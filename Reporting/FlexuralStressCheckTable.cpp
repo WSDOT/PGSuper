@@ -886,7 +886,7 @@ void CFlexuralStressCheckTable::BuildAllowDeckStressInformation(rptChapter* pCha
    //
    // Required Strength
    //
-   Float64 fc_reqd = pGirderArtifact->GetRequiredDeckConcreteStrength(task.intervalIdx, task.limitState);
+   Float64 fc_reqd = pGirderArtifact->GetRequiredDeckConcreteStrength(task.stressType, task.intervalIdx, task.limitState);
 
    if ( 0 < fc_reqd )
    {
@@ -1057,7 +1057,7 @@ void CFlexuralStressCheckTable::BuildAllowSegmentStressInformation(rptParagraph*
    //
    // Required Strength
    //
-   Float64 fc_reqd = pSegmentArtifact->GetRequiredSegmentConcreteStrength(task.intervalIdx, task.limitState);
+   Float64 fc_reqd = pSegmentArtifact->GetRequiredSegmentConcreteStrength(task.stressType, task.intervalIdx, task.limitState);
    if ( 0 < fc_reqd )
    {
       *pPara << _T("Concrete strength required to satisfy this requirement = ") << stress_u.SetValue( fc_reqd ) << rptNewLine;
@@ -1226,7 +1226,7 @@ void CFlexuralStressCheckTable::BuildAllowClosureJointStressInformation(rptParag
    //
    // Required Strength
    //
-   Float64 fc_reqd = pSegmentArtifact->GetRequiredClosureJointConcreteStrength(task.intervalIdx, task.limitState);
+   Float64 fc_reqd = pSegmentArtifact->GetRequiredClosureJointConcreteStrength(task.stressType, task.intervalIdx, task.limitState);
    if ( 0 < fc_reqd )
    {
       *pPara << _T("Concrete strength required to satisfy this requirement = ") << stress_u.SetValue( fc_reqd ) << rptNewLine;

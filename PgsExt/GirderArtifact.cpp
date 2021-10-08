@@ -295,14 +295,14 @@ bool pgsGirderArtifact::IsDeckWithRebarAllowableStressApplicable(const StressChe
    return false;
 }
 
-Float64 pgsGirderArtifact::GetRequiredGirderConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState) const
+Float64 pgsGirderArtifact::GetRequiredGirderConcreteStrength(pgsTypes::StressType stressType, IntervalIndexType intervalIdx,pgsTypes::LimitState limitState) const
 {
    Float64 f = 0;
    for (const auto& item : m_SegmentArtifacts)
    {
       const auto& artifact(item.second);
       ATLASSERT(item.first == artifact.GetSegmentKey());
-      Float64 required = artifact.GetRequiredSegmentConcreteStrength(intervalIdx,limitState);
+      Float64 required = artifact.GetRequiredSegmentConcreteStrength(stressType,intervalIdx,limitState);
       if ( required < 0 )
       {
          ATLASSERT(required == -99999); // there is not a concrete strength that will work
@@ -333,14 +333,14 @@ Float64 pgsGirderArtifact::GetRequiredGirderConcreteStrength() const
    return f;
 }
 
-Float64 pgsGirderArtifact::GetRequiredDeckConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState) const
+Float64 pgsGirderArtifact::GetRequiredDeckConcreteStrength(pgsTypes::StressType stressType, IntervalIndexType intervalIdx,pgsTypes::LimitState limitState) const
 {
    Float64 f = 0;
    for (const auto& item : m_SegmentArtifacts)
    {
       const auto& artifact(item.second);
       ATLASSERT(item.first == artifact.GetSegmentKey());
-      Float64 required = artifact.GetRequiredDeckConcreteStrength(intervalIdx,limitState);
+      Float64 required = artifact.GetRequiredDeckConcreteStrength(stressType,intervalIdx,limitState);
       if ( required < 0 )
       {
          ATLASSERT(required == -99999); // there is not a concrete strength that will work

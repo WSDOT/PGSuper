@@ -115,8 +115,8 @@ public:
    void SetCapacity(pgsTypes::StressLocation stressLocation,Float64 fAllowable);
    Float64 GetCapacity(pgsTypes::StressLocation stressLocation) const;
 
-   void SetRequiredConcreteStrength(pgsTypes::StressLocation stressLocation,Float64 fcReqd);
-   Float64 GetRequiredConcreteStrength(pgsTypes::StressLocation stressLocation) const;
+   void SetRequiredConcreteStrength(pgsTypes::StressType stressType,pgsTypes::StressLocation stressLocation,Float64 fcReqd);
+   Float64 GetRequiredConcreteStrength(pgsTypes::StressType stressType,pgsTypes::StressLocation stressLocation) const;
    Float64 GetRequiredBeamConcreteStrength() const;
    Float64 GetRequiredDeckConcreteStrength() const;
 
@@ -161,8 +161,10 @@ private:
    std::array<bool, 4> m_bBiaxialStresses; // if true, the alternative tensile stress requirements are reported for biaxial stresses
 
    // Other
-   std::array<Float64,4> m_FcReqd; // concrete strenght required to satisfy allowable for this section
-                        // No concrete strength work if < 0
+   std::array<std::array<Float64,4>, 2> m_FcReqd; // array index is m_FcReqd[pgsTypes::StressType][pgsTypes::StressLocation]
+   // concrete strength required to satisfy allowable at this section
+   // If no concrete strength work store a negative value
+   // Store a value of zero when stress limits are not a function of concrete strength
 
    bool StressedPassed(pgsTypes::StressLocation stressLocation) const;
    bool TensionPassedWithRebar(Float64 fTens,pgsTypes::StressLocation stressLocation) const;

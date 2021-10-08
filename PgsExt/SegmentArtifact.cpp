@@ -667,7 +667,7 @@ bool pgsSegmentArtifact::DidPrincipalTensionStressPass() const
    return m_PrincipalTensionStressArtifact.Passed();
 }
 
-Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
+Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength(pgsTypes::StressType stressType, IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -679,7 +679,7 @@ Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength(IntervalIndexType
    {
       const auto& key(item.first);
 
-      if ( key.intervalIdx == intervalIdx && key.limitState == ls )
+      if ( key.intervalIdx == intervalIdx && key.limitState == ls && key.stressType == stressType)
       {
          for( const auto& artifact : item.second)
          {
@@ -695,7 +695,7 @@ Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength(IntervalIndexType
                pgsTypes::StressLocation stressLocation = (i == 0 ? pgsTypes::TopGirder : pgsTypes::BottomGirder);
                if ( artifact.IsApplicable(stressLocation) )
                {
-                  Float64 fc = artifact.GetRequiredConcreteStrength(stressLocation);
+                  Float64 fc = artifact.GetRequiredConcreteStrength(stressType,stressLocation);
 
                   if ( fc < 0 ) 
                   {
@@ -715,7 +715,7 @@ Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength(IntervalIndexType
    return fc_reqd;
 }
 
-Float64 pgsSegmentArtifact::GetRequiredClosureJointConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
+Float64 pgsSegmentArtifact::GetRequiredClosureJointConcreteStrength(pgsTypes::StressType stressType, IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -743,7 +743,7 @@ Float64 pgsSegmentArtifact::GetRequiredClosureJointConcreteStrength(IntervalInde
                pgsTypes::StressLocation stressLocation = (i == 0 ? pgsTypes::TopGirder : pgsTypes::BottomGirder);
                if ( artifact.IsApplicable(stressLocation) )
                {
-                  Float64 fc = artifact.GetRequiredConcreteStrength(stressLocation);
+                  Float64 fc = artifact.GetRequiredConcreteStrength(stressType,stressLocation);
 
                   if ( fc < 0 ) 
                   {
@@ -763,7 +763,7 @@ Float64 pgsSegmentArtifact::GetRequiredClosureJointConcreteStrength(IntervalInde
    return fc_reqd;
 }
 
-Float64 pgsSegmentArtifact::GetRequiredDeckConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
+Float64 pgsSegmentArtifact::GetRequiredDeckConcreteStrength(pgsTypes::StressType stressType, IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
 {
    Float64 fc_reqd = 0;
 
@@ -780,7 +780,7 @@ Float64 pgsSegmentArtifact::GetRequiredDeckConcreteStrength(IntervalIndexType in
                pgsTypes::StressLocation stressLocation = (i == 0 ? pgsTypes::TopDeck : pgsTypes::BottomDeck);
                if ( artifact.IsApplicable(stressLocation) )
                {
-                  Float64 fc = artifact.GetRequiredConcreteStrength(stressLocation);
+                  Float64 fc = artifact.GetRequiredConcreteStrength(stressType,stressLocation);
 
                   if ( fc < 0 ) 
                   {
@@ -834,7 +834,7 @@ Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength() const
             pgsTypes::StressLocation stressLocation = (i == 0 ? pgsTypes::TopGirder : pgsTypes::BottomGirder );
             if ( artifact.IsApplicable(stressLocation) )
             {
-               Float64 fc = artifact.GetRequiredConcreteStrength(stressLocation);
+               Float64 fc = Max(artifact.GetRequiredConcreteStrength(pgsTypes::Compression,stressLocation),artifact.GetRequiredConcreteStrength(pgsTypes::Tension,stressLocation));
 
                if ( fc < 0 ) 
                {
@@ -905,7 +905,7 @@ Float64 pgsSegmentArtifact::GetRequiredClosureJointConcreteStrength() const
                pgsTypes::StressLocation stressLocation = (i == 0 ? pgsTypes::TopGirder : pgsTypes::BottomGirder );
                if ( artifact.IsApplicable(stressLocation) )
                {
-                  Float64 fc = artifact.GetRequiredConcreteStrength(stressLocation);
+                  Float64 fc = Max(artifact.GetRequiredConcreteStrength(pgsTypes::Compression,stressLocation), artifact.GetRequiredConcreteStrength(pgsTypes::Tension,stressLocation));
 
                   if ( fc < 0 ) 
                   {
@@ -956,7 +956,7 @@ Float64 pgsSegmentArtifact::GetRequiredDeckConcreteStrength() const
             pgsTypes::StressLocation stressLocation = (i == 0 ? pgsTypes::TopDeck : pgsTypes::BottomDeck);
             if ( artifact.IsApplicable(stressLocation) )
             {
-               Float64 fc = artifact.GetRequiredConcreteStrength(stressLocation);
+               Float64 fc = Max(artifact.GetRequiredConcreteStrength(pgsTypes::Compression,stressLocation), artifact.GetRequiredConcreteStrength(pgsTypes::Tension,stressLocation));
 
                if ( fc < 0 ) 
                {

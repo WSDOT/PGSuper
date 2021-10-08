@@ -2639,7 +2639,7 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	               Float64 fc_reqd;
 	               ATLASSERT(bCheckMax[face] == false); // alternate stress doesn't use limiting value
 	               fc_reqd = pow(f/(lambda*talt[face]),2);
-	               artifact.SetRequiredConcreteStrength(face == TOP ? topStressLocation : botStressLocation,fc_reqd);
+	               artifact.SetRequiredConcreteStrength(pgsTypes::Tension,face == TOP ? topStressLocation : botStressLocation,fc_reqd);
 	            }
 	         } // if is tension
 	      } // next section
@@ -2687,7 +2687,7 @@ void pgsDesigner2::ComputeConcreteStrength(pgsFlexuralStressArtifact& artifact,p
             fc_reqd = 0;
          }
 
-         artifact.SetRequiredConcreteStrength(stressLocation,fc_reqd);
+         artifact.SetRequiredConcreteStrength(task.stressType,stressLocation,fc_reqd);
       }
       else
       {
@@ -2731,7 +2731,7 @@ void pgsDesigner2::ComputeConcreteStrength(pgsFlexuralStressArtifact& artifact,p
             fc_reqd = 0;
          }
 
-         artifact.SetRequiredConcreteStrength(stressLocation,fc_reqd);
+         artifact.SetRequiredConcreteStrength(task.stressType,stressLocation,fc_reqd);
       } // end if compression/tension
    } // end if bIsApplicable
 }
@@ -2897,11 +2897,11 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
 
          if ( MinIndex(fTop,fBot) == 0 )
          {
-            artifact.SetRequiredConcreteStrength(pgsTypes::TopGirder,fc_reqd);
+            artifact.SetRequiredConcreteStrength(task.stressType,pgsTypes::TopGirder,fc_reqd);
          }
          else
          {
-            artifact.SetRequiredConcreteStrength(pgsTypes::BottomGirder,fc_reqd);
+            artifact.SetRequiredConcreteStrength(task.stressType, pgsTypes::BottomGirder,fc_reqd);
          }
       }
       else // tension
@@ -3038,11 +3038,11 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
 
          if ( MaxIndex(fTop,fBot) == 0 )
          {
-            artifact.SetRequiredConcreteStrength(pgsTypes::TopGirder,fc_reqd);
+            artifact.SetRequiredConcreteStrength(task.stressType, pgsTypes::TopGirder,fc_reqd);
          }
          else
          {
-            artifact.SetRequiredConcreteStrength(pgsTypes::BottomGirder,fc_reqd);
+            artifact.SetRequiredConcreteStrength(task.stressType, pgsTypes::BottomGirder,fc_reqd);
          }
       }
 

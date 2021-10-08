@@ -538,11 +538,11 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
 
                if ( MinIndex(fTop,fBot) == 0 )
                {
-                  pFabrStressArtifact->SetRequiredConcreteStrength(pgsTypes::TopGirder,fc_reqd);
+                  pFabrStressArtifact->SetRequiredConcreteStrength(ststype[icase], pgsTypes::TopGirder,fc_reqd);
                }
                else
                {
-                  pFabrStressArtifact->SetRequiredConcreteStrength(pgsTypes::BottomGirder,fc_reqd);
+                  pFabrStressArtifact->SetRequiredConcreteStrength(ststype[icase], pgsTypes::BottomGirder,fc_reqd);
                }
             }
             else
@@ -578,11 +578,11 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
 
                if ( MaxIndex(fTop,fBot) == 0 )
                {
-                  pFabrStressArtifact->SetRequiredConcreteStrength(pgsTypes::TopGirder,fc_reqd);
+                  pFabrStressArtifact->SetRequiredConcreteStrength(ststype[icase], pgsTypes::TopGirder,fc_reqd);
                }
                else
                {
-                  pFabrStressArtifact->SetRequiredConcreteStrength(pgsTypes::BottomGirder,fc_reqd);
+                  pFabrStressArtifact->SetRequiredConcreteStrength(ststype[icase], pgsTypes::BottomGirder,fc_reqd);
                }
             }
          }
