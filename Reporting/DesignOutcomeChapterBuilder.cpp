@@ -1504,7 +1504,7 @@ void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDispl
          RowIndexType row = i+1;
          const CShearZoneData2& rszdata = pShearData->ShearZones[i];
          zone_end += rszdata.ZoneLength;
-         (*pTables)(row,col++) << rszdata.ZoneNum;
+         (*pTables)(row,col++) << LABEL_INDEX(rszdata.ZoneNum);
 
          if ( nz <= i+1 || max_zoneloc <= zone_end)
          {

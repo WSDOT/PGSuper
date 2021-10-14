@@ -508,7 +508,9 @@ bool pgsShearDesignTool::DoDesignForSplitting() const
 
 bool pgsShearDesignTool::DoDesignFromScratch() const
 {
-   return m_bDoDesignFromScratch;
+   // use design from scratch setting, or force design from scratch
+   // if there aren't any predefined stirrups to use for the design basis
+   return m_bDoDesignFromScratch || m_ShearData.ShearZones.empty();
 }
 
 IndexType pgsShearDesignTool::GetNumStirrupSizeBarCombos() const
@@ -1462,7 +1464,7 @@ bool pgsShearDesignTool::LayoutPrimaryStirrupZones() const
          zone_len = ::ConvertToSysUnits(zone_len,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
 
          // Store current zone data in zone collection
-         zone_data.ZoneNum = ++nzones_designed;
+         zone_data.ZoneNum = nzones_designed++;
 
          zone_data.ZoneLength = done ? 0.0 : zone_len; // last zone has infinite length
 
