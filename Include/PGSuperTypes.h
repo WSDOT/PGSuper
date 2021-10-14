@@ -839,6 +839,23 @@ typedef struct pgsTypes
       ptsmNCHRP
    } PrincipalTensileStressMethod;
 
+   typedef enum ShearFlowMethod
+   {
+      // compute horizontal interface shear flow between slab and girder using
+      sfmLRFD,     // LRFD simplified equation
+      sfmClassical // Classical equation (VQ/I)
+   } ShearFlowMethod;
+
+   typedef enum ShearCapacityMethod
+   {
+      // NOTE: enum values are in a weird order... the constants are set so that they
+      //       are consistent with previous versions of PGSuper. DO NOT CHANGE CONSTANTS
+      scmBTEquations = 0, // LRFD 5.7.3.5 (pre2017: 5.8.3.5)
+      scmVciVcw = 2, // LRFD 5.8.3.6 (Vci, Vcw - added in 2007, removed in 2017)
+      scmWSDOT2001 = 1, // WSDOT BDM Method (June 2001 Design Memo)
+      scmBTTables = 3, // LRFD B5.1
+      scmWSDOT2007 = 4  // WSDOT BDM Method (August 2007 Design Memo - Use new BT equations from to be published 2008 interims)
+   } ShearCapacityMethod;
 } pgsTypes;
 
 //-----------------------------------------------------------------------------
@@ -1506,24 +1523,6 @@ typedef enum HarpedStrandOffsetType
    hsoBOTTOM2BOTTOM = 4,    // Bottom-most strand to bottom of girder
    hsoECCENTRICITY  = 5     // Eccentricity of total strand group
 } HarpedStrandOffsetType;
-
-enum ShearFlowMethod
-{
-   // compute horizontal interface shear flow between slab and girder using
-   sfmLRFD,     // LRFD simplified equation
-   sfmClassical // Classical equation (VQ/I)
-};
-
-enum ShearCapacityMethod
-{
-   // NOTE: enum values are in a weird order... the constants are set so that they
-   //       are consistent with previous versions of PGSuper. DO NOT CHANGE CONSTANTS
-   scmBTEquations = 0, // LRFD 5.7.3.5 (pre2017: 5.8.3.5)
-   scmVciVcw      = 2, // LRFD 5.8.3.6 (Vci, Vcw - added in 2007, removed in 2017)
-   scmWSDOT2001   = 1, // WSDOT BDM Method (June 2001 Design Memo)
-   scmBTTables    = 3, // LRFD B5.1
-   scmWSDOT2007   = 4  // WSDOT BDM Method (August 2007 Design Memo - Use new BT equations from to be published 2008 interims)
-};
 
 // functions to hash and un-hash span/girder for file loading and saving
 inline DWORD HashGirderSpacing(pgsTypes::MeasurementLocation ml,pgsTypes::MeasurementType mt)

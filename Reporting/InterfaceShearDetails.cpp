@@ -332,7 +332,7 @@ void CInterfaceShearDetails::BuildRating(IBroker* pBroker, rptChapter* pChapter,
 
 rptRcTable* CInterfaceShearDetails::CreateVuiTable(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
-   ColumnIndexType nCol = m_ShearFlowMethod == sfmLRFD ? 6 : 7;
+   ColumnIndexType nCol = m_ShearFlowMethod == pgsTypes::sfmLRFD ? 6 : 7;
 
    rptRcTable* vui_table = rptStyleManager::CreateDefaultTable(nCol);
 
@@ -344,7 +344,7 @@ rptRcTable* CInterfaceShearDetails::CreateVuiTable(IBroker* pBroker,rptChapter* 
 
    (*vui_table)(0, col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-   if (m_ShearFlowMethod == sfmLRFD)
+   if (m_ShearFlowMethod == pgsTypes::sfmLRFD)
    {
       (*vui_table)(0, col++) << COLHDR(Sub2(_T("d"), _T("vi")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
    }
@@ -356,7 +356,7 @@ rptRcTable* CInterfaceShearDetails::CreateVuiTable(IBroker* pBroker,rptChapter* 
 
    (*vui_table)(0, col++) << COLHDR(Sub2(_T("V"), _T("u")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
 
-   if (m_ShearFlowMethod == sfmLRFD)
+   if (m_ShearFlowMethod == pgsTypes::sfmLRFD)
    {
       (*vui_table)(0, col++) << COLHDR(Sub2(_T("v"), _T("ui")) << _T(" = ") << Sub2(_T("V"), _T("u")) << _T("/") << Sub2(_T("d"), _T("vi")), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit());
    }
@@ -368,7 +368,7 @@ rptRcTable* CInterfaceShearDetails::CreateVuiTable(IBroker* pBroker,rptChapter* 
    (*vui_table)(0, col++) << COLHDR(Sub2(_T("b"), _T("vi")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
    (*vui_table)(0, col++) << COLHDR(Sub2(symbol(nu), _T("ui")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
 
-   if (m_ShearFlowMethod == sfmLRFD)
+   if (m_ShearFlowMethod == pgsTypes::sfmLRFD)
    {
       pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
       *pChapter << pPara;
@@ -387,7 +387,7 @@ void CInterfaceShearDetails::FillVuiTable(rptRcTable* pTable,RowIndexType row,co
    Float64 Vui = pArtifact->GetDemand();
    (*pTable)(row, col++) << location.SetValue(POI_SPAN, poi);
 
-   if (m_ShearFlowMethod == sfmLRFD)
+   if (m_ShearFlowMethod == pgsTypes::sfmLRFD)
    {
       (*pTable)(row, col++) << dim.SetValue(pArtifact->GetDv());
    }

@@ -347,7 +347,7 @@ public:
 
 // IInterfaceShearRequirements 
 public:
-   virtual ShearFlowMethod GetShearFlowMethod() const override;
+   virtual pgsTypes::ShearFlowMethod GetShearFlowMethod() const override;
    virtual Float64 GetMaxShearConnectorSpacing(const pgsPointOfInterest& poi) const override;
 
 // IDuctLimits

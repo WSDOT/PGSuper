@@ -950,23 +950,23 @@ void write_shear_capacity(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnit
 
    switch (pSpecEntry->GetShearCapacityMethod())
    {
-   case scmBTEquations:
+   case pgsTypes::scmBTEquations:
       *pPara << _T("Shear capacity computed in accordance with LRFD ") << LrfdCw8th(_T("5.8.3.4.2"), _T("5.7.3.4.2")) << _T(" (General method)") << rptNewLine;
       break;
 
-   case scmVciVcw:
+   case pgsTypes::scmVciVcw:
       *pPara << _T("Shear capacity computed in accordance with LRFD 5.8.3.4.3 (Vci, Vcw method)") << rptNewLine;
       break;
 
-   case scmBTTables:
+   case pgsTypes::scmBTTables:
       *pPara << _T("Shear capacity computed in accordance with LRFD B5.1 (Beta-Theta Tables)") << rptNewLine;
       break;
 
-   case scmWSDOT2001:
+   case pgsTypes::scmWSDOT2001:
       *pPara << _T("Shear capacity computed in accordance with WSDOT Bridge Design Manual (June 2001)") << rptNewLine;
       break;
 
-   case scmWSDOT2007:
+   case pgsTypes::scmWSDOT2007:
       *pPara << _T("Shear capacity computed in accordance with WSDOT Bridge Design Manual (August 2007)") << rptNewLine;
       break;
 
@@ -1010,11 +1010,11 @@ void write_shear_capacity(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnit
 
    switch (pSpecEntry->GetShearFlowMethod())
    {
-   case sfmLRFD:
+   case pgsTypes::sfmLRFD:
       *pPara << _T("Shear stress at girder/deck interface computed using the LRFD simplified method: ") << Sub2(_T("V"), _T("ui")) << _T(" = ") << _T("V/bd") << rptNewLine;
       break;
 
-   case sfmClassical:
+   case pgsTypes::sfmClassical:
       *pPara << _T("Shear stress at girder/deck interface computed using the classical shear flow formula: ") << Sub2(_T("V"), _T("ui")) << _T(" = (") << Sub2(_T("V"), _T("u")) << _T("Q)") << _T("/") << _T("(Ib)") << rptNewLine;
       break;
    }

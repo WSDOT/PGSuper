@@ -184,7 +184,7 @@ struct SHEARCAPACITYDETAILS
    };
 
    // [IN]
-   ShearCapacityMethod Method; // General or Simplified per LRFD 5.8.3.4.3 (Vci/Vcw - added to LRFD in 2007) (removed from LRFD in 2017)
+   pgsTypes::ShearCapacityMethod Method; // General or Simplified per LRFD 5.8.3.4.3 (Vci/Vcw - added to LRFD in 2007) (removed from LRFD in 2017)
    Float64 Nu;
    Float64 Mu;
    Float64 RealMu; // Actual Mu computed from structural analysis. Same as Mu if MuLimitUsed is false

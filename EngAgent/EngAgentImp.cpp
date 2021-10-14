@@ -3527,9 +3527,9 @@ void CEngAgentImp::GetShearCapacityDetails(pgsTypes::LimitState limitState, Inte
    GET_IFACE(ISpecification, pSpec);
    GET_IFACE(ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
+   pgsTypes::ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
 
-   if ( shear_capacity_method == scmBTEquations || shear_capacity_method == scmWSDOT2007 )
+   if ( shear_capacity_method == pgsTypes::scmBTEquations || shear_capacity_method == pgsTypes::scmWSDOT2007 )
    {
       ZoneIndexType csZoneIdx = GetCriticalSectionZoneIndex(limitState,poi);
       if ( csZoneIdx != INVALID_INDEX )

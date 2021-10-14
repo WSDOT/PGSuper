@@ -759,44 +759,44 @@ void CSpecMainSheet::CheckShearCapacityMethod()
 {
    // makes sure the shear capacity method is consistent with the specification version that is selected
    if ( GetSpecVersion() < lrfdVersionMgr::FourthEdition2007 &&  // if we are before 4th Edition
-        m_Entry.m_ShearCapacityMethod == scmVciVcw ) // Vci/Vcw is not a valid option
+        m_Entry.m_ShearCapacityMethod == pgsTypes::scmVciVcw ) // Vci/Vcw is not a valid option
    {
       // force to the general method
       if ( GetSpecVersion() <= lrfdVersionMgr::FourthEdition2007 )
       {
-         m_Entry.m_ShearCapacityMethod = scmBTTables;
+         m_Entry.m_ShearCapacityMethod = pgsTypes::scmBTTables;
       }
       else
       {
-         m_Entry.m_ShearCapacityMethod = scmBTEquations;
+         m_Entry.m_ShearCapacityMethod = pgsTypes::scmBTEquations;
       }
    }
 
    // The general method from the 2007 spec becomes the tables method in the 2008 spec
    // make that adjustment here
-   if ( GetSpecVersion() < lrfdVersionMgr::FourthEditionWith2008Interims && m_Entry.m_ShearCapacityMethod == scmBTEquations )
+   if ( GetSpecVersion() < lrfdVersionMgr::FourthEditionWith2008Interims && m_Entry.m_ShearCapacityMethod == pgsTypes::scmBTEquations )
    {
-      m_Entry.m_ShearCapacityMethod = scmBTTables;
+      m_Entry.m_ShearCapacityMethod = pgsTypes::scmBTTables;
    }
 
    if ( GetSpecVersion() < lrfdVersionMgr::SecondEditionWith2000Interims &&  // if we are before 2nd Edition + 2000
-        m_Entry.m_ShearCapacityMethod == scmWSDOT2001 ) // WSDOT 2001 is not a valid option
+        m_Entry.m_ShearCapacityMethod == pgsTypes::scmWSDOT2001 ) // WSDOT 2001 is not a valid option
    {
       // force to the general method
       if ( GetSpecVersion() <= lrfdVersionMgr::FourthEdition2007 )
       {
-         m_Entry.m_ShearCapacityMethod = scmBTTables;
+         m_Entry.m_ShearCapacityMethod = pgsTypes::scmBTTables;
       }
       else
       {
-         m_Entry.m_ShearCapacityMethod = scmBTEquations;
+         m_Entry.m_ShearCapacityMethod = pgsTypes::scmBTEquations;
       }
    }
 
    if ( GetSpecVersion() < lrfdVersionMgr::FourthEdition2007 &&  // if we are before 4th Edition
-        m_Entry.m_ShearCapacityMethod == scmWSDOT2007 ) // WSDOT 2007 is not a valid option
+        m_Entry.m_ShearCapacityMethod == pgsTypes::scmWSDOT2007 ) // WSDOT 2007 is not a valid option
    {
-      m_Entry.m_ShearCapacityMethod = scmWSDOT2001; // force to WSDOT 2001
+      m_Entry.m_ShearCapacityMethod = pgsTypes::scmWSDOT2001; // force to WSDOT 2001
    }
 }
 

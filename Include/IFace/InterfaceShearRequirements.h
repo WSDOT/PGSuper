@@ -25,10 +25,6 @@
 // SYSTEM INCLUDES
 //
 
-#if !defined INCLUDED_WBFLTYPES_H_
-#include <WbflTypes.h>
-#endif
-
 #include <PGSuperTypes.h>
 
 /*****************************************************************************
@@ -44,7 +40,7 @@ interface IInterfaceShearRequirements : IUnknown
 {
    //------------------------------------------------------------------------
    // returns the method for computing shear flow
-   virtual ShearFlowMethod GetShearFlowMethod() const = 0;
+   virtual pgsTypes::ShearFlowMethod GetShearFlowMethod() const = 0;
 
    //------------------------------------------------------------------------
    // returns the maximum longitudinal center-to-center spacing of

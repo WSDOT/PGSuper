@@ -3363,7 +3363,7 @@ Float64 CSpecAgentImp::GetClosureJointShearResistanceFactor(pgsTypes::ConcreteTy
 
 ///////////////////////////////////////////////////
 // IInterfaceShearRequirements 
-ShearFlowMethod CSpecAgentImp::GetShearFlowMethod() const
+pgsTypes::ShearFlowMethod CSpecAgentImp::GetShearFlowMethod() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetShearFlowMethod();

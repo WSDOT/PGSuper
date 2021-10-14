@@ -3403,7 +3403,7 @@ void pgsDesigner2::CheckHorizontalShear(pgsTypes::LimitState limitState, const p
 
    Float64 Vuh;
 
-   if ( pInterfaceShear->GetShearFlowMethod() == sfmClassical )
+   if ( pInterfaceShear->GetShearFlowMethod() == pgsTypes::sfmClassical )
    {
       GET_IFACE(ISectionProperties,pSectProp);
 

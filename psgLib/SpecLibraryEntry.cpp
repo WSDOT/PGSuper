@@ -207,10 +207,10 @@ m_EnableSlabOffsetCheck(true),
 m_EnableSlabOffsetDesign(true),
 m_DesignStrandFillType(ftMinimizeHarping),
 m_EffFlangeWidthMethod(pgsTypes::efwmLRFD),
-m_ShearFlowMethod(sfmClassical),
+m_ShearFlowMethod(pgsTypes::sfmClassical),
 m_MaxInterfaceShearConnectorSpacing(::ConvertToSysUnits(48.0,unitMeasure::Inch)),
 m_bUseDeckWeightForPc(true),
-m_ShearCapacityMethod(scmBTEquations),
+m_ShearCapacityMethod(pgsTypes::scmBTEquations),
 m_bLimitNetTensionStrainToPositiveValues(false),
 m_CuringMethodTimeAdjustmentFactor(7),
 m_MinLiftPoint(-1), // H
@@ -1067,7 +1067,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 {
    Int16 temp;
-   ShearCapacityMethod shear_capacity_method = m_ShearCapacityMethod; // used as a temporary storage for shear capacity method before file version 18
+   pgsTypes::ShearCapacityMethod shear_capacity_method = m_ShearCapacityMethod; // used as a temporary storage for shear capacity method before file version 18
 
    if(pLoad->BeginUnit(_T("SpecificationLibraryEntry")))
    {
@@ -2504,16 +2504,16 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
             switch(temp)
             {
-            case 0: // scmGeneral -> scmBTTables
-               shear_capacity_method = scmBTTables;
+            case 0: // scmGeneral -> pgsTypes::scmBTTables
+               shear_capacity_method = pgsTypes::scmBTTables;
                break;
 
-            case 1: // scmWSDOT -> scmWSDOT2001
-               shear_capacity_method = scmWSDOT2001;
+            case 1: // scmWSDOT -> pgsTypes::scmWSDOT2001
+               shear_capacity_method = pgsTypes::scmWSDOT2001;
                break;
                
-            case 2: // scmSimplified -> scmVciVcw
-               shear_capacity_method = scmVciVcw;
+            case 2: // scmSimplified -> pgsTypes::scmVciVcw
+               shear_capacity_method = pgsTypes::scmVciVcw;
                break;
 
             default:
@@ -2523,7 +2523,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       }
       else
       {
-         shear_capacity_method = scmBTTables;
+         shear_capacity_method = pgsTypes::scmBTTables;
       }
 
       if ( version < 37 )
@@ -3929,7 +3929,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
-         m_ShearFlowMethod = (ShearFlowMethod)(value);
+         m_ShearFlowMethod = (pgsTypes::ShearFlowMethod)(value);
 
          // MaxInterfaceShearConnectorSpacing wasn't available in this version of the input
          // the default value is 48". Set the value to match the spec
@@ -3952,42 +3952,42 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
          switch(value)
          {
-         case 0: // scmGeneral -> scmBTEquations
-            m_ShearCapacityMethod = scmBTEquations;
+         case 0: // scmGeneral -> pgsTypes::scmBTEquations
+            m_ShearCapacityMethod = pgsTypes::scmBTEquations;
             break;
 
-         case 1: // scmWSDOT -> scmWSDOT2001
-            m_ShearCapacityMethod = scmWSDOT2001;
+         case 1: // scmWSDOT -> pgsTypes::scmWSDOT2001
+            m_ShearCapacityMethod = pgsTypes::scmWSDOT2001;
             break;
             
-         case 2: // scmSimplified -> scmVciVcw
-            m_ShearCapacityMethod = scmVciVcw;
+         case 2: // scmSimplified -> pgsTypes::scmVciVcw
+            m_ShearCapacityMethod = pgsTypes::scmVciVcw;
             break;
 
          default:
             //ATLASSERT(false); do nothing...
             // if value is 3 or 4 it is the correct stuff
-            m_ShearCapacityMethod = (ShearCapacityMethod)value;
+            m_ShearCapacityMethod = (pgsTypes::ShearCapacityMethod)value;
          }
 
          // The general method from the 2007 spec becomes the tables method in the 2008 spec
          // make that adjustment here
-         if ( m_SpecificationType < lrfdVersionMgr::FourthEditionWith2008Interims && m_ShearCapacityMethod == scmBTEquations )
+         if ( m_SpecificationType < lrfdVersionMgr::FourthEditionWith2008Interims && m_ShearCapacityMethod == pgsTypes::scmBTEquations )
          {
-            m_ShearCapacityMethod = scmBTTables;
+            m_ShearCapacityMethod = pgsTypes::scmBTTables;
          }
 
          // if this is the 2008 spec, or later and if the shear method is WSDOT 2007, change it to Beta-Theta equations
-         if ( lrfdVersionMgr::FourthEditionWith2008Interims <= m_SpecificationType && m_ShearCapacityMethod == scmWSDOT2007 )
+         if ( lrfdVersionMgr::FourthEditionWith2008Interims <= m_SpecificationType && m_ShearCapacityMethod == pgsTypes::scmWSDOT2007 )
          {
-            m_ShearCapacityMethod = scmBTEquations;
+            m_ShearCapacityMethod = pgsTypes::scmBTEquations;
          }
       }
       else if ( version < 18 )
       {
          // this is before Version 18... shear capacity method was read above in a now obsolete paremeter
          // translate that parameter here
-         m_ShearCapacityMethod = (ShearCapacityMethod)shear_capacity_method;
+         m_ShearCapacityMethod = (pgsTypes::ShearCapacityMethod)shear_capacity_method;
       }
       else
       {
@@ -4021,7 +4021,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
-         m_ShearFlowMethod = (ShearFlowMethod)(value);
+         m_ShearFlowMethod = (pgsTypes::ShearFlowMethod)(value);
 
          if ( 1 < shear_version )
          {
@@ -4068,35 +4068,35 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
          switch(value)
          {
-         case 0: // scmGeneral -> scmBTEquations
-            m_ShearCapacityMethod = scmBTEquations;
+         case 0: // scmGeneral -> pgsTypes::scmBTEquations
+            m_ShearCapacityMethod = pgsTypes::scmBTEquations;
             break;
 
-         case 1: // scmWSDOT -> scmWSDOT2001
-            m_ShearCapacityMethod = scmWSDOT2001;
+         case 1: // scmWSDOT -> pgsTypes::scmWSDOT2001
+            m_ShearCapacityMethod = pgsTypes::scmWSDOT2001;
             break;
             
-         case 2: // scmSimplified -> scmVciVcw
-            m_ShearCapacityMethod = scmVciVcw;
+         case 2: // scmSimplified -> pgsTypes::scmVciVcw
+            m_ShearCapacityMethod = pgsTypes::scmVciVcw;
             break;
 
          default:
             //ATLASSERT(false); do nothing...
             // if value is 3 or 4 it is the correct stuff
-            m_ShearCapacityMethod = (ShearCapacityMethod)value;
+            m_ShearCapacityMethod = (pgsTypes::ShearCapacityMethod)value;
          }
 
          // The general method from the 2007 spec becomes the tables method in the 2008 spec
          // make that adjustment here
-         if ( m_SpecificationType < lrfdVersionMgr::FourthEditionWith2008Interims && m_ShearCapacityMethod == scmBTEquations )
+         if ( m_SpecificationType < lrfdVersionMgr::FourthEditionWith2008Interims && m_ShearCapacityMethod == pgsTypes::scmBTEquations )
          {
-            m_ShearCapacityMethod = scmBTTables;
+            m_ShearCapacityMethod = pgsTypes::scmBTTables;
          }
 
          // if this is the 2008 spec, or later and if the shear method is WSDOT 2007, change it to Beta-Theta equations
-         if ( lrfdVersionMgr::FourthEditionWith2008Interims <= m_SpecificationType && m_ShearCapacityMethod == scmWSDOT2007 )
+         if ( lrfdVersionMgr::FourthEditionWith2008Interims <= m_SpecificationType && m_ShearCapacityMethod == pgsTypes::scmWSDOT2007 )
          {
-            m_ShearCapacityMethod = scmBTEquations;
+            m_ShearCapacityMethod = pgsTypes::scmBTEquations;
          }
 
          if (3 < shear_version)
@@ -7248,12 +7248,12 @@ pgsTypes::EffectiveFlangeWidthMethod SpecLibraryEntry::GetEffectiveFlangeWidthMe
    return m_EffFlangeWidthMethod;
 }
 
-void SpecLibraryEntry::SetShearFlowMethod(ShearFlowMethod method)
+void SpecLibraryEntry::SetShearFlowMethod(pgsTypes::ShearFlowMethod method)
 {
    m_ShearFlowMethod = method;
 }
 
-ShearFlowMethod SpecLibraryEntry::GetShearFlowMethod() const
+pgsTypes::ShearFlowMethod SpecLibraryEntry::GetShearFlowMethod() const
 {
    return m_ShearFlowMethod;
 }
@@ -7278,12 +7278,12 @@ bool SpecLibraryEntry::UseDeckWeightForPermanentNetCompressiveForce() const
    return m_bUseDeckWeightForPc;
 }
 
-void SpecLibraryEntry::SetShearCapacityMethod(ShearCapacityMethod method)
+void SpecLibraryEntry::SetShearCapacityMethod(pgsTypes::ShearCapacityMethod method)
 {
    m_ShearCapacityMethod = method;
 }
 
-ShearCapacityMethod SpecLibraryEntry::GetShearCapacityMethod() const
+pgsTypes::ShearCapacityMethod SpecLibraryEntry::GetShearCapacityMethod() const
 {
    return m_ShearCapacityMethod;
 }

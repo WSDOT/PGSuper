@@ -79,7 +79,7 @@ private:
    DECLARE_UV_PROTOTYPE(rptLength4UnitValue, l4);
 
    bool m_bIsSpec2007orOlder;
-   ShearFlowMethod m_ShearFlowMethod;
+   pgsTypes::ShearFlowMethod m_ShearFlowMethod;
 
    rptRcTable* CreateVuiTable(IBroker* pBroker, rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
    void FillVuiTable(rptRcTable* pTable, RowIndexType row, const pgsPointOfInterest& poi, const pgsHorizontalShearArtifact* pArtifact);

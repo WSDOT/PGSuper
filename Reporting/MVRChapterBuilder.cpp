@@ -435,7 +435,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
             CCombinedReactionTable().Build(pBroker,pChapter, girderKey,pDisplayUnits,intervalIdx,analysisType,BearingReactionsTable, bDesign, bRating);
          }
 
-         if ( pSpecEntry->GetShearCapacityMethod() == scmVciVcw )
+         if ( pSpecEntry->GetShearCapacityMethod() == pgsTypes::scmVciVcw )
          {
             p = new rptParagraph(rptStyleManager::GetHeadingStyle());
             *pChapter << p;

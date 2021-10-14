@@ -912,8 +912,8 @@ public:
    //////////////////////////////////////
 
    // Set/Get the shear capacity calculation method
-   void SetShearCapacityMethod(ShearCapacityMethod method);
-   ShearCapacityMethod GetShearCapacityMethod() const;
+   void SetShearCapacityMethod(pgsTypes::ShearCapacityMethod method);
+   pgsTypes::ShearCapacityMethod GetShearCapacityMethod() const;
 
    // Set/Get flag indicating if the net tensile strain computed per LRFD Eq. 5.7.3.4.2-4 should be limited to non-negative numbers
    void LimitNetTensionStrainToPositiveValues(bool bLimit);
@@ -963,8 +963,8 @@ public:
    // Horizontal Interface Shear
 
    // Set/Get the shear flow calculation method
-   void SetShearFlowMethod(ShearFlowMethod method);
-   ShearFlowMethod GetShearFlowMethod() const;
+   void SetShearFlowMethod(pgsTypes::ShearFlowMethod method);
+   pgsTypes::ShearFlowMethod GetShearFlowMethod() const;
 
    void SetMaxInterfaceShearConnectionSpacing(Float64 sMax);
    Float64 GetMaxInterfaceShearConnectorSpacing() const;
@@ -1556,14 +1556,14 @@ private:
    arDesignStrandFillType m_DesignStrandFillType;
    pgsTypes::EffectiveFlangeWidthMethod m_EffFlangeWidthMethod;
 
-   ShearFlowMethod m_ShearFlowMethod;
+   pgsTypes::ShearFlowMethod m_ShearFlowMethod;
    Float64 m_MaxInterfaceShearConnectorSpacing;
    bool m_bUseDeckWeightForPc;
 
    std::array<Float64, 2> m_StirrupSpacingCoefficient;
    std::array<Float64, 2> m_MaxStirrupSpacing;
 
-   ShearCapacityMethod m_ShearCapacityMethod;
+   pgsTypes::ShearCapacityMethod m_ShearCapacityMethod;
 
    Float64 m_CuringMethodTimeAdjustmentFactor;
 
