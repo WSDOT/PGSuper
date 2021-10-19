@@ -33818,7 +33818,7 @@ void CBridgeAgentImp::GetDeckMatData(const pgsPointOfInterest& poi,pgsTypes::Dec
             if (0 < rebarData.TopSpacing)
             {
                Float64 fnBars = rebarSectionWidth / rebarData.TopSpacing;
-               nBars = ::Round(fnBars); // round to nearest integer
+               nBars = (IndexType)::Round(fnBars); // round to nearest integer
             }
 
             Float64 As = nBars*pBar->GetNominalArea()/rebarSectionWidth;
@@ -33846,7 +33846,7 @@ void CBridgeAgentImp::GetDeckMatData(const pgsPointOfInterest& poi,pgsTypes::Dec
             if (0 < rebarData.BottomSpacing)
             {
                Float64 fnBars = rebarSectionWidth / rebarData.BottomSpacing;
-               nBars = ::Round(fnBars); // round to nearest integer
+               nBars = (IndexType)::Round(fnBars); // round to nearest integer
             }
 
             Float64 As = nBars*pBar->GetNominalArea()/rebarSectionWidth;
@@ -33902,7 +33902,7 @@ void CBridgeAgentImp::GetDeckMatData(const pgsPointOfInterest& poi,pgsTypes::Dec
                   if (0 < nmRebarData.Spacing)
                   {
                      Float64 fnBars = rebarSectionWidth / nmRebarData.Spacing;
-                     nBars = ::Round(fnBars); // round to nearest integer
+                     nBars = (IndexType)::Round(fnBars); // round to nearest integer
                   }
 
                   Float64 As = nBars*pBar->GetNominalArea()/rebarSectionWidth;

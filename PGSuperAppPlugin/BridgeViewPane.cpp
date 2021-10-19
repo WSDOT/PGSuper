@@ -180,7 +180,7 @@ void CBridgeViewPane::GetUniformStationingData(IBroker* pBroker, Float64 startSt
    if (10 < num_stations)
    {
       num_stations /= 10;
-      num_stations = ceill((IndexType)num_stations);
+      num_stations = ceill(num_stations);
       station_step *= num_stations;
    }
 

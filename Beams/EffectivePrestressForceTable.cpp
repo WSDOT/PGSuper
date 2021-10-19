@@ -146,7 +146,7 @@ void CEffectivePrestressForceTable::AddRow(rptChapter* pChapter,IBroker* pBroker
    for (auto limitState : vLimitStates)
    {
       // NOTE: can't use limitState as an array index key because the values are not sequential. that is why we are using "i"
-      fpe_with_liveload[i] = pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent, limitState, true/*include elastic effects*/, INVALID_INDEX);
+      fpe_with_liveload[i] = pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent, limitState, true/*include elastic effects*/, true/*apply elastic gain reductions*/, INVALID_INDEX);
       Ppe_with_liveload[i] = pPrestressForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent, limitState, true/*include elastic effects*/, INVALID_INDEX);
       i++;
    }
