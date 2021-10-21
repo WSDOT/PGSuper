@@ -53,16 +53,12 @@ static char THIS_FILE[] = __FILE__;
 #define DELTA_ESH  symbol(DELTA) << Sub2(symbol(epsilon),_T("sh"))
 #define CREEP(_a_,_b_) symbol(psi) << _T("(") << _a_ << _T(",") << _b_ << _T(")")
 #define CREEP_tb_ti_ti  CREEP(Sub2(_T("t"),_T("b")) << _T(" - ") << Sub2(_T("t"),_T("i")),Sub2(_T("t"),_T("i"))) // Y(tb-ti,ti)
-#define CREEP_tm_ti_ti  CREEP(Sub2(_T("t"),_T("m")) << _T(" - ") << Sub2(_T("t"),_T("i")),Sub2(_T("t"),_T("i"))) // Y(tm-ti,ti)
 #define CREEP_te_ti_ti  CREEP(Sub2(_T("t"),_T("e")) << _T(" - ") << Sub2(_T("t"),_T("i")),Sub2(_T("t"),_T("i"))) // Y(te-ti,ti)
 #define CREEP_tb_ti  CREEP(Sub2(_T("t"),_T("b")),Sub2(_T("t"),_T("i"))) // Y(tb,ti)
-#define CREEP_tm_ti  CREEP(Sub2(_T("t"),_T("m")),Sub2(_T("t"),_T("i"))) // Y(tm,ti)
 #define CREEP_te_ti  CREEP(Sub2(_T("t"),_T("e")),Sub2(_T("t"),_T("i"))) // Y(te,ti)
 #define CREEP_tb_tla CREEP(Sub2(_T("t"),_T("b")),Sub2(_T("t"),_T("la")))
-#define CREEP_tm_tla CREEP(Sub2(_T("t"),_T("m")),Sub2(_T("t"),_T("la")))
 #define CREEP_te_tla CREEP(Sub2(_T("t"),_T("e")),Sub2(_T("t"),_T("la")))
 #define CREEP_tb_to  CREEP(Sub2(_T("t"),_T("b")),Sub2(_T("t"),_T("o")))
-#define CREEP_tm_to  CREEP(Sub2(_T("t"),_T("m")),Sub2(_T("t"),_T("o")))
 #define CREEP_te_to  CREEP(Sub2(_T("t"),_T("e")),Sub2(_T("t"),_T("o")))
 
 /****************************************************************************
@@ -2310,7 +2306,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
                (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("vs"));
                (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("hc"));
                (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("f"));
-               (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("td")) << _T("(") << Sub2(_T("t"), _T("m")) << _T(" - ") << Sub2(_T("t"), _T("i")) << _T(")");
+               (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("td")) << _T("(") << Sub2(_T("t"), _T("e")) << _T(" - ") << Sub2(_T("t"), _T("i")) << _T(")");
             }
          }
          else if (model == pgsTypes::tdmACI209)
@@ -2341,20 +2337,20 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
          {
             if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims)
             {
-               (*pTable)(rowIdx, colIdx++) << CREEP_tm_ti;
+               (*pTable)(rowIdx, colIdx++) << CREEP_te_ti;
             }
             else
             {
-               (*pTable)(rowIdx, colIdx++) << CREEP_tm_ti_ti;
+               (*pTable)(rowIdx, colIdx++) << CREEP_te_ti_ti;
             }
          }
          else if (model == pgsTypes::tdmACI209)
          {
-            (*pTable)(rowIdx, colIdx++) << CREEP_tm_tla;
+            (*pTable)(rowIdx, colIdx++) << CREEP_te_tla;
          }
          else if (model == pgsTypes::tdmCEBFIP)
          {
-            (*pTable)(rowIdx, colIdx++) << CREEP_tm_to;
+            (*pTable)(rowIdx, colIdx++) << CREEP_te_to;
          }
          else
          {
