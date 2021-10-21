@@ -22,15 +22,15 @@
 
 #include "StdAfx.h"
 #include <Reporting\ShrinkageStrainChapterBuilder.h>
-#include <Reporting\LRFDTimeDependentShrinkageStrainChapterBuilder.h>
-#include <Reporting\ACI209ShrinkageStrainChapterBuilder.h>
-#include <Reporting\CEBFIPShrinkageStrainChapterBuilder.h>
-
-#include <IFace\AnalysisResults.h>
+//#include <Reporting\LRFDTimeDependentShrinkageStrainChapterBuilder.h>
+//#include <Reporting\ACI209ShrinkageStrainChapterBuilder.h>
+//#include <Reporting\CEBFIPShrinkageStrainChapterBuilder.h>
+//
+//#include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
-#include <IFace\Bridge.h>
-
-#include <PgsExt\StrandData.h>
+//#include <IFace\Bridge.h>
+//
+//#include <PgsExt\StrandData.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -65,25 +65,32 @@ rptChapter* CShrinkageStrainChapterBuilder::Build(CReportSpecification* pRptSpec
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
 
-   rptChapter* pChapter;
+   //rptChapter* pChapter;
+   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
+
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
    ATLASSERT( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP );
-   if ( pLossParams->GetTimeDependentModel() == pgsTypes::tdmAASHTO )
-   {
-      pChapter = CLRFDTimeDependentShrinkageStrainChapterBuilder().Build(pRptSpec,level);
-   }
-   else if ( pLossParams->GetTimeDependentModel() == pgsTypes::tdmACI209 )
-   {
-      pChapter = CACI209ShrinkageStrainChapterBuilder().Build(pRptSpec,level);
-   }
-   else if ( pLossParams->GetTimeDependentModel() == pgsTypes::tdmCEBFIP )
-   {
-      pChapter = CCEBFIPShrinkageStrainChapterBuilder().Build(pRptSpec,level);
-   }
-   else
-   {
-      ATLASSERT(false);
-   }
+
+   rptParagraph* pPara = new rptParagraph;
+   (*pChapter) << pPara;
+   *pPara << _T("Shrinkage strain details are listed in the Time Step Details Report.") << rptNewLine;
+
+   //if ( pLossParams->GetTimeDependentModel() == pgsTypes::tdmAASHTO )
+   //{
+   //   pChapter = CLRFDTimeDependentShrinkageStrainChapterBuilder().Build(pRptSpec,level);
+   //}
+   //else if ( pLossParams->GetTimeDependentModel() == pgsTypes::tdmACI209 )
+   //{
+   //   pChapter = CACI209ShrinkageStrainChapterBuilder().Build(pRptSpec,level);
+   //}
+   //else if ( pLossParams->GetTimeDependentModel() == pgsTypes::tdmCEBFIP )
+   //{
+   //   pChapter = CCEBFIPShrinkageStrainChapterBuilder().Build(pRptSpec,level);
+   //}
+   //else
+   //{
+   //   ATLASSERT(false);
+   //}
 
    return pChapter;
 }
