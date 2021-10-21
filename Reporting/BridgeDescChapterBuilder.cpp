@@ -1761,7 +1761,7 @@ void write_aci209_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTabl
    }
    else
    {
-      std::_tstring strCement(concrete.ACI209CementType == pgsTypes::TypeI ? _T("Type I") : _T("Type II"));
+      std::_tstring strCement(concrete.ACI209CementType == pgsTypes::TypeI ? _T("Type I") : _T("Type III"));
       (*pTable)(row,col++) << strCement;
    }
    (*pTable)(row,col++) << time.SetValue(concrete.A);
