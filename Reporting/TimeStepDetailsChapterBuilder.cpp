@@ -171,9 +171,55 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       pPara->SetName(str);
    }
 
+
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    IntervalIndexType firstIntervalIdx = (rptIntervalIdx == INVALID_INDEX ? 0 : rptIntervalIdx);
-   IntervalIndexType lastIntervalIdx  = (rptIntervalIdx == INVALID_INDEX ? nIntervals-1 : rptIntervalIdx);
+   IntervalIndexType lastIntervalIdx = (rptIntervalIdx == INVALID_INDEX ? nIntervals - 1 : rptIntervalIdx);
+
+   if (vPoi.size() == 1)
+   {
+      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+      *pChapter << pPara;
+      pPara->SetName(_T("Creep Details"));
+      *pPara << pPara->GetName() << rptNewLine;
+
+      ReportCreepDetails(pChapter, pBroker, vPoi.front(), firstIntervalIdx, lastIntervalIdx, pDisplayUnits);
+
+      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+      *pChapter << pPara;
+      pPara->SetName(_T("Shrinkage Details"));
+      *pPara << pPara->GetName() << rptNewLine;
+
+      ReportShrinkageDetails(pChapter, pBroker, vPoi.front(), firstIntervalIdx, lastIntervalIdx, pDisplayUnits);
+
+      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+      *pChapter << pPara;
+      pPara->SetName(_T("Relaxation Details"));
+      *pPara << pPara->GetName() << rptNewLine;
+
+      ReportStrandRelaxationDetails(pChapter, pBroker, vPoi.front(), firstIntervalIdx, lastIntervalIdx, pDisplayUnits);
+
+      if (0 < nSegmentDucts)
+      {
+         ReportSegmentTendonRelaxationDetails(pChapter, pBroker, vPoi.front(), firstIntervalIdx, lastIntervalIdx, pDisplayUnits);
+      }
+
+      if (0 < nGirderDucts)
+      {
+         ReportGirderTendonRelaxationDetails(pChapter, pBroker, vPoi.front(), firstIntervalIdx, lastIntervalIdx, pDisplayUnits);
+      }
+   }
+   else
+   {
+      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+      *pChapter << pPara;
+      pPara->SetName(_T("Creep, Shrinkage and Relaxation Details"));
+      *pPara << pPara->GetName() << rptNewLine;
+      pPara = new rptParagraph;
+      *pChapter << pPara;
+      *pPara << _T("Creep, shrinkage and relaxation details for multiple cross sections results in a very large report. Create a Time Step Details report for a specific section to see the calculation details at that section.") << rptNewLine;
+   }
+
    for ( IntervalIndexType intervalIdx = firstIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++ )
    {
       CGirderKey prevGirderKey;
@@ -254,7 +300,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
          pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pChapter) << pPara;
-         (*pPara) << _T("Composite Transformed Section Properties") << rptNewLine;
+         (*pPara) << _T("Composite Transformed Section Properties using Age Adjusted Modulus") << rptNewLine;
          pPara = new rptParagraph;
          (*pChapter) << pPara;
          (*pPara) << rptRcImage(strImagePath + _T("TransformedProperties.png")) << rptNewLine;
@@ -263,145 +309,151 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          *pPara << Sub2(_T("Y"),_T("tr")) << _T(" is measured positive upwards from the top of girder (at the girder/deck interface).") << rptNewLine;
          *pPara << rptNewLine;
 
-         // Unrestrained creep deformation in concrete parts due to loads applied in previous intervals
-         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-         (*pChapter) << pPara;
-         (*pPara) << _T("Unrestrained creep deformation of concrete components due to loads applied in previous intervals") << rptNewLine;
-         pPara = new rptParagraph;
-         (*pChapter) << pPara;
-         (*pPara) << rptRcImage(strImagePath + _T("FreeCreep_Axial.png")) << rptNewLine;
-         (*pPara) << rptRcImage(strImagePath + _T("FreeCreep_Curvature.png")) << rptNewLine;
-         rptRcTable* pFreeCreepTable = BuildFreeCreepDeformationTable(tsDetails, bHasDeck, pDisplayUnits);
-         *pPara << pFreeCreepTable << rptNewLine;
-         *pPara << rptNewLine;
-
-         // Unrestrained shrinkage during this interval
-         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-         (*pChapter) << pPara;
-         (*pPara) << _T("Unrestrained shrinkage deformation of concrete components") << rptNewLine;
-         pPara = new rptParagraph;
-         (*pChapter) << pPara;
-         *pPara << _T("Girder: ") << DELTA_ESH << Super2(_T("x10"), _T("6")) << _T(" = ") << tsDetails.Girder.Shrinkage.esi*1E6 << rptNewLine;
-
-         if (bHasDeck)
+         Float64 duration = pIntervals->GetDuration(intervalIdx);
+         if (0 < duration)
          {
-            *pPara << _T("Deck: ") << DELTA_ESH << Super2(_T("x10"), _T("6")) << _T(" = ") << tsDetails.Deck.Shrinkage.esi*1E6 << rptNewLine;
-         }
-
-         *pPara << rptNewLine;
-
-         // Unrestrained strand relaxation
-         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-         (*pChapter) << pPara;
-         (*pPara) << _T("Apparent unrestrained deformation of strands due to relaxation") << rptNewLine;
-         pPara = new rptParagraph;
-         (*pChapter) << pPara;
-         (*pPara) << rptRcImage(strImagePath + _T("ApparentRelaxationStrain.png")) << rptNewLine;
-         rptRcTable* pStrandRelaxationTable = BuildStrandRelaxationTable(tsDetails, pDisplayUnits);
-         (*pPara) << pStrandRelaxationTable << rptNewLine;
-         (*pPara) << rptNewLine;
-
-         // Unrestrained tendon relaxation
-         if (0 < nSegmentDucts)
-         {
+            // Unrestrained creep deformation in concrete parts due to loads applied in previous intervals
             pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
             (*pChapter) << pPara;
-            (*pPara) << _T("Apparent unrestrained deformation of segment tendons due to relaxation") << rptNewLine;
+            (*pPara) << _T("Unrestrained creep deformation of concrete components due to loads applied in previous intervals") << rptNewLine;
+            pPara = new rptParagraph;
+            (*pChapter) << pPara;
+            (*pPara) << rptRcImage(strImagePath + _T("FreeCreep_Axial.png")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + _T("FreeCreep_Curvature.png")) << rptNewLine;
+            rptRcTable* pFreeCreepTable = BuildFreeCreepDeformationTable(tsDetails, bHasDeck, pDisplayUnits);
+            *pPara << pFreeCreepTable << rptNewLine;
+            *pPara << rptNewLine;
+
+            // Unrestrained shrinkage during this interval
+            pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+            (*pChapter) << pPara;
+            (*pPara) << _T("Unrestrained shrinkage deformation of concrete components") << rptNewLine;
+            pPara = new rptParagraph;
+            (*pChapter) << pPara;
+            *pPara << _T("Girder: ") << DELTA_ESH << Super2(_T("x10"), _T("6")) << _T(" = ") << tsDetails.Girder.Shrinkage.esi * 1E6 << rptNewLine;
+
+            if (bHasDeck)
+            {
+               *pPara << _T("Deck: ") << DELTA_ESH << Super2(_T("x10"), _T("6")) << _T(" = ") << tsDetails.Deck.Shrinkage.esi * 1E6 << rptNewLine;
+            }
+
+            *pPara << rptNewLine;
+
+            // Unrestrained strand relaxation
+            pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+            (*pChapter) << pPara;
+            (*pPara) << _T("Apparent unrestrained deformation of strands due to relaxation") << rptNewLine;
             pPara = new rptParagraph;
             (*pChapter) << pPara;
             (*pPara) << rptRcImage(strImagePath + _T("ApparentRelaxationStrain.png")) << rptNewLine;
-            rptRcTable* pTendonRelaxationTable = BuildSegmentTendonRelaxationTable(tsDetails, pDisplayUnits);
-            (*pPara) << pTendonRelaxationTable << rptNewLine;
+            rptRcTable* pStrandRelaxationTable = BuildStrandRelaxationTable(tsDetails, pDisplayUnits);
+            (*pPara) << pStrandRelaxationTable << rptNewLine;
             (*pPara) << rptNewLine;
-         }
 
-         if ( 0 < nGirderDucts )
-         {
+            // Unrestrained tendon relaxation
+            if (0 < nSegmentDucts)
+            {
+               pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+               (*pChapter) << pPara;
+               (*pPara) << _T("Apparent unrestrained deformation of segment tendons due to relaxation") << rptNewLine;
+               pPara = new rptParagraph;
+               (*pChapter) << pPara;
+               (*pPara) << rptRcImage(strImagePath + _T("ApparentRelaxationStrain.png")) << rptNewLine;
+               rptRcTable* pTendonRelaxationTable = BuildSegmentTendonRelaxationTable(tsDetails, pDisplayUnits);
+               (*pPara) << pTendonRelaxationTable << rptNewLine;
+               (*pPara) << rptNewLine;
+            }
+
+            if (0 < nGirderDucts)
+            {
+               pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+               (*pChapter) << pPara;
+               (*pPara) << _T("Apparent unrestrained deformation of girder tendons due to relaxation") << rptNewLine;
+               pPara = new rptParagraph;
+               (*pChapter) << pPara;
+               (*pPara) << rptRcImage(strImagePath + _T("ApparentRelaxationStrain.png")) << rptNewLine;
+               rptRcTable* pTendonRelaxationTable = BuildGirderTendonRelaxationTable(tsDetails, pDisplayUnits);
+               (*pPara) << pTendonRelaxationTable << rptNewLine;
+               (*pPara) << rptNewLine;
+            }
+
+            // Forces required to fully restrain each component
             pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
             (*pChapter) << pPara;
-            (*pPara) << _T("Apparent unrestrained deformation of girder tendons due to relaxation") << rptNewLine;
+            (*pPara) << _T("Component Restraining Forces") << rptNewLine;
             pPara = new rptParagraph;
             (*pChapter) << pPara;
-            (*pPara) << rptRcImage(strImagePath + _T("ApparentRelaxationStrain.png")) << rptNewLine;
-            rptRcTable* pTendonRelaxationTable = BuildGirderTendonRelaxationTable(tsDetails,pDisplayUnits);
-            (*pPara) << pTendonRelaxationTable << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + _T("IncrementalRestrainingForce_Axial.png")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + _T("IncrementalRestrainingForce_Moment.png")) << rptNewLine;
+            rptRcTable* pComponentRestrainingForcesTable = BuildComponentRestrainingForceTable(tsDetails, bHasDeck, pDisplayUnits);
+            (*pPara) << pComponentRestrainingForcesTable << rptNewLine;
             (*pPara) << rptNewLine;
+
+
+            // Forces required to fully restrain each component
+            pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+            (*pChapter) << pPara;
+            (*pPara) << _T("Section Restraining Forces") << rptNewLine;
+            pPara = new rptParagraph;
+            (*pChapter) << pPara;
+            (*pPara) << rptRcImage(strImagePath + _T("TotalRestrainingForce_Axial.png")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + _T("TotalRestrainingForce_Moment.png")) << rptNewLine;
+            rptRcTable* pSectionRestrainingForcesTable = BuildSectionRestrainingForceTable(tsDetails, pDisplayUnits);
+            (*pPara) << pSectionRestrainingForcesTable << rptNewLine;
+            (*pPara) << rptNewLine;
+
+            // Deformations required to fully restrain each component
+            pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+            (*pChapter) << pPara;
+            (*pPara) << _T("Section Restraining Deformations") << rptNewLine;
+            pPara = new rptParagraph;
+            (*pChapter) << pPara;
+            (*pPara) << rptRcImage(strImagePath + _T("TotalRestrainingDeformation_Axial.png")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + _T("TotalRestrainingDeformation_Curvature.png")) << rptNewLine;
+            rptRcTable* pSectionRestrainingDeformationTable = BuildSectionRestrainingDeformationTable(tsDetails, pDisplayUnits);
+            (*pPara) << pSectionRestrainingDeformationTable << rptNewLine;
+            (*pPara) << _T("Section restraining deformations are computed at multiple sections along the girder. It is assumed that deformations vary linerally between sections. The girder is analyzed for these deformations. The resulting section forces are listed in the Restrained Section Forces table below.") << rptNewLine;
+            (*pPara) << rptNewLine;
+
+            // Forces due to the external restraints of the strutural system
+            pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+            (*pChapter) << pPara;
+            (*pPara) << _T("Restrained Section Forces") << rptNewLine;
+            pPara = new rptParagraph;
+            (*pChapter) << pPara;
+            rptRcTable* pRestrainedSectionForcesTable = BuildRestrainedSectionForceTable(tsDetails, pDisplayUnits);
+            (*pPara) << pRestrainedSectionForcesTable << rptNewLine;
+            (*pPara) << _T("The restrained section forces are the secondary forces due to the structural system restraining the deformations due to creep, shrinkage, and relaxation.") << rptNewLine;
+            *pPara << rptNewLine;
+
+            // Restrained component forces
+            pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+            (*pChapter) << pPara;
+            (*pPara) << _T("Restrained Component Forces") << rptNewLine;
+            pPara = new rptParagraph;
+            (*pChapter) << pPara;
+            (*pPara) << rptRcImage(strImagePath + _T("RestrainedComponentForces_Axial.png")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + _T("RestrainedComponentForces_Moment.png")) << rptNewLine;
+            rptRcTable* pRestrainedComponentForcesTable = BuildRestrainedComponentForceTable(tsDetails, bHasDeck, pDisplayUnits);
+            (*pPara) << pRestrainedComponentForcesTable << rptNewLine;
+            *pPara << rptNewLine;
          }
+         else
+         {
+            // Incremental Forces due to loads applied during this interval
+            pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+            (*pChapter) << pPara;
+            (*pPara) << _T("Incremental forces due to external loads and restrained component forces during this interval.") << rptNewLine;
 
-         // Forces required to fully restrain each component
-         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-         (*pChapter) << pPara;
-         (*pPara) << _T("Component Restraining Forces") << rptNewLine;
-         pPara = new rptParagraph;
-         (*pChapter) << pPara;
-         (*pPara) << rptRcImage(strImagePath + _T("IncrementalRestrainingForce_Axial.png")) << rptNewLine;
-         (*pPara) << rptRcImage(strImagePath + _T("IncrementalRestrainingForce_Moment.png")) << rptNewLine;
-         rptRcTable* pComponentRestrainingForcesTable = BuildComponentRestrainingForceTable(tsDetails, bHasDeck, pDisplayUnits);
-         (*pPara) << pComponentRestrainingForcesTable << rptNewLine;
-         (*pPara) << rptNewLine;
+            pPara = new rptParagraph;
+            (*pChapter) << pPara;
+            (*pPara) << rptRcImage(strImagePath + _T("IncrementalForce_Axial.png")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + _T("IncrementalForce_Moment.png")) << rptNewLine;
 
-
-         // Forces required to fully restrain each component
-         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-         (*pChapter) << pPara;
-         (*pPara) << _T("Section Restraining Forces") << rptNewLine;
-         pPara = new rptParagraph;
-         (*pChapter) << pPara;
-         (*pPara) << rptRcImage(strImagePath + _T("TotalRestrainingForce_Axial.png")) << rptNewLine;
-         (*pPara) << rptRcImage(strImagePath + _T("TotalRestrainingForce_Moment.png")) << rptNewLine;
-         rptRcTable* pSectionRestrainingForcesTable = BuildSectionRestrainingForceTable(tsDetails, pDisplayUnits);
-         (*pPara) << pSectionRestrainingForcesTable << rptNewLine;
-         (*pPara) << rptNewLine;
-
-         // Deformations required to fully restrain each component
-         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-         (*pChapter) << pPara;
-         (*pPara) << _T("Section Restraining Deformations") << rptNewLine;
-         pPara = new rptParagraph;
-         (*pChapter) << pPara;
-         (*pPara) << rptRcImage(strImagePath + _T("TotalRestrainingDeformation_Axial.png")) << rptNewLine;
-         (*pPara) << rptRcImage(strImagePath + _T("TotalRestrainingDeformation_Curvature.png")) << rptNewLine;
-         rptRcTable* pSectionRestrainingDeformationTable = BuildSectionRestrainingDeformationTable(tsDetails, pDisplayUnits);
-         (*pPara) << pSectionRestrainingDeformationTable << rptNewLine;
-         (*pPara) << _T("Section restraining deformations are computed at multiple sections along the girder. It is assumed that deformations vary linerally between sections. The girder is analyzed for these deformations. The resulting section forces are listed in the Restrained Section Forces table below.") << rptNewLine;
-         (*pPara) << rptNewLine;
-
-         // Forces due to the external restraints of the strutural system
-         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-         (*pChapter) << pPara;
-         (*pPara) << _T("Restrained Section Forces") << rptNewLine;
-         pPara = new rptParagraph;
-         (*pChapter) << pPara;
-         rptRcTable* pRestrainedSectionForcesTable = BuildRestrainedSectionForceTable(tsDetails, pDisplayUnits);
-         (*pPara) << pRestrainedSectionForcesTable << rptNewLine;
-         (*pPara) << _T("The restrained section forces are the secondary forces due to the structural system restraining the deformations due to creep, shrinkage, and relaxation.") << rptNewLine;
-         *pPara << rptNewLine;
-
-         // Restrained component forces
-         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-         (*pChapter) << pPara;
-         (*pPara) << _T("Restrained Component Forces") << rptNewLine;
-         pPara = new rptParagraph;
-         (*pChapter) << pPara;
-         (*pPara) << rptRcImage(strImagePath + _T("RestrainedComponentForces_Axial.png")) << rptNewLine;
-         (*pPara) << rptRcImage(strImagePath + _T("RestrainedComponentForces_Moment.png")) << rptNewLine;
-         rptRcTable* pRestrainedComponentForcesTable = BuildRestrainedComponentForceTable(tsDetails, bHasDeck, pDisplayUnits);
-         (*pPara) << pRestrainedComponentForcesTable << rptNewLine;
-         *pPara << rptNewLine;
-
-         // Incremental Forces due to loads applied during this interval
-         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-         (*pChapter) << pPara;
-         (*pPara) << _T("Incremental forces due to external loads and restrained component forces during this interval.") << rptNewLine;
-
-         pPara = new rptParagraph;
-         (*pChapter) << pPara;
-         (*pPara) << rptRcImage(strImagePath + _T("IncrementalForce_Axial.png")) << rptNewLine;
-         (*pPara) << rptRcImage(strImagePath + _T("IncrementalForce_Moment.png")) << rptNewLine;
-
-         rptRcTable* pIncForcesTable = BuildIncrementalForceTable(pBroker,vLoads,tsDetails, bHasDeck, pDisplayUnits);
-         (*pPara) << pIncForcesTable << rptNewLine;
-         *pPara << rptNewLine;
+            rptRcTable* pIncForcesTable = BuildIncrementalForceTable(pBroker, vLoads, tsDetails, bHasDeck, pDisplayUnits);
+            (*pPara) << pIncForcesTable << rptNewLine;
+            *pPara << rptNewLine;
+         }
 
          // Incremental stresses due to loads applied during this interval
          pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
@@ -468,40 +520,6 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          (*pChapter) << pPara;
          rptRcTable* pCumulativeSummaryTable = BuildConcreteStressSummaryTable(pBroker,vPoi.front(),rtCumulative,false/*deck*/,pDisplayUnits);
          (*pPara) << pCumulativeSummaryTable << rptNewLine;
-      }
-   }
-
-   if ( vPoi.size() == 1 )
-   {
-      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
-      *pChapter << pPara;
-      pPara->SetName(_T("Creep Details"));
-      *pPara << pPara->GetName() << rptNewLine;
-
-      ReportCreepDetails(pChapter,pBroker,vPoi.front(),firstIntervalIdx,lastIntervalIdx,pDisplayUnits);
-
-      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
-      *pChapter << pPara;
-      pPara->SetName(_T("Shrinkage Details"));
-      *pPara << pPara->GetName() << rptNewLine;
-
-      ReportShrinkageDetails(pChapter,pBroker,vPoi.front(),firstIntervalIdx,lastIntervalIdx,pDisplayUnits);
-
-      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
-      *pChapter << pPara;
-      pPara->SetName(_T("Relaxation Details"));
-      *pPara << pPara->GetName() << rptNewLine;
-
-      ReportStrandRelaxationDetails(pChapter,pBroker,vPoi.front(),firstIntervalIdx,lastIntervalIdx,pDisplayUnits);
-      
-      if (0 < nSegmentDucts)
-      {
-         ReportSegmentTendonRelaxationDetails(pChapter, pBroker, vPoi.front(), firstIntervalIdx, lastIntervalIdx, pDisplayUnits);
-      }
-
-      if ( 0 < nGirderDucts )
-      {
-         ReportGirderTendonRelaxationDetails(pChapter,pBroker,vPoi.front(),firstIntervalIdx,lastIntervalIdx,pDisplayUnits);
       }
    }
 
@@ -1788,7 +1806,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
    INIT_UV_PROTOTYPE(rptStressUnitValue,     stress,      pDisplayUnits->GetStressUnit(),    false);
 
    IndexType nLoads = vLoads.size();
-   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nLoads+3);
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nLoads+3+3);
    pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CJ_LEFT));
    pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CJ_LEFT));
    pTable->SetNumberOfHeaderRows(2);
@@ -1817,6 +1835,14 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
 
    pTable->SetRowSpan(rowIdx,colIdx,2);
    (*pTable)(rowIdx,colIdx++) << COLHDR(_T("Cumulative") << rptNewLine << _T("Total"),rptStressUnitTag,pDisplayUnits->GetStressUnit());
+
+   pTable->SetColumnSpan(rowIdx, colIdx, 3);
+   (*pTable)(rowIdx, colIdx) << _T("Cumulative Losses");
+   rowIdx++;
+   (*pTable)(rowIdx, colIdx++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftCreep), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(rowIdx, colIdx++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftShrinkage), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(rowIdx, colIdx++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftRelaxation), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+
 
    // Label the rows in column 0
    rowIdx = pTable->GetNumberOfHeaderRows();
@@ -1862,10 +1888,10 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
    }
 
    // fill the table
-   Float64 f_top_girder[2] = {0,0};
-   Float64 f_bot_girder[2] = {0,0};
-   Float64 f_top_deck[2]   = {0,0};
-   Float64 f_bot_deck[2]   = {0,0};
+   std::array<Float64, 2> f_top_girder = {0,0};
+   std::array<Float64, 2> f_bot_girder = {0,0};
+   std::array<Float64, 2> f_top_deck   = {0,0};
+   std::array<Float64, 2> f_bot_deck   = {0,0};
    colIdx = 1;
    for ( IndexType i = 0; i < nLoads; i++, colIdx++ )
    {
@@ -1912,7 +1938,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
       }
    } // next loading
 
-   // Totals
+   // Incremental Totals
    rowIdx = pTable->GetNumberOfHeaderRows();
 
    // Girder
@@ -1977,6 +2003,64 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
    for (const auto& tsTendon : tsDetails.GirderTendons)
    {
       (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsTendon.fpe);
+   }
+
+
+   // Cumulative Time-Dependent Effects
+   colIdx++;
+   rowIdx = pTable->GetNumberOfHeaderRows();
+
+   // Girder
+   (*pTable)(rowIdx, colIdx) << _T(""); //stress.SetValue(f_top_girder[rtCumulative]);
+   (*pTable)(rowIdx, colIdx+1) << _T(""); //stress.SetValue(f_top_girder[rtCumulative]);
+   (*pTable)(rowIdx, colIdx+2) << _T(""); //stress.SetValue(f_top_girder[rtCumulative]);
+   rowIdx++;
+
+   (*pTable)(rowIdx, colIdx) << _T(""); //stress.SetValue(f_bot_girder[rtCumulative]);
+   (*pTable)(rowIdx, colIdx+1) << _T(""); //stress.SetValue(f_bot_girder[rtCumulative]);
+   (*pTable)(rowIdx, colIdx+2) << _T(""); //stress.SetValue(f_bot_girder[rtCumulative]);
+   rowIdx++;
+
+   // Strands
+   for (int i = 0; i < 3; i++)
+   {
+      pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+      (*pTable)(rowIdx, colIdx) << stress.SetValue(tsDetails.Strands[strandType].fpei[pgsTypes::pftCreep]);
+      (*pTable)(rowIdx, colIdx+1) << stress.SetValue(tsDetails.Strands[strandType].fpei[pgsTypes::pftShrinkage]);
+      (*pTable)(rowIdx, colIdx+2) << stress.SetValue(tsDetails.Strands[strandType].fpei[pgsTypes::pftRelaxation]);
+      rowIdx++;
+   }
+
+   if (bHasDeck)
+   {
+      // Deck
+      (*pTable)(rowIdx, colIdx) << _T(""); //stress.SetValue(f_top_deck[rtCumulative]);
+      (*pTable)(rowIdx, colIdx+1) << _T(""); //stress.SetValue(f_top_deck[rtCumulative]);
+      (*pTable)(rowIdx, colIdx+2) << _T(""); //stress.SetValue(f_top_deck[rtCumulative]);
+      rowIdx++;
+
+      (*pTable)(rowIdx, colIdx) << _T(""); //stress.SetValue(f_bot_deck[rtCumulative]);
+      (*pTable)(rowIdx, colIdx+1) << _T(""); //stress.SetValue(f_bot_deck[rtCumulative]);
+      (*pTable)(rowIdx, colIdx+2) << _T(""); //stress.SetValue(f_bot_deck[rtCumulative]);
+      rowIdx++;
+   }
+
+   // Segment Tendons
+   for (const auto& tsTendon : tsDetails.SegmentTendons)
+   {
+      (*pTable)(rowIdx, colIdx) << stress.SetValue(tsTendon.fpei[pgsTypes::pftCreep]);
+      (*pTable)(rowIdx, colIdx+1) << stress.SetValue(tsTendon.fpei[pgsTypes::pftShrinkage]);
+      (*pTable)(rowIdx, colIdx+2) << stress.SetValue(tsTendon.fpei[pgsTypes::pftRelaxation]);
+      rowIdx++;
+   }
+
+   // Girder Tendons
+   for (const auto& tsTendon : tsDetails.GirderTendons)
+   {
+      (*pTable)(rowIdx, colIdx) << stress.SetValue(tsTendon.fpei[pgsTypes::pftCreep]);
+      (*pTable)(rowIdx, colIdx+1) << stress.SetValue(tsTendon.fpei[pgsTypes::pftShrinkage]);
+      (*pTable)(rowIdx, colIdx+2) << stress.SetValue(tsTendon.fpei[pgsTypes::pftRelaxation]);
+      rowIdx++;
    }
 
    return pTable;

@@ -610,8 +610,7 @@ struct TIME_STEP_CONCRETE
       P = 0;
       M = 0;
 
-      int n = sizeof(dPi)/sizeof(dPi[0]);
-      for ( int i = 0; i < n ; i++ )
+      for (int i = 0; i < pftTimeStepSize; i++)
       {
          dei[i] = 0;
          ei[i]  = 0;
@@ -681,6 +680,7 @@ struct TIME_STEP_STRAND
 
    // Loss/Gain during this interval (change in effective prestress this interval)
    std::array<Float64, pftTimeStepSize> dfpei; // = dP/Aps
+   std::array<Float64, pftTimeStepSize> fpei; // = fpei[load] from previous interval plus dfpei[load] from this interval
    Float64 dfpe; // summation of dfpei
 
    // Effective prestress
@@ -720,8 +720,7 @@ struct TIME_STEP_STRAND
       de = 0;
       e = 0;
 
-      int n = sizeof(dPi)/sizeof(dPi[0]);
-      for ( int i = 0; i < n; i++ )
+      for ( int i = 0; i < pftTimeStepSize; i++ )
       {
          dei[i] = 0;
          ei[i] = 0;
@@ -730,6 +729,7 @@ struct TIME_STEP_STRAND
          Pi[i]  = 0;
 
          dfpei[i] = 0;
+         fpei[i] = 0;
       }
 
       dfpe = 0;
@@ -787,8 +787,7 @@ struct TIME_STEP_REBAR
       de = 0;
       e = 0;
 
-      int n = sizeof(dPi)/sizeof(dPi[0]);
-      for ( int i = 0; i < n; i++ )
+      for (int i = 0; i < pftTimeStepSize; i++)
       {
          dei[i] = 0;
          ei[i] = 0;
@@ -920,8 +919,7 @@ struct TIME_STEP_DETAILS
       Itr = 0;
       Ea  = 0;
 
-      int n = sizeof(dPi)/sizeof(dPi[0]);
-      for ( int i = 0; i < n ; i++ )
+      for (int i = 0; i < pftTimeStepSize; i++)
       {
          dPi[i] = 0;
          dMi[i] = 0;
