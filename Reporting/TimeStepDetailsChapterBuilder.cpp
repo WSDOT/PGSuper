@@ -1317,12 +1317,12 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildRestrainedComponentForceTable(c
 
    rowIdx++;
    colIdx = 1;
-   (*pTable)(rowIdx,colIdx++) << COLHDR(Overline(symbol(DELTA) << _T("P")) << Sub(_T("r")),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
-   (*pTable)(rowIdx,colIdx++) << COLHDR(Overline(symbol(DELTA) << _T("M")) << Sub(_T("r")),rptMomentUnitTag,pDisplayUnits->GetSmallMomentUnit());
-   (*pTable)(rowIdx,colIdx++) << COLHDR(Overline(symbol(DELTA) << _T("P")) << Sub(_T("r")),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
-   (*pTable)(rowIdx,colIdx++) << COLHDR(Overline(symbol(DELTA) << _T("M")) << Sub(_T("r")),rptMomentUnitTag,pDisplayUnits->GetSmallMomentUnit());
-   (*pTable)(rowIdx,colIdx++) << COLHDR(Overline(symbol(DELTA) << _T("P")) << Sub(_T("r")),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
-   (*pTable)(rowIdx,colIdx++) << COLHDR(Overline(symbol(DELTA) << _T("M")) << Sub(_T("r")),rptMomentUnitTag,pDisplayUnits->GetSmallMomentUnit());
+   (*pTable)(rowIdx,colIdx++) << COLHDR(symbol(DELTA) << _T("P") << Sub(_T("k")),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+   (*pTable)(rowIdx,colIdx++) << COLHDR(symbol(DELTA) << _T("M") << Sub(_T("k")),rptMomentUnitTag,pDisplayUnits->GetSmallMomentUnit());
+   (*pTable)(rowIdx,colIdx++) << COLHDR(symbol(DELTA) << _T("P") << Sub(_T("k")),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+   (*pTable)(rowIdx,colIdx++) << COLHDR(symbol(DELTA) << _T("M") << Sub(_T("k")),rptMomentUnitTag,pDisplayUnits->GetSmallMomentUnit());
+   (*pTable)(rowIdx,colIdx++) << COLHDR(symbol(DELTA) << _T("P") << Sub(_T("k")),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+   (*pTable)(rowIdx,colIdx++) << COLHDR(symbol(DELTA) << _T("M") << Sub(_T("k")),rptMomentUnitTag,pDisplayUnits->GetSmallMomentUnit());
 
 
    rowIdx = pTable->GetNumberOfHeaderRows();
@@ -2357,6 +2357,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
          else
             ATLASSERT(false);
 
+         *pPara << _T("Creep coefficients used to compute age adjusted modulus") << rptNewLine;
          rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nCol);
          *pPara << pTable << rptNewLine;
 
@@ -2381,7 +2382,6 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
                (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("vs"));
                (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("hc"));
                (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("f"));
-               (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("td")) << _T("(") << Sub2(_T("t"), _T("b")) << _T(" - ") << Sub2(_T("t"), _T("i")) << _T(")");
                (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("td")) << _T("(") << Sub2(_T("t"), _T("e")) << _T(" - ") << Sub2(_T("t"), _T("i")) << _T(")");
             }
             else
@@ -2566,6 +2566,8 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
       } // end of scope
 
       {
+         *pPara << _T("Creep coefficients used to unrestrained creep deformations") << rptNewLine;
+      
          rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nColumns);
          *pPara << pTable << rptNewLine;
 
