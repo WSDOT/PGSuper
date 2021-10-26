@@ -9939,7 +9939,7 @@ GDRCONFIG CBridgeAgentImp::GetSegmentConfiguration(const CSegmentKey& segmentKey
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
    const CGirderMaterial* pMaterial = pSegmentData->GetSegmentMaterial(segmentKey);
 
-   ATLASSERT(pStrands->GetStrandDefinitionType() != pgsTypes::sdtDirectStrandInput);
+   ATLASSERT(IsGridBasedStrandModel(pStrands->GetStrandDefinitionType()));
 
    CComPtr<IStrandModel> strandModel;
    girder->get_StrandModel(&strandModel);
@@ -15762,7 +15762,7 @@ gpPoint2d CBridgeAgentImp::GetStrandCG(IntervalIndexType intervalIdx, const pgsP
 
    GET_IFACE(ISegmentData, pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
-   if (!HasAsymmetricGirders() && pStrands->GetStrandDefinitionType() != pgsTypes::sdtDirectStrandInput)
+   if (!HasAsymmetricGirders() && IsGridBasedStrandModel(pStrands->GetStrandDefinitionType()))
    {
       // direct stand input can be asymmetric - can't call HasAsymmetricPrestressing because that causes recursion with this metho
       // don't have asymmetric effects, cg is on CL at X = 0
@@ -15856,7 +15856,7 @@ void CBridgeAgentImp::GetStrandProfile(const CPrecastSegmentData* pSegment, cons
 {
    // This method gives a strand profile for "what-if" cases
    ATLASSERT(strandType != pgsTypes::Permanent);
-   ATLASSERT(pStrands->GetStrandDefinitionType() == pgsTypes::sdtDirectRowInput || pStrands->GetStrandDefinitionType() == pgsTypes::sdtDirectStrandInput);
+   ATLASSERT(!IsGridBasedStrandModel(pStrands->GetStrandDefinitionType()));
 
    CComPtr<IPoint2dCollection> profile;
    profile.CoCreateInstance(CLSID_Point2dCollection);

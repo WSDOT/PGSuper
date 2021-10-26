@@ -5668,7 +5668,7 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey, pgsDebondArtifa
    GET_IFACE(ISegmentData, pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
    CComPtr<IIndexArray> arrayPermStrandIndex;
-   if (pStrands->GetStrandDefinitionType() != pgsTypes::sdtDirectStrandInput)
+   if (IsGridBasedStrandModel(pStrands->GetStrandDefinitionType()))
    {
       pStrandGeometry->ComputePermanentStrandIndices(segmentKey, strand_type, &arrayPermStrandIndex);
    }

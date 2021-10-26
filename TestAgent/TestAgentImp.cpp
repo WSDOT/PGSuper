@@ -2413,7 +2413,7 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std
       GET_IFACE(IBridgeDescription, pIBridgeDesc);
       const auto* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
       auto strandDefType = pSegment->Strands.GetStrandDefinitionType();
-      if (strandDefType != pgsTypes::sdtDirectRowInput && strandDefType != pgsTypes::sdtDirectStrandInput) // GetNextNumStrands and ComputeStrandFill don't work with these strand def types
+      if (IsGridBasedStrandModel(strandDefType)) // GetNextNumStrands and ComputeStrandFill don't work with these strand def types
       {
          StrandIndexType nns = pStrandGeometry->GetNextNumStrands(segmentKey, pgsTypes::Harped, 0);
          ConfigStrandFillVector fillvec = pStrandGeometry->ComputeStrandFill(segmentKey, pgsTypes::Harped, nns);

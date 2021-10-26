@@ -118,17 +118,17 @@ void CGirderDescDlg::Init(const CBridgeDescription2* pBridgeDesc,const CSegmentK
 
    m_TimelineMgr = *(pBridgeDesc->GetTimelineManager());
 
-   if( m_pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectRowInput || m_pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectStrandInput)
+   if( IsGridBasedStrandModel(m_pSegment->Strands.GetStrandDefinitionType()))
    {
-      AddAdditionalPropertyPages( false, false );
+      GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
+      GET_IFACE2(pBroker, ISpecification, pSpec);
+      GET_IFACE2(pBroker, ILibrary, pLib);
+      const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+      AddAdditionalPropertyPages(pSpecEntry->AllowStraightStrandExtensions(), pStrandGeom->CanDebondStrands(m_SegmentKey, pgsTypes::Straight));
    }
    else
    {
-      GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-      GET_IFACE2(pBroker,ISpecification,pSpec);
-      GET_IFACE2(pBroker,ILibrary,pLib);
-      const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-      AddAdditionalPropertyPages( pSpecEntry->AllowStraightStrandExtensions(), pStrandGeom->CanDebondStrands(m_SegmentKey,pgsTypes::Straight) );
+      AddAdditionalPropertyPages(false, false);
    }
 
    m_SpanGdrDetailsBearingsPage.m_psp.dwFlags |= PSP_HASHELP;

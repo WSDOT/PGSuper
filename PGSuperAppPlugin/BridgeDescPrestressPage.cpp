@@ -184,7 +184,7 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
          pParent->m_pSegment->Strands.SetHarpedStraightNstrands(ns, nh);
       }
    }
-   else if (m_CurrStrandDefinitionType == pgsTypes::sdtDirectSelection || m_CurrStrandDefinitionType == pgsTypes::sdtDirectRowInput || m_CurrStrandDefinitionType == pgsTypes::sdtDirectStrandInput)
+   else if (m_CurrStrandDefinitionType == pgsTypes::sdtDirectSelection || IsDirectStrandModel(m_CurrStrandDefinitionType))
    {
       // Data is kept up to date in pParent->m_GirderData.PrestressData
       nh = pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Harped);
@@ -197,7 +197,7 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
    }
 
    // Jacking force controls for harped/straight are same for pgsTypes::sdtStraightHarped and pgsTypes::sdtDirectSelection
-   if (m_CurrStrandDefinitionType==pgsTypes::sdtStraightHarped || m_CurrStrandDefinitionType==pgsTypes::sdtDirectSelection || m_CurrStrandDefinitionType==pgsTypes::sdtDirectRowInput || m_CurrStrandDefinitionType == pgsTypes::sdtDirectStrandInput)
+   if (m_CurrStrandDefinitionType==pgsTypes::sdtStraightHarped || m_CurrStrandDefinitionType==pgsTypes::sdtDirectSelection || IsDirectStrandModel(m_CurrStrandDefinitionType))
    {
       // Harped
       bool bPjackUserInput = !pParent->m_pSegment->Strands.IsPjackCalculated(pgsTypes::Harped);
@@ -253,7 +253,7 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
    }
 
    // Temporary
-   if (m_CurrStrandDefinitionType != pgsTypes::sdtDirectSelection && m_CurrStrandDefinitionType != pgsTypes::sdtDirectRowInput && m_CurrStrandDefinitionType != pgsTypes::sdtDirectStrandInput)
+   if (m_CurrStrandDefinitionType != pgsTypes::sdtDirectSelection && IsGridBasedStrandModel(m_CurrStrandDefinitionType))
    {
       if (!pDX->m_bSaveAndValidate)
       {
@@ -479,7 +479,7 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
       DisableHpOffsetControls(TRUE);
    }
 
-   if (pDX->m_bSaveAndValidate && m_CurrStrandDefinitionType != pgsTypes::sdtDirectRowInput && m_CurrStrandDefinitionType != pgsTypes::sdtDirectStrandInput)
+   if (pDX->m_bSaveAndValidate && IsGridBasedStrandModel(m_CurrStrandDefinitionType))
    {
       // determine if offset strands are within girder bounds
       if (0 < nh)
@@ -801,7 +801,7 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
 
    EnableToolTips(TRUE);
 
-   if ( m_CurrStrandDefinitionType == pgsTypes::sdtDirectRowInput || m_CurrStrandDefinitionType == pgsTypes::sdtDirectStrandInput)
+   if (IsDirectStrandModel(m_CurrStrandDefinitionType))
    {
       ShowEndOffsetControls(FALSE);
       ShowHpOffsetControls(FALSE);
@@ -1034,7 +1034,7 @@ void CGirderDescPrestressPage::UpdatePjackEdit( UINT nCheckBox  )
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
    StrandIndexType nStrands;
-   bool bIsDirect = (m_CurrStrandDefinitionType == pgsTypes::sdtDirectSelection || m_CurrStrandDefinitionType == pgsTypes::sdtDirectRowInput || m_CurrStrandDefinitionType == pgsTypes::sdtDirectStrandInput);
+   bool bIsDirect = (m_CurrStrandDefinitionType == pgsTypes::sdtDirectSelection || IsDirectStrandModel(m_CurrStrandDefinitionType));
    switch( nCheckBox )
    {
    case IDC_HS_JACK:
@@ -1145,7 +1145,7 @@ void CGirderDescPrestressPage::UpdatePjackEditEx(StrandIndexType nStrands, UINT 
       CDataExchange dx(this,FALSE);
       DDX_UnitValueAndTag( &dx, nEdit, nUnit, Pjack, pDisplayUnits->GetGeneralForceUnit() );
 
-      if ( m_CurrStrandDefinitionType == pgsTypes::sdtDirectRowInput || m_CurrStrandDefinitionType == pgsTypes::sdtDirectStrandInput)
+      if (IsDirectStrandModel(m_CurrStrandDefinitionType))
       {
          pParent->m_pSegment->Strands.SetPjack(strandType,Pjack);
       }
@@ -1162,7 +1162,7 @@ void CGirderDescPrestressPage::UpdatePjackEditEx(StrandIndexType nStrands, UINT 
       DDX_UnitValueAndTag( &dx, nEdit, nUnit, jack, pDisplayUnits->GetGeneralForceUnit() );
    }
 
-   if ( m_CurrStrandDefinitionType == pgsTypes::sdtDirectRowInput || m_CurrStrandDefinitionType == pgsTypes::sdtDirectStrandInput)
+   if (IsDirectStrandModel(m_CurrStrandDefinitionType))
    {
       pgsTypes::StrandType strandType;
       switch( nCheckBox )
@@ -1662,7 +1662,7 @@ StrandIndexType CGirderDescPrestressPage::GetStraightStrandCount()
          CDataExchange DX(this,FALSE);
 	      DDX_Text(&DX, IDC_NUM_SS, nStraightStrands);
       }
-      else if (m_CurrStrandDefinitionType == pgsTypes::sdtDirectSelection || m_CurrStrandDefinitionType == pgsTypes::sdtDirectRowInput || m_CurrStrandDefinitionType == pgsTypes::sdtDirectStrandInput)
+      else if (m_CurrStrandDefinitionType == pgsTypes::sdtDirectSelection || IsDirectStrandModel(m_CurrStrandDefinitionType))
       {
          // data is stored when direct input dialog is closed
         nStraightStrands = pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Straight);
@@ -1708,7 +1708,7 @@ StrandIndexType CGirderDescPrestressPage::GetHarpedStrandCount()
          CDataExchange DX(this,TRUE);
 	      DDX_Text(&DX, IDC_NUM_HS, nHarpedStrands);
       }
-      else if (m_CurrStrandDefinitionType == pgsTypes::sdtDirectSelection || m_CurrStrandDefinitionType == pgsTypes::sdtDirectRowInput || m_CurrStrandDefinitionType == pgsTypes::sdtDirectStrandInput)
+      else if (m_CurrStrandDefinitionType == pgsTypes::sdtDirectSelection || IsDirectStrandModel(m_CurrStrandDefinitionType))
       {
          // data is stored when direct input dialog is closed
          nHarpedStrands = pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Harped);
@@ -2001,7 +2001,7 @@ void CGirderDescPrestressPage::ShowHideNumStrandControls(pgsTypes::StrandDefinit
    }
 
 
-   if(strandDefinitionType == pgsTypes::sdtDirectSelection || strandDefinitionType == pgsTypes::sdtDirectRowInput || strandDefinitionType == pgsTypes::sdtDirectStrandInput)
+   if(strandDefinitionType == pgsTypes::sdtDirectSelection || IsDirectStrandModel(strandDefinitionType))
    {
       // hide spinners if direct-select
       int topids[] = {IDC_NUM_HS_SPIN, IDC_NUM_HS, IDC_NUM_SS_SPIN, IDC_NUM_SS, IDC_NUM_TEMP_SPIN, IDC_NUM_TEMP, -12345};
@@ -2139,7 +2139,7 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
    if (newStrandDefinitionType == pgsTypes::sdtDirectSelection)
    {
       // Going to direct fill
-      if (m_CurrStrandDefinitionType == pgsTypes::sdtDirectRowInput || m_CurrStrandDefinitionType == pgsTypes::sdtDirectStrandInput)
+      if (IsDirectStrandModel(m_CurrStrandDefinitionType))
       {
          CString str(_T("The total number of strands will remain the same, however the strands will be placed in pre-defined locations which may be different than the current strand locations. Additionally, debonding and strands extensions will be discarded. Would you like tor proceed?"));
          int st = ::AfxMessageBox(str, MB_YESNO | MB_ICONQUESTION );
@@ -2308,7 +2308,7 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
                return;
             }
          }
-         else if (0 < num_perm && (m_CurrStrandDefinitionType == pgsTypes::sdtDirectRowInput || m_CurrStrandDefinitionType == pgsTypes::sdtDirectStrandInput))
+         else if (0 < num_perm && IsDirectStrandModel(m_CurrStrandDefinitionType))
          {
             CString str(_T("The total number of strands will remain the same, however the strands will be placed in pre-defined locations which may be different than the current strand locations. Additionally, debonding and strands extensions will be discarded. Would you like to proceed?"));
             int st = ::AfxMessageBox(str, MB_YESNO | MB_ICONQUESTION );
@@ -2409,7 +2409,7 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
                return;
             }
          }
-         else if (m_CurrStrandDefinitionType == pgsTypes::sdtDirectRowInput || m_CurrStrandDefinitionType == pgsTypes::sdtDirectStrandInput)
+         else if (IsDirectStrandModel(m_CurrStrandDefinitionType))
          {
             CString str(_T("The total number of strands will remain the same, however the strands will be placed in pre-defined locations which may be different than the current strand locations. Additionally, debonding and strands extensions will be discarded. Would you like to proceed?"));
             int st = ::AfxMessageBox(str, MB_YESNO | MB_ICONQUESTION );
@@ -2445,7 +2445,7 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
          HideControls(0, newStrandDefinitionType); 
          HideControls(1, newStrandDefinitionType); 
       }
-      else if (newStrandDefinitionType == pgsTypes::sdtDirectRowInput || newStrandDefinitionType == pgsTypes::sdtDirectStrandInput)
+      else if (IsDirectStrandModel(newStrandDefinitionType))
       {
          CStrandRowCollection strandRows;
          if (m_CurrStrandDefinitionType == pgsTypes::sdtDirectStrandInput)
@@ -2666,7 +2666,7 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
    ShowHideNumStrandControls(newStrandDefinitionType);
 
    // show/hide the Extend Strands tab on the parent dialog
-   if ( m_CurrStrandDefinitionType == pgsTypes::sdtDirectRowInput || m_CurrStrandDefinitionType == pgsTypes::sdtDirectStrandInput)
+   if (IsDirectStrandModel(m_CurrStrandDefinitionType))
    {
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
       pParent->OnGirderTypeChanged(false,false);
@@ -2689,7 +2689,7 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
       pParent->OnGirderTypeChanged(bCanExtendStrands,bCanDebond);
    }
 
-   if (m_CurrStrandDefinitionType == pgsTypes::sdtDirectRowInput || m_CurrStrandDefinitionType == pgsTypes::sdtDirectStrandInput)
+   if (IsDirectStrandModel(m_CurrStrandDefinitionType))
    {
       ShowEndOffsetControls(FALSE);
       ShowHpOffsetControls(FALSE);

@@ -6448,7 +6448,7 @@ STDMETHODIMP CProjectAgentImp::Save(IStructuredSave* pStrSave)
 
 void CProjectAgentImp::ValidateStrands(const CSegmentKey& segmentKey,CPrecastSegmentData* pSegment,bool fromLibrary)
 {
-   if ( pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectRowInput || pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectStrandInput )
+   if (IsDirectStrandModel(pSegment->Strands.GetStrandDefinitionType()))
    {
       // user defined strands don't use strand information from the library
       return;

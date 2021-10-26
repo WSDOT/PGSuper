@@ -531,7 +531,7 @@ bool CStrandData::operator==(const CStrandData& rOther) const
       return false;
    }
 
-   if ( m_NumPermStrandsType == pgsTypes::sdtDirectRowInput || m_NumPermStrandsType == pgsTypes::sdtDirectStrandInput )
+   if ( IsDirectStrandModel(m_NumPermStrandsType))
    {
       for (Uint16 i = 0; i < 4; i++)
       {
@@ -749,7 +749,7 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
          m_NumPermStrandsType = (pgsTypes::StrandDefinitionType)var.lVal;
       }
 
-      if (m_NumPermStrandsType == pgsTypes::sdtDirectRowInput || m_NumPermStrandsType == pgsTypes::sdtDirectStrandInput)
+      if (IsDirectStrandModel(m_NumPermStrandsType))
       {
          // added in version 13 for sdtDirectRowInput and version 17 for sdtDirectStrandInput
          hr = pStrLoad->BeginUnit(_T("StrandRows"));
@@ -1107,7 +1107,7 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
          m_AdjustableStrandType = pgsTypes::asHarped;
       }
 
-      if ( 5.0 <= version && (m_NumPermStrandsType != pgsTypes::sdtDirectRowInput && m_NumPermStrandsType != pgsTypes::sdtDirectStrandInput) )
+      if ( 5.0 <= version && !IsDirectStrandModel(m_NumPermStrandsType))
       {
          // not writing this data if NumPermStrandsType is sdtDirectRowInput... this was added in version 13 of the data block
          // not writing this data if NumPermStrandsType is sdtDirectStrandInput... this was added in version 17 of the data block
@@ -1240,7 +1240,7 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
       THROW_LOAD(InvalidFileFormat,pStrLoad);
    }
 
-   if ( m_NumPermStrandsType == pgsTypes::sdtDirectRowInput || m_NumPermStrandsType == pgsTypes::sdtDirectStrandInput)
+   if ( IsDirectStrandModel(m_NumPermStrandsType))
    {
       ProcessStrandRowData();
    }
@@ -1263,7 +1263,7 @@ HRESULT CStrandData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
    pStrSave->put_Property(_T("NumPermStrandsType"), CComVariant(m_NumPermStrandsType));
 
-   if ( m_NumPermStrandsType == pgsTypes::sdtDirectRowInput || m_NumPermStrandsType == pgsTypes::sdtDirectStrandInput )
+   if ( IsDirectStrandModel(m_NumPermStrandsType))
    {
       // added in version 13 for sdtDirectRowInput and version 17 for sdtDirectStrandInput
       pStrSave->BeginUnit(_T("StrandRows"),2.0);
@@ -1409,7 +1409,7 @@ HRESULT CStrandData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->put_Property(_T("TempStrandUsage"),CComVariant(m_TempStrandUsage));
    pStrSave->put_Property(_T("AdjustableStrandType"),CComVariant(m_AdjustableStrandType)); // added version 14.
 
-   if ( m_NumPermStrandsType != pgsTypes::sdtDirectRowInput && m_NumPermStrandsType != pgsTypes::sdtDirectStrandInput )
+   if ( IsGridBasedStrandModel(m_NumPermStrandsType))
    {
       // not writing this data if NumPermStrandsType is sdtDirectRowInput... this was added in version 13 of the data block
       pStrSave->put_Property(_T("SymmetricDebond"),CComVariant(m_bSymmetricDebond));
@@ -1682,7 +1682,7 @@ bool CStrandData::GetStrandRow(pgsTypes::StrandType strandType, StrandIndexType 
 
 void CStrandData::SetStrandCount(pgsTypes::StrandType strandType,StrandIndexType nStrands)
 {
-   ATLASSERT( m_NumPermStrandsType != pgsTypes::sdtDirectRowInput && m_NumPermStrandsType != pgsTypes::sdtDirectStrandInput);
+   ATLASSERT(!IsDirectStrandModel(m_NumPermStrandsType));
    m_Nstrands[strandType] = nStrands;
 }
 

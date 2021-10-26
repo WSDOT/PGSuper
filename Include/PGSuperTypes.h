@@ -2202,4 +2202,14 @@ inline bool IsSegmentContinuousOverPier(pgsTypes::PierSegmentConnectionType conn
    return (connectionType == pgsTypes::psctContinuousSegment || connectionType == pgsTypes::psctIntegralSegment) ? true : false;
 }
 
+inline bool IsGridBasedStrandModel(pgsTypes::StrandDefinitionType strandModelType)
+{
+   return (strandModelType == pgsTypes::sdtTotal || strandModelType == pgsTypes::sdtStraightHarped || strandModelType == pgsTypes::sdtDirectSelection) ? true : false;
+}
+
+inline bool IsDirectStrandModel(pgsTypes::StrandDefinitionType strandModelType)
+{
+   return (strandModelType == pgsTypes::sdtDirectRowInput || strandModelType == pgsTypes::sdtDirectStrandInput) ? true : false;
+}
+
 #endif // INCLUDED_PGSUPERTYPES_H_
