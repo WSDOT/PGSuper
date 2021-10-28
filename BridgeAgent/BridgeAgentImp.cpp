@@ -9939,7 +9939,7 @@ GDRCONFIG CBridgeAgentImp::GetSegmentConfiguration(const CSegmentKey& segmentKey
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
    const CGirderMaterial* pMaterial = pSegmentData->GetSegmentMaterial(segmentKey);
 
-   ATLASSERT(IsGridBasedStrandModel(pStrands->GetStrandDefinitionType()));
+   ATLASSERT(pStrands->GetStrandDefinitionType() != pgsTypes::sdtDirectStrandInput); // NOTE: Strand Point model is a grid based model in WBFL
 
    CComPtr<IStrandModel> strandModel;
    girder->get_StrandModel(&strandModel);
