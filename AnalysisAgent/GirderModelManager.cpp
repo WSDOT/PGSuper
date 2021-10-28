@@ -11735,17 +11735,16 @@ void CGirderModelManager::ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsType
             ATLASSERT(vPoi.size() == 1);
             const pgsPointOfInterest& poi(vPoi.front());
 
-            Float64 Pback,  Mback, backMomentArm;  // load on back side of pier
-            Float64 Pahead, Mahead, aheadMomentArm; // load on ahead side of pier
-            GetPierDiaphragmLoads(pierIdx, girderKey.girderIndex, &Pback, &Mback, &backMomentArm, &Pahead, &Mahead, &aheadMomentArm);
+            PIER_DIAPHRAGM_LOAD_DETAILS backSide, aheadSide;
+            GetPierDiaphragmLoads(pierIdx, girderKey.girderIndex, &backSide, &aheadSide);
 
             const CSegmentKey& segmentKey(poi.GetSegmentKey());
             Float64 end_dist = pBridge->GetSegmentStartEndDistance(segmentKey);
             Float64 Xs = end_dist; // assume P and M are applied at CL Bearing
-            if (!IsZero(aheadMomentArm))
+            if (!IsZero(aheadSide.MomentArm))
             {
                // P is applied at another location (that is why moment arm != 0)
-               Xs = end_dist - aheadMomentArm; // moment arm is measured from CL Bearing towards the left where the load occurs... convert to the Segment Coordinate System
+               Xs = end_dist - aheadSide.MomentArm; // moment arm is measured from CL Bearing towards the left where the load occurs... convert to the Segment Coordinate System
             }
             Xs = IsZero(Xs) ? 0.0 : Xs;
             ATLASSERT(0 <= Xs); // load must be on the segment
@@ -11763,8 +11762,8 @@ void CGirderModelManager::ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsType
             load->put_MemberType(mbrType);
             load->put_MemberID(mbrID);
             load->put_Location(Xmbr);
-            load->put_Fy(Pahead);
-            load->put_Mz(Mahead);
+            load->put_Fy(aheadSide.P);
+            load->put_Mz(aheadSide.M);
 
             CComBSTR bstrStage;
             pgsTypes::BoundaryConditionType bcType = pPier->GetBoundaryConditionType();
@@ -11785,7 +11784,7 @@ void CGirderModelManager::ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsType
             CComPtr<IPointLoadItem> ptLoadItem;
             pointLoads->Add(bstrStage,bstrLoadGroup,load,&ptLoadItem);
 
-            SaveOverhangPointLoads(CSegmentKey(girderKey,0),analysisType,bstrStage,bstrLoadGroup,Pahead,Pback);
+            SaveOverhangPointLoads(CSegmentKey(girderKey,0),analysisType,bstrStage,bstrLoadGroup,aheadSide.P,backSide.P);
          }
          else if ( pPier == pEndPier )
          {
@@ -11795,18 +11794,17 @@ void CGirderModelManager::ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsType
             ATLASSERT(vPoi.size() == 1);
             const pgsPointOfInterest& poi(vPoi.front());
 
-            Float64 Pback, Mback, backMomentArm;  // load on back side of pier
-            Float64 Pahead, Mahead, aheadMomentArm; // load on ahead side of pier
-            GetPierDiaphragmLoads(pierIdx, girderKey.girderIndex, &Pback, &Mback, &backMomentArm, &Pahead, &Mahead, &aheadMomentArm);
+            PIER_DIAPHRAGM_LOAD_DETAILS backSide, aheadSide;
+            GetPierDiaphragmLoads(pierIdx, girderKey.girderIndex, &backSide, &aheadSide);
 
             const CSegmentKey& segmentKey(poi.GetSegmentKey());
             Float64 Ls = pBridge->GetSegmentLength(segmentKey);
             Float64 end_dist = pBridge->GetSegmentEndEndDistance(segmentKey);
             Float64 Xs = Ls - end_dist;
-            if (!IsZero(backMomentArm))
+            if (!IsZero(backSide.MomentArm))
             {
                // P is applied at another location (this is why moment arm != 0)
-               Xs += backMomentArm; // moment are is measured from CL Bearing towards the right where the load occurs... convert to Segment Coordinate System
+               Xs += backSide.MomentArm; // moment are is measured from CL Bearing towards the right where the load occurs... convert to Segment Coordinate System
             }
             Xs = IsZero(Xs) ? 0.0 : Xs;
             Xs = IsEqual(Xs, Ls) ? Ls : Xs;
@@ -11825,8 +11823,8 @@ void CGirderModelManager::ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsType
             load->put_MemberType(mbrType);
             load->put_MemberID(mbrID);
             load->put_Location(Xmbr);
-            load->put_Fy(Pback);
-            load->put_Mz(Mback);
+            load->put_Fy(backSide.P);
+            load->put_Mz(backSide.M);
 
             CComBSTR bstrStage;
             pgsTypes::BoundaryConditionType bcType = pPier->GetBoundaryConditionType();
@@ -11847,7 +11845,7 @@ void CGirderModelManager::ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsType
             CComPtr<IPointLoadItem> ptLoadItem;
             pointLoads->Add(bstrStage,bstrLoadGroup,load,&ptLoadItem);
 
-            SaveOverhangPointLoads(CSegmentKey(girderKey,nSegments-1),analysisType,bstrStage,bstrLoadGroup,Pahead,Pback);
+            SaveOverhangPointLoads(CSegmentKey(girderKey,nSegments-1),analysisType,bstrStage,bstrLoadGroup,aheadSide.P,backSide.P);
          }
          else
          {
@@ -11886,16 +11884,15 @@ void CGirderModelManager::ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsType
 
             pgsPointOfInterest poi = pPoi->GetPierPointOfInterest(girderKey, pierIdx);
 
-            Float64 Pback,  Mback, backMomentArm;  // load on back side of pier
-            Float64 Pahead, Mahead, aheadMomentArm; // load on ahead side of pier
-            GetPierDiaphragmLoads(pierIdx, girderKey.girderIndex, &Pback, &Mback, &backMomentArm, &Pahead, &Mahead, &aheadMomentArm);
+            PIER_DIAPHRAGM_LOAD_DETAILS backSide, aheadSide;
+            GetPierDiaphragmLoads(pierIdx, girderKey.girderIndex, &backSide, &aheadSide);
 
             if ( pPier->GetSegmentConnectionType() == pgsTypes::psctContinuousSegment ||
                  pPier->GetSegmentConnectionType() == pgsTypes::psctIntegralSegment) 
             {
                // there should not be any moment at intermediate piers with continuous segments
-               ATLASSERT(IsZero(Mback) && IsZero(backMomentArm));
-               ATLASSERT(IsZero(Mahead) && IsZero(aheadMomentArm));
+               ATLASSERT(IsZero(backSide.M) && IsZero(backSide.MomentArm));
+               ATLASSERT(IsZero(aheadSide.M) && IsZero(aheadSide.MomentArm));
 
                // Segment is continuous over the pier... apply the total load at the CL Pier
                //
@@ -11912,12 +11909,12 @@ void CGirderModelManager::ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsType
                load->put_MemberType(mtSuperstructureMember);
                load->put_MemberID(mbrID);
                load->put_Location(dist_along_segment - start_end_dist);
-               load->put_Fy(Pback + Pahead);
+               load->put_Fy(backSide.P + aheadSide.P);
 
                // apply this load along with the deck
                CComPtr<IPointLoadItem> ptLoadItem;
                pointLoads->Add(bstrDeckStage,bstrLoadGroup,load,&ptLoadItem);
-               SaveOverhangPointLoads(CSegmentKey(girderKey, 0), analysisType, bstrDeckStage, bstrLoadGroup, Pahead, Pback);
+               SaveOverhangPointLoads(CSegmentKey(girderKey, 0), analysisType, bstrDeckStage, bstrLoadGroup, aheadSide.P, backSide.P);
             }
             else
             {
@@ -11956,12 +11953,12 @@ void CGirderModelManager::ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsType
                backLoad->put_MemberType(mtSuperstructureMember);
                backLoad->put_MemberID(mbrID);
                backLoad->put_Location(dist_along_segment - start_end_dist - back_bearing_offset);
-               backLoad->put_Fy(Pback);
-               backLoad->put_Mz(Mback);
+               backLoad->put_Fy(backSide.P);
+               backLoad->put_Mz(backSide.M);
 
                CComPtr<IPointLoadItem> ptLoadItem;
                pointLoads->Add(bstrStageBack,bstrLoadGroup,backLoad,&ptLoadItem);
-               SaveOverhangPointLoads(CSegmentKey(girderKey, 0), analysisType, bstrStageBack, bstrLoadGroup, 0, Pback);
+               SaveOverhangPointLoads(CSegmentKey(girderKey, 0), analysisType, bstrStageBack, bstrLoadGroup, 0, backSide.P);
 
                mbrID = GetFirstSuperstructureMemberID(nextSegmentKey);
                Float64 location = ahead_bearing_offset - next_start_end_dist;
@@ -11981,12 +11978,12 @@ void CGirderModelManager::ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsType
                aheadLoad->put_MemberType(mtSuperstructureMember);
                aheadLoad->put_MemberID(mbrID);
                aheadLoad->put_Location(location);
-               aheadLoad->put_Fy(Pahead);
-               aheadLoad->put_Mz(Mahead);
+               aheadLoad->put_Fy(aheadSide.P);
+               aheadLoad->put_Mz(aheadSide.M);
 
                ptLoadItem.Release();
                pointLoads->Add(bstrStageAhead,bstrLoadGroup,aheadLoad,&ptLoadItem);
-               SaveOverhangPointLoads(CSegmentKey(girderKey, 0), analysisType, bstrStageAhead, bstrLoadGroup, Pahead, 0);
+               SaveOverhangPointLoads(CSegmentKey(girderKey, 0), analysisType, bstrStageAhead, bstrLoadGroup, aheadSide.P, 0);
             }
          }
       } // next pier
@@ -14709,7 +14706,7 @@ void CGirderModelManager::GetIntermediateDiaphragmLoads(const CSpanKey& spanKey,
    }
 }
 
-void CGirderModelManager::GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIndexType gdrIdx, Float64* pPback, Float64 *pMback, Float64* pBackMomentArm, Float64* pPahead, Float64* pMahead, Float64* pAheadMomentArm) const
+void CGirderModelManager::GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIndexType gdrIdx, PIER_DIAPHRAGM_LOAD_DETAILS* pBackSide, PIER_DIAPHRAGM_LOAD_DETAILS* pAheadSide) const
 {
    GET_IFACE(IBridge,    pBridge );
    GET_IFACE(IMaterials, pMaterial);
@@ -14719,12 +14716,23 @@ void CGirderModelManager::GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIn
 
    const auto* pPier = pIBridgeDesc->GetPier(pierIdx);
 
-   *pPback  = 0.0;
-   *pMback  = 0.0;
-   *pBackMomentArm = 0.0;
-   *pPahead = 0.0;
-   *pMahead = 0.0;
-   *pAheadMomentArm = 0.0;
+   pBackSide->TribWidth = 0;
+   pBackSide->Height = 0;
+   pBackSide->Width = 0;
+   pBackSide->SkewAngle = 0;
+   pBackSide->Density = 0;
+   pBackSide->P = 0;
+   pBackSide->M = 0;
+   pBackSide->MomentArm = 0;
+
+   pAheadSide->TribWidth = 0;
+   pAheadSide->Height = 0;
+   pAheadSide->Width = 0;
+   pAheadSide->SkewAngle = 0;
+   pAheadSide->Density = 0;
+   pAheadSide->P = 0;
+   pAheadSide->M = 0;
+   pAheadSide->MomentArm = 0;
 
    GroupIndexType backGroupIdx, aheadGroupIdx;
    pBridge->GetGirderGroupIndex(pierIdx,&backGroupIdx,&aheadGroupIdx);
@@ -14751,6 +14759,8 @@ void CGirderModelManager::GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIn
 
    Float64 density = (pBridge->GetDeckType() == pgsTypes::sdtNone ? pMaterial->GetSegmentWeightDensity(segmentKey, castDiaphragmsIntervalIdx) : pMaterial->GetDeckWeightDensity(0/*assume region 0*/,castDiaphragmsIntervalIdx));
    Float64 g = unitSysUnitsMgr::GetGravitationalAcceleration();
+   pBackSide->Density = density;
+   pAheadSide->Density = density;
 
    bool bApplyLoadToBackSide  = pBridge->DoesPierDiaphragmLoadGirder(pierIdx,pgsTypes::Back);
    bool bApplyLoadToAheadSide = pBridge->DoesPierDiaphragmLoadGirder(pierIdx,pgsTypes::Ahead);
@@ -14799,7 +14809,11 @@ void CGirderModelManager::GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIn
       Float64 W,H;
       pBridge->GetPierDiaphragmSize(pierIdx,pgsTypes::Back,&W,&H);
 
-      *pPback = -H*W*density*g*trib_slab_width/cos(skew);
+      pBackSide->Width = W;
+      pBackSide->Height = H;
+      pBackSide->TribWidth = trib_slab_width;
+      pBackSide->SkewAngle = skew;
+      pBackSide->P = -H*W*density*g*trib_slab_width/cos(skew);
 
       if ( pBridge->IsBoundaryPier(pierIdx) )
       {
@@ -14827,22 +14841,22 @@ void CGirderModelManager::GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIn
             if (end_dist < moment_arm)
             {
                // the load is beyond the end of the segment so put an equivalent force/moment at the end of the segment
-               *pBackMomentArm = end_dist; // moment arm to end of segment
+               pBackSide->MomentArm = end_dist; // moment arm to end of segment
                moment_arm -= end_dist; // moment arm for P from end of segment to get moment at end of segment
-               *pMback = *pPback * moment_arm;
+               pBackSide->M = pBackSide->P * moment_arm;
             }
             else
             {
                // the load is on the end of the segment, model it with just the point load and moment arm
-               *pMback = 0.0;
-               *pBackMomentArm = moment_arm;
+               pBackSide->M = 0.0;
+               pBackSide->MomentArm = moment_arm;
             }
          }
          else
          {
             // cantilever is too short for explicit load modeling... use an equivalent force/moment at the CL Bearing
-            *pMback = *pPback * moment_arm;
-            *pBackMomentArm = 0.0;
+            pBackSide->M = pBackSide->P * moment_arm;
+            pBackSide->MomentArm = 0.0;
          }
 
       }
@@ -14853,7 +14867,11 @@ void CGirderModelManager::GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIn
       Float64 W,H;
       pBridge->GetPierDiaphragmSize(pierIdx,pgsTypes::Ahead,&W,&H);
 
-      *pPahead = -H*W*density*g*trib_slab_width/cos(skew);
+      pAheadSide->Width = W;
+      pAheadSide->Height = H;
+      pAheadSide->TribWidth = trib_slab_width;
+      pAheadSide->SkewAngle = skew;
+      pAheadSide->P = -H*W*density*g*trib_slab_width/cos(skew);
 
       if ( pBridge->IsBoundaryPier(pierIdx) )
       {
@@ -14880,22 +14898,22 @@ void CGirderModelManager::GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIn
             if (end_dist < moment_arm)
             {
                // the load is beyond the end of the segment so put an equivalent force/moment at the end of the segment
-               *pAheadMomentArm = end_dist; // moment arm to end of segment
+               pAheadSide->MomentArm = end_dist; // moment arm to end of segment
                moment_arm -= end_dist; // moment arm for P from end of segment to get moment at end of segment
-               *pMahead = -1*(*pPahead) * moment_arm;
+               pAheadSide->M = -1*(pAheadSide->P) * moment_arm;
             }
             else
             {
                // the load is on the end of the segment, model it with just the point load and moment arm
-               *pMahead = 0.0;
-               *pAheadMomentArm = moment_arm;
+               pAheadSide->M = 0.0;
+               pAheadSide->MomentArm = moment_arm;
             }
          }
          else
          {
             // cantilever is too short for explicit load modeling... use an equivalent force/moment at the CL Bearing
-            *pMahead = -1*(*pPahead) * moment_arm;
-            *pAheadMomentArm = 0.0;
+            pAheadSide->M = -1*(pAheadSide->P) * moment_arm;
+            pAheadSide->MomentArm = 0.0;
          }
       }
    }

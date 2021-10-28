@@ -1763,9 +1763,9 @@ void CAnalysisAgentImp::GetIntermediateDiaphragmLoads(const CSpanKey& spanKey, s
    m_pGirderModelManager->GetIntermediateDiaphragmLoads(spanKey,pLoads);
 }
 
-void CAnalysisAgentImp::GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIndexType gdrIdx, Float64* pPback, Float64 *pMback, Float64* pBackMomentArm, Float64* pPahead, Float64* pMahead, Float64* pAheadMomentArm) const
+void CAnalysisAgentImp::GetPierDiaphragmLoads(PierIndexType pierIdx, GirderIndexType gdrIdx, PIER_DIAPHRAGM_LOAD_DETAILS* pBackSide, PIER_DIAPHRAGM_LOAD_DETAILS* pAheadSide) const
 {
-   m_pGirderModelManager->GetPierDiaphragmLoads(pierIdx,gdrIdx,pPback,pMback,pBackMomentArm,pPahead,pMahead,pAheadMomentArm);
+   m_pGirderModelManager->GetPierDiaphragmLoads(pierIdx, gdrIdx, pBackSide, pAheadSide);
 }
 
 Float64 CAnalysisAgentImp::GetGirderDeflectionForCamber(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig) const

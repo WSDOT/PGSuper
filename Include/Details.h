@@ -29,6 +29,18 @@
 #include <Lrfd\Lrfd.h>
 #include <WBFLRCCapacity.h>
 
+struct PIER_DIAPHRAGM_LOAD_DETAILS
+{
+   Float64 TribWidth;
+   Float64 Height;
+   Float64 Width;
+   Float64 SkewAngle;
+   Float64 Density;
+   Float64 P;
+   Float64 M;
+   Float64 MomentArm;
+};
+
 struct SLAB_OFFSET_AT_SECTION
 {
    pgsPointOfInterest PointOfInterest;

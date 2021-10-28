@@ -93,7 +93,7 @@ public:
    void GetCantileverSlabPadLoad(const CSegmentKey& segmentKey, Float64* pP1, Float64* pM1, Float64* pP2, Float64* pM2) const;
    void GetPrecastDiaphragmLoads(const CSegmentKey& segmentKey, std::vector<DiaphragmLoad>* pLoads) const;
    void GetIntermediateDiaphragmLoads(const CSpanKey& spanKey, std::vector<DiaphragmLoad>* pLoads) const;
-   void GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIndexType gdrIdx,Float64* pPback, Float64 *pMback, Float64* pBackMomentArm, Float64* pPahead, Float64* pMahead, Float64* pAheadMomentArm) const;
+   void GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIndexType gdrIdx, PIER_DIAPHRAGM_LOAD_DETAILS* pBackSide, PIER_DIAPHRAGM_LOAD_DETAILS* pAheadSide) const;
    void GetClosureJointLoads(const CClosureKey& closureKey,std::vector<ClosureJointLoad>* pLoads) const;
 
    bool HasShearKeyLoad(const CGirderKey& girderKey) const; // checks for load in adjacent continuous beams as well as current beam

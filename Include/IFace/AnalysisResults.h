@@ -320,7 +320,7 @@ interface IProductLoads : IUnknown
    // At abutments, the diaphragm load can be offset from the CL Bearing. The load is defined as an equivalent force/moment system depending on how the loading is specified
    // if the girder end distance is long enough to be modeled as a cantilever, the load applied on or at the tip the cantilever depending on its definition. The moment
    // arm parameter is the distance from the vertical load (P) to the CL Bearing.
-   virtual void GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIndexType gdrIdx, Float64* pPback, Float64 *pMback, Float64* pBackMomentArm, Float64* pPahead, Float64* pMahead,Float64* pAheadMomentArm) const = 0;
+   virtual void GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIndexType gdrIdx, PIER_DIAPHRAGM_LOAD_DETAILS* pBackSide, PIER_DIAPHRAGM_LOAD_DETAILS* pAheadSide) const = 0;
 
    virtual std::vector<std::_tstring> GetVehicleNames(pgsTypes::LiveLoadType llType,const CGirderKey& girderKey) const = 0;
 
