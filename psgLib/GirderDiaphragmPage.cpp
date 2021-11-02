@@ -135,6 +135,13 @@ void CGirderDiaphragmPage::OnEdit()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
+   ROWCOL row = m_Grid.GetRowCount();
+   if (row == 0)
+   {
+      OnAdd();
+      return;
+   }
+
    CGirderMainSheet* pDad = (CGirderMainSheet*)GetParent();
 
    CRowColArray rows;
