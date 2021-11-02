@@ -3098,7 +3098,7 @@ std::_tstring CTimelineManager::GetErrorMessage(Uint32 errorCode) const
 
    if (sysFlags<Uint32>::IsSet(errorCode, TLM_INTERMEDIATE_DIAPHRAGM_LOADING_ERROR))
    {
-      os << _T("Intermediate diaphragms are cast after the deck. Add an Apply Load activity at or before the event containing the Cast Deck activity.") << std::endl << std::endl;
+      os << _T("Intermediate diaphragm loads are applied after the deck is cast. They must be applied after all segments are erected up until deck casting. To fix the problem add an Apply Load activity with intermediate diaphragms loads at or before the event containing the Cast Deck activity to the timeline.") << std::endl << std::endl;
    }
 
    return os.str();
