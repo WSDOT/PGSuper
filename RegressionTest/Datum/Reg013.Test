@@ -6,7 +6,7 @@
 The Specification Check was Not Successful
 Stresses in the prestressing strands are too high.
 Tension stress check failed for Service III Limit State in Interval 17 Open to Traffic
-Splitting zone check failed.
+Splitting check failed.
 Lifting checks failed
 Hauling checks failed
 
@@ -19,7 +19,7 @@ Hauling checks failed
 The Specification Check was Not Successful
 Stresses in the prestressing strands are too high.
 Tension stress check failed for Service III Limit State in Interval 17 Open to Traffic
-Splitting zone check failed.
+Splitting check failed.
 Lifting checks failed
 Hauling checks failed
 

@@ -4,7 +4,7 @@
 
 
 The Specification Check was Not Successful
-Bursting zone check failed.
+Bursting check failed.
 Lifting checks failed
 Slab Offset ("A" Dimension) check failed
 
@@ -19,7 +19,7 @@ Compression stress check failed for Service I Limit State in Interval 2 Prestres
 Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Compression stress check failed for Service I Limit State in Interval 12 Cast Deck
 Compression stress check failed for Service I Limit State in Interval 18 Apply User Defined Loads, Open to Traffic
-Bursting zone check failed.
+Bursting check failed.
 Lifting checks failed
 Hauling checks failed
 Slab Offset ("A" Dimension) check failed

@@ -6,7 +6,7 @@
 The Specification Check was Not Successful
 Tension stress check failed for Service III Limit State in Interval 19 Open to Traffic
 Ultimate vertical shear capacity check failed for Strength I Limit State
-Splitting zone check failed.
+Splitting check failed.
 Lifting checks failed
 
 
@@ -16,7 +16,7 @@ Lifting checks failed
 
 
 The Specification Check was Not Successful
-Splitting zone check failed.
+Splitting check failed.
 Lifting checks failed
 
 
@@ -26,7 +26,7 @@ Lifting checks failed
 
 
 The Specification Check was Not Successful
-Splitting zone check failed.
+Splitting check failed.
 Lifting checks failed
 
 

@@ -5,7 +5,7 @@
 
 The Specification Check was Not Successful
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
-Splitting zone check failed.
+Splitting check failed.
 Minimum fillet value exceeded for bridge check failed
 
 
@@ -22,7 +22,7 @@ Compression stress check failed for Service I Limit State in Interval 20 Open to
 Compression stress check failed for Service I Limit State in Interval 20 Open to Traffic
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
-Splitting zone check failed.
+Splitting check failed.
 Minimum fillet value exceeded for bridge check failed
 
 
@@ -39,7 +39,7 @@ Compression stress check failed for Service I Limit State in Interval 20 Open to
 Compression stress check failed for Service I Limit State in Interval 20 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
-Splitting zone check failed.
+Splitting check failed.
 Minimum fillet value exceeded for bridge check failed
 
 
@@ -69,7 +69,7 @@ Compression stress check failed for Service I Limit State in Interval 12 Cast De
 Compression stress check failed for Service I Limit State in Interval 20 Open to Traffic
 Compression stress check failed for Service I Limit State in Interval 20 Open to Traffic
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
-Splitting zone check failed.
+Splitting check failed.
 Minimum fillet value exceeded for bridge check failed
 
 
@@ -86,7 +86,7 @@ Compression stress check failed for Service I Limit State in Interval 20 Open to
 Compression stress check failed for Service I Limit State in Interval 20 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
-Splitting zone check failed.
+Splitting check failed.
 Minimum fillet value exceeded for bridge check failed
 
 

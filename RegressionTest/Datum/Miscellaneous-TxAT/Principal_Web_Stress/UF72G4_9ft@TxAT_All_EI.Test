@@ -4,7 +4,7 @@
 
 
 The Specification Check was Not Successful
-Splitting zone check failed.
+Splitting check failed.
 Confinement zone check failed.
 
 
@@ -15,7 +15,7 @@ Confinement zone check failed.
 
 The Specification Check was Not Successful
 Tension stress check failed for Service III Limit State in Interval 20 Open to Traffic
-Splitting zone check failed.
+Splitting check failed.
 Confinement zone check failed.
 
 
@@ -26,7 +26,7 @@ Confinement zone check failed.
 
 The Specification Check was Not Successful
 Tension stress check failed for Service III Limit State in Interval 20 Open to Traffic
-Splitting zone check failed.
+Splitting check failed.
 Confinement zone check failed.
 Slab Offset ("A" Dimension) check failed
 

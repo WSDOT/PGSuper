@@ -14,7 +14,7 @@ Compression stress check failed for Service I Limit State in Interval 20 Open to
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Splitting zone check failed.
+Splitting check failed.
 Lifting checks failed
 Hauling checks failed
 Slab Offset ("A" Dimension) check failed
@@ -36,7 +36,7 @@ Compression stress check failed for Service I Limit State in Interval 20 Open to
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Splitting zone check failed.
+Splitting check failed.
 Lifting checks failed
 Hauling checks failed
 Slab Offset ("A" Dimension) check failed

@@ -6,7 +6,7 @@
 The Specification Check was Not Successful
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Debond arrangement checks failed.
-Splitting zone check failed.
+Splitting check failed.
 Confinement zone check failed.
 Lifting checks failed
 
@@ -19,7 +19,7 @@ Lifting checks failed
 The Specification Check was Not Successful
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Debond arrangement checks failed.
-Splitting zone check failed.
+Splitting check failed.
 Confinement zone check failed.
 Lifting checks failed
 
@@ -32,7 +32,7 @@ Lifting checks failed
 The Specification Check was Not Successful
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Debond arrangement checks failed.
-Splitting zone check failed.
+Splitting check failed.
 Confinement zone check failed.
 
 

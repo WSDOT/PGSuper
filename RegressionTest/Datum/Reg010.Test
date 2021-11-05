@@ -7,7 +7,7 @@ The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Tension stress check failed for Service I Limit State in Interval 8 Remove temporary strands
-Bursting zone check failed.
+Bursting check failed.
 Confinement zone check failed.
 Lifting checks failed
 
@@ -21,7 +21,7 @@ The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Tension stress check failed for Service I Limit State in Interval 8 Remove temporary strands
-Bursting zone check failed.
+Bursting check failed.
 Confinement zone check failed.
 Lifting checks failed
 

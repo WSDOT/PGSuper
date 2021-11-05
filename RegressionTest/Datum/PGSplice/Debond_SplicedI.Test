@@ -34,7 +34,7 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.7.4].
 Stirrup detailing checks failed for the Strength I Limit State.
 Debond arrangement checks failed for Segment 1.
-Splitting zone check failed for Segment 1.
+Splitting check failed for Segment 1.
 Confinement zone check failed for Segment 1.
 Confinement zone check failed for Segment 2.
 Lifting checks failed for Segment 1.

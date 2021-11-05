@@ -6,7 +6,7 @@
 The Specification Check was Not Successful
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Stirrup detailing checks failed for the Strength I Limit State.
-Splitting zone check failed.
+Splitting check failed.
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
@@ -16,7 +16,7 @@ Splitting zone check failed.
 
 The Specification Check was Not Successful
 Ultimate vertical shear capacity check failed for Strength I Limit State
-Splitting zone check failed.
+Splitting check failed.
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
@@ -26,6 +26,6 @@ Splitting zone check failed.
 
 The Specification Check was Not Successful
 Ultimate vertical shear capacity check failed for Strength I Limit State
-Splitting zone check failed.
+Splitting check failed.
 
 

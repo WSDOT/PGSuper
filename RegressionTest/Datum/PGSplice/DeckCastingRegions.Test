@@ -36,9 +36,9 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.7.4].
 Stirrup detailing checks failed for the Strength I Limit State.
-Splitting zone check failed for Segment 1.
-Splitting zone check failed for Segment 2.
-Splitting zone check failed for Segment 3.
+Splitting check failed for Segment 1.
+Splitting check failed for Segment 2.
+Splitting check failed for Segment 3.
 Confinement zone check failed for Segment 1.
 Confinement zone check failed for Segment 2.
 Confinement zone check failed for Segment 3.
@@ -90,9 +90,9 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.7.4].
 Stirrup detailing checks failed for the Strength I Limit State.
-Splitting zone check failed for Segment 1.
-Splitting zone check failed for Segment 2.
-Splitting zone check failed for Segment 3.
+Splitting check failed for Segment 1.
+Splitting check failed for Segment 2.
+Splitting check failed for Segment 3.
 Confinement zone check failed for Segment 1.
 Confinement zone check failed for Segment 2.
 Confinement zone check failed for Segment 3.

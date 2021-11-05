@@ -7,7 +7,7 @@ Warning: Beam 1 in span 1 has mixed harped and debonded strands. This is an inva
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 20 Open to Traffic
 Tension stress check failed for Service III Limit State in Interval 20 Open to Traffic
-Splitting zone check failed.
+Splitting check failed.
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
@@ -19,7 +19,7 @@ Warning: Beam 2 in span 1 has mixed harped and debonded strands. This is an inva
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 20 Open to Traffic
 Tension stress check failed for Service III Limit State in Interval 20 Open to Traffic
-Splitting zone check failed.
+Splitting check failed.
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
@@ -31,6 +31,6 @@ Warning: Beam 3 in span 1 has mixed harped and debonded strands. This is an inva
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 20 Open to Traffic
 Tension stress check failed for Service III Limit State in Interval 20 Open to Traffic
-Splitting zone check failed.
+Splitting check failed.
 
 

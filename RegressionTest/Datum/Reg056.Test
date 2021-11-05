@@ -8,7 +8,7 @@ The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Debond arrangement checks failed.
-Bursting zone check failed.
+Bursting check failed.
 Slab Offset ("A" Dimension) check failed
 
 
@@ -21,7 +21,7 @@ The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Debond arrangement checks failed.
-Bursting zone check failed.
+Bursting check failed.
 Slab Offset ("A" Dimension) check failed
 
 

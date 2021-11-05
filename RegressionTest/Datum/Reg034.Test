@@ -9,7 +9,7 @@ Compression stress check failed for Service I Limit State in Interval 9 Install 
 Compression stress check failed for Service I Limit State in Interval 13 Open to Traffic
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Stirrup detailing checks failed for the Strength I Limit State.
-Bursting zone check failed.
+Bursting check failed.
 Confinement zone check failed.
 Lifting checks failed
 Hauling checks failed
@@ -27,7 +27,7 @@ Compression stress check failed for Service I Limit State in Interval 9 Install 
 Compression stress check failed for Service I Limit State in Interval 13 Open to Traffic
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Stirrup detailing checks failed for the Strength I Limit State.
-Bursting zone check failed.
+Bursting check failed.
 Confinement zone check failed.
 Lifting checks failed
 Hauling checks failed

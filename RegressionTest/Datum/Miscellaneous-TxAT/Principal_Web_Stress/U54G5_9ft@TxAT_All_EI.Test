@@ -6,7 +6,7 @@
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 19 Open to Traffic
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.7.4].
-Splitting zone check failed.
+Splitting check failed.
 Hauling checks failed
 Slab Offset ("A" Dimension) check failed
 
@@ -19,7 +19,7 @@ Slab Offset ("A" Dimension) check failed
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 19 Open to Traffic
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.7.4].
-Splitting zone check failed.
+Splitting check failed.
 Hauling checks failed
 Slab Offset ("A" Dimension) check failed
 

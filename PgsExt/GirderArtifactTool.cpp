@@ -428,11 +428,11 @@ void ListSplittingZoneFailures(IBroker* pBroker,FailureList& rFailures,const pgs
          std::_tostringstream os;
          if ( 1 < nSegments )
          {
-            os << strZone << _T(" zone check failed for Segment ") << LABEL_SEGMENT(segIdx) << _T(".");
+            os << strZone << _T(" check failed for Segment ") << LABEL_SEGMENT(segIdx) << _T(".");
          }
          else
          {
-            os << strZone << _T(" zone check failed.");
+            os << strZone << _T(" check failed.");
          }
 
          rFailures.emplace_back(os.str());

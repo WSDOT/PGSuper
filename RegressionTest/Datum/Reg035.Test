@@ -10,7 +10,7 @@ Compression stress check failed for Service I Limit State in Interval 17 Open to
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
-Bursting zone check failed.
+Bursting check failed.
 Confinement zone check failed.
 Lifting checks failed
 Hauling checks failed
@@ -30,7 +30,7 @@ Compression stress check failed for Service I Limit State in Interval 17 Open to
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
-Bursting zone check failed.
+Bursting check failed.
 Confinement zone check failed.
 Lifting checks failed
 Hauling checks failed

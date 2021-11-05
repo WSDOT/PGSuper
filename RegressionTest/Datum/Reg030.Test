@@ -13,7 +13,7 @@ Compression stress check failed for Service I Limit State in Interval 14 Open to
 Compression stress check failed for Service IA Limit State in Interval 14 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Bursting zone check failed.
+Bursting check failed.
 Confinement zone check failed.
 Lifting checks failed
 Hauling checks failed
@@ -34,7 +34,7 @@ Compression stress check failed for Service I Limit State in Interval 10 Install
 Compression stress check failed for Service I Limit State in Interval 14 Open to Traffic
 Compression stress check failed for Service I Limit State in Interval 14 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
-Bursting zone check failed.
+Bursting check failed.
 Confinement zone check failed.
 Lifting checks failed
 Hauling checks failed

@@ -10,7 +10,7 @@ The Specification Check was Not Successful
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Debond arrangement checks failed.
-Bursting zone check failed.
+Bursting check failed.
 Minimum fillet value exceeded for bridge check failed
 
 
@@ -25,7 +25,7 @@ The Specification Check was Not Successful
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Debond arrangement checks failed.
-Bursting zone check failed.
+Bursting check failed.
 Minimum fillet value exceeded for bridge check failed
 
 

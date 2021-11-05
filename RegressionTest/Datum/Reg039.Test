@@ -7,7 +7,7 @@ The Specification Check was Not Successful
 Tension stress check failed for Service III Limit State in Interval 19 Open to Traffic
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Stirrup detailing checks failed for the Strength I Limit State.
-Bursting zone check failed.
+Bursting check failed.
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
@@ -18,6 +18,6 @@ Bursting zone check failed.
 The Specification Check was Not Successful
 Tension stress check failed for Service III Limit State in Interval 19 Open to Traffic
 Stirrup detailing checks failed for the Strength I Limit State.
-Bursting zone check failed.
+Bursting check failed.
 
 

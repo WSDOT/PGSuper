@@ -5,7 +5,7 @@
 
 The Specification Check was Not Successful
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Bursting zone check failed.
+Bursting check failed.
 Slab Offset ("A" Dimension) check failed
 Minimum fillet value exceeded for bridge check failed
 
@@ -18,7 +18,7 @@ Minimum fillet value exceeded for bridge check failed
 The Specification Check was Not Successful
 Tension stress check failed for Service III Limit State in Interval 19 Open to Traffic
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Bursting zone check failed.
+Bursting check failed.
 Slab Offset ("A" Dimension) check failed
 Minimum fillet value exceeded for bridge check failed
 

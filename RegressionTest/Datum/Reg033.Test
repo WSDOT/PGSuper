@@ -12,7 +12,7 @@ Compression stress check failed for Service I Limit State in Interval 18 Open to
 Compression stress check failed for Service I Limit State in Interval 18 Open to Traffic
 Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Bursting zone check failed.
+Bursting check failed.
 Lifting checks failed
 Hauling checks failed
 
@@ -31,7 +31,7 @@ Compression stress check failed for Service I Limit State in Interval 18 Open to
 Compression stress check failed for Service I Limit State in Interval 18 Open to Traffic
 Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Bursting zone check failed.
+Bursting check failed.
 Lifting checks failed
 Hauling checks failed
 
