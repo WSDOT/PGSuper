@@ -2527,6 +2527,7 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
             tsDetails.Strands[strandType].loss = -tsDetails.Strands[strandType].Relaxation.fr;
 
             tsDetails.Strands[strandType].dfpei[pgsTypes::pftRelaxation] = -tsDetails.Strands[strandType].loss;
+            tsDetails.Strands[strandType].fpei[pgsTypes::pftRelaxation] = tsDetails.Strands[strandType].dfpei[pgsTypes::pftRelaxation];
             tsDetails.Strands[strandType].dfpe += tsDetails.Strands[strandType].dfpei[pgsTypes::pftRelaxation];
             tsDetails.Strands[strandType].fpe  += tsDetails.Strands[strandType].dfpei[pgsTypes::pftRelaxation];
 
@@ -3280,6 +3281,7 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
 
                // Losses and effective prestress
                tsDetails.Strands[strandType].dfpei[pfType] += IsZero(tsDetails.Strands[strandType].As) ? 0 : tsDetails.Strands[strandType].dPi[pfType] / tsDetails.Strands[strandType].As;
+               tsDetails.Strands[strandType].fpei[pfType] = prevTimeStepDetails.Strands[strandType].fpei[pfType] + tsDetails.Strands[strandType].dfpei[pfType];
                tsDetails.Strands[strandType].dfpe += tsDetails.Strands[strandType].dfpei[pfType];
                if (i == 0)
                {
@@ -3372,6 +3374,7 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
 
                   // Losses and effective prestress
                   strand.dfpei[pfType] += IsZero(strand.As) ? 0 : strand.dPi[pfType] / strand.As;
+                  strand.fpei[pfType] = prevTimeStepDetails.Strands[strandType][strandIdx].fpei[pfType] + strand.dfpei[pfType];
                   strand.dfpe += strand.dfpei[pfType];
                   if (i == 0)
                   {
@@ -3490,6 +3493,7 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
 
                // Losses prestress
                tendon.dfpei[pfType] += (IsZero(tendon.As) ? 0 : tendon.dPi[pfType] / tendon.As);
+               tendon.fpei[pfType] = prevTimeStepDetails.SegmentTendons[ductIdx].fpei[pfType] + tendon.dfpei[pfType];
                tendon.dfpe += tendon.dfpei[pfType];
 
                if (intervalIdx == stressTendonIntervalIdx)
@@ -3616,6 +3620,7 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
 
                // Losses prestress
                tendon.dfpei[pfType] += (IsZero(tendon.As) ? 0 : tendon.dPi[pfType] / tendon.As);
+               tendon.fpei[pfType] = prevTimeStepDetails.GirderTendons[ductIdx].fpei[pfType] + tendon.dfpei[pfType];
                tendon.dfpe += tendon.dfpei[pfType];
 
                if (intervalIdx == stressTendonIntervalIdx)
