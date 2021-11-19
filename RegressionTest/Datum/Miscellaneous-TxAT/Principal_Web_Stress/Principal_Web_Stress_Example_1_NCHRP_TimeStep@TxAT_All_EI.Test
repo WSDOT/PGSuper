@@ -7,7 +7,6 @@ The Specification Check was Not Successful
 Tension stress check failed for Service III Limit State in Interval 20 Open to Traffic
 Splitting check failed.
 Lifting checks failed
-Hauling checks failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
@@ -18,7 +17,6 @@ Hauling checks failed
 The Specification Check was Not Successful
 Tension stress check failed for Service III Limit State in Interval 20 Open to Traffic
 Splitting check failed.
-Lifting checks failed
 Hauling checks failed
 
 
@@ -30,6 +28,5 @@ Hauling checks failed
 The Specification Check was Not Successful
 Splitting check failed.
 Lifting checks failed
-Hauling checks failed
 
 

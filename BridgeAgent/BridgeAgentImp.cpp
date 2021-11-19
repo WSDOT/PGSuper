@@ -27273,7 +27273,19 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
    }
    concrete.SetLambda(GetSegmentLambda(segmentKey));
    concrete.SetDensity(GetSegmentStrengthDensity(segmentKey));
-   concrete.SetDensityForWeight(GetSegmentWeightDensity(segmentKey,intervalIdx));
+
+   // self-weight is based on gross cross-sectional area. the stability engine computes moment using a linear force of density*area
+   // when transformed section properties are used, we would get density*(transformed area) so we need to scale the desnsity
+   // so it is equivalent to density*(gross area)
+   PoiList vPoi;
+   GetPointsOfInterest(segmentKey, POI_RELEASED_SEGMENT | POI_5L, &vPoi);
+   ATLASSERT(vPoi.size() == 1);
+   pgsPointOfInterest poi(vPoi.front());
+   Float64 A = GetAg(intervalIdx, poi);
+   Float64 Agross = GetAg(pgsTypes::sptGross, releaseIntervalIdx, poi);
+   Float64 density = GetSegmentWeightDensity(segmentKey, intervalIdx);
+   density *= (Agross / A);
+   concrete.SetDensityForWeight(density);
 
    GET_IFACE(ISegmentLiftingSpecCriteria,pLiftingCriteria);
    if ( bUseConfig && !handlingConfig.bIgnoreGirderConfig )
@@ -27319,7 +27331,7 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
 
 
    // get camber... measured from end of segment as if it was supported at it's ends
-   PoiList vPoi;
+   vPoi.clear();
    GetPointsOfInterest(segmentKey, POI_START_FACE, &vPoi);
    const pgsPointOfInterest& poiEnd(vPoi.front());
    ATLASSERT(vPoi.size() == 1);
@@ -27554,7 +27566,19 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
    }
    concrete.SetLambda(GetSegmentLambda(segmentKey));
    concrete.SetDensity(GetSegmentStrengthDensity(segmentKey));
-   concrete.SetDensityForWeight(GetSegmentWeightDensity(segmentKey,intervalIdx));
+
+   // self-weight is based on gross cross-sectional area. the stability engine computes moment using a linear force of density*area
+   // when transformed section properties are used, we would get density*(transformed area) so we need to scale the desnsity
+   // so it is equivalent to density*(gross area)
+   PoiList vPoi;
+   GetPointsOfInterest(segmentKey, POI_RELEASED_SEGMENT | POI_5L, &vPoi);
+   ATLASSERT(vPoi.size() == 1);
+   pgsPointOfInterest poi(vPoi.front());
+   Float64 A = GetAg(intervalIdx, poi);
+   Float64 Agross = GetAg(pgsTypes::sptGross, releaseIntervalIdx, poi);
+   Float64 density = GetSegmentWeightDensity(segmentKey, intervalIdx);
+   density *= (Agross / A);
+   concrete.SetDensityForWeight(density);
 
    GET_IFACE(ISegmentHaulingSpecCriteria,pHaulingCriteria);
    if ( bUseConfig && !handlingConfig.bIgnoreGirderConfig )
@@ -27577,7 +27601,7 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
    pProblem->SetImpact(impactUp,impactDown);
    pProblem->SetImpactUsage((WBFL::Stability::HaulingImpact)pHaulingCriteria->GetHaulingImpactUsage());
 
-   PoiList vPoi;
+   vPoi.clear();
    GetPointsOfInterest(segmentKey, POI_START_FACE, &vPoi);
    ATLASSERT(vPoi.size() == 1);
    const pgsPointOfInterest& poiStart(vPoi.front());
