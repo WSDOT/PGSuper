@@ -4830,7 +4830,7 @@ std::vector<pgsTypes::ProductForceType> CTimeStepLossEngineer::GetApplicableProd
    bool bIsInClosure = m_pPoi->IsInClosureJoint(poi,&closureKey);
    IntervalIndexType compositeClosureIntervalIdx = m_pIntervals->GetCompositeClosureJointInterval(segmentKey);
 
-   // Force effects due to girder self weight occur at prestress release, storage, and erection of this interval,
+   // Force effects due to girder self weight occur at prestress release, storage, lifting, hauling, and erection,
    // erection of any other segment that is erected after this interval, and
    // any interval when a temporary support is removed after the segment is erected
 
@@ -4866,6 +4866,8 @@ std::vector<pgsTypes::ProductForceType> CTimeStepLossEngineer::GetApplicableProd
       // for storage and erection
       IntervalIndexType releasePrestressIntervalIdx = m_pIntervals->GetPrestressReleaseInterval(segmentKey);
       IntervalIndexType storageIntervalIdx = m_pIntervals->GetStorageInterval(segmentKey);
+      IntervalIndexType liftingIntervalIdx = m_pIntervals->GetLiftSegmentInterval(segmentKey);
+      IntervalIndexType haulingIntervalIdx = m_pIntervals->GetHaulSegmentInterval(segmentKey);
       IntervalIndexType erectSegmentIntervalIdx = m_pIntervals->GetErectSegmentInterval(segmentKey);
 
       // girder load comes into play if there are segments erected after this segment is erected
@@ -4882,7 +4884,9 @@ std::vector<pgsTypes::ProductForceType> CTimeStepLossEngineer::GetApplicableProd
          [&erectSegmentIntervalIdx](const auto& intervalIdx) {return erectSegmentIntervalIdx <= intervalIdx;}));
 
       if ( intervalIdx == releasePrestressIntervalIdx || // load first introduced
+           intervalIdx == liftingIntervalIdx || // supports move
            intervalIdx == storageIntervalIdx || // supports move
+           intervalIdx == haulingIntervalIdx || // supports move
            intervalIdx == erectSegmentIntervalIdx || // supports move
            bDoesDeadLoadOfAnotherSegmentEffectThisSegment || // this segment gets loaded from a construction event
            (bIsTempSupportRemovalInterval && bTSRemovedAfterSegmentErection) ) // this segments gets loadede from a construction event

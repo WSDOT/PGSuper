@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 32.83    7   5.00                     1     1    WF100    *     64  0.6  270  42.21  18.09   9.75   9.75                                              20  96.0  7.0  7.500 10.100   5.212    -5.716    21735   0.478  0.596  -0.501 -2.503 -0.459 -0.668 -3.630 277.33  566.45   21.00   18.33   18.33    2.09    2.75    2.71    3.63    0.56 
+ 32.83    7   5.00                     1     1    WF100    *     64  0.6  270  42.21  18.09   9.75   9.75                                              20  96.0  7.0  7.500 10.100   5.356    -5.966    21735   0.478  0.596   4.076 -2.503 -0.459 -0.668 -3.630 277.33  661.71   21.00   18.33   18.33    2.09    2.76    2.71    3.64    0.17 
 
 
 The Specification Check was Not Successful
@@ -11,21 +11,21 @@ Lifting checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 32.83    7   5.00                     1     2    WF100    *     64  0.6  270  42.44  18.13   9.75   9.75                                              20  96.0  7.0  7.497 10.100   5.339    -5.576    21959   0.478  0.596  -0.061 -2.666 -0.463 -0.673 -3.801 252.11  425.68   21.00   18.33   18.33    2.06    2.75    2.67    3.62    0.97 
+ 32.83    7   5.00                     1     2    WF100    *     64  0.6  270  42.44  18.13   9.75   9.75                                              20  96.0  7.0  7.497 10.100   5.443    -5.758    21959   0.478  0.596   3.264 -2.666 -0.463 -0.673 -3.801 252.11  495.29   21.00   18.33   18.33    2.06    2.76    2.67    3.63    0.68 
 
 
 The Specification Check was Not Successful
 Tension stress check failed for Service III Limit State in Interval 20 Open to Traffic
 Splitting check failed.
-Hauling checks failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 32.83    7   5.00                     1     4    WF100    *     64  0.6  270  42.21  18.09   9.75   9.75                                              20  96.0  7.0  7.500 10.100   4.969    -5.410    20461   0.478  0.596  -0.658 -2.640 -0.459  0.000 -3.099 277.33  585.04   21.00   18.33   18.33    2.28    2.93    2.96    3.86    0.83 
+ 32.83    7   5.00                     1     4    WF100    *     64  0.6  270  42.21  18.09   9.75   9.75                                              20  96.0  7.0  7.500 10.100   5.112    -5.661    20461   0.478  0.596   3.919 -2.640 -0.459  0.000 -3.099 277.33  680.30   21.00   18.33   18.33    2.28    2.94    2.96    3.87    0.44 
 
 
 The Specification Check was Not Successful
+Tension stress check failed for Service III Limit State in Interval 20 Open to Traffic
 Splitting check failed.
 Lifting checks failed
 

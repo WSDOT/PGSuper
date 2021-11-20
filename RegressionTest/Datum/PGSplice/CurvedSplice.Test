@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 70.00    7  10.50       26122         1     1     60      *     16  0.6  270  44.72  43.08   9.50   9.50                                              5.997  8.128   1.936    -3.728    18730   0.992  0.992  -0.686 -1.515  0.000 -0.081 -1.596  11.63  144.97    1.50    1.50    1.50    0.37    0.06    0.48    0.08    0.00 
+ 70.00    7  10.50       26122         1     1     60      *     16  0.6  270  44.72  43.08   9.50   9.50                                              5.997  8.128   1.975    -3.779    18734   0.992  0.992  -0.669 -1.515  0.000 -0.081 -1.596  11.63  144.49    1.50    1.50    1.50    0.34    0.06    0.43    0.08    0.00 
 
 
 The Specification Check was Not Successful
@@ -72,7 +72,7 @@ Duct Size check failed for Duct 3.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 70.00    7  10.50       26122         1     2     60      *     16  0.6  270  44.72  43.49   9.50   9.50                                              5.997  8.128   1.883    -3.643    18684   0.775  0.985  -0.724 -1.835  0.000 -0.084 -1.918  11.30  137.00    1.50    1.50    1.50    1.06    0.35    1.38    0.61    0.00 
+ 70.00    7  10.50       26122         1     2     60      *     16  0.6  270  44.72  43.49   9.50   9.50                                              5.997  8.128   1.922    -3.695    18689   0.775  0.985  -0.706 -1.835  0.000 -0.084 -1.918  11.30  136.50    1.50    1.50    1.50    0.98    0.36    1.28    0.62    0.00 
 
 
 The Specification Check was Not Successful
@@ -90,6 +90,7 @@ Tension stress check failed for Service I Limit State in Interval 2 Prestress Re
 Tension stress check failed for Service I Limit State in Interval 10 Erect Segments for Segment 2
 Tension stress check failed for Service I Limit State in Interval 11 Apply User Defined Loads for Segment 2
 Tension stress check failed for Service I Limit State in Interval 15 Cast closure joint and Cast Deck for Segment 2
+Tension stress check failed for Service III Limit State in Interval 26 Time Step for Deck
 Tension stress check failed for Service I Limit State in Interval 4 Place segments into storage for Segment 3
 Tension stress check failed for Service I Limit State in Interval 10 Erect Segments for Segment 3
 Tension stress check failed for Service I Limit State in Interval 11 Apply User Defined Loads for Segment 3
