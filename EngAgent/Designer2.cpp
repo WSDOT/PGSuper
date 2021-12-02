@@ -4917,6 +4917,10 @@ void pgsDesigner2::CheckSplittingZone(const CSegmentKey& segmentKey,const GDRCON
 
    Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
 
+   // splitting direction must be set prior to getting Avs so we get the right value
+   pgsTypes::SplittingDirection splittingDirection = pGdr->GetSplittingDirection(segmentKey);
+   pArtifact->SetSplittingDirection(splittingDirection);
+
    std::array<Float64,2> Avs;
    if ( pConfig == nullptr )
    {
@@ -4932,9 +4936,6 @@ void pgsDesigner2::CheckSplittingZone(const CSegmentKey& segmentKey,const GDRCON
       GetSplittingAvFromStirrupConfig(pConfig->StirrupConfig, barType, barGrade, segment_length,
                                                   start_zl, &Avs[pgsTypes::metStart], end_zl, &Avs[pgsTypes::metEnd]);
    }
-
-   pgsTypes::SplittingDirection splittingDirection = pGdr->GetSplittingDirection(segmentKey);
-   pArtifact->SetSplittingDirection(splittingDirection);
 
    bool bUHPC = pMat->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC ? true : false;
    Float64 f_fc = (bUHPC ? pTransverseReinforcementSpec->GetUHPCStrengthAtFirstCrack() : 0);

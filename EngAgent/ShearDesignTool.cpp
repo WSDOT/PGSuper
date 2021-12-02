@@ -562,14 +562,15 @@ bool pgsShearDesignTool::GetIsCompositeDeck() const
 
 bool pgsShearDesignTool::GetDoPrimaryBarsProvideSplittingCapacity() const
 {
-   if(m_DoBarsProvideSplittingCapacity)
-   {
-      const pgsSplittingZoneArtifact* pSplittingArtifact = m_StirrupCheckArtifact.GetSplittingZoneArtifact();
-      if(pSplittingArtifact->GetSplittingDirection()==pgsTypes::sdVertical) // primary are only vertical
-         return true;
-   }
+    if (m_DoBarsProvideSplittingCapacity)
+    {
+        GET_IFACE(IGirder, pGirder);
+        auto splittingDirection = pGirder->GetSplittingDirection(m_SegmentKey);
+        if (splittingDirection == pgsTypes::sdVertical) // primary bars are vertical
+            return true;
+    }
 
-   return false;
+    return false;
 }
 
 bool pgsShearDesignTool::GetBarsActAsConfinement() const
