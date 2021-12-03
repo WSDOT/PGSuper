@@ -1830,10 +1830,6 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
    resultsFile<<bridgeId<<", "<<pid<<", 122036, "<<-1<<", "<<(int)(sStrand->Passed()?1:0)<<", 15, "<<SEGMENT(segmentKey)<<std::endl;
 
    // next poi-related values
-   const pgsStirrupCheckAtPoisArtifact* psArtifact = 0;
-   const pgsLongReinfShearArtifact* pArtifact      = 0;
-   const pgsStirrupDetailArtifact* pSDArtifact     = 0;
-   const pgsHorizontalShearArtifact* pAHsrtifact   = 0;
 
    // This complex method of getting POIs is to match the POIs used in the regression test
    // from previous version of PGSuper (Versions 2.x). By making the vector of POI match
@@ -1851,9 +1847,19 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
    vPoi.insert(vPoi.end(),vPoi3.begin(),vPoi3.end());
    pIPoi->SortPoiList(&vPoi);
 
+   const pgsStirrupCheckAtPoisArtifact* psArtifact = nullptr;
+   const pgsLongReinfShearArtifact* pArtifact = nullptr;
+   const pgsStirrupDetailArtifact* pSDArtifact = nullptr;
+   const pgsHorizontalShearArtifact* pAHsrtifact = nullptr;
+
    for(const pgsPointOfInterest& poi : vPoi)
    {
-      Float64 loc = ::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter);
+       psArtifact = nullptr;
+       pArtifact = nullptr;
+       pSDArtifact = nullptr;
+       pAHsrtifact = nullptr;
+
+       Float64 loc = ::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter);
 
       // write to poi file
       poiFile<<" 1, "<< bridgeId<< ", 3, 1, "<<loc<<", 2, -1, -1, -1,  0,  0,  0, -1,  0,  0,  0,  0,  0,  0,  0"<<std::endl;
