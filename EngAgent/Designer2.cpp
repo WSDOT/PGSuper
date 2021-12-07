@@ -2334,7 +2334,7 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	            fAllowable[TOP][WITHOUT_REBAR] = artifact.GetCapacity(topStressLocation);
 	            fAllowable[BOT][WITHOUT_REBAR] = artifact.GetCapacity(botStressLocation);
 	            fAllowable[TOP][WITH_REBAR]    = pAllowable->GetAllowableTensionStress(poi,topStressLocation,task,true/*with rebar*/,bIsInPTZ[TOP]);
-	            fAllowable[BOT][WITH_REBAR]    = pAllowable->GetAllowableTensionStress(poi,topStressLocation,task,true/*with rebar*/,bIsInPTZ[BOT]);
+	            fAllowable[BOT][WITH_REBAR]    = pAllowable->GetAllowableTensionStress(poi,botStressLocation,task,true/*with rebar*/,bIsInPTZ[BOT]);
 	
 	            Float64 fTopAllowable = fAllowable[TOP][WITHOUT_REBAR];
 	            Float64 fBotAllowable = fAllowable[BOT][WITHOUT_REBAR];
