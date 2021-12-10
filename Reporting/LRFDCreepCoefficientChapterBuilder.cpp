@@ -158,6 +158,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReport
    strHeading.emplace_back(ICamber::cpReleaseToDiaphragm, _T("Prestress release until girder erection"));
    strHeading.emplace_back(ICamber::cpDiaphragmToDeck, _T("Girder erection until deck casting"));
    strHeading.emplace_back(ICamber::cpReleaseToDeck, _T("Prestress release until deck casting"));
+   strHeading.emplace_back(ICamber::cpDeckToFinal, _T("Deck casting to final"));
    strHeading.emplace_back(ICamber::cpReleaseToFinal, _T("Prestress release to final"));
 
    bool bSI = IS_SI_UNITS(pDisplayUnits);
@@ -330,6 +331,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(CReportSpecificatio
    strHeading.emplace_back(ICamber::cpReleaseToDiaphragm, _T("Prestress release until girder erection"));
    strHeading.emplace_back(ICamber::cpDiaphragmToDeck, _T("Girder erection until deck casting"));
    strHeading.emplace_back(ICamber::cpReleaseToDeck, _T("Prestress release until deck casting"));
+   strHeading.emplace_back(ICamber::cpDeckToFinal, _T("Deck casting to final"));
    strHeading.emplace_back(ICamber::cpReleaseToFinal, _T("Prestress release to final"));
 
    for ( Int16 i = CREEP_MINTIME; i <= CREEP_MAXTIME; i++ )
