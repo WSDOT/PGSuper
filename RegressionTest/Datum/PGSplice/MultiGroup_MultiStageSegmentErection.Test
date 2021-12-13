@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.58    4  10.50                     1     1    U66PT    *      0  0.6  270   0.00   0.00   9.00   9.00                                              5.000  7.628   2.102    -2.108    10479   1.006  1.006  -7.307 -0.664  0.000 -0.066 -0.729   0.00    0.00    0.00    0.00    0.00    0.75    0.10    0.97    0.19    0.00 
+ 40.58    4  10.50                     1     1    U66PT    *      0  0.6  270   0.00   0.00   9.00   9.00                                              5.000  7.628   2.049    -1.799    10027   1.006  1.006  -6.836 -0.664  0.000 -0.066 -0.729   0.00    0.00    0.00    0.00    0.00    0.86    0.04    1.11    0.10    0.00 
 
 
 The Specification Check was Not Successful
@@ -26,6 +26,7 @@ Tension stress check failed for Service I Limit State in Interval 28 Install Rai
 Tension stress check failed for Service III Limit State in Interval 35 Load Rating for Deck
 Principal tension stress in webs stress check failed for Segment 2
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Stirrup detailing checks failed for the Strength I Limit State.
@@ -40,7 +41,7 @@ Slab Offset ("A" Dimension) check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.58    4  10.50                     1     2    U66PT    *      0  0.6  270   0.00   0.00   9.00   9.00                                              5.000  7.628   2.139    -2.140    10460   1.048  1.048  -7.327 -0.655  0.000 -0.066 -0.722   0.00    0.00    0.00    0.00    0.00    0.72    0.09    0.94    0.18    0.00 
+ 40.58    4  10.50                     1     2    U66PT    *      0  0.6  270   0.00   0.00   9.00   9.00                                              5.000  7.628   2.079    -1.831    10347   1.048  1.048  -6.855 -0.655  0.000 -0.066 -0.722   0.00    0.00    0.00    0.00    0.00    0.82    0.04    1.07    0.10    0.00 
 
 
 The Specification Check was Not Successful
@@ -66,6 +67,7 @@ Tension stress check failed for Service I Limit State in Interval 28 Install Rai
 Tension stress check failed for Service III Limit State in Interval 35 Load Rating for Deck
 Principal tension stress in webs stress check failed for Segment 2
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Stirrup detailing checks failed for the Strength I Limit State.

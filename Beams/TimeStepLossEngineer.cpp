@@ -1185,7 +1185,7 @@ void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CGirderKey& girderKey,L
                }
                else
                {
-                  dfpA[pgsTypes::metEnd] = ::LinInterp(anchorSetDetails.Lset[pgsTypes::metEnd] - (Xge-frDetails.X),anchorSetDetails.dfpS[pgsTypes::metEnd],anchorSetDetails.dfpAT[pgsTypes::metEnd],anchorSetDetails.Lset[pgsTypes::metEnd]);
+                  dfpA[pgsTypes::metEnd] = ::LinInterp((Xge-frDetails.X),anchorSetDetails.dfpAT[pgsTypes::metEnd],anchorSetDetails.dfpS[pgsTypes::metEnd],anchorSetDetails.Lset[pgsTypes::metEnd]);
                }
             }
 
@@ -1391,7 +1391,7 @@ void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CPrecastSegmentData* pS
                }
                else
                {
-                  dfpA[pgsTypes::metEnd] = ::LinInterp(anchorSetDetails.Lset[pgsTypes::metEnd] - frDetails.X, anchorSetDetails.dfpS[pgsTypes::metEnd], anchorSetDetails.dfpAT[pgsTypes::metEnd], anchorSetDetails.Lset[pgsTypes::metEnd]);
+                  dfpA[pgsTypes::metEnd] = ::LinInterp((Ls-frDetails.X), anchorSetDetails.dfpAT[pgsTypes::metEnd], anchorSetDetails.dfpS[pgsTypes::metEnd], anchorSetDetails.Lset[pgsTypes::metEnd]);
                }
             }
 

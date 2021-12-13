@@ -1,11 +1,12 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 109.0    7  15.83 H-3034 variable     1     1     48"D    *     21  0.6  270  18.92  15.63  10.50  10.50                                              5.023  5.349   2.946    -3.959    11829   1.495  1.495   0.346 -0.503 -0.055 -0.038 -0.596  26.00  228.40   10.00   15.00   15.00    4.36    0.69    5.65    1.04    0.00 
+ 109.0    7  15.83 H-3034 variable     1     1     48"D    *     21  0.6  270  18.92  15.63  10.50  10.50                                              5.023  5.349   3.129    -3.680    11605   1.495  1.495   0.476 -0.503 -0.055 -0.038 -0.596  26.00  198.95   10.00   15.00   15.00    4.38    0.68    5.67    1.02    0.00 
 
 
 The Specification Check was Not Successful
 Tendon 1 is overstressed
 Tendon 2 is overstressed
+Tension stress check failed for Service I Limit State in Interval 3 Prestress Release for Segment 1
 Tension stress check failed for Service I Limit State in Interval 5 Place segments into storage for Segment 1
 Compression stress check failed for Service I Limit State in Interval 20 Stress Tendons for Segment 1
 Compression stress check failed for Service I Limit State in Interval 22 Cast Deck for Segment 1
@@ -19,6 +20,7 @@ Tension stress check failed for Service III Limit State in Interval 33 Time Step
 Tension stress check failed for Service I Limit State in Interval 3 Prestress Release for Segment 2
 Tension stress check failed for Service I Limit State in Interval 5 Place segments into storage for Segment 2
 Compression stress check failed for Service I Limit State in Interval 22 Cast Deck for Segment 2
+Compression stress check failed for Service I Limit State in Interval 28 Install Railing System for Segment 2
 Compression stress check failed for Service I Limit State in Interval 32 Install Overlay for Segment 2
 Compression stress check failed for Service I Limit State in Interval 33 Time Step for Segment 2
 Compression stress check failed for Service I Limit State in Interval 33 Time Step for Segment 2
@@ -30,6 +32,7 @@ Ultimate moment capacity (negative moment) check failed for Strength I Limit Sta
 Ultimate moment capacity (negative moment) check failed for Strength II Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength II Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.7.4].
 Horizontal Interface Shears/Length check failed for Strength II Limit State [5.7.4].
 Lifting checks failed for Segment 1.
@@ -42,12 +45,13 @@ Duct Size check failed for Duct 2.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 109.0    7  15.83 H-3034 variable     1     2     48"D    *     21  0.6  270  18.96  15.67  10.50  10.50                                              5.023  5.349   2.923    -3.881    11295   1.368  1.368   0.391 -0.425 -0.056 -0.038 -0.519  26.09  230.71   10.00   15.00   15.00    4.76    0.81    6.17    1.20    0.00 
+ 109.0    7  15.83 H-3034 variable     1     2     48"D    *     21  0.6  270  18.96  15.67  10.50  10.50                                              5.023  5.349   3.104    -3.605    11065   1.368  1.368   0.507 -0.425 -0.056 -0.038 -0.519  26.09  200.60   10.00   15.00   15.00    4.77    0.79    6.19    1.17    0.00 
 
 
 The Specification Check was Not Successful
 Tendon 1 is overstressed
 Tendon 2 is overstressed
+Tension stress check failed for Service I Limit State in Interval 3 Prestress Release for Segment 1
 Tension stress check failed for Service I Limit State in Interval 5 Place segments into storage for Segment 1
 Compression stress check failed for Service I Limit State in Interval 20 Stress Tendons for Segment 1
 Compression stress check failed for Service I Limit State in Interval 22 Cast Deck for Segment 1
@@ -61,6 +65,7 @@ Tension stress check failed for Service III Limit State in Interval 33 Time Step
 Tension stress check failed for Service I Limit State in Interval 3 Prestress Release for Segment 2
 Tension stress check failed for Service I Limit State in Interval 5 Place segments into storage for Segment 2
 Compression stress check failed for Service I Limit State in Interval 22 Cast Deck for Segment 2
+Compression stress check failed for Service I Limit State in Interval 28 Install Railing System for Segment 2
 Compression stress check failed for Service I Limit State in Interval 32 Install Overlay for Segment 2
 Compression stress check failed for Service I Limit State in Interval 33 Time Step for Segment 2
 Compression stress check failed for Service I Limit State in Interval 33 Time Step for Segment 2
@@ -69,7 +74,9 @@ Compression stress check failed for Fatigue I Limit State in Interval 33 Time St
 Tension stress check failed for Service I Limit State in Interval 28 Install Railing System for Deck
 Tension stress check failed for Service III Limit State in Interval 33 Time Step for Deck
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.7.4].
 Horizontal Interface Shears/Length check failed for Strength II Limit State [5.7.4].
 Lifting checks failed for Segment 1.
