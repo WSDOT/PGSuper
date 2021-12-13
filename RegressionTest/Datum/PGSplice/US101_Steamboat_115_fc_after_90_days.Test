@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 32.00    5   7.00 US101 STEAMBOAT     1     1    0.5in    *      6  0.6  270  43.14  44.17  12.00  10.10                                              5.000  9.750   9.750     9.750    12583   0.602  0.743   0.080 -0.592 -0.183 -0.178 -0.953   5.07   44.06    3.00    3.00    3.00    1.90    2.66    2.46    3.49    2.20 
+ 32.00    5   7.00 US101 STEAMBOAT     1     1    0.5in    *      6  0.6  270  43.14  44.17  12.00  10.10                                              5.000  9.750   9.750     9.750    12485   0.602  0.743   0.082 -0.592 -0.183 -0.178 -0.953   5.07   48.70    3.00    3.00    3.00    1.85    2.67    2.40    3.49    2.12 
 
 
 The Specification Check was Not Successful
@@ -8,16 +8,19 @@ Tendon 1 is overstressed
 Tendon 2 is overstressed
 Tendon 3 is overstressed
 Tendon 4 is overstressed
+Tension stress check failed for Service III Limit State in Interval 41 Time Step for Segment 1
 Tension stress check failed for Service I Limit State in Interval 19 Apply User Defined Loads for Deck
+Tension stress check failed for Service III Limit State in Interval 41 Time Step for Deck
+Tension stress check failed for Service III Limit State in Interval 41 Time Step for Segment 2
 Tension stress check failed for Service I Limit State in Interval 19 Apply User Defined Loads for Deck
+Tension stress check failed for Service III Limit State in Interval 41 Time Step for Deck
 Lifting checks failed for Segment 2.
 Hauling checks failed for Segment 2.
-Slab Offset ("A" Dimension) check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 32.00    5   7.00 US101 STEAMBOAT     1     2    0.5in    *      6  0.6  270  43.14  44.17  12.00  10.10                                              5.000  9.750   9.750     9.750    12853   0.602  0.743   0.080 -0.644 -0.179 -0.174 -0.997   5.07   43.76    3.00    3.00    3.00    1.88    2.60    2.43    3.41    2.12 
+ 32.00    5   7.00 US101 STEAMBOAT     1     2    0.5in    *      6  0.6  270  43.14  44.17  12.00  10.10                                              5.000  9.750   9.750     9.750    12750   0.602  0.743   0.082 -0.644 -0.179 -0.174 -0.997   5.07   48.25    3.00    3.00    3.00    1.84    2.61    2.39    3.42    2.03 
 
 
 The Specification Check was Not Successful
@@ -25,10 +28,13 @@ Tendon 1 is overstressed
 Tendon 2 is overstressed
 Tendon 3 is overstressed
 Tendon 4 is overstressed
+Tension stress check failed for Service III Limit State in Interval 41 Time Step for Segment 1
 Tension stress check failed for Service I Limit State in Interval 19 Apply User Defined Loads for Deck
+Tension stress check failed for Service III Limit State in Interval 41 Time Step for Deck
+Tension stress check failed for Service III Limit State in Interval 41 Time Step for Segment 2
 Tension stress check failed for Service I Limit State in Interval 19 Apply User Defined Loads for Deck
+Tension stress check failed for Service III Limit State in Interval 41 Time Step for Deck
 Lifting checks failed for Segment 2.
 Hauling checks failed for Segment 2.
-Slab Offset ("A" Dimension) check failed
 
 

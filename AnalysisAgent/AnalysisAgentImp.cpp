@@ -6342,9 +6342,8 @@ CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(const CSeg
    GET_IFACE(IBridge,pBridge);
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
 
-   // if fc < 0 use current fc girder
-   LoadingEvent le = GetLoadingEvent(creepPeriod);
-   Float64 fc = GetConcreteStrengthAtTimeOfLoading(segmentKey,le,pConfig);
+   // this is for the kf factor so the loading interval is always release (we want f'ci)
+   Float64 fc = GetConcreteStrengthAtTimeOfLoading(segmentKey,leRelease,pConfig);
 
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);

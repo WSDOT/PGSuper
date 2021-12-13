@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 26.00    5   6.48   Cascade River     1     1    WF60P    *      6  1/2  270  -0.30  -0.93   5.25   5.25                                              3.077  6.312   6.312     6.312     4335   0.555  0.706   2.107 -0.964  0.000 -0.139 -1.103   3.97   56.47    0.00    0.00    0.00    1.23    0.41    1.60    0.69    1.02 
+ 26.00    5   6.48   Cascade River     1     1    WF60P    *      6  1/2  270  -0.30  -0.93   5.25   5.25                                              3.077  6.312   6.312     6.312     4335   0.555  0.706   2.234 -0.964  0.000 -0.139 -1.103   3.97   68.72    0.00    0.00    0.00    1.23    0.36    1.59    0.62    0.66 
 
 
 The Specification Check was Not Successful
@@ -8,8 +8,10 @@ Compression stress check failed for Service I Limit State in Interval 18 Stress 
 Compression stress check failed for Service I Limit State in Interval 21 Cast Deck for Segment 1
 Compression stress check failed for Service I Limit State in Interval 23 Composite deck, Apply User Defined Loads, Install Railing System for Segment 1
 Tension stress check failed for Service III Limit State in Interval 30 Load Rating for Segment 1
+Principal tension stress in webs stress check failed for Segment 1
 Compression stress check failed for Service I Limit State in Interval 18 Stress Tendons for Segment 2
 Tension stress check failed for Service III Limit State in Interval 30 Load Rating for Segment 2
+Principal tension stress in webs stress check failed for Segment 2
 Compression stress check failed for Service I Limit State in Interval 21 Cast Deck for Segment 3
 Compression stress check failed for Service I Limit State in Interval 23 Composite deck, Apply User Defined Loads, Install Railing System for Segment 3
 Ultimate vertical shear capacity check failed for Strength I Limit State
@@ -29,7 +31,7 @@ Duct Size check failed for Duct 3.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 26.00    5   6.48   Cascade River     1     2    WF60P    *      6  1/2  270  -0.30  -0.93   5.25   5.25                                              3.077  6.312   6.312     6.312     4515   0.555  0.706   1.944 -1.366  0.000 -0.131 -1.497   3.97   56.35    0.00    0.00    0.00    1.19    0.36    1.54    0.62    0.91 
+ 26.00    5   6.48   Cascade River     1     2    WF60P    *      6  1/2  270  -0.30  -0.93   5.25   5.25                                              3.077  6.312   6.312     6.312     4515   0.555  0.706   2.071 -1.366  0.000 -0.131 -1.497   3.97   68.48    0.00    0.00    0.00    1.19    0.34    1.54    0.58    0.57 
 
 
 The Specification Check was Not Successful
@@ -37,8 +39,10 @@ Compression stress check failed for Service I Limit State in Interval 18 Stress 
 Compression stress check failed for Service I Limit State in Interval 21 Cast Deck for Segment 1
 Compression stress check failed for Service I Limit State in Interval 23 Composite deck, Apply User Defined Loads, Install Railing System for Segment 1
 Tension stress check failed for Service III Limit State in Interval 30 Load Rating for Segment 1
+Principal tension stress in webs stress check failed for Segment 1
 Compression stress check failed for Service I Limit State in Interval 18 Stress Tendons for Segment 2
 Tension stress check failed for Service III Limit State in Interval 30 Load Rating for Segment 2
+Principal tension stress in webs stress check failed for Segment 2
 Compression stress check failed for Service I Limit State in Interval 21 Cast Deck for Segment 3
 Compression stress check failed for Service I Limit State in Interval 23 Composite deck, Apply User Defined Loads, Install Railing System for Segment 3
 Ultimate vertical shear capacity check failed for Strength I Limit State
