@@ -457,6 +457,8 @@ void CSegmentTendonGrid::OnCalcPjack(ROWCOL nRow)
       // Set Pjack to the max value
       UpdateMaxPjack(nRow);
    }
+
+   ResizeColWidthsToFit(CGXRange(0, 0, GetRowCount(), GetColCount()));
 }
 
 CSegmentDuctData CSegmentTendonGrid::GetDuctRow(ROWCOL nRow)
@@ -506,10 +508,10 @@ void CSegmentTendonGrid::AppendRow(const CSegmentDuctData& duct)
    SetValueRange(CGXRange(nRow, nPjackCheckCol), (LONG)!duct.bPjCalc);
 
    CString strValue;
-   strValue.Format(_T("%s"), ::FormatDimension(duct.Pj, pDisplayUnits->GetForcePerLengthUnit(), false));
+   strValue.Format(_T("%s"), ::FormatDimension(duct.Pj, pDisplayUnits->GetGeneralForceUnit(), false));
    SetValueRange(CGXRange(nRow, nPjackCol), strValue);
 
-   strValue.Format(_T("%s"), ::FormatDimension(duct.LastUserPj, pDisplayUnits->GetForcePerLengthUnit(), false));
+   strValue.Format(_T("%s"), ::FormatDimension(duct.LastUserPj, pDisplayUnits->GetGeneralForceUnit(), false));
    SetValueRange(CGXRange(nRow, nPjackUserCol), strValue);
 
    SetValueRange(CGXRange(nRow, nJackEndCol), (LONG)duct.JackingEnd);
@@ -526,10 +528,9 @@ void CSegmentTendonGrid::AppendRow(const CSegmentDuctData& duct)
    SetValueRange(CGXRange(nRow, nRightEndYCol), strValue);
    SetValueRange(CGXRange(nRow, nRightEndDatumCol), (LONG)duct.DuctPoint[CSegmentDuctData::Right].second);
 
-   ResizeColWidthsToFit(CGXRange(0,0,GetRowCount(),GetColCount()));
-
    UpdateDuctPoints(nRow);
    UpdateNumStrandsList(nRow);
+   OnCalcPjack(nRow);
 
    GetParam()->EnableUndo(TRUE);
    GetParam()->SetLockReadOnly(TRUE);
