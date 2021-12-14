@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 30.33    7   0.14                     1     1     5B40          10  1/2  270  16.43  16.43                                              4.000  5.000   0.629    -0.505     1086   0.422  0.680   0.100  0.000 -0.005 -0.006 -0.010   8.67   36.43    1.00    1.00    1.00    1.93    4.45    2.50    5.79    3.43 
+ 30.33    7   0.14                     1     1     5B40          10  1/2  270  16.43  16.43                                              4.000  5.000   0.629    -0.505     1086   0.422  0.680   0.225  0.000 -0.005 -0.006 -0.010   8.67   36.43    1.00    1.00    1.00    1.93    4.45    2.50    5.79    3.43 
 
 
 The Specification Check was Not Successful
@@ -9,7 +9,7 @@ Confinement zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 30.33    7   0.14                     1     2     5B40          10  1/2  270  16.43  16.43                                              4.000  5.000   0.623    -0.500     1074   0.414  0.679   0.100  0.000 -0.005 -0.006 -0.010   8.67   36.43    1.00    1.00    1.00    1.97    4.45    2.55    5.80    3.49 
+ 30.33    7   0.14                     1     2     5B40          10  1/2  270  16.43  16.43                                              4.000  5.000   0.623    -0.500     1074   0.414  0.679   0.225  0.000 -0.005 -0.006 -0.010   8.67   36.43    1.00    1.00    1.00    1.97    4.45    2.55    5.80    3.49 
 
 
 The Specification Check was Not Successful
@@ -18,7 +18,7 @@ Confinement zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 30.33    7   0.14                     1     4     4B40           8  1/2  270  16.19  16.19                                              4.000  5.000   0.634    -0.494      895   0.352  0.495   0.089  0.000 -0.006  0.000 -0.006   6.40   28.05    1.00    1.00    1.00    1.86    6.15    2.41    8.05    3.31 
+ 30.33    7   0.14                     1     4     4B40           8  1/2  270  16.19  16.19                                              4.000  5.000   0.634    -0.494      895   0.352  0.495   0.199  0.000 -0.006  0.000 -0.006   6.40   28.05    1.00    1.00    1.00    1.86    6.15    2.41    8.05    3.31 
 
 
 The Specification Check was Not Successful
@@ -27,31 +27,34 @@ Confinement zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 30.33    7   0.14                     2     1    5B40c          48  1/2  270  14.81  14.37  12    2.5   28    12    6   2   2   2   0   4.000  6.500   3.889    -3.166     4738   0.340  0.610   0.804  0.000 -0.339 -0.426 -0.765  85.32  264.02    1.00    1.00    1.00    1.36    1.53    1.77    2.38    1.18 
+ 30.33    7   0.14                     2     1    5B40c          48  1/2  270  14.81  14.37  12    2.5   28    12    6   2   2   2   0   4.000  6.500   3.889    -3.166     4738   0.340  0.610   1.778  0.000 -0.339 -0.426 -0.765  85.32  264.02    1.00    1.00    1.00    1.36    1.53    1.77    2.38    1.18 
 
 
 The Specification Check was Not Successful
 Bursting check failed.
 Confinement zone check failed.
+Finished elevation check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 30.33    7   0.14                     2     2    5B40c          48  1/2  270  14.81  14.37  12    2.5   28    12    6   2   2   2   0   4.000  6.000   3.865    -3.150     4702   0.334  0.609   0.804  0.000 -0.339 -0.426 -0.765  85.32  264.02    1.00    1.00    1.00    1.33    1.50    1.72    2.34    1.18 
+ 30.33    7   0.14                     2     2    5B40c          48  1/2  270  14.81  14.37  12    2.5   28    12    6   2   2   2   0   4.000  6.000   3.865    -3.150     4702   0.334  0.609   1.778  0.000 -0.339 -0.426 -0.765  85.32  264.02    1.00    1.00    1.00    1.33    1.50    1.72    2.34    1.18 
 
 
 The Specification Check was Not Successful
 Bursting check failed.
 Confinement zone check failed.
+Finished elevation check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 30.33    7   0.14                     2     4    4B40c          40  1/2  270  14.57  13.87  14    2.5   22    14   10   2   2   0   0   4.000  6.500   3.897    -3.073     3902   0.286  0.444   0.455  0.000 -0.412  0.000 -0.412  63.24  207.33    1.00    1.00    1.00    1.38    2.66    1.79    3.47    1.25 
+ 30.33    7   0.14                     2     4    4B40c          40  1/2  270  14.57  13.87  14    2.5   22    14   10   2   2   0   0   4.000  6.500   3.897    -3.073     3902   0.286  0.444   0.996  0.000 -0.412  0.000 -0.412  63.24  207.33    1.00    1.00    1.00    1.38    2.66    1.79    3.47    1.25 
 
 
 The Specification Check was Not Successful
 Bursting check failed.
 Confinement zone check failed.
+Finished elevation check failed
 
 

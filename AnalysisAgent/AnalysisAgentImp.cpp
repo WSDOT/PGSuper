@@ -6373,7 +6373,7 @@ CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(const CSeg
             case cpReleaseToDiaphragm:
                cc.SetCuringMethod( pSpecEntry->GetCuringMethod() == CURING_ACCELERATED ? lrfdCreepCoefficient::Accelerated : lrfdCreepCoefficient::Normal );
                cc.SetInitialAge( pSpecEntry->GetXferTime() );
-               cc.SetMaturity( (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration1Min() : pSpecEntry->GetCreepDuration1Max()) - cc.GetAdjustedInitialAge() );
+               cc.SetMaturity( (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration1Min() : pSpecEntry->GetCreepDuration1Max()) );
                break;
 
             case cpReleaseToDeck:

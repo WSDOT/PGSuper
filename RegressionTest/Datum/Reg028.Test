@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 35.75    3  12.50                     1     1    U60G5    *     70  0.6  270  19.26   3.43  10.25  10.25                                              6.000  7.000   6.773    -4.543    12655   0.000  0.000   2.346 -3.925  0.000 -0.277 -4.203 325.56  644.55    3.00    3.00    3.00  177102  217318  229577  281709  855503 
+ 35.75    3  12.50                     1     1    U60G5    *     70  0.6  270  19.26   3.43  10.25  10.25                                              6.000  7.000   6.773    -4.543    12655   0.000  0.000   4.252 -3.925  0.000 -0.277 -4.203 325.56  644.55    3.00    3.00    3.00  177102  217318  229577  281709  855503 
 
 
 The Specification Check was Not Successful
@@ -14,12 +14,13 @@ Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 35.75    3  12.50                     1     2    U60G5          68  0.6  270  19.46   6.75  10.25  10.25                                              6.500  8.300   6.191    -4.134    13011   0.000  0.000   2.412 -2.980  0.000 -0.213 -3.193 310.15  620.03    0.00    0.00    0.00  196067  251816  254161  326428  119387 
+ 35.75    3  12.50                     1     2    U60G5          68  0.6  270  19.46   6.75  10.25  10.25                                              6.500  8.300   6.191    -4.134    13011   0.000  0.000   4.320 -2.980  0.000 -0.213 -3.193 310.15  620.03    0.00    0.00    0.00  196067  251816  254161  326428  119387 
 
 
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 17 Apply User Defined Loads, Open to Traffic
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Slab Offset ("A" Dimension) check failed
 
 
