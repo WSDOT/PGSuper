@@ -5218,7 +5218,7 @@ CShearData2 GirderLibraryEntry::LegacyShearData::ConvertToShearData() const
    if (!m_ShearZoneInfo.empty())
    {
       sdata.ShearZones.clear();
-      Uint32 zn = 1;
+      Uint32 zn = 0;
       for ( ShearZoneInfoVec::const_iterator it = m_ShearZoneInfo.begin(); it!=m_ShearZoneInfo.end(); it++)
       {
          const ShearZoneInfo& rinfo = *it;
@@ -5228,7 +5228,7 @@ CShearData2 GirderLibraryEntry::LegacyShearData::ConvertToShearData() const
          zdata.ZoneLength = rinfo.ZoneLength;
          zdata.nVertBars = rinfo.nVertBars;
 
-         if (zn<=m_LastConfinementZone)
+         if (zn < m_LastConfinementZone)
          {
             zdata.ConfinementBarSize = rinfo.VertBarSize;
          }
