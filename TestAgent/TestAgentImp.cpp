@@ -47,6 +47,7 @@
 #include <psgLib\SpecLibraryEntry.h>
 #include <PsgLib\GirderLibraryEntry.h>
 
+#include <PgsExt\DeckDescription2.h>
 #include <PgsExt\GirderGroupData.h>
 #include <PgsExt\SplicedGirderData.h>
 #include <PgsExt\PrecastSegmentData.h>
@@ -1032,6 +1033,10 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
 
       // write to poi file
       poiFile<<locn<<_T(", ")<< bridgeId<< _T(", 7, 1, ")<<loc<<_T(", 2, -1, -1, -1,  0,  0,  0, -1,  0,  0,  0,  0,  0,  0,  0")<<std::endl;
+
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 29998, ") << loc << _T(", ") << DEFLECTION(::ConvertFromSysUnits(pForce->GetDeflection(releaseIntervalIdx, pgsTypes::pftGirder, poi, bat, rtCumulative, false), unitMeasure::Millimeter)) << _T(", 1, ") << SEGMENT(segmentKey) << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 29999, ") << loc << _T(", ") << DEFLECTION(::ConvertFromSysUnits(pForce->GetDeflection(releaseIntervalIdx, pgsTypes::pftPretension, poi, bat, rtCumulative, false), unitMeasure::Millimeter)) << _T(", 1, ") << SEGMENT(segmentKey) << std::endl;
+
 
       // girder 
       IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
@@ -2416,7 +2421,6 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std
    // get location of first harped strand
    if (0 < nh)
    {
-      GET_IFACE(IBridgeDescription, pIBridgeDesc);
       const auto* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
       auto strandDefType = pSegment->Strands.GetStrandDefinitionType();
       if (IsGridBasedStrandModel(strandDefType)) // GetNextNumStrands and ComputeStrandFill don't work with these strand def types
@@ -2449,6 +2453,24 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std
 
    Float64 days =  ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration1Min(), unitMeasure::Day);
    resultsFile<<bridgeId<<", "<<pid<<", 123021, "<<loc<<", "<< QUIET(::ConvertFromSysUnits(pSpecEntry->GetCreepDuration1Min(), unitMeasure::Day)) <<   ", 101, "<<SEGMENT(segmentKey)<<std::endl;
+
+   CREEPCOEFFICIENTDETAILS details = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpReleaseToFinal, CREEP_MAXTIME);
+   resultsFile << bridgeId << ", " << pid << ", 123060," << QUIET(details.Ct) << SEGMENT(segmentKey) << std::endl;
+
+   details = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpReleaseToDeck, CREEP_MAXTIME);
+   resultsFile << bridgeId << ", " << pid << ", 123061," << QUIET(details.Ct) << SEGMENT(segmentKey) << std::endl;
+
+   details = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpReleaseToDiaphragm, CREEP_MAXTIME);
+   resultsFile << bridgeId << ", " << pid << ", 123062," << QUIET(details.Ct) << SEGMENT(segmentKey) << std::endl;
+
+   if (IsStructuralDeck(pIBridgeDesc->GetDeckDescription()->GetDeckType()))
+   {
+       details = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpDiaphragmToDeck, CREEP_MAXTIME);
+       resultsFile << bridgeId << ", " << pid << ", 123063," << QUIET(details.Ct) << SEGMENT(segmentKey) << std::endl;
+
+       details = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpDeckToFinal, CREEP_MAXTIME);
+       resultsFile << bridgeId << ", " << pid << ", 123064," << QUIET(details.Ct) << SEGMENT(segmentKey) << std::endl;
+   }
 
    // Stirrup data
    GET_IFACE(IStirrupGeometry,pStirrupGeometry);
