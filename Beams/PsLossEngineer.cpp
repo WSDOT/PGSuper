@@ -3144,16 +3144,11 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    *ptd = pSpecEntry->GetCreepDuration2Max();
    *ptf = pSpecEntry->GetTotalCreepDuration();
 
-   *pAslab = pSectProp->GetGrossDeckArea(poi);
 
-   Float64 wTop = 0;
-   FlangeIndexType nFlanges = pGirder->GetTopFlangeCount(segmentKey);
-   for ( FlangeIndexType flangeIdx = 0; flangeIdx < nFlanges; flangeIdx++ )
-   {
-      Float64 wtf = pGirder->GetTopFlangeWidth(poi,flangeIdx);
-      wTop += wtf;
-   }
-   *pPslab = 2*pSectProp->GetTributaryFlangeWidth(poi) - wTop;
+   Float64 V, S;
+   pSectProp->GetDeckVolumeAndSurfaceArea(&V, &S);
+   *pAslab = V;
+   *pPslab = S;
 
 
    // Update the data members of the loss calculation object.  It will take care of the rest

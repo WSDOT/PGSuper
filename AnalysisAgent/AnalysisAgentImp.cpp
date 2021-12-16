@@ -6480,19 +6480,19 @@ CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(const CSeg
                break;
 
             case cpDiaphragmToDeck:
-               cc.SetCuringMethod( lrfdCreepCoefficient2005::Normal );
+               cc.SetCuringMethod(pSpecEntry->GetCuringMethod() == CURING_ACCELERATED ? lrfdCreepCoefficient2005::Accelerated : lrfdCreepCoefficient2005::Normal);
                cc.SetInitialAge( constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration1Min() : pSpecEntry->GetCreepDuration1Max() );
                cc.SetMaturity(  (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max()) - cc.GetAdjustedInitialAge());
                break;
 
             case cpDiaphragmToFinal:
-               cc.SetCuringMethod( lrfdCreepCoefficient2005::Normal );
+               cc.SetCuringMethod(pSpecEntry->GetCuringMethod() == CURING_ACCELERATED ? lrfdCreepCoefficient2005::Accelerated : lrfdCreepCoefficient2005::Normal);
                cc.SetInitialAge( (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration1Min() : pSpecEntry->GetCreepDuration1Max()) );
                cc.SetMaturity( pSpecEntry->GetTotalCreepDuration() - cc.GetAdjustedInitialAge() );
                break;
 
             case cpDeckToFinal:
-               cc.SetCuringMethod( lrfdCreepCoefficient2005::Normal );
+               cc.SetCuringMethod(pSpecEntry->GetCuringMethod() == CURING_ACCELERATED ? lrfdCreepCoefficient2005::Accelerated : lrfdCreepCoefficient2005::Normal);
                cc.SetInitialAge( constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max() );
                cc.SetMaturity( pSpecEntry->GetTotalCreepDuration() - cc.GetAdjustedInitialAge() );
                break;
