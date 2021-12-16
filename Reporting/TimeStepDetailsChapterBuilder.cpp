@@ -2566,7 +2566,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
       } // end of scope
 
       {
-         *pPara << _T("Creep coefficients used to unrestrained creep deformations") << rptNewLine;
+         *pPara << _T("Creep coefficients used to compute unrestrained creep deformations") << rptNewLine;
       
          rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nColumns);
          *pPara << pTable << rptNewLine;
