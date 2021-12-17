@@ -1,18 +1,22 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    7   9.00  Freeport Unit 3    1     1     STX7    *     42  0.6  270  29.50  30.48   9.75   9.75                                              5.998 10.000   2.563    -2.961    12871   0.724  0.884   2.154 -0.530  0.000 -0.033 -0.563 109.22  453.79    2.00   18.00   18.00    2.66    2.58    3.44    3.64    1.84 
+ 61.00    7   9.00  Freeport Unit 3    1     1     STX7    *     42  0.6  270  29.50  30.48   9.75   9.75                                              5.998 10.000   2.439    -3.113    13707   0.724  0.884   2.200 -0.530  0.000 -0.033 -0.563 109.22  476.31    2.00   18.00   18.00    2.48    2.74    3.22    3.86    1.50 
 
 
 The Specification Check was Not Successful
+Tension stress check failed for Service III Limit State in Interval 38 Load Rating for Segment 1
+Tension stress check failed for Service III Limit State in Interval 38 Load Rating for Segment 4
 Slab Offset ("A" Dimension) check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    7   9.00  Freeport Unit 3    1     2     STX7    *     42  0.6  270  29.50  30.48   9.75   9.75                                              5.998 10.000   2.577    -2.976    12949   0.724  0.884   2.133 -0.479  0.000 -0.033 -0.512 109.22  453.07    2.00   18.00   18.00    2.64    2.50    3.42    3.52    1.81 
+ 61.00    7   9.00  Freeport Unit 3    1     2     STX7    *     42  0.6  270  29.50  30.48   9.75   9.75                                              5.998 10.000   2.452    -3.127    13786   0.724  0.884   2.177 -0.479  0.000 -0.033 -0.512 109.22  475.43    2.00   18.00   18.00    2.46    2.65    3.19    3.73    1.47 
 
 
 The Specification Check was Not Successful
+Tension stress check failed for Service III Limit State in Interval 38 Load Rating for Segment 1
+Tension stress check failed for Service III Limit State in Interval 38 Load Rating for Segment 4
 Slab Offset ("A" Dimension) check failed
 
 

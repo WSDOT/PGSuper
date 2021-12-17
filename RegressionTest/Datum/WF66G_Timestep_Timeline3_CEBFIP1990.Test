@@ -1,0 +1,28 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                                             Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 27.83    5   6.00                     1     1    WF66G    *     38  0.6  270  25.44  25.44  11.25  11.25                                                             4.899  5.900   3.131    -5.201     9403   0.554  0.671   8.877 -1.474 -0.204 -0.288 -1.966 213.36  851.76    3.00    5.50    5.50    1.65    2.16    2.14    2.87    0.00 
+
+
+The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tension stress check failed for Service III Limit State in Interval 34 Time Step
+Lifting checks failed
+Hauling checks failed
+Slab Offset ("A" Dimension) check failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                                             Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 27.83    5   6.00                     1     2    WF66G    *     38  0.6  270  25.44  25.44  11.25  11.25                                                             4.899  5.900   3.138    -5.208     9422   0.554  0.671   8.877 -1.488 -0.204 -0.288 -1.980 213.36  850.88    3.00    5.50    5.50    1.65    2.15    2.13    2.86    0.00 
+
+
+The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tension stress check failed for Service III Limit State in Interval 34 Time Step
+Lifting checks failed
+Hauling checks failed
+Slab Offset ("A" Dimension) check failed
+
+

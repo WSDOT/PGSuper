@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.58    6   7.17                     1     1    WF95P    *     12  0.6  270  44.03  42.70   9.00   9.00                                              5.000 10.258   2.272    -2.505    11329   0.669  0.776  -0.192 -0.427  0.000 -0.039 -0.466   7.96   99.95    0.00    0.00    0.00    2.53    0.00    3.28    0.00    0.00 
+ 40.58    6   7.17                     1     1    WF95P    *     12  0.6  270  44.03  42.70   9.00   9.00                                              5.000 10.258   2.196    -2.685    11766   0.669  0.776  -0.196 -0.427  0.000 -0.039 -0.466   7.96  116.66    0.00    0.00    0.00    2.50    0.00    3.24    0.00    0.75 
 
 
 The Specification Check was Not Successful
@@ -8,7 +8,6 @@ Tendon 1 is overstressed
 Tendon 2 is overstressed
 Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 1
 Tension stress check failed for Service I Limit State in Interval 18 Cast deck regions 2 for Segment 1
-Tension stress check failed for Service I Limit State in Interval 24 Install Railing System for Segment 1
 Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Segment 1
 Tension stress check failed for Service I Limit State in Interval 18 Cast deck regions 2 for Deck
 Tension stress check failed for Service I Limit State in Interval 21 Stress Tendons, Remove Temporary Support for Deck
@@ -54,7 +53,7 @@ Duct Size check failed for Duct 2.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.58    6   7.17                     1     2    WF95P    *     12  0.6  270  44.03  42.70   9.00   9.00                                              5.000 10.258   2.292    -2.519    11270   0.649  0.776  -0.216 -0.452  0.000 -0.039 -0.491   7.96   99.57    0.00    0.00    0.00    2.57    0.00    3.34    0.00    0.00 
+ 40.58    6   7.17                     1     2    WF95P    *     12  0.6  270  44.03  42.70   9.00   9.00                                              5.000 10.258   2.213    -2.699    11717   0.649  0.776  -0.220 -0.452  0.000 -0.039 -0.491   7.96  116.25    0.00    0.00    0.00    2.54    0.00    3.29    0.00    0.79 
 
 
 The Specification Check was Not Successful
@@ -62,7 +61,6 @@ Tendon 1 is overstressed
 Tendon 2 is overstressed
 Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 1
 Tension stress check failed for Service I Limit State in Interval 18 Cast deck regions 2 for Segment 1
-Tension stress check failed for Service I Limit State in Interval 24 Install Railing System for Segment 1
 Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Segment 1
 Tension stress check failed for Service I Limit State in Interval 18 Cast deck regions 2 for Deck
 Tension stress check failed for Service I Limit State in Interval 21 Stress Tendons, Remove Temporary Support for Deck

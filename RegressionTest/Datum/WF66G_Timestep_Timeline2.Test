@@ -1,0 +1,30 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                                             Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 27.83    5   6.00                     1     1    WF66G    *     38  0.6  270  26.39  26.39  11.25  11.25                                                             4.899  5.900   3.963    -4.355     9363   0.548  0.671   4.206 -1.482 -0.198 -0.280 -1.960 143.26  333.36    3.00    5.50    5.50    1.69    2.16    2.19    2.87    0.59 
+
+
+The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
+Compression stress check failed for Service I Limit State in Interval 14 Cast Deck, Install Intermediate Diaphragms
+Compression stress check failed for Service I Limit State in Interval 21 Time Step
+Tension stress check failed for Service III Limit State in Interval 21 Time Step
+Lifting checks failed
+Hauling checks failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                                             Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 27.83    5   6.00                     1     2    WF66G    *     38  0.6  270  26.39  26.39  11.25  11.25                                                             4.899  5.900   3.970    -4.363     9381   0.548  0.671   4.206 -1.497 -0.198 -0.280 -1.975 143.26  332.70    3.00    5.50    5.50    1.69    2.15    2.18    2.86    0.58 
+
+
+The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
+Compression stress check failed for Service I Limit State in Interval 14 Cast Deck, Install Intermediate Diaphragms
+Compression stress check failed for Service I Limit State in Interval 21 Time Step
+Tension stress check failed for Service III Limit State in Interval 21 Time Step
+Lifting checks failed
+Hauling checks failed
+
+
