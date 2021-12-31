@@ -140,8 +140,8 @@ public:
    // Returns a vector of all the temporary supports that support this segment
    std::vector<const CTemporarySupportData*> GetTemporarySupports() const;
 
-   // Returns true if the segment is a drop-in segment
-   bool IsDropIn() const;
+   // Returns if the segment is a drop-in segment, and which end(s) is free to translate if so
+   pgsTypes::DropInType IsDropIn() const;
 
    // Returns true if the segment is propped (supported by two hard supports and a cantilever end)
    bool IsPropped() const;

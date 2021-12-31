@@ -856,6 +856,17 @@ typedef struct pgsTypes
       scmBTTables = 3, // LRFD B5.1
       scmWSDOT2007 = 4  // WSDOT BDM Method (August 2007 Design Memo - Use new BT equations from to be published 2008 interims)
    } ShearCapacityMethod;
+
+   // Segments at erection can be Drop ins. In this case, one or both ends are free to translate  
+   // in order to meet elevation with the supporting segment
+   typedef enum DropInType
+   { 
+      ditNotDropIn, 
+      ditYesFreeBothEnds, 
+      ditYesFreeStartEnd, 
+      ditYesFreeEndEnd 
+   } DropInType;
+
 } pgsTypes;
 
 //-----------------------------------------------------------------------------

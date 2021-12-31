@@ -1634,6 +1634,7 @@ std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType interv
    ATLASSERT(pfType != pgsTypes::pftPretension); // pretension results are obtained from the segment models
 
 #if defined _DEBUG
+/*
    if (pfType == pgsTypes::pftGirder)
    {
       // Girder deflection requests must be incremental
@@ -1642,6 +1643,7 @@ std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType interv
       // the beginning of storage and erection
       ATLASSERT(resultsType == rtIncremental);
    }
+*/
 #endif
 
    std::vector<Float64> results;
@@ -8260,50 +8262,26 @@ void CGirderModelManager::GetLBAMBoundaryConditions(bool bContinuous,const CTime
       pPier = (endType == pgsTypes::metStart ? pSegment->GetSpan(pgsTypes::metStart)->GetPrevPier() : pSegment->GetSpan(pgsTypes::metEnd)->GetNextPier());
    }
 
-   if ( pTS )
+   if (pTS)
    {
-      // Boundary condition should not be continuous segment at the end of a segment
-      // it can only be closure joint which is considered to be a hinge until the
-      // stage after it has been cast
-      ATLASSERT( pTS->GetConnectionType() == pgsTypes::tsctClosureJoint );
+      // Deal with erection towers and drop in segments
+      pgsTypes::DropInType dropInType = pSegment->IsDropIn();
+      // See if we have a free end (i.e. segment is freely supported by the adjacent segment at endType)
+      bool isDropInAtEnd = pgsTypes::ditYesFreeBothEnds == dropInType ||
+                           (endType == pgsTypes::metStart && pgsTypes::ditYesFreeStartEnd == dropInType) ||
+                           (endType == pgsTypes::metEnd && pgsTypes::ditYesFreeEndEnd == dropInType);
 
-      // if the temporary support is at an erection tower -OR-
-      // if temporary support is at a strong back and the segment is a "drop in"
-      // set the member end release
-      //
-      // "drop in" segments start and end in the same span (pier segments straddle a pier),
-      // don't have any interior supports, and are supported by strong backs at each end
-      bool bIsDropIn = pSegment->IsDropIn();
-      bool bIsPropped = pSegment->IsPropped();
-      if ( pTS->GetSupportType() == pgsTypes::ErectionTower || ((bIsDropIn || bIsPropped) && pTS->GetSupportType() != pgsTypes::StrongBack))
+      // Always put hinges at both sides of erection towers
+      if (pTS->GetSupportType() == pgsTypes::ErectionTower || isDropInAtEnd)
       {
+         // Place a hinge 
+         ATLASSERT(pClosure);
          CClosureKey closureKey(pClosure->GetClosureKey());
-         GET_IFACE(IIntervals,pIntervals);
+         GET_IFACE(IIntervals, pIntervals);
          IntervalIndexType closureIntervalIdx = pIntervals->GetCompositeClosureJointInterval(closureKey);
-         CComBSTR bstrContinuity( GetLBAMStageName(closureIntervalIdx) );
+         CComBSTR bstrContinuity(GetLBAMStageName(closureIntervalIdx));
          pSSMbr->SetEndReleaseRemovalStage(endType == pgsTypes::metStart ? ssLeft : ssRight, bstrContinuity);
          pSSMbr->SetEndRelease(endType == pgsTypes::metStart ? ssLeft : ssRight, mrtMz);
-      }
-      else
-      {
-         ATLASSERT(pTS->GetSupportType() == pgsTypes::StrongBack);
-         const CPrecastSegmentData* pAdjacentSegment = (endType == pgsTypes::metStart ? pSegment->GetPrevSegment() : pSegment->GetNextSegment());
-         ATLASSERT(pAdjacentSegment != nullptr);
-         bool bAdjacentIsDropIn = pAdjacentSegment->IsDropIn();
-         
-         SegmentIndexType nSegments = pSegment->GetGirder()->GetSegmentCount();
-         SegmentIndexType segIdx = pSegment->GetIndex();
-         bool bHingedEnd = (endType == pgsTypes::metStart ? (segIdx < nSegments/2) : (nSegments/2 < segIdx));
-
-         if ( bHingedEnd && !bAdjacentIsDropIn )
-         {
-            CClosureKey closureKey(pClosure->GetClosureKey());
-            GET_IFACE(IIntervals,pIntervals);
-            IntervalIndexType closureIntervalIdx = pIntervals->GetCompositeClosureJointInterval(closureKey);
-            CComBSTR bstrContinuity( GetLBAMStageName(closureIntervalIdx) );
-            pSSMbr->SetEndReleaseRemovalStage(endType == pgsTypes::metStart ? ssLeft : ssRight, bstrContinuity);
-            pSSMbr->SetEndRelease(endType == pgsTypes::metStart ? ssLeft : ssRight, mrtMz);
-         }
       }
    }
    else
