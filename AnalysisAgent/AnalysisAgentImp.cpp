@@ -1816,7 +1816,7 @@ void CAnalysisAgentImp::GetGirderDeflectionForCamber(const pgsPointOfInterest& p
    d_inc = GetDeflection(erectionIntervalIdx, _T("Girder_Incremental"), poi, bat, rtCumulative, false);
    r_inc = GetRotation(erectionIntervalIdx, _T("Girder_Incremental"), poi, bat, rtCumulative, false);
 
-   ATLASSERT(IsEqual(dStorage+d_inc,dErected));
+   ATLASSERT(IsEqual(dStorage+d_inc,dErected,.001)); // Use tolerance of 1mm. Incremental approach and perm deflection approach result in slightly different values. Incremental approach returns slightly non-zero deflections at supports. This is likely a tolerance issue
    ATLASSERT(IsEqual(rStorage+r_inc,rErected));
 
    if (pConfig != nullptr)
