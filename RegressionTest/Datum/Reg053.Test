@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   7.00 SCHLOMAN ROAD -     1     1    WF83G    *     59  0.6  270  36.03  16.66  10.00  10.00                                              17  78.6  6.0  7.200  8.900   6.071    -5.750    21253   0.643  0.743   5.677 -3.676  0.000 -0.350 -4.026 261.95  396.50   10.50   23.00   23.00    1.68    1.94    2.18    2.63    1.42 
+ 40.00    6   7.00 SCHLOMAN ROAD -     1     1    WF83G    *     59  0.6  270  36.03  16.66  10.00  10.00                                              17  78.6  6.0  7.200  8.900   6.071    -5.750    21253   0.643  0.743   5.675 -3.676  0.000 -0.350 -4.026 261.95  396.50   10.50   23.00   23.00    1.68    1.94    2.18    2.63    1.42 
 
 
 The Specification Check was Not Successful
@@ -10,7 +10,7 @@ Ultimate vertical shear capacity check failed for Strength II Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   7.00 SCHLOMAN ROAD -     1     2    WF83G    *     59  0.6  270  36.03  16.66  10.00  10.00                                              17  78.6  6.0  7.200  8.900   6.056    -5.711    20694   0.601  0.743   5.446 -3.767  0.000 -0.348 -4.115 261.95  392.64   10.50   23.00   23.00    1.79    1.93    2.32    2.61    1.49 
+ 40.00    6   7.00 SCHLOMAN ROAD -     1     2    WF83G    *     59  0.6  270  36.03  16.66  10.00  10.00                                              17  78.6  6.0  7.200  8.900   6.056    -5.711    20694   0.601  0.743   5.445 -3.767  0.000 -0.348 -4.115 261.95  392.64   10.50   23.00   23.00    1.79    1.93    2.32    2.61    1.49 
 
 
 The Specification Check was Not Successful

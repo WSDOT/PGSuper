@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.58    4  10.50                     1     1    U66PT    *      0  0.6  270   0.00   0.00   9.00   9.00                                              5.000  7.628   2.388    -2.147    10479   1.006  1.006  -6.864 -0.664  0.000 -0.066 -0.729   0.00    0.00    0.00    0.00    0.00    0.77    0.17    1.00    0.28    0.00 
+ 40.58    4  10.50                     1     1    U66PT    *      0  0.6  270   0.00   0.00   9.00   9.00                                              5.000  7.628   2.388    -2.147    10479   1.006  1.006  -4.269 -0.664  0.000 -0.066 -0.729   0.00    0.00    0.00    0.00    0.00    0.77    0.18    1.00    0.29    0.00 
 
 
 The Specification Check was Not Successful
@@ -40,7 +40,7 @@ Slab Offset ("A" Dimension) check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.58    4  10.50                     1     2    U66PT    *      0  0.6  270   0.00   0.00   9.00   9.00                                              5.000  7.628   2.423    -2.179    10460   1.048  1.048  -6.883 -0.655  0.000 -0.066 -0.722   0.00    0.00    0.00    0.00    0.00    0.74    0.16    0.96    0.27    0.00 
+ 40.58    4  10.50                     1     2    U66PT    *      0  0.6  270   0.00   0.00   9.00   9.00                                              5.000  7.628   2.423    -2.179    10460   1.048  1.048  -4.289 -0.655  0.000 -0.066 -0.722   0.00    0.00    0.00    0.00    0.00    0.74    0.17    0.96    0.28    0.00 
 
 
 The Specification Check was Not Successful
@@ -66,6 +66,7 @@ Tension stress check failed for Service I Limit State in Interval 28 Install Rai
 Tension stress check failed for Service III Limit State in Interval 35 Load Rating for Deck
 Principal tension stress in webs stress check failed for Segment 2
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Stirrup detailing checks failed for the Strength I Limit State.

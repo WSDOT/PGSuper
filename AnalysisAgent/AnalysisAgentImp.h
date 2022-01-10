@@ -578,6 +578,10 @@ private:
    void GetDesignSlabPadDeflectionAdjustment(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig,Float64* pDy,Float64* pRz) const;
    void GetDesignSlabPadStressAdjustment(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig,Float64* pfTop,Float64* pfBot) const;
 
+   // Function returns permanent deflection caused by girder dead load and modulus stiffening at storage. Values are adjusted for support location for given interval
+   enum sagInterval { sagHauling, sagErection };
+   std::vector<Float64> GetPermanentGirderDeflectionFromStorage(sagInterval interval, pgsTypes::BridgeAnalysisType bat, const PoiList& vPoi) const;
+
    Float64 GetConcreteStrengthAtTimeOfLoading(const CSegmentKey& segmentKey, LoadingEvent le,const GDRCONFIG* pConfig=nullptr) const;
    LoadingEvent GetLoadingEvent(CreepPeriod creepPeriod) const;
 
@@ -608,8 +612,6 @@ private:
    void IsGirderInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,const GDRCONFIG* pConfig,bool* pbTopPTZ,bool* pbBotPTZ) const;
 
    void GetDeckShrinkageStresses(const pgsPointOfInterest& poi,Float64 fcGdr,Float64* pftop,Float64* pfbot) const;
-
-   std::vector<std::pair<pgsPointOfInterest,IntervalIndexType>> GetSegmentPreviousSupportLocations(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) const;
 
    void GetRawPrecamber(const pgsPointOfInterest& poi, Float64 Ls,Float64* pDprecamber,Float64* pRprecamber) const;
    IntervalIndexType GetErectionInterval(const PoiList& vPoi) const;

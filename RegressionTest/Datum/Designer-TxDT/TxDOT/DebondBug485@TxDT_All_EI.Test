@@ -16,7 +16,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 39.25    9   0.19    Waco Creek       1     5    4SB12           6  1/2  270   3.50   3.50   5.00   5.00                                              4.000  5.000   0.574    -0.769      266   0.355  0.355   0.145 -0.019  0.000  0.000 -0.019   5.15   19.63    1.00    1.00    1.00    1.45    6.70    1.88   10.18    2.16 
+ 39.25    9   0.19    Waco Creek       1     5    4SB12           6  1/2  270   3.50   3.50   5.00   5.00                                              4.000  5.000   0.574    -0.769      266   0.355  0.355   0.144 -0.019  0.000  0.000 -0.019   5.15   19.63    1.00    1.00    1.00    1.45    6.70    1.88   10.18    2.16 
 
 
 The Specification Check was Successful
@@ -40,7 +40,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 39.25    9   0.19    Waco Creek       2     5    4SB12           8  1/2  270   3.50   3.50   5.00   5.00                                              4.000  5.000   0.881    -1.150      300   0.355  0.355   0.266 -0.051  0.000  0.000 -0.051   7.91   28.24    1.00    1.00    1.00    1.31    5.87    1.69    9.10    1.61 
+ 39.25    9   0.19    Waco Creek       2     5    4SB12           8  1/2  270   3.50   3.50   5.00   5.00                                              4.000  5.000   0.881    -1.150      300   0.355  0.355   0.265 -0.051  0.000  0.000 -0.051   7.91   28.24    1.00    1.00    1.00    1.31    5.87    1.69    9.10    1.61 
 
 
 The Specification Check was Successful
@@ -48,7 +48,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 39.25    9   0.17    Waco Creek       3     1    5SB12          14  1/2  270   3.50   3.50   5.00   5.00                                              4.000  5.000   1.321    -1.769      550   0.438  0.438   0.511 -0.107  0.000 -0.053 -0.161  17.26   54.84    1.00    1.00    1.00    1.18    4.65    1.53    7.99    1.16 
+ 39.25    9   0.17    Waco Creek       3     1    5SB12          14  1/2  270   3.50   3.50   5.00   5.00                                              4.000  5.000   1.321    -1.769      550   0.438  0.438   0.510 -0.107  0.000 -0.053 -0.161  17.26   54.84    1.00    1.00    1.00    1.18    4.65    1.53    7.99    1.16 
 
 
 The Specification Check was Successful
@@ -56,7 +56,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 39.25    9   0.17    Waco Creek       3     2    5SB12          14  1/2  270   3.50   3.50   5.00   5.00                                              4.000  5.000   1.303    -1.737      533   0.417  0.417   0.511 -0.109  0.000 -0.053 -0.162  17.26   54.81    1.00    1.00    1.00    1.24    5.29    1.61    8.42    1.22 
+ 39.25    9   0.17    Waco Creek       3     2    5SB12          14  1/2  270   3.50   3.50   5.00   5.00                                              4.000  5.000   1.303    -1.737      533   0.417  0.417   0.510 -0.109  0.000 -0.053 -0.162  17.26   54.81    1.00    1.00    1.00    1.24    5.29    1.61    8.42    1.22 
 
 
 The Specification Check was Successful
@@ -88,7 +88,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 39.25    9   0.19    Waco Creek       4     5    4SB12          14  1/2  270   3.50   3.50   5.00   5.00   2    2.5   14     2    2   0   0   0   0   4.000  5.000   1.675    -2.099      508   0.355  0.355   0.769 -0.211  0.000  0.000 -0.211  19.62   61.27    1.00    1.00    1.00    1.25    5.65    1.62    7.45    1.13 
+ 39.25    9   0.19    Waco Creek       4     5    4SB12          14  1/2  270   3.50   3.50   5.00   5.00   2    2.5   14     2    2   0   0   0   0   4.000  5.000   1.675    -2.099      508   0.355  0.355   0.768 -0.211  0.000  0.000 -0.211  19.62   61.27    1.00    1.00    1.00    1.25    5.65    1.62    7.45    1.13 
 
 
 The Specification Check was Successful
@@ -96,7 +96,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 39.25    9   0.17    Waco Creek       5     1    5SB12          28  1/2  270   3.50   3.50   5.00   5.00  14    2.5   28    14   10   4   0   0   0   4.000  5.000   2.292    -2.989      877   0.438  0.438   1.850 -0.358  0.000 -0.179 -0.537  60.83  164.02    1.00    1.00    1.00    1.29    4.00    1.67    6.53    1.13 
+ 39.25    9   0.17    Waco Creek       5     1    5SB12          28  1/2  270   3.50   3.50   5.00   5.00  14    2.5   28    14   10   4   0   0   0   4.000  5.000   2.292    -2.989      877   0.438  0.438   1.849 -0.358  0.000 -0.179 -0.537  60.83  164.02    1.00    1.00    1.00    1.29    4.00    1.67    6.53    1.13 
 
 
 The Specification Check was Successful
@@ -104,7 +104,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 39.25    9   0.17    Waco Creek       5     2    5SB12          26  1/2  270   3.50   3.50   5.00   5.00  12    2.5   26    12   10   2   0   0   0   4.000  5.000   2.265    -2.943      852   0.417  0.417   1.626 -0.364  0.000 -0.178 -0.542  51.84  141.41    1.00    1.00    1.00    1.32    4.71    1.72    6.87    1.03 
+ 39.25    9   0.17    Waco Creek       5     2    5SB12          26  1/2  270   3.50   3.50   5.00   5.00  12    2.5   26    12   10   2   0   0   0   4.000  5.000   2.265    -2.943      852   0.417  0.417   1.625 -0.364  0.000 -0.178 -0.542  51.84  141.41    1.00    1.00    1.00    1.32    4.71    1.72    6.87    1.03 
 
 
 The Specification Check was Successful

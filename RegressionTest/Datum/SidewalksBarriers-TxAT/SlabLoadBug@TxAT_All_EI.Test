@@ -13,7 +13,7 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 23.87    6   7.00                     1     2     4B20    *      0  1/2  270   0.00   0.00   5.00   5.00                                              4.000  5.000   2.924    -4.300     2484   0.786  0.786  -3.959 -0.816 -0.081 -0.097 -0.994   0.00    0.00    1.00    1.00    1.00    0.00    0.23    0.00    0.30    0.00 
+ 23.87    6   7.00                     1     2     4B20    *      0  1/2  270   0.00   0.00   5.00   5.00                                              4.000  5.000   2.924    -4.300     2484   0.786  0.786  -3.960 -0.816 -0.081 -0.097 -0.994   0.00    0.00    1.00    1.00    1.00    0.00    0.23    0.00    0.30    0.00 
 
 
 The Specification Check was Not Successful
@@ -26,7 +26,7 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 23.87    6   7.00                     1     4     4B20    *      0  1/2  270   0.00   0.00   5.00   5.00                                              4.000  5.000   2.945    -4.366     2521   0.786  0.786  -3.959 -0.816 -0.125 -0.097 -1.038   0.00    0.00    1.00    1.00    1.00    0.00    0.23    0.00    0.30    0.00 
+ 23.87    6   7.00                     1     4     4B20    *      0  1/2  270   0.00   0.00   5.00   5.00                                              4.000  5.000   2.945    -4.366     2521   0.786  0.786  -3.960 -0.816 -0.125 -0.097 -1.038   0.00    0.00    1.00    1.00    1.00    0.00    0.23    0.00    0.30    0.00 
 
 
 The Specification Check was Not Successful

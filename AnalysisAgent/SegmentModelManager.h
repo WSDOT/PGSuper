@@ -109,6 +109,11 @@ public:
    void GetStress(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const PoiList& vPoi,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot) const;
    void GetReaction(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,LPCTSTR strLoadingName,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,Float64* pRleft,Float64* pRright) const;
 
+   // Returns POIs at segment supports where deflection is zero, or dependent on adjacent segment if segment is a drop in,
+   // at time of erection. 
+   std::vector<pgsPointOfInterest> GetDeflectionDatumLocationsForSegment(const CSegmentKey& segmentKey, IntervalIndexType intervalIdx, pgsTypes::DropInType dropInType) const;
+
+
 private:
 	DECLARE_SHARED_LOGFILE;
    IBroker* m_pBroker; // must be a weak reference (this is the agent's pointer and it is a weak refernece)
