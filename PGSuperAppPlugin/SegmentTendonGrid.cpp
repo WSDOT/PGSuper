@@ -861,8 +861,15 @@ void CSegmentTendonGrid::GetPjack(ROWCOL nRow, CSegmentDuctData* pDuct)
    pDuct->Pj = _tstof(GetCellValue(nRow, nPjackCol));
    pDuct->Pj = ::ConvertToSysUnits(pDuct->Pj, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure);
 
-   pDuct->LastUserPj = _tstof(GetCellValue(nRow, nPjackUserCol));
-   pDuct->LastUserPj = ::ConvertToSysUnits(pDuct->LastUserPj, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure);
+   if (pDuct->bPjCalc)
+   {
+      pDuct->LastUserPj = _tstof(GetCellValue(nRow, nPjackUserCol));
+      pDuct->LastUserPj = ::ConvertToSysUnits(pDuct->LastUserPj, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure);
+   }
+   else
+   {
+      pDuct->LastUserPj = pDuct->Pj;
+   }
 }
 
 pgsTypes::JackingEndType CSegmentTendonGrid::GetJackingEnd(ROWCOL nRow)
