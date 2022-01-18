@@ -2129,6 +2129,11 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
       // strands
       if ( bIsOnSegment || bIsInBoundaryPierDiaphragm )
       {
+         GET_IFACE(IBridgeDescription, pIBridgeDesc);
+         const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+         pgsTypes::AdjustableStrandType adj_type = pSegment->Strands.GetAdjustableStrandType();
+         std::array<CString, 2> strStrandType{ _T("Straight"),pgsTypes::asHarped == adj_type ? _T("Harped") : _T("Adj. Straight") };
+
          GET_IFACE(IStrandGeometry, pStrandGeom);
          for ( int i = 0; i < 2; i++ ) // straight and harped strands
          {
@@ -2205,7 +2210,6 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
                strand_initial_strain.CoCreateInstance(CLSID_Plane3d);
                strand_initial_strain->ThroughAltitude(eps_initial[strandType][strandIdx]);
 
-               std::array<CString, 2> strStrandType{ _T("Straight"),_T("Harped") };
                CString strName;
                strName.Format(_T("%s Strand %d"), strStrandType[strandType], LABEL_INDEX(strandIdx));
                AddShape2Section(CComBSTR(strName), section, shape, ssStrand, ssGirder, strand_initial_strain, Le, false);
