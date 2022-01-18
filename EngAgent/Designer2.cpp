@@ -5728,7 +5728,7 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey, pgsDebondArtifa
    bool bCheckMaxPerSection;
    Float64 fraMaxPerSection;
    pDebondLimits->GetMaxDebondedStrandsPerSection(segmentKey, &nMax10orLess, &nMax, &bCheckMaxPerSection, &fraMaxPerSection);
-   pArtifact->AddMaxDebondStrandsAtSection(nStrands <= 10 ? nMax10orLess : nMax, bCheckMaxPerSection, fraMaxPerSection);
+   pArtifact->AddMaxDebondStrandsAtSection(nDebonded <= 10 ? nMax10orLess : nMax, bCheckMaxPerSection, fraMaxPerSection);
 
    Float64 maxFraPerRow = pDebondLimits->GetMaxDebondedStrandsPerRow(segmentKey);
 

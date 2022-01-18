@@ -1364,7 +1364,7 @@ BEGIN
     LTEXT           "Maximum debonded strands per row",IDC_STATIC,15,36,114,8
     EDITTEXT        IDC_MAX_STRANDS_PER_ROW,145,36,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "(% of total permanent strands in a row) ",IDC_STATIC,191,36,122,8
-    LTEXT           "Maximum debonded strands per section. For 10 or fewer total strands",IDC_STATIC,15,53,218,8
+    LTEXT           "Maximum debonded strands per section. For 10 or fewer debonded strands",IDC_STATIC,15,53,218,8
     EDITTEXT        IDC_MAX_NUM_PER_SECTION_10_OR_LESS,234,49,40,14,ES_AUTOHSCROLL
     LTEXT           "strands, otherwise",IDC_STATIC,276,52,58,8
     EDITTEXT        IDC_MAX_NUM_PER_SECTION,337,50,40,14,ES_RIGHT | ES_AUTOHSCROLL
