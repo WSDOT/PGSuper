@@ -33557,47 +33557,50 @@ Float64 CBridgeAgentImp::GetApsInHalfDepth(const pgsPointOfInterest& poi,Develop
       if ( bIncludeStrand )
       {
          Float64 debond_factor;
-         if(devAdjust==dlaNone)
-         {
-            debond_factor = 1.0;
-         }
-         else if(use_approximate)
+         if(devAdjust == dlaNone || use_approximate)
          {
             // Use mid-span development length details to approximate debond factor
             // determine minimum bonded length from poi
             Float64 bond_start, bond_end;
             bool bDebonded = IsStrandDebonded(segmentKey,strandIdx,pgsTypes::Straight,pConfig,&bond_start,&bond_end);
 
-            Float64 left_bonded_length, right_bonded_length;
-            if ( bDebonded )
+            if (devAdjust == dlaNone)
             {
-               // measure bonded length
-               left_bonded_length = dist_from_start - bond_start;
-               right_bonded_length = bond_end - dist_from_start;
+               debond_factor = (bDebonded && !InRange(bond_start, dist_from_start, bond_end)) ? 0.0 : 1.0;
             }
             else
             {
-               // no debonding, bond length is to ends of girder
-               left_bonded_length  = dist_from_start;
-               right_bonded_length = segment_length - dist_from_start;
+               Float64 left_bonded_length, right_bonded_length;
+               if (bDebonded)
+               {
+                  // measure bonded length
+                  left_bonded_length = dist_from_start - bond_start;
+                  right_bonded_length = bond_end - dist_from_start;
+               }
+               else
+               {
+                  // no debonding, bond length is to ends of girder
+                  left_bonded_length = dist_from_start;
+                  right_bonded_length = segment_length - dist_from_start;
+               }
+
+               Float64 bonded_length = Min(left_bonded_length, right_bonded_length);
+
+               // For approximate development length adjustment, take development length information at mid span and use for entire girder
+               // adjusted for distance to ends of strands
+               PoiList vPoi;
+               GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT, &vPoi);
+               ATLASSERT(vPoi.size() == 1);
+               const pgsPointOfInterest& poi = vPoi.front();
+               ATLASSERT(poi.IsMidSpan(POI_ERECTED_SEGMENT));
+
+               bool bUHPC = GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC ? true : false;
+
+               GET_IFACE(IPretensionForce, pPSForce);
+               STRANDDEVLENGTHDETAILS dla_det = pPSForce->GetDevLengthDetails(poi, pgsTypes::Straight, false, bUHPC, pConfig);
+
+               debond_factor = GetDevLengthAdjustment(bonded_length, dla_det.ld, dla_det.ltDetails.lt, dla_det.fps, dla_det.fpe);
             }
-
-            Float64 bonded_length = Min(left_bonded_length, right_bonded_length);
-
-            // For approximate development length adjustment, take development length information at mid span and use for entire girder
-            // adjusted for distance to ends of strands
-            PoiList vPoi;
-            GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT, &vPoi);
-            ATLASSERT(vPoi.size() == 1);
-            const pgsPointOfInterest& poi = vPoi.front();
-            ATLASSERT(poi.IsMidSpan(POI_ERECTED_SEGMENT));
-
-            bool bUHPC = GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC ? true : false;
-
-            GET_IFACE(IPretensionForce, pPSForce);
-            STRANDDEVLENGTHDETAILS dla_det = pPSForce->GetDevLengthDetails(poi, pgsTypes::Straight, false, bUHPC, pConfig);
-
-            debond_factor = GetDevLengthAdjustment(bonded_length, dla_det.ld, dla_det.ltDetails.lt, dla_det.fps, dla_det.fpe);
          }
          else
          {
