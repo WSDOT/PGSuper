@@ -2196,11 +2196,11 @@ void CStrandData::AssertValid()
 {
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
 
-   // strand must all be the same grade and type
+   // permanent strands must be the same grade and type
    // which implies strands all have same properties (such as ultimate and yield strands and modulus of elasticity)
    // this assumption of them being all the same is inherent throught the software
    ATLASSERT(pPool->CompareStrands(m_StrandMaterial[pgsTypes::Straight], m_StrandMaterial[pgsTypes::Harped]));
-   ATLASSERT(pPool->CompareStrands(m_StrandMaterial[pgsTypes::Straight], m_StrandMaterial[pgsTypes::Temporary]));
-   ATLASSERT(pPool->CompareStrands(m_StrandMaterial[pgsTypes::Harped], m_StrandMaterial[pgsTypes::Temporary]));
+   //ATLASSERT(pPool->CompareStrands(m_StrandMaterial[pgsTypes::Straight], m_StrandMaterial[pgsTypes::Temporary]));
+   //ATLASSERT(pPool->CompareStrands(m_StrandMaterial[pgsTypes::Harped], m_StrandMaterial[pgsTypes::Temporary]));
 }
 #endif

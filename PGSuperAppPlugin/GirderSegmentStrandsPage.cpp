@@ -252,10 +252,10 @@ void CGirderSegmentStrandsPage::DoDataExchange(CDataExchange* pDX)
       const matPsStrand* pStraightStrand = pPool->GetStrand(m_StrandKey[pgsTypes::Straight]);
       const matPsStrand* pHarpedStrand = pPool->GetStrand(m_StrandKey[pgsTypes::Harped]);
       const matPsStrand* pTemporaryStrand = pPool->GetStrand(m_StrandKey[pgsTypes::Temporary]);
-      if (!pPool->CompareStrands(pStraightStrand, pHarpedStrand) || !pPool->CompareStrands(pStraightStrand, pTemporaryStrand))
+      if (!pPool->CompareStrands(pStraightStrand, pHarpedStrand)/* || !pPool->CompareStrands(pStraightStrand, pTemporaryStrand)*/)
       {
          pDX->PrepareCtrl(IDC_STRAIGHT_STRAND_SIZE);
-         AfxMessageBox(_T("Strands must all be of the same Grade (250 or 270) and Type (low relaxation or stress relieved)"));
+         AfxMessageBox(_T("Straight and harped strands must be the same Grade (250, 270, 300) and Type (low relaxation or stress relieved)"));
          pDX->Fail();
       }
 
