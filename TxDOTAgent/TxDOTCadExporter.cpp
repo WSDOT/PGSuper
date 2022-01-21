@@ -520,6 +520,8 @@ HRESULT CTxDOTCadExporter::ExportHaunchDeflectionData(IBroker* pBroker, const st
       }
    }
 
+
+
    // Get down to dumping data
    try
    {
@@ -592,19 +594,19 @@ HRESULT CTxDOTCadExporter::ExportHaunchDeflectionData(IBroker* pBroker, const st
             }
          }
 
-         // Tolerance to 1/8"
+         // Write X, Y, and Z in ft'-in x/frac" format rounded up to nearest 1/8" accuracy
          Float64 xyzToler = ::ConvertToSysUnits(0.125, unitMeasure::Inch);
 
          Float64 val;
          if (IsEqual(Xstart, Xend))
          {
-            Float64 val = ::CeilOffTol(Xstart, xyzToler);
-            val = ConvertFromSysUnits(val, unitMeasure::Inch);
-            pExporter->WriteFloatToCell(1, _T("X_Val"), rowNum, val);
+            val = ::CeilOffTol(Xstart, xyzToler);
+            val = ConvertFromSysUnits(val, unitMeasure::Feet);
+            pExporter->WriteStringToCell(1, _T("X_Val"), rowNum, CTxDataExporter::CreateFeetInchFracString(val, 0.001, 8, CTxDataExporter::RoundUp).c_str());
 
-            val = ::CeilOffTol(Xstart + height, xyzToler);
-            val = ConvertFromSysUnits(val, unitMeasure::Inch);
-            pExporter->WriteFloatToCell(1, _T("Y_Val"), rowNum, val);
+            val = ::CeilOffTol(Xstart+height, xyzToler);
+            val = ConvertFromSysUnits(val, unitMeasure::Feet);
+            pExporter->WriteStringToCell(1, _T("Y_Val"), rowNum, CTxDataExporter::CreateFeetInchFracString(val, 0.001, 8, CTxDataExporter::RoundUp).c_str());
          }
          else
          {
@@ -617,9 +619,9 @@ HRESULT CTxDOTCadExporter::ExportHaunchDeflectionData(IBroker* pBroker, const st
          }
 
          // Z
-         val = ::CeilOffTol(Z, xyzToler);
-         val = ConvertFromSysUnits(val, unitMeasure::Inch);
-         pExporter->WriteFloatToCell(1, _T("Z_Val"), rowNum, val);
+         val = ::CeilOffTol(Z + height, xyzToler);
+         val = ConvertFromSysUnits(val, unitMeasure::Feet);
+         pExporter->WriteStringToCell(1, _T("Z_Val"), rowNum, CTxDataExporter::CreateFeetInchFracString(val, 0.001, 8, CTxDataExporter::RoundUp).c_str());
 
          // slab deflections
          // deflections from slab loading

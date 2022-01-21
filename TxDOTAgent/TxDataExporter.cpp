@@ -52,3 +52,75 @@ void CTxDataExporter::WriteFloatToCell(IndexType hTable, LPCTSTR strRangeName, I
 
    WriteStringToCell(hTable, strRangeName, rowIdx, fltstring);
 }
+
+std::_tstring CTxDataExporter::CreateFeetInchFracString(Float64 feetValue, Float64 zeroTolerance, Uint16 denominator, CTxDataExporter::Rounding rounding)
+{
+   // English formatted output  ft'-inn/d"
+   Int16 sign = ::BinarySign(feetValue);
+   Float64 value = fabs(feetValue); // make a positive number
+   Int16 ft = Int16(value); // integer part
+   value -= ft; // remove the feet part
+   value *= 12; // value now in inches
+   Uint16 in = Uint16(value);
+
+   value -= in; // value is now fractions of an inch
+
+   value = ::RoundOff(value, 1.0 / denominator); // round off to the accuracy of the denominator
+
+   Uint16 numerator;
+   switch (rounding)
+   {
+   case CTxDataExporter::RoundOff: numerator = Uint16(::RoundOff(value * denominator, 1)); break;
+   case CTxDataExporter::RoundUp: numerator = Uint16(::CeilOff(value * denominator, 1)); break;
+   case CTxDataExporter::RoundDown: numerator = Uint16(::FloorOff(value * denominator, 1)); break;
+   default: ATLASSERT(false); numerator = Uint16(::RoundOff(value * denominator, 1)); break;
+   }
+
+   // reduce the fraction
+   while (numerator % 2 == 0 && denominator % 2 == 0)
+   {
+      numerator /= 2;
+      denominator /= 2;
+   }
+
+   if (numerator == denominator)
+   {
+      in++;
+      numerator = 0;
+   }
+
+   if (in == 12)
+   {
+      ft++;
+      in = 0;
+   }
+
+   std::_tostringstream os;
+   if (numerator == 0) // whole number of inches
+   {
+      if (ft == 0) // 1"
+         os << sign * in << _T("\"");
+      else // 1'-3"
+         os << sign * ft << _T("'-") << in << _T("\"");
+   }
+   else // has fractional inches
+   {
+      if (ft == 0 && in == 0)
+      {
+         if (sign < 0)
+            os << __T("-");
+
+         os << numerator << _T("/") << denominator << _T("\"");
+      }
+      else if (ft == 0) // 1 1/2"
+      {
+         os << sign * in << _T(" ") << numerator << _T("/") << denominator << _T("\"");
+      }
+      else // 3'-1 1/2"
+      {
+         os << sign * ft << _T("'-") << in << _T(" ") << numerator << _T("/") << denominator << _T("\"");
+      }
+   }
+
+   return os.str();
+}

@@ -41,4 +41,18 @@ public:
    virtual BOOL Commit(LPCTSTR strFilename) = 0;
    // called if the data export fails.
    virtual void Fail() = 0;
+
+   /// Specifies how values are rounded
+   enum Rounding
+   {
+      RoundOff, ///< rounds to the nearest value
+      RoundUp,  ///< rounds up
+      RoundDown ///< rounds down
+   };
+
+   // Get string from feet value in ft" in-1/frac" format. Plain text
+   static std::_tstring CTxDataExporter::CreateFeetInchFracString(Float64  feetDecimalVal, // decimal value in Feet
+                                                               Float64  zeroTolerance,  // tolerance for zeroness
+                                                               Uint16   denominator,    // precision of fraction (denominator for fraction of an inch, e.g. use 8 for a precision of 1/8")
+                                                               Rounding rounding);      // indicates how the value is to be rounded to the specified precision);
 };
