@@ -131,6 +131,7 @@
 #define IDC_OPT_FILLTYPE_COMBO          270
 #define IDC_DIRECT_STATIC               270
 #define IDC_FILE_FORMAT                 271
+#define IDC_EXPORT_TYPE                 272
 #define IDD_GIRDER_SELECT_STRANDS       324
 #define IDC_VALUE                       1018
 #define IDC_VALUE_UNITS                 1026

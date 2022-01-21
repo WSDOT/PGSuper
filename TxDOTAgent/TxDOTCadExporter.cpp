@@ -25,7 +25,6 @@
 #include "stdafx.h"
 #include "TxDOTCadExporter.h"
 #include "TxDOTCadWriter.h"
-#include "ExportCadData.h" 
 #include "TxDOTLegacyCadWriter.h"
 
 #include "TxExcelDataExporter.h"
@@ -36,10 +35,18 @@
 
 #include <IFace\Selection.h>
 #include <IFace\TestFileExport.h>
+#include <IFace\Intervals.h>
+#include <EAF\EAFDisplayUnits.h>
+#include <IFace\AnalysisResults.h>
+#include <IFace\Constructability.h>
+#include <IFace\Project.h>
 
 #include <MfcTools\XUnwind.h>
 #include <MFCTools\VersionInfo.h>
 #include <MFCTools\AutoRegistry.h>
+
+#include <Reporter\FormattedLengthUnitValue.h>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -132,53 +139,72 @@ STDMETHODIMP CTxDOTCadExporter::GetCommandHintText(BSTR*  bstrText) const
 
 STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
 {
-   GET_IFACE2(pBroker,ISelection,pSelection);
+   GET_IFACE2(pBroker, ISelection, pSelection);
    CSelection selection = pSelection->GetSelection();
 
    CGirderKey girderKey;
-   if ( selection.Type == CSelection::Span )
+   if (selection.Type == CSelection::Span)
    {
-      GET_IFACE2(pBroker,IBridge,pBridge);
+      GET_IFACE2(pBroker, IBridge, pBridge);
       girderKey.groupIndex = pBridge->GetGirderGroupIndex(selection.SpanIdx);
       girderKey.girderIndex = 0;
    }
-   else if ( selection.Type == CSelection::Girder || selection.Type == CSelection::Segment || selection.Type == CSelection::ClosureJoint )
+   else if (selection.Type == CSelection::Girder || selection.Type == CSelection::Segment || selection.Type == CSelection::ClosureJoint)
    {
-      girderKey.groupIndex  = selection.GroupIdx;
+      girderKey.groupIndex = selection.GroupIdx;
       girderKey.girderIndex = selection.GirderIdx;
    }
    else
    {
-      girderKey.groupIndex  = 0;
+      girderKey.groupIndex = 0;
       girderKey.girderIndex = 0;
    }
 
    std::vector<CGirderKey> girderKeys;
    girderKeys.push_back(girderKey);
 
-	// Create ExportCADData dialog box object 
-   exportCADData::ctxFileFormatType fileFormat = exportCADData::ctxExcel;;
+   // Create ExportCADData dialog box object 
+   exportCADData::cdtExportDataType fileDataType = exportCADData::cdtGirderDesignData;
+   exportCADData::ctxFileFormatType fileFormat = exportCADData::ctxExcel;
    {
       AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	   exportCADData  caddlg (pBroker, nullptr);
+      exportCADData  caddlg(pBroker, nullptr);
       caddlg.m_GirderKeys = girderKeys;
       caddlg.m_FileFormatType = fileFormat;
 
-	   // Open the ExportCADData dialog box 
-	   
-	   if (caddlg.DoModal() == IDOK)
-	   {
-		   // Get user's span & beam id values 
-		   girderKeys  = caddlg.m_GirderKeys;
+      // Open the ExportCADData dialog box 
+
+      if (caddlg.DoModal() == IDOK)
+      {
+         // Get user's span & beam id values 
+         girderKeys = caddlg.m_GirderKeys;
+         fileDataType = caddlg.m_ExportDataType;
          fileFormat = caddlg.m_FileFormatType;
-	   }
-	   else
-	   {
-		   // Just do nothing if CANCEL
-	       return S_OK;
-	   }
+      }
+      else
+      {
+         // Just do nothing if CANCEL
+         return S_OK;
+      }
    }
 
+   if (fileDataType == exportCADData::cdtGirderDesignData || fileDataType == exportCADData::cdtLegacyTextGirderData)
+   {
+      return ExportGirderDesignData(pBroker, girderKeys, fileDataType, fileFormat);
+   }
+   else if (fileDataType == exportCADData::cdtHaunchAndDeflectionData)
+   {
+      return ExportHaunchDeflectionData(pBroker, girderKeys, fileDataType, fileFormat);
+   }
+   else
+   {
+      ATLASSERT(0);
+      return E_FAIL;
+   }
+}
+
+HRESULT CTxDOTCadExporter::ExportGirderDesignData(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys, exportCADData::cdtExportDataType fileDataType, exportCADData::ctxFileFormatType fileFormat)
+{
    // Generic class for writing CAD format (Excel or CSV) to a specific CTxDataExporter
    TxDOTCadWriter cadWriter;
 
@@ -220,10 +246,9 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
    CString strFilter;
    CString strSuffix;
 
-   if (exportCADData::ctxLegacy == fileFormat)
+   if (fileDataType == exportCADData::cdtLegacyTextGirderData)
    {
-#pragma Reminder("Legacy TxDOT CAD Export is a hack an may no longer be useful. Remove this option at Version 6.0 if confirmed.")
-      // This doesn't fit with our factory pattern, but the plan is to delete this functionality in the near future
+      // This doesn't fit with our factory pattern, but some users in Houston still use and it's not worth rewriting
       // Use the File and girder selection UI from this function and then jump to our old legacy version
       default_name = _T("CADexport.txt");
       strFilter = _T("Legacy Text File (*.txt)|*.txt||");
@@ -334,68 +359,313 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
          }
 		}
 
-      if (exportCADData::ctxLegacy == fileFormat)
+      if (fileDataType == exportCADData::cdtLegacyTextGirderData)
       {
-#pragma Reminder("Legacy TxDOT CAD Export is a hack. Consider removing this option at Version 6.0")
-         // We have our file name and girder list. Create Legacy format in its own function so it can be removed later
-         return TxDOT_WriteLegacyCADDataToFile(file_path, pBroker, girderKeys);
+         // We have our file name and girder list. Create Legacy format in its own function.
+         TxDOT_WriteLegacyCADDataToFile(file_path, pBroker, girderKeys);
       }
-
-      bool did_throw=false;
-
-      // Create progress window in own scope
-      try
+      else
       {
-         GET_IFACE2(pBroker,IProgress,pProgress);
-
-         bool multi = girderKeys.size()>1;
-         DWORD mask = multi ? PW_ALL : PW_ALL|PW_NOGAUGE; // Progress window has a cancel button,
-         CEAFAutoProgress ap(pProgress,0,mask); 
-
-         if (multi)
-            pProgress->Init(0,(short)girderKeys.size(),1);  // and for multi-girders, a gauge.
-
-	      // Write CAD data to text file
-         TxDOTCadWriter cadWriter;
-         for (std::vector<CGirderKey>::iterator it = girderKeys.begin(); it!= girderKeys.end(); it++)
+         // Create progress window in own scope
+         try
          {
-            CGirderKey& girderKey(*it);
+            GET_IFACE2(pBroker, IProgress, pProgress);
 
-            txcwStrandLayoutType strand_layout = GetStrandLayoutType(pBroker, girderKey);
+            bool multi = girderKeys.size() > 1;
+            DWORD mask = multi ? PW_ALL : PW_ALL | PW_NOGAUGE; // Progress window has a cancel button,
+            CEAFAutoProgress ap(pProgress, 0, mask);
 
-	         if (CAD_SUCCESS != cadWriter.WriteCADDataToFile(*pExporter, pBroker, girderKey, strand_layout, table_layout, isIBeam) )
+            if (multi)
+               pProgress->Init(0, (short)girderKeys.size(), 1);  // and for multi-girders, a gauge.
+
+            // Write CAD data to text file
+            TxDOTCadWriter cadWriter;
+            for (std::vector<CGirderKey>::const_iterator it = girderKeys.begin(); it != girderKeys.end(); it++)
             {
-		         AfxMessageBox (_T("Warning: An error occured while writing to File"));
-               pExporter->Fail();
-		         return S_OK;
+               const CGirderKey& girderKey(*it);
+
+               txcwStrandLayoutType strand_layout = GetStrandLayoutType(pBroker, girderKey);
+
+               if (CAD_SUCCESS != cadWriter.WriteCADDataToFile(*pExporter, pBroker, girderKey, strand_layout, table_layout, isIBeam))
+               {
+                  AfxMessageBox(_T("Warning: An error occured while writing to File"));
+                  pExporter->Fail();
+                  return S_OK;
+               }
+
+               pProgress->Increment();
             }
 
-            pProgress->Increment();
-         }
-
-		   // Close the open file
-         if (!pExporter->Commit(file_path))
+            // Close the open file
+            if (!pExporter->Commit(file_path))
+            {
+               AfxMessageBox(_T("File Creation Aborted"), MB_ICONINFORMATION | MB_OK);
+               pExporter->Fail();
+               return E_FAIL;
+            }
+         } // autoprogress scope
+         catch (...)
          {
-            AfxMessageBox(_T("File Creation Aborted"), MB_ICONINFORMATION | MB_OK);
-            pExporter->Fail();
-            return E_FAIL;
+            // must catch so progress window goes out of scope and gets destroyed
+            // must rethrow to get the exception into MFC
+            throw;
          }
-      } // autoprogress scope
-      catch(...)
-      {
-         // must catch so progress window goes out of scope and gets destroyed
-         // must rethrow to get the exception into MFC
-         throw; 
-      }
 
-		// Notify completion 
-	   CString msg(_T("File: "));
-	   msg += file_path + _T(" file created successfully.");
-      AfxMessageBox(msg,MB_ICONINFORMATION|MB_OK);
+         // Notify completion 
+         CString msg(_T("File: "));
+         msg += file_path + _T(" file created successfully.");
+         AfxMessageBox(msg, MB_ICONINFORMATION | MB_OK);
+      }
 
 //         pProgress->UpdateMessage(_T("Writing Top Strand Research Data"));
 //         raised_strand_research(pBroker, girderKeys);
 	}
+
+   return S_OK;
+}
+
+HRESULT CTxDOTCadExporter::ExportHaunchDeflectionData(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys, exportCADData::cdtExportDataType fileDataType, exportCADData::ctxFileFormatType fileFormat)
+{
+   // Factory the specific file format exporter and its associated information
+   std::unique_ptr<CTxDataExporter> pExporter;
+   TxDOTCadWriter::txcwNsTableLayout table_layout;
+   CString default_name;
+   CString strFilter;
+   CString strSuffix;
+
+   if (exportCADData::ctxExcel == fileFormat)
+   {
+      table_layout = TxDOTCadWriter::ttlnTwoTables;
+      default_name = _T("HaunchDeflectionCADexport.xlsx");
+      strFilter = _T("CAD Export Excel Worksheet (*.xlsx)|*.xlsx||");
+      strSuffix = _T("xlsx");
+
+      // Determine which template file to open
+      CString templateFolder = this->GetExcelTemplateFolderLocation();
+      CString templateName = templateFolder + (_T("CADExport-HaunchDeflectionData.xltx"));
+
+      if (!DoesFileExist(templateName))
+      {
+         CString errMsg = CString(_T("The Excel template file at ")) + templateName + CString(_T(" does not exist. This is likely an installation problem. CAD haunch and deflection export cannot continue."));
+         ::AfxMessageBox(errMsg);
+         return E_FAIL;
+      }
+
+      // Make the exporter
+      auto pExcelExporter = std::make_unique<CTxExcelDataExporter>();
+      pExcelExporter->InitializeExporter(templateName);
+
+      // move to base class ptr
+      pExporter = std::move(pExcelExporter);
+   }
+   else if (exportCADData::ctxCSV == fileFormat)
+   {
+      table_layout = TxDOTCadWriter::ttlnSingleTable;
+      default_name = _T("HaunchDeflectionCADexport.txt");
+      strFilter = _T("Semicolon Separated Value text File (*.txt)|*.txt||");
+      strSuffix = _T("txt");
+
+      // Make CSV exporter and give it the list of columns in its table
+      auto pCSVDataExporter = std::make_unique<CTxCSVDataExporter>();
+
+      pCSVDataExporter->SetSeparator(_T(";"));
+
+      // Main table
+      std::vector<std::_tstring> cols = std::vector<std::_tstring>({ _T("SpanNo"),_T("BeamNo"),_T("X_Val"),_T("Y_Val"),_T("Z_Val"),_T("A_Val"),_T("B_Val"), });
+
+      pCSVDataExporter->InitializeTable(1, cols);
+
+      // move to base class ptr
+      pExporter = std::move(pCSVDataExporter);
+   }
+   else
+   {
+      ATLASSERT(0);
+      ::AfxMessageBox(_T("Invalid CAD export file format selected"));
+      return E_FAIL;
+   }
+
+   // Create SAVEAS file dialog box object 
+   CFileDialog  fildlg(FALSE, strSuffix, default_name, OFN_HIDEREADONLY, strFilter);
+
+   // Open the SAVEAS dialog box
+   CString file_path;
+   if (fildlg.DoModal() == IDOK)
+   {
+      // Get full pathname of selected file 
+      file_path = fildlg.GetPathName();
+
+      // See if the file currently exists 
+      if (DoesFileExist(file_path))
+      {
+         // See if the user wants to overwrite file 
+         CString msg(_T(" The file: "));
+         msg += file_path + _T(" exists. Overwrite it?");
+         int stm = AfxMessageBox(msg, MB_YESNOCANCEL | MB_ICONQUESTION);
+         if (stm != IDYES)
+         {
+            pExporter->Fail();
+            return S_OK;
+         }
+         else
+         {
+            if (0 == ::DeleteFile(file_path))
+            {
+               CString errMsg = CString(_T("Error deleting the file: \" ")) + file_path + CString(_T(" \". Could it be open in another program (e.g., Excel)? CAD export cannot continue."));
+               ::AfxMessageBox(errMsg);
+               pExporter->Fail();
+               return E_FAIL;
+            }
+         }
+      }
+   }
+
+   // Get down to dumping data
+   try
+   {
+      GET_IFACE2(pBroker, IProgress, pProgress);
+
+      bool multi = girderKeys.size() > 1;
+      DWORD mask = multi ? PW_ALL : PW_ALL | PW_NOGAUGE; // Progress window has a cancel button,
+      CEAFAutoProgress ap(pProgress, 0, mask);
+
+      if (multi)
+         pProgress->Init(0, (short)girderKeys.size(), 1);  // and for multi-girders, a gauge.
+
+      GET_IFACE2(pBroker, IPointOfInterest, pIPOI);
+      GET_IFACE2(pBroker, IBridge, pBridge);
+      GET_IFACE2(pBroker, IGirder, pGirder);
+      GET_IFACE2(pBroker, ISpecification, pSpec);
+      GET_IFACE2(pBroker, IGirderHaunch, pGdrHaunch);
+      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+      GET_IFACE2(pBroker, IIntervals, pIntervals);
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(0); // assume deck casting region 0
+
+      pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
+      pgsTypes::BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
+
+      // Write CAD data to text file
+      Uint32 rowNum(0);
+      for (const auto& girderKey : girderKeys)
+      {
+         const CSegmentKey segmentKey(girderKey, 0);
+
+         // SPAN NUMBER
+         pExporter->WriteStringToCell(1, _T("SpanNo"), rowNum, LABEL_SPAN(segmentKey.groupIndex));
+
+         // GIRDER NUMBER
+         pExporter->WriteStringToCell(1, _T("BeamNo"), rowNum, LABEL_GIRDER(segmentKey.girderIndex));
+
+         // Get Midspan poi and take averages at 0.2, 0.3 points to compute quarter point reactions
+         PoiList vPoi;
+         pIPOI->GetPointsOfInterest(segmentKey, POI_TENTH_POINTS | POI_SPAN, &vPoi);
+         ATLASSERT(vPoi.size() == 11);
+         const pgsPointOfInterest& poi_0 = vPoi[0];
+         const pgsPointOfInterest& poi_2 = vPoi[2];
+         const pgsPointOfInterest& poi_3 = vPoi[3];
+         const pgsPointOfInterest& poi_5 = vPoi[5];
+         const pgsPointOfInterest& poi_7 = vPoi[7];
+         const pgsPointOfInterest& poi_8 = vPoi[8];
+         const pgsPointOfInterest& poi_10 = vPoi[10];
+
+         // X,Y,Z
+         Float64 Xstart = pBridge->GetSlabOffset(segmentKey, pgsTypes::metStart);
+         Float64 Xend = pBridge->GetSlabOffset(segmentKey, pgsTypes::metEnd);
+         Float64 height = pGirder->GetHeight(poi_0); // assume prismatic girders
+
+         // haunch all along the girder
+         const auto& slab_offset_details = pGdrHaunch->GetSlabOffsetDetails(segmentKey);
+
+         // find Z value at mid-span
+         Float64 Z(0);
+         Float64 Wtop(0);
+         Float64 tslab(0);
+         Float64 midloc = poi_5.GetDistFromStart();
+         for (const auto& slab_offset : slab_offset_details.SlabOffset)
+         {
+            if (slab_offset.PointOfInterest.GetDistFromStart() == midloc)
+            {
+               Z = slab_offset.TopSlabToTopGirder;
+               Wtop = slab_offset.Wtop;
+               tslab = slab_offset.tSlab;
+               break;
+            }
+         }
+
+         // Tolerance to 1/8"
+         Float64 xyzToler = ::ConvertToSysUnits(0.125, unitMeasure::Inch);
+
+         Float64 val;
+         if (IsEqual(Xstart, Xend))
+         {
+            Float64 val = ::CeilOffTol(Xstart, xyzToler);
+            val = ConvertFromSysUnits(val, unitMeasure::Inch);
+            pExporter->WriteFloatToCell(1, _T("X_Val"), rowNum, val);
+
+            val = ::CeilOffTol(Xstart + height, xyzToler);
+            val = ConvertFromSysUnits(val, unitMeasure::Inch);
+            pExporter->WriteFloatToCell(1, _T("Y_Val"), rowNum, val);
+         }
+         else
+         {
+            // cannot have unequal "A"'s 
+            pExporter->WriteStringToCell(1, _T("X_Val"), rowNum, _T("n/a"));
+            pExporter->WriteStringToCell(1, _T("Y_Val"), rowNum, _T("n/a"));
+            CString msg;
+            msg.Format(_T("Warning: The \"A\" dimension is different at each end. Standard detailing uses the same \"A\" at each end. X and Y for span %d, girder %d cannot be written"), segmentKey.groupIndex + 1, segmentKey.girderIndex + 1);
+            AfxMessageBox(msg, MB_OK | MB_ICONEXCLAMATION);
+         }
+
+         // Z
+         val = ::CeilOffTol(Z, xyzToler);
+         val = ConvertFromSysUnits(val, unitMeasure::Inch);
+         pExporter->WriteFloatToCell(1, _T("Z_Val"), rowNum, val);
+
+         // slab deflections
+         // deflections from slab loading
+         Float64 delta_slab2(0), delta_slab3(0), delta_slab5(0), delta_slab7(0), delta_slab8(0);
+         if (castDeckIntervalIdx != INVALID_INDEX)
+         {
+            GET_IFACE2(pBroker, IProductForces, pProductForces);
+            delta_slab2 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_2, bat, rtCumulative, false);
+            delta_slab3 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_3, bat, rtCumulative, false);
+            delta_slab5 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_5, bat, rtCumulative, false);
+            delta_slab7 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_7, bat, rtCumulative, false);
+            delta_slab8 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_8, bat, rtCumulative, false);
+         }
+
+         // DL Defl Deck @ Pt A{ 1 / 4 pt }
+         val = ConvertFromSysUnits((delta_slab2 + delta_slab3) / 2.0, unitMeasure::Feet);
+         pExporter->WriteFloatToCell(1, _T("A_Val"), rowNum, val);
+
+         // DL Defl Deck @ Pt B {1/2 pt} 
+         val = ConvertFromSysUnits(delta_slab5, unitMeasure::Feet);
+         pExporter->WriteFloatToCell(1, _T("B_Val"), rowNum, val);
+
+         pProgress->Increment();
+
+         rowNum++;
+      }
+
+      // Close the open file
+      if (!pExporter->Commit(file_path))
+      {
+         AfxMessageBox(_T("File Creation Aborted"), MB_ICONINFORMATION | MB_OK);
+         pExporter->Fail();
+         return E_FAIL;
+      }
+   } // autoprogress scope
+   catch (...)
+   {
+      // must catch so progress window goes out of scope and gets destroyed
+      // must rethrow to get the exception into MFC
+      throw;
+   }
+
+   // Notify completion 
+   CString msg(_T("File: "));
+   msg += file_path + _T(" file created successfully.");
+   AfxMessageBox(msg, MB_ICONINFORMATION | MB_OK);
 
    return S_OK;
 }

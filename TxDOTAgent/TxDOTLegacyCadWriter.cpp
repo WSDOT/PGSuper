@@ -281,7 +281,7 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
       are_harped_bent = !IsEqual(hs_ecc_end, hs_ecc_mid);
    }
 
-   bool isExtendedVersion = false;
+   bool isExtendedVersion = true; // All we do now
 
    // Determine if a straight-raised design
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);

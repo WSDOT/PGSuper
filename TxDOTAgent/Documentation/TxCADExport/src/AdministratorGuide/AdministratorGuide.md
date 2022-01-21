@@ -92,6 +92,19 @@ Range Name | Units | Description
 NSPattern | text | In form: *, **, ***,... referred from the main strand table from a designated girder having a non-standard strand pattern.
 NSArrangement | Text | In form: “2.5(ABCE)” or “2.5(10)” see details in section 3.5.1
 
+Range Names and Contents of Haunch and Deflectins Table Template Data
+--------------------------------
+
+Range Name | Units | Description
+---------- | ----- | -----------
+SpanNo | text | Span number
+BeamNo | text | Girder number
+X_Val | Inches | "X" dimension as defined on TxDOT plan sheets
+Y_Val | Inches | "Y" dimension as defined on TxDOT plan sheets
+Z_Val | Inches | "Z" dimension as defined on TxDOT plan sheets
+A_Val | Feet | "A" dimension as defined on TxDOT plan sheets
+B_Val | Feet | "B" dimension as defined on TxDOT plan sheets
+
 Semicolon-separated Text Files
 ---------
 There are no user options to modify the data written to this format. All options are hard-coded in C++. Layout of the file is based on the most recent template files.
