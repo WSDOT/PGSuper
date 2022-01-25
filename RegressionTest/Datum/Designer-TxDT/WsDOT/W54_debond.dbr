@@ -5941,7 +5941,7 @@ Design - Inventory, LRFD Design Truck + Lane
 ond, 0.0.0.0, 881001, 1.64, 0, 0
 ond, 0.0.0.0, 881001a, 15.09, 0, 0
 ond, 0.0.0.0, 881003, 1.35, 0, 0
-ond, 0.0.0.0, 881003a, 9.53, 0, 0
+ond, 0.0.0.0, 881003a, 20.65, 0, 0
 ond, 0.0.0.0, 881006, 1.16, 0, 0
 ond, 0.0.0.0, 881007, 1.16, 0, 0
 Design - Inventory, LRFD Design Tandem + Lane
@@ -5955,7 +5955,7 @@ Design - Operating, LRFD Design Truck + Lane
 ond, 0.0.0.0, 881001, 2.12, 0, 0
 ond, 0.0.0.0, 881001a, 15.09, 0, 0
 ond, 0.0.0.0, 881003, 2.26, 0, 0
-ond, 0.0.0.0, 881003a, 9.53, 0, 0
+ond, 0.0.0.0, 881003a, 20.65, 0, 0
 ond, 0.0.0.0, 881007, 2.12, 0, 0
 Design - Operating, LRFD Design Tandem + Lane
 ond, 0.0.0.0, 881001, 2.5, 0, 0
@@ -5974,7 +5974,7 @@ Legal Load - Routine Commercial Traffic, Type 3S2
 ond, 0.0.0.0, 881001, 3.09, 0, 0
 ond, 0.0.0.0, 881001a, 15.09, 0, 0
 ond, 0.0.0.0, 881003, 3.33, 0, 0
-ond, 0.0.0.0, 881003a, 20.65, 0, 0
+ond, 0.0.0.0, 881003a, 9.53, 0, 0
 ond, 0.0.0.0, 881006, 1.8, 0, 0
 ond, 0.0.0.0, 881007, 1.8, 0, 0
 Legal Load - Routine Commercial Traffic, Type 3-3
@@ -11253,26 +11253,26 @@ Design - Operating, LRFD Design Truck + Lane
 ond, 0.0.0.0, 881001, 2.31, 0, 1
 ond, 0.0.0.0, 881001a, 15.09, 0, 1
 ond, 0.0.0.0, 881003, 2.73, 0, 1
-ond, 0.0.0.0, 881003a, 20.65, 0, 1
+ond, 0.0.0.0, 881003a, 9.53, 0, 1
 ond, 0.0.0.0, 881007, 2.31, 0, 1
 Design - Operating, LRFD Design Tandem + Lane
 ond, 0.0.0.0, 881001, 2.72, 0, 1
 ond, 0.0.0.0, 881001a, 15.09, 0, 1
 ond, 0.0.0.0, 881003, 3.3, 0, 1
-ond, 0.0.0.0, 881003a, 20.65, 0, 1
+ond, 0.0.0.0, 881003a, 9.53, 0, 1
 ond, 0.0.0.0, 881007, 2.72, 0, 1
 Legal Load - Routine Commercial Traffic, Type 3
 ond, 0.0.0.0, 881001, 4.05, 0, 1
 ond, 0.0.0.0, 881001a, 15.09, 0, 1
 ond, 0.0.0.0, 881003, 4.36, 0, 1
-ond, 0.0.0.0, 881003a, 20.65, 0, 1
+ond, 0.0.0.0, 881003a, 9.53, 0, 1
 ond, 0.0.0.0, 881006, 2.3, 0, 1
 ond, 0.0.0.0, 881007, 2.3, 0, 1
 Legal Load - Routine Commercial Traffic, Type 3S2
 ond, 0.0.0.0, 881001, 3.37, 0, 1
 ond, 0.0.0.0, 881001a, 15.09, 0, 1
 ond, 0.0.0.0, 881003, 3.71, 0, 1
-ond, 0.0.0.0, 881003a, 20.65, 0, 1
+ond, 0.0.0.0, 881003a, 9.53, 0, 1
 ond, 0.0.0.0, 881006, 1.91, 0, 1
 ond, 0.0.0.0, 881007, 1.91, 0, 1
 Legal Load - Routine Commercial Traffic, Type 3-3
@@ -11286,7 +11286,7 @@ Legal Load - Specialized Hauling Vehicles, NRL
 ond, 0.0.0.0, 881001, 2.88, 0, 1
 ond, 0.0.0.0, 881001a, 15.09, 0, 1
 ond, 0.0.0.0, 881003, 3.42, 0, 1
-ond, 0.0.0.0, 881003a, 20.65, 0, 1
+ond, 0.0.0.0, 881003a, 9.53, 0, 1
 ond, 0.0.0.0, 881006, 1.45, 0, 1
 ond, 0.0.0.0, 881007, 1.45, 0, 1
 Legal Load - Emergency Vehicles, Type EV2

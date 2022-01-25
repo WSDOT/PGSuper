@@ -14276,7 +14276,7 @@ Design - Inventory, LRFD Design Tandem + Lane
 ion, 0.0.0.0, 881001, 2.65, 0, 1
 ion, 0.0.0.0, 881001a, 31.7, 0, 1
 ion, 0.0.0.0, 881003, 3.5, 0, 1
-ion, 0.0.0.0, 881003a, 5.6, 0, 1
+ion, 0.0.0.0, 881003a, 57.8, 0, 1
 ion, 0.0.0.0, 881006, 2.19, 0, 1
 ion, 0.0.0.0, 881007, 2.19, 0, 1
 Design - Operating, LRFD Design Truck + Lane
@@ -14289,13 +14289,13 @@ Design - Operating, LRFD Design Tandem + Lane
 ion, 0.0.0.0, 881001, 3.43, 0, 1
 ion, 0.0.0.0, 881001a, 31.7, 0, 1
 ion, 0.0.0.0, 881003, 4.61, 0, 1
-ion, 0.0.0.0, 881003a, 5.6, 0, 1
+ion, 0.0.0.0, 881003a, 57.8, 0, 1
 ion, 0.0.0.0, 881007, 3.43, 0, 1
 Legal Load - Routine Commercial Traffic, Type 3
 ion, 0.0.0.0, 881001, 8.08, 0, 1
 ion, 0.0.0.0, 881001a, 31.7, 0, 1
 ion, 0.0.0.0, 881003, 10.49, 0, 1
-ion, 0.0.0.0, 881003a, 5.6, 0, 1
+ion, 0.0.0.0, 881003a, 57.8, 0, 1
 ion, 0.0.0.0, 881006, 5.54, 0, 1
 ion, 0.0.0.0, 881007, 5.54, 0, 1
 Legal Load - Routine Commercial Traffic, Type 3S2
