@@ -678,7 +678,7 @@ int Test_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& girde
    workerB.WriteFloat64(designLoadTensileStress,_T(" ftens "),10,6,_T("%6.3f"));
 
 	//----- COL 16 ---- 
-   workerB.WriteInt16(reqMinUltimateMomentCapacity,_T("ultMo"),9,5,_T("%5d"));
+   workerB.WriteInt32(reqMinUltimateMomentCapacity,_T("ultMo"),9,5,_T("%5d"));
 	//----- COL 17 ---- 
    workerB.WriteFloat64(momentDistFactor,_T("LLDFm"),7,5,_T("%5.3f"));
 	//----- COL 17aa ---- 
@@ -863,6 +863,17 @@ void CadWriterWorkerBee::WriteInt16(Int16 val, LPCTSTR title, Int16 colWidth, In
    ATLASSERT(nr==nchars);
 
    this->WriteString(buf, title, colWidth, nchars,_T("%s"));
+}
+
+void CadWriterWorkerBee::WriteInt32(Int32 val, LPCTSTR title, Int16 colWidth, Int16 nchars, LPCTSTR format)
+{
+   // write string to local buffer
+   TCHAR buf[32];
+   int nr = _stprintf_s(buf, 32, format, val);
+
+   ATLASSERT(nr == nchars);
+
+   this->WriteString(buf, title, colWidth, nchars, _T("%s"));
 }
 
 
