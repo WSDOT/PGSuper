@@ -43,6 +43,7 @@
 #define IDC_COPY_MATERIAL               315
 #define IDD_AASHTO_CONCRETE             316
 #define IDC_EC_K1_LABEL                 317
+#define IDD_AASHTO_CONCRETE2            317
 #define IDC_EC_K1                       318
 #define IDC_EC_K2_LABEL                 319
 #define IDC_EC_K2                       320
@@ -82,6 +83,7 @@
 #define IDD_CEBFIP_PARAMETERS           359
 #define IDD_COPY_CONC_ENTRY             360
 #define IDC_CONC_ENTRIES                361
+#define IDD_PCIUHPC_CONCRETE            361
 #define IDC_LABEL                       362
 #define IDI_WARNING2                    363
 #define IDC_WARNING                     364
@@ -108,6 +110,12 @@
 #define ID_C_HELP                       1361
 #define IDC_RADIO1                      1362
 #define IDC_HELP                        1363
+#define IDC_FFC                         1364
+#define IDC_FFC_UNIT                    1365
+#define IDC_FRR                         1366
+#define IDC_FRR_UNIT                    1367
+#define IDC_CHECK1                      1368
+#define IDC_PCTT                        1368
 #define IDC_BOUNDARY_CONDITION          1407
 #define IDC_UPDATE_FREQUENCY            1412
 #define IDC_SERVERS                     1429
@@ -130,6 +138,9 @@
 #define IDC_SERVERS_STATIC              1637
 #define IDC_SERVERS_STATIC2             1639
 #define IDC_GROUP                       1655
+#define IDC_FIBER_LABEL                 1733
+#define IDC_FIBER                       1734
+#define IDC_FIBER_UNIT                  1735
 #define IDC_CONFIGURATION_GROUP         1804
 #define IDC_TITLE                       1805
 #define IDC_INTERVAL                    3016
@@ -142,7 +153,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        300
 #define _APS_NEXT_COMMAND_VALUE         32776
-#define _APS_NEXT_CONTROL_VALUE         1364
+#define _APS_NEXT_CONTROL_VALUE         1369
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

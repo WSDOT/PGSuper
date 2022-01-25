@@ -67,6 +67,13 @@ bool CGirderDescDlg::HasDeck() const
    return IsStructuralDeck(m_DeckType);
 }
 
+LPCTSTR CGirderDescDlg::GetIntentionalRougheningPrompt() const
+{
+   return m_pSegment->Material.Concrete.Type == pgsTypes::PCI_UHPC ?
+      _T("Top flange is intentionally roughened with fluted joints") :
+      _T("Top flange is intentionally roughened for interface shear capacity");
+}
+
 INT_PTR CGirderDescDlg::DoModal()
 {
    INT_PTR result = CPropertySheet::DoModal();

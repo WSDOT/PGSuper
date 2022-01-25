@@ -28,6 +28,7 @@
 #include "AASHTOConcretePage.h"
 #include "ACIConcretePage.h"
 #include "CEBFIPConcretePage.h"
+#include "PCIUHPCConcretePage.h"
 
 // ConcreteDetailsDlg.h : header file
 //
@@ -39,7 +40,7 @@ class PGSEXTCLASS CConcreteDetailsDlg : public CPropertySheet
 {
 // Construction
 public:
-	CConcreteDetailsDlg(bool bFinalProperties,bool bEnableComputeTimeParameters = true,bool bEnableCopyFromLibrary = true,CWnd* pParent = nullptr,UINT iSelectPage=0);
+	CConcreteDetailsDlg(bool bFinalProperties,bool bIncludedUHPC=true,bool bEnableComputeTimeParameters = true,bool bEnableCopyFromLibrary = true,CWnd* pParent = nullptr,UINT iSelectPage=0);
 
    // text strings to in in display units... Ec comes out in display units
    static CString UpdateEc(pgsTypes::ConcreteType type,const CString& strFc,const CString& strDensity,const CString& strK1,const CString& strK2);
@@ -54,6 +55,7 @@ public:
 	//{{AFX_VIRTUAL(CConcreteDetailsDlg)
 	//}}AFX_VIRTUAL
    bool m_bFinalProperties; // if true, properties are based on f'c28 otherwise they are based on f'ci
+   bool m_bIncludeUHPC; // if true, PCI UHPC can be selected as a type
    bool m_bEnableComputeTimeParamters; // if true, interface will be provided that allows the user to input f'ci and f'c and
    // time parameters to fit the f'c(t) function through f'ci and f'c will be computed
    bool m_bEnableCopyFromLibrary; // if true, the Copy From Library button is displayed in the UI
@@ -71,6 +73,7 @@ public:
    CAASHTOConcretePage m_AASHTO;
    CACIConcretePage m_ACI;
    CCEBFIPConcretePage m_CEBFIP;
+   CPCIUHPCConcretePage m_PCIUHPC;
 
    // Implementation
 protected:

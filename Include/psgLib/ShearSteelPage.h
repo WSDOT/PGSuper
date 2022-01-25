@@ -40,6 +40,7 @@ class PSGLIBCLASS CShearSteelPageParent
 {
 public:
    virtual bool HasDeck() const = 0;
+   virtual LPCTSTR GetIntentionalRougheningPrompt() const = 0;
 };
 
 /////////////////////////////////////////////////////////////////////////////

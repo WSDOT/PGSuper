@@ -115,6 +115,8 @@ TXDOTDOUBLET            METAFILE                "res\\txdotdou.emf"
 TAPEREDIBEAM            METAFILE                "res\\TaperedIBeam.emf"
 DECKEDSLABBEAM          METAFILE                "res\\DeckedSlabBeam.emf"
 SPLICEDNUBEAM           METAFILE                "res\\SplicedNUBeam.emf"
+NUDECKEDBULBTEE         METAFILE                "res\\NUDeckedBulbTee.emf"
+PCIDECKEDBULBTEE         METAFILE                "res\\PCIDeckedBulbTee.emf"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -164,6 +166,9 @@ IDR_SPLICEDUBEAMFACTORY REGISTRY                "SplicedUBeamFactory.rgs"
 IDR_SPLICEDNUBEAMFACTORY REGISTRY                "SplicedNUBeamFactory.rgs"
 
 IDR_AGE_ADJUSTED_MATERIAL REGISTRY              "AgeAdjustedMaterial.rgs"
+
+IDR_NUDECKEDBULBTEEFACTORY REGISTRY "NUDeckedBulbTeeFactory.rgs"
+IDR_PCIDECKEDBULBTEEFACTORY REGISTRY "PCIDeckedBulbTeeFactory.rgs"
 
 /////////////////////////////////////////////////////////////////////////////
 //

@@ -62,4 +62,7 @@
 // Bearing information is not available
 #define XREASON_BAD_BEARING_DATA            0x0800
 
+// Prestress loss method requirement not satisfied
+#define XREASON_PRESTRESS_LOSS_METHOD       0x1000
+
 #endif // INCLUDED_PGSUPEREXCEPTION_H_

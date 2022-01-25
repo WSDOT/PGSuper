@@ -86,6 +86,12 @@ void CInterfaceShearDetails::Build(IBroker* pBroker, rptChapter* pChapter,
 
    (*pPara) << _T("Details for Horizontal Interface Shear Capacity (") << GetLimitStateString(ls) << _T(") [") << LrfdCw8th(_T("5.8.4.1"), _T("5.7.4.1")) << _T("]") << rptNewLine;
 
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
+   if (pMaterials->GetSegmentConcreteType(CSegmentKey(girderKey, 0)) == pgsTypes::PCI_UHPC)
+   {
+      (*pPara) << _T("PCI UHPC SDG E.7.4.1") << rptNewLine;
+   }
+
    GET_IFACE2(pBroker, IDocumentType, pDocType);
    location.IncludeSpanAndGirder(pDocType->IsPGSpliceDocument() || girderKey.groupIndex == ALL_GROUPS);
 

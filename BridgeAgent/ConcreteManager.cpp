@@ -166,6 +166,8 @@ void CConcreteManager::ValidateConcrete() const
    Float64 modE;
 
    const CRailingSystem* pLeftRailingSystem = m_pBridgeDesc->GetLeftRailingSystem();
+   ATLASSERT(pLeftRailingSystem->Concrete.Type != pgsTypes::PCI_UHPC); // UHPC not supported yet - if this fires, there is a bug in the UI somewhere
+
    if ( pLeftRailingSystem->Concrete.bUserEc )
    {
       modE = pLeftRailingSystem->Concrete.Ec;
@@ -186,6 +188,7 @@ void CConcreteManager::ValidateConcrete() const
    m_pRailingConcrete[pgsTypes::tboLeft].reset( CreateConcreteModel(_T("Left Railing Concrete"), pLeftRailingSystem->Concrete,time_at_casting,cure_time,age_at_initial_loading,time_step) );
 
    const CRailingSystem* pRightRailingSystem = m_pBridgeDesc->GetRightRailingSystem();
+   ATLASSERT(pRightRailingSystem->Concrete.Type != pgsTypes::PCI_UHPC); // UHPC not supported yet - if this fires, there is a bug in the UI somewhere
    if ( pRightRailingSystem->Concrete.bUserEc )
    {
       modE = pRightRailingSystem->Concrete.Ec;
@@ -209,6 +212,7 @@ void CConcreteManager::ValidateConcrete() const
    // Precast Segment and Closure Joint Concrete
    //
    //////////////////////////////////////////////////////////////////////////////
+   bool bUHPCGirder = false; // when deck concrete is valided below, we need to know if any of the girders are UHPC
    GroupIndexType nGroups = m_pBridgeDesc->GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
@@ -223,6 +227,11 @@ void CConcreteManager::ValidateConcrete() const
             CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
 
             const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+
+            if (pSegment->Material.Concrete.Type == pgsTypes::PCI_UHPC)
+            {
+               bUHPCGirder = true;
+            }
 
             SegmentIDType segmentID = pSegment->GetID();
 
@@ -321,6 +330,7 @@ void CConcreteManager::ValidateConcrete() const
       if ( pPier->GetPierModelType() == pgsTypes::pmtPhysical )
       {
          const CConcreteMaterial& concrete = pPier->GetConcrete();
+         ATLASSERT(concrete.Type != pgsTypes::PCI_UHPC);
 
          Float64 modE;
          if ( concrete.bUserEci )
@@ -408,6 +418,7 @@ void CConcreteManager::ValidateConcrete() const
       IndexType regionIdx = 0;
       for (auto& pDeckConcrete : m_pvDeckConcrete)
       {
+         // Post information item in the status center if these limits are not satisfied
          Float64 time = pDeckConcrete->GetTimeAtCasting() + pDeckConcrete->GetCureTime() + 28.0;
          Float64 fc28 = pDeckConcrete->GetFc(time);
          if (fc28 < fcMin && !IsEqual(fc28, fcMin))
@@ -425,7 +436,7 @@ void CConcreteManager::ValidateConcrete() const
          }
 
          pgsTypes::ConcreteType slabConcreteType = (pgsTypes::ConcreteType)pDeckConcrete->GetType();
-         if (fcMax < fc28 && slabConcreteType != pgsTypes::UHPC)
+         if (fcMax < fc28)
          {
             std::_tostringstream os;
             os << _T("Deck concrete strength (" << (LPCTSTR)::FormatDimension(fc28, pDisplayUnits->GetStressUnit()) << ") exceeds the ") << (LPCTSTR)::FormatDimension(fcMax, pDisplayUnits->GetStressUnit()) << _T(" concrete strength limit per LRFD 5.1");
@@ -437,7 +448,7 @@ void CConcreteManager::ValidateConcrete() const
          }
 
          Float64 max_slab_fc = pLimits->GetMaxSlabFc(slabConcreteType);
-         if (  max_slab_fc < fc28 && !IsEqual(max_slab_fc,fc28) && slabConcreteType != pgsTypes::UHPC )
+         if (  max_slab_fc < fc28 && !IsEqual(max_slab_fc,fc28))
          {
             std::_tostringstream os;
             os << _T("Deck concrete strength (" << (LPCTSTR)::FormatDimension(fc28,pDisplayUnits->GetStressUnit()) << ") exceeds the normal value of ") << (LPCTSTR)::FormatDimension(max_slab_fc,pDisplayUnits->GetStressUnit());
@@ -446,6 +457,18 @@ void CConcreteManager::ValidateConcrete() const
             CSegmentKey dummyKey;
             pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::FinalStrength,dummyKey,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
             pStatusCenter->Add(pStatusItem);
+         }
+
+         if (bUHPCGirder && slabConcreteType != pgsTypes::PCI_UHPC)
+         {
+            if (fc28 < ::ConvertToSysUnits(6.0, unitMeasure::KSI) || slabConcreteType != pgsTypes::Normal)
+            {
+               // PCI UHPC SDG E.C4.2 recommends deck concrete by normal weight and have a minimum f'c of 6 ksi
+               CString strMsg(_T("PCI UHPC SDG E.C4.2 recommends that PCI-UHPC girders with conventional concrete deck, the deck should be normal weight concrete and have a minimum specified compressive strength of 6.0 KSI"));
+               CSegmentKey dummyKey;
+               pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab, pgsConcreteStrengthStatusItem::FinalStrength, dummyKey, m_StatusGroupID, m_scidConcreteStrengthWarning, strMsg);
+               pStatusCenter->Add(pStatusItem);
+            }
          }
 
          Float64 max_wc = pLimits->GetMaxConcreteUnitWeight(slabConcreteType);
@@ -536,7 +559,7 @@ void CConcreteManager::ValidateConcrete() const
       }
 
       pgsTypes::ConcreteType jointConcreteType = (pgsTypes::ConcreteType)m_pLongitudinalJointConcrete->GetType();
-      if (fcMax < fc28 && jointConcreteType != pgsTypes::UHPC)
+      if (fcMax < fc28 && jointConcreteType != pgsTypes::PCI_UHPC)
       {
          std::_tostringstream os;
          os << _T("Longitudinal joint strength (" << (LPCTSTR)::FormatDimension(fc28, pDisplayUnits->GetStressUnit()) << ") exceeds the ") << (LPCTSTR)::FormatDimension(fcMax, pDisplayUnits->GetStressUnit()) << _T(" concrete strength limit per LRFD 5.1");
@@ -627,7 +650,6 @@ void CConcreteManager::ValidateConcrete() const
 
    // Check girder concrete
    std::_tstring strMsg;
-
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
       const CGirderGroupData* pGroup = m_pBridgeDesc->GetGirderGroup(grpIdx);
@@ -775,25 +797,34 @@ void CConcreteManager::ValidateLongitudinalJointConcrete() const
    m_bIsLongitudinalJointValidated = true;
 }
 
-void CConcreteManager::ValidateConcreteParameters(std::shared_ptr<matConcreteBase> pConcrete,pgsConcreteStrengthStatusItem::ConcreteType elementType,LPCTSTR strLabel,const CSegmentKey& segmentKey) const
+void CConcreteManager::ValidateConcreteParameters(std::shared_ptr<matConcreteBase> pConcrete, pgsConcreteStrengthStatusItem::ConcreteType elementType, LPCTSTR strLabel, const CSegmentKey& segmentKey) const
 {
    ATLASSERT(elementType == pgsConcreteStrengthStatusItem::GirderSegment || elementType == pgsConcreteStrengthStatusItem::ClosureJoint);
-   GET_IFACE(ILimits,pLimits);
+   GET_IFACE(ILimits, pLimits);
 
    // these interfaces not used unless there is a problem
-   GET_IFACE_NOCHECK(IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE_NOCHECK(IEAFStatusCenter,pStatusCenter);
+   GET_IFACE_NOCHECK(IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE_NOCHECK(IEAFStatusCenter, pStatusCenter);
 
    pgsTypes::ConcreteType concreteType = (pgsTypes::ConcreteType)pConcrete->GetType();
 
-   // per 5.4.2.1 f'c must exceed 28 MPa (4 ksi)
-   bool bSI = lrfdVersionMgr::GetUnits() == lrfdVersionMgr::SI ? true : false;
-   Float64 fcMin = bSI ? ::ConvertToSysUnits(28, unitMeasure::MPa) : ::ConvertToSysUnits(4, unitMeasure::KSI);
-   // the LRFD doesn't say that this specifically applies to closure joints,
-   // but we are going to assume that it does.
+   Float64 fcMin, fcMax;
+   if (concreteType == pgsTypes::PCI_UHPC)
+   {
+      fcMin = ::ConvertToSysUnits(17.4, unitMeasure::KSI);
+      fcMax = ::ConvertToSysUnits(99999.0, unitMeasure::KSI); // this is a dummy value - we aren't going to check fcMax below
+   }
+   else
+   {
+      // per 5.4.2.1 f'c must exceed 28 MPa (4 ksi)
+      bool bSI = lrfdVersionMgr::GetUnits() == lrfdVersionMgr::SI ? true : false;
+      fcMin = bSI ? ::ConvertToSysUnits(28, unitMeasure::MPa) : ::ConvertToSysUnits(4, unitMeasure::KSI);
+      // the LRFD doesn't say that this specifically applies to closure joints,
+      // but we are going to assume that it does.
 
-   Float64 fcMax = (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::EighthEdition2017 ? 10.0 : 15.0); // KSI... limit went from 10ksi to 15ksi in 8th edition
-   fcMax = ::ConvertToSysUnits(fcMax, unitMeasure::KSI);
+      fcMax = (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::EighthEdition2017 ? 10.0 : 15.0); // KSI... limit went from 10ksi to 15ksi in 8th edition
+      fcMax = ::ConvertToSysUnits(fcMax, unitMeasure::KSI);
+   }
 
    Float64 max_fci, max_fc;
    if ( elementType == pgsConcreteStrengthStatusItem::GirderSegment )
@@ -817,14 +848,17 @@ void CConcreteManager::ValidateConcreteParameters(std::shared_ptr<matConcreteBas
    if (fc28 < fcMin )
    {
       std::_tostringstream os;
-      os << strLabel << _T(": Concrete strength is less that permitted by LRFD 5.4.2.1");
+      if(concreteType == pgsTypes::PCI_UHPC)
+         os << strLabel << _T(": Concrete strength (") << (LPCTSTR)::FormatDimension(fc28, pDisplayUnits->GetStressUnit()) << _T(") is less that minimum performance criteria for PCI UHPC materials(") << (LPCTSTR)::FormatDimension(fcMin, pDisplayUnits->GetStressUnit()) << _T(")");
+      else
+         os << strLabel << _T(": Concrete strength is less that permitted by LRFD 5.4.2.1");
       strMsg = os.str();
       pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(elementType,pgsConcreteStrengthStatusItem::FinalStrength,segmentKey,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
       pStatusCenter->Add(pStatusItem);
    }
 
 
-   if (fcMax < fc28 && concreteType != pgsTypes::UHPC)
+   if (fcMax < fc28 && concreteType != pgsTypes::PCI_UHPC)
    {
       std::_tostringstream os;
       os << strLabel << _T(" strength (" << (LPCTSTR)::FormatDimension(fc28, pDisplayUnits->GetStressUnit()) << ") exceeds the ") << (LPCTSTR)::FormatDimension(fcMax, pDisplayUnits->GetStressUnit()) << _T(" concrete strength limit per LRFD 5.1");
@@ -834,7 +868,7 @@ void CConcreteManager::ValidateConcreteParameters(std::shared_ptr<matConcreteBas
       pStatusCenter->Add(pStatusItem);
    }
 
-   if (  max_fci < fci && !IsEqual(max_fci,fci,::ConvertToSysUnits(0.001,unitMeasure::KSI)) && concreteType != pgsTypes::UHPC )
+   if (  max_fci < fci && !IsEqual(max_fci,fci,::ConvertToSysUnits(0.001,unitMeasure::KSI)) && concreteType != pgsTypes::PCI_UHPC )
    {
       std::_tostringstream os;
       os << strLabel << _T(": Initial concrete strength (") << (LPCTSTR)::FormatDimension(fci,pDisplayUnits->GetStressUnit()) <<  _T(") exceeds the normal value of ") << (LPCTSTR)::FormatDimension(max_fci,pDisplayUnits->GetStressUnit());
@@ -845,7 +879,7 @@ void CConcreteManager::ValidateConcreteParameters(std::shared_ptr<matConcreteBas
       pStatusCenter->Add(pStatusItem);
    }
 
-   if (  max_fc < fc28 && !IsEqual(max_fc,fc28,::ConvertToSysUnits(0.001,unitMeasure::KSI)) && concreteType != pgsTypes::UHPC )
+   if (  max_fc < fc28 && !IsEqual(max_fc,fc28,::ConvertToSysUnits(0.001,unitMeasure::KSI)) && concreteType != pgsTypes::PCI_UHPC )
    {
       std::_tostringstream os;
       os << strLabel << _T(": Concrete strength (") << (LPCTSTR)::FormatDimension(fc28,pDisplayUnits->GetStressUnit()) << _T(") exceeds the normal value of ") << (LPCTSTR)::FormatDimension(max_fc,pDisplayUnits->GetStressUnit());
@@ -854,6 +888,54 @@ void CConcreteManager::ValidateConcreteParameters(std::shared_ptr<matConcreteBas
 
       pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(elementType,pgsConcreteStrengthStatusItem::FinalStrength,segmentKey,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
       pStatusCenter->Add(pStatusItem);
+   }
+
+   if (concreteType == pgsTypes::PCI_UHPC)
+   {
+      if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::NinthEdition2020)
+      {
+         strMsg = _T("The project criteria must be based on AASHTO LRFD 9th Edition 2020 or later when PCI UHPC materials are used.");
+         pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(elementType, pgsConcreteStrengthStatusItem::Specification, segmentKey, m_StatusGroupID, m_scidConcreteStrengthError, strMsg.c_str());
+         pStatusCenter->Add(pStatusItem);
+      }
+
+      Float64 fci_min = ::ConvertToSysUnits(10.0, unitMeasure::KSI);
+      if (fci < fci_min)
+      {
+         std::_tostringstream os;
+         os << strLabel << _T(": Initial concrete strength (") << (LPCTSTR)::FormatDimension(fci, pDisplayUnits->GetStressUnit()) << _T(") is less than the recommended minimum for PCI UHPC materials (") << (LPCTSTR)::FormatDimension(fci_min, pDisplayUnits->GetStressUnit()) << _T(")") << _T(", PCI UHPC SDG E.4.2");
+
+         strMsg = os.str();
+
+         pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(elementType, pgsConcreteStrengthStatusItem::ReleaseStrength, segmentKey, m_StatusGroupID, m_scidConcreteStrengthWarning, strMsg.c_str());
+         pStatusCenter->Add(pStatusItem);
+      }
+
+      Float64 ffc;
+      const auto* pLRFDConcrete = dynamic_cast<const lrfdLRFDConcrete*>(pConcrete.get());
+      const auto* pLRFDTimeDependentConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete.get());
+      if (pLRFDConcrete)
+      {
+         ffc = pLRFDConcrete->GetFirstCrackStrength();
+      }
+      else
+      {
+         ffc = pLRFDTimeDependentConcrete->GetFirstCrackStrength();
+      }
+
+      Float64 fcMin, ffcMin, fpeakMin, frrMin;
+      lrfdConcreteUtil::GetPCIUHPCMinProperties(&fcMin, &ffcMin, &fpeakMin, &frrMin);
+
+      if (ffc < ffcMin)
+      {
+         std::_tostringstream os;
+         os << strLabel << _T(": First peak (cracking) flexural strength (") << (LPCTSTR)::FormatDimension(ffc, pDisplayUnits->GetStressUnit()) << _T(") is less than the minimum performance criteria for PCI UHPC materials (") << (LPCTSTR)::FormatDimension(ffcMin, pDisplayUnits->GetStressUnit()) << _T(")") << _T(", PCI UHPC SDG E.4.2");
+
+         strMsg = os.str();
+
+         pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(elementType, pgsConcreteStrengthStatusItem::FirstPeakFlexuralStrength, segmentKey, m_StatusGroupID, m_scidConcreteStrengthWarning, strMsg.c_str());
+         pStatusCenter->Add(pStatusItem);
+      }
    }
 
    Float64 max_wc = pLimits->GetMaxConcreteUnitWeight(concreteType);
@@ -888,9 +970,17 @@ void CConcreteManager::ValidateConcreteParameters(std::shared_ptr<matConcreteBas
       {
          os << strLabel << _T(": concrete density is out of range for Normal Weight Concrete per LRFD 5.2.");
       }
-      else
+      else if(concreteType == pgsTypes::AllLightweight || concreteType == pgsTypes::SandLightweight)
       {
          os << strLabel << _T(": concrete density is out of range for Lightweight Concrete per LRFD 5.2.");
+      }
+      else if (concreteType == pgsTypes::PCI_UHPC)
+      {
+         os << strLabel << _T(": concrete density is out of range for PCI UHPC materials");
+      }
+      else
+      {
+         ATLASSERT(false); // is there a new concreet type
       }
 
       strMsg = os.str();
@@ -931,7 +1021,7 @@ void CConcreteManager::ValidateConcreteParameters(std::shared_ptr<matConcreteBas
 
 bool CConcreteManager::IsConcreteDensityInRange(Float64 density,pgsTypes::ConcreteType type) const
 {
-   if (type == pgsTypes::UHPC)
+   if (type == pgsTypes::PCI_UHPC)
    {
       return true; // there isn't a desnity limit for UHPC
    }
@@ -987,6 +1077,7 @@ matConcreteBase* CConcreteManager::CreateConcreteModel(LPCTSTR strName,const CCo
    pConcrete->HasAggSplittingStrength(concrete.bHasFct);
    pConcrete->SetAggSplittingStrength(concrete.Fct);
    pConcrete->SetMaxAggregateSize(concrete.MaxAggregateSize);
+   pConcrete->SetFiberLength(concrete.FiberLength);
    pConcrete->SetRelativeHumidity(rh);
    pConcrete->SetTimeAtCasting(timeAtCasting);
    pConcrete->SetAgeAtInitialLoading(ageAtInitialLoading);
@@ -1024,8 +1115,8 @@ void CConcreteManager::CreateConcrete(const CConcreteMaterial& concrete,LPCTSTR 
    Float64 lambda = lrfdConcreteUtil::ComputeConcreteDensityModificationFactor((matConcrete::Type)concrete.Type,concrete.StrengthDensity,concrete.bHasFct,concrete.Fct,concrete.Fc);
 
    // get the modulus of rupture.
-   Float64 frShear   = lrfdConcreteUtil::ModRupture(concrete.Fci,GetShearFrCoefficient(concrete.Type));
-   Float64 frFlexure = lrfdConcreteUtil::ModRupture(concrete.Fci,GetFlexureFrCoefficient(concrete.Type));
+   Float64 frShear = lrfdConcreteUtil::ModRupture(concrete.Fci, GetShearFrCoefficient(concrete.Type));
+   Float64 frFlexure = lrfdConcreteUtil::ModRupture(concrete.Fci, GetFlexureFrCoefficient(concrete.Type));
 
    pReleaseConc->SetName(strName);
    pReleaseConc->SetFc(concrete.Fci);
@@ -1033,6 +1124,7 @@ void CConcreteManager::CreateConcrete(const CConcreteMaterial& concrete,LPCTSTR 
    pReleaseConc->SetDensityForWeight(concrete.WeightDensity);
    pReleaseConc->SetE(modE);
    pReleaseConc->SetMaxAggregateSize(concrete.MaxAggregateSize);
+   pReleaseConc->SetFiberLength(concrete.FiberLength);
    pReleaseConc->SetType((matConcrete::Type)concrete.Type);
    pReleaseConc->HasAggSplittingStrength(concrete.bHasFct);
    pReleaseConc->SetAggSplittingStrength(concrete.Fct);
@@ -1057,7 +1149,7 @@ void CConcreteManager::CreateConcrete(const CConcreteMaterial& concrete,LPCTSTR 
 
    // get the modulus of rupture.
    frShear   = lrfdConcreteUtil::ModRupture(concrete.Fc,GetShearFrCoefficient(concrete.Type));
-   frFlexure = lrfdConcreteUtil::ModRupture(concrete.Fc,GetFlexureFrCoefficient(concrete.Type));
+   frFlexure = (concrete.Type != pgsTypes::PCI_UHPC ? lrfdConcreteUtil::ModRupture(concrete.Fc,GetFlexureFrCoefficient(concrete.Type)) : 0);
 
    pConcrete->SetName(strName);
    pConcrete->SetFc(concrete.Fc);
@@ -1065,6 +1157,7 @@ void CConcreteManager::CreateConcrete(const CConcreteMaterial& concrete,LPCTSTR 
    pConcrete->SetDensityForWeight(concrete.WeightDensity);
    pConcrete->SetE(modE);
    pConcrete->SetMaxAggregateSize(concrete.MaxAggregateSize);
+   pConcrete->SetFiberLength(concrete.FiberLength);
    pConcrete->SetType((matConcrete::Type)concrete.Type);
    pConcrete->HasAggSplittingStrength(concrete.bHasFct);
    pConcrete->SetAggSplittingStrength(concrete.Fct);
@@ -1094,6 +1187,12 @@ Float64 CConcreteManager::GetSegmentMaxAggrSize(const CSegmentKey& segmentKey) c
 {
    ValidateConcrete();
    return m_pSegmentConcrete[segmentKey]->GetMaxAggregateSize();
+}
+
+Float64 CConcreteManager::GetSegmentConcreteFiberLength(const CSegmentKey& segmentKey) const
+{
+   ValidateConcrete();
+   return m_pSegmentConcrete[segmentKey]->GetType() == pgsTypes::PCI_UHPC ? m_pSegmentConcrete[segmentKey]->GetFiberLength() : 0;
 }
 
 Float64 CConcreteManager::GetSegmentStrengthDensity(const CSegmentKey& segmentKey) const
@@ -1208,6 +1307,12 @@ Float64 CConcreteManager::GetClosureJointMaxAggrSize(const CSegmentKey& closureK
 {
    ValidateConcrete();
    return m_pClosureConcrete[closureKey]->GetMaxAggregateSize();
+}
+
+Float64 CConcreteManager::GetClosureJointConcreteFiberLength(const CClosureKey& closureKey) const
+{
+   ValidateConcrete();
+   return m_pClosureConcrete[closureKey]->GetType() == pgsTypes::PCI_UHPC ? m_pClosureConcrete[closureKey]->GetFiberLength() : 0;
 }
 
 Float64 CConcreteManager::GetClosureJointStrengthDensity(const CSegmentKey& closureKey) const
@@ -1375,6 +1480,21 @@ Float64 CConcreteManager::GetDeckMaxAggrSize() const
    if ( pDeckConcrete != nullptr )
    {
       return pDeckConcrete->GetMaxAggregateSize();
+   }
+   else
+   {
+      return 0;
+   }
+}
+
+Float64 CConcreteManager::GetDeckConcreteFiberLength() const
+{
+   ValidateConcrete();
+   auto* pDeckConcrete = m_pvDeckConcrete.empty() ? nullptr : m_pvDeckConcrete[0].get(); // use region 0 because the deck material in all casting regions is the same
+
+   if (pDeckConcrete != nullptr)
+   {
+      return pDeckConcrete->GetType() == pgsTypes::PCI_UHPC ? pDeckConcrete->GetFiberLength() : 0;
    }
    else
    {
@@ -1798,6 +1918,9 @@ Float64 CConcreteManager::GetFlexureModRupture(Float64 fc,pgsTypes::ConcreteType
 
 Float64 CConcreteManager::GetFlexureFrCoefficient(pgsTypes::ConcreteType type) const
 {
+   if (type == pgsTypes::PCI_UHPC)
+      return 0;
+
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
@@ -1831,9 +1954,10 @@ bool CConcreteManager::HasUHPC() const
 {
    ValidateConcrete();
    ValidateSegmentConcrete();
+
    for (auto& item : m_pSegmentConcrete)
    {
-      if (item.second->GetType() == matConcrete::UHPC)
+      if (item.second->GetType() == matConcrete::PCI_UHPC)
       {
          return true;
       }
@@ -1841,7 +1965,7 @@ bool CConcreteManager::HasUHPC() const
 
    for (auto& item : m_pClosureConcrete)
    {
-      if (item.second->GetType() == matConcrete::UHPC)
+      if (item.second->GetType() == matConcrete::PCI_UHPC)
       {
          return true;
       }
@@ -1850,14 +1974,14 @@ bool CConcreteManager::HasUHPC() const
    ValidateDeckConcrete();
    for (auto& item : m_pvDeckConcrete)
    {
-      if (item->GetType() == matConcrete::UHPC)
+      if (item->GetType() == matConcrete::PCI_UHPC)
       {
          return true;
       }
    }
 
    ValidateLongitudinalJointConcrete();
-   if (m_pLongitudinalJointConcrete != nullptr && m_pLongitudinalJointConcrete->GetType() == matConcrete::UHPC)
+   if (m_pLongitudinalJointConcrete != nullptr && m_pLongitudinalJointConcrete->GetType() == matConcrete::PCI_UHPC)
    {
       return true;
    }
@@ -1865,16 +1989,18 @@ bool CConcreteManager::HasUHPC() const
    ValidateRailingSystemConcrete();
    for (auto& item : m_pRailingConcrete)
    {
-      if (item->GetType() == matConcrete::UHPC)
+      if (item->GetType() == matConcrete::PCI_UHPC)
       {
+         ATLASSERT(false); // the UI should prevent UHPC for railings
          return true;
       }
    }
 
    for (auto& item : m_pPierConcrete)
    {
-      if (item.second->GetType() == matConcrete::UHPC)
+      if (item.second->GetType() == matConcrete::PCI_UHPC)
       {
+         ATLASSERT(false); // the UI should prevent UHPC for piers
          return true;
       }
    }
@@ -1885,6 +2011,9 @@ bool CConcreteManager::HasUHPC() const
 
 Float64 CConcreteManager::GetShearFrCoefficient(pgsTypes::ConcreteType type) const
 {
+   if (type == pgsTypes::PCI_UHPC)
+      return 0;
+
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
@@ -2120,6 +2249,23 @@ Float64 CConcreteManager::GetSegmentAgingCoefficient(const CSegmentKey& segmentK
    return GetConcreteAgingCoefficient(m_pSegmentConcrete[segmentKey].get(),timeOfLoading);
 }
 
+Float64 CConcreteManager::GetSegmentConcreteFirstCrackingStrength(const CSegmentKey& segmentKey) const
+{
+   ValidateConcrete();
+   ValidateSegmentConcrete();
+   if (m_pSegmentConcrete[segmentKey]->GetType() == matConcreteBase::PCI_UHPC)
+   {
+      std::shared_ptr<const lrfdLRFDConcrete> pConcrete1 = std::dynamic_pointer_cast<const lrfdLRFDConcrete>(m_pSegmentConcrete[segmentKey]);
+      std::shared_ptr<const lrfdLRFDTimeDependentConcrete> pConcrete2 = std::dynamic_pointer_cast<const lrfdLRFDTimeDependentConcrete>(m_pSegmentConcrete[segmentKey]);
+      return (pConcrete1 ? pConcrete1->GetFirstCrackStrength() : pConcrete2->GetFirstCrackStrength());
+   }
+   else
+   {
+      ATLASSERT(false); // this is a call for UHPC only so how did you get here?
+      return 0;
+   }
+}
+
 const matConcreteBase* CConcreteManager::GetSegmentConcrete(const CSegmentKey& segmentKey) const
 {
    ValidateConcrete();
@@ -2196,6 +2342,23 @@ const matConcreteBase* CConcreteManager::GetClosureJointConcrete(const CClosureK
    ValidateConcrete();
    ValidateSegmentConcrete();
    return m_pClosureConcrete[closureKey].get();
+}
+
+Float64 CConcreteManager::GetClosureJointConcreteFirstCrackingStrength(const CClosureKey& closureKey) const
+{
+   ValidateConcrete();
+   ValidateSegmentConcrete();
+   if (m_pClosureConcrete[closureKey]->GetType() == matConcreteBase::PCI_UHPC)
+   {
+      std::shared_ptr<const lrfdLRFDConcrete> pConcrete1 = std::dynamic_pointer_cast<const lrfdLRFDConcrete>(m_pClosureConcrete[closureKey]);
+      std::shared_ptr<const lrfdLRFDTimeDependentConcrete> pConcrete2 = std::dynamic_pointer_cast<const lrfdLRFDTimeDependentConcrete>(m_pClosureConcrete[closureKey]);
+      return (pConcrete1 ? pConcrete1->GetFirstCrackStrength() : pConcrete2->GetFirstCrackStrength());
+   }
+   else
+   {
+      ATLASSERT(false); // this is a call for UHPC only so how did you get here?
+      return 0;
+   }
 }
 
 Float64 CConcreteManager::GetLongitudinalJointCastingTime() const
@@ -2391,6 +2554,10 @@ lrfdLRFDConcrete* CConcreteManager::CreateLRFDConcreteModel(const CConcreteMater
       }
    }
 
+   pLRFDConcrete->SetFirstCrackStrength(concrete.Ffc);
+   pLRFDConcrete->SetPostCrackingTensileStrength(concrete.Frr);
+
+
    return pLRFDConcrete;
 }
 
@@ -2437,6 +2604,9 @@ lrfdLRFDTimeDependentConcrete* CConcreteManager::CreateTimeDependentLRFDConcrete
 
    Float64 lambda = lrfdConcreteUtil::ComputeConcreteDensityModificationFactor((matConcrete::Type)concrete.Type,concrete.StrengthDensity,concrete.bHasFct,concrete.Fct,concrete.Fc);
    pConcrete->SetLambda(lambda);
+
+   pConcrete->SetFirstCrackStrength(concrete.Ffc);
+   pConcrete->SetPostCrackingTensileStrength(concrete.Frr);
 
    return pConcrete;
 }

@@ -187,10 +187,10 @@ Float64 pgsWsdotHaulingAnalysisArtifact::GetFsFailure(pgsTypes::HaulingSlope slo
    return m_HaulingArtifact.GetHaulingResults().MinFsFailure[slope];
 }
 
-void pgsWsdotHaulingAnalysisArtifact::GetRequiredConcreteStrength(pgsTypes::HaulingSlope slope,Float64 *pfciComp,Float64 *pfcTensionNoRebar,Float64 *pfcTensionWithRebar) const
+void pgsWsdotHaulingAnalysisArtifact::GetRequiredConcreteStrength(pgsTypes::HaulingSlope slope,Float64 *pfciComp,Float64 *pfcTension, Float64* pfcTensionWithRebar) const
 {
    *pfciComp = m_HaulingArtifact.RequiredFcCompression((WBFL::Stability::HaulingSlope)slope);
-   *pfcTensionNoRebar = m_HaulingArtifact.RequiredFcTension((WBFL::Stability::HaulingSlope)slope);
+   *pfcTension = m_HaulingArtifact.RequiredFcTensionWithoutRebar((WBFL::Stability::HaulingSlope)slope);
    *pfcTensionWithRebar = m_HaulingArtifact.RequiredFcTensionWithRebar((WBFL::Stability::HaulingSlope)slope);
 }
 

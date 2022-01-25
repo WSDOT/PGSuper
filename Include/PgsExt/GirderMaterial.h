@@ -49,25 +49,11 @@ public:
    CConcreteMaterial Concrete;
 
    CGirderMaterial();
-
-   CGirderMaterial(const CGirderMaterial& rOther);
-
    ~CGirderMaterial();
 
-   CGirderMaterial& operator = (const CGirderMaterial& rOther);
-
    bool operator==(const CGirderMaterial& rOther) const;
-
    bool operator!=(const CGirderMaterial& rOther) const;
 
 	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
 	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
-
-#if defined _DEBUG
-   void AssertValid();
-#endif
-
-protected:
-   void MakeCopy(const CGirderMaterial& rOther);
-   void MakeAssignment(const CGirderMaterial& rOther);
 };

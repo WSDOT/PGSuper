@@ -58,7 +58,7 @@ public:
    virtual bool Passed(bool bIgnoreConfigurationLimits=false) const = 0;
    virtual bool Passed(pgsTypes::HaulingSlope slope) const = 0;
    virtual bool PassedStressCheck(pgsTypes::HaulingSlope slope) const = 0;
-   virtual void GetRequiredConcreteStrength(pgsTypes::HaulingSlope slope,Float64 *pfcCompression,Float64 *pfcTensionNoRebar,Float64 *pfcTensionWithRebar) const = 0;
+   virtual void GetRequiredConcreteStrength(pgsTypes::HaulingSlope slope,Float64 *pfcCompression,Float64 *pfcTension,Float64* pfcTensionWithRebar) const = 0;
 
    virtual void BuildHaulingCheckReport(const CSegmentKey& segmentKey, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const = 0;
    virtual void BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const = 0;
@@ -114,7 +114,7 @@ public:
    virtual bool Passed(bool bIgnoreConfigurationLimits = false) const override;
    virtual bool Passed(pgsTypes::HaulingSlope slope) const override;
    virtual bool PassedStressCheck(pgsTypes::HaulingSlope slope) const override;
-   virtual void GetRequiredConcreteStrength(pgsTypes::HaulingSlope slope,Float64 *pfcCompression,Float64 *pfcTensionNoRebar,Float64 *pfcTensionWithRebar) const override;
+   virtual void GetRequiredConcreteStrength(pgsTypes::HaulingSlope slope,Float64 *pfcCompression,Float64 *pfcTension, Float64* pfcTensionWithRebar) const override;
 
    virtual void BuildHaulingCheckReport(const CSegmentKey& segmentKey,rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const override;
    virtual void BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const override;

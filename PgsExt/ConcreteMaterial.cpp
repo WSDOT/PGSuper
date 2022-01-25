@@ -77,6 +77,11 @@ CConcreteMaterial::CConcreteMaterial()
    bHasFct = false;
    Fct = 0;
 
+   Ffc = ::ConvertToSysUnits(1.5, unitMeasure::KSI);
+   Frr = ::ConvertToSysUnits(0.75, unitMeasure::KSI);
+   FiberLength = ::ConvertToSysUnits(0.5, unitMeasure::Inch);
+   bPCTT = false;
+
    bBasePropertiesOnInitialValues = false;
 
    bACIUserParameters = false;
@@ -89,24 +94,8 @@ CConcreteMaterial::CConcreteMaterial()
    matCEBFIPConcrete::GetModelParameters((matCEBFIPConcrete::CementType)CEBFIPCementType,&S,&BetaSc);
 }  
 
-CConcreteMaterial::CConcreteMaterial(const CConcreteMaterial& rOther)
-{
-   MakeCopy(rOther);
-}
-
 CConcreteMaterial::~CConcreteMaterial()
 {
-}
-
-//======================== OPERATORS  =======================================
-CConcreteMaterial& CConcreteMaterial::operator= (const CConcreteMaterial& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
 }
 
 bool CConcreteMaterial::operator==(const CConcreteMaterial& rOther) const
@@ -164,7 +153,12 @@ bool CConcreteMaterial::operator==(const CConcreteMaterial& rOther) const
       return false;
    }
 
-   if ( MaxAggregateSize != rOther.MaxAggregateSize )
+   if (MaxAggregateSize != rOther.MaxAggregateSize)
+   {
+      return false;
+   }
+
+   if (FiberLength != rOther.FiberLength)
    {
       return false;
    }
@@ -207,6 +201,18 @@ bool CConcreteMaterial::operator==(const CConcreteMaterial& rOther) const
    if ( bHasFct && !IsEqual(Fct,rOther.Fct) )
    {
       return false;
+   }
+
+   if (Type == pgsTypes::PCI_UHPC)
+   {
+      if (!IsEqual(Ffc, rOther.Ffc))
+         return false;
+
+      if (!IsEqual(Frr, rOther.Frr))
+         return false;
+
+      if (bPCTT != rOther.bPCTT)
+         return false;
    }
 
    if ( bBasePropertiesOnInitialValues != rOther.bBasePropertiesOnInitialValues )
@@ -278,56 +284,9 @@ bool CConcreteMaterial::operator!=(const CConcreteMaterial& rOther) const
    return !operator==(rOther);
 }
 
-void CConcreteMaterial::MakeCopy(const CConcreteMaterial& rOther)
-{
-   Type              = rOther.Type;
-   Fc                = rOther.Fc;
-   bUserEc           = rOther.bUserEc;
-   Ec                = rOther.Ec;
-   WeightDensity     = rOther.WeightDensity;
-   StrengthDensity   = rOther.StrengthDensity;
-   MaxAggregateSize  = rOther.MaxAggregateSize;
-
-   bHasInitial       = rOther.bHasInitial;
-   Fci               = rOther.Fci;
-   bUserEci          = rOther.bUserEci;
-   Eci               = rOther.Eci;
-
-   // AASHTO Parameters
-   EcK1              = rOther.EcK1;
-   EcK2              = rOther.EcK2;
-   CreepK1           = rOther.CreepK1;
-   CreepK2           = rOther.CreepK2;
-   ShrinkageK1       = rOther.ShrinkageK1;
-   ShrinkageK2       = rOther.ShrinkageK2;
-   bHasFct           = rOther.bHasFct;
-   Fct               = rOther.Fct;
-
-   bBasePropertiesOnInitialValues = rOther.bBasePropertiesOnInitialValues;
-
-   // ACI Parameters
-   bACIUserParameters = rOther.bACIUserParameters;
-   A                  = rOther.A;
-   B                  = rOther.B;
-   CureMethod         = rOther.CureMethod;
-   ACI209CementType   = rOther.ACI209CementType;
-
-   // CEB-FIP Parameters
-   bCEBFIPUserParameters = rOther.bCEBFIPUserParameters;
-   S                     = rOther.S;
-   BetaSc                = rOther.BetaSc;
-   CEBFIPCementType      = rOther.CEBFIPCementType;
-}
-
-
-void CConcreteMaterial::MakeAssignment(const CConcreteMaterial& rOther)
-{
-   MakeCopy( rOther );
-}
-
 HRESULT CConcreteMaterial::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
-   pStrSave->BeginUnit(_T("Concrete"),2.0);
+   pStrSave->BeginUnit(_T("Concrete"),4.0);
    pStrSave->put_Property(_T("Type"),             CComVariant( lrfdConcreteUtil::GetTypeName((matConcrete::Type)Type,false).c_str() ));
    pStrSave->put_Property(_T("Fc"),               CComVariant(Fc));
 
@@ -341,6 +300,7 @@ HRESULT CConcreteMaterial::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->put_Property(_T("WeightDensity"),    CComVariant(WeightDensity));
    pStrSave->put_Property(_T("StrengthDensity"),  CComVariant(StrengthDensity));
    pStrSave->put_Property(_T("MaxAggregateSize"), CComVariant(MaxAggregateSize));
+   pStrSave->put_Property(_T("FiberLength"), CComVariant(FiberLength)); // added in version 4
 
    pStrSave->put_Property(_T("InitialParameters"),CComVariant(bHasInitial));
    if ( bHasInitial )
@@ -364,7 +324,7 @@ HRESULT CConcreteMaterial::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->put_Property(_T("ShrinkageK1"),      CComVariant(ShrinkageK1));
    pStrSave->put_Property(_T("ShrinkageK2"),      CComVariant(ShrinkageK2));
 
-   if ( Type != pgsTypes::Normal )
+   if ( Type != pgsTypes::Normal ) // this should have been if LWC since it doesn't apply to UHPC, but it is done now so leave it alone
    {
       pStrSave->put_Property(_T("HasFct"),CComVariant(bHasFct));
       if ( bHasFct )
@@ -373,6 +333,14 @@ HRESULT CConcreteMaterial::Save(IStructuredSave* pStrSave,IProgress* pProgress)
       }
    }
    pStrSave->EndUnit(); // AASHTO
+
+   // Added in Version 3
+   pStrSave->BeginUnit(_T("PCI_UHPC"), 1.0);
+   pStrSave->put_Property(_T("Ffc"), CComVariant(Ffc));
+   pStrSave->put_Property(_T("Frr"), CComVariant(Frr));
+   pStrSave->put_Property(_T("FiberLength"), CComVariant(FiberLength));
+   pStrSave->put_Property(_T("PCTT"), CComVariant(bPCTT));
+   pStrSave->EndUnit(); // PCI_UHPC
 
    pStrSave->put_Property(_T("BasePropertiesOnInitialValues"),CComVariant(bBasePropertiesOnInitialValues));
 
@@ -437,6 +405,13 @@ HRESULT CConcreteMaterial::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    pStrLoad->get_Property(_T("MaxAggregateSize"), &var);
    MaxAggregateSize = var.dblVal;
 
+   if (3 < version)
+   {
+      // added in version 4
+      pStrLoad->get_Property(_T("FiberLength"), &var);
+      FiberLength = var.dblVal;
+   }
+
    var.vt = VT_BOOL;
    pStrLoad->get_Property(_T("InitialParameters"),&var);
    bHasInitial = (var.boolVal == VARIANT_TRUE ? true : false);
@@ -498,6 +473,30 @@ HRESULT CConcreteMaterial::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    }
 
    pStrLoad->EndUnit(); // AASHTO
+
+
+   if(2 < version)
+   {
+      // added in Version 3
+      pStrLoad->BeginUnit(_T("PCI_UHPC"));
+      
+      var.vt = VT_R8;
+      
+      pStrLoad->get_Property(_T("Ffc"), &var);
+      Ffc = var.dblVal;
+      
+      pStrLoad->get_Property(_T("Frr"), &var);
+      Frr = var.dblVal;
+
+      pStrLoad->get_Property(_T("FiberLength"), &var);
+      FiberLength = var.dblVal;
+
+      var.vt = VT_BOOL;
+      pStrLoad->get_Property(_T("PCTT"), &var);
+      bPCTT = (var.boolVal == VARIANT_TRUE ? true : false);
+
+      pStrLoad->EndUnit(); // PCI_UHPC
+   }
 
    var.vt = VT_BOOL;
    pStrLoad->get_Property(_T("BasePropertiesOnInitialValues"),&var);
@@ -562,8 +561,3 @@ HRESULT CConcreteMaterial::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    return S_OK;
 }
 
-#if defined _DEBUG
-void CConcreteMaterial::AssertValid()
-{
-}
-#endif

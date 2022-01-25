@@ -259,9 +259,8 @@ struct SHEARCAPACITYDETAILS
    Float64 sxe_tbl;
    Float64 Theta;
    Float64 FiberStress;// coefficient for compute the contribution of fibers in UHPC to the shear capacity (taken as 0.75 ksi for now)
-   Float64 Vc;
+   Float64 Vc; // Shear strength of concrete (= Vcf for PCI UHPC)
    Float64 Vs;
-   Float64 Vf; // capacity of UHPC fibers
    Float64 Vn1;  // [Eqn 5.8.3.3-1]
    Float64 Vn2;  // [Eqn 5.8.3.3-2]
    Float64 Vn;   // Nominal shear resistance
@@ -418,7 +417,7 @@ struct CREEPCOEFFICIENTDETAILS
 
    // before 2005 interim
    Float64 kf;
-   Float64 kc;
+   //Float64 kc; // this is stored in ktd because it is actually a time-development factor
 
    // 2005 and later
    Float64 kvs;
@@ -1074,27 +1073,6 @@ struct LOSSDETAILS
 #if defined _DEBUG
    pgsPointOfInterest POI; // this is the POI that this loss details applies to
 #endif
-};
-
-struct XFERLENGTHDETAILS
-{
-   bool bMinuteValue; // if true, the transfer length was set to a very small value
-   Float64 db; // strand diameter
-   Int16 ndb; // number of strand diameters used for xfer length
-   bool bEpoxy; // is strand grit epoxy coated
-   Float64 lt; // transfer length
-};
-
-struct STRANDDEVLENGTHDETAILS
-{
-    // details of bonded and debonded strand development and transfer
-    // length calculations... see LRFD 5.9.4.3.1 and 5.9.4.3.2 (pre2017: 5.11.4.1  and 5.11.4.2)
-    Float64 db; // strand diameter
-    Float64 fpe;
-    Float64 fps;
-    Float64 k;
-    Float64 ld; // development length
-    XFERLENGTHDETAILS ltDetails; // transfer length
 };
 
 #define NO_TTS          0 // lifting without TTS

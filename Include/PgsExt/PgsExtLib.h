@@ -39,6 +39,8 @@
 
 #include <MathEx.h>
 
+#include <Reporter\Reporter.h>
+
 #if defined PGS_ASSERT_VALID
 #undef PGS_ASSERT_VALID
 #endif

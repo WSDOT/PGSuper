@@ -46,7 +46,7 @@ struct txnEditGirderData
    CSplicedGirderData m_Girder;
 
    pgsTypes::SlabOffsetType m_SlabOffsetType;
-   Float64 m_SlabOffset[2]; // index is pgsTypes::MemberEndType
+   std::array<Float64, 2> m_SlabOffset; // index is pgsTypes::MemberEndType
    // if slab offset is whole bridge then m_SlabOffset[pgsTypes::metStart] contains the value
 
    pgsTypes::AssumedExcessCamberType m_AssumedExcessCamberType;

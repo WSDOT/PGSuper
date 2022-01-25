@@ -48,24 +48,8 @@ CGirderMaterial::CGirderMaterial()
 {
 }  
 
-CGirderMaterial::CGirderMaterial(const CGirderMaterial& rOther)
-{
-   MakeCopy(rOther);
-}
-
 CGirderMaterial::~CGirderMaterial()
 {
-}
-
-//======================== OPERATORS  =======================================
-CGirderMaterial& CGirderMaterial::operator= (const CGirderMaterial& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
 }
 
 bool CGirderMaterial::operator==(const CGirderMaterial& rOther) const
@@ -83,17 +67,6 @@ bool CGirderMaterial::operator!=(const CGirderMaterial& rOther) const
    return !operator==(rOther);
 }
 
-void CGirderMaterial::MakeCopy(const CGirderMaterial& rOther)
-{
-   Concrete        = rOther.Concrete;
-}
-
-
-void CGirderMaterial::MakeAssignment(const CGirderMaterial& rOther)
-{
-   MakeCopy( rOther );
-}
-
 HRESULT CGirderMaterial::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    return Concrete.Save(pStrSave,pProgress);
@@ -103,10 +76,3 @@ HRESULT CGirderMaterial::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 {
    return Concrete.Load(pStrLoad,pProgress);
 }
-
-#if defined _DEBUG
-void CGirderMaterial::AssertValid()
-{
-   Concrete.AssertValid();
-}
-#endif

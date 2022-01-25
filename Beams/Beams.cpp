@@ -69,6 +69,9 @@
 
 #include "AgeAdjustedMaterial.h"
 
+#include "NUDeckedBulbTeeFactory.h"
+#include "PCIDeckedBulbTeeFactory.h"
+
 #include <Plugins\Beams.h>
 #include <Beams\Interfaces.h>
 
@@ -126,7 +129,9 @@ BEGIN_BEAM_FACTORY_LIST
    BEAM_FACTORY(CLSID_UBeam2Factory,       CATID_UBeamFactory)
 
    // Deck bulb tee factories
-   BEAM_FACTORY(CLSID_BulbTeeFactory,      CATID_DeckBulbTeeBeamFactory)
+   BEAM_FACTORY(CLSID_BulbTeeFactory, CATID_DeckBulbTeeBeamFactory)
+   BEAM_FACTORY(CLSID_NUDeckedBulbTeeFactory, CATID_DeckBulbTeeBeamFactory)
+   BEAM_FACTORY(CLSID_PCIDeckedBulbTeeFactory, CATID_DeckBulbTeeBeamFactory)
 
    // Double-tee factories
    BEAM_FACTORY(CLSID_DoubleTeeFactory,    CATID_DoubleTeeBeamFactory)
@@ -165,37 +170,37 @@ CATID GetBeamCATID(IndexType index)
 
 
 BEGIN_OBJECT_MAP(ObjectMap)
-	OBJECT_ENTRY(CLSID_WFBeamFactory,     CIBeamFactory)
-	OBJECT_ENTRY(CLSID_UBeamFactory,      CUBeamFactory)
-	OBJECT_ENTRY(CLSID_UBeam2Factory,     CUBeam2Factory)
-	OBJECT_ENTRY(CLSID_NUBeamFactory,     CNUBeamFactory)
-   OBJECT_ENTRY(CLSID_BulbTeeFactory,    CBulbTeeFactory)
-   OBJECT_ENTRY(CLSID_MultiWebFactory,   CMultiWebFactory)
-   OBJECT_ENTRY(CLSID_MultiWeb2Factory,  CMultiWeb2Factory)
-   OBJECT_ENTRY(CLSID_DoubleTeeFactory,  CDoubleTeeFactory)
+   OBJECT_ENTRY(CLSID_WFBeamFactory, CIBeamFactory)
+   OBJECT_ENTRY(CLSID_UBeamFactory, CUBeamFactory)
+   OBJECT_ENTRY(CLSID_UBeam2Factory, CUBeam2Factory)
+   OBJECT_ENTRY(CLSID_NUBeamFactory, CNUBeamFactory)
+   OBJECT_ENTRY(CLSID_BulbTeeFactory, CBulbTeeFactory)
+   OBJECT_ENTRY(CLSID_MultiWebFactory, CMultiWebFactory)
+   OBJECT_ENTRY(CLSID_MultiWeb2Factory, CMultiWeb2Factory)
+   OBJECT_ENTRY(CLSID_DoubleTeeFactory, CDoubleTeeFactory)
    OBJECT_ENTRY(CLSID_VoidedSlabFactory, CVoidedSlabFactory)
    OBJECT_ENTRY(CLSID_VoidedSlab2Factory, CVoidedSlab2Factory)
-   OBJECT_ENTRY(CLSID_BoxBeamFactory,    CBoxBeamFactory)
-   OBJECT_ENTRY(CLSID_BoxBeam2Factory,    CBoxBeamFactory2)
+   OBJECT_ENTRY(CLSID_BoxBeamFactory, CBoxBeamFactory)
+   OBJECT_ENTRY(CLSID_BoxBeam2Factory, CBoxBeamFactory2)
    OBJECT_ENTRY(CLSID_TxDotDoubleTFactory, CTxDotDoubleTFactory)
-	OBJECT_ENTRY(CLSID_TaperedIBeamFactory, CTaperedIBeamFactory)
-	OBJECT_ENTRY(CLSID_DeckedSlabBeamFactory,CDeckedSlabBeamFactory)
+   OBJECT_ENTRY(CLSID_TaperedIBeamFactory, CTaperedIBeamFactory)
+   OBJECT_ENTRY(CLSID_DeckedSlabBeamFactory, CDeckedSlabBeamFactory)
 
-   OBJECT_ENTRY(CLSID_SplicedIBeamFactory,   CSplicedIBeamFactory)
-   OBJECT_ENTRY(CLSID_SplicedNUBeamFactory,   CSplicedNUBeamFactory)
-   OBJECT_ENTRY(CLSID_SplicedUBeamFactory,   CSplicedUBeamFactory)
+   OBJECT_ENTRY(CLSID_SplicedIBeamFactory, CSplicedIBeamFactory)
+   OBJECT_ENTRY(CLSID_SplicedNUBeamFactory, CSplicedNUBeamFactory)
+   OBJECT_ENTRY(CLSID_SplicedUBeamFactory, CSplicedUBeamFactory)
 
-   OBJECT_ENTRY(CLSID_WFBeamFamily,          CIBeamFamily)
-   OBJECT_ENTRY(CLSID_UBeamFamily,           CUBeamFamily)
-   OBJECT_ENTRY(CLSID_BoxBeamFamily,         CBoxBeamFamily)
+   OBJECT_ENTRY(CLSID_WFBeamFamily, CIBeamFamily)
+   OBJECT_ENTRY(CLSID_UBeamFamily, CUBeamFamily)
+   OBJECT_ENTRY(CLSID_BoxBeamFamily, CBoxBeamFamily)
    OBJECT_ENTRY(CLSID_DeckBulbTeeBeamFamily, CDeckBulbTeeBeamFamily)
-   OBJECT_ENTRY(CLSID_DoubleTeeBeamFamily,   CDoubleTeeBeamFamily)
-   OBJECT_ENTRY(CLSID_RibbedBeamFamily,      CRibbedBeamFamily)
-   OBJECT_ENTRY(CLSID_SlabBeamFamily,        CSlabBeamFamily)
-   OBJECT_ENTRY(CLSID_DeckedSlabBeamFamily,  CDeckedSlabBeamFamily)
+   OBJECT_ENTRY(CLSID_DoubleTeeBeamFamily, CDoubleTeeBeamFamily)
+   OBJECT_ENTRY(CLSID_RibbedBeamFamily, CRibbedBeamFamily)
+   OBJECT_ENTRY(CLSID_SlabBeamFamily, CSlabBeamFamily)
+   OBJECT_ENTRY(CLSID_DeckedSlabBeamFamily, CDeckedSlabBeamFamily)
 
-   OBJECT_ENTRY(CLSID_SplicedIBeamFamily,    CSplicedIBeamFamily)
-   OBJECT_ENTRY(CLSID_SplicedUBeamFamily,    CSplicedUBeamFamily)
+   OBJECT_ENTRY(CLSID_SplicedIBeamFamily, CSplicedIBeamFamily)
+   OBJECT_ENTRY(CLSID_SplicedUBeamFamily, CSplicedUBeamFamily)
 
    OBJECT_ENTRY(CLSID_StrandMoverImpl, CStrandMoverImpl)
 
@@ -207,10 +212,13 @@ BEGIN_OBJECT_MAP(ObjectMap)
    OBJECT_ENTRY(CLSID_VoidedSlabDistFactorEngineer, CVoidedSlabDistFactorEngineer)
    OBJECT_ENTRY(CLSID_VoidedSlab2DistFactorEngineer, CVoidedSlab2DistFactorEngineer)
 
-   OBJECT_ENTRY(CLSID_PsBeamLossEngineer,   CPsBeamLossEngineer)
+   OBJECT_ENTRY(CLSID_PsBeamLossEngineer, CPsBeamLossEngineer)
    OBJECT_ENTRY(CLSID_TimeStepLossEngineer, CTimeStepLossEngineer)
 
    OBJECT_ENTRY(CLSID_AgeAdjustedMaterial, CAgeAdjustedMaterial)
+
+   OBJECT_ENTRY(CLSID_NUDeckedBulbTeeFactory, CNUDeckedBulbTeeFactory)
+   OBJECT_ENTRY(CLSID_PCIDeckedBulbTeeFactory, CPCIDeckedBulbTeeFactory)
 END_OBJECT_MAP()
 
 class CBeamsApp : public CWinApp

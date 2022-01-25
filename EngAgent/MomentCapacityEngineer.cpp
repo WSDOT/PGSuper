@@ -41,6 +41,7 @@
 #include <PgsExt\statusitem.h>
 #include <PgsExt\GirderLabel.h>
 #include <PgsExt\BridgeDescription2.h>
+#include <PgsExt\DevelopmentLength.h>
 
 #include <Lrfd\ConcreteUtil.h>
 
@@ -458,7 +459,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
             StrandIndexType nStrands = pStrandGeometry->GetStrandCount(segmentKey, strandType, pConfig);
             for (StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
             {
-               Float64 transfer_length_factor = pPrestressForce->GetXferLengthAdjustment(poi, strandType, strandIdx, pConfig);
+               Float64 transfer_length_factor = pPrestressForce->GetTransferLengthAdjustment(poi, strandType, strandIdx, pConfig);
                fpe_ps[strandType].push_back(transfer_length_factor * fpe);
                eps_initial[strandType].push_back(fpe_ps[strandType].back() / Eps);
             }
@@ -1532,15 +1533,34 @@ Float64 pgsMomentCapacityEngineer::GetNonCompositeDeadLoadMoment(IntervalIndexTy
    return Mdnc;
 }
 
+#include <IFace\Allowables.h>
 Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment,const GDRCONFIG* pConfig) const
 {
    GET_IFACE(IMaterials,pMaterial);
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
+   GET_IFACE(IPointOfInterest, pPoi);
+   CClosureKey closureKey;
+   bool bOnSegment = pPoi->IsOnSegment(poi);
+   bool bInClosureJoint = pPoi->IsInClosureJoint(poi, &closureKey);
+   bool bUHPC = (bOnSegment ? pMaterial->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC : bInClosureJoint ? pMaterial->GetClosureJointConcreteType(closureKey) == pgsTypes::PCI_UHPC : false);
+   
+   GET_IFACE(IBridge, pBridge);
+   bool bNonstructuralDeck = IsNonstructuralDeck(pBridge->GetDeckType());
+
    Float64 fr;   // Rupture stress
-   // Compute modulus of rupture
-   if (bPositiveMoment)
+
+   if ((bPositiveMoment && bUHPC)  // Positive moment with UHPC segment or closure
+      ||  // -OR-
+      (!bPositiveMoment && bNonstructuralDeck && bUHPC) // Negative moment with nonstructural deck (moment is taken by girder) and UHPC segment or closure
+      )
+   {
+      // PCI UHPC uses the tensile stress limit at service limit state, ft, instead of modulus of rupture, fr
+      GET_IFACE(IAllowableConcreteStress, pAllowables);
+      fr = pAllowables->GetAllowableTensionStress(poi, pgsTypes::BottomGirder, StressCheckTask(intervalIdx, pgsTypes::ServiceIII, pgsTypes::Tension), true, true);
+   }
+   else if (bPositiveMoment)
    {
       if (pConfig)
       {
@@ -1548,28 +1568,29 @@ Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(IntervalIndexType interva
       }
       else
       {
-         GET_IFACE(IPointOfInterest, pPoi);
-         CClosureKey closureKey;
-         if (pPoi->IsOnSegment(poi))
+         if (bOnSegment)
          {
             fr = pMaterial->GetSegmentFlexureFr(segmentKey, intervalIdx);
          }
-         else if (pPoi->IsInClosureJoint(poi, &closureKey))
+         else if (bInClosureJoint)
          {
             fr = pMaterial->GetClosureJointFlexureFr(closureKey, intervalIdx);
          }
          else
          {
             IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
-            fr = pMaterial->GetDeckFlexureFr(deckCastingRegionIdx,intervalIdx);
+            fr = pMaterial->GetDeckFlexureFr(deckCastingRegionIdx, intervalIdx);
          }
       }
    }
    else
    {
-      GET_IFACE(IBridge,pBridge);
-      if (IsNonstructuralDeck(pBridge->GetDeckType()))
+      // negative moment
+      if (bNonstructuralDeck)
       {
+         // deck is not structural so moment is carried by the girder
+         // NOTE: currently we don't support non-structural and no-deck spliced girders. When that happens, we need to deal with the POI being in a closure joint
+         ATLASSERT(bInClosureJoint == false);
          if (pConfig)
          {
             fr = pMaterial->GetFlexureModRupture(pConfig->fc28, pConfig->ConcType);
@@ -1934,6 +1955,8 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    bool bIsOnGirder    = pPoi->IsOnGirder(poi);
    bool bIsInBoundaryPierDiaphragm = pPoi->IsInBoundaryPierDiaphragm(poi);
 
+   bool bUHPC = (bIsOnSegment ? pMaterial->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC : bIsInClosure ? pMaterial->GetClosureJointConcreteType(closureKey) == pgsTypes::PCI_UHPC : false);
+
    GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
    DuctIndexType nSegmentDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
 
@@ -1976,44 +1999,30 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    CreateGirderTendonMaterial(segmentKey, &ssGirderTendon);
 
    // girder concrete
-   CComPtr<IUnconfinedConcrete> matGirder;
-   matGirder.CoCreateInstance(CLSID_UnconfinedConcrete);
-   if ( pConfig )
+   CComQIPtr<IStressStrain> ssGirder;
+   if (!bUHPC)
    {
-      matGirder->put_fc(bUse90DayStrength ? pConfig->fc28 /*if 90 day strength option is enabled, force fc to the 28 day value*/: pConfig->fc );
-   }
-   else
-   {
-      if ( bIsInClosure )
+      CComPtr<IUnconfinedConcrete> matGirder;
+      matGirder.CoCreateInstance(CLSID_UnconfinedConcrete);
+      if (pConfig)
       {
-         // poi is in a closure joint
-         if (bUse90DayStrength)
-         {
-            matGirder->put_fc(pMaterial->GetClosureJointFc28(closureKey));
-         }
-         else
-         {
-            matGirder->put_fc(pMaterial->GetClosureJointDesignFc(closureKey, intervalIdx));
-         }
-      }
-      else if ( bIsOnSegment )
-      {
-         if (bUse90DayStrength)
-         {
-            matGirder->put_fc(pMaterial->GetSegmentFc28(segmentKey));
-         }
-         else
-         {
-            matGirder->put_fc(pMaterial->GetSegmentDesignFc(segmentKey, intervalIdx));
-         }
+         matGirder->put_fc(bUse90DayStrength ? pConfig->fc28 /*if 90 day strength option is enabled, force fc to the 28 day value*/ : pConfig->fc);
       }
       else
       {
-         ATLASSERT(bIsInBoundaryPierDiaphragm);
-         // poi is not in the segment and isn't in a closure joint
-         // this means the POI is in a cast-in-place diaphragm between girder groups
-         // LRFD 5.12.3.3.10 (5.14.1.4.10) says if the diaphragm is confined by the girders, the girder strength can be used.
-         if (IsDiaphragmConfined(poi))
+         if (bIsInClosure)
+         {
+            // poi is in a closure joint
+            if (bUse90DayStrength)
+            {
+               matGirder->put_fc(pMaterial->GetClosureJointFc28(closureKey));
+            }
+            else
+            {
+               matGirder->put_fc(pMaterial->GetClosureJointDesignFc(closureKey, intervalIdx));
+            }
+         }
+         else if (bIsOnSegment)
          {
             if (bUse90DayStrength)
             {
@@ -2026,25 +2035,78 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
          }
          else
          {
-            // assume deck concrete is used for the diaphragm.
-            if (bUse90DayStrength)
+            ATLASSERT(bIsInBoundaryPierDiaphragm);
+            // poi is not in the segment and isn't in a closure joint
+            // this means the POI is in a cast-in-place diaphragm between girder groups
+            // LRFD 5.12.3.3.10 (5.14.1.4.10) says if the diaphragm is confined by the girders, the girder strength can be used.
+            if (IsDiaphragmConfined(poi))
             {
-               matGirder->put_fc(pMaterial->GetDeckFc28());
+               if (bUse90DayStrength)
+               {
+                  matGirder->put_fc(pMaterial->GetSegmentFc28(segmentKey));
+               }
+               else
+               {
+                  matGirder->put_fc(pMaterial->GetSegmentDesignFc(segmentKey, intervalIdx));
+               }
             }
             else
             {
+               // assume deck concrete is used for the diaphragm.
+               if (bUse90DayStrength)
+               {
+                  matGirder->put_fc(pMaterial->GetDeckFc28());
+               }
+               else
+               {
+                  matGirder->put_fc(pMaterial->GetDeckDesignFc(intervalIdx));
+               }
+            }
+         }
+      }
+      matGirder.QueryInterface(&ssGirder);
+   }
+   else
+   {
+      CComPtr<IPCIUHPConcrete> matGirder;
+      matGirder.CoCreateInstance(CLSID_PCIUHPConcrete);
+
+      if (pConfig)
+      {
+         matGirder->put_fc(pConfig->fc28);
+      }
+      else
+      {
+         if (bIsInClosure)
+         {
+            // poi is in a closure joint
+            matGirder->put_fc(pMaterial->GetClosureJointDesignFc(closureKey, intervalIdx));
+         }
+         else if (bIsOnSegment)
+         {
+            matGirder->put_fc(pMaterial->GetSegmentDesignFc(segmentKey, intervalIdx));
+         }
+         else
+         {
+            ATLASSERT(bIsInBoundaryPierDiaphragm);
+            // poi is not in the segment and isn't in a closure joint
+            // this means the POI is in a cast-in-place diaphragm between girder groups
+            // LRFD 5.12.3.3.10 (5.14.1.4.10) says if the diaphragm is confined by the girders, the girder strength can be used.
+            if (IsDiaphragmConfined(poi))
+            {
+               matGirder->put_fc(pMaterial->GetSegmentDesignFc(segmentKey, intervalIdx));
+            }
+            else
+            {
+               // assume deck concrete is used for the diaphragm.
                matGirder->put_fc(pMaterial->GetDeckDesignFc(intervalIdx));
             }
          }
       }
+      matGirder.QueryInterface(&ssGirder);
    }
-   CComQIPtr<IStressStrain> ssGirder(matGirder);
 
-   // longitudinal joint concrete
-   CComPtr<IUnconfinedConcrete> matLongitudinalJoints;
-   matLongitudinalJoints.CoCreateInstance(CLSID_UnconfinedConcrete);
-   matLongitudinalJoints->put_fc(pMaterial->GetLongitudinalJointFc(intervalIdx));
-   CComQIPtr<IStressStrain> ssLongitudinalJoints(matLongitudinalJoints);
+   // longitudinal joint concrete - see below
 
    // slab concrete
    CComPtr<IUnconfinedConcrete> matSlab;
@@ -2379,6 +2441,22 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    GET_IFACE(IBridgeDescription, pIBridgeDesc);
    if (pIBridgeDesc->GetBridgeDescription()->HasStructuralLongitudinalJoints())
    {
+      CComPtr<IStressStrain> ssLongitudinalJoints;
+      if (pMaterial->GetLongitudinalJointConcreteType() == pgsTypes::PCI_UHPC)
+      {
+         CComPtr<IPCIUHPConcrete> matLongitudinalJoints;
+         matLongitudinalJoints.CoCreateInstance(CLSID_PCIUHPConcrete);
+         matLongitudinalJoints->put_fc(pMaterial->GetLongitudinalJointFc(intervalIdx));
+         matLongitudinalJoints.QueryInterface(&ssLongitudinalJoints);
+      }
+      else
+      {
+         CComPtr<IUnconfinedConcrete> matLongitudinalJoints;
+         matLongitudinalJoints.CoCreateInstance(CLSID_UnconfinedConcrete);
+         matLongitudinalJoints->put_fc(pMaterial->GetLongitudinalJointFc(intervalIdx));
+         matLongitudinalJoints.QueryInterface(&ssLongitudinalJoints);
+      }
+
       CComPtr<IShape> leftJointShape, rightJointShape;
       pShapes->GetJointShapes(intervalIdx, poi, false, pgsTypes::scGirder, &leftJointShape, &rightJointShape);
 
@@ -3057,14 +3135,11 @@ pgsMomentCapacityEngineer::pgsBondTool::pgsBondTool(IBroker* pBroker,const pgsPo
    {
       m_bNearMidSpan = true;
    }
-
-   GET_IFACE(IMaterials, pMaterials);
-   m_bUHPC = (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC ? true : false);
 }
 
 Float64 pgsMomentCapacityEngineer::pgsBondTool::GetTransferLengthFactor(StrandIndexType strandIdx, pgsTypes::StrandType strandType) const
 {
-   return m_pPrestressForce->GetXferLengthAdjustment(m_Poi, strandType, strandIdx, m_pConfig);
+   return m_pPrestressForce->GetTransferLengthAdjustment(m_Poi, strandType, strandIdx, m_pConfig);
 }
 
 Float64 pgsMomentCapacityEngineer::pgsBondTool::GetDevelopmentLengthFactor(StrandIndexType strandIdx,pgsTypes::StrandType strandType) const
@@ -3083,8 +3158,11 @@ Float64 pgsMomentCapacityEngineer::pgsBondTool::GetDevelopmentLengthFactor(Stran
    if ( !m_bNearMidSpan && !bIsExtendedStrand)
    {
       bool bDebonded = IsDebonded(strandIdx,strandType);
-      STRANDDEVLENGTHDETAILS dev_length = m_pPrestressForce->GetDevLengthDetails(m_PoiMidSpan,strandType,bDebonded,m_bUHPC, m_pConfig);
-      development_length_factor = m_pPrestressForce->GetStrandBondFactor(m_Poi,strandIdx,strandType,dev_length.fps,dev_length.fpe, m_pConfig);
+      const std::shared_ptr<pgsDevelopmentLength> pDevLength = m_pPrestressForce->GetDevelopmentLengthDetails(m_PoiMidSpan,strandType,bDebonded, m_pConfig);
+      Float64 fps = pDevLength->GetFps();
+      Float64 fpe = pDevLength->GetFpe();
+
+      development_length_factor = m_pPrestressForce->GetDevelopmentLengthAdjustment(m_Poi,strandIdx,strandType,fps,fpe, m_pConfig);
    }
 
    return development_length_factor;

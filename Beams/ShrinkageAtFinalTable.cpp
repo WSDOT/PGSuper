@@ -27,6 +27,8 @@
 #include <IFace\Project.h>
 #include <PsgLib\SpecLibraryEntry.h>
 
+#include <PgsExt\GirderMaterial.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -68,11 +70,14 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
+   GET_IFACE2(pBroker, ISegmentData, pSegmentData);
+   bool bUHPC = pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC ? true : false;
+   bool bPCTT = (bUHPC ? pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.bPCTT : false);
+
    // Create and configure the table
    ColumnIndexType numColumns = 7;
    CShrinkageAtFinalTable* table = new CShrinkageAtFinalTable( numColumns, pDisplayUnits );
    rptStyleManager::ConfigureTable(table);
-
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
@@ -83,64 +88,80 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
+   *pParagraph << rptRcImage(strImagePath + _T("Delta_fpSD.png")) << rptNewLine;
+
    if ( spMode == pgsTypes::spmGross )
    {
-      *pParagraph << rptRcImage(strImagePath + _T("Delta_FpSD_Gross.png")) << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + _T("Kdf_Gross.png")) << rptNewLine;
    }
    else
    {
-      *pParagraph << rptRcImage(strImagePath + _T("Delta_FpSD_Transformed.png")) << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + _T("Kdf_Transformed.png")) << rptNewLine;
    }
 
-   if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
+   if (bUHPC)
    {
-      if ( IS_SI_UNITS(pDisplayUnits) )
-      {
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn-SI.png")) << rptNewLine;
-      }
+      if (bPCTT)
+         *pParagraph << rptRcImage(strImagePath + _T("CreepShrinkageAtFinal_UHPC_PCTT.png")) << rptNewLine;
       else
-      {
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn-US.png")) << rptNewLine;
-      }
-   }
-   else if ( pSpecEntry->GetSpecificationType() == lrfdVersionMgr::ThirdEditionWith2006Interims )
-   {
-      if ( IS_SI_UNITS(pDisplayUnits) )
-      {
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2006-SI.png")) << rptNewLine;
-      }
-      else
-      {
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2006-US.png")) << rptNewLine;
-      }
-   }
-   else
-   {
-      if ( IS_SI_UNITS(pDisplayUnits) )
-      {
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2007-SI.png")) << rptNewLine;
-      }
-      else
-      {
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2007-US.png")) << rptNewLine;
-      }
-   }
+         *pParagraph << rptRcImage(strImagePath + _T("CreepShrinkageAtFinal_UHPC.png")) << rptNewLine;
 
-   *pParagraph << rptRcImage(strImagePath + _T("HumidityFactor.png")) << rptNewLine;
-   if ( IS_SI_UNITS(pDisplayUnits) )
-   {
-      ATLASSERT( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims );
-      *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_SI.png")) << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + _T("UHPC_Factors.png")) << rptNewLine;
    }
    else
    {
-      if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims )
+      *pParagraph << rptRcImage(strImagePath + _T("CreepShrinkageAtFinal.png")) << rptNewLine;
+
+      if (pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims)
       {
-         *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_US.png")) << rptNewLine;
+         if (IS_SI_UNITS(pDisplayUnits))
+         {
+            *pParagraph << rptRcImage(strImagePath + _T("KvsEqn-SI.png")) << rptNewLine;
+         }
+         else
+         {
+            *pParagraph << rptRcImage(strImagePath + _T("KvsEqn-US.png")) << rptNewLine;
+         }
+      }
+      else if (pSpecEntry->GetSpecificationType() == lrfdVersionMgr::ThirdEditionWith2006Interims)
+      {
+         if (IS_SI_UNITS(pDisplayUnits))
+         {
+            *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2006-SI.png")) << rptNewLine;
+         }
+         else
+         {
+            *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2006-US.png")) << rptNewLine;
+         }
       }
       else
       {
-         *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_US2015.png")) << rptNewLine;
+         if (IS_SI_UNITS(pDisplayUnits))
+         {
+            *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2007-SI.png")) << rptNewLine;
+         }
+         else
+         {
+            *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2007-US.png")) << rptNewLine;
+         }
+      }
+
+      *pParagraph << rptRcImage(strImagePath + _T("HumidityFactor.png")) << rptNewLine;
+      if (IS_SI_UNITS(pDisplayUnits))
+      {
+         ATLASSERT(pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims);
+         *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_SI.png")) << rptNewLine;
+      }
+      else
+      {
+         if (pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims)
+         {
+            *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_US.png")) << rptNewLine;
+         }
+         else
+         {
+            *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_US2015.png")) << rptNewLine;
+         }
       }
    }
    
@@ -170,7 +191,7 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
    (*pParamTable)(0,4) << COLHDR(Sub2(_T("t"),_T("f")),rptTimeUnitTag,pDisplayUnits->GetWholeDaysUnit());
 
    (*pParamTable)(1,0) << ptl->GetRelHumidity();
-   (*pParamTable)(1,1) << table->ecc.SetValue(ptl->GetVolume()/ptl->GetSurfaceArea());
+   (*pParamTable)(1,1) << table->ecc.SetValue(ptl->GetGirderCreep()->GetVolume()/ptl->GetGirderCreep()->GetSurfaceArea());
    (*pParamTable)(1,2) << table->stress.SetValue(ptl->GetFci());
    (*pParamTable)(1,3) << table->time.SetValue(ptl->GetInitialAge());
    (*pParamTable)(1,4) << table->time.SetValue(ptl->GetFinalAge());
@@ -202,9 +223,9 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
    (*pParamTable)(2,4) << table->strain.SetValue(ptl->Get_ebif() * 1000);
    (*pParamTable)(2,5) << table->strain.SetValue(ptl->Get_ebid() * 1000);
    (*pParamTable)(2,6) << table->strain.SetValue(ptl->Get_ebdf() * 1000);
-   (*pParamTable)(2,7) << ptl->GetGdrK1Creep();
-   (*pParamTable)(2,8) << ptl->GetGdrK2Creep();
-   (*pParamTable)(2,9) << table->creep.SetValue(ptl->GetCreepInitialToFinal().GetCreepCoefficient());
+   (*pParamTable)(2,7) << ptl->GetGirderCreep()->GetK1();
+   (*pParamTable)(2, 8) << ptl->GetGirderCreep()->GetK2();
+   (*pParamTable)(2,9) << table->creep.SetValue(ptl->GetGirderCreep()->GetCreepCoefficient(ptl->GetMaturityAtFinal(),ptl->GetInitialAge()));
 
    // intermediate results
    pParamTable = rptStyleManager::CreateDefaultTable(5,_T(""));
@@ -224,14 +245,14 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
    (*pParamTable)(0,3) << Sub2(_T("k"),_T("f"));
 
    table->time.ShowUnitTag(true);
-   (*pParamTable)(0,4) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetCreepInitialToFinal().GetMaturity());
+   (*pParamTable)(0,4) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetMaturityAtFinal());
    table->time.ShowUnitTag(false);
 
-   (*pParamTable)(1,0) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetKvs());
+   (*pParamTable)(1,0) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKvs());
    (*pParamTable)(1,1) << table->scalar.SetValue(ptl->Getkhs());
-   (*pParamTable)(1,2) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetKhc());
-   (*pParamTable)(1,3) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetKf());
-   (*pParamTable)(1,4) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetKtd());
+   (*pParamTable)(1,2) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKhc());
+   (*pParamTable)(1,3) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKf());
+   (*pParamTable)(1,4) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKtd(ptl->GetMaturityAtFinal()));
 
    // shrinkage loss   
    *pParagraph << table << rptNewLine;

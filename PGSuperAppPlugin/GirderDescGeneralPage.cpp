@@ -1023,6 +1023,11 @@ void CGirderDescGeneralPage::OnMoreConcreteProperties()
    dlg.m_General.m_Ds          = pParent->m_pSegment->Material.Concrete.StrengthDensity;
    dlg.m_General.m_Dw          = pParent->m_pSegment->Material.Concrete.WeightDensity;
 
+   dlg.m_PCIUHPC.m_ffc = pParent->m_pSegment->Material.Concrete.Ffc;
+   dlg.m_PCIUHPC.m_frr = pParent->m_pSegment->Material.Concrete.Frr;
+   dlg.m_PCIUHPC.m_FiberLength = pParent->m_pSegment->Material.Concrete.FiberLength;
+   dlg.m_PCIUHPC.m_bPCTT = pParent->m_pSegment->Material.Concrete.bPCTT;
+
    dlg.m_AASHTO.m_EccK1       = pParent->m_pSegment->Material.Concrete.EcK1;
    dlg.m_AASHTO.m_EccK2       = pParent->m_pSegment->Material.Concrete.EcK2;
    dlg.m_AASHTO.m_CreepK1     = pParent->m_pSegment->Material.Concrete.CreepK1;
@@ -1055,6 +1060,11 @@ void CGirderDescGeneralPage::OnMoreConcreteProperties()
       pParent->m_pSegment->Material.Concrete.MaxAggregateSize = dlg.m_General.m_AggSize;
       pParent->m_pSegment->Material.Concrete.StrengthDensity  = dlg.m_General.m_Ds;
       pParent->m_pSegment->Material.Concrete.WeightDensity    = dlg.m_General.m_Dw;
+
+      pParent->m_pSegment->Material.Concrete.Ffc = dlg.m_PCIUHPC.m_ffc;
+      pParent->m_pSegment->Material.Concrete.Frr = dlg.m_PCIUHPC.m_frr;
+      pParent->m_pSegment->Material.Concrete.FiberLength = dlg.m_PCIUHPC.m_FiberLength;
+      pParent->m_pSegment->Material.Concrete.bPCTT = dlg.m_PCIUHPC.m_bPCTT;
 
       pParent->m_pSegment->Material.Concrete.EcK1             = dlg.m_AASHTO.m_EccK1;
       pParent->m_pSegment->Material.Concrete.EcK2             = dlg.m_AASHTO.m_EccK2;

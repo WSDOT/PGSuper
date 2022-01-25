@@ -27,6 +27,7 @@
 #include <IFace\PrincipalWebStress.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
+#include <IFace\Allowables.h>
 
 #include <PgsExt\GirderArtifact.h>
 
@@ -105,6 +106,9 @@ rptChapter* CPrincipalTensionStressDetailsChapterBuilder::Build(CReportSpecifica
 
    GET_IFACE2_NOCHECK(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
+   GET_IFACE2(pBroker, IAllowableConcreteStress, pAllowables);
+   Float64 threshold = pAllowables->GetPrincipalTensileStressFcThreshold();
+
    bool bApplicable = false;
    for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
    {
@@ -133,7 +137,7 @@ rptChapter* CPrincipalTensionStressDetailsChapterBuilder::Build(CReportSpecifica
          else if (pArtifact->GetApplicability() == pgsPrincipalTensionStressArtifact::ConcreteStrength)
          {
             INIT_UV_PROTOTYPE(rptStressUnitValue, stress_u, pDisplayUnits->GetStressUnit(), true);
-            *pPara << _T("Concrete strength does not exceed the ") << stress_u.SetValue(::ConvertToSysUnits(10.0, unitMeasure::KSI)) << _T(" threshold") << rptNewLine;
+            *pPara << _T("Concrete strength does not exceed the ") << stress_u.SetValue(::ConvertToSysUnits(threshold, unitMeasure::KSI)) << _T(" threshold") << rptNewLine;
          }
          else
          {

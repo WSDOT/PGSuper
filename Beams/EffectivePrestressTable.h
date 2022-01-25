@@ -58,6 +58,7 @@ private:
 
    const CGirderData* m_pGD;
 
+   bool m_bUHPC;
    bool m_bPTTempStrand;
    bool m_bTempStrands;
    bool m_bIgnoreInitialRelaxation;

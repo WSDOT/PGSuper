@@ -208,7 +208,7 @@ public:
    virtual bool Passed(bool bIgnoreConfigurationLimits = false) const override;
    virtual bool Passed(pgsTypes::HaulingSlope slope) const override;
    virtual bool PassedStressCheck(pgsTypes::HaulingSlope slope) const override;
-   virtual void GetRequiredConcreteStrength(pgsTypes::HaulingSlope slope,Float64 *pfcCompression,Float64 *pfcTensionNoRebar,Float64 *pfcTensionWithRebar) const override;
+   virtual void GetRequiredConcreteStrength(pgsTypes::HaulingSlope slope,Float64 *pfcCompression,Float64 *pfcTension, Float64* pfcTensionWithRebar) const override;
 
    Float64 GetLeadingOverhang() const;
    Float64 GetTrailingOverhang() const;

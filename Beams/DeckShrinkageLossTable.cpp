@@ -29,6 +29,8 @@
 #include <IFace\Intervals.h>
 #include <PsgLib\SpecLibraryEntry.h>
 
+#include <PgsExt\GirderMaterial.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -80,6 +82,10 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
+   GET_IFACE2(pBroker, ISegmentData, pSegmentData);
+   bool bUHPC = pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC ? true : false;
+   bool bPCTT = (bUHPC ? pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.bPCTT : false);
+
    // Create and configure the table
    ColumnIndexType numColumns = 13;
    CElasticGainDueToDeckShrinkageTable* table = new CElasticGainDueToDeckShrinkageTable( numColumns, pDisplayUnits );
@@ -103,77 +109,84 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
 
    if ( spMode == pgsTypes::spmGross )
    {
-      if (pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2006Interims)
-      {
-         *pParagraph << rptRcImage(strImagePath + _T("Delta_FpSS_Gross.png")) << rptNewLine;
-      }
+      *pParagraph << rptRcImage(strImagePath + _T("Delta_FpSS_Gross.png")) << rptNewLine;
+   }
+   else
+   {
+      *pParagraph << rptRcImage(strImagePath + _T("Delta_FpSS_Transformed.png")) << rptNewLine;
+   }
+
+   if (bUHPC)
+   {
+      if (bPCTT)
+         *pParagraph << rptRcImage(strImagePath + _T("DeckCreepShrinkage_UHPC_PCTT.png")) << rptNewLine;
       else
-      {
-         *pParagraph << rptRcImage(strImagePath + _T("Delta_FpSS_Gross_2007.png")) << rptNewLine;
-      }
+         *pParagraph << rptRcImage(strImagePath + _T("DeckCreepShrinkage_UHPC.png")) << rptNewLine;
+
+      *pParagraph << rptRcImage(strImagePath + _T("UHPC_Factors.png")) << rptNewLine;
    }
    else
    {
       if (pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2006Interims)
       {
-         *pParagraph << rptRcImage(strImagePath + _T("Delta_FpSS_Transformed.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("DeckCreepShrinkage.png")) << rptNewLine;
       }
       else
       {
-         *pParagraph << rptRcImage(strImagePath + _T("Delta_FpSS_Transformed_2007.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("DeckCreepShrinkage_2007.png")) << rptNewLine;
       }
-   }
 
-   if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
-   {
-      if ( IS_SI_UNITS(pDisplayUnits) )
+      if (pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims)
       {
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn-SI.png")) << rptNewLine;
+         if (IS_SI_UNITS(pDisplayUnits))
+         {
+            *pParagraph << rptRcImage(strImagePath + _T("KvsEqn-SI.png")) << rptNewLine;
+         }
+         else
+         {
+            *pParagraph << rptRcImage(strImagePath + _T("KvsEqn-US.png")) << rptNewLine;
+         }
+      }
+      else if (pSpecEntry->GetSpecificationType() == lrfdVersionMgr::ThirdEditionWith2006Interims)
+      {
+         if (IS_SI_UNITS(pDisplayUnits))
+         {
+            *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2006-SI.png")) << rptNewLine;
+         }
+         else
+         {
+            *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2006-US.png")) << rptNewLine;
+         }
       }
       else
       {
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn-US.png")) << rptNewLine;
+         if (IS_SI_UNITS(pDisplayUnits))
+         {
+            *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2007-SI.png")) << rptNewLine;
+         }
+         else
+         {
+            *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2007-US.png")) << rptNewLine;
+         }
       }
-   }
-   else if ( pSpecEntry->GetSpecificationType() == lrfdVersionMgr::ThirdEditionWith2006Interims )
-   {
-      if ( IS_SI_UNITS(pDisplayUnits) )
-      {
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2006-SI.png")) << rptNewLine;
-      }
-      else
-      {
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2006-US.png")) << rptNewLine;
-      }
-   }
-   else
-   {
-      if ( IS_SI_UNITS(pDisplayUnits) )
-      {
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2007-SI.png")) << rptNewLine;
-      }
-      else
-      {
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2007-US.png")) << rptNewLine;
-      }
-   }
 
-   *pParagraph << rptRcImage(strImagePath + _T("HumidityFactor.png")) << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + _T("HumidityFactor.png")) << rptNewLine;
 
-   if ( IS_SI_UNITS(pDisplayUnits) )
-   {
-      ATLASSERT( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims );
-      *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_Deck_SI.png")) << rptNewLine;
-   }
-   else
-   {
-      if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims )
+      if (IS_SI_UNITS(pDisplayUnits))
       {
-         *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_Deck_US.png")) << rptNewLine;
+         ATLASSERT(pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims);
+         *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_Deck_SI.png")) << rptNewLine;
       }
       else
       {
-         *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_Deck_US2015.png")) << rptNewLine;
+         if (pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims)
+         {
+            *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_Deck_US.png")) << rptNewLine;
+         }
+         else
+         {
+            *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_Deck_US2015.png")) << rptNewLine;
+         }
       }
    }
 
@@ -237,34 +250,34 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
    col = 0;
 
    (*pParamTable)(row, col++) << table->mod_e.SetValue(ptl->GetEcd());
-   if ( IsZero(ptl->GetVolumeSlab()) || IsZero(ptl->GetSurfaceAreaSlab()) )
+   if ( IsZero(ptl->GetDeckCreep()->GetVolume()) || IsZero(ptl->GetDeckCreep()->GetSurfaceArea()) )
    {
       (*pParamTable)(row,col++) << table->ecc.SetValue(0.0);
    }
    else
    {
-      (*pParamTable)(row, col++) << table->ecc.SetValue(ptl->GetVolumeSlab()/ptl->GetSurfaceAreaSlab());
+      (*pParamTable)(row, col++) << table->ecc.SetValue(ptl->GetDeckCreep()->GetVolume()/ptl->GetDeckCreep()->GetSurfaceArea());
    }
 
-   (*pParamTable)(row, col++) << table->scalar.SetValue(ptl->GetCreepDeck().GetKvs());
+   (*pParamTable)(row, col++) << table->scalar.SetValue(ptl->GetDeckCreep()->GetKvs());
    (*pParamTable)(row, col++) << table->scalar.SetValue(ptl->Getkhs());
-   (*pParamTable)(row, col++) << table->scalar.SetValue(ptl->GetCreepDeck().GetKhc());
+   (*pParamTable)(row, col++) << table->scalar.SetValue(ptl->GetDeckCreep()->GetKhc());
    (*pParamTable)(row, col++) << table->stress.SetValue(0.8*ptl->GetFcSlab()); // See NCHRP 496 (page 27 and 30)
    (*pParamTable)(row, col++) << table->stress.SetValue(ptl->GetFcSlab());
-   (*pParamTable)(row, col++) << table->scalar.SetValue(ptl->GetCreepDeck().GetKf());
-   (*pParamTable)(row, col++) << table->time.SetValue(ptl->GetCreepDeck().GetInitialAge());
+   (*pParamTable)(row, col++) << table->scalar.SetValue(ptl->GetDeckCreep()->GetKf());
+   (*pParamTable)(row, col++) << table->time.SetValue(ptl->GetDeckInitialAge());
    (*pParamTable)(row, col++) << table->time.SetValue(ptl->GetAgeAtDeckPlacement());
    (*pParamTable)(row, col++) << table->time.SetValue(ptl->GetFinalAge());
-   (*pParamTable)(row, col++) << table->scalar.SetValue(ptl->GetCreepDeck().GetKtd());
+   (*pParamTable)(row, col++) << table->scalar.SetValue(ptl->GetDeckCreep()->GetKtd(ptl->GetDeckMaturityAtFinal()));
    (*pParamTable)(row, col++) << (spMode == pgsTypes::spmGross ? pSpecEntry->GetDeckShrinkageElasticGain() : 1.0);
    (*pParamTable)(row, col++) << ptl->GetDeckK1Shrinkage();
    (*pParamTable)(row, col++) << ptl->GetDeckK2Shrinkage();
    (*pParamTable)(row, col++) << table->strain.SetValue(ptl->Get_eddf() * 1000);
-   (*pParamTable)(row, col++) << ptl->GetDeckK1Creep();
-   (*pParamTable)(row, col++) << ptl->GetDeckK2Creep();
-   (*pParamTable)(row, col++) << table->creep.SetValue(ptl->GetCreepDeck().GetCreepCoefficient());
+   (*pParamTable)(row, col++) << ptl->GetDeckCreep()->GetK1();
+   (*pParamTable)(row, col++) << ptl->GetDeckCreep()->GetK2();
+   (*pParamTable)(row, col++) << table->creep.SetValue(ptl->GetDeckCreep()->GetCreepCoefficient(ptl->GetDeckMaturityAtFinal(),ptl->GetDeckInitialAge()));
 
-   pParamTable = rptStyleManager::CreateDefaultTable(13,_T(""));
+   pParamTable = rptStyleManager::CreateDefaultTable(15,_T(""));
    *pParagraph << pParamTable << rptNewLine;
 
    row = 0;
@@ -280,6 +293,8 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
    {
       (*pParamTable)(row, col++) << Sub2(_T("k"), _T("vs"));
    }
+   (*pParamTable)(row, col++) << Sub2(_T("k"), _T("hs"));
+   (*pParamTable)(row, col++) << Sub2(_T("k"), _T("hc"));
    (*pParamTable)(row, col++) << COLHDR(RPT_FCI, rptStressUnitTag, pDisplayUnits->GetStressUnit());
    (*pParamTable)(row, col++) << COLHDR(RPT_FC, rptStressUnitTag, pDisplayUnits->GetStressUnit());
    (*pParamTable)(row, col++) << Sub2(_T("k"), _T("f"));
@@ -294,26 +309,28 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
    row = 1;
    col = 0;
    (*pParamTable)(row, col++) << table->mod_e.SetValue( ptl->GetEc() );
-   if (IsZero(ptl->GetVolumeSlab()) || IsZero(ptl->GetSurfaceAreaSlab()))
+   if (IsZero(ptl->GetDeckCreep()->GetVolume()) || IsZero(ptl->GetDeckCreep()->GetSurfaceArea()))
    {
       (*pParamTable)(row, col++) << table->ecc.SetValue(0.0);
    }
    else
    {
-      (*pParamTable)(row, col++) << table->ecc.SetValue(ptl->GetVolume() / ptl->GetSurfaceArea());
+      (*pParamTable)(row, col++) << table->ecc.SetValue(ptl->GetDeckCreep()->GetVolume() / ptl->GetDeckCreep()->GetSurfaceArea());
    }
 
-   (*pParamTable)(row, col++) << table->scalar.SetValue(ptl->GetCreepDeckToFinal().GetKvs());
+   (*pParamTable)(row, col++) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKvs());
+   (*pParamTable)(row, col++) << table->scalar.SetValue(ptl->Getkhs());
+   (*pParamTable)(row, col++) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKhc());
    (*pParamTable)(row, col++) << table->stress.SetValue(ptl->GetFci());
    (*pParamTable)(row, col++) << table->stress.SetValue(ptl->GetFc());
-   (*pParamTable)(row, col++) << table->scalar.SetValue(ptl->GetCreepDeckToFinal().GetKf());
-   (*pParamTable)(row, col++) << table->time.SetValue(ptl->GetCreepDeckToFinal().GetInitialAge());
+   (*pParamTable)(row, col++) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKf());
+   (*pParamTable)(row, col++) << table->time.SetValue(ptl->GetAgeAtDeckPlacement());
    (*pParamTable)(row, col++) << table->time.SetValue(ptl->GetAgeAtDeckPlacement());
    (*pParamTable)(row, col++) << table->time.SetValue(ptl->GetFinalAge());
-   (*pParamTable)(row, col++) << table->scalar.SetValue(ptl->GetCreepDeckToFinal().GetKtd());
-   (*pParamTable)(row, col++) << ptl->GetGdrK1Creep();
-   (*pParamTable)(row, col++) << ptl->GetGdrK2Creep();
-   (*pParamTable)(row, col++) << table->creep.SetValue(ptl->GetCreepDeckToFinal().GetCreepCoefficient());
+   (*pParamTable)(row, col++) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKtd(ptl->GetMaturityDeckPlacementToFinal()));
+   (*pParamTable)(row, col++) << ptl->GetGirderCreep()->GetK1();
+   (*pParamTable)(row, col++) << ptl->GetGirderCreep()->GetK2();
+   (*pParamTable)(row, col++) << table->creep.SetValue(ptl->GetGirderCreep()->GetCreepCoefficient(ptl->GetMaturityDeckPlacementToFinal(),ptl->GetAgeAtDeckPlacement()));
 
    *pParagraph << table << rptNewLine;
    row = 0;

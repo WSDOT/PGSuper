@@ -212,6 +212,11 @@ public:
    Float64 GetAggSplittingStrength() const;
 
    //------------------------------------------------------------------------
+   // Parameters for the PCI UHPC concrete
+   void SetPCIUHPC(Float64 ffc, Float64 frr, Float64 fiberLength, bool bPCTT);
+   void GetPCIUHPC(Float64* ffc, Float64* frr, Float64* pFiberLength,bool* bPCTT) const;
+
+   //------------------------------------------------------------------------
    // Parameters for the ACI 209R-92 model
    bool UserACIParameters() const;
    void UserACIParameters(bool bUser);
@@ -262,6 +267,7 @@ private:
    Float64 m_Ds;
    Float64 m_Dw;
    Float64 m_AggSize;
+   Float64 m_FiberLength;
    bool m_bUserEc;
    Float64 m_Ec;
    pgsTypes::ConcreteType m_Type;
@@ -275,6 +281,11 @@ private:
    Float64 m_ShrinkageK2;
    bool m_bHasFct;
    Float64 m_Fct;
+
+   // PCI UHPC Parameters
+   Float64 m_Ffc;
+   Float64 m_Frr;
+   bool m_bPCTT;
 
    // ACI Model Parameters
    bool m_bUserACIParameters;

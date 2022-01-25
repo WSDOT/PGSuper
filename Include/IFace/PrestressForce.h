@@ -41,6 +41,8 @@
 //
 class pgsPointOfInterest;
 class matPsStrand;
+class pgsTransferLength;
+class pgsDevelopmentLength;
 class rptChapter;
 interface IEAFDisplayUnits;
 
@@ -65,13 +67,17 @@ interface IPretensionForce : IUnknown
    virtual Float64 GetPjackMax(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType,StrandIndexType nStrands) const = 0;
    virtual Float64 GetPjackMax(const CSegmentKey& segmentKey,const matPsStrand& strand,StrandIndexType nStrands) const = 0;
 
-   virtual Float64 GetXferLength(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) const = 0;
-   virtual Float64 GetXferLengthAdjustment(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG* pConfig=nullptr) const = 0;
-   virtual Float64 GetXferLengthAdjustment(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, StrandIndexType strandIdx, const GDRCONFIG* pConfig = nullptr) const = 0;
-   virtual Float64 GetDevLength(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, bool bDebonded,bool bUHPC, const GDRCONFIG* pConfig=nullptr) const = 0;
-   virtual STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, bool bDebonded,bool bUHPC,const GDRCONFIG* pConfig=nullptr) const = 0;
-   virtual Float64 GetStrandBondFactor(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType, bool bDebonded, const GDRCONFIG* pConfig=nullptr) const = 0;
-   virtual Float64 GetStrandBondFactor(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType,Float64 fps,Float64 fpe,const GDRCONFIG* pConfig=nullptr) const = 0;
+   virtual Float64 GetTransferLength(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual const std::shared_ptr<pgsTransferLength> GetTransferLengthDetails(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual Float64 GetTransferLengthAdjustment(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG* pConfig=nullptr) const = 0;
+   virtual Float64 GetTransferLengthAdjustment(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, StrandIndexType strandIdx, const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual void ReportTransferLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const = 0;
+
+   virtual Float64 GetDevelopmentLength(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, bool bDebonded, const GDRCONFIG* pConfig=nullptr) const = 0;
+   virtual const std::shared_ptr<pgsDevelopmentLength> GetDevelopmentLengthDetails(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, bool bDebonded,const GDRCONFIG* pConfig=nullptr) const = 0;
+   virtual void ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const = 0;
+   virtual Float64 GetDevelopmentLengthAdjustment(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType, bool bDebonded, const GDRCONFIG* pConfig=nullptr) const = 0;
+   virtual Float64 GetDevelopmentLengthAdjustment(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType, Float64 fps, Float64 fpe,const GDRCONFIG* pConfig=nullptr) const = 0;
 
    // Returns the governing hold down force based on the average harped strand slope. The slope associated with
    // the hold down force is returned through the pSlope parameter. The poi where the max hold down force occurs is returned through pPoi
@@ -220,6 +226,10 @@ interface ILosses : IUnknown
    // Return true if elastic gains and/or deck shrinkage should be included in the losses
    virtual bool AreElasticGainsApplicable() const = 0;
    virtual bool IsDeckShrinkageApplicable() const = 0;
+
+   // Returns true if the prestress loss calcaulation methods includes initial relaxation
+   // This occurs for LRFD 3rd Edition 2004 and earlier and WSDOT_REFINED, TXDOT_REFINED_2004, WSDOT_LUMPSUM, and TIME_STEP methods
+   virtual bool LossesIncludeInitialRelaxation() const = 0;
 };
 
 #endif // INCLUDED_IFACE_PRESTRESS_H_

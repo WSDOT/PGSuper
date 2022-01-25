@@ -39,6 +39,7 @@
 //
 interface IBroker;
 class pgsPointOfInterest;
+class pgsDevelopmentLength;
 class rptChapter;
 interface IEAFDisplayUnits;
 
@@ -59,21 +60,8 @@ DESCRIPTION
 class pgsPsForceEng
 {
 public:
-   //------------------------------------------------------------------------
-   // Default constructor
    pgsPsForceEng();
-
-   //------------------------------------------------------------------------
-   // Copy constructor
-   pgsPsForceEng(const pgsPsForceEng& rOther);
-
-   //------------------------------------------------------------------------
-   // Destructor
-   virtual ~pgsPsForceEng();
-
-   //------------------------------------------------------------------------
-   // Assignment operator
-   pgsPsForceEng& operator = (const pgsPsForceEng& rOther);
+   ~pgsPsForceEng();
 
    void SetBroker(IBroker* pBroker);
    void SetStatusGroupID(StatusGroupIDType statusGroupID);
@@ -124,36 +112,6 @@ public:
    Float64 GetPjackMax(const CSegmentKey& segmentKey,const matPsStrand& strand,StrandIndexType nStrands) const;
 
    //------------------------------------------------------------------------
-   // Returns the prestress transfer length
-   XFERLENGTHDETAILS GetXferLengthDetails(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) const;
-   Float64 GetXferLength(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) const;
-
-   //------------------------------------------------------------------------
-   // Returns the transfer length adjustment factor. The factor is 0 at the
-   // point where bond begins and 1.0 at the end of the transfer length
-   Float64 GetXferLengthAdjustment(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG* pConfig = nullptr) const;
-
-   //------------------------------------------------------------------------
-   // Returns the transfer length adjustment factor. The factor is 0 at the
-   // point where bond begins and 1.0 at the end of the transfer length
-   Float64 GetXferLengthAdjustment(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, StrandIndexType strandIdx, const GDRCONFIG* pConfig = nullptr) const;
-
-   //------------------------------------------------------------------------
-   // Returns the prestress development length
-   Float64 GetDevLength(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, bool bDebonded,bool bUHPC,const GDRCONFIG* pConfig=nullptr) const;
-
-   //------------------------------------------------------------------------
-   // Returns the development length adjustment factor. The factor is 0 at the
-   // point where bond begins and 1.0 at the end of the development length
-   Float64 GetDevLengthAdjustment(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType, bool bDebonded, const GDRCONFIG* pConfig=nullptr) const;
-   Float64 GetDevLengthAdjustment(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType,Float64 fps,Float64 fpe, const GDRCONFIG* pConfig = nullptr) const;
-
-   //------------------------------------------------------------------------
-   // Returns the details of the develpment lenght computations
-   STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType, bool bDebonded,bool bUHPC,const GDRCONFIG* pConfig=nullptr) const;
-   STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, bool bDebonded,bool bUHPC,Float64 fps,Float64 fpe, const GDRCONFIG* pConfig = nullptr) const;
-
-   //------------------------------------------------------------------------
    // Returns the prestress hold down force
    Float64 GetHoldDownForce(const CSegmentKey& segmentKey,bool bTotalForce,Float64* pSlope, pgsPointOfInterest* pPoi, const GDRCONFIG* pConfig = nullptr) const;
 
@@ -192,16 +150,11 @@ public:
    Float64 GetEffectivePrestressWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState, VehicleIndexType vehicleIndex, bool bIncludeElasticEffects, bool bApplyElasticGainReduction, const GDRCONFIG* pConfig) const;
 
 protected:
-   void MakeCopy(const pgsPsForceEng& rOther);
-   void MakeAssignment(const pgsPsForceEng& rOther);
 
 private:
    IBroker* m_pBroker;
    StatusGroupIDType m_StatusGroupID;
    mutable CComPtr<IPsLossEngineer> m_LossEngineer;
-
-   // method used to compute prestress transfer length
-   mutable pgsTypes::PrestressTransferComputationType m_PrestressTransferComputationType;
 
    void CreateLossEngineer(const CGirderKey& girderKey) const;
 

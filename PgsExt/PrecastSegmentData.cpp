@@ -1448,7 +1448,6 @@ void CPrecastSegmentData::AssertValid()
 
    Strands.AssertValid();
    Tendons.AssertValid();
-   Material.AssertValid();
    ShearData.AssertValid();
    LongitudinalRebarData.AssertValid();
    HandlingData.AssertValid();

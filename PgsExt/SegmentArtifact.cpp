@@ -852,13 +852,13 @@ Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength() const
 
    if (m_pHaulingAnalysisArtifact != nullptr)
    {
-      Float64 fc_reqd_hauling_comp1, fc_reqd_hauling_tens1, fc_reqd_hauling_tens_wbar1;
-      m_pHaulingAnalysisArtifact->GetRequiredConcreteStrength(pgsTypes::CrownSlope,&fc_reqd_hauling_comp1,&fc_reqd_hauling_tens1, &fc_reqd_hauling_tens_wbar1);
+       Float64 fc_reqd_hauling_comp1, fc_reqd_hauling_tens1, fc_reqd_hauling_tens_wbar1;
+       m_pHaulingAnalysisArtifact->GetRequiredConcreteStrength(pgsTypes::CrownSlope, &fc_reqd_hauling_comp1, &fc_reqd_hauling_tens1, &fc_reqd_hauling_tens_wbar1);
 
-      Float64 fc_reqd_hauling_comp2, fc_reqd_hauling_tens2, fc_reqd_hauling_tens_wbar2;
-      m_pHaulingAnalysisArtifact->GetRequiredConcreteStrength(pgsTypes::Superelevation,&fc_reqd_hauling_comp2,&fc_reqd_hauling_tens2, &fc_reqd_hauling_tens_wbar2);
+       Float64 fc_reqd_hauling_comp2, fc_reqd_hauling_tens2, fc_reqd_hauling_tens_wbar2;
+       m_pHaulingAnalysisArtifact->GetRequiredConcreteStrength(pgsTypes::Superelevation, &fc_reqd_hauling_comp2, &fc_reqd_hauling_tens2, &fc_reqd_hauling_tens_wbar2);
 
-      Float64 fc_reqd_hauling = Max(fc_reqd_hauling_tens_wbar1,fc_reqd_hauling_comp2,fc_reqd_hauling_tens_wbar1,fc_reqd_hauling_comp2);
+       Float64 fc_reqd_hauling = Max(fc_reqd_hauling_tens_wbar1, fc_reqd_hauling_comp2, fc_reqd_hauling_tens_wbar1, fc_reqd_hauling_comp2);
 
       if ( fc_reqd_hauling < 0 ) // there is no concrete strength that will work
       {
@@ -1011,11 +1011,11 @@ Float64 pgsSegmentArtifact::GetRequiredReleaseStrength() const
  
    if (m_pLiftingCheckArtifact != nullptr)
    {
-      Float64 fc_reqd_lifting_comp = m_pLiftingCheckArtifact->RequiredFcCompression();
-      Float64 fc_reqd_lifting_tens_norebar = m_pLiftingCheckArtifact->RequiredFcTension();
-      Float64 fc_reqd_lifting_tens_withrebar = m_pLiftingCheckArtifact->RequiredFcTensionWithRebar();
+       Float64 fc_reqd_lifting_comp = m_pLiftingCheckArtifact->RequiredFcCompression();
+       Float64 fc_reqd_lifting_tens_norebar = m_pLiftingCheckArtifact->RequiredFcTension();
+       Float64 fc_reqd_lifting_tens_withrebar = m_pLiftingCheckArtifact->RequiredFcTensionWithRebar();
 
-      Float64 fc_reqd_lifting = Max(fc_reqd_lifting_comp,fc_reqd_lifting_tens_norebar,fc_reqd_lifting_tens_withrebar);
+       Float64 fc_reqd_lifting = Max(fc_reqd_lifting_comp, fc_reqd_lifting_tens_norebar, fc_reqd_lifting_tens_withrebar);
 
       fc_reqd = Max(fc_reqd,fc_reqd_lifting);
    }

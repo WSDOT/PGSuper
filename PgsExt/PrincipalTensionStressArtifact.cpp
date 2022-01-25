@@ -29,7 +29,7 @@ pgsPrincipalTensionSectionArtifact::pgsPrincipalTensionSectionArtifact()
    m_fmax = -99999;
    m_Yg = -99999;
    m_strWebLocation = _T("Undefined");
-   m_fcReqd = -99999;
+   m_fcReqd = NO_AVAILABLE_CONCRETE_STRENGTH;
 }
 
 pgsPrincipalTensionSectionArtifact::pgsPrincipalTensionSectionArtifact(const pgsPointOfInterest& poi, Float64 fAllow, Float64 fmax, Float64 Yg, LPCTSTR lpszWebLocation, Float64 fcReqd)

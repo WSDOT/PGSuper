@@ -69,8 +69,8 @@ CString ConcreteLibraryEntry::GetConcreteType(pgsTypes::ConcreteType type)
       lpszType = _T("Sand lightweight");
       break;
 
-   case pgsTypes::UHPC:
-      lpszType = _T("UHPC");
+   case pgsTypes::PCI_UHPC:
+      lpszType = _T("PCI-UHPC");
       break;
 
    default:
@@ -166,6 +166,10 @@ m_ShrinkageK1(1.0),
 m_ShrinkageK2(1.0),
 m_Type(pgsTypes::Normal),
 m_Fct(0), // need a good default value
+m_Ffc(::ConvertToSysUnits(1.5,unitMeasure::KSI)),
+m_Frr(::ConvertToSysUnits(0.75,unitMeasure::KSI)),
+m_FiberLength(::ConvertToSysUnits(0.5,unitMeasure::Inch)),
+m_bPCTT(false),
 m_bHasFct(false),
 m_bUserACIParameters(false),
 m_CureMethod(pgsTypes::Moist),
@@ -201,10 +205,11 @@ ConcreteLibraryEntry& ConcreteLibraryEntry::operator= (const ConcreteLibraryEntr
 //======================== OPERATIONS =======================================
 bool ConcreteLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 {
-   pSave->BeginUnit(_T("ConcreteMaterialEntry"), 6.0);
+   pSave->BeginUnit(_T("ConcreteMaterialEntry"), 7.0);
 
    // Version 5, re-arranged data and added AASHTO and ACI groups.
    // Version 6, added CEB-FIP Concrete
+   // Version 7, added PCI UHPC
 
    pSave->Property(_T("Name"),this->GetName().c_str());
    
@@ -236,6 +241,14 @@ bool ConcreteLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    }
    pSave->EndUnit(); // AASHTO
 
+   // Added version 7
+   pSave->BeginUnit(_T("PCIUHPC"), 1.0);
+   pSave->Property(_T("Ffc"), m_Ffc);
+   pSave->Property(_T("Frr"), m_Frr);
+   pSave->Property(_T("FiberLength"), m_FiberLength);
+   pSave->Property(_T("PCTT"), m_bPCTT);
+   pSave->EndUnit(); // PCIUHPC
+
    pSave->BeginUnit(_T("ACI"),1.0);
    pSave->Property(_T("UserACI"),m_bUserACIParameters);
    pSave->Property(_T("A"),m_A);
@@ -262,7 +275,7 @@ bool ConcreteLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
    if(pLoad->BeginUnit(_T("ConcreteMaterialEntry")))
    {
       Float64 version = pLoad->GetVersion();
-      if (6.0 < version )
+      if (7.0 < version )
       {
          THROW_LOAD(BadVersion,pLoad);
       }
@@ -449,6 +462,17 @@ bool ConcreteLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
+         if (6 < version)
+         {
+            // Added version 7
+            if(!pLoad->BeginUnit(_T("PCIUHPC"))) THROW_LOAD(InvalidFileFormat,pLoad);
+            if (!pLoad->Property(_T("Ffc"), &m_Ffc)) THROW_LOAD(InvalidFileFormat, pLoad);
+            if(!pLoad->Property(_T("Frr"), &m_Frr)) THROW_LOAD(InvalidFileFormat, pLoad);
+            if (!pLoad->Property(_T("FiberLength"), &m_FiberLength)) THROW_LOAD(InvalidFileFormat, pLoad);
+            if(!pLoad->Property(_T("PCTT"), &m_bPCTT)) THROW_LOAD(InvalidFileFormat, pLoad);
+            if(!pLoad->EndUnit()) THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+
          if ( !pLoad->BeginUnit(_T("ACI")) )
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -602,6 +626,12 @@ bool ConcreteLibraryEntry::Compare(const ConcreteLibraryEntry& rOther, std::vect
       vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(_T("Max. Aggregate Size"),m_AggSize,rOther.m_AggSize,pDisplayUnits->ComponentDim));
    }
 
+   if (m_Type == pgsTypes::PCI_UHPC && !::IsEqual(m_FiberLength, rOther.m_FiberLength))
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(_T("Fiber Length"), m_FiberLength, rOther.m_FiberLength, pDisplayUnits->ComponentDim));
+   }
+
    if ( !::IsEqual(m_EccK1,rOther.m_EccK1) )
    {
       RETURN_ON_DIFFERENCE;
@@ -653,6 +683,32 @@ bool ConcreteLibraryEntry::Compare(const ConcreteLibraryEntry& rOther, std::vect
       }
    }
 
+   if (m_Type == pgsTypes::PCI_UHPC)
+   {
+      if (!::IsEqual(m_Ffc, rOther.m_Ffc))
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceStressItem(_T("Ffc"), m_Ffc, rOther.m_Ffc, pDisplayUnits->Stress));
+      }
+
+      if (!::IsEqual(m_Frr, rOther.m_Frr))
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceStressItem(_T("Frr"), m_Frr, rOther.m_Frr, pDisplayUnits->Stress));
+      }
+
+      if (!::IsEqual(m_FiberLength, rOther.m_FiberLength))
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceStressItem(_T("Fiber Length"), m_Frr, rOther.m_Frr, pDisplayUnits->Stress));
+      }
+
+      if (m_bPCTT != rOther.m_bPCTT)
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceBooleanItem(_T("PCTT"), m_bPCTT, rOther.m_bPCTT, _T("Checked"), _T("Unchecked")));
+      }
+   }
 
    if ( m_bUserACIParameters != rOther.m_bUserACIParameters )
    {
@@ -880,6 +936,23 @@ Float64 ConcreteLibraryEntry::GetAggSplittingStrength() const
    return m_Fct;
 }
 
+void ConcreteLibraryEntry::SetPCIUHPC(Float64 ffc, Float64 frr, Float64 fiberLength,bool bPCTT)
+{
+   m_Ffc = ffc;
+   m_Frr = frr;
+   m_FiberLength = fiberLength;
+   m_bPCTT = bPCTT;
+}
+
+void ConcreteLibraryEntry::GetPCIUHPC(Float64* ffc, Float64* frr, Float64* fiberLength, bool* bPCTT) const
+{
+   *ffc = m_Ffc;
+   *frr = m_Frr;
+   *fiberLength = m_FiberLength;
+   *bPCTT = m_bPCTT;
+}
+
+
 bool ConcreteLibraryEntry::UserACIParameters() const
 {
    return m_bUserACIParameters;
@@ -998,6 +1071,8 @@ bool ConcreteLibraryEntry::Edit(bool allowEditing,int nPage)
    dlg.m_General.m_Ec        = this->GetEc();
    dlg.m_General.m_Type      = this->GetType();
 
+   GetPCIUHPC(&dlg.m_PCIUHPC.m_ffc, &dlg.m_PCIUHPC.m_frr, &dlg.m_PCIUHPC.m_FiberLength, &dlg.m_PCIUHPC.m_bPCTT);
+
    dlg.m_AASHTO.m_EccK1       = this->GetModEK1();
    dlg.m_AASHTO.m_EccK2       = this->GetModEK2();
    dlg.m_AASHTO.m_CreepK1     = this->GetCreepK1();
@@ -1040,6 +1115,8 @@ bool ConcreteLibraryEntry::Edit(bool allowEditing,int nPage)
       this->HasAggSplittingStrength(dlg.m_AASHTO.m_bHasFct);
       this->SetAggSplittingStrength(dlg.m_AASHTO.m_Fct);
 
+      SetPCIUHPC(dlg.m_PCIUHPC.m_ffc, dlg.m_PCIUHPC.m_frr, dlg.m_PCIUHPC.m_FiberLength, dlg.m_PCIUHPC.m_bPCTT);
+
       this->UserACIParameters(dlg.m_ACI.m_bUserParameters);
       this->SetAlpha(dlg.m_ACI.m_A);
       this->SetBeta(dlg.m_ACI.m_B);
@@ -1077,6 +1154,13 @@ void ConcreteLibraryEntry::MakeCopy(const ConcreteLibraryEntry& rOther)
    m_ShrinkageK2  = rOther.m_ShrinkageK2;
    m_bHasFct  = rOther.m_bHasFct;
    m_Fct      = rOther.m_Fct;
+
+   // PCI UHPC
+   m_Ffc = rOther.m_Ffc;
+   m_Frr = rOther.m_Frr;
+   m_FiberLength = rOther.m_FiberLength;
+   m_bPCTT = rOther.m_bPCTT;
+
 
    // ACI
    m_bUserACIParameters = rOther.m_bUserACIParameters;

@@ -30,9 +30,10 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\MomentCapacity.h>
-
+#include <IFace\Project.h>
 #include <IFace\Intervals.h>
 
+#include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\GirderLabel.h>
 
 #include <PGSuperColors.h>
@@ -331,8 +332,24 @@ rptChapter* CMomentCapacityChapterBuilder::Build(CReportSpecification* pRptSpec,
    *pPara << rptNewLine;
 
    std::_tstring strImagePath = rptStyleManager::GetImagePath();
-   *pPara << _T("Unconfined Concrete Stress-Strain Model") << rptNewLine;
-   *pPara << rptRcImage(strImagePath + _T("UnconfinedConcrete.png")) << rptNewLine;
+
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   bool bUHPC = pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC || (pBridgeDesc->HasStructuralLongitudinalJoints() ? pMaterials->GetLongitudinalJointConcreteType() == pgsTypes::PCI_UHPC : false);
+   if (bUHPC)
+   {
+      *pPara << _T("PCI UHPC Concrete Stress-Strain Model (PCI UHPC SDG E.6.1)") << rptNewLine;
+      *pPara << rptRcImage(strImagePath + _T("PCIUHPCConcrete.png")) << rptNewLine;
+   }
+
+   bool bUnconfinedConcrete = pMaterials->GetSegmentConcreteType(segmentKey) != pgsTypes::PCI_UHPC || (pBridgeDesc->HasStructuralLongitudinalJoints() ? pMaterials->GetLongitudinalJointConcreteType() != pgsTypes::PCI_UHPC : false);
+   if (bUnconfinedConcrete)
+   {
+      *pPara << _T("Unconfined Concrete Stress-Strain Model") << rptNewLine;
+      *pPara << rptRcImage(strImagePath + _T("UnconfinedConcrete.png")) << rptNewLine;
+   }
 
    *pPara << _T("Prestressing Strand Model") << rptNewLine;
    *pPara << rptRcImage(strImagePath + _T("PowerFormula.png")) << rptNewLine;

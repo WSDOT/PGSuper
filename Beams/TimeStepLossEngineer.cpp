@@ -1725,17 +1725,17 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
                TIME_STEP_DETAILS& prevTimeStepDetails(details.TimeStepDetails[intervalIdx - 1]);
 
             // strands were stressed in a previous interval
-               if (intervalIdx == releaseIntervalIdx)
+            if (intervalIdx == releaseIntervalIdx)
             {
                // accounts for lack of development and location of debonding
-                  Float64 xfer_factor = m_pPSForce->GetXferLengthAdjustment(poi, strandType);
+               Float64 xfer_factor = m_pPSForce->GetTransferLengthAdjustment(poi, strandType);
 
                // xfer_factor reduces the nominal strand force (force based on all strands)
                // to the actual force by making adjustments for lack of full development
                // and debonding. Since the strands data structure contains the actual
                // effective area of strands (area reduced for debonding) we need to
                // get the nominal area here and use it in the calculation below
-                  Float64 As = m_pStrandGeom->GetStrandArea(poi, intervalIdx, strandType);
+               Float64 As = m_pStrandGeom->GetStrandArea(poi, intervalIdx, strandType);
 
                // this the interval when the prestress force is release into the girders, apply the
                // prestress as an external force. The prestress force is the area of strand times
@@ -1761,14 +1761,14 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
             // relaxation during this interval
             // by using the effective prestress at the end of the previous interval we get a very good approximation for 
             // the actual (reduced) relaxation. See "Time-Dependent Analysis of Composite Frames", Tadros, Ghali, Dilger, pg 876
-               if (!bIgnoreRelaxationEffects)
+            if (!bIgnoreRelaxationEffects)
             {
-                  tsDetails.Strands[strandType].Relaxation = m_pMaterials->GetIncrementalStrandRelaxationDetails(segmentKey, intervalIdx, prevTimeStepDetails.Strands[strandType].fpe, strandType);
+               tsDetails.Strands[strandType].Relaxation = m_pMaterials->GetIncrementalStrandRelaxationDetails(segmentKey, intervalIdx, prevTimeStepDetails.Strands[strandType].fpe, strandType);
             }
          }
 
          // apparent strain due to relaxation
-            tsDetails.Strands[strandType].er = -tsDetails.Strands[strandType].Relaxation.fr / EStrand[strandType]; // Tadros 1977, second term in Eqn 8
+         tsDetails.Strands[strandType].er = -tsDetails.Strands[strandType].Relaxation.fr / EStrand[strandType]; // Tadros 1977, second term in Eqn 8
 
          // force required to restrain the apparent relaxation strain
          tsDetails.Strands[strandType].PrRelaxation = tsDetails.Strands[strandType].Relaxation.fr*tsDetails.Strands[strandType].As; // Tadros 1977, Eqn 10
@@ -1830,7 +1830,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
 
                      // accounts for lack of development and location of debonding
 #pragma Reminder("UPDATE: this should be the adjustment for the individual strands, not all the strands taken together")
-                        Float64 xfer_factor = m_pPSForce->GetXferLengthAdjustment(poi, strandType);
+                        Float64 xfer_factor = m_pPSForce->GetTransferLengthAdjustment(poi, strandType);
 
                      Float64 P = -xfer_factor*strand.As*prevTimeStepDetails.Strands[strandType][strandIdx].fpe;
                      tsDetails.dPi[pgsTypes::pftPretension] += P;

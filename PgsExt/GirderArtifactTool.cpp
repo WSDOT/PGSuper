@@ -23,6 +23,7 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\GirderArtifactTool.h>
 #include <PgsExt\GirderLabel.h>
+#include <PgsExt\SplittingCheckEngineer.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
 #include <IFace\Bridge.h>
@@ -421,10 +422,10 @@ void ListSplittingZoneFailures(IBroker* pBroker,FailureList& rFailures,const pgs
    {
       CSegmentKey segmentKey(girderKey,segIdx);
       const pgsSegmentArtifact* pArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
-      const pgsSplittingZoneArtifact* pBZArtifact = pArtifact->GetStirrupCheckArtifact()->GetSplittingZoneArtifact();
-      if ( !pBZArtifact->Passed() )
+      const std::shared_ptr<pgsSplittingCheckArtifact> pSplittingCheckArtifact = pArtifact->GetStirrupCheckArtifact()->GetSplittingCheckArtifact();
+      if (pSplittingCheckArtifact && !pSplittingCheckArtifact->Passed() )
       {
-         std::_tstring strZone( lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() ? _T("Splitting") : _T("Bursting") );
+         std::_tstring strZone(pgsSplittingCheckEngineer::GetCheckName());
          std::_tostringstream os;
          if ( 1 < nSegments )
          {
@@ -450,7 +451,7 @@ void ListConfinementZoneFailures(IBroker* pBroker,FailureList& rFailures,const p
       CSegmentKey segmentKey(girderKey,segIdx);
       const pgsSegmentArtifact* pArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
       const pgsStirrupCheckArtifact *pStirrups = pArtifact->GetStirrupCheckArtifact();
-      const pgsConfinementArtifact& rShear = pStirrups->GetConfinementArtifact();
+      const pgsConfinementCheckArtifact& rShear = pStirrups->GetConfinementArtifact();
       if ( !rShear.Passed() )
       {
          std::_tostringstream os;

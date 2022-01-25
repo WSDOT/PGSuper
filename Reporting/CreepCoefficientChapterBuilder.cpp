@@ -23,15 +23,8 @@
 #include "StdAfx.h"
 #include <Reporting\CreepCoefficientChapterBuilder.h>
 #include <Reporting\LRFDCreepCoefficientChapterBuilder.h>
-//#include <Reporting\LRFDTimeDependentCreepCoefficientChapterBuilder.h>
-//#include <Reporting\ACI209CreepCoefficientChapterBuilder.h>
-//#include <Reporting\CEBFIPCreepCoefficientChapterBuilder.h>
-//
-//#include <IFace\AnalysisResults.h>
+
 #include <IFace\Project.h>
-//#include <IFace\Bridge.h>
-//
-//#include <PgsExt\StrandData.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -75,18 +68,6 @@ rptChapter* CCreepCoefficientChapterBuilder::Build(CReportSpecification* pRptSpe
       rptParagraph* pPara = new rptParagraph;
       (*pChapter) << pPara;
       *pPara << _T("Creep coefficient details are listed in the Time Step Details Report.") << rptNewLine;
-      //if ( pLossParams->GetTimeDependentModel() == pgsTypes::tdmAASHTO )
-      //{
-      //   pChapter = CLRFDTimeDependentCreepCoefficientChapterBuilder().Build(pRptSpec,level);
-      //}
-      //else if ( pLossParams->GetTimeDependentModel() == pgsTypes::tdmACI209 )
-      //{
-      //   pChapter = CACI209CreepCoefficientChapterBuilder().Build(pRptSpec,level);
-      //}
-      //else if ( pLossParams->GetTimeDependentModel() == pgsTypes::tdmCEBFIP )
-      //{
-      //   pChapter = CCEBFIPCreepCoefficientChapterBuilder().Build(pRptSpec,level);
-      //}
    }
    else
    {

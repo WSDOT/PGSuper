@@ -94,6 +94,10 @@ class dbgDumpContext;
 
 #define NO_LIVE_LOAD_DEFINED _T("No Live Load Defined")
 
+// When required concrete strength is set to this value it indicates that 
+// no concrete strength will satisfy the stress limits
+#define NO_AVAILABLE_CONCRETE_STRENGTH -99999
+
 typedef struct pgsTypes
 {
    typedef enum SectionCoordinateType
@@ -624,10 +628,10 @@ typedef struct pgsTypes
    typedef enum ConcreteType
    {
       Normal,
-      AllLightweight,
-      SandLightweight,
-      UHPC,
-      ConcreteTypeCount // this should always be the last value in the num
+      AllLightweight, // Starting with AASHTO LRFD 7th Edition, 2016 Interims, the destinction between All Lightweight and Sand Lightweight is removed. AllLightweight is considered an invalid parameter and it automatically gets converted to SandLightweight
+      SandLightweight, // Starting with AASHTO LRFD 7th Edition, 2016 Interims SandLightweight means "Lightweight" for all types of lightweight concrete
+      PCI_UHPC, // Concrete is defined by on PCI definition of UHPC
+      ConcreteTypeCount // this should always be the last value in the enum
    } ConcreteType;
 
    // Rebar layout defines where longitudinal rebar is placed along girder. 

@@ -196,6 +196,7 @@
     <ClInclude Include="..\Include\IFace\InterfaceShearRequirements.h" />
     <ClInclude Include="..\Include\IFace\PrecastIGirderDetailsSpec.h" />
     <ClInclude Include="..\Include\IFace\ResistanceFactors.h" />
+    <ClInclude Include="..\Include\IFace\SplittingChecks.h" />
     <ClInclude Include="..\Include\IFace\TransverseReinforcementSpec.h" />
     <ClInclude Include="CLSID.h" />
     <ClInclude Include="Resource.h" />

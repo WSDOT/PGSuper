@@ -199,13 +199,7 @@ void CPrincipalTensionStressCheckTable::BuildTable(rptChapter* pChapter, IBroker
       Float64 fc = pMaterials->GetSegmentDesignFc(segmentKey, intervalIdx);
       *pSegmentPara << RPT_FC << _T(" = ") << stress_u.SetValue(fc) << rptNewLine;
 
-      Float64 fAllow = pAllowables->GetAllowableSegmentPrincipalWebTensionStress(segmentKey);
-      (*pSegmentPara) << _T("Tension stress limit = ") << tension_coeff.SetValue(coefficient);
-      if (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion())
-      {
-         (*pSegmentPara) << symbol(lambda);
-      }
-      (*pSegmentPara) << symbol(ROOT) << RPT_FC << _T(" = ") << stress_u.SetValue(fAllow) << rptNewLine;
+      pAllowables->ReportAllowableSegmentPrincipalWebTensionStress(segmentKey, pSegmentPara, pDisplayUnits);
 
       Float64 fc_reqd = pArtifact->GetRequiredSegmentConcreteStrength();
       if (0 < fc_reqd)
@@ -230,13 +224,7 @@ void CPrincipalTensionStressCheckTable::BuildTable(rptChapter* pChapter, IBroker
          Float64 fc = pMaterials->GetClosureJointDesignFc(closureKey, intervalIdx);
          *pClosurePara << RPT_FC << _T(" = ") << stress_u.SetValue(fc) << rptNewLine;
 
-         Float64 fAllow = pAllowables->GetAllowableClosureJointPrincipalWebTensionStress(closureKey);
-         (*pClosurePara) << _T("Tension stress limit = ") << tension_coeff.SetValue(coefficient);
-         if (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion())
-         {
-            (*pClosurePara) << symbol(lambda);
-         }
-         (*pClosurePara) << symbol(ROOT) << RPT_FC << _T(" = ") << stress_u.SetValue(fAllow) << rptNewLine;
+         pAllowables->ReportAllowableClosureJointPrincipalWebTensionStress(closureKey, pClosurePara, pDisplayUnits);
 
          Float64 fc_reqd = pArtifact->GetRequiredClosureJointConcreteStrength();
          if (0 < fc_reqd)

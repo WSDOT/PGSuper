@@ -1021,7 +1021,7 @@ Float64 CPGSuperDocProxyAgent::GetSectionCutStation()
    };
 
    ASSERT(false); // should never get here
-   return -999999;
+   return -99999;
 }
 
 

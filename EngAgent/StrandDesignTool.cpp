@@ -170,16 +170,17 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
    }
    else
    {
-      if (pSegmentMaterial->Concrete.Type == pgsTypes::UHPC)
+      if (pSegmentMaterial->Concrete.Type == pgsTypes::PCI_UHPC)
       {
-         LOG(_T("UHPC Concrete"));
-         // somewhat arbitrary values
-         // Graybeal "Compression Response of Rapid-Strengthing Ultra-High Performance Concrete Formulation" FHWA Publication: FHWA-HRT-12-064
-         // Sets limits of f'c of 14-26ksi
-         m_MinFci = ::ConvertToSysUnits(10.0, unitMeasure::KSI);
-         m_MaxFci = ::ConvertToSysUnits(14.0, unitMeasure::KSI);
-         m_MinFc = ::ConvertToSysUnits(14.0, unitMeasure::KSI);
-         m_MaxFc = ::ConvertToSysUnits(26.0, unitMeasure::KSI);
+         LOG(_T("PCI-UHPC Concrete"));
+         GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
+         m_MinFci = IS_SI_UNITS(pDisplayUnits) ? ::ConvertToSysUnits(28.0, unitMeasure::MPa) : ::ConvertToSysUnits(4.0, unitMeasure::KSI); // minimum per LRFD 5.4.2.1
+         m_MaxFci = m_DesignOptions.maxFci; // this is from the design strategy defined in the girder
+         m_MinFc = ::ConvertToSysUnits(17.4, unitMeasure::KSI);
+         m_MaxFc = m_DesignOptions.maxFc;// this is from the design strategy defined in the girder
+
+         if (m_MaxFci < m_MinFci) m_MaxFci = m_MinFci;
+         if (m_MaxFc < m_MinFc) m_MaxFc = m_MinFc;
       }
       else
       {
@@ -209,6 +210,7 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
                       pSegmentMaterial->Concrete.WeightDensity, lrfdConcreteUtil::ModE((matConcrete::Type)(pSegmentMaterial->Concrete.Type),ifc,  pSegmentMaterial->Concrete.StrengthDensity, false ),
                       0.0,0.0); // we don't need the modulus of rupture for shear or flexur. Just use 0.0
    conc.SetMaxAggregateSize(pSegmentMaterial->Concrete.MaxAggregateSize);
+   conc.SetFiberLength(pSegmentMaterial->Concrete.FiberLength);
    conc.SetType((matConcrete::Type)pSegmentMaterial->Concrete.Type);
    conc.HasAggSplittingStrength(pSegmentMaterial->Concrete.bHasFct);
    conc.SetAggSplittingStrength(pSegmentMaterial->Concrete.Fct);
@@ -308,9 +310,9 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
    m_SegmentLength         = pBridge->GetSegmentLength(m_SegmentKey);
    m_SpanLength            = pBridge->GetSegmentSpanLength(m_SegmentKey);
    m_StartConnectionLength = pBridge->GetSegmentStartEndDistance(m_SegmentKey);
-   m_XFerLength[pgsTypes::Straight]  = pPrestressForce->GetXferLength(m_SegmentKey,pgsTypes::Straight);
-   m_XFerLength[pgsTypes::Harped]    = pPrestressForce->GetXferLength(m_SegmentKey,pgsTypes::Harped);
-   m_XFerLength[pgsTypes::Temporary] = pPrestressForce->GetXferLength(m_SegmentKey,pgsTypes::Temporary);
+   m_XFerLength[pgsTypes::Straight]  = pPrestressForce->GetTransferLength(m_SegmentKey,pgsTypes::Straight);
+   m_XFerLength[pgsTypes::Harped]    = pPrestressForce->GetTransferLength(m_SegmentKey,pgsTypes::Harped);
+   m_XFerLength[pgsTypes::Temporary] = pPrestressForce->GetTransferLength(m_SegmentKey,pgsTypes::Temporary);
 
    // harped offsets, hold-down and max strand slopes
    InitHarpedPhysicalBounds(pSegmentData->GetStrandMaterial(m_SegmentKey,pgsTypes::Harped));
@@ -2012,63 +2014,84 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
    else
    {
       GET_IFACE(IMaterials,pMaterials);
-      Float64 lambda = pMaterials->GetSegmentLambda(GetSegmentKey());
 
-      fc_reqd = -1;
-      if ( 0 < fControl )
+      if (pMaterials->GetSegmentConcreteType(GetSegmentKey()) == pgsTypes::PCI_UHPC)
       {
-         Float64 t, fmax;
-         bool bfMax;
-
-         GET_IFACE(IAllowableConcreteStress,pAllowStress);
-         pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,task,false/*without rebar*/,false,&t,&bfMax,&fmax);
-         if (0 < t)
+         if (task.intervalIdx == releaseIntervalIdx)
          {
-            LOG(_T("f allow coeff = ") << ::ConvertFromSysUnits(t,unitMeasure::SqrtKSI) << _T("_/f'c = ") << ::ConvertFromSysUnits(fControl,unitMeasure::KSI));
-            fc_reqd = pow(fControl/(lambda*t),2);
-
-            if ( bfMax && fmax < fControl) 
-            {
-               // allowable stress is limited to value lower than needed
-               if ( task.intervalIdx == releaseIntervalIdx )
-               {
-                  // try getting the alternative allowable if rebar is used
-                  bool bCheckMaxAlt;
-                  Float64 fMaxAlt;
-                  Float64 talt;
-
-                  ATLASSERT(task.limitState == pgsTypes::ServiceI && task.stressType == pgsTypes::Tension);
-
-                  pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,task,true/*with rebar*/,false/*in other than precompressed tensile zone*/,&talt,&bCheckMaxAlt,&fMaxAlt);
-                  fc_reqd = pow(fControl/(lambda*talt),2);
-                  result = ConcSuccessWithRebar;
-                  LOG(_T("Min rebar is required to acheive required strength"));
-               }
-               else
-               {
-                  LOG(_T("Required strength is greater than user-input max of ")<<::ConvertFromSysUnits(fmax,unitMeasure::KSI)<<_T(" cannot achieve strength"));
-                  fc_reqd = -1;
-                  return ConcFailed;
-               }
-            }
+            const auto* pConcrete = pMaterials->GetSegmentConcrete(GetSegmentKey());
+            const lrfdLRFDConcrete* pConcrete1 = dynamic_cast<const lrfdLRFDConcrete*>(pConcrete);
+            const lrfdLRFDTimeDependentConcrete* pConcrete2 = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete);
+            Float64 f_fc = (pConcrete1 ? pConcrete1->GetFirstCrackStrength() : pConcrete2->GetFirstCrackStrength());
+            Float64 fc = GetConcreteStrength();
+            fc_reqd = pow(1.5 * fControl / fc, 2) * fc;
+            // stress limit = (2/3)ffc*sqrt(f'ci/fc);
          }
          else
          {
-            // stress coeff is zero, no tensile capacity
-            fc_reqd = -1;
-            LOG(_T("WARNING: Have applied tension with zero tension allowed - Should not happen"));
-            //ATLASSERT(false);
-            return ConcFailed;
+            fc_reqd = 0; // stress limit = (2/3)(ffc) which is not a function of f'c
          }
-
-         LOG(_T("F demand (tension) = ") << ::ConvertFromSysUnits(fControl,unitMeasure::KSI) << _T(" KSI") << _T(" --> f'c (req'd unrounded) = ") << ::ConvertFromSysUnits(fc_reqd,unitMeasure::KSI) << (result==ConcSuccessWithRebar ?_T(" KSI, min rebar required"):_T(" KSI")));
-
       }
       else
       {
-         // this is a tension case, but the controlling stress is compressive
-         // the lowest required concrete strength is 0.
-         fc_reqd = 0;
+         Float64 lambda = pMaterials->GetSegmentLambda(GetSegmentKey());
+
+         fc_reqd = -1;
+         if (0 < fControl)
+         {
+            Float64 t, fmax;
+            bool bfMax;
+
+            GET_IFACE(IAllowableConcreteStress, pAllowStress);
+            pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI, pgsTypes::TopGirder, task, false/*without rebar*/, false, &t, &bfMax, &fmax);
+            if (0 < t)
+            {
+               LOG(_T("f allow coeff = ") << ::ConvertFromSysUnits(t, unitMeasure::SqrtKSI) << _T("_/f'c = ") << ::ConvertFromSysUnits(fControl, unitMeasure::KSI));
+               fc_reqd = pow(fControl / (lambda * t), 2);
+
+               if (bfMax && fmax < fControl)
+               {
+                  // allowable stress is limited to value lower than needed
+                  if (task.intervalIdx == releaseIntervalIdx)
+                  {
+                     // try getting the alternative allowable if rebar is used
+                     bool bCheckMaxAlt;
+                     Float64 fMaxAlt;
+                     Float64 talt;
+
+                     ATLASSERT(task.limitState == pgsTypes::ServiceI && task.stressType == pgsTypes::Tension);
+
+                     pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI, pgsTypes::TopGirder, task, true/*with rebar*/, false/*in other than precompressed tensile zone*/, &talt, &bCheckMaxAlt, &fMaxAlt);
+                     fc_reqd = pow(fControl / (lambda * talt), 2);
+                     result = ConcSuccessWithRebar;
+                     LOG(_T("Min rebar is required to acheive required strength"));
+                  }
+                  else
+                  {
+                     LOG(_T("Required strength is greater than spec defined upper limit of ") << ::ConvertFromSysUnits(fmax, unitMeasure::KSI) << _T(", cannot achieve strength"));
+                     fc_reqd = -1;
+                     return ConcFailed;
+                  }
+               }
+            }
+            else
+            {
+               // stress coeff is zero, no tensile capacity
+               fc_reqd = -1;
+               LOG(_T("WARNING: Have applied tension with zero tension allowed - Should not happen"));
+               //ATLASSERT(false);
+               return ConcFailed;
+            }
+
+            LOG(_T("F demand (tension) = ") << ::ConvertFromSysUnits(fControl, unitMeasure::KSI) << _T(" KSI") << _T(" --> f'c (req'd unrounded) = ") << ::ConvertFromSysUnits(fc_reqd, unitMeasure::KSI) << (result == ConcSuccessWithRebar ? _T(" KSI, min rebar required") : _T(" KSI")));
+
+         }
+         else
+         {
+            // this is a tension case, but the controlling stress is compressive
+            // the lowest required concrete strength is 0.
+            fc_reqd = 0;
+         }
       }
    }
 
@@ -3472,7 +3495,7 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
       const PoiAttributeType attrib_xfer = POI_PSXFER;
 
       // want longest transfer length
-      Float64 xfer_length = Max(pPrestress->GetXferLength(m_SegmentKey, pgsTypes::Straight), pPrestress->GetXferLength(m_SegmentKey, pgsTypes::Harped));
+      Float64 xfer_length = Max(pPrestress->GetTransferLength(m_SegmentKey, pgsTypes::Straight), pPrestress->GetTransferLength(m_SegmentKey, pgsTypes::Harped));
 
       Float64 start_conn = pBridge->GetSegmentStartEndDistance(m_SegmentKey);
       if (xfer_length < start_conn)
@@ -3528,7 +3551,7 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
       for (int i = 0; i < 2; i++)
       {
          pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
-         Float64 xfer_length = pPrestress->GetXferLength(m_SegmentKey, strandType);
+         Float64 xfer_length = pPrestress->GetTransferLength(m_SegmentKey, strandType);
          pgsPointOfInterest lxfer(m_SegmentKey, xfer_length, attrib_xfer);
          AddPOI(lxfer, start_supp, end_supp);
 
@@ -3548,7 +3571,7 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
       
          Int16 nincs = (Int16)floor((leftEnd + 1.0e-05)/db_incr); // we know both locs are equidistant from ends
 
-         Float64 xfer_length = pPrestress->GetXferLength(m_SegmentKey, pgsTypes::Straight);
+         Float64 xfer_length = pPrestress->GetTransferLength(m_SegmentKey, pgsTypes::Straight);
 
          Float64 ldb_loc=0.0;
          Float64 rdb_loc=m_SegmentLength;

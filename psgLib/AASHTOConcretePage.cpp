@@ -118,13 +118,14 @@ BOOL CAASHTOConcretePage::OnSetActive()
 {
    CPropertyPage::OnSetActive();
 
+   // the aggregate strength parameters are only applicable to lightweigth concrete
    CConcreteEntryDlg* pParent = (CConcreteEntryDlg*)GetParent();
-   BOOL bEnable = (pParent->m_General.m_Type == pgsTypes::Normal || pParent->m_General.m_Type == pgsTypes::UHPC ? FALSE : TRUE);
-   GetDlgItem(IDC_HAS_AGG_STRENGTH)->EnableWindow(bEnable);
-   GetDlgItem(IDC_AGG_STRENGTH)->EnableWindow(bEnable);
-   GetDlgItem(IDC_AGG_STRENGTH_T)->EnableWindow(bEnable);
+   int nShowCmd = (pParent->m_General.m_Type == pgsTypes::AllLightweight || pParent->m_General.m_Type == pgsTypes::SandLightweight ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_HAS_AGG_STRENGTH)->ShowWindow(nShowCmd);
+   GetDlgItem(IDC_AGG_STRENGTH)->ShowWindow(nShowCmd);
+   GetDlgItem(IDC_AGG_STRENGTH_T)->ShowWindow(nShowCmd);
 
-   if (bEnable)
+   if (nShowCmd == SW_SHOW)
    {
       OnAggSplittingStrengthClicked();
    }

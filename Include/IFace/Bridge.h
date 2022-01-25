@@ -816,6 +816,11 @@ interface IMaterials : IUnknown
    virtual INCREMENTALSHRINKAGEDETAILS GetIncrementalRailingSystemFreeShrinakgeStrainDetails(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx) const = 0;
    virtual INCREMENTALSHRINKAGEDETAILS GetIncrementalLongitudinalJointFreeShrinkageStrainDetails(IntervalIndexType intervalIdx) const = 0;
 
+   // Autogenous shrinkage strain
+   virtual Float64 GetSegmentAutogenousShrinkage(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetClosureJointAutogenousShrinkage(const CClosureKey& closureKey) const = 0;
+   virtual Float64 GetDeckAutogenousShrinkage() const = 0;
+
    // Returns the creep coefficient at the specified time (timeType) in interval (intervalIdx) for a loading
    // occuring at time (loadingTimeType) in interval (loadingIntervalIdx). 
    virtual Float64 GetSegmentCreepCoefficient(const CSegmentKey& segmentKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const = 0;
@@ -836,6 +841,7 @@ interface IMaterials : IUnknown
    virtual Float64 GetSegmentConcreteAggSplittingStrength(const CSegmentKey& segmentKey) const = 0;
    virtual Float64 GetSegmentStrengthDensity(const CSegmentKey& segmentKey) const = 0;
    virtual Float64 GetSegmentMaxAggrSize(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetSegmentConcreteFiberLength(const CSegmentKey& segmentKey) const = 0;
    virtual Float64 GetSegmentEccK1(const CSegmentKey& segmentKey) const = 0;
    virtual Float64 GetSegmentEccK2(const CSegmentKey& segmentKey) const = 0;
    virtual Float64 GetSegmentCreepK1(const CSegmentKey& segmentKey) const = 0;
@@ -843,6 +849,7 @@ interface IMaterials : IUnknown
    virtual Float64 GetSegmentShrinkageK1(const CSegmentKey& segmentKey) const = 0;
    virtual Float64 GetSegmentShrinkageK2(const CSegmentKey& segmentKey) const = 0;
    virtual const matConcreteBase* GetSegmentConcrete(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetSegmentConcreteFirstCrackingStrength(const CSegmentKey& segmentKey) const = 0;
 
    // Closure Joint Concrete
    virtual pgsTypes::ConcreteType GetClosureJointConcreteType(const CClosureKey& closureKey) const = 0;
@@ -850,6 +857,7 @@ interface IMaterials : IUnknown
    virtual Float64 GetClosureJointConcreteAggSplittingStrength(const CClosureKey& closureKey) const = 0;
    virtual Float64 GetClosureJointStrengthDensity(const CClosureKey& closureKey) const = 0;
    virtual Float64 GetClosureJointMaxAggrSize(const CClosureKey& closureKey) const = 0;
+   virtual Float64 GetClosureJointConcreteFiberLength(const CClosureKey& closureKey) const = 0;
    virtual Float64 GetClosureJointEccK1(const CClosureKey& closureKey) const = 0;
    virtual Float64 GetClosureJointEccK2(const CClosureKey& closureKey) const = 0;
    virtual Float64 GetClosureJointCreepK1(const CClosureKey& closureKey) const = 0;
@@ -857,12 +865,14 @@ interface IMaterials : IUnknown
    virtual Float64 GetClosureJointShrinkageK1(const CClosureKey& closureKey) const = 0;
    virtual Float64 GetClosureJointShrinkageK2(const CClosureKey& closureKey) const = 0;
    virtual const matConcreteBase* GetClosureJointConcrete(const CClosureKey& closureKey) const = 0;
+   virtual Float64 GetClosureJointConcreteFirstCrackingStrength(const CClosureKey& closureKey) const = 0;
 
    // Deck Concrete
    virtual pgsTypes::ConcreteType GetDeckConcreteType() const = 0;
    virtual bool DoesDeckConcreteHaveAggSplittingStrength() const = 0;
    virtual Float64 GetDeckConcreteAggSplittingStrength() const = 0;
    virtual Float64 GetDeckMaxAggrSize() const = 0;
+   virtual Float64 GetDeckConcreteFiberLength() const = 0;
    virtual Float64 GetDeckStrengthDensity() const = 0;
    virtual Float64 GetDeckEccK1() const = 0;
    virtual Float64 GetDeckEccK2() const = 0;

@@ -56,7 +56,7 @@
 #include <Reporting\CritSectionChapterBuilder.h>
 #include <Reporting\StirrupDetailingCheckChapterBuilder.h>
 #include <Reporting\ADimChapterBuilder.h>
-#include <Reporting\BurstingZoneDetailsChapterBuilder.h>
+#include <Reporting\SplittingCheckDetailsChapterBuilder.h>
 #include <Reporting\CreepCoefficientChapterBuilder.h>
 #include <Reporting\CamberChapterBuilder.h>
 #include <Reporting\LongReinfShearCheckChapterBuilder.h>
@@ -226,7 +226,7 @@ void CReporterBase::CreateDetailsReport()
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CCritSectionChapterBuilder(true,false)) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLongReinfShearCheckChapterBuilder(true,false)) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CPrincipalTensionStressDetailsChapterBuilder));
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CSplittingZoneDetailsChapterBuilder) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CSplittingCheckDetailsChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CEffFlangeWidthDetailsChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CDistributionFactorDetailsChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CCreepCoefficientChapterBuilder) );

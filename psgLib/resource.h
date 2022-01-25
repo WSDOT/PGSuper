@@ -113,6 +113,7 @@
 #define IDD_HAUL_TRUCK                  312
 #define IDD_EDIT_ADDITIONAL_INTERFACE_STEEL 324
 #define IDD_SPEC_BEARINGS               330
+#define IDD_PCIUHPC_CONCRETE            361
 #define IDC_IMPACT_USAGE                411
 #define IDC_D1                          1001
 #define IDC_W1                          1002
@@ -781,11 +782,16 @@
 #define IDC_SHEAR_FLOW_METHOD           1362
 #define IDC_WEIGHT_METHOD               1363
 #define IDC_WEIGHT_UNIT                 1364
+#define IDC_FFC                         1364
 #define IDC_CURING_TIME_FACTOR          1365
 #define IDC_WEIGHT_UNIT2                1365
 #define IDC_EC_UNIT                     1365
+#define IDC_FFC_UNIT                    1365
+#define IDC_FRR                         1366
 #define IDC_ANCHORSET                   1367
+#define IDC_FRR_UNIT                    1367
 #define IDC_WOBBLE                      1368
+#define IDC_PCTT                        1368
 #define IDC_FRICTION                    1369
 #define IDC_WOBBLE_TAG                  1370
 #define IDC_ANCHORSET_TAG               1371
@@ -1422,6 +1428,9 @@
 #define IDC_TAPERED_SOLE_PLATE_THRESHOLD 1730
 #define IDC_BEARING_LLDF2               1731
 #define IDC_DUCT_SIZE_LABEL             1732
+#define IDC_FIBER_LABEL                 1733
+#define IDC_FIBER                       1734
+#define IDC_FIBER_UNIT                  1735
 #define IDS_E_INVALIDVERSION            1750
 #define IDS_E_USERDEFINED               1752
 #define IDC_DIAPHRAGM_NOTE              1858
@@ -1455,7 +1464,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        333
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1733
+#define _APS_NEXT_CONTROL_VALUE         1736
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

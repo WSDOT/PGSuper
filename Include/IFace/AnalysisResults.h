@@ -738,6 +738,9 @@ interface ICamber : IUnknown
    // Returns details of creep coefficient calculations.
    virtual CREEPCOEFFICIENTDETAILS GetCreepCoefficientDetails(const CSegmentKey& segmentKey, CreepPeriod creepPeriod, Int16 constructionRate, const GDRCONFIG* pConfig = nullptr) const = 0;
 
+   virtual std::shared_ptr<const lrfdCreepCoefficient> GetGirderCreepModel(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual std::shared_ptr<const lrfdCreepCoefficient2005> GetDeckCreepModel(IndexType deckCastingRegionIdx) const = 0;
+    
    // Deflection caused by permanent prestressing alone (Harped and Straight Strands only).
    // Deflections are computed using the concrete properties at release.
    // Deflections are measured relative to the support location defined by datum

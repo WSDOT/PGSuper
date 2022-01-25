@@ -95,6 +95,11 @@ bool CGirderMainSheet::HasDeck() const
    return false;
 }
 
+LPCTSTR CGirderMainSheet::GetIntentionalRougheningPrompt() const
+{
+   return _T("Top flange is intentionally roughened for interface shear capacity");
+}
+
 void CGirderMainSheet::UpdatePropertyPages()
 {
    // Certain pages don't apply to spliced girders

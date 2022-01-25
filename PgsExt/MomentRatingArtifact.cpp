@@ -42,7 +42,7 @@ m_strVehicleName(_T("Unknown"))
    m_RatingType = pgsTypes::lrDesign_Inventory;
 
    m_VehicleIndex = INVALID_INDEX;
-   m_VehicleWeight = -999999;
+   m_VehicleWeight = -99999;
 
    m_SystemFactor = 1.0;
    m_ConditionFactor = 1.0;

@@ -43,7 +43,9 @@
 #include <PgsExt\GirderModelFactory.h>
 #include <PgsExt\PoiMap.h>
 #include <PgsExt\StabilityAnalysisPoint.h>
-#include <pgsExt\AnalysisResult.h>
+#include <PgsExt\AnalysisResult.h>
+
+#include <PgsExt\DevelopmentLength.h>
 
 #include <PgsExt\ReportPointOfInterest.h>
 #include <PsgLib\ShearData.h>
@@ -224,39 +226,6 @@ inline IUserDefinedLoads::UserDefinedLoadCase Project2BridgeLoads(UserLoads::Loa
 #endif
    return (IUserDefinedLoads::UserDefinedLoadCase)plc;
 }
-
-// function for computing debond factor from development length
-Float64 GetDevLengthAdjustment(Float64 bonded_length, Float64 dev_length, Float64 xfer_length, Float64 fps, Float64 fpe)
-{
-   if (bonded_length <= 0.0)
-   {
-      // strand is unbonded at location, no more to do
-      return 0.0;
-   }
-   else
-   {
-      Float64 adjust = -999; // dummy value, helps with debugging
-
-      if ( bonded_length <= xfer_length)
-      {
-         adjust = (fpe < fps ? (bonded_length*fpe) / (xfer_length*fps) : 1.0);
-      }
-      else if ( bonded_length < dev_length )
-      {
-         adjust = (fpe + (bonded_length - xfer_length)*(fps-fpe)/(dev_length - xfer_length))/fps;
-      }
-      else
-      {
-         adjust = 1.0;
-      }
-
-      adjust = IsZero(adjust) ? 0 : adjust;
-      adjust = ::ForceIntoRange(0.0,adjust,1.0);
-      return adjust;
-   }
-}
-
-
 
 // Function to choose confinement bars from primary and additional
 static void ChooseConfinementBars(Float64 requiredZoneLength, 
@@ -5229,7 +5198,7 @@ void CBridgeAgentImp::LayoutPrestressTransferAndDebondPoi(const CSegmentKey& seg
    for (int i = 0; i < 2; i++)
    {
       pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
-      Float64 xfer_length = pPrestress->GetXferLength(segmentKey, strandType);
+      Float64 xfer_length = pPrestress->GetTransferLength(segmentKey, strandType);
 
       Float64 d1 = xfer_length;
       Float64 d2 = segment_length - xfer_length;
@@ -5260,7 +5229,7 @@ void CBridgeAgentImp::LayoutPrestressTransferAndDebondPoi(const CSegmentKey& seg
    {
       pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
 
-      Float64 xfer_length = pPrestress->GetXferLength(segmentKey, strandType);
+      Float64 xfer_length = pPrestress->GetTransferLength(segmentKey, strandType);
 
       const std::vector<CDebondData>& vDebond(pStrands->GetDebonding(strandType));
       std::vector<CDebondData>::const_iterator iter(vDebond.begin());
@@ -5945,11 +5914,11 @@ void CBridgeAgentImp::LayoutPoiForSegmentBarCutoffs(const CSegmentKey& segmentKe
          {
             // Get development length and add poi only if dev length is shorter than 1/2 rebar length
             REBARDEVLENGTHDETAILS devDetails = GetSegmentRebarDevelopmentLengthDetails(segmentKey, rebar, concType, fc, hasFct, Fct);
-            Float64 ldb = devDetails.ldb;
-            if (ldb < barLength/2.0)
+            Float64 ld = devDetails.ld;
+            if (ld < barLength/2.0)
             {
-               startLoc += ldb;
-               endLoc -= ldb;
+               startLoc += ld;
+               endLoc -= ld;
 
                if (left_brg_loc < startLoc && startLoc < right_brg_loc)
                {
@@ -13527,6 +13496,22 @@ INCREMENTALSHRINKAGEDETAILS CBridgeAgentImp::GetIncrementalLongitudinalJointFree
    return details;
 }
 
+const Float64 autogenous_shrinkage_strain = 600.0E-6;
+Float64 CBridgeAgentImp::GetSegmentAutogenousShrinkage(const CSegmentKey& segmentKey) const
+{
+   return GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC ? autogenous_shrinkage_strain : 0.0; // PCI UHPC E.4.3.3
+}
+
+Float64 CBridgeAgentImp::GetClosureJointAutogenousShrinkage(const CClosureKey& closureKey) const
+{
+   return GetClosureJointConcreteType(closureKey) == pgsTypes::PCI_UHPC ? autogenous_shrinkage_strain : 0.0; // PCI UHPC E.4.3.3
+}
+
+Float64 CBridgeAgentImp::GetDeckAutogenousShrinkage() const
+{
+   return GetDeckConcreteType() == pgsTypes::PCI_UHPC ? autogenous_shrinkage_strain : 0.0; // PCI UHPC E.4.3.3
+}
+
 Float64 CBridgeAgentImp::GetSegmentCreepCoefficient(const CSegmentKey& segmentKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
 {
    return GetSegmentCreepCoefficientDetails(segmentKey,loadingIntervalIdx,loadingTimeType,intervalIdx,timeType)->Ct;
@@ -13612,6 +13597,11 @@ Float64 CBridgeAgentImp::GetSegmentMaxAggrSize(const CSegmentKey& segmentKey) co
    return m_ConcreteManager.GetSegmentMaxAggrSize(segmentKey);
 }
 
+Float64 CBridgeAgentImp::GetSegmentConcreteFiberLength(const CSegmentKey& segmentKey) const
+{
+   return m_ConcreteManager.GetSegmentConcreteFiberLength(segmentKey);
+}
+
 Float64 CBridgeAgentImp::GetSegmentEccK1(const CSegmentKey& segmentKey) const
 {
    return m_ConcreteManager.GetSegmentEccK1(segmentKey);
@@ -13647,6 +13637,11 @@ const matConcreteBase* CBridgeAgentImp::GetSegmentConcrete(const CSegmentKey& se
    return m_ConcreteManager.GetSegmentConcrete(segmentKey);
 }
 
+Float64 CBridgeAgentImp::GetSegmentConcreteFirstCrackingStrength(const CSegmentKey& segmentKey) const
+{
+   return m_ConcreteManager.GetSegmentConcreteFirstCrackingStrength(segmentKey);
+}
+
 pgsTypes::ConcreteType CBridgeAgentImp::GetClosureJointConcreteType(const CClosureKey& closureKey) const
 {
    return m_ConcreteManager.GetClosureJointConcreteType(closureKey);
@@ -13670,6 +13665,11 @@ Float64 CBridgeAgentImp::GetClosureJointStrengthDensity(const CClosureKey& closu
 Float64 CBridgeAgentImp::GetClosureJointMaxAggrSize(const CClosureKey& closureKey) const
 {
    return m_ConcreteManager.GetClosureJointMaxAggrSize(closureKey);
+}
+
+Float64 CBridgeAgentImp::GetClosureJointConcreteFiberLength(const CClosureKey& closureKey) const
+{
+   return m_ConcreteManager.GetClosureJointConcreteFiberLength(closureKey);
 }
 
 Float64 CBridgeAgentImp::GetClosureJointEccK1(const CClosureKey& closureKey) const
@@ -13707,6 +13707,11 @@ const matConcreteBase* CBridgeAgentImp::GetClosureJointConcrete(const CClosureKe
    return m_ConcreteManager.GetClosureJointConcrete(closureKey);
 }
 
+Float64 CBridgeAgentImp::GetClosureJointConcreteFirstCrackingStrength(const CClosureKey& closureKey) const
+{
+   return m_ConcreteManager.GetClosureJointConcreteFirstCrackingStrength(closureKey);
+}
+
 pgsTypes::ConcreteType CBridgeAgentImp::GetDeckConcreteType() const
 {
    return m_ConcreteManager.GetDeckConcreteType();
@@ -13725,6 +13730,11 @@ Float64 CBridgeAgentImp::GetDeckConcreteAggSplittingStrength() const
 Float64 CBridgeAgentImp::GetDeckMaxAggrSize() const
 {
    return m_ConcreteManager.GetDeckMaxAggrSize();
+}
+
+Float64 CBridgeAgentImp::GetDeckConcreteFiberLength() const
+{
+   return m_ConcreteManager.GetDeckConcreteFiberLength();
 }
 
 Float64 CBridgeAgentImp::GetDeckStrengthDensity() const
@@ -14198,7 +14208,7 @@ Float64 CBridgeAgentImp::GetDevLengthFactor(const pgsPointOfInterest& poi,IRebar
    Float64 Xe = Xpoi + end;
 
    Float64 cut_length = Min(start, end);
-   fra = cut_length/details.ldb;
+   fra = cut_length/details.ld;
    fra = Min(fra, 1.0);
 
    if (fra < 1.0)
@@ -25100,7 +25110,7 @@ Float64 CBridgeAgentImp::GetTopFlangeThickening(const CPrecastSegmentData* pSegm
    }
 
    ATLASSERT(false);
-   return -999999;
+   return -99999;
 }
 
 Float64 CBridgeAgentImp::GetTopFlangeWidth(const pgsPointOfInterest& poi) const
@@ -31462,8 +31472,8 @@ const CBridgeAgentImp::SectProp& CBridgeAgentImp::GetSectionProperties(IntervalI
          props.Section = deckSection;
          props.GirderShapeIndex = gdr_idx;
          props.SlabShapeIndex = slabIdx;
-         props.dx = -9999999; // not used
-         props.dy = -9999999; // not used
+         props.dx = -99999; // not used
+         props.dy = -99999; // not used
          props.ElasticProps = eprop;
          props.ShapeProps   = shapeprops;
       }
@@ -32209,8 +32219,11 @@ void CBridgeAgentImp::LayoutSegmentRebar(const CSegmentKey& segmentKey)
       CComPtr<IUnitConvert> unit_convert;
       unitServer->get_UnitConvert(&unit_convert);
 
+      pgsTypes::ConcreteType concreteType = GetSegmentConcreteType(segmentKey);
+
       // need this for clear spacing validation below
       Float64 max_aggregate_size = GetSegmentMaxAggrSize(segmentKey);
+      Float64 fiber_length = GetSegmentConcreteFiberLength(segmentKey);
 
       pgsTypes::SegmentVariationType segmentVariation = pSegment->GetVariationType();
 
@@ -32231,11 +32244,13 @@ void CBridgeAgentImp::LayoutSegmentRebar(const CSegmentKey& segmentKey)
          Float64 db;
          rebar->get_NominalDiameter(&db);
 
+#pragma Reminder("UPDATE - this be a spec check")
          // validate bar spacing within the row
          // LRFD 5.10.3.1.2 - clear distance between parallel bars in a layer shall not be less than:
          // * nominal diameter of bar
          // * 1.33 times the maximum size of the coarse aggregate
          // * 1.0 inch
+         // * 1.0 times fiber length for PCI UHPC
          // clear spacing is bar spacing minus nominal diameter of bar
          if ( 1 < info.NumberOfBars ) // only have to validate spacing between bars if there is more than one bar
          {
@@ -32265,6 +32280,15 @@ void CBridgeAgentImp::LayoutSegmentRebar(const CSegmentKey& segmentKey)
                   << _T(": Clearance between longitudinal bars in row ") << LABEL_INDEX(idx) << _T(" is less than 1.0 inch (See LRFD 5.10.3.1.2)") << std::endl;
 
                std::unique_ptr<pgsGirderDescriptionStatusItem> pStatusItem = std::make_unique<pgsGirderDescriptionStatusItem>(segmentKey,EGD_LONG_REINF,m_StatusGroupID,m_scidGirderDescriptionWarning,os.str().c_str());
+               pStatusCenter->Add(pStatusItem.release());
+            }
+            else if (concreteType == pgsTypes::PCI_UHPC && clear < 1.0*fiber_length)
+            {
+               std::_tostringstream os;
+               os << SEGMENT_LABEL(segmentKey)
+                  << _T(": Clearance between longitudinal bars in row ") << LABEL_INDEX(idx) << _T(" is less than the fiber length (See PCI UHPC SDG E.10.2)") << std::endl;
+
+               std::unique_ptr<pgsGirderDescriptionStatusItem> pStatusItem = std::make_unique<pgsGirderDescriptionStatusItem>(segmentKey, EGD_LONG_REINF, m_StatusGroupID, m_scidGirderDescriptionWarning, os.str().c_str());
                pStatusCenter->Add(pStatusItem.release());
             }
          }
@@ -33570,43 +33594,28 @@ Float64 CBridgeAgentImp::GetApsInHalfDepth(const pgsPointOfInterest& poi,Develop
             }
             else
             {
-               Float64 left_bonded_length, right_bonded_length;
-               if (bDebonded)
-               {
-                  // measure bonded length
-                  left_bonded_length = dist_from_start - bond_start;
-                  right_bonded_length = bond_end - dist_from_start;
-               }
-               else
-               {
-                  // no debonding, bond length is to ends of girder
-                  left_bonded_length = dist_from_start;
-                  right_bonded_length = segment_length - dist_from_start;
-               }
-
-               Float64 bonded_length = Min(left_bonded_length, right_bonded_length);
-
                // For approximate development length adjustment, take development length information at mid span and use for entire girder
                // adjusted for distance to ends of strands
                PoiList vPoi;
                GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT, &vPoi);
                ATLASSERT(vPoi.size() == 1);
-               const pgsPointOfInterest& poi = vPoi.front();
-               ATLASSERT(poi.IsMidSpan(POI_ERECTED_SEGMENT));
-
-               bool bUHPC = GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC ? true : false;
+               const pgsPointOfInterest& mid_span_poi = vPoi.front();
+               ATLASSERT(mid_span_poi.IsMidSpan(POI_ERECTED_SEGMENT));
 
                GET_IFACE(IPretensionForce, pPSForce);
-               STRANDDEVLENGTHDETAILS dla_det = pPSForce->GetDevLengthDetails(poi, pgsTypes::Straight, false, bUHPC, pConfig);
+               const std::shared_ptr<pgsTransferLength> pXferLength = pPSForce->GetTransferLengthDetails(segmentKey, pgsTypes::Straight, pConfig);
+               const std::shared_ptr<pgsDevelopmentLength> pDevLength = pPSForce->GetDevelopmentLengthDetails(mid_span_poi, pgsTypes::Straight, false, pConfig);
+               Float64 fps = pDevLength->GetFps();
+               Float64 fpe = pDevLength->GetFpe();
 
-               debond_factor = GetDevLengthAdjustment(bonded_length, dla_det.ld, dla_det.ltDetails.lt, dla_det.fps, dla_det.fpe);
+               debond_factor = pPSForce->GetDevelopmentLengthAdjustment(poi, strandIdx, pgsTypes::Straight, fps, fpe, pConfig);
             }
          }
          else
          {
             // Full adjustment for development
             GET_IFACE(IPretensionForce,pPSForce);
-            debond_factor = pPSForce->GetStrandBondFactor(poi,strandIdx,pgsTypes::Straight,false, pConfig);
+            debond_factor = pPSForce->GetDevelopmentLengthAdjustment(poi,strandIdx,pgsTypes::Straight,false, pConfig);
          }
 
          Aps += debond_factor*aps;
@@ -33668,7 +33677,7 @@ Float64 CBridgeAgentImp::GetApsInHalfDepth(const pgsPointOfInterest& poi,Develop
          else
          {
             GET_IFACE(IPretensionForce,pPSForce);
-            debond_factor = pPSForce->GetStrandBondFactor(poi,strandIdx,pgsTypes::Harped,false,pConfig);
+            debond_factor = pPSForce->GetDevelopmentLengthAdjustment(poi,strandIdx,pgsTypes::Harped,false,pConfig);
          }
 
          Aps += debond_factor*aps;
@@ -33952,7 +33961,7 @@ void CBridgeAgentImp::GetDeckMatData(const pgsPointOfInterest& poi,pgsTypes::Dec
                                                                                        pBar->GetNominalDimension(), pBar->GetYieldStrength(), 
                                                                                        (matConcrete::Type)pDeck->Concrete.Type, pDeck->Concrete.Fc, 
                                                                                        pDeck->Concrete.bHasFct, pDeck->Concrete.Fct,pDeck->Concrete.StrengthDensity);
-                     Float64 ld = devdet.ldb;
+                     Float64 ld = devdet.ld;
 
                      Float64 left_bar_length = station - start; // distance from left end of bar to poi
                      Float64 right_bar_length = end - station; // distance from right end of bar to poi

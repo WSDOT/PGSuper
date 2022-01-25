@@ -214,6 +214,7 @@
     <ClCompile Include="ConcreteGeneralPage.cpp" />
     <ClCompile Include="ConcreteMaterial.cpp" />
     <ClCompile Include="ConfigurePGSuperDlg.cpp" />
+    <ClCompile Include="ConfinementCheckArtifact.cpp" />
     <ClCompile Include="ConstructabilityArtifact.cpp" />
     <ClCompile Include="CopyConcreteEntry.cpp" />
     <ClCompile Include="CustomDDX.cpp" />
@@ -257,6 +258,7 @@
     <ClCompile Include="LoadManager.cpp" />
     <ClCompile Include="LongitudinalRebarData.cpp" />
     <ClCompile Include="LongRebarInstance.cpp" />
+    <ClCompile Include="LRFDSplittingCheckEngineer.cpp" />
     <ClCompile Include="MacroTxn.cpp" />
     <ClCompile Include="main.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -264,6 +266,7 @@
     </ClCompile>
     <ClCompile Include="MomentLoadData.cpp" />
     <ClCompile Include="MomentRatingArtifact.cpp" />
+    <ClCompile Include="PCIUHPCConcretePage.cpp" />
     <ClCompile Include="PierData.cpp" />
     <ClCompile Include="PierData2.cpp" />
     <ClCompile Include="PlantHandlingWeightArtifact.cpp" />
@@ -301,6 +304,8 @@
     <ClCompile Include="SpanData2.cpp" />
     <ClCompile Include="SpanGirderRelatedStatusItem.cpp" />
     <ClCompile Include="SplicedGirderData.cpp" />
+    <ClCompile Include="SplittingCheckArtifact.cpp" />
+    <ClCompile Include="SplittingCheckEngineer.cpp" />
     <ClCompile Include="StabilityAnalysisPoint.cpp" />
     <ClCompile Include="StatusItem.cpp" />
     <ClCompile Include="StirrupCheckArtifact.cpp" />
@@ -344,6 +349,7 @@
     <ClInclude Include="..\Include\PgsExt\ConcreteDetailsDlg.h" />
     <ClInclude Include="..\Include\PgsExt\ConcreteGeneralPage.h" />
     <ClInclude Include="..\Include\PgsExt\ConcreteMaterial.h" />
+    <ClInclude Include="..\Include\PgsExt\ConfinementCheckArtifact.h" />
     <ClInclude Include="..\Include\PgsExt\ConstructabilityArtifact.h" />
     <ClInclude Include="..\Include\PgsExt\CustomDDX.h" />
     <ClInclude Include="..\Include\PgsExt\DebondArtifact.h" />
@@ -355,6 +361,7 @@
     <ClInclude Include="..\Include\PgsExt\DeckRebarData.h" />
     <ClInclude Include="..\Include\PgsExt\DeflectionCheckArtifact.h" />
     <ClInclude Include="..\Include\PgsExt\DesignConfigUtil.h" />
+    <ClInclude Include="..\Include\PgsExt\DevelopmentLength.h" />
     <ClInclude Include="..\Include\PgsExt\DistributedLoadData.h" />
     <ClInclude Include="..\Include\PgsExt\DuctSizeArtifact.h" />
     <ClInclude Include="..\Include\PgsExt\EditBridge.h" />
@@ -385,9 +392,11 @@
     <ClInclude Include="..\Include\PgsExt\LoadManager.h" />
     <ClInclude Include="..\Include\PgsExt\LongitudinalRebarData.h" />
     <ClInclude Include="..\Include\PgsExt\LongRebarInstance.h" />
+    <ClInclude Include="..\Include\PgsExt\LRFDSplittingCheckEngineer.h" />
     <ClInclude Include="..\Include\PgsExt\MacroTxn.h" />
     <ClInclude Include="..\Include\PgsExt\MomentLoadData.h" />
     <ClInclude Include="..\Include\PgsExt\MomentRatingArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\PCIUHPCConcretePage.h" />
     <ClInclude Include="..\Include\PgsExt\PgsExt.h" />
     <ClInclude Include="..\Include\PgsExt\PgsExtExp.h" />
     <ClInclude Include="..\Include\PgsExt\PgsExtLib.h" />
@@ -422,6 +431,8 @@
     <ClInclude Include="..\Include\PgsExt\SpanData2.h" />
     <ClInclude Include="..\Include\PgsExt\SpanGirderRelatedStatusItem.h" />
     <ClInclude Include="..\Include\PgsExt\SplicedGirderData.h" />
+    <ClInclude Include="..\Include\PgsExt\SplittingCheckArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\SplittingCheckEngineer.h" />
     <ClInclude Include="..\Include\PgsExt\StabilityAnalysisPoint.h" />
     <ClInclude Include="..\Include\PgsExt\StatusItem.h" />
     <ClInclude Include="..\Include\PgsExt\StirrupCheckArtifact.h" />
@@ -438,6 +449,7 @@
     <ClInclude Include="..\Include\PgsExt\TimelineEvent.h" />
     <ClInclude Include="..\Include\PgsExt\TimelineItemListBox.h" />
     <ClInclude Include="..\Include\PgsExt\TimelineManager.h" />
+    <ClInclude Include="..\Include\PgsExt\TransferLength.h" />
     <ClInclude Include="..\Include\PgsExt\TxnManager.h" />
     <ClInclude Include="..\Include\PgsExt\YieldStressRatioArtifact.h" />
     <ClInclude Include="..\MakePgz\unzip.h" />

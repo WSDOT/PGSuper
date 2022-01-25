@@ -704,34 +704,19 @@ public:
    void SetHaulingCompressionPeakStressFactor(Float64 stress);
 
    // Set/Get the maximum allowable concrete tension stress during during hauling as a factor times sqrt(f'ci)
-   Float64 GetHaulingTensionStressFactorNormalCrown() const;
-   void SetHaulingTensionStressFactorNormalCrown(Float64 stress);
+   Float64 GetHaulingTensionStressFactor(pgsTypes::HaulingSlope slope) const;
+   void SetHaulingTensionStressFactor(pgsTypes::HaulingSlope slope,Float64 stress);
 
    // Set/Get the absolute maximum allowable concrete tension stress during hauling.
    // If bIsApplicable is false the allowable concrete tension stress is not limited
    // and maxStress is undefined
-   void GetHaulingMaximumTensionStressNormalCrown(bool* bIsApplicable, Float64* maxStress) const;
-   void SetHaulingMaximumTensionStressNormalCrown(bool bIsApplicable, Float64 maxStress);
+   void GetHaulingMaximumTensionStress(pgsTypes::HaulingSlope slope,bool* bIsApplicable, Float64* maxStress) const;
+   void SetHaulingMaximumTensionStress(pgsTypes::HaulingSlope slope,bool bIsApplicable, Float64 maxStress);
 
    // Set/Get the maximum allowable concrete tension stress during hauling as a factor times sqrt(f'c)
    // when adequate mild rebar is provided
-   Float64 GetHaulingTensionStressFactorWithRebarNormalCrown() const;
-   void SetHaulingTensionStressFactorWithRebarNormalCrown(Float64 stress);
-
-   // Set/Get the maximum allowable concrete tension stress during during hauling as a factor times sqrt(f'ci)
-   Float64 GetHaulingTensionStressFactorMaxSuper() const;
-   void SetHaulingTensionStressFactorMaxSuper(Float64 stress);
-
-   // Set/Get the absolute maximum allowable concrete tension stress during hauling.
-   // If bIsApplicable is false the allowable concrete tension stress is not limited
-   // and maxStress is undefined
-   void GetHaulingMaximumTensionStressMaxSuper(bool* bIsApplicable, Float64* maxStress) const;
-   void SetHaulingMaximumTensionStressMaxSuper(bool bIsApplicable, Float64 maxStress);
-
-   // Set/Get the maximum allowable concrete tension stress during hauling as a factor times sqrt(f'c)
-   // when adequate mild rebar is provided
-   Float64 GetHaulingTensionStressFactorWithRebarMaxSuper() const;
-   void SetHaulingTensionStressFactorWithRebarMaxSuper(Float64 stress);
+   Float64 GetHaulingTensionStressFactorWithRebar(pgsTypes::HaulingSlope slope) const;
+   void SetHaulingTensionStressFactorWithRebar(pgsTypes::HaulingSlope slope,Float64 stress);
 
    // Set/Get minimum factor of safety against cracking for hauling
    Float64 GetHaulingCrackingFOS() const;
@@ -922,10 +907,6 @@ public:
    // Set/Get the coefficient for computing modulus of rupture for shear capacity analysis
    void SetShearModulusOfRuptureCoefficient(pgsTypes::ConcreteType type,Float64 fr);
    Float64 GetShearModulusOfRuptureCoefficient(pgsTypes::ConcreteType type) const;
-
-   // Set/Get the UHPC fiber shear strength
-   void SetUHPCFiberShearStrength(Float64 Yffu);
-   Float64 GetUHPCFiberShearStrength() const;
 
    // Set/Get the shear capacity resistance factors
    void SetShearResistanceFactor(bool isDebonded, pgsTypes::ConcreteType type,Float64 phi);
@@ -1315,8 +1296,7 @@ private:
 
    Float64 m_CyTensStressServWithRebar;
    Float64 m_TensStressLiftingWithRebar;
-   Float64 m_TensStressHaulingWithRebarNormalCrown;
-   Float64 m_TensStressHaulingWithRebarMaxSuper;
+   std::array<Float64, 2> m_TensStressHaulingWithRebar; // array index is pgsTypes::HaulingSlope
 
    Float64 m_CyTensStressLifting;
    bool    m_CyDoTensStressLiftingMax;
@@ -1360,15 +1340,12 @@ private:
 
    Float64 m_GlobalCompStressHauling;
    Float64 m_PeakCompStressHauling;
-   Float64 m_TensStressHaulingNormalCrown;
-   bool    m_DoTensStressHaulingMaxNormalCrown;
-   Float64 m_TensStressHaulingMaxNormalCrown;
-   Float64 m_TensStressHaulingMaxSuper;
-   bool    m_DoTensStressHaulingMaxMaxSuper;
-   Float64 m_TensStressHaulingMaxMaxSuper;
+   std::array<Float64, 2> m_TensStressHauling; // aray index is pgsTypes::HaulingSlope
+   std::array<bool, 2>    m_DoTensStressHaulingMax;
+   std::array<Float64, 2> m_TensStressHaulingMax;
 
-   std::array<Float64, pgsTypes::ConcreteTypeCount> m_HaulingModulusOfRuptureCoefficient;
-   std::array<Float64, pgsTypes::ConcreteTypeCount> m_LiftingModulusOfRuptureCoefficient;
+   std::array<Float64, 3> m_HaulingModulusOfRuptureCoefficient; // pgsTypes::ConcreteType is the array index, pgsTypes::PCI_UHPC is not valid
+   std::array<Float64, 3> m_LiftingModulusOfRuptureCoefficient; // pgsTypes::ConcreteType is the array index, pgsTypes::PCI_UHPC is not valid
 
    Float64 m_MinLiftPoint;
    Float64 m_LiftPointAccuracy;
@@ -1429,8 +1406,8 @@ private:
    int     m_Bs3LRFDOverReinforcedMomentCapacity;
    bool    m_bIncludeRebar_Moment;
    bool    m_bIncludeStrand_NegMoment;
-   std::array<Float64, pgsTypes::ConcreteTypeCount>  m_FlexureModulusOfRuptureCoefficient; // index is pgsTypes::ConcreteType enum
-   std::array<Float64, pgsTypes::ConcreteTypeCount>  m_ShearModulusOfRuptureCoefficient;   // index is pgsTypes::ConcreteType enum
+   std::array<Float64, 3>  m_FlexureModulusOfRuptureCoefficient; // index is pgsTypes::ConcreteType enum (PCI UHPC is not valid)
+   std::array<Float64, 3>  m_ShearModulusOfRuptureCoefficient;   // index is pgsTypes::ConcreteType enum (PCI UHPC is not valid)
    bool m_bLimitNetTensionStrainToPositiveValues; // when true, es from LRFD Eq 5.7.3.4.2-4 is taken to be zero if it is computed as a negative value
 
    pgsTypes::PrincipalTensileStressMethod m_PrincipalTensileStressMethod;
@@ -1606,9 +1583,6 @@ private:
 
    bool m_bCheckGirderInclination;
    Float64 m_InclinedGirder_FSmax;
-
-   Float64 m_UHPCFiberShearStrength;
-   Float64 m_UHPCStregthAtFirstCrack;
 
    pgsTypes::SlabOffsetRoundingMethod m_SlabOffsetRoundingMethod;
    Float64 m_SlabOffsetRoundingTolerance;

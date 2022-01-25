@@ -348,10 +348,7 @@ void CPierLayoutPage::UpdateConcreteTypeLabel()
          strLabel = _T("Sand Lightweight Concrete");
          break;
 
-      case pgsTypes::UHPC:
-         strLabel = _T("UHPC");
-         break;
-
+      case pgsTypes::PCI_UHPC: // UI should prevent UHPC for piers
       default:
          ATLASSERT(false); // should never get here
          strLabel = _T("Concrete Type Label Error");
@@ -361,7 +358,7 @@ void CPierLayoutPage::UpdateConcreteTypeLabel()
    {
       // LRFD 2016 and later there is only normal and lightweight concrete. We
       //use the SandLightweight enum to mean "lightweight"
-      ATLASSERT( m_pPier->GetConcrete().Type == pgsTypes::Normal || m_pPier->GetConcrete().Type == pgsTypes::UHPC || m_pPier->GetConcrete().Type == pgsTypes::SandLightweight );
+      ATLASSERT( m_pPier->GetConcrete().Type == pgsTypes::Normal || m_pPier->GetConcrete().Type == pgsTypes::PCI_UHPC || m_pPier->GetConcrete().Type == pgsTypes::SandLightweight );
       switch( m_pPier->GetConcrete().Type )
       {
       case pgsTypes::Normal:
@@ -372,10 +369,7 @@ void CPierLayoutPage::UpdateConcreteTypeLabel()
          strLabel = _T("Lightweight Concrete");
          break;
 
-      case pgsTypes::UHPC:
-         strLabel = _T("UHPC");
-         break;
-
+      case pgsTypes::PCI_UHPC: // UI should prevent UHPC for piers
       default:
          ATLASSERT(false); // should never get here
          strLabel = _T("Concrete Type Label Error");
@@ -476,7 +470,7 @@ void CPierLayoutPage::OnUserEc()
 void CPierLayoutPage::OnMoreProperties()
 {
    UpdateData(TRUE);
-   CConcreteDetailsDlg dlg(true/*f'c*/,false/*don't enable Compute Time Parameters option*/);
+   CConcreteDetailsDlg dlg(true/*f'c*/,false/*no uhpc*/, false/*don't enable Compute Time Parameters option*/);
    CConcreteMaterial& concrete = m_pPier->GetConcrete();
 
    dlg.m_fc28 = concrete.Fc;

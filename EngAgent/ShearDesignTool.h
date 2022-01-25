@@ -260,6 +260,8 @@ private:
    bool m_bDoDesignForSplitting;
    bool m_bDoDesignFromScratch;
 
+   pgsTypes::ConcreteType m_ConcreteType;
+
    // Confinement zone lengths at both ends of girder
    Float64 m_StartConfinementZl;
    Float64 m_EndConfinementZl;

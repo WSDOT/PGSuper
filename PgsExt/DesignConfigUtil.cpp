@@ -389,7 +389,6 @@ Float64 GetAdditionalHorizInterfaceAvs(const STIRRUPCONFIG& config, Float64 loca
    }
    else
    {
-      ATLASSERT(false); // this should never happen
       *pSize = matRebar::bsNone;
       *pNBars = 0.0;
       *pSpacing = 0.0;

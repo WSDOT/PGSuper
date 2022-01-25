@@ -58,6 +58,7 @@ private:
 
    const CStrandData* m_pStrands;
    bool m_bTemporaryStrands;
+   bool m_bUHPC;
 };
 
 #endif //__TIMEDEPENDENTLOSSESATSHIPPINGTABLE_H_

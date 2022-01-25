@@ -58,6 +58,12 @@
     <ClCompile Include="SummaryRatingArtifactImpl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TransferLengthEngineer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DevelopmentLengthEngineer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\IFace\MomentCapacity.h">
@@ -146,6 +152,12 @@
     </ClInclude>
     <ClInclude Include="..\Include\IFace\PrincipalWebStress.h">
       <Filter>IFace</Filter>
+    </ClInclude>
+    <ClInclude Include="TransferLengthEngineer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DevelopmentLengthEngineer.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

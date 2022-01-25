@@ -686,26 +686,28 @@ void write_crack_moment_data_table(IBroker* pBroker,
 
    *pParagraph << table << rptNewLine;
 
+   ColumnIndexType col = 0;
+
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
    if ( intervalIdx < lastCompositeDeckIntervalIdx)
    {
-      (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+      (*table)(0, col++)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    }
    else
    {
-      (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+      (*table)(0, col++)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    }
 
-   (*table)(0,1)  << COLHDR( RPT_STRESS(_T("r")), rptPressureUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,2)  << COLHDR( RPT_STRESS(_T("cpe")), rptPressureUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,3)  << COLHDR( Sub2(_T("S"),_T("nc")), rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit() );
-   (*table)(0,4)  << COLHDR( Sub2(_T("S"),_T("c")), rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit() );
-   (*table)(0,5)  << COLHDR( Sub2(_T("M"),_T("dnc")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,6)  << COLHDR( Sub2(_T("M"),_T("cr")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0, col++)  << COLHDR( RPT_STRESS(_T("r")), rptPressureUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0, col++)  << COLHDR( RPT_STRESS(_T("cpe")), rptPressureUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0, col++)  << COLHDR( Sub2(_T("S"),_T("nc")), rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit() );
+   (*table)(0, col++)  << COLHDR( Sub2(_T("S"),_T("c")), rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit() );
+   (*table)(0, col++)  << COLHDR( Sub2(_T("M"),_T("dnc")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0, col++)  << COLHDR( Sub2(_T("M"),_T("cr")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    if ( bAfter2002 && bBefore2012 )
    {
-      (*table)(0,7)  << COLHDR(Sub2(_T("S"),_T("c")) << RPT_STRESS(_T("r")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+      (*table)(0, col++)  << COLHDR(Sub2(_T("S"),_T("c")) << RPT_STRESS(_T("r")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    }
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -746,17 +748,18 @@ void write_crack_moment_data_table(IBroker* pBroker,
          }
       }
 
-      (*table)(row,0) << location.SetValue( POI_SPAN, poi );
-      (*table)(row,1) << stress.SetValue( pcmd->fr );
-      (*table)(row,2) << stress.SetValue( pcmd->fcpe);
-      (*table)(row,3) << sect_mod.SetValue( pcmd->Sb );
-      (*table)(row,4) << sect_mod.SetValue( pcmd->Sbc );
-      (*table)(row,5) << moment.SetValue( pcmd->Mdnc);
-      (*table)(row,6) << moment.SetValue( pcmd->Mcr );
+      col = 0;
+      (*table)(row, col++) << location.SetValue( POI_SPAN, poi );
+      (*table)(row, col++) << stress.SetValue( pcmd->fr );
+      (*table)(row, col++) << stress.SetValue( pcmd->fcpe);
+      (*table)(row, col++) << sect_mod.SetValue( pcmd->Sb );
+      (*table)(row, col++) << sect_mod.SetValue( pcmd->Sbc );
+      (*table)(row, col++) << moment.SetValue( pcmd->Mdnc);
+      (*table)(row, col++) << moment.SetValue( pcmd->Mcr );
 
       if ( bAfter2002 && bBefore2012 )
       {
-         (*table)(row,7) << moment.SetValue( pcmd->McrLimit );
+         (*table)(row, col++) << moment.SetValue( pcmd->McrLimit );
       }
 
       row++;
@@ -790,28 +793,46 @@ void write_crack_moment_data_table(IBroker* pBroker,
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       CSegmentKey segmentKey(girderKey,segIdx);
-      *pParagraph << _T("Segment ") << LABEL_SEGMENT(segIdx) << _T(" ") << RPT_STRESS(_T("r")) << _T(" = ") << fr_coefficient.SetValue(pMaterial->GetSegmentFlexureFrCoefficient(segmentKey));
-      if ( bLambda )
+      if (1 < nSegments)
       {
-         *pParagraph << symbol(lambda);
+         *pParagraph << _T("Segment") << LABEL_SEGMENT(segIdx) << _T(" ");
       }
-      *pParagraph << symbol(ROOT) << RPT_FC << rptNewLine;
 
-      if ( segIdx != nSegments-1 )
+      if (pMaterial->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC)
       {
-         CClosureKey closureKey(segmentKey);
-         *pParagraph << _T("Closure Joint ") << LABEL_SEGMENT(segIdx) << _T(" ") << RPT_STRESS(_T("r")) << _T(" = ") << fr_coefficient.SetValue(pMaterial->GetClosureJointFlexureFrCoefficient(closureKey));
-         if ( bLambda )
+         *pParagraph << RPT_STRESS(_T("r")) << _T(" = tensile stress limit at service limit state") << rptNewLine;
+      }
+      else
+      {
+         *pParagraph << RPT_STRESS(_T("r")) << _T(" = ") << fr_coefficient.SetValue(pMaterial->GetSegmentFlexureFrCoefficient(segmentKey));
+         if (bLambda)
          {
             *pParagraph << symbol(lambda);
          }
          *pParagraph << symbol(ROOT) << RPT_FC << rptNewLine;
       }
+
+      if ( segIdx != nSegments-1 )
+      {
+         CClosureKey closureKey(segmentKey);
+         *pParagraph << _T("Closure Joint ") << LABEL_SEGMENT(segIdx) << _T(" ") << RPT_STRESS(_T("r")) << _T(" = ");
+         if (pMaterial->GetClosureJointConcreteType(closureKey) == pgsTypes::PCI_UHPC)
+         {
+            *pParagraph << _T(" = tensile stress limit at service limit state") << rptNewLine;
+         }
+         else
+         {
+            *pParagraph << fr_coefficient.SetValue(pMaterial->GetClosureJointFlexureFrCoefficient(closureKey));
+            if (bLambda)
+            {
+               *pParagraph << symbol(lambda);
+            }
+            *pParagraph << symbol(ROOT) << RPT_FC << rptNewLine;
+         }
+      }
    }
 
    *pParagraph << RPT_STRESS(_T("cpe")) << _T(" = compressive stress in concrete due to effective prestress force only (after allowance for all prestress losses) at extreme fiber of section where tensile stress is caused by externally applied loads.") << rptNewLine;
-#pragma Reminder("UPDATE: remove image from images folder if it is no longer used")
-   //*pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("fcpe.png")) << rptNewLine;
    *pParagraph << Sub2(_T("S"),_T("nc")) << _T(" = section modulus for the extreme fiber of the monolithic or noncomposite section where tensile stress is caused by externally applied loads") << rptNewLine;
    *pParagraph << Sub2(_T("S"),_T("c")) << _T(" = section modulus for the extreme fiber of the composite section where tensile stress is caused by externally applied loads") << rptNewLine;
    *pParagraph << Sub2(_T("M"),_T("dnc")) << _T(" = total unfactored dead load moment acting on the monolithic or noncomposite section") << rptNewLine;

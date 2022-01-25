@@ -458,7 +458,7 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
       {
          value1 = pStrandGeom->GetStrandArea(poi, intervalIdx, pgsTypes::Straight);
          value2 = pStrandGeom->GetStrandArea(poi, intervalIdx, pgsTypes::Harped);
-         value3 = pPretensionForce->GetXferLengthAdjustment(poi, pgsTypes::Straight)*value1 + pPretensionForce->GetXferLengthAdjustment(poi, pgsTypes::Harped)*value2;
+         value3 = pPretensionForce->GetTransferLengthAdjustment(poi, pgsTypes::Straight)*value1 + pPretensionForce->GetTransferLengthAdjustment(poi, pgsTypes::Harped)*value2;
          value4 = pStrandGeom->GetStrandArea(poi, intervalIdx, pgsTypes::Temporary);
          break;
       }

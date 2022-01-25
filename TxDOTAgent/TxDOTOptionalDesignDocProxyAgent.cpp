@@ -242,7 +242,7 @@ void CTxDOTOptionalDesignDocProxyAgent::SelectRailingSystem(pgsTypes::TrafficBar
 Float64 CTxDOTOptionalDesignDocProxyAgent::GetSectionCutStation()
 {
    ASSERT(false); // should never get here
-   return -999999;
+   return -99999;
 }
 
 ////////////////////////////////////////////////////////////////////

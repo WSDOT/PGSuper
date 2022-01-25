@@ -423,7 +423,7 @@ void pgsAlternativeTensileStressCalculator::ComputeReqdFcTens(const CSegmentKey&
       if ( rcsBfmax && (rcsFmax < ft) )
       {
          // allowable stress is limited and we hit the limit
-         *pFcNo = -99999;
+         *pFcNo = NO_AVAILABLE_CONCRETE_STRENGTH;
       }
       else
       {

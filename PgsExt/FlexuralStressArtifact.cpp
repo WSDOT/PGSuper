@@ -65,8 +65,8 @@ pgsFlexuralStressArtifact::pgsFlexuralStressArtifact()
       m_AltTensileStressRequirements[i].bIsAdequateRebar = true;
       m_bBiaxialStresses[i] = false;
 
-      m_FcReqd[pgsTypes::Compression][i] = -99999;
-      m_FcReqd[pgsTypes::Tension][i] = -99999;
+      m_FcReqd[pgsTypes::Compression][i] = NO_AVAILABLE_CONCRETE_STRENGTH;
+      m_FcReqd[pgsTypes::Tension][i] = NO_AVAILABLE_CONCRETE_STRENGTH;
    }
 }
 
@@ -96,8 +96,8 @@ m_Poi(poi),m_Task(task)
       m_AltTensileStressRequirements[i].bIsAdequateRebar = true;
       m_bBiaxialStresses[i] = false;
 
-      m_FcReqd[pgsTypes::Compression][i] = -99999;
-      m_FcReqd[pgsTypes::Tension][i] = -99999;
+      m_FcReqd[pgsTypes::Compression][i] = NO_AVAILABLE_CONCRETE_STRENGTH;
+      m_FcReqd[pgsTypes::Tension][i] = NO_AVAILABLE_CONCRETE_STRENGTH;
    }
 }
 

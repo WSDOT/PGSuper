@@ -35,6 +35,7 @@
 #include <IFace\ShearCapacity.h>
 #include <IFace\Constructability.h>
 #include <IFace\TransverseReinforcementSpec.h>
+#include <IFace\SplittingChecks.h>
 #include <IFace\PrecastIGirderDetailsSpec.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\GirderHandling.h>
@@ -2312,7 +2313,29 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	         ComputeConcreteStrength(artifact,botStressLocation,poi,task);
 	
 	         // compute the "with rebar" allowable tensile stress
-	         if ( task.stressType == pgsTypes::Tension )
+            //
+
+            // Skip this case for UHPC
+            CClosureKey closureKey;
+            bool bIsInClosure = pPoi->IsInClosureJoint(poi, &closureKey);
+            matConcrete::Type concreteType;
+            if (i == 0)
+            {
+               if (bIsInClosure)
+               {
+                  concreteType = (matConcrete::Type)pMaterials->GetClosureJointConcreteType(closureKey);
+               }
+               else
+               {
+                  concreteType = (matConcrete::Type)pMaterials->GetSegmentConcreteType(segmentKey);
+               }
+            }
+            else
+            {
+               concreteType = (matConcrete::Type)pMaterials->GetDeckConcreteType();
+            }
+
+	         if ( task.stressType == pgsTypes::Tension && concreteType != matConcrete::PCI_UHPC)
 	         {
 	            bool bIsTopApplicable = artifact.IsApplicable(topStressLocation); 
 	            bool bIsBotApplicable = artifact.IsApplicable(botStressLocation);
@@ -2343,11 +2366,8 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	            Float64 fsMax = (bSISpec ? ::ConvertToSysUnits(206.0,unitMeasure::MPa) : ::ConvertToSysUnits(30.0,unitMeasure::KSI) );
 	
 	            gbtAlternativeTensileStressRequirements altTensionRequirements;
-	
-	            CClosureKey closureKey;
-	            bool bIsInClosure = pPoi->IsInClosureJoint(poi, &closureKey);
-	
-	            Float64 Es, fu; // rebar parameters that we aren't using but get anyway
+
+               Float64 Es, fu; // rebar parameters that we aren't using but get anyway
 	            if (i == 0)
 	            {
 	               if (bIsInClosure)
@@ -2388,7 +2408,7 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	               thisSegmentKey = closureKey;
 	            }
 	
-	            if (pAllowable->HasAllowableTensionWithRebarOption(task.intervalIdx, bIsInPTZ[TOP], !bIsInClosure, thisSegmentKey))
+               if (pAllowable->HasAllowableTensionWithRebarOption(task.intervalIdx, bIsInPTZ[TOP], !bIsInClosure, thisSegmentKey))
 	            {
 	               if (i == 0 /*girder stresses*/ && bIsInClosure && bIsInPTZ[TOP])
 	               {
@@ -2629,7 +2649,8 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	               f = Max(fTop,fBot);
 	            }
 	
-	            // Compute concrete strength required to satisfy stress limit
+	            // Compute concrete strength required to satisfy stress limit when there is adequate reinforcement to use the secondary tension stress limit
+               // This method is needed because ComputeConcreteStrength above only considers the first limit.
 	            if (0.0 < f && IsAdequateRebar[face])
 	            {
 	               // stress is tensile and there is adequate reinforcement to use the 
@@ -2654,20 +2675,8 @@ void pgsDesigner2::ComputeConcreteStrength(pgsFlexuralStressArtifact& artifact,p
 {
    bool bIsApplicable = artifact.IsApplicable(stressLocation);
 
-   GET_IFACE(IMaterials,pMaterials);
-   Float64 lambda;
-   if ( ::IsGirderStressLocation(stressLocation) )
-   {
-      lambda = pMaterials->GetSegmentLambda(poi.GetSegmentKey());
-   }
-   else
-   {
-      lambda = pMaterials->GetDeckLambda();
-   }
-
-   // determine what concrete strength (if any) would work for this section. 
-   // what concrete strength is required to satisify the allowable stress criteria
-   // if there isn't a strength that works, use a value of -1
+   // Determine the concrete strength (if any) that satisfies the stress limit criteria.
+   // If there isn't a strength that works, use a value of NO_AVAILABLE_CONCRETE_STRENGTH
    if ( bIsApplicable )
    {
       GET_IFACE(IAllowableConcreteStress,  pAllowable );
@@ -2680,7 +2689,7 @@ void pgsDesigner2::ComputeConcreteStrength(pgsFlexuralStressArtifact& artifact,p
 
          Float64 f = artifact.GetDemand(stressLocation);
          Float64 c = pAllowable->GetAllowableCompressionStressCoefficient(poi,stressLocation,task);
-         Float64 fc_reqd = (IsZero(c) ? -99999 : f/-c);
+         Float64 fc_reqd = (IsZero(c) ? NO_AVAILABLE_CONCRETE_STRENGTH : f/-c);
          
          if ( fc_reqd < 0 ) // the minimum stress is tensile so compression isn't an issue
          {
@@ -2694,41 +2703,108 @@ void pgsDesigner2::ComputeConcreteStrength(pgsFlexuralStressArtifact& artifact,p
          // Tension
          ATLASSERT(task.stressType == pgsTypes::Tension);
 
-         bool bIsInPTZ = artifact.IsInPrecompressedTensileZone(stressLocation);
-         Float64 f = artifact.GetDemand(stressLocation);
+         bool bIsInClosureJoint = false;
+         CClosureKey closureKey;
 
-         Float64 fAllowable = pAllowable->GetAllowableTensionStress(poi,stressLocation,task,false/*without rebar*/,bIsInPTZ);
-         artifact.SetCapacity(stressLocation,fAllowable);
-
-         // get allowable tension for the "without rebar" case.
-         // since we need top and bottom stresses for the "with rebar" case, we will deal with
-         // that outside of this loop (see below)
-         Float64 t;
-         bool bCheckMax;
-         Float64 fmax;
-         pAllowable->GetAllowableTensionStressCoefficient(poi,stressLocation,task,false/*without rebar*/,bIsInPTZ,&t, &bCheckMax,&fmax);
-
-         Float64 fc_reqd;
-         if (0.0 < f)
+         GET_IFACE(IMaterials, pMaterials);
+         Float64 lambda = 1.0;
+         if (::IsGirderStressLocation(stressLocation))
          {
-            // if t is zero the allowable will be zero... demand "f" is > 0 so there
-            // isn't a concrete strength that will work.... if t is not zero, compute
-            // the required concrete strength
-            fc_reqd = (IsZero(t) ? -99999 : BinarySign(f)*pow(f/(lambda*t),2));
-
-            if ( bCheckMax &&                  // allowable stress is limited -AND-
-                 (0 < fc_reqd) &&              // there is a concrete strength that might work -AND-
-                 (pow(fmax/(lambda*t),2) < fc_reqd) )   // that strength will exceed the max limit on allowable
+            GET_IFACE(IPointOfInterest, pPoi);
+            bIsInClosureJoint = pPoi->IsInClosureJoint(poi, &closureKey);
+            if (bIsInClosureJoint)
             {
-               // then that concrete strength wont really work afterall
-               // too bad... this isn't going to work
-               fc_reqd = -99999;
+               lambda = pMaterials->GetClosureJointLambda(closureKey);
+            }
+            else
+            {
+               lambda = pMaterials->GetSegmentLambda(poi.GetSegmentKey());
             }
          }
          else
          {
-            // the maximum stress is compressive so tension isn't an issue
-            fc_reqd = 0;
+            lambda = pMaterials->GetDeckLambda();
+         }
+
+         bool bIsInPTZ = artifact.IsInPrecompressedTensileZone(stressLocation);
+         Float64 fAllowable = pAllowable->GetAllowableTensionStress(poi,stressLocation,task,false/*without rebar*/,bIsInPTZ); // this accounts for UHPC and returns the correct tension stress limit
+         artifact.SetCapacity(stressLocation,fAllowable);
+
+         Float64 f = artifact.GetDemand(stressLocation);
+
+         Float64 fc_reqd = 0;
+         if (0.0 < f)
+         {
+            bool bUHPC = false;
+            Float64 f_fc, fc_28;
+            IntervalIndexType intervalIdx;
+            GET_IFACE(IIntervals, pIntervals);
+            if (bIsInClosureJoint)
+            {
+               bUHPC = pMaterials->GetClosureJointConcreteType(closureKey) == pgsTypes::PCI_UHPC;
+
+               const auto* pConcrete = pMaterials->GetClosureJointConcrete(closureKey);
+               const lrfdLRFDConcrete* pConcrete1 = dynamic_cast<const lrfdLRFDConcrete*>(pConcrete);
+               const lrfdLRFDTimeDependentConcrete* pConcrete2 = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete);
+               f_fc = (bUHPC ? (pConcrete1 ? pConcrete1->GetFirstCrackStrength()  : pConcrete2->GetFirstCrackStrength()): 0.0);
+               fc_28 = pMaterials->GetClosureJointFc28(closureKey);
+
+               intervalIdx = pIntervals->GetCompositeClosureJointInterval(closureKey);
+            }
+            else
+            {
+               bUHPC = pMaterials->GetSegmentConcreteType(poi.GetSegmentKey()) == pgsTypes::PCI_UHPC;
+
+               const auto* pConcrete = pMaterials->GetSegmentConcrete(poi.GetSegmentKey());
+               const lrfdLRFDConcrete* pConcrete1 = dynamic_cast<const lrfdLRFDConcrete*>(pConcrete);
+               const lrfdLRFDTimeDependentConcrete* pConcrete2 = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete);
+               f_fc = (bUHPC ? (pConcrete1 ? pConcrete1->GetFirstCrackStrength() : pConcrete2->GetFirstCrackStrength()) : 0.0);
+               fc_28 = pMaterials->GetSegmentFc28(poi.GetSegmentKey());
+
+               intervalIdx = pIntervals->GetHaulSegmentInterval(poi.GetSegmentKey());
+            }
+
+            if (bUHPC)
+            {
+               // the maximum stress is compressive so tension isn't an issue
+               // or this is UHPC and allowable stress isn't a function of f'c
+               //fc_reqd = 0;
+
+               // the general form of the tension stress limit at release is (2/3)(f_fc)*sqrt(f'ci/f'c)
+               // this can be solved for f'ci or f'c as needed
+               if (intervalIdx <= task.intervalIdx)
+               {
+                  fc_reqd = 0;
+               }
+               else
+               {
+                  fc_reqd = pow(1.5 * f / f_fc, 2) * fc_28;
+               }
+            }
+            else
+            {
+               // get allowable tension for the "without rebar" case.
+               // since we need top and bottom stresses for the "with rebar" case, we will deal with
+               // that outside of this loop (see below)
+               Float64 t;
+               bool bCheckMax;
+               Float64 fmax;
+               pAllowable->GetAllowableTensionStressCoefficient(poi, stressLocation, task, false/*without rebar*/, bIsInPTZ, &t, &bCheckMax, &fmax);
+
+               // if t is zero the allowable will be zero... demand "f" is > 0 so there
+               // isn't a concrete strength that will work.... if t is not zero, compute
+               // the required concrete strength
+               fc_reqd = (IsZero(t) ? NO_AVAILABLE_CONCRETE_STRENGTH : BinarySign(f) * pow(f / (lambda * t), 2));
+
+               if (bCheckMax &&                  // allowable stress is limited -AND-
+                  (0 < fc_reqd) &&              // there is a concrete strength that might work -AND-
+                  (pow(fmax / (lambda * t), 2) < fc_reqd))   // that strength will exceed the max limit on allowable
+               {
+                  // then that concrete strength wont really work afterall
+                  // too bad... this isn't going to work
+                  fc_reqd = -99999;
+               }
+            }
          }
 
          artifact.SetRequiredConcreteStrength(task.stressType,stressLocation,fc_reqd);
@@ -3009,40 +3085,63 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
          // Take the controlling tension
          Float64 f =  Max(fTop,fBot);
 
-         Float64 fc_reqd;
+         Float64 fci_reqd = 0;
          if (0.0 < f)
          {
-            // Is adequate rebar available to use the higher limit?
-            if (altTensionRequirements.bIsAdequateRebar )
+            if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC)
             {
-               // We have additional rebar and can go to a higher limit
-               fc_reqd = pow(f/(lambda*talt),2);
+               const auto* pConcrete = pMaterials->GetSegmentConcrete(segmentKey);
+               const lrfdLRFDConcrete* pConcrete1 = dynamic_cast<const lrfdLRFDConcrete*>(pConcrete);
+               const lrfdLRFDTimeDependentConcrete* pConcrete2 = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete);
+               Float64 f_fc = pConcrete1 ? pConcrete1->GetFirstCrackStrength() : pConcrete2->GetFirstCrackStrength();
+               Float64 fc_28 = (pConfig == nullptr ? pMaterials->GetSegmentFc28(segmentKey) : pConfig->fc);
+
+               IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
+
+               // the maximum stress is compressive so tension isn't an issue
+               // or this is UHPC and allowable stress isn't a function of f'c
+               //fc_reqd = 0;
+
+               // the general form of the tension stress limit at release is (2/3)(f_fc)*sqrt(f'ci/f'c)
+               // this can be solved for f'ci or f'c as needed
+               if (haulingIntervalIdx <= task.intervalIdx)
+               {
+                  fci_reqd = 0;
+               }
+               else
+               {
+                  fci_reqd = pow(1.5 * f / f_fc, 2) * fc_28;
+               }
             }
             else
             {
-               fc_reqd = (IsZero(t) ? 0 : BinarySign(f)*pow(f/(lambda*t),2));
-               if ( bCheckMax &&                  // allowable stress is limited -AND-
-                    (0 < fc_reqd) &&              // there is a concrete strength that might work -AND-
-                    (pow(ftmax/(lambda*t),2) < fc_reqd) )   // that strength will exceed the max limit on allowable
+               // Is adequate rebar available to use the higher limit?
+               if (altTensionRequirements.bIsAdequateRebar )
                {
-                  // too bad... this isn't going to work
-                  fc_reqd = -99999;
+                  // We have additional rebar and can go to a higher limit
+                  fci_reqd = pow(f/(lambda*talt),2);
+               }
+               else
+               {
+                  fci_reqd = (IsZero(t) ? 0 : BinarySign(f)*pow(f/(lambda*t),2));
+                  if ( bCheckMax &&                  // allowable stress is limited -AND-
+                       (0 < fci_reqd) &&              // there is a concrete strength that might work -AND-
+                       (pow(ftmax/(lambda*t),2) < fci_reqd) )   // that strength will exceed the max limit on allowable
+                  {
+                     // too bad... this isn't going to work
+                     fci_reqd = NO_AVAILABLE_CONCRETE_STRENGTH;
+                  }
                }
             }
-         }
-         else
-         {
-            // the maximum stress is compressive so tension isn't an issue
-            fc_reqd = 0;
          }
 
          if ( MaxIndex(fTop,fBot) == 0 )
          {
-            artifact.SetRequiredConcreteStrength(task.stressType, pgsTypes::TopGirder,fc_reqd);
+            artifact.SetRequiredConcreteStrength(task.stressType, pgsTypes::TopGirder,fci_reqd);
          }
          else
          {
-            artifact.SetRequiredConcreteStrength(task.stressType, pgsTypes::BottomGirder,fc_reqd);
+            artifact.SetRequiredConcreteStrength(task.stressType, pgsTypes::BottomGirder,fci_reqd);
          }
       }
 
@@ -3490,12 +3589,10 @@ void pgsDesigner2::CheckHorizontalShear(pgsTypes::LimitState limitState, const p
    pArtifact->SetDoAllPrimaryStirrupsEngageDeck(do_all_stirrups_engage_deck);
 
    // friction and cohesion factors
-   lrfdConcreteUtil::DensityType girderDensityType = (lrfdConcreteUtil::DensityType)pMaterial->GetSegmentConcreteType(segmentKey);
-   lrfdConcreteUtil::DensityType slabDensityType   = (lrfdConcreteUtil::DensityType)pMaterial->GetDeckConcreteType();
-   Float64 c  = lrfdConcreteUtil::ShearCohesionFactor(is_roughened,girderDensityType,slabDensityType);
-   Float64 u  = lrfdConcreteUtil::ShearFrictionFactor(is_roughened);
-   Float64 K1 = lrfdConcreteUtil::HorizShearK1(is_roughened);
-   Float64 K2 = lrfdConcreteUtil::HorizShearK2(is_roughened,girderDensityType,slabDensityType);
+   pgsTypes::ConcreteType girderConcType = pMaterial->GetSegmentConcreteType(segmentKey);
+   pgsTypes::ConcreteType slabConcType = pMaterial->GetDeckConcreteType();
+   Float64 c, u, K1, K2;
+   lrfdConcreteUtil::InterfaceShearParameters(is_roughened, (matConcrete::Type)girderConcType, (matConcrete::Type)slabConcType, &c, &u, &K1, &K2);
 
    pArtifact->SetCohesionFactor(c);
    pArtifact->SetFrictionFactor(u);
@@ -3513,23 +3610,21 @@ void pgsDesigner2::CheckHorizontalShear(pgsTypes::LimitState limitState, const p
    pArtifact->SetFy(fy);
 
    Float64 Vn1, Vn2, Vn3;
-   lrfdConcreteUtil::HorizontalShearResistances(c, u, K1, K2, Acv, pArtifact->GetAvOverS(), gamma_dc*Pc, fc, fy,
-                                                &Vn1, &Vn2, &Vn3);
+   lrfdConcreteUtil::InterfaceShearResistances(c, u, K1, K2, Acv, pArtifact->GetAvOverS(), gamma_dc*Pc, fc, fy, &Vn1, &Vn2, &Vn3);
    pArtifact->SetVn(Vn1, Vn2, Vn3);
 
-   pgsTypes::ConcreteType gdrConcType  = pMaterial->GetSegmentConcreteType(segmentKey);
-   pgsTypes::ConcreteType slabConcType = pMaterial->GetDeckConcreteType();
    GET_IFACE(IResistanceFactors,pResistanceFactors);
    GET_IFACE(IPointOfInterest,pPoi);
    Float64 phiGirder;
    CClosureKey closureKey;
    if ( pPoi->IsInClosureJoint(poi,&closureKey) )
    {
-      phiGirder = pResistanceFactors->GetClosureJointShearResistanceFactor(gdrConcType);
+      pgsTypes::ConcreteType cjConcType = pMaterial->GetClosureJointConcreteType(closureKey);
+      phiGirder = pResistanceFactors->GetClosureJointShearResistanceFactor(cjConcType);
    }
    else
    {
-      phiGirder = pResistanceFactors->GetShearResistanceFactor(poi, gdrConcType);
+      phiGirder = pResistanceFactors->GetShearResistanceFactor(poi, girderConcType);
    }
 
    Float64 phiSlab   = pResistanceFactors->GetShearResistanceFactor(false, slabConcType);
@@ -3950,7 +4045,6 @@ Float64 pgsDesigner2::GetAvsOverMin(const pgsPointOfInterest& poi,const SHEARCAP
       switch( scd.ConcreteType )
       {
       case pgsTypes::Normal:
-      case pgsTypes::UHPC:
          avs *= sqrt(fc);
          break;
 
@@ -3974,6 +4068,10 @@ Float64 pgsDesigner2::GetAvsOverMin(const pgsPointOfInterest& poi,const SHEARCAP
          {
             avs *= 0.85*sqrt(fc);
          }
+         break;
+
+      case pgsTypes::PCI_UHPC:
+         avs *= 0; // there isn't a minimum Av/S for UHPC, stirrups not required
          break;
 
       default:
@@ -4248,7 +4346,7 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
    pArtifact->SetCapacityForce(capacity);
 }
 
-void pgsDesigner2::CheckConfinement(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig, pgsConfinementArtifact* pArtifact ) const
+void pgsDesigner2::CheckConfinement(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig, pgsConfinementCheckArtifact* pArtifact ) const
 {
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(IGirder,pGdr);
@@ -4704,7 +4802,7 @@ void pgsDesigner2::CheckShear(bool bDesign,const CSegmentKey& segmentKey,Interva
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    bool bCheckConfinement = pSpecEntry->IsConfinementCheckEnabled() && limitState==pgsTypes::StrengthI; // only need to check confinement once
 
-   pgsConfinementArtifact c_artifact;
+   pgsConfinementCheckArtifact c_artifact;
    if (bCheckConfinement)
    {
       CheckConfinement(segmentKey, pConfig, &c_artifact);
@@ -4712,7 +4810,7 @@ void pgsDesigner2::CheckShear(bool bDesign,const CSegmentKey& segmentKey,Interva
    }
 
    // Splitting zone check
-   CheckSplittingZone(segmentKey,pConfig,pStirrupArtifact);
+   pStirrupArtifact->SetSplittingCheckArtifact(CheckSplittingZone(segmentKey,pConfig));
 
    // poi-based shear check
    GET_IFACE(ILimitStateForces, pLimitStateForces);
@@ -4774,188 +4872,14 @@ void pgsDesigner2::CheckShear(bool bDesign,const CSegmentKey& segmentKey,Interva
    } // next POI
 }
 
-void pgsDesigner2::CheckSplittingZone(const CSegmentKey& segmentKey,const GDRCONFIG* pConfig,pgsStirrupCheckArtifact* pStirrupArtifact) const
+std::shared_ptr<pgsSplittingCheckArtifact> pgsDesigner2::CheckSplittingZone(const CSegmentKey& segmentKey,const GDRCONFIG* pConfig) const
 {
-   // don't need to do anything if disabled
-   GET_IFACE(ISpecification,pSpec);
-   GET_IFACE(ILibrary,pLib);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   if (!pSpecEntry->IsSplittingCheckEnabled())
-   {
-      return;
-   }
-
-   GET_IFACE(IBridge,pBridge);
-   GET_IFACE(IMaterials,pMat);
-   GET_IFACE(IGirder,pGdr);
-   GET_IFACE(ITransverseReinforcementSpec,pTransverseReinforcementSpec);
-   GET_IFACE(ILosses,pLosses);
-   GET_IFACE(IPretensionForce,pPrestressForce);
-
-   GET_IFACE(IProgress,pProgress);
+   GET_IFACE(IProgress, pProgress);
    CEAFAutoProgress ap(pProgress);
-   pProgress->UpdateMessage( _T("Checking splitting requirements") );
+   pProgress->UpdateMessage(_T("Checking splitting requirements"));
 
-   
-   // get POI at point of prestress transfer
-   // this is where the prestress force is fully transfered
-   GET_IFACE(IPointOfInterest,pPOI);
-   PoiList vPOI;
-   pPOI->GetPointsOfInterest(segmentKey, POI_PSXFER, &vPOI);
-   ATLASSERT(vPOI.size() != 0);
-   std::array<pgsPointOfInterest, 2> poi{ vPOI.front(),vPOI.back() };
-
-   pgsSplittingZoneArtifact* pArtifact = pStirrupArtifact->GetSplittingZoneArtifact();
-
-   pArtifact->SetIsApplicable(true);
-
-   Float64 start_h = pGdr->GetSplittingZoneHeight( poi[pgsTypes::metStart] );
-   pArtifact->SetH(pgsTypes::metStart,start_h);
-
-   Float64 end_h = pGdr->GetSplittingZoneHeight(poi[pgsTypes::metEnd]);
-   pArtifact->SetH(pgsTypes::metEnd,end_h);
-
-   // basically this is h/4 except that the 4 is a parametric value
-   Float64 n = pTransverseReinforcementSpec->GetSplittingZoneLengthFactor();
-   pArtifact->SetSplittingZoneLengthFactor(n);
-
-   Float64 start_zl = pTransverseReinforcementSpec->GetSplittingZoneLength(start_h);
-   pArtifact->SetSplittingZoneLength(pgsTypes::metStart,start_zl);
-
-   Float64 end_zl = pTransverseReinforcementSpec->GetSplittingZoneLength(end_h);
-   pArtifact->SetSplittingZoneLength(pgsTypes::metEnd,end_zl);
-
-   GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType jackingIntervalIdx = pIntervals->GetStressStrandInterval(segmentKey);
-   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-
-   // Get the splitting force parameters (the artifact actually computes the splitting force)
-   std::array<std::array<Float64, 3>, 2> Fpj;
-   std::array<std::array<Float64, 3>, 2> dFpT;
-   for (int i = 0; i < 2; i++)
-   {
-      pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
-      for (int j = 0; j < 3; j++)
-      {
-         pgsTypes::StrandType strandType = (pgsTypes::StrandType)j;
-         Fpj[endType][strandType] = pPrestressForce->GetEffectivePrestress(poi[endType], strandType, jackingIntervalIdx, pgsTypes::Start, pConfig);
-         dFpT[endType][strandType] = pLosses->GetEffectivePrestressLoss(poi[endType], strandType, releaseIntervalIdx, pgsTypes::End, pConfig);
-      }
-   }
-
-   std::array<StrandIndexType, 3> Nstrands;
-   std::array<std::array<StrandIndexType, 3>, 2> NdbStrands;
-   if ( pConfig == nullptr )
-   {
-      GET_IFACE(IStrandGeometry,pStrandGeometry);
-      for (int i = 0; i < 2; i++)
-      {
-         pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
-         for (int j = 0; j < 3; j++)
-         {
-            pgsTypes::StrandType strandType = (pgsTypes::StrandType)j;
-            Nstrands[strandType] = pStrandGeometry->GetStrandCount(segmentKey, strandType);
-            NdbStrands[endType][strandType] = pStrandGeometry->GetNumDebondedStrands(segmentKey, strandType, (endType == pgsTypes::metStart ? pgsTypes::dbetStart : pgsTypes::dbetEnd));
-         }
-      }
-   }
-   else
-   {
-      for (int i = 0; i < 2; i++)
-      {
-         pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
-         for (int j = 0; j < 3; j++)
-         {
-            pgsTypes::StrandType strandType = (pgsTypes::StrandType)j;
-            Nstrands[strandType] = pConfig->PrestressConfig.GetStrandCount(strandType);
-            NdbStrands[endType][strandType] = pConfig->PrestressConfig.Debond[strandType].size();
-         }
-      }
-   }
-
-   // if the temporary strands aren't pretensioned, then they aren't in the section
-   // when Splitting is checked!!!
-   if ( pConfig == nullptr)
-   {
-      GET_IFACE(ISegmentData,pSegmentData);
-      const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
-      if ( pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned )
-      {
-         Nstrands[pgsTypes::Temporary] = 0;
-         NdbStrands[pgsTypes::metStart][pgsTypes::Temporary] = 0;
-         NdbStrands[pgsTypes::metEnd][pgsTypes::Temporary] = 0;
-      }
-   }
-   else
-   {
-      if ( pConfig->PrestressConfig.TempStrandUsage != pgsTypes::ttsPretensioned )
-      {
-         Nstrands[pgsTypes::Temporary] = 0;
-         NdbStrands[pgsTypes::metStart][pgsTypes::Temporary] = 0;
-         NdbStrands[pgsTypes::metEnd][pgsTypes::Temporary] = 0;
-      }
-   }
-
-   for (int i = 0; i < 2; i++)
-   {
-      pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
-      for (int j = 0; j < 3; j++)
-      {
-         pgsTypes::StrandType strandType = (pgsTypes::StrandType)j;
-         pArtifact->SetAps(endType, strandType, (Nstrands[strandType] - NdbStrands[endType][strandType])*pMat->GetStrandMaterial(segmentKey, strandType)->GetNominalArea());
-         pArtifact->SetFpj(endType, strandType, Fpj[endType][strandType]);
-         pArtifact->SetLossesAfterTransfer(endType, strandType, dFpT[endType][strandType]);
-      }
-   }
-
-   // Compute Splitting resistance
-   Float64 Es, fy, fu;
-   pMat->GetSegmentTransverseRebarProperties(segmentKey,&Es,&fy,&fu);
-   Float64 fs = pTransverseReinforcementSpec->GetMaxSplittingStress(fy);
-   pArtifact->SetFs(pgsTypes::metStart,fs);
-   pArtifact->SetFs(pgsTypes::metEnd,fs);
-
-   Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
-
-   // splitting direction must be set prior to getting Avs so we get the right value
-   pgsTypes::SplittingDirection splittingDirection = pGdr->GetSplittingDirection(segmentKey);
-   pArtifact->SetSplittingDirection(splittingDirection);
-
-   std::array<Float64,2> Avs;
-   if ( pConfig == nullptr )
-   {
-      GET_IFACE(IStirrupGeometry, pStirrupGeometry);
-      Avs[pgsTypes::metStart] = pStirrupGeometry->GetSplittingAv(segmentKey,0.0,start_zl);
-      Avs[pgsTypes::metEnd] = pStirrupGeometry->GetSplittingAv(segmentKey,segment_length-end_zl,segment_length);
-   }
-   else
-   {
-      matRebar::Type barType;
-      matRebar::Grade barGrade;
-      pMat->GetSegmentTransverseRebarMaterial(segmentKey, &barType, &barGrade);
-      GetSplittingAvFromStirrupConfig(pConfig->StirrupConfig, barType, barGrade, segment_length,
-                                                  start_zl, &Avs[pgsTypes::metStart], end_zl, &Avs[pgsTypes::metEnd]);
-   }
-
-   bool bUHPC = pMat->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC ? true : false;
-   Float64 f_fc = (bUHPC ? pTransverseReinforcementSpec->GetUHPCStrengthAtFirstCrack() : 0);
-   pArtifact->SetUHPCStrengthAtFirstCrack(f_fc);
-
-   for (int i = 0; i < 2; i++)
-   {
-      pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
-      pArtifact->SetAvs(endType, Avs[endType]);
-
-      Float64 Pr = fs*Avs[endType];
-      if (bUHPC)
-      {
-         Float64 h = pArtifact->GetH(endType);
-         Float64 bv = pGdr->GetShearWidth(poi[endType]);
-         pArtifact->SetShearWidth(endType, bv);
-         Pr += (f_fc / 2)*(h / n)*bv;
-      }
-      pArtifact->SetSplittingResistance(endType, Pr);
-   }
+   GET_IFACE(ISplittingChecks,pSplittingChecks);
+   return pSplittingChecks->CheckSplitting(segmentKey, pConfig);
 }
 
 void pgsDesigner2::CheckSegmentDetailing(const CSegmentKey& segmentKey,pgsSegmentArtifact* pGdrArtifact) const
@@ -5007,7 +4931,7 @@ void pgsDesigner2::CheckSegmentDetailing(const CSegmentKey& segmentKey,pgsSegmen
    }
 
    GET_IFACE_NOCHECK(IMaterials, pMaterials);
-   if (  0 == nWebs || pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
+   if (  0 == nWebs || pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC)
    {
       // this is kind of a hack for UHPC
       // UHPC can have much thinner webs than conventional concrete... the LRFD limit doesn't apply
@@ -5347,7 +5271,7 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
    const CSplicedGirderData* pGirder = pGroup->GetGirder(girderKey.girderIndex);
    const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
 
-   // we need to know if the stirrups engague the deck along the length of the girder
+   // we need to know if the stirrups engage the deck along the length of the girder
    // below we loop over all segments and do evaluation... we need to know stirrup engaguement
    // before entering the loop.... figure it out here
    GET_IFACE(IStirrupGeometry, pStirrupGeometry);
@@ -6203,7 +6127,7 @@ void pgsDesigner2::CheckPrincipalTensionStressInWebs(const CSegmentKey& segmentK
 
       // threshold f'c for performing principal stress check
       GET_IFACE(IAllowableConcreteStress, pAllowable );
-      Float64 principalTensileStressFcThreshold = pAllowable->GetprincipalTensileStressFcThreshold();
+      Float64 principalTensileStressFcThreshold = pAllowable->GetPrincipalTensileStressFcThreshold();
 
       pArtifact->SetApplicablity(principalTensileStressFcThreshold < fc ? pgsPrincipalTensionStressArtifact::Applicable : pgsPrincipalTensionStressArtifact::ConcreteStrength); // no PT so only applicable if fc > 10 ksi
    }
@@ -8851,12 +8775,12 @@ void pgsDesigner2::DesignForLiftingHarping(const arDesignOptions& options, bool 
       // go to the artifact to get the required release strength to satisfy the compression and
       // tension criteria
       Float64 fci_comp = artifact.RequiredFcCompression();
-      Float64 fci_tens = artifact.RequiredFcTension();
+      Float64 fci_tens = artifact.RequiredFcTensionWithoutRebar();
       Float64 fci_tens_wrebar = artifact.RequiredFcTensionWithRebar();
 
       // if there isn't a concrete strength that will make the tension limits work,
       // get the heck outta here!
-      if ( fci_tens < 0 && fci_tens_wrebar < 0 )
+      if ( fci_tens < 0 && fci_tens_wrebar < 0)
       {
          // there isn't a concrete strength that will work (because of tension limit)
          LOG(_T("There is no concrete strength that will work for lifting after shipping design - Tension controls - FAILED"));
@@ -8934,7 +8858,7 @@ void pgsDesigner2::GetEndZoneMinMaxRawStresses(const CSegmentKey& segmentKey,con
    // look at lifting locations and transfer lengths
    // Largest of overhang or transfer will control. (from sensitivity study and until proven wrong)
    GET_IFACE(IPretensionForce,pPrestressForce);
-   Float64 XferLength = Max(pPrestressForce->GetXferLength(segmentKey, pgsTypes::Straight), pPrestressForce->GetXferLength(segmentKey, pgsTypes::Harped));
+   Float64 XferLength = Max(pPrestressForce->GetTransferLength(segmentKey, pgsTypes::Straight), pPrestressForce->GetTransferLength(segmentKey, pgsTypes::Harped));
 
    GET_IFACE(IBridge,pBridge);
    Float64 Lg = pBridge->GetSegmentLength(segmentKey);
@@ -9082,7 +9006,7 @@ std::vector<DebondLevelType> pgsDesigner2::DesignForLiftingDebonding(bool bPropo
 
    // Get required release strength from artifact
    Float64 fci_comp = artifact.RequiredFcCompression();
-   Float64 fci_tens = artifact.RequiredFcTension();
+   Float64 fci_tens = artifact.RequiredFcTensionWithoutRebar();
    Float64 fci_tens_wrebar = artifact.RequiredFcTensionWithRebar();
 
    // Determine if we need to add rebar
@@ -9472,11 +9396,11 @@ void pgsDesigner2::DesignForShipping(IProgress* pProgress) const
 
    // Get required release strength from artifact
    Float64 fc_comp1(0.0), fc_comp2(0.0), fc_tens(0.0), fc_tens_wrebar1(0.0), fc_tens_wrebar2(0.0);
-   final_artifact->GetRequiredConcreteStrength(pgsTypes::CrownSlope,&fc_comp1,&fc_tens,&fc_tens_wrebar1);
-   final_artifact->GetRequiredConcreteStrength(pgsTypes::Superelevation,&fc_comp2,&fc_tens,&fc_tens_wrebar2);
+   final_artifact->GetRequiredConcreteStrength(pgsTypes::CrownSlope, &fc_comp1, &fc_tens, &fc_tens_wrebar1);
+   final_artifact->GetRequiredConcreteStrength(pgsTypes::Superelevation, &fc_comp2, &fc_tens, &fc_tens_wrebar2);
 
-   Float64 fc_comp = Max(fc_comp1,fc_comp2);
-   fc_tens = Max(fc_tens_wrebar1,fc_tens_wrebar2); // Hauling design always uses higher allowable limit (lower f'c)
+   Float64 fc_comp = Max(fc_comp1, fc_comp2);
+   fc_tens = Max(fc_tens_wrebar1, fc_tens_wrebar2); // Hauling design always uses higher allowable limit (lower f'c)
 
    LOG(_T("f'c (unrounded) required for shipping; tension = ") << ::ConvertFromSysUnits(fc_tens,unitMeasure::KSI) << _T(" KSI, compression = ") << ::ConvertFromSysUnits(fc_comp,unitMeasure::KSI) << _T(" KSI"));
 
@@ -10180,7 +10104,7 @@ void pgsDesigner2::DesignShear(pgsSegmentDesignArtifact* pArtifact, bool bDoStar
    m_ShearDesignTool.SetLongShearCapacityRequiresStirrupTightening(false);
 
    GET_IFACE(IMaterials, pMaterials);
-   bool bUHPC = pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC ? true : false;
+   bool bUHPC = pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC ? true : false;
 
    bool bIter = true;
    while(bIter)
@@ -10197,22 +10121,22 @@ void pgsDesigner2::DesignShear(pgsSegmentDesignArtifact* pArtifact, bool bDoStar
       if (bDoStartFromScratch)
       {
          // From-scratch stirrup layout - do initial check with minimal stirrups
+
+         // Minimal stirrups are needed so we don't use equations for Beta for less than min stirrup configuration
+         CShearData2 default_data; // Use defaults from constructor to create no-stirrup condition
          if (bUHPC)
          {
+            // stirrups are not required for UHPC
             shear_data.ShearZones.clear();
-            shear_data.HorizontalInterfaceZones.clear();
          }
          else
          {
-            // Minimal stirrups are needed so we don't use equations for Beta for less than min stirrup configuration
-            CShearData2 default_data; // Use defaults from constructor to create no-stirrup condition
             shear_data.ShearZones = default_data.ShearZones;
             shear_data.ShearZones.front().VertBarSize = matRebar::bs5;
             shear_data.ShearZones.front().BarSpacing = 24.0 * one_inch;
             shear_data.ShearZones.front().nVertBars = 2;
-            shear_data.HorizontalInterfaceZones = default_data.HorizontalInterfaceZones;
          }
-
+         shear_data.HorizontalInterfaceZones = default_data.HorizontalInterfaceZones;
          shear_data.bIsRoughenedSurface = m_ShearDesignTool.GetIsTopFlangeRoughened();
          shear_data.bUsePrimaryForSplitting = m_ShearDesignTool.GetDoPrimaryBarsProvideSplittingCapacity();
       }
@@ -10265,6 +10189,7 @@ void pgsDesigner2::DesignShear(pgsSegmentDesignArtifact* pArtifact, bool bDoStar
             ATLASSERT(pool != nullptr);
 
             Float64 max_agg_size = pMaterials->GetSegmentMaxAggrSize(segmentKey); // for 1.33 max agg size for bar spacing
+            Float64 fiber_length = pMaterials->GetSegmentConcreteFiberLength(segmentKey); // for 1.0 * max fiber length
 
             GET_IFACE(IGirder,pGirder);
             Float64 wFlange = pGirder->GetBottomWidth(pgsPointOfInterest(segmentKey, 0.0));
@@ -10284,8 +10209,8 @@ void pgsDesigner2::DesignShear(pgsSegmentDesignArtifact* pArtifact, bool bDoStar
                Float64 av_onebar = pRebar->GetNominalArea();
                Float64 db = pRebar->GetNominalDimension();
 
-               // min clear spacing per 5.10.3.1.2.
-               Float64 min_clear = Max(one_inch,1.33*max_agg_size,db);
+               // min clear spacing per 5.10.3.1.2 (NOTE: this is really intended for longitudinal bars)
+               Float64 min_clear = Max(one_inch,1.33*max_agg_size,db,1.0*fiber_length);
                Float64 min_bar_spacing = min_clear + db;
 
                nbars = av_add/av_onebar;

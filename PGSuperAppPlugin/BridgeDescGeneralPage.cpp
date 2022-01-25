@@ -254,6 +254,13 @@ void CBridgeDescGeneralPage::DoDataExchange(CDataExchange* pDX)
    {
       pParent->m_BridgeDesc.SetLongitudinalJointMaterial(m_JointConcrete);
    }
+   else
+   {
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+      m_strUserEc.Format(_T("%s"), FormatDimension(m_JointConcrete.Ec, pDisplayUnits->GetModEUnit(), false));
+   }
 
 
 
@@ -2300,6 +2307,7 @@ void CBridgeDescGeneralPage::OnMoreProperties()
 {
    UpdateData(TRUE);
    CConcreteDetailsDlg dlg(true  /*properties are based on f'c*/,
+      true /*include uhpc*/,
       false /*don't enable Compute Time Parameters option*/,
       false /*hide the CopyFromLibrary buton*/);
 
@@ -2322,6 +2330,11 @@ void CBridgeDescGeneralPage::OnMoreProperties()
    dlg.m_AASHTO.m_bHasFct = m_JointConcrete.bHasFct;
    dlg.m_AASHTO.m_Fct = m_JointConcrete.Fct;
 
+   dlg.m_PCIUHPC.m_ffc = m_JointConcrete.Ffc;
+   dlg.m_PCIUHPC.m_frr = m_JointConcrete.Frr;
+   dlg.m_PCIUHPC.m_FiberLength = m_JointConcrete.FiberLength;
+   dlg.m_PCIUHPC.m_bPCTT = m_JointConcrete.bPCTT;
+
    if (dlg.DoModal() == IDOK)
    {
       m_JointConcrete.Fc = dlg.m_fc28;
@@ -2340,6 +2353,11 @@ void CBridgeDescGeneralPage::OnMoreProperties()
       m_JointConcrete.ShrinkageK2 = dlg.m_AASHTO.m_ShrinkageK2;
       m_JointConcrete.bHasFct = dlg.m_AASHTO.m_bHasFct;
       m_JointConcrete.Fct = dlg.m_AASHTO.m_Fct;
+
+      m_JointConcrete.Ffc = dlg.m_PCIUHPC.m_ffc;
+      m_JointConcrete.Frr = dlg.m_PCIUHPC.m_frr;
+      m_JointConcrete.FiberLength = dlg.m_PCIUHPC.m_FiberLength;
+      m_JointConcrete.bPCTT = dlg.m_PCIUHPC.m_bPCTT;
 
       m_strUserEc = dlg.m_General.m_strUserEc;
       m_ctrlEc.SetWindowText(m_strUserEc);

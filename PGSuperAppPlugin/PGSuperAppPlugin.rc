@@ -2157,7 +2157,7 @@ BEGIN
     LTEXT           "Static",IDC_RIGHT_TOP_WIDTH_UNIT,432,185,19,8
     LTEXT           "(Allowable top width =)",IDC_ALLOWABLE_TOP_WIDTH,320,199,164,8
     GROUPBOX        "Longitudinal Joint Material",IDC_LONGITUDINAL_JOINT_MATERIAL_GROUP,288,220,213,62
-    LTEXT           "Concrete Type Label",IDC_CONCRETE_TYPE_LABEL,307,231,67,8
+    LTEXT           "Concrete Type Label",IDC_CONCRETE_TYPE_LABEL,307,231,175,8
     LTEXT           "f'c",IDC_FC_LABEL,302,249,8,8
     EDITTEXT        IDC_FC,319,244,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_FC_UNIT,363,247,19,8

@@ -565,6 +565,8 @@ interface ISpecification : IUnknown
    typedef enum PrincipalWebStressCheckType { pwcNotApplicable, pwcAASHTOMethod, pwcNCHRPMethod, pwcNCHRPTimeStepMethod } PrincipalWebStressCheckType;
 
    virtual PrincipalWebStressCheckType GetPrincipalWebStressCheckType(const CSegmentKey& segmentKey) const = 0;
+
+   virtual lrfdVersionMgr::Version GetSpecificationType() const = 0;
 };
 
 /*****************************************************************************

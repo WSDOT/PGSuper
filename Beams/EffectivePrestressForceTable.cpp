@@ -131,7 +131,7 @@ void CEffectivePrestressForceTable::AddRow(rptChapter* pChapter,IBroker* pBroker
 
    Float64 fpe = pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, m_LiveLoadIntervalIdx, pgsTypes::End);
 
-   std::array<Float64, 2> adj{ pPrestressForce->GetXferLengthAdjustment(poi,pgsTypes::Straight),  pPrestressForce->GetXferLengthAdjustment(poi,pgsTypes::Harped) };
+   std::array<Float64, 2> adj{ pPrestressForce->GetTransferLengthAdjustment(poi,pgsTypes::Straight),  pPrestressForce->GetTransferLengthAdjustment(poi,pgsTypes::Harped) };
 
    GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
    std::array<Float64, 2> Aps{ pStrandGeom->GetStrandArea(poi,m_LiveLoadIntervalIdx,pgsTypes::Straight), pStrandGeom->GetStrandArea(poi,m_LiveLoadIntervalIdx,pgsTypes::Harped) };

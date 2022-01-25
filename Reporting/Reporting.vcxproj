@@ -170,7 +170,7 @@
     <ClCompile Include="BridgeDescDetailsChapterBuilder.cpp" />
     <ClCompile Include="BrokerReportSpecification.cpp" />
     <ClCompile Include="BrokerReportSpecificationBuilder.cpp" />
-    <ClCompile Include="BurstingZoneDetailsChapterBuilder.cpp" />
+    <ClCompile Include="SplittingCheckDetailsChapterBuilder.cpp" />
     <ClCompile Include="CamberChapterBuilder.cpp" />
     <ClCompile Include="CamberTable.cpp" />
     <ClCompile Include="CastingYardMomentsTable.cpp" />
@@ -378,7 +378,7 @@
     <ClInclude Include="..\Include\Reporting\BridgeDescDetailsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\BrokerReportSpecification.h" />
     <ClInclude Include="..\Include\Reporting\BrokerReportSpecificationBuilder.h" />
-    <CustomBuild Include="..\Include\Reporting\BurstingZoneDetailsChapterBuilder.h" />
+    <CustomBuild Include="..\Include\Reporting\SplittingCheckDetailsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\CamberChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\CamberTable.h" />
     <ClInclude Include="..\Include\Reporting\CastingYardMomentsTable.h" />

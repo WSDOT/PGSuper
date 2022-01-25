@@ -110,7 +110,7 @@ void write_ex_table(IBroker* pBroker,
                     const PoiList& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
-                    const std::_tstring& strStageName,pgsTypes::LimitState ls, bool bUHPC);
+                    const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
 void write_Vs_table(IBroker* pBroker,
                     IEAFDisplayUnits* pDisplayUnits,
@@ -133,13 +133,12 @@ void write_Vc_table(IBroker* pBroker,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
-
-void write_Vf_table(IBroker* pBroker,
-                    IEAFDisplayUnits* pDisplayUnits,
-                    const PoiList& vPoi,
-                    rptChapter* pChapter,
-                    IntervalIndexType intervalIdx,
-                    const std::_tstring& strStageName, pgsTypes::LimitState ls);
+void write_Vcf_table(IBroker* pBroker,
+   IEAFDisplayUnits* pDisplayUnits,
+   const PoiList& vPoi,
+   rptChapter* pChapter,
+   IntervalIndexType intervalIdx,
+   const std::_tstring& strStageName, pgsTypes::LimitState ls);
 
 void write_Vci_table(IBroker* pBroker,
                      IEAFDisplayUnits* pDisplayUnits,
@@ -314,7 +313,7 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(CReportSpecification* pRp
          pPoi->MergePoiLists(vBasicPoi, vCSPoi,&vPoi); // merge, sort, and remove duplicates
 
          pgsTypes::ConcreteType concType = pMaterial->GetSegmentConcreteType(vPoi.front().get().GetSegmentKey());
-         bool bUHPC = (concType == pgsTypes::UHPC) ? true : false;
+         bool bUHPC = (concType == pgsTypes::PCI_UHPC) ? true : false;
 
          if (1 < vLimitStates.size())
          {
@@ -331,12 +330,15 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(CReportSpecification* pRp
             write_fpc_table             (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
             write_fpo_table             (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
             write_Fe_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-            write_ex_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls, bUHPC);
+            write_ex_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
             write_btsummary_table       (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls, bUHPC);
-            write_Vc_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
             if (bUHPC)
             {
-               write_Vf_table(pBroker, pDisplayUnits, vPoi, pChapter, intervalIdx, stage_name, ls);
+               write_Vcf_table(pBroker, pDisplayUnits, vPoi, pChapter, intervalIdx, stage_name, ls);
+            }
+            else
+            {
+               write_Vc_table(pBroker, pDisplayUnits, vPoi, pChapter, intervalIdx, stage_name, ls);
             }
             write_Vs_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
          }
@@ -344,12 +346,15 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(CReportSpecification* pRp
          {
             write_shear_stress_table    (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
             write_fpo_table             (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-            write_ex_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls, bUHPC);
+            write_ex_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
             write_btsummary_table       (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls, bUHPC);
-            write_Vc_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
             if (bUHPC)
             {
-               write_Vf_table(pBroker, pDisplayUnits, vPoi, pChapter, intervalIdx, stage_name, ls);
+               write_Vcf_table(pBroker, pDisplayUnits, vPoi, pChapter, intervalIdx, stage_name, ls);
+            }
+            else
+            {
+               write_Vc_table(pBroker, pDisplayUnits, vPoi, pChapter, intervalIdx, stage_name, ls);
             }
             write_Vs_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
          }
@@ -361,10 +366,6 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(CReportSpecification* pRp
             write_Vcw_table             (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
             write_theta_table           (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
             write_Vs_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-            if (bUHPC)
-            {
-               write_Vf_table(pBroker, pDisplayUnits, vPoi, pChapter, intervalIdx, stage_name, ls);
-            }
          }
 
          write_Vn_table(pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls, bUHPC);
@@ -968,7 +969,6 @@ void write_fpce_table(IBroker* pBroker,
    }
 
    *pParagraph << RPT_STRESS(_T("cpe")) << _T(" = compressive stress in concrete due to effective prestress force only (after allowance for all prestress losses) at extreme fiber of section where tensile stress is caused by externally applied loads.") << rptNewLine;
-   *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("fcpe.png")) << rptNewLine;
    *pParagraph << Sub2(_T("S"),_T("nc")) << _T(" = section modulus for the extreme fiber of the monolithic or noncomposite section where tensile stress is caused by externally applied loads") << rptNewLine;
    *pParagraph << Sub2(_T("S"),_T("c")) << _T(" = section modulus for the extreme fiber of the composite section where tensile stress is caused by externally applied loads") << rptNewLine;
    *pParagraph << Sub2(_T("M"),_T("dnc")) << _T(" = total unfactored dead load moment acting on the monolithic or noncomposite section") << rptNewLine;
@@ -1424,7 +1424,7 @@ void write_ex_table(IBroker* pBroker,
                     const PoiList& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
-                    const std::_tstring& strStageName,pgsTypes::LimitState ls,bool bUHPC)
+                    const std::_tstring& strStageName,pgsTypes::LimitState ls)
 {
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
@@ -1530,7 +1530,7 @@ void write_ex_table(IBroker* pBroker,
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
-   if (bUHPC || pSpecEntry->LimitNetTensionStrainToPositiveValues())
+   if (pSpecEntry->LimitNetTensionStrainToPositiveValues())
    {
       *pParagraph << _T("When the computed strain is negative, it is taken as zero (LRFD 5.7.3.4.1)") << rptNewLine;
    }
@@ -2290,7 +2290,7 @@ void write_Vc_table(IBroker* pBroker,
          }
 
          std::_tstring strImage;
-         if ( bLambda )
+         if ( bLambda)
          {
             strImage = _T("VcEquation_2016.png");
          }
@@ -2301,7 +2301,6 @@ void write_Vc_table(IBroker* pBroker,
             switch( concType )
             {
             case pgsTypes::Normal:
-            case pgsTypes::UHPC:
                strImage = (IS_US_UNITS(pDisplayUnits) ? _T("VcEquation_NWC_US.png") : _T("VcEquation_NWC_SI.png"));
                break;
 
@@ -2325,6 +2324,11 @@ void write_Vc_table(IBroker* pBroker,
                {
                   strImage = (IS_US_UNITS(pDisplayUnits) ? _T("VcEquation_SLWC_US.png") : _T("VcEquation_SLWC_SI.png"));
                }
+               break;
+
+            case pgsTypes::PCI_UHPC:
+               ATLASSERT(false); // should not be UHPC, see Vcf table
+               strImage = _T("VcfEquation.png");
                break;
 
             default:
@@ -2442,8 +2446,7 @@ void write_Vc_table(IBroker* pBroker,
    }
 }
 
-
-void write_Vf_table(IBroker* pBroker,
+void write_Vcf_table(IBroker* pBroker,
    IEAFDisplayUnits* pDisplayUnits,
    const PoiList& vPoi,
    rptChapter* pChapter,
@@ -2455,7 +2458,7 @@ void write_Vf_table(IBroker* pBroker,
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   *pParagraph << _T("Shear Resistance Provided By Fibers in the Concrete - ") << GetLimitStateString(ls) << rptNewLine;
+   *pParagraph << _T("Shear Resistance Provided By Tensile Stress in the Concrete with Fibers - ") << GetLimitStateString(ls) << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
@@ -2477,14 +2480,14 @@ void write_Vf_table(IBroker* pBroker,
       pPoi->GetSegmentKeys(vPoi, girderKey, &vSegmentKeys);
       for (const auto& segmentKey : vSegmentKeys)
       {
-         ATLASSERT(pMaterial->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC);
+         ATLASSERT(pMaterial->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC);
 
          if (1 < vSegmentKeys.size())
          {
             *pParagraph << _T("Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex) << _T(" ");
          }
 
-         std::_tstring strImage(_T("Vf.png"));
+         std::_tstring strImage(_T("VcfEquation.png"));
 
          *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + strImage) << rptNewLine;
 
@@ -2505,11 +2508,11 @@ void write_Vf_table(IBroker* pBroker,
    ColumnIndexType colIdx = 0;
 
    (*table)(0, colIdx++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table)(0, colIdx++) << symbol(PSI) << RPT_STRESS(_T("fu"));
+   (*table)(0, colIdx++) << COLHDR(RPT_STRESS(_T("t")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
    (*table)(0, colIdx++) << COLHDR(symbol(theta), rptAngleUnitTag, pDisplayUnits->GetAngleUnit());
    (*table)(0, colIdx++) << COLHDR(Sub2(_T("b"), _T("v")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
    (*table)(0, colIdx++) << COLHDR(Sub2(_T("d"), _T("v")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-   (*table)(0, colIdx++) << COLHDR(Sub2(_T("V"), _T("f")), rptForceUnitTag, pDisplayUnits->GetShearUnit());
+   (*table)(0, colIdx++) << COLHDR(Sub2(_T("V"), _T("cf")), rptForceUnitTag, pDisplayUnits->GetShearUnit());
 
    INIT_UV_PROTOTYPE(rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false);
    INIT_UV_PROTOTYPE(rptForceUnitValue, shear, pDisplayUnits->GetShearUnit(), false);
@@ -2548,11 +2551,12 @@ void write_Vf_table(IBroker* pBroker,
       (*table)(row, colIdx++) << angle.SetValue(scd.Theta);
       (*table)(row, colIdx++) << dim.SetValue(scd.bv);
       (*table)(row, colIdx++) << dim.SetValue(scd.dv);
-      (*table)(row, colIdx++) << shear.SetValue(scd.Vf);
+      (*table)(row, colIdx++) << shear.SetValue(scd.Vc); // Vc = Vcf
 
       row++;
    }
 }
+
 
 void write_Vci_table(IBroker* pBroker,
                     IEAFDisplayUnits* pDisplayUnits,
@@ -2603,7 +2607,6 @@ void write_Vci_table(IBroker* pBroker,
             switch( concType )
             {
             case pgsTypes::Normal:
-            case pgsTypes::UHPC:
                strImage = _T("Vci_NWC.png");
                break;
 
@@ -2629,6 +2632,7 @@ void write_Vci_table(IBroker* pBroker,
                }
                break;
 
+            case pgsTypes::PCI_UHPC: // should never have PCI UHPC with Vci/Vcw method because of minimum LRFD edition
             default:
                ATLASSERT(false);
             }
@@ -2746,7 +2750,6 @@ void write_Vcw_table(IBroker* pBroker,
             switch( concType )
             {
             case pgsTypes::Normal:
-            case pgsTypes::UHPC:
                strImage = _T("Vcw_NWC.png");
                break;
 
@@ -2772,6 +2775,7 @@ void write_Vcw_table(IBroker* pBroker,
                }
                break;
 
+            case pgsTypes::PCI_UHPC: // should never have PCI UHPC with Vci/Vcw method because of minimum LRFD edition
             default:
                ATLASSERT(false);
             }
@@ -2884,7 +2888,6 @@ void write_theta_table(IBroker* pBroker,
             switch( concType )
             {
             case pgsTypes::Normal:
-            case pgsTypes::UHPC:
                strImage = _T("cotan_theta_NWC.png");
                break;
 
@@ -2910,6 +2913,7 @@ void write_theta_table(IBroker* pBroker,
                }
                break;
 
+            case pgsTypes::PCI_UHPC: // Vci/Vcw method not applicable to UHPC so how did we get here?
             default:
                ATLASSERT(false);
             }
@@ -2998,10 +3002,6 @@ void write_Vn_table(IBroker* pBroker,
    *pChapter << pParagraph;
 
    CollectionIndexType nCol = (shear_capacity_method == pgsTypes::scmVciVcw ? 11 : 12);
-   if (bUHPC)
-   {
-      nCol++;
-   }
 
    rptRcTable* table = rptStyleManager::CreateDefaultTable(nCol,strName);
 
@@ -3031,12 +3031,14 @@ void write_Vn_table(IBroker* pBroker,
    }
    else
    {
-      (*table)(0,col++) << COLHDR( Sub2(_T("V"),_T("c")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-   }
-
-   if (bUHPC)
-   {
-      (*table)(0, col++) << COLHDR(Sub2(_T("V"), _T("f")), rptForceUnitTag, pDisplayUnits->GetShearUnit());
+      if (bUHPC)
+      {
+         (*table)(0, col++) << COLHDR(Sub2(_T("V"), _T("cf")), rptForceUnitTag, pDisplayUnits->GetShearUnit());
+      }
+      else
+      {
+         (*table)(0, col++) << COLHDR(Sub2(_T("V"), _T("c")), rptForceUnitTag, pDisplayUnits->GetShearUnit());
+      }
    }
 
    (*table)(0,col++) << COLHDR( Sub2(_T("V"),_T("s")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
@@ -3091,10 +3093,6 @@ void write_Vn_table(IBroker* pBroker,
       if (scd.ShearInRange)
       {
          (*table)(row,col++) << shear.SetValue( scd.Vc );
-         if (bUHPC)
-         {
-            (*table)(row, col++) << shear.SetValue(scd.Vf);
-         }
          (*table)(row,col++) << shear.SetValue( scd.Vs );
          (*table)(row,col++) << shear.SetValue( scd.Vn1 );
       }
@@ -3126,10 +3124,14 @@ void write_Vn_table(IBroker* pBroker,
       *pParagraph << Super(_T("&")) << Sub2(_T("V"),_T("c")) << _T(" = ") << _T("min(") << Sub2(_T("V"),_T("ci")) << _T(",") << Sub2(_T("V"),_T("cw")) << _T(")") << rptNewLine;
    }
 
-   *pParagraph << Super(_T("$")) << Sub2(_T("V"), _T("n1")) << _T(" = ") << Sub2(_T("V"), _T("c"));
+   *pParagraph << Super(_T("$")) << Sub2(_T("V"), _T("n1")) << _T(" = ");
    if (bUHPC)
    {
-      *pParagraph << _T(" + ") << Sub2(_T("V"), _T("f"));
+      *pParagraph << Sub2(_T("V"), _T("cf"));
+   }
+   else
+   {
+      *pParagraph << Sub2(_T("V"), _T("c"));
    }
    *pParagraph << _T(" + ") << Sub2(_T("V"), _T("s"));
 
@@ -3142,9 +3144,7 @@ void write_Vn_table(IBroker* pBroker,
       *pParagraph << _T(" + ") << Sub2(_T("V"),_T("p")) << _T(" [Eqn ") << LrfdCw8th(_T("5.8.3.3-1"),_T("5.7.3.3-1")) << _T("]")<< rptNewLine;
    }
 
-
-   std::_tstring strK(bUHPC ? _T("0.18") : _T("0.25"));
-   *pParagraph << Super(_T("#")) << Sub2(_T("V"),_T("n2")) << _T(" = ") << strK << RPT_FC << Sub2(_T("b"),_T("v")) << Sub2(_T("d"),_T("v"));
+   *pParagraph << Super(_T("#")) << Sub2(_T("V"),_T("n2")) << _T(" = 0.25") << RPT_FC << Sub2(_T("b"),_T("v")) << Sub2(_T("d"),_T("v"));
    if ( shear_capacity_method == pgsTypes::scmVciVcw )
    {
       *pParagraph << _T(" [Eqn  ") << LrfdCw8th(_T("5.8.3.3-2"),_T("5.7.3.3-2")) << _T(" with ") << Sub2(_T("V"),_T("p")) << _T(" taken to be 0]") << rptNewLine;
@@ -3206,10 +3206,6 @@ void write_Avs_table(IBroker* pBroker,
    }
 
    CollectionIndexType nCol = (shear_capacity_method == pgsTypes::scmVciVcw ? 8 : 9);
-   if (bUHPC)
-   {
-      nCol++;
-   }
 
    rptRcTable* table = rptStyleManager::CreateDefaultTable(nCol);
 
@@ -3225,10 +3221,13 @@ void write_Avs_table(IBroker* pBroker,
 
    (*table)(0,col++)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*table)(0,col++) << COLHDR( Sub2(_T("V"),_T("u")) << _T("/") << symbol(phi), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-   (*table)(0,col++) << COLHDR( Sub2(_T("V"),_T("c")), rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
    if (bUHPC)
    {
-      (*table)(0, col++) << COLHDR(Sub2(_T("V"), _T("f")), rptForceUnitTag, pDisplayUnits->GetShearUnit());
+      (*table)(0, col++) << COLHDR(Sub2(_T("V"), _T("cf")), rptForceUnitTag, pDisplayUnits->GetShearUnit());
+   }
+   else
+   {
+      (*table)(0, col++) << COLHDR(Sub2(_T("V"), _T("c")), rptForceUnitTag, pDisplayUnits->GetShearUnit());
    }
 
    if ( shear_capacity_method != pgsTypes::scmVciVcw )
@@ -3236,7 +3235,15 @@ void write_Avs_table(IBroker* pBroker,
       (*table)(0,col++) << COLHDR( Sub2(_T("V"),_T("p")), rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
    }
 
-   (*table)(0,col++) << COLHDR( Sub2(_T("V"),_T("s")) << _T(" *"), rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
+   if (bUHPC)
+   {
+      (*table)(0, col++) << COLHDR(Sub2(_T("V"), _T("s")), rptForceUnitTag, pDisplayUnits->GetShearUnit());
+   }
+   else
+   {
+      (*table)(0, col++) << COLHDR(Sub2(_T("V"), _T("s")) << _T(" *"), rptForceUnitTag, pDisplayUnits->GetShearUnit());
+   }
+
    (*table)(0,col++) << COLHDR( RPT_FY, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << COLHDR( Sub2(_T("d"),_T("v")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*table)(0,col++) << COLHDR( symbol(theta), rptAngleUnitTag,  pDisplayUnits->GetAngleUnit() );
@@ -3274,11 +3281,6 @@ void write_Avs_table(IBroker* pBroker,
       (*table)(row,col++) << location.SetValue( POI_SPAN, poi );
       (*table)(row,col++) << shear.SetValue( scd.Vu/scd.Phi );
       (*table)(row,col++) << shear.SetValue( scd.Vc );
-
-      if (bUHPC)
-      {
-         (*table)(row, col++) << shear.SetValue(scd.Vf);
-      }
       
       if ( shear_capacity_method != pgsTypes::scmVciVcw )
       {
@@ -3297,16 +3299,19 @@ void write_Avs_table(IBroker* pBroker,
    pParagraph = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pParagraph;
 
-   if (shear_capacity_method == pgsTypes::scmVciVcw)
+   if (!bUHPC)
    {
-      *pParagraph << _T("* - Transverse reinforcement required if ") << Sub2(_T("V"), _T("u")) << _T(" > 0.5") << symbol(phi) << _T("(") << Sub2(_T("V"), _T("c"));
-      *pParagraph << _T(")");
-      *pParagraph << _T(" [LRFD Eqn 5.8.2.4-1 with ") << Sub2(_T("V"), _T("p")) << _T(" taken to be 0]") << rptNewLine;
-   }
-   else
-   {
-      *pParagraph << _T("* - Transverse reinforcement required if ") << Sub2(_T("V"),_T("u")) << _T(" > 0.5") << symbol(phi) << _T("(") << Sub2(_T("V"),_T("c"));
-      *pParagraph  << _T(" + ") << Sub2(_T("V"),_T("p")) << _T(") [LRFD Eqn ") << LrfdCw8th(_T("5.8.2.4-1"),_T("5.7.2.3-1")) << _T("]")<< rptNewLine;
+      if (shear_capacity_method == pgsTypes::scmVciVcw)
+      {
+         *pParagraph << _T("* - Transverse reinforcement required if ") << Sub2(_T("V"), _T("u")) << _T(" > 0.5") << symbol(phi) << _T("(") << Sub2(_T("V"), _T("c"));
+         *pParagraph << _T(")");
+         *pParagraph << _T(" [LRFD Eqn 5.8.2.4-1 with ") << Sub2(_T("V"), _T("p")) << _T(" taken to be 0]") << rptNewLine;
+      }
+      else
+      {
+         *pParagraph << _T("* - Transverse reinforcement required if ") << Sub2(_T("V"), _T("u")) << _T(" > 0.5") << symbol(phi) << _T("(") << Sub2(_T("V"), _T("c"));
+         *pParagraph << _T(" + ") << Sub2(_T("V"), _T("p")) << _T(") [LRFD Eqn ") << LrfdCw8th(_T("5.8.2.4-1"), _T("5.7.2.3-1")) << _T("]") << rptNewLine;
+      }
    }
 }
 

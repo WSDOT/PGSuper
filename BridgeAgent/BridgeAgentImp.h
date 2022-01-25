@@ -518,6 +518,10 @@ public:
    virtual INCREMENTALSHRINKAGEDETAILS GetIncrementalRailingSystemFreeShrinakgeStrainDetails(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx) const override;
    virtual INCREMENTALSHRINKAGEDETAILS GetIncrementalLongitudinalJointFreeShrinkageStrainDetails(IntervalIndexType intervalIdx) const override;
 
+   virtual Float64 GetSegmentAutogenousShrinkage(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetClosureJointAutogenousShrinkage(const CClosureKey& closureKey) const override;
+   virtual Float64 GetDeckAutogenousShrinkage() const override;
+
    virtual Float64 GetSegmentCreepCoefficient(const CSegmentKey& segmentKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const override;
    virtual Float64 GetClosureJointCreepCoefficient(const CClosureKey& closureKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const override;
    virtual Float64 GetDeckCreepCoefficient(IndexType castingRegionIdx, IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const override;
@@ -535,6 +539,7 @@ public:
    virtual Float64 GetSegmentConcreteAggSplittingStrength(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetSegmentStrengthDensity(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetSegmentMaxAggrSize(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentConcreteFiberLength(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetSegmentEccK1(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetSegmentEccK2(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetSegmentCreepK1(const CSegmentKey& segmentKey) const override;
@@ -542,11 +547,14 @@ public:
    virtual Float64 GetSegmentShrinkageK1(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetSegmentShrinkageK2(const CSegmentKey& segmentKey) const override;
    virtual const matConcreteBase* GetSegmentConcrete(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentConcreteFirstCrackingStrength(const CSegmentKey& segmentKey) const override;
+
    virtual pgsTypes::ConcreteType GetClosureJointConcreteType(const CClosureKey& closureKey) const override;
    virtual bool DoesClosureJointConcreteHaveAggSplittingStrength(const CClosureKey& closureKey) const override;
    virtual Float64 GetClosureJointConcreteAggSplittingStrength(const CClosureKey& closureKey) const override;
    virtual Float64 GetClosureJointStrengthDensity(const CClosureKey& closureKey) const override;
    virtual Float64 GetClosureJointMaxAggrSize(const CClosureKey& closureKey) const override;
+   virtual Float64 GetClosureJointConcreteFiberLength(const CClosureKey& closureKey) const override;
    virtual Float64 GetClosureJointEccK1(const CClosureKey& closureKey) const override;
    virtual Float64 GetClosureJointEccK2(const CClosureKey& closureKey) const override;
    virtual Float64 GetClosureJointCreepK1(const CClosureKey& closureKey) const override;
@@ -554,10 +562,13 @@ public:
    virtual Float64 GetClosureJointShrinkageK1(const CClosureKey& closureKey) const override;
    virtual Float64 GetClosureJointShrinkageK2(const CClosureKey& closureKey) const override;
    virtual const matConcreteBase* GetClosureJointConcrete(const CClosureKey& closureKey) const override;
+   virtual Float64 GetClosureJointConcreteFirstCrackingStrength(const CClosureKey& closureKey) const override;
+
    virtual pgsTypes::ConcreteType GetDeckConcreteType() const override;
    virtual bool DoesDeckConcreteHaveAggSplittingStrength() const override;
    virtual Float64 GetDeckConcreteAggSplittingStrength() const override;
    virtual Float64 GetDeckMaxAggrSize() const override;
+   virtual Float64 GetDeckConcreteFiberLength() const override;
    virtual Float64 GetDeckStrengthDensity() const override;
    virtual Float64 GetDeckEccK1() const override;
    virtual Float64 GetDeckEccK2() const override;
@@ -1395,7 +1406,7 @@ private:
 
       mutable std::map<Float64, Float64> Q; // key is Yclip and value is Q
 
-      SectProp() { GirderShapeIndex = INVALID_INDEX; SlabShapeIndex = INVALID_INDEX; dx = -999999;dy = -999999;YtopGirder = 0; Perimeter = 0; bComposite = false; Qslab = 0; AcBottomHalf = 0; AcTopHalf = 0; }
+      SectProp() { GirderShapeIndex = INVALID_INDEX; SlabShapeIndex = INVALID_INDEX; dx = -99999;dy = -99999;YtopGirder = 0; Perimeter = 0; bComposite = false; Qslab = 0; AcBottomHalf = 0; AcTopHalf = 0; }
    } SectProp;
    typedef std::map<PoiIntervalKey,SectProp> SectPropContainer; // Key = PoiIntervalKey object
    std::array<std::unique_ptr<SectPropContainer>, pgsTypes::sptSectionPropertyTypeCount> m_pSectProps; // index = one of the pgsTypes::SectionPropertyType constants

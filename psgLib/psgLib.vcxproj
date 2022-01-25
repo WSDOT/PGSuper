@@ -234,6 +234,7 @@
     <ClCompile Include="LongSteelGrid.cpp" />
     <ClCompile Include="LongSteelPage.cpp" />
     <ClCompile Include="OldHaulTruck.cpp" />
+    <ClCompile Include="PCIUHPCConcretePage.cpp" />
     <ClCompile Include="psgLib.cpp" />
     <ClCompile Include="RatingDescriptionPage.cpp" />
     <ClCompile Include="RatingDialog.cpp" />
@@ -376,6 +377,7 @@
     <ClInclude Include="LiveLoadFactorsPage.h" />
     <ClInclude Include="LongSteelGrid.h" />
     <ClInclude Include="LongSteelPage.h" />
+    <ClInclude Include="PCIUHPCConcretePage.h" />
     <ClInclude Include="RatingDescriptionPage.h" />
     <ClInclude Include="RatingDialog.h" />
     <ClInclude Include="RenameLibraryEntry.h" />

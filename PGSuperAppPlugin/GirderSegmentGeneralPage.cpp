@@ -805,6 +805,11 @@ void CGirderSegmentGeneralPage::OnMoreConcreteProperties()
    dlg.m_CEBFIP.m_BetaSc          = pSegment->Material.Concrete.BetaSc;
    dlg.m_CEBFIP.m_CementType      = pSegment->Material.Concrete.CEBFIPCementType;
 
+   dlg.m_PCIUHPC.m_ffc = pSegment->Material.Concrete.Ffc;
+   dlg.m_PCIUHPC.m_frr = pSegment->Material.Concrete.Frr;
+   dlg.m_PCIUHPC.m_FiberLength = pSegment->Material.Concrete.FiberLength;
+   dlg.m_PCIUHPC.m_bPCTT = pSegment->Material.Concrete.bPCTT;
+
    dlg.m_General.m_strUserEc  = m_strUserEc;
 
    if ( dlg.DoModal() == IDOK )
@@ -840,6 +845,12 @@ void CGirderSegmentGeneralPage::OnMoreConcreteProperties()
       pSegment->Material.Concrete.S                     = dlg.m_CEBFIP.m_S;
       pSegment->Material.Concrete.BetaSc                = dlg.m_CEBFIP.m_BetaSc;
       pSegment->Material.Concrete.CEBFIPCementType      = dlg.m_CEBFIP.m_CementType;
+
+      pSegment->Material.Concrete.Ffc = dlg.m_PCIUHPC.m_ffc;
+      pSegment->Material.Concrete.Frr = dlg.m_PCIUHPC.m_frr;
+      pSegment->Material.Concrete.FiberLength = dlg.m_PCIUHPC.m_FiberLength;
+      pSegment->Material.Concrete.bPCTT = dlg.m_PCIUHPC.m_bPCTT;
+
 
       m_strUserEc  = dlg.m_General.m_strUserEc;
       m_ctrlEc.SetWindowText(m_strUserEc);

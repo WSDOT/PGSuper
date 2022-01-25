@@ -32,6 +32,8 @@
 #include "LoadRater.h"
 #include "MomentCapacityEngineer.h"
 #include "ShearCapacityEngineer.h"
+#include "TransferLengthEngineer.h"
+#include "DevelopmentLengthEngineer.h"
 #include "PrincipalWebStressEngineer.h"
 #include <IFace\DistFactorEngineer.h>
 #include <IFace\RatingSpecification.h>
@@ -41,6 +43,7 @@
 
 #include <PgsExt\PoiKey.h>
 #include <PgsExt\Keys.h>
+
 #include <map>
 
 #if defined _USE_MULTITHREADING
@@ -225,19 +228,25 @@ public:
    virtual bool AreElasticGainsApplicable() const override;
    virtual bool IsDeckShrinkageApplicable() const override;
 
+   virtual bool LossesIncludeInitialRelaxation() const override;
+
 
 // IPretensionForce
 public:
    virtual Float64 GetPjackMax(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType,StrandIndexType nStrands) const override;
    virtual Float64 GetPjackMax(const CSegmentKey& segmentKey,const matPsStrand& strand,StrandIndexType nStrands) const override;
 
-   virtual Float64 GetXferLength(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) const override;
-   virtual Float64 GetXferLengthAdjustment(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG* pConfig=nullptr) const override;
-   virtual Float64 GetXferLengthAdjustment(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, StrandIndexType strandIdx, const GDRCONFIG* pConfig = nullptr) const override;
-   virtual Float64 GetDevLength(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, bool bDebonded,bool bUHPC, const GDRCONFIG* pConfig=nullptr) const override;
-   virtual STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, bool bDebonded,bool bUHPC,const GDRCONFIG* pConfig=nullptr) const override;
-   virtual Float64 GetStrandBondFactor(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType, bool bDebonded, const GDRCONFIG* pConfig=nullptr) const override;
-   virtual Float64 GetStrandBondFactor(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType,Float64 fps,Float64 fpe,const GDRCONFIG* pConfig=nullptr) const override;
+   virtual Float64 GetTransferLength(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const override;
+   virtual const std::shared_ptr<pgsTransferLength> GetTransferLengthDetails(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const override;
+   virtual Float64 GetTransferLengthAdjustment(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG* pConfig=nullptr) const override;
+   virtual Float64 GetTransferLengthAdjustment(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, StrandIndexType strandIdx, const GDRCONFIG* pConfig = nullptr) const override;
+   virtual void ReportTransferLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const override;
+
+   virtual Float64 GetDevelopmentLength(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, bool bDebonded, const GDRCONFIG* pConfig=nullptr) const override;
+   virtual const std::shared_ptr<pgsDevelopmentLength> GetDevelopmentLengthDetails(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, bool bDebonded,const GDRCONFIG* pConfig=nullptr) const override;
+   virtual void ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const override;
+   virtual Float64 GetDevelopmentLengthAdjustment(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType, bool bDebonded, const GDRCONFIG* pConfig=nullptr) const override;
+   virtual Float64 GetDevelopmentLengthAdjustment(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType,Float64 fps, Float64 fpe,const GDRCONFIG* pConfig=nullptr) const override;
 
    virtual Float64 GetHoldDownForce(const CSegmentKey& segmentKey,bool bTotalForce=true,Float64* pSlope=nullptr,pgsPointOfInterest* pPoi=nullptr,const GDRCONFIG* pConfig=nullptr) const override;
 
@@ -452,6 +461,9 @@ private:
 
    mutable std::map<PrestressPoiKey,Float64> m_PsForce; // cache of prestress forces
    mutable std::map<PrestressWithLiveLoadPoiKey,Float64> m_PsForceWithLiveLoad; // cache of prestress forces including live load
+
+   pgsTransferLengthEngineer m_TransferLengthEngineer;
+   pgsDevelopmentLengthEngineer m_DevelopmentLengthEngineer;
 
    pgsPsForceEng             m_PsForceEngineer;
    pgsDesigner2              m_Designer;

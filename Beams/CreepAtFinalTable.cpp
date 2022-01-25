@@ -227,7 +227,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    (*pParamTable)(1,1) << table->mod_e.SetValue( ptl->GetEc() );
    (*pParamTable)(1,2) << table->mod_e.SetValue( ptl->GetEci() );
    (*pParamTable)(1,3) << table->stress.SetValue(ptl->GetFc());
-   (*pParamTable)(1,4) << table->scalar.SetValue(ptl->GetCreepDeckToFinal().GetKf());
+   (*pParamTable)(1,4) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKf());
 
    pParamTable = rptStyleManager::CreateDefaultTable(5,_T(""));
    *pParagraph << pParamTable << rptNewLine;
@@ -236,15 +236,15 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    (*pParamTable)(0,2) << COLHDR(Sub2(_T("t"),_T("f")), rptTimeUnitTag, pDisplayUnits->GetWholeDaysUnit());
 
    table->time.ShowUnitTag(true);
-   (*pParamTable)(0,3) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("Initial to Final") << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetCreepInitialToFinal().GetMaturity());
-   (*pParamTable)(0,4) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("Deck Placement to Final") << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetCreepDeckToFinal().GetMaturity());
+   (*pParamTable)(0,3) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("Initial to Final") << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetMaturityAtFinal());
+   (*pParamTable)(0,4) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("Deck Placement to Final") << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetMaturityDeckPlacementToFinal());
    table->time.ShowUnitTag(false);
 
    (*pParamTable)(1,0) << table->time.SetValue( ptl->GetInitialAge() );
    (*pParamTable)(1,1) << table->time.SetValue( ptl->GetAgeAtDeckPlacement() );
    (*pParamTable)(1,2) << table->time.SetValue( ptl->GetFinalAge() );
-   (*pParamTable)(1,3) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetKtd());
-   (*pParamTable)(1,4) << table->scalar.SetValue(ptl->GetCreepDeckToFinal().GetKtd());
+   (*pParamTable)(1,3) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKtd(ptl->GetMaturityAtFinal()));
+   (*pParamTable)(1,4) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKtd(ptl->GetMaturityDeckPlacementToFinal()));
 
    pParamTable = rptStyleManager::CreateDefaultTable(3,_T(""));
    *pParagraph << pParamTable << rptNewLine;
@@ -252,9 +252,9 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    (*pParamTable)(0,1) << Sub2(symbol(psi),_T("b")) << _T("(") << Sub2(_T("t"),_T("d")) << _T(",") << Sub2(_T("t"),_T("i")) << _T(")");
    (*pParamTable)(0,2) << Sub2(symbol(psi),_T("b")) << _T("(") << Sub2(_T("t"),_T("f")) << _T(",") << Sub2(_T("t"),_T("d")) << _T(")");
 
-   (*pParamTable)(1,0) << table->creep.SetValue(ptl->GetCreepInitialToFinal().GetCreepCoefficient());
-   (*pParamTable)(1,1) << table->creep.SetValue(ptl->GetCreepInitialToDeck().GetCreepCoefficient());
-   (*pParamTable)(1,2) << table->creep.SetValue(ptl->GetCreepDeckToFinal().GetCreepCoefficient());
+   (*pParamTable)(1,0) << table->creep.SetValue(ptl->GetGirderCreep()->GetCreepCoefficient(ptl->GetMaturityAtFinal(),ptl->GetInitialAge()));
+   (*pParamTable)(1,1) << table->creep.SetValue(ptl->GetGirderCreep()->GetCreepCoefficient(ptl->GetMaturityAtDeckPlacement(),ptl->GetInitialAge()));
+   (*pParamTable)(1,2) << table->creep.SetValue(ptl->GetGirderCreep()->GetCreepCoefficient(ptl->GetMaturityDeckPlacementToFinal(),ptl->GetAgeAtDeckPlacement()));
 
    if (bIsPrismatic)
    {

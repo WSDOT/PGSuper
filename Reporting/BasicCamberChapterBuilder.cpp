@@ -394,7 +394,7 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecif
       pPara = new rptParagraph;
       *pChapter << pPara;
 
-      CREEPCOEFFICIENTDETAILS details[6];
+      std::array<CREEPCOEFFICIENTDETAILS, 6> details;
       details[0] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpReleaseToDiaphragm, i);
       details[1] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpReleaseToDeck, i);
       details[2] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpReleaseToFinal, i);

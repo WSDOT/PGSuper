@@ -277,6 +277,9 @@
     <ClCompile Include="LibraryEditorStatusBar.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PCIUHPCConcretePage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AASHTOConcretePage.h">
@@ -580,6 +583,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LibraryEditorStatusBar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PCIUHPCConcretePage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

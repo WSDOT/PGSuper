@@ -180,6 +180,7 @@
   <ItemGroup>
     <ClCompile Include="AlternativeTensileStressCalculator.cpp" />
     <ClCompile Include="Designer2.cpp" />
+    <ClCompile Include="DevelopmentLengthEngineer.cpp" />
     <ClCompile Include="EngAgent.cpp" />
     <ClCompile Include="EngAgentImp.cpp" />
     <ClCompile Include="GirderHandlingChecker.cpp" />
@@ -199,6 +200,7 @@
     </ClCompile>
     <ClCompile Include="StrandDesignTool.cpp" />
     <ClCompile Include="SummaryRatingArtifactImpl.cpp" />
+    <ClCompile Include="TransferLengthEngineer.cpp" />
     <ClCompile Include="WsDOTGirderHaulingChecker.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -221,6 +223,7 @@
     <ClInclude Include="CLSID.h" />
     <ClInclude Include="DesignCodes.h" />
     <ClInclude Include="Designer2.h" />
+    <ClInclude Include="DevelopmentLengthEngineer.h" />
     <ClInclude Include="EngAgent.h" />
     <ClInclude Include="EngAgentImp.h" />
     <ClInclude Include="GirderHandlingChecker.h" />
@@ -237,6 +240,7 @@
     <ClInclude Include="StatusItems.h" />
     <ClInclude Include="StdAfx.h" />
     <ClInclude Include="StrandDesignTool.h" />
+    <ClInclude Include="TransferLengthEngineer.h" />
     <ClInclude Include="WsDOTGirderHaulingChecker.h" />
   </ItemGroup>
   <ItemGroup>

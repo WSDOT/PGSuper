@@ -305,7 +305,7 @@ Float64 pgsGirderArtifact::GetRequiredGirderConcreteStrength(pgsTypes::StressTyp
       Float64 required = artifact.GetRequiredSegmentConcreteStrength(stressType,intervalIdx,limitState);
       if ( required < 0 )
       {
-         ATLASSERT(required == -99999); // there is not a concrete strength that will work
+         ATLASSERT(required == NO_AVAILABLE_CONCRETE_STRENGTH); // there is not a concrete strength that will work
          return required;
       }
 
@@ -324,7 +324,7 @@ Float64 pgsGirderArtifact::GetRequiredGirderConcreteStrength() const
       Float64 required = artifact.GetRequiredSegmentConcreteStrength();
       if ( required < 0 )
       {
-         ATLASSERT(required == -99999); // there is not a concrete strength that will work
+         ATLASSERT(required == NO_AVAILABLE_CONCRETE_STRENGTH); // there is not a concrete strength that will work
          return required;
       }
 
@@ -343,7 +343,7 @@ Float64 pgsGirderArtifact::GetRequiredDeckConcreteStrength(pgsTypes::StressType 
       Float64 required = artifact.GetRequiredDeckConcreteStrength(stressType,intervalIdx,limitState);
       if ( required < 0 )
       {
-         ATLASSERT(required == -99999); // there is not a concrete strength that will work
+         ATLASSERT(required == NO_AVAILABLE_CONCRETE_STRENGTH); // there is not a concrete strength that will work
          return required;
       }
 
@@ -362,7 +362,7 @@ Float64 pgsGirderArtifact::GetRequiredDeckConcreteStrength() const
       Float64 required = artifact.GetRequiredDeckConcreteStrength();
       if ( required < 0 )
       {
-         ATLASSERT(required == -99999); // there is not a concrete strength that will work
+         ATLASSERT(required == NO_AVAILABLE_CONCRETE_STRENGTH); // there is not a concrete strength that will work
          return required;
       }
 
@@ -381,7 +381,7 @@ Float64 pgsGirderArtifact::GetRequiredReleaseStrength() const
       Float64 required = artifact.GetRequiredReleaseStrength();
       if ( required < 0 )
       {
-         ATLASSERT(required == -99999); // there is not a concrete strength that will work
+         ATLASSERT(required == NO_AVAILABLE_CONCRETE_STRENGTH); // there is not a concrete strength that will work
          return required;
       }
 

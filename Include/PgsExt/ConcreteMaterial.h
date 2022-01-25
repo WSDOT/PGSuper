@@ -48,6 +48,7 @@ public:
    Float64 WeightDensity;
    Float64 StrengthDensity;
    Float64 MaxAggregateSize;
+   Float64 FiberLength;
    bool    bUserEc; // if true, Ec is a user input value
    Float64 Ec; // 28-day secant modulus
 
@@ -67,6 +68,11 @@ public:
    bool    bHasFct; // if true, the concrete model is defined with Fct
    Float64 Fct;
 
+   // PCI-UHPC Parameters
+   Float64 Ffc; // Concrete stress at first cracking
+   Float64 Frr; // Post-cracking tensile strength
+   bool bPCTT; // Post-cure thermal treatment
+
    // Time Dependent Models - General
    bool bBasePropertiesOnInitialValues; // if true, and if bHasInitial is true, the time dependent
                                             // concrete models are based on Fci and Eci, otherwise they are
@@ -85,40 +91,12 @@ public:
    pgsTypes::CEBFIPCementType CEBFIPCementType;
 
 
-   //------------------------------------------------------------------------
-   // Default constructor
    CConcreteMaterial();
-
-   //------------------------------------------------------------------------
-   // Copy constructor
-   CConcreteMaterial(const CConcreteMaterial& rOther);
-
-   //------------------------------------------------------------------------
-   // Destructor
    ~CConcreteMaterial();
 
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
-   CConcreteMaterial& operator = (const CConcreteMaterial& rOther);
-
-   //------------------------------------------------------------------------
    bool operator==(const CConcreteMaterial& rOther) const;
-
-   //------------------------------------------------------------------------
    bool operator!=(const CConcreteMaterial& rOther) const;
 
 	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
 	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
-
-#if defined _DEBUG
-   void AssertValid();
-#endif
-
-protected:
-   //------------------------------------------------------------------------
-   void MakeCopy(const CConcreteMaterial& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const CConcreteMaterial& rOther);
 };

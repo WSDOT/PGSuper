@@ -874,7 +874,7 @@ void CBridgeDescDeckDetailsPage::OnMoreConcreteProperties()
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
 
-   CConcreteDetailsDlg dlg(true/*f'c*/,false/*don't enable Compute Time Parameters option*/);
+   CConcreteDetailsDlg dlg(true/*f'c*/,true/*include uhpc*/, false/*don't enable Compute Time Parameters option*/);
 
    CDataExchange dx(this,TRUE);
    ExchangeConcreteData(&dx);
@@ -905,6 +905,11 @@ void CBridgeDescDeckDetailsPage::OnMoreConcreteProperties()
    dlg.m_ACI.m_B               = pDeck->Concrete.B;
    dlg.m_ACI.m_CureMethod      = pDeck->Concrete.CureMethod;
    dlg.m_ACI.m_CementType      = pDeck->Concrete.ACI209CementType;
+
+   dlg.m_PCIUHPC.m_ffc = pDeck->Concrete.Ffc;
+   dlg.m_PCIUHPC.m_frr = pDeck->Concrete.Frr;
+   dlg.m_PCIUHPC.m_FiberLength = pDeck->Concrete.FiberLength;
+   dlg.m_PCIUHPC.m_bPCTT = pDeck->Concrete.bPCTT;
 
    matACI209Concrete concrete;
    concrete.SetTimeAtCasting(0);
@@ -950,6 +955,11 @@ void CBridgeDescDeckDetailsPage::OnMoreConcreteProperties()
       pDeck->Concrete.S                     = dlg.m_CEBFIP.m_S;
       pDeck->Concrete.BetaSc                = dlg.m_CEBFIP.m_BetaSc;
       pDeck->Concrete.CEBFIPCementType      = dlg.m_CEBFIP.m_CementType;
+
+      pDeck->Concrete.Ffc = dlg.m_PCIUHPC.m_ffc;
+      pDeck->Concrete.Frr = dlg.m_PCIUHPC.m_frr;
+      pDeck->Concrete.FiberLength = dlg.m_PCIUHPC.m_FiberLength;
+      pDeck->Concrete.bPCTT = dlg.m_PCIUHPC.m_bPCTT;
 
       m_strUserEc  = dlg.m_General.m_strUserEc;
       m_ctrlEc.SetWindowText(m_strUserEc);

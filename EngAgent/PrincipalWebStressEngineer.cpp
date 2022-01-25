@@ -315,15 +315,12 @@ void pgsPrincipalWebStressEngineer::Check(const PoiList& vPois, pgsPrincipalTens
 
 void pgsPrincipalWebStressEngineer::CheckTimeStep(const PoiList& vPois, pgsPrincipalTensionStressArtifact * pArtifact) const
 {
-   GET_IFACE(IAllowableConcreteStress, pAllowables);
-   GET_IFACE(IMaterials, pMaterials);
    GET_IFACE(IIntervals, pIntervals);
-
    IntervalIndexType liveLoadInterval = pIntervals->GetLiveLoadInterval();
 
+   GET_IFACE(IAllowableConcreteStress, pAllowables);
    Float64 coefficient = pAllowables->GetAllowablePrincipalWebTensionStressCoefficient();
 
-   GET_IFACE(IPointOfInterest, pPoi);
    Float64 fcReqd = -Float64_Max;
    for (const pgsPointOfInterest& poi : vPois)
    {
@@ -346,18 +343,7 @@ void pgsPrincipalWebStressEngineer::CheckTimeStep(const PoiList& vPois, pgsPrinc
          }
       }
 
-      // compute required concrete strength for this web section
-      CClosureKey closureKey;
-      Float64 lambda;
-      if(pPoi->IsInClosureJoint(poi,&closureKey))
-      {
-         lambda = pMaterials->GetClosureJointLambda(closureKey);
-      }
-      else
-      {
-         lambda = pMaterials->GetSegmentLambda(poi.GetSegmentKey());
-      }
-      Float64 fc_reqd = pow(fmax / (coefficient*lambda), 2);
+      Float64 fc_reqd = pAllowables->GetPrincipalTensileStressRequiredConcreteStrength(poi, fmax);
       fcReqd = Max(fcReqd, fc_reqd); // we want the max
 
       // create check artifact for this poi
@@ -370,11 +356,8 @@ void pgsPrincipalWebStressEngineer::CheckTimeStep(const PoiList& vPois, pgsPrinc
 void pgsPrincipalWebStressEngineer::CheckSimpleLosses(const PoiList & vPois, pgsPrincipalTensionStressArtifact * pArtifact) const
 {
    GET_IFACE(IAllowableConcreteStress, pAllowables);
-   GET_IFACE(IMaterials, pMaterials);
-
    Float64 coefficient = pAllowables->GetAllowablePrincipalWebTensionStressCoefficient();
 
-   GET_IFACE(IPointOfInterest, pPoi);
    Float64 fcReqd = -Float64_Max;
    for (const pgsPointOfInterest& poi : vPois)
    {
@@ -396,18 +379,7 @@ void pgsPrincipalWebStressEngineer::CheckSimpleLosses(const PoiList & vPois, pgs
          }
       }
 
-      // compute required concrete strength for this web section
-      CClosureKey closureKey;
-      Float64 lambda;
-      if(pPoi->IsInClosureJoint(poi,&closureKey))
-      {
-         lambda = pMaterials->GetClosureJointLambda(closureKey);
-      }
-      else
-      {
-         lambda = pMaterials->GetSegmentLambda(poi.GetSegmentKey());
-      }
-      Float64 fc_reqd = pow(fmax / (coefficient*lambda), 2);
+      Float64 fc_reqd = pAllowables->GetPrincipalTensileStressRequiredConcreteStrength(poi, fmax);
       fcReqd = Max(fcReqd, fc_reqd); // we want the max
 
       // create check artifact for this poi

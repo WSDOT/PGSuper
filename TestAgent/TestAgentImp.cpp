@@ -1809,11 +1809,11 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122007, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pDefl->GetCapacity(), unitMeasure::Millimeter)) <<_T(", 2, ")<<SEGMENT(segmentKey)<<std::endl;
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122008, ")<<-1<<_T(", ")<<(int)(pDefl->Passed()?1:0)<<_T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
 
-   const pgsSplittingZoneArtifact* pBurst = pSegmentArtifact->GetStirrupCheckArtifact()->GetSplittingZoneArtifact();
-   if (pBurst->GetIsApplicable())
+   const auto pBurst = pSegmentArtifact->GetStirrupCheckArtifact()->GetSplittingCheckArtifact();
+   if (pBurst)
    {
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122010, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pBurst->GetSplittingZoneLength(pgsTypes::metStart), unitMeasure::Millimeter)) <<_T(", 2, ")<<SEGMENT(segmentKey)<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122011, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pBurst->GetTotalSplittingForce(pgsTypes::metStart), unitMeasure::Newton)) <<_T(", 2, ")<<SEGMENT(segmentKey)<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122011, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pBurst->GetSplittingForce(pgsTypes::metStart), unitMeasure::Newton)) <<_T(", 2, ")<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122012, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pBurst->GetSplittingResistance(pgsTypes::metStart), unitMeasure::Newton)) <<_T(", 2, ")<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122013, ")<<-1<<_T(", ")<<(int)(pBurst->Passed()?1:0)<<_T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
    }
@@ -2172,7 +2172,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
    } // next POI
 
    // confinement
-   const pgsConfinementArtifact& rconf = pstirrup_artifact->GetConfinementArtifact();
+   const pgsConfinementCheckArtifact& rconf = pstirrup_artifact->GetConfinementArtifact();
    if (rconf.IsApplicable())
    {
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100220, ")<<-1<<_T(", ")<<(int)(rconf.Passed()?1:0)<<_T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
@@ -2186,8 +2186,8 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
    }
 
    // splitting / bursting
-   const pgsSplittingZoneArtifact* pSplit = pstirrup_artifact->GetSplittingZoneArtifact();
-   if(pSplit->GetIsApplicable())
+   const auto pSplit = pstirrup_artifact->GetSplittingCheckArtifact();
+   if(pSplit)
    {
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100230, ")<<-1<<_T(", ")<<(int)(pSplit->Passed()?1:0)<<_T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
 
@@ -2197,7 +2197,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100234, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pSplit->GetFs(pgsTypes::metStart), unitMeasure::MPa)) <<   _T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100235, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pSplit->GetH(pgsTypes::metStart), unitMeasure::Millimeter)) <<   _T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100236, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pSplit->GetLossesAfterTransfer(pgsTypes::metStart,pgsTypes::Permanent), unitMeasure::MPa)) <<   _T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100237, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pSplit->GetTotalSplittingForce(pgsTypes::metStart), unitMeasure::Newton)) <<   _T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100237, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pSplit->GetSplittingForce(pgsTypes::metStart), unitMeasure::Newton)) <<   _T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100238, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pSplit->GetSplittingResistance(pgsTypes::metStart), unitMeasure::Newton)) <<   _T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100239, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pSplit->GetSplittingZoneLength(pgsTypes::metStart), unitMeasure::Millimeter)) <<   _T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
 
@@ -2207,7 +2207,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100244, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pSplit->GetFs(pgsTypes::metEnd), unitMeasure::MPa)) <<   _T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100245, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pSplit->GetH(pgsTypes::metEnd), unitMeasure::Millimeter)) <<   _T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100246, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pSplit->GetLossesAfterTransfer(pgsTypes::metEnd,pgsTypes::Permanent), unitMeasure::MPa)) <<   _T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100247, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pSplit->GetTotalSplittingForce(pgsTypes::metEnd), unitMeasure::Newton)) <<   _T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100247, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pSplit->GetSplittingForce(pgsTypes::metEnd), unitMeasure::Newton)) <<   _T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100248, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pSplit->GetSplittingResistance(pgsTypes::metEnd), unitMeasure::Newton)) <<   _T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100249, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pSplit->GetSplittingZoneLength(pgsTypes::metEnd), unitMeasure::Millimeter)) <<   _T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
    }

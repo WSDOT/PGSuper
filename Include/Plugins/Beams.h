@@ -32,7 +32,6 @@ struct __declspec(uuid("{9EDBDD8D-ABBB-413a-9B2D-9EB2712BE914}")) TaperedIBeamFa
 DEFINE_GUID(CLSID_NUBeamFactory, 0xDA3C413D, 0x6413, 0x4485, 0xBD, 0x29, 0xE8, 0xA4, 0x19, 0xE9, 0x81, 0xAF);
 struct __declspec(uuid("{DA3C413D-6413-4485-BD29-E8A419E981AF}")) NUBeamFactory;
 
-
 DEFINE_GUID(CLSID_UBeamFactory, 0xF72BA192, 0x6D82, 0x4d66, 0x92, 0xCA, 0xEB, 0x13, 0x46, 0x6E, 0x6B, 0xA9);
 struct __declspec(uuid("{F72BA192-6D82-4d66-92CA-EB13466E6BA9}")) UBeamFactory;
 
@@ -80,6 +79,12 @@ struct __declspec(uuid("{2583C7C1-FF57-4113-B45B-702CFA6AD013}")) TxDotDoubleTFa
 
 DEFINE_GUID(CLSID_DeckedSlabBeamFactory, 0xDEFA27AD, 0x3D22, 0x481b, 0x90, 0x06, 0x62, 0x7C, 0x65, 0xD2, 0x64, 0x8F);
 struct __declspec(uuid("{DEFA27AD-3D22-481b-9006-627C65D2648F}")) DeckedSlabBeamFactory;
+
+DEFINE_GUID(CLSID_NUDeckedBulbTeeFactory, 0xD543DA67, 0x2E50, 0x48D1, 0x8E, 0x07, 0xE8, 0xA9, 0x7F, 0x51, 0x98, 0xF3);
+struct __declspec(uuid("{D543DA67-2E50-48D1-8E07-E8A97F5198F3}")) NUDeckedBulbTeeFactory;
+
+DEFINE_GUID(CLSID_PCIDeckedBulbTeeFactory, 0x28549B5C, 0x856A, 0x443A, 0xB0, 0xBE, 0x47, 0x03, 0x48, 0xD1, 0x6B, 0xE7);
+struct __declspec(uuid("{28549B5C-856A-443A-B0BE-470348D16BE7}")) PCIDeckedBulbTeeFactory;
 
 // PGSplice
 

@@ -56,6 +56,7 @@ public:
 
    //CShearSteelPageParent
    virtual bool HasDeck() const override;
+   virtual LPCTSTR GetIntentionalRougheningPrompt() const override;
 
 // Attributes
 public:

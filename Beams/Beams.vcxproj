@@ -186,6 +186,7 @@
     <ClInclude Include="..\Include\Plugins\CLSID.h" />
     <ClInclude Include="..\Include\Plugins\ConfigureStrandMover.h" />
     <ClInclude Include="AgeAdjustedMaterial.h" />
+    <ClInclude Include="AutogenousShrinkageTable.h" />
     <ClInclude Include="BeamFamilyImpl.h" />
     <ClInclude Include="BoxBeamDistFactorEngineer.h" />
     <ClInclude Include="BoxBeamFactory.h" />
@@ -218,6 +219,8 @@
     <ClInclude Include="MultiWebDistFactorEngineer.h" />
     <ClInclude Include="MultiWebFactory.h" />
     <ClInclude Include="NUBeamFactory.h" />
+    <ClInclude Include="NUDeckedBulbTeeFactory.h" />
+    <ClInclude Include="PCIDeckedBulbTeeFactory.h" />
     <ClInclude Include="PostTensionInteractionTable.h" />
     <ClInclude Include="PostTensionTimeDependentLossesAtShippingTable.h" />
     <ClInclude Include="PsBeamLossEngineer.h" />
@@ -280,6 +283,8 @@
     <None Include="MultiWebfactory.rgs" />
     <None Include="MultiWebFamily.rgs" />
     <None Include="NUBeamFactory.rgs" />
+    <None Include="NUDeckedBulbTeeFactory.rgs" />
+    <None Include="PCIDeckedBulbTeeFactory.rgs" />
     <None Include="PsBeamLossEngineer.rgs" />
     <None Include="Res\BoxBeam.emf" />
     <None Include="Res\BoxBeam2.emf" />
@@ -338,6 +343,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AgeAdjustedMaterial.cpp" />
+    <ClCompile Include="AutogenousShrinkageTable.cpp" />
     <ClCompile Include="BeamFamilyImpl.cpp" />
     <ClCompile Include="Beams.cpp" />
     <ClCompile Include="BoxBeamDistFactorEngineer.cpp" />
@@ -370,6 +376,8 @@
     <ClCompile Include="MultiWebDistFactorEngineer.cpp" />
     <ClCompile Include="MultiWebFactory.cpp" />
     <ClCompile Include="NUBeamFactory.cpp" />
+    <ClCompile Include="NUDeckedBulbTeeFactory.cpp" />
+    <ClCompile Include="PCIDeckedBulbTeeFactory.cpp" />
     <ClCompile Include="PostTensionInteractionTable.cpp" />
     <ClCompile Include="PostTensionTimeDependentLossesAtShippingTable.cpp" />
     <ClCompile Include="PsBeamLossEngineer.cpp" />

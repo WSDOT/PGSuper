@@ -43,7 +43,7 @@
     <ClCompile Include="BrokerReportSpecificationBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="BurstingZoneDetailsChapterBuilder.cpp">
+    <ClCompile Include="SplittingCheckDetailsChapterBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CamberChapterBuilder.cpp">
@@ -1222,7 +1222,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\Include\Reporting\BurstingZoneDetailsChapterBuilder.h">
+    <CustomBuild Include="..\Include\Reporting\SplittingCheckDetailsChapterBuilder.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>

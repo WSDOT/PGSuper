@@ -169,6 +169,9 @@ void CAnalysisAgentImp::Invalidate(bool clearStatus)
       m_CreepCoefficientDetails[CREEP_MAXTIME][i].clear();
    }
 
+   m_GirderCreepModels.clear();
+   m_DeckCreepModels.clear();
+
    if (clearStatus)
    {
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
@@ -6537,6 +6540,10 @@ Float64 CAnalysisAgentImp::GetCreepCoefficient(const CSegmentKey& segmentKey, Cr
 
 CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(const CSegmentKey& segmentKey,CreepPeriod creepPeriod, Int16 constructionRate,const GDRCONFIG* pConfig) const
 {
+#pragma Reminder("WORKING HERE - PCI UHPC - merge this creep modeling into the modeling in BridgeAgent:ConcreteManager")
+    // This is going to be a big chunk of work. In BridgeAgent, the creep modeling is done for time-step analysis and has
+    // general creep coefficient results coming from WBFL::Materials. BridgeAgent doesn't currently have the concept of construction rate or CREEPCOEFFICIENTDETAILS.
+    // BridgeAgent does not yet have PCI UHPC creep models.
    if (pConfig == nullptr)
    {
       // check to see if the configuration was already cached
@@ -6548,206 +6555,94 @@ CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(const CSeg
       }
    }
 
-   CREEPCOEFFICIENTDETAILS details;
-
-   GET_IFACE(IEnvironment,pEnvironment);
-
-   GET_IFACE(ISectionProperties,pSectProp);
-
-   GET_IFACE(IBridge,pBridge);
-   pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
-
-   // this is for the kf factor so the loading interval is always release (we want f'ci)
-   Float64 fc = GetConcreteStrengthAtTimeOfLoading(segmentKey,leRelease,pConfig);
-
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
+   std::shared_ptr<const lrfdCreepCoefficient> cc = GetGirderCreepModel(segmentKey, pConfig);
+   
+   GET_IFACE(ILibrary, pLib);
+   GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
+   // compute the creep coefficient
+   CREEPCOEFFICIENTDETAILS details;
    details.Method = pSpecEntry->GetCreepMethod();
    ATLASSERT(details.Method == CREEP_LRFD); // only supporting LRFD method... the old WSDOT method is out
+   details.Spec = (pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004) ? CREEP_SPEC_PRE_2005 : CREEP_SPEC_2005;
 
-   details.Spec = (pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004 ) ? CREEP_SPEC_PRE_2005 : CREEP_SPEC_2005;
-
-   if ( details.Spec == CREEP_SPEC_PRE_2005 )
+   try
    {
-      //  LRFD 3rd edition and earlier
-      try
-      {
-         lrfdCreepCoefficient cc;
-         cc.SetRelHumidity( pEnvironment->GetRelHumidity() );
-         Float64 V, S;
-         pSectProp->GetSegmentVolumeAndSurfaceArea(segmentKey, &V, &S);
-         cc.SetVolume(V);
-         cc.SetSurfaceArea( S );
-         cc.SetFc(fc);
-         cc.SetCuringMethodTimeAdjustmentFactor(::ConvertToSysUnits(pSpecEntry->GetCuringMethodTimeAdjustmentFactor(),unitMeasure::Day));
+       Float64 ti, t;
+       switch (creepPeriod)
+       {
+       case cpReleaseToDiaphragm:
+           ti = cc->GetAdjustedInitialAge(pSpecEntry->GetXferTime());
+           t = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration1Min() : pSpecEntry->GetCreepDuration1Max()) - (details.Spec == CREEP_SPEC_PRE_2005 ? 0 : cc->GetAdjustedInitialAge(ti));
+           break;
 
-         switch( creepPeriod )
-         {
-            case cpReleaseToDiaphragm:
-               cc.SetCuringMethod( pSpecEntry->GetCuringMethod() == CURING_ACCELERATED ? lrfdCreepCoefficient::Accelerated : lrfdCreepCoefficient::Normal );
-               cc.SetInitialAge( pSpecEntry->GetXferTime() );
-               cc.SetMaturity( (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration1Min() : pSpecEntry->GetCreepDuration1Max()) );
-               break;
+       case cpReleaseToDeck:
+           ti = cc->GetAdjustedInitialAge(pSpecEntry->GetXferTime());
+           t = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max()) - (details.Spec == CREEP_SPEC_PRE_2005 ? 0 : cc->GetAdjustedInitialAge(ti));
+           break;
 
-            case cpReleaseToDeck:
-               cc.SetCuringMethod( pSpecEntry->GetCuringMethod() == CURING_ACCELERATED ? lrfdCreepCoefficient::Accelerated : lrfdCreepCoefficient::Normal );
-               cc.SetInitialAge( pSpecEntry->GetXferTime() );
-               cc.SetMaturity( constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max() );
-               break;
+       case cpReleaseToFinal:
+           ti = cc->GetAdjustedInitialAge(pSpecEntry->GetXferTime());
+           t = pSpecEntry->GetTotalCreepDuration() - (details.Spec == CREEP_SPEC_PRE_2005 ? 0 : cc->GetAdjustedInitialAge(ti));
+           break;
 
-            case cpReleaseToFinal:
-               cc.SetCuringMethod( pSpecEntry->GetCuringMethod() == CURING_ACCELERATED ? lrfdCreepCoefficient::Accelerated : lrfdCreepCoefficient::Normal );
-               cc.SetInitialAge( pSpecEntry->GetXferTime() );
-               cc.SetMaturity( pSpecEntry->GetTotalCreepDuration() );
-               break;
+       case cpDiaphragmToDeck:
+           ti = constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration1Min() : pSpecEntry->GetCreepDuration1Max();
+           t = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max()) - (details.Spec == CREEP_SPEC_PRE_2005 ? 0 : cc->GetAdjustedInitialAge(ti));
+           break;
 
-            case cpDiaphragmToDeck:
-               cc.SetCuringMethod( lrfdCreepCoefficient::Normal );
-               cc.SetInitialAge( constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration1Min() : pSpecEntry->GetCreepDuration1Max() );
-               cc.SetMaturity(   constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max() );
-               break;
+       case cpDiaphragmToFinal:
+           ti = constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration1Min() : pSpecEntry->GetCreepDuration1Max();
+           t = pSpecEntry->GetTotalCreepDuration() - (details.Spec == CREEP_SPEC_PRE_2005 ? 0 : cc->GetAdjustedInitialAge(ti));
+           break;
 
-            case cpDiaphragmToFinal:
-               cc.SetCuringMethod( lrfdCreepCoefficient::Normal );
-               cc.SetInitialAge( constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration1Min() : pSpecEntry->GetCreepDuration1Max() );
-               cc.SetMaturity( pSpecEntry->GetTotalCreepDuration() );
-               break;
+       case cpDeckToFinal:
+           ti = constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max();
+           t = pSpecEntry->GetTotalCreepDuration() - (details.Spec == CREEP_SPEC_PRE_2005 ? 0 : cc->GetAdjustedInitialAge(ti));
+           break;
 
-            case cpDeckToFinal:
-               cc.SetCuringMethod( lrfdCreepCoefficient::Normal );
-               cc.SetInitialAge( constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max() );
-               cc.SetMaturity( pSpecEntry->GetTotalCreepDuration() );
-               break;
+       default:
+           ATLASSERT(false);
+       }
 
-            default:
-               ATLASSERT(false);
-         }
 
-         details.ti           = cc.GetAdjustedInitialAge();
-         details.t            = cc.GetMaturity();
-         details.Fc           = cc.GetFc();
-         details.H            = cc.GetRelHumidity();
-         details.kf           = cc.GetKf();
-         details.kc           = cc.GetKc();
-         details.VSratio      = cc.GetVolume() / cc.GetSurfaceArea();
-         details.CuringMethod = cc.GetCuringMethod();
+       std::shared_ptr<const lrfdCreepCoefficient2005> lrfd_cc = std::dynamic_pointer_cast<const lrfdCreepCoefficient2005>(cc);
+       if (lrfd_cc)
+       {
+           details.K1 = lrfd_cc->GetK1();
+           details.K2 = lrfd_cc->GetK2();
+           details.kvs = lrfd_cc->GetKvs();
+           details.khc = lrfd_cc->GetKhc();
+       }
 
-         details.Ct           = cc.GetCreepCoefficient();
-      }
-#if defined _DEBUG
-      catch( lrfdXCreepCoefficient& ex )
-#else
-      catch( lrfdXCreepCoefficient& /*ex*/ )
-#endif // _DEBUG
-      {
-         ATLASSERT( ex.GetReason() == lrfdXCreepCoefficient::VSRatio );
+       details.ti = ti;
+       details.t = t;
+       details.Fc = cc->GetFci();
+       details.H = cc->GetRelHumidity();
+       details.kf = cc->GetKf();
+       details.VSratio = cc->GetVolume() / cc->GetSurfaceArea();
+       details.CuringMethod = cc->GetCuringMethod();
+       details.ktd = cc->GetKtd(t);
 
-         std::_tstring strMsg(_T("V/S Ratio exceeds maximum value per C5.4.2.3.2. Use a different method for estimating creep"));
-      
-         pgsVSRatioStatusItem* pStatusItem = new pgsVSRatioStatusItem(segmentKey,m_StatusGroupID,m_scidVSRatio,strMsg.c_str());
-
-         GET_IFACE(IEAFStatusCenter,pStatusCenter);
-         pStatusCenter->Add(pStatusItem);
-      
-         THROW_UNWIND(strMsg.c_str(),-1);
-      }
+       details.Ct = cc->GetCreepCoefficient(t, ti);
    }
-   else
-   {
-      // LRFD 3rd edition with 2005 interims and later
-      try
-      {
-         lrfdCreepCoefficient2005 cc;
-         cc.SetRelHumidity( pEnvironment->GetRelHumidity() );
-         Float64 V, S;
-         pSectProp->GetSegmentVolumeAndSurfaceArea(segmentKey, &V, &S);
-         cc.SetVolume( V );
-         cc.SetSurfaceArea(S);
-         cc.SetFc(fc);
-
-         cc.SetCuringMethodTimeAdjustmentFactor(::ConvertToSysUnits(pSpecEntry->GetCuringMethodTimeAdjustmentFactor(), unitMeasure::Day));
-
-         GET_IFACE(IMaterials,pMaterial);
-         cc.SetK1( pMaterial->GetSegmentCreepK1(segmentKey) );
-         cc.SetK2( pMaterial->GetSegmentCreepK2(segmentKey) );
-
-
-         switch( creepPeriod )
-         {
-            case cpReleaseToDiaphragm:
-               cc.SetCuringMethod( pSpecEntry->GetCuringMethod() == CURING_ACCELERATED ? lrfdCreepCoefficient2005::Accelerated : lrfdCreepCoefficient2005::Normal );
-               cc.SetInitialAge( pSpecEntry->GetXferTime() );
-               cc.SetMaturity( (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration1Min() : pSpecEntry->GetCreepDuration1Max()) - cc.GetAdjustedInitialAge() );
-               break;
-
-            case cpReleaseToDeck:
-               cc.SetCuringMethod( pSpecEntry->GetCuringMethod() == CURING_ACCELERATED ? lrfdCreepCoefficient2005::Accelerated : lrfdCreepCoefficient2005::Normal );
-               cc.SetInitialAge( pSpecEntry->GetXferTime() );
-               cc.SetMaturity( (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max()) - cc.GetAdjustedInitialAge() );
-               break;
-
-            case cpReleaseToFinal:
-               cc.SetCuringMethod( pSpecEntry->GetCuringMethod() == CURING_ACCELERATED ? lrfdCreepCoefficient2005::Accelerated : lrfdCreepCoefficient2005::Normal );
-               cc.SetInitialAge( pSpecEntry->GetXferTime() );
-               cc.SetMaturity( pSpecEntry->GetTotalCreepDuration() - cc.GetAdjustedInitialAge() );
-               break;
-
-            case cpDiaphragmToDeck:
-               cc.SetCuringMethod(pSpecEntry->GetCuringMethod() == CURING_ACCELERATED ? lrfdCreepCoefficient2005::Accelerated : lrfdCreepCoefficient2005::Normal);
-               cc.SetInitialAge( constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration1Min() : pSpecEntry->GetCreepDuration1Max() );
-               cc.SetMaturity(  (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max()) - cc.GetAdjustedInitialAge());
-               break;
-
-            case cpDiaphragmToFinal:
-               cc.SetCuringMethod(pSpecEntry->GetCuringMethod() == CURING_ACCELERATED ? lrfdCreepCoefficient2005::Accelerated : lrfdCreepCoefficient2005::Normal);
-               cc.SetInitialAge( (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration1Min() : pSpecEntry->GetCreepDuration1Max()) );
-               cc.SetMaturity( pSpecEntry->GetTotalCreepDuration() - cc.GetAdjustedInitialAge() );
-               break;
-
-            case cpDeckToFinal:
-               cc.SetCuringMethod(pSpecEntry->GetCuringMethod() == CURING_ACCELERATED ? lrfdCreepCoefficient2005::Accelerated : lrfdCreepCoefficient2005::Normal);
-               cc.SetInitialAge( constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max() );
-               cc.SetMaturity( pSpecEntry->GetTotalCreepDuration() - cc.GetAdjustedInitialAge() );
-               break;
-
-            default:
-               ATLASSERT(false);
-         }
-
-         details.ti           = cc.GetAdjustedInitialAge();
-         details.t            = cc.GetMaturity();
-         details.Fc           = cc.GetFc();
-         details.H            = cc.GetRelHumidity();
-         details.kvs          = cc.GetKvs();
-         details.khc          = cc.GetKhc();
-         details.kf           = cc.GetKf();
-         details.ktd          = cc.GetKtd();
-         details.VSratio      = cc.GetVolume() / cc.GetSurfaceArea();
-         details.CuringMethod = cc.GetCuringMethod();
-         details.K1           = cc.GetK1();
-         details.K2           = cc.GetK2();
-
-         details.Ct           = cc.GetCreepCoefficient();
-      }
 #if defined _DEBUG
-      catch( lrfdXCreepCoefficient& ex )
+   catch (lrfdXCreepCoefficient& ex)
 #else
-      catch( lrfdXCreepCoefficient& /*ex*/ )
+   catch (lrfdXCreepCoefficient& /*ex*/)
 #endif // _DEBUG
-      {
-         ATLASSERT( ex.GetReason() == lrfdXCreepCoefficient::VSRatio );
+   {
+       ATLASSERT(ex.GetReason() == lrfdXCreepCoefficient::VSRatio);
 
-         std::_tstring strMsg(_T("V/S Ratio exceeds maximum value per C5.4.2.3.2. Use a different method for estimating creep"));
-      
-         pgsVSRatioStatusItem* pStatusItem = new pgsVSRatioStatusItem(segmentKey,m_StatusGroupID,m_scidVSRatio,strMsg.c_str());
+       std::_tstring strMsg(_T("V/S Ratio exceeds maximum value per C5.4.2.3.2. Use a different method for estimating creep"));
 
-         GET_IFACE(IEAFStatusCenter,pStatusCenter);
-         pStatusCenter->Add(pStatusItem);
-      
-         THROW_UNWIND(strMsg.c_str(),-1);
-      }
+       pgsVSRatioStatusItem* pStatusItem = new pgsVSRatioStatusItem(segmentKey, m_StatusGroupID, m_scidVSRatio, strMsg.c_str());
+
+       GET_IFACE(IEAFStatusCenter, pStatusCenter);
+       pStatusCenter->Add(pStatusItem);
+
+       THROW_UNWIND(strMsg.c_str(), -1);
    }
 
    if (pConfig == nullptr)
@@ -6757,6 +6652,137 @@ CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(const CSeg
    }
 
    return details;
+}
+
+std::shared_ptr<const lrfdCreepCoefficient> CAnalysisAgentImp::GetGirderCreepModel(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig) const
+{
+    std::shared_ptr<lrfdCreepCoefficient> cc;
+    if (pConfig == nullptr)
+    {
+        auto found = m_GirderCreepModels.find(segmentKey);
+        if (found != m_GirderCreepModels.end())
+        {
+            cc = (*found).second;
+            return cc;
+        }
+    }
+
+
+    // we want creep for a pConfig or the creep model hasn't been constructed yet
+
+    // build the creep model
+
+    GET_IFACE(ILibrary, pLib);
+    GET_IFACE(ISpecification, pSpec);
+    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+    Uint32 spec = (pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004) ? CREEP_SPEC_PRE_2005 : CREEP_SPEC_2005;
+
+   if (spec == CREEP_SPEC_PRE_2005)
+   {
+      cc = std::make_shared<lrfdCreepCoefficient>();
+   }
+   else
+   {
+      GET_IFACE(IMaterials, pMaterials);
+      std::shared_ptr<lrfdCreepCoefficient2005> lrfd_cc;
+      if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC)
+      {
+         std::shared_ptr<lrfdPCIUHPCCreepCoefficient> uhpc_cc = std::make_shared<lrfdPCIUHPCCreepCoefficient>();
+
+         GET_IFACE(ISegmentData, pSegment);
+         bool bPCTTGirder = pSegment->GetSegmentMaterial(segmentKey)->Concrete.bPCTT;
+         uhpc_cc->PostCureThermalTreatment(bPCTTGirder);
+
+         lrfd_cc = uhpc_cc;
+      }
+      else
+      {
+         lrfd_cc = std::make_shared<lrfdCreepCoefficient2005>();
+      }
+
+
+      lrfd_cc->SetK1(pMaterials->GetSegmentCreepK1(segmentKey));
+      lrfd_cc->SetK2(pMaterials->GetSegmentCreepK2(segmentKey));
+
+      cc = lrfd_cc;
+   }
+
+   GET_IFACE(IEnvironment, pEnvironment);
+   GET_IFACE(ISectionProperties, pSectProp);
+
+   cc->SetCuringMethod(pSpecEntry->GetCuringMethod() == CURING_ACCELERATED ? lrfdCreepCoefficient::Accelerated : lrfdCreepCoefficient::Normal);
+   cc->SetRelHumidity(pEnvironment->GetRelHumidity());
+   Float64 V, S;
+   pSectProp->GetSegmentVolumeAndSurfaceArea(segmentKey, &V, &S);
+   cc->SetVolume(V);
+   cc->SetSurfaceArea(S);
+
+   Float64 fci = GetConcreteStrengthAtTimeOfLoading(segmentKey, leRelease, pConfig);
+   cc->SetFci(fci);
+
+   cc->SetCuringMethodTimeAdjustmentFactor(::ConvertToSysUnits(pSpecEntry->GetCuringMethodTimeAdjustmentFactor(), unitMeasure::Day));
+
+   if (pConfig == nullptr)
+   {
+      m_GirderCreepModels.insert(std::make_pair(segmentKey, cc));
+   }
+
+    return cc;
+}
+
+std::shared_ptr<const lrfdCreepCoefficient2005> CAnalysisAgentImp::GetDeckCreepModel(IndexType deckCastingRegionIdx) const
+{
+    auto found = m_DeckCreepModels.find(deckCastingRegionIdx);
+    if (found != m_DeckCreepModels.end())
+    {
+        return (*found).second;
+    }
+
+    GET_IFACE(IMaterials, pMaterials);
+    std::shared_ptr<lrfdCreepCoefficient2005> lrfd_cc;
+    if (pMaterials->GetDeckConcreteType() == pgsTypes::PCI_UHPC)
+    {
+        std::shared_ptr<lrfdPCIUHPCCreepCoefficient> uhpc_cc = std::make_shared<lrfdPCIUHPCCreepCoefficient>();
+
+        GET_IFACE(IBridgeDescription, pBridgeDesc);
+        bool bPCTTDeck = pBridgeDesc->GetDeckDescription()->Concrete.bPCTT;
+        uhpc_cc->PostCureThermalTreatment(bPCTTDeck);
+
+        lrfd_cc = uhpc_cc;
+    }
+    else
+    {
+        lrfd_cc = std::make_shared<lrfdCreepCoefficient2005>();
+    }
+
+    lrfd_cc->SetK1(pMaterials->GetDeckCreepK1());
+    lrfd_cc->SetK2(pMaterials->GetDeckCreepK2());
+
+
+
+    GET_IFACE(IEnvironment, pEnvironment);
+    GET_IFACE(ISectionProperties, pSectProp);
+
+    lrfd_cc->SetCuringMethod(lrfdCreepCoefficient::Normal);
+    lrfd_cc->SetRelHumidity(pEnvironment->GetRelHumidity());
+
+    Float64 V, S;
+    pSectProp->GetDeckVolumeAndSurfaceArea(&V, &S);
+    lrfd_cc->SetVolume(V);
+    lrfd_cc->SetSurfaceArea(S);
+
+    GET_IFACE(IIntervals, pIntervals);
+    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
+    Float64 fcSlab = pMaterials->GetDeckFc(deckCastingRegionIdx, compositeDeckIntervalIdx);
+    lrfd_cc->SetFci(0.80*fcSlab); // deck is non-prestressed. Use 80% of strength. See NCHRP 496 (page 27 and 30) and LRFD 5.4.2.3.2
+    GET_IFACE(ILibrary, pLib);
+    GET_IFACE(ISpecification, pSpec);
+    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+    lrfd_cc->SetCuringMethodTimeAdjustmentFactor(::ConvertToSysUnits(pSpecEntry->GetCuringMethodTimeAdjustmentFactor(), unitMeasure::Day));
+
+    m_DeckCreepModels.insert(std::make_pair(deckCastingRegionIdx, lrfd_cc));
+
+    return lrfd_cc;
 }
 
 Float64 CAnalysisAgentImp::GetPrestressDeflection(const pgsPointOfInterest& poi,pgsTypes::PrestressDeflectionDatum datum, const GDRCONFIG* pConfig) const

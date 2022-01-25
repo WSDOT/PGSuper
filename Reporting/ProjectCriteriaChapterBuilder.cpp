@@ -513,13 +513,24 @@ void write_lifting(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDis
    
    Float64 fccy_global = pSegmentLiftingSpecCriteria->GetLiftingAllowableGlobalCompressiveConcreteStress(segmentKey);
    Float64 fccy_peak = pSegmentLiftingSpecCriteria->GetLiftingAllowablePeakCompressiveConcreteStress(segmentKey);
-   Float64 ftcy = pSegmentLiftingSpecCriteria->GetLiftingAllowableTensileConcreteStress(segmentKey);
-   Float64 ft   = pSegmentLiftingSpecCriteria->GetLiftingWithMildRebarAllowableStress(segmentKey);
-   *pPara << _T("Concrete Stress Limits - Lifting (5.9.4.1.1)") << rptNewLine;
+   *pPara << _T("Concrete Stress Limits - Lifting") << rptNewLine;
    *pPara << _T("- Compressive Stress (General) = ") << stress.SetValue(fccy_global) << rptNewLine;
    *pPara << _T("- Compressive Stress (With Lateral Bending) = ") << stress.SetValue(fccy_peak) << rptNewLine;
-   *pPara << _T("- Tensile Stress (w/o mild rebar) = ") << stress.SetValue(ftcy) << rptNewLine;
-   *pPara << _T("- Tensile Stress (w/  mild rebar) = ") << stress.SetValue(ft) << rptNewLine;
+
+   // we are putting the knowledge of how tension stress is evaluated in this report - don't do that
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
+   if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC)
+   {
+      Float64 ftcy = pSegmentLiftingSpecCriteria->GetLiftingAllowableTensileConcreteStress(segmentKey);
+      *pPara << _T("- Tensile Stress = ") << stress.SetValue(ftcy) << rptNewLine;
+   }
+   else
+   {
+      Float64 ftcy = pSegmentLiftingSpecCriteria->GetLiftingAllowableTensileConcreteStress(segmentKey);
+      Float64 ft = pSegmentLiftingSpecCriteria->GetLiftingWithMildRebarAllowableStress(segmentKey);
+      *pPara << _T("- Tensile Stress (w/o mild rebar) = ") << stress.SetValue(ftcy) << rptNewLine;
+      *pPara << _T("- Tensile Stress (w/  mild rebar) = ") << stress.SetValue(ft) << rptNewLine;
+   }
 }
 
 void write_wsdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey)
@@ -610,21 +621,39 @@ void write_wsdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits
 
    Float64 fccy_global = pHauling->GetHaulingAllowableGlobalCompressiveConcreteStress(segmentKey);
    Float64 fccy_peak = pHauling->GetHaulingAllowablePeakCompressiveConcreteStress(segmentKey);
-   Float64 ftcy = pHauling->GetHaulingAllowableTensileConcreteStressNormalCrown(segmentKey);
-   Float64 ft   = pHauling->GetHaulingWithMildRebarAllowableStressNormalCrown(segmentKey);
-   *pPara << _T("Concrete Stress Limits - Hauling (") << LrfdCw8th(_T("5.9.4.2.1"),_T("5.9.2.3.2a")) << _T(") - Normal Crown Slope") << rptNewLine;
+   *pPara << _T("Concrete Stress Limits - Hauling - Normal Crown Slope") << rptNewLine;
    *pPara << _T("- Compressive Stress (General) = ") << stress.SetValue(fccy_global) << rptNewLine;
    *pPara << _T("- Compressive Stress (With lateral bending) = ") << stress.SetValue(fccy_peak) << rptNewLine;
-   *pPara << _T("- Tensile Stress (w/o mild rebar) = ") << stress.SetValue(ftcy) << rptNewLine;
-   *pPara << _T("- Tensile Stress (w/  mild rebar) = ") << stress.SetValue(ft) << rptNewLine;
 
-   ftcy = pHauling->GetHaulingAllowableTensileConcreteStressMaxSuper(segmentKey);
-   ft   = pHauling->GetHaulingWithMildRebarAllowableStressMaxSuper(segmentKey);
-   *pPara << _T(" Concrete Stress Limits - Hauling (") << LrfdCw8th(_T("5.9.4.2.1"),_T("5.9.2.3.2a")) << _T(") - Maximum Superelevation") << rptNewLine;
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
+   if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC)
+   {
+      Float64 ftcy = pHauling->GetHaulingAllowableTensileConcreteStress(segmentKey, pgsTypes::CrownSlope);
+      *pPara << _T("- Tensile Stress = ") << stress.SetValue(ftcy) << rptNewLine;
+   }
+   else
+   {
+      Float64 ftcy = pHauling->GetHaulingAllowableTensileConcreteStress(segmentKey, pgsTypes::CrownSlope);
+      Float64 ft = pHauling->GetHaulingWithMildRebarAllowableStress(segmentKey, pgsTypes::CrownSlope);
+      *pPara << _T("- Tensile Stress (w/o mild rebar) = ") << stress.SetValue(ftcy) << rptNewLine;
+      *pPara << _T("- Tensile Stress (w/  mild rebar) = ") << stress.SetValue(ft) << rptNewLine;
+   }
+
+   *pPara << _T(" Concrete Stress Limits - Hauling - Maximum Superelevation") << rptNewLine;
    *pPara << _T("- Compressive Stress (General) = ") << stress.SetValue(fccy_global) << rptNewLine;
    *pPara << _T("- Compressive Stress (With lateral bending) = ") << stress.SetValue(fccy_peak) << rptNewLine;
-   *pPara << _T("- Tensile Stress (w/o mild rebar) = ") << stress.SetValue(ftcy) << rptNewLine;
-   *pPara << _T("- Tensile Stress (w/  mild rebar) = ") << stress.SetValue(ft) << rptNewLine;
+   if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC)
+   {
+      Float64 ftcy = pHauling->GetHaulingAllowableTensileConcreteStress(segmentKey, pgsTypes::Superelevation);
+      *pPara << _T("- Tensile Stress = ") << stress.SetValue(ftcy) << rptNewLine;
+   }
+   else
+   {
+      Float64 ftcy = pHauling->GetHaulingAllowableTensileConcreteStress(segmentKey, pgsTypes::Superelevation);
+      Float64 ft = pHauling->GetHaulingWithMildRebarAllowableStress(segmentKey, pgsTypes::Superelevation);
+      *pPara << _T("- Tensile Stress (w/o mild rebar) = ") << stress.SetValue(ftcy) << rptNewLine;
+      *pPara << _T("- Tensile Stress (w/  mild rebar) = ") << stress.SetValue(ft) << rptNewLine;
+   }
 }
 
 void write_kdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry, const CSegmentKey& segmentKey)
@@ -666,12 +695,21 @@ void write_kdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    *pPara<<_T("Support location design accuracy = ")<<dim2.SetValue(pSpecEntry->GetTruckSupportLocationAccuracy())<<rptNewLine;
 
    Float64 fccy = pHauling->GetKdotHaulingAllowableCompressiveConcreteStress(segmentKey);
-   Float64 ftcy = pHauling->GetKdotHaulingAllowableTensileConcreteStress(segmentKey);
-   Float64 ft   = pHauling->GetKdotHaulingWithMildRebarAllowableStress(segmentKey);
-   *pPara<<_T("Concrete Stress Limits - Hauling (") << LrfdCw8th(_T("5.9.4.2.1"),_T("5.9.2.3.2a")) << _T(")")<<rptNewLine;
+   *pPara<<_T("Concrete Stress Limits - Hauling")<<rptNewLine;
    *pPara<<_T("- Compressive Stress = ")<<stress.SetValue(fccy)<<rptNewLine;
-   *pPara<<_T("- Tensile Stress (w/o mild rebar) = ")<<stress.SetValue(ftcy) << rptNewLine;
-   *pPara<<_T("- Tensile Stress (w/  mild rebar) = ")<<stress.SetValue(ft) << rptNewLine;
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
+   if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC)
+   {
+      Float64 ftcy = pHauling->GetKdotHaulingAllowableTensileConcreteStress(segmentKey);
+      *pPara << _T("- Tensile Stress = ") << stress.SetValue(ftcy) << rptNewLine;
+   }
+   else
+   {
+      Float64 ftcy = pHauling->GetKdotHaulingAllowableTensileConcreteStress(segmentKey);
+      Float64 ft = pHauling->GetKdotHaulingWithMildRebarAllowableStress(segmentKey);
+      *pPara << _T("- Tensile Stress (w/o mild rebar) = ") << stress.SetValue(ftcy) << rptNewLine;
+      *pPara << _T("- Tensile Stress (w/  mild rebar) = ") << stress.SetValue(ft) << rptNewLine;
+   }
 }
 
 void write_temp_strand_removal(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey)
@@ -703,11 +741,20 @@ void write_temp_strand_removal(rptChapter* pChapter,IBroker* pBroker, IEAFDispla
       *pPara<<_T("Compression Stress Limits")<<rptNewLine;
       *pPara<<_T("- Service I = ")<<stress.SetValue(fcsp)<<rptNewLine;
 
-      Float64 fts = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, StressCheckTask(tsRemovalIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension), false);
-      Float64 ft  = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, StressCheckTask(tsRemovalIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension), true);
       *pPara<<_T("Tension Stress Limits")<<rptNewLine;
-      *pPara<<_T("- Service I (w/o mild rebar) = ")<<stress.SetValue(fts) << rptNewLine;
-      *pPara<<_T("- Service I (w/  mild rebar) = ")<<stress.SetValue(ft) << rptNewLine;
+      GET_IFACE2(pBroker, IMaterials, pMaterials);
+      if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC)
+      {
+         Float64 fts = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, StressCheckTask(tsRemovalIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension), false);
+         *pPara << _T("- Service I = ") << stress.SetValue(fts) << rptNewLine;
+      }
+      else
+      {
+         Float64 fts = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, StressCheckTask(tsRemovalIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension), false);
+         Float64 ft = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, StressCheckTask(tsRemovalIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension), true);
+         *pPara << _T("- Service I (w/o mild rebar) = ") << stress.SetValue(fts) << rptNewLine;
+         *pPara << _T("- Service I (w/  mild rebar) = ") << stress.SetValue(ft) << rptNewLine;
+      }
     }
 }
 
@@ -781,7 +828,7 @@ void write_bridge_site2(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
 
    pgsPointOfInterest poi(segmentKey,0.0);
    Float64 fcsp = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, StressCheckTask(lastIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression, false/*exclude liveload*/));
-   *pPara<<_T("Compression Stress Limits (") << LrfdCw8th(_T("5.9.4.2.1"),_T("5.9.2.3.2a")) << _T(")")<<rptNewLine;
+   *pPara<<_T("Compression Stress Limits")<<rptNewLine;
    *pPara<<_T("- Service I = ")<<stress.SetValue(fcsp)<<rptNewLine;
 
    if ( pAllowableConcreteStress->CheckFinalDeadLoadTensionStress() )
@@ -834,7 +881,7 @@ void write_bridge_site3(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    pgsPointOfInterest poi(segmentKey,0.0);
 
    Float64 fcsl = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, StressCheckTask(liveLoadIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression));
-   *pPara<<_T("Compression Stress Limits (") << LrfdCw8th(_T("5.9.4.2.1"),_T("5.9.2.3.2a")) << _T(")")<<rptNewLine;
+   *pPara<<_T("Compression Stress Limits")<<rptNewLine;
    *pPara<<_T("- Service I (permanent + live load) = ")<<stress.SetValue(fcsl)<<rptNewLine;
 
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
@@ -844,13 +891,13 @@ void write_bridge_site3(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    }
 
    Float64 fts = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, StressCheckTask(liveLoadIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension), false,false);
-   *pPara<<_T("Tension Stress Limits (") << LrfdCw8th(_T("5.9.4.2.2"),_T("5.9.2.3.2b")) << _T(")")<<rptNewLine;
+   *pPara<<_T("Tension Stress Limits")<<rptNewLine;
    *pPara<<_T("- Service III = ")<<stress.SetValue(fts)<<rptNewLine;
 
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
    {
       Float64 ftf = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, StressCheckTask(liveLoadIntervalIdx,pgsTypes::FatigueI,pgsTypes::Compression));
-      *pPara<<_T("Allowable Compressive Concrete Stresses (5.5.3.1)")<<rptNewLine;
+      *pPara<<_T("Allowable Compressive Concrete Stresses")<<rptNewLine;
       *pPara<<_T("- Fatigue I = ")<<stress.SetValue(ftf)<<rptNewLine;
    }
 
