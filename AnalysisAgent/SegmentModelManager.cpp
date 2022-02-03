@@ -42,6 +42,7 @@
 
 #include <PgsExt\SplicedGirderData.h>
 #include <PgsExt\PrecastSegmentData.h>
+#include <PgsExt\ClosureJointData.h>
 
 #include <iterator>
 #include <algorithm>
@@ -1687,6 +1688,11 @@ bool RemoveStrongbacksSupports(const CTemporarySupportData* pTS)
    return (pTS->GetSupportType() == pgsTypes::StrongBack ? true : false);
 }
 
+bool RemoveTowerSupports(const CTemporarySupportData* pTS)
+{
+   return (pTS->GetSupportType() == pgsTypes::ErectionTower ? true : false);
+}
+
 class RemoveTSNotInstalled
 {
 public:
@@ -1754,32 +1760,38 @@ std::vector<pgsPointOfInterest> CSegmentModelManager::GetDeflectionDatumLocation
    else
    {
       // We are in erected bridge
+      // Basic rules are as follows:
+      //1)	Rules are executed based on support conditions at erection time of segment in question
+      //2)	If a segment is supported by 2 or more permanent piers, then both EDD locations are at the two outermost permanent piers
+      //3)	Else If segment supported by 1 permanent pier :
+      //    a)	If zero erection towers.Place EDD at pierand strongback at other end
+      //    b)	Else If 1 erection tower, or multiple towers all on same side of pier
+      //       i)	If tower(s) on side of pier with adjacent segment with free end, place EDD at outermost tower.Allow tower adjustment if free to move
+      //       ii)	Else if tower on side of pier with a supporting adjacent segment, Place EDD at strongback, or tower if tower at closure
+      //    c)	Else if > 1 towers, and towers on both sides of pier :
+      //      Place single EDD at Pier, allow outermost towers to be adjustable in co - dependent seesaw motion.Any redundant towers go along for the ride.Segment rotation is independent of adjacent segment BC’s.
+      //4)	Else If zero permanent piers :
+      //    a)	If zero towers : Place EDDs at strongbacks
+      //    b)	Else if 1 tower:
+      //       i)	If both ends of segment dependent on adjacent segments, place EDD’s at strongbacksand adjust tower elevation per unrecoverable deflection
+      //       ii)	If only one end dependent on adjacent segment, place EDD at towerand at supporting strongback
+      //    c)	If 2 + towers:
+      //       i)	If adjacent segments at both ends free, place EDDs at outermost towers
+      //       ii)	Else if both ends dependent on adjacent segments.Place EDD’s on strongbacks, adjust tower elevations
+      //       iii)	Else if one end freeand other dependent.Place EDD at strongback at dependent end, and other EDD at closest tower to free end
+      //5)	Additional rules for erection deflection datums :
+      //    a)	Deflections at free ends of drop in segments are made to match deflection of adjacent supporting segment
+      //    b)	A mismatch in end deflections can occur when segments with fully constrained ends are placed adjacently.This mismatch must be checked if post - tensioning through joint
       GET_IFACE(IBridgeDescription, pIBridgeDesc);
       const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
 
-      // Basic rules are as follows:
-      // Rigid supports are piers and erection towers
-      // If two or more rigid supports, map zero datum to two outermost supports
-      // If one rigid support, map zero to that support’s location using vertical translation
-      // If no rigid supports, map zero to ends of segment
-      // If outermost support at a closure joint, map to end of segment
-
-      // POI's at segment ends - for use, or comparison later
-      PoiList vStartEndSegmentPois;
-      pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE, &vStartEndSegmentPois);
-      const pgsPointOfInterest& startSegPOI(vStartEndSegmentPois.front().get());
-      const pgsPointOfInterest& endSegPOI(vStartEndSegmentPois.back().get());
-
-      // Get POI's at all rigid support locations
-      std::vector<pgsPointOfInterest> vRigidPois;
-      // First, piers...
+      // Get POI's at outermost rigid piers
+      std::vector<pgsPointOfInterest> vRigidPierPois;
       std::vector<const CPierData2*> vPiers = pSegment->GetPiers();
       IndexType nPiers = vPiers.size();
       if (0 < nPiers)
       {
-         // Segment is supported by one or more piers... use piers closest to the ends of the segment
-
-         if (vPiers.front()->IsBoundaryPier())
+         if (vPiers.front()->IsBoundaryPier() || vPiers.front()->GetClosureJoint(segmentKey.girderIndex)!=nullptr)
          {
             // if supported by a boundary pier, get the CL Brg poi
             PoiList vSupportPoi;
@@ -1795,139 +1807,321 @@ std::vector<pgsPointOfInterest> CSegmentModelManager::GetDeflectionDatumLocation
                pPoi->GetPointsOfInterest(segmentKey, POI_10L | POI_ERECTED_SEGMENT, &vSupportPoi);
             }
 
-            vRigidPois.emplace_back(vSupportPoi.front());
+            vRigidPierPois.emplace_back(vSupportPoi.front());
          }
          else
          {
             // this is an interior pier, we want the CL Pier poi
-            vRigidPois.emplace_back(pPoi->GetPierPointOfInterest(segmentKey, vPiers.front()->GetIndex()));
+            vRigidPierPois.emplace_back(pPoi->GetPierPointOfInterest(segmentKey, vPiers.front()->GetIndex()));
          }
 
          if (1 < nPiers)
          {
-            if (vPiers.back()->IsBoundaryPier())
+            if (vPiers.back()->IsBoundaryPier() || vPiers.back()->GetClosureJoint(segmentKey.girderIndex) != nullptr)
             {
                // if supported by a boundary pier, we want the CL Brg poi
                PoiList vSupportPoi;
                pPoi->GetPointsOfInterest(segmentKey, POI_10L | POI_ERECTED_SEGMENT, &vSupportPoi); // in collection, back() boundary pier must be at end of segment
-               vRigidPois.emplace_back(vSupportPoi.front());
+               vRigidPierPois.emplace_back(vSupportPoi.front());
             }
             else
             {
-               vRigidPois.emplace_back(pPoi->GetPierPointOfInterest(segmentKey, vPiers.back()->GetIndex()));
+               vRigidPierPois.emplace_back(pPoi->GetPierPointOfInterest(segmentKey, vPiers.back()->GetIndex()));
             }
          }
       }
 
-      // Temporary supports. Clear out those not in current interval
-      std::vector<const CTemporarySupportData*> vAllTS = pSegment->GetTemporarySupports();
-      vAllTS.erase(std::remove_if(vAllTS.begin(), vAllTS.end(), RemoveTSNotInstalled(pIntervals, intervalIdx)), vAllTS.end());
-
-      // Get only TS towers (rigid) currently erected
-      std::vector<const CTemporarySupportData*> vRigidTS = vAllTS;
-      vRigidTS.erase(std::remove_if(vRigidTS.begin(), vRigidTS.end(), RemoveStrongbacksSupports), vRigidTS.end());
-
-      if (0 < vRigidTS.size())
+      // Rule 2 - if 2 or more rigid piers, return pois at those piers. 
+      if (nPiers > 1)
       {
-         pgsPointOfInterest poiLeftTS = pPoi->GetTemporarySupportPointOfInterest(segmentKey, vRigidTS.front()->GetIndex());
-         if (poiLeftTS.HasAttribute(POI_CLOSURE))
-         {
-            Float64 Xstart = pPoi->ConvertPoiToGirderPathCoordinate(startSegPOI);
-            Float64 Xend = pPoi->ConvertPoiToGirderPathCoordinate(endSegPOI);
-            Float64 Xts = pPoi->ConvertPoiToGirderPathCoordinate(poiLeftTS);
+         return vRigidPierPois; // Should always happen in PGSuper
+      }
+      else
+      {
+         // Look at temporary support configuration
+         // Temporary supports. Clear out those not in current interval
+         std::vector<const CTemporarySupportData*> vAllTS = pSegment->GetTemporarySupports();
+         vAllTS.erase(std::remove_if(vAllTS.begin(), vAllTS.end(), RemoveTSNotInstalled(pIntervals, intervalIdx)), vAllTS.end());
 
-            // At closure, use poi at end closest to support
-            if (abs(Xts - Xstart) < abs(Xts - Xend))
-            {
-               vRigidPois.emplace_back(startSegPOI);
-            }
-            else
-            {
-               vRigidPois.emplace_back(endSegPOI);
-            }
-         }
-         else
-         {
-            vRigidPois.emplace_back(poiLeftTS);
-         }
+         // Get only towers currently erected
+         std::vector<const CTemporarySupportData*> vTSTowers = vAllTS;
+         vTSTowers.erase(std::remove_if(vTSTowers.begin(), vTSTowers.end(), RemoveStrongbacksSupports), vTSTowers.end());
+         IndexType nTowers = vTSTowers.size();
 
-         if (1 < vRigidTS.size())
-         {
-            pgsPointOfInterest poiRightTS = pPoi->GetTemporarySupportPointOfInterest(segmentKey, vRigidTS.back()->GetIndex());
-            if (poiRightTS.HasAttribute(POI_CLOSURE))
-            {
-               Float64 Xstart = pPoi->ConvertPoiToGirderPathCoordinate(startSegPOI);
-               Float64 Xend = pPoi->ConvertPoiToGirderPathCoordinate(endSegPOI);
-               Float64 Xts = pPoi->ConvertPoiToGirderPathCoordinate(poiRightTS);
+         // Get only strongbacks currently erected
+         std::vector<const CTemporarySupportData*> vTSStrongbacks = vAllTS;
+         vTSStrongbacks.erase(std::remove_if(vTSStrongbacks.begin(), vTSStrongbacks.end(), RemoveTowerSupports), vTSStrongbacks.end());
+         IndexType nStrongbacks = vTSStrongbacks.size();
 
-               // At closure, use poi at end closest to support
-               if (abs(Xts - Xstart) < abs(Xts - Xend))
+         std::vector<pgsPointOfInterest> vPoi;
+
+         if (nPiers == 1)  // Rule 3
+         {
+            const CPierData2* pPier = vPiers.front();
+            Float64 PierStation = pPier->GetStation();
+
+            if (nTowers == 0)
+            {
+               // Rule 3a. This is a drop in
+               ATLASSERT(vTSStrongbacks.size() == 1);
+               if (vTSStrongbacks.front()->GetStation() < PierStation)
                {
-                  vRigidPois.emplace_back(startSegPOI);
+                  if (vTSStrongbacks.front()->GetClosureJoint(segmentKey.girderIndex) == nullptr)
+                  {
+                     vPoi.emplace_back(pPoi->GetTemporarySupportPointOfInterest(segmentKey, vTSStrongbacks.front()->GetIndex()));
+                  }
+                  else
+                  {
+                     PoiList vSupportPoi;
+                     pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_ERECTED_SEGMENT, &vSupportPoi); 
+                     vPoi.emplace_back(vSupportPoi.front());
+                  }
+
+                  vPoi.push_back(vRigidPierPois.front());
                }
                else
                {
-                  vRigidPois.emplace_back(endSegPOI);
+                  vPoi.push_back(vRigidPierPois.front());
+                  if (vTSStrongbacks.front()->GetClosureJoint(segmentKey.girderIndex) == nullptr)
+                  {
+                     vPoi.emplace_back(pPoi->GetTemporarySupportPointOfInterest(segmentKey, vTSStrongbacks.front()->GetIndex()));
+                  }
+                  else
+                  {
+                     PoiList vSupportPoi;
+                     pPoi->GetPointsOfInterest(segmentKey, POI_10L | POI_ERECTED_SEGMENT, &vSupportPoi);
+                     vPoi.emplace_back(vSupportPoi.front());
+                  }
                }
             }
             else
             {
-               vRigidPois.emplace_back(poiRightTS);
-            }
-         }
-      }
+               // 1 or more towers under segment. 
+               // Determine if all towers on same side of pier, or straddle pier
+               bool bTowerLeft(false), bTowerRight(false);
+               for (const auto* ptower : vTSTowers)
+               {
+                  if (ptower->GetStation() < PierStation)
+                  {
+                     bTowerLeft = true;
+                  }
+                  else
+                  {
+                     bTowerRight = true;
+                  }
+               }
 
-      // Now we have a list of pois at end-zone rigid piers and towers. 
-      std::vector<pgsPointOfInterest> vPois;
-      std::size_t numRigid = vRigidPois.size();
-      if (0 == numRigid)
-      {
-         // No rigid supports under segment. Use segment ends as datums
-         vPois.emplace_back(startSegPOI);
-         vPois.emplace_back(endSegPOI);
-      }
-      else if (1 == numRigid)
-      {
-         // Only one rigid support under segment. 
-         if (pgsTypes::ditNotDropIn == dropInType)
-         {
-            // Not a drop in. Just use single rigid support for datum
-            vPois.emplace_back(vRigidPois.front());
+               if (bTowerLeft && bTowerRight)
+               {
+                  // Rule 3c: Towers on both sides. Place single EDD only at Pier
+                  vPoi.push_back(vRigidPierPois.front());
+               }
+               else
+               {
+                  const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+
+                  if (bTowerLeft)
+                  {
+                     // All towers are to left of pier. See if adjacent segment is free to move 
+                     const CPrecastSegmentData* pLeftSegment = pSegment->GetPrevSegment();
+                     const CClosureJointData* pClosure = pSegment->GetClosureJoint(pgsTypes::metStart);
+                     if (pLeftSegment && pClosure)
+                     {
+                        pgsTypes::DropInType adjDropInType = pLeftSegment->IsDropIn();
+                        if (adjDropInType == pgsTypes::ditYesFreeEndEnd || adjDropInType == pgsTypes::ditYesFreeBothEnds)
+                        {
+                           // Rule 3bi. Place EDD at outermost tower near free segment to support adjacent segment
+                           // Use bearings at closure if at closure
+                           if (vTSTowers.front()->GetClosureJoint(segmentKey.girderIndex) != nullptr)
+                           {
+                              PoiList vSupportPoi;
+                              pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_ERECTED_SEGMENT, &vSupportPoi); // in collection, back() boundary pier must be at end of segment
+                              vPoi.emplace_back(vSupportPoi.front());
+                           }
+                           else
+                           {
+                              vPoi.push_back(pPoi->GetTemporarySupportPointOfInterest(segmentKey, vTSTowers.front()->GetIndex()));
+                           }
+
+                           vPoi.push_back(vRigidPierPois.front());
+                        }
+                        else
+                        {
+                           // Rule 3bii
+                           const CTemporarySupportData* pTempS = pClosure->GetTemporarySupport();
+                           if (pTempS)
+                           {
+                              // Use bearings at closure if at closure
+                              if (vTSTowers.front()->GetClosureJoint(segmentKey.girderIndex) != nullptr)
+                              {
+                                 PoiList vSupportPoi;
+                                 pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_ERECTED_SEGMENT, &vSupportPoi); // in collection, back() boundary pier must be at end of segment
+                                 vPoi.emplace_back(vSupportPoi.front());
+                              }
+                              else
+                              {
+                                 vPoi.push_back(pPoi->GetTemporarySupportPointOfInterest(segmentKey, vTSTowers.front()->GetIndex()));
+                              }
+
+                              vPoi.push_back(vRigidPierPois.front());
+                           }
+                           else
+                           {
+                              // otherwise use outermost tower
+                              vPoi.push_back(pPoi->GetTemporarySupportPointOfInterest(segmentKey, vTSTowers.front()->GetIndex()));
+                              vPoi.push_back(vRigidPierPois.front());
+                           }
+                        }
+                     }
+                     else
+                     {
+                        // no segment to left. just place at left tower
+                        vPoi.push_back(pPoi->GetTemporarySupportPointOfInterest(segmentKey, vTSTowers.front()->GetIndex()));
+                        vPoi.push_back(vRigidPierPois.front());
+                     }
+                  }
+                  else
+                  {
+                     ATLASSERT(bTowerRight);
+                     // All towers are to right of pier. See if adjacent segment is free to move 
+                     const CPrecastSegmentData* pRightSegment = pSegment->GetNextSegment();
+                     const CClosureJointData* pClosure = pSegment->GetClosureJoint(pgsTypes::metEnd);
+                     if (pRightSegment && pClosure)
+                     {
+                        pgsTypes::DropInType adjDropInType = pRightSegment->IsDropIn();
+                        if (adjDropInType == pgsTypes::ditYesFreeStartEnd || adjDropInType == pgsTypes::ditYesFreeBothEnds)
+                        {
+                           // Rule 3bi. Place EDD at outermost tower near free segment to support adjacent segment
+                           vPoi.push_back(vRigidPierPois.back());
+
+                           if (vTSTowers.back()->GetClosureJoint(segmentKey.girderIndex) != nullptr)
+                           {
+                              PoiList vSupportPoi;
+                              pPoi->GetPointsOfInterest(segmentKey, POI_10L | POI_ERECTED_SEGMENT, &vSupportPoi);
+                              vPoi.emplace_back(vSupportPoi.front());
+                           }
+                           else
+                           {
+                              vPoi.push_back(pPoi->GetTemporarySupportPointOfInterest(segmentKey, vTSTowers.back()->GetIndex()));
+                           }
+                        }
+                        else
+                        {
+                           // Rule 3bii
+                           const CTemporarySupportData* pTempS = pClosure->GetTemporarySupport();
+                           if (pTempS)
+                           {
+                              // Use temp support at closure if at closure
+                              vPoi.push_back(vRigidPierPois.back());
+
+                              PoiList vSupportPoi;
+                              pPoi->GetPointsOfInterest(segmentKey, POI_10L | POI_ERECTED_SEGMENT, &vSupportPoi);
+                              vPoi.emplace_back(vSupportPoi.front());
+                           }
+                           else
+                           {
+                              // otherwise use outermost tower
+                              vPoi.push_back(vRigidPierPois.back());
+                              vPoi.push_back(pPoi->GetTemporarySupportPointOfInterest(segmentKey, vTSTowers.back()->GetIndex()));
+                           }
+                        }
+                     }
+                     else
+                     {
+                        // no segment to left. just place at left tower
+                        vPoi.push_back(vRigidPierPois.back());
+                        vPoi.push_back(pPoi->GetTemporarySupportPointOfInterest(segmentKey, vTSTowers.back()->GetIndex()));
+                     }
+                  }
+               }
+            }
          }
          else
          {
-            // A drop in. Use one or both strongbacks as datums
-            if (pgsTypes::ditYesFreeStartEnd == dropInType)
+            // nPiers == 0
+            if (nTowers == 0)
             {
-               vPois.emplace_back(startSegPOI);
-               vPois.emplace_back(vRigidPois.front());
+               // Rule 4a
+               // No piers and no towers. Segment only supported by strongbacks
+               ATLASSERT(nStrongbacks == 2);
+               PoiList vSupportPoi;
+               pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_ERECTED_SEGMENT, &vSupportPoi);
+               vPoi.emplace_back(vSupportPoi.front());
+               vSupportPoi.clear();
+               pPoi->GetPointsOfInterest(segmentKey, POI_10L | POI_ERECTED_SEGMENT, &vSupportPoi);
+               vPoi.emplace_back(vSupportPoi.front());
             }
-            else if (pgsTypes::ditYesFreeEndEnd == dropInType)
+            else // nTowers > 0 && nPiers==0
             {
-               vPois.emplace_back(vRigidPois.front());
-               vPois.emplace_back(endSegPOI);
-            }
-            else
-            {
-               // Free at both ends of segment and a rigid support? Logic is flawed
-               ATLASSERT(0);
-               vPois.emplace_back(startSegPOI);
-               vPois.emplace_back(endSegPOI);
+               // Rules 4b-4c are basically the same
+               const CPrecastSegmentData* pLeftSegment = pSegment->GetPrevSegment();
+               const CClosureJointData* pLeftClosure = pSegment->GetClosureJoint(pgsTypes::metStart);
+               const CTemporarySupportData* pLeftClosureSupport = pLeftClosure ? pLeftClosure->GetTemporarySupport() : nullptr;
+               const CPrecastSegmentData* pRightSegment = pSegment->GetNextSegment();
+               const CClosureJointData* pRightClosure = pSegment->GetClosureJoint(pgsTypes::metEnd);
+               const CTemporarySupportData* pRightClosureSupport = pRightClosure ? pRightClosure->GetTemporarySupport() : nullptr;
+
+               if (dropInType == pgsTypes::ditYesFreeBothEnds)
+               {
+                  ATLASSERT(pLeftClosureSupport&& pRightClosureSupport); 
+                  PoiList vSupportPoi;
+                  pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_ERECTED_SEGMENT, &vSupportPoi);
+                  vPoi.emplace_back(vSupportPoi.front());
+                  vSupportPoi.clear();
+                  pPoi->GetPointsOfInterest(segmentKey, POI_10L | POI_ERECTED_SEGMENT, &vSupportPoi);
+                  vPoi.emplace_back(vSupportPoi.front());
+               }
+               else if (dropInType == pgsTypes::ditYesFreeEndEnd)
+               {
+                  ATLASSERT(pRightClosureSupport);
+                  if (vTSTowers.front()->GetClosureJoint(segmentKey.girderIndex))
+                  {
+                     PoiList vSupportPoi;
+                     pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_ERECTED_SEGMENT, &vSupportPoi);
+                     vPoi.emplace_back(vSupportPoi.front());
+                  }
+                  else
+                  {
+                     vPoi.emplace_back(pPoi->GetTemporarySupportPointOfInterest(segmentKey, vTSTowers.front()->GetIndex()));
+                  }
+
+                  PoiList vSupportPoi;
+                  pPoi->GetPointsOfInterest(segmentKey, POI_10L | POI_ERECTED_SEGMENT, &vSupportPoi);
+                  vPoi.emplace_back(vSupportPoi.front());
+               }
+               else if (dropInType == pgsTypes::ditYesFreeStartEnd)
+               {
+                  ATLASSERT(pLeftClosureSupport);
+                  PoiList vSupportPoi;
+                  pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_ERECTED_SEGMENT, &vSupportPoi);
+                  vPoi.emplace_back(vSupportPoi.front());
+
+                  if (vTSTowers.back()->GetClosureJoint(segmentKey.girderIndex))
+                  {
+                     PoiList vSupportPoi;
+                     pPoi->GetPointsOfInterest(segmentKey, POI_10L | POI_ERECTED_SEGMENT, &vSupportPoi);
+                     vPoi.emplace_back(vSupportPoi.front());
+                  }
+                  else
+                  {
+                     vPoi.push_back(pPoi->GetTemporarySupportPointOfInterest(segmentKey, vTSTowers.back()->GetIndex()));
+                  }
+               }
+               else // fixed at both ends
+               {
+                  ATLASSERT(nTowers>1); // need to look if this is really a case. Make arbitrary selection
+                  PoiList vSupportPoi;
+                  pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_ERECTED_SEGMENT, &vSupportPoi);
+                  vPoi.emplace_back(vSupportPoi.front());
+                  vSupportPoi.clear();
+                  pPoi->GetPointsOfInterest(segmentKey, POI_10L | POI_ERECTED_SEGMENT, &vSupportPoi);
+                  vPoi.emplace_back(vSupportPoi.front());
+               }
             }
          }
-      }
-      else if (1 < numRigid)
-      {
-         // 2 or more rigid supports under segment. Sort them and find which 2 are our datum locations
-         PoiList listRigidPois;
-         MakePoiList(vRigidPois, &listRigidPois);
-         pPoi->SortPoiList(&listRigidPois);
 
-         vPois.emplace_back(listRigidPois.front());
-         vPois.emplace_back(listRigidPois.back());
+         return vPoi;
       }
-
-      return vPois;
    }
 }
 

@@ -575,6 +575,70 @@ pgsTypes::DropInType CPrecastSegmentData::IsDropIn() const
          }
       }
    }
+   else if (nPiers == 1 && nTowers == 1 && nStrongBacks == 0)
+   {
+      // segment is supported only by one pier and one tower...
+      // it could be a "drop-in" in the sense that one Free end is suspended by the adjacent segment that has full fixity at the tower end 
+      const CPierData2* pPier1;
+      const CTemporarySupportData* pTS1;
+      GetSupport(pgsTypes::metStart, &pPier1, &pTS1);
+
+      const CPierData2* pPier2;
+      const CTemporarySupportData* pTS2;
+      GetSupport(pgsTypes::metEnd, &pPier2, &pTS2);
+
+      // Determine which end is free
+      if (pPier1 != nullptr && pTS2 != nullptr)
+      {
+         // pier on left, tower on right. See if adjacent segment at tower is fixed
+         ATLASSERT(pTS2->GetSupportType() == pgsTypes::ErectionTower);
+         if (pTS2->GetClosureJoint(0) != nullptr )
+         {
+            // consider segment stabley fixed if adequate rigid supports
+            const CPrecastSegmentData* pNextSeg = this->GetNextSegment();
+            const std::vector<const CPierData2*> vPiers = pNextSeg->GetPiers();
+            IndexType nNextPiers = vPiers.size();
+            if (nNextPiers > 1)
+            {
+               return pgsTypes::ditYesFreeEndEnd; // 2 or more piers will fix adjacent segment
+            }
+            else if (nNextPiers==1)
+            {
+               std::vector<const CTemporarySupportData*> vTS = pNextSeg->GetTemporarySupports();
+               vTS.erase(std::remove_if(vTS.begin(), vTS.end(), RemoveStrongbacksSupports), vTS.end());
+               if (vTS.size() > 1)
+               {
+                  return pgsTypes::ditYesFreeEndEnd; // 1 pier plus 2 or more towers will fix segment
+               }
+            }
+         }
+      }
+      else if (pPier2 != nullptr && pTS1 != nullptr)
+      {
+         // pier on right, tower on left
+         ATLASSERT(pTS1->GetSupportType() == pgsTypes::ErectionTower);
+         if (pTS1->GetClosureJoint(0) != nullptr)
+         {
+            // consider segment stabley fixed if adequate rigid supports
+            const CPrecastSegmentData* pPrevSeg = this->GetPrevSegment();
+            const std::vector<const CPierData2*> vPiers = pPrevSeg->GetPiers();
+            IndexType nPrevPiers = vPiers.size();
+            if (nPrevPiers > 1)
+            {
+               return pgsTypes::ditYesFreeStartEnd; // 2 or more piers will fix adjacent segment
+            }
+            else if (nPrevPiers == 1)
+            {
+               std::vector<const CTemporarySupportData*> vTS = pPrevSeg->GetTemporarySupports();
+               vTS.erase(std::remove_if(vTS.begin(), vTS.end(), RemoveStrongbacksSupports), vTS.end());
+               if (vTS.size() > 1)
+               {
+                  return pgsTypes::ditYesFreeStartEnd; // 1 pier plus 2 or more towers will fix segment
+               }
+            }
+         }
+      }
+   }
    else if (nPiers == 0 && nTowers == 1 && nStrongBacks >= 1)
    {
       // segment is supported only by one erection tower and one strongback...

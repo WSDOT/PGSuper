@@ -2954,7 +2954,7 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
                const CPrecastSegmentData* prevSeg = pSegment->GetPrevSegment();
                ATLASSERT(prevSeg);
                PoiList endPois;
-               pPoi->GetPointsOfInterest(prevSeg->GetSegmentKey(), POI_END_FACE, &endPois);
+               pPoi->GetPointsOfInterest(prevSeg->GetSegmentKey(), POI_10L | POI_ERECTED_SEGMENT, &endPois);
 
                Float64 DyDropinStart = GetDeflection(offsetInterval, pfType, endPois.front(), bat, rtCumulative);
                DyStart -= DyDropinStart;
@@ -2965,7 +2965,7 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
                const CPrecastSegmentData* nextSeg = pSegment->GetNextSegment();
                ATLASSERT(nextSeg);
                PoiList endPois;
-               pPoi->GetPointsOfInterest(nextSeg->GetSegmentKey(), POI_START_FACE, &endPois);
+               pPoi->GetPointsOfInterest(nextSeg->GetSegmentKey(), POI_0L | POI_ERECTED_SEGMENT, &endPois);
 
                Float64 DyDropinEnd = GetDeflection(offsetInterval, pfType, endPois.front(), bat, rtCumulative);
                DyEnd -= DyDropinEnd;
@@ -3202,7 +3202,7 @@ std::vector<Float64> CAnalysisAgentImp::GetPermanentGirderDeflectionFromStorage(
             CSegmentKey prevSegKey = prevSeg->GetSegmentKey();
 
             PoiList endPois;
-            pPoi->GetPointsOfInterest(prevSeg->GetSegmentKey(), POI_END_FACE, &endPois);
+            pPoi->GetPointsOfInterest(prevSeg->GetSegmentKey(), POI_10L | POI_ERECTED_SEGMENT, &endPois);
 
             Float64 DyDropinStart = GetPermanentGirderDeflectionFromStorage(sagint, bat, endPois).front();
             DyStart -= DyDropinStart;
@@ -3216,7 +3216,7 @@ std::vector<Float64> CAnalysisAgentImp::GetPermanentGirderDeflectionFromStorage(
             CSegmentKey nextSegKey = nextSeg->GetSegmentKey();
 
             PoiList endPois;
-            pPoi->GetPointsOfInterest(nextSeg->GetSegmentKey(), POI_START_FACE, &endPois);
+            pPoi->GetPointsOfInterest(nextSeg->GetSegmentKey(), POI_0L | POI_ERECTED_SEGMENT, &endPois);
 
             Float64 DyDropinEnd = GetPermanentGirderDeflectionFromStorage(sagint, bat, endPois).front();
             DyEnd -= DyDropinEnd;
