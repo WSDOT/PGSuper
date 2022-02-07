@@ -307,6 +307,12 @@ IDType CAnalysisResultsGraphController::SelectedGraphIndexToGraphID(IndexType gr
    }
 }
 
+bool CAnalysisResultsGraphController::ShowBeamBelowGraph() const
+{
+   // only put beam below graph for deflection results
+   return this->GetActionType() == actionDeflection || this->GetActionType() == actionXDeflection;
+}
+
 IndexType CAnalysisResultsGraphController::GetGraphTypeCount() const
 {
    CComboBox* pcbLoading = (CComboBox*)GetDlgItem(IDC_DROP_LIST);

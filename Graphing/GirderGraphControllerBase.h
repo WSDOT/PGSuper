@@ -41,6 +41,9 @@ public:
    void ShowBeam(bool bShow);
    bool ShowBeam() const;
 
+   // Sometimes we want to show the beam below our graph
+   virtual bool ShowBeamBelowGraph() const = 0;
+
    // called by the framework when the view's OnUpdate method is called
    virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
 

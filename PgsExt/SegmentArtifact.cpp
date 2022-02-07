@@ -671,7 +671,7 @@ Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength(pgsTypes::StressT
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
 
    Float64 fc_reqd = 0;
 

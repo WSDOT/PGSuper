@@ -44,6 +44,11 @@ public:
    void SetStyle(DWORD dwStyle);
    DWORD GetStyle() const;
 
+   // Keep deep beams from drawing too high. Beam will draw to scale until Length/Height is less than this 
+   // value, then scale depth to fit into this aspect ratio
+   void SetMinAspectRatio(Float64 ratio);
+   Float64 GetMinAspectRatio() const;
+
    // Draws the beam
    // graphMapper is the point mapper used to draw the graph. 
    // pUnitConverter is used to convert X-axis values into display units. Use the same unit converter as the graph
@@ -55,7 +60,12 @@ public:
    // GET_IFACE(IPointOfInterest,pPoi);
    // Float64 beamShift = -1*pPoi->ConvertPoiToGirderlineCoordinate(pgsPointOfInterest(segmentKey,0.0));
 
-   void DrawBeam(IBroker* pBroker,CDC* pDC,const grlibPointMapper& graphMapper,arvPhysicalConverter* pUnitConverter, IntervalIndexType firstPlottingIntervalIdx, IntervalIndexType lastPlottingIntervalIdx,const CGirderKey& girderKey,Float64 beamShift);
+   void DrawBeam(IBroker* pBroker,CDC* pDC,const grlibPointMapper& beamMapper,arvPhysicalConverter* pUnitConverter, IntervalIndexType firstPlottingIntervalIdx, IntervalIndexType lastPlottingIntervalIdx,const CGirderKey& girderKey,Float64 beamShift);
+
+   // Support size in device coord's
+   CSize GetSupportSize(CDC* pDC) const;
+
+   grlibPointMapper CreatePointMapperAtGraphZero(const grlibPointMapper& graphMapper) const;
 
 protected:
    IBroker* m_pBroker;
@@ -64,6 +74,9 @@ protected:
    CSize m_SupportSize;
 
    DWORD m_dwStyle;
+   Float64 m_MinAspectRatio;
+
+   Float64 m_YScaleFac; // Scale Y values so we fit within the given min aspect ratio
 
    void DrawSegment(Float64 beamShift, IntervalIndexType intervalIdx, bool bIsHaulingInterval,const CSegmentKey& segmentKey, IIntervals* pIntervals, IGirder* pIGirder, IPointOfInterest* pPoi, const grlibPointMapper& mapper, CDC* pDC);
    void DrawClosureJoint(Float64 beamShift, IntervalIndexType intervalIdx, const CClosureKey& closureKey, IIntervals* pIntervals, IGirder* pIGirder, IPointOfInterest* pPoi, const grlibPointMapper& mapper, CDC* pDC);

@@ -64,6 +64,8 @@ protected:
    int GetSectionPropertyControlID(pgsTypes::SectionPropertyType type);
    pgsTypes::SectionPropertyType GetSectionPropertyType(int nIDC);
 
+   virtual bool ShowBeamBelowGraph() const override { return false; }
+
 #ifdef _DEBUG
 public:
    void AssertValid() const;

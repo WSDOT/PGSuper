@@ -85,6 +85,9 @@ public:
 
    IDType SelectedGraphIndexToGraphID(IndexType graphIdx);
 
+   virtual bool ShowBeamBelowGraph() const override;
+
+
 protected:
    CWideDropDownComboBox m_cbDropList;
 

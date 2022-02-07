@@ -43,6 +43,7 @@ static char THIS_FILE[] = __FILE__;
 CDrawBeamTool::CDrawBeamTool()
 {
    m_dwStyle = DBS_ERECTED_SEGMENTS_ONLY;
+   m_MinAspectRatio = 1.0;
 }
 
 CDrawBeamTool::~CDrawBeamTool()
@@ -59,7 +60,17 @@ DWORD CDrawBeamTool::GetStyle() const
    return m_dwStyle;
 }
 
-void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC, const grlibPointMapper& graphMapper,arvPhysicalConverter* pUnitConverter,IntervalIndexType firstPlottingIntervalIdx,IntervalIndexType lastPlottingIntervalIdx,const CGirderKey& girderKey,Float64 beamShift)
+void CDrawBeamTool::SetMinAspectRatio(Float64 ratio)
+{
+   m_MinAspectRatio = ratio;
+}
+
+Float64 CDrawBeamTool::GetMinAspectRatio() const
+{
+   return m_MinAspectRatio;
+}
+
+void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC, const grlibPointMapper& mapper,arvPhysicalConverter* pUnitConverter,IntervalIndexType firstPlottingIntervalIdx,IntervalIndexType lastPlottingIntervalIdx,const CGirderKey& girderKey,Float64 beamShift)
 {
    m_pBroker = pBroker;
    m_pUnitConverter = pUnitConverter;
@@ -89,47 +100,41 @@ void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC, const grlibPointMapper& 
       bIsPermanentInterval = false;
    }
 
-   //
-   // re-configure mapper so beam height draws with same scale as beam length
-   //
-   grlibPointMapper mapper(graphMapper);
-
-   // get device point at World (0,0)
-   LONG x,y;
-   mapper.WPtoDP(0,0,&x,&y);
-
-   // Get world extents and world origin
-   gpSize2d wExt  = mapper.GetWorldExt();
-   gpPoint2d wOrg = mapper.GetWorldOrg();
-   
-   // get device extents and device origin
-   LONG dx,dy;
-   mapper.GetDeviceExt(&dx,&dy);
-
-   LONG dox,doy;
-   mapper.GetDeviceOrg(&dox,&doy);
-
-   // compute a new device origin in the y direction
-   doy = (LONG)Round(y - (0.0 - wOrg.Y())*((Float64)(dx)/-wExt.Dx()));
-
-   // change the y scaling (use same scaling as X direction)
-   mapper.SetWorldExt(wExt.Dx(),wExt.Dx());
-   mapper.SetDeviceExt(dx,dx);
-
-   // change the device origin
-   mapper.SetDeviceOrg(dox,doy);
-
-   // beam will now draw to scale
-
-#pragma Reminder("UPDATE: printing sizes should be based on printer properties")
-   if (pDC->IsPrinting())
+   // Get maximum beam depth along girder. Assume max height occurs at a pier
+   GET_IFACE(ISectionProperties, pSectProp);
+   Float64 beamDepth = 0.0;
+   Float64 beamLength = 0.0;
+   for (const auto& thisGirderKey : vGirderKeys)
    {
-      m_SupportSize = CSize(20,20);
+      beamLength += pBridge->GetGirderLength(thisGirderKey);
+
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(thisGirderKey.groupIndex);
+      const CSplicedGirderData* pGirder = pGroup->GetGirder(thisGirderKey.girderIndex);
+      SegmentIndexType nSegments = pGirder->GetSegmentCount();
+      for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+      {
+         const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+         const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
+
+         const std::vector<const CPierData2*> piers = pSegment->GetPiers();
+         for (const auto& pPier : piers)
+         {
+            Float64 segdep = pSectProp->GetSegmentHeightAtPier(segmentKey, pPier->GetIndex());
+            beamDepth = max(beamDepth, segdep);
+         }
+      }
    }
-   else
+
+   Float64 beamAspectRatio = beamLength / beamDepth;
+
+   // if beam length/depth is smaller than min we need to scale down Y to bring it into range
+   m_YScaleFac = 1.0;
+   if (beamAspectRatio < m_MinAspectRatio)
    {
-      m_SupportSize = CSize(5,5);
+      m_YScaleFac = beamAspectRatio / m_MinAspectRatio;
    }
+
+   m_SupportSize = GetSupportSize(pDC);
 
    //
    // Draw the segments
@@ -202,6 +207,54 @@ void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC, const grlibPointMapper& 
          }
       }
    } // end of group loop
+}
+
+CSize CDrawBeamTool::GetSupportSize(CDC* pDC) const
+{
+#pragma Reminder("UPDATE: printing sizes should be based on printer properties")
+   if (pDC->IsPrinting())
+   {
+      return CSize(20, 20);
+   }
+   else
+   {
+      return CSize(5, 5);
+   }
+}
+
+grlibPointMapper CDrawBeamTool::CreatePointMapperAtGraphZero(const grlibPointMapper& graphMapper) const
+{
+   //
+   // re-configure mapper so beam height draws with same scale as beam length
+   //
+   grlibPointMapper mapper(graphMapper);
+
+   // get device point at World (0,0)
+   LONG x, y;
+   mapper.WPtoDP(0, 0, &x, &y);
+
+   // Get world extents and world origin
+   gpSize2d wExt = mapper.GetWorldExt();
+   gpPoint2d wOrg = mapper.GetWorldOrg();
+
+   // get device extents and device origin
+   LONG dx, dy;
+   mapper.GetDeviceExt(&dx, &dy);
+
+   LONG dox, doy;
+   mapper.GetDeviceOrg(&dox, &doy);
+
+   // compute a new device origin in the y direction
+   doy = (LONG)Round(y - (0.0 - wOrg.Y()) * ((Float64)(dx) / -wExt.Dx()));
+
+   // change the y scaling (use same scaling as X direction)
+   mapper.SetWorldExt(wExt.Dx(), wExt.Dx());
+   mapper.SetDeviceExt(dx, dx);
+
+   // change the device origin
+   mapper.SetDeviceOrg(dox, doy);
+
+   return mapper;
 }
 
 Float64 CDrawBeamTool::ComputeGirderShift(const CGirderKey& girderKey)
@@ -294,6 +347,7 @@ void CDrawBeamTool::DrawSegment(Float64 beamShift, IntervalIndexType intervalIdx
 
       Float64 X = m_pUnitConverter->Convert(Xgl + beamShift);
       Float64 Y = m_pUnitConverter->Convert(y); // use the X-converter so the height of the beam is scaled the same as the length
+      Y *= m_YScaleFac;
 
       mapper.WPtoDP(X, Y, &pnts[idx].x, &pnts[idx].y);
    }
@@ -345,6 +399,7 @@ void CDrawBeamTool::DrawClosureJoint(Float64 beamShift, IntervalIndexType interv
 
       Float64 X = m_pUnitConverter->Convert(Xgl + beamShift);
       Float64 Y = m_pUnitConverter->Convert(y); // use the X-converter so the height of the beam is scaled the same as the length
+      Y *= m_YScaleFac;
 
       mapper.WPtoDP(X, Y, &pnts[idx].x, &pnts[idx].y);
    }
@@ -410,6 +465,7 @@ void CDrawBeamTool::DrawSegmentEndSupport(Float64 beamShift, IntervalIndexType i
    GET_IFACE(ISectionProperties,pSectProp);
    Float64 sectionHeight = pSectProp->GetHg(pIntervals->GetPrestressReleaseInterval(segmentKey),poiCLBrg);
    Float64 H = m_pUnitConverter->Convert(sectionHeight);
+   H *= m_YScaleFac;
 
    CPoint p;
    mapper.WPtoDP(X,-H,&p.x,&p.y);
@@ -661,6 +717,8 @@ CPoint CDrawBeamTool::GetPierPoint(Float64 beamShift, IntervalIndexType interval
    CPoint p;
    Float64 X = m_pUnitConverter->Convert(Xgl + beamShift);
    Float64 H = m_pUnitConverter->Convert(sectionHeight);
+   H *= m_YScaleFac;
+
    mapper.WPtoDP(X, -H, &p.x, &p.y);
 
    return p;
@@ -723,6 +781,8 @@ CPoint CDrawBeamTool::GetTemporarySupportPoint(Float64 beamShift, IntervalIndexT
    CPoint p;
    Float64 X = m_pUnitConverter->Convert(Xgl + beamShift);
    Float64 H = m_pUnitConverter->Convert(sectionHeight);
+   H *= m_YScaleFac;
+
    mapper.WPtoDP(X, -H, &p.x, &p.y);
 
    return p;
@@ -746,6 +806,7 @@ void CDrawBeamTool::DrawStrongBack(const CGirderKey& girderKey,const CTemporaryS
    GET_IFACE(ISectionProperties,pSectProp);
    Float64 sectionHeight = pSectProp->GetSegmentHeightAtTemporarySupport(leftSegmentKey,pTS->GetIndex());
    Float64 H = m_pUnitConverter->Convert(sectionHeight);
+   H *= m_YScaleFac;
 
    CPoint hp0,hp1;
    mapper.WPtoDP(0,0,&hp0.x,&hp0.y);
@@ -862,6 +923,7 @@ void CDrawBeamTool::DrawTendons(Float64 beamShift,IntervalIndexType intervalIdx,
 
             Float64 WX = m_pUnitConverter->Convert(x + beamShift + tendonShift + segment_tendon_shift);
             Float64 WY = m_pUnitConverter->Convert(y);
+            WY *= m_YScaleFac;
 
             LONG DX, DY;
             mapper.WPtoDP(WX, WY, &DX, &DY);
@@ -907,6 +969,7 @@ void CDrawBeamTool::DrawTendons(Float64 beamShift,IntervalIndexType intervalIdx,
 
          Float64 WX = m_pUnitConverter->Convert(x+beamShift+tendonShift);
          Float64 WY = m_pUnitConverter->Convert(y);
+         WY *= m_YScaleFac;
 
          LONG DX, DY;
          mapper.WPtoDP(WX,WY,&DX,&DY);

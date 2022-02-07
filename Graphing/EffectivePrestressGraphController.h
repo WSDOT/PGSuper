@@ -54,6 +54,8 @@ public:
 
    virtual IntervalIndexType GetFirstInterval() override;
 
+   virtual bool ShowBeamBelowGraph() const override { return false; }
+
 protected:
 
    virtual BOOL OnInitDialog() override;
