@@ -1,7 +1,7 @@
 REM - Script to prepare for Release
 
 SET BINTARGET=bin
-SET REGFREECOM=\ARP\BridgeLink\RegFreeCOM
+SET REGFREECOM=%ARPDIR%\BridgeLink\RegFreeCOM
 
 
 REM - COM DLLs

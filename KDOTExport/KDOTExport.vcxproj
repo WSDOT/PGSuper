@@ -59,7 +59,7 @@
     <_ProjectFileVersion>14.0.25431.1</_ProjectFileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(ARPDIR)\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
@@ -67,7 +67,7 @@
     <CodeAnalysisRuleAssemblies />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(ARPDIR)\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
     <LinkIncremental>true</LinkIncremental>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
@@ -83,13 +83,13 @@
       <GenSerialization>true</GenSerialization>
     </CXX_Tree_Mapping_Rule>
     <Midl>
-      <AdditionalIncludeDirectories>$(PGSUPERDIR)\Include\Plugins;$(WBFLDIR)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ARPDIR)\PGSuper\Include\Plugins;$(ARPDIR)\WBFL\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TargetEnvironment>X64</TargetEnvironment>
       <TypeLibraryName>.\Release/KDOTExport.tlb</TypeLibraryName>
       <HeaderFileName />
     </Midl>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(PGSUPERDIR)\Include\;$(PGSUPERDIR)\Include\$(Platform);$(PGSUPERDIR)\Include\Plugins;$(WBFLDIR)\Include;$(WBFLDIR)\Include\$(Platform);$(BRIDGELINKDIR)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ARPDIR)\PGSuper\Include\;$(ARPDIR)\PGSuper\Include\$(Platform);$(ARPDIR)\PGSuper\Include\Plugins;$(ARPDIR)\WBFL\Include;$(ARPDIR)\WBFL\Include\$(Platform);$(ARPDIR)\BridgeLink\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -109,10 +109,10 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>$(WBFLDIR)\Apache\XERCESCPKG-31-X64-VC100\lib\xerces-c_3.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(ARPDIR)\WBFL\Apache\XERCESCPKG-31-X64-VC100\lib\xerces-c_3.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>$(WBFLDIR)\RegFreeCOM\$(Platform)\$(Configuration);$(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ARPDIR)\WBFL\RegFreeCOM\$(Platform)\$(Configuration);$(ARPDIR)\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\KDOTExport.def</ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -136,7 +136,7 @@
       <GenSerialization>true</GenSerialization>
     </CXX_Tree_Mapping_Rule>
     <Midl>
-      <AdditionalIncludeDirectories>$(PGSUPERDIR)\Include\Plugins;$(WBFLDIR)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ARPDIR)\PGSuper\Include\Plugins;$(ARPDIR)\WBFL\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TargetEnvironment>X64</TargetEnvironment>
       <TypeLibraryName>.\Debug/KDOTExport.tlb</TypeLibraryName>
       <HeaderFileName />
@@ -144,7 +144,7 @@
     <ClCompile>
       <AdditionalOptions>/Zm500  %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(PGSUPERDIR)\Include\;$(PGSUPERDIR)\Include\$(Platform);$(PGSUPERDIR)\Include\Plugins;$(WBFLDIR)\Include;$(WBFLDIR)\Include\$(Platform);$(BRIDGELINKDIR)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ARPDIR)\PGSuper\Include\;$(ARPDIR)\PGSuper\Include\$(Platform);$(ARPDIR)\PGSuper\Include\Plugins;$(ARPDIR)\WBFL\Include;$(ARPDIR)\WBFL\Include\$(Platform);$(ARPDIR)\BridgeLink\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -164,10 +164,10 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>$(WBFLDIR)\Apache\XERCESCPKG-31-X64-VC100\lib\xerces-c_3D.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(ARPDIR)\WBFL\Apache\XERCESCPKG-31-X64-VC100\lib\xerces-c_3D.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>$(WBFLDIR)\RegFreeCOM\$(Platform)\$(Configuration);$(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ARPDIR)\WBFL\RegFreeCOM\$(Platform)\$(Configuration);$(ARPDIR)\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\KDOTExport.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>

@@ -6,11 +6,11 @@
   <PropertyGroup>
     <SourcePath>$(SourcePath)</SourcePath>
     <ExecutablePath>$(ExecutablePath)</ExecutablePath>
-    <IncludePath>$(PGSUPERDIR)\Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ARPDIR)\PGSuper\Include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <Link>
-      <AdditionalLibraryDirectories>$(BRIDGELINKDIR)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ARPDIR)\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup />

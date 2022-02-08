@@ -10,8 +10,8 @@ SET PGSUPER_TEMPLATE_EXTENSION=PGT
 del %PGSUPER_TARGET%\WSDOT.*
 del %PGSUPER_TARGET%\AASHTO.*
 
-\ARP\BridgeLink\RegFreeCOM\x64\Release\makepgz.exe %PGSUPER_TARGET%\WSDOT.pgz  \ARP\PGSuper\Configurations\WSDOT.lbr  \ARP\PGSuper\Configurations\PGSuper\WSDOT   %PGSUPER_TEMPLATE_EXTENSION%
-\ARP\BridgeLink\RegFreeCOM\x64\Release\makepgz.exe %PGSUPER_TARGET%\AASHTO.pgz \ARP\PGSuper\Configurations\AASHTO.lbr \ARP\PGSuper\Configurations\PGSuper\AASHTO  %PGSUPER_TEMPLATE_EXTENSION%
+%ARPDIR%\BridgeLink\RegFreeCOM\x64\Release\makepgz.exe %PGSUPER_TARGET%\WSDOT.pgz  %ARPDIR%\PGSuper\Configurations\WSDOT.lbr  %ARPDIR%\PGSuper\Configurations\PGSuper\WSDOT   %PGSUPER_TEMPLATE_EXTENSION%
+%ARPDIR%\BridgeLink\RegFreeCOM\x64\Release\makepgz.exe %PGSUPER_TARGET%\AASHTO.pgz %ARPDIR%\PGSuper\Configurations\AASHTO.lbr %ARPDIR%\PGSuper\Configurations\PGSuper\AASHTO  %PGSUPER_TEMPLATE_EXTENSION%
 
 REM -------------------------------------------
 REM - Publish PGSplice Configurations
@@ -23,6 +23,6 @@ SET PGSPLICE_TEMPLATE_EXTENSION=SPT
 
 del %PGSPLICE_TARGET%\WSDOT.*
 
-\ARP\BridgeLink\RegFreeCOM\x64\Release\makepgz.exe %PGSPLICE_TARGET%\WSDOT.pgz  \ARP\PGSuper\Configurations\WSDOT.lbr  \ARP\PGSuper\Configurations\PGSplice\WSDOT  %PGSPLICE_TEMPLATE_EXTENSION%
+%ARPDIR%\BridgeLink\RegFreeCOM\x64\Release\makepgz.exe %PGSPLICE_TARGET%\WSDOT.pgz  %ARPDIR%\PGSuper\Configurations\WSDOT.lbr  %ARPDIR%\PGSuper\Configurations\PGSplice\WSDOT  %PGSPLICE_TEMPLATE_EXTENSION%
 
-copy \ARP\PGSuper\Configurations\LibraryInfo.html \\wsdot\Resources\Topics\Publish\Web\ProdCF\EESC\Bridge\software\PGSuper\
+copy %ARPDIR%\PGSuper\Configurations\LibraryInfo.html \\wsdot\Resources\Topics\Publish\Web\ProdCF\EESC\Bridge\software\PGSuper\
