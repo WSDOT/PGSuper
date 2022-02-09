@@ -9,9 +9,11 @@ SET PGSUPER_TEMPLATE_EXTENSION=PGT
 
 del %PGSUPER_TARGET%\WSDOT.*
 del %PGSUPER_TARGET%\AASHTO.*
+del %PGSUPER_TARGET%\PCI_UHPC.*
 
 %ARPDIR%\BridgeLink\RegFreeCOM\x64\Release\makepgz.exe %PGSUPER_TARGET%\WSDOT.pgz  %ARPDIR%\PGSuper\Configurations\WSDOT.lbr  %ARPDIR%\PGSuper\Configurations\PGSuper\WSDOT   %PGSUPER_TEMPLATE_EXTENSION%
 %ARPDIR%\BridgeLink\RegFreeCOM\x64\Release\makepgz.exe %PGSUPER_TARGET%\AASHTO.pgz %ARPDIR%\PGSuper\Configurations\AASHTO.lbr %ARPDIR%\PGSuper\Configurations\PGSuper\AASHTO  %PGSUPER_TEMPLATE_EXTENSION%
+%ARPDIR%\BridgeLink\RegFreeCOM\x64\Release\makepgz.exe %PGSUPER_TARGET%\PCI_UHPC.pgz %ARPDIR%\PGSuper\Configurations\PCI_UHPC.lbr %ARPDIR%\PGSuper\Configurations\PGSuper\PCI_UHPC  %PGSUPER_TEMPLATE_EXTENSION%
 
 REM -------------------------------------------
 REM - Publish PGSplice Configurations
