@@ -309,8 +309,7 @@ IDType CAnalysisResultsGraphController::SelectedGraphIndexToGraphID(IndexType gr
 
 bool CAnalysisResultsGraphController::ShowBeamBelowGraph() const
 {
-   // only put beam below graph for deflection results
-   return this->GetActionType() == actionDeflection || this->GetActionType() == actionXDeflection;
+   return true;
 }
 
 IndexType CAnalysisResultsGraphController::GetGraphTypeCount() const
