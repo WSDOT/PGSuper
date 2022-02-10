@@ -30,6 +30,7 @@
 #include <EAF\EAFAutoProgress.h>
 
 #include <PgsExt\BridgeDescription2.h>
+#include <PgsExt\Helpers.h>
 
 HRESULT CPGSuperProjectImporter::FinalConstruct()
 {
@@ -56,33 +57,24 @@ STDMETHODIMP CPGSuperProjectImporter::GetIcon(HICON* phIcon) const
 
 STDMETHODIMP CPGSuperProjectImporter::Import(IBroker* pBroker)
 {
-//   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   AfxMessageBox(_T("This project importer simulates importing data from an external source by creating a default bridge. A real project importer would connect to an external data source and programatically create a PGSuper model."),MB_OK);
 
-   int st = AfxMessageBox(_T("Simulate importing data from an external source by creating a default bridge. Click Yes to do it!"),MB_YESNO);
+   GET_IFACE2(pBroker,IProgress,pProgress);
+   CEAFAutoProgress ap(pProgress);
 
-   if (st==IDYES)
-   {
-      GET_IFACE2(pBroker,IProgress,pProgress);
-      CEAFAutoProgress ap(pProgress);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   pDisplayUnits->SetUnitMode(eafTypes::umUS);
 
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-      pDisplayUnits->SetUnitMode(eafTypes::umUS);
+   pProgress->UpdateMessage(_T("Building Bridge"));
+   BuildBridge(pBroker);
 
-      pProgress->UpdateMessage(_T("Building Bridge"));
-      BuildBridge(pBroker);
+   pProgress->UpdateMessage(_T("Initializing Girders"));
+   InitGirderData(pBroker);
 
-      pProgress->UpdateMessage(_T("Initializing Girders"));
-      InitGirderData(pBroker);
+   pProgress->UpdateMessage(_T("Setting Project Criteria"));
+   SetSpecification(pBroker);
 
-      pProgress->UpdateMessage(_T("Setting Project Criteria"));
-      SetSpecification(pBroker);
-
-      return S_OK;
-   }
-   else
-   {
-      return E_FAIL;
-   }
+   return S_OK;
 }
 
 void CPGSuperProjectImporter::BuildBridge(IBroker* pBroker)
@@ -95,63 +87,92 @@ void CPGSuperProjectImporter::BuildBridge(IBroker* pBroker)
    // Girder is the first girder of the first registered type
    //
 
+   // We will build our bridge using the first girder defined for the first girder family that we find
+   // 
    // get the names of the available girder families
    std::vector<std::_tstring> girderFamilyNames;
    pLibNames->EnumGirderFamilyNames(&girderFamilyNames);
-   std::vector<std::_tstring>::iterator familyIter;
-   std::_tstring strGirderFamily;
-   std::_tstring strGirderName ;
-   for ( familyIter = girderFamilyNames.begin(); familyIter != girderFamilyNames.end(); familyIter++ )
+   std::_tstring strGirderFamily, strGirderName;
+   for (const auto& familyName : girderFamilyNames)
    {
-      strGirderFamily = *familyIter;
-
-      // get the the name of one of the girders in this family
+      // find the first family that has girders defined
       std::vector<std::_tstring> names;
-      pLibNames->EnumGirderNames(strGirderFamily.c_str(), &names );
-
-      std::vector<std::_tstring>::iterator nameIter;
-      for ( nameIter = names.begin(); nameIter != names.end(); nameIter++ )
+      pLibNames->EnumGirderNames(familyName.c_str(), &names);
+      if (0 < names.size())
       {
-         strGirderName = *nameIter;
-
-         // we've got the first girder in the first family for whatever library is loaded in PGSuper
-         // force the loops to complete
-         nameIter = names.end()-1;
-         familyIter = girderFamilyNames.end()-1;
+         strGirderFamily = familyName;
+         strGirderName = names.front();
+         break;
       }
    }
 
    CBridgeDescription2 bridge;
    bridge.SetGirderFamilyName(strGirderFamily.c_str());
 
-   GirderIndexType num_girders = 5;
-   Float64 girder_spacing = ::ConvertToSysUnits(6.0,unitMeasure::Feet);
-   Float64 span_length = ::ConvertToSysUnits(100.0,unitMeasure::Feet); // set span length to 100ft
-
-   Float64 bridge_width = girder_spacing * num_girders; // overhang is half girder spacing
-
-   bridge.UseSameGirderForEntireBridge(true);
-   bridge.SetGirderName(strGirderName.c_str());
-
-   bridge.UseSameNumberOfGirdersInAllGroups(true);
-   bridge.SetGirderCount(num_girders);
-
-
+   // get the beam factory so we can get important information about the beam
    GET_IFACE2(pBroker,ILibrary,pLibrary);
    const GirderLibraryEntry* pGirderEntry = pLibrary->GetGirderEntry(strGirderName.c_str());
+
    CComPtr<IBeamFactory> beamFactory;
    pGirderEntry->GetBeamFactory(&beamFactory);
 
-   pgsTypes::SupportedBeamSpacings spacingTypes = beamFactory->GetSupportedBeamSpacings();
+   // use the same girder for the entire bridge
+   bridge.UseSameGirderForEntireBridge(true);
+   bridge.SetGirderName(strGirderName.c_str()); // set the girder name
+   bridge.SetGirderLibraryEntry(pGirderEntry); // associate it's definition
 
+   // use 5 girders per span... and all spans have the same number of girders
+   GirderIndexType num_girders = 5;
+   bridge.UseSameNumberOfGirdersInAllGroups(true);
+   bridge.SetGirderCount(num_girders);
+
+   // use the first supported beam spacing type
+   pgsTypes::SupportedBeamSpacings spacingTypes = beamFactory->GetSupportedBeamSpacings();
    pgsTypes::SupportedBeamSpacing spacingType = spacingTypes.front();
 
-   bridge.SetGirderSpacingType(spacingType);
-   bridge.SetGirderSpacing( girder_spacing  );
-   bridge.SetMeasurementType( pgsTypes::NormalToItem );
-   bridge.SetMeasurementLocation( pgsTypes::AtPierLine );
+   pgsTypes::SupportedDeckTypes deckTypes = beamFactory->GetSupportedDeckTypes(spacingType);
+   pgsTypes::SupportedDeckType deckType = deckTypes.front();
 
-   bridge.CreateFirstSpan(nullptr,nullptr,nullptr,0); // creates 2 piers and a span
+   Float64 minSpacing, maxSpacing;
+   beamFactory->GetAllowableSpacingRange(pGirderEntry->GetDimensions(),deckType,spacingType,&minSpacing,&maxSpacing);
+   Float64 girder_spacing = minSpacing;
+
+
+   bridge.SetGirderSpacingType(spacingType);
+   bridge.SetMeasurementType(pgsTypes::NormalToItem);
+   bridge.SetMeasurementLocation(pgsTypes::AtPierLine);
+
+   Float64 bridge_width = girder_spacing * num_girders; // overhang is half girder spacing
+
+   if (IsAdjacentSpacing(spacingType))
+   {
+      ATLASSERT(IsJointSpacing(spacingType));
+
+      bridge.SetGirderSpacing(girder_spacing); // girder spacing is also joint spacing for adjacent beams
+
+      std::vector<pgsTypes::TopWidthType> topWidthTypes = beamFactory->GetSupportedTopWidthTypes();
+      pgsTypes::TopWidthType topWidthType = topWidthTypes.front();
+
+      Float64 left1, right1, left2, right2;
+      beamFactory->GetAllowableTopWidthRange(topWidthType, pGirderEntry->GetDimensions(), &left1, &left2, &right1, &right2);
+
+      if (IsTopWidthSpacing(spacingType))
+      {
+         // girder spacing is the top width
+         bridge.SetGirderTopWidth(topWidthType, left1, right1);
+      }
+
+      bridge_width = num_girders * (left1 + right1) + (num_girders - 1) * girder_spacing; // girder spacing is joint width in this case
+   }
+   else
+   {
+      bridge.SetGirderSpacing(girder_spacing);
+   }
+
+   Float64 span_length = ::ConvertToSysUnits(100.0, unitMeasure::Feet); // set span length to 100ft
+
+
+   bridge.CreateFirstSpan(nullptr,nullptr,nullptr,INVALID_INDEX); // creates 2 piers and a span
    bridge.SetSpanLength(0,span_length); 
 
    bridge.SetSlabOffset(::ConvertToSysUnits(12.0,unitMeasure::Inch));
@@ -160,15 +181,6 @@ void CPGSuperProjectImporter::BuildBridge(IBroker* pBroker)
    //
    // define the bridge deck
    //
-
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(strGirderName.c_str());
-   CComPtr<IBeamFactory> factory;
-   pGdrEntry->GetBeamFactory(&factory);
-   pgsTypes::SupportedBeamSpacings beamSpacings = factory->GetSupportedBeamSpacings();
-   pgsTypes::SupportedBeamSpacing beamSpacing = beamSpacings[0];
-   pgsTypes::SupportedDeckTypes deckTypes = factory->GetSupportedDeckTypes(beamSpacing);
-   pgsTypes::SupportedDeckType deckType = deckTypes[0];
 
    CDeckPoint point;
    if (deckType==pgsTypes::sdtCompositeCIP || deckType==pgsTypes::sdtCompositeSIP)
@@ -217,7 +229,7 @@ void CPGSuperProjectImporter::BuildBridge(IBroker* pBroker)
    }
 
    deck.WearingSurface = pgsTypes::wstFutureOverlay;
-   if ( beamSpacing == pgsTypes::sbsUniformAdjacent )
+   if ( spacingType == pgsTypes::sbsUniformAdjacent )
       deck.TransverseConnectivity = pgsTypes::atcConnectedAsUnit;
 
    deck.Concrete.Fc               = ::ConvertToSysUnits(5.0,unitMeasure::KSI);
@@ -250,6 +262,7 @@ void CPGSuperProjectImporter::BuildBridge(IBroker* pBroker)
    bridge.GetLeftRailingSystem()->strExteriorRailing = strBarrierName;
    bridge.GetRightRailingSystem()->strExteriorRailing = strBarrierName;
 
+   InitTimelineManager(pBroker,bridge);
 
    /// Assign the bridge model to PGSuper
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -294,4 +307,217 @@ void CPGSuperProjectImporter::InitGirderData(IBroker* pBroker)
          }
       }
    }
+}
+
+void CPGSuperProjectImporter::InitTimelineManager(IBroker* pBroker, CBridgeDescription2& bridge)
+{
+   // NOTE: The actual timing doesn't matter since we aren't doing a true time-step analysis
+   // We will just use reasonable times so the sequence is correct
+   CTimelineManager timelineMgr;
+
+   GET_IFACE2(pBroker, ILibrary, pLib);
+   GET_IFACE2(pBroker, ISpecification, pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+
+   // get a list of all the segment IDs. it is needed in a couple locations below
+   std::set<SegmentIDType> segmentIDs;
+   GroupIndexType nGroups = bridge.GetGirderGroupCount();
+   for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
+   {
+      const CGirderGroupData* pGroup = bridge.GetGirderGroup(grpIdx);
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+      for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
+      {
+         const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+         SegmentIndexType nSegments = pGirder->GetSegmentCount();
+         for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+         {
+            const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+            SegmentIDType segmentID = pSegment->GetID();
+            std::pair<std::set<SegmentIDType>::iterator, bool> result = segmentIDs.insert(segmentID);
+            ATLASSERT(result.second == true);
+         }
+      }
+   }
+
+   // Casting yard stage... starts at day 0 when strands are stressed
+   // The activities in this stage includes prestress release, lifting and storage
+   std::unique_ptr<CTimelineEvent> pTimelineEvent = std::make_unique<CTimelineEvent>();
+   pTimelineEvent->SetDay(0);
+   pTimelineEvent->SetDescription(_T("Construct Girders, Erect Piers"));
+   pTimelineEvent->GetConstructSegmentsActivity().Enable();
+   pTimelineEvent->GetConstructSegmentsActivity().SetTotalCuringDuration(::ConvertFromSysUnits(pSpecEntry->GetXferTime(), unitMeasure::Day));
+   pTimelineEvent->GetConstructSegmentsActivity().SetRelaxationTime(::ConvertFromSysUnits(pSpecEntry->GetXferTime(), unitMeasure::Day));
+   pTimelineEvent->GetConstructSegmentsActivity().AddSegments(segmentIDs);
+
+   // assume piers are erected at the same time girders are being constructed
+   pTimelineEvent->GetErectPiersActivity().Enable();
+   PierIndexType nPiers = bridge.GetPierCount();
+   for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
+   {
+      const CPierData2* pPier = bridge.GetPier(pierIdx);
+      PierIDType pierID = pPier->GetID();
+      pTimelineEvent->GetErectPiersActivity().AddPier(pierID);
+   }
+
+   EventIndexType eventIdx;
+   timelineMgr.AddTimelineEvent(pTimelineEvent.release(), true, &eventIdx);
+
+   // Erect girders. It is assumed that girders are transported, erected, and temporary strands 
+   // are removed all on the same day. Assuming max construction sequence (D120). The actual
+   // don't matter unless the user switches to time-step analysis.
+   pTimelineEvent = std::make_unique<CTimelineEvent>();
+   Float64 day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration1Max(), unitMeasure::Day);
+   Float64 maxDay = 28.0;
+   day = Max(day, maxDay);
+   maxDay += 1.0;
+   pTimelineEvent->SetDay(day);
+   pTimelineEvent->SetDescription(_T("Erect Girders"));
+   pTimelineEvent->GetErectSegmentsActivity().Enable();
+   pTimelineEvent->GetErectSegmentsActivity().AddSegments(segmentIDs);
+   timelineMgr.AddTimelineEvent(pTimelineEvent.get(), true, &eventIdx);
+   maxDay = pTimelineEvent->GetDay();
+   pTimelineEvent.release();
+
+   pgsTypes::SupportedDeckType deckType = bridge.GetDeckDescription()->GetDeckType();
+
+   Float64 deck_diaphragm_curing_duration = 0; // we assume composite deck locks in creep deflections. Girder creep occurs over the curing duration. Set the duration to 0 day to avoid creep deflection
+   if (IsNonstructuralDeck(deckType))
+   {
+      // deck is non-composite or there is no deck so creep can continue
+      deck_diaphragm_curing_duration = Min(::ConvertFromSysUnits(pSpecEntry->GetTotalCreepDuration() - pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day), 28.0);
+   }
+
+   if (IsJointSpacing(bridge.GetGirderSpacingType()) && bridge.HasStructuralLongitudinalJoints())
+   {
+      // No deck
+      // 1) Diaphragms
+      // 2) Joints
+
+      // deck or overlay
+      // 1) Diaphragms
+      // 2) Joints
+      // 3) Deck
+      pTimelineEvent = std::make_unique<CTimelineEvent>();
+      day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
+      day = Max(day, maxDay);
+      pTimelineEvent->SetDay(day);
+      pTimelineEvent->SetDescription(_T("Cast Diaphragms"));
+      pTimelineEvent->GetApplyLoadActivity().ApplyIntermediateDiaphragmLoad();
+      timelineMgr.AddTimelineEvent(pTimelineEvent.get(), true, &eventIdx);
+      maxDay = pTimelineEvent->GetDay() + 1;
+      pTimelineEvent.release();
+
+      pTimelineEvent = std::make_unique<CTimelineEvent>();
+      day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day) + 1.0;
+      day = Max(day, maxDay);
+      pTimelineEvent->SetDay(day);
+      pTimelineEvent->SetDescription(_T("Cast Longitudinal Joints"));
+
+      pTimelineEvent->GetCastLongitudinalJointActivity().Enable();
+      pTimelineEvent->GetCastLongitudinalJointActivity().SetTotalCuringDuration(1.0); // day
+      pTimelineEvent->GetCastLongitudinalJointActivity().SetActiveCuringDuration(1.0); // day
+      timelineMgr.AddTimelineEvent(pTimelineEvent.get(), true, &eventIdx);
+      maxDay = pTimelineEvent->GetDay() + 1;
+      pTimelineEvent.release();
+
+      if (deckType != pgsTypes::sdtNone)
+      {
+         pTimelineEvent = std::make_unique<CTimelineEvent>();
+         day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day) + 2.0;
+         day = Max(day, maxDay);
+         pTimelineEvent->SetDay(day);
+
+
+         pTimelineEvent->SetDescription(GetCastDeckEventName(deckType));
+         pTimelineEvent->GetCastDeckActivity().Enable();
+         pTimelineEvent->GetCastDeckActivity().SetCastingType(CCastDeckActivity::Continuous); // this is the only option supported for PGSuper models
+         pTimelineEvent->GetCastDeckActivity().SetTotalCuringDuration(deck_diaphragm_curing_duration); // day
+         pTimelineEvent->GetCastDeckActivity().SetActiveCuringDuration(deck_diaphragm_curing_duration); // day
+         timelineMgr.AddTimelineEvent(pTimelineEvent.get(), true, &eventIdx);
+         maxDay = pTimelineEvent->GetDay() + 1;
+         pTimelineEvent.release();
+      }
+   }
+   else
+   {
+      // Cast deck & diaphragms
+      pTimelineEvent = std::make_unique<CTimelineEvent>();
+      day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
+      day = Max(day, maxDay);
+      pTimelineEvent->SetDay(day);
+      pTimelineEvent->SetDescription(_T("Cast Diaphragms"));
+
+      pTimelineEvent->GetApplyLoadActivity().ApplyIntermediateDiaphragmLoad();
+      timelineMgr.AddTimelineEvent(pTimelineEvent.get(), true, &eventIdx);
+      maxDay = pTimelineEvent->GetDay() + 1;
+      pTimelineEvent.release();
+
+      if (deckType != pgsTypes::sdtNone)
+      {
+         pTimelineEvent = std::make_unique<CTimelineEvent>();
+         day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
+         day = Max(day, maxDay);
+         pTimelineEvent->SetDay(day);
+         pTimelineEvent->SetDescription(GetCastDeckEventName(deckType));
+         pTimelineEvent->GetCastDeckActivity().Enable();
+         pTimelineEvent->GetCastDeckActivity().SetCastingType(CCastDeckActivity::Continuous); // this is the only option supported for PGSuper models
+         pTimelineEvent->GetCastDeckActivity().SetTotalCuringDuration(deck_diaphragm_curing_duration); // day
+         pTimelineEvent->GetCastDeckActivity().SetActiveCuringDuration(deck_diaphragm_curing_duration); // day
+         timelineMgr.AddTimelineEvent(pTimelineEvent.get(), true, &eventIdx);
+         maxDay = pTimelineEvent->GetDay() + 1;
+         pTimelineEvent.release();
+      }
+   }
+
+   // traffic barrier/superimposed dead loads
+   pTimelineEvent = std::make_unique<CTimelineEvent>();
+   day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day) + deck_diaphragm_curing_duration;
+   day = Max(day, maxDay);
+   pTimelineEvent->SetDay(day); // deck is continuous
+   pTimelineEvent->GetApplyLoadActivity().ApplyRailingSystemLoad();
+
+   pgsTypes::WearingSurfaceType wearingSurface = bridge.GetDeckDescription()->WearingSurface;
+   if (wearingSurface == pgsTypes::wstSacrificialDepth || wearingSurface == pgsTypes::wstOverlay)
+   {
+      pTimelineEvent->SetDescription(_T("Final without Live Load"));
+      if (wearingSurface == pgsTypes::wstOverlay)
+      {
+         pTimelineEvent->GetApplyLoadActivity().ApplyOverlayLoad();
+      }
+   }
+   else
+   {
+      pTimelineEvent->SetDescription(_T("Install Railing System"));
+   }
+   timelineMgr.AddTimelineEvent(pTimelineEvent.get(), true, &eventIdx);
+   maxDay = pTimelineEvent->GetDay() + 1;
+   pTimelineEvent.release();
+
+   if (wearingSurface == pgsTypes::wstFutureOverlay)
+   {
+      pTimelineEvent = std::make_unique<CTimelineEvent>();
+      day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day) + deck_diaphragm_curing_duration + 1.0;
+      day = Max(day, maxDay);
+      pTimelineEvent->SetDay(day);
+      pTimelineEvent->SetDescription(_T("Final without Live Load"));
+      pTimelineEvent->GetApplyLoadActivity().ApplyOverlayLoad();
+      timelineMgr.AddTimelineEvent(pTimelineEvent.get(), true, &eventIdx);
+      maxDay = pTimelineEvent->GetDay() + 1;
+      pTimelineEvent.release();
+   }
+
+   // live load
+   pTimelineEvent = std::make_unique<CTimelineEvent>();
+   day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day) + deck_diaphragm_curing_duration + 1.0;
+   day = Max(day, maxDay);
+   pTimelineEvent->SetDay(day);
+   pTimelineEvent->SetDescription(_T("Final with Live Load"));
+   pTimelineEvent->GetApplyLoadActivity().ApplyLiveLoad();
+   pTimelineEvent->GetApplyLoadActivity().ApplyRatingLiveLoad();
+   timelineMgr.AddTimelineEvent(pTimelineEvent.get(), true, &eventIdx);
+   maxDay = pTimelineEvent->GetDay() + 1;
+   pTimelineEvent.release();
+
+   bridge.SetTimelineManager(&timelineMgr);
 }

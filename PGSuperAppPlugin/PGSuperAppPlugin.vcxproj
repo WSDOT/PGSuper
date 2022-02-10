@@ -889,7 +889,6 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <Image Include="res\AnalysisResultsView.ico" />
     <Image Include="res\bitmap1.bmp" />
     <Image Include="res\Bridge.ico" />
-    <Image Include="res\Bridge2.ico" />
     <Image Include="res\bss.ico" />
     <Image Include="res\colhdr.bmp" />
     <Image Include="res\Continuous.bmp" />
@@ -920,10 +919,12 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <Image Include="res\North.ico" />
     <Image Include="res\north_ar.bmp" />
     <Image Include="res\PGSpliceDoc.ico" />
+    <Image Include="res\PGSpliceProjectImporter.ico" />
     <Image Include="res\PGSpliceTemplate.ico" />
     <Image Include="res\PGSpliceToolbar.bmp" />
     <Image Include="res\PGSuper.ico" />
     <Image Include="res\PGSuperDoc.ico" />
+    <Image Include="res\PGSuperProjectImporter.ico" />
     <Image Include="res\PGSuperTemplate.ico" />
     <Image Include="res\PGSuperToolbar.bmp" />
     <Image Include="res\pgs_template.ico" />

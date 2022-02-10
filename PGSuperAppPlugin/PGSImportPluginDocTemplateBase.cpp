@@ -25,6 +25,7 @@
 #include "PGSImportPluginDocTemplateBase.h"
 #include "SelectItemDlg.h"
 #include <IFace\Project.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -130,6 +131,12 @@ BOOL CPGSImportPluginDocTemplateBase::DoOpenDocumentFile(LPCTSTR lpszPathName,BO
    catch(...)
    {
    }
+
+   CPGSDocBase* pDoc = (CPGSDocBase*)pDocument;
+   CComPtr<IDocUnitSystem> docUnitSystem;
+   pDoc->GetDocUnitSystem(&docUnitSystem);
+   GET_IFACE2(broker,IEAFDisplayUnits, pDisplayUnits);
+   docUnitSystem->put_UnitMode(IS_US_UNITS(pDisplayUnits) ? umUS : umSI);
 
    // it worked, now bump untitled count (for untitled documents... from MFC for multidoc applications)
 	m_nUntitledCount++;

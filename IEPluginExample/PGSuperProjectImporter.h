@@ -27,6 +27,8 @@
 #include <Plugins\PGSuperIEPlugin.h>
 #include "resource.h"       // main symbols
 
+class CBridgeDescription2;
+
 /////////////////////////////////////////////////////////////////////////////
 // CPGSuperProjectImporter
 class ATL_NO_VTABLE CPGSuperProjectImporter : 
@@ -61,4 +63,5 @@ private:
    void BuildBridge(IBroker* pBroker);
    void SetSpecification(IBroker* pBroker);
    void InitGirderData(IBroker* pBroker);
+   void InitTimelineManager(IBroker* pBroker,CBridgeDescription2& bridge);
 };

@@ -45,6 +45,13 @@ public:
    virtual CString GetTemplateFileExtension() override;
    virtual const CRuntimeClass* GetDocTemplateRuntimeClass() override;
 
+   virtual LPCTSTR GetCatalogServerKey() const override;
+   virtual LPCTSTR GetPublisherKey() const override;
+   virtual LPCTSTR GetMasterLibraryCacheKey() const override;
+   virtual LPCTSTR GetMasterLibraryURLKey() const override;
+   virtual LPCTSTR GetWorkgroupTemplatesCacheKey() const override;
+   virtual CString GetCacheFolder() const override;
+
    virtual CATID GetProjectImporterCATID() override;
    virtual UINT GetMenuResourceID() override;
    virtual CPGSImportPluginDocTemplateBase* CreateDocTemplate() override;

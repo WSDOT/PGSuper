@@ -1790,9 +1790,6 @@
     <Image Include="res\Bridge.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="res\Bridge2.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="res\colhdr.bmp">
       <Filter>Resource Files</Filter>
     </Image>
@@ -1947,6 +1944,12 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\RW_Crosssection.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\PGSpliceProjectImporter.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\PGSuperProjectImporter.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

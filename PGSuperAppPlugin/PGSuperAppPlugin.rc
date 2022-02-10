@@ -12,7 +12,8 @@
 #endif
 #include "afxres.h"
 #include <EAF\EAFResources.h>
-#include "grid\gxresrc.h"
+#include "grid\gxresrc.h"
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -145,9 +146,9 @@ IDI_DISTRIBUTED_LOAD    ICON                    "res\\distributed_load.ico"
 
 IDI_MOMENT_LOAD         ICON                    "res\\moment.ico"
 
-IDR_PGSUPERPROJECTIMPORTER ICON                    "res\\Bridge2.ico"
+IDR_PGSUPERPROJECTIMPORTER ICON                    "res\\PGSuperProjectImporter.ico"
 
-IDR_PGSPLICEPROJECTIMPORTER ICON                    "res\\Bridge2.ico"
+IDR_PGSPLICEPROJECTIMPORTER ICON                    "res\\PGSpliceProjectImporter.ico"
 
 IDI_EDIT_BRIDGE         ICON                    "res\\EditBridge.ico"
 

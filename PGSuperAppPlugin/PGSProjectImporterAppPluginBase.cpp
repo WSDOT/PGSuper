@@ -233,7 +233,7 @@ HMENU CPGSProjectImporterAppPluginBase::GetSharedMenuHandle()
 CString CPGSProjectImporterAppPluginBase::GetName()
 {
    CString str;
-   str.Format(_T("%s Project Importer"),GetAppName());
+   str.Format(_T("%s"),GetAppName());
    return str;
 }
 
