@@ -2311,27 +2311,30 @@ Uint32 CTimelineManager::Validate() const
    }
    
    // Check user defined loads
-   for (const auto& load : m_pLoadManager->m_PointLoads)
+   if (m_pLoadManager)
    {
-      if ( !IsUserDefinedLoadApplied(load.m_ID) )
+      for (const auto& load : m_pLoadManager->m_PointLoads)
       {
-         error |= TLM_USER_LOAD_ACTIVITY_REQUIRED;
+         if (!IsUserDefinedLoadApplied(load.m_ID))
+         {
+            error |= TLM_USER_LOAD_ACTIVITY_REQUIRED;
+         }
       }
-   }
 
-   for (const auto& load : m_pLoadManager->m_DistributedLoads)
-   {
-      if ( !IsUserDefinedLoadApplied(load.m_ID) )
+      for (const auto& load : m_pLoadManager->m_DistributedLoads)
       {
-         error |= TLM_USER_LOAD_ACTIVITY_REQUIRED;
+         if (!IsUserDefinedLoadApplied(load.m_ID))
+         {
+            error |= TLM_USER_LOAD_ACTIVITY_REQUIRED;
+         }
       }
-   }
 
-   for (const auto& load : m_pLoadManager->m_MomentLoads)
-   {
-      if ( !IsUserDefinedLoadApplied(load.m_ID) )
+      for (const auto& load : m_pLoadManager->m_MomentLoads)
       {
-         error |= TLM_USER_LOAD_ACTIVITY_REQUIRED;
+         if (!IsUserDefinedLoadApplied(load.m_ID))
+         {
+            error |= TLM_USER_LOAD_ACTIVITY_REQUIRED;
+         }
       }
    }
 
