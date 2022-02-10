@@ -6868,6 +6868,7 @@ void CProjectAgentImp::SetBridgeDescription(const CBridgeDescription2& desc)
       ReleaseBridgeLibraryEntries();
 
       m_BridgeDescription = desc; // make an assignement... copies everything including IDs and Indices
+      m_LoadManager.SetTimelineManager(m_BridgeDescription.GetTimelineManager());
 
       UseBridgeLibraryEntries();
 
