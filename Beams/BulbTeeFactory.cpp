@@ -828,6 +828,7 @@ std::_tstring CBulbTeeFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckTyp
 
    switch(deckType)
    {
+   case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeOverlay:
       strImage =  _T("BulbTee_Composite.gif");
       break;
@@ -851,6 +852,7 @@ std::_tstring CBulbTeeFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes:
 
    switch(deckType)
    {
+   case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeOverlay:
       strImage =  _T("+Mn_BulbTee_Composite.gif");
       break;
@@ -874,6 +876,7 @@ std::_tstring CBulbTeeFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes:
 
    switch(deckType)
    {
+   case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeOverlay:
       strImage =  _T("-Mn_BulbTee_Composite.gif");
       break;
@@ -897,6 +900,7 @@ std::_tstring CBulbTeeFactory::GetShearDimensionsSchematicImage(pgsTypes::Suppor
 
    switch(deckType)
    {
+   case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeOverlay:
       strImage =  _T("Vn_BulbTee_Composite.gif");
       break;
