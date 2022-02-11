@@ -215,14 +215,14 @@ bool CAnalysisResultsGraphViewController::IncludeElevationAdjustment() const
    return m_pGraphController->IncludeElevationAdjustment();
 }
 
-void CAnalysisResultsGraphViewController::IncludePrecamber(bool bInclude)
+void CAnalysisResultsGraphViewController::IncludeUnrecoverableDefl(bool bInclude)
 {
-   m_pGraphController->IncludePrecamber(bInclude);
+   m_pGraphController->IncludeUnrecoverableDefl(bInclude);
 }
 
-bool CAnalysisResultsGraphViewController::IncludePrecamber() const
+bool CAnalysisResultsGraphViewController::IncludeUnrecoverableDefl() const
 {
-   return m_pGraphController->IncludePrecamber();
+   return m_pGraphController->IncludeUnrecoverableDefl();
 }
 
 void CAnalysisResultsGraphViewController::ShowGrid(bool bShow)

@@ -80,8 +80,8 @@ interface IAnalysisResultsGraphViewController : IEAFViewController
    virtual void IncludeElevationAdjustment(bool bInclude) = 0;
    virtual bool IncludeElevationAdjustment() const = 0;
 
-   virtual void IncludePrecamber(bool bInclude) = 0;
-   virtual bool IncludePrecamber() const = 0;
+   virtual void IncludeUnrecoverableDefl(bool bInclude) = 0;
+   virtual bool IncludeUnrecoverableDefl() const = 0;
 
    virtual void ShowGrid(bool bShow) = 0;
    virtual bool ShowGrid() const = 0;

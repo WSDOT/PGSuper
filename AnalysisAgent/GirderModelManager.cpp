@@ -3446,7 +3446,7 @@ std::vector<Float64> CGirderModelManager::GetMoment(IntervalIndexType intervalId
    return results;
 }
 
-std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType intervalIdx,LoadingCombinationType combo,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
+std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType intervalIdx,LoadingCombinationType combo,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludePreErectionUnrecov) const
 {
    ATLASSERT(combo != lcCR && combo != lcSH && combo != lcRE && combo != lcPS); // this are time-step analysis load combinations
 
@@ -3496,7 +3496,9 @@ std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType interv
 
    std::vector<Float64> badGirderDeflection;
    std::vector<Float64> goodGirderDeflection;
-   if ( combo == lcDC && (resultsType == rtCumulative || (resultsType == rtIncremental && intervalIdx == erectionIntervalIdx)))
+
+   bool bDoApplyStorageCorrection = combo == lcDC && (resultsType == rtCumulative || (resultsType == rtIncremental && intervalIdx == erectionIntervalIdx)) && bIncludePreErectionUnrecov;
+   if (bDoApplyStorageCorrection)
    {
       // the DC combination contains girder deflections based on the full weight of the girder being applied at erection.
       // this is not the correct deflection... the correct deflection is the deflection at storage plus the incremental
@@ -3504,12 +3506,11 @@ std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType interv
       // get the bad girder deflection so we can remove it from the DC combination, and get the correct deflection so we can
       // add it into the DC combination.
       CComBSTR bstrLoadGroup( GetLoadGroupName(pgsTypes::pftGirder) );
-      badGirderDeflection  = GetDeflection(intervalIdx,OLE2T(bstrLoadGroup),vPoi,bat,rtCumulative); // get bad deflection (use the string version instead of the pfType version so the girder load name doesn't get altered)
+      badGirderDeflection = GetDeflection(intervalIdx,OLE2T(bstrLoadGroup),vPoi,bat,rtCumulative); // get bad deflection (use the string version instead of the pfType version so the girder load name doesn't get altered)
 
       GET_IFACE(IProductForces2, pProdForces);
-      goodGirderDeflection = pProdForces->GetDeflection(intervalIdx,pgsTypes::pftGirder,vPoi,bat,rtCumulative);
+      goodGirderDeflection = pProdForces->GetDeflection(intervalIdx,pgsTypes::pftGirder,vPoi,bat,rtCumulative,false,false,bIncludePreErectionUnrecov);
    }
-
 
    IndexType nResults;
    results->get_Count(&nResults);
@@ -3525,7 +3526,7 @@ std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType interv
 
       ATLASSERT(IsEqual(Dy,Dyr));
 
-      if (combo == lcDC && (resultsType == rtCumulative || (resultsType == rtIncremental && intervalIdx == erectionIntervalIdx)))
+      if (bDoApplyStorageCorrection)
       {
          Float64 badDy  = badGirderDeflection[idx];
          Float64 goodDy = goodGirderDeflection[idx];
@@ -4073,13 +4074,13 @@ void CGirderModelManager::GetMoment(IntervalIndexType intervalIdx,pgsTypes::Limi
    *pMax = vMax.front();
 }
 
-void CGirderModelManager::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,bool bIncludeLiveLoad,Float64* pMin,Float64* pMax) const
+void CGirderModelManager::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,bool bIncludeLiveLoad,bool bIncludePreErectionUnrecov,Float64* pMin,Float64* pMax) const
 {
    PoiList vPoi;
    vPoi.push_back(poi);
 
    std::vector<Float64> vMin, vMax;
-   GetDeflection(intervalIdx,limitState,vPoi,bat,bIncludePrestress,bIncludeLiveLoad,&vMin,&vMax);
+   GetDeflection(intervalIdx,limitState,vPoi,bat,bIncludePrestress,bIncludeLiveLoad,bIncludePreErectionUnrecov,&vMin,&vMax);
 
    ATLASSERT(vMin.size() == 1);
    ATLASSERT(vMax.size() == 1);
@@ -4439,7 +4440,7 @@ void CGirderModelManager::GetMoment(IntervalIndexType intervalIdx,pgsTypes::Limi
    }
 }
 
-void CGirderModelManager::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,bool bIncludeLiveLoad,std::vector<Float64>* pMin,std::vector<Float64>* pMax) const
+void CGirderModelManager::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,bool bIncludeLiveLoad,bool bIncludePreErectionUnrecov,std::vector<Float64>* pMin,std::vector<Float64>* pMax) const
 {
    pMin->clear();
    pMax->clear();
@@ -4470,7 +4471,7 @@ void CGirderModelManager::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::
    CComBSTR bstrLoadGroup( GetLoadGroupName(pgsTypes::pftGirder) );
    std::vector<Float64> badGirderDeflection  = GetDeflection(intervalIdx,OLE2T(bstrLoadGroup),vPoi,bat,rtCumulative);
    GET_IFACE(IProductForces2, pProdForces);
-   std::vector<Float64> goodGirderDeflection = pProdForces->GetDeflection(intervalIdx,pgsTypes::pftGirder,vPoi,bat,rtCumulative);
+   std::vector<Float64> goodGirderDeflection = pProdForces->GetDeflection(intervalIdx,pgsTypes::pftGirder,vPoi,bat,rtCumulative,false,false,bIncludePreErectionUnrecov);
    
    GET_IFACE(ILoadFactors,pILoadFactors);
    const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
@@ -4505,7 +4506,7 @@ void CGirderModelManager::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::
       // prestress deflection is not included in the LBAM models... get the product results load
       // and add them in
       GET_IFACE(IProductForces2, pProductForces);
-      std::vector<Float64> deltaPS = pProductForces->GetDeflection(intervalIdx,pgsTypes::pftPretension,vPoi,bat,rtCumulative,false);
+      std::vector<Float64> deltaPS = pProductForces->GetDeflection(intervalIdx,pgsTypes::pftPretension,vPoi,bat,rtCumulative,false,false,bIncludePreErectionUnrecov);
       std::transform(deltaPS.cbegin(),deltaPS.cend(),pMin->cbegin(),pMin->begin(),[](const auto& a, const auto& b) {return a + b;});
       std::transform(deltaPS.cbegin(),deltaPS.cend(),pMax->cbegin(),pMax->begin(),[](const auto& a, const auto& b) {return a + b;});
 
@@ -4516,7 +4517,7 @@ void CGirderModelManager::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::
       if (firstPTIntervalIdx != INVALID_INDEX)
       {
          IntervalIndexType i = Min(firstPTIntervalIdx - 1, intervalIdx);
-         std::vector<Float64> deltaPT = pProductForces->GetDeflection(i, pgsTypes::pftPostTensioning, vPoi, bat, rtCumulative, false);
+         std::vector<Float64> deltaPT = pProductForces->GetDeflection(i, pgsTypes::pftPostTensioning, vPoi, bat, rtCumulative, false,false,bIncludePreErectionUnrecov);
          std::transform(deltaPT.cbegin(), deltaPT.cend(), pMin->cbegin(), pMin->begin(), [](const auto& a, const auto& b) {return a + b; });
          std::transform(deltaPT.cbegin(), deltaPT.cend(), pMax->cbegin(), pMax->begin(), [](const auto& a, const auto& b) {return a + b; });
       }

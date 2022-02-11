@@ -1648,7 +1648,7 @@ void CConstructabilityCheckTable::BuildTimeStepCamberCheck(rptChapter* pChapter,
          (*pTable)(row++, 2) << dim.SetValue(C);
 
          Float64 Dmin, Dmax;
-         pLSForces->GetDeflection(firstCastDeckIntervalIdx - 1, pgsTypes::ServiceI, poiMidSpan, bat, true/*include prestress*/, false/*no liveload*/, true /*include elevation adjustment*/, true /*include precamber*/, &Dmin, &Dmax);
+         pLSForces->GetDeflection(firstCastDeckIntervalIdx - 1, pgsTypes::ServiceI, poiMidSpan, bat, true/*include prestress*/, false/*no liveload*/, true /*include elevation adjustment*/, true /*include precamber*/, true /* include unrecoverable */, &Dmin, &Dmax);
          ATLASSERT(IsEqual(Dmin, Dmax));
          (*pTable)(row, 1) << _T("Mid-segment camber at time of deck casting, at ") << deckCastingTime << _T(" days, D");
 
@@ -1703,7 +1703,7 @@ void CConstructabilityCheckTable::BuildTimeStepCamberCheck(rptChapter* pChapter,
          (*pTable)(row++, 2) << dim.SetValue(C);
 
          Float64 Dmin, Dmax;
-         pLSForces->GetDeflection(firstCastDeckIntervalIdx - 1, pgsTypes::ServiceI, poiMidSpan, bat, true/*include prestress*/, false/*no liveload*/, true /*include elevation adjustment*/, true /*include precamber*/, &Dmin, &Dmax);
+         pLSForces->GetDeflection(firstCastDeckIntervalIdx - 1, pgsTypes::ServiceI, poiMidSpan, bat, true/*include prestress*/, false/*no liveload*/, true /*include elevation adjustment*/, true /*include precamber*/,true /* include unrecoverable */, &Dmin, &Dmax);
          ATLASSERT(IsEqual(Dmin, Dmax));
          (*pTable)(row, 1) << _T("Mid-span camber at time of deck casting, at ") << deckCastingTime << _T(" days, D");
 

@@ -1357,11 +1357,11 @@ Float64 CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,pgsTypes::Pro
    return results.front();
 }
 
-Float64 CAnalysisAgentImp::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeElevationAdjustment, bool bIncludePrecamber) const
+Float64 CAnalysisAgentImp::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeElevationAdjustment, bool bIncludePrecamber,bool bIncludePreErectionUnrecov) const
 {
    PoiList vPoi;
    vPoi.push_back(poi);
-   std::vector<Float64> results = GetDeflection(intervalIdx,pfType,vPoi,bat,resultsType,bIncludeElevationAdjustment,bIncludePrecamber);
+   std::vector<Float64> results = GetDeflection(intervalIdx,pfType,vPoi,bat,resultsType,bIncludeElevationAdjustment,bIncludePrecamber,bIncludePreErectionUnrecov);
    ATLASSERT(results.size() == 1);
    return results.front();
 }
@@ -1375,11 +1375,11 @@ Float64 CAnalysisAgentImp::GetXDeflection(IntervalIndexType intervalIdx, pgsType
    return results.front();
 }
 
-Float64 CAnalysisAgentImp::GetRotation(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeSlopeAdjustment,bool bIncludePrecamber) const
+Float64 CAnalysisAgentImp::GetRotation(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeSlopeAdjustment,bool bIncludePrecamber,bool bIncludePreErectionUnrecov) const
 {
    PoiList vPoi;
    vPoi.push_back(poi);
-   std::vector<Float64> results = GetRotation(intervalIdx,pfType,vPoi,bat,resultsType,bIncludeSlopeAdjustment,bIncludePrecamber);
+   std::vector<Float64> results = GetRotation(intervalIdx,pfType,vPoi,bat,resultsType,bIncludeSlopeAdjustment,bIncludePrecamber,bIncludePreErectionUnrecov);
    ATLASSERT(results.size() == 1);
    return results.front();
 }
@@ -2828,7 +2828,7 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,
    return results;
 }
 
-std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeElevationAdjustment, bool bIncludePrecamber) const
+std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeElevationAdjustment, bool bIncludePrecamber,bool bIncludePreErectionUnrecov) const
 {
    USES_CONVERSION;
    InitializeAnalysis(vPoi);
@@ -2872,7 +2872,14 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
          }
          else
          {
-            startIntervalIdx = segReleaseIntervalIdx;
+            if (bIncludePreErectionUnrecov || intervalIdx < segErectionIntervalIdx)
+            {
+               startIntervalIdx = segReleaseIntervalIdx;
+            }
+            else
+            {
+               startIntervalIdx = segErectionIntervalIdx;
+            }
          }
 
          // Get POI's at segment support locations at segment erection interval. We will use these support locations as datums throughout
@@ -2941,7 +2948,7 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
          // adjusted them to zero at the targetted support locations
          // Check if this is a drop in. If so, we need to adjust deflections at the free end(s) of the dropin to match the supporting segment
          // at the time when the drop in is erected
-         if (resultsType == rtCumulative && intervalIdx >= segErectionIntervalIdx && pgsTypes::ditNotDropIn != dropInType)
+         if (resultsType == rtCumulative && intervalIdx >= segErectionIntervalIdx && pgsTypes::ditNotDropIn != dropInType && bIncludePreErectionUnrecov)
          {
             IntervalIndexType offsetInterval = segErectionIntervalIdx;
             bool isDropInAtStart = pgsTypes::ditYesFreeBothEnds == dropInType || pgsTypes::ditYesFreeStartEnd == dropInType;
@@ -2956,7 +2963,7 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
                PoiList endPois;
                pPoi->GetPointsOfInterest(prevSeg->GetSegmentKey(), POI_10L | POI_ERECTED_SEGMENT, &endPois);
 
-               Float64 DyDropinStart = GetDeflection(offsetInterval, pfType, endPois.front(), bat, rtCumulative);
+               Float64 DyDropinStart = GetDeflection(offsetInterval, pfType, endPois.front(), bat, rtCumulative,false,false,bIncludePreErectionUnrecov); // tower adjustment and precamber are dealt with later
                DyStart -= DyDropinStart;
             }
 
@@ -2967,7 +2974,7 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
                PoiList endPois;
                pPoi->GetPointsOfInterest(nextSeg->GetSegmentKey(), POI_0L | POI_ERECTED_SEGMENT, &endPois);
 
-               Float64 DyDropinEnd = GetDeflection(offsetInterval, pfType, endPois.front(), bat, rtCumulative);
+               Float64 DyDropinEnd = GetDeflection(offsetInterval, pfType, endPois.front(), bat, rtCumulative,false,false,bIncludePreErectionUnrecov);
                DyEnd -= DyDropinEnd;
             }
 
@@ -3008,38 +3015,61 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
       {
          IntervalIndexType erectionIntervalIdx = GetErectionInterval(vPoi);
          CSegmentKey segmentKey(vPoi.front().get().GetSegmentKey());
-         GET_IFACE(IIntervals, pIntervals);
-         IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
 
-         if ( intervalIdx < erectionIntervalIdx || pfType == pgsTypes::pftPretension || pfType == pgsTypes::pftPostTensioning)
+         if (intervalIdx < erectionIntervalIdx && pfType == pgsTypes::pftGirder)
          {
-            if (haulingIntervalIdx == intervalIdx && pfType == pgsTypes::pftGirder && resultsType == rtCumulative)
+            GET_IFACE(IIntervals,pIntervals);
+            IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
+            if (haulingIntervalIdx == intervalIdx && resultsType == rtCumulative)
             {
                // Girder deflection at hauling is tricky special case. 
                // This is where we first see the permanent deflection due to the increase in modulus over time.
                // Get permanent deflection caused by modulus change (stiffening) adjusted to zero at truck dunnage locations
-               std::vector<Float64> permDeflStorage = GetPermanentGirderDeflectionFromStorage(sagHauling, bat, vPoi);
+               std::vector<Float64> permDeflStorage = GetPermanentGirderDeflectionFromStorage(sagHauling,bat,vPoi);
 
                // Add deflection for hauling based on modulus at hauling
-               deflections = m_pSegmentModelManager->GetDeflection(haulingIntervalIdx, pgsTypes::pftGirder, vPoi, rtCumulative);
-               std::transform(permDeflStorage.cbegin(), permDeflStorage.cend(), deflections.cbegin(), deflections.begin(), [](const auto& a, const auto& b) {return a + b; });
+               deflections = m_pSegmentModelManager->GetDeflection(haulingIntervalIdx,pgsTypes::pftGirder,vPoi,rtCumulative);
+               std::transform(permDeflStorage.cbegin(),permDeflStorage.cend(),deflections.cbegin(),deflections.begin(),[](const auto& a,const auto& b) {return a + b; });
             }
             else
             {
                // before erection - results are in the segment models
+               deflections = m_pSegmentModelManager->GetDeflection(intervalIdx,pfType,vPoi,resultsType);
+            }
+         }
+         else if (pfType == pgsTypes::pftPretension)
+         {
+            if (!bIncludePreErectionUnrecov)
+            {
+               deflections.resize(vPoi.size(),0.0);// pretensioning always before erection
+            }
+            else
+            {
                // also... pretension deflections and segment PT deflections are always computed from the segment models
-               deflections = m_pSegmentModelManager->GetDeflection(intervalIdx, pfType, vPoi, resultsType);
+               deflections = m_pSegmentModelManager->GetDeflection(intervalIdx,pfType,vPoi,resultsType);
+            }
+         }
+         else if (pfType == pgsTypes::pftPostTensioning)
+         {
+            // segment post tensioning
+            if (!bIncludePreErectionUnrecov)
+            {
+               deflections.resize(vPoi.size(),0.0);// segment posttensioning always before erection
+            }
+            else
+            {
+               deflections = m_pSegmentModelManager->GetDeflection(intervalIdx,pfType,vPoi,resultsType);
+            }
 
-               if (erectionIntervalIdx <= intervalIdx && pfType == pgsTypes::pftPostTensioning)
-               {
-                  // if this is after erection and the loading is PT, we need to get the girder PT
-                  // deflection as well... the else block below isn't accessable from here so
-                  // we'll just get the values directly
-                  std::vector<Float64> girder_pt_deflections;
-                  girder_pt_deflections.reserve(vPoi.size());
-                  girder_pt_deflections = m_pGirderModelManager->GetDeflection(intervalIdx, pfType, vPoi, bat, resultsType);
-                  std::transform(girder_pt_deflections.cbegin(), girder_pt_deflections.cend(), deflections.cbegin(), deflections.begin(), [](const auto& a, const auto& b) {return a + b; });
-               }
+            if (erectionIntervalIdx <= intervalIdx)
+            {
+               // if this is after erection and the loading is PT, we need to get the girder PT
+               // deflection as well... the else block below isn't accessable from here so
+               // we'll just get the values directly
+               std::vector<Float64> girder_pt_deflections;
+               girder_pt_deflections.reserve(vPoi.size());
+               girder_pt_deflections = m_pGirderModelManager->GetDeflection(intervalIdx, pfType, vPoi, bat, resultsType);
+               std::transform(girder_pt_deflections.cbegin(), girder_pt_deflections.cend(), deflections.cbegin(), deflections.begin(), [](const auto& a, const auto& b) {return a + b; });
             }
          }
          else if (erectionIntervalIdx == intervalIdx  && rtIncremental == resultsType)
@@ -3057,6 +3087,7 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
 
             GET_IFACE_NOCHECK(IBridgeDescription, pIBridgeDesc);
             GET_IFACE_NOCHECK(IPointOfInterest, pPoi);
+            GET_IFACE_NOCHECK(IIntervals,pIntervals);
             std::list<PoiList> lPoi;
             pPoi->GroupBySegment(vPoi, &lPoi);
             for (const auto& vSegmentPoi : lPoi)
@@ -3064,8 +3095,6 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
                CSegmentKey segmentKey(vSegmentPoi.front().get().GetSegmentKey());
                const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
                pgsTypes::DropInType dropInType = pSegment->IsDropIn();
-
-               IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
 
                // Old code
                //// Get the storage deflection
@@ -3075,22 +3104,22 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
                //// Sum to get deflection at erection
                //std::transform(dStorage.cbegin(), dStorage.cend(), dInc.cbegin(), std::back_inserter(deflections), [](const auto& a, const auto& b) {return a + b; });
 
-               // Get permanent deflection caused by modulus change (stiffening) adjusted to zero at erection support locations 
-               std::vector<Float64> dStorage = GetPermanentGirderDeflectionFromStorage(sagErection, bat, vSegmentPoi);
+               // Get total deflection after erection using modulus at erection
+               std::vector<Float64> dInc = m_pGirderModelManager->GetDeflection(intervalIdx, pfType, vSegmentPoi, bat, resultsType);
 
-               // Get deflection at erection using modulus at erection
-               std::vector<Float64> dInc = m_pGirderModelManager->GetDeflection(erectionIntervalIdx, pfType, vSegmentPoi, bat, resultsType);
+               if (bIncludePreErectionUnrecov)
+               {
+                  // Get permanent deflection caused by modulus change (stiffening) adjusted to zero at erection support locations 
+                  std::vector<Float64> dStorage = GetPermanentGirderDeflectionFromStorage(sagErection,bat,vSegmentPoi);
 
-               // Sum to get total deflection at erection
-               std::vector<Float64>::iterator deftotd = deflIter;
-               std::transform(dStorage.cbegin(), dStorage.cend(), dInc.cbegin(), deftotd, [](const auto& a, const auto& b) {return a + b; });
-
-               // now sum all the incremental deflections that occur after erection, upto and including the specified interval
-               for (IntervalIndexType intIdx = erectionIntervalIdx + 1; intIdx <= intervalIdx; intIdx++)
+                  // Sum to get total deflection at erection
+                  std::vector<Float64>::iterator deftotd = deflIter;
+                  std::transform(dStorage.cbegin(),dStorage.cend(),dInc.cbegin(),deftotd,[](const auto& a,const auto& b) {return a + b; });
+               }
+               else
                {
                   std::vector<Float64>::iterator definc = deflIter;
-                  std::vector<Float64> dInc = m_pGirderModelManager->GetDeflection(intIdx, pfType, vSegmentPoi, bat, rtIncremental);
-                  std::transform(dInc.cbegin(), dInc.cend(), definc, definc, [](const auto& a, const auto& b) {return a + b; });
+                  std::transform(dInc.cbegin(),dInc.cend(),definc,definc,[](const auto& a,const auto& b) {return a + b; });
                }
 
                deflIter += vSegmentPoi.size();
@@ -3338,7 +3367,7 @@ std::vector<Float64> CAnalysisAgentImp::GetXDeflection(IntervalIndexType interva
    return vDelta;
 }
 
-std::vector<Float64> CAnalysisAgentImp::GetRotation(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeSlopeAdjustment, bool bIncludePrecamber) const
+std::vector<Float64> CAnalysisAgentImp::GetRotation(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeSlopeAdjustment, bool bIncludePrecamber,bool bIncludePreErectionUnrecov) const
 {
    USES_CONVERSION;
    InitializeAnalysis(vPoi);
@@ -3427,8 +3456,8 @@ std::vector<Float64> CAnalysisAgentImp::GetRotation(IntervalIndexType intervalId
                }
                else
                {
-                  Float64 Dy1 = GetDeflection(iIdx, pfType, vSupportPoi.front(), bat, rtCumulative);
-                  Float64 Dy2 = GetDeflection(iIdx, pfType, vSupportPoi.back(), bat, rtCumulative);
+                  Float64 Dy1 = GetDeflection(iIdx, pfType, vSupportPoi.front(), bat, rtCumulative,true,false,bIncludePreErectionUnrecov);
+                  Float64 Dy2 = GetDeflection(iIdx, pfType, vSupportPoi.back(), bat, rtCumulative,true,false,bIncludePreErectionUnrecov);
 
                   Float64 Xg1 = pPoi->ConvertPoiToGirderPathCoordinate(vSupportPoi.front());
                   Float64 Xg2 = pPoi->ConvertPoiToGirderPathCoordinate(vSupportPoi.back());
@@ -3641,11 +3670,11 @@ Float64 CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,LoadingCombin
    return results.front();
 }
 
-Float64 CAnalysisAgentImp::GetDeflection(IntervalIndexType intervalIdx, LoadingCombinationType comboType, const pgsPointOfInterest& poi, pgsTypes::BridgeAnalysisType bat, ResultsType resultsType, bool bIncludeElevationAdjustment, bool bIncludePrecamber) const
+Float64 CAnalysisAgentImp::GetDeflection(IntervalIndexType intervalIdx, LoadingCombinationType comboType, const pgsPointOfInterest& poi, pgsTypes::BridgeAnalysisType bat, ResultsType resultsType, bool bIncludeElevationAdjustment, bool bIncludePrecamber,bool bIncludePreErectionUnrecov) const
 {
    PoiList vPoi;
    vPoi.push_back(poi);
-   std::vector<Float64> results(GetDeflection(intervalIdx, comboType, vPoi, bat, resultsType, bIncludeElevationAdjustment,bIncludePrecamber));
+   std::vector<Float64> results(GetDeflection(intervalIdx, comboType, vPoi, bat, resultsType, bIncludeElevationAdjustment,bIncludePrecamber,bIncludePreErectionUnrecov));
    ATLASSERT(results.size() == 1);
    return results.front();
 }
@@ -3659,11 +3688,11 @@ Float64 CAnalysisAgentImp::GetXDeflection(IntervalIndexType intervalIdx, Loading
    return results.front();
 }
 
-Float64 CAnalysisAgentImp::GetRotation(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeSlopeAdjustment, bool bIncludePrecamber) const
+Float64 CAnalysisAgentImp::GetRotation(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeSlopeAdjustment, bool bIncludePrecamber,bool bIncludePreErectionUnrecov) const
 {
    PoiList vPoi;
    vPoi.push_back(poi);
-   std::vector<Float64> results( GetRotation(intervalIdx,comboType,vPoi,bat,resultsType,bIncludeSlopeAdjustment,bIncludePrecamber) );
+   std::vector<Float64> results( GetRotation(intervalIdx,comboType,vPoi,bat,resultsType,bIncludeSlopeAdjustment,bIncludePrecamber,bIncludePreErectionUnrecov) );
    ATLASSERT(results.size() == 1);
    return results.front();
 }
@@ -4084,7 +4113,7 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,
    return results;
 }
 
-std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeElevationAdjustment, bool bIncludePrecamber) const
+std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeElevationAdjustment, bool bIncludePrecamber,bool bIncludePreErectionUnrecov) const
 {
    USES_CONVERSION;
    InitializeAnalysis(vPoi);
@@ -4100,7 +4129,7 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
       std::vector<pgsTypes::ProductForceType> pfTypes = CProductLoadMap::GetProductForces(m_pBroker,comboType);
       for( const auto& pfType : pfTypes)
       {
-         std::vector<Float64> delta = GetDeflection(intervalIdx,pfType,vPoi,bat,resultsType);
+         std::vector<Float64> delta = GetDeflection(intervalIdx,pfType,vPoi,bat,resultsType,false,false,bIncludePreErectionUnrecov);
          std::transform(delta.cbegin(),delta.cend(),deflection.cbegin(),deflection.begin(),[](const auto& a, const auto& b) {return a + b;});
       }
    }
@@ -4121,7 +4150,7 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
       default: ATLASSERT(false); // should not happen
       }
 
-      deflection = GetDeflection(intervalIdx,pfType,vPoi,bat,resultsType,false);
+      deflection = GetDeflection(intervalIdx,pfType,vPoi,bat,resultsType,false,false,bIncludePreErectionUnrecov);
    }
    else
    {
@@ -4138,13 +4167,13 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
             // the incremental result at the time of erection is being requested. this is when
             // we switch between segment models and girder models. the incremental results
             // is the cumulative result this interval minus the cumulative result in the previous interval
-            std::vector<Float64> Dprev = GetDeflection(intervalIdx-1,comboType,vPoi,bat,rtCumulative);
-            std::vector<Float64> Dthis = GetDeflection(intervalIdx,  comboType,vPoi,bat,rtCumulative);
+            std::vector<Float64> Dprev = GetDeflection(intervalIdx-1,comboType,vPoi,bat,rtCumulative,false,false,bIncludePreErectionUnrecov);
+            std::vector<Float64> Dthis = GetDeflection(intervalIdx,  comboType,vPoi,bat,rtCumulative,false,false,bIncludePreErectionUnrecov);
             std::transform(Dthis.cbegin(),Dthis.cend(),Dprev.cbegin(),std::back_inserter(deflection),[](const auto& a, const auto& b) {return a - b;});
          }
          else
          {
-            deflection = m_pGirderModelManager->GetDeflection(intervalIdx,comboType,vPoi,bat,resultsType);
+            deflection = m_pGirderModelManager->GetDeflection(intervalIdx,comboType,vPoi,bat,resultsType,bIncludePreErectionUnrecov);
          }
       }
       catch(...)
@@ -4287,7 +4316,7 @@ std::vector<Float64> CAnalysisAgentImp::GetXDeflection(IntervalIndexType interva
                   Float64 Iyy = pSectProp->GetIyy(iIdx, spPoi);
                   Float64 Ixy = pSectProp->GetIxy(iIdx, spPoi);
 
-                  std::vector<Float64> deltaY = m_pGirderModelManager->GetDeflection(iIdx, comboType, vPoi, bat, rtIncremental); // these are the incremental vertical deflections in interval iIdx
+                  std::vector<Float64> deltaY = m_pGirderModelManager->GetDeflection(iIdx, comboType, vPoi, bat, rtIncremental,false); // these are the incremental vertical deflections in interval iIdx
 
                   // lateral deflections are (delta Y)*(-Ixy/Iyy)
                   // scale deltaY by D and add to the running sum
@@ -4325,7 +4354,7 @@ std::vector<Float64> CAnalysisAgentImp::GetXDeflection(IntervalIndexType interva
    return deflection;
 }
 
-std::vector<Float64> CAnalysisAgentImp::GetRotation(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeSlopeAdjustment, bool bIncludePrecamber) const
+std::vector<Float64> CAnalysisAgentImp::GetRotation(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeSlopeAdjustment, bool bIncludePrecamber, bool bIncludePreErectionUnrecov) const
 {
    USES_CONVERSION;
    InitializeAnalysis(vPoi);
@@ -4500,13 +4529,13 @@ void CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,pgsTypes::LimitS
    *pMax = Mmax.front();
 }
 
-void CAnalysisAgentImp::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncPrestress,bool bIncludeLiveLoad,bool bIncludeElevationAdjustment,bool bIncludePrecamber,Float64* pMin,Float64* pMax) const
+void CAnalysisAgentImp::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncPrestress,bool bIncludeLiveLoad,bool bIncludeElevationAdjustment,bool bIncludePrecamber,bool bIncludePreErectionUnrecov,Float64* pMin,Float64* pMax) const
 {
    PoiList vPoi;
    vPoi.push_back(poi);
 
    std::vector<Float64> Dmin, Dmax;
-   GetDeflection(intervalIdx,limitState,vPoi,bat,bIncPrestress,bIncludeLiveLoad,bIncludeElevationAdjustment,bIncludePrecamber,&Dmin,&Dmax);
+   GetDeflection(intervalIdx,limitState,vPoi,bat,bIncPrestress,bIncludeLiveLoad,bIncludeElevationAdjustment,bIncludePrecamber,bIncludePreErectionUnrecov,&Dmin,&Dmax);
 
    ATLASSERT(Dmin.size() == 1);
    ATLASSERT(Dmax.size() == 1);
@@ -4530,13 +4559,13 @@ void CAnalysisAgentImp::GetXDeflection(IntervalIndexType intervalIdx, pgsTypes::
    *pMax = Dmax.front();
 }
 
-void CAnalysisAgentImp::GetRotation(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,bool bIncludeLiveLoad,bool bIncludeSlopeAdjustment, bool bIncludePrecamber, Float64* pMin,Float64* pMax) const
+void CAnalysisAgentImp::GetRotation(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,bool bIncludeLiveLoad,bool bIncludeSlopeAdjustment, bool bIncludePrecamber,bool bIncludePreErectionUnrecov, Float64* pMin,Float64* pMax) const
 {
    PoiList vPoi;
    vPoi.push_back(poi);
 
    std::vector<Float64> Rmin, Rmax;
-   GetRotation(intervalIdx,limitState,vPoi,bat,bIncludePrestress,bIncludeLiveLoad,bIncludeSlopeAdjustment,bIncludePrecamber,&Rmin,&Rmax);
+   GetRotation(intervalIdx,limitState,vPoi,bat,bIncludePrestress,bIncludeLiveLoad,bIncludeSlopeAdjustment,bIncludePrecamber,bIncludePreErectionUnrecov,&Rmin,&Rmax);
 
    ATLASSERT(Rmin.size() == 1);
    ATLASSERT(Rmax.size() == 1);
@@ -5052,7 +5081,7 @@ std::vector<Float64> CAnalysisAgentImp::GetSlabDesignMoment(pgsTypes::LimitState
    return Msd;
 }
 
-void CAnalysisAgentImp::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,bool bIncludeLiveLoad,bool bIncludeElevationAdjustment,bool bIncludePrecamber,std::vector<Float64>* pMin,std::vector<Float64>* pMax) const
+void CAnalysisAgentImp::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,bool bIncludeLiveLoad,bool bIncludeElevationAdjustment,bool bIncludePrecamber,bool bIncludePreErectionUnrecov,std::vector<Float64>* pMin,std::vector<Float64>* pMax) const
 {
    USES_CONVERSION;
    InitializeAnalysis(vPoi);
@@ -5075,7 +5104,7 @@ void CAnalysisAgentImp::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::Li
       }
       else
       {
-         m_pGirderModelManager->GetDeflection(intervalIdx,limitState,vPoi,bat,bIncludePrestress,bIncludeLiveLoad,pMin,pMax);
+         m_pGirderModelManager->GetDeflection(intervalIdx,limitState,vPoi,bat,bIncludePrestress,bIncludeLiveLoad,bIncludePreErectionUnrecov,pMin,pMax);
       }
    }
    catch(...)
@@ -5116,9 +5145,9 @@ void CAnalysisAgentImp::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::Li
          pLoadFactors->GetRE(limitState, &gREMin, &gREMax);
       }
 
-      std::vector<Float64> vDcr = GetDeflection(intervalIdx,lcCR,vPoi,bat,rtCumulative);
-      std::vector<Float64> vDsh = GetDeflection(intervalIdx,lcSH,vPoi,bat,rtCumulative);
-      std::vector<Float64> vDre = GetDeflection(intervalIdx,lcRE,vPoi,bat,rtCumulative);
+      std::vector<Float64> vDcr = GetDeflection(intervalIdx,lcCR,vPoi,bat,rtCumulative,false,false,bIncludePreErectionUnrecov);
+      std::vector<Float64> vDsh = GetDeflection(intervalIdx,lcSH,vPoi,bat,rtCumulative,false,false,bIncludePreErectionUnrecov);
+      std::vector<Float64> vDre = GetDeflection(intervalIdx,lcRE,vPoi,bat,rtCumulative,false,false,bIncludePreErectionUnrecov);
 
       if ( IsEqual(gCRMin,1.0) )
       {
@@ -5309,7 +5338,7 @@ void CAnalysisAgentImp::GetXDeflection(IntervalIndexType intervalIdx, pgsTypes::
    std::transform(dxDC.cbegin(), dxDC.cend(), dxPS.cbegin(), std::back_inserter(*pMax), [DCmax](const auto& dc, const auto& ps) {return DCmax*dc + ps;});
 }
 
-void CAnalysisAgentImp::GetRotation(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,bool bIncludeLiveLoad,bool bIncludeSlopeAdjustment,bool bIncludePrecamber,std::vector<Float64>* pMin,std::vector<Float64>* pMax) const
+void CAnalysisAgentImp::GetRotation(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,bool bIncludeLiveLoad,bool bIncludeSlopeAdjustment,bool bIncludePrecamber,bool bIncludePreErectionUnrecov,std::vector<Float64>* pMin,std::vector<Float64>* pMax) const
 {
    USES_CONVERSION;
    InitializeAnalysis(vPoi);
@@ -7018,7 +7047,7 @@ Float64 CAnalysisAgentImp::GetExcessCamberEx(const pgsPointOfInterest& poi,Int16
       GET_IFACE(IIntervals, pIntervals);
       IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
       Float64 Emin, Emax;
-      GetDeflection(liveLoadIntervalIdx, pgsTypes::ServiceI, poi, bat, true, false/*exclude live load deflection*/, true/*include elevation adjustments*/, true /*include precamber*/, &Emin, &Emax);
+      GetDeflection(liveLoadIntervalIdx, pgsTypes::ServiceI, poi, bat, true, false/*exclude live load deflection*/, true/*include elevation adjustments*/, true /*include precamber*/, true /* include unrecoverable */, &Emin, &Emax);
       ATLASSERT(IsEqual(Emin, Emax)); // no live load so these should be the same
       ATLASSERT(IsEqual(Emin, excess));
 
@@ -7030,7 +7059,7 @@ Float64 CAnalysisAgentImp::GetExcessCamberEx(const pgsPointOfInterest& poi,Int16
       ATLASSERT(castDeckIntervalIdx != INVALID_INDEX);
       // use -1 on interval because we want the deflection immedately before deck casting
       Float64 Dmin, Dmax;
-      GetDeflection(castDeckIntervalIdx-1, pgsTypes::ServiceI, poi, bat, true, false/*exclude live load deflection*/, true/*include elevation adjustments*/, true /*include precamber*/, &Dmin, &Dmax);
+      GetDeflection(castDeckIntervalIdx-1, pgsTypes::ServiceI, poi, bat, true, false/*exclude live load deflection*/, true/*include elevation adjustments*/, true /*include precamber*/, true /* include unrecoverable */, &Dmin, &Dmax);
       ATLASSERT(IsEqual(Dmin, Dmax)); // no live load so these should be the same
 
       *pDy = Dmax;
@@ -7164,7 +7193,7 @@ Float64 CAnalysisAgentImp::GetDCamberForGirderScheduleEx(const pgsPointOfInteres
          }
 
          Float64 Dmin, Dmax;
-         GetDeflection(intervalIdx, pgsTypes::ServiceI, poi, bat, true, false, true, true, &Dmin, &Dmax);
+         GetDeflection(intervalIdx, pgsTypes::ServiceI, poi, bat, true, false, true, true, true, &Dmin, &Dmax);
          ATLASSERT(IsEqual(Dmin, Dmax)); // no live load so these should be the same
 
          return Dmin;
@@ -7225,19 +7254,19 @@ void CAnalysisAgentImp::GetScreedCamberEx(const pgsPointOfInterest& poi, Int16 t
 
       IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
       Float64 Dmin, Dmax;
-      GetDeflection(intervalIdx, pgsTypes::ServiceI, poi, bat, true/*include prestress*/, false/*no liveload*/, true /*include elevation adjustment*/, true /*include precamber*/, &Dmin, &Dmax);
+      GetDeflection(intervalIdx, pgsTypes::ServiceI, poi, bat, true/*include prestress*/, false/*no liveload*/, true /*include elevation adjustment*/, true /*include precamber*/, true /* include unrecoverable */, &Dmin, &Dmax);
       ATLASSERT(IsEqual(Dmin, Dmax)); // no live load so these should be the same
 
       Float64 DRmin, DRmax;
-      GetRotation(intervalIdx, pgsTypes::ServiceI, poi, bat, true/*include prestress*/, false/*no liveload*/, true /*include elevation adjustment*/, true /*include precamber*/, &DRmin, &DRmax);
+      GetRotation(intervalIdx, pgsTypes::ServiceI, poi, bat, true/*include prestress*/, false/*no liveload*/, true /*include elevation adjustment*/, true /*include precamber*/,true /* include unrecoverable */, &DRmin, &DRmax);
       ATLASSERT(IsEqual(DRmin, DRmax)); // no live load so these should be the same
 
       Float64 Fmin, Fmax;
-      GetDeflection(liveLoadIntervalIdx, pgsTypes::ServiceI, poi, bat, true/*include prestress*/, false/*no liveload*/, true /*include elevation adjustment*/, true /*include precamber*/, &Fmin, &Fmax);
+      GetDeflection(liveLoadIntervalIdx, pgsTypes::ServiceI, poi, bat, true/*include prestress*/, false/*no liveload*/, true /*include elevation adjustment*/, true /*include precamber*/,true /* include unrecoverable */, &Fmin, &Fmax);
       ATLASSERT(IsEqual(Fmin, Fmax)); // no live load so these should be the same
 
       Float64 FRmin, FRmax;
-      GetRotation(liveLoadIntervalIdx, pgsTypes::ServiceI, poi, bat, true/*include prestress*/, false/*no liveload*/, true /*include elevation adjustment*/, true /*include precamber*/, &FRmin, &FRmax);
+      GetRotation(liveLoadIntervalIdx, pgsTypes::ServiceI, poi, bat, true/*include prestress*/, false/*no liveload*/, true /*include elevation adjustment*/, true /*include precamber*/,true /* include unrecoverable */, &FRmin, &FRmax);
       ATLASSERT(IsEqual(FRmin, FRmax)); // no live load so these should be the same
 
       *pDy = Dmin - Fmin;

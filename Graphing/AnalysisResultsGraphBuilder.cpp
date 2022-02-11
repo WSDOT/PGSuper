@@ -1864,8 +1864,8 @@ void CAnalysisResultsGraphBuilder::ProductLoadGraph(IndexType graphIdx,const CAn
          case actionDeflection:
          {
             bool bIncludeElevationAdjustment = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludeElevationAdjustment();
-            bool bIncludePrecamber = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludePrecamber();
-            std::vector<Float64> deflections(pForces->GetDeflection(intervalIdx, pfType, vPoi, bat[analysisIdx], resultsType, bIncludeElevationAdjustment, bIncludePrecamber));
+            bool bIncludeUnrecoverableDefl = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludeUnrecoverableDefl();
+            std::vector<Float64> deflections(pForces->GetDeflection(intervalIdx, pfType, vPoi, bat[analysisIdx], resultsType, bIncludeElevationAdjustment, bIncludeUnrecoverableDefl,bIncludeUnrecoverableDefl));
             AddGraphPoints(data_series_id[analysisIdx], xVals, deflections);
             break;
          }
@@ -1878,8 +1878,8 @@ void CAnalysisResultsGraphBuilder::ProductLoadGraph(IndexType graphIdx,const CAn
          case actionRotation:
          {
             bool bIncludeSlopeAdjustment = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludeElevationAdjustment();
-            bool bIncludePrecamber = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludePrecamber();
-            std::vector<Float64> rotations(pForces->GetRotation(intervalIdx, pfType, vPoi, bat[analysisIdx], resultsType, bIncludeSlopeAdjustment, bIncludePrecamber));
+            bool bIncludeUnrecoverableDefl = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludeUnrecoverableDefl();
+            std::vector<Float64> rotations(pForces->GetRotation(intervalIdx, pfType, vPoi, bat[analysisIdx], resultsType, bIncludeSlopeAdjustment, bIncludeUnrecoverableDefl));
             AddGraphPoints(data_series_id[analysisIdx], xVals, rotations);
             break;
          }
@@ -1963,8 +1963,8 @@ void CAnalysisResultsGraphBuilder::CombinedLoadGraph(IndexType graphIdx,const CA
       case actionDeflection:
          {
             bool bIncludeElevationAdjustment = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludeElevationAdjustment();
-            bool bIncludePrecamber = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludePrecamber();
-            std::vector<Float64> displ = pForces->GetDeflection( intervalIdx, combination_type, vPoi, bat[analysisIdx], resultsType, bIncludeElevationAdjustment, bIncludePrecamber );
+            bool bIncludeUnrecoverableDefl = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludeUnrecoverableDefl();
+            std::vector<Float64> displ = pForces->GetDeflection( intervalIdx, combination_type, vPoi, bat[analysisIdx], resultsType, bIncludeElevationAdjustment, bIncludeUnrecoverableDefl,bIncludeUnrecoverableDefl);
             AddGraphPoints(data_series_id[analysisIdx], xVals, displ);
             break;
          }
@@ -1979,8 +1979,8 @@ void CAnalysisResultsGraphBuilder::CombinedLoadGraph(IndexType graphIdx,const CA
       case actionRotation:
          {
             bool bIncludeSlopeAdjustment = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludeElevationAdjustment();
-            bool bIncludePrecamber = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludePrecamber();
-            std::vector<Float64> rotations = pForces->GetRotation( intervalIdx, combination_type, vPoi, bat[analysisIdx], resultsType, bIncludeSlopeAdjustment, bIncludePrecamber );
+            bool bIncludeUnrecoverableDefl = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludeUnrecoverableDefl();
+            std::vector<Float64> rotations = pForces->GetRotation( intervalIdx, combination_type, vPoi, bat[analysisIdx], resultsType, bIncludeSlopeAdjustment, bIncludeUnrecoverableDefl );
             AddGraphPoints(data_series_id[analysisIdx], xVals, rotations);
             break;
          }
@@ -2204,20 +2204,20 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx,const 
          bool bIncPrestress = (graphType == graphDemand ? true : false);
          bool bIncludeLiveLoad = false;
          bool bIncludeElevationAdjustment = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludeElevationAdjustment();
-         bool bIncludePrecamber = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludePrecamber();
+         bool bIncludeUnrecoverableDefl = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludeUnrecoverableDefl();
          if ( analysisType == pgsTypes::Envelope )
          {
             std::vector<Float64> dispmn, dispmx;
-            pForces->GetDeflection( intervalIdx, limitState, vPoi, pgsTypes::MinSimpleContinuousEnvelope, bIncPrestress, bIncludeLiveLoad, bIncludeElevationAdjustment, bIncludePrecamber, &dispmn, &dispmx);
+            pForces->GetDeflection( intervalIdx, limitState, vPoi, pgsTypes::MinSimpleContinuousEnvelope, bIncPrestress, bIncludeLiveLoad, bIncludeElevationAdjustment,bIncludeUnrecoverableDefl, bIncludeUnrecoverableDefl, &dispmn, &dispmx);
             AddGraphPoints(min_data_series, xVals, dispmn);
 
-            pForces->GetDeflection( intervalIdx, limitState, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, bIncPrestress, bIncludeLiveLoad, bIncludeElevationAdjustment, bIncludePrecamber, &dispmn, &dispmx);
+            pForces->GetDeflection( intervalIdx, limitState, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, bIncPrestress, bIncludeLiveLoad, bIncludeElevationAdjustment, bIncludeUnrecoverableDefl,bIncludeUnrecoverableDefl, &dispmn, &dispmx);
             AddGraphPoints(max_data_series, xVals, dispmx);
          }
          else
          {
             std::vector<Float64> dispmn, dispmx;
-            pForces->GetDeflection( intervalIdx, limitState, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncPrestress, bIncludeLiveLoad, bIncludeElevationAdjustment, bIncludePrecamber, &dispmn, &dispmx);
+            pForces->GetDeflection( intervalIdx, limitState, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncPrestress, bIncludeLiveLoad, bIncludeElevationAdjustment, bIncludeUnrecoverableDefl, bIncludeUnrecoverableDefl, &dispmn, &dispmx);
             AddGraphPoints(min_data_series, xVals, dispmn);
             AddGraphPoints(max_data_series, xVals, dispmx);
          }
@@ -2251,20 +2251,20 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx,const 
          bool bIncPrestress = (graphType == graphDemand ? true : false);
          bool bIncludeLiveLoad = false;
          bool bIncludeSlopeAdjustment = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludeElevationAdjustment();
-         bool bIncludePrecamber = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludePrecamber();
+         bool bIncludeUnrecoverableDefl = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludeUnrecoverableDefl();
          if ( analysisType == pgsTypes::Envelope )
          {
             std::vector<Float64> minRotation, maxRotation;
-            pForces->GetRotation( intervalIdx, limitState, vPoi, pgsTypes::MinSimpleContinuousEnvelope, bIncPrestress, bIncludeLiveLoad, bIncludeSlopeAdjustment, bIncludePrecamber, &minRotation, &maxRotation);
+            pForces->GetRotation( intervalIdx, limitState, vPoi, pgsTypes::MinSimpleContinuousEnvelope, bIncPrestress, bIncludeLiveLoad, bIncludeSlopeAdjustment, bIncludeUnrecoverableDefl, bIncludeUnrecoverableDefl, &minRotation, &maxRotation);
             AddGraphPoints(min_data_series, xVals, minRotation);
 
-            pForces->GetRotation( intervalIdx, limitState, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, bIncPrestress, bIncludeLiveLoad, bIncludeSlopeAdjustment, bIncludePrecamber, &minRotation, &maxRotation);
+            pForces->GetRotation( intervalIdx, limitState, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, bIncPrestress, bIncludeLiveLoad, bIncludeSlopeAdjustment, bIncludeUnrecoverableDefl, bIncludeUnrecoverableDefl, &minRotation, &maxRotation);
             AddGraphPoints(max_data_series, xVals, maxRotation);
          }
          else
          {
             std::vector<Float64> minRotation, maxRotation;
-            pForces->GetRotation( intervalIdx, limitState, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncPrestress, bIncludeLiveLoad, bIncludeSlopeAdjustment, bIncludePrecamber, &minRotation, &maxRotation);
+            pForces->GetRotation( intervalIdx, limitState, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncPrestress, bIncludeLiveLoad, bIncludeSlopeAdjustment, bIncludeUnrecoverableDefl, bIncludeUnrecoverableDefl, &minRotation, &maxRotation);
             AddGraphPoints(min_data_series, xVals, minRotation);
             AddGraphPoints(max_data_series, xVals, maxRotation);
          }

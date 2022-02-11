@@ -58,6 +58,7 @@ void CAnalysisResultsGraphController::SetGraphMode(CAnalysisResultsGraphControll
    FillSelectListCtrl(false);
    FillActionTypeCtrl();
    UpdateListInfo();
+   OnIntervalsChanged();
    UpdateGraph();
 }
 
@@ -84,7 +85,7 @@ BEGIN_MESSAGE_MAP(CAnalysisResultsGraphController, CGirderGraphControllerBase)
    ON_BN_CLICKED(IDC_BOTTOM_DECK, OnStress)
 
    ON_BN_CLICKED(IDC_ELEV_ADJUSTMENT, OnElevAdjustment)
-   ON_BN_CLICKED(IDC_PRECAMBER, OnPrecamber)
+   ON_BN_CLICKED(IDC_PRECAMBER, OnUnrecoverableDefl)
 
    ON_BN_CLICKED(IDC_SIMPLE,OnAnalysisTypeClicked)
    ON_BN_CLICKED(IDC_SIMPLE2,OnAnalysisTypeClicked)
@@ -120,7 +121,7 @@ BOOL CAnalysisResultsGraphController::OnInitDialog()
    UpdateStressControls();
    UpdateAnalysisType();
    UpdateElevAdjustment();
-   UpdatePrecamberAdjustment();
+   UpdateUnrecoverableDeflAdjustment();
 
    return TRUE;
 }
@@ -148,7 +149,7 @@ void CAnalysisResultsGraphController::SetActionType(ActionType actionType)
          pcbAction->SetCurSel(idx);
 
          UpdateElevAdjustment();
-         UpdatePrecamberAdjustment();
+         UpdateUnrecoverableDeflAdjustment();
          UpdateStressControls();
          UpdateResultsType();
 
@@ -256,13 +257,13 @@ bool CAnalysisResultsGraphController::IncludeElevationAdjustment() const
    return IsDlgButtonChecked(IDC_ELEV_ADJUSTMENT) == BST_CHECKED ? true : false;
 }
 
-void CAnalysisResultsGraphController::IncludePrecamber(bool bInclude)
+void CAnalysisResultsGraphController::IncludeUnrecoverableDefl(bool bInclude)
 {
    CheckDlgButton(IDC_PRECAMBER, bInclude ? BST_CHECKED : BST_UNCHECKED);
    UpdateGraph();
 }
 
-bool CAnalysisResultsGraphController::IncludePrecamber() const
+bool CAnalysisResultsGraphController::IncludeUnrecoverableDefl() const
 {
    return IsDlgButtonChecked(IDC_PRECAMBER) == BST_CHECKED ? true : false;
 }
@@ -462,6 +463,7 @@ void CAnalysisResultsGraphController::OnDropDownChanged()
    {
       FillActionTypeCtrl();
       FillSelectListCtrl(true);
+      OnIntervalsChanged();
    }
    else
    {
@@ -477,6 +479,10 @@ void CAnalysisResultsGraphController::OnSelectListChanged()
    if ( GetGraphMode() == Loading) 
    {
       UpdateResultsType();
+   }
+   else
+   {
+      OnIntervalsChanged();
    }
 
    UpdateGraph();
@@ -497,7 +503,7 @@ void CAnalysisResultsGraphController::OnElevAdjustment()
    UpdateGraph();
 }
 
-void CAnalysisResultsGraphController::OnPrecamber()
+void CAnalysisResultsGraphController::OnUnrecoverableDefl()
 {
    UpdateGraph();
 }
@@ -508,6 +514,11 @@ void CAnalysisResultsGraphController::OnAnalysisTypeClicked()
    ATLASSERT(nIDC != 0); // 0 means nothing is selected
    pgsTypes::AnalysisType analysisType = (pgsTypes::AnalysisType)(nIDC - IDC_SIMPLE);
    SetAnalysisType(analysisType);
+}
+
+void CAnalysisResultsGraphController::OnIntervalsChanged()
+{
+   UpdateUnrecoverableDeflAdjustment();
 }
 
 void CAnalysisResultsGraphController::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
@@ -1008,27 +1019,45 @@ void CAnalysisResultsGraphController::UpdateElevAdjustment()
    }
 }
 
-void CAnalysisResultsGraphController::UpdatePrecamberAdjustment()
+void CAnalysisResultsGraphController::UpdateUnrecoverableDeflAdjustment()
 {
    CWnd* pWnd = GetDlgItem(IDC_PRECAMBER);
 
-   GET_IFACE(IDocumentType, pDocType);
-   if (pDocType->IsPGSpliceDocument())
-   {
-      // precamber doesn't apply to PGSplice
-      pWnd->ShowWindow(SW_HIDE);
-      return;
-   }
-
+   // Only show for deflection
    ActionType actionType = GetActionType();
    if (actionType == actionDeflection || actionType == actionRotation)
    {
       pWnd->ShowWindow(SW_SHOW);
+
+      // This is not an option if a pre-erection interval is selected
+      GET_IFACE(IIntervals,pIntervals);
+      IntervalIndexType erectInterval = pIntervals->GetFirstSegmentErectionInterval(GetGirderKey());
+
+      bool hasPreErection(false);
+      std::vector<IntervalIndexType> intervals(GetSelectedIntervals());
+      for (const auto& interval : intervals)
+      {
+         if (interval < erectInterval)
+         {
+            hasPreErection = true;
+         }
+      }
+
+      if (hasPreErection)
+      {
+         CheckDlgButton(IDC_PRECAMBER,BST_CHECKED);
+         pWnd->EnableWindow(FALSE);
+      }
+      else
+      {
+         pWnd->EnableWindow(TRUE);
+      }
    }
    else
    {
       pWnd->ShowWindow(SW_HIDE);
    }
+
 }
 
 void CAnalysisResultsGraphController::UpdateAnalysisType()

@@ -344,6 +344,7 @@ std::vector<Float64> CSegmentModelManager::GetDeflection(IntervalIndexType inter
       GET_IFACE_NOCHECK(IBridgeDescription, pIBridgeDesc);
       GET_IFACE(IIntervals,pIntervals);
       GET_IFACE(IPointOfInterest,pPoi);
+
       std::list<PoiList> sPoi;
       pPoi->GroupBySegment(vPoi, &sPoi);
       for ( const auto& vPoiThisSegment : sPoi)
