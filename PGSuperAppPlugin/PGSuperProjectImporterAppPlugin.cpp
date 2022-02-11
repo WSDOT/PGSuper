@@ -26,6 +26,7 @@
 #include "BridgePlanView.h"
 #include "PGSuperImportPluginDocTemplate.h"
 #include <MFCTools\AutoRegistry.h>
+#include "PGSuperCommandLineInfo.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -126,4 +127,15 @@ CPGSImportPluginDocTemplateBase* CPGSuperProjectImporterAppPlugin::CreateDocTemp
       m_hMenuShared,1);
 
    return pDocTemplate;
+}
+
+CEAFCommandLineInfo* CPGSuperProjectImporterAppPlugin::CreateCommandLineInfo() const
+{
+   return new CPGSuperProjectImporterCommandLineInfo();
+}
+
+CString CPGSuperProjectImporterAppPlugin::GetUsageMessage()
+{
+   CPGSuperProjectImporterCommandLineInfo pgsCmdInfo;
+   return pgsCmdInfo.GetUsageMessage();
 }

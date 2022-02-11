@@ -47,3 +47,12 @@ private:
    virtual LPCTSTR GetAppName() const;
 };
 
+class  CPGSpliceProjectImporterCommandLineInfo : public CPGSProjectImporterBaseCommandLineInfo
+{
+public:
+   CPGSpliceProjectImporterCommandLineInfo();
+
+private:
+   virtual LPCTSTR GetAppName() const;
+};
+

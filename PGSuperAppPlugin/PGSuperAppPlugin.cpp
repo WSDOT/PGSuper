@@ -374,7 +374,7 @@ bool CPGSuperAppPlugin::UpdatingTemplates()
    return m_bUpdatingTemplate;
 }
 
-CPGSBaseCommandLineInfo* CPGSuperAppPlugin::CreateCommandLineInfo() const
+CEAFCommandLineInfo* CPGSuperAppPlugin::CreateCommandLineInfo() const
 {
    return new CPGSuperCommandLineInfo();
 }

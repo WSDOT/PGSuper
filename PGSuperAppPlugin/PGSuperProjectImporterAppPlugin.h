@@ -56,9 +56,14 @@ public:
    virtual UINT GetMenuResourceID() override;
    virtual CPGSImportPluginDocTemplateBase* CreateDocTemplate() override;
 
+   virtual CEAFCommandLineInfo* CreateCommandLineInfo() const override;
+   virtual CString GetUsageMessage() override;
+
+
 BEGIN_COM_MAP(CPGSuperProjectImporterAppPlugin)
    COM_INTERFACE_ENTRY(IEAFAppPlugin)
    COM_INTERFACE_ENTRY(IEAFCommandCallback)
+   COM_INTERFACE_ENTRY(IEAFAppCommandLine)
 END_COM_MAP()
 
 BEGIN_CONNECTION_POINT_MAP(CPGSuperProjectImporterAppPlugin)

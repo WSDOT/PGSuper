@@ -43,6 +43,8 @@ bool CPGSProjectImporterMgrBase::LoadImporters()
 {
    USES_CONVERSION;
 
+   // Loads all of the registered project importers
+
    CComPtr<ICatRegister> pICatReg;
    HRESULT hr = pICatReg.CoCreateInstance(CLSID_StdComponentCategoriesMgr);
    if ( FAILED(hr) )

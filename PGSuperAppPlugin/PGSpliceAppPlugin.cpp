@@ -372,7 +372,7 @@ bool CPGSpliceAppPlugin::UpdatingTemplates()
    return m_bUpdatingTemplate;
 }
 
-CPGSBaseCommandLineInfo* CPGSpliceAppPlugin::CreateCommandLineInfo() const
+CEAFCommandLineInfo* CPGSpliceAppPlugin::CreateCommandLineInfo() const
 {
    return new CPGSpliceCommandLineInfo();
 }

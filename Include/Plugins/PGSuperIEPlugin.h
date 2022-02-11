@@ -77,6 +77,7 @@ interface IPGSProjectImporter : IUnknown
    virtual HRESULT GetItemText(BSTR* bstrText) const = 0;
    virtual HRESULT Import(IBroker* pBroker) = 0;
    virtual HRESULT GetIcon(HICON* phIcon) const = 0;
+   virtual HRESULT GetCLSID(CLSID* pCLSID) const = 0;
 };
 
 // {BF6EC18A-43D2-4ea1-BC7F-54365DD645DA}

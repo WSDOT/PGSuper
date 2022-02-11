@@ -34,6 +34,13 @@ HRESULT CPGSpliceProjectImporter::FinalConstruct()
 
 /////////////////////////////////////////////////////////////////////////////
 // CPGSpliceProjectImporter
+
+STDMETHODIMP CPGSpliceProjectImporter::GetCLSID(CLSID* pCLSID) const
+{
+   *pCLSID = CLSID_PGSuperProjectImporter;
+   return S_OK;
+}
+
 STDMETHODIMP CPGSpliceProjectImporter::GetItemText(BSTR*  bstrText) const
 {
    CComBSTR bstrItemText("Example Importer");

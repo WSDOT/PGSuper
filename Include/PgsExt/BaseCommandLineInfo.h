@@ -79,3 +79,29 @@ private:
    virtual LPCTSTR GetAppName() const = 0;
 };
 
+
+class PGSEXTCLASS CPGSProjectImporterBaseCommandLineInfo : public CEAFCommandLineInfo
+{
+public:
+   CPGSProjectImporterBaseCommandLineInfo();
+   virtual ~CPGSProjectImporterBaseCommandLineInfo();
+
+   // derive new version to parse new commands
+   virtual void ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast) override;
+
+   virtual CString GetUsageMessage() override;
+   virtual CString GetErrorMessage() override;
+
+   bool m_bNewProject;
+   CString m_strCLSID;
+
+   Uint32 m_Count; // parameter number
+
+private:
+   // Prevent accidental copying and assignment
+   CPGSProjectImporterBaseCommandLineInfo(const CPGSProjectImporterBaseCommandLineInfo&) = delete;
+   CPGSProjectImporterBaseCommandLineInfo& operator=(const CPGSProjectImporterBaseCommandLineInfo&) = delete;
+
+   virtual LPCTSTR GetAppName() const = 0;
+};
+

@@ -50,6 +50,8 @@ public:
 
    virtual CDocTemplate::Confidence MatchDocType(LPCTSTR lpszPathName,	CDocument*& rpDocMatch);
 
+   CEAFTemplateItem* GetTemplateItem(const CLSID& clsid);
+
 protected:
    virtual BOOL DoOpenDocumentFile(LPCTSTR lpszPathName,BOOL bMakeVisible,CEAFDocument* pDocument,CFrameWnd* pFrame);
 

@@ -58,6 +58,7 @@ public:
    STDMETHOD(GetItemText)(/*[out,retval]*/BSTR*  bstrText) const override;
    STDMETHOD(GetIcon)(/*[out]*/HICON* phIcon) const override;
    STDMETHOD(Import)(/*[in]*/IBroker* pBroker) override;
+   STDMETHOD(GetCLSID)(CLSID* pCLSID) const override;
 
 private:
    void BuildBridge(IBroker* pBroker);

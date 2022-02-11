@@ -45,3 +45,15 @@ LPCTSTR CPGSuperCommandLineInfo::GetAppName() const
 {
    return _T("PGSuper");
 }
+
+/////////////////////////////////
+
+CPGSuperProjectImporterCommandLineInfo::CPGSuperProjectImporterCommandLineInfo() :
+   CPGSProjectImporterBaseCommandLineInfo()
+{
+}
+
+LPCTSTR CPGSuperProjectImporterCommandLineInfo::GetAppName() const
+{
+   return _T("PGSuperProjectImporter");
+}

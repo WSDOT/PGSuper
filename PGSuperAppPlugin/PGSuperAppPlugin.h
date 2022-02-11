@@ -95,7 +95,7 @@ public:
    bool UpdatingTemplates();
 
 protected:
-   virtual CPGSBaseCommandLineInfo* CreateCommandLineInfo() const override;
+   virtual CEAFCommandLineInfo* CreateCommandLineInfo() const override;
 
    virtual LPCTSTR GetCatalogServerKey() const override;
    virtual LPCTSTR GetPublisherKey() const override;

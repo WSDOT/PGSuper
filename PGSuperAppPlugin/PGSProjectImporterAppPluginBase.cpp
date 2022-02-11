@@ -149,9 +149,70 @@ void CPGSProjectImporterAppPluginBase::ConfigureProjectImporters()
    }
 }
 
-CPGSBaseCommandLineInfo* CPGSProjectImporterAppPluginBase::CreateCommandLineInfo() const
+BOOL CPGSProjectImporterAppPluginBase::DoProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo)
 {
-   return nullptr;//return new CPGSuperProjectImporterCommandLineInfo; (if we want to handle command line options for an importer, we need a new class);
+//   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   // cmdInfo is the command line information from the application. The application
+   // doesn't know about this plug-in at the time the command line parameters are parsed
+   //
+   // Re-parse the parameters with our own command line information object
+   std::unique_ptr<CPGSProjectImporterBaseCommandLineInfo> pgsCmdInfo((CPGSProjectImporterBaseCommandLineInfo*)CreateCommandLineInfo());
+   if (pgsCmdInfo.get() != nullptr)
+   {
+      EAFGetApp()->ParseCommandLine(*pgsCmdInfo);
+      cmdInfo = *pgsCmdInfo;
+
+      if (pgsCmdInfo->m_bNewProject)
+      {
+         CreateNewProject(*pgsCmdInfo);
+         return TRUE; // command line parameters handled
+      }
+
+      if (pgsCmdInfo->m_bError)
+      {
+         return FALSE;
+      }
+   }
+
+   return FALSE;
+}
+
+void CPGSProjectImporterAppPluginBase::CreateNewProject(CPGSProjectImporterBaseCommandLineInfo& cmdInfo)
+{
+   ATLASSERT(cmdInfo.m_bNewProject);
+
+   CEAFApp* pApp = EAFGetApp();
+
+   CEAFBrokerDocument* pDoc = nullptr;
+   POSITION pos = pApp->m_pDocManager->GetFirstDocTemplatePosition();
+   while (pos != nullptr)
+   {
+      CPGSImportPluginDocTemplateBase* pTemplate = (CPGSImportPluginDocTemplateBase*)pApp->m_pDocManager->GetNextDocTemplate(pos);
+      CComPtr<IEAFAppPlugin> pAppPlugin;
+      pTemplate->GetPlugin(&pAppPlugin);
+      CComPtr<IEAFAppPlugin> me(this);
+      if (pAppPlugin.IsEqualObject(me))
+      {
+         CLSID clsid;
+         HRESULT hr = ::CLSIDFromString(cmdInfo.m_strCLSID, &clsid);
+         if (hr != NOERROR)
+         {
+            cmdInfo.m_bError = TRUE;
+            return;
+         }
+
+         CEAFTemplateItem* pItem = pTemplate->GetTemplateItem(clsid);
+         pTemplate->SetTemplateItem(pItem);
+         pDoc = (CEAFBrokerDocument*)pTemplate->OpenDocumentFile(nullptr, FALSE, TRUE);
+         break;
+      }
+   }
+
+   if (pDoc == nullptr)
+   {
+      cmdInfo.m_bError = TRUE;
+   }
 }
 
 BOOL CPGSProjectImporterAppPluginBase::Init(CEAFApp* pParent)
@@ -205,6 +266,7 @@ std::vector<CEAFDocTemplate*> CPGSProjectImporterAppPluginBase::CreateDocTemplat
 
    std::vector<CEAFDocTemplate*> vDocTemplates;
 
+   // Create the one and only document template for all project importers associated with this Plug-in Application
    CPGSImportPluginDocTemplateBase* pDocTemplate = CreateDocTemplate();
 
    // If there aren't any importers, we don't want the "PGSuper/PGSplice Project Importer" option to
@@ -310,4 +372,14 @@ BOOL CPGSProjectImporterAppPluginBase::GetToolTipMessageString(UINT nID, CString
 	}
 
    return TRUE;
+}
+
+CString CPGSProjectImporterAppPluginBase::GetCommandLineAppName() const
+{
+   return GetAppName() + CString(_T("ProjectImporter"));
+}
+
+BOOL CPGSProjectImporterAppPluginBase::ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo)
+{
+   return DoProcessCommandLineOptions(cmdInfo);
 }

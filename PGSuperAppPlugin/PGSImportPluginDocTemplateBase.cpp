@@ -175,9 +175,11 @@ CPGSProjectImporterMgrBase* CPGSImportPluginDocTemplateBase::GetProjectImporterM
 {
    if ( m_pProjectImporterMgr == nullptr )
    {
+      // The first time the project importer manager is requested, create it and loadd all of the importers
       m_pProjectImporterMgr = CreateProjectImporterMgr();
-
       m_pProjectImporterMgr->LoadImporters();
+
+      // For each registered importer, add a template item to the template group
 
       CollectionIndexType nImporters = m_pProjectImporterMgr->GetImporterCount();
       for ( CollectionIndexType idx = 0; idx < nImporters; idx++ )
@@ -195,4 +197,25 @@ CPGSProjectImporterMgrBase* CPGSImportPluginDocTemplateBase::GetProjectImporterM
    }
 
    return m_pProjectImporterMgr;
+}
+
+CEAFTemplateItem* CPGSImportPluginDocTemplateBase::GetTemplateItem(const CLSID& clsid)
+{
+   IndexType nItems = m_TemplateGroup.GetItemCount();
+   for (IndexType idx = 0; idx < nItems; idx++)
+   {
+      CEAFTemplateItem* pItem = m_TemplateGroup.GetItem(idx);
+      if (pItem->IsKindOf(RUNTIME_CLASS(CMyTemplateItem)))
+      {
+         CMyTemplateItem* pMyItem = (CMyTemplateItem*)pItem;
+         CLSID itemCLSID;
+         pMyItem->m_Importer->GetCLSID(&itemCLSID);
+         if (clsid == itemCLSID)
+         {
+            return pItem;
+         }
+      }
+   }
+
+   return nullptr;
 }

@@ -45,3 +45,15 @@ LPCTSTR CPGSpliceCommandLineInfo::GetAppName() const
 {
    return _T("PGSplice");
 }
+
+/////////////////////////////////
+
+CPGSpliceProjectImporterCommandLineInfo::CPGSpliceProjectImporterCommandLineInfo() :
+   CPGSProjectImporterBaseCommandLineInfo()
+{
+}
+
+LPCTSTR CPGSpliceProjectImporterCommandLineInfo::GetAppName() const
+{
+   return _T("PGSpliceProjectImporter");
+}

@@ -187,7 +187,7 @@ BOOL CPGSAppPluginBase::DoProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo
    // doesn't know about this plug-in at the time the command line parameters are parsed
    //
    // Re-parse the parameters with our own command line information object
-   std::unique_ptr<CPGSBaseCommandLineInfo> pgsCmdInfo(CreateCommandLineInfo());
+   std::unique_ptr<CPGSBaseCommandLineInfo> pgsCmdInfo((CPGSBaseCommandLineInfo*)CreateCommandLineInfo());
    if ( pgsCmdInfo.get() != nullptr )
    {
       EAFGetApp()->ParseCommandLine(*pgsCmdInfo);

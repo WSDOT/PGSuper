@@ -92,21 +92,21 @@ public:
    bool UpdatingTemplates();
 
 protected:
-   virtual CPGSBaseCommandLineInfo* CreateCommandLineInfo() const;
+   virtual CEAFCommandLineInfo* CreateCommandLineInfo() const;
 
 // IEAFAppPlugin
 public:
-   virtual BOOL Init(CEAFApp* pParent);
-   virtual void Terminate();
-   virtual void IntegrateWithUI(BOOL bIntegrate);
-   virtual std::vector<CEAFDocTemplate*> CreateDocTemplates();
-   virtual HMENU GetSharedMenuHandle();
-   virtual CString GetName();
-   virtual CString GetDocumentationSetName();
-   virtual CString GetDocumentationURL();
-   virtual CString GetDocumentationMapFile();
-   virtual void LoadDocumentationMap();
-   virtual eafTypes::HelpResult GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID,CString& strURL);
+   virtual BOOL Init(CEAFApp* pParent) override;
+   virtual void Terminate() override;
+   virtual void IntegrateWithUI(BOOL bIntegrate) override;
+   virtual std::vector<CEAFDocTemplate*> CreateDocTemplates() override;
+   virtual HMENU GetSharedMenuHandle() override;
+   virtual CString GetName() override;
+   virtual CString GetDocumentationSetName() override;
+   virtual CString GetDocumentationURL() override;
+   virtual CString GetDocumentationMapFile() override;
+   virtual void LoadDocumentationMap() override;
+   virtual eafTypes::HelpResult GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID,CString& strURL) override;
 
 // IEAFAppCommandLine
 public:
@@ -116,9 +116,9 @@ public:
 
 // IEAFCommandCallback
 public:
-   virtual BOOL OnCommandMessage(UINT nID,int nCode,void* pExtra,AFX_CMDHANDLERINFO* pHandlerInfo);
-   virtual BOOL GetStatusBarMessageString(UINT nID, CString& rMessage) const;
-   virtual BOOL GetToolTipMessageString(UINT nID, CString& rMessage) const;
+   virtual BOOL OnCommandMessage(UINT nID,int nCode,void* pExtra,AFX_CMDHANDLERINFO* pHandlerInfo) override;
+   virtual BOOL GetStatusBarMessageString(UINT nID, CString& rMessage) const override;
+   virtual BOOL GetToolTipMessageString(UINT nID, CString& rMessage) const override;
 
 };
 

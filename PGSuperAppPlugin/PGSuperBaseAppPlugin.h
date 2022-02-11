@@ -66,7 +66,7 @@ protected:
    virtual void LoadRegistryValues() override;
    virtual void SaveRegistryValues() override;
 
-   virtual CPGSBaseCommandLineInfo* CreateCommandLineInfo() const = 0;
+   virtual CEAFCommandLineInfo* CreateCommandLineInfo() const = 0;
    virtual BOOL DoProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo);
    virtual void Process1250Testing(const CPGSBaseCommandLineInfo& rCmdInfo);
 

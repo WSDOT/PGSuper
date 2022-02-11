@@ -47,3 +47,11 @@ private:
    virtual LPCTSTR GetAppName() const override;
 };
 
+class  CPGSuperProjectImporterCommandLineInfo : public CPGSProjectImporterBaseCommandLineInfo
+{
+public:
+   CPGSuperProjectImporterCommandLineInfo();
+
+private:
+   virtual LPCTSTR GetAppName() const override;
+};

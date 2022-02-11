@@ -48,6 +48,12 @@ STDMETHODIMP CPGSuperProjectImporter::GetItemText(BSTR*  bstrText) const
    return S_OK;
 }
 
+STDMETHODIMP CPGSuperProjectImporter::GetCLSID(CLSID* pCLSID) const
+{
+   *pCLSID = CLSID_PGSuperProjectImporter;
+   return S_OK;
+}
+
 STDMETHODIMP CPGSuperProjectImporter::GetIcon(HICON* phIcon) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
