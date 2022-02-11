@@ -191,6 +191,11 @@ eafTypes::HelpResult CTxDOTAppPlugin::GetDocumentLocation(LPCTSTR lpszDocSetName
    return m_DocumentationImpl.GetDocumentLocation(lpszDocSetName,nID,strURL);
 }
 
+CString CTxDOTAppPlugin::GetCommandLineAppName() const
+{
+   return GetAppName();
+}
+
 CString CTxDOTAppPlugin::GetUsageMessage()
 {
    CTxDOTCommandLineInfo txCmdInfo;

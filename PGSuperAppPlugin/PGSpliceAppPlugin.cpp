@@ -206,6 +206,11 @@ eafTypes::HelpResult CPGSpliceAppPlugin::GetDocumentLocation(LPCTSTR lpszDocSetN
    return CPGSAppPluginBase::GetDocumentLocation(lpszDocSetName,nID,strURL);
 }
 
+CString CPGSpliceAppPlugin::GetCommandLineAppName() const
+{
+   return GetAppName();
+}
+
 CString CPGSpliceAppPlugin::GetUsageMessage()
 {
    CPGSpliceCommandLineInfo pgsCmdInfo;

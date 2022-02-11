@@ -110,8 +110,9 @@ public:
 
 // IEAFAppCommandLine
 public:
-   virtual CString GetUsageMessage();
-   virtual BOOL ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo);
+   virtual CString GetCommandLineAppName() const override;
+   virtual CString GetUsageMessage() override;
+   virtual BOOL ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo) override;
 
 // IEAFCommandCallback
 public:

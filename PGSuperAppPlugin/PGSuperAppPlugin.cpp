@@ -207,6 +207,11 @@ eafTypes::HelpResult CPGSuperAppPlugin::GetDocumentLocation(LPCTSTR lpszDocSetNa
    return CPGSAppPluginBase::GetDocumentLocation(lpszDocSetName,nID,strURL);
 }
 
+CString CPGSuperAppPlugin::GetCommandLineAppName() const
+{
+   return GetAppName();
+}
+
 CString CPGSuperAppPlugin::GetUsageMessage()
 {
    CPGSuperCommandLineInfo pgsCmdInfo;
