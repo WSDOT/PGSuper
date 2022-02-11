@@ -4,6 +4,7 @@ Technical Guide {#technical_guide}
 The purpose of this Technical Guide is to detail the algorithms and computational methods used by this software.
 
 Topics
+* @subpage tg_07_strands
 * @subpage tg_anchor_set
 * @subpage tg_bearing_seat_geometry
 * @subpage tg_capacity_demand_ratios
