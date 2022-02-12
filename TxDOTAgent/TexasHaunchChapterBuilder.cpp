@@ -343,7 +343,7 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
 
       // Get Midspan poi and take averages at 0.2, 0.3 points to compute quarter point reactions
       PoiList vPoi;
-      pIPOI->GetPointsOfInterest(segmentKey, POI_TENTH_POINTS | POI_SPAN, &vPoi);
+      pIPOI->GetPointsOfInterest(segmentKey, POI_TENTH_POINTS | POI_ERECTED_SEGMENT, &vPoi);
       ATLASSERT(vPoi.size()==11);
       const pgsPointOfInterest& poi_0 = vPoi[0];
       const pgsPointOfInterest& poi_2 = vPoi[2];
@@ -392,6 +392,8 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
          }
       }
 
+      ATLASSERT(tslab != 0.0); // Z dimension not found. GetSlabOffsetDetails not returning our POI?
+
       // haunch volume. use simplified txdot method
       Float64 L = pBridge->GetGirderLayoutLength(girderKey); // CL Pier to CL Pier
       Float64 Xavg = (Xstart+Xend)/2.0;
@@ -415,67 +417,73 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
       (*pTable)(row,col) <<  Bold(LABEL_GIRDER(girder));
       row++;
 
+      const unitmgtLengthData& length_unit(pDisplayUnits->GetSpanLengthUnit()); // feet
+      rptFormattedLengthUnitValue cmpdim(&length_unit.UnitOfMeasure,length_unit.Tol,false,true,8,true,rptFormattedLengthUnitValue::RoundOff);
+      cmpdim.SetFormat(length_unit.Format);
+      cmpdim.SetWidth(length_unit.Width);
+      cmpdim.SetPrecision(length_unit.Precision);
+
       if (areAsSymm)
       {
          if (bFirst)
-            (*pTable)(row,0) << _T("X (") << disp.GetUnitTag() << _T(") ");
+            (*pTable)(row,0) << _T("X");
 
          val = ::CeilOffTol(Xstart, xyzToler);
 
-         (*pTable)(row,col) << disp.SetValue( val );
+         (*pTable)(row,col) << cmpdim.SetValue( val );
          row++;
 
          if (bFirst)
-            (*pTable)(row,0) << _T("Y (") << disp.GetUnitTag() << _T(") ");
+            (*pTable)(row,0) << _T("Y");
 
          val = ::CeilOffTol(Xstart+height, xyzToler);
 
-         (*pTable)(row,col) << disp.SetValue( val );
+         (*pTable)(row,col) << cmpdim.SetValue( val );
          row++;
 
       }
       else
       {
          if (bFirst)
-            (*pTable)(row,0) << _T("X Start (") << disp.GetUnitTag() << _T(") ");
+            (*pTable)(row,0) << _T("X Start");
 
          val = ::CeilOffTol(Xstart, xyzToler);
 
-         (*pTable)(row,col) << disp.SetValue( val );
+         (*pTable)(row,col) << cmpdim.SetValue( val );
          row++;
 
          if (bFirst)
-            (*pTable)(row,0) << _T("X End (") << disp.GetUnitTag() << _T(") ");
+            (*pTable)(row,0) << _T("X End");
 
          val = ::CeilOffTol(Xend, xyzToler);
 
-         (*pTable)(row,col) << disp.SetValue( val );
+         (*pTable)(row,col) << cmpdim.SetValue( val );
          row++;
 
          if (bFirst)
-            (*pTable)(row,0) << _T("Y Start (") << disp.GetUnitTag() << _T(") ");
+            (*pTable)(row,0) << _T("Y Start");
 
          val = ::CeilOffTol(Xstart+height, xyzToler);
 
-         (*pTable)(row,col) << disp.SetValue( val );
+         (*pTable)(row,col) << cmpdim.SetValue( val );
          row++;
 
          if (bFirst)
-            (*pTable)(row,0) << _T("Y End (") << disp.GetUnitTag() << _T(") ");
+            (*pTable)(row,0) << _T("Y End");
 
          val = ::CeilOffTol(Xend+height, xyzToler);
 
-         (*pTable)(row,col) << disp.SetValue( val );
+         (*pTable)(row,col) << cmpdim.SetValue( val );
          row++;
       }
 
       // Z
       if (bFirst)
-         (*pTable)(row,0) << _T("Z (") << disp.GetUnitTag() << _T(") ");
+         (*pTable)(row,0) << _T("Z");
 
       val = ::CeilOffTol(Z, xyzToler);
 
-      (*pTable)(row,col) << disp.SetValue( val );
+      (*pTable)(row,col) << cmpdim.SetValue( val );
       row++;
 
       // slab deflections

@@ -50,6 +50,9 @@ public:
       RoundDown ///< rounds down
    };
 
+   // String for TxDOT X,Y,Z values
+   static CString CreateXYZString(Float64 sysVal, Float64 toler);
+
    // Get string from feet value in ft" in-1/frac" format. Plain text
    static std::_tstring CTxDataExporter::CreateFeetInchFracString(Float64  feetDecimalVal, // decimal value in Feet
                                                                Float64  zeroTolerance,  // tolerance for zeroness

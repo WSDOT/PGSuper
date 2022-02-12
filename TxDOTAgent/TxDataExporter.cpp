@@ -53,6 +53,17 @@ void CTxDataExporter::WriteFloatToCell(IndexType hTable, LPCTSTR strRangeName, I
    WriteStringToCell(hTable, strRangeName, rowIdx, fltstring);
 }
 
+CString CTxDataExporter::CreateXYZString(Float64 sysVal,Float64 toler)
+{
+   Float64 val = ::CeilOffTol(sysVal,toler);
+   val = ConvertFromSysUnits(val,unitMeasure::Inch);
+
+   CString str;
+   str.Format(_T("%.3f"), val);
+   return str;
+}
+
+
 std::_tstring CTxDataExporter::CreateFeetInchFracString(Float64 feetValue, Float64 zeroTolerance, Uint16 denominator, CTxDataExporter::Rounding rounding)
 {
    // English formatted output  ft'-inn/d"

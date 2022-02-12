@@ -539,7 +539,6 @@ HRESULT CTxDOTCadExporter::ExportHaunchDeflectionData(IBroker* pBroker, const st
       GET_IFACE2(pBroker, IGirder, pGirder);
       GET_IFACE2(pBroker, ISpecification, pSpec);
       GET_IFACE2(pBroker, IGirderHaunch, pGdrHaunch);
-      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
       GET_IFACE2(pBroker, IIntervals, pIntervals);
       IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(0); // assume deck casting region 0
 
@@ -560,7 +559,7 @@ HRESULT CTxDOTCadExporter::ExportHaunchDeflectionData(IBroker* pBroker, const st
 
          // Get Midspan poi and take averages at 0.2, 0.3 points to compute quarter point reactions
          PoiList vPoi;
-         pIPOI->GetPointsOfInterest(segmentKey, POI_TENTH_POINTS | POI_SPAN, &vPoi);
+         pIPOI->GetPointsOfInterest(segmentKey, POI_TENTH_POINTS | POI_ERECTED_SEGMENT, &vPoi);
          ATLASSERT(vPoi.size() == 11);
          const pgsPointOfInterest& poi_0 = vPoi[0];
          const pgsPointOfInterest& poi_2 = vPoi[2];
@@ -594,19 +593,17 @@ HRESULT CTxDOTCadExporter::ExportHaunchDeflectionData(IBroker* pBroker, const st
             }
          }
 
-         // Write X, Y, and Z in ft'-in x/frac" format rounded up to nearest 1/8" accuracy
+         // Write X, Y, and Z decimal in format rounded up to nearest 1/8" accuracy
          Float64 xyzToler = ::ConvertToSysUnits(0.125, unitMeasure::Inch);
 
+         CString fmtStr;
          Float64 val;
          if (IsEqual(Xstart, Xend))
          {
-            val = ::CeilOffTol(Xstart, xyzToler);
-            val = ConvertFromSysUnits(val, unitMeasure::Feet);
-            pExporter->WriteStringToCell(1, _T("X_Val"), rowNum, CTxDataExporter::CreateFeetInchFracString(val, 0.001, 8, CTxDataExporter::RoundUp).c_str());
+            pExporter->WriteStringToCell(1, _T("X_Val"), rowNum, CTxDataExporter::CreateXYZString(Xstart, xyzToler));
 
-            val = ::CeilOffTol(Xstart+height, xyzToler);
-            val = ConvertFromSysUnits(val, unitMeasure::Feet);
-            pExporter->WriteStringToCell(1, _T("Y_Val"), rowNum, CTxDataExporter::CreateFeetInchFracString(val, 0.001, 8, CTxDataExporter::RoundUp).c_str());
+            Float64 Y = Xstart + height;
+            pExporter->WriteStringToCell(1, _T("Y_Val"), rowNum, CTxDataExporter::CreateXYZString(Y, xyzToler));
          }
          else
          {
@@ -619,9 +616,7 @@ HRESULT CTxDOTCadExporter::ExportHaunchDeflectionData(IBroker* pBroker, const st
          }
 
          // Z
-         val = ::CeilOffTol(Z + height, xyzToler);
-         val = ConvertFromSysUnits(val, unitMeasure::Feet);
-         pExporter->WriteStringToCell(1, _T("Z_Val"), rowNum, CTxDataExporter::CreateFeetInchFracString(val, 0.001, 8, CTxDataExporter::RoundUp).c_str());
+         pExporter->WriteStringToCell(1, _T("Z_Val"), rowNum, CTxDataExporter::CreateXYZString(Z, xyzToler));
 
          // slab deflections
          // deflections from slab loading
