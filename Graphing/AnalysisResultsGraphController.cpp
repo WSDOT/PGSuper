@@ -116,6 +116,7 @@ BOOL CAnalysisResultsGraphController::OnInitDialog()
    CheckRadioButton(IDC_INCREMENTAL,IDC_CUMULATIVE,IDC_CUMULATIVE);
    CheckDlgButton(IDC_TOP_GIRDER,BST_CHECKED);
    CheckDlgButton(IDC_BOTTOM_GIRDER,BST_CHECKED);
+   CheckDlgButton(IDC_PRECAMBER,BST_CHECKED);
 
    UpdateListInfo();
    UpdateStressControls();
