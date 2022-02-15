@@ -45,16 +45,18 @@ std::_tstring IntervalTool::AsString(Float64 value) const
 {
    ATLASSERT(0.0 <= m_LastValue);
 
-   Float64 v = int(value);
-   if ( value == m_LastValue )
+   // Intervals are displayed as int's
+   int v = (int)value;
+   if ( value == (int)m_LastValue )
    {
-      v -= 1.0;
+      v -= 1;
    }
 
-   Uint16 precision = m_Precision;
-   const_cast<IntervalTool*>(this)->m_Precision = 0;
-   std::_tstring strValue = ScalarTool::AsString(v);
-   const_cast<IntervalTool*>(this)->m_Precision = precision;
+
+   std::_tostringstream os;
+   os << v;
+
+   std::_tstring strValue(os.str());
 
    if ( value == m_LastValue )
    {

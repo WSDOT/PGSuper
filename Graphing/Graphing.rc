@@ -264,8 +264,9 @@ BEGIN
     CONTROL         "Interval",IDC_INTERVALS,"Button",BS_AUTORADIOBUTTON,11,86,41,10
     CONTROL         "Include Elevation Adjustments",IDC_ELEV_ADJUSTMENT,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,109,113,10
-    CONTROL         "Show Grid",IDC_GRID,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,132,48,10
-    CONTROL         "Include Precamber",IDC_PRECAMBER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,121,75,10
+    CONTROL         "Show Grid",IDC_GRID,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,137,48,15
+    CONTROL         "Include Permanent Deflections\nPrior to Erection",IDC_PRECAMBER,
+                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,6,122,142,15
 END
 
 

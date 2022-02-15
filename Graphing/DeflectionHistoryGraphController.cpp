@@ -58,6 +58,8 @@ BOOL CDeflectionHistoryGraphController::OnInitDialog()
       GetDlgItem(IDC_ELEV_ADJUSTMENT)->ShowWindow(SW_HIDE);
    }
 
+   CheckDlgButton(IDC_PRECAMBER,BST_CHECKED);
+
    return TRUE;
 }
 
