@@ -361,7 +361,7 @@ void CSegmentGraphBuilderBase::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
       GetBeamDrawIntervals(&firstIntervalIdx,&lastIntervalIdx);
 
       CDrawBeamTool drawBeam;
-      drawBeam.SetMinAspectRatio(20.0); // shrink beam height to reasonable aspect if needed so it will fit nicely on graph.
+      drawBeam.SetMinAspectRatio(30.0); // shrink beam height to reasonable aspect if needed so it will fit nicely on graph.
       drawBeam.SetStyle(GetDrawBeamStyle());
 
       grlibPointMapper mapper;

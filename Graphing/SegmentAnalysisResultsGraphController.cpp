@@ -660,6 +660,7 @@ void CSegmentAnalysisResultsGraphController::FillDropListCtrl_Intervals(bool bRe
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
+   IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
    IntervalIndexType firstIntervalIdx = GetFirstInterval();
    IntervalIndexType lastIntervalIdx = GetLastInterval();
    for (IntervalIndexType intervalIdx = firstIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++)
@@ -668,6 +669,12 @@ void CSegmentAnalysisResultsGraphController::FillDropListCtrl_Intervals(bool bRe
       {
          CString strInterval;
          strInterval.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+
+         if (intervalIdx == erectSegmentIntervalIdx)
+         {
+            strInterval += _T(" - Current Segment");
+         }
+
          int idx = pcbIntervals->AddString(strInterval);
          pcbIntervals->SetItemData(idx,intervalIdx);
       }
@@ -772,6 +779,7 @@ void CSegmentAnalysisResultsGraphController::FillSelectListCtrl_Intervals(bool b
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
+   IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
    IntervalIndexType firstIntervalIdx = GetFirstInterval();
    IntervalIndexType lastIntervalIdx  = GetLastInterval();
    for ( IntervalIndexType intervalIdx = firstIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++ )
@@ -786,6 +794,12 @@ void CSegmentAnalysisResultsGraphController::FillSelectListCtrl_Intervals(bool b
          }
 
          str.Format(_T("%d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+
+         if (intervalIdx == erectSegmentIntervalIdx)
+         {
+            str += _T(" - Current Segment");
+         }
+
          int idx = plbIntervals->AddString(str);
          plbIntervals->SetItemData(idx,intervalIdx);
       }
