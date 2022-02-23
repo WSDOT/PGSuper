@@ -10,7 +10,9 @@
 #define IDD_GIRDER_PROPERTIES_GRAPH_CONTROLLER 199
 #define IDD_CONCRETE_PROPERTY_GRAPH_CONTROLLER 200
 #define IDD_DEFLECTIONHISTORY_GRAPH_CONTROLLER 201
+#define IDD_ANALYSISRESULTS_GRAPH_CONTROLLER2 202
 #define IDD_INITIALSTRAIN_GRAPH_CONTROLLER 203
+#define IDD_SEGMENT_ANALYSISRESULTS_GRAPH_CONTROLLER 204
 #define IDC_EVENT                       1096
 #define IDC_SIMPLE                      1478
 #define IDC_SIMPLE2                     1479
@@ -22,6 +24,7 @@
 #define IDC_GROUP                       3012
 #define IDC_GIRDER                      3013
 #define IDC_SEGMENT                     3014
+#define IDC_GIRDER2                     3014
 #define IDC_CLOSURE                     3015
 #define IDC_INTERVAL                    3016
 #define IDC_CLOSURE2                    3016

@@ -3020,7 +3020,7 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
          {
             GET_IFACE(IIntervals,pIntervals);
             IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
-            if (haulingIntervalIdx == intervalIdx && resultsType == rtCumulative)
+            if (haulingIntervalIdx == intervalIdx && resultsType == rtCumulative && bIncludePreErectionUnrecov)
             {
                // Girder deflection at hauling is tricky special case. 
                // This is where we first see the permanent deflection due to the increase in modulus over time.
@@ -4160,7 +4160,23 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
 
          if ( intervalIdx < erectionIntervalIdx )
          {
-            deflection = m_pSegmentModelManager->GetDeflection(intervalIdx,comboType,vPoi,resultsType);
+            IntervalIndexType haulingIntervalIdx = GetHaulingInterval(vPoi);
+
+            if (haulingIntervalIdx == intervalIdx && resultsType == rtCumulative && comboType==lcDC && bIncludePreErectionUnrecov)
+            {
+               // Girder deflection at hauling is tricky special case. 
+               // This is where we first see the permanent deflection due to the increase in modulus over time.
+               // Get permanent deflection caused by modulus change (stiffening) adjusted to zero at truck dunnage locations
+               std::vector<Float64> permDeflStorage = GetPermanentGirderDeflectionFromStorage(sagHauling,bat,vPoi);
+
+               // Add deflection for hauling based on modulus at hauling
+               deflection = m_pSegmentModelManager->GetDeflection(intervalIdx,comboType,vPoi,resultsType);
+               std::transform(permDeflStorage.cbegin(),permDeflStorage.cend(),deflection.cbegin(),deflection.begin(),[](const auto& a,const auto& b) {return a + b; });
+            }
+            else
+            {
+               deflection = m_pSegmentModelManager->GetDeflection(intervalIdx,comboType,vPoi,resultsType);
+            }
          }
          else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
          {
@@ -11152,4 +11168,12 @@ IntervalIndexType CAnalysisAgentImp::GetStorageInterval(const PoiList& vPoi) con
    }
 
    return storageIntervalIdx;
+}
+
+IntervalIndexType CAnalysisAgentImp::GetHaulingInterval(const PoiList& vPoi) const
+{
+   GET_IFACE(IIntervals,pIntervals);
+   CSegmentKey segmentKey(vPoi.front().get().GetSegmentKey());
+   IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
+   return haulingIntervalIdx;
 }

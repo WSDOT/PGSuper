@@ -30,6 +30,7 @@
 
 // Graph Builders
 #include <Graphing\AnalysisResultsGraphBuilder.h>
+#include <Graphing\SegmentAnalysisResultsGraphBuilder.h>
 #include <Graphing\EffectivePrestressGraphBuilder.h>
 #include <Graphing\StabilityGraphBuilder.h>
 #include <Graphing\StressHistoryGraphBuilder.h>
@@ -48,6 +49,7 @@ void CGrapherBase::InitCommonGraphBuilders()
    GET_IFACE(IGraphManager,pGraphMgr);
 
    pGraphMgr->AddGraphBuilder(new CAnalysisResultsGraphBuilder);
+   pGraphMgr->AddGraphBuilder(new CSegmentAnalysisResultsGraphBuilder);
    pGraphMgr->AddGraphBuilder(new CEffectivePrestressGraphBuilder);
    pGraphMgr->AddGraphBuilder(new CStabilityGraphBuilder);
    pGraphMgr->AddGraphBuilder(new CStressHistoryGraphBuilder);

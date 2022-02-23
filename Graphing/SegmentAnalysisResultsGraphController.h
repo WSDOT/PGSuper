@@ -22,18 +22,18 @@
 
 #pragma once
 
-#include <Graphing\AnalysisResultsGraphBuilder.h>
-#include "GirderGraphControllerBase.h"
+#include <Graphing\SegmentAnalysisResultsGraphBuilder.h>
+#include "SegmentGraphControllerBase.h"
 #include <Graphing\GraphingTypes.h>
 
 #include <IFace\AnalysisResults.h>
 #include <MfcTools\WideDropDownComboBox.h>
 
-class CAnalysisResultsGraphController : public CGirderGraphControllerBase
+class CSegmentAnalysisResultsGraphController : public CSegmentGraphControllerBase
 {
 public:
-   CAnalysisResultsGraphController();
-   DECLARE_DYNCREATE(CAnalysisResultsGraphController);
+   CSegmentAnalysisResultsGraphController();
+   DECLARE_DYNCREATE(CSegmentAnalysisResultsGraphController);
 
    // returns one of the GRAPH_MODE_xxx constants
    enum GraphModeType {Interval, Loading};
@@ -77,12 +77,6 @@ public:
    IntervalIndexType GetInterval() const;
    std::vector<IntervalIndexType> GetSelectedIntervals() const;
 
-   void IncludeElevationAdjustment(bool bInclude);
-   bool IncludeElevationAdjustment() const;
-
-   void IncludeUnrecoverableDefl(bool bInclude);
-   bool IncludeUnrecoverableDefl() const;
-
    IDType SelectedGraphIndexToGraphID(IndexType graphIdx);
 
    virtual bool ShowBeamBelowGraph() const override;
@@ -94,22 +88,22 @@ protected:
    virtual void DoDataExchange(CDataExchange* pDX);
    virtual BOOL OnInitDialog() override;
 
-	//{{AFX_MSG(CAnalysisResultsGraphController)
+	//{{AFX_MSG(CSegmentAnalysisResultsGraphController)
    afx_msg void OnModeChanged();
    afx_msg void OnActionChanged();
    afx_msg void OnDropDownChanged();
    afx_msg void OnSelectListChanged();
    afx_msg void OnPlotTypeClicked();
    afx_msg void OnStress();
-   afx_msg void OnElevAdjustment();
-   afx_msg void OnUnrecoverableDefl();
    afx_msg void OnAnalysisTypeClicked();
    afx_msg void OnIntervalsChanged();
+   afx_msg void OnUnrecoverableDefl();
    //}}AFX_MSG
 
    virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
    virtual void OnGroupChanged() override;
    virtual void OnGirderChanged() override;
+   virtual void OnSegmentChanged() override;
 
 	DECLARE_MESSAGE_MAP()
 
@@ -123,19 +117,14 @@ protected:
    void FillSelectListCtrl_Loadings(bool bRetainSelection);
 
    void UpdateStressControls();
-   void UpdateElevAdjustment();
-   void UpdateUnrecoverableDeflAdjustment();
-   void UpdateAnalysisType();
    void UpdateListInfo();
    void UpdateResultsType();
+   void UpdateUnrecoverableDeflAdjustment();
+
+   bool IncludeUnrecoverableDefl(IntervalIndexType interval) const;
 
    IntervalIndexType GetFirstInterval() const;
    IntervalIndexType GetLastInterval() const;
-
-   bool m_bHasStructuralDeck;
-
-   IntervalIndexType m_LiveLoadIntervalIdx;
-   IntervalIndexType m_LoadRatingIntervalIdx;
 
 #ifdef _DEBUG
 public:
@@ -143,5 +132,5 @@ public:
    void Dump(CDumpContext& dc) const;
 #endif //_DEBUG
 
-   friend CAnalysisResultsGraphBuilder;
+   friend CSegmentAnalysisResultsGraphBuilder;
 };

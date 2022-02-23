@@ -22,10 +22,10 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include <Graphing\GirderGraphBuilderBase.h>
+#include <Graphing\SegmentGraphBuilderBase.h>
 #include <Graphing\DrawBeamTool.h>
 
-#include "GirderGraphControllerBase.h"
+#include "SegmentGraphControllerBase.h"
 
 #include "GraphColor.h"
 
@@ -58,11 +58,11 @@ static char THIS_FILE[] = __FILE__;
 static unitmgtLengthData DUMMY(unitMeasure::Meter);
 static LengthTool    DUMMY_TOOL(DUMMY);
 
-BEGIN_MESSAGE_MAP(CGirderGraphBuilderBase, CEAFGraphBuilderBase)
+BEGIN_MESSAGE_MAP(CSegmentGraphBuilderBase, CEAFGraphBuilderBase)
 END_MESSAGE_MAP()
 
 
-CGirderGraphBuilderBase::CGirderGraphBuilderBase() :
+CSegmentGraphBuilderBase::CSegmentGraphBuilderBase() :
 CEAFAutoCalcGraphBuilder(),
 m_Graph(DUMMY_TOOL,DUMMY_TOOL),
 m_pXFormat(nullptr),
@@ -74,7 +74,7 @@ m_bShift(false)
 {
 }
 
-CGirderGraphBuilderBase::CGirderGraphBuilderBase(const CGirderGraphBuilderBase& other) :
+CSegmentGraphBuilderBase::CSegmentGraphBuilderBase(const CSegmentGraphBuilderBase& other) :
 CEAFAutoCalcGraphBuilder(other),
 m_Graph(DUMMY_TOOL,DUMMY_TOOL),
 m_pXFormat(nullptr),
@@ -85,7 +85,7 @@ m_pGraphController(nullptr)
 {
 }
 
-CGirderGraphBuilderBase::~CGirderGraphBuilderBase()
+CSegmentGraphBuilderBase::~CSegmentGraphBuilderBase()
 {
    if ( m_pGraphController != nullptr )
    {
@@ -107,28 +107,23 @@ CGirderGraphBuilderBase::~CGirderGraphBuilderBase()
 
 }
 
-CEAFGraphControlWindow* CGirderGraphBuilderBase::GetGraphControlWindow()
+CEAFGraphControlWindow* CSegmentGraphBuilderBase::GetGraphControlWindow()
 {
    ATLASSERT(m_pGraphController != nullptr);
    return m_pGraphController;
 }
 
-bool CGirderGraphBuilderBase::HandleDoubleClick(UINT nFlags,CPoint point)
+bool CSegmentGraphBuilderBase::HandleDoubleClick(UINT nFlags,CPoint point)
 {
-   CGirderKey girderKey(m_pGraphController->GetGirderKey());
-   if (girderKey.groupIndex == ALL_GROUPS)
-   {
-      girderKey.groupIndex = 0;
-   }
+   const CSegmentKey segmentKey(m_pGraphController->GetSegmentKey());
 
    GET_IFACE(IEditByUI,pEditByUI);
-   pEditByUI->EditGirderDescription(girderKey,EGD_GENERAL);
+   pEditByUI->EditSegmentDescription(segmentKey,EGS_GENERAL);
 
    return true;
 }
 
-
-int CGirderGraphBuilderBase::InitializeGraphController(CWnd* pParent,UINT nID)
+int CSegmentGraphBuilderBase::InitializeGraphController(CWnd* pParent,UINT nID)
 {
    EAFGetBroker(&m_pBroker);
 
@@ -159,7 +154,7 @@ int CGirderGraphBuilderBase::InitializeGraphController(CWnd* pParent,UINT nID)
    return 0;
 }
 
-void CGirderGraphBuilderBase::UpdateXAxis()
+void CSegmentGraphBuilderBase::UpdateXAxis()
 {
    if ( m_pXFormat )
    {
@@ -176,7 +171,7 @@ void CGirderGraphBuilderBase::UpdateXAxis()
    m_Graph.SetXAxisNumberOfMajorTics(11);
 }
 
-void CGirderGraphBuilderBase::UpdateYAxis()
+void CSegmentGraphBuilderBase::UpdateYAxis()
 {
    if ( m_pYFormat )
    {
@@ -193,17 +188,17 @@ void CGirderGraphBuilderBase::UpdateYAxis()
    m_Graph.SetYAxisNumberOfMajorTics(21);
 }
 
-void CGirderGraphBuilderBase::Shift(bool bShift)
+void CSegmentGraphBuilderBase::Shift(bool bShift)
 {
    m_bShift = bShift;
 }
 
-bool CGirderGraphBuilderBase::Shift() const
+bool CSegmentGraphBuilderBase::Shift() const
 {
    return m_bShift;
 }
 
-void CGirderGraphBuilderBase::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
+void CSegmentGraphBuilderBase::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
    if (lHint == HINT_SELECTIONCHANGED)
       return; // none of the graphs are keyed to the selection, so if the selection changes, do nothing
@@ -211,31 +206,31 @@ void CGirderGraphBuilderBase::OnUpdate(CView* pSender, LPARAM lHint, CObject* pH
    CEAFAutoCalcGraphBuilder::OnUpdate(pSender, lHint, pHint);
 }
 
-bool CGirderGraphBuilderBase::UpdateNow()
+bool CSegmentGraphBuilderBase::UpdateNow()
 {
    return true;
 }
 
-Float64 CGirderGraphBuilderBase::ComputeShift(const CGirderKey& girderKey)
+Float64 CSegmentGraphBuilderBase::ComputeShift(const CSegmentKey& segmentKey)
 {
-   if ( girderKey.groupIndex == ALL_GROUPS || girderKey.groupIndex == 0 )
+   if (segmentKey.groupIndex == ALL_GROUPS || segmentKey.segmentIndex == ALL_SEGMENTS)
    {
-      // we are showing the first group so there isn't a shift
+      ATLASSERT(0); // not sure what to do about this. shouldn't happen
       return 0;
    }
 
    GET_IFACE(IPointOfInterest,pPoi);
-   pgsPointOfInterest poi(CSegmentKey(girderKey,0),0.0);
+   pgsPointOfInterest poi(segmentKey,0.0); // start of our segment
    Float64 Xgl = pPoi->ConvertPoiToGirderlineCoordinate(poi);
 
-   poi.SetSegmentKey(CSegmentKey(0,girderKey.girderIndex,0));
+   poi.SetSegmentKey(CSegmentKey(0,segmentKey.girderIndex,0)); // start of bridge
    Float64 Xstart = pPoi->ConvertPoiToGirderlineCoordinate(poi);
 
    Float64 shift = Xstart - Xgl;
    return shift;
 }
 
-void CGirderGraphBuilderBase::GetXValues(const PoiList& vPoi,std::vector<Float64>* pXVals)
+void CSegmentGraphBuilderBase::GetXValues(const PoiList& vPoi,std::vector<Float64>* pXVals)
 {
    GET_IFACE(IPointOfInterest,pPoi);
 
@@ -245,8 +240,8 @@ void CGirderGraphBuilderBase::GetXValues(const PoiList& vPoi,std::vector<Float64
    Float64 shift = 0;
    if ( m_bShift )
    {
-      const CGirderKey& girderKey(vPoi.front().get().GetSegmentKey());
-      shift = ComputeShift(girderKey);
+      const CSegmentKey& segmentKey(vPoi.front().get().GetSegmentKey());
+      shift = ComputeShift(segmentKey);
    }
 
    for (const pgsPointOfInterest& poi : vPoi)
@@ -259,7 +254,7 @@ void CGirderGraphBuilderBase::GetXValues(const PoiList& vPoi,std::vector<Float64
    }
 }
 
-void CGirderGraphBuilderBase::AddGraphPoints(IndexType series, const std::vector<Float64>& xvals,const std::vector<Float64>& yvals)
+void CSegmentGraphBuilderBase::AddGraphPoints(IndexType series, const std::vector<Float64>& xvals,const std::vector<Float64>& yvals)
 {
    std::vector<Float64>::const_iterator xIter(xvals.begin()), yIter(yvals.begin());
    std::vector<Float64>::const_iterator xIterEnd(xvals.end()), yIterEnd(yvals.end());
@@ -271,7 +266,7 @@ void CGirderGraphBuilderBase::AddGraphPoints(IndexType series, const std::vector
    }
 }
 
-void CGirderGraphBuilderBase::AddGraphPoints(IndexType series, const std::vector<Float64>& xvals,const std::vector<sysSectionValue>& yvals)
+void CSegmentGraphBuilderBase::AddGraphPoints(IndexType series, const std::vector<Float64>& xvals,const std::vector<sysSectionValue>& yvals)
 {
    std::vector<Float64>::const_iterator xIter;
    std::vector<sysSectionValue>::const_iterator yIter;
@@ -285,7 +280,7 @@ void CGirderGraphBuilderBase::AddGraphPoints(IndexType series, const std::vector
    }
 }
 
-void CGirderGraphBuilderBase::AddGraphPoint(IndexType series, Float64 xval, Float64 yval)
+void CSegmentGraphBuilderBase::AddGraphPoint(IndexType series, Float64 xval, Float64 yval)
 {
    // deal with unit conversion
    arvPhysicalConverter* pcx = dynamic_cast<arvPhysicalConverter*>(m_pXFormat);
@@ -299,7 +294,7 @@ void CGirderGraphBuilderBase::AddGraphPoint(IndexType series, Float64 xval, Floa
    m_Graph.AddPoint(series, gpPoint2d(x,y));
 }
 
-void CGirderGraphBuilderBase::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
+void CSegmentGraphBuilderBase::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -321,31 +316,25 @@ void CGirderGraphBuilderBase::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
 
    // before drawing the graph background, which also draws the axes
    // make sure the graph is big enough to hold the beam
+   const CSegmentKey segmentKey(m_pGraphController->GetSegmentKey());
    if (m_pGraphController->ShowBeam())
    {
-      CGirderKey girderKey(m_pGraphController->GetGirderGroup(),m_pGraphController->GetGirder());
-
       Float64 shift = 0;
       if ( m_bShift )
       {
-         shift = ComputeShift(girderKey);
+         shift = ComputeShift(segmentKey);
       }
 
       // make the minimum size of the graph include the size of the girder. this makes the girder display
       // properly when there aren't any points to graph
-      GET_IFACE(IBridge, pBridge);
-      std::vector<CGirderKey> vGirderKeys;
-      pBridge->GetGirderline(girderKey, &vGirderKeys);
-
+      GET_IFACE(IBridge,pBridge);
       GET_IFACE(IPointOfInterest,pPoi);
-      pgsPointOfInterest startPoi(CSegmentKey(vGirderKeys.front(),0),0.0);
+      pgsPointOfInterest startPoi(segmentKey, 0.0);
       Float64 Xstart = pPoi->ConvertPoiToGirderlineCoordinate(startPoi);
 
-      SegmentIndexType nSegments = pBridge->GetSegmentCount(vGirderKeys.back());
-      CSegmentKey lastSegmentKey(vGirderKeys.back(),nSegments-1);
-      Float64 Ls = pBridge->GetSegmentLength(lastSegmentKey);
-      pgsPointOfInterest endPoi(lastSegmentKey,Ls);
-      Float64 Xend = pPoi->ConvertPoiToGirderlineCoordinate(endPoi);
+      Float64 segLen = pBridge->GetSegmentLength(segmentKey);
+
+      Float64 Xend = Xstart + segLen;
 
       Xstart += shift;
       Xend   += shift;
@@ -362,19 +351,17 @@ void CGirderGraphBuilderBase::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
    // superimpose the beam on the background
    if ( m_pGraphController->ShowBeam() )
    {
-      CGirderKey girderKey(m_pGraphController->GetGirderGroup(),m_pGraphController->GetGirder());
-
       Float64 shift = 0;
       if ( m_bShift )
       {
-         shift = ComputeShift(girderKey);
+         shift = ComputeShift(segmentKey);
       }
 
       IntervalIndexType firstIntervalIdx, lastIntervalIdx;
       GetBeamDrawIntervals(&firstIntervalIdx,&lastIntervalIdx);
 
       CDrawBeamTool drawBeam;
-      drawBeam.SetMinAspectRatio(25.0); // shrink beam height to reasonable aspect if needed so it will fit nicely on graph.
+      drawBeam.SetMinAspectRatio(20.0); // shrink beam height to reasonable aspect if needed so it will fit nicely on graph.
       drawBeam.SetStyle(GetDrawBeamStyle());
 
       grlibPointMapper mapper;
@@ -412,7 +399,7 @@ void CGirderGraphBuilderBase::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
          mapper.SetWorldExt(wExt.Dx(), wExt.Dx());
       }
 
-      drawBeam.DrawBeam(m_pBroker,pDC,mapper,m_pXFormat,firstIntervalIdx,lastIntervalIdx,girderKey,shift);
+      drawBeam.DrawBeamSegment(m_pBroker,pDC,mapper,m_pXFormat,firstIntervalIdx,lastIntervalIdx,segmentKey,shift);
    }
 
    // draw the data series
@@ -421,18 +408,18 @@ void CGirderGraphBuilderBase::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
    pDC->RestoreDC(save);
 }
 
-DWORD CGirderGraphBuilderBase::GetDrawBeamStyle() const
+DWORD CSegmentGraphBuilderBase::GetDrawBeamStyle() const
 {
    return 0;
 }
 
-void CGirderGraphBuilderBase::ShowGrid(bool bShow)
+void CSegmentGraphBuilderBase::ShowGrid(bool bShow)
 {
    m_Graph.SetDoDrawGrid(bShow);
    GetView()->Invalidate();
 }
 
-void CGirderGraphBuilderBase::ShowBeam(bool bShow)
+void CSegmentGraphBuilderBase::ShowBeam(bool bShow)
 {
    GetView()->Invalidate();
 }

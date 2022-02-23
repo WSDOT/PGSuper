@@ -207,7 +207,7 @@ CAnalysisResultsGraphBuilder::~CAnalysisResultsGraphBuilder()
 
 void CAnalysisResultsGraphBuilder::Init()
 {
-   SetName(_T("Analysis Results"));
+   SetName(_T("Analysis Results - After Erection"));
 
    InitDocumentation(EAFGetDocument()->GetDocumentationSetName(),IDH_ANALYSIS_RESULTS);
 
@@ -392,13 +392,6 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CGirderKey& gird
    for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
    {
       vAllIntervals.push_back(intervalIdx);
-   }
-
-   // bridge site intervals
-   std::vector<IntervalIndexType> vBridgeSiteIntervals;
-   for ( IntervalIndexType intervalIdx = erectSegmentIntervalIdx+1; intervalIdx < nIntervals; intervalIdx++ )
-   {
-      vBridgeSiteIntervals.push_back(intervalIdx);
    }
 
    // intervals only after live load is applied

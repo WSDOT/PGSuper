@@ -1,6 +1,6 @@
 Analysis Results Graph {#ug_analysis_results_graph}
 ==============================================
-The Analysis Results Graph presents analysis results in traditional engineering graph formats including moment, shear, deflection, and stress diagrams.
+The Analysis Results Graph presents analysis results in traditional engineering graph formats including moment, shear, deflection, and stress diagrams. There are two analysis results views, allowing you to view individual segment results prior to erection, and girder responses in the bridge after erection.
 
 Results can be presented for several different loadings for a specified analysis interval, or they can be shown for a specified loading as it changes over multiple analysis intervals.
 
@@ -13,15 +13,22 @@ Span | Select a span or All Spans
 Girder | Select a girder, or girder line if All Spans is selected
 Interval/Loading list | If the plot mode is Plot by Interval, select an interval, otherwise select a loading
 Results Type | Select an analysis results type to plot such as moment, shear, deflection or stress.
-Graph Item List | Select one or more items from the graph item list. If the plot mode is Plot by Interval, select loadings, otherwise select intervals. Hold [CTRL] to select multiple, nonsequential, items. Hold [SHIFT] and select the first and last items in a range
+Graph Item List | Select one or more items from the graph item list. If the plot mode is Plot by Interval, select loadings, otherwise select intervals. Hold [CTRL] to select multiple, non-sequential, items. Hold [SHIFT] and select the first and last items in a range
 Show Grid | Toggles the grid 
 Show Girder | Toggles the girder
-Incremental/Cumulative | Plot incremental results (incremental change in results occuring during the selected interval) or cumulative results (sum of incremental results in this and all preceding intervals).
+Incremental/Cumulative | Plot incremental results (incremental change in results occurring during the selected interval) or cumulative results (sum of incremental results in this and all preceding intervals).
 Top Girder | Toggles stress plot for top of girder
 Bottom Girder | Toggles stress plot for bottom of girder
 Top Deck | Toggles stress plot for top of deck
 Bottom Deck | Toggles stress plot for bottom of deck
 Include Elevation Adjustments | When checked, elevation adjustments are added to computed deflections (PGSplice only)
 Structural Analysis Method | Select the structural analysis method
+Include Unrecoverable Deflections Prior to Erection | When checked, unrecoverable girder deflections from prior to erection are summed with responses after erection.
 
 > NOTE: Analysis results for the Lifting and Hauling Intervals are for plumb girder subjected to self-weight and prestress loading only.
+
+***Unrecoverable Deflections at Erection Due to Change in Modulus During Storage***
+
+Girder Segments are not perfectly straight elements when placed at erection. They are shaped with permanent unrecoverable deformations caused by prestressing forces, creep, shrinkage, relaxation, girder hardening (increase in modulus of elasticity during storage), and pre-camber. The analysis results graph allows you to view the different aspects of unrecoverable deflections at the time of erection.
+
+See @ref tg_deflections for more information.

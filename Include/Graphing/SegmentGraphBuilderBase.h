@@ -28,17 +28,17 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\PointOfInterest.h>
 
-class CGirderGraphControllerBase;
+class CSegmentGraphControllerBase;
 class CEAFGraphControlWindow;
 class arvPhysicalConverter;
 
 // This is an abstract base class for graphs that display girder along the X-axis
-class GRAPHINGCLASS CGirderGraphBuilderBase : public CEAFAutoCalcGraphBuilder
+class GRAPHINGCLASS CSegmentGraphBuilderBase : public CEAFAutoCalcGraphBuilder
 {
 public:
-   CGirderGraphBuilderBase();
-   CGirderGraphBuilderBase(const CGirderGraphBuilderBase& other);
-   virtual ~CGirderGraphBuilderBase();
+   CSegmentGraphBuilderBase();
+   CSegmentGraphBuilderBase(const CSegmentGraphBuilderBase& other);
+   virtual ~CSegmentGraphBuilderBase();
 
    virtual int InitializeGraphController(CWnd* pParent,UINT nID) override;
    virtual CEAFGraphControlWindow* GetGraphControlWindow() override;
@@ -60,10 +60,10 @@ public:
 
 
 protected:
-   CGirderGraphControllerBase* m_pGraphController;
+   CSegmentGraphControllerBase* m_pGraphController;
 
    // implement this method to create the graph controller object (the C++ object, not the Windows object)
-   virtual CGirderGraphControllerBase* CreateGraphController() = 0;
+   virtual CSegmentGraphControllerBase* CreateGraphController() = 0;
 
    DECLARE_MESSAGE_MAP()
 
@@ -76,7 +76,7 @@ protected:
    Float64 m_ZeroToleranceX;
    Float64 m_ZeroToleranceY;
 
-   Float64 ComputeShift(const CGirderKey& girderKey);
+   Float64 ComputeShift(const CSegmentKey& segmentKey);
    void GetXValues(const PoiList& vPoi,std::vector<Float64>* pXVals);
    void AddGraphPoints(IndexType series, const std::vector<Float64>& xvals,const std::vector<Float64>& yvals);
    void AddGraphPoints(IndexType series, const std::vector<Float64>& xvals,const std::vector<sysSectionValue>& yvals);

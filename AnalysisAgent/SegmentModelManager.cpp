@@ -1728,7 +1728,6 @@ std::vector<pgsPointOfInterest> CSegmentModelManager::GetDeflectionDatumLocation
       IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
 
       PoiAttributeType poiReference;
-      ATLASSERT(intervalIdx != releaseIntervalIdx);
       if (releaseIntervalIdx <= intervalIdx && intervalIdx < liftingIntervalIdx)
       {
          poiReference = POI_RELEASED_SEGMENT;

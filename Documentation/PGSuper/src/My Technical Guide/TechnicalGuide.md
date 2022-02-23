@@ -8,6 +8,7 @@ Topics
 * @subpage tg_biaxial_stresses
 * @subpage tg_bearing_seat_geometry
 * @subpage tg_camber
+* @subpage tg_deflections
 * @subpage tg_capacity_demand_ratios
 * @subpage tg_computing_pier_diaphragm_dimensions
 * @subpage tg_concrete_properties

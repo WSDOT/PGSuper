@@ -176,9 +176,11 @@ void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC, const grlibPointMapper& 
       } // end of segment loop
 
       //
-      // Draw the tendons
+      // Draw the tendons for all segments
       //
-      DrawTendons(beamShift,intervalIdx,thisGirderKey,mapper,pDC);
+      CSegmentKey segmentKey(thisGirderKey,ALL_SEGMENTS);
+
+      DrawTendons(beamShift,intervalIdx,segmentKey,mapper,pDC);
 
       //
       // Draw the permanent piers
@@ -207,6 +209,102 @@ void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC, const grlibPointMapper& 
          }
       }
    } // end of group loop
+}
+
+void CDrawBeamTool::DrawBeamSegment(IBroker* pBroker,CDC* pDC,const grlibPointMapper& mapper,arvPhysicalConverter* pUnitConverter,IntervalIndexType firstPlottingIntervalIdx,IntervalIndexType lastPlottingIntervalIdx,const CSegmentKey& segmentKey,Float64 beamShift)
+{
+   m_pBroker = pBroker;
+   m_pUnitConverter = pUnitConverter;
+
+   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IGirder,pIGirder);
+   GET_IFACE(IPointOfInterest,pPoi);
+   GET_IFACE_NOCHECK(ISectionProperties,pSectProp);
+
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   IntervalIndexType intervalIdx = lastPlottingIntervalIdx;
+
+   IntervalIndexType erectedSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
+   IntervalIndexType haulingSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
+   bool bIsHaulingInterval = intervalIdx == haulingSegmentIntervalIdx;
+
+   bool bIsPermanentInterval = erectedSegmentIntervalIdx <= intervalIdx;
+
+   Float64 beamLength = pBridge->GetSegmentLength(segmentKey);
+
+   // Get maximum beam depth along girder. First assume max height occurs at a pier. If no pier, get at mid-segment
+   Float64 beamDepth = 0.0;
+   const CPrecastSegmentData* pSegment = pBridgeDesc->GetSegment(segmentKey);
+   const std::vector<const CPierData2*> piers = pSegment->GetPiers();
+   if (!piers.empty())
+   {
+      for (const auto& pPier : piers)
+      {
+         Float64 segdep = pSectProp->GetSegmentHeightAtPier(segmentKey,pPier->GetIndex());
+         beamDepth = max(beamDepth,segdep);
+      }
+   }
+   else
+   {
+      beamDepth = pSectProp->GetSegmentHeight(pSegment, beamLength/2.0);
+   }
+
+   // if beam length/depth is smaller than min we need to scale down Y to bring it into range
+   Float64 beamAspectRatio = beamLength / beamDepth;
+   m_YScaleFac = 1.0;
+   if (beamAspectRatio < m_MinAspectRatio)
+   {
+      m_YScaleFac = beamAspectRatio / m_MinAspectRatio;
+   }
+
+   m_SupportSize = GetSupportSize(pDC);
+
+   //
+   // Draw Segment
+   //
+   DrawSegment(beamShift,intervalIdx,bIsHaulingInterval,segmentKey,pIntervals,pIGirder,pPoi,mapper,pDC);
+
+   //
+   // Draw the tendons
+   //
+   DrawTendons(beamShift,intervalIdx,segmentKey,mapper,pDC);
+
+   //
+   // Draw Supports or piers
+   //
+   CGirderKey girderKey(segmentKey.groupIndex,segmentKey.girderIndex);
+
+   if (!bIsPermanentInterval)
+   {
+      DrawSegmentEndSupport(beamShift,intervalIdx,bIsHaulingInterval,segmentKey,pgsTypes::metStart,pIntervals,pPoi,mapper,pDC);
+      DrawSegmentEndSupport(beamShift,intervalIdx,bIsHaulingInterval,segmentKey,pgsTypes::metEnd,pIntervals,pPoi,mapper,pDC);
+   }
+   else 
+   {
+      const std::vector<const CPierData2*> piers = pSegment->GetPiers();
+      for (const auto& pPier : piers)
+      {
+         DrawPier(beamShift,intervalIdx,girderKey,pPier->GetIndex(),mapper,pDC);
+      }
+
+      const std::vector<const CTemporarySupportData*> tempsupports = pSegment->GetTemporarySupports();
+      for (const auto& tempsupport : tempsupports)
+      {
+         SupportIndexType tsIdx = tempsupport->GetIndex();
+
+         IntervalIndexType erectionTempSupportIntervalIdx = pIntervals->GetTemporarySupportErectionInterval(tsIdx);
+         IntervalIndexType removeTempSupportIntervalIdx = pIntervals->GetTemporarySupportRemovalInterval(tsIdx);
+
+         if (erectionTempSupportIntervalIdx <= intervalIdx && intervalIdx < removeTempSupportIntervalIdx)
+         {
+            // only draw temporary support if it has been erected and not yet removed
+            DrawTemporarySupport(beamShift,intervalIdx,girderKey,tsIdx,mapper,pDC);
+         }
+      }
+   } 
 }
 
 CSize CDrawBeamTool::GetSupportSize(CDC* pDC) const
@@ -295,20 +393,9 @@ void CDrawBeamTool::DrawSegment(Float64 beamShift, IntervalIndexType intervalIdx
    IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
    IntervalIndexType firstErectedSegmentIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(segmentKey);
 
-   if (intervalIdx < releaseIntervalIdx 
-      ||
-      (!bIsHaulingInterval && firstErectedSegmentIntervalIdx <= intervalIdx && intervalIdx < erectionIntervalIdx && sysFlags<DWORD>::IsSet(m_dwStyle, DBS_ERECTED_SEGMENTS_ONLY))
-      ||
-      (bIsHaulingInterval && intervalIdx != pIntervals->GetHaulSegmentInterval(segmentKey) && sysFlags<DWORD>::IsSet(m_dwStyle, DBS_HAULED_SEGMENTS_ONLY))
-      )
+   if (intervalIdx < releaseIntervalIdx)
    {
       // the prestress has not been released yet so the segment doesn't exist...
-      // -OR-
-      // the current interval is after the first segment is erected, so the entire beam is being drawn (not individual segments)
-      // the current interval is also before the erection interval for the current segment
-      // the style is to only draw erected segments so this segment is skipped
-      // -OR-
-      // segment hauling occurs during the current interval and the current segment is not being hauled in this interval
       return;
    }
 
@@ -878,32 +965,47 @@ void CDrawBeamTool::DrawIntegralHingeAhead(CPoint p,CDC* pDC)
    DrawRoller(p,pDC);
 }
 
-void CDrawBeamTool::DrawTendons(Float64 beamShift,IntervalIndexType intervalIdx, const CGirderKey& girderKey, const grlibPointMapper& mapper,CDC* pDC)
+void CDrawBeamTool::DrawTendons(Float64 beamShift,IntervalIndexType intervalIdx, const CSegmentKey& rSegmentKey, const grlibPointMapper& mapper,CDC* pDC)
 {
    GET_IFACE_NOCHECK(ISegmentTendonGeometry, pSegmentTendonGeometry);
    GET_IFACE(IGirderTendonGeometry,pGirderTendonGeometry);
    GET_IFACE_NOCHECK(IIntervals,pIntervals); // only gets used if there are tendons
 
+   CGirderKey girderKey(rSegmentKey.groupIndex,rSegmentKey.girderIndex);
    Float64 tendonShift = ComputeGirderShift(girderKey);
 
-   GET_IFACE(IBridge, pBridge);
-   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   SegmentIndexType nSegments;
+   if (rSegmentKey.segmentIndex == ALL_SEGMENTS)
+   {
+      GET_IFACE(IBridge,pBridge);
+      nSegments = pBridge->GetSegmentCount(girderKey);
+   }
+   else
+   {
+      nSegments = 1;
+   }
+
+   CSegmentKey mySegmentKey(rSegmentKey);
    for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
    {
-      CSegmentKey segmentKey(girderKey, segIdx);
-      IntervalIndexType ptIntervalIdx = pIntervals->GetStressSegmentTendonInterval(segmentKey);
+      if (rSegmentKey.segmentIndex == ALL_SEGMENTS)
+      {
+         mySegmentKey.segmentIndex = segIdx;
+      }
+
+      IntervalIndexType ptIntervalIdx = pIntervals->GetStressSegmentTendonInterval(mySegmentKey);
       if (intervalIdx < ptIntervalIdx)
       {
          continue; // don't draw if not yet installed
       }
 
-      DuctIndexType nSegmentDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
+      DuctIndexType nSegmentDucts = pSegmentTendonGeometry->GetDuctCount(mySegmentKey);
       for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
       {
          CComPtr<IPoint2dCollection> points;
-         pSegmentTendonGeometry->GetDuctCenterline(segmentKey, ductIdx, &points);
+         pSegmentTendonGeometry->GetDuctCenterline(mySegmentKey, ductIdx, &points);
 
-         Float64 segment_tendon_shift = ComputeSegmentShift(segmentKey);
+         Float64 segment_tendon_shift = ComputeSegmentShift(mySegmentKey);
 
          COLORREF color = SEGMENT_TENDON_LINE_COLOR;
 

@@ -60,7 +60,10 @@ public:
    // GET_IFACE(IPointOfInterest,pPoi);
    // Float64 beamShift = -1*pPoi->ConvertPoiToGirderlineCoordinate(pgsPointOfInterest(segmentKey,0.0));
 
-   void DrawBeam(IBroker* pBroker,CDC* pDC,const grlibPointMapper& beamMapper,arvPhysicalConverter* pUnitConverter, IntervalIndexType firstPlottingIntervalIdx, IntervalIndexType lastPlottingIntervalIdx,const CGirderKey& girderKey,Float64 beamShift);
+   void DrawBeam(IBroker* pBroker,CDC* pDC,const grlibPointMapper& beamMapper,arvPhysicalConverter* pUnitConverter,IntervalIndexType firstPlottingIntervalIdx,IntervalIndexType lastPlottingIntervalIdx,const CGirderKey& girderKey,Float64 beamShift);
+
+   // Just draw one segment
+   void DrawBeamSegment(IBroker* pBroker,CDC* pDC,const grlibPointMapper& beamMapper,arvPhysicalConverter* pUnitConverter, IntervalIndexType firstPlottingIntervalIdx, IntervalIndexType lastPlottingIntervalIdx,const CSegmentKey& segmentKey,Float64 beamShift);
 
    // Support size in device coord's
    CSize GetSupportSize(CDC* pDC) const;
@@ -95,7 +98,7 @@ protected:
    void DrawIntegral(CPoint p,CDC* pDC);
    void DrawIntegralHingeBack(CPoint p,CDC* pDC);
    void DrawIntegralHingeAhead(CPoint p,CDC* pDC);
-   void DrawTendons(Float64 beamShift,IntervalIndexType intervalIndexType, const CGirderKey& girderKey, const grlibPointMapper& mapper,CDC* pDC);
+   void DrawTendons(Float64 beamShift,IntervalIndexType intervalIndexType, const CSegmentKey& segmentKey, const grlibPointMapper& mapper,CDC* pDC);
    Float64 ComputeGirderShift(const CGirderKey& girderKey);
    Float64 ComputeSegmentShift(const CSegmentKey& segmentKey);
 };
