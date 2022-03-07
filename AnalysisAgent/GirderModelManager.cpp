@@ -12748,8 +12748,8 @@ void CGirderModelManager::GetPierSupportIDs(const ReactionLocation& location, Su
       Float64 right_brg_offset = pBridge->GetSegmentStartBearingOffset(aheadSegmentKey);
       Float64 right_end_dist = pBridge->GetSegmentStartEndDistance(aheadSegmentKey);
 
-      *pBackID = IsZero(left_brg_offset + left_end_dist) ? pierID : backID;
-      *pAheadID = IsZero(right_brg_offset + right_end_dist) ? pierID : aheadID;
+      *pBackID = IsEqual(left_brg_offset,left_end_dist) ? pierID : backID;
+      *pAheadID = IsEqual(right_brg_offset,right_end_dist) ? pierID : aheadID;
    }
 }
 
