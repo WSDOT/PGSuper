@@ -261,7 +261,7 @@ void CTOGAGirderSelectStrandsDlg::OnPaint()
    CComPtr<IPoint2d> objOrg;
    shape_box->get_BottomCenter(&objOrg);
 
-   gpPoint2d orgin;
+   GraphPoint orgin;
    Float64 x,y;
    objOrg->get_X(&x);
    objOrg->get_Y(&y);
@@ -282,9 +282,9 @@ void CTOGAGirderSelectStrandsDlg::OnPaint()
       ymax = Max(ymax, ys);
    }
 
-   gpRect2d strand_bounds(-xmax-m_Radius, 0.0, xmax+m_Radius, ymax+m_Radius);
+   GraphRect strand_bounds(-xmax-m_Radius, 0.0, xmax+m_Radius, ymax+m_Radius);
 
-   gpSize2d world_size;
+   GraphSize world_size;
    world_size.Dx() = Max(bottom_width,strand_bounds.Width());
 
    world_size.Dy() = strand_bounds.Height();
@@ -381,7 +381,9 @@ void CTOGAGirderSelectStrandsDlg::DrawShape(CDC* pDC,IShape* shape,grlibPointMap
    objPoints->get__Enum(&enumPoints);
    while ( enumPoints->Next(1,&point,nullptr) != S_FALSE )
    {
-      mapper.WPtoDP(point,&dx,&dy);
+      GraphPoint pnt;
+      point->Location(&pnt.X(), &pnt.Y());
+      mapper.WPtoDP(pnt,&dx,&dy);
 
       points[i] = CPoint(dx,dy);
 
@@ -472,7 +474,7 @@ void CTOGAGirderSelectStrandsDlg::DrawStrands(CDC* pDC, grlibPointMapper& Mapper
    pDC->SelectObject(pOldPen);
 }
 
-void PrintNumber(CDC* pDC, grlibPointMapper& Mapper, const gpPoint2d& loc, StrandIndexType strandIdx)
+void PrintNumber(CDC* pDC, grlibPointMapper& Mapper, const GraphPoint& loc, StrandIndexType strandIdx)
 {
    long x, y;
    Mapper.WPtoDP(loc.X(), loc.Y(), &x, &y);
@@ -512,7 +514,7 @@ StrandIndexType CTOGAGirderSelectStrandsDlg::DrawStrand(CDC* pDC, grlibPointMapp
    index++;
 
    if ( m_DrawNumbers )
-      PrintNumber(pDC, Mapper, gpPoint2d(x,y), index);
+      PrintNumber(pDC, Mapper, GraphPoint(x,y), index);
 
    if (0.0 < x)
    {
@@ -537,7 +539,7 @@ StrandIndexType CTOGAGirderSelectStrandsDlg::DrawStrand(CDC* pDC, grlibPointMapp
 
       index++;
 
-      gpPoint2d np(-x,y);
+      GraphPoint np(-x,y);
       if ( m_DrawNumbers )
          PrintNumber(pDC, Mapper, np, index);
    }

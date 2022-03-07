@@ -122,9 +122,9 @@ void CDrawPrecastSegmentControl::OnPaint()
    rect->get_Top(&top);
    rect->get_Right(&right);
    rect->get_Bottom(&bottom);
-   gpRect2d box(left,bottom,right,top);
-   gpSize2d size = box.Size();
-   gpPoint2d org = box.Center();
+   GraphRect box(left,bottom,right,top);
+   GraphSize size = box.Size();
+   GraphPoint org = box.Center();
 
    grlibPointMapper mapper;
    mapper.SetMappingMode(grlibPointMapper::Isotropic);
@@ -239,7 +239,9 @@ void CDrawPrecastSegmentControl::DrawShape(CDC* pDC,grlibPointMapper& mapper,ISh
    for ( CollectionIndexType i = 0; i < nPoints; i++ )
    {
       LONG dx,dy;
-      mapper.WPtoDP(points[i],&dx,&dy);
+      GraphPoint pnt;
+      points[i]->Location(&pnt.X(), &pnt.Y());
+      mapper.WPtoDP(pnt,&dx,&dy);
       dev_points[i] = CPoint(dx,dy);
 
       points[i]->Release();
@@ -272,7 +274,9 @@ void CDrawPrecastSegmentControl::DrawBottomFlange(CDC* pDC,grlibPointMapper& map
    for ( CollectionIndexType i = 0; i < nPoints; i++ )
    {
       LONG dx,dy;
-      mapper.WPtoDP(points[i],&dx,&dy);
+      GraphPoint pnt;
+      points[i]->Location(&pnt.X(), &pnt.Y());
+      mapper.WPtoDP(pnt,&dx,&dy);
       dev_points[i] = CPoint(dx,dy);
 
       points[i]->Release();

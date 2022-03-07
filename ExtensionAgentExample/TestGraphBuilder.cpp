@@ -118,7 +118,7 @@ void CTestGraphBuilder::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
       else
          y = cos(angle);
 
-      gpPoint2d point(angle,y);
+      GraphPoint point(angle,y);
       graph.AddPoint(idx,point);
    }
 
@@ -210,7 +210,7 @@ void CTestGraphBuilder2::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
       else
          y = cos(angle);
 
-      gpPoint2d point(angle,y);
+      GraphPoint point(angle,y);
       graph.AddPoint(idx,point);
    }
 
@@ -289,13 +289,13 @@ void CTestGraphBuilder3::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
    {
       Float64 X = x[i];
       if ( i < 2 )
-         graph.AddPoint(series1,gpPoint2d(X,pow(10,X)));
+         graph.AddPoint(series1,GraphPoint(X,pow(10,X)));
 
       if ( i < 3 )
-         graph.AddPoint(series2,gpPoint2d(X,X));
+         graph.AddPoint(series2, GraphPoint(X,X));
 
       if ( !(graph.GetYAxisScale() == grAxisXY::LOGARITHMIC && i < 2) )
-         graph.AddPoint(series3,gpPoint2d(X,log10(X)));
+         graph.AddPoint(series3, GraphPoint(X,log10(X)));
    }
 
    CRect rect = GetView()->GetDrawingRect();

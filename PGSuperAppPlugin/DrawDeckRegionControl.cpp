@@ -142,9 +142,9 @@ void CDrawDeckRegionControl::OnPaint()
    rect->get_Top(&top);
    rect->get_Bottom(&bottom);
    rect->get_Right(&right);
-   gpRect2d box(left, bottom, right, top);
-   gpSize2d size = box.Size();
-   gpPoint2d org = box.Center();
+   GraphRect box(left, bottom, right, top);
+   GraphSize size = box.Size();
+   GraphPoint org = box.Center();
 
    rClient.DeflateRect(1, 1, 1, 1);
    CSize sClient = rClient.Size();
@@ -190,8 +190,10 @@ void CDrawDeckRegionControl::OnPaint()
       shape->get_ShapeProperties(&shapeProps);
       CComPtr<IPoint2d> pntCG;
       shapeProps->get_Centroid(&pntCG);
+      GraphPoint cg;
+      pntCG->Location(&cg.X(), &cg.Y());
       LONG dx, dy;
-      mapper.WPtoDP(pntCG, &dx, &dy);
+      mapper.WPtoDP(cg, &dx, &dy);
       CString strType(regionType == CCastingRegion::Pier ? _T("-M") : _T("+M"));
       CString strSequence;
       if (regionIdx == 0)
@@ -232,7 +234,9 @@ void CDrawDeckRegionControl::Draw(CDC* pDC,grlibPointMapper& mapper,IShape* pSha
    for ( CollectionIndexType i = 0; i < nPoints; i++ )
    {
       LONG dx,dy;
-      mapper.WPtoDP(points[i],&dx,&dy);
+      GraphPoint pnt;
+      points[i]->Location(&pnt.X(), &pnt.Y());
+      mapper.WPtoDP(pnt,&dx,&dy);
       dev_points[i] = CPoint(dx,dy);
 
       points[i]->Release();

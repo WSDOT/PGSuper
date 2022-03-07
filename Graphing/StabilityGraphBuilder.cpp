@@ -349,7 +349,7 @@ void CStabilityGraphBuilder::AddGraphPoint(IndexType series, Float64 xval, Float
    ASSERT(pcx);
    arvPhysicalConverter* pcy = dynamic_cast<arvPhysicalConverter*>(m_pYFormat);
    ASSERT(pcy);
-   m_Graph.AddPoint(series, gpPoint2d(pcx->Convert(xval),pcy->Convert(yval)));
+   m_Graph.AddPoint(series, GraphPoint(pcx->Convert(xval),pcy->Convert(yval)));
 }
 
 void CStabilityGraphBuilder::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
@@ -462,8 +462,8 @@ void CStabilityGraphBuilder::DrawLegend(CDC* pDC)
    COLORREF oldBkColor = pDC->SetBkColor(GRAPH_BACKGROUND);
 
    const grlibPointMapper& mapper = m_Graph.GetClientAreaPointMapper(pDC->GetSafeHdc());
-   gpPoint2d org = mapper.GetWorldOrg();
-   gpSize2d  ext = mapper.GetWorldExt();
+   GraphPoint org = mapper.GetWorldOrg();
+   GraphSize  ext = mapper.GetWorldExt();
 
    CPoint topLeft;
    mapper.WPtoDP(org.X()-ext.Dx()/2.,org.Y()+ext.Dy()/2.,&topLeft.x,&topLeft.y);

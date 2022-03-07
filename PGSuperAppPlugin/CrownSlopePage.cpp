@@ -561,8 +561,8 @@ void CCrownSlopePage::OnPaint()
 
    grlibPointMapper mapper;
    mapper.SetMappingMode(grlibPointMapper::Isotropic);
-   mapper.SetWorldExt(rpsize);
-   mapper.SetWorldOrg(org);
+   mapper.SetWorldExt(GraphSize(rpsize.Dx(),rpsize.Dy()));
+   mapper.SetWorldOrg(GraphPoint(org.X(),org.Y()));
    mapper.SetDeviceExt(csize.cx,csize.cy);
    mapper.SetDeviceOrg(csize.cx/2,csize.cy/2);
 

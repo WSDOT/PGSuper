@@ -31,6 +31,7 @@
 
 #include <GeomModel\CompositeShape.h>
 
+class grlibPointMapper;
 
 /////////////////////////////////////////////////////////////////////////////
 // CSectionViewDialog dialog

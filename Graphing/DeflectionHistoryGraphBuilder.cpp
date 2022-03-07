@@ -351,7 +351,7 @@ void CDeflectionHistoryGraphBuilder::AddGraphPoint(IndexType series, Float64 xva
    ASSERT(pcy);
    Float64 x = pcx->Convert(xval);
    Float64 y = pcy->Convert(yval);
-   m_Graph.AddPoint(series, gpPoint2d(x,y));
+   m_Graph.AddPoint(series, GraphPoint(x,y));
 }
 
 void CDeflectionHistoryGraphBuilder::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)

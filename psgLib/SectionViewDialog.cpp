@@ -49,7 +49,6 @@
 #include <WBFLGenericBridgeTools.h>
 #endif
 
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -218,9 +217,9 @@ void CSectionViewDialog::OnPaint()
    bbox->get_Top(&top);
    bbox->get_Bottom(&bottom);
 
-   gpRect2d box(left,bottom,right,top);
-   gpSize2d size = box.Size();
-   gpPoint2d org = box.BottomCenter();
+   GraphRect box(left,bottom,right,top);
+   GraphSize size = box.Size();
+   GraphPoint org = box.BottomCenter();
 
    grlibPointMapper mapper;
    mapper.SetMappingMode(grlibPointMapper::Isotropic);
@@ -256,7 +255,7 @@ void CSectionViewDialog::OnPaint()
 #endif
 }
 
-void PrintNumber(CDC* pDC, grlibPointMapper& Mapper, const gpPoint2d& loc, StrandIndexType strandIdx)
+void PrintNumber(CDC* pDC, grlibPointMapper& Mapper, const GraphPoint& loc, StrandIndexType strandIdx)
 {
    long x, y;
    Mapper.WPtoDP(loc.X(), loc.Y(), &x, &y);
@@ -345,7 +344,9 @@ void CSectionViewDialog::DrawShape(CDC* pDC,grlibPointMapper& Mapper,IShape* pSh
    for ( CollectionIndexType i = 0; i < nPoints; i++ )
    {
       long dx,dy;
-      Mapper.WPtoDP(points[i],&dx,&dy);
+      GraphPoint point;
+      points[i]->Location(&point.X(), &point.Y());
+      Mapper.WPtoDP(point,&dx,&dy);
       dev_points[i] = CPoint(dx,dy);
 
       points[i]->Release();
@@ -470,7 +471,7 @@ StrandIndexType CSectionViewDialog::DrawStrand(CDC* pDC, grlibPointMapper& Mappe
 
    if (m_bDrawNumbers)
    {
-      PrintNumber(pDC, Mapper, gpPoint2d(x, y), index);
+      PrintNumber(pDC, Mapper, GraphPoint(x, y), index);
    }
 
    if (0.0 < x)
@@ -485,7 +486,7 @@ StrandIndexType CSectionViewDialog::DrawStrand(CDC* pDC, grlibPointMapper& Mappe
       ATLASSERT(strandInc == 1);
       index += strandInc;
 
-      gpPoint2d np(-x,y);
+      GraphPoint np(-x,y);
       if (m_bDrawNumbers)
       {
          PrintNumber(pDC, Mapper, np, index);

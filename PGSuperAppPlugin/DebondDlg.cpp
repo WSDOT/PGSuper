@@ -285,7 +285,7 @@ void CGirderDescDebondPage::OnPaint()
    }
    Float64 bottom_width = pGirder->GetBottomWidth(poi);
 
-   gpSize2d size;
+   GraphSize size;
    size.Dx() = Max(top_width,bottom_width);
 
    CComPtr<IRect2d> box;
@@ -305,12 +305,8 @@ void CGirderDescDebondPage::OnPaint()
    CComPtr<IPoint2d> objOrg;
    box->get_BottomCenter(&objOrg);
 
-   gpPoint2d org;
-   Float64 x,y;
-   objOrg->get_X(&x);
-   objOrg->get_Y(&y);
-   org.X() = x;
-   org.Y() = y;
+   GraphPoint org;
+   objOrg->Location(&org.X(), &org.Y());
 
    grlibPointMapper mapper;
    mapper.SetMappingMode(grlibPointMapper::Isotropic);
@@ -419,7 +415,9 @@ void CGirderDescDebondPage::DrawShape(CDC* pDC,IShape* shape,grlibPointMapper& m
    objPoints->get__Enum(&enumPoints);
    while ( enumPoints->Next(1,&point,nullptr) != S_FALSE )
    {
-      mapper.WPtoDP(point,&dx,&dy);
+      GraphPoint pnt;
+      point->Location(&pnt.X(), &pnt.Y());
+      mapper.WPtoDP(pnt,&dx,&dy);
 
       points[i] = CPoint(dx,dy);
 

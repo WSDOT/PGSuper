@@ -332,8 +332,8 @@ grlibPointMapper CDrawBeamTool::CreatePointMapperAtGraphZero(const grlibPointMap
    mapper.WPtoDP(0, 0, &x, &y);
 
    // Get world extents and world origin
-   gpSize2d wExt = mapper.GetWorldExt();
-   gpPoint2d wOrg = mapper.GetWorldOrg();
+   GraphSize wExt = mapper.GetWorldExt();
+   GraphPoint wOrg = mapper.GetWorldOrg();
 
    // get device extents and device origin
    LONG dx, dy;

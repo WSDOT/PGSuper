@@ -202,7 +202,7 @@ void CDrawStrandControl::OnPaint()
    //
    // Set up coordinate mapping
    //
-   std::array<gpRect2d,2> box;
+   std::array<GraphRect,2> box;
    for ( int i = 0; i < 2; i++ )
    {
       pgsTypes::MemberEndType end = pgsTypes::MemberEndType(i);
@@ -225,7 +225,7 @@ void CDrawStrandControl::OnPaint()
    bounding_box->get_Top(&top);
    bounding_box->get_Bottom(&bottom);
 
-   gpRect2d profileBox;
+   GraphRect profileBox;
    profileBox.Set(left, bottom, right, top);
 
    Float64 aspect_ratio = box[pgsTypes::metStart].Width()/m_Hg;
@@ -373,7 +373,9 @@ void CDrawStrandControl::Draw(CDC* pDC,grlibPointMapper& mapper,IPoint2dCollecti
    for ( CollectionIndexType i = 0; i < nPoints; i++ )
    {
       LONG dx,dy;
-      mapper.WPtoDP(points[i],&dx,&dy);
+      GraphPoint point;
+      points[i]->Location(&point.X(), &point.Y());
+      mapper.WPtoDP(point,&dx,&dy);
       dev_points[i] = CPoint(dx,dy);
 
       points[i]->Release();
@@ -650,7 +652,7 @@ void CDrawStrandControl::DrawTendons(CDC* pDC, grlibPointMapper& leftMapper, grl
          grlibPointMapper* pPointMapper = (end == pgsTypes::metStart ? &leftMapper : &rightMapper);
 
          pPointMapper->GetAdjustedDeviceExt(&dx, &dy);
-         gpSize2d world_ext = pPointMapper->GetWorldExt();
+         auto world_ext = pPointMapper->GetWorldExt();
          LONG diameter = (LONG)(dy*duct_diameter / world_ext.Dy());
          LONG radius = diameter / 2;
 

@@ -296,7 +296,7 @@ void CGirderGraphBuilderBase::AddGraphPoint(IndexType series, Float64 xval, Floa
    x = IsZero(x,m_ZeroToleranceX) ? 0 : x;
    Float64 y = pcy->Convert(yval);
    y = IsZero(y,m_ZeroToleranceY) ? 0 : y;
-   m_Graph.AddPoint(series, gpPoint2d(x,y));
+   m_Graph.AddPoint(series, GraphPoint(x,y));
 }
 
 void CGirderGraphBuilderBase::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
@@ -393,8 +393,8 @@ void CGirderGraphBuilderBase::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
          LONG dx, dy;
          mapper.GetDeviceExt(&dx, &dy);
 
-         gpSize2d wExt = mapper.GetWorldExt();
-         gpPoint2d wOrg = mapper.GetWorldOrg();
+         GraphSize wExt = mapper.GetWorldExt();
+         GraphPoint wOrg = mapper.GetWorldOrg();
 
          // get device point at World (0,0)
          LONG x, y;
