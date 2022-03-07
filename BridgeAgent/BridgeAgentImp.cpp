@@ -12396,7 +12396,10 @@ std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails
 
       Float64 adjOverlayDepth = overlayDepth * roadwayAngleAdjust; // Height increases with slope
 
-      Float64 slabOffset = GetSlabOffset(segmentKey,face == pgsTypes::Ahead ? pgsTypes::metStart : pgsTypes::metEnd);
+      // Slab Offset can vary along segment since it can be different at each end, and affected by erection tower elevation adjustment
+      // Get actual geometric slab offset at CL girder. Fix for Mantis 1256
+      GET_IFACE(IBridge,pBridge);
+      Float64 slabOffset = pBridge->GetTopSlabToTopGirderChordDistance(poi);
 
       Float64 workPointElevation = workPointFinishedGradeElevation - adjOverlayDepth - slabOffset;
 
