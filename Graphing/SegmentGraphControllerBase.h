@@ -52,6 +52,9 @@ protected:
 
    virtual BOOL OnInitDialog() override;
 
+   // let subclasses decide how to deal with ISelection
+   virtual CSegmentKey GetAppSelectedSegment();
+
 	//{{AFX_MSG(CSegmentGraphControllerBase)
    afx_msg void CbnOnGroupChanged();
    afx_msg void CbnOnGirderChanged();

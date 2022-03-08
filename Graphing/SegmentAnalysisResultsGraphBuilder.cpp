@@ -217,13 +217,14 @@ void CSegmentAnalysisResultsGraphBuilder::Init()
 
 BOOL CSegmentAnalysisResultsGraphBuilder::CreateGraphController(CWnd* pParent,UINT nID)
 {
+   // we only graph single segments
    CSegmentKey segmentKey(0,0,0);
    GET_IFACE(ISelection, pSelection);
    CSelection selection = pSelection->GetSelection();
    if (selection.Type == CSelection::Girder || selection.Type == CSelection::Segment)
    {
-      segmentKey.groupIndex = selection.GroupIdx;
-      segmentKey.girderIndex = selection.GirderIdx;
+      segmentKey.groupIndex = selection.GroupIdx == ALL_GROUPS ? 0 : selection.GroupIdx;
+      segmentKey.girderIndex = selection.GirderIdx == ALL_GIRDERS ? 0 : selection.GirderIdx;
       segmentKey.segmentIndex = selection.SegmentIdx!= ALL_SEGMENTS ? selection.SegmentIdx : 0;
    }
    
@@ -761,7 +762,6 @@ void CSegmentAnalysisResultsGraphBuilder::InitializeGraph(IndexType graphIdx, co
    if (actionType == actionShear)
    {
       GET_IFACE(IProductForces, pProductForces);
-      GET_IFACE(IIntervals, pIntervals);
       int penStyle = PS_SOLID;
 
       *pAnalysisTypeCount = 1;

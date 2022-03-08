@@ -48,8 +48,8 @@ void CGrapherBase::InitCommonGraphBuilders()
 {
    GET_IFACE(IGraphManager,pGraphMgr);
 
-   pGraphMgr->AddGraphBuilder(new CAnalysisResultsGraphBuilder);
    pGraphMgr->AddGraphBuilder(new CSegmentAnalysisResultsGraphBuilder);
+   pGraphMgr->AddGraphBuilder(new CAnalysisResultsGraphBuilder);
    pGraphMgr->AddGraphBuilder(new CEffectivePrestressGraphBuilder);
    pGraphMgr->AddGraphBuilder(new CStabilityGraphBuilder);
    pGraphMgr->AddGraphBuilder(new CStressHistoryGraphBuilder);

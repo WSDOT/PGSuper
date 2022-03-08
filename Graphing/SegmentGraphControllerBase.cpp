@@ -73,14 +73,16 @@ BOOL CSegmentGraphControllerBase::OnInitDialog()
    FillGirderCtrl();
    FillSegmentCtrl();
 
+   GET_IFACE(IDocumentType,pDocType);
+   bool isPGSuper = pDocType->IsPGSuperDocument();
+
    // Set initial value based on the current selection
-   GET_IFACE(ISelection,pSelection);
-   CSelection selection = pSelection->GetSelection();
+   CSegmentKey segmentKey = GetAppSelectedSegment();
 
    CComboBox* pcbGroup  = (CComboBox*)GetDlgItem(IDC_GROUP);
    if ( pcbGroup )
    {
-      pcbGroup->SetCurSel( selection.GroupIdx == ALL_GROUPS ? 0 : (int)selection.GroupIdx + (m_bAllGroups ? 1:0));
+      pcbGroup->SetCurSel(segmentKey.groupIndex == ALL_GROUPS ? 0 : (int)segmentKey.groupIndex + (m_bAllGroups ? 1:0));
       int curSel = pcbGroup->GetCurSel();
       DWORD_PTR itemData = pcbGroup->GetItemData(curSel);
       m_SegmentKey.groupIndex  = (GroupIndexType)(itemData);
@@ -89,14 +91,14 @@ BOOL CSegmentGraphControllerBase::OnInitDialog()
    CComboBox* pcbGirder = (CComboBox*)GetDlgItem(IDC_GIRDER);
    if ( pcbGirder )
    {
-      pcbGirder->SetCurSel(selection.GirderIdx == ALL_GIRDERS ? 0 : (int)selection.GirderIdx);
+      pcbGirder->SetCurSel(segmentKey.girderIndex == ALL_GIRDERS ? 0 : (int)segmentKey.girderIndex);
       m_SegmentKey.girderIndex = (GirderIndexType)pcbGirder->GetCurSel();
    }
 
    CComboBox* pcbSegment = (CComboBox*)GetDlgItem(IDC_SEGMENT);
-   if (pcbSegment)
+   if (pcbSegment && !isPGSuper)
    {
-      pcbSegment->SetCurSel(selection.SegmentIdx == ALL_SEGMENTS ? 0 : (int)selection.SegmentIdx);
+      pcbSegment->SetCurSel(segmentKey.segmentIndex == ALL_SEGMENTS ? 0 : (int)segmentKey.segmentIndex);
       m_SegmentKey.segmentIndex = (SegmentIndexType)pcbSegment->GetCurSel();
    }
 
@@ -104,6 +106,19 @@ BOOL CSegmentGraphControllerBase::OnInitDialog()
    CheckDlgButton(IDC_BEAM, BST_CHECKED);
 
    return TRUE;
+}
+
+CSegmentKey CSegmentGraphControllerBase::GetAppSelectedSegment()
+{
+   GET_IFACE(ISelection,pSelection);
+   CSelection selection = pSelection->GetSelection();
+
+   // Default behavior is to select an individual segment
+   GroupIndexType group = selection.GroupIdx == ALL_GROUPS ? 0 : selection.GroupIdx;
+   GirderIndexType girder = selection.GirderIdx == ALL_GIRDERS ? 0 : selection.GirderIdx;
+   SegmentIndexType segment = selection.SegmentIdx == ALL_SEGMENTS ? 0 : selection.SegmentIdx;
+
+   return CSegmentKey(group,girder,segment);
 }
 
 GroupIndexType CSegmentGraphControllerBase::GetGirderGroup()             
