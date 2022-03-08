@@ -553,14 +553,19 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlab2DistFactorEngineer::GetLLDFParam
 
       // s and t for top and bottom
       Float64 s_top = Width - t_ext;
-      Float64 t_top = (Height - (nIntVoids == 0 ? ExtVoidDiameter : Max(IntVoidDiameter,ExtVoidDiameter)))/2;
+      Float64 s_bot = Width - t_ext;
+      Float64 t_top = (Height - (nIntVoids == 0 ? ExtVoidDiameter : Max(IntVoidDiameter, ExtVoidDiameter))) / 2;
+      Float64 t_bot = (Height - (nIntVoids == 0 ? ExtVoidDiameter : Max(IntVoidDiameter, ExtVoidDiameter))) / 2;
+
+      Float64 slab_depth = pBridge->GetStructuralSlabDepth(poi);
+      t_top += slab_depth;
 
       // length of internal, vertical elements between voids
       Float64 s_int = Height - t_top;
 
       Jvoid.Elements.push_back(VOIDEDSLAB_J_VOID::Element(s_top,t_top)); // top
-      Jvoid.Elements.push_back(VOIDEDSLAB_J_VOID::Element(s_top,t_top)); // bottom
-      Sum_s_over_t += 2*(s_top/t_top);
+      Jvoid.Elements.push_back(VOIDEDSLAB_J_VOID::Element(s_bot,t_bot)); // bottom
+      Sum_s_over_t += (s_top / t_top) + (s_bot / t_bot);
 
       Jvoid.Elements.push_back(VOIDEDSLAB_J_VOID::Element(s_int,t_ext)); // left edge
       Sum_s_over_t += (s_int/t_ext);
