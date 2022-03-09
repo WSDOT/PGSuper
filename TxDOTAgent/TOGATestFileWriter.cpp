@@ -135,7 +135,7 @@ void CadWriterWorkerBee::WriteFloat64(Float64 val, LPCTSTR title, Int16 colWidth
    this->WriteString(buf, title, colWidth, nChars,_T("%s"));
 }
 
-void CadWriterWorkerBee::WriteInt16(Int16 val, LPCTSTR title, Int16 colWidth, Int16 nchars, LPCTSTR format)
+void CadWriterWorkerBee::WriteInt32(Int32 val, LPCTSTR title, Int16 colWidth, Int16 nchars, LPCTSTR format)
 {
    // write string to local buffer
    TCHAR buf[32];
