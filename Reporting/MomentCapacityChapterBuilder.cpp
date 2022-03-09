@@ -112,6 +112,14 @@ rptChapter* CMomentCapacityChapterBuilder::Build(CReportSpecification* pRptSpec,
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dist,   pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), true );
 
+   rptRcScalar strain;
+   strain.SetFormat(sysNumericFormatTool::Automatic);
+   strain.SetWidth(7);
+   strain.SetPrecision(3);
+
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
+
+
    location.PrefixAttributes(false); // put the attributes after the location
    location.IncludeSpanAndGirder(false);
 
@@ -125,7 +133,10 @@ rptChapter* CMomentCapacityChapterBuilder::Build(CReportSpecification* pRptSpec,
    (*pPara) << _T("Tension Resultant, T = ") << force.SetValue(pmcd->T) << rptNewLine;
    (*pPara) << _T("Depth to Tension Resultant, ") << Sub2(_T("d"),_T("e")) << _T(" = ") << dist.SetValue(pmcd->de) << rptNewLine;
    (*pPara) << _T("Depth to Tension Resultant (for shear), ") << Sub2(_T("d"),_T("e")) << _T(" = ") << dist.SetValue(pmcd->de_shear) << rptNewLine;
-   (*pPara) << _T("Nominal Capacity, ") << Sub2(_T("M"),_T("n")) << _T(" = ") << moment.SetValue(pmcd->Mn) << rptNewLine;
+   (*pPara) << Sub2(symbol(epsilon), _T("t")) << _T(" x 1000 = ") << strain.SetValue(pmcd->et * 1000) << rptNewLine;
+   (*pPara) << symbol(phi) << _T(" =") << scalar.SetValue(pmcd->Phi) << rptNewLine;
+   (*pPara) << _T("Nominal Capacity, ") << Sub2(_T("M"), _T("n")) << _T(" = ") << moment.SetValue(pmcd->Mn) << rptNewLine;
+   (*pPara) << _T("Nominal Resistance, ") << Sub2(_T("M"),_T("r")) << _T(" = ") << symbol(phi) << Sub2(_T("M"), _T("n")) << _T(" = ") << moment.SetValue(pmcd->Mr) << rptNewLine;
    (*pPara) << _T("Moment Arm = ") << Sub2(_T("d"),_T("e")) << _T(" - ") << Sub2(_T("d"),_T("c")) << _T(" = ") << Sub2(_T("M"),_T("n")) << _T("/T = ") << dist.SetValue(pmcd->MomentArm) << rptNewLine;
 
    //std::array<std::_tstring, 3> strControl{ _T("concrete crushing"), _T("maximum reinforcement strain"), _T("maximum reinforcement strain with stress limited by lack of full development [5.9.4.3.2]") };

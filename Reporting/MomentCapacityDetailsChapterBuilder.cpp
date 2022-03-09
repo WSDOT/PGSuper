@@ -384,7 +384,7 @@ void write_moment_data_table(IBroker* pBroker,
    (*table)(0,col++) << COLHDR(_T("d") << Sub(_T("t")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    if ( lrfdVersionMgr::SixthEdition2012 <= lrfdVersionMgr::GetVersion() )
    {
-      (*table)(0,col++) << Sub2(symbol(epsilon),_T("t"));
+      (*table)(0,col++) << Sub2(symbol(epsilon),_T("t")) << _T(" x 1000");
    }
 
    if ( bPositiveMoment )
@@ -479,8 +479,8 @@ void write_moment_data_table(IBroker* pBroker,
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
    rptRcScalar strain;
-   strain.SetFormat( sysNumericFormatTool::Fixed );
-   strain.SetWidth(6);
+   strain.SetFormat( sysNumericFormatTool::Automatic);
+   strain.SetWidth(7);
    strain.SetPrecision(3);
 
    Int16 count = 0;
@@ -509,7 +509,7 @@ void write_moment_data_table(IBroker* pBroker,
       (*table)(row,col++) << dim.SetValue( pmcd->dt );
       if ( lrfdVersionMgr::SixthEdition2012 <= lrfdVersionMgr::GetVersion() )
       {
-         (*table)(row,col++) << strain.SetValue(pmcd->et);
+         (*table)(row,col++) << strain.SetValue(pmcd->et * 1000.0);
       }
 
       if ( bPositiveMoment)
