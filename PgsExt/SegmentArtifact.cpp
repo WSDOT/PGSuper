@@ -854,11 +854,13 @@ Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength() const
    {
        Float64 fc_reqd_hauling_comp1, fc_reqd_hauling_tens1, fc_reqd_hauling_tens_wbar1;
        m_pHaulingAnalysisArtifact->GetRequiredConcreteStrength(pgsTypes::CrownSlope, &fc_reqd_hauling_comp1, &fc_reqd_hauling_tens1, &fc_reqd_hauling_tens_wbar1);
+       Float64 fc_reqd_hauling_1 = Max(fc_reqd_hauling_comp1, fc_reqd_hauling_tens1, fc_reqd_hauling_tens_wbar1);
 
        Float64 fc_reqd_hauling_comp2, fc_reqd_hauling_tens2, fc_reqd_hauling_tens_wbar2;
        m_pHaulingAnalysisArtifact->GetRequiredConcreteStrength(pgsTypes::Superelevation, &fc_reqd_hauling_comp2, &fc_reqd_hauling_tens2, &fc_reqd_hauling_tens_wbar2);
+       Float64 fc_reqd_hauling_2 = Max(fc_reqd_hauling_comp2, fc_reqd_hauling_tens2, fc_reqd_hauling_tens_wbar2);
 
-       Float64 fc_reqd_hauling = Max(fc_reqd_hauling_tens_wbar1, fc_reqd_hauling_comp2, fc_reqd_hauling_tens_wbar1, fc_reqd_hauling_comp2);
+       Float64 fc_reqd_hauling = Max(fc_reqd_hauling_1,fc_reqd_hauling_2);
 
       if ( fc_reqd_hauling < 0 ) // there is no concrete strength that will work
       {
