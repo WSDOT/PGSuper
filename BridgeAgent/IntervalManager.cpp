@@ -39,6 +39,8 @@
 
 #include <MfcTools\Exceptions.h>
 
+#include <algorithm>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE

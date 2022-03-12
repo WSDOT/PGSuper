@@ -34,6 +34,8 @@
 #include <IFace\Project.h>
 #include <PgsExt\LoadFactors.h>
 
+#include <algorithm>
+
 /////////// Misc
 
 inline IndexType HashPOIInterval(PoiIDType poiid, IntervalIndexType interval)
