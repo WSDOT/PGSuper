@@ -94,7 +94,9 @@ HRESULT CTxDOTCadExporter::FinalConstruct()
    }
 
    // Get the user's setting, using the local machine setting as the default if not present
-   m_strTemplateLocation = pApp->GetProfileString(_T("Settings"),_T("TxCADExportTemplateFolder"),strDefaultLocation);
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CWinApp* pThisApp = AfxGetApp();
+   m_strTemplateLocation = pThisApp->GetProfileString(_T("Settings"),_T("TxCADExportTemplateFolder"),strDefaultLocation);
 
    // make sure we have a trailing backslash
    if (_T('\\') != m_strTemplateLocation.GetAt(m_strTemplateLocation.GetLength() - 1))
@@ -107,7 +109,8 @@ HRESULT CTxDOTCadExporter::FinalConstruct()
 
 void CTxDOTCadExporter::FinalRelease()
 {
-   CEAFApp* pApp = EAFGetApp();
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CWinApp* pApp = AfxGetApp();
    VERIFY(pApp->WriteProfileString(_T("Settings"), _T("TxCADExportTemplateFolder"), m_strTemplateLocation));
 }
 
