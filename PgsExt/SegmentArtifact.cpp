@@ -410,7 +410,7 @@ bool pgsSegmentArtifact::IsWithRebarAllowableStressApplicable(const StressCheckT
    ATLASSERT(attribute == 0 || attribute == POI_CLOSURE);
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
 
    const auto& vArtifacts(GetFlexuralStressArtifacts(task));
    for( const auto& artifact : vArtifacts)

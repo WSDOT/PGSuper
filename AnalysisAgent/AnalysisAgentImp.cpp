@@ -2993,20 +2993,23 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
 
          // Final step is to deal with what looks like a bug in the GirderModelManager when computing
          // creep deflections within closure joints. Clean up deflections by using adjacent value to closures
-#pragma Reminder("The patch below likely hides a bug in the GirderModelManager when computing creep deflections within closure joints")
-         std::vector<Float64>::iterator deflit = deflectionsIter;
-         for (const auto& poi : vSegmentPoi)
+#pragma Reminder("The patch below hides a bug in the GirderModelManager when computing creep deflections within closure joints")
+         if (deflectionsIter != deflections.begin())
          {
-            if (poi.get().HasAttribute(POI_CLOSURE))
+            std::vector<Float64>::iterator deflit = deflectionsIter;
+            for (const auto& poi : vSegmentPoi)
             {
-               std::vector<Float64>::iterator cldit = deflit;
-               *deflit = *(--cldit); // use deflection value just previous to closure joint
-            }
+               if (poi.get().HasAttribute(POI_CLOSURE))
+               {
+                  std::vector<Float64>::iterator cldit = deflit;
+                  *deflit = *(--cldit); // use deflection value just previous to closure joint
+               }
 
-            deflit++;;
+               deflit++;;
+            }
          }
 
-         deflectionsIter += vSegmentPoi.size();
+         deflectionsIter += vSegmentPoi.size(); // continue to pois in next segment
       } // next segment
    }
    else
