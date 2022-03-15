@@ -1840,6 +1840,9 @@ void pgsStrandDesignTool::FillArtifactWithFlexureValues()
 
 bool pgsStrandDesignTool::UpdateConcreteStrength(Float64 fcRequired, const StressCheckTask& task,pgsTypes::StressLocation stressLocation)
 {
+   if (fcRequired < 0) // there is not required concrete strength that works
+      return false;
+
    Float64 fc_current = m_pArtifact->GetConcreteStrength();
    LOG(_T("Update Final Concrete Strength if needed. f'c required = ")<< ::ConvertFromSysUnits(fcRequired,unitMeasure::KSI) << _T(" KSI f'c current = ")<< ::ConvertFromSysUnits(fc_current,unitMeasure::KSI) << _T(" KSI"));;
 
