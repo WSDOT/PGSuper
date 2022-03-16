@@ -762,16 +762,6 @@ HRESULT CBridgeDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
 
          ATLASSERT(pPier->m_EndDistanceMeasurementType[pgsTypes::Ahead] == pPier->m_EndDistanceMeasurementType[pgsTypes::Back]);
          ATLASSERT(pPier->m_BearingOffsetMeasurementType[pgsTypes::Ahead] == pPier->m_BearingOffsetMeasurementType[pgsTypes::Back]);
-
-         // There is a problem modeling boundary conditions at cantilever piers
-         // The LBAM does not support changing boundary conditions so we can't model a "continuous" beam
-         // which is the girder cantilevered over a support, and then change it to integral. For
-         // this reason, only hinge and roller boundary conditions are supported at cantilever piers.
-         // Force the boundary condition to a supported value.
-         if (pPier->IsAbutment() && IsContinuousBoundaryCondition(pPier->GetBoundaryConditionType()))
-         {
-            pPier->SetBoundaryConditionType(pgsTypes::bctHinge);
-         }
       }
 
       if ( ::IsBridgeSpacing(m_GirderSpacingType) )
