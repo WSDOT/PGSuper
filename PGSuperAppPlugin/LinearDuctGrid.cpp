@@ -113,7 +113,7 @@ void CLinearDuctGrid::CustomInit(CLinearDuctGridCallback* pCallback)
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
 			.SetEnabled(FALSE)          // disables usage as current cell
-         .SetValue("Point")
+         .SetValue(_T("Point"))
 		);
    col++;
 

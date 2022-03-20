@@ -185,17 +185,17 @@ void CCrownSlopeGrid::InitRowData(ROWCOL row)
    {
       // No row to copy. just make some reasonable assumptions
       SetValueRange(CGXRange(row, 0), row - 1); // row num
-      SetValueRange(CGXRange(row, 1), "0+00");
-      SetValueRange(CGXRange(row, 2), "-0.02");
+      SetValueRange(CGXRange(row, 1), _T("0+00"));
+      SetValueRange(CGXRange(row, 2), _T("-0.02"));
 
       ROWCOL col = 3;
       for (IndexType ir = 0; ir < m_pRoadwaySectionData->NumberOfSegmentsPerSection - 2; ir++)
       {
-         SetValueRange(CGXRange(row, col++), "10.00");
-         SetValueRange(CGXRange(row, col++), "-0.02");
+         SetValueRange(CGXRange(row, col++), _T("10.00"));
+         SetValueRange(CGXRange(row, col++), _T("-0.02"));
       }
 
-      SetValueRange(CGXRange(row, col), "-0.02");
+      SetValueRange(CGXRange(row, col), _T("-0.02"));
    }
 
    GetParam()->EnableUndo(TRUE);

@@ -117,11 +117,11 @@ void CLLDFPierGrid::CustomInit(PierIndexType pierIdx)
 
    SetMergeCellsMode(gxnMergeEvalOnDisplay);
 
-   SetStyleRange(CGXRange(0,1),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue("Strength/Service"));
-   SetStyleRange(CGXRange(0,2),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue("Fatigue/Special Permit Rating"));
+   SetStyleRange(CGXRange(0,1),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue(_T("Strength/Service")));
+   SetStyleRange(CGXRange(0,2),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue(_T("Fatigue/Special Permit Rating")));
 
-   SetStyleRange(CGXRange(0,0),CGXStyle().SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue(" "));
-   SetStyleRange(CGXRange(1,0),CGXStyle().SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue(" "));
+   SetStyleRange(CGXRange(0,0),CGXStyle().SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue(_T(" ")));
+   SetStyleRange(CGXRange(1,0),CGXStyle().SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue(_T(" ")));
 
    // set text along top row
 	SetStyleRange(CGXRange(1,1), CGXStyle()
@@ -131,7 +131,7 @@ void CLLDFPierGrid::CustomInit(PierIndexType pierIdx)
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
          .SetInterior(::GetSysColor(COLOR_BTNFACE))
-			.SetValue("-M")
+			.SetValue(_T("-M"))
 		);
 
 	SetStyleRange(CGXRange(1,2), CGXStyle()
@@ -141,7 +141,7 @@ void CLLDFPierGrid::CustomInit(PierIndexType pierIdx)
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
          .SetInterior(::GetSysColor(COLOR_BTNFACE))
-			.SetValue("-M")
+			.SetValue(_T("-M"))
 		);
 
    // make it so that text fits correctly in header row

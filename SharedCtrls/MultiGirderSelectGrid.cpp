@@ -29,8 +29,6 @@
 #include <afxdisp.h>
 #endif // _AFX_NO_OLE_SUPPORT
 
-#include <grid\gxall.h>
-
 #include "SharedCTrls\MultiGirderSelectGrid.h" 
 #include <PgsExt\GirderLabel.h>
 #include <PgsExt\Keys.h>

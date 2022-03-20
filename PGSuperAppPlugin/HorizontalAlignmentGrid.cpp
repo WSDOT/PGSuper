@@ -120,11 +120,11 @@ void CHorizontalAlignmentGrid::InitRowData(ROWCOL row)
    GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
    UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
-   SetValueRange(CGXRange(row,1),unit_mode == umUS ? "0+00" : "0+000");
-   SetValueRange(CGXRange(row,2),"45 L");
-   SetValueRange(CGXRange(row,3),"1000");
-   SetValueRange(CGXRange(row,4),"0");
-   SetValueRange(CGXRange(row,5),"0");
+   SetValueRange(CGXRange(row,1),unit_mode == umUS ? _T("0+00") : _T("0+000"));
+   SetValueRange(CGXRange(row,2),_T("45 L"));
+   SetValueRange(CGXRange(row,3),_T("1000"));
+   SetValueRange(CGXRange(row,4),_T("0"));
+   SetValueRange(CGXRange(row,5),_T("0"));
 
    GetParam()->EnableUndo(TRUE);
 }

@@ -32,12 +32,6 @@
 #include <MfcTools\MetaFileStatic.h>
 #endif
 
-// for the grid
-#ifndef _GXALL_H_
-#include "gxwnd.h"
-#include "gxctrl.h"
-#endif
-
 #include "BeamDimensionGrid.h"
 
 // Want to be able to update the girder image as the user scrolls

@@ -27,12 +27,6 @@
 #pragma once
 #endif // _MSC_VER >= 1000
 // GirderStrandPage.h : header file
-//
-// for the grid
-#ifndef _GXALL_H_
-#include "gxwnd.h"
-#include "gxctrl.h"
-#endif
 
 #include "GirderGlobalStrandGrid.h"
 #include <Units\Measure.h>

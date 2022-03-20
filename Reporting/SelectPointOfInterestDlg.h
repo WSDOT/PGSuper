@@ -24,6 +24,7 @@
 
 #include "resource.h"
 #include <Reporting\SpanGirderReportSpecification.h>
+#include "afxcmn.h"
 
 // CSelectPointOfInterestDlg dialog
 

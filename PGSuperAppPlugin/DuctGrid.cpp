@@ -155,7 +155,7 @@ void CDuctGrid::CustomInit(CSplicedGirderData* pGirder)
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
 			.SetEnabled(FALSE)          // disables usage as current cell
-         .SetValue("Duct")
+         .SetValue(_T("Duct"))
 		);
    col++;
 
