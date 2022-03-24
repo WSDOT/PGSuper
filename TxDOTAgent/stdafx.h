@@ -48,7 +48,11 @@
 #include <atlctl.h>
 #include <afxadv.h>
 
+#if defined _NOGRID
+#include <NoGrid.h>
+#else
 #include <grid\gxall.h>
+#endif
 
 #include <WBFLCore.h>
 #include <WBFLTools.h>

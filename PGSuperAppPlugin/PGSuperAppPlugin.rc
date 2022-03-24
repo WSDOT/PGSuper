@@ -1,6 +1,7 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
+#include <WBFLGrid.h>
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -12,7 +13,9 @@
 #endif
 #include "afxres.h"
 #include <EAF\EAFResources.h>
+#if !defined _NOGRID
 #include "grid\gxresrc.h"
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -45,7 +48,9 @@ BEGIN
     "#endif\r\n"
     "#include ""afxres.h""\r\n"
     "#include <EAF\\EAFResources.h>\r\n"
-    "#include ""grid\\gxresrc.h""\r\0"
+   "#if !defined _NOGRID\r\n"
+   "#include ""grid\gxresrc.h""\r\n"
+   "#endif\r\n"
 END
 
 3 TEXTINCLUDE 
@@ -65,7 +70,9 @@ BEGIN
     "#include ""afxres.rc""         // Standard components\r\n"
     "#include ""afxprint.rc""       // printing/print preview resources\r\n"
     "#endif\r\n"
+   "#if !defined _NOGRID\r\n"
     "#include ""grid\\gxres.rc""\r\0"
+   "#endif\r\n"
 END
 
 #endif    // APSTUDIO_INVOKED

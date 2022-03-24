@@ -34,7 +34,12 @@
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFHelp.h>
 
+#if defined _NOGRID
+#include <NoGrid.h>
+#else
 #include <grid\gxall.h>
+#endif
+
 #include <MFCTools\MFCTools.h>
 
 #include <MathEx.h>

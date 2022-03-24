@@ -15,7 +15,12 @@
 extern CComModule _Module;
 #include <atlcom.h>
 #include <afxdlgs.h>
+
+#if defined _NOGRID
+#include <NoGrid.h>
+#else
 #include <grid\gxall.h>
+#endif
 
 #include "Documentation\KDOT.hh"
 

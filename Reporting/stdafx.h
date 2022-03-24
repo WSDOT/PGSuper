@@ -46,7 +46,12 @@
 #include <initguid.h>
 #include <EAF\EAFDisplayUnits.h>
 
+#if defined _NOGRID
+#include <NoGrid.h>
+#else
 #include <grid\gxall.h>
+#endif
+
 #include <afxwin.h>
 
 #include <EAF\EAFUtilities.h>
