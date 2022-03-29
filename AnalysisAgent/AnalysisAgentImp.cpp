@@ -2175,7 +2175,7 @@ std::vector<Float64> CAnalysisAgentImp::GetTimeStepPrestressAxial(IntervalIndexT
    P.reserve(vPoi.size());
 
    GET_IFACE(ILosses,pILosses);
-   for (const auto& poi : vPoi)
+   for (const pgsPointOfInterest& poi : vPoi)
    {
       const LOSSDETAILS* pLossDetails = pILosses->GetLossDetails(poi,intervalIdx);
       const TIME_STEP_DETAILS& tsDetails = pLossDetails->TimeStepDetails[intervalIdx];
@@ -2505,15 +2505,14 @@ std::vector<Float64> CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,p
          CGirderKey girderKey(vPoi.front().get().GetSegmentKey());
          ComputeTimeDependentEffects(girderKey,intervalIdx);
          
+         GET_IFACE_NOCHECK(IIntervals, pIntervals);
+         GET_IFACE_NOCHECK(ILosses, pLosses);
          if ( resultsType == rtCumulative )
          {
             results.resize(vPoi.size(),0);
-            GET_IFACE(ILosses,pLosses);
-            GET_IFACE(IIntervals,pIntervals);
             IntervalIndexType releaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(girderKey);
             for ( IntervalIndexType iIdx = releaseIntervalIdx; iIdx <= intervalIdx; iIdx++ )
             {
-               GET_IFACE(IIntervals,pIntervals);
                if ( 0 < pIntervals->GetDuration(iIdx) )
                {
                   CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,pfType - pgsTypes::pftCreep);
@@ -2524,10 +2523,8 @@ std::vector<Float64> CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,p
          }
          else
          {
-            GET_IFACE(IIntervals,pIntervals);
             if ( 0 < pIntervals->GetDuration(intervalIdx) )
             {
-               GET_IFACE(ILosses,pLosses);
                CString strLoadingName = pLosses->GetRestrainingLoadName(intervalIdx,pfType - pgsTypes::pftCreep);
                results = GetAxial(intervalIdx,strLoadingName,vPoi,bat,resultsType);
             }
