@@ -5717,13 +5717,13 @@ Design - Operating, LRFD Design Truck + Lane
 est, 0.0.0.0, 881001, 1.66, 0, 0
 est, 0.0.0.0, 881001a, 14.4, 0, 0
 est, 0.0.0.0, 881003, 2.7, 0, 0
-est, 0.0.0.0, 881003a, 22.5, 0, 0
+est, 0.0.0.0, 881003a, 6.3, 0, 0
 est, 0.0.0.0, 881007, 1.66, 0, 0
 Design - Operating, LRFD Design Tandem + Lane
 est, 0.0.0.0, 881001, 1.94, 0, 0
 est, 0.0.0.0, 881001a, 14.4, 0, 0
 est, 0.0.0.0, 881003, 3.28, 0, 0
-est, 0.0.0.0, 881003a, 22.5, 0, 0
+est, 0.0.0.0, 881003a, 6.3, 0, 0
 est, 0.0.0.0, 881007, 1.94, 0, 0
 Design - Operating, LRFD Truck Train [90%(Truck + Lane)]
 est, 0.0.0.0, 881001, 1.79769e+308, 0, 0
@@ -11794,7 +11794,7 @@ Design - Inventory, LRFD Design Truck + Lane
 est, 0.0.0.0, 881001, 1.43, 0, 1
 est, 0.0.0.0, 881001a, 14.4, 0, 1
 est, 0.0.0.0, 881003, 2.72, 0, 1
-est, 0.0.0.0, 881003a, 20.1, 0, 1
+est, 0.0.0.0, 881003a, 8.71, 0, 1
 est, 0.0.0.0, 881006, 0.97, 0, 1
 est, 0.0.0.0, 881007, 0.97, 0, 1
 Design - Inventory, LRFD Design Tandem + Lane
@@ -11815,13 +11815,13 @@ Design - Operating, LRFD Design Truck + Lane
 est, 0.0.0.0, 881001, 1.85, 0, 1
 est, 0.0.0.0, 881001a, 14.4, 0, 1
 est, 0.0.0.0, 881003, 3.75, 0, 1
-est, 0.0.0.0, 881003a, 22.5, 0, 1
+est, 0.0.0.0, 881003a, 6.3, 0, 1
 est, 0.0.0.0, 881007, 1.85, 0, 1
 Design - Operating, LRFD Design Tandem + Lane
 est, 0.0.0.0, 881001, 2.17, 0, 1
 est, 0.0.0.0, 881001a, 14.4, 0, 1
 est, 0.0.0.0, 881003, 4.55, 0, 1
-est, 0.0.0.0, 881003a, 22.5, 0, 1
+est, 0.0.0.0, 881003a, 6.3, 0, 1
 est, 0.0.0.0, 881007, 2.17, 0, 1
 Design - Operating, LRFD Truck Train [90%(Truck + Lane)]
 est, 0.0.0.0, 881001, 1.79769e+308, 0, 1
@@ -17892,14 +17892,14 @@ Design - Inventory, LRFD Design Truck + Lane
 est, 0.0.0.0, 881001, 1.43, 0, 3
 est, 0.0.0.0, 881001a, 14.4, 0, 3
 est, 0.0.0.0, 881003, 2.72, 0, 3
-est, 0.0.0.0, 881003a, 20.1, 0, 3
+est, 0.0.0.0, 881003a, 8.71, 0, 3
 est, 0.0.0.0, 881006, 0.97, 0, 3
 est, 0.0.0.0, 881007, 0.97, 0, 3
 Design - Inventory, LRFD Design Tandem + Lane
 est, 0.0.0.0, 881001, 1.68, 0, 3
 est, 0.0.0.0, 881001a, 14.4, 0, 3
 est, 0.0.0.0, 881003, 3.28, 0, 3
-est, 0.0.0.0, 881003a, 20.1, 0, 3
+est, 0.0.0.0, 881003a, 8.71, 0, 3
 est, 0.0.0.0, 881006, 1.13, 0, 3
 est, 0.0.0.0, 881007, 1.13, 0, 3
 Design - Inventory, LRFD Truck Train [90%(Truck + Lane)]
@@ -17913,13 +17913,13 @@ Design - Operating, LRFD Design Truck + Lane
 est, 0.0.0.0, 881001, 1.85, 0, 3
 est, 0.0.0.0, 881001a, 14.4, 0, 3
 est, 0.0.0.0, 881003, 3.75, 0, 3
-est, 0.0.0.0, 881003a, 22.5, 0, 3
+est, 0.0.0.0, 881003a, 6.3, 0, 3
 est, 0.0.0.0, 881007, 1.85, 0, 3
 Design - Operating, LRFD Design Tandem + Lane
 est, 0.0.0.0, 881001, 2.17, 0, 3
 est, 0.0.0.0, 881001a, 14.4, 0, 3
 est, 0.0.0.0, 881003, 4.55, 0, 3
-est, 0.0.0.0, 881003a, 22.5, 0, 3
+est, 0.0.0.0, 881003a, 6.3, 0, 3
 est, 0.0.0.0, 881007, 2.17, 0, 3
 Design - Operating, LRFD Truck Train [90%(Truck + Lane)]
 est, 0.0.0.0, 881001, 1.79769e+308, 0, 3

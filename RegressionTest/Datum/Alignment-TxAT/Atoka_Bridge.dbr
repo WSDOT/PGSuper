@@ -11989,7 +11989,7 @@ Design - Inventory, LRFD Design Truck + Lane
 dge, 0.0.0.0, 881001, 0, 0, 1
 dge, 0.0.0.0, 881001a, 0.57, 0, 1
 dge, 0.0.0.0, 881003, 0.15, 0, 1
-dge, 0.0.0.0, 881003a, 27.36, 0, 1
+dge, 0.0.0.0, 881003a, 7.43, 0, 1
 dge, 0.0.0.0, 881006, 0, 0, 1
 dge, 0.0.0.0, 881007, 0, 0, 1
 Design - Inventory, LRFD Design Tandem + Lane
@@ -18000,7 +18000,7 @@ Design - Inventory, LRFD Design Truck + Lane
 dge, 0.0.0.0, 881001, 0, 0, 2
 dge, 0.0.0.0, 881001a, 0.57, 0, 2
 dge, 0.0.0.0, 881003, 0.15, 0, 2
-dge, 0.0.0.0, 881003a, 27.32, 0, 2
+dge, 0.0.0.0, 881003a, 7.43, 0, 2
 dge, 0.0.0.0, 881006, 0, 0, 2
 dge, 0.0.0.0, 881007, 0, 0, 2
 Design - Inventory, LRFD Design Tandem + Lane
