@@ -424,10 +424,10 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
    bool bIncludeStrandsWithNegativeMoment = pSpecEntry->IncludeStrandForNegativeMoment();
 
    Float64 Eps = pStrand->GetE();
-   Float64 fpe_ps_all_strands = 0.0; // "average" value for all strands to keep reporting consisten with previous versions
-   Float64 eps_initial_all_strands = 0.0; // "average" value for all strands to keep reporting consisten with previous versions
+   Float64 fpe_ps_all_strands = 0.0; // "average" value for all strands to keep reporting consistent with previous versions
+   Float64 eps_initial_all_strands = 0.0; // "average" value for all strands to keep reporting consistent with previous versions
    std::array<std::vector<Float64>, 2> fpe_ps; // effective prestress after all losses
-   std::array<std::vector<Float64>, 2> eps_initial; // initial strain in the preressing strands (strain at effect prestress)
+   std::array<std::vector<Float64>, 2> eps_initial; // initial strain in the preressing strands (strain at effective prestress)
    if ( bPositiveMoment || bIncludeStrandsWithNegativeMoment || 0 < nSegmentDucts || 0 < nGirderDucts )
    {
       // only consider strands in positive moment analysis or if there are ducts
@@ -595,87 +595,85 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
 
       HRESULT hr = m_MomentCapacitySolver->Solve(0.00, na_angle, ec, 0.0, smFixedCompressionStrain, &solution);
 
-      // This block of commented out code was an attempt to revision the moment capacity solution with the
-      // strain in the reinforcement exceeded their maximum elongation. However, this solution did not work well.
-      // 
-      //if (hr == S_OK)
-      //{
-      //   mcd.Controlling = MN_CONCRETE; // capacity was controlled by concrete strain
-      //}
-      //else if (hr == RC_E_MATERIALFAILURE)
-      //{
-      //   WATCHX(MomCap, 0, _T("Exceeded material strain limit"));
+      if (hr == S_OK)
+      {
+         mcd.Controlling = MOMENTCAPACITYDETAILS::ControllingType::Concrete; // capacity was controlled by concrete strain
+      }
+      else if (hr == RC_E_MATERIALFAILURE)
+      {
+         WATCHX(MomCap, 0, _T("Exceeded material strain limit"));
 
-      //   CComPtr<IGeneralSectionSolution> general_solution;
-      //   solution->get_GeneralSectionSolution(&general_solution);
+         CComPtr<IGeneralSectionSolution> general_solution;
+         solution->get_GeneralSectionSolution(&general_solution);
 
-      //   Float64 max_overstrain_ratio = 0;
-      //   IndexType controllingOverstrainedSliceIdx = INVALID_INDEX;
+         Float64 max_overstrain_ratio = 0;
+         IndexType controllingOverstrainedSliceIdx = INVALID_INDEX;
 
-      //   IndexType nSlices;
-      //   general_solution->get_SliceCount(&nSlices);
-      //   for (IndexType sliceIdx = 0; sliceIdx < nSlices; sliceIdx++)
-      //   {
-      //      CComPtr<IGeneralSectionSlice> slice;
-      //      general_solution->get_Slice(sliceIdx, &slice);
-      //      VARIANT_BOOL vbExceededStrainLimit;
-      //      slice->ExceededStrainLimit(&vbExceededStrainLimit);
-      //      if (vbExceededStrainLimit == VARIANT_TRUE)
-      //      {
-      //         Float64 total_strain;
-      //         slice->get_TotalStrain(&total_strain);
-      //         CComPtr<IStressStrain> fgMaterial;
-      //         slice->get_ForegroundMaterial(&fgMaterial);
-      //         // if fgMaterial is null, slice is a void so we will skip it
-      //         if (fgMaterial)
-      //         {
-      //             Float64 emin, emax;
-      //             fgMaterial->StrainLimits(&emin, &emax);
-      //             Float64 overstrain_ratio = Max(total_strain / emin, total_strain / emax);
+         IndexType nSlices;
+         general_solution->get_SliceCount(&nSlices);
+         for (IndexType sliceIdx = 0; sliceIdx < nSlices; sliceIdx++)
+         {
+            CComPtr<IGeneralSectionSlice> slice;
+            general_solution->get_Slice(sliceIdx, &slice);
+            VARIANT_BOOL vbExceededStrainLimit;
+            slice->ExceededStrainLimit(&vbExceededStrainLimit);
+            if (vbExceededStrainLimit == VARIANT_TRUE)
+            {
+               Float64 total_strain;
+               slice->get_TotalStrain(&total_strain);
+               CComPtr<IStressStrain> fgMaterial;
+               slice->get_ForegroundMaterial(&fgMaterial);
+               // if fgMaterial is null, slice is a void so we will skip it
+               if (fgMaterial)
+               {
+                   Float64 emin, emax;
+                   fgMaterial->StrainLimits(&emin, &emax);
+                   ATLASSERT(!IsZero(emin) && !IsZero(emax));
+                   Float64 overstrain_ratio = Max(total_strain / emin, total_strain / emax);
 
-      //             if (max_overstrain_ratio < overstrain_ratio)
-      //             {
-      //                 max_overstrain_ratio = overstrain_ratio;
-      //                 controllingOverstrainedSliceIdx = sliceIdx;
-      //             }
-      //         }
-      //      }
-      //   }
+                   if (max_overstrain_ratio < overstrain_ratio)
+                   {
+                       max_overstrain_ratio = overstrain_ratio;
+                       controllingOverstrainedSliceIdx = sliceIdx;
+                   }
+               }
+            }
+         }
 
-      //   ATLASSERT(controllingOverstrainedSliceIdx != INVALID_INDEX); // if this is INVALID_INDEX, we didn't an over strained slice but should have
+         ATLASSERT(controllingOverstrainedSliceIdx != INVALID_INDEX); // if this is INVALID_INDEX, we didn't find an over-strained slice but should have
 
-      //   CComPtr<IGeneralSectionSlice> slice;
-      //   general_solution->get_Slice(controllingOverstrainedSliceIdx, &slice);
+         CComPtr<IGeneralSectionSlice> slice;
+         general_solution->get_Slice(controllingOverstrainedSliceIdx, &slice);
 
-      //   IndexType shapeIdx;
-      //   slice->get_ShapeIndex(&shapeIdx);
+         IndexType shapeIdx;
+         slice->get_ShapeIndex(&shapeIdx);
 
-      //   CComPtr<IShape> s;
-      //   section->get_Shape(shapeIdx, &s);
-      //   CComQIPtr<IGenericShape> shape(s);
-      //   ATLASSERT(shape); // either this isn't reinforcement, the index is wrong, or reinforcement was modeled with something other than the generic shape
-      //   CComPtr<IPoint2d> pntCG;
-      //   shape->get_Centroid(&pntCG);
-      //   Float64 Xcg, Ycg;
-      //   pntCG->Location(&Xcg, &Ycg);
+         CComPtr<IShape> s;
+         section->get_Shape(shapeIdx, &s);
+         CComPtr<IShapeProperties> props;
+         s->get_ShapeProperties(&props);
+         CComPtr<IPoint2d> pntCG;
+         props->get_Centroid(&pntCG);
+         Float64 Xcg, Ycg;
+         pntCG->Location(&Xcg, &Ycg);
 
-      //   // get the foreground model for the shape and get its max usable strain
-      //   CComPtr<IStressStrain> ssModel;
-      //   section->get_ForegroundMaterial(shapeIdx, &ssModel);
-      //   Float64 emin, emax;
-      //   ssModel->StrainLimits(&emin, &emax);
+         // get the foreground model for the shape and get its max usable strain
+         CComPtr<IStressStrain> ssModel;
+         section->get_ForegroundMaterial(shapeIdx, &ssModel);
+         Float64 emin, emax;
+         ssModel->StrainLimits(&emin, &emax);
 
-      //   // get the initial strain
-      //   CComPtr<IPlane3d> initial_strain;
-      //   section->get_InitialStrain(shapeIdx, &initial_strain);
-      //   Float64 ei;
-      //   initial_strain->GetZ(Xcg, Ycg, &ei);
+         // get the initial strain
+         CComPtr<IPlane3d> initial_strain;
+         section->get_InitialStrain(shapeIdx, &initial_strain);
+         Float64 ei;
+         initial_strain->GetZ(Xcg, Ycg, &ei);
 
-      //   Float64 e = emax - ei;
-      //   hr = m_MomentCapacitySolver->Solve(0.0, na_angle, e, Ycg, smFixedStrain, &solution.p);
-      //   ATLASSERT(SUCCEEDED(hr));
-      //   mcd.Controlling = bDevelopmentReducedStrainCapacity ? MN_DEVELOPMENT : MN_REINFORCEMENT_STRAIN;
-      //}
+         Float64 e = emax - ei;
+         hr = m_MomentCapacitySolver->Solve(0.0, na_angle, e, Ycg, smFixedStrain, &solution.p);
+         ATLASSERT(SUCCEEDED(hr));
+         mcd.Controlling = bDevelopmentReducedStrainCapacity ? MOMENTCAPACITYDETAILS::ControllingType::Development : MOMENTCAPACITYDETAILS::ControllingType::ReinforcementStrain;
+      }
 
       if (FAILED(hr))
       {
@@ -697,27 +695,8 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
          default:                         strErrorCode.Format(_T("0x%X"), hr);
          }
 
-         //// Dump the section for later diagnostics
-         //GET_IFACE(IEAFDocument, pDoc);
-         //CString strFileRoot = pDoc->GetFileRoot(); // returns the root path for the document such as "C:\My Documents\"
-         //CString strFileName;
-         //strFileName.Format(_T("%sRCCapacity_POI_%d.txt"), strFileRoot, poi.GetID());
-
-         //CComPtr<IStructuredSave2> ss;
-         //ss.CoCreateInstance(CLSID_StructuredSave2);
-         //CComBSTR bstrFileName(strFileName);
-         //ss->Open(bstrFileName);
-
-         //CComQIPtr<IStructuredStorage2> stg(section);
-         //stg->Save(ss);
-         //ss->Close();
-
-         //ss.Release();
-         //stg.Release();
-
          const unitmgtLengthData& unit = pDisplayUnits->GetSpanLengthUnit();
          CString msg;
-         //msg.Format(_T("An unknown error occured while computing %s moment capacity for %s at %f %s from the left end of the girder.\n(hr = %s)\n(Location ID = %d)\nPlease contact technical support with a screen print of this error message and send the diagnostic file %s."),
          msg.Format(_T("An unknown error occured while computing %s moment capacity for %s at %f %s from the left end of the girder.\n(hr = %s)\n(Location ID = %d).\nPlease send your file to technical support."),
             (bPositiveMoment ? _T("positive") : _T("negative")),
             SEGMENT_LABEL(segmentKey),
@@ -725,12 +704,9 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
             unit.UnitOfMeasure.UnitTag().c_str(),
             strErrorCode,
             poi.GetID()
-            /*, strFileName*/
          );
          pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID, m_scidMomentCapacity, msg);
          pStatusCenter->Add(pStatusItem);
-
-         //THROW_UNWIND(msg, -1);
       }
 
 #if defined _DEBUG
@@ -1852,26 +1828,8 @@ void pgsMomentCapacityEngineer::CreateStrandMaterial(const CSegmentKey& segmentK
 
       if (development_length_factor < 1)
       {
-         *pbDevelopmentReducedStrainCapacity = true; // capacity of strand is being reduced because of development length
-
-         //// The maximum usable strain is the difference between max strain and the initial strain reduced by development length factor + initial strain.
-         //// The strain associated strand development is reduced. This is the differential strain between the steel and concrete, not the total strain
-         //// reduced_emmax = (emax - initialStrain)*development_length_factor + initialStrain
-         ////
-         ////                                                          reduced_emax        emax
-         ////  +---------------------------------------------------------*-------------------+
-         ////  |<----- initialStrain --->|<----------- emax - initialStrain ---------------->|
-         ////  |                         |  
-         ////  |                         |<----------------------------->| (emax - initialStrain)*(development_length_factor)
-         ////  |<------------------------------------------------------->| (emax - initialStrain)*(development_length_factor) + initialStrain
-
-         //Float64 emin, emax;
-         //ssStrand->StrainLimits(&emin, &emax);
-         //Float64 reduced_emax = (emax - initialStrain) * development_length_factor + initialStrain;
-         //reduced_emax = Min(reduced_emax, emax);
-         //powerFormula->SetStrainLimits(emin, reduced_emax);
-
          // reduced stress per LRFD Fig C5.9.4.3.2-1, development_length_factor = fpx/fps -> fpx = (development_length_factor)*fps
+         *pbDevelopmentReducedStrainCapacity = true; // capacity of strand is being reduced because of development length
          powerFormula->put_ReductionFactor(development_length_factor);
       }
 

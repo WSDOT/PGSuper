@@ -6,25 +6,25 @@ A non linear approach is used in lieu of the AASHTO approaches because the equat
 
 Theory
 ----------
-The basic theory and assumptions for the non-linear analysis are:
+The basic theory and assumptions for the strain compatibility analysis are:
 1. The strength design of flexural members is based on satisfaction of applicable conditions of equilibrium and compatibility of strains.
 2. Strain in the reinforcement and concrete is assumed to be directly proportional to the distance from the neutral axis.
-3. The maximum useable strain at the extreme concrete compression fiber is assumed to be 0.003.
+3. The maximum useable strain at the extreme concrete compression fiber is 0.003.
 4. The maximum useable strain in prestressing strand is 0.035 as defined in ASTM A416.
 5. For positive moment analysis; the effects of non-prestressed (mild steel) reinforcement are included in the analysis at the user's option. The area of girder rebar is adjusted for lack of development. Deck rebar is ignored
-6. For negative moment analysis; the effects of non-prestressed (mild steel) Deck reinforcement are included in the analysis. Rebar in the girder is included at the user's option
+6. For negative moment analysis; the effects of non-prestressed (mild steel) Deck reinforcement are included in the analysis. Rebar in the girder is included at the user's option.
 7. The tensile strength of concrete is neglected.
 8. The non-linear concrete stress-strain relationship is taken from Reference 2.
 9. The material model of stress-strain behavior for low relaxation and stress relieved prestressing strands utilizes the "power formula" taken from the PCI Bridge Design Manual.
 10. The distance c from the fiber of maximum strain to the neutral axis is measured in a direction perpendicular to that axis.
 
-NOTE: Mild reinforcement is only used in the capacity analysis if permitted by the Project Criteria. For bridge systems without a cast in place deck or overlay, the mild reinforcement in the girder is used in the negative moment capacity analysis, regardless of the settings in the Project Criteria.
+NOTE: Mild steel reinforcement is only used in the capacity analysis if permitted by the Project Criteria. For bridge systems without a cast in place deck or overlay, the mild reinforcement in the girder is used in the negative moment capacity analysis, regardless of the settings in the Project Criteria.
 
 Solution Method
 ----------------
-The non-linear compressive behavior of prestressed beam sections is modelled by slicing the compression area of the section into horizontal strips. Strains are computed at the midpoint of each strip and then stresses are computed using the concrete material model. The moment contribution by each strip is then determined by multiplying the stress in the strip by the strip area to get the force and then multiplying this force by the distance from the strip's geometrical centroid to the top of the non-composite girder section. Analysis with 10 strips provides reasonable accuracy.
+The strain compatibility analysis is carried out by dividing the beam section into slices, computing the strain at the centroid of each slice, and computing the stress at the centroid. The stress field is then integrated over the girder section to determine the resultant axial force and moment. This process is repeated for different locations of the neutral axis until equilibrium of internal and external forces is acheived.
 
-At the conclusion of the analysis, the strain in the reinforcement is compared to the minimum required elongation specified in the applicable ASTM. If the strain in the reinforcement exceeds the minimum required elogation the moment capacity is over predicted. The strain at the level of the reinforcement is fixed at the minimum elongation and the capacity analysis is repeated. The resulting strain in the concrete will be less than 0.003 and the rectangular stress distribution approximation from the AASHTO specifications cannot be used providing further justification for the non-linear strain-compatibility solution.
+At the conclusion of the analysis, the strain in the reinforcement is compared to the minimum required elongation specified in the applicable ASTM. If the strain in the reinforcement exceeds the minimum required elogation the moment capacity is over predicted. The strain at the level of the reinforcement is fixed at the minimum elongation and the capacity analysis is repeated. The resulting strain in the concrete will be less than 0.003 and the rectangular stress distribution approximation from the AASHTO specifications cannot be used. This provides further justification for the strain-compatibility solution.
 
 Ultimate moment capacity is computed relative to the condition of zero strain in the non-prestressed materials in the cross section. The following flow chart illustrates the high level procedure for this method:
 
@@ -50,9 +50,11 @@ The initial strain in the prestressing steel, <span style="font-family:Symbol">e
 
 Stress in the Prestressing Strand
 --------------------------------
-As mentioned above, the stress/strain material model for the prestressing steel is computed using the "power method" where  <span style="font-family:Symbol">e</span><sub>ps</sub> =  <span style="font-family:Symbol">e</span><sub>1</sub> + <span style="font-family:Symbol">e</span><sub>2</sub>. The equation, and a graph, for grade 270 steel are given below.
+As mentioned above, the stress/strain material model for the prestressing steel is computed using the "power method" where  <span style="font-family:Symbol">e</span><sub>ps</sub> =  <span style="font-family:Symbol">e</span><sub>1</sub> + <span style="font-family:Symbol">e</span><sub>2</sub>. The equation, and a graph, for Grade 270 steel are given below.
 
 ![](PowerFormula.gif)
+
+For sections where strand are not fully developed, the stress determined by the power formula is reduced as specified in AASHTO LRFD 5.9.4.3.2.
 
 Stress in the Mild Reinforcement
 ----------------------------------

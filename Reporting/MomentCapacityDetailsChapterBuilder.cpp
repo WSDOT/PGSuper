@@ -294,7 +294,7 @@ void write_moment_data_table(IBroker* pBroker,
    ColumnIndexType nColumns;
    if( bPositiveMoment || 0 < nGirderTendons || 0 < nMaxSegmentTendons)
    {
-      nColumns = 10;// 12;
+      nColumns = 11;// 12;
       if ( lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::FifthEdition2010 )
       {
          nColumns++; // for PPR
@@ -302,7 +302,7 @@ void write_moment_data_table(IBroker* pBroker,
    }
    else
    {
-      nColumns = 10;
+      nColumns = 11;
    }
 
    if ( lrfdVersionMgr::SixthEdition2012 <= lrfdVersionMgr::GetVersion() )
@@ -351,6 +351,10 @@ void write_moment_data_table(IBroker* pBroker,
       *pChapter << pPara;
       (*pPara) << _T("* Used to compute ") << Sub2(_T("d"),_T("v")) << _T(" for shear. Depth to resultant tension force for strands on the tension half of the section. See PCI Bridge Design Manual, 3rd Edition, MNL-133-11, §8.4.1.2") << rptNewLine;
    }
+
+   pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
+   *pChapter << pPara;
+   *pPara << _T("+ Controlling: C=Concrete crushing, T=Tension strain limit of reinforcement, D=Reduced strand stress due to lack of full development per LRFD ") << LrfdCw8th(_T("5.11.4.2"), _T("5.9.4.3.2")) << rptNewLine;
 
 
    if ( girderKey.groupIndex == ALL_GROUPS )
@@ -466,6 +470,7 @@ void write_moment_data_table(IBroker* pBroker,
    (*table)(0,col++) << COLHDR(_T("C"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
    (*table)(0,col++) << COLHDR(_T("T"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
    (*table)(0,col++) << COLHDR(_T("M") << Sub(_T("n")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0, col++) << _T("Controlling +");
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptForceUnitValue,  force,    pDisplayUnits->GetGeneralForceUnit(), false );
@@ -485,6 +490,8 @@ void write_moment_data_table(IBroker* pBroker,
 
    Int16 count = 0;
    RowIndexType row = table->GetNumberOfHeaderRows();
+
+   std::array<std::_tstring, 3> strControlling{ _T("C"), _T("T"), _T("D") };
 
    GET_IFACE2(pBroker,IMomentCapacity,pMomentCap);
    for (const pgsPointOfInterest& poi : vPoi)
@@ -602,6 +609,7 @@ void write_moment_data_table(IBroker* pBroker,
       (*table)(row,col++) << force.SetValue( pmcd->T );
       (*table)(row,col++) << moment.SetValue( pmcd->Mn );
 
+      (*table)(row, col++) << strControlling[std::underlying_type<MOMENTCAPACITYDETAILS::ControllingType>::type(pmcd->Controlling)];
 
       row++;
       count++;
