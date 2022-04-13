@@ -60,7 +60,7 @@ protected:
    virtual void UpdateGirderComboBox(SpanIndexType spanIdx);
 
    virtual void UpdateChapterList();
-   virtual void ClearChapterCheckMarks();
+   virtual void ClearChapterCheckMarks(BOOL bClear = TRUE);
    virtual void InitChapterListFromSpec();
    virtual void InitFromRptSpec();
 
@@ -72,4 +72,6 @@ public:
    afx_msg void OnHelp();
    afx_msg void OnBnClickedRadio();
    afx_msg void OnBnClickedSelectMultipleButton();
+   afx_msg void OnSelectAll();
+   afx_msg void OnDeselectAll();
 };

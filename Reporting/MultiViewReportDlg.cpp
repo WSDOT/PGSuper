@@ -121,6 +121,8 @@ BEGIN_MESSAGE_MAP(CMultiViewReportDlg, CDialog)
    ON_BN_CLICKED(IDC_RADIO1, &CMultiViewReportDlg::OnBnClickedRadio)
    ON_BN_CLICKED(IDC_RADIO2, &CMultiViewReportDlg::OnBnClickedRadio)
    ON_BN_CLICKED(IDC_SELECT_MULTIPLE_BUTTON, &CMultiViewReportDlg::OnBnClickedSelectMultipleButton)
+   ON_COMMAND(IDC_SELECT_ALL, OnSelectAll)
+   ON_COMMAND(IDC_DESELECT_ALL, OnDeselectAll)
 END_MESSAGE_MAP()
 
 BOOL CMultiViewReportDlg::OnInitDialog()
@@ -257,13 +259,12 @@ void CMultiViewReportDlg::OnHelp()
    EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_DIALOG_REPORT );
 }
 
-
-void CMultiViewReportDlg::ClearChapterCheckMarks()
+void CMultiViewReportDlg::ClearChapterCheckMarks(BOOL bClear)
 {
    int cChapters = m_ChList.GetCount();
-   for ( int ch = 0; ch < cChapters; ch++ )
+   for (int ch = 0; ch < cChapters; ch++)
    {
-      m_ChList.SetCheck(ch,0);
+      m_ChList.SetCheck(ch, bClear ? BST_UNCHECKED : BST_CHECKED);
    }
 }
 
@@ -349,4 +350,14 @@ void CMultiViewReportDlg::UpdateButtonText()
    CString msg;
    msg.Format(_T("Select Girders\n(%d Selected)"), m_GirderKeys.size());
    GetDlgItem(IDC_SELECT_MULTIPLE_BUTTON)->SetWindowText(msg);
+}
+
+void CMultiViewReportDlg::OnSelectAll()
+{
+   ClearChapterCheckMarks(FALSE);
+}
+
+void CMultiViewReportDlg::OnDeselectAll()
+{
+   ClearChapterCheckMarks();
 }

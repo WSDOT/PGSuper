@@ -56,7 +56,7 @@ protected:
    virtual void UpdateChapterList();
    virtual void UpdateGirderComboBox(GroupIndexType grpIdx);
 
-   virtual void ClearChapterCheckMarks();
+   virtual void ClearChapterCheckMarks(BOOL bClear=TRUE);
    virtual void InitChapterListFromSpec();
    virtual void InitFromRptSpec();
 
@@ -74,6 +74,8 @@ public:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnHelp();
 	afx_msg void OnGroupChanged();
+   afx_msg void OnSelectAll();
+   afx_msg void OnDeselectAll();
 	//}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()
