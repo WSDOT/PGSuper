@@ -111,7 +111,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    if (1 < nSegments ? true : false)
    {
-      *p << _T("Erected Segments reactions are the simple span reactions when the segments are first erected") << rptNewLine;
+      *p << _T("Erected Segments reactions are the segment self-weight simple span reactions after erection. Girder reactions are for the completed girder after post-tensioning and temporary support removal.") << rptNewLine;
    }
 
    if( doFinalLoads )
@@ -173,6 +173,11 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    p = new rptParagraph;
    *pChapter << p;
    *p << CProductRotationTable().Build(pBroker,girderKey,pSpec->GetAnalysisType(), bIncludeImpact,true,true,true,true,pDisplayUnits) << rptNewLine;
+   if (1 < nSegments ? true : false)
+   {
+      *p << _T("Erected Segments rotations are the segment self-weight simple span rotation after erection. Girder rotations are for the completed girder after post-tensioning and temporary support removal.") << rptNewLine;
+   }
+
    *p << (bIncludeImpact ? LIVELOAD_PER_GIRDER : LIVELOAD_PER_GIRDER_NO_IMPACT) << rptNewLine;
 
    if (bPedestrian)
