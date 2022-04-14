@@ -29,12 +29,6 @@
 // LongSteelPage.h : header file
 //
 
-// for the grid
-#ifndef _GXALL_H_
-#include "gxwnd.h"
-#include "gxctrl.h"
-#endif
-
 #include "LongSteelGrid.h"
 #include <Units\Measure.h>
 

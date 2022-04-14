@@ -106,6 +106,8 @@ void CSpanGirderReportDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CSpanGirderReportDlg, CDialog)
 	ON_COMMAND(IDHELP, OnHelp)
+   ON_COMMAND(IDC_SELECT_ALL,OnSelectAll)
+   ON_COMMAND(IDC_DESELECT_ALL,OnDeselectAll)
 	ON_CBN_SELCHANGE(IDC_SPAN, OnGroupChanged)
 END_MESSAGE_MAP()
 
@@ -339,12 +341,12 @@ void CSpanGirderReportDlg::OnGroupChanged()
    UpdateGirderComboBox(grpIdx);
 }
 
-void CSpanGirderReportDlg::ClearChapterCheckMarks()
+void CSpanGirderReportDlg::ClearChapterCheckMarks(BOOL bClear)
 {
    int cChapters = m_ChList.GetCount();
    for ( int ch = 0; ch < cChapters; ch++ )
    {
-      m_ChList.SetCheck(ch,0);
+      m_ChList.SetCheck(ch,bClear ? BST_UNCHECKED : BST_CHECKED);
    }
 }
 
@@ -404,4 +406,14 @@ void CSpanGirderReportDlg::InitFromRptSpec()
    UpdateData(FALSE);
 
    InitChapterListFromSpec();
+}
+
+void CSpanGirderReportDlg::OnSelectAll()
+{
+   ClearChapterCheckMarks(FALSE);
+}
+
+void CSpanGirderReportDlg::OnDeselectAll()
+{
+   ClearChapterCheckMarks();
 }

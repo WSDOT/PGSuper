@@ -38,7 +38,11 @@
 
 #include <IFace\Tools.h>
 
+#if defined _NOGRID
+#include <NoGrid.h>
+#else
 #include <grid\gxall.h>
+#endif
 
 #include <WBFLAtlExt.h>
 

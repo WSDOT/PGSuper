@@ -1,11 +1,10 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    6   5.00                     1     1     W42G          21  0.6  270  15.89   5.08  13.25  13.25                                               7  38.0  3.0  4.000 14.600   4.593    -4.142     2984   0.510  0.596   5.566 -0.600 -0.043 -0.061 -0.704 132.92  293.71    1.75   10.00   10.00    2.24    2.28    2.90    3.01    1.96 
+ 28.25    6   5.00                     1     1     W42G    *     16  0.6  270  16.14   3.77  10.50  10.50                                               6  38.0  3.0  6.400  6.400   3.781    -3.742     2674   0.492  0.596   2.704 -0.799 -0.056 -0.079 -0.934  65.66  117.00    1.75    5.00    5.00    1.73    1.83    2.24    2.42    1.88 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
 Lifting checks failed
 Hauling checks failed
@@ -13,12 +12,11 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    6   5.00                     1     2     W42G          21  0.6  270  15.89   5.08  13.25  13.25                                               7  38.0  3.0  4.000 14.600   4.486    -4.055     2994   0.510  0.596   5.548 -0.555 -0.043 -0.061 -0.658 132.92  295.83    1.75   10.00   10.00    2.26    2.30    2.93    3.04    2.02 
+ 28.25    6   5.00                     1     2     W42G    *     16  0.6  270  16.14   3.77  10.50  10.50                                               6  38.0  3.0  6.400  6.400   3.751    -3.718     2677   0.492  0.596   2.678 -0.776 -0.056 -0.079 -0.912  65.66  117.63    1.75    5.00    5.00    1.73    1.83    2.25    2.43    1.89 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
 Lifting checks failed
 Hauling checks failed
@@ -26,12 +24,11 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    6   5.00                     1     4     W42G          21  0.6  270  15.89   5.08  13.25  13.25                                               7  38.0  3.0  4.000 14.600   4.486    -4.055     2994   0.510  0.596   5.548 -0.555 -0.043 -0.061 -0.658 132.92  295.83    1.75   10.00   10.00    2.26    2.30    2.93    3.04    2.02 
+ 28.25    6   5.00                     1     4     W42G    *     16  0.6  270  16.14   3.77  10.50  10.50                                               6  38.0  3.0  6.400  6.400   3.751    -3.718     2677   0.492  0.596   2.678 -0.776 -0.056 -0.079 -0.912  65.66  117.63    1.75    5.00    5.00    1.73    1.83    2.25    2.43    1.89 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
 Lifting checks failed
 Hauling checks failed

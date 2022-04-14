@@ -24,6 +24,7 @@
 
 #include "resource.h"
 #include <Reporting\TimeStepDetailsReportSpecification.h>
+#include "afxcmn.h"
 
 // CTimeStepDetailsDlg dialog
 

@@ -123,16 +123,16 @@ void CLLDFGrid::CustomInit(SpanIndexType ispan, bool bContinuous)
 
    SetMergeCellsMode(gxnMergeEvalOnDisplay);
 
-   SetStyleRange(CGXRange(0,1),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue("Strength/Service"));
-   SetStyleRange(CGXRange(0,2),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue("Strength/Service"));
-   SetStyleRange(CGXRange(0,3),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue("Strength/Service"));
+   SetStyleRange(CGXRange(0,1),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue(_T("Strength/Service")));
+   SetStyleRange(CGXRange(0,2),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue(_T("Strength/Service")));
+   SetStyleRange(CGXRange(0,3),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue(_T("Strength/Service")));
    
-   SetStyleRange(CGXRange(0,4),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue("Fatigue/Special Permit Rating"));
-   SetStyleRange(CGXRange(0,5),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue("Fatigue/Special Permit Rating"));
-   SetStyleRange(CGXRange(0,6),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue("Fatigue/Special Permit Rating"));
+   SetStyleRange(CGXRange(0,4),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue(_T("Fatigue/Special Permit Rating")));
+   SetStyleRange(CGXRange(0,5),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue(_T("Fatigue/Special Permit Rating")));
+   SetStyleRange(CGXRange(0,6),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue(_T("Fatigue/Special Permit Rating")));
 
-   SetStyleRange(CGXRange(0,0),CGXStyle().SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue(" "));
-   SetStyleRange(CGXRange(1,0),CGXStyle().SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue(" "));
+   SetStyleRange(CGXRange(0,0),CGXStyle().SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue(_T(" ")));
+   SetStyleRange(CGXRange(1,0),CGXStyle().SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue(_T(" ")));
 
    // set text along top row
 	SetStyleRange(CGXRange(1,1), CGXStyle()
@@ -142,7 +142,7 @@ void CLLDFGrid::CustomInit(SpanIndexType ispan, bool bContinuous)
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
          .SetInterior(::GetSysColor(COLOR_BTNFACE))
-			.SetValue("+M")
+			.SetValue(_T("+M"))
 		);
 
 	SetStyleRange(CGXRange(1,2), CGXStyle()
@@ -152,7 +152,7 @@ void CLLDFGrid::CustomInit(SpanIndexType ispan, bool bContinuous)
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
          .SetInterior(::GetSysColor(COLOR_BTNFACE))
-			.SetValue("-M")
+			.SetValue(_T("-M"))
 		);
 
 	SetStyleRange(CGXRange(1,3), CGXStyle()
@@ -162,7 +162,7 @@ void CLLDFGrid::CustomInit(SpanIndexType ispan, bool bContinuous)
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
          .SetInterior(::GetSysColor(COLOR_BTNFACE))
-			.SetValue("V")
+			.SetValue(_T("V"))
 		);
 
 	SetStyleRange(CGXRange(1,4), CGXStyle()
@@ -172,7 +172,7 @@ void CLLDFGrid::CustomInit(SpanIndexType ispan, bool bContinuous)
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
          .SetInterior(::GetSysColor(COLOR_BTNFACE))
-			.SetValue("+M")
+			.SetValue(_T("+M"))
 		);
 
 	SetStyleRange(CGXRange(1,5), CGXStyle()
@@ -182,7 +182,7 @@ void CLLDFGrid::CustomInit(SpanIndexType ispan, bool bContinuous)
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
          .SetInterior(::GetSysColor(COLOR_BTNFACE))
-			.SetValue("-M")
+			.SetValue(_T("-M"))
 		);
 
 	SetStyleRange(CGXRange(1,6), CGXStyle()
@@ -192,7 +192,7 @@ void CLLDFGrid::CustomInit(SpanIndexType ispan, bool bContinuous)
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
          .SetInterior(::GetSysColor(COLOR_BTNFACE))
-			.SetValue("V")
+			.SetValue(_T("V"))
 		);
 
    // make it so that text fits correctly in header row

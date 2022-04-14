@@ -474,7 +474,7 @@ void CEffectivePrestressGraphBuilder::UpdatePretensionGraphData(GroupIndexType g
          if (bStresses)
          {
             Float64 Aps = pStrandGeom->GetStrandArea(poi, intervalIdx, strandType);
-            Fpe /= Aps; // now a stress
+            Fpe = IsZero(Aps) ? 0.0 : Fpe / Aps; // now a stress
          }
          AddGraphPoint(dataSeries, X, Fpe);
 
@@ -489,7 +489,7 @@ void CEffectivePrestressGraphBuilder::UpdatePretensionGraphData(GroupIndexType g
             if (bStresses)
             {
                Float64 Aps = pStrandGeom->GetStrandArea(poi, intervalIdx, strandType);
-               Fpe /= Aps; // now a stress
+               Fpe = IsZero(Aps) ? 0.0 : Fpe / Aps; // now a stress
             }
             AddGraphPoint(dataSeries2, X, Fpe);
          }

@@ -195,6 +195,8 @@ m_LongReinfShearMethod(LRFD_METHOD),
 m_bDoEvaluateDeflection(true),
 m_DeflectionLimit(800.0),
 m_bIncludeStrand_NegMoment(false),
+m_bConsiderReinforcementStrainLimit(false),
+m_nMomentCapacitySlices(10),
 m_bIncludeRebar_Moment(false),
 m_bIncludeRebar_Shear(false),
 m_AnalysisType(pgsTypes::Envelope),
@@ -702,10 +704,12 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    //pSave->Property(_T("IncludeRebar_MomentCapacity"),m_bIncludeRebar_Moment); // added for version 7.0
 
    // added in version 37
-   pSave->BeginUnit(_T("MomentCapacity"),4.0);
+   pSave->BeginUnit(_T("MomentCapacity"),5.0);
       pSave->Property(_T("Bs3LRFDOverreinforcedMomentCapacity"),(Int16)m_Bs3LRFDOverReinforcedMomentCapacity);
       pSave->Property(_T("IncludeStrandForNegMoment"), m_bIncludeStrand_NegMoment); // added in version 4 of this data block
       pSave->Property(_T("IncludeRebarForCapacity"),m_bIncludeRebar_Moment);
+      pSave->Property(_T("ConsiderReinforcementStrainLimit"),m_bConsiderReinforcementStrainLimit); // added in version 5 of this data block
+      pSave->Property(_T("MomentCapacitySliceCount"), m_nMomentCapacitySlices); // added in version 5 of this data block
       pSave->Property(_T("IncludeNoncompositeMomentForNegMomentDesign"),m_bIncludeForNegMoment); // added version 2 of this data block
       pSave->BeginUnit(_T("ResistanceFactor"),1.0);
          pSave->BeginUnit(_T("NormalWeight"),2.0);
@@ -2569,8 +2573,22 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
-
          m_bIncludeRebar_Moment = (temp == 0 ? false : true);
+
+
+         if (4 < mc_version) // added in version 5
+         {
+            if (!pLoad->Property(_T("ConsiderReinforcementStrainLimit"), &temp))
+            {
+               THROW_LOAD(InvalidFileFormat, pLoad);
+            }
+            m_bConsiderReinforcementStrainLimit = (temp == 0 ? false : true);
+
+            if (!pLoad->Property(_T("MomentCapacitySliceCount"), &m_nMomentCapacitySlices))
+            {
+               THROW_LOAD(InvalidFileFormat, pLoad);
+            }
+         }
 
          if ( 2 <= mc_version )
          {
@@ -5056,6 +5074,8 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
    //
    if ( (GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims && m_Bs3LRFDOverReinforcedMomentCapacity != rOther.m_Bs3LRFDOverReinforcedMomentCapacity) ||
         m_bIncludeStrand_NegMoment != rOther.m_bIncludeStrand_NegMoment ||
+      m_bConsiderReinforcementStrainLimit != rOther.m_bConsiderReinforcementStrainLimit ||
+      m_nMomentCapacitySlices != rOther.m_nMomentCapacitySlices ||
         m_bIncludeRebar_Moment != rOther.m_bIncludeRebar_Moment ||
         !::IsEqual(m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal], rOther.m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal]) ||
         !::IsEqual(m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight], rOther.m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight]) ||
@@ -6975,6 +6995,26 @@ void SpecLibraryEntry::SetLLDeflectionLimit(Float64 limit)
    m_DeflectionLimit = limit;
 }
 
+void SpecLibraryEntry::ConsiderReinforcementStrainLimitForMomentCapacity(bool bConsider)
+{
+   m_bConsiderReinforcementStrainLimit = bConsider;
+}
+
+bool SpecLibraryEntry::ConsiderReinforcementStrainLimitForMomentCapacity() const
+{
+   return m_bConsiderReinforcementStrainLimit;
+}
+
+void SpecLibraryEntry::SetSliceCountForMomentCapacity(IndexType nSlices)
+{
+   m_nMomentCapacitySlices = ForceIntoRange((IndexType)10, nSlices, (IndexType)100);
+}
+
+IndexType SpecLibraryEntry::GetSliceCountForMomentCapacity() const
+{
+   return m_nMomentCapacitySlices;
+}
+
 void SpecLibraryEntry::IncludeStrandForNegativeMoment(bool bInclude)
 {
    m_bIncludeStrand_NegMoment = bInclude;
@@ -8000,6 +8040,8 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_DeflectionLimit       = rOther.m_DeflectionLimit;
 
    m_bIncludeStrand_NegMoment = rOther.m_bIncludeStrand_NegMoment;
+   m_bConsiderReinforcementStrainLimit = rOther.m_bConsiderReinforcementStrainLimit;
+   m_nMomentCapacitySlices = rOther.m_nMomentCapacitySlices;
    m_bIncludeRebar_Moment = rOther.m_bIncludeRebar_Moment;
    m_bIncludeRebar_Shear = rOther.m_bIncludeRebar_Shear;
 

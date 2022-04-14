@@ -207,7 +207,7 @@ CAnalysisResultsGraphBuilder::~CAnalysisResultsGraphBuilder()
 
 void CAnalysisResultsGraphBuilder::Init()
 {
-   SetName(_T("Analysis Results - Post Erection"));
+   SetName(_T("Analysis Results - On site"));
 
    InitDocumentation(EAFGetDocument()->GetDocumentationSetName(),IDH_ANALYSIS_RESULTS);
 

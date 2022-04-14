@@ -24,6 +24,7 @@
 
 #include "resource.h"
 #include <Reporting\EquilibriumCheckReportSpecification.h>
+#include "afxcmn.h"
 
 // CEquilibriumCheckDlg dialog
 

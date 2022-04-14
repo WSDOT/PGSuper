@@ -9281,215 +9281,128 @@ void pgsDesigner2::DesignForShipping(IProgress* pProgress) const
    std::unique_ptr<pgsGirderHaulingChecker> hauling_checker( checker_factory.CreateGirderHaulingChecker() );
 
    bool bResult = false;
-   bool bTemporaryStrandsAdded = false;
-   std::unique_ptr<pgsHaulingAnalysisArtifact> final_artifact;
 
-   do
+   HANDLINGCONFIG haulConfig;
+   haulConfig.bIgnoreGirderConfig = false;
+   haulConfig.GdrConfig = m_StrandDesignTool.GetSegmentConfiguration();
+
+   ISegmentHaulingDesignPointsOfInterest* pPoiLd = dynamic_cast<ISegmentHaulingDesignPointsOfInterest*>(&m_StrandDesignTool);
+
+   std::unique_ptr<pgsHaulingAnalysisArtifact> artifact ( hauling_checker->DesignHauling(segmentKey,haulConfig,m_bShippingDesignIgnoreConfigurationLimits,pPoiLd,&bResult,LOGGER));
+
+   if (bResult == false && m_bShippingDesignIgnoreConfigurationLimits == false)
    {
-      HANDLINGCONFIG haulConfig;
-      haulConfig.bIgnoreGirderConfig = false;
-      haulConfig.GdrConfig = m_StrandDesignTool.GetSegmentConfiguration();
+      // Designer could not find a valid configuration.
+      LOG(_T("Failed to satisfy shipping requirements - shipping configuration limitations may be preventing a suitable solution from being found. Ignore limitations and try again"));
+      m_bShippingDesignIgnoreConfigurationLimits = true; // ignore configuration limitations and try again
+      artifact.reset(hauling_checker->DesignHauling(segmentKey, haulConfig, m_bShippingDesignIgnoreConfigurationLimits, pPoiLd, &bResult, LOGGER));
+   }
 
-      ISegmentHaulingDesignPointsOfInterest* pPoiLd = dynamic_cast<ISegmentHaulingDesignPointsOfInterest*>(&m_StrandDesignTool);
-
-      std::unique_ptr<pgsHaulingAnalysisArtifact> artifact ( hauling_checker->DesignHauling(segmentKey,haulConfig,m_bShippingDesignIgnoreConfigurationLimits,pPoiLd,&bResult,LOGGER));
-
-      // capture the results of the trial
-      m_StrandDesignTool.SetTruckSupportLocations(haulConfig.LeftOverhang,haulConfig.RightOverhang);
-      if ( haulConfig.pHaulTruckEntry )
-      {
-         m_StrandDesignTool.SetHaulTruck( haulConfig.pHaulTruckEntry->GetName().c_str() );
-      }
-      else
-      {
-         m_StrandDesignTool.SetHaulTruck( _T("Unknown") );
-      }
-
-      if (!bResult )
-      {
-         LOG(_T("Adding temporary strands"));
-         if ( !m_StrandDesignTool.AddTempStrands() )
-         {
-            if ( !m_bShippingDesignIgnoreConfigurationLimits)
-            {
-               LOG(_T("Could not add temporary strands - go to equal cantilever method and continue"));
-               // the design isn't working with unequal cantilevers
-               // start again with equal cantilevesr
-               m_StrandDesignTool.SetNumTempStrands(0);
-               m_bShippingDesignIgnoreConfigurationLimits = true;
-               continue;
-            }
-
-            LOG(_T("Could not add temporary strands - check to see if we are up against the geometric limits of the shipping configuration"));
-            GET_IFACE(ISegmentHaulingSpecCriteria,pCriteria);
-            Float64 maxDistanceBetweenSupports = pCriteria->GetAllowableDistanceBetweenSupports(segmentKey);
-            Float64 maxLeadingOverhang = pCriteria->GetAllowableLeadingOverhang(segmentKey);
-            Float64 distBetweenSupportPoints = m_StrandDesignTool.GetSegmentLength() - haulConfig.LeftOverhang - haulConfig.RightOverhang;
-
-            if ( IsEqual(maxLeadingOverhang,haulConfig.RightOverhang) &&
-                 IsEqual(maxDistanceBetweenSupports,distBetweenSupportPoints) )
-            {
-               LOG(_T("Failed to satisfy shipping requirements - shipping configuration limitations prevents a suitable solution from being found"));
-               m_StrandDesignTool.SetOutcome(pgsSegmentDesignArtifact::GirderShippingConfiguration);
-               m_DesignerOutcome.AbortDesign();
-               return;
-            }
-
-            // Attempt to add raised straight strands - this may work for shipping
-            if ( m_StrandDesignTool.AddRaisedStraightStrands() )
-            {
-               m_DesignerOutcome.SetOutcome(pgsDesignCodes::RaisedStraightStrands);
-               LOG(_T("Added Raised Straight Strands to control shipping stresses - Restart design with new strand configuration"));
-               return;
-            }
-
-            LOG(_T("Could not add temporary or raised strands - attempt to bump concrete strength by 500psi"));
-            bool bSuccess = m_StrandDesignTool.Bump500(StressCheckTask(haulSegmentIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension), pgsTypes::TopGirder);
-            if (bSuccess)
-            {
-               LOG(_T("Concrete strength was increased for shipping - Restart") );
-               m_DesignerOutcome.SetOutcome(pgsDesignCodes::FcIncreased);
-               m_StrandDesignTool.SetNumTempStrands(0);
-               m_bShippingDesignIgnoreConfigurationLimits = false;
-               return;
-            }
-            else
-            {
-               LOG(_T("Failed to increase concrete strength and could not add temporary strands - abort"));
-               m_StrandDesignTool.SetOutcome(pgsSegmentDesignArtifact::GirderShippingStability);
-               m_DesignerOutcome.AbortDesign();
-               return;
-            }
-         }
-         else
-         {
-            LOG(_T("Temporary strands added. Restart design"));
-            bTemporaryStrandsAdded = true;
-            m_DesignerOutcome.SetOutcome(pgsDesignCodes::TemporaryStrandsChanged);
-            continue; // go back to top of loop and try again
-         }
-      }
-      else
-      {
-         // Capture final result
-         final_artifact.swap(artifact);
-      }
-
-   } while ( !bResult );
-
+   // We've got a good shipping configuration - the only thing to worry about now is stresses
+   
+   // capture the results of the design
+   m_StrandDesignTool.SetTruckSupportLocations(haulConfig.LeftOverhang,haulConfig.RightOverhang);
+   // We now have bunk point locations to ensure stability
+   m_DesignerOutcome.SetOutcome(pgsDesignCodes::HaulingConfigChanged);
+   if ( haulConfig.pHaulTruckEntry )
+   {
+      m_StrandDesignTool.SetHaulTruck( haulConfig.pHaulTruckEntry->GetName().c_str() );
+   }
+   else
+   {
+      m_StrandDesignTool.SetHaulTruck( _T("Unknown") );
+   }
 
    CHECK_PROGRESS;
 
 #if defined _DEBUG
    LOG(_T("-- Dump of Hauling Artifact After Design --"));
-   if (final_artifact.get() != nullptr)
+   if (artifact.get() != nullptr)
    {
-      final_artifact->Dump(LOGGER);
+      artifact->Dump(LOGGER);
    }
    LOG(_T("-- End Dump of Hauling Artifact --"));
 #endif
 
-   // We now have bunk point locations to ensure stability
-   m_DesignerOutcome.SetOutcome(pgsDesignCodes::HaulingConfigChanged);
-   
+   bool bPassedStressChecks = artifact->PassedStressCheck(pgsTypes::CrownSlope) && artifact->PassedStressCheck(pgsTypes::Superelevation);
+   LOG(_T("Design ") << (bPassedStressChecks ? _T("did") : _T("did not")) << _T(" pass stress checks"));
+
+   if (bResult && bPassedStressChecks)
+   {
+      m_StrandDesignTool.SetOutcome(pgsSegmentDesignArtifact::Success);
+      return;
+   }
+
    Float64 fc_max = m_StrandDesignTool.GetMaximumConcreteStrength();
 
    // Get required release strength from artifact
    Float64 fc_comp1(0.0), fc_comp2(0.0), fc_tens(0.0), fc_tens_wrebar1(0.0), fc_tens_wrebar2(0.0);
-   final_artifact->GetRequiredConcreteStrength(pgsTypes::CrownSlope, &fc_comp1, &fc_tens, &fc_tens_wrebar1);
-   final_artifact->GetRequiredConcreteStrength(pgsTypes::Superelevation, &fc_comp2, &fc_tens, &fc_tens_wrebar2);
+   artifact->GetRequiredConcreteStrength(pgsTypes::CrownSlope, &fc_comp1, &fc_tens, &fc_tens_wrebar1);
+   artifact->GetRequiredConcreteStrength(pgsTypes::Superelevation, &fc_comp2, &fc_tens, &fc_tens_wrebar2);
 
    Float64 fc_comp = Max(fc_comp1, fc_comp2);
    fc_tens = Max(fc_tens_wrebar1, fc_tens_wrebar2); // Hauling design always uses higher allowable limit (lower f'c)
 
    LOG(_T("f'c (unrounded) required for shipping; tension = ") << ::ConvertFromSysUnits(fc_tens,unitMeasure::KSI) << _T(" KSI, compression = ") << ::ConvertFromSysUnits(fc_comp,unitMeasure::KSI) << _T(" KSI"));
 
-   if ( fc_tens < 0 )
-   {
-      // there isn't a concrete strength that will work (because of tension limit)
-
-      // Add temporary strands and try again.
-      LOG(_T("There is no concrete strength that will work for shipping - Tension controls... Adding temporary strands"));
-      if ( !m_StrandDesignTool.AddTempStrands() )
-      {
-         LOG(_T("Could not add temporary strands"));
-         m_StrandDesignTool.SetOutcome(pgsSegmentDesignArtifact::GirderShippingConcreteStrength);
-         m_DesignerOutcome.AbortDesign();
-         return;
-      }
-      else
-      {
-         LOG(_T("Temporary strands added. Restart design"));
-         m_DesignerOutcome.SetOutcome(pgsDesignCodes::TemporaryStrandsChanged);
-         return;
-      }
-   }
-
-   LOG(_T("Shipping Results : f'c (unrounded) tens = ") << ::ConvertFromSysUnits(fc_tens,unitMeasure::KSI) << _T(" KSI, Comp = ")
-        << ::ConvertFromSysUnits(fc_comp,unitMeasure::KSI)<<_T("KSI, Left Bunk Point = ") 
-        << ::ConvertFromSysUnits(m_StrandDesignTool.GetTrailingOverhang(),unitMeasure::Feet) << _T(" ft") 
-        << _T("    Right Bunk Point = ") << ::ConvertFromSysUnits(m_StrandDesignTool.GetLeadingOverhang(),unitMeasure::Feet) << _T(" ft"));
-
    CHECK_PROGRESS;
 
-   if (fc_max < fc_tens || fc_max < fc_comp )
+   if (fc_tens <= fc_max && // tension is less than max strength - AND -
+       fc_comp <= fc_max && // compression is less than max strength - AND -
+       fc_tens <= fc_comp // strength is controlled by compression... adjust the concrete strength (if controlled by tension, add temporary strands)
+      )
    {
-      // strength needed is more than max allowed. Try setting to max for one more design go-around
-      Float64 fc_curr = m_StrandDesignTool.GetConcreteStrength();
-      if ( IsEqual(fc_max,fc_curr) )
-      {
-         if ( m_StrandDesignTool.AddRaisedStraightStrands() )
-         {
-            // Attempt to add raised straight strands if this is an option. Very small chance that it will work 
-            // for this case, but...
-            m_DesignerOutcome.SetOutcome(pgsDesignCodes::RaisedStraightStrands);
-            LOG(_T("Added Raised Straight Strands to control shipping stresses - Restart design with new strand configuration"));
-            return;
-         }
-         else
-         {
-            LOG(_T("Strength required for shipping is greater than our current max, and we have already tried max for design - Design Failed") );
-            m_StrandDesignTool.SetOutcome(pgsSegmentDesignArtifact::GirderShippingConcreteStrength);
-            m_DesignerOutcome.AbortDesign();
-            return;
-         }
-      }
-      else
-      {
-         LOG(_T("Strength required for shipping is greater than our current max of ") << ::ConvertFromSysUnits(fc_max,unitMeasure::KSI) << _T(" KSI - Try using max for one more go-around") );
-         if (fc_max < fc_comp)
-         {
-            fc_comp = fc_max;
-         }
+      LOG(_T("Required concrete strength does not exceed maximum. Attempting to increase concrete strength"));
+      // NOTE: Using bogus stress location
+      Float64 fc_old = m_StrandDesignTool.GetConcreteStrength();
 
-         if (fc_max < fc_tens)
-         {
-            fc_tens = fc_max;
-         }
+      bool bFcUpdated = m_StrandDesignTool.UpdateConcreteStrength(fc_tens, StressCheckTask(haulSegmentIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension), pgsTypes::TopGirder);
+      bFcUpdated |= m_StrandDesignTool.UpdateConcreteStrength(fc_comp, StressCheckTask(haulSegmentIntervalIdx, pgsTypes::ServiceI, pgsTypes::Compression), pgsTypes::BottomGirder);
+      if (bFcUpdated)
+      {
+         LOG(_T("Concrete strength was increased for shipping - Restart"));
+         Float64 fc_new = m_StrandDesignTool.GetConcreteStrength();
+         m_DesignerOutcome.SetOutcome(fc_old < fc_new ? pgsDesignCodes::FcIncreased : pgsDesignCodes::FcDecreased);
+         return;
       }
    }
 
    CHECK_PROGRESS;
 
-   // NOTE: Using bogus stress location
-  Float64 fc_old = m_StrandDesignTool.GetConcreteStrength();
+   // there isn't a concrete strength that will work (because of tension limit)
 
-   bool bFcUpdated = m_StrandDesignTool.UpdateConcreteStrength(fc_tens, StressCheckTask(haulSegmentIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension),pgsTypes::TopGirder);
-   bFcUpdated |= m_StrandDesignTool.UpdateConcreteStrength(fc_comp, StressCheckTask(haulSegmentIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression),pgsTypes::BottomGirder);
-   if ( bFcUpdated )
-   {
-      LOG(_T("Concrete strength was increased for shipping - Restart") );
-      Float64 fc_new = m_StrandDesignTool.GetConcreteStrength();
-      m_DesignerOutcome.SetOutcome(fc_new> fc_old ? pgsDesignCodes::FcIncreased : pgsDesignCodes::FcDecreased);
-      return;
-   }
 
-   if ( bTemporaryStrandsAdded )
+   // Add temporary strands and try again.
+   LOG(_T("There is no concrete strength that will work for shipping... Adding temporary strands"));
+   if (m_StrandDesignTool.AddTempStrands())
    {
-      LOG(_T("Temporary strands were added for shipping - Restart") );
+      LOG(_T("Temporary strands added. Restart design"));
       m_DesignerOutcome.SetOutcome(pgsDesignCodes::TemporaryStrandsChanged);
       return;
    }
+   else
+   {
+      LOG(_T("Could not add temporary strands - attempt to increase concrete strength"));
+      Float64 fc_old = m_StrandDesignTool.GetConcreteStrength();
+      bool bFcUpdated = m_StrandDesignTool.UpdateConcreteStrength(fc_tens, StressCheckTask(haulSegmentIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension), pgsTypes::TopGirder);
+      bFcUpdated |= m_StrandDesignTool.UpdateConcreteStrength(fc_comp, StressCheckTask(haulSegmentIntervalIdx, pgsTypes::ServiceI, pgsTypes::Compression), pgsTypes::BottomGirder);
+      if (bFcUpdated)
+      {
+         LOG(_T("Concrete strength was increased for shipping - Restart"));
+         Float64 fc_new = m_StrandDesignTool.GetConcreteStrength();
+         m_DesignerOutcome.SetOutcome(fc_old < fc_new ? pgsDesignCodes::FcIncreased : pgsDesignCodes::FcDecreased);
+         return;
+      }
+
+      m_StrandDesignTool.SetOutcome(pgsSegmentDesignArtifact::GirderShippingConcreteStrength);
+      //m_DesignerOutcome.AbortDesign();
+      return;
+   }
+
+   LOG(_T("Shipping Results : f'c (unrounded) tens = ") << ::ConvertFromSysUnits(fc_tens, unitMeasure::KSI) << _T(" KSI, Comp = ")
+      << ::ConvertFromSysUnits(fc_comp, unitMeasure::KSI) << _T("KSI, Left Bunk Point = ")
+      << ::ConvertFromSysUnits(m_StrandDesignTool.GetTrailingOverhang(), unitMeasure::Feet) << _T(" ft")
+      << _T("    Right Bunk Point = ") << ::ConvertFromSysUnits(m_StrandDesignTool.GetLeadingOverhang(), unitMeasure::Feet) << _T(" ft"));
 
    LOG(_T("Shipping Design Complete - Continue design") );
 }

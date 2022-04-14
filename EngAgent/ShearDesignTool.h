@@ -68,8 +68,8 @@ public:
       Float64 Xpoi = poi.GetDistFromStart();
       if ( 
            (Xpoi < m_StartBrg || m_EndBrg < Xpoi) ||
-           (IsEqual(Xpoi,m_StartBrg) && poi.HasAttribute(POI_CANTILEVER)) || // POI is at the left bearing but it is on the cantilever side
-           (IsEqual(Xpoi,m_EndBrg)   && poi.HasAttribute(POI_CANTILEVER))    // POI is at the right bearing but it is on the cantilever side
+           (IsEqual(Xpoi,m_StartBrg) && poi.HasAttribute(POI_SPAN | POI_CANTILEVER)) || // POI is at the left bearing but it is on the cantilever side
+           (IsEqual(Xpoi,m_EndBrg)   && poi.HasAttribute(POI_SPAN | POI_CANTILEVER))    // POI is at the right bearing but it is on the cantilever side
          )
       {
          return true; // don't want to keep

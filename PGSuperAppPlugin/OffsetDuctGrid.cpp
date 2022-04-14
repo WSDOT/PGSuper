@@ -94,7 +94,7 @@ void COffsetDuctGrid::CustomInit(COffsetDuctGridCallback* pCallback)
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
 			.SetEnabled(FALSE)          // disables usage as current cell
-         .SetValue("")
+         .SetValue(_T(""))
 		);
    col++;
 

@@ -2175,7 +2175,7 @@ std::vector<Float64> CAnalysisAgentImp::GetTimeStepPrestressAxial(IntervalIndexT
    P.reserve(vPoi.size());
 
    GET_IFACE(ILosses,pILosses);
-   for (const auto& poi : vPoi)
+   for (const pgsPointOfInterest& poi : vPoi)
    {
       const LOSSDETAILS* pLossDetails = pILosses->GetLossDetails(poi,intervalIdx);
       const TIME_STEP_DETAILS& tsDetails = pLossDetails->TimeStepDetails[intervalIdx];
@@ -2505,15 +2505,14 @@ std::vector<Float64> CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,p
          CGirderKey girderKey(vPoi.front().get().GetSegmentKey());
          ComputeTimeDependentEffects(girderKey,intervalIdx);
          
+         GET_IFACE_NOCHECK(IIntervals, pIntervals);
+         GET_IFACE_NOCHECK(ILosses, pLosses);
          if ( resultsType == rtCumulative )
          {
             results.resize(vPoi.size(),0);
-            GET_IFACE(ILosses,pLosses);
-            GET_IFACE(IIntervals,pIntervals);
             IntervalIndexType releaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(girderKey);
             for ( IntervalIndexType iIdx = releaseIntervalIdx; iIdx <= intervalIdx; iIdx++ )
             {
-               GET_IFACE(IIntervals,pIntervals);
                if ( 0 < pIntervals->GetDuration(iIdx) )
                {
                   CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,pfType - pgsTypes::pftCreep);
@@ -2524,10 +2523,8 @@ std::vector<Float64> CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,p
          }
          else
          {
-            GET_IFACE(IIntervals,pIntervals);
             if ( 0 < pIntervals->GetDuration(intervalIdx) )
             {
-               GET_IFACE(ILosses,pLosses);
                CString strLoadingName = pLosses->GetRestrainingLoadName(intervalIdx,pfType - pgsTypes::pftCreep);
                results = GetAxial(intervalIdx,strLoadingName,vPoi,bat,resultsType);
             }
@@ -2993,20 +2990,23 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
 
          // Final step is to deal with what looks like a bug in the GirderModelManager when computing
          // creep deflections within closure joints. Clean up deflections by using adjacent value to closures
-#pragma Reminder("The patch below likely hides a bug in the GirderModelManager when computing creep deflections within closure joints")
-         std::vector<Float64>::iterator deflit = deflectionsIter;
-         for (const auto& poi : vSegmentPoi)
+#pragma Reminder("The patch below hides a bug in the GirderModelManager when computing creep deflections within closure joints")
+         if (deflectionsIter != deflections.begin())
          {
-            if (poi.get().HasAttribute(POI_CLOSURE))
+            std::vector<Float64>::iterator deflit = deflectionsIter;
+            for (const auto& poi : vSegmentPoi)
             {
-               std::vector<Float64>::iterator cldit = deflit;
-               *deflit = *(--cldit); // use deflection value just previous to closure joint
-            }
+               if (poi.get().HasAttribute(POI_CLOSURE))
+               {
+                  std::vector<Float64>::iterator cldit = deflit;
+                  *deflit = *(--cldit); // use deflection value just previous to closure joint
+               }
 
-            deflit++;;
+               deflit++;;
+            }
          }
 
-         deflectionsIter += vSegmentPoi.size();
+         deflectionsIter += vSegmentPoi.size(); // continue to pois in next segment
       } // next segment
    }
    else

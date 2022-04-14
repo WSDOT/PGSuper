@@ -1135,6 +1135,7 @@
 #define IDC_SHOW_WEB_WIDTH_PROJECTIOS   1557
 #define IDC_SHOW_WEB_WIDTH_PROJECTIONS  1557
 #define IDC_BEARING_REACTION_IMPACT     1557
+#define IDC_CONSIDER_REINFORCEMENT_STRAIN_LIMITS 1557
 #define IDC_FCGP_COMBO                  1558
 #define IDC_FCPG_COMBO                  1558
 #define IDC_DEBOND_RAISE_CHECK          1558
@@ -1431,6 +1432,7 @@
 #define IDC_FIBER_LABEL                 1733
 #define IDC_FIBER                       1734
 #define IDC_FIBER_UNIT                  1735
+#define IDC_SLICE_COUNT                 1736
 #define IDS_E_INVALIDVERSION            1750
 #define IDS_E_USERDEFINED               1752
 #define IDC_DIAPHRAGM_NOTE              1858
@@ -1464,7 +1466,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        333
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1736
+#define _APS_NEXT_CONTROL_VALUE         1737
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

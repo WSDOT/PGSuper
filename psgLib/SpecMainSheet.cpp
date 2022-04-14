@@ -696,6 +696,10 @@ void CSpecMainSheet::ExchangeMomentCapacityData(CDataExchange* pDX)
    DDX_CBItemData(pDX, IDC_NEG_MOMENT, m_Entry.m_bIncludeForNegMoment);
    DDX_Check_Bool(pDX, IDC_INCLUDE_STRAND_FOR_NEG_MOMENT, m_Entry.m_bIncludeStrand_NegMoment);
    DDX_Check_Bool(pDX, IDC_INCLUDE_REBAR_MOMENT, m_Entry.m_bIncludeRebar_Moment );
+   DDX_Check_Bool(pDX, IDC_CONSIDER_REINFORCEMENT_STRAIN_LIMITS, m_Entry.m_bConsiderReinforcementStrainLimit);
+
+   DDX_Text(pDX, IDC_SLICE_COUNT, m_Entry.m_nMomentCapacitySlices);
+   DDV_MinMaxInt(pDX, m_Entry.m_nMomentCapacitySlices, 10, 100);
 
    CString tag;
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2016Interims )

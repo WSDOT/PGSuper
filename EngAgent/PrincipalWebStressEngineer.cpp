@@ -504,7 +504,7 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
       Float64 fpcx2 = fMin[pgsTypes::TopGirder] - (fMax[pgsTypes::BottomGirder] - fMin[pgsTypes::TopGirder])*YwebSection / details.Hg;
 
       Float64 fTop, fBot, fpcx;
-      if (fpcx2 < fpcx1)
+      if (::IsLT(fpcx2,fpcx1))
       {
          fpcx = fpcx1;
          fTop = fMax[pgsTypes::TopGirder];

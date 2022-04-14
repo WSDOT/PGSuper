@@ -869,6 +869,16 @@ public:
    void IncludeRebarForMoment(bool bInclude);
    bool IncludeRebarForMoment() const;
    
+   // Set/Get a parameter that indicates if the strain limits specified in the relavent material
+   // standards are considered when computing moment capacity. If considered, and the strains are
+   // exceeded when the concrete crushing strain is at 0.003, the capacity is recomputed based
+   // on the limiting strain.
+   void ConsiderReinforcementStrainLimitForMomentCapacity(bool bConsider);
+   bool ConsiderReinforcementStrainLimitForMomentCapacity() const;
+
+   void SetSliceCountForMomentCapacity(IndexType nSlices);
+   IndexType GetSliceCountForMomentCapacity() const;
+   
    // Set/Get a paramter that indicates if pretensioned strands are included in negative moment capacity calculations.
    // If true, the pretensioned strands are included in negative moment capacity calculuations
    void IncludeStrandForNegativeMoment(bool bInclude);
@@ -1406,6 +1416,8 @@ private:
    int     m_Bs3LRFDOverReinforcedMomentCapacity;
    bool    m_bIncludeRebar_Moment;
    bool    m_bIncludeStrand_NegMoment;
+   bool    m_bConsiderReinforcementStrainLimit;
+   IndexType m_nMomentCapacitySlices; // user defined number of slices for strain compatibility analysis (constrained to be between 10 and 100)
    std::array<Float64, 3>  m_FlexureModulusOfRuptureCoefficient; // index is pgsTypes::ConcreteType enum (PCI UHPC is not valid)
    std::array<Float64, 3>  m_ShearModulusOfRuptureCoefficient;   // index is pgsTypes::ConcreteType enum (PCI UHPC is not valid)
    bool m_bLimitNetTensionStrainToPositiveValues; // when true, es from LRFD Eq 5.7.3.4.2-4 is taken to be zero if it is computed as a negative value

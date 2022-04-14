@@ -1,14 +1,18 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
-
+#include <WBFLGrid.h>
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include "afxres.h"
-#include "grid/gxresrc.h"
+
+#if !defined _NOGRID
+#include "grid\gxresrc.h"
+#endif
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -33,7 +37,9 @@ END
 2 TEXTINCLUDE 
 BEGIN
     "#include ""afxres.h""\r\n"
-    "#include ""grid/gxresrc.h""\r\0"
+   "#if !defined _NOGRID\r\n"
+   "#include ""grid\gxresrc.h""\r\n"
+   "#endif\r\n"
 END
 
 3 TEXTINCLUDE 
@@ -50,8 +56,10 @@ BEGIN
     "#endif\r\n"
     "#include ""afxres.rc""         // Standard components\r\n"
     "#endif\r\n"
-    "#include ""grid/gxres.rc""               // Objective Grid resources\r\0"
-END
+   "#if !defined _NOGRID\r\n"
+   "#include ""grid\\gxres.rc""\r\0"
+   "#endif\r\n"
+   END
 
 #endif    // APSTUDIO_INVOKED
 
@@ -621,7 +629,10 @@ LANGUAGE 9, 1
 #endif
 #include "afxres.rc"         // Standard components
 #endif
-#include "grid/gxres.rc"               // Objective Grid resources
+#if !defined _NOGRID
+#include "grid/gxres.rc"               // Objective Grid resources
+#endif
+
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

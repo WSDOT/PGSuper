@@ -108,7 +108,7 @@ void CParabolicDuctGrid::CustomInit(CParabolicDuctGridCallback* pCallback)
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
 			.SetEnabled(FALSE)          // disables usage as current cell
-         .SetValue("Point")
+         .SetValue(_T("Point"))
          .SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE)
 		);
 
@@ -117,7 +117,7 @@ void CParabolicDuctGrid::CustomInit(CParabolicDuctGridCallback* pCallback)
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
 			.SetEnabled(FALSE)          // disables usage as current cell
-         .SetValue("Point")
+         .SetValue(_T("Point"))
          .SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE)
 		);
 

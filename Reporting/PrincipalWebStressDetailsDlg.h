@@ -24,6 +24,7 @@
 
 #include "resource.h"
 #include <Reporting\PrincipalWebStressDetailsReportSpecification.h>
+#include "afxcmn.h"
 
 // CPrincipalWebStressDetailsDlg dialog
 

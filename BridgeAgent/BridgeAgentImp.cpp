@@ -4354,6 +4354,38 @@ void CBridgeAgentImp::ValidateGirders()
                }
             }
 
+            // There is a problem modeling boundary conditions at cantilever piers
+            // The LBAM does not support changing boundary conditions so we can't model a "continuous" beam
+            // which is the girder cantilevered over a support, and then change it to integral. For
+            // this reason, only hinge and roller boundary conditions are supported at cantilever piers.
+            //
+            // Historical note - this check was once done in BridgeDescription2.cpp after the bridge model was loaded,
+            // but the check for cantilever wasn't made. This resulted in boundary conditions always being force to
+            // hinge. See Mantis 1319. There isn't enough information in the ProjectAgent to determine if a segment is
+            // cantilevered so the check was moved to here. Calling ModelCantilevers from the ProjectAgent at load time
+            // results in undefined behavior since the bridge model is not yet fully loaded from disk.
+            // Instead of forcing the boundary condition to change, the model is put into an error state and the user can
+            // decide how to adjust the model.
+            const CPierData2* pPier = pBridgeDesc->GetPier(pierIdx);
+            if (pPier->IsAbutment() && IsContinuousBoundaryCondition(pPier->GetBoundaryConditionType()))
+            {
+               CSegmentKey segmentKey(grpIdx, gdrIdx, 0);
+               if (pPier->GetIndex() != 0)
+               {
+                  segmentKey.segmentIndex = pGirder->GetSegmentCount() - 1;
+               }
+               bool bStartCantilever, bEndCantilever;
+               ModelCantilevers(segmentKey, &bStartCantilever, &bEndCantilever);
+               bool bCantilever = (segmentKey.segmentIndex == 0 ? bStartCantilever : bEndCantilever);
+               if (bCantilever)
+               {
+                  CString strMsg;
+                  strMsg.Format(_T("The boundary condition at %s must be Hinge or Roller."), LABEL_PIER_EX(pPier->IsAbutment(), pierIdx));
+                  std::unique_ptr<pgsBridgeDescriptionStatusItem> pStatusItem = std::make_unique<pgsBridgeDescriptionStatusItem>(m_StatusGroupID, m_scidBridgeDescriptionError, pgsBridgeDescriptionStatusItem::Framing, strMsg);
+                  pStatusCenter->Add(pStatusItem.release());
+               }
+            }
+
          } // pier loop
       } // girder loop
    } // group loop

@@ -1,10 +1,11 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 12.17    5   0.00                     1     1    BI-36    *     22  0.6  270  10.99   4.83   7.50   7.50                                              4.800  5.600   3.776    -3.793     2013   0.210  0.501   3.918 -0.951 -0.116 -0.410 -1.477  71.69  153.99    1.75    5.00    5.00    1.96    1.06    2.54    1.41    1.99 
+ 12.17    5   0.00                     1     1    BI-36    *     22  0.6  270  10.99   4.83   7.50   7.50                                              4.800  5.400   3.763    -3.789     2010   0.210  0.501   3.918 -0.968 -0.118 -0.415 -1.502  71.69  152.98    1.75    5.00    5.00    1.95    1.04    2.53    1.39    1.99 
 
 
 The Specification Check was Not Successful
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Splitting check failed.
 

@@ -207,7 +207,7 @@ CSegmentAnalysisResultsGraphBuilder::~CSegmentAnalysisResultsGraphBuilder()
 
 void CSegmentAnalysisResultsGraphBuilder::Init()
 {
-   SetName(_T("Analysis Results - Before Erection"));
+   SetName(_T("Analysis Results - At Casting Yard"));
 
    InitDocumentation(EAFGetDocument()->GetDocumentationSetName(),IDH_ANALYSIS_RESULTS);
 

@@ -1,27 +1,24 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.83    5   6.00                     1     1    WF66G    *     38  0.6  270  28.65  12.86  11.00  11.00                                              12  59.0  4.0  4.700  5.600   3.760    -3.951     9361   0.553  0.671   3.920 -1.556 -0.215 -0.305 -2.076 146.30  289.07    3.00    5.50    5.50    1.86    2.15    2.41    2.86    1.47 
+ 27.83    5   6.00                     1     1    WF66G    *     38  0.6  270  28.65  12.86  11.25  11.25                                              12  59.0  4.0  4.700  5.600   3.781    -3.971     9396   0.553  0.671   4.438 -1.584 -0.215 -0.305 -2.105 149.08  272.97    3.00    5.50    5.50    1.85    2.14    2.40    2.85    1.49 
 
 
-The Specification Check was Not Successful
-Splitting check failed.
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.83    5   6.00                     1     2    WF66G    *     38  0.6  270  28.65  12.86  10.75  10.75                                              12  59.0  4.0  4.700  5.600   3.755    -3.946     9351   0.553  0.671   3.842 -1.549 -0.215 -0.305 -2.070 146.30  289.45    3.00    5.50    5.50    1.87    2.15    2.42    2.86    1.47 
-
-
-The Specification Check was Not Successful
-Splitting check failed.
+The Specification Check was Successful
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.83    5   6.00                     1     3    WF66G    *     38  0.6  270  28.65  12.86  10.75  10.75                                              12  59.0  4.0  4.700  5.600   3.755    -3.946     9351   0.553  0.671   3.842 -1.549 -0.215 -0.305 -2.070 146.30  289.45    3.00    5.50    5.50    1.87    2.15    2.42    2.86    1.47 
+ 27.83    5   6.00                     1     2    WF66G    *     38  0.6  270  28.65  12.86  11.25  11.25                                              12  59.0  4.0  4.700  5.600   3.792    -3.981     9415   0.553  0.671   4.361 -1.600 -0.215 -0.305 -2.120 149.08  272.23    3.00    5.50    5.50    1.85    2.13    2.40    2.84    1.49 
 
 
-The Specification Check was Not Successful
-Splitting check failed.
+The Specification Check was Successful
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 27.83    5   6.00                     1     3    WF66G    *     38  0.6  270  28.65  12.86  11.25  11.25                                              12  59.0  4.0  4.700  5.600   3.792    -3.981     9415   0.553  0.671   4.361 -1.600 -0.215 -0.305 -2.120 149.08  272.23    3.00    5.50    5.50    1.85    2.13    2.40    2.84    1.49 
+
+
+The Specification Check was Successful
 
 
