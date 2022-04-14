@@ -211,7 +211,7 @@ private:
    void ComputeCrackingMoment(Float64 g1,Float64 g2,Float64 g3,Float64 fr,Float64 fcpe,Float64 Mdnc,Float64 Sb,Float64 Sbc,CRACKINGMOMENTDETAILS* pcmd) const;
    void GetCrackingMomentFactors(bool bPositiveMoment,Float64* pG1,Float64* pG2,Float64* pG3) const;
 
-   void BuildCapacityProblem(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, const std::array<std::vector<Float64>, 2>& eps_initial, const std::vector<Float64>& ept_initial_segment, const std::vector<Float64>& ept_initial_girder, pgsBondTool& bondTool, bool bPositiveMoment, IGeneralSection** ppProblem, IPoint2d** pntCompression, Float64* pdt, Float64* pH, Float64* pHaunch,bool* pbDevelopmentReducedStrainCapacity) const;
+   void BuildCapacityProblem(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, const std::array<std::vector<Float64>, 2>& eps_initial, const std::vector<Float64>& ept_initial_segment, const std::vector<Float64>& ept_initial_girder, pgsBondTool& bondTool, bool bPositiveMoment, IGeneralSection** ppProblem, IPoint2d** pntCompression, Float64* pec, Float64* pdt, Float64* pH, Float64* pHaunch,bool* pbDevelopmentReducedStrainCapacity) const;
 
    // GROUP: INQUIRY
 

@@ -560,11 +560,12 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
    // create a problem to solve
    CComPtr<IGeneralSection> section;
    CComPtr<IPoint2d> pntCompression; // location of the extreme compression face
+   Float64 ec; // compression strain limit for upper-most piece of concrete (typically the deck)
    Float64 dt; // depth from top of section to extreme layer of tensile reinforcement
    Float64 H; // overall height of section
    Float64 Haunch; // haunch build up that is modeled
    bool bDevelopmentReducedStrainCapacity; // indicates if the strain limit in reinforcement is reduced because of lack of full development length
-   BuildCapacityProblem(intervalIdx,poi,pConfig,eps_initial,ept_initial_segment,ept_initial_girder,bondTool,bPositiveMoment,&section,&pntCompression,&dt,&H,&Haunch,&bDevelopmentReducedStrainCapacity);
+   BuildCapacityProblem(intervalIdx,poi,pConfig,eps_initial,ept_initial_segment,ept_initial_girder,bondTool,bPositiveMoment,&section,&pntCompression,&ec,&dt,&H,&Haunch,&bDevelopmentReducedStrainCapacity);
 
    CComPtr<IMomentCapacitySolution> solution;
    if (section)
@@ -573,8 +574,14 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
       DumpSection(poi, section, bond_factors[0], bond_factors[1], bPositiveMoment);
 #endif // _DEBUG_SECTION_DUMP
 
+      GET_IFACE(ILibrary, pLib);
+      GET_IFACE(ISpecification, pSpec);
+      const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+      bool bConsiderReinforcementStrainLimits = pSpecEntry->ConsiderReinforcementStrainLimitForMomentCapacity();
+      IndexType nSlices = pSpecEntry->GetSliceCountForMomentCapacity();
+
       m_MomentCapacitySolver->putref_Section(section);
-      m_MomentCapacitySolver->put_Slices(10);
+      m_MomentCapacitySolver->put_Slices(nSlices);
       m_MomentCapacitySolver->put_SliceGrowthFactor(3);
       m_MomentCapacitySolver->put_MaxIterations(50);
 
@@ -585,9 +592,6 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
       // determine neutral axis angle
       // compression is on the left side of the neutral axis
       Float64 na_angle = (bPositiveMoment ? 0.00 : M_PI);
-
-      // compressive strain limit
-      Float64 ec = -0.003;
 
 #if defined _DEBUG
       CTime startTime = CTime::GetCurrentTime();
@@ -601,8 +605,10 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
       }
       else if (hr == RC_E_MATERIALFAILURE)
       {
+         hr = S_OK; // reset
          WATCHX(MomCap, 0, _T("Exceeded material strain limit"));
-
+         if (bConsiderReinforcementStrainLimits)
+         {
          CComPtr<IGeneralSectionSolution> general_solution;
          solution->get_GeneralSectionSolution(&general_solution);
 
@@ -672,6 +678,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
          Float64 e = emax - ei;
          hr = m_MomentCapacitySolver->Solve(0.0, na_angle, e, Ycg, smFixedStrain, &solution.p);
          ATLASSERT(SUCCEEDED(hr));
+         }
          mcd.Controlling = bDevelopmentReducedStrainCapacity ? MOMENTCAPACITYDETAILS::ControllingType::Development : MOMENTCAPACITYDETAILS::ControllingType::ReinforcementStrain;
       }
 
@@ -1704,6 +1711,7 @@ void pgsMomentCapacityEngineer::AnalyzeCrackedSection(const pgsPointOfInterest& 
    // the cracked section analysis tool uses the same model as the moment capacity tool
    CComPtr<IGeneralSection> beam_section;
    CComPtr<IPoint2d> pntCompression; // needed to figure out the result geometry
+   Float64 ec; // concrete strain limit
    Float64 dt; // depth from top of section to extreme layer of tensile reinforcement
    Float64 H; // overall height of section
    Float64 Haunch; // haunch build up that is modeled
@@ -1728,7 +1736,7 @@ void pgsMomentCapacityEngineer::AnalyzeCrackedSection(const pgsPointOfInterest& 
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-   BuildCapacityProblem(liveLoadIntervalIdx,poi,nullptr,e_initial_strands,e_initial_segment_tendons,e_initial_girder_tendons,bondTool,bPositiveMoment,&beam_section,&pntCompression,&dt,&H,&Haunch,&bDevelopmentReducedStrainCapacity);
+   BuildCapacityProblem(liveLoadIntervalIdx,poi,nullptr,e_initial_strands,e_initial_segment_tendons,e_initial_girder_tendons,bondTool,bPositiveMoment,&beam_section,&pntCompression,&ec,&dt,&H,&Haunch,&bDevelopmentReducedStrainCapacity);
 
    // determine neutral axis angle
    // compression is on the left side of the neutral axis
@@ -1876,7 +1884,7 @@ void pgsMomentCapacityEngineer::CreateTendonMaterial(const matPsStrand* pTendon,
    (*ppSS)->AddRef();
 }
 
-void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,const std::array<std::vector<Float64>, 2>& eps_initial,const std::vector<Float64>& ept_initial_segment,const std::vector<Float64>& ept_initial_girder,pgsBondTool& bondTool,bool bPositiveMoment,IGeneralSection** ppProblem,IPoint2d** pntCompression,Float64* pdt, Float64* pH,Float64* pHaunch, bool* pbDevelopmentReducedStrainCapacity) const
+void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,const std::array<std::vector<Float64>, 2>& eps_initial,const std::vector<Float64>& ept_initial_segment,const std::vector<Float64>& ept_initial_girder,pgsBondTool& bondTool,bool bPositiveMoment,IGeneralSection** ppProblem,IPoint2d** pntCompression,Float64* pec,Float64* pdt, Float64* pH,Float64* pHaunch, bool* pbDevelopmentReducedStrainCapacity) const
 {
    *pbDevelopmentReducedStrainCapacity = false;
 
@@ -1891,6 +1899,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
       // there is no moment capacity for this case
       *ppProblem = nullptr;
       *pntCompression = nullptr;
+      *pec = 0;
       *pdt = 0;
       *pH = 0;
       *pHaunch = 0;
@@ -2063,6 +2072,9 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
       }
       matGirder.QueryInterface(&ssGirder);
    }
+
+   Float64 maxStrain;
+   ssGirder->StrainLimits(pec, &maxStrain); // compression strain limit of girder concrete
 
    // longitudinal joint concrete - see below
 
@@ -2427,6 +2439,14 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
       {
          AddShape2Section(CComBSTR("Right Long. Joint"), section, rightJointShape, ssLongitudinalJoints, nullptr, nullptr, 1.0, false);
       }
+
+      if (leftJointShape || rightJointShape)
+      {
+         Float64 minStrain, maxStrain;
+         ssLongitudinalJoints->StrainLimits(&minStrain, &maxStrain);
+         if (*pec < minStrain)
+            *pec = minStrain; // longitudinal joint compressive strain limit governs over the girder's limit
+      }
    }
 
    // add the deck to the model
@@ -2505,6 +2525,11 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
       {
          (*pntCompression)->Release();
          posDeck->get_LocatorPoint(lpTopCenter,pntCompression);
+
+         // for positive moments, the deck is on top of the girder so
+         // the deck is furthest from the neutral axis and it's compression strain limit
+         // is what we want
+         ssSlab->StrainLimits(pec, &maxStrain);
       }
       else
       {

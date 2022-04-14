@@ -254,6 +254,13 @@ void write_moment_data_table(IBroker* pBroker,
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
    const GirderLibraryEntry* pGdrEntry = pGroup->GetGirder(girderKey.girderIndex)->GetGirderLibraryEntry();
 
+   GET_IFACE2(pBroker, ILibrary, pLib);
+   GET_IFACE2(pBroker, ISpecification, pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+   bool bConsiderReinforcementStrainLimits = pSpecEntry->ConsiderReinforcementStrainLimitForMomentCapacity();
+
+   bool bAfter2005 = (lrfdVersionMgr::ThirdEditionWith2006Interims <= pSpecEntry->GetSpecificationType() ? true : false);
+
    CComPtr<IBeamFactory> pFactory;
    pGdrEntry->GetBeamFactory(&pFactory);
 
@@ -265,13 +272,13 @@ void write_moment_data_table(IBroker* pBroker,
    for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
    {
       CSegmentKey segmentKey(girderKey, segIdx);
-      nMaxSegmentTendons = Max(nMaxSegmentTendons,pSegmentTendonGeometry->GetDuctCount(segmentKey));
+      nMaxSegmentTendons = Max(nMaxSegmentTendons, pSegmentTendonGeometry->GetDuctCount(segmentKey));
    }
 
    DuctIndexType nGirderTendons = pGirderTendonGeometry->GetDuctCount(girderKey);
 
    std::_tstring strPicture;
-   if ( bPositiveMoment )
+   if (bPositiveMoment)
    {
       strPicture = pFactory->GetPositiveMomentCapacitySchematicImage(deckType);
    }
@@ -289,13 +296,13 @@ void write_moment_data_table(IBroker* pBroker,
    *pChapter << pPara;
 
    CString strLabel;
-   strLabel.Format(_T("Moment Capacity [%s] - %s"), LrfdCw8th(_T("5.7.3.2.4"),_T("5.6.3.2.4")),strStageName);
+   strLabel.Format(_T("Moment Capacity [%s] - %s"), LrfdCw8th(_T("5.7.3.2.4"), _T("5.6.3.2.4")), strStageName);
 
    ColumnIndexType nColumns;
-   if( bPositiveMoment || 0 < nGirderTendons || 0 < nMaxSegmentTendons)
+   if (bPositiveMoment || 0 < nGirderTendons || 0 < nMaxSegmentTendons)
    {
       nColumns = 11;// 12;
-      if ( lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::FifthEdition2010 )
+      if (lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::FifthEdition2010)
       {
          nColumns++; // for PPR
       }
@@ -305,7 +312,7 @@ void write_moment_data_table(IBroker* pBroker,
       nColumns = 11;
    }
 
-   if ( lrfdVersionMgr::SixthEdition2012 <= lrfdVersionMgr::GetVersion() )
+   if (lrfdVersionMgr::SixthEdition2012 <= lrfdVersionMgr::GetVersion())
    {
       nColumns++; // for epsilon_t
    }
@@ -320,12 +327,12 @@ void write_moment_data_table(IBroker* pBroker,
    //   nColumns += 2*nGirderTendons; // fpe and epsilon_pti
    //}
 
-   if ( bPositiveMoment )
+   if (bPositiveMoment)
    {
       nColumns += 1; // for de_shear
    }
 
-   if ( bPositiveMoment || 0 < nGirderTendons || 0 < nMaxSegmentTendons)
+   if (bPositiveMoment || 0 < nGirderTendons || 0 < nMaxSegmentTendons)
    {
       nColumns += 1; // for fps_avg
    }
@@ -335,26 +342,31 @@ void write_moment_data_table(IBroker* pBroker,
       nColumns += 1; // for fpt_avg_segment
    }
 
-   if ( 0 < nGirderTendons )
+   if (0 < nGirderTendons)
    {
       nColumns += 1; // for fpt_avg_girder
    }
 
-   rptRcTable* table = rptStyleManager::CreateDefaultTable(nColumns,strLabel);
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(nColumns, strLabel);
 
    *pPara << table << rptNewLine;
 
 
-   if ( bPositiveMoment )
+   if (bPositiveMoment)
    {
       rptParagraph* pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
       *pChapter << pPara;
-      (*pPara) << _T("* Used to compute ") << Sub2(_T("d"),_T("v")) << _T(" for shear. Depth to resultant tension force for strands on the tension half of the section. See PCI Bridge Design Manual, 3rd Edition, MNL-133-11, §8.4.1.2") << rptNewLine;
+      (*pPara) << _T("* Used to compute ") << Sub2(_T("d"), _T("v")) << _T(" for shear. Depth to resultant tension force for strands on the tension half of the section. See PCI Bridge Design Manual, 3rd Edition, MNL-133-11, §8.4.1.2") << rptNewLine;
    }
 
    pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pPara;
-   *pPara << _T("+ Controlling: C=Concrete crushing, T=Tension strain limit of reinforcement, D=Reduced strand stress due to lack of full development per LRFD ") << LrfdCw8th(_T("5.11.4.2"), _T("5.9.4.3.2")) << rptNewLine;
+   *pPara << _T("+ Controlling: C=Concrete crushing, T=Tension strain limit of reinforcement, D=Reduced strand stress due to lack of full development per LRFD ") << LrfdCw8th(_T("5.11.4.2"), _T("5.9.4.3.2"));
+   if (!bConsiderReinforcementStrainLimits)
+   {
+      *pPara << _T(", E=Reinforcement strain exceeds minimum elongation per the material specification");
+   }
+   *pPara << rptNewLine;
 
 
    if ( girderKey.groupIndex == ALL_GROUPS )
@@ -609,16 +621,21 @@ void write_moment_data_table(IBroker* pBroker,
       (*table)(row,col++) << force.SetValue( pmcd->T );
       (*table)(row,col++) << moment.SetValue( pmcd->Mn );
 
+      if (bConsiderReinforcementStrainLimits)
+      {
       (*table)(row, col++) << strControlling[std::underlying_type<MOMENTCAPACITYDETAILS::ControllingType>::type(pmcd->Controlling)];
+      }
+      else
+      {
+         (*table)(row, col) << strControlling[std::underlying_type<MOMENTCAPACITYDETAILS::ControllingType>::type(pmcd->Controlling)];
+         if (pmcd->Controlling != MOMENTCAPACITYDETAILS::ControllingType::Concrete)
+            (*table)(row, col) << _T(", E");
+         col++;
+      }
 
       row++;
       count++;
    }
-
-   GET_IFACE2(pBroker,ISpecification,pSpec);
-   GET_IFACE2(pBroker,ILibrary, pLib);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfter2005 = ( lrfdVersionMgr::ThirdEditionWith2006Interims <= pSpecEntry->GetSpecificationType() ? true : false );
 
    pPara = new rptParagraph;
    *pChapter << pPara;

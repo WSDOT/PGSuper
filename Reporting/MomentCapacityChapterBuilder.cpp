@@ -302,8 +302,7 @@ rptChapter* CMomentCapacityChapterBuilder::Build(CReportSpecification* pRptSpec,
       slice->ExceededStrainLimit(&vbExceededStrainLimit);
       if (vbExceededStrainLimit == VARIANT_TRUE)
       {
-         (*pTable)(row, col).SetFillBackGroundColor(rptRiStyle::Red);
-         (*pTable)(row, col++) << total_strain << _T(" (") << (total_strain < 0 ? emin : emax) << _T(")");
+         (*pTable)(row, col++) << color(Red) << total_strain << _T(" (") << (total_strain < 0 ? emin : emax) << _T(")") << color(Black);
       }
       else
       {
@@ -318,7 +317,6 @@ rptChapter* CMomentCapacityChapterBuilder::Build(CReportSpecification* pRptSpec,
       {
          (*pTable)(row, col++) << fpx_fps;
       }
-      //(*pTable)(row, col++) << (fgStress < 0 ? emin : emax); // report if strains are limited
       (*pTable)(row, col++) << stress.SetValue(fgStress);
       (*pTable)(row, col++) << stress.SetValue(bgStress);
       (*pTable)(row, col++) << stress.SetValue(netStress);
@@ -333,6 +331,8 @@ rptChapter* CMomentCapacityChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    force.ShowUnitTag(true);
    moment.ShowUnitTag(true);
+
+   *pPara << _T("Total strain in ") << color(Red) << _T("red") << color(Black) << _T(" text indicates the strain exceeds the usable strain limit of the material. The usable strain limit is show in parentheses.") << rptNewLine;
 
    *pPara << _T("Resultant Force  = ") << symbol(SUM) << _T("(") << symbol(delta) << _T("F) = ") << force.SetValue(sum_force)   << rptNewLine;
    *pPara << _T("Resultant Moment = ") << symbol(SUM) << _T("(") << symbol(delta) << _T("M) = ") << moment.SetValue(sum_moment) << rptNewLine;
