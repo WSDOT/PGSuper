@@ -122,9 +122,9 @@ private:
                            Float64* pAd,
                            Float64* ped,
                            Float64* pKsh,
-                           gpPoint2d* pepermRelease,// eccentricity of the permanent strands on the non-composite section
-                           gpPoint2d* pepermFinal,
-                           gpPoint2d* petemp,
+                           WBFL::Geometry::Point2d* pepermRelease,// eccentricity of the permanent strands on the non-composite section
+                           WBFL::Geometry::Point2d* pepermFinal,
+                           WBFL::Geometry::Point2d* petemp,
                            Float64* paps,  // area of one prestress strand
                            Float64* pApsPerm,
                            Float64* pApsTTS,

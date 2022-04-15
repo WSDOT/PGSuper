@@ -494,8 +494,8 @@ void CShrinkageAtDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* pBroke
       Aps += pDetails->pLosses->GetApsTemporary();
    }
 
-   gpPoint2d e  = pDetails->pLosses->GetEccPermanentFinal();
-   gpPoint2d eps = e;
+   WBFL::Geometry::Point2d e  = pDetails->pLosses->GetEccPermanentFinal();
+   WBFL::Geometry::Point2d eps = e;
    if ( pDetails->pLosses->GetTempStrandUsage() == lrfdLosses::tsPretensioned )
    {
       eps = pDetails->pLosses->GetEccpgFinal();

@@ -40,7 +40,6 @@
 #include <WBFLGenericBridge_i.c>
 #include <WBFLGenericBridgeTools_i.c>
 #include <WBFLUnitServer_i.c>
-#include <WBFLSections_i.c>
 
 #include <WBFLBridgeGeometry_i.c>
 

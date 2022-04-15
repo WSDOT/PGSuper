@@ -26,7 +26,7 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "GraphView.h"
-#include <Graphing\AnalysisResultsGraphBuilder.h>
+#include <Graphs\AnalysisResultsGraphBuilder.h>
 
 #include "PGSuperCalculationSheet.h"
 #include <IFace\VersionInfo.h>
@@ -66,8 +66,8 @@ END_MESSAGE_MAP()
 void CGraphView::DumpLBAM()
 {
    // Alt + Ctrl + L
-   std::shared_ptr<CGraphBuilder> pGraphBuilder(GetGraphBuilder());
-   std::shared_ptr<CAnalysisResultsGraphBuilder> pMyGraphBuilder = std::dynamic_pointer_cast<CAnalysisResultsGraphBuilder>(pGraphBuilder);
+   std::unique_ptr<WBFL::Graphing::GraphBuilder>& pGraphBuilder(GetGraphBuilder());
+   CAnalysisResultsGraphBuilder* pMyGraphBuilder = dynamic_cast<CAnalysisResultsGraphBuilder*>(pGraphBuilder.get());
    if ( pMyGraphBuilder )
    {
       pMyGraphBuilder->DumpLBAM();
@@ -93,8 +93,8 @@ void CGraphView::Dump(CDumpContext& dc) const
 // CGraphView message handlers
 bool CGraphView::DoResultsExist()
 {
-   std::shared_ptr<CGraphBuilder> pGraphBuilder(GetGraphBuilder());
-   std::shared_ptr<CEAFGraphBuilderBase> pMyGraphBuilder = std::dynamic_pointer_cast<CEAFGraphBuilderBase>(pGraphBuilder);
+   std::unique_ptr<WBFL::Graphing::GraphBuilder>& pGraphBuilder(GetGraphBuilder());
+   CEAFGraphBuilderBase* pMyGraphBuilder = dynamic_cast<CEAFGraphBuilderBase*>(pGraphBuilder.get());
    return pMyGraphBuilder->IsValidGraph();
 }
 

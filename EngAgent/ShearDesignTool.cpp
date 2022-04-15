@@ -875,7 +875,7 @@ void pgsShearDesignTool::ProcessAvsDemand(std::vector<std::pair<Float64,bool>>& 
          Float64 y  = rDemandAtPois[idx].first;
          if ( !IsEqual(last_x,x) )
          {
-            mirror_avs.AddPoint(gpPoint2d(x,y));
+            mirror_avs.AddPoint(x,y);
          }
          last_x = x;
          idx++;
@@ -1013,7 +1013,7 @@ void pgsShearDesignTool::ProcessAvsDemand(std::vector<std::pair<Float64,bool>>& 
 
       Float64 y  = rDemandAtPois[pidx].first;
 
-      rDemandAtLocations.AddPoint(gpPoint2d(x,y));
+      rDemandAtLocations.AddPoint(x,y);
       pidx++;
    }
 }

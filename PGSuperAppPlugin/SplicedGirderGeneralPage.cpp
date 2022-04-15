@@ -433,7 +433,7 @@ const matPsStrand* CSplicedGirderGeneralPage::GetStrand()
    return pPool->GetStrand(key);
 }
 
-grlibPointMapper::MapMode CSplicedGirderGeneralPage::GetTendonControlMapMode() const
+WBFL::Graphing::PointMapper::MapMode CSplicedGirderGeneralPage::GetTendonControlMapMode() const
 {
    return m_DrawTendons.GetMapMode();
 }
@@ -557,6 +557,6 @@ void CSplicedGirderGeneralPage::OnChangedGirderName()
 void CSplicedGirderGeneralPage::OnSchematicButton()
 {
    auto mm = m_DrawTendons.GetMapMode();
-   mm = (mm == grlibPointMapper::Isotropic ? grlibPointMapper::Anisotropic : grlibPointMapper::Isotropic);
+   mm = (mm == WBFL::Graphing::PointMapper::MapMode::Isotropic ? WBFL::Graphing::PointMapper::MapMode::Anisotropic : WBFL::Graphing::PointMapper::MapMode::Isotropic);
    m_DrawTendons.SetMapMode(mm);
 }

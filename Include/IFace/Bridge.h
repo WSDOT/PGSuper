@@ -1097,20 +1097,20 @@ DEFINE_GUID(IID_IStrandGeometry,
 interface IStrandGeometry : IUnknown
 {
    // Returns the centroid of the prestressing steel in Girder Section Coordinates (0,0 at top CL of girder)
-   virtual gpPoint2d GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig=nullptr) const = 0;
-   virtual gpPoint2d GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig=nullptr) const = 0;
+   virtual WBFL::Geometry::Point2d GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig=nullptr) const = 0;
+   virtual WBFL::Geometry::Point2d GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig=nullptr) const = 0;
 
    // Eccentricity values greater than zero indicate the strands are below the cg of the section. 
    // (+ eccentricity, strands in bottom, - eccentricity, strands in top)
    // Returns the geometric eccentricity of prestressing strands for the various strand types for the specified configuration.
    // Eccentricity is measured with respect to the centroid of the section at the specified interval
-   virtual gpPoint2d GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig=nullptr) const = 0;
-   virtual gpPoint2d GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig=nullptr) const = 0;
+   virtual WBFL::Geometry::Point2d GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig=nullptr) const = 0;
+   virtual WBFL::Geometry::Point2d GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig=nullptr) const = 0;
 
    // Returns the geometric eccentricity of prestressing strands for the various strand types.
    // Eccentricity is measured with respect to the centroid of the specified section type at the specified interval
-   virtual gpPoint2d GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig=nullptr) const = 0;
-   virtual gpPoint2d GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig=nullptr) const = 0;
+   virtual WBFL::Geometry::Point2d GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig=nullptr) const = 0;
+   virtual WBFL::Geometry::Point2d GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig=nullptr) const = 0;
 
    // gets a profile view of a strand
    virtual void GetStrandProfile(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, StrandIndexType strandIdx, IPoint2dCollection** ppProfilePoints) const = 0;
@@ -1330,7 +1330,7 @@ interface ISectionProperties : IUnknown
    virtual pgsTypes::HaunchAnalysisSectionPropertiesType GetHaunchAnalysisSectionPropertiesType() const = 0;
 
    // Returns the stress points for a section. The controlling stress point indes returned by GetStressCoefficients can be used to access the container
-   virtual std::vector<gpPoint2d> GetStressPoints(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual std::vector<WBFL::Geometry::Point2d> GetStressPoints(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig = nullptr) const = 0;
 
    // Get the stress coefficients at the specifed location
    // f = Ca*Axial + Cbx*Mx + Cby*My

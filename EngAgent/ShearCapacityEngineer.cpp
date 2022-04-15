@@ -22,7 +22,6 @@
 
 #include "StdAfx.h"
 #include "ShearCapacityEngineer.h"
-#include <ReinforcedConcrete\ReinforcedConcrete.h>
 #include <Units\SysUnits.h>
 #include <PGSuperException.h>
 #include <IFace\Bridge.h>

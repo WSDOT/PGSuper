@@ -26,17 +26,15 @@
 #include "stdafx.h"
 #include <psgLib\psgLib.h>
 #include "SectionViewDialog.h"
-#include <GraphicsLib\PointMapper.h>
+#include <Graphing/PointMapper.h>
 #include <PgsExt\GirderLabel.h>
 #include "PGSuperColors.h"
 
-#include <GeomModel\IShape.h>
-#include <GeomModel\Circle.h>
-
-#include <GeomModel\Polygon.h>
+#include <GeomModel/Shape.h>
+#include <GeomModel/Circle.h>
+#include <GeomModel/Polygon.h>
 
 #include <WBFLGeometry.h>
-#include <WBFLSections.h>
 #include <WBFLGenericBridge.h>
 
 #include <EAF\EAFApp.h>
@@ -217,12 +215,12 @@ void CSectionViewDialog::OnPaint()
    bbox->get_Top(&top);
    bbox->get_Bottom(&bottom);
 
-   GraphRect box(left,bottom,right,top);
-   GraphSize size = box.Size();
-   GraphPoint org = box.BottomCenter();
+   WBFL::Graphing::Rect box(left,bottom,right,top);
+   WBFL::Graphing::Size size = box.Size();
+   WBFL::Graphing::Point org = box.BottomCenter();
 
-   grlibPointMapper mapper;
-   mapper.SetMappingMode(grlibPointMapper::Isotropic);
+   WBFL::Graphing::PointMapper mapper;
+   mapper.SetMappingMode(WBFL::Graphing::PointMapper::MapMode::Isotropic);
    mapper.SetWorldExt(size);
    mapper.SetWorldOrg(org);
    mapper.SetDeviceExt(csize.cx,csize.cy);
@@ -255,7 +253,7 @@ void CSectionViewDialog::OnPaint()
 #endif
 }
 
-void PrintNumber(CDC* pDC, grlibPointMapper& Mapper, const GraphPoint& loc, StrandIndexType strandIdx)
+void PrintNumber(CDC* pDC, WBFL::Graphing::PointMapper& Mapper, const WBFL::Graphing::Point& loc, StrandIndexType strandIdx)
 {
    long x, y;
    Mapper.WPtoDP(loc.X(), loc.Y(), &x, &y);
@@ -266,7 +264,7 @@ void PrintNumber(CDC* pDC, grlibPointMapper& Mapper, const GraphPoint& loc, Stra
    pDC->TextOut(x, y, str);
 }
 
-void CSectionViewDialog::DrawShape(CDC* pDC, grlibPointMapper& Mapper)
+void CSectionViewDialog::DrawShape(CDC* pDC, WBFL::Graphing::PointMapper& Mapper)
 {
    CComQIPtr<ICompositeShape> compshape(m_pShape);
 
@@ -287,7 +285,7 @@ void CSectionViewDialog::DrawShape(CDC* pDC, grlibPointMapper& Mapper)
    pDC->SelectObject(pOldBrush);
 }
 
-void CSectionViewDialog::DrawShape(CDC* pDC,grlibPointMapper& mapper,ICompositeShape* pCompositeShape,CBrush& solidBrush,CBrush& voidBrush)
+void CSectionViewDialog::DrawShape(CDC* pDC, WBFL::Graphing::PointMapper& mapper,ICompositeShape* pCompositeShape,CBrush& solidBrush,CBrush& voidBrush)
 {
    CollectionIndexType nShapes;
    pCompositeShape->get_Count(&nShapes);
@@ -323,7 +321,7 @@ void CSectionViewDialog::DrawShape(CDC* pDC,grlibPointMapper& mapper,ICompositeS
    }
 }
 
-void CSectionViewDialog::DrawShape(CDC* pDC,grlibPointMapper& Mapper,IShape* pShape)
+void CSectionViewDialog::DrawShape(CDC* pDC, WBFL::Graphing::PointMapper& Mapper,IShape* pShape)
 {
    CComPtr<IPoint2dCollection> polypoints;
    pShape->get_PolyPoints(&polypoints);
@@ -344,7 +342,7 @@ void CSectionViewDialog::DrawShape(CDC* pDC,grlibPointMapper& Mapper,IShape* pSh
    for ( CollectionIndexType i = 0; i < nPoints; i++ )
    {
       long dx,dy;
-      GraphPoint point;
+      WBFL::Graphing::Point point;
       points[i]->Location(&point.X(), &point.Y());
       Mapper.WPtoDP(point,&dx,&dy);
       dev_points[i] = CPoint(dx,dy);
@@ -358,7 +356,7 @@ void CSectionViewDialog::DrawShape(CDC* pDC,grlibPointMapper& Mapper,IShape* pSh
    delete[] dev_points;
 }
 
-void CSectionViewDialog::DrawStrands(CDC* pDC, grlibPointMapper& Mapper, bool isEnd)
+void CSectionViewDialog::DrawStrands(CDC* pDC, WBFL::Graphing::PointMapper& Mapper, bool isEnd)
 {
    pDC->SetTextAlign(TA_CENTER);
    CFont font;
@@ -451,7 +449,7 @@ void CSectionViewDialog::DrawStrands(CDC* pDC, grlibPointMapper& Mapper, bool is
    pDC->SelectObject(pOldPen);
 }
 
-StrandIndexType CSectionViewDialog::DrawStrand(CDC* pDC, grlibPointMapper& Mapper, Float64 x, Float64 y, StrandIndexType index,StrandIndexType strandInc)
+StrandIndexType CSectionViewDialog::DrawStrand(CDC* pDC, WBFL::Graphing::PointMapper& Mapper, Float64 x, Float64 y, StrandIndexType index,StrandIndexType strandInc)
 {
    // Strands are defined assuming bottom of girder is at (0,0), however
    // the girder shape is actually defined with (0,0) at the top center
@@ -471,7 +469,7 @@ StrandIndexType CSectionViewDialog::DrawStrand(CDC* pDC, grlibPointMapper& Mappe
 
    if (m_bDrawNumbers)
    {
-      PrintNumber(pDC, Mapper, GraphPoint(x, y), index);
+      PrintNumber(pDC, Mapper, WBFL::Graphing::Point(x, y), index);
    }
 
    if (0.0 < x)
@@ -486,7 +484,7 @@ StrandIndexType CSectionViewDialog::DrawStrand(CDC* pDC, grlibPointMapper& Mappe
       ATLASSERT(strandInc == 1);
       index += strandInc;
 
-      GraphPoint np(-x,y);
+      WBFL::Graphing::Point np(-x,y);
       if (m_bDrawNumbers)
       {
          PrintNumber(pDC, Mapper, np, index);
@@ -496,7 +494,7 @@ StrandIndexType CSectionViewDialog::DrawStrand(CDC* pDC, grlibPointMapper& Mappe
    return index;
 }
 
-void CSectionViewDialog::DrawWebSections(CDC* pDC, grlibPointMapper& Mapper)
+void CSectionViewDialog::DrawWebSections(CDC* pDC, WBFL::Graphing::PointMapper& Mapper)
 {
    USES_CONVERSION;
    CPen pen(1, PS_DASH, BROWN);
@@ -530,7 +528,7 @@ void CSectionViewDialog::DrawWebSections(CDC* pDC, grlibPointMapper& Mapper)
    pDC->SetTextAlign(old_align);
 }
 
-void CSectionViewDialog::DrawWebWidthProjections(CDC* pDC, grlibPointMapper& Mapper)
+void CSectionViewDialog::DrawWebWidthProjections(CDC* pDC, WBFL::Graphing::PointMapper& Mapper)
 {
    if (m_WebWidthProjections)
    {

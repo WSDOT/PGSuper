@@ -285,7 +285,7 @@ void CGirderDescDebondPage::OnPaint()
    }
    Float64 bottom_width = pGirder->GetBottomWidth(poi);
 
-   GraphSize size;
+   WBFL::Graphing::Size size;
    size.Dx() = Max(top_width,bottom_width);
 
    CComPtr<IRect2d> box;
@@ -305,11 +305,11 @@ void CGirderDescDebondPage::OnPaint()
    CComPtr<IPoint2d> objOrg;
    box->get_BottomCenter(&objOrg);
 
-   GraphPoint org;
+   WBFL::Graphing::Point org;
    objOrg->Location(&org.X(), &org.Y());
 
-   grlibPointMapper mapper;
-   mapper.SetMappingMode(grlibPointMapper::Isotropic);
+   WBFL::Graphing::PointMapper mapper;
+   mapper.SetMappingMode(WBFL::Graphing::PointMapper::MapMode::Isotropic);
    mapper.SetWorldExt(size);
    mapper.SetWorldOrg(org);
    mapper.SetDeviceExt(csize.cx,csize.cy);
@@ -397,7 +397,7 @@ void CGirderDescDebondPage::OnPaint()
    pWnd->ReleaseDC(pDC);
 }
 
-void CGirderDescDebondPage::DrawShape(CDC* pDC,IShape* shape,grlibPointMapper& mapper)
+void CGirderDescDebondPage::DrawShape(CDC* pDC,IShape* shape, WBFL::Graphing::PointMapper& mapper)
 {
    CComPtr<IPoint2dCollection> objPoints;
    shape->get_PolyPoints(&objPoints);
@@ -415,7 +415,7 @@ void CGirderDescDebondPage::DrawShape(CDC* pDC,IShape* shape,grlibPointMapper& m
    objPoints->get__Enum(&enumPoints);
    while ( enumPoints->Next(1,&point,nullptr) != S_FALSE )
    {
-      GraphPoint pnt;
+      WBFL::Graphing::Point pnt;
       point->Location(&pnt.X(), &pnt.Y());
       mapper.WPtoDP(pnt,&dx,&dy);
 
@@ -430,7 +430,7 @@ void CGirderDescDebondPage::DrawShape(CDC* pDC,IShape* shape,grlibPointMapper& m
    delete[] points;
 }
 
-void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper,Float64 Xadjustment)
+void CGirderDescDebondPage::DrawStrands(CDC* pDC, WBFL::Graphing::PointMapper& mapper,Float64 Xadjustment)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);

@@ -48,7 +48,6 @@
 #include <WBFLSTL.h>
 
 #include <WBFLGeometry.h>
-#include <WBFLSections.h>
 #include <WBFLGenericBridge.h>
 #include <WBFLGenericBridgeTools.h>
 
@@ -3805,7 +3804,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
       }
 
       // make sure bars are inside of girder - use shape symmetry
-      gpPoint2d testpnt;
+      WBFL::Geometry::Point2d testpnt;
       testpnt.X() = (*itl).BarSpacing * ((*itl).NumberOfBars-1)/2.;
       if ((*itl).Face==pgsTypes::BottomFace)
       {
@@ -4800,13 +4799,6 @@ void GirderLibraryEntry::MakeCopy(const GirderLibraryEntry& rOther)
    m_bCheckDebondingInWebWidthProjections = rOther.m_bCheckDebondingInWebWidthProjections;
    m_MaxDebondLengthBySpanFraction          = rOther.m_MaxDebondLengthBySpanFraction;
    m_MaxDebondLengthByHardDistance          = rOther.m_MaxDebondLengthByHardDistance;
-
-   // deep copy of strand locations
-   // use a factory since we have lots of points to create
-   CComPtr<IGeomUtil> geom_util;
-   geom_util.CoCreateInstance(CLSID_GeomUtil);
-   CComPtr<IPoint2dFactory> factory;
-   geom_util->get_Point2dFactory(&factory);
 
    m_StraightStrands = rOther.m_StraightStrands;
    m_TemporaryStrands = rOther.m_TemporaryStrands;

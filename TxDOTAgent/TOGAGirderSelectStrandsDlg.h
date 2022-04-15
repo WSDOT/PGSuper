@@ -29,9 +29,10 @@
 
 #include <PsgLib\SpecLibraryEntry.h>
 #include "TOGAStrandFillGrid.h"
-#include <GraphicsLib\GraphicsLib.h>
 #include <IFace\Bridge.h>
 #include "afxwin.h"
+
+#include <Graphing/PointMapper.h>
 
 
 class CTOGAGirderSelectStrandsDlg : public CDialog
@@ -105,9 +106,9 @@ private:
    CSize m_FirstSize;
 
 private:
-   void DrawShape(CDC* pDC,IShape* shape,grlibPointMapper& mapper);
-   void DrawStrands(CDC* pDC,grlibPointMapper& mapper);
-   StrandIndexType DrawStrand(CDC* pDC, grlibPointMapper& Mapper, Float64 x, Float64 y, StrandIndexType index, bool isFilled, ROWCOL gridRow);
+   void DrawShape(CDC* pDC,IShape* shape, WBFL::Graphing::PointMapper& mapper);
+   void DrawStrands(CDC* pDC, WBFL::Graphing::PointMapper& mapper);
+   StrandIndexType DrawStrand(CDC* pDC, WBFL::Graphing::PointMapper& Mapper, Float64 x, Float64 y, StrandIndexType index, bool isFilled, ROWCOL gridRow);
 
    void AddClickRect(CRect rect, ROWCOL nRow);
 

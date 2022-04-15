@@ -447,7 +447,7 @@ void CGirderSelectStrandsPage::OnPaint()
    CComPtr<IPoint2d> objOrg;
    shape_box->get_BottomCenter(&objOrg);
 
-   GraphPoint orgin;
+   WBFL::Graphing::Point orgin;
    objOrg->Location(&orgin.X(), &orgin.Y());
 
    // Get height and width of the area occupied by all possible strand locations
@@ -484,7 +484,7 @@ void CGirderSelectStrandsPage::OnPaint()
 
    auto strand_bounds = ComputeStrandBounds(strand_mover, absol_end_offset, absol_hp_offset);
 
-   GraphSize world_size;
+   WBFL::Graphing::Size world_size;
    world_size.Dx() = Max(top_width,bottom_width,strand_bounds.Width());
    world_size.Dy() = Max(height,strand_bounds.Height());
 
@@ -498,8 +498,8 @@ void CGirderSelectStrandsPage::OnPaint()
    // is some space between the drawing and the edge of the picture control
 
    // This mapping pushes image to bottom
-   grlibPointMapper mapper;
-   mapper.SetMappingMode(grlibPointMapper::Isotropic);
+   WBFL::Graphing::PointMapper mapper;
+   mapper.SetMappingMode(WBFL::Graphing::PointMapper::MapMode::Isotropic);
    mapper.SetWorldExt(world_size);
    mapper.SetWorldOrg(orgin);
    mapper.SetDeviceExt(client_size.cx,client_size.cy);
@@ -565,7 +565,7 @@ void CGirderSelectStrandsPage::OnPaint()
    pWnd->ReleaseDC(pDC);
 }
 
-void CGirderSelectStrandsPage::DrawShape(CDC* pDC,IShape* shape,grlibPointMapper& mapper)
+void CGirderSelectStrandsPage::DrawShape(CDC* pDC,IShape* shape, WBFL::Graphing::PointMapper& mapper)
 {
    CComPtr<IPoint2dCollection> objPoints;
    shape->get_PolyPoints(&objPoints);
@@ -583,7 +583,7 @@ void CGirderSelectStrandsPage::DrawShape(CDC* pDC,IShape* shape,grlibPointMapper
    objPoints->get__Enum(&enumPoints);
    while ( enumPoints->Next(1,&point,nullptr) != S_FALSE )
    {
-      GraphPoint pnt;
+      WBFL::Graphing::Point pnt;
       point->Location(&pnt.X(), &pnt.Y());
       mapper.WPtoDP(pnt,&dx,&dy);
 
@@ -598,7 +598,7 @@ void CGirderSelectStrandsPage::DrawShape(CDC* pDC,IShape* shape,grlibPointMapper
    delete[] points;
 }
 
-void CGirderSelectStrandsPage::DrawStrands(CDC* pDC, grlibPointMapper& Mapper, IStrandMover* strand_mover, Float64 absol_end_offset, Float64 absol_hp_offset)
+void CGirderSelectStrandsPage::DrawStrands(CDC* pDC, WBFL::Graphing::PointMapper& Mapper, IStrandMover* strand_mover, Float64 absol_end_offset, Float64 absol_hp_offset)
 {
    pDC->SetTextAlign(TA_CENTER);
    CFont font;
@@ -739,7 +739,7 @@ void CGirderSelectStrandsPage::DrawStrands(CDC* pDC, grlibPointMapper& Mapper, I
    pDC->SelectObject(pOldPen);
 }
 
-void PrintNumber(CDC* pDC, grlibPointMapper& Mapper, const GraphPoint& loc, StrandIndexType strandIdx)
+void PrintNumber(CDC* pDC, WBFL::Graphing::PointMapper& Mapper, const WBFL::Graphing::Point& loc, StrandIndexType strandIdx)
 {
    long x, y;
    Mapper.WPtoDP(loc.X(), loc.Y(), &x, &y);
@@ -753,7 +753,7 @@ void PrintNumber(CDC* pDC, grlibPointMapper& Mapper, const GraphPoint& loc, Stra
    pDC->TextOut(x, y, str);
 }
 
-StrandIndexType CGirderSelectStrandsPage::DrawStrand(CDC* pDC, grlibPointMapper& Mapper, Float64 x, Float64 y, StrandIndexType index, bool isFilled, ROWCOL gridRow)
+StrandIndexType CGirderSelectStrandsPage::DrawStrand(CDC* pDC, WBFL::Graphing::PointMapper& Mapper, Float64 x, Float64 y, StrandIndexType index, bool isFilled, ROWCOL gridRow)
 {
    CRect rect;
    Mapper.WPtoDP(x-m_Radius,y-m_Radius,&rect.left,&rect.top); 
@@ -779,7 +779,7 @@ StrandIndexType CGirderSelectStrandsPage::DrawStrand(CDC* pDC, grlibPointMapper&
    index++;
 
    if ( m_DrawNumbers )
-      PrintNumber(pDC, Mapper, GraphPoint(x,y), index);
+      PrintNumber(pDC, Mapper, WBFL::Graphing::Point(x,y), index);
 
    if (0.0 < x)
    {
@@ -804,7 +804,7 @@ StrandIndexType CGirderSelectStrandsPage::DrawStrand(CDC* pDC, grlibPointMapper&
 
       index++;
 
-      GraphPoint np(-x,y);
+      WBFL::Graphing::Point np(-x,y);
       if ( m_DrawNumbers )
          PrintNumber(pDC, Mapper, np, index);
    }
@@ -812,7 +812,7 @@ StrandIndexType CGirderSelectStrandsPage::DrawStrand(CDC* pDC, grlibPointMapper&
    return index;
 }
 
-gpRect2d CGirderSelectStrandsPage::ComputeStrandBounds(IStrandMover* strand_mover, Float64 absol_end_offset, Float64 absol_hp_offset)
+WBFL::Geometry::Rect2d CGirderSelectStrandsPage::ComputeStrandBounds(IStrandMover* strand_mover, Float64 absol_end_offset, Float64 absol_hp_offset)
 {
    Float64 xmax(0.0), ymax(0.0);
 
@@ -874,7 +874,7 @@ gpRect2d CGirderSelectStrandsPage::ComputeStrandBounds(IStrandMover* strand_move
       ymax = Max(ymax, ys);
    }
 
-   return gpRect2d(-xmax-m_Radius, 0.0, xmax+m_Radius, ymax+m_Radius);
+   return WBFL::Geometry::Rect2d(-xmax-m_Radius, 0.0, xmax+m_Radius, ymax+m_Radius);
 }
 
 void CGirderSelectStrandsPage::OnNumStrandsChanged()

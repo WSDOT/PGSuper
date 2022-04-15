@@ -439,12 +439,6 @@ bool CGirderMainSheet::ExchangeStrandData(CDataExchange* pDX)
    // get strand locations from grid and put them in library entry
    if (pDX->m_bSaveAndValidate)
    {
-      // lots of points to create - might as well be efficient
-      CComPtr<IGeomUtil> geom_util;
-      geom_util.CoCreateInstance(CLSID_GeomUtil);
-      CComPtr<IPoint2dFactory> pnt_factory;
-      geom_util->get_Point2dFactory(&pnt_factory);
-
       Float64 heightStart = m_Entry.GetBeamHeight(pgsTypes::metStart);
       Float64 heightEnd   = m_Entry.GetBeamHeight(pgsTypes::metEnd);
     

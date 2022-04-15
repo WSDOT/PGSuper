@@ -29,7 +29,7 @@
 
 #include <WBFLRCCapacity.h>
 
-#include <GraphicsLib\PointMapper.h>
+#include <Graphing/PointMapper.h>
 
 class REPORTINGCLASS CCrackedSectionChapterBuilder :
    public CPGSuperChapterBuilder
@@ -45,7 +45,7 @@ public:
 private:
    rptRcImage* CreateImage(ICrackedSectionSolution* pSolution,bool bPositiveMoment) const;
    void DrawSection(CImage& image,ICrackedSectionSolution* pSolution,bool bPositiveMoment) const;
-   void DrawSlice(IShape* pShape,CDC* pDC,grlibPointMapper& mapper) const;
+   void DrawSlice(IShape* pShape,CDC* pDC, WBFL::Graphing::PointMapper& mapper) const;
 
    // This is a list of temporary files that were created on the fly
    // Delete them in the destructor

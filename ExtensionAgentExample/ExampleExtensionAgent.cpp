@@ -103,17 +103,17 @@ void CExampleExtensionAgent::RegisterGraphs()
 {
    GET_IFACE(IGraphManager,pGraphMgr);
 
-   CTestGraphBuilder* pTestGraphBuilder = new CTestGraphBuilder;
+   std::unique_ptr<CTestGraphBuilder> pTestGraphBuilder = std::make_unique<CTestGraphBuilder>();
    pTestGraphBuilder->SetMenuBitmap(&m_bmpMenu);
-   pGraphMgr->AddGraphBuilder(pTestGraphBuilder);
+   pGraphMgr->AddGraphBuilder(std::move(pTestGraphBuilder));
 
-   CTestGraphBuilder2* pTestGraphBuilder2 = new CTestGraphBuilder2;
+   std::unique_ptr<CTestGraphBuilder2> pTestGraphBuilder2 = std::make_unique<CTestGraphBuilder2>();
    pTestGraphBuilder2->SetMenuBitmap(&m_bmpMenu);
-   pGraphMgr->AddGraphBuilder(pTestGraphBuilder2);
+   pGraphMgr->AddGraphBuilder(std::move(pTestGraphBuilder2));
 
-   CTestGraphBuilder3* pTestGraphBuilder3 = new CTestGraphBuilder3;
+   std::unique_ptr<CTestGraphBuilder3> pTestGraphBuilder3 = std::make_unique<CTestGraphBuilder3>();
    pTestGraphBuilder3->SetMenuBitmap(&m_bmpMenu);
-   pGraphMgr->AddGraphBuilder(pTestGraphBuilder3);
+   pGraphMgr->AddGraphBuilder(std::move(pTestGraphBuilder3));
 }
 
 void CExampleExtensionAgent::CreateMenus()

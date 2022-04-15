@@ -276,14 +276,14 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
    Float64 PsEnd;    // Force in straight strands (varies with location due to debonding)
    Float64 Ph;    // Force in harped strands
    Float64 Pt;    // Force in temporary strands
-   gpPoint2d ecc_harped_start; // eccentricity of harped strands at end of girder
-   gpPoint2d ecc_harped_end;  // eccentricity of harped strands at end of girder
-   gpPoint2d ecc_harped_hp1;  // eccentricity of harped strand at harping point (left)
-   gpPoint2d ecc_harped_hp2;  // eccentricity of harped strand at harping point (right)
-   gpPoint2d ecc_straight_start;  // eccentricity of straight strands (left)
-   gpPoint2d ecc_straight_end;    // eccentricity of straight strands (right)
-   gpPoint2d ecc_temporary_start; // eccentricity of temporary strands (left)
-   gpPoint2d ecc_temporary_end;   // eccentricity of temporary strands (right)
+   WBFL::Geometry::Point2d ecc_harped_start; // eccentricity of harped strands at end of girder
+   WBFL::Geometry::Point2d ecc_harped_end;  // eccentricity of harped strands at end of girder
+   WBFL::Geometry::Point2d ecc_harped_hp1;  // eccentricity of harped strand at harping point (left)
+   WBFL::Geometry::Point2d ecc_harped_hp2;  // eccentricity of harped strand at harping point (right)
+   WBFL::Geometry::Point2d ecc_straight_start;  // eccentricity of straight strands (left)
+   WBFL::Geometry::Point2d ecc_straight_end;    // eccentricity of straight strands (right)
+   WBFL::Geometry::Point2d ecc_temporary_start; // eccentricity of temporary strands (left)
+   WBFL::Geometry::Point2d ecc_temporary_end;   // eccentricity of temporary strands (right)
    Float64 hp1; // Location of left harping point
    Float64 hp2; // Location of right harping point
    Float64 Ls;  // Length of segment
@@ -7891,7 +7891,7 @@ Float64 CAnalysisAgentImp::GetStressPerStrand(IntervalIndexType intervalIdx,cons
    pgsTypes::IntervalTimeType timeType (spMode == pgsTypes::spmGross ? pgsTypes::End : pgsTypes::Start);
    bool bIncludeElasticEffects = (spMode == pgsTypes::spmGross ? true : false);
    Float64 P = pPsForce->GetPrestressForcePerStrand(poi,strandType,intervalIdx,timeType,bIncludeElasticEffects);
-   gpPoint2d ecc = pStrandGeom->GetEccentricity(intervalIdx, poi, strandType);
+   WBFL::Geometry::Point2d ecc = pStrandGeom->GetEccentricity(intervalIdx, poi, strandType);
 
    return GetStress(intervalIdx,poi,stressLocation,P, ecc.X(), ecc.Y());
 }
@@ -7950,7 +7950,7 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx, const pgs
    }
 
    pgsTypes::SectionPropertyType spType = (spMode == pgsTypes::spmGross ? pgsTypes::sptGrossNoncomposite : pgsTypes::sptTransformedNoncomposite);
-   gpPoint2d ecc = pStrandGeom->GetEccentricity(spType, bIncludeTemporaryStrands ? tsInstallationIntervalIdx : intervalIdx, poi, bIncludeTemporaryStrands, &config);
+   WBFL::Geometry::Point2d ecc = pStrandGeom->GetEccentricity(spType, bIncludeTemporaryStrands ? tsInstallationIntervalIdx : intervalIdx, poi, bIncludeTemporaryStrands, &config);
 
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 

@@ -261,7 +261,7 @@ void CTOGAGirderSelectStrandsDlg::OnPaint()
    CComPtr<IPoint2d> objOrg;
    shape_box->get_BottomCenter(&objOrg);
 
-   GraphPoint orgin;
+   WBFL::Graphing::Point orgin;
    Float64 x,y;
    objOrg->get_X(&x);
    objOrg->get_Y(&y);
@@ -282,9 +282,9 @@ void CTOGAGirderSelectStrandsDlg::OnPaint()
       ymax = Max(ymax, ys);
    }
 
-   GraphRect strand_bounds(-xmax-m_Radius, 0.0, xmax+m_Radius, ymax+m_Radius);
+   WBFL::Graphing::Rect strand_bounds(-xmax-m_Radius, 0.0, xmax+m_Radius, ymax+m_Radius);
 
-   GraphSize world_size;
+   WBFL::Graphing::Size world_size;
    world_size.Dx() = Max(bottom_width,strand_bounds.Width());
 
    world_size.Dy() = strand_bounds.Height();
@@ -296,8 +296,8 @@ void CTOGAGirderSelectStrandsDlg::OnPaint()
    // is some space between the drawing and the edge of the picture control
 
    // This mapping pushes image to bottom
-   grlibPointMapper mapper;
-   mapper.SetMappingMode(grlibPointMapper::Isotropic);
+   WBFL::Graphing::PointMapper mapper;
+   mapper.SetMappingMode(WBFL::Graphing::PointMapper::MapMode::Isotropic);
    mapper.SetWorldExt(world_size);
    mapper.SetWorldOrg(orgin);
    mapper.SetDeviceExt(client_size.cx,client_size.cy);
@@ -363,7 +363,7 @@ void CTOGAGirderSelectStrandsDlg::OnPaint()
    pWnd->ReleaseDC(pDC);
 }
 
-void CTOGAGirderSelectStrandsDlg::DrawShape(CDC* pDC,IShape* shape,grlibPointMapper& mapper)
+void CTOGAGirderSelectStrandsDlg::DrawShape(CDC* pDC,IShape* shape, WBFL::Graphing::PointMapper& mapper)
 {
    CComPtr<IPoint2dCollection> objPoints;
    shape->get_PolyPoints(&objPoints);
@@ -381,7 +381,7 @@ void CTOGAGirderSelectStrandsDlg::DrawShape(CDC* pDC,IShape* shape,grlibPointMap
    objPoints->get__Enum(&enumPoints);
    while ( enumPoints->Next(1,&point,nullptr) != S_FALSE )
    {
-      GraphPoint pnt;
+      WBFL::Graphing::Point pnt;
       point->Location(&pnt.X(), &pnt.Y());
       mapper.WPtoDP(pnt,&dx,&dy);
 
@@ -396,7 +396,7 @@ void CTOGAGirderSelectStrandsDlg::DrawShape(CDC* pDC,IShape* shape,grlibPointMap
    delete[] points;
 }
 
-void CTOGAGirderSelectStrandsDlg::DrawStrands(CDC* pDC, grlibPointMapper& Mapper)
+void CTOGAGirderSelectStrandsDlg::DrawStrands(CDC* pDC, WBFL::Graphing::PointMapper& Mapper)
 {
    pDC->SetTextAlign(TA_CENTER);
    CFont font;
@@ -474,7 +474,7 @@ void CTOGAGirderSelectStrandsDlg::DrawStrands(CDC* pDC, grlibPointMapper& Mapper
    pDC->SelectObject(pOldPen);
 }
 
-void PrintNumber(CDC* pDC, grlibPointMapper& Mapper, const GraphPoint& loc, StrandIndexType strandIdx)
+void PrintNumber(CDC* pDC, WBFL::Graphing::PointMapper& Mapper, const WBFL::Graphing::Point& loc, StrandIndexType strandIdx)
 {
    long x, y;
    Mapper.WPtoDP(loc.X(), loc.Y(), &x, &y);
@@ -488,7 +488,7 @@ void PrintNumber(CDC* pDC, grlibPointMapper& Mapper, const GraphPoint& loc, Stra
    pDC->TextOut(x, y, str);
 }
 
-StrandIndexType CTOGAGirderSelectStrandsDlg::DrawStrand(CDC* pDC, grlibPointMapper& Mapper, Float64 x, Float64 y, StrandIndexType index, bool isFilled, ROWCOL gridRow)
+StrandIndexType CTOGAGirderSelectStrandsDlg::DrawStrand(CDC* pDC, WBFL::Graphing::PointMapper& Mapper, Float64 x, Float64 y, StrandIndexType index, bool isFilled, ROWCOL gridRow)
 {
    CRect rect;
    Mapper.WPtoDP(x-m_Radius,y-m_Radius,&rect.left,&rect.top); 
@@ -514,7 +514,7 @@ StrandIndexType CTOGAGirderSelectStrandsDlg::DrawStrand(CDC* pDC, grlibPointMapp
    index++;
 
    if ( m_DrawNumbers )
-      PrintNumber(pDC, Mapper, GraphPoint(x,y), index);
+      PrintNumber(pDC, Mapper, WBFL::Graphing::Point(x,y), index);
 
    if (0.0 < x)
    {
@@ -539,7 +539,7 @@ StrandIndexType CTOGAGirderSelectStrandsDlg::DrawStrand(CDC* pDC, grlibPointMapp
 
       index++;
 
-      GraphPoint np(-x,y);
+      WBFL::Graphing::Point np(-x,y);
       if ( m_DrawNumbers )
          PrintNumber(pDC, Mapper, np, index);
    }

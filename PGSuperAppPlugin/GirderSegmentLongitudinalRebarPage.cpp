@@ -119,7 +119,7 @@ void CGirderSegmentLongitudinalRebarPage::DoDataExchange(CDataExchange* pDX)
             Float64 Lzone, height, tbf;
             pSegment->GetVariationParameters(zone,false,&Lzone,&height,&tbf);
 
-            gpPoint2d testpnt;
+            WBFL::Geometry::Point2d testpnt;
             testpnt.X() = row.BarSpacing * (row.NumberOfBars-1)/2.;
             if (row.Face == pgsTypes::TopFace)
             {

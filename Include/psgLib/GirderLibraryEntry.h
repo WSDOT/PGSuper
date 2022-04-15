@@ -40,7 +40,7 @@
 
 #include <IFace\BeamFactory.h>
 
-#include <GeometricPrimitives\GeometricPrimitives.h>
+#include <GeomModel/GeomModel.h>
 
 #include <System\SubjectT.h>
 #include <Units\sysUnits.h>

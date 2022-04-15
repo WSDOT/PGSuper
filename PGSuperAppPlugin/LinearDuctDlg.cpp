@@ -260,11 +260,11 @@ const CLinearDuctGeometry& CLinearDuctDlg::GetDuctGeometry() const
 void CLinearDuctDlg::OnSchematicButton()
 {
    auto mm = m_DrawTendons.GetMapMode();
-   mm = (mm == grlibPointMapper::Isotropic ? grlibPointMapper::Anisotropic : grlibPointMapper::Isotropic);
+   mm = (mm == WBFL::Graphing::PointMapper::MapMode::Isotropic ? WBFL::Graphing::PointMapper::MapMode::Anisotropic : WBFL::Graphing::PointMapper::MapMode::Isotropic);
    m_DrawTendons.SetMapMode(mm);
 }
 
-grlibPointMapper::MapMode CLinearDuctDlg::GetTendonControlMapMode() const
+WBFL::Graphing::PointMapper::MapMode CLinearDuctDlg::GetTendonControlMapMode() const
 {
    return m_DrawTendons.GetMapMode();
 }

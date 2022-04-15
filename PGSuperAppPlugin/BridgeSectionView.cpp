@@ -46,8 +46,6 @@
 #include <IFace\EditByUI.h>
 #include <IFace\Intervals.h>
 
-#include <GraphicsLib\GraphTool.h>
-
 #include "GirderDisplayObjectEvents.h"
 #include "TrafficBarrierDisplayObjectEvents.h"
 

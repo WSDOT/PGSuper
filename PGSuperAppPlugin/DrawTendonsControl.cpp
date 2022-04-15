@@ -50,7 +50,7 @@ CDrawTendonsControl::CDrawTendonsControl()
 {
    m_pGirder = nullptr;
    m_pPTData = nullptr;
-   m_MapMode = grlibPointMapper::Isotropic;
+   m_MapMode = WBFL::Graphing::PointMapper::MapMode::Isotropic;
    m_DuctIdx = ALL_DUCTS;
    m_bDrawAllDucts = false;
 }
@@ -75,7 +75,7 @@ void CDrawTendonsControl::CustomInit(const CGirderKey& girderKey,const CSplicedG
    m_pPTData = pPTData;
 }
 
-void CDrawTendonsControl::SetMapMode(grlibPointMapper::MapMode mm)
+void CDrawTendonsControl::SetMapMode(WBFL::Graphing::PointMapper::MapMode mm)
 {
    if (m_MapMode != mm)
    {
@@ -85,7 +85,7 @@ void CDrawTendonsControl::SetMapMode(grlibPointMapper::MapMode mm)
    }
 }
 
-grlibPointMapper::MapMode CDrawTendonsControl::GetMapMode() const
+WBFL::Graphing::PointMapper::MapMode CDrawTendonsControl::GetMapMode() const
 {
    return m_MapMode;
 }
@@ -235,13 +235,13 @@ void CDrawTendonsControl::OnPaint()
    bounding_box->get_Top(&top);
    bounding_box->get_Bottom(&bottom);
 
-   GraphRect box(left,bottom,right,top);
-   GraphSize size = box.Size();
-   GraphPoint org = box.Center();
+   WBFL::Graphing::Rect box(left,bottom,right,top);
+   WBFL::Graphing::Size size = box.Size();
+   WBFL::Graphing::Point org = box.Center();
 
    CSize sClient = rClient.Size();
 
-   grlibPointMapper mapper;
+   WBFL::Graphing::PointMapper mapper;
    mapper.SetMappingMode(m_MapMode);
    mapper.SetWorldExt(size);
    mapper.SetWorldOrg(org);
@@ -271,7 +271,7 @@ void CDrawTendonsControl::OnPaint()
       CComPtr<IPoint2d> cg;
       props->get_Centroid(&cg);
 
-      GraphPoint pnt;
+      WBFL::Graphing::Point pnt;
       cg->Location(&pnt.X(), &pnt.Y());
 
       long dx,dy;
@@ -299,7 +299,7 @@ void CDrawTendonsControl::OnPaint()
    dc.SelectObject(pOldFont);
 }
 
-void CDrawTendonsControl::DrawShape(CDC* pDC,grlibPointMapper& mapper,IShape* pShape)
+void CDrawTendonsControl::DrawShape(CDC* pDC, WBFL::Graphing::PointMapper& mapper,IShape* pShape)
 {
    CComPtr<IPoint2dCollection> polypoints;
    pShape->get_PolyPoints(&polypoints);
@@ -307,7 +307,7 @@ void CDrawTendonsControl::DrawShape(CDC* pDC,grlibPointMapper& mapper,IShape* pS
    Draw(pDC,mapper,polypoints,TRUE);
 }
 
-void CDrawTendonsControl::Draw(CDC* pDC,grlibPointMapper& mapper,IPoint2dCollection* pPolyPoints,BOOL bPolygon)
+void CDrawTendonsControl::Draw(CDC* pDC, WBFL::Graphing::PointMapper& mapper,IPoint2dCollection* pPolyPoints,BOOL bPolygon)
 {
    CollectionIndexType nPoints;
    pPolyPoints->get_Count(&nPoints);
@@ -325,7 +325,7 @@ void CDrawTendonsControl::Draw(CDC* pDC,grlibPointMapper& mapper,IPoint2dCollect
    for ( CollectionIndexType i = 0; i < nPoints; i++ )
    {
       LONG dx,dy;
-      GraphPoint point;
+      WBFL::Graphing::Point point;
       points[i]->Location(&point.X(), &point.Y());
       mapper.WPtoDP(point,&dx,&dy);
       dev_points[i] = CPoint(dx,dy);

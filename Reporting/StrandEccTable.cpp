@@ -419,7 +419,7 @@ rptRcTable* CStrandEccTable::Build_XY(IBroker* pBroker, const CSegmentKey& segme
 
       if ( 0 < Ns )
       {
-         gpPoint2d ecc = pStrandGeom->GetEccentricity(spType, intervalIdx, poi, pgsTypes::Straight);
+         WBFL::Geometry::Point2d ecc = pStrandGeom->GetEccentricity(spType, intervalIdx, poi, pgsTypes::Straight);
          (*p_table)(row, col++) << eccentricity.SetValue(ecc.X());
          (*p_table)(row, col++) << eccentricity.SetValue(ecc.Y());
       }
@@ -431,7 +431,7 @@ rptRcTable* CStrandEccTable::Build_XY(IBroker* pBroker, const CSegmentKey& segme
 
       if ( 0 < Nh )
       {
-         gpPoint2d ecc = pStrandGeom->GetEccentricity(spType, intervalIdx, poi, pgsTypes::Harped);
+         WBFL::Geometry::Point2d ecc = pStrandGeom->GetEccentricity(spType, intervalIdx, poi, pgsTypes::Harped);
          (*p_table)(row, col++) << eccentricity.SetValue(ecc.X());
          (*p_table)(row, col++) << eccentricity.SetValue(ecc.Y());
       }
@@ -445,7 +445,7 @@ rptRcTable* CStrandEccTable::Build_XY(IBroker* pBroker, const CSegmentKey& segme
       {
          if ( 0 < Nt )
          {
-            gpPoint2d ecc = pStrandGeom->GetEccentricity(spType, intervalIdx, poi, pgsTypes::Temporary);
+            WBFL::Geometry::Point2d ecc = pStrandGeom->GetEccentricity(spType, intervalIdx, poi, pgsTypes::Temporary);
             (*p_table)(row, col++) << eccentricity.SetValue(ecc.X());
             (*p_table)(row, col++) << eccentricity.SetValue(ecc.Y());
          }
@@ -455,12 +455,12 @@ rptRcTable* CStrandEccTable::Build_XY(IBroker* pBroker, const CSegmentKey& segme
             (*p_table)(row, col++) << _T("-");
          }
 
-         gpPoint2d ecc = pStrandGeom->GetEccentricity(spType, intervalIdx, poi, true /*include temporary strands*/);
+         WBFL::Geometry::Point2d ecc = pStrandGeom->GetEccentricity(spType, intervalIdx, poi, true /*include temporary strands*/);
          (*p_table)(row, col++) << eccentricity.SetValue(ecc.X());
          (*p_table)(row, col++) << eccentricity.SetValue(ecc.Y());
       }
 
-      gpPoint2d ecc = pStrandGeom->GetEccentricity(spType, intervalIdx, poi, false/*exclude temporary strands*/);
+      WBFL::Geometry::Point2d ecc = pStrandGeom->GetEccentricity(spType, intervalIdx, poi, false/*exclude temporary strands*/);
       (*p_table)(row, col++) << eccentricity.SetValue(ecc.X());
       (*p_table)(row, col++) << eccentricity.SetValue(ecc.Y());
 

@@ -45,7 +45,7 @@ m_MinCutoffLength(0.0)
 }
 
 
-pgsLongRebarInstance::pgsLongRebarInstance(const gpPoint2d& rloc, 
+pgsLongRebarInstance::pgsLongRebarInstance(const WBFL::Geometry::Point2d& rloc,
                                            const matRebar* pRebar, 
                                            Float64 minCutoffLength):
 m_Location(rloc),
@@ -77,12 +77,12 @@ pgsLongRebarInstance& pgsLongRebarInstance::operator= (const pgsLongRebarInstanc
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 
-gpPoint2d pgsLongRebarInstance::GetLocation() const
+const WBFL::Geometry::Point2d& pgsLongRebarInstance::GetLocation() const
 {
    return m_Location;
 }
 
-void pgsLongRebarInstance::SetLocation(const gpPoint2d& loc)
+void pgsLongRebarInstance::SetLocation(const WBFL::Geometry::Point2d& loc)
 {
    m_Location = loc;
 }

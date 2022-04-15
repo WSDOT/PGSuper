@@ -17723,7 +17723,7 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPoint
       }
    }
 
-   std::array<gpPoint2d, 3> ecc
+   std::array<WBFL::Geometry::Point2d, 3> ecc
    {
       pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Straight),
       pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Harped),
@@ -17735,7 +17735,7 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPoint
 
    // Compute the resultant eccentricity of the prestress force (this is different than the geometric eccentricity of the strand area)
    Float64 Pps = std::accumulate(std::cbegin(P), std::cend(P), 0.0);
-   gpPoint2d E = IsZero(Pps) ? gpPoint2d(0,0) : std::inner_product(std::cbegin(ecc),std::cend(ecc),std::cbegin(P),gpPoint2d(0,0))/Pps;
+   WBFL::Geometry::Point2d E = IsZero(Pps) ? WBFL::Geometry::Point2d(0,0) : std::inner_product(std::cbegin(ecc),std::cend(ecc),std::cbegin(P), WBFL::Geometry::Point2d(0,0))/Pps;
 
    *pfTop = GetStress(releaseIntervalIdx,poi,topLoc,Pps,E.X(), E.Y());
    *pfBot = GetStress(releaseIntervalIdx,poi,botLoc,Pps,E.X(), E.Y());

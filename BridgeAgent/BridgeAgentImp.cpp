@@ -63,7 +63,6 @@
 #include <Math\MathUtils.h>
 #include <System\Flags.h>
 #include <Material\Material.h>
-#include <GeomModel\ShapeUtils.h>
 
 #include <IFace\DrawBridgeSettings.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -2944,7 +2943,7 @@ void CBridgeAgentImp::ResolveStrandRowElevations(const CSegmentKey& segmentKey,c
       {
          // adjust to be measured from top of girder
          CComPtr<IShape> shape;
-         segment->get_PrimaryShape(Xhp[i], sbLeft, cstGirder, &shape);
+         segment->get_GirderShape(Xhp[i], sbLeft, cstGirder, &shape);
 
          // bounding boxes of the section (height of section is height of bounding box)
          CComPtr<IRect2d> box;
@@ -3033,10 +3032,10 @@ void CBridgeAgentImp::CreateStrandModel(IPrecastGirder* girder,ISuperstructureMe
       strandGridModel->GetHarpingPointLocations(&XsHp1Loc, &XsHp2Loc);
 
       CComPtr<IShape> startShape, hp1Shape, hp2Shape, endShape;
-      segment->get_PrimaryShape(XsStart, sbRight, cstGirder, &startShape);
-      segment->get_PrimaryShape(XsHp1Loc, sbLeft, cstGirder, &hp1Shape);
-      segment->get_PrimaryShape(XsHp2Loc, sbLeft, cstGirder, &hp2Shape);
-      segment->get_PrimaryShape(XsEnd, sbLeft, cstGirder, &endShape);
+      segment->get_GirderShape(XsStart, sbRight, cstGirder, &startShape);
+      segment->get_GirderShape(XsHp1Loc, sbLeft, cstGirder, &hp1Shape);
+      segment->get_GirderShape(XsHp2Loc, sbLeft, cstGirder, &hp2Shape);
+      segment->get_GirderShape(XsEnd, sbLeft, cstGirder, &endShape);
 
       // bounding boxes of the section (height of section is height of bounding box)
       CComPtr<IRect2d> bbStart, bbHP1, bbHP2, bbEnd;
@@ -7495,7 +7494,7 @@ bool CBridgeAgentImp::HasAsymmetricPrestressing() const
                const pgsPointOfInterest& poi = vPoi.front();
 
                IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(segmentKey);
-               gpPoint2d cg = GetStrandCG(releaseIntervalIdx, poi, true /*include temp strands*/);
+               auto cg = GetStrandCG(releaseIntervalIdx, poi, true /*include temp strands*/);
                if (!IsZero(cg.X()))
                {
                   // we found one case of asymmetry so return
@@ -8328,11 +8327,11 @@ Float64 CBridgeAgentImp::GetGirderOffset(GirderIndexType gdrIdx,PierIndexType pi
    xform.CoCreateInstance(CLSID_CoordinateXform2d);
    if (offsetMeasureDatum == pgsTypes::omtAlignment )
    {
-      xform->putref_NewOrigin(pntAlignment);
+      xform->put_NewOrigin(pntAlignment);
    }
    else
    {
-      xform->putref_NewOrigin(pntBridge);
+      xform->put_NewOrigin(pntBridge);
    }
 
    xform->put_RotationAngle(dir);
@@ -15700,7 +15699,7 @@ const CHorizontalInterfaceZoneData* CBridgeAgentImp::GetHorizInterfaceShearZoneD
 /////////////////////////////////////////////////////////////////////////
 // IStrandGeometry
 //
-gpPoint2d CBridgeAgentImp::GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig) const
+WBFL::Geometry::Point2d CBridgeAgentImp::GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig) const
 {
    // computes the geometric centroid multiple strand groups (permanent or all strands)
    std::array<Float64, 3> strand_area
@@ -15710,20 +15709,20 @@ gpPoint2d CBridgeAgentImp::GetStrandCG(IntervalIndexType intervalIdx, const pgsP
       bIncTemp ? GetStrandArea(poi,intervalIdx,pgsTypes::Temporary,pConfig) : 0.0
    };
 
-   std::array<gpPoint2d, 3> strand_cg
+   std::array<WBFL::Geometry::Point2d, 3> strand_cg
    {
       GetStrandCG(intervalIdx, poi, pgsTypes::Straight, pConfig),
       GetStrandCG(intervalIdx, poi, pgsTypes::Harped, pConfig),
-      bIncTemp ? GetStrandCG(intervalIdx, poi, pgsTypes::Temporary, pConfig) : gpPoint2d(0,0)
+      bIncTemp ? GetStrandCG(intervalIdx, poi, pgsTypes::Temporary, pConfig) : WBFL::Geometry::Point2d(0,0)
    };
 
    // cg = Sum(strand_cg * strand_area)/Sum(strand_area);
    Float64 A = std::accumulate(strand_area.begin(), strand_area.end(), 0.0);
-   gpPoint2d cg = IsZero(A) ? gpPoint2d(0,0) : std::inner_product(strand_cg.begin(), strand_cg.end(), strand_area.begin(), gpPoint2d(0, 0)) / A;
+   WBFL::Geometry::Point2d cg = IsZero(A) ? WBFL::Geometry::Point2d(0,0) : std::inner_product(strand_cg.begin(), strand_cg.end(), strand_area.begin(), WBFL::Geometry::Point2d(0, 0)) / A;
    return cg;
 }
 
-gpPoint2d CBridgeAgentImp::GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig) const
+WBFL::Geometry::Point2d CBridgeAgentImp::GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig) const
 {
    // this method computes the CG for a particular strand type... for a combined type like permanent, call the other version of this method excluding temporary strands
    if(strandType == pgsTypes::Permanent)
@@ -15731,7 +15730,7 @@ gpPoint2d CBridgeAgentImp::GetStrandCG(IntervalIndexType intervalIdx, const pgsP
 
    VALIDATE(GIRDER);
 
-   gpPoint2d cg;
+   WBFL::Geometry::Point2d cg;
 
    // If the strands are off the segment, not yet installed, or been removed (in the case of temporary strands), they aren't
    // available so we'll use (0,0) as a default CG.
@@ -15829,26 +15828,26 @@ gpPoint2d CBridgeAgentImp::GetStrandCG(IntervalIndexType intervalIdx, const pgsP
    return cg;
 }
 
-gpPoint2d CBridgeAgentImp::GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig) const
+WBFL::Geometry::Point2d CBridgeAgentImp::GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig) const
 {
    pgsTypes::SectionPropertyType spType = (GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);
    return GetEccentricity(spType, intervalIdx, poi, bIncTemp, pConfig);
 }
 
-gpPoint2d CBridgeAgentImp::GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig) const
+WBFL::Geometry::Point2d CBridgeAgentImp::GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig) const
 {
    pgsTypes::SectionPropertyType spType = (GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);
    return GetEccentricity(spType, intervalIdx, poi, strandType, pConfig);
 }
 
-gpPoint2d CBridgeAgentImp::GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig) const
+WBFL::Geometry::Point2d CBridgeAgentImp::GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig) const
 {
    // computes the geometric eccentricity multiple strand groups (permanent or all strands)
-   std::array<gpPoint2d, 3> ecc
+   std::array<WBFL::Geometry::Point2d, 3> ecc
    {
       GetEccentricity(spType, intervalIdx, poi, pgsTypes::Straight, pConfig),
       GetEccentricity(spType, intervalIdx, poi, pgsTypes::Harped,   pConfig),
-      bIncTemp ? GetEccentricity(spType, intervalIdx, poi, pgsTypes::Temporary, pConfig) : gpPoint2d(0,0)
+      bIncTemp ? GetEccentricity(spType, intervalIdx, poi, pgsTypes::Temporary, pConfig) : WBFL::Geometry::Point2d(0,0)
    };
 
    std::array<Float64, 3> Aps
@@ -15859,24 +15858,24 @@ gpPoint2d CBridgeAgentImp::GetEccentricity(pgsTypes::SectionPropertyType spType,
    };
 
    Float64 A = std::accumulate(Aps.begin(), Aps.end(), 0.0);
-   gpPoint2d e = IsZero(A) ? gpPoint2d(0, 0) : std::inner_product(ecc.begin(), ecc.end(), Aps.begin(), gpPoint2d(0,0)) / A;
+   WBFL::Geometry::Point2d e = IsZero(A) ? WBFL::Geometry::Point2d(0, 0) : std::inner_product(ecc.begin(), ecc.end(), Aps.begin(), WBFL::Geometry::Point2d(0,0)) / A;
    return e;
 }
 
-gpPoint2d CBridgeAgentImp::GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig) const
+WBFL::Geometry::Point2d CBridgeAgentImp::GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig) const
 {
    // this method computes the eccentricity for a particular strand type... for a combined type like permanent, call the other version of this method excluding temporary strands
    if (strandType == pgsTypes::Permanent)
       return GetEccentricity(spType, intervalIdx, poi, false/*exclude temporary strands*/, pConfig);
 
-   gpPoint2d ecc(0, 0);
+   WBFL::Geometry::Point2d ecc(0, 0);
    if (!AreStrandsEngaged(intervalIdx,poi,strandType,pConfig))
    {
       // not strands, no eccentricity
       return ecc;
    }
 
-   gpPoint2d cg = GetStrandCG(intervalIdx, poi, strandType, pConfig);
+   auto cg = GetStrandCG(intervalIdx, poi, strandType, pConfig);
 
    const SectProp& props = GetSectionProperties(intervalIdx, poi, spType);
    Float64 Yt;
@@ -21466,9 +21465,9 @@ pgsTypes::HaunchAnalysisSectionPropertiesType CBridgeAgentImp::GetHaunchAnalysis
    }
 }
 
-std::vector<gpPoint2d> CBridgeAgentImp::GetStressPoints(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig) const
+std::vector<WBFL::Geometry::Point2d> CBridgeAgentImp::GetStressPoints(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig) const
 {
-   std::vector<gpPoint2d> vPoints;
+   std::vector<WBFL::Geometry::Point2d> vPoints;
 
    bool bIsCompositeDeck = IsCompositeDeck();
    if (IsDeckStressLocation(location))
@@ -27127,7 +27126,7 @@ void CBridgeAgentImp::ConfigureSegmentStabilityModel(const CSegmentKey& segmentK
    Float64 Wbot1 = GetBottomWidth(poi1);
 
    pgsTypes::SectionPropertyType sectPropType = GetSectionPropertiesType();
-   gpPoint2d pntTL1, pntTR1, pntBL1, pntBR1;
+   WBFL::Stability::Point pntTL1, pntTR1, pntBL1, pntBR1;
    SectProp props = GetSectionProperties(intervalIdx, poi1, sectPropType);
    CComQIPtr<ICompositeSectionEx> compSection(props.Section);
    CComPtr<ICompositeSectionItemEx> item;
@@ -27226,7 +27225,7 @@ void CBridgeAgentImp::ConfigureSegmentStabilityModel(const CSegmentKey& segmentK
             bottomPoints->get_Item(0, &cpntBL);
             bottomPoints->get_Item(nPoints - 1, &cpntBR);
 
-            gpPoint2d pntTL2, pntTR2, pntBL2, pntBR2;
+            WBFL::Stability::Point pntTL2, pntTR2, pntBL2, pntBR2;
             cpntTL->Location(&pntTL2.X(), &pntTL2.Y());
             cpntTR->Location(&pntTR2.X(), &pntTR2.Y());
             cpntBL->Location(&pntBL2.X(), &pntBL2.Y());
@@ -29581,7 +29580,7 @@ void CBridgeAgentImp::GetSegmentDuctPoint(const pgsPointOfInterest& poi, const C
    {
       CComPtr<ISuperstructureMemberSegment> pSSMbrSegment;
       GetSegment(segmentKey, &pSSMbrSegment);
-      pSSMbrSegment->get_PrimaryShape(z, sbRight, cstGirder, &shape);
+      pSSMbrSegment->get_GirderShape(z, sbRight, cstGirder, &shape);
    }
 
    CComQIPtr<IGirderSection> section(shape);
@@ -31629,7 +31628,7 @@ Float64 CBridgeAgentImp::ComputeY(IntervalIndexType intervalIdx,const pgsPointOf
    SectionBias sectionBias = GetSectionBias(poi);
 
    CComPtr<IShape> shape;
-   segment->get_PrimaryShape(Xpoi,sectionBias, cstGirder, &shape);
+   segment->get_GirderShape(Xpoi,sectionBias, cstGirder, &shape);
 
    Float64 Y;
    switch (location)
@@ -31757,7 +31756,7 @@ HRESULT CBridgeAgentImp::GetGirderSection(const pgsPointOfInterest& poi,IGirderS
       Xs = ::ForceIntoRange(0.0, Xs, Ls);
 
       CComPtr<IShape> girder_shape;
-      segment->get_PrimaryShape(Xs, sectionBias, cstGirder, &girder_shape);
+      segment->get_GirderShape(Xs, sectionBias, cstGirder, &girder_shape);
 
       CComQIPtr<IGirderSection> section(girder_shape);
       section.CopyTo(gdrSection);
@@ -33470,7 +33469,7 @@ void CBridgeAgentImp::GetSegmentShapeDirect(const pgsPointOfInterest& poi,IShape
 
    SectionBias sectionBias = GetSectionBias(poi);
    Float64 Xs = poi.GetDistFromStart();
-   segment->get_PrimaryShape(Xs,sectionBias,cstGirder,ppShape);
+   segment->get_GirderShape(Xs,sectionBias,cstGirder,ppShape);
 }
 
 BarSize CBridgeAgentImp::GetBarSize(matRebar::Size size) const
@@ -34554,7 +34553,7 @@ void CBridgeAgentImp::CreateParabolicTendon(const CSegmentKey& segmentKey, DuctI
    // dig into the segment object to get the number of webs
    Float64 Xs = 0;
    CComPtr<IShape> shape;
-   pSSMbrSegment->get_PrimaryShape(Xs, sbRight, cstGirder, &shape);
+   pSSMbrSegment->get_GirderShape(Xs, sbRight, cstGirder, &shape);
 
    CComQIPtr<IGirderSection> section(shape);
    WebIndexType nWebs;
@@ -34637,7 +34636,7 @@ void CBridgeAgentImp::CreateLinearTendon(const CSegmentKey& segmentKey, DuctInde
    // dig into the segment object to get the number of webs
    Float64 Xs = 0;
    CComPtr<IShape> shape;
-   pSSMbrSegment->get_PrimaryShape(Xs, sbRight, cstGirder, &shape);
+   pSSMbrSegment->get_GirderShape(Xs, sbRight, cstGirder, &shape);
 
    CComQIPtr<IGirderSection> section(shape);
    WebIndexType nWebs;
@@ -34814,7 +34813,7 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey, DuctInd
    // dig into the segment object to get the number of webs
    Float64 Xs = 0.0;
    CComPtr<IShape> shape;
-   segment->get_PrimaryShape(Xs,sbRight,cstGirder,&shape);
+   segment->get_GirderShape(Xs,sbRight,cstGirder,&shape);
 
    CComQIPtr<IGirderSection> section(shape);
    WebIndexType nWebs;
@@ -35305,7 +35304,7 @@ void CBridgeAgentImp::CreateLinearTendon(const CGirderKey& girderKey, DuctIndexT
    pSSMbr->get_Segment(0,&segment);
 
    CComPtr<IShape> shape;
-   segment->get_PrimaryShape(0,sbRight,cstGirder,&shape);
+   segment->get_GirderShape(0,sbRight,cstGirder,&shape);
 
    Float64 Lg = GetGirderLength(girderKey);
 
@@ -35433,7 +35432,7 @@ void CBridgeAgentImp::CreateOffsetTendon(const CGirderKey& girderKey, DuctIndexT
    pSSMbr->get_Segment(0,&segment);
 
    CComPtr<IShape> shape;
-   segment->get_PrimaryShape(0,sbRight,cstGirder,&shape);
+   segment->get_GirderShape(0,sbRight,cstGirder,&shape);
 
    CComQIPtr<IGirderSection> section(shape);
    WebIndexType nWebs;

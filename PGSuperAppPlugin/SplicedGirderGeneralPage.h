@@ -51,7 +51,7 @@ public:
    const matPsStrand* GetStrand();
    pgsTypes::StrandInstallationType GetInstallationType();
 
-   grlibPointMapper::MapMode GetTendonControlMapMode() const;
+   WBFL::Graphing::PointMapper::MapMode GetTendonControlMapMode() const;
 
    CSplicedGirderData* GetGirder();
 

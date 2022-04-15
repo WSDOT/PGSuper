@@ -493,8 +493,8 @@ void CMomentCapacityChapterBuilder::DrawSection(CImage& image,IMomentCapacitySol
 
    // set up coordinate mapping
    Float64 mirror_factor = (bPositiveMoment ? 1 : -1); // if neg moment, mirror x and y (so the result is right side up)
-   grlibPointMapper mapper;
-   mapper.SetMappingMode(grlibPointMapper::Isotropic);
+   WBFL::Graphing::PointMapper mapper;
+   mapper.SetMappingMode(WBFL::Graphing::PointMapper::MapMode::Isotropic);
    mapper.SetWorldExt(mirror_factor*width_scale*wx,mirror_factor*wy);
 
    Float64 orgY;
@@ -741,7 +741,7 @@ void CMomentCapacityChapterBuilder::DrawSection(CImage& image,IMomentCapacitySol
    image.ReleaseDC();
 }
 
-void CMomentCapacityChapterBuilder::DrawSlice(IShape* pShape,CDC* pDC,grlibPointMapper& mapper) const
+void CMomentCapacityChapterBuilder::DrawSlice(IShape* pShape,CDC* pDC, WBFL::Graphing::PointMapper& mapper) const
 {
    CComPtr<IPoint2dCollection> objPoints;
    pShape->get_PolyPoints(&objPoints);

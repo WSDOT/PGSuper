@@ -206,7 +206,7 @@ CEffectOfPostTensionedTemporaryStrandsTable* CEffectOfPostTensionedTemporaryStra
       Float64 Iyy = pSectProp->GetIyy(releaseIntervalIdx, poi);
       Float64 Ixy = pSectProp->GetIxy(releaseIntervalIdx, poi);
 
-      gpPoint2d ecc = pStrandGeom->GetEccentricity(tsInstallIntervalIdx, pgsPointOfInterest(segmentKey, 0), pgsTypes::Temporary);
+      auto ecc = pStrandGeom->GetEccentricity(tsInstallIntervalIdx, pgsPointOfInterest(segmentKey, 0), pgsTypes::Temporary);
 
       if (spMode == pgsTypes::spmGross)
       {

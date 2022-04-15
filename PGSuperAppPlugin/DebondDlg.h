@@ -32,8 +32,8 @@
 #include "resource.h"
 #include "DebondGrid.h"
 
-#include <GraphicsLib\GraphicsLib.h>
 #include <WBFLTools.h>
+#include <Graphing/PointMapper.h>
 
 class CGirderDescDlg;
 
@@ -79,8 +79,8 @@ protected:
 
    StrandIndexType GetStrandCount();
    StrandIndexType GetNumPermanentStrands();
-   void DrawShape(CDC* pDC,IShape* shape,grlibPointMapper& mapper);
-   void DrawStrands(CDC* pDC,grlibPointMapper& mapper,Float64 Xadjustment);
+   void DrawShape(CDC* pDC,IShape* shape, WBFL::Graphing::PointMapper& mapper);
+   void DrawStrands(CDC* pDC, WBFL::Graphing::PointMapper& mapper,Float64 Xadjustment);
 
 
 	// Generated message map functions

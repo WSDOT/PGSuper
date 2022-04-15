@@ -23,7 +23,7 @@
 #pragma once
 
 #include <PgsExt\PrecastSegmentData.h>
-#include <GraphicsLib\PointMapper.h>
+#include <Graphing/PointMapper.h>
 
 
 // CDrawStrandControl
@@ -61,10 +61,10 @@ protected:
    CComPtr<IPoint2dCollection> m_BottomFlangeProfile; // top of bottom flange line
 
    void CreateSegmentProfiles(IShape** ppShape,IPoint2dCollection** ppPoints);
-   void DrawShape(CDC* pDC,grlibPointMapper& mapper,IShape* pShape);
-   void Draw(CDC* pDC,grlibPointMapper& mapper,IPoint2dCollection* pPolyPoints,BOOL bPolygon);
-   void DrawStrands(CDC* pDC, grlibPointMapper& leftMapper, grlibPointMapper& centerMapper, grlibPointMapper& rightMapper);
-   void DrawTendons(CDC* pDC, grlibPointMapper& leftMapper, grlibPointMapper& centerMapper, grlibPointMapper& rightMapper);
+   void DrawShape(CDC* pDC, WBFL::Graphing::PointMapper& mapper,IShape* pShape);
+   void Draw(CDC* pDC, WBFL::Graphing::PointMapper& mapper,IPoint2dCollection* pPolyPoints,BOOL bPolygon);
+   void DrawStrands(CDC* pDC, WBFL::Graphing::PointMapper& leftMapper, WBFL::Graphing::PointMapper& centerMapper, WBFL::Graphing::PointMapper& rightMapper);
+   void DrawTendons(CDC* pDC, WBFL::Graphing::PointMapper& leftMapper, WBFL::Graphing::PointMapper& centerMapper, WBFL::Graphing::PointMapper& rightMapper);
 };
 
 

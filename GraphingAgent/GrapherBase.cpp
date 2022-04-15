@@ -29,14 +29,14 @@
 #include <IFace\Project.h>
 
 // Graph Builders
-#include <Graphing\AnalysisResultsGraphBuilder.h>
-#include <Graphing\SegmentAnalysisResultsGraphBuilder.h>
-#include <Graphing\EffectivePrestressGraphBuilder.h>
-#include <Graphing\StabilityGraphBuilder.h>
-#include <Graphing\StressHistoryGraphBuilder.h>
-#include <Graphing\GirderPropertiesGraphBuilder.h>
-#include <Graphing\ConcretePropertyGraphBuilder.h>
-#include <Graphing\DeflectionHistoryGraphBuilder.h>
+#include <Graphs\AnalysisResultsGraphBuilder.h>
+#include <Graphs\SegmentAnalysisResultsGraphBuilder.h>
+#include <Graphs\EffectivePrestressGraphBuilder.h>
+#include <Graphs\StabilityGraphBuilder.h>
+#include <Graphs\StressHistoryGraphBuilder.h>
+#include <Graphs\GirderPropertiesGraphBuilder.h>
+#include <Graphs\ConcretePropertyGraphBuilder.h>
+#include <Graphs\DeflectionHistoryGraphBuilder.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -51,14 +51,14 @@ void CGrapherBase::InitCommonGraphBuilders()
    pGraphMgr->SortByName(false); // don't sort alphabetically
 
    // add the graphs to the graph manager in near alphabetical order
-   pGraphMgr->AddGraphBuilder(new CSegmentAnalysisResultsGraphBuilder); // Analysis Results - Before Erection
-   pGraphMgr->AddGraphBuilder(new CAnalysisResultsGraphBuilder); // Analysis Results - After Erection
-   pGraphMgr->AddGraphBuilder(new CConcretePropertyGraphBuilder);
-   pGraphMgr->AddGraphBuilder(new CDeflectionHistoryGraphBuilder);
-   pGraphMgr->AddGraphBuilder(new CEffectivePrestressGraphBuilder);
-   pGraphMgr->AddGraphBuilder(new CGirderPropertiesGraphBuilder);
-   pGraphMgr->AddGraphBuilder(new CStabilityGraphBuilder);
-   pGraphMgr->AddGraphBuilder(new CStressHistoryGraphBuilder);
+   pGraphMgr->AddGraphBuilder(std::move(std::make_unique<CSegmentAnalysisResultsGraphBuilder>())); // Analysis Results - Before Erection
+   pGraphMgr->AddGraphBuilder(std::move(std::make_unique<CAnalysisResultsGraphBuilder>())); // Analysis Results - After Erection
+   pGraphMgr->AddGraphBuilder(std::move(std::make_unique<CConcretePropertyGraphBuilder>()));
+   pGraphMgr->AddGraphBuilder(std::move(std::make_unique<CDeflectionHistoryGraphBuilder>()));
+   pGraphMgr->AddGraphBuilder(std::move(std::make_unique<CEffectivePrestressGraphBuilder>()));
+   pGraphMgr->AddGraphBuilder(std::move(std::make_unique<CGirderPropertiesGraphBuilder>()));
+   pGraphMgr->AddGraphBuilder(std::move(std::make_unique<CStabilityGraphBuilder>()));
+   pGraphMgr->AddGraphBuilder(std::move(std::make_unique<CStressHistoryGraphBuilder>()));
 }
 
 STDMETHODIMP CGrapherBase::SetBroker(IBroker* pBroker)

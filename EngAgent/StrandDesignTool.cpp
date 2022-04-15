@@ -4979,7 +4979,7 @@ std::vector<DebondLevelType> pgsStrandDesignTool::ComputeDebondsForDemand(const 
       Float64 Hg = pSectProp->GetHg(interval, demand.m_Poi);
 
       // Need X eccentricity for My biaxial bending. This value will not change because the design algo can only define strand layouts that are symmetric about Y
-      gpPoint2d ecc = pStrandGeom->GetEccentricity(interval, demand.m_Poi, false, &fullyBondedConfig);
+      auto ecc = pStrandGeom->GetEccentricity(interval, demand.m_Poi, false, &fullyBondedConfig);
 
       if (allowTens < demand.m_TopStress || demand.m_BottomStress < allowComp)
       {

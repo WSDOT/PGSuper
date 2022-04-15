@@ -732,7 +732,7 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
          GetRawShearCapacityDetails(limitState,intervalIdx,poi,pConfig,&scd);
 
          // dv
-         dv.AddPoint( gpPoint2d(x, scd.dv) );
+         dv.AddPoint( x, scd.dv );
          csdp.Poi = poi;
          csdp.DistFromFOS = x;
          csdp.Dv  = scd.dv;
@@ -742,8 +742,8 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
          if (scd.ShearInRange)
          {
             Float64 dvt   = 0.5*scd.dv/tan(scd.Theta);
-            dv_cos_theta.AddPoint( gpPoint2d(x, dvt) );
-            theta.AddPoint( gpPoint2d(x, scd.Theta) );
+            dv_cos_theta.AddPoint( x, dvt );
+            theta.AddPoint( x, scd.Theta );
 
             csdp.InRange          = true;
             csdp.Theta            = scd.Theta;
@@ -761,7 +761,7 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
 
          // intercept functions make a 45 degree angle upward from supports
          // the intercept line is the line of unity
-         unity.AddPoint( gpPoint2d(x,x) );
+         unity.AddPoint( x, x );
 
          LOG(poi.GetDistFromStart()<<_T(", ")<<csdp.Dv<<_T(", ")<<csdp.Theta<<_T(", ")<<csdp.CotanThetaDv05<<_T(", ")<<x);
       }
@@ -770,7 +770,7 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
 
       // now that the graphs are created, find the intsection of the unity line with the dv and 0.5dvcot(theta) lines
       // determine intersections
-      gpPoint2d p;
+      WBFL::Geometry::Point2d p;
       Float64 x1;
       math1dRange range = dv.GetRange();  // range is same for all
 

@@ -58,7 +58,6 @@
 #include <WBFLGeometry_i.c>
 #include <WBFLFem2d_i.c>
 #include <WBFLRCCapacity_i.c> 
-#include <WBFLSections_i.c> 
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

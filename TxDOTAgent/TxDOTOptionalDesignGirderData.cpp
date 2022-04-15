@@ -30,8 +30,7 @@
 #include <Lrfd\StrandPool.h>
 #include <WbflAtlExt.h>
 #include <limits>
-#include <GeomModel\IShape.h>
-#include <WBFLSections.h>
+#include <GeomModel/Shape.h>
 #include <WBFLGenericBridge.h>
 
 #include <IFace\BeamFactory.h>

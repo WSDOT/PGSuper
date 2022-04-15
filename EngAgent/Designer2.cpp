@@ -2433,12 +2433,12 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	               IndexType controllingTopStressPointIdx;
 	               pSectProps->GetStressCoefficients(task.intervalIdx, poi, pgsTypes::TopGirder, nullptr, &Ca, &Cbx, &Cby, &controllingTopStressPointIdx);
 	               ATLASSERT(controllingTopStressPointIdx != INVALID_INDEX);
-	               std::vector<gpPoint2d> vTopStressPoints = pSectProps->GetStressPoints(task.intervalIdx, poi, pgsTypes::TopGirder);
+	               auto vTopStressPoints = pSectProps->GetStressPoints(task.intervalIdx, poi, pgsTypes::TopGirder);
 	
 	               IndexType controllingBottomStressPointIdx;
 	               pSectProps->GetStressCoefficients(task.intervalIdx, poi, pgsTypes::BottomGirder, nullptr, &Ca, &Cbx, &Cby, &controllingBottomStressPointIdx);
 	               ATLASSERT(controllingBottomStressPointIdx != INVALID_INDEX);
-	               std::vector<gpPoint2d> vBottomStressPoints = pSectProps->GetStressPoints(task.intervalIdx, poi, pgsTypes::BottomGirder);
+	               auto vBottomStressPoints = pSectProps->GetStressPoints(task.intervalIdx, poi, pgsTypes::BottomGirder);
 
 	               bool bBiaxialStresses = (vTopStressPoints.size() == 1 && vBottomStressPoints.size() == 1 ? false : true);
 	
@@ -2447,7 +2447,7 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	                  // one stress points means we have a symmetric section and the top center point is the stress point
 	                  // make two stress points by spreading them appart in the X direction
 	                  Float64 W = pGirder->GetTopWidth(poi);
-	                  gpPoint2d pntTop = vTopStressPoints.front();
+	                  auto pntTop = vTopStressPoints.front();
 	                  altTensionRequirements.pntTopLeft.Move(pntTop.X() - W/2, pntTop.Y(), fTop);
 	                  altTensionRequirements.pntTopRight.Move(pntTop.X() + W/2, pntTop.Y(), fTop);
 	               }
@@ -2455,8 +2455,8 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	               {
 	                  ATLASSERT(2 <= vTopStressPoints.size());
 	                  IndexType otherIdx = (controllingTopStressPointIdx == 0 ? 1 : 0); // index of a different stress point
-	                  gpPoint2d pntTop = vTopStressPoints[controllingTopStressPointIdx]; // location of controlling stress point (this is where fTop occurs)
-	                  gpPoint2d pntTop2 = vTopStressPoints[otherIdx]; // location of a different stress point
+	                  auto pntTop = vTopStressPoints[controllingTopStressPointIdx]; // location of controlling stress point (this is where fTop occurs)
+                     auto pntTop2 = vTopStressPoints[otherIdx]; // location of a different stress point
 	                  // stress at a point (x,y)
 	                  // let D = (IxxIyy - Ixy^2)
 	                  // f = [(MyIxx + MxIxy)x - (MxIyy + MyIxy)y]/D
@@ -2477,7 +2477,7 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	               if (vBottomStressPoints.size() == 1)
 	               {
 	                  Float64 W = pGirder->GetBottomWidth(poi);
-	                  gpPoint2d pntBottom = vBottomStressPoints.front();
+                     auto pntBottom = vBottomStressPoints.front();
 	                  altTensionRequirements.pntBottomLeft.Move(pntBottom.X() - W/2, pntBottom.Y(), fBot);
 	                  altTensionRequirements.pntBottomRight.Move(pntBottom.X() + W/2, pntBottom.Y(), fBot);
 	               }
@@ -2485,8 +2485,8 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	               {
 	                  ATLASSERT(2 <= vBottomStressPoints.size());
 	                  IndexType otherIdx = (controllingTopStressPointIdx == 0 ? 1 : 0); // index of a different stress point
-	                  gpPoint2d pntBot = vBottomStressPoints[controllingTopStressPointIdx]; // location of controlling stress point (this is where fTop occurs)
-	                  gpPoint2d pntBot2 = vBottomStressPoints[otherIdx]; // location of a different stress point
+                     auto pntBot = vBottomStressPoints[controllingTopStressPointIdx]; // location of controlling stress point (this is where fTop occurs)
+                     auto pntBot2 = vBottomStressPoints[otherIdx]; // location of a different stress point
 	                  // stress at a point (x,y)
 	                  // let D = (IxxIyy - Ixy^2)
 	                  // f = [(MyIxx + MxIxy)x - (MxIyy + MyIxy)y]/D
@@ -2533,12 +2533,12 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	               IndexType controllingTopStressPointIdx;
 	               pSectProps->GetStressCoefficients(task.intervalIdx, poi, pgsTypes::TopGirder, nullptr, &Ca, &Cbx, &Cby, &controllingTopStressPointIdx);
 	               ATLASSERT(controllingTopStressPointIdx != INVALID_INDEX);
-	               std::vector<gpPoint2d> vTopStressPoints = pSectProps->GetStressPoints(task.intervalIdx, poi, pgsTypes::TopGirder);
+                  auto vTopStressPoints = pSectProps->GetStressPoints(task.intervalIdx, poi, pgsTypes::TopGirder);
 	
 	               IndexType controllingBottomStressPointIdx;
 	               pSectProps->GetStressCoefficients(task.intervalIdx, poi, pgsTypes::BottomGirder, nullptr, &Ca, &Cbx, &Cby, &controllingBottomStressPointIdx);
 	               ATLASSERT(controllingBottomStressPointIdx != INVALID_INDEX);
-	               std::vector<gpPoint2d> vBottomStressPoints = pSectProps->GetStressPoints(task.intervalIdx, poi, pgsTypes::BottomGirder);
+                  auto vBottomStressPoints = pSectProps->GetStressPoints(task.intervalIdx, poi, pgsTypes::BottomGirder);
 	
 	
 	               bool bBiaxialStresses = (vTopStressPoints.size() == 1 && vBottomStressPoints.size() == 1 ? false : true);
@@ -2548,7 +2548,7 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	                  // one stress points means we have a symmetric section and the top center point is the stress point
 	                  // make two stress points by spreading them appart in the X direction
 	                  Float64 W = pGirder->GetTopWidth(poi);
-	                  gpPoint2d pntTop = vTopStressPoints.front();
+                     auto pntTop = vTopStressPoints.front();
 	                  altTensionRequirements.pntTopLeft.Move(pntTop.X() - W/2, pntTop.Y(), fTop);
 	                  altTensionRequirements.pntTopRight.Move(pntTop.X() + W/2, pntTop.Y(), fTop);
 	               }
@@ -2556,8 +2556,8 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	               {
 	                  ATLASSERT(2 <= vTopStressPoints.size());
 	                  IndexType otherIdx = (controllingTopStressPointIdx == 0 ? 1 : 0); // index of a different stress point
-	                  gpPoint2d pntTop = vTopStressPoints[controllingTopStressPointIdx]; // location of controlling stress point (this is where fTop occurs)
-	                  gpPoint2d pntTop2 = vTopStressPoints[otherIdx]; // location of a different stress point
+                     auto pntTop = vTopStressPoints[controllingTopStressPointIdx]; // location of controlling stress point (this is where fTop occurs)
+                     auto pntTop2 = vTopStressPoints[otherIdx]; // location of a different stress point
 	                                                                  // stress at a point (x,y)
 	                                                                  // let D = (IxxIyy - Ixy^2)
 	                                                                  // f = [(MyIxx + MxIxy)x - (MxIyy + MyIxy)y]/D
@@ -2578,7 +2578,7 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	               if (vBottomStressPoints.size() == 1)
 	               {
 	                  Float64 W = pGirder->GetBottomWidth(poi);
-	                  gpPoint2d pntBottom = vBottomStressPoints.front();
+                     auto pntBottom = vBottomStressPoints.front();
 	                  altTensionRequirements.pntBottomLeft.Move(pntBottom.X() - W/2, pntBottom.Y(), fBot);
 	                  altTensionRequirements.pntBottomRight.Move(pntBottom.X() + W/2, pntBottom.Y(), fBot);
 	               }
@@ -2586,8 +2586,8 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	               {
 	                  ATLASSERT(2 <= vBottomStressPoints.size());
 	                  IndexType otherIdx = (controllingTopStressPointIdx == 0 ? 1 : 0); // index of a different stress point
-	                  gpPoint2d pntBot = vBottomStressPoints[controllingTopStressPointIdx]; // location of controlling stress point (this is where fTop occurs)
-	                  gpPoint2d pntBot2 = vBottomStressPoints[otherIdx]; // location of a different stress point
+                     auto pntBot = vBottomStressPoints[controllingTopStressPointIdx]; // location of controlling stress point (this is where fTop occurs)
+                     auto pntBot2 = vBottomStressPoints[otherIdx]; // location of a different stress point
 	                                                                     // stress at a point (x,y)
 	                                                                     // let D = (IxxIyy - Ixy^2)
 	                                                                     // f = [(MyIxx + MxIxy)x - (MxIyy + MyIxy)y]/D
@@ -2996,12 +2996,12 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
          IndexType controllingTopStressPointIdx;
          pSectProps->GetStressCoefficients(task.intervalIdx, poi, pgsTypes::TopGirder, nullptr, &Ca, &Cbx, &Cby, &controllingTopStressPointIdx);
          ATLASSERT(controllingTopStressPointIdx != INVALID_INDEX);
-         std::vector<gpPoint2d> vTopStressPoints = pSectProps->GetStressPoints(task.intervalIdx, poi, pgsTypes::TopGirder);
+         auto vTopStressPoints = pSectProps->GetStressPoints(task.intervalIdx, poi, pgsTypes::TopGirder);
 
          IndexType controllingBottomStressPointIdx;
          pSectProps->GetStressCoefficients(task.intervalIdx, poi, pgsTypes::BottomGirder, nullptr, &Ca, &Cbx, &Cby, &controllingBottomStressPointIdx);
          ATLASSERT(controllingBottomStressPointIdx != INVALID_INDEX);
-         std::vector<gpPoint2d> vBottomStressPoints = pSectProps->GetStressPoints(task.intervalIdx, poi, pgsTypes::BottomGirder);
+         auto vBottomStressPoints = pSectProps->GetStressPoints(task.intervalIdx, poi, pgsTypes::BottomGirder);
 
          bool bBiaxialStresses = (vTopStressPoints.size() == 1 && vBottomStressPoints.size() == 1 ? false : true);
 
@@ -3010,7 +3010,7 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
             // one stress points means we have a symmetric section and the top center point is the stress point
             // make two stress points by spreading them appart in the X direction
             Float64 W = pGirder->GetTopWidth(poi);
-            gpPoint2d pntTop = vTopStressPoints.front();
+            auto pntTop = vTopStressPoints.front();
             altTensionRequirements.pntTopLeft.Move(pntTop.X() - W/2, pntTop.Y(), fTop);
             altTensionRequirements.pntTopRight.Move(pntTop.X() + W/2, pntTop.Y(), fTop);
          }
@@ -3018,8 +3018,8 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
          {
             ATLASSERT(2 <= vTopStressPoints.size());
             IndexType otherIdx = (controllingTopStressPointIdx == 0 ? 1 : 0); // index of a different stress point
-            gpPoint2d pntTop = vTopStressPoints[controllingTopStressPointIdx]; // location of controlling stress point (this is where fTop occurs)
-            gpPoint2d pntTop2 = vTopStressPoints[otherIdx]; // location of a different stress point
+            auto pntTop = vTopStressPoints[controllingTopStressPointIdx]; // location of controlling stress point (this is where fTop occurs)
+            auto pntTop2 = vTopStressPoints[otherIdx]; // location of a different stress point
                                                             // stress at a point (x,y)
                                                             // let D = (IxxIyy - Ixy^2)
                                                             // f = [(MyIxx + MxIxy)x - (MxIyy + MyIxy)y]/D
@@ -3040,7 +3040,7 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
          if (vBottomStressPoints.size() == 1)
          {
             Float64 W = pGirder->GetBottomWidth(poi);
-            gpPoint2d pntBottom = vBottomStressPoints.front();
+            auto pntBottom = vBottomStressPoints.front();
             altTensionRequirements.pntBottomLeft.Move(pntBottom.X() - W/2, pntBottom.Y(), fBot);
             altTensionRequirements.pntBottomRight.Move(pntBottom.X() + W/2, pntBottom.Y(), fBot);
          }
@@ -3048,8 +3048,8 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
          {
             ATLASSERT(2 <= vBottomStressPoints.size());
             IndexType otherIdx = (controllingTopStressPointIdx == 0 ? 1 : 0); // index of a different stress point
-            gpPoint2d pntBot = vBottomStressPoints[controllingTopStressPointIdx]; // location of controlling stress point (this is where fTop occurs)
-            gpPoint2d pntBot2 = vBottomStressPoints[otherIdx]; // location of a different stress point
+            auto pntBot = vBottomStressPoints[controllingTopStressPointIdx]; // location of controlling stress point (this is where fTop occurs)
+            auto pntBot2 = vBottomStressPoints[otherIdx]; // location of a different stress point
                                                                // stress at a point (x,y)
                                                                // let D = (IxxIyy - Ixy^2)
                                                                // f = [(MyIxx + MxIxy)x - (MxIyy + MyIxy)y]/D
@@ -8262,7 +8262,7 @@ std::vector<DebondLevelType> pgsDesigner2::DesignEndZoneReleaseDebonding(IProgre
 
    // compute debond levels at each section from demand
    GET_IFACE(IStrandGeometry, pStrandGeom);
-   gpPoint2d cg = pStrandGeom->GetStrandCG(releaseIntervalIdx, midPOI, true, &config);
+   auto cg = pStrandGeom->GetStrandCG(releaseIntervalIdx, midPOI, true, &config);
    std::vector<DebondLevelType> debond_levels;
    debond_levels = m_StrandDesignTool.ComputeDebondsForDemand(stress_demands, config, cg.Y(), releaseIntervalIdx, allowable_tension, allowable_compression);
 
@@ -9243,7 +9243,7 @@ std::vector<DebondLevelType> pgsDesigner2::DesignDebondingForLifting(HANDLINGCON
       IntervalIndexType liftingIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
 
       GET_IFACE(IStrandGeometry, pStrandGeom);
-      gpPoint2d cg = pStrandGeom->GetStrandCG(liftingIntervalIdx, midPOI, true, &liftConfig.GdrConfig);
+      auto cg = pStrandGeom->GetStrandCG(liftingIntervalIdx, midPOI, true, &liftConfig.GdrConfig);
       lifting_debond_levels = m_StrandDesignTool.ComputeDebondsForDemand(stress_demands, liftConfig.GdrConfig, cg.Y(), liftingIntervalIdx, allowable_tension, allowable_global_compression);
 
       if ( lifting_debond_levels.empty() )

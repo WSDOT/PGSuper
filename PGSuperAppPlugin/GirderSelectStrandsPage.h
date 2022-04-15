@@ -24,10 +24,10 @@
 
 #include <PsgLib\SpecLibraryEntry.h>
 #include "StrandFillGrid.h"
-#include <GraphicsLib\GraphicsLib.h>
 #include <IFace\Bridge.h>
 #include <IFace\BeamFactory.h>
 #include "afxwin.h"
+#include <Graphing/PointMapper.h>
 
 // CGirderSelectStrandsPage dialog
 
@@ -117,13 +117,13 @@ private:
    CSize m_FirstSize;
 
 private:
-   void DrawShape(CDC* pDC,IShape* shape,grlibPointMapper& mapper);
-   void DrawStrands(CDC* pDC,grlibPointMapper& mapper, IStrandMover* strand_mover, Float64 absol_end_offset, Float64 absol_hp_offset);
-   StrandIndexType DrawStrand(CDC* pDC, grlibPointMapper& Mapper, Float64 x, Float64 y, StrandIndexType index, bool isFilled, ROWCOL gridRow);
+   void DrawShape(CDC* pDC,IShape* shape,WBFL::Graphing::PointMapper& mapper);
+   void DrawStrands(CDC* pDC, WBFL::Graphing::PointMapper& mapper, IStrandMover* strand_mover, Float64 absol_end_offset, Float64 absol_hp_offset);
+   StrandIndexType DrawStrand(CDC* pDC, WBFL::Graphing::PointMapper& Mapper, Float64 x, Float64 y, StrandIndexType index, bool isFilled, ROWCOL gridRow);
 
    void AddClickRect(CRect rect, ROWCOL nRow);
 
-   gpRect2d ComputeStrandBounds(IStrandMover* strand_mover, Float64 absol_end_offset, Float64 absol_hp_offset);
+   WBFL::Geometry::Rect2d ComputeStrandBounds(IStrandMover* strand_mover, Float64 absol_end_offset, Float64 absol_hp_offset);
 
    void UpdateStrandAdjustments();
    void ShowHarpedAdjustmentControls(BOOL show, bool AreHarpStraight);

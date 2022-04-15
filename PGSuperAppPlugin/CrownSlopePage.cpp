@@ -30,7 +30,8 @@
 #include <EAF\EAFDocument.h>
 
 #include "PGSuperColors.h"
-#include <GraphicsLib\GraphicsLib.h>
+#include <Graphing/GraphingTypes.h>
+#include <Graphing/PointMapper.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -45,24 +46,24 @@ static void DrawArrowLine(CDC* pDC, long xstart, long ystart, long xend, long ye
    pDC->LineTo(xend,yend);
 
    // create a left pointing arrow in double coords and move and rotate it to our end
-   gpPolygon2d arrow;
-   arrow.AddPoint(gpPoint2d(0.0, arrowWidth/2));
-   arrow.AddPoint(gpPoint2d(0.0, -arrowWidth/2));
-   arrow.AddPoint(gpPoint2d(arrowLength, 0.0));
+   WBFL::Geometry::Polygon arrow;
+   arrow.AddPoint(0.0, arrowWidth/2);
+   arrow.AddPoint(0.0, -arrowWidth/2);
+   arrow.AddPoint(arrowLength, 0.0);
 
-   gpVector2d arrowvec(gpSize2d(xend - xstart, yend - ystart));
+   WBFL::Geometry::Vector2d arrowvec(WBFL::Geometry::Size2d(xend - xstart, yend - ystart));
    Float64 arrowdir = arrowvec.GetDirection();
 
-   arrow.Rotate(gpPoint2d(0, 0), arrowdir);
+   arrow.Rotate(WBFL::Geometry::Point2d(0, 0), arrowdir);
 
-   arrow.Offset(xend, yend);
+   arrow.Offset((Float64)xend, (Float64)yend);
 
    POINT points[3];
    for (long i = 0; i < 3; i++)
    {
-      const gpPoint2d* pnt(arrow.GetPoint(i));
-      points[i].x = (long)Round(pnt->X());
-      points[i].y = (long)Round(pnt->Y());
+      const WBFL::Geometry::Point2d& pnt(arrow.GetPoint(i));
+      points[i].x = (long)Round(pnt.X());
+      points[i].y = (long)Round(pnt.Y());
    }
 
    pDC->Polygon(points, 3);
@@ -449,7 +450,7 @@ bool CCrownSlopePage::GetSelectedTemplate(RoadwaySectionTemplate* pTemplate)
    return true;
 }
 
-gpRect2d CCrownSlopePage::GetRidgePointBounds()
+WBFL::Geometry::Rect2d CCrownSlopePage::GetRidgePointBounds()
 {
    Float64 xmax(-Float64_Max), xmin(Float64_Max);
    Float64 ymax(-Float64_Max), ymin(Float64_Max);
@@ -462,7 +463,7 @@ gpRect2d CCrownSlopePage::GetRidgePointBounds()
       ymin = min(rp.Y(), ymin);
    }
 
-   return gpRect2d(xmin,ymin,xmax,ymax);
+   return WBFL::Geometry::Rect2d(xmin,ymin,xmax,ymax);
 }
 
 
@@ -495,11 +496,11 @@ void CCrownSlopePage::OnPaint()
    {
       // no interior segments. Just draw a triangle centered in view. Use 10 as a default distance
       Float64 yval(0.0);
-      m_DrawnRidgePoints.push_back(gpPoint2d(0.0, yval));
+      m_DrawnRidgePoints.emplace_back(0.0, yval);
       yval += (m_RoadwaySectionData.slopeMeasure == RoadwaySectionData::RelativeToAlignmentPoint ? -1.0 : 1.0) * currTempl.LeftSlope * 10.0;
-      m_DrawnRidgePoints.push_back(gpPoint2d(10.0, yval));
+      m_DrawnRidgePoints.emplace_back(10.0, yval);
       yval += 1.0 * currTempl.RightSlope * 10.0;
-      m_DrawnRidgePoints.push_back(gpPoint2d(20.0, yval));
+      m_DrawnRidgePoints.emplace_back(20.0, yval);
    }
    else
    {
@@ -518,10 +519,10 @@ void CCrownSlopePage::OnPaint()
 
       Float64 xval(0.0), yval(0.0);
       // leftmost segment
-      m_DrawnRidgePoints.push_back(gpPoint2d(xval, yval));
+      m_DrawnRidgePoints.emplace_back(xval, yval);
       xval += exterior_seg_length;
       yval += (m_RoadwaySectionData.slopeMeasure == RoadwaySectionData::RelativeToAlignmentPoint ? -1.0 : 1.0) * currTempl.LeftSlope * exterior_seg_length;
-      m_DrawnRidgePoints.push_back(gpPoint2d(xval, yval));
+      m_DrawnRidgePoints.emplace_back(xval, yval);
 
       // exterior segments. track which side of controlling ridge point we are on
       IndexType ridgePtIdx(2);
@@ -533,7 +534,7 @@ void CCrownSlopePage::OnPaint()
 
          yval += flipSlope * rseg.Slope * rseg.Length;
 
-         m_DrawnRidgePoints.push_back(gpPoint2d(xval, yval));
+         m_DrawnRidgePoints.emplace_back(xval, yval);
 
          ridgePtIdx++;
       }
@@ -541,28 +542,28 @@ void CCrownSlopePage::OnPaint()
       // rightmost segment
       xval += exterior_seg_length;
       yval += 1.0 * currTempl.RightSlope * exterior_seg_length;
-      m_DrawnRidgePoints.push_back(gpPoint2d(xval, yval));
+      m_DrawnRidgePoints.emplace_back(xval, yval);
    }
 
    // bounds of window
    CSize csize = redit.Size();
 
    // bounding rect around model
-   gpRect2d ridgeBounds = GetRidgePointBounds();
+   auto ridgeBounds = GetRidgePointBounds();
 
    // zoom out a bit
-   gpSize2d rpsize(ridgeBounds.Size());
+   auto rpsize(ridgeBounds.Size());
    rpsize.Dx() *= 0.025;
    rpsize.Dy() *= 0.1;
    ridgeBounds = ridgeBounds.InflateBy(rpsize);
    rpsize = ridgeBounds.Size();
 
-   gpPoint2d org(ridgeBounds.Center());
+   auto org(ridgeBounds.Center());
 
-   grlibPointMapper mapper;
-   mapper.SetMappingMode(grlibPointMapper::Isotropic);
-   mapper.SetWorldExt(GraphSize(rpsize.Dx(),rpsize.Dy()));
-   mapper.SetWorldOrg(GraphPoint(org.X(),org.Y()));
+   WBFL::Graphing::PointMapper mapper;
+   mapper.SetMappingMode(WBFL::Graphing::PointMapper::MapMode::Isotropic);
+   mapper.SetWorldExt(WBFL::Graphing::Size(rpsize.Dx(),rpsize.Dy()));
+   mapper.SetWorldOrg(WBFL::Graphing::Point(org.X(),org.Y()));
    mapper.SetDeviceExt(csize.cx,csize.cy);
    mapper.SetDeviceOrg(csize.cx/2,csize.cy/2);
 
@@ -578,8 +579,8 @@ void CCrownSlopePage::OnPaint()
    CBrush* pOldBrush = pDC->SelectObject(&solid_brush);
 
    // Start arrow line
-   const gpPoint2d& rp0 = m_DrawnRidgePoints[0];
-   const gpPoint2d& rp1 = m_DrawnRidgePoints[1];
+   const auto& rp0 = m_DrawnRidgePoints[0];
+   const auto& rp1 = m_DrawnRidgePoints[1];
    long dx0, dy0, dx1, dy1;
    mapper.WPtoDP(rp0.X(), rp0.Y(), &dx0, &dy0);
    mapper.WPtoDP(rp1.X(), rp1.Y(), &dx1, &dy1);
@@ -590,7 +591,7 @@ void CCrownSlopePage::OnPaint()
    IndexType numrp = m_DrawnRidgePoints.size();
    for (IndexType irp = 1; irp < numrp - 1; irp++)
    {
-      const gpPoint2d& rp = m_DrawnRidgePoints[irp];
+      const auto& rp = m_DrawnRidgePoints[irp];
 
       long dx, dy;
       mapper.WPtoDP(rp.X(), rp.Y(), &dx, &dy);
@@ -605,8 +606,8 @@ void CCrownSlopePage::OnPaint()
    }
 
    // End arrow line
-   const gpPoint2d& rps = m_DrawnRidgePoints[numrp-2];
-   const gpPoint2d& rpe = m_DrawnRidgePoints[numrp-1];
+   const auto& rps = m_DrawnRidgePoints[numrp-2];
+   const auto& rpe = m_DrawnRidgePoints[numrp-1];
    long dxs, dys, dxe, dye;
    mapper.WPtoDP(rps.X(), rps.Y(), &dxs, &dys);
    mapper.WPtoDP(rpe.X(), rpe.Y(), &dxe, &dye);
@@ -625,7 +626,7 @@ void CCrownSlopePage::OnPaint()
 
    for (IndexType irp = 1; irp < numrp - 1; irp++)
    {
-      const gpPoint2d& rp = m_DrawnRidgePoints[irp];
+      const auto& rp = m_DrawnRidgePoints[irp];
       long dx, dy;
       mapper.WPtoDP(rp.X(), rp.Y(), &dx, &dy);
 
@@ -680,8 +681,8 @@ void CCrownSlopePage::OnPaint()
    pDC->SetTextColor(ALIGNMENT_COLOR);
    for (IndexType irp = 0; irp < numrp-1; irp++)
    {
-      const gpPoint2d& rps = m_DrawnRidgePoints[irp];
-      const gpPoint2d& rpe = m_DrawnRidgePoints[irp+1];
+      const auto& rps = m_DrawnRidgePoints[irp];
+      const auto& rpe = m_DrawnRidgePoints[irp+1];
 
       long midx, midy;
       mapper.WPtoDP((rps.X()+rpe.X())/2.0, (rps.Y()+rpe.Y())/2.0, &midx, &midy);

@@ -49,7 +49,6 @@
 #include <WBFLCore.h>
 #include <WBFLTools.h>
 #include <WBFLGeometry.h>
-#include <WBFLSections.h>
 #include <WBFLCogo.h>
 #include <WBFLGenericBridge.h>
 #include <WBFLSTL.h>

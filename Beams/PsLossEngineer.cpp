@@ -370,9 +370,9 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
    Float64 Ad;
    Float64 ed;
    Float64 Ksh;
-   gpPoint2d epermRelease;// eccentricity of the permanent strands on the non-composite section
-   gpPoint2d epermFinal;
-   gpPoint2d etemp;
+   WBFL::Geometry::Point2d epermRelease;// eccentricity of the permanent strands on the non-composite section
+   WBFL::Geometry::Point2d epermFinal;
+   WBFL::Geometry::Point2d etemp;
    Float64 aps;  // area of one prestress strand
    Float64 ApsPerm;
    Float64 ApsTTS;
@@ -557,9 +557,9 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
    Float64 Ad;
    Float64 ed;
    Float64 Ksh;
-   gpPoint2d epermRelease;// eccentricity of the permanent strands on the non-composite section
-   gpPoint2d epermFinal;
-   gpPoint2d etemp;
+   WBFL::Geometry::Point2d epermRelease;// eccentricity of the permanent strands on the non-composite section
+   WBFL::Geometry::Point2d epermFinal;
+   WBFL::Geometry::Point2d etemp;
    Float64 aps;  // area of one prestress strand
    Float64 ApsPerm;
    Float64 ApsTTS;
@@ -875,9 +875,9 @@ lrfdElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRefinedEst
    Float64 Ad;
    Float64 ed;
    Float64 Ksh;
-   gpPoint2d epermRelease;// eccentricity of the permanent strands on the non-composite section
-   gpPoint2d epermFinal;
-   gpPoint2d etemp;
+   WBFL::Geometry::Point2d epermRelease;// eccentricity of the permanent strands on the non-composite section
+   WBFL::Geometry::Point2d epermFinal;
+   WBFL::Geometry::Point2d etemp;
    Float64 aps;  // area of one prestress strand
    Float64 ApsPerm;
    Float64 ApsTTS;
@@ -1119,9 +1119,9 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
    Float64 Ad;
    Float64 ed;
    Float64 Ksh;
-   gpPoint2d epermRelease;// eccentricity of the permanent strands on the non-composite section
-   gpPoint2d epermFinal;
-   gpPoint2d etemp;
+   WBFL::Geometry::Point2d epermRelease;// eccentricity of the permanent strands on the non-composite section
+   WBFL::Geometry::Point2d epermFinal;
+   WBFL::Geometry::Point2d etemp;
    Float64 aps;  // area of one prestress strand
    Float64 ApsPerm;
    Float64 ApsTTS;
@@ -1436,9 +1436,9 @@ void CPsLossEngineer::LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfI
    Float64 Ad;
    Float64 ed;
    Float64 Ksh;
-   gpPoint2d epermRelease;// eccentricity of the permanent strands on the non-composite section
-   gpPoint2d epermFinal;
-   gpPoint2d etemp;
+   WBFL::Geometry::Point2d epermRelease;// eccentricity of the permanent strands on the non-composite section
+   WBFL::Geometry::Point2d epermFinal;
+   WBFL::Geometry::Point2d etemp;
    Float64 aps;  // area of one prestress strand
    Float64 ApsPerm;
    Float64 ApsTTS;
@@ -2755,9 +2755,9 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    Float64* pAd,
    Float64* ped,
    Float64* pKsh,
-   gpPoint2d* pepermRelease,// eccentricity of the permanent strands on the non-composite section
-   gpPoint2d* pepermFinal,
-   gpPoint2d* petemp,
+   WBFL::Geometry::Point2d* pepermRelease,// eccentricity of the permanent strands on the non-composite section
+   WBFL::Geometry::Point2d* pepermFinal,
+   WBFL::Geometry::Point2d* petemp,
    Float64* paps,  // area of one prestress strand
    Float64* pApsPerm,
    Float64* pApsTTS,

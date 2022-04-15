@@ -34,7 +34,7 @@ public:
    CTestGraphBuilder(const CTestGraphBuilder& other);
    virtual BOOL CreateGraphController(CWnd* pParent,UINT nID) override;
    virtual void DrawGraphNow(CWnd* pGraphWnd,CDC* pDC) override;
-   virtual CGraphBuilder* Clone() const override;
+   virtual std::unique_ptr<WBFL::Graphing::GraphBuilder> Clone() const override;
    virtual void CreateViewController(IEAFViewController** ppController) override;
 
 protected:
@@ -58,7 +58,7 @@ public:
    CTestGraphBuilder2(const CTestGraphBuilder2& other);
    virtual BOOL CreateGraphController(CWnd* pParent,UINT nID) override;
    virtual void DrawGraphNow(CWnd* pGraphWnd,CDC* pDC) override;
-   virtual CGraphBuilder* Clone() const override;
+   virtual std::unique_ptr<WBFL::Graphing::GraphBuilder> Clone() const override;
    virtual void CreateViewController(IEAFViewController** ppController) override;
 
 protected:
@@ -81,7 +81,7 @@ public:
    CTestGraphBuilder3(const CTestGraphBuilder3& other);
    virtual BOOL CreateGraphController(CWnd* pParent,UINT nID) override;
    virtual void DrawGraphNow(CWnd* pGraphWnd,CDC* pDC) override;
-   virtual CGraphBuilder* Clone() const override;
+   virtual std::unique_ptr<WBFL::Graphing::GraphBuilder> Clone() const override;
    virtual void CreateViewController(IEAFViewController** ppController) override;
 
 protected:

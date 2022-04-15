@@ -39,9 +39,8 @@
 #include <Material\Rebar.h>
 #endif
 
-#if !defined INCLUDED_GEOMETRY_PRIMITIVES_H_
-#include <GeometricPrimitives\Primitives.h>
-#endif
+#include <GeomModel/Primitives.h>
+
 // FORWARD DECLARATIONS
 //
 
@@ -74,7 +73,7 @@ public:
 
    //------------------------------------------------------------------------
    // full constructor
-   pgsLongRebarInstance(const gpPoint2d& rloc, const matRebar* pRebar, Float64 minCutoffLength);
+   pgsLongRebarInstance(const WBFL::Geometry::Point2d& rloc, const matRebar* pRebar, Float64 minCutoffLength);
 
    //------------------------------------------------------------------------
    // Copy constructor
@@ -94,8 +93,8 @@ public:
 
    //------------------------------------------------------------------------
    // Location in section where rebar occurs
-   gpPoint2d  GetLocation() const;
-   void SetLocation(const gpPoint2d& loc);
+   const WBFL::Geometry::Point2d& GetLocation() const;
+   void SetLocation(const WBFL::Geometry::Point2d& loc);
 
    //------------------------------------------------------------------------
    // a pointer to this rebar's material
@@ -125,7 +124,7 @@ protected:
 
 private:
    // GROUP: DATA MEMBERS
-      gpPoint2d       m_Location;
+      WBFL::Geometry::Point2d       m_Location;
       const matRebar* m_pRebar;
       Float64         m_MinCutoffLength; // Distance from cut location
    // GROUP: LIFECYCLE

@@ -274,8 +274,8 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
    {
       col = 0;
 
-      gpPoint2d ecc_p = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Permanent);
-      gpPoint2d ecc_t = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Temporary);
+      WBFL::Geometry::Point2d ecc_p = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Permanent);
+      WBFL::Geometry::Point2d ecc_t = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Temporary);
 
       if ( bDesign )
       {

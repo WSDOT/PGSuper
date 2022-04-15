@@ -122,12 +122,12 @@ void CDrawPrecastSegmentControl::OnPaint()
    rect->get_Top(&top);
    rect->get_Right(&right);
    rect->get_Bottom(&bottom);
-   GraphRect box(left,bottom,right,top);
-   GraphSize size = box.Size();
-   GraphPoint org = box.Center();
+   WBFL::Graphing::Rect box(left,bottom,right,top);
+   WBFL::Graphing::Size size = box.Size();
+   WBFL::Graphing::Point org = box.Center();
 
-   grlibPointMapper mapper;
-   mapper.SetMappingMode(grlibPointMapper::Isotropic);
+   WBFL::Graphing::PointMapper mapper;
+   mapper.SetMappingMode(WBFL::Graphing::PointMapper::MapMode::Isotropic);
    mapper.SetWorldExt(size);
    mapper.SetWorldOrg(org);
    mapper.SetDeviceExt(sClient.cx,sClient.cy);
@@ -215,7 +215,7 @@ void CDrawPrecastSegmentControl::CreateSegmentShape(const CSegmentKey& segmentKe
    pGirder->GetSegmentBottomFlangeProfile(segmentKey,pSplicedGirder,true,ppPoints);
 }
 
-void CDrawPrecastSegmentControl::DrawShape(CDC* pDC,grlibPointMapper& mapper,IShape* pShape)
+void CDrawPrecastSegmentControl::DrawShape(CDC* pDC, WBFL::Graphing::PointMapper& mapper,IShape* pShape)
 {
    if ( pShape == nullptr )
       return;
@@ -239,7 +239,7 @@ void CDrawPrecastSegmentControl::DrawShape(CDC* pDC,grlibPointMapper& mapper,ISh
    for ( CollectionIndexType i = 0; i < nPoints; i++ )
    {
       LONG dx,dy;
-      GraphPoint pnt;
+      WBFL::Graphing::Point pnt;
       points[i]->Location(&pnt.X(), &pnt.Y());
       mapper.WPtoDP(pnt,&dx,&dy);
       dev_points[i] = CPoint(dx,dy);
@@ -253,7 +253,7 @@ void CDrawPrecastSegmentControl::DrawShape(CDC* pDC,grlibPointMapper& mapper,ISh
    delete[] dev_points;
 }
 
-void CDrawPrecastSegmentControl::DrawBottomFlange(CDC* pDC,grlibPointMapper& mapper,IPoint2dCollection* pPoints)
+void CDrawPrecastSegmentControl::DrawBottomFlange(CDC* pDC, WBFL::Graphing::PointMapper& mapper,IPoint2dCollection* pPoints)
 {
    if ( pPoints == nullptr )
       return;
@@ -274,7 +274,7 @@ void CDrawPrecastSegmentControl::DrawBottomFlange(CDC* pDC,grlibPointMapper& map
    for ( CollectionIndexType i = 0; i < nPoints; i++ )
    {
       LONG dx,dy;
-      GraphPoint pnt;
+      WBFL::Graphing::Point pnt;
       points[i]->Location(&pnt.X(), &pnt.Y());
       mapper.WPtoDP(pnt,&dx,&dy);
       dev_points[i] = CPoint(dx,dy);

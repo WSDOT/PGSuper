@@ -28,7 +28,7 @@
 #endif // _MSC_VER >= 1000
 // GirderGlobalStrandGrid.h : header file
 //
-#include <GeometricPrimitives\GeometricPrimitives.h>
+#include <GeomModel/GeomModel.h>
 #include <PsgLib\GirderLibraryEntry.h>
 #include <Units\Measure.h>
 

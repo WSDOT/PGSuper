@@ -43,7 +43,6 @@ extern CComModule _Module;
 
 #include <WBFLTools.h>
 #include <WBFLGeometry.h>
-#include <WBFLSections.h>
 #include <WBFLCogo.h>
 #include <WBFLGenericBridge.h>
 #include <WBFLGenericBridgeTools.h>

@@ -22,7 +22,6 @@
 
 #pragma once
 
-#include <GraphicsLib\GraphicsLib.h>
 #include "DrawStrandControl.h"
 #include "SegmentTendonGrid.h"
 
