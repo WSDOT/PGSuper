@@ -285,6 +285,7 @@ void CSegmentGraphControllerBase::OnShowBeam()
    ((CSegmentGraphBuilderBase*)GetGraphBuilder())->ShowBeam(ShowBeam());
 }
 
+
 void CSegmentGraphControllerBase::OnGroupChanged()
 {
 }

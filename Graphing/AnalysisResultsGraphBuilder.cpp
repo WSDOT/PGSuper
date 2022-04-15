@@ -24,6 +24,7 @@
 #include "resource.h"
 #include <Graphing\AnalysisResultsGraphBuilder.h>
 #include <Graphing\DrawBeamTool.h>
+#include <Graphing\ExportGraphXYTool.h>
 #include "AnalysisResultsGraphController.h"
 #include "AnalysisResultsGraphDefinition.h"
 #include "AnalysisResultsGraphViewControllerImp.h"
@@ -4130,4 +4131,9 @@ void CAnalysisResultsGraphBuilder::GetSecondaryXValues(const PoiList& vPoi,const
          pvPoi->push_back(poi);
       }
     }
+}
+
+void CAnalysisResultsGraphBuilder::ExportGraphData()
+{
+   CExportGraphXYTool::ExportGraphData(m_Graph);
 }

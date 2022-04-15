@@ -148,6 +148,7 @@
     <ClCompile Include="AnalysisResultsGraphController.cpp" />
     <ClCompile Include="AnalysisResultsGraphDefinition.cpp" />
     <ClCompile Include="AnalysisResultsGraphViewControllerImp.cpp" />
+    <ClCompile Include="GraphExportDlg.cpp" />
     <ClCompile Include="ConcretePropertiesGraphViewControllerImp.cpp" />
     <ClCompile Include="ConcretePropertyGraphBuilder.cpp" />
     <ClCompile Include="ConcretePropertyGraphController.cpp" />
@@ -158,6 +159,7 @@
     <ClCompile Include="EffectivePrestressGraphBuilder.cpp" />
     <ClCompile Include="EffectivePrestressGraphController.cpp" />
     <ClCompile Include="EffectivePrestressGraphViewControllerImp.cpp" />
+    <ClCompile Include="ExportGraphXYTool.cpp" />
     <ClCompile Include="GirderGraphBuilderBase.cpp" />
     <ClCompile Include="GirderGraphControllerBase.cpp" />
     <ClCompile Include="GirderPropertiesGraphBuilder.cpp" />
@@ -197,6 +199,7 @@
     <ClInclude Include="..\Include\Graphing\DrawBeamTool.h" />
     <ClInclude Include="..\Include\Graphing\EffectivePrestressGraphBuilder.h" />
     <ClInclude Include="..\Include\Graphing\EffectivePrestressGraphViewController.h" />
+    <ClInclude Include="..\Include\Graphing\ExportGraphXYTool.h" />
     <ClInclude Include="..\Include\Graphing\GirderGraphBuilderBase.h" />
     <ClInclude Include="..\Include\Graphing\GirderPropertiesGraphBuilder.h" />
     <ClInclude Include="..\Include\Graphing\GirderPropertiesGraphViewController.h" />
@@ -212,6 +215,7 @@
     <ClInclude Include="AnalysisResultsGraphController.h" />
     <ClInclude Include="AnalysisResultsGraphDefinition.h" />
     <ClInclude Include="AnalysisResultsGraphViewControllerImp.h" />
+    <ClInclude Include="GraphExportDlg.h" />
     <ClInclude Include="ConcretePropertiesGraphViewControllerImp.h" />
     <ClInclude Include="ConcretePropertyGraphController.h" />
     <ClInclude Include="DeflectionHistoryGraphController.h" />

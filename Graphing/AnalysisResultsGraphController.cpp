@@ -90,6 +90,9 @@ BEGIN_MESSAGE_MAP(CAnalysisResultsGraphController, CGirderGraphControllerBase)
    ON_BN_CLICKED(IDC_SIMPLE,OnAnalysisTypeClicked)
    ON_BN_CLICKED(IDC_SIMPLE2,OnAnalysisTypeClicked)
    ON_BN_CLICKED(IDC_SIMPLE3,OnAnalysisTypeClicked)
+
+   ON_BN_CLICKED(IDC_EXPORT_GRAPH_BTN,OnGraphExportClicked)
+   ON_UPDATE_COMMAND_UI(IDC_EXPORT_GRAPH_BTN,OnCommandUIGraphExport)
    //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -521,6 +524,18 @@ void CAnalysisResultsGraphController::OnIntervalsChanged()
 {
    UpdateUnrecoverableDeflAdjustment();
 }
+
+void CAnalysisResultsGraphController::OnGraphExportClicked()
+{
+   ((CAnalysisResultsGraphBuilder*)GetGraphBuilder())->ExportGraphData();
+}
+
+// this has to be implemented otherwise button will not be enabled.
+void CAnalysisResultsGraphController::OnCommandUIGraphExport(CCmdUI* pCmdUI)
+{
+   pCmdUI->Enable(TRUE);
+}
+
 
 void CAnalysisResultsGraphController::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {

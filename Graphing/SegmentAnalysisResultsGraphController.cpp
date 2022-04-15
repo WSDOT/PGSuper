@@ -74,21 +74,17 @@ BEGIN_MESSAGE_MAP(CSegmentAnalysisResultsGraphController, CSegmentGraphControlle
    ON_CBN_SELCHANGE( IDC_DROP_LIST, OnDropDownChanged )
    ON_LBN_SELCHANGE( IDC_SELECT_LIST, OnSelectListChanged )
 
+   ON_BN_CLICKED(IDC_EXPORT_GRAPH_BTN,OnGraphExportClicked)
+   ON_UPDATE_COMMAND_UI(IDC_EXPORT_GRAPH_BTN,OnCommandUIGraphExport)
+
    ON_BN_CLICKED(IDC_INCREMENTAL,OnPlotTypeClicked)
    ON_BN_CLICKED(IDC_CUMULATIVE,OnPlotTypeClicked)
 
    ON_BN_CLICKED(IDC_TOP_GIRDER, OnStress)
    ON_BN_CLICKED(IDC_BOTTOM_GIRDER, OnStress)
-   ON_BN_CLICKED(IDC_TOP_DECK, OnStress)
-   ON_BN_CLICKED(IDC_BOTTOM_DECK, OnStress)
-
-   ON_BN_CLICKED(IDC_SIMPLE,OnAnalysisTypeClicked)
-   ON_BN_CLICKED(IDC_SIMPLE2,OnAnalysisTypeClicked)
-   ON_BN_CLICKED(IDC_SIMPLE3,OnAnalysisTypeClicked)
    ON_BN_CLICKED(IDC_PRECAMBER,OnUnrecoverableDefl)
    //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
-
 
 void CSegmentAnalysisResultsGraphController::DoDataExchange(CDataExchange* pDX)
 {
@@ -467,12 +463,15 @@ void CSegmentAnalysisResultsGraphController::OnStress()
    UpdateGraph();
 }
 
-void CSegmentAnalysisResultsGraphController::OnAnalysisTypeClicked()
+void CSegmentAnalysisResultsGraphController::OnGraphExportClicked()
 {
-   int nIDC = GetCheckedRadioButton(IDC_SIMPLE,IDC_SIMPLE3);
-   ATLASSERT(nIDC != 0); // 0 means nothing is selected
-   pgsTypes::AnalysisType analysisType = (pgsTypes::AnalysisType)(nIDC - IDC_SIMPLE);
-   SetAnalysisType(analysisType);
+   ((CSegmentAnalysisResultsGraphBuilder*)GetGraphBuilder())->ExportGraphData();
+}
+
+// this has to be implemented otherwise button will not be enabled.
+void CSegmentAnalysisResultsGraphController::OnCommandUIGraphExport(CCmdUI* pCmdUI)
+{
+   pCmdUI->Enable(TRUE);
 }
 
 void CSegmentAnalysisResultsGraphController::OnIntervalsChanged()

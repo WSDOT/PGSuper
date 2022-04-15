@@ -53,6 +53,8 @@ public:
 
    COLORREF GetGraphColor(IndexType graphIdx,IntervalIndexType intervalIdx);
 
+   void ExportGraphData();
+
 protected:
    std::unique_ptr<grGraphColor> m_pGraphColor;
    std::set<IndexType> m_UsedDataLabels; // keeps track of the graph data labels that have already been used so we don't get duplicates in the legend

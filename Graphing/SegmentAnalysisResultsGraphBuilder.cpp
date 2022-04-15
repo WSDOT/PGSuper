@@ -24,6 +24,7 @@
 #include "resource.h"
 #include <Graphing\SegmentAnalysisResultsGraphBuilder.h>
 #include <Graphing\DrawBeamTool.h>
+#include <Graphing\ExportGraphXYTool.h>
 #include "SegmentAnalysisResultsGraphController.h"
 #include "SegmentAnalysisResultsGraphDefinition.h"
 #include "SegmentAnalysisResultsGraphViewControllerImp.h"
@@ -595,6 +596,11 @@ COLORREF CSegmentAnalysisResultsGraphBuilder::GetGraphColor(IndexType graphIdx,I
    }
 
    return c;
+}
+
+void CSegmentAnalysisResultsGraphBuilder::ExportGraphData()
+{
+   CExportGraphXYTool::ExportGraphData(m_Graph);
 }
 
 CString CSegmentAnalysisResultsGraphBuilder::GetDataLabel(IndexType graphIdx,const CSegmentAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx)

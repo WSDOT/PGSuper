@@ -95,9 +95,10 @@ protected:
    afx_msg void OnSelectListChanged();
    afx_msg void OnPlotTypeClicked();
    afx_msg void OnStress();
-   afx_msg void OnAnalysisTypeClicked();
    afx_msg void OnIntervalsChanged();
    afx_msg void OnUnrecoverableDefl();
+   afx_msg void OnGraphExportClicked();
+   afx_msg void OnCommandUIGraphExport(CCmdUI* pCmdUI);
    //}}AFX_MSG
 
    virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
