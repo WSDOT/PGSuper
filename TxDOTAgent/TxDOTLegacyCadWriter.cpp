@@ -143,8 +143,6 @@ Float64		value 			   /*  => Value to convert                   */
 ////////////////// Main function for writing legacy cad file ///////////////////////////
 int TxDOT_WriteLegacyCADDataToFile(CString& filePath, IBroker* pBroker, const std::vector<CGirderKey>& girderKeys)
 {
-#pragma Reminder("Legacy TxDOT CAD Export is a hack. Consider removing this option at Version 6.0")
-
    bool did_throw=false;
 
    // Create progress window in own scope
@@ -648,7 +646,6 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
 
    	/* 19. DEFLECTION (SLAB AND DIAPHRAGMS)  */
       value = pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftSlab,      pmid, bat, rtCumulative, false )
-            + pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftSlabPad,   pmid, bat, rtCumulative, false )
             + pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftDiaphragm, pmid, bat, rtCumulative, false )
             + pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftShearKey,  pmid, bat, rtCumulative, false );
       value = IsZero(value) ? 0 : value;
