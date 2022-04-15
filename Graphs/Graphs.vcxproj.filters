@@ -43,9 +43,6 @@
     <ClCompile Include="GirderPropertiesGraphController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Graphing.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="LocationGraphController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -108,46 +105,22 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Include\Graphing\AnalysisResultsGraphBuilder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="AnalysisResultsGraphController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AnalysisResultsGraphDefinition.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Include\Graphing\AutoLib.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Graphing\ConcretePropertyGraphBuilder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ConcretePropertyGraphController.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Graphing\DeflectionHistoryGraphBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DeflectionHistoryGraphController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Include\Graphing\DrawBeamTool.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Graphing\EffectivePrestressGraphBuilder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="EffectivePrestressGraphController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Include\Graphing\GirderGraphBuilderBase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GirderGraphControllerBase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Graphing\GirderPropertiesGraphBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GirderPropertiesGraphController.h">
@@ -156,28 +129,13 @@
     <ClInclude Include="GraphColor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Graphing.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Graphing\GraphingExp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Graphing\GraphingTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="LocationGraphController.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Graphing\StabilityGraphBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="StabilityGraphController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Graphing\StressHistoryGraphBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="StressHistoryGraphController.h">
@@ -189,28 +147,13 @@
     <ClInclude Include="StabilityGraphViewControllerImp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Include\Graphing\StabilityGraphViewController.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Graphing\EffectivePrestressGraphViewController.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="EffectivePrestressGraphViewControllerImp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ConcretePropertiesGraphViewControllerImp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Include\Graphing\ConcretePropertiesGraphViewController.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Graphing\DeflectionHistoryGraphViewController.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DeflectionHistoryGraphViewControllerImp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Graphing\StressHistoryGraphViewController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="StressHistoryGraphViewControllerImp.h">
@@ -219,13 +162,7 @@
     <ClInclude Include="AnalysisResultsGraphViewControllerImp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Include\Graphing\AnalysisResultsGraphViewController.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GirderPropertiesGraphViewControllerImp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Graphing\GirderPropertiesGraphViewController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SegmentAnalysisResultsGraphController.h">
@@ -240,13 +177,73 @@
     <ClInclude Include="SegmentGraphControllerBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Include\SegmentAnalysisResultsGraphBuilder.h">
+    <ClInclude Include="..\Include\Graphs\AnalysisResultsGraphBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Include\SegmentAnalysisResultsGraphViewController.h">
+    <ClInclude Include="..\Include\Graphs\AnalysisResultsGraphViewController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Include\SegmentGraphBuilderBase.h">
+    <ClInclude Include="..\Include\Graphs\AutoLib.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Graphs\ConcretePropertiesGraphViewController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Graphs\ConcretePropertyGraphBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Graphs\DeflectionHistoryGraphBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Graphs\DeflectionHistoryGraphViewController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Graphs\DrawBeamTool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Graphs\EffectivePrestressGraphBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Graphs\EffectivePrestressGraphViewController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Graphs\GirderGraphBuilderBase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Graphs\GirderPropertiesGraphBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Graphs\GirderPropertiesGraphViewController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Graphs\GraphsExp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Graphs\GraphTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Graphs\StabilityGraphBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Graphs\StabilityGraphViewController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Graphs\StressHistoryGraphBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Graphs\StressHistoryGraphViewController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Graphs\SegmentAnalysisResultsGraphBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Graphs\SegmentAnalysisResultsGraphViewController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Graphs\SegmentGraphBuilderBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Graphing\SegmentGraphBuilderBase.h">
@@ -254,13 +251,12 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Graphing.def" />
-    <None Include="res\Graphing.rc2">
+    <None Include="Graphs.def">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="res\Graphs.rc2">
       <Filter>Resource Files</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
@@ -277,7 +273,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Graphing.rc">
+    <ResourceCompile Include="Graphs.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>

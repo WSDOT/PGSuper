@@ -22,12 +22,18 @@
 
 #pragma once
 
-#include <Graphing\GraphingExp.h>
+#include <Graphs\GraphsExp.h>
 
-class grGraphXY;
+namespace WBFL
+{
+   namespace Graphing
+   {
+      class GraphXY;
+   }
+}
 
 // This is a utility class draws the beam on graphs
-class GRAPHINGCLASS CExportGraphXYTool
+class GRAPHCLASS CExportGraphXYTool
 {
 public:
    CExportGraphXYTool();

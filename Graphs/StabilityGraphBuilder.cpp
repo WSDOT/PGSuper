@@ -22,10 +22,10 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include <Graphs\StabilityGraphBuilder.h>
+#include <Graphs/StabilityGraphBuilder.h>
 #include "StabilityGraphController.h"
 #include "StabilityGraphViewControllerImp.h"
-#include <Graphing\ExportGraphXYTool.h>
+#include <Graphs/ExportGraphXYTool.h>
 #include "..\Documentation\PGSuper.hh"
 
 #include "GraphColor.h"
