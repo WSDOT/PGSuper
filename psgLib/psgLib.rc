@@ -72,8 +72,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 7,0,0,4
- PRODUCTVERSION 7,0,0,4
+ FILEVERSION 7,0,0,5
+ PRODUCTVERSION 7,0,0,5
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -91,12 +91,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "7.0.0.4"
+            VALUE "FileVersion", "7.0.0.5"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2022, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "7.0.0.4"
+            VALUE "ProductVersion", "7.0.0.5"
         END
     END
     BLOCK "VarFileInfo"
