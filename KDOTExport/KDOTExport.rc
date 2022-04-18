@@ -72,7 +72,7 @@ BEGIN
             VALUE "FileDescription", "PGSuperKDOTExport  Module"
             VALUE "FileVersion", "7.0.0.4"
             VALUE "InternalName", "PGSuperKDOTExport.dll"
-            VALUE "LegalCopyright", "Copyright © 1999-2021, KDOT, All rights reserved"
+            VALUE "LegalCopyright", "Copyright © 1999-2022, KDOT, All rights reserved"
             VALUE "OriginalFilename", "PGSuperKDOTExport.dll"
             VALUE "ProductName", "PGSuper KDOT Export"
             VALUE "ProductVersion", "7.0.0.4"

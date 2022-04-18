@@ -69,7 +69,7 @@ BEGIN
             VALUE "FileDescription", "GraphingAgent Module\0"
             VALUE "FileVersion", "7.0.0.4\0"
             VALUE "InternalName", "GraphingAgent\0"
-            VALUE "LegalCopyright", "Copyright © 1999-2021, Washington State Department of Transportation, All Rights Reserved\0"
+            VALUE "LegalCopyright", "Copyright © 1999-2022, Washington State Department of Transportation, All Rights Reserved\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OLESelfRegister", "\0"
             VALUE "OriginalFilename", "GraphingAgent.DLL\0"
