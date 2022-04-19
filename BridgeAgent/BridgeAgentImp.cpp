@@ -25498,7 +25498,7 @@ Float64 CBridgeAgentImp::GetShearWidth(const pgsPointOfInterest& poi) const
    }
 
    Float64 duct_deduction = 0;
-   if ( IsOnGirder(poi) )
+   if ( IsOnGirder(poi) && 0 < nGirderDucts)
    {
       GET_IFACE_NOCHECK(IDuctLimits, pDuctLimits);
       GET_IFACE(IGirderTendonGeometry, pGirderTendonGeom);
