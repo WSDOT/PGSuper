@@ -2340,6 +2340,7 @@ Uint32 CTimelineManager::Validate() const
 
    // Make sure railing system is installed after the deck, or if there is no
    // deck, after the last segment is erected
+   EventIndexType diaphragmEventIdx = GetIntermediateDiaphragmsLoadEventIndex();
    if (m_pBridgeDesc->GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone)
    {
       EventIndexType lastSegmentErectionEventIdx = GetLastSegmentErectionEventIndex();
@@ -2357,7 +2358,6 @@ Uint32 CTimelineManager::Validate() const
       }
 
       // Make sure intermediate diaphragms are installed before the deck is cast
-      EventIndexType diaphragmEventIdx = GetIntermediateDiaphragmsLoadEventIndex();
       if (castDeckEventIdx < diaphragmEventIdx)
       {
          error |= TLM_INTERMEDIATE_DIAPHRAGM_LOADING_ERROR;
@@ -2533,6 +2533,47 @@ Uint32 CTimelineManager::Validate() const
                   error |= TLM_SEGMENT_ERECTION_ERROR;
                }
             }
+
+            // Make sure intermediate diaphragms are installed after the segments are erected
+            if (diaphragmEventIdx < erectSegmentEventIdx)
+            {
+               error |= TLM_INTERMEDIATE_DIAPHRAGM_LOADING_ERROR;
+               m_SegmentErectionError.emplace_back(pSegment->GetSegmentKey());
+            }
+
+            if (m_pLoadManager)
+            {
+               for (const auto& load : m_pLoadManager->m_PointLoads)
+               {
+                  EventIndexType eventIdx = FindUserLoadEventIndex(load.m_ID);
+                  if (eventIdx < erectSegmentEventIdx)
+                  {
+                     error |= TLM_USER_LOAD_ERROR;
+                     m_SegmentErectionError.emplace_back(pSegment->GetSegmentKey());
+                  }
+               }
+
+               for (const auto& load : m_pLoadManager->m_DistributedLoads)
+               {
+                  EventIndexType eventIdx = FindUserLoadEventIndex(load.m_ID);
+                  if (eventIdx < erectSegmentEventIdx)
+                  {
+                     error |= TLM_USER_LOAD_ERROR;
+                     m_SegmentErectionError.emplace_back(pSegment->GetSegmentKey());
+                  }
+               }
+
+               for (const auto& load : m_pLoadManager->m_MomentLoads)
+               {
+                  EventIndexType eventIdx = FindUserLoadEventIndex(load.m_ID);
+                  if (eventIdx < erectSegmentEventIdx)
+                  {
+                     error |= TLM_USER_LOAD_ERROR;
+                     m_SegmentErectionError.emplace_back(pSegment->GetSegmentKey());
+                  }
+               }
+            }
+
 
             // Returns a vector of all the temporary supports that support this segment
             if (gdrIdx == 0)
@@ -3101,7 +3142,12 @@ std::_tstring CTimelineManager::GetErrorMessage(Uint32 errorCode) const
 
    if (sysFlags<Uint32>::IsSet(errorCode, TLM_INTERMEDIATE_DIAPHRAGM_LOADING_ERROR))
    {
-      os << _T("Intermediate diaphragm loads are applied after the deck is cast. They must be applied after all segments are erected up until deck casting. To fix the problem add an Apply Load activity with intermediate diaphragms loads at or before the event containing the Cast Deck activity to the timeline.") << std::endl << std::endl;
+      os << _T("Intermediate diaphragm loads are applied before segments are erected or after the deck is cast. They must be applied after all segments are erected up until deck casting. To fix the problem add an Apply Load activity with intermediate diaphragms loads at or before the event containing the Cast Deck activity to the timeline.") << std::endl << std::endl;
+   }
+
+   if (sysFlags<Uint32>::IsSet(errorCode, TLM_USER_LOAD_ERROR))
+   {
+      os << _T("User defined loads are applied before segments are erected. They must be applied after all segments are erected. To fix the problem add an Apply Load activity with user defined loads at or after the event containing the last Erect Segment activity to the timeline.") << std::endl << std::endl;
    }
 
    return os.str();

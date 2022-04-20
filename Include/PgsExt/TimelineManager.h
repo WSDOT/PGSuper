@@ -53,7 +53,8 @@
 #define TLM_RAILING_SYSTEM_ERROR                         0x00100000 // railing system is installed before deck is cast
 #define TLM_STRESS_TENDON_ERROR                          0x00200000 // tendon stressed before closure joints are cast or segments are erected
 #define TLM_LOAD_RATING_ERROR                            0x00400000 // load rating occurs before bridge is open to traffic
-#define TLM_INTERMEDIATE_DIAPHRAGM_LOADING_ERROR         0x00800000 // intermediate diaphragm are cast after the deck is cast (must occur before)
+#define TLM_INTERMEDIATE_DIAPHRAGM_LOADING_ERROR         0x00800000 // intermediate diaphragm are cast after the deck is cast (must occur before) or before segment erection (must occur after)
+#define TLM_USER_LOAD_ERROR                              0x01000000 // user defined loads are applied before a segment is erected (must occur after)
 
 #define TLM_SUCCESS                                      0x00000000 // event was successfully added
 
