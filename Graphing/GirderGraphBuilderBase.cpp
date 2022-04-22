@@ -115,14 +115,19 @@ CEAFGraphControlWindow* CGirderGraphBuilderBase::GetGraphControlWindow()
 
 bool CGirderGraphBuilderBase::HandleDoubleClick(UINT nFlags,CPoint point)
 {
+   GET_IFACE(IEditByUI, pEditByUI);
    CGirderKey girderKey(m_pGraphController->GetGirderKey());
    if (girderKey.groupIndex == ALL_GROUPS)
    {
-      girderKey.groupIndex = 0;
+      // we don't know which group to edit since there are multiple groups displayed in the graph
+      // This method of EditGirderDescription prompts if a girder is not defined by the selection context
+      // of the Bridge View window.
+      pEditByUI->EditGirderDescription();
    }
-
-   GET_IFACE(IEditByUI,pEditByUI);
-   pEditByUI->EditGirderDescription(girderKey,EGD_GENERAL);
+   else
+   {
+      pEditByUI->EditGirderDescription(girderKey, EGD_GENERAL);
+   }
 
    return true;
 }

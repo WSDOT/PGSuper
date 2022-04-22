@@ -295,6 +295,9 @@ public:
    bool EditDirectSelectionPrestressing(const CSegmentKey& segmentKey);
    bool EditDirectRowInputPrestressing(const CSegmentKey& segmentKey);
    bool EditDirectStrandInputPrestressing(const CSegmentKey& segmentKey);
+   
+   bool EditGirderDescription();
+   bool EditGirderSegmentDescription();
 
    virtual bool EditGirderDescription(const CGirderKey& girderKey,int nPage) = 0;
    virtual bool EditGirderSegmentDescription(const CSegmentKey& segmentKey,int nPage) = 0;

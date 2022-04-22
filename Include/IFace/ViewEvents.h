@@ -118,14 +118,22 @@ interface IAlignmentProfileViewEventCallback
 // Callbacks for the Girder Elevation View
 interface IGirderElevationViewEventCallback
 {
+   // called when a context menu is created in the view background
    virtual void OnBackgroundContextMenu(CEAFMenu* pMenu) = 0;
+
+   // called when a context menu is created for a girder segment
+   virtual void OnGirderSegmentContextMenu(const CSegmentKey& segmentKey, CEAFMenu* pMenu) = 0;
 };
 
 /////////////////////////////////////////////////////////
 // Callbacks for the Girder Section View
 interface IGirderSectionViewEventCallback
 {
+   // called when a context menu is created in the view background
    virtual void OnBackgroundContextMenu(CEAFMenu* pMenu) = 0;
+
+   // called when a context menu is created in the girder section
+   virtual void OnGirderSectionContextMenu(const pgsPointOfInterest& poi, CEAFMenu* pMenu) = 0;
 };
 
 /////////////////////////////////////////////////////////

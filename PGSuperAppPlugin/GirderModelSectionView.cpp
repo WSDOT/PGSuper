@@ -34,6 +34,7 @@
 #include "GirderModelSectionView.h"
 #include "GirderModelChildFrame.h"
 #include "GMDisplayMgrEventsImpl.h"
+#include "GirderDisplayObjectEvents.h"
 #include "DisplayObjectFactory.h"
 #include <IFace\Bridge.h>
 #include <IFace\DrawBridgeSettings.h>
@@ -410,7 +411,7 @@ void CGirderModelSectionView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, I
       else
       {
          GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
-         gpPoint2d ecc = pStrandGeom->GetEccentricity(intervalIdx, poi, true /*include temp strands*/);
+         auto ecc = pStrandGeom->GetEccentricity(intervalIdx, poi, true /*include temp strands*/);
 
          GET_IFACE2(pBroker, IBridge, pBridge);
          if (pBridge->HasAsymmetricGirders())
@@ -656,6 +657,15 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
       pntBC->Offset(bottom_width, 0.0);
       connectable->AddSocket(SOCKET_BR, pntBC, &socketBR);
    }
+
+   // Register an event sink with the segment display object so that we can handle double clicks
+   // on the segment differently then a general double click
+   CGirderSectionViewSegmentDisplayObjectEvents* pEvents = new CGirderSectionViewSegmentDisplayObjectEvents(poi, GetFrame());
+   CComPtr<iDisplayObjectEvents> events;
+   events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
+   CComQIPtr<iDisplayObject, &IID_iDisplayObject> dispObj(doPnt);
+   dispObj->RegisterEventSink(events);
+
 
    pDL->AddDisplayObject(doPnt);
 
@@ -1097,7 +1107,7 @@ void CGirderModelSectionView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc,IBro
 
 
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   gpPoint2d cg = pStrandGeom->GetStrandCG(intervalIdx, poi, true);
+   auto cg = pStrandGeom->GetStrandCG(intervalIdx, poi, true);
 
    CComPtr<IPoint2d> point;
    point.CoCreateInstance(__uuidof(Point2d));

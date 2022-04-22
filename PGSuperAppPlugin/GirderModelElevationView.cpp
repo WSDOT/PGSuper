@@ -57,6 +57,7 @@
 #include "GMDisplayMgrEventsImpl.h"
 #include "GevEditLoad.h"
 #include "GirderDropSite.h"
+#include "GirderDisplayObjectEvents.h"
 
 #include "PGSuperColors.h"
 
@@ -224,6 +225,8 @@ void CGirderModelElevationView::OnInitialUpdate()
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
 
+   dispMgr->EnableLBtnSelect(TRUE);
+   dispMgr->EnableRBtnSelect(TRUE);
    dispMgr->SetSelectionLineColor(SELECTED_OBJECT_LINE_COLOR);
    dispMgr->SetSelectionFillColor(SELECTED_OBJECT_FILL_COLOR);
 
@@ -434,12 +437,6 @@ void CGirderModelElevationView::UpdateDisplayObjects()
 
    // clean out all the display objects
    dispMgr->ClearDisplayObjects();
-
-   dispMgr->EnableLBtnSelect(TRUE);
-   dispMgr->EnableRBtnSelect(TRUE);
-   dispMgr->SetSelectionLineColor(SELECTED_OBJECT_LINE_COLOR);
-   dispMgr->SetSelectionFillColor(SELECTED_OBJECT_FILL_COLOR);
-
 
    CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
 
@@ -1228,6 +1225,14 @@ void CGirderModelElevationView::BuildSegmentDisplayObjects(CPGSDocBase* pDoc,IBr
             doPnt->SetMaxTipWidth(TOOLTIP_WIDTH);
             doPnt->SetTipDisplayTime(TOOLTIP_DURATION);
             doPnt->SetToolTipText(strMsg);
+
+            // Register an event sink with the segment display object so that we can handle double clicks
+            // on the segment differently then a general double click
+            CGirderElevationViewSegmentDisplayObjectEvents* pEvents = new CGirderElevationViewSegmentDisplayObjectEvents(segmentKey, GetFrame());
+            CComPtr<iDisplayObjectEvents> events;
+            events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
+            CComQIPtr<iDisplayObject, &IID_iDisplayObject> dispObj(doPnt);
+            dispObj->RegisterEventSink(events);
 
             // put the display object in its display list
             pDL->AddDisplayObject(doPnt);

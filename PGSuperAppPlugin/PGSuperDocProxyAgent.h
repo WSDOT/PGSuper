@@ -243,8 +243,10 @@ public:
    virtual void EditBridgeDescription(int nPage) override;
    virtual void EditAlignmentDescription(int nPage) override;
    virtual bool EditSegmentDescription(const CSegmentKey& segmentKey, int nPage) override;
+   virtual bool EditSegmentDescription() override;
    virtual bool EditClosureJointDescription(const CClosureKey& closureKey, int nPage) override;
    virtual bool EditGirderDescription(const CGirderKey& girderKey, int nPage) override;
+   virtual bool EditGirderDescription() override;
    virtual bool EditSpanDescription(SpanIndexType spanIdx, int nPage) override;
    virtual bool EditPierDescription(PierIndexType pierIdx, int nPage) override;
    virtual bool EditTemporarySupportDescription(PierIndexType pierIdx, int nPage) override; 

@@ -862,6 +862,18 @@ bool CPGSDocBase::EditDirectRowInputPrestressing(const CSegmentKey& segmentKey)
    }
 }
 
+bool CPGSDocBase::EditGirderDescription()
+{
+   EAFGetMainFrame()->PostMessage(WM_COMMAND, ID_EDIT_GIRDER, 0);
+   return true;
+}
+
+bool CPGSDocBase::EditGirderSegmentDescription()
+{
+   EAFGetMainFrame()->PostMessage(WM_COMMAND, ID_EDIT_SEGMENT, 0);
+   return true;
+}
+
 bool CPGSDocBase::EditDirectStrandInputPrestressing(const CSegmentKey& segmentKey)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());

@@ -1171,6 +1171,11 @@ bool CPGSuperDocProxyAgent::EditSegmentDescription(const CSegmentKey& segmentKey
    return m_pMyDocument->EditGirderSegmentDescription(segmentKey,nPage);
 }
 
+bool CPGSuperDocProxyAgent::EditSegmentDescription()
+{
+   return m_pMyDocument->EditGirderSegmentDescription();
+}
+
 bool CPGSuperDocProxyAgent::EditClosureJointDescription(const CClosureKey& closureKey, int nPage)
 {
    return m_pMyDocument->EditClosureJointDescription(closureKey,nPage);
@@ -1179,6 +1184,11 @@ bool CPGSuperDocProxyAgent::EditClosureJointDescription(const CClosureKey& closu
 bool CPGSuperDocProxyAgent::EditGirderDescription(const CGirderKey& girderKey, int nPage)
 {
    return m_pMyDocument->EditGirderDescription(girderKey,nPage);
+}
+
+bool CPGSuperDocProxyAgent::EditGirderDescription()
+{
+   return m_pMyDocument->EditGirderDescription();
 }
 
 bool CPGSuperDocProxyAgent::EditSpanDescription(SpanIndexType spanIdx, int nPage)
