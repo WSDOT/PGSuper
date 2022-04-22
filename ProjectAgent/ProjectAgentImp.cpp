@@ -5859,6 +5859,23 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       return hr;
    }
 
+   IndexType curveIdx = 0;
+   for (auto& curve : m_AlignmentData2.CompoundCurves)
+   {
+      if (curve.Radius < MIN_CURVE_RADIUS && curve.Radius != 0.0)
+      {
+         curve.Radius = 0;
+
+         GET_IFACE(IEAFStatusCenter, pStatusCenter);
+         CString strMsg;
+         strMsg.Format(_T("Horizonal curve %d: The curve radius is less than the minimum so it has been set to 0 to model an angle point in the alignment."), LABEL_INDEX(curveIdx));
+
+         pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID, m_scidBridgeDescriptionInfo, strMsg);
+         pStatusCenter->Add(pStatusItem);
+      }
+      curveIdx++;
+   }
+
    // there were a couple of settings moved from the spec library entry into the main program
    // if the values for this project are still in the library entry, get them now
    const SpecLibrary* pTempSpecLib = temp_manager.GetSpecLibrary();

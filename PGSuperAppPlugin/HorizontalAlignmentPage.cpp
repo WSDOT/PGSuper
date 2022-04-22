@@ -74,6 +74,8 @@ void CHorizontalAlignmentPage::DoDataExchange(CDataExchange* pDX)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	//}}AFX_DATA_MAP
 
+   GET_IFACE2(GetBroker(), IEAFDisplayUnits, pDisplayUnits);
+
    CComPtr<IDirection> direction;
    direction.CoCreateInstance(CLSID_Direction);
 
@@ -95,7 +97,16 @@ void CHorizontalAlignmentPage::DoDataExchange(CDataExchange* pDX)
       int curveID = 1;
       for ( iter = m_AlignmentData.CompoundCurves.begin(); iter != m_AlignmentData.CompoundCurves.end(); iter++, curveID++ )
       {
+         // NOTE... a curve radius of exactly 0.0 means there is an angle point in the alignment (not a curve)
          CompoundCurveData& hc = *iter;
+         if (hc.Radius < MIN_CURVE_RADIUS && !IsZero(hc.Radius))
+         {
+            CString strMsg;
+            strMsg.Format(_T("Curve Radius cannot be less than %s for curve # %d"), FormatDimension(MIN_CURVE_RADIUS, pDisplayUnits->GetSpanLengthUnit()), curveID);
+            AfxMessageBox(strMsg);
+            pDX->Fail();
+         }
+
          if ( hc.Radius < 0 )
          {
             CString strMsg;
@@ -128,7 +139,6 @@ void CHorizontalAlignmentPage::DoDataExchange(CDataExchange* pDX)
       m_Grid.SetCurveData(m_AlignmentData.CompoundCurves);
    }
 
-   GET_IFACE2(GetBroker(),IEAFDisplayUnits,pDisplayUnits);
    DDX_Station(pDX,  IDC_REFSTATION, m_AlignmentData.RefStation, pDisplayUnits->GetStationFormat() );
    DDX_UnitValue(pDX,IDC_NORTHING,m_AlignmentData.yRefPoint,pDisplayUnits->GetAlignmentLengthUnit());
    DDX_UnitValue(pDX,IDC_EASTING, m_AlignmentData.xRefPoint,pDisplayUnits->GetAlignmentLengthUnit());

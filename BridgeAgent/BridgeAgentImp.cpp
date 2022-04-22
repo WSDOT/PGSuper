@@ -2019,6 +2019,7 @@ bool CBridgeAgentImp::BuildCogoModel()
       }
       else
       {
+         ATLASSERT(MIN_CURVE_RADIUS <= first_curve_data.Radius);
          Float64 delta;
          if (first_curve_data.bFwdTangent)
          {
@@ -2075,7 +2076,7 @@ bool CBridgeAgentImp::BuildCogoModel()
             Float64 tolerance = ::ConvertToSysUnits(0.009, unitMeasure::Feet); // input accuracy is 0.01 ft
             if (!IsZero(distance,tolerance))
             {
-               locate->ByDistDir(pbt, pi_station - prev_curve_ST_station, CComVariant(back_tangent), 0.00, &pi);
+               locate->ByDistDir(pbt, distance, CComVariant(back_tangent), 0.00, &pi);
                
                if (pi->SameLocation(pbt) == S_FALSE )
                {
@@ -2103,12 +2104,14 @@ bool CBridgeAgentImp::BuildCogoModel()
                alignment->AddEx(pnt);
             }
 
+            pbt = pi;
             back_tangent = fwd_tangent;
             prev_curve_ST_station = pi_station;
          }
          else
          {
             // a real curve
+            ATLASSERT(MIN_CURVE_RADIUS <= curve_data.Radius);
 
             // locate the PI
             CComPtr<IPoint2d> pi;
@@ -2298,7 +2301,7 @@ bool CBridgeAgentImp::BuildCogoModel()
 
    // 6) determine the location of the actual alignment reference point in the local coordinate system
    CComPtr<IPoint2d> objRefPoint;
-   alignment->LocatePoint(CComVariant(alignment_data.RefStation),omtAlongDirection, 0.00,CComVariant(0.00),&objRefPoint);
+   alignment->LocatePoint(CComVariant(alignment_data.RefStation), omtAlongDirection, 0.00, CComVariant(0.00), &objRefPoint);
    Float64 dx,dy;
    objRefPoint->Location(&dx,&dy);
    m_DeltaX = alignment_data.xRefPoint - dx;
