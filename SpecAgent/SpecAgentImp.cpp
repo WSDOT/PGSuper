@@ -425,7 +425,8 @@ std::vector<IntervalIndexType> CSpecAgentImp::GetStressCheckIntervals(const CGir
    GroupIndexType lastGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? pBridge->GetGirderGroupCount() - 1 : firstGroupIdx);
    for (GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++)
    {
-      CGirderKey thisGirderKey(grpIdx, girderKey.girderIndex);
+      IndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      CGirderKey thisGirderKey(grpIdx, Min(girderKey.girderIndex,nGirders-1));
       SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
       for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
       {
