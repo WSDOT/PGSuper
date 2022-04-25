@@ -65,6 +65,13 @@ CCopyGirderDlg::CCopyGirderDlg(IBroker* pBroker, const std::map<IDType,ICopyGird
    // keep selection around
    GET_IFACE(ISelection,pSelection);
    m_FromSelection = pSelection->GetSelection();
+   if (m_FromSelection.Type != CSelection::Girder && m_FromSelection.Type != CSelection::Segment)
+   {
+      // A girder is not selected so force the selection to be the first girder
+      m_FromSelection.Type = CSelection::Girder;
+      m_FromSelection.GroupIdx = (m_FromSelection.GroupIdx == INVALID_INDEX ? 0 : m_FromSelection.GroupIdx);
+      m_FromSelection.GirderIdx = (m_FromSelection.GirderIdx == INVALID_INDEX ? 0 : m_FromSelection.GirderIdx);
+   }
 
    CEAFDocument* pDoc = EAFGetDocument();
    m_bIsPGSplice = pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) != FALSE;
