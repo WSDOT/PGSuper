@@ -30977,7 +30977,7 @@ mathCompositeFunction2d CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& 
    }
 
    x2 = Lg - dist;
-   y2 = ConvertDuctOffsetToDuctElevation(girderKey,pGirder,x1,offset,offsetType);
+   y2 = ConvertDuctOffsetToDuctElevation(girderKey,pGirder,x2,offset,offsetType);
    rightParabola = GenerateParabola1(x1,y1,x2,y2,0.0);
    fnCenterline.AddFunction(x1,x2,rightParabola);
 

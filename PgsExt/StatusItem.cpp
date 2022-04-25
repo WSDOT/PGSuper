@@ -368,12 +368,11 @@ eafTypes::StatusSeverityType pgsGirderDescriptionStatusCallback::GetSeverity() c
 
 void pgsGirderDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
    pgsGirderDescriptionStatusItem* pItem = dynamic_cast<pgsGirderDescriptionStatusItem*>(pStatusItem);
    ATLASSERT(pItem!=nullptr);
 
    CString strMessage;
-   strMessage.Format(_T("%s\n\r%s"),pItem->GetDescription(),_T("Would you like to edit the girder?"));
+   strMessage.Format(_T("%s\n\n%s"),pItem->GetDescription(),_T("Would you like to edit the girder?"));
    int result = AfxMessageBox(strMessage,MB_YESNO);
 
    if ( result == IDYES )

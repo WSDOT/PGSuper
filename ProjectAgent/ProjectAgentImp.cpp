@@ -5070,6 +5070,7 @@ STDMETHODIMP CProjectAgentImp::Init()
    m_scidBridgeDescriptionWarning = pStatusCenter->RegisterCallback(new pgsBridgeDescriptionStatusCallback(m_pBroker, eafTypes::statusWarning));
    m_scidBridgeDescriptionError   = pStatusCenter->RegisterCallback(new pgsBridgeDescriptionStatusCallback(m_pBroker, eafTypes::statusError));
    m_scidGirderDescriptionWarning = pStatusCenter->RegisterCallback(new pgsGirderDescriptionStatusCallback(m_pBroker,eafTypes::statusWarning));
+   m_scidGirderDescriptionError = pStatusCenter->RegisterCallback(new pgsGirderDescriptionStatusCallback(m_pBroker, eafTypes::statusError));
    m_scidRebarStrengthWarning     = pStatusCenter->RegisterCallback(new pgsRebarStrengthStatusCallback());
    m_scidLoadDescriptionWarning   = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusWarning));
    m_scidConnectionGeometryWarning = pStatusCenter->RegisterCallback(new pgsConnectionGeometryStatusCallback(m_pBroker, eafTypes::statusWarning));
@@ -5818,6 +5819,7 @@ void CProjectAgentImp::ValidateBridgeModel()
       pgsBridgeDescriptionStatusItem* pStatusItem = new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionError,pgsBridgeDescriptionStatusItem::General,_T("Bridge model is unstable. Modify the boundary conditions."));
       m_BridgeStabilityStatusItemID = pStatusCenter->Add(pStatusItem);
    }
+
 }
 
 STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
@@ -6010,6 +6012,80 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       }
    }
 
+   GET_IFACE(IDocumentType, pDocType);
+   if (pDocType->IsPGSpliceDocument())
+   {
+      // prior to BridgeLink version 7, some invalid parabolic duct geometry could be input - detect that geometry here
+      // and put an error in the status center
+      GET_IFACE_NOCHECK(IEAFStatusCenter, pStatusCenter);
+      GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
+      for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
+      {
+         CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(grpIdx);
+         GirderIndexType nGirders = pGroup->GetGirderCount();
+         for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
+         {
+            CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+            CPTData* pPT = pGirder->GetPostTensioning();
+            DuctIndexType nDucts = pPT->GetDuctCount();
+            for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+            {
+               CDuctData* pDuct = pPT->GetDuct(ductIdx);
+               if (pDuct->DuctGeometryType == CDuctGeometry::Parabolic)
+               {
+                  PierIndexType startPierIdx, endPierIdx;
+                  pDuct->ParabolicDuctGeometry.GetRange(&startPierIdx, &endPierIdx);
+
+                  SpanIndexType startSpanIdx = (SpanIndexType)(startPierIdx);
+                  SpanIndexType endSpanIdx = (SpanIndexType)(endPierIdx - 1);
+
+                  for (SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++)
+                  {
+                     Float64 distLow;
+                     Float64 offsetLow;
+                     CDuctGeometry::OffsetType lowOffsetType;
+                     pDuct->ParabolicDuctGeometry.GetLowPoint(spanIdx, &distLow, &offsetLow, &lowOffsetType);
+
+                     if (offsetLow == -1.0)
+                     {
+                        CString strMsg;
+                        strMsg.Format(_T("The Girder %s Duct %d low point in Span %s cannot be coincident with the high point. Use a relative distance that is less than 100%%."), LABEL_GIRDER(gdrIdx), LABEL_DUCT(ductIdx), LABEL_SPAN(spanIdx));
+
+                        pgsGirderDescriptionStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(CSegmentKey(grpIdx,gdrIdx,INVALID_INDEX), 0, m_StatusGroupID, m_scidGirderDescriptionError, strMsg);
+                        pStatusCenter->Add(pStatusItem);
+                     }
+
+                     PierIndexType pierIdx = (PierIndexType)spanIdx;
+                     if (startPierIdx < pierIdx)
+                     {
+                        Float64 distLeftIP;
+                        Float64 highOffset;
+                        CDuctGeometry::OffsetType highOffsetType;
+                        Float64 distRightIP;
+                        pDuct->ParabolicDuctGeometry.GetHighPoint(pierIdx, &distLeftIP, &highOffset, &highOffsetType, &distRightIP);
+
+                        if (distLeftIP == -1.0)
+                        {
+                           CString strMsg;
+                           strMsg.Format(_T("The Girder %s Duct %d inflection point before Pier %s cannot be coincident with the high point. Use a relative distance that is less than 100%%."), LABEL_GIRDER(gdrIdx), LABEL_DUCT(ductIdx), LABEL_PIER(pierIdx));
+                           pgsGirderDescriptionStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(CSegmentKey(grpIdx, gdrIdx, INVALID_INDEX), 0, m_StatusGroupID, m_scidGirderDescriptionError, strMsg);
+                           pStatusCenter->Add(pStatusItem);
+                        }
+
+                        if (distRightIP == -1.0)
+                        {
+                           CString strMsg;
+                           strMsg.Format(_T("The Girder %s Duct %d inflection point after Pier %s cannot be coincident with the high point. Use a relative distance that is less than 100%%."), LABEL_GIRDER(gdrIdx), LABEL_DUCT(ductIdx), LABEL_PIER(pierIdx));
+                           pgsGirderDescriptionStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(CSegmentKey(grpIdx, gdrIdx, INVALID_INDEX), 0, m_StatusGroupID, m_scidGirderDescriptionError, strMsg);
+                           pStatusCenter->Add(pStatusItem);
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      }
+   }
 
    // There was a bug in Version 4.0, in CBridgeDescGeneralPage::DoDataExchange(), that could cause
    // the top width type to be set to an invalid value. The invalid value was saved to file
@@ -6174,7 +6250,6 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       InitRatingSpecification(strSpecName);
    }
 
-   GET_IFACE(IDocumentType, pDocType);
    if (pDocType->IsPGSpliceDocument())
    {
       DuctLibrary* pDuctLibrary = GetDuctLibrary();
@@ -11826,14 +11901,8 @@ void CProjectAgentImp::DealWithGirderLibraryChanges(bool fromLibrary)
    } // grooup loop
 }
 
-
-
 void CProjectAgentImp::AddSegmentStatusItem(const CSegmentKey& segmentKey,std::_tstring& message)
 {
-#pragma Reminder("UPDATE: status items per girder?")
-   // should statis items be by girder insteady of by segment?
-   // maybe segment is ok for things like segment concrete out of range
-
    // first post message
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
    pgsGirderDescriptionStatusItem* pStatusItem =  new pgsGirderDescriptionStatusItem(segmentKey,0,m_StatusGroupID,m_scidGirderDescriptionWarning,message.c_str());

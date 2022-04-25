@@ -158,6 +158,7 @@ END_CONNECTION_POINT_MAP()
    StatusCallbackIDType m_scidBridgeDescriptionWarning;
    StatusCallbackIDType m_scidBridgeDescriptionError;
    StatusCallbackIDType m_scidGirderDescriptionWarning;
+   StatusCallbackIDType m_scidGirderDescriptionError;
    StatusCallbackIDType m_scidRebarStrengthWarning;
    StatusCallbackIDType m_scidLoadDescriptionWarning;
    StatusCallbackIDType m_scidConnectionGeometryWarning;

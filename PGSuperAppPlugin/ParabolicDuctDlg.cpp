@@ -14,7 +14,6 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 
-
 void DDX_DuctGeometry(CDataExchange* pDX,CParabolicDuctGrid& grid,CParabolicDuctGeometry& ductGeometry)
 {
    if ( pDX->m_bSaveAndValidate )
@@ -67,6 +66,14 @@ void DDV_DuctGeometry(CDataExchange* pDX,int nIDC,CParabolicDuctGeometry& ductGe
             pDX->Fail();
          }
 
+         if (offsetLow == -1.0)
+         {
+            CString strMsg;
+            strMsg.Format(_T("The low point in Span %s cannot be coincident with the high point. Use a relative distance that is less than 100%%."),LABEL_SPAN(spanIdx));
+            AfxMessageBox(strMsg, MB_ICONEXCLAMATION | MB_OK);
+            pDX->Fail();
+         }
+
          PierIndexType pierIdx = (PierIndexType)spanIdx;
          if ( startPierIdx < pierIdx )
          {
@@ -80,6 +87,22 @@ void DDV_DuctGeometry(CDataExchange* pDX,int nIDC,CParabolicDuctGeometry& ductGe
                CString strMsg;
                strMsg.Format(_T("The high point offset at Pier %s must be greater than zero."),LABEL_PIER(pierIdx));
                AfxMessageBox(strMsg,MB_ICONEXCLAMATION | MB_OK);
+               pDX->Fail();
+            }
+
+            if (distLeftIP == -1.0)
+            {
+               CString strMsg;
+               strMsg.Format(_T("The inflection point before Pier %s cannot be coincident with the high point. Use a relative distance that is less than 100%%."), LABEL_PIER(pierIdx));
+               AfxMessageBox(strMsg, MB_ICONEXCLAMATION | MB_OK);
+               pDX->Fail();
+            }
+
+            if (distRightIP == -1.0)
+            {
+               CString strMsg;
+               strMsg.Format(_T("The inflection point after Pier %s cannot be coincident with the high point. Use a relative distance that is less than 100%%."), LABEL_PIER(pierIdx));
+               AfxMessageBox(strMsg, MB_ICONEXCLAMATION | MB_OK);
                pDX->Fail();
             }
          }
