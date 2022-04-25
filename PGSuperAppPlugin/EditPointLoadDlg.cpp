@@ -460,7 +460,7 @@ void CEditPointLoadDlg::UpdateSpanLength()
       }
       else
       {
-         Float64 span_length = pBridge->GetSpanLength(spanIdx,gdrIdx);
+         Float64 span_length = pBridge->GetFullSpanLength(CSpanKey(spanIdx,gdrIdx));
          CString str;
          str.Format(_T("Span Length = %s"),FormatDimension(span_length,pDisplayUnits->GetSpanLengthUnit()));
          m_SpanLengthCtrl.SetWindowText(str);
