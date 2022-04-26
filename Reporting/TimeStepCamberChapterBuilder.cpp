@@ -372,6 +372,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateTable(IBroker* pBroker, const C
       vProductForces.push_back(pgsTypes::pftUserLLIM);
    }
    //vProductForces.push_back(pgsTypes::pftShearKey);
+   //vProductForces.push_back(pgsTypes::pftLongitudinalJoint);
    //vProductForces.push_back(pgsTypes::pftSecondaryEffects);
    if (stressingIntervalIdx != INVALID_INDEX)
    {

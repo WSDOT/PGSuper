@@ -790,6 +790,10 @@ interface ICamber : IUnknown
    // cast.  Deflections are computed using 28day concrete properties.
    virtual Float64 GetShearKeyDeflection(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig=nullptr) const = 0;
 
+   // Returns the amount the girder deflects when the longitudinal joints are
+   // cast.  Deflections are computed using 28day concrete properties.
+   virtual Float64 GetLongitudinalJointDeflection(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig = nullptr) const = 0;
+
    // Returns the amount the girder deflects when the construction load is
    // applied.  Deflections are computed using 28day concrete properties.
    virtual Float64 GetConstructionLoadDeflection(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig=nullptr) const = 0;

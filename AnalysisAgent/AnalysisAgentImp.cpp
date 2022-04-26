@@ -6982,10 +6982,17 @@ Float64 CAnalysisAgentImp::GetDeckPanelDeflection(const pgsPointOfInterest& poi,
    return dy;
 }
 
-Float64 CAnalysisAgentImp::GetShearKeyDeflection(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig) const
+Float64 CAnalysisAgentImp::GetShearKeyDeflection(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig) const
 {
-   Float64 dy,rz;
-   GetShearKeyDeflection(poi,pConfig,&dy,&rz);
+   Float64 dy, rz;
+   GetShearKeyDeflection(poi, pConfig, &dy, &rz);
+   return dy;
+}
+
+Float64 CAnalysisAgentImp::GetLongitudinalJointDeflection(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig) const
+{
+   Float64 dy, rz;
+   GetLongitudinalJointDeflection(poi, pConfig, &dy, &rz);
    return dy;
 }
 
@@ -7517,6 +7524,34 @@ void CAnalysisAgentImp::GetShearKeyDeflection(const pgsPointOfInterest& poi,cons
    }
 }
 
+void CAnalysisAgentImp::GetLongitudinalJointDeflection(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, Float64* pDy, Float64* pRz) const
+{
+   pgsTypes::BridgeAnalysisType bat = GetBridgeAnalysisType(pgsTypes::Minimize);
+
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
+   GET_IFACE(IIntervals, pIntervals);
+   IntervalIndexType longitudinalJointIntervalIdx = pIntervals->GetCastLongitudinalJointInterval();
+
+   if (HasLongitudinalJointLoad())
+   {
+      *pDy = GetDeflection(longitudinalJointIntervalIdx, pgsTypes::pftLongitudinalJoint, poi, bat, rtIncremental);
+      *pRz = GetRotation(longitudinalJointIntervalIdx, pgsTypes::pftLongitudinalJoint, poi, bat, rtIncremental);
+
+      if (pConfig)
+      {
+         Float64 k = GetDeflectionAdjustmentFactor(poi, pConfig, longitudinalJointIntervalIdx);
+
+         (*pDy) *= k;
+         (*pRz) *= k;
+      }
+   }
+   else
+   {
+      *pDy = 0.0;
+      *pRz = 0.0;
+   }
+}
 void CAnalysisAgentImp::GetConstructionLoadDeflection(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,Float64* pDy,Float64* pRz) const
 {
    pgsTypes::BridgeAnalysisType bat = GetBridgeAnalysisType(pgsTypes::Minimize);
@@ -9156,8 +9191,8 @@ void CAnalysisAgentImp::GetDCamberForGirderScheduleEx2(const pgsPointOfInterest&
 
 void CAnalysisAgentImp::GetD_Deck_TempStrands(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,CamberModelData& initModelData,CamberModelData& initTempModelData,CamberModelData& releaseTempModelData,Int16 constructionRate,bool applyFactors,Float64* pDy,Float64* pRz) const
 {
-   Float64 Dps, Dtpsi, Dtpsr, DgStorage, DgErected, DgInc, Dcreep1, Ddiaphragm, Dcreep2, Dshearkey, Dconstr;
-   Float64 Rps, Rtpsi, Rtpsr, RgStorage, RgErected, RgInc, Rcreep1, Rdiaphragm, Rcreep2, Rshearkey, Rconstr;
+   Float64 Dps, Dtpsi, Dtpsr, DgStorage, DgErected, DgInc, Dcreep1, Ddiaphragm, Dcreep2, Dshearkey, DlongJoint, Dconstr;
+   Float64 Rps, Rtpsi, Rtpsr, RgStorage, RgErected, RgInc, Rcreep1, Rdiaphragm, Rcreep2, Rshearkey, RlongJoint, Rconstr;
 
    Float64 Dx, DXtpsi, DXtpsr;
    GetPermanentPrestressDeflection(poi, pgsTypes::pddErected, pConfig, &Dx,&Dps, &Rps);
@@ -9175,6 +9210,7 @@ void CAnalysisAgentImp::GetD_Deck_TempStrands(const pgsPointOfInterest& poi,cons
 
    GetDiaphragmDeflection(poi, pConfig, &Ddiaphragm, &Rdiaphragm);
    GetShearKeyDeflection(poi, pConfig, &Dshearkey, &Rshearkey);
+   GetLongitudinalJointDeflection(poi, pConfig, &DlongJoint, &RlongJoint);
    GetConstructionLoadDeflection(poi, pConfig, &Dconstr, &Rconstr);
    if (pConfig)
    {
@@ -9190,13 +9226,13 @@ void CAnalysisAgentImp::GetD_Deck_TempStrands(const pgsPointOfInterest& poi,cons
 
    Float64 D1 = cm.ErectionFactor*(DgErected + Dps + Dtpsi);
    Float64 D2 = D1 + cm.CreepFactor*Dcreep1;
-   Float64 D3 = D2 + cm.DiaphragmFactor*(Ddiaphragm + Dshearkey + Dconstr) + cm.ErectionFactor*Dtpsr;
+   Float64 D3 = D2 + cm.DiaphragmFactor*(Ddiaphragm + Dshearkey + DlongJoint + Dconstr) + cm.ErectionFactor*Dtpsr;
    Float64 D4 = D3 + cm.CreepFactor*Dcreep2;
    *pDy = D4;
 
    Float64 R1 = cm.ErectionFactor*(RgErected + Rps + Rtpsi);
    Float64 R2 = R1 + cm.CreepFactor*Rcreep1;
-   Float64 R3 = R2 + cm.DiaphragmFactor*(Rdiaphragm + Rshearkey + Rconstr) +  cm.ErectionFactor*Rtpsr;
+   Float64 R3 = R2 + cm.DiaphragmFactor*(Rdiaphragm + Rshearkey + RlongJoint + Rconstr) +  cm.ErectionFactor*Rtpsr;
    Float64 R4 = R3 + cm.CreepFactor*Rcreep2;
 
    *pRz = R4;
@@ -9204,14 +9240,15 @@ void CAnalysisAgentImp::GetD_Deck_TempStrands(const pgsPointOfInterest& poi,cons
 
 void CAnalysisAgentImp::GetD_Deck(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,CamberModelData& initModelData,CamberModelData& initTempModelData,CamberModelData& releaseTempModelData,Int16 constructionRate,bool applyFactors,Float64* pDy,Float64* pRz) const
 {
-   Float64 Dps, DgStorage, DgErected, DgInc, Dcreep, Ddiaphragm, Dshearkey, Dconstr;
-   Float64 Rps, RgStorage, RgErected, RgInc, Rcreep, Rdiaphragm, Rshearkey, Rconstr;
+   Float64 Dps, DgStorage, DgErected, DgInc, Dcreep, Ddiaphragm, Dshearkey, DlongJoint, Dconstr;
+   Float64 Rps, RgStorage, RgErected, RgInc, Rcreep, Rdiaphragm, Rshearkey, RlongJoint, Rconstr;
 
    Float64 Dx;
    GetPermanentPrestressDeflection(poi, pgsTypes::pddErected, pConfig, &Dx, &Dps, &Rps);
    GetGirderDeflectionForCamber(poi, pConfig, &DgStorage, &RgStorage, &DgErected, &RgErected, &DgInc, &RgInc);
    GetDiaphragmDeflection(poi, pConfig, &Ddiaphragm, &Rdiaphragm);
    GetShearKeyDeflection(poi, pConfig, &Dshearkey, &Rshearkey);
+   GetLongitudinalJointDeflection(poi, pConfig, &DlongJoint, &RlongJoint);
    GetConstructionLoadDeflection(poi, pConfig, &Dconstr, &Rconstr);
    if (pConfig)
    {
@@ -9225,15 +9262,15 @@ void CAnalysisAgentImp::GetD_Deck(const pgsPointOfInterest& poi,const GDRCONFIG*
    // apply camber multipliers
    CamberMultipliers cm = GetCamberMultipliersEx(poi.GetSegmentKey(), applyFactors);
 
-   *pDy = cm.ErectionFactor*(DgErected + Dps) + cm.CreepFactor*Dcreep + cm.DiaphragmFactor*(Ddiaphragm + Dshearkey + Dconstr) ;
-   *pRz = cm.ErectionFactor*(RgErected + Rps) + cm.CreepFactor*Rcreep + cm.DiaphragmFactor*(Rdiaphragm + Rshearkey + Rconstr);
+   *pDy = cm.ErectionFactor*(DgErected + Dps) + cm.CreepFactor*Dcreep + cm.DiaphragmFactor*(Ddiaphragm + Dshearkey + DlongJoint + Dconstr) ;
+   *pRz = cm.ErectionFactor*(RgErected + Rps) + cm.CreepFactor*Rcreep + cm.DiaphragmFactor*(Rdiaphragm + Rshearkey + RlongJoint + Rconstr);
 }
 
 void CAnalysisAgentImp::GetD_NoDeck_TempStrands(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,CamberModelData& initModelData,CamberModelData& initTempModelData,CamberModelData& releaseTempModelData,Int16 constructionRate,bool applyFactors,Float64* pDy,Float64* pRz) const
 {
    // Interpert "D" as deflection before application of superimposed dead loads
-   Float64 Dps, Dtpsi, Dtpsr, DgStorage, DgErected, DgInc, Dcreep1, Ddiaphragm, Dshearkey, Dcreep2, Dconstr, Duser1;
-   Float64 Rps, Rtpsi, Rtpsr, RgStorage, RgErected, RgInc, Rcreep1, Rdiaphragm, Rshearkey, Rcreep2, Rconstr, Ruser1;
+   Float64 Dps, Dtpsi, Dtpsr, DgStorage, DgErected, DgInc, Dcreep1, Ddiaphragm, Dshearkey, DlongJoint, Dcreep2, Dconstr, Duser1;
+   Float64 Rps, Rtpsi, Rtpsr, RgStorage, RgErected, RgInc, Rcreep1, Rdiaphragm, Rshearkey, RlongJoint, Rcreep2, Rconstr, Ruser1;
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
@@ -9269,6 +9306,7 @@ void CAnalysisAgentImp::GetD_NoDeck_TempStrands(const pgsPointOfInterest& poi,co
    GetCreepDeflection(poi, ICamber::cpReleaseToDiaphragm, constructionRate, pgsTypes::pddErected, pConfig, &Dcreep1, &Rcreep1);
    GetDiaphragmDeflection(poi, pConfig, &Ddiaphragm, &Rdiaphragm);
    GetShearKeyDeflection(poi, pConfig, &Dshearkey, &Rshearkey);
+   GetLongitudinalJointDeflection(poi, pConfig, &DlongJoint, &RlongJoint);
    GetConstructionLoadDeflection(poi, pConfig, &Dconstr, &Rconstr);
    GetUserLoadDeflection(nonCompositeUserLoadIntervalIdx, poi, pConfig, &Duser1, &Ruser1);
    GetCreepDeflection(poi, ICamber::cpDiaphragmToDeck, constructionRate, pgsTypes::pddErected, pConfig, &Dcreep2, &Rcreep2);
@@ -9278,13 +9316,13 @@ void CAnalysisAgentImp::GetD_NoDeck_TempStrands(const pgsPointOfInterest& poi,co
 
    Float64 D1 = cm.ErectionFactor*(DgErected + Dps + Dtpsi);
    Float64 D2 = D1 + cm.CreepFactor*Dcreep1;
-   Float64 D3 = D2 + cm.DiaphragmFactor*(Ddiaphragm + Dshearkey + Dconstr) + cm.ErectionFactor*Dtpsr + cm.SlabUser1Factor*Duser1;
+   Float64 D3 = D2 + cm.DiaphragmFactor*(Ddiaphragm + Dshearkey + DlongJoint + Dconstr) + cm.ErectionFactor*Dtpsr + cm.SlabUser1Factor*Duser1;
    Float64 D4 = D3 + cm.CreepFactor*Dcreep2;
    *pDy = D4;
 
    Float64 R1 = cm.ErectionFactor*(RgErected + Rps + Rtpsi);
    Float64 R2 = R1 + cm.CreepFactor*Rcreep1;
-   Float64 R3 = R2 + cm.DiaphragmFactor*(Rdiaphragm + Rshearkey + Rconstr) + cm.ErectionFactor*Rtpsr + cm.SlabUser1Factor*Ruser1;
+   Float64 R3 = R2 + cm.DiaphragmFactor*(Rdiaphragm + Rshearkey + RlongJoint + Rconstr) + cm.ErectionFactor*Rtpsr + cm.SlabUser1Factor*Ruser1;
    Float64 R4 = R3 + cm.CreepFactor*Rcreep2;
    *pRz = R4;
 }
@@ -9292,8 +9330,8 @@ void CAnalysisAgentImp::GetD_NoDeck_TempStrands(const pgsPointOfInterest& poi,co
 void CAnalysisAgentImp::GetD_NoDeck(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,CamberModelData& initModelData,CamberModelData& initTempModelData,CamberModelData& releaseTempModelData,Int16 constructionRate,bool applyFactors,Float64* pDy,Float64* pRz) const
 {
    // Interpert "D" as deflection before application of superimposed dead loads
-   Float64 Dps, DgStorage, DgErected, DgInc, Dcreep1, Ddiaphragm, Dshearkey, Dcreep2, Dconstr, Duser1;
-   Float64 Rps, RgStorage, RgErected, RgInc, Rcreep1, Rdiaphragm, Rshearkey, Rcreep2, Rconstr, Ruser1;
+   Float64 Dps, DgStorage, DgErected, DgInc, Dcreep1, Ddiaphragm, Dshearkey, DlongJoint, Dcreep2, Dconstr, Duser1;
+   Float64 Rps, RgStorage, RgErected, RgInc, Rcreep1, Rdiaphragm, Rshearkey, RlongJoint, Rcreep2, Rconstr, Ruser1;
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
@@ -9327,6 +9365,7 @@ void CAnalysisAgentImp::GetD_NoDeck(const pgsPointOfInterest& poi,const GDRCONFI
    GetCreepDeflection(poi, ICamber::cpReleaseToDiaphragm, constructionRate, pgsTypes::pddErected, pConfig, &Dcreep1, &Rcreep1);
    GetDiaphragmDeflection(poi, pConfig, &Ddiaphragm, &Rdiaphragm);
    GetShearKeyDeflection(poi, pConfig, &Dshearkey, &Rshearkey);
+   GetLongitudinalJointDeflection(poi, pConfig, &DlongJoint, &RlongJoint);
    GetConstructionLoadDeflection(poi, pConfig, &Dconstr, &Rconstr);
    GetUserLoadDeflection(nonCompositeUserLoadIntervalIdx, poi, pConfig, &Duser1, &Ruser1);
    GetCreepDeflection(poi, ICamber::cpDiaphragmToDeck, constructionRate, pgsTypes::pddErected, pConfig, &Dcreep2, &Rcreep2);
@@ -9336,13 +9375,13 @@ void CAnalysisAgentImp::GetD_NoDeck(const pgsPointOfInterest& poi,const GDRCONFI
 
    Float64 D1 = cm.ErectionFactor*(DgErected + Dps);
    Float64 D2 = D1 + cm.CreepFactor*Dcreep1;
-   Float64 D3 = D2 + cm.DiaphragmFactor*(Ddiaphragm + Dshearkey + Dconstr) + cm.SlabUser1Factor*Duser1;
+   Float64 D3 = D2 + cm.DiaphragmFactor*(Ddiaphragm + Dshearkey + DlongJoint + Dconstr) + cm.SlabUser1Factor*Duser1;
    Float64 D4 = D3 + cm.CreepFactor*Dcreep2;
    *pDy = D4;
 
    Float64 R1 = cm.ErectionFactor*(RgErected + Rps);
    Float64 R2 = R1 + cm.CreepFactor*Rcreep1;
-   Float64 R3 = R2 + cm.DiaphragmFactor*(Rdiaphragm + Rshearkey + Rconstr) + cm.SlabUser1Factor*Duser1;
+   Float64 R3 = R2 + cm.DiaphragmFactor*(Rdiaphragm + Rshearkey + DlongJoint + Rconstr) + cm.SlabUser1Factor*Duser1;
    Float64 R4 = R3 + cm.CreepFactor*Rcreep2;
    *pRz = R4;
 }
