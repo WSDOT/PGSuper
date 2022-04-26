@@ -66,10 +66,18 @@ void DDV_DuctGeometry(CDataExchange* pDX,int nIDC,CParabolicDuctGeometry& ductGe
             pDX->Fail();
          }
 
-         if (offsetLow == -1.0)
+         if (distLow == -1.0)
          {
             CString strMsg;
             strMsg.Format(_T("The low point in Span %s cannot be coincident with the high point. Use a relative distance that is less than 100%%."),LABEL_SPAN(spanIdx));
+            AfxMessageBox(strMsg, MB_ICONEXCLAMATION | MB_OK);
+            pDX->Fail();
+         }
+
+         if (distLow == 0.0)
+         {
+            CString strMsg;
+            strMsg.Format(_T("The low point in Span %s cannot be zero."), LABEL_SPAN(spanIdx));
             AfxMessageBox(strMsg, MB_ICONEXCLAMATION | MB_OK);
             pDX->Fail();
          }

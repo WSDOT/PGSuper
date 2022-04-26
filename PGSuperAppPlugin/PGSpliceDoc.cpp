@@ -598,6 +598,8 @@ bool CPGSpliceDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,in
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
    dlg.m_StirrupsPage.m_ShearData = pSegment->ShearData;
 
+   bool bRetVal = false;
+
    if ( dlg.DoModal() == IDOK )
    {
       CPrecastSegmentData* pNewSegment = dlg.m_Girder.GetSegment(segmentKey.segmentIndex);
@@ -630,9 +632,10 @@ bool CPGSpliceDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,in
 
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
+      bRetVal = true;
    }
    
-   return true;
+   return bRetVal;
 }
 
 bool CPGSpliceDoc::EditClosureJointDescription(const CClosureKey& closureKey,int nPage)
@@ -679,6 +682,8 @@ bool CPGSpliceDoc::EditGirderDescription(const CGirderKey& girderKey,int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
+   bool bRetVal = false;
+
    CSplicedGirderDescDlg dlg(girderKey);
 
    if ( dlg.DoModal() == IDOK )
@@ -700,9 +705,11 @@ bool CPGSpliceDoc::EditGirderDescription(const CGirderKey& girderKey,int nPage)
 
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
+
+      bRetVal = true;
    }
 
-   return true;
+   return bRetVal;
 }
 
 void CPGSpliceDoc::DeleteTemporarySupport(SupportIDType tsID)

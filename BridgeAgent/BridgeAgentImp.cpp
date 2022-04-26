@@ -34915,6 +34915,20 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey, DuctInd
 
       Float64 x2 = x1; // dummy (x1 and x2 are computed from the web plane below)
       Float64 z2 = z1 + dist; // this is the location of the low point
+
+      if (IsLE(z2, z1))
+      {
+         GET_IFACE(IEAFStatusCenter, pStatusCenter);
+         CString strMsg;
+         strMsg.Format(_T("%s, Span %s, Duct %d: Start to Low segment is invalid. Correct duct definition."), LABEL_GIRDER(girderKey), LABEL_SPAN(startSpanIdx), LABEL_DUCT(ductIdx));
+         std::unique_ptr<pgsGirderDescriptionStatusItem> pStatusItem = std::make_unique<pgsGirderDescriptionStatusItem>(CSegmentKey(girderKey, ALL_SEGMENTS), 0, m_StatusGroupID, m_scidGirderDescriptionError, strMsg);
+         pStatusCenter->Add(pStatusItem.release());
+
+         break; // get the heck outta here
+      }
+
+      ATLASSERT(z1 < z2);
+
       Float64 y2 = ConvertDuctOffsetToDuctElevation(girderKey,nullptr,z2,offset,offsetType);
 
       // locate the tendon horizontally in the girder cross section
@@ -34937,7 +34951,6 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey, DuctInd
       pntEnd.CoCreateInstance(CLSID_Point3d);
       pntEnd->Move(x2,y2,z2);
 
-      ATLASSERT(z1 < z2);
       parabolicTendonSegment->put_Start(pntStart);
       parabolicTendonSegment->put_End(pntEnd);
       parabolicTendonSegment->put_Slope(0.0);
@@ -34983,6 +34996,19 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey, DuctInd
 
          z2 = z3 - distLeftIP; // inflection point measured from high point... want z2 measured from start of span
 
+         if (IsLE(z2, z1))
+         {
+            GET_IFACE(IEAFStatusCenter, pStatusCenter);
+            CString strMsg;
+            strMsg.Format(_T("%s, Span %s, Duct %d: Low to IP segment is invalid. Correct duct definition."), LABEL_GIRDER(girderKey), LABEL_SPAN(prevSpanIdx), LABEL_DUCT(ductIdx));
+            std::unique_ptr<pgsGirderDescriptionStatusItem> pStatusItem = std::make_unique<pgsGirderDescriptionStatusItem>(CSegmentKey(girderKey, ALL_SEGMENTS), 0, m_StatusGroupID, m_scidGirderDescriptionError, strMsg);
+            pStatusCenter->Add(pStatusItem.release());
+
+            break; // get the heck outta here
+         }
+
+         ATLASSERT(z1 < z2);
+
          // elevation at inflection point (slope at low and high points must be zero)
          Float64 y2 = (y3*(z2-z1) + y1*(z3-z2))/(z3-z1);
 
@@ -34999,8 +35025,6 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey, DuctInd
          CComPtr<IPoint3d> pntInflection;
          pntInflection.CoCreateInstance(CLSID_Point3d);
          pntInflection->Move(x2,y2,z2);
-
-         ATLASSERT(z1 < z2);
          leftParabolicTendonSegment->put_Start(pntStart);
          leftParabolicTendonSegment->put_End(pntInflection);
          leftParabolicTendonSegment->put_Slope(0.0);
@@ -35015,7 +35039,19 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey, DuctInd
          pntEnd.CoCreateInstance(CLSID_Point3d);
          pntEnd->Move(x3,y3,z3);
 
+
+         if (IsLE(z3, z2))
+         {
+            GET_IFACE(IEAFStatusCenter, pStatusCenter);
+            CString strMsg;
+            strMsg.Format(_T("%s, Span %s, Duct %d: IP to High segment is invalid. Correct duct definition."), LABEL_GIRDER(girderKey), LABEL_SPAN(prevSpanIdx), LABEL_DUCT(ductIdx));
+            std::unique_ptr<pgsGirderDescriptionStatusItem> pStatusItem = std::make_unique<pgsGirderDescriptionStatusItem>(CSegmentKey(girderKey, ALL_SEGMENTS), 0, m_StatusGroupID, m_scidGirderDescriptionError, strMsg);
+            pStatusCenter->Add(pStatusItem.release());
+
+            break; // get the heck outta here
+         }
          ATLASSERT(z2 < z3);
+
          rightParabolicTendonSegment->put_Start(pntInflection);
          rightParabolicTendonSegment->put_End(pntEnd);
          rightParabolicTendonSegment->put_Slope(0.0);
@@ -35057,6 +35093,20 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey, DuctInd
          }
 
          z2 = z1 + distRightIP; // inflection point measured from high point
+
+         if (IsLE(z2, z1))
+         {
+            GET_IFACE(IEAFStatusCenter, pStatusCenter);
+            CString strMsg;
+            strMsg.Format(_T("%s, Span %s, Duct %d: High to IP segment is invalid. Correct duct definition."), LABEL_GIRDER(girderKey), LABEL_SPAN(nextSpanIdx), LABEL_DUCT(ductIdx));
+            std::unique_ptr<pgsGirderDescriptionStatusItem> pStatusItem = std::make_unique<pgsGirderDescriptionStatusItem>(CSegmentKey(girderKey, ALL_SEGMENTS), 0, m_StatusGroupID, m_scidGirderDescriptionError, strMsg);
+            pStatusCenter->Add(pStatusItem.release());
+
+            break; // get the heck outta here
+         }
+
+         ATLASSERT(z1 < z2);
+
          y2 = (y3*(z2-z1) + y1*(z3-z2))/(z3-z1);
 
          webPlane->GetX(y2,z2,&x2);
@@ -35073,7 +35123,6 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey, DuctInd
          pntInflection.CoCreateInstance(CLSID_Point3d);
          pntInflection->Move(x2,y2,z2);
 
-         ATLASSERT(z1 < z2);
          leftParabolicTendonSegment->put_Start(pntStart);
          leftParabolicTendonSegment->put_End(pntInflection);
          leftParabolicTendonSegment->put_Slope(0.0);
@@ -35081,6 +35130,20 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey, DuctInd
          tendon->AddSegment(leftParabolicTendonSegment);
 
          // inflection point to low point
+
+         if (IsLE(z3, z2))
+         {
+            GET_IFACE(IEAFStatusCenter, pStatusCenter);
+            CString strMsg;
+            strMsg.Format(_T("%s, Span %s, Duct %d: IP to Low segment is invalid. Correct duct definition."), LABEL_GIRDER(girderKey), LABEL_SPAN(nextSpanIdx), LABEL_DUCT(ductIdx));
+            std::unique_ptr<pgsGirderDescriptionStatusItem> pStatusItem = std::make_unique<pgsGirderDescriptionStatusItem>(CSegmentKey(girderKey, ALL_SEGMENTS), 0, m_StatusGroupID, m_scidGirderDescriptionError, strMsg);
+            pStatusCenter->Add(pStatusItem.release());
+
+            break; // get the heck outta here
+         }
+
+         ATLASSERT(z2 < z3);
+
          rightParabolicTendonSegment.Release();
          rightParabolicTendonSegment.CoCreateInstance(CLSID_ParabolicTendonSegment);
 
@@ -35168,6 +35231,20 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey, DuctInd
 
       x2 = x1; // dummy
       z2 = Lg - dist; // dist is measured from the end of the bridge
+
+      if (IsLE(z2, z1))
+      {
+         GET_IFACE(IEAFStatusCenter, pStatusCenter);
+         CString strMsg;
+         strMsg.Format(_T("%s, Span %s, Duct %d: Low to End segment is invalid. Correct duct definition."), LABEL_GIRDER(girderKey), LABEL_SPAN(endSpanIdx), LABEL_DUCT(ductIdx));
+         std::unique_ptr<pgsGirderDescriptionStatusItem> pStatusItem = std::make_unique<pgsGirderDescriptionStatusItem>(CSegmentKey(girderKey, ALL_SEGMENTS), 0, m_StatusGroupID, m_scidGirderDescriptionError, strMsg);
+         pStatusCenter->Add(pStatusItem.release());
+
+         break; // get the heck outta here
+      }
+
+      ATLASSERT(z1 < z2);
+
       y2 = ConvertDuctOffsetToDuctElevation(girderKey,nullptr,z2,offset,offsetType);
 
       webPlane->GetX(y1,z1,&x1);
@@ -35184,7 +35261,6 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey, DuctInd
       pntEnd.CoCreateInstance(CLSID_Point3d);
       pntEnd->Move(x2,y2,z2);
 
-      ATLASSERT(z1 < z2);
       parabolicTendonSegment->put_Start(pntStart);
       parabolicTendonSegment->put_End(pntEnd);
       parabolicTendonSegment->put_Slope(0.0);
@@ -35274,7 +35350,7 @@ void CBridgeAgentImp::CreateLinearTendon(const CGirderKey& girderKey, DuctIndexT
          {
             GET_IFACE(IEAFStatusCenter, pStatusCenter);
             CString strMsg;
-            strMsg.Format(_T("%s, Tendon %d: Point %d is beyond the end of the girder. This point has been ignored. Correct tendon definition."),LABEL_GIRDER(girderKey),LABEL_DUCT(ductIdx),LABEL_INDEX(pointIdx));
+            strMsg.Format(_T("%s, Duct %d: Point %d is beyond the end of the girder. This point has been ignored. Correct duct definition."),LABEL_GIRDER(girderKey),LABEL_DUCT(ductIdx),LABEL_INDEX(pointIdx));
             std::unique_ptr<pgsGirderDescriptionStatusItem> pStatusItem = std::make_unique<pgsGirderDescriptionStatusItem>(CSegmentKey(girderKey,ALL_SEGMENTS), 0, m_StatusGroupID, m_scidGirderDescriptionWarning, strMsg);
             pStatusCenter->Add(pStatusItem.release());
             continue; // skip to next point

@@ -49,6 +49,7 @@ protected: // create from serialization only
 
    bool EditTemporarySupportDescription(SupportIDType tsID,int nPage);
    
+   // Return true if the edit was completed, otherwise return false (return false if the edit was cancelled)
    virtual bool EditGirderSegmentDescription(const CSegmentKey& segmentKey,int nPage) override;
    virtual bool EditClosureJointDescription(const CClosureKey& closureKey,int nPage) override;
    virtual bool EditGirderDescription(const CGirderKey& girderKey,int nPage) override;

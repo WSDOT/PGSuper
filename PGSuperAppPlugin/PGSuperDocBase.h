@@ -287,8 +287,8 @@ public:
    virtual libLibraryManager* GetLibraryManager(CollectionIndexType num) override;
    virtual libLibraryManager* GetTargetLibraryManager() override;
 
-   void EditBridgeDescription(int nPage);
-   void EditAlignmentDescription(int nPage);
+   bool EditBridgeDescription(int nPage);
+   bool EditAlignmentDescription(int nPage);
    bool EditSpanDescription(SpanIndexType spanIdx, int nPage);
    bool EditPierDescription(PierIndexType pierIdx, int nPage);
    bool EditTemporarySupportDescription(PierIndexType pierIdx, int nPage);
@@ -299,6 +299,7 @@ public:
    bool EditGirderDescription();
    bool EditGirderSegmentDescription();
 
+   // Return true if the edit was completed, otherwise return false (return false if the edit was cancelled)
    virtual bool EditGirderDescription(const CGirderKey& girderKey,int nPage) = 0;
    virtual bool EditGirderSegmentDescription(const CSegmentKey& segmentKey,int nPage) = 0;
    virtual bool EditClosureJointDescription(const CClosureKey& closureKey,int nPage) = 0;

@@ -192,7 +192,6 @@ bool CPGSuperDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,int
       nPage--;
    }
 
-
    CGirderDescDlg dlg(pBridgeDesc,segmentKey);
    dlg.SetActivePage(nPage);
 

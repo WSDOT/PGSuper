@@ -436,7 +436,7 @@ void CPGSDocBase::GetDocUnitSystem(IDocUnitSystem** ppDocUnitSystem)
    (*ppDocUnitSystem)->AddRef();
 }
 
-void CPGSDocBase::EditAlignmentDescription(int nPage)
+bool CPGSDocBase::EditAlignmentDescription(int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -457,10 +457,16 @@ void CPGSDocBase::EditAlignmentDescription(int nPage)
 
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
+
+      return true;
+   }
+   else
+   {
+      return false;
    }
 }
 
-void CPGSDocBase::EditBridgeDescription(int nPage)
+bool CPGSDocBase::EditBridgeDescription(int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -498,6 +504,12 @@ void CPGSDocBase::EditBridgeDescription(int nPage)
 
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
+
+      return true;
+   }
+   else
+   {
+      return false;
    }
 }
 
