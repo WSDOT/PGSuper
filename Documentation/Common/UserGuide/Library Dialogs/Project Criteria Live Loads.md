@@ -28,9 +28,11 @@ Use rigid method... | When checked, the rigid method, as described in LRFD 4.6.2
 > * If the fractional distance is not 0.5, the width of the bridge is evaluated at two locations. If the width of the bridge is the same at both locations, the section that is nearest the location specifed in the Project Criteria will be used.
 
 > TIP: You can forgo the computation of live load distribution factors and enter your own values.
+
  
 Pedestrian Live Load (LRFD 3.6.1.6)
 ------------------------------------
+
 Define the pedestrian live load.
 
 Item | Description

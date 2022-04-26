@@ -22,6 +22,7 @@ PGSplice Dialogs {#ug_dialogs}
 * @subpage ug_dialogs_copy_girder_properties
 * @subpage ug_dialogs_copy_pier_properties
 * @subpage ug_dialogs_copy_tempsupport_properties
+* @subpage ug_dialogs_cracked_section_details_report
 * @subpage ug_dialogs_design_live_loads
 * @subpage ug_dialogs_distributed_load
 * @subpage ug_dialogs_effective_flange_width
@@ -45,6 +46,7 @@ PGSplice Dialogs {#ug_dialogs}
 * @subpage ug_dialogs_loadrating_summary_report_options
 * @subpage ug_dialogs_loads_view
 * @subpage ug_dialogs_moment_load
+* @subpage ug_dialogs_moment_capacity_details_report
 * @subpage ug_dialogs_parabolic_duct
 * @subpage ug_dialogs_pier_description
 * @subpage ug_dialogs_plugins

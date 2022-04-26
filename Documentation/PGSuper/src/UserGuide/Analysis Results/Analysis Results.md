@@ -50,6 +50,7 @@ Interval | Name | Description
 > NOTE: The intervals are always numbered sequentially and some intervals may not be applicable to your bridge model. The intervals in your project may not exactly match the list above.
 
 > NOTE: The interval names contain the old stage names in parentheses.
+
  
 Graphical Results
 -----------------
