@@ -766,7 +766,7 @@ bool pgsPointOfInterest::MergeAttributes(const pgsPointOfInterest& rOther)
 
    if ((HasAttribute(POI_CASTING_BOUNDARY_START) && rOther.HasAttribute(POI_CASTING_BOUNDARY_END)) || (HasAttribute(POI_CASTING_BOUNDARY_END) && rOther.HasAttribute(POI_CASTING_BOUNDARY_START)))
    {
-      // POIs for end points of deck casting regions cannot be merged. The POIs are in different different casting regions
+      // POIs for end points of deck casting regions cannot be merged. The POIs are in different casting regions
       return false;
    }
 
