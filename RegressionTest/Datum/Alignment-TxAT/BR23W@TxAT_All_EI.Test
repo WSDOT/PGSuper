@@ -21,7 +21,7 @@ The Specification Check was Successful
 
 The Specification Check was Not Successful
 Strand slope exceeds maximum
-Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 17 Open to Traffic
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Confinement zone check failed.
 Hauling checks failed
@@ -49,7 +49,7 @@ The Specification Check was Successful
 
 
 The Specification Check was Not Successful
-Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 17 Open to Traffic
 Stirrup detailing checks failed for the Strength I Limit State.
 Confinement zone check failed.
 Lifting checks failed
@@ -79,7 +79,7 @@ The Specification Check was Successful
 
 The Specification Check was Not Successful
 Strand slope exceeds maximum
-Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 17 Open to Traffic
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Confinement zone check failed.

@@ -15,7 +15,7 @@ Slab Offset ("A" Dimension) check failed
 
 
 The Specification Check was Not Successful
-Tension stress check failed for Service III Limit State in Interval 19 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic
 Splitting check failed.
 Confinement zone check failed.
 
@@ -26,7 +26,7 @@ Confinement zone check failed.
 
 
 The Specification Check was Not Successful
-Tension stress check failed for Service III Limit State in Interval 19 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic
 Splitting check failed.
 Confinement zone check failed.
 Slab Offset ("A" Dimension) check failed

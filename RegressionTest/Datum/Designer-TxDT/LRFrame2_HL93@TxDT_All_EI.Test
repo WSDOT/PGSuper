@@ -4,7 +4,7 @@
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 20 Apply User Defined Loads, Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 19 Apply User Defined Loads, Open to Traffic
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Splitting check failed.
 
@@ -15,7 +15,7 @@ Splitting check failed.
 
 
 The Specification Check was Not Successful
-Tension stress check failed for Service III Limit State in Interval 20 Apply User Defined Loads, Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 19 Apply User Defined Loads, Open to Traffic
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Splitting check failed.
 Confinement zone check failed.
@@ -94,7 +94,7 @@ Girder design was Not Successful
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 12 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 20 Apply User Defined Loads, Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 19 Apply User Defined Loads, Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Splitting check failed.
 Confinement zone check failed.
@@ -131,7 +131,7 @@ Girder design was Not Successful
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 12 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 20 Apply User Defined Loads, Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 19 Apply User Defined Loads, Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Splitting check failed.
 Confinement zone check failed.
@@ -169,8 +169,8 @@ The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Compression stress check failed for Service I Limit State in Interval 12 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 20 Apply User Defined Loads, Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 20 Apply User Defined Loads, Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 19 Apply User Defined Loads, Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 19 Apply User Defined Loads, Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Splitting check failed.
 Confinement zone check failed.
@@ -208,8 +208,8 @@ The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Compression stress check failed for Service I Limit State in Interval 12 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 20 Apply User Defined Loads, Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 20 Apply User Defined Loads, Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 19 Apply User Defined Loads, Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 19 Apply User Defined Loads, Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Splitting check failed.
 Confinement zone check failed.
@@ -246,7 +246,7 @@ Girder design was Not Successful
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 12 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 20 Apply User Defined Loads, Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 19 Apply User Defined Loads, Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Splitting check failed.
 Confinement zone check failed.
@@ -284,8 +284,8 @@ The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Compression stress check failed for Service I Limit State in Interval 12 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 20 Apply User Defined Loads, Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 20 Apply User Defined Loads, Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 19 Apply User Defined Loads, Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 19 Apply User Defined Loads, Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Splitting check failed.
 Confinement zone check failed.
@@ -323,8 +323,8 @@ Girder design was Not Successful
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 12 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 20 Apply User Defined Loads, Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 20 Apply User Defined Loads, Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 19 Apply User Defined Loads, Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 19 Apply User Defined Loads, Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Splitting check failed.

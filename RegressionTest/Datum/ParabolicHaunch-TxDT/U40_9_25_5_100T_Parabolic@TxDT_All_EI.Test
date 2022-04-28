@@ -17,7 +17,7 @@ Bursting check failed.
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Tension stress check failed for Service III Limit State in Interval 17 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 16 Open to Traffic
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
@@ -34,7 +34,7 @@ Slab Offset ("A" Dimension) check failed
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Tension stress check failed for Service III Limit State in Interval 17 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 16 Open to Traffic
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].

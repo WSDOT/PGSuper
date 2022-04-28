@@ -5,7 +5,7 @@
 
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 17 Open to Traffic
 Bursting check failed.
 Lifting checks failed
 
@@ -16,7 +16,7 @@ Lifting checks failed
 
 
 The Specification Check was Not Successful
-Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 17 Open to Traffic
 Stirrup detailing checks failed for the Strength I Limit State.
 Confinement zone check failed.
 Lifting checks failed
