@@ -507,14 +507,9 @@ std::vector<Float64> CSegmentModelManager::GetDeflection(IntervalIndexType inter
                   const pgsPointOfInterest& poi(*poiIter);
                   Float64 Dy = *DyIter;
 
-                  if (!poi.HasAttribute(POI_CLOSURE) || vDy.empty())
+                  if(pPoi->IsOnSegment(poi))
                   {
                      Dy -= Dsupp;
-                  }
-                  else
-                  {
-                     // Deflections in closure joints are not accurate. Just use deflection of previous poi, if possible
-                     Dy = vDy.back();
                   }
 
                   vDy.push_back(Dy);
@@ -577,16 +572,11 @@ std::vector<Float64> CSegmentModelManager::GetDeflection(IntervalIndexType inter
                   const pgsPointOfInterest& poi(*poiIter);
                   Float64 Dy = *DyIter;
 
-                  if (!poi.HasAttribute(POI_CLOSURE) || vDy.empty())
+                  if (pPoi->IsOnSegment(poi))
                   {
                      Float64 Xg = poi.GetDistFromStart();
                      Float64 d = ::LinInterp(Xg - XgStart, DyStart, DyEnd, XgEnd - XgStart);
                      Dy -= d;
-                  }
-                  else
-                  {
-                     // Deflections in closure joints are not accurate. Just use deflection of previous poi if vDy is not empty
-                     Dy = vDy.back();
                   }
 
                   vDy.push_back(Dy);

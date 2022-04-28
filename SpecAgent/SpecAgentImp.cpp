@@ -225,6 +225,7 @@ std::vector<StressCheckTask> CSpecAgentImp::GetStressCheckTasks(const CSegmentKe
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
    IntervalIndexType noncompositeIntervalIdx = pIntervals->GetLastNoncompositeInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
    GET_IFACE_NOCHECK(IGirder, pGirder);
@@ -394,7 +395,7 @@ std::vector<StressCheckTask> CSpecAgentImp::GetStressCheckTasks(const CSegmentKe
          for (auto intervalIdx : vUserLoadIntervals)
          {
             vStressCheckTasks.emplace_back(intervalIdx, pgsTypes::ServiceI, pgsTypes::Compression);
-            vStressCheckTasks.emplace_back(intervalIdx, pgsTypes::ServiceI, pgsTypes::Tension);
+            vStressCheckTasks.emplace_back(intervalIdx, liveLoadIntervalIdx <= intervalIdx ? pgsTypes::ServiceIII : pgsTypes::ServiceI, pgsTypes::Tension);
          }
       }
 
@@ -408,7 +409,7 @@ std::vector<StressCheckTask> CSpecAgentImp::GetStressCheckTasks(const CSegmentKe
       if (overlayIntervalIdx != INVALID_INDEX)
       {
          vStressCheckTasks.emplace_back(overlayIntervalIdx, pgsTypes::ServiceI, pgsTypes::Compression);
-         vStressCheckTasks.emplace_back(overlayIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension);
+         vStressCheckTasks.emplace_back(overlayIntervalIdx, liveLoadIntervalIdx <= overlayIntervalIdx ? pgsTypes::ServiceIII : pgsTypes::ServiceI, pgsTypes::Tension);
       }
    }
 
@@ -2015,9 +2016,10 @@ void CSpecAgentImp::GetSegmentAllowableTensionStressCoefficient(const pgsPointOf
       else
       {
          // if this is a non-stressing interval, use allowables from Table 5.9.2.3.2b-1 (pre2017: 5.9.4.2.2-1)
-         if ( task.intervalIdx < railingSystemIntervalIdx )
+         GET_IFACE(IDocumentType, pDocType);
+         if ( task.intervalIdx < railingSystemIntervalIdx && pDocType->IsPGSuperDocument())
          {
-
+            // this is a PGSuper only stress limit
             ATLASSERT( task.limitState == pgsTypes::ServiceI );
             x = pSpec->GetErectionTensionStressFactor();
             pSpec->GetErectionMaximumTensionStress(&bCheckMax,&fmax);
@@ -2027,12 +2029,11 @@ void CSpecAgentImp::GetSegmentAllowableTensionStressCoefficient(const pgsPointOf
             if ( task.limitState == pgsTypes::ServiceI && CheckFinalDeadLoadTensionStress() )
             {
                x = pSpec->GetFinalTensionPermanentLoadsStressFactor();
-               pSpec->GetFinalTensionPermanentLoadStressFactor(&bCheckMax,&fmax);
+               pSpec->GetFinalTensionPermanentLoadStressFactor(&bCheckMax, &fmax);
             }
             else
             {
 #if defined _DEBUG
-               GET_IFACE(IDocumentType, pDocType);
                ATLASSERT((pDocType->IsPGSpliceDocument() && task.limitState == pgsTypes::ServiceI) || task.limitState == pgsTypes::ServiceIII);
 #endif
                GET_IFACE(IEnvironment,pEnv);
@@ -2201,14 +2202,16 @@ bool CSpecAgentImp::IsStressCheckApplicable(const CGirderKey& girderKey, const S
    IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
 
+
    if ( task.stressType == pgsTypes::Tension )
    {
       switch(task.limitState)
       {
       case pgsTypes::ServiceI:
-         if ( (erectSegmentIntervalIdx <= task.intervalIdx && task.intervalIdx <= noncompositeIntervalIdx && !CheckTemporaryStresses())
-              ||
-              (liveLoadIntervalIdx <= task.intervalIdx && !CheckFinalDeadLoadTensionStress())
+      {
+         if ((erectSegmentIntervalIdx <= task.intervalIdx && task.intervalIdx <= noncompositeIntervalIdx && !CheckTemporaryStresses())
+            ||
+            (liveLoadIntervalIdx <= task.intervalIdx && !CheckFinalDeadLoadTensionStress())
             )
          {
             return false;
@@ -2217,6 +2220,7 @@ bool CSpecAgentImp::IsStressCheckApplicable(const CGirderKey& girderKey, const S
          {
             return true;
          }
+      }
 
       case pgsTypes::ServiceI_PermitRoutine:
       case pgsTypes::ServiceI_PermitSpecial:

@@ -1418,9 +1418,6 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
       return;
    }
 
-   // Get the X locations for the graph
-   GET_IFACE(IPointOfInterest, pIPoi);
-
    // If the segments are simple span elements, we want to draw a graph for each segment individually.
    // Determine if the segments are simple spans during the intervals being graphed
    GET_IFACE(IIntervals, pIntervals);
@@ -1488,50 +1485,54 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
 
       SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
 
-      SegmentIndexType endSegmentIdx = (bSimpleSpanSegments ? nSegments-1 : 0);
-      for (SegmentIndexType segIdx = 0; segIdx <= endSegmentIdx; segIdx++)
+      for (IndexType graphIdx = 0; graphIdx < nSelectedGraphs; graphIdx++)
       {
-         CSegmentKey segmentKey(thisGirderKey, segIdx);
-         IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-         IntervalIndexType segmentErectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
-         IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
+         IDType graphID = ((CAnalysisResultsGraphController*)m_pGraphController)->SelectedGraphIndexToGraphID(graphIdx);
+         const CAnalysisResultsGraphDefinition& graphDef = m_pGraphDefinitions->GetGraphDefinition(graphID);
 
-         //if ((lastPlottingIntervalIdx < releaseIntervalIdx) // this is before release for this segment, so this segment doesn't exist yet
-         //   ||
-         //   ((firstPlottingIntervalIdx <= firstSegmentErectionIntervalIdx && firstSegmentErectionIntervalIdx <= lastPlottingIntervalIdx) && (lastPlottingIntervalIdx < segmentErectionIntervalIdx)) // results are for erected segments AND current segment is not yet erected
-         //   )
-         //{
-         //   continue;
-         //}
-         //
-         PoiList vPoi;
-
-         // Pois for pricipal web stress are unique. 
-         ActionType actionType = ((CAnalysisResultsGraphController*)m_pGraphController)->GetActionType();
-         if (actionPrincipalWebStress == actionType)
+         bool bSimpleSpanSegmentsThisGraph = bSimpleSpanSegments;
+         if (graphDef.m_GraphType == graphProduct && graphDef.m_LoadType.ProductLoadType == pgsTypes::pftPretension)
          {
-            GET_IFACE(IPrincipalWebStress, pPrincipalWebStress);
-            pPrincipalWebStress->GetPrincipalWebStressPointsOfInterest(CSegmentKey(thisGirderKey, bSimpleSpanSegments ? segIdx : ALL_SEGMENTS), lastPlottingIntervalIdx, &vPoi);
+            // pretensioning is always simple span
+            bSimpleSpanSegmentsThisGraph = true;
          }
-         else
+         
+         SegmentIndexType endSegmentIdx = (bSimpleSpanSegmentsThisGraph ? nSegments-1 : 0);
+         for (SegmentIndexType segIdx = 0; segIdx <= endSegmentIdx; segIdx++)
          {
-            pIPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey, bSimpleSpanSegments ? segIdx : ALL_SEGMENTS), &vPoi);
-            if (bSimpleSpanSegments)
+            CSegmentKey segmentKey(thisGirderKey, segIdx);
+            IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+            IntervalIndexType segmentErectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
+            IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
+            // Get the X locations for the graph - we have to do this for each graph type because some
+            // items graph as simple spans and some graph on the continuous span
+            GET_IFACE(IPointOfInterest, pIPoi);
+            PoiList vPoi;
+
+            // Pois for pricipal web stress are unique. 
+            ActionType actionType = ((CAnalysisResultsGraphController*)m_pGraphController)->GetActionType();
+            if (actionPrincipalWebStress == actionType)
             {
-               // these POI are between segments so they don't apply
-               vPoi.erase(std::remove_if(vPoi.begin(), vPoi.end(), [pIPoi](const auto& poi) {return pIPoi->IsOffSegment(poi); }), vPoi.end());
-               //pIPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
-               //pIPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
+               GET_IFACE(IPrincipalWebStress, pPrincipalWebStress);
+               pPrincipalWebStress->GetPrincipalWebStressPointsOfInterest(CSegmentKey(thisGirderKey, bSimpleSpanSegmentsThisGraph ? segIdx : ALL_SEGMENTS), lastPlottingIntervalIdx, &vPoi);
             }
-         }
+            else
+            {
+               pIPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey, bSimpleSpanSegmentsThisGraph ? segIdx : ALL_SEGMENTS), &vPoi);
+               if (bSimpleSpanSegmentsThisGraph)
+               {
+                  // these POI are between segments so they don't apply
+                  vPoi.erase(std::remove_if(vPoi.begin(), vPoi.end(), [pIPoi](const auto& poi) {return pIPoi->IsOffSegment(poi); }), vPoi.end());
+                  //pIPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
+                  //pIPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
+               }
+            }
 
-         // Map POI coordinates to X-values for the graph
-         std::vector<Float64> xVals;
-         Shift(girderKey.groupIndex == ALL_GROUPS ? false : true);
-         GetXValues(vPoi,&xVals);
+            // Map POI coordinates to X-values for the graph
+            std::vector<Float64> xVals;
+            Shift(girderKey.groupIndex == ALL_GROUPS ? false : true);
+            GetXValues(vPoi, &xVals);
 
-         for ( IndexType graphIdx = 0; graphIdx < nSelectedGraphs; graphIdx++ )
-         {
             IntervalIndexType intervalIdx = INVALID_INDEX;
             if ( graphMode == CAnalysisResultsGraphController::Loading)
             {
@@ -1557,9 +1558,6 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
                // skip it
                continue;
             }
-
-            IDType graphID = ((CAnalysisResultsGraphController*)m_pGraphController)->SelectedGraphIndexToGraphID(graphIdx);
-            const CAnalysisResultsGraphDefinition& graphDef = m_pGraphDefinitions->GetGraphDefinition(graphID);
 
             IndexType selectedGraphIdx = m_pGraphDefinitions->GetGraphIndex(graphID);
 

@@ -5860,6 +5860,10 @@ void CBridgeAgentImp::LayoutPoiForSlabCastingRegions(const CGirderKey& girderKey
                   Xpoi = Ls;
                }
 
+               // for deck casting regions that are exactly at segment ends, take out any noise in the numbers
+               Xpoi = IsZero(Xpoi) ? 0.0 : Xpoi;
+               Xpoi = IsEqual(Xpoi, Ls) ? Ls : Xpoi;
+
                pgsPointOfInterest poi(segmentKey, Xpoi, attrib[endType]);
                VERIFY(m_pPoiMgr->AddPointOfInterest(poi) != INVALID_ID);
                break; // we found the POI, so no need to continue search through the segments
@@ -21191,6 +21195,13 @@ void CBridgeAgentImp::RemovePointsOfInterest(PoiList& vPoi,PoiAttributeType targ
 bool CBridgeAgentImp::IsInClosureJoint(const pgsPointOfInterest& poi,CClosureKey* pClosureKey) const
 {
    CSegmentKey segmentKey(poi.GetSegmentKey());
+
+   if (IsOnSegment(poi))
+   {
+      *pClosureKey = CClosureKey(INVALID_INDEX, INVALID_INDEX, INVALID_INDEX);
+      return false;
+   }
+
    Float64 Xpoi = poi.GetDistFromStart();
 
    bool bAdjustSegmentIndex = false;
@@ -30553,6 +30564,12 @@ bool CBridgeAgentImp::IsGirderTendonStressingInterval(const CGirderKey& girderKe
    }
 
    return false;
+}
+
+bool CBridgeAgentImp::IsUserDefinedLoadingInterval(IntervalIndexType intervalIdx) const
+{
+   VALIDATE(BRIDGE);
+   return m_IntervalManager.IsUserDefinedLoadingInterval(intervalIdx);
 }
 
 bool CBridgeAgentImp::IsSegmentTendonStressingInterval(const CSegmentKey& segmentKey, IntervalIndexType intervalIdx) const

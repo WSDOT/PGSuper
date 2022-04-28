@@ -239,6 +239,9 @@ interface IIntervals : IUnknown
    // returns a vector of intervals when user defined loads are applied to this girder
    virtual std::vector<IntervalIndexType> GetUserDefinedLoadIntervals(const CSpanKey& spanKey,pgsTypes::ProductForceType pfType) const = 0;
 
+   // returns true if a user defined load is applied in the specified interval
+   virtual bool IsUserDefinedLoadingInterval(IntervalIndexType intervalIdx) const = 0;
+
    // Returns the interval when user defined loads are applied to the noncomposite section
    virtual IntervalIndexType GetNoncompositeUserLoadInterval() const = 0;
 

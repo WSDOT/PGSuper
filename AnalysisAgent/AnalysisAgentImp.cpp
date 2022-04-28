@@ -7074,12 +7074,9 @@ Float64 CAnalysisAgentImp::GetExcessCamberEx(const pgsPointOfInterest& poi,Int16
       ATLASSERT(IsEqual(Emin, Emax)); // no live load so these should be the same
       ATLASSERT(IsEqual(Emin, excess));
 
-      GET_IFACE(IPointOfInterest, pPoi);
-      IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
-      ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
-
-      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
       ATLASSERT(castDeckIntervalIdx != INVALID_INDEX);
+
       // use -1 on interval because we want the deflection immedately before deck casting
       Float64 Dmin, Dmax;
       GetDeflection(castDeckIntervalIdx-1, pgsTypes::ServiceI, poi, bat, true, false/*exclude live load deflection*/, true/*include elevation adjustments*/, true /*include precamber*/, true /* include unrecoverable */, &Dmin, &Dmax);

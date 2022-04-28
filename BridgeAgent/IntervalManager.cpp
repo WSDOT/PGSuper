@@ -740,6 +740,19 @@ IntervalIndexType CIntervalManager::GetUserLoadInterval(const CSpanKey& spanKey,
    return found->second;
 }
 
+bool CIntervalManager::IsUserDefinedLoadingInterval(IntervalIndexType intervalIdx) const
+{
+   std::array<UserLoads::LoadCase, 2> loadCases{ UserLoads::DC,UserLoads::DW };
+   for (auto& loadCase : loadCases)
+   {
+      for (auto& loadInterval : m_UserLoadInterval[loadCase])
+      {
+         if (loadInterval.second == intervalIdx) return true; 
+      }
+   }
+   return false;
+}
+
 IntervalIndexType CIntervalManager::GetStressSegmentTendonInterval(const CSegmentKey& segmentKey) const
 {
    ASSERT_SEGMENT_KEY(segmentKey);

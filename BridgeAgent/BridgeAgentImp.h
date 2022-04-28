@@ -1298,6 +1298,7 @@ public:
    virtual std::vector<IntervalIndexType> GetTemporarySupportRemovalIntervals(GroupIndexType groupIdx) const override;
    virtual std::vector<IntervalIndexType> GetUserDefinedLoadIntervals(const CSpanKey& spanKey) const override;
    virtual std::vector<IntervalIndexType> GetUserDefinedLoadIntervals(const CSpanKey& spanKey,pgsTypes::ProductForceType pfType) const override;
+   virtual bool IsUserDefinedLoadingInterval(IntervalIndexType intervalIdx) const override;
    virtual IntervalIndexType GetNoncompositeUserLoadInterval() const override;
    virtual IntervalIndexType GetCompositeUserLoadInterval() const override;
    virtual IntervalIndexType GetLastNoncompositeInterval() const override;

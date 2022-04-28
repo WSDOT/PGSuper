@@ -173,6 +173,9 @@ public:
    // returns the index of the interval when a user defined load is applied
    IntervalIndexType GetUserLoadInterval(const CSpanKey& spanKey,UserLoads::LoadCase loadCase,LoadIDType userLoadID) const;
 
+   // returns true if a user defined loads is applied in this interval
+   bool IsUserDefinedLoadingInterval(IntervalIndexType intervalIdx) const;
+
    // returns the interval index when a temporary support is erected
    IntervalIndexType GetTemporarySupportErectionInterval(SupportIndexType tsIdx) const;
 
