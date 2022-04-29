@@ -959,6 +959,16 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
          // for negative moment, we want it to be measured from the bottom
          mcd.de_shear = H - mcd.de_shear;
       }
+
+      if (IsZero(mcd.de_shear))
+      {
+         // de_shear is zero when there isn't any reinforcement on the "flexural tension side" of the member defined by
+         // the mid-depth of the member. This typically occurs in spliced girders at intermediate piers where the
+         // tendons are at the top of the girder and extended reinforcement is not modeled at the bottom of the girder
+         // to make the positive moment connection. When de_shear is zero, analysis results are nonsense.
+         // We will use the depth to the resultant tension force as de_shear
+         mcd.de_shear = mcd.de;
+      }
    }
 
 
@@ -2159,7 +2169,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    if ( bPositiveMoment || bIncludeStrandsWithNegativeMoment || 0 < nSegmentDucts || 0 < nGirderDucts) // only model strands for positive moment, the spec says to use them, or if there are tendons in the model
    {
       // strands
-      if ( bIsOnSegment || bIsInBoundaryPierDiaphragm )
+      if ( bIsOnSegment || bIsInBoundaryPierDiaphragm || bIsInClosure)
       {
          GET_IFACE(IBridgeDescription, pIBridgeDesc);
          const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
@@ -2224,9 +2234,13 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
                CComQIPtr<IShape> shape(strand_shape);
                Float64 Le = 1.0; // elongation length (unity)
 
+               // if the POI is off the segment and the strand is extended, it's not stressed, use a decompression strain of 0.0
+               // otherwise use the provided value
+               Float64 epsi = (!bIsOnSegment && bIsExtendedStrand) ? 0.0 : eps_initial[strandType][strandIdx];
+
                bool bDevelopmentReducedStrainCapacity;
                CComPtr<IStressStrain> ssStrand;
-               CreateStrandMaterial(segmentKey, bondTool, strandType, strandIdx, eps_initial[strandType][strandIdx], &bDevelopmentReducedStrainCapacity, &ssStrand);
+               CreateStrandMaterial(segmentKey, bondTool, strandType, strandIdx, epsi, &bDevelopmentReducedStrainCapacity, &ssStrand);
                if (!(*pbDevelopmentReducedStrainCapacity) && bDevelopmentReducedStrainCapacity)
                {
                   *pbDevelopmentReducedStrainCapacity = true;
@@ -2240,10 +2254,10 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
 
                CComPtr<IPlane3d> strand_initial_strain;
                strand_initial_strain.CoCreateInstance(CLSID_Plane3d);
-               strand_initial_strain->ThroughAltitude(eps_initial[strandType][strandIdx]);
+               strand_initial_strain->ThroughAltitude(epsi);
 
                CString strName;
-               strName.Format(_T("%s Strand %d"), strStrandType[strandType], LABEL_INDEX(strandIdx));
+               strName.Format(_T("%s%s Strand %d"), bIsExtendedStrand ? _T("Extended ") : _T(""), strStrandType[strandType], LABEL_INDEX(strandIdx));
                AddShape2Section(CComBSTR(strName), section, shape, ssStrand, ssGirder, strand_initial_strain, Le, false);
             } // next strand
          } // next strand type

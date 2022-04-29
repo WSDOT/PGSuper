@@ -92,6 +92,11 @@ rptChapter* CGirderTendonGeometryChapterBuilder::Build(CReportSpecification* pRp
    PoiList vPoi;
    pPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), &vPoi);
 
+   // critical sections haven't been computed when time-step analysis happens
+   // so don't attempt to report them here.
+   pPoi->RemovePointsOfInterest(vPoi, POI_CRITSECTSHEAR1);
+   pPoi->RemovePointsOfInterest(vPoi, POI_CRITSECTSHEAR2);
+
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
