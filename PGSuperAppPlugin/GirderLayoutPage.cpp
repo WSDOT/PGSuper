@@ -544,7 +544,8 @@ void CSpanGirderLayoutPage::OnNextPierGirderSpacingMeasureChanged()
 
 void CSpanGirderLayoutPage::GirderTypeChanged()
 {
-   OnChangeSameGirderSpacing();
+   m_SpacingGrid[pgsTypes::metStart].UpdateGrid();
+   m_SpacingGrid[pgsTypes::metEnd].UpdateGrid();
 }
 
 GirderIndexType CSpanGirderLayoutPage::GetMinGirderCount()
