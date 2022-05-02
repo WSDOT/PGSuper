@@ -44,7 +44,7 @@ std::shared_ptr<CReportSpecification> CBrokerReportSpecificationBuilder::CreateR
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CSpanGirderReportDlg dlg(m_pBroker,rptDesc,ChaptersOnly,pOldRptSpec);
+   CSpanGirderReportDlg dlg(m_pBroker,rptDesc,CSpanGirderReportDlg::Mode::ChaptersOnly,pOldRptSpec);
 
    if ( dlg.DoModal() == IDOK )
    {

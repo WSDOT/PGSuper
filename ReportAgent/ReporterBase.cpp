@@ -357,14 +357,14 @@ void CReporterBase::CreateLiftingReport()
 {
    GET_IFACE(IReportManager,pRptMgr);
 
-   std::shared_ptr<CReportSpecificationBuilder> pMultiViewRptSpecBuilder(std::make_shared<CMultiViewSpanGirderReportSpecificationBuilder>(m_pBroker) );
+   std::shared_ptr<CReportSpecificationBuilder> pSegmentRptSpecBuilder(std::make_shared<CSegmentReportSpecificationBuilder>(m_pBroker, CSegmentKey(0, 0, 0)));
 
    std::unique_ptr<CReportBuilder> pRptBuilder(std::make_unique<CReportBuilder>(_T("Lifting Report")));
 #if defined _DEBUG || defined _BETA_VERSION
    pRptBuilder->IncludeTimingChapter();
 #endif
    pRptBuilder->AddTitlePageBuilder( std::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
-   pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
+   pRptBuilder->SetReportSpecificationBuilder(pSegmentRptSpecBuilder);
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLiftingCheckChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLiftingCheckDetailsChapterBuilder) );
    pRptMgr->AddReportBuilder(pRptBuilder.release() );
@@ -374,14 +374,14 @@ void CReporterBase::CreateHaulingReport()
 {
    GET_IFACE(IReportManager,pRptMgr);
 
-   std::shared_ptr<CReportSpecificationBuilder> pMultiViewRptSpecBuilder(std::make_shared<CMultiViewSpanGirderReportSpecificationBuilder>(m_pBroker) );
+   std::shared_ptr<CReportSpecificationBuilder> pSegmentRptSpecBuilder(std::make_shared<CSegmentReportSpecificationBuilder>(m_pBroker, CSegmentKey(0, 0, 0)));
 
    std::unique_ptr<CReportBuilder> pRptBuilder(std::make_unique<CReportBuilder>(_T("Hauling Report")));
 #if defined _DEBUG || defined _BETA_VERSION
    pRptBuilder->IncludeTimingChapter();
 #endif
    pRptBuilder->AddTitlePageBuilder( std::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
-   pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
+   pRptBuilder->SetReportSpecificationBuilder(pSegmentRptSpecBuilder);
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CHaulingCheckChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CHaulingCheckDetailsChapterBuilder) );
    pRptMgr->AddReportBuilder( pRptBuilder.release() );

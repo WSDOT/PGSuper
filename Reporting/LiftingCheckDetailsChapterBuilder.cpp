@@ -69,10 +69,9 @@ LPCTSTR CLiftingCheckDetailsChapterBuilder::GetName() const
 
 rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
-   const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
+   CBrokerReportSpecification* pBrokerRptSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
+   pBrokerRptSpec->GetBroker(&pBroker);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    
@@ -81,18 +80,42 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    {
       GET_IFACE2(pBroker, IArtifact, pArtifacts);
       GET_IFACE2(pBroker, IGirder, pGirder);
+      GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
 
-      GET_IFACE2(pBroker, IBridge, pBridge);
       std::vector<CGirderKey> vGirderKeys;
-      pBridge->GetGirderline(girderKey, &vGirderKeys);
+
+      CGirderReportSpecification* pGirderReportSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+      CSegmentReportSpecification* pSegmentReportSpec = dynamic_cast<CSegmentReportSpecification*>(pRptSpec);
+
+      if (pGirderReportSpec)
+      {
+         CGirderKey girderKey = pGirderReportSpec->GetGirderKey();
+         pBridge->GetGirderline(girderKey, &vGirderKeys);
+      }
+      else
+      {
+         vGirderKeys.emplace_back(pSegmentReportSpec->GetSegmentKey());
+      }
+
       for (const auto& thisGirderKey : vGirderKeys)
       {
-         SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
-         for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+         SegmentIndexType firstSegIdx, lastSegIdx;
+         if (pGirderReportSpec)
+         {
+            firstSegIdx = 0;
+            lastSegIdx = pBridge->GetSegmentCount(thisGirderKey) - 1;
+         }
+         else
+         {
+            firstSegIdx = pSegmentReportSpec->GetSegmentIndex();
+            lastSegIdx = firstSegIdx;
+         }
+
+         for (SegmentIndexType segIdx = firstSegIdx; segIdx <= lastSegIdx; segIdx++)
          {
             CSegmentKey segmentKey(thisGirderKey, segIdx);
 
-            if (1 < nSegments)
+            if (1 < (lastSegIdx-firstSegIdx))
             {
                std::_tstringstream os;
                os << _T("Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex) << std::endl;

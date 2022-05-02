@@ -53,6 +53,20 @@ private:
    CGirderKey m_GirderKey;
 };
 
+class REPORTINGCLASS CSegmentReportSpecificationBuilder :
+   public CBrokerReportSpecificationBuilder
+{
+public:
+   CSegmentReportSpecificationBuilder(IBroker* pBroker, const CSegmentKey& defaultSegmentKey);
+   ~CSegmentReportSpecificationBuilder(void);
+
+   virtual std::shared_ptr<CReportSpecification> CreateReportSpec(const CReportDescription& rptDesc, std::shared_ptr<CReportSpecification>& pRptSpec);
+   virtual std::shared_ptr<CReportSpecification> CreateDefaultReportSpec(const CReportDescription& rptDesc);
+
+private:
+   CSegmentKey m_SegmentKey;
+};
+
 class REPORTINGCLASS CGirderLineReportSpecificationBuilder :
    public CBrokerReportSpecificationBuilder
 {

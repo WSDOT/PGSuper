@@ -52,7 +52,7 @@ std::shared_ptr<CReportSpecification> CBridgeAnalysisReportSpecificationBuilder:
    GirderIndexType girder = pSelection->GetSelectedGirder().girderIndex;
 
    CBridgeAnalysisReportDlg dlg(m_pBroker,rptDesc,pOldRptSpec); // span only mode
-   dlg.m_Girder = girder;
+   dlg.m_SegmentKey.girderIndex = girder;
 
    if ( dlg.DoModal() == IDOK )
    {
@@ -63,14 +63,14 @@ std::shared_ptr<CReportSpecification> CBridgeAnalysisReportSpecificationBuilder:
       if(pOldGRptSpec)
       {
          std::shared_ptr<CBridgeAnalysisReportSpecification> pNewGRptSpec(std::make_shared<CBridgeAnalysisReportSpecification>(*pOldGRptSpec) );
-         pNewGRptSpec->SetGirderIndex(dlg.m_Girder);
+         pNewGRptSpec->SetGirderIndex(dlg.m_SegmentKey.girderIndex);
          pNewGRptSpec->SetOptions(dlg.m_bDesign, dlg.m_bRating);
 
          pNewRptSpec = std::static_pointer_cast<CReportSpecification>(pNewGRptSpec);
       }
       else
       {
-         pNewRptSpec = std::make_shared<CBridgeAnalysisReportSpecification>(rptDesc.GetReportName(),m_pBroker,dlg.m_Girder,dlg.m_bDesign,dlg.m_bRating);
+         pNewRptSpec = std::make_shared<CBridgeAnalysisReportSpecification>(rptDesc.GetReportName(),m_pBroker,dlg.m_SegmentKey.girderIndex,dlg.m_bDesign,dlg.m_bRating);
       }
 
       std::vector<std::_tstring> chList = dlg.m_ChapterList;

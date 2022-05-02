@@ -21,6 +21,8 @@
 #define IDD_BRIDGEANALYSISREPORT        3003
 #define IDS_E_NOCHAPTERS                3004
 #define IDD_MULTIGIRDERREPORT           3004
+#define IDC_GIRDER2                     3004
+#define IDC_SEGMENT                     3004
 #define IDC_LABEL                       3005
 #define IDS_E_NOGIRDERS                 3005
 #define IDD_MULTIVIEWREPORT             3005

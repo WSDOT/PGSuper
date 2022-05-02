@@ -130,6 +130,34 @@ protected:
    CGirderKey m_GirderKey;
 };
 
+class REPORTINGCLASS CSegmentReportSpecification :
+   public CBrokerReportSpecification
+{
+public:
+   CSegmentReportSpecification(LPCTSTR strReportName, IBroker* pBroker, const CSegmentKey& segmentKey);
+   CSegmentReportSpecification(const CSegmentReportSpecification& other);
+   ~CSegmentReportSpecification(void);
+
+   virtual std::_tstring GetReportTitle() const override;
+   virtual std::_tstring GetReportContextString() const override;
+
+   void SetGroupIndex(GroupIndexType grpIdx);
+   GroupIndexType GetGroupIndex() const;
+
+   void SetGirderIndex(GirderIndexType gdrIdx);
+   GirderIndexType GetGirderIndex() const;
+
+   void SetSegmentIndex(SegmentIndexType gdrIdx);
+   SegmentIndexType GetSegmentIndex() const;
+
+   void SetSegmentKey(const CSegmentKey& segmentKey);
+   const CSegmentKey& GetSegmentKey() const;
+
+   virtual HRESULT Validate() const;
+
+protected:
+   CSegmentKey m_SegmentKey;
+};
 
 class REPORTINGCLASS CGirderLineReportSpecification :
    public CBrokerReportSpecification

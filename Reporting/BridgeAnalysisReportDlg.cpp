@@ -45,7 +45,7 @@ static char THIS_FILE[] = __FILE__;
 IMPLEMENT_DYNAMIC(CBridgeAnalysisReportDlg, CSpanGirderReportDlg)
 
 CBridgeAnalysisReportDlg::CBridgeAnalysisReportDlg(IBroker* pBroker,const CReportDescription& rptDesc,std::shared_ptr<CReportSpecification>& pRptSpec,UINT nIDTemplate,CWnd* pParent)
-	: CSpanGirderReportDlg(pBroker,rptDesc,GirderAndChapters,pRptSpec,nIDTemplate, pParent)
+	: CSpanGirderReportDlg(pBroker,rptDesc, CSpanGirderReportDlg::Mode::GirderAndChapters,pRptSpec,nIDTemplate, pParent)
 {
    m_bDesign = true;
    m_bRating = true;
