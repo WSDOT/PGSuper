@@ -1242,28 +1242,30 @@ void write_losses(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisp
       switch( loss_method )
       {
       case pgsTypes::AASHTO_REFINED:
-         *pPara<<_T("Losses calculated per Refined Estimate Method in accordance with AASHTO LRFD ") << LrfdCw8th(_T("5.9.5.4"),_T("5.9.3.4"))<<rptNewLine;
+         *pPara<<_T("Losses calculated in accordance with AASHTO LRFD ") << LrfdCw8th(_T("5.9.5.4"),_T("5.9.3.4")) << _T(" Refined Estimate") << rptNewLine;
          *pPara<<_T("Relaxation Loss Method = ") << relaxation_method[pSpecEntry->GetRelaxationLossMethod()] << rptNewLine;
          bReportElasticGainParameters = (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() ? true : false);
          break;
       case pgsTypes::WSDOT_REFINED:
-         *pPara<<_T("Losses calculated per Refined Estimate Method in accordance with AASHTO LRFD ") << LrfdCw8th(_T("5.9.5.4"),_T("5.9.3.4")) << _T(" and WSDOT Bridge Design")<<rptNewLine;
+         *pPara<<_T("Losses calculated in accordance with AASHTO LRFD ") << LrfdCw8th(_T("5.9.5.4"),_T("5.9.3.4")) << _T(" Refined Estimate and WSDOT Bridge Design")<<rptNewLine;
          *pPara<<_T("Relaxation Loss Method = ") << relaxation_method[pSpecEntry->GetRelaxationLossMethod()] << rptNewLine;
          bReportElasticGainParameters = (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() ? true : false);
          break;
       case pgsTypes::TXDOT_REFINED_2004:
-         *pPara<<_T("Losses calculated per Refined Estimate Method in accordance with AASHTO LRFD ") << LrfdCw8th(_T("5.9.5.4"),_T("5.9.3.4")) << _T(" and TxDOT Bridge Design")<<rptNewLine;
+         *pPara<<_T("Losses calculated in accordance with AASHTO LRFD ") << LrfdCw8th(_T("5.9.5.4"),_T("5.9.3.4")) << _T(" Refined Estimate and TxDOT Bridge Design")<<rptNewLine;
          break;
       case pgsTypes::TXDOT_REFINED_2013:
-         *pPara<<_T("Losses calculated per Refined Estimate Method in accordance with TxDOT Bridge Research Report 0-6374-2, June, 2013")<<rptNewLine;
+         *pPara<<_T("Losses calculated accordance with TxDOT Bridge Research Report 0-6374-2, June, 2013")<<rptNewLine;
          break;
       case pgsTypes::AASHTO_LUMPSUM:
          bReportElasticGainParameters = (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() ? true : false);
+         *pPara << _T("Losses calculated in accordance with AASHTO LRFD ") << LrfdCw8th(_T("5.9.5.3"), _T("5.9.3.3")) << (bReportElasticGainParameters ? _T(" Approximate Estimate") : _T(" Approximate Lump Sum Estimate"))  << rptNewLine;
+         break;
       case pgsTypes::AASHTO_LUMPSUM_2005:
-         *pPara<<_T("Losses calculated per Approximate Lump Sum Method in accordance with AASHTO LRFD ") << LrfdCw8th(_T("5.9.5.3"),_T("5.9.3.3")) <<rptNewLine;
+         *pPara<<_T("Losses calculated in accordance with AASHTO LRFD ") << LrfdCw8th(_T("5.9.5.3"),_T("5.9.3.3")) << _T(" Approximate Method") << rptNewLine;
          break;
       case pgsTypes::WSDOT_LUMPSUM:
-         *pPara<<_T("Losses calculated per Approximate Lump Sum Method in accordance with AASHTO LRFD  ") << LrfdCw8th(_T("5.9.5.3"),_T("5.9.3.3")) << _T(" and WSDOT Bridge Design Manual") << rptNewLine;
+         *pPara<<_T("Losses calculated in accordance with AASHTO LRFD  ") << LrfdCw8th(_T("5.9.5.3"),_T("5.9.3.3")) << _T(" Approximate Method and WSDOT Bridge Design Manual") << rptNewLine;
          break;
       case pgsTypes::TIME_STEP:
          *pPara<<_T("Losses calculated with a time-step method") << rptNewLine;

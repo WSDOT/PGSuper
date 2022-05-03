@@ -58,7 +58,8 @@ public:
 
 // Implementation
 protected:
-	// Generated message map functions
+	void InitComboBoxes();
+   // Generated message map functions
 	//{{AFX_MSG(CSpecLossPage)
 	virtual BOOL OnInitDialog();
    afx_msg void OnHelp();

@@ -100,23 +100,25 @@ BOOL CPretensioningPage::OnInitDialog()
    switch( pSpecEntry->GetLossMethod() )
    {
    case LOSSES_AASHTO_REFINED:
-      strMethod = _T("Losses calculated per Refined Estimate Method in accordance with AASHTO LRFD ") + CString(LrfdCw8th(_T("5.9.5.4"),_T("5.9.3.4")));
+      strMethod = _T("Losses calculated in accordance with AASHTO LRFD ") + CString(LrfdCw8th(_T("5.9.5.4"),_T("5.9.3.4"))) + CString(_T(" Refined Estimate"));
       break;
    case LOSSES_WSDOT_REFINED:
-      strMethod = _T("Losses calculated per Refined Estimate Method in accordance with WSDOT Bridge Design Manual and AASHTO LRFD ") + CString(LrfdCw8th(_T("5.9.5.4"),_T("5.9.3.4")));
+      strMethod = _T("Losses calculated in accordance with WSDOT Bridge Design Manual and AASHTO LRFD ") + CString(LrfdCw8th(_T("5.9.5.4"),_T("5.9.3.4"))) + CString(_T(" Refined Estimate"));
       break;
    case LOSSES_TXDOT_REFINED_2004:
-      strMethod = _T("Losses calculated per Refined Estimate Method in accordance with TxDOT Bridge Design Manual and AASHTO LRFD ") + CString(LrfdCw8th(_T("5.9.5.4"),_T("5.9.3.4")));
+      strMethod = _T("Losses calculated in accordance with TxDOT Bridge Design Manual and AASHTO LRFD ") + CString(LrfdCw8th(_T("5.9.5.4"),_T("5.9.3.4"))) + CString(_T(" Refined Estimate"));
       break;
    case LOSSES_TXDOT_REFINED_2013:
-      strMethod = _T("Losses calculated per Refined Estimate Method in accordance with TxDOT Bridge Research Report 0-6374-2, June, 2013");
+      strMethod = _T("Losses calculated in accordance with TxDOT Bridge Research Report 0-6374-2, June, 2013");
       break;
    case LOSSES_AASHTO_LUMPSUM:
+      strMethod = _T("Losses calculated in accordance with AASHTO LRFD ") + CString(LrfdCw8th(_T("5.9.5.3"), _T("5.9.3.3"))) + (lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::ThirdEdition2004 ? CString(_T(" Approximate Lump Sum Estimate")) : CString(_T(" Approximate Estimate")));
+      break;
    case LOSSES_AASHTO_LUMPSUM_2005:
-      strMethod = _T("Losses calculated per Approximate Lump Sum Method in accordance with AASHTO LRFD ") + CString(LrfdCw8th(_T("5.9.5.3"),_T("5.9.3.3")));
+      strMethod = _T("Losses calculated in accordance with AASHTO LRFD ") + CString(LrfdCw8th(_T("5.9.5.3"),_T("5.9.3.3"))) + CString(_T(" Approximate Estimate"));
       break;
    case LOSSES_WSDOT_LUMPSUM:
-      strMethod = _T("Losses calculated per Approximate Lump Sum Method in accordance with WSDOT Bridge Design Manual and AASHTO LRFD ") + CString(LrfdCw8th(_T("5.9.5.3"),_T("5.9.3.3")));
+      strMethod = _T("Losses calculated in accordance with WSDOT Bridge Design Manual and AASHTO LRFD ") + CString(LrfdCw8th(_T("5.9.5.3"),_T("5.9.3.3"))) + CString(_T(" Approximate Estimate"));
       break;
    case LOSSES_TIME_STEP:
       strMethod = _T("Losses calculated with a time-step analysis");

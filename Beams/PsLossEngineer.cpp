@@ -2481,7 +2481,8 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pCh
    // Lump Sum Loss at time of shipping
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << _T("Approximate Lump Sum Estimate of Time Dependent Losses at Hauling") << rptNewLine;
+   CString strApproxMethod(lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::ThirdEdition2004 ? _T("Approximate Lump Sum Estimate") : _T("Approximate Estimate"));
+   *pParagraph << strApproxMethod << _T(" of Time Dependent Losses at Hauling") << rptNewLine;
 
    if ( pDetails->LossMethod == pgsTypes::AASHTO_LUMPSUM || pDetails->LossMethod == pgsTypes::WSDOT_LUMPSUM )
    {
@@ -2571,7 +2572,9 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLosses(rptChapter* pChapter,cons
 
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << _T("Approximate Lump Sum Estimate of Time Dependent Losses") << rptNewLine;
+
+   CString strApproxMethod(lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::ThirdEdition2004 ? _T("Approximate Lump Sum Estimate") : _T("Approximate Estimate"));
+   *pParagraph << strApproxMethod << _T(" of Time Dependent Losses") << rptNewLine;
 
    if ( pDetails->LossMethod == pgsTypes::AASHTO_LUMPSUM || pDetails->LossMethod == pgsTypes::WSDOT_LUMPSUM )
    {

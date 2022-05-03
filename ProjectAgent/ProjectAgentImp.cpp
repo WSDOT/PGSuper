@@ -11073,8 +11073,12 @@ std::_tstring CProjectAgentImp::GetLossMethodDescription() const
       break;
 
    case pgsTypes::AASHTO_LUMPSUM:
+      strLossMethod = _T("Approximate lump sum estimate per AASHTO LRFD ");
+      strLossMethod += std::_tstring(LrfdCw8th(_T("5.9.5.3"), _T("5.9.3.3")));
+      break;
+
    case pgsTypes::AASHTO_LUMPSUM_2005:
-         strLossMethod = _T("Approximate lump sum estimate per AASHTO LRFD ");
+      strLossMethod = _T("Approximate estimate per AASHTO LRFD ");
       strLossMethod += std::_tstring(LrfdCw8th(_T("5.9.5.3"), _T("5.9.3.3")));
       break;
 
@@ -11083,8 +11087,11 @@ std::_tstring CProjectAgentImp::GetLossMethodDescription() const
       break;
 
    case pgsTypes::WSDOT_LUMPSUM:
-   case pgsTypes::WSDOT_LUMPSUM_2005:
       strLossMethod = _T("Approximate lump sum estimate per WSDOT Bridge Design Manual");
+      break;
+
+   case pgsTypes::WSDOT_LUMPSUM_2005:
+      strLossMethod = _T("Approximate estimate per WSDOT Bridge Design Manual");
       break;
 
    case pgsTypes::WSDOT_REFINED:
