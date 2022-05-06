@@ -23,7 +23,7 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "AnalysisResultsGraphController.h"
-#include <Graphs/GraphingTypes.h>
+#include <Graphs/GraphTypes.h>
 #include <Graphs/AnalysisResultsGraphBuilder.h>
 #include <Graphs/ExportGraphXYTool.h>
 

@@ -22,7 +22,7 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include <Graphs\ExportGraphXYTool.h>
+#include <Graphing\ExportGraphXYTool.h>
 
 #include <UnitMgt\UnitValueNumericalFormatTools.h>
 #include <MfcTools\ExcelWrapper.h>
@@ -63,7 +63,7 @@ struct DataSeriesNameHolder
    bool operator==(const DataSeriesNameHolder& other) const { return penStyle == other.penStyle && penWidth == other.penWidth && color == other.color; }
 };
 
-bool compare_point (const WBFL::Graphing::Point& i, const WBFL::Graphing::Point& j)
+bool compare_point (GraphPoint i,GraphPoint j)
 {
    return i.X() < j.X();
 }
@@ -76,7 +76,7 @@ public:
    GraphExportUtil()
    { ; }
 
-   bool ProcessGraph(const WBFL::Graphing::GraphXY& rGraph);
+   bool ProcessGraph(const grGraphXY& rGraph);
    bool ExportToExcel(CString filename);
    bool ExportToCSV(CString filename);
 
@@ -228,7 +228,7 @@ CString CExportGraphXYTool::GetTruncatedFileName()
 /// //////////// 
 /// GraphExportUtil
 /// <param name="rGraph"></param>
-bool GraphExportUtil::ProcessGraph(const WBFL::Graphing::GraphXY& rGraph)
+bool GraphExportUtil::ProcessGraph(const grGraphXY& rGraph)
 {
    m_Title = rGraph.GetTitle();
    m_SubTitle = rGraph.GetSubtitle();
@@ -253,7 +253,7 @@ bool GraphExportUtil::ProcessGraph(const WBFL::Graphing::GraphXY& rGraph)
    std::vector<IndexType> cookies = rGraph.GetCookies();
    for (const auto& cookie : cookies)
    {
-      std::vector<WBFL::Graphing::Point> vPoints;
+      std::vector<GraphPoint> vPoints;
       rGraph.GetDataSeriesPoints(cookie, &vPoints);
       std::stable_sort(vPoints.begin(),vPoints.end(),compare_point); // There are some cases where points are not sorted properly
 
@@ -297,19 +297,19 @@ bool GraphExportUtil::ProcessGraph(const WBFL::Graphing::GraphXY& rGraph)
    // one series per segment, with the first series named and subsequent series being nameless, but with the 
    // same brush data. We need to find these cases and link them together into a single series so we can have clean data
    // Also, series often contain redundant data points. We'll clean those up too
-   std::vector< std::vector<WBFL::Graphing::Point> > rawSeriesGraphPoints;
+   std::vector< std::vector<GraphPoint> > rawSeriesGraphPoints;
 
    // Use the set below to help connect the series together
    std::set<DataSeriesNameHolder> dataSeriesNames;
 
    for (const auto& cookie : cookies)
    {
-      std::vector<WBFL::Graphing::Point> vOriginalPoints;
+      std::vector<GraphPoint> vOriginalPoints;
       rGraph.GetDataSeriesPoints(cookie,&vOriginalPoints);
 
       std::stable_sort(vOriginalPoints.begin(),vOriginalPoints.end(),compare_point); // There are some cases where points are not sorted properly
 
-      std::vector<WBFL::Graphing::Point> cleanPoints;
+      std::vector<GraphPoint> cleanPoints;
       cleanPoints.reserve(vOriginalPoints.size());
 
       IndexType numDups = 0;

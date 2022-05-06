@@ -94,12 +94,12 @@ void CEffectivePrestressGraphBuilder::CreateViewController(IEAFViewController** 
    (*ppController)->AddRef();
 }
 
-std::unique_ptr<WBFL::Graphing::GraphBuilder> CEffectivePrestressGraphBuilder::Clone() const
+CGraphBuilder* CEffectivePrestressGraphBuilder::Clone() const
 {
    // set the module state or the commands wont route to the
    // the graph control window
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   return std::make_unique<CEffectivePrestressGraphBuilder>(*this);
+   return new CEffectivePrestressGraphBuilder(*this);
 }
 
 void CEffectivePrestressGraphBuilder::UpdateXAxis()
@@ -116,10 +116,10 @@ void CEffectivePrestressGraphBuilder::UpdateYAxis()
       m_pYFormat = nullptr;
    }
 
-   m_Graph.YAxisNiceRange(true);
+   m_Graph.SetYAxisNiceRange(true);
    m_Graph.SetYAxisNumberOfMinorTics(5);
    m_Graph.SetYAxisNumberOfMajorTics(21);
-   m_Graph.PinYAxisAtZero(true);
+   m_Graph.SetPinYAxisAtZero(true);
 
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    if ( ((CEffectivePrestressGraphController*)m_pGraphController)->IsStressGraph() )
@@ -235,7 +235,7 @@ void CEffectivePrestressGraphBuilder::UpdatePosttensionGraphData(GroupIndexType 
 
    IntervalIndexType firstIntervalIdx = ((CMultiIntervalGirderGraphControllerBase*)m_pGraphController)->GetFirstInterval();
    IntervalIndexType lastIntervalIdx  = ((CMultiIntervalGirderGraphControllerBase*)m_pGraphController)->GetLastInterval();
-   WBFL::Graphing::GraphColor graphColor;
+   grGraphColor graphColor;
 
    std::vector<IntervalIndexType> vIntervals = ((CMultiIntervalGirderGraphControllerBase*)m_pGraphController)->GetSelectedIntervals();
 
@@ -419,7 +419,7 @@ void CEffectivePrestressGraphBuilder::UpdatePretensionGraphData(GroupIndexType g
    pgsTypes::StrandType strandType = (bPermanent ? pgsTypes::Permanent : pgsTypes::Temporary);
 
    IntervalIndexType firstIntervalIdx = ((CMultiIntervalGirderGraphControllerBase*)m_pGraphController)->GetFirstInterval();
-   WBFL::Graphing::GraphColor graphColor;
+   grGraphColor graphColor;
 
    std::vector<IntervalIndexType>::iterator intervalIter(vIntervals.begin());
    std::vector<IntervalIndexType>::iterator intervalIterEnd(vIntervals.end());

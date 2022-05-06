@@ -78,7 +78,7 @@ int CGirderPropertiesGraphBuilder::InitializeGraphController(CWnd* pParent,UINT 
       return FALSE;
    }
 
-   m_Graph.PinYAxisAtZero(true);
+   m_Graph.SetPinYAxisAtZero(true);
 
    m_pGraphController->CheckRadioButton(IDC_TRANSFORMED,IDC_GROSS,IDC_TRANSFORMED);
 
@@ -105,12 +105,12 @@ void CGirderPropertiesGraphBuilder::CreateViewController(IEAFViewController** pp
    (*ppController)->AddRef();
 }
 
-std::unique_ptr<WBFL::Graphing::GraphBuilder> CGirderPropertiesGraphBuilder::Clone() const
+CGraphBuilder* CGirderPropertiesGraphBuilder::Clone() const
 {
    // set the module state or the commands wont route to the
    // the graph control window
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   return std::make_unique<CGirderPropertiesGraphBuilder>(*this);
+   return new CGirderPropertiesGraphBuilder(*this);
 }
 
 void CGirderPropertiesGraphBuilder::UpdateXAxis()
@@ -475,7 +475,7 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
          {
             if (bIsAsymmetric)
             {
-               WBFL::Geometry::Point2d ecc = pStrandGeom->GetEccentricity(sectPropType, intervalIdx, poi, true/*include temp strands*/);
+               gpPoint2d ecc = pStrandGeom->GetEccentricity(sectPropType, intervalIdx, poi, true/*include temp strands*/);
                value2 = ecc.X();
                value1 = ecc.Y();
             }
@@ -614,7 +614,7 @@ void CGirderPropertiesGraphBuilder::UpdateTendonGraph(PropertyType propertyType,
       nMaxDucts = Max(nMaxDucts, nGirderDucts); // overall max number of ducts
    }
    
-   WBFL::Graphing::GraphColor graphColor;
+   grGraphColor graphColor;
 
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {

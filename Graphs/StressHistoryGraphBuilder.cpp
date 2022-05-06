@@ -46,7 +46,7 @@
 #include <EAF\EAFGraphView.h>
 #include <EAF\EAFDocument.h>
 
-#include <Graphing/AxisXY.h>
+#include <GraphicsLib\AxisXY.h>
 
 #include <MFCTools\MFCTools.h>
 
@@ -159,12 +159,12 @@ void CStressHistoryGraphBuilder::CreateViewController(IEAFViewController** ppCon
    (*ppController)->AddRef();
 }
 
-std::unique_ptr<WBFL::Graphing::GraphBuilder> CStressHistoryGraphBuilder::Clone() const
+CGraphBuilder* CStressHistoryGraphBuilder::Clone() const
 {
    // set the module state or the commands wont route to the
    // the graph control window
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   return std::make_unique<CStressHistoryGraphBuilder>(*this);
+   return new CStressHistoryGraphBuilder(*this);
 }
 
 int CStressHistoryGraphBuilder::InitializeGraphController(CWnd* pParent,UINT nID)
@@ -200,13 +200,13 @@ int CStressHistoryGraphBuilder::InitializeGraphController(CWnd* pParent,UINT nID
    m_pYFormat = new StressTool(stressUnit);
    m_Graph.SetYAxisValueFormat(*m_pYFormat);
    m_Graph.SetYAxisTitle(std::_tstring(_T("Stress (")+m_pYFormat->UnitTag()+_T(")")).c_str());
-   m_Graph.YAxisNiceRange(true);
+   m_Graph.SetYAxisNiceRange(true);
    m_Graph.SetYAxisNumberOfMinorTics(5);
    m_Graph.SetYAxisNumberOfMajorTics(21);
 
    // Show the grid by default... set the control to checked
    m_pGraphController->CheckDlgButton(IDC_GRID,BST_CHECKED);
-   m_Graph.DrawGrid(); // show grid by default
+   m_Graph.SetDoDrawGrid(); // show grid by default
 
    return 0;
 }
@@ -234,7 +234,7 @@ void CStressHistoryGraphBuilder::Stresses(pgsTypes::StressLocation stressLocatio
 
 void CStressHistoryGraphBuilder::ShowGrid(bool bShowGrid)
 {
-   m_Graph.DrawGrid(bShowGrid);
+   m_Graph.SetDoDrawGrid(bShowGrid);
    GetView()->Invalidate();
 }
 
@@ -429,7 +429,7 @@ void CStressHistoryGraphBuilder::AddGraphPoint(IndexType series, Float64 xval, F
    ASSERT(pcy);
    Float64 x = pcx->Convert(xval);
    Float64 y = pcy->Convert(yval);
-   m_Graph.AddPoint(series, WBFL::Graphing::Point(x,y));
+   m_Graph.AddPoint(series, GraphPoint(x,y));
 }
 
 void CStressHistoryGraphBuilder::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
@@ -458,25 +458,25 @@ void CStressHistoryGraphBuilder::UpdateXAxis()
 {
    if ( m_XAxisType == X_AXIS_TIME_LINEAR )
    {
-      m_Graph.SetXAxisScale(WBFL::Graphing::AxisXY::AxisScale::Linear);
+      m_Graph.SetXAxisScale(grAxisXY::LINEAR);
       m_Graph.SetXAxisTitle(_T("Time (days)"));
-      m_Graph.XAxisNiceRange(true);
+      m_Graph.SetXAxisNiceRange(true);
       m_Graph.SetXAxisNumberOfMinorTics(10);
       m_Graph.SetXAxisValueFormat(*m_pTimeFormat);
    }
    else if ( m_XAxisType == X_AXIS_TIME_LOG )
    {
-      m_Graph.SetXAxisScale(WBFL::Graphing::AxisXY::AxisScale::Logarithmic);
+      m_Graph.SetXAxisScale(grAxisXY::LOGARITHMIC);
       m_Graph.SetXAxisTitle(_T("Time (days)"));
-      m_Graph.XAxisNiceRange(true);
+      m_Graph.SetXAxisNiceRange(true);
       m_Graph.SetXAxisNumberOfMinorTics(10);
       m_Graph.SetXAxisValueFormat(*m_pTimeFormat);
    }
    else
    {
-      m_Graph.SetXAxisScale(WBFL::Graphing::AxisXY::AxisScale::Linear);
+      m_Graph.SetXAxisScale(grAxisXY::LINEAR);
       m_Graph.SetXAxisTitle(_T("Interval"));
-      m_Graph.XAxisNiceRange(false);
+      m_Graph.SetXAxisNiceRange(false);
       m_Graph.SetXAxisNumberOfMinorTics(0);
       m_Graph.SetXAxisValueFormat(*m_pIntervalFormat);
    }
