@@ -23,6 +23,7 @@
 #include "stdafx.h"
 #include "resource.h"
 #include <Graphing\DeflectionHistoryGraphBuilder.h>
+#include <Graphing\ExportGraphXYTool.h>
 #include "DeflectionHistoryGraphController.h"
 #include "DeflectionHistoryGraphViewControllerImp.h"
 #include "..\Documentation\PGSuper.hh"
@@ -423,4 +424,9 @@ void CDeflectionHistoryGraphBuilder::UpdateYAxis()
    m_Graph.SetYAxisNiceRange(true);
    m_Graph.SetYAxisNumberOfMinorTics(5);
    m_Graph.SetYAxisNumberOfMajorTics(21);
+}
+
+void CDeflectionHistoryGraphBuilder::ExportGraphData(LPCTSTR rstrDefaultFileName)
+{
+   CExportGraphXYTool::ExportGraphData(m_Graph,rstrDefaultFileName);
 }

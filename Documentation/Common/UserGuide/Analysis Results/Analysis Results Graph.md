@@ -27,6 +27,8 @@ Include Unrecoverable Deflections Prior to Erection | When checked, unrecoverabl
 
 > NOTE: Analysis results for the Lifting and Hauling Intervals are for plumb girder subjected to self-weight and prestress loading only.
 
+**Exporting Results Data**: Data from graphs can be exported to a file by clicking on the *Export Graph Data* button. See @ref ug_exporting_graph_data for more information.
+
 ***Unrecoverable Deflections at Erection Due to Change in Modulus During Storage***
 
 Girder Segments are not perfectly straight elements when placed at erection. They are shaped with permanent unrecoverable deformations caused by prestressing forces, creep, shrinkage, relaxation, girder hardening (increase in modulus of elasticity during storage), and pre-camber. The analysis results graph allows you to view the different aspects of unrecoverable deflections at the time of erection.

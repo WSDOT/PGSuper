@@ -62,6 +62,7 @@ public:
 
    virtual void CreateViewController(IEAFViewController** ppController) override;
 
+   void ExportGraphData(LPCTSTR rstrDefaultFileName);
 protected:
    virtual CGirderGraphControllerBase* CreateGraphController() override;
    virtual bool UpdateNow() override;

@@ -50,7 +50,7 @@ public:
    virtual void CreateViewController(IEAFViewController** ppController) override;
 
    void ShowGrid(bool bShowGrid);
-
+   void ExportGraphData(LPCTSTR rstrDefaultFileName);
 protected:
    void Init();
 

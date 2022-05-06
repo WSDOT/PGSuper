@@ -23,6 +23,7 @@
 #include "stdafx.h"
 #include "resource.h"
 #include <Graphing\StressHistoryGraphBuilder.h>
+#include <Graphing\ExportGraphXYTool.h>
 #include "StressHistoryGraphController.h"
 #include "StressHistoryGraphViewControllerImp.h"
 #include "..\Documentation\PGSuper.hh"
@@ -493,4 +494,9 @@ void CStressHistoryGraphBuilder::UpdateYAxis()
    m_pYFormat = new StressTool(stressUnit);
    m_Graph.SetYAxisValueFormat(*m_pYFormat);
    m_Graph.SetYAxisTitle(std::_tstring(_T("Stress (")+m_pYFormat->UnitTag()+_T(")")).c_str());
+}
+
+void CStressHistoryGraphBuilder::ExportGraphData(LPCTSTR rstrDefaultFileName)
+{
+   CExportGraphXYTool::ExportGraphData(m_Graph,rstrDefaultFileName);
 }

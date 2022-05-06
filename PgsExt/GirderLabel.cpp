@@ -74,13 +74,29 @@ std::_tstring pgsGirderLabel::GetGirderLabel(const CGirderKey& girderKey, bool f
    if ( forceSpan || pDocType->IsPGSuperDocument() )
    {
       std::_tostringstream os;
-      os << _T("Span ") << LABEL_SPAN(girderKey.groupIndex) << _T(", Girder ") << LABEL_GIRDER(girderKey.girderIndex);
+      if (girderKey.groupIndex != ALL_GROUPS)
+      {
+         os << _T("Span ") << LABEL_SPAN(girderKey.groupIndex) << _T(", Girder ") << LABEL_GIRDER(girderKey.girderIndex);
+      }
+      else
+      {
+         os << _T("All Spans, Girder ") << LABEL_GIRDER(girderKey.girderIndex);
+      }
+
       return os.str();
    }
    else
    {
       std::_tostringstream os;
-      os << _T("Group ") << LABEL_GROUP(girderKey.groupIndex) << _T(", Girder ") << LABEL_GIRDER(girderKey.girderIndex);
+      if (girderKey.groupIndex != ALL_GROUPS)
+      {
+         os << _T("Group ") << LABEL_GROUP(girderKey.groupIndex) << _T(", Girder ") << LABEL_GIRDER(girderKey.girderIndex);
+      }
+      else
+      {
+         os << _T("All Groups, Girder ") << LABEL_GIRDER(girderKey.girderIndex);
+      }
+
       return os.str();
    }
 }

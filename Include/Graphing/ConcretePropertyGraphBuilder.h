@@ -69,6 +69,7 @@ public:
 
    void ShowGrid(bool bShow);
 
+   void ExportGraphData(LPCTSTR rstrDefaultFileName);
 protected:
    void Init();
    CConcretePropertyGraphController* m_pGraphController;

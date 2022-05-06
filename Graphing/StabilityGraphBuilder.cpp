@@ -25,6 +25,7 @@
 #include <Graphing\StabilityGraphBuilder.h>
 #include "StabilityGraphController.h"
 #include "StabilityGraphViewControllerImp.h"
+#include <Graphing\ExportGraphXYTool.h>
 #include "..\Documentation\PGSuper.hh"
 
 #include "GraphColor.h"
@@ -530,4 +531,9 @@ void CStabilityGraphBuilder::DrawLegend(CDC* pDC)
    pDC->SelectObject(oldBrush);
    pDC->SetTextAlign(oldAlign);
    pDC->SetBkColor(oldBkColor);
+}
+
+void CStabilityGraphBuilder::ExportGraphData(LPCTSTR rstrDefaultFileName)
+{
+   CExportGraphXYTool::ExportGraphData(m_Graph,rstrDefaultFileName);
 }

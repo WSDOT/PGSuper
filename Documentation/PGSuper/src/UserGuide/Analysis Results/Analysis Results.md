@@ -66,6 +66,8 @@ Graph | Description
 @subpage ug_girder_stability_graph | Graphs stability factors of safety as a function of support location for lifting and hauling
 @subpage ug_stress_history_graph | Change in stress at a point over time
 
+**Exporting Results Data**: Data from graphs can be exported to a file by clicking on the *Export Graph Data* button. See @subpage ug_exporting_graph_data for more information.
+
 > NOTE: Extensions can add more graph types. Refer to extension documentation for more specific information.
 
 Reporting Results

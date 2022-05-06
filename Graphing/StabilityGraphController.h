@@ -59,6 +59,8 @@ protected:
    afx_msg void OnSegmentChanged();
    afx_msg void OnGraphTypeChanged();
    afx_msg void OnShowGrid();
+   afx_msg void OnGraphExportClicked();
+   afx_msg void OnCommandUIGraphExport(CCmdUI* pCmdUI);
    //}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()

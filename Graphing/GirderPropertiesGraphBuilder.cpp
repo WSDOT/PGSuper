@@ -23,6 +23,7 @@
 #include "stdafx.h"
 #include "resource.h"
 #include <Graphing\GirderPropertiesGraphBuilder.h>
+#include <Graphing\ExportGraphXYTool.h>
 #include "GirderPropertiesGraphController.h"
 #include "GirderPropertiesGraphViewControllerImp.h"
 #include "..\Documentation\PGSuper.hh"
@@ -115,7 +116,7 @@ CGraphBuilder* CGirderPropertiesGraphBuilder::Clone() const
 void CGirderPropertiesGraphBuilder::UpdateXAxis()
 {
    CGirderGraphBuilderBase::UpdateXAxis();
-   m_Graph.SetXAxisTitle(std::_tstring(_T("Distance From CL Bearing at Left End of Girder (")+m_pXFormat->UnitTag()+_T(")")).c_str());
+   m_Graph.SetXAxisTitle(std::_tstring(_T("Distance From Left End of Left-Most Girder (")+m_pXFormat->UnitTag()+_T(")")).c_str());
 }
 
 CGirderGraphControllerBase* CGirderPropertiesGraphBuilder::CreateGraphController()
@@ -886,4 +887,9 @@ void CGirderPropertiesGraphBuilder::GetBeamDrawIntervals(IntervalIndexType* pFir
 {
    *pFirstIntervalIdx = ((CIntervalGirderGraphControllerBase*)m_pGraphController)->GetInterval();
    *pLastIntervalIdx = *pFirstIntervalIdx;
+}
+
+void CGirderPropertiesGraphBuilder::ExportGraphData(LPCTSTR rstrDefaultFileName)
+{
+   CExportGraphXYTool::ExportGraphData(m_Graph,rstrDefaultFileName);
 }

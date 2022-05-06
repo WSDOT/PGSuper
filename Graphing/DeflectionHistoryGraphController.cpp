@@ -24,7 +24,9 @@
 #include "resource.h"
 #include "DeflectionHistoryGraphController.h"
 #include <Graphing\DeflectionHistoryGraphBuilder.h>
+#include <Graphing\ExportGraphXYTool.h>
 #include <IFace\DocumentType.h>
+#include <EAF\EAFDocument.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -44,6 +46,8 @@ BEGIN_MESSAGE_MAP(CDeflectionHistoryGraphController, CLocationGraphController)
    ON_BN_CLICKED(IDC_ELEV_ADJUSTMENT,OnElevAdjustment)
    ON_BN_CLICKED(IDC_PRECAMBER,OnPrecamber)
    ON_BN_CLICKED(IDC_GRID, OnShowGrid)
+   ON_BN_CLICKED(IDC_EXPORT_GRAPH_BTN,OnGraphExportClicked)
+   ON_UPDATE_COMMAND_UI(IDC_EXPORT_GRAPH_BTN,OnCommandUIGraphExport)
    //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -127,6 +131,37 @@ void CDeflectionHistoryGraphController::ShowGrid(bool bShowGrid)
       pBtn->SetCheck(bShowGrid ? BST_CHECKED : BST_UNCHECKED);
       ((CDeflectionHistoryGraphBuilder*)GetGraphBuilder())->ShowGrid(bShowGrid);
    }
+}
+
+void CDeflectionHistoryGraphController::OnGraphExportClicked()
+{
+   CComboBox* pcbLocation = (CComboBox*)GetDlgItem(IDC_POI);
+   int curSel = pcbLocation->GetCurSel();
+   if (curSel == CB_ERR)
+   {
+      ::AfxMessageBox(_T("No Location is Selected. Please selection a location"),MB_ICONERROR);
+      return;
+   }
+
+   // Build default file name
+   CString strProjectFileNameNoPath = CExportGraphXYTool::GetTruncatedFileName();
+
+   CString girderName;
+   pcbLocation->GetLBText(curSel,girderName);
+
+   CString actionName = _T("Deflection History");
+
+   CString strDefaultFileName = strProjectFileNameNoPath + _T("_") + girderName + _T("_") + actionName;
+   strDefaultFileName.Replace(' ','_');
+   strDefaultFileName.Replace(',','_');
+
+   ((CDeflectionHistoryGraphBuilder*)GetGraphBuilder())->ExportGraphData(strDefaultFileName);
+}
+
+// this has to be implemented otherwise button will not be enabled.
+void CDeflectionHistoryGraphController::OnCommandUIGraphExport(CCmdUI* pCmdUI)
+{
+   pCmdUI->Enable(TRUE);
 }
 
 #ifdef _DEBUG

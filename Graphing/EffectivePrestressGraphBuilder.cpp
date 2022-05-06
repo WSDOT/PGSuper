@@ -24,6 +24,7 @@
 #include "resource.h"
 #include <Graphing\EffectivePrestressGraphBuilder.h>
 #include <Graphing\DrawBeamTool.h>
+#include <Graphing\ExportGraphXYTool.h>
 #include "EffectivePrestressGraphController.h"
 #include "EffectivePrestressGraphViewControllerImp.h"
 #include "..\Documentation\PGSuper.hh"
@@ -514,4 +515,9 @@ void CEffectivePrestressGraphBuilder::GetBeamDrawIntervals(IntervalIndexType* pF
       *pFirstIntervalIdx = intervalIdx;
       *pLastIntervalIdx = *pFirstIntervalIdx;
    }
+}
+
+void CEffectivePrestressGraphBuilder::ExportGraphData(LPCTSTR rstrDefaultFileName)
+{
+   CExportGraphXYTool::ExportGraphData(m_Graph,rstrDefaultFileName);
 }

@@ -52,7 +52,7 @@ public:
 
    COLORREF GetGraphColor(IndexType graphIdx,IntervalIndexType intervalIdx);
 
-   void ExportGraphData();
+   void ExportGraphData(LPCTSTR rstrDefaultFileName);
 
 protected:
    std::unique_ptr<grGraphColor> m_pGraphColor;

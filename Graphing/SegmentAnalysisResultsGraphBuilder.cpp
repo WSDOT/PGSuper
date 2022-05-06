@@ -502,7 +502,7 @@ void CSegmentAnalysisResultsGraphBuilder::UpdateXAxisTitle()
    }
    else
    {
-      m_Graph.SetXAxisTitle(std::_tstring(_T("Distance From CL Bearing at Left End of Girder (")+m_pXFormat->UnitTag()+_T(")")).c_str());
+      m_Graph.SetXAxisTitle(std::_tstring(_T("Distance From Left End of Left-Most Girder (")+m_pXFormat->UnitTag()+_T(")")).c_str());
    }
 }
 
@@ -598,9 +598,9 @@ COLORREF CSegmentAnalysisResultsGraphBuilder::GetGraphColor(IndexType graphIdx,I
    return c;
 }
 
-void CSegmentAnalysisResultsGraphBuilder::ExportGraphData()
+void CSegmentAnalysisResultsGraphBuilder::ExportGraphData(LPCTSTR rstrDefaultFileName)
 {
-   CExportGraphXYTool::ExportGraphData(m_Graph);
+   CExportGraphXYTool::ExportGraphData(m_Graph, rstrDefaultFileName);
 }
 
 CString CSegmentAnalysisResultsGraphBuilder::GetDataLabel(IndexType graphIdx,const CSegmentAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx)

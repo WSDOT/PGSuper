@@ -25,12 +25,14 @@
 #include "SegmentAnalysisResultsGraphController.h"
 #include <Graphing\GraphingTypes.h>
 #include <Graphing\SegmentAnalysisResultsGraphBuilder.h>
+#include <Graphing\ExportGraphXYTool.h>
 
 #include <IFace\DocumentType.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
 #include <IFace\Bridge.h>
 
+#include <EAF\EAFDocument.h>
 #include <Hints.h>
 
 #ifdef _DEBUG
@@ -465,7 +467,20 @@ void CSegmentAnalysisResultsGraphController::OnStress()
 
 void CSegmentAnalysisResultsGraphController::OnGraphExportClicked()
 {
-   ((CSegmentAnalysisResultsGraphBuilder*)GetGraphBuilder())->ExportGraphData();
+   // Build default file name
+   CString strProjectFileNameNoPath = CExportGraphXYTool::GetTruncatedFileName();
+
+   CSegmentKey segmentKey(GetSegmentKey());
+   CString girderName = SEGMENT_LABEL(segmentKey);
+
+   ActionType action = GetActionType();
+   CString actionName = GetActionName(action);
+
+   CString strDefaultFileName = strProjectFileNameNoPath + _T("_") + girderName + _T("_") + actionName;
+   strDefaultFileName.Replace(' ','_');
+   strDefaultFileName.Replace(',','_');
+
+   ((CSegmentAnalysisResultsGraphBuilder*)GetGraphBuilder())->ExportGraphData(strDefaultFileName);
 }
 
 // this has to be implemented otherwise button will not be enabled.

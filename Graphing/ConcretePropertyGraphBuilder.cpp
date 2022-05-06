@@ -23,6 +23,7 @@
 #include "stdafx.h"
 #include "resource.h"
 #include <Graphing\ConcretePropertyGraphBuilder.h>
+#include <Graphing\ExportGraphXYTool.h>
 #include "ConcretePropertyGraphController.h"
 #include "ConcretePropertiesGraphViewControllerImp.h"
 #include "..\Documentation\PGSuper.hh"
@@ -698,4 +699,9 @@ void CConcretePropertyGraphBuilder::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
    m_Graph.Draw(pDC->GetSafeHdc());
 
    pDC->RestoreDC(save);
+}
+
+void CConcretePropertyGraphBuilder::ExportGraphData(LPCTSTR rstrDefaultFileName)
+{
+   CExportGraphXYTool::ExportGraphData(m_Graph,rstrDefaultFileName);
 }

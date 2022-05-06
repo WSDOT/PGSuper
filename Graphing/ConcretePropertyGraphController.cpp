@@ -24,6 +24,7 @@
 #include "resource.h"
 #include "ConcretePropertyGraphController.h"
 #include <Graphing\ConcretePropertyGraphBuilder.h>
+#include <Graphing\ExportGraphXYTool.h>
 
 #include <EAF\EAFUtilities.h>
 #include <IFace\DocumentType.h>
@@ -32,6 +33,7 @@
 #include <IFace\Selection.h>
 #include <IFace\PointOfInterest.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <EAF\EAFDocument.h>
 
 #include <EAF\EAFGraphBuilderBase.h>
 #include <EAF\EAFGraphView.h>
@@ -81,6 +83,8 @@ BEGIN_MESSAGE_MAP(CConcretePropertyGraphController, CEAFGraphControlWindow)
    ON_BN_CLICKED(IDC_AGE_LINEAR,OnXAxis)
    ON_BN_CLICKED(IDC_INTERVALS,OnXAxis)
    ON_BN_CLICKED(IDC_GRID, OnShowGrid)
+   ON_BN_CLICKED(IDC_EXPORT_GRAPH_BTN,OnGraphExportClicked)
+   ON_UPDATE_COMMAND_UI(IDC_EXPORT_GRAPH_BTN,OnCommandUIGraphExport)
    //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -273,6 +277,38 @@ void CConcretePropertyGraphController::ShowGrid(bool bShowGrid)
       pBtn->SetCheck(bShowGrid ? BST_CHECKED : BST_UNCHECKED);
       ((CConcretePropertyGraphBuilder*)GetGraphBuilder())->ShowGrid(bShowGrid);
    }
+}
+
+void CConcretePropertyGraphController::OnGraphExportClicked()
+{
+   // Build default file name
+   CString strProjectFileNameNoPath = CExportGraphXYTool::GetTruncatedFileName();
+
+   CSegmentKey segmentKey(GetSegment());
+   CString girderName = SEGMENT_LABEL(segmentKey);
+
+   int graphType = GetGraphType();
+   CString graphName;
+   switch (graphType)
+   {
+   case GRAPH_TYPE_FC: graphName = _T("FC"); break;
+   case GRAPH_TYPE_EC: graphName = _T("EC"); break;
+   case GRAPH_TYPE_SH: graphName = _T("SH"); break;
+   case GRAPH_TYPE_CR: graphName = _T("CR"); break;
+   }
+
+
+   CString strDefaultFileName = strProjectFileNameNoPath + _T("_") + girderName + _T("_") + graphName;
+   strDefaultFileName.Replace(' ','_'); // prefer not to have spaces or ,'s in file names
+   strDefaultFileName.Replace(',','_');
+
+   ((CConcretePropertyGraphBuilder*)GetGraphBuilder())->ExportGraphData(strDefaultFileName);
+}
+
+// this has to be implemented otherwise button will not be enabled.
+void CConcretePropertyGraphController::OnCommandUIGraphExport(CCmdUI* pCmdUI)
+{
+   pCmdUI->Enable(TRUE);
 }
 
 void CConcretePropertyGraphController::UpdateGraph()

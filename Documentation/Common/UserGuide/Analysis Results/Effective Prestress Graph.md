@@ -13,3 +13,5 @@ Interval | Select the intervals for which to plot the effective prestress. Hold 
 Stress/Force | Select if the effective prestress (fpe) or the effective prestress force (Fpe) is to be plotted
 Show Grid | Toggles the grid
 Show Girder | Toggles the girder
+
+**Exporting Graph Data**: Data from this graph can be exported to a file by clicking on the *Export Graph Data* button. See @ref ug_exporting_graph_data for more information.

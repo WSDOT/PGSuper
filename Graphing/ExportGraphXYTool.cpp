@@ -27,7 +27,7 @@
 #include <UnitMgt\UnitValueNumericalFormatTools.h>
 #include <MfcTools\ExcelWrapper.h>
 #include <GraphicsLib\GraphXY.h>
-#include "GraphExportDlg.h"
+#include <EAF\EAFDocument.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -78,27 +78,23 @@ public:
 
    bool ProcessGraph(const grGraphXY& rGraph);
    bool ExportToExcel(CString filename);
+   bool ExportToCSV(CString filename);
 
 private:
-   CString GetTitle();
-   CString GetSubTitle();
 
    void CleanupSeriesData();
 
    // Write to Excel
-   bool CommitExcel(LPCTSTR strFilename);
-   void SetColumnData(IndexType hTable,LPCTSTR strColumnHeading,ColumnIndexType colIdx,const std::vector<Float64>& values);
+   bool CommitExcel(_Application& excel, Worksheets& worksheets, LPCTSTR strFilename);
+   void SetColumnData(Worksheets& worksheets, IndexType hTable,LPCTSTR strColumnHeading,ColumnIndexType colIdx,const std::vector<Float64>& values);
    CString GetColumnLabel(ColumnIndexType colIdx);
 
 
 private:
-   // Excel
-   _Application m_Excel;
-   Worksheets m_Worksheets;
-
    // Raw data
    CString m_Title;
    CString m_SubTitle;
+   CString m_YTitle;
 
    struct SeriesType
    {
@@ -122,7 +118,7 @@ CExportGraphXYTool::~CExportGraphXYTool()
 {
 }
 
-bool CExportGraphXYTool::ExportGraphData(const grGraphXY& rGraph)
+bool CExportGraphXYTool::ExportGraphData(const grGraphXY& rGraph,LPCTSTR strDefaultFileName)
 {
    if (rGraph.GetDataSeriesCount() == 0)
    {
@@ -131,40 +127,12 @@ bool CExportGraphXYTool::ExportGraphData(const grGraphXY& rGraph)
    }
 
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CGraphExportDlg::FileFormat fileFormat(CGraphExportDlg::ffExcel);
-   CGraphExportDlg dlg;
-   dlg.m_FileFormat = fileFormat;
-   if (dlg.DoModal() == IDOK)
-   {
-      fileFormat = dlg.m_FileFormat;
-   }
-   else
-   {
-      // Just do nothing if CANCEL
-      return true;
-   }
 
    // Deal with file create name
-   CString default_name;
-   CString strFilter;
-   CString strSuffix;
-   if (CGraphExportDlg::ffExcel == fileFormat)
-   {
-      default_name = _T("GraphExport.xlsx");
-      strFilter = _T("Excel Worksheet (*.xlsx)|*.xlsx||");
-      strSuffix = _T("xlsx");
-   }
-   else if (CGraphExportDlg::ffCsvText == fileFormat)
-   {
-      default_name = _T("GraphExport.txt");
-      strFilter = _T("Comma Separated Value text File (*.csv)|*.csv||");
-      strSuffix = _T("csv");
-   }
-   else
-   {
-      ATLASSERT(0);
-      return false;
-   }
+   CString default_name(strDefaultFileName);
+   TCHAR strFilter[] = _T("Excel Worksheet (*.xlsx)|*.xlsx|") _T("Comma Separated Value text File (*.csv)|*.csv|");
+   TCHAR strSuffix[] = _T("xlsx") _T("csv");
+   enum enSuffixIdx { esiExcel=1,esiCSV } suffIdx(esiExcel);
 
    // Create file dialog
    CString file_path;
@@ -173,6 +141,7 @@ bool CExportGraphXYTool::ExportGraphData(const grGraphXY& rGraph)
    {
       // Get full pathname of selected file 
       file_path = fildlg.GetPathName();
+      suffIdx = (enSuffixIdx)fildlg.m_ofn.nFilterIndex; // file type selected in dialog
 
       // See if the file currently exists 
       if (DoesFileExist(file_path))
@@ -195,9 +164,12 @@ bool CExportGraphXYTool::ExportGraphData(const grGraphXY& rGraph)
             }
          }
       }
-
    }
-   
+   else
+   {
+      return false;
+   }
+
    // We have the information we need. Process graph data into the structure we need and then write it to file
    GraphExportUtil graphUtil;
    if (!graphUtil.ProcessGraph(rGraph))
@@ -206,16 +178,51 @@ bool CExportGraphXYTool::ExportGraphData(const grGraphXY& rGraph)
       return false;
    }
 
-   if (CGraphExportDlg::ffExcel == fileFormat)
+   if (suffIdx == esiExcel)
    {
       graphUtil.ExportToExcel(file_path);
    }
+   else if (suffIdx == esiCSV)
+   {
+      graphUtil.ExportToCSV(file_path);
+   }
    else
    {
-      ::AfxMessageBox(_T("CSV Export not yet implemented."),MB_OK | MB_ICONEXCLAMATION);
+      ATLASSERT(0); // should never happen
+      CString msg;
+      msg.Format(_T("Invalid File Type Specified. File suffix must be either \".xlsx\" or \".csv\". Name specified was \"%s\"."),file_path);
+      ::AfxMessageBox(msg,MB_OK | MB_ICONERROR);
+      return false;
    }
 
    return true;
+}
+
+CString CExportGraphXYTool::GetTruncatedFileName()
+{
+   // Build default file name
+   CString strProjectFileNameNoPath;
+   CEAFDocument* pDoc = EAFGetDocument();
+   CString strProjectFileName = pDoc->GetPathName();
+   if (strProjectFileName.IsEmpty())
+   {
+      strProjectFileNameNoPath = _T("Untitled");
+   }
+   else
+   {
+      CString strProjectFileNameNoExt(strProjectFileName.Left(strProjectFileName.ReverseFind('.')));
+      int loc = strProjectFileNameNoExt.ReverseFind('\\');
+      if (-1 == loc)
+      {
+         strProjectFileNameNoPath = strProjectFileNameNoExt;
+      }
+      else
+      {
+         strProjectFileNameNoPath = strProjectFileNameNoExt.Right(strProjectFileNameNoExt.GetLength() - (loc+1));
+      }
+   }
+
+   return strProjectFileNameNoPath;
 }
 
 /// //////////// 
@@ -224,7 +231,8 @@ bool CExportGraphXYTool::ExportGraphData(const grGraphXY& rGraph)
 bool GraphExportUtil::ProcessGraph(const grGraphXY& rGraph)
 {
    m_Title = rGraph.GetTitle();
-   m_SubTitle = rGraph.GetYAxisTitle();
+   m_SubTitle = rGraph.GetSubtitle();
+   m_YTitle = rGraph.GetYAxisTitle();
 
    // One challenging part here is that grGraphXY's data series are each based on unique X Values. 
    // We want our export to be based on a single, common X vector. So we need to resolve this.
@@ -390,8 +398,7 @@ bool GraphExportUtil::ProcessGraph(const grGraphXY& rGraph)
          else
          {
             // We have an independent series with no name. Just add it
-            ATLASSERT(0);
-            m_SeriesNames.push_back(CString());
+            m_SeriesNames.push_back(CString(_T("Data")));
             rawSeriesGraphPoints.emplace_back(cleanPoints);
          }
       }
@@ -518,7 +525,15 @@ void GraphExportUtil::CleanupSeriesData()
    std::size_t icol = 0;
    for (auto& series : m_SeriesData)
    {
-      newSeriesData[icol].push_back(series.front());
+      if (!series.empty())
+      {
+         newSeriesData[icol].push_back(series.front());
+      }
+      else
+      {
+         newSeriesData[icol].push_back(0.0); // some graphs have no data - just make something up
+      }
+
       icol++;
    }
 
@@ -559,16 +574,6 @@ void GraphExportUtil::CleanupSeriesData()
    }
 }
 
-CString GraphExportUtil::GetTitle()
-{
-   return m_Title;
-}
-
-CString GraphExportUtil::GetSubTitle()
-{
-   return m_SubTitle;
-}
-
 // some useful idispatch variables
 COleVariant ovOptional((long)DISP_E_PARAMNOTFOUND,VT_ERROR);  // optional parameter
 COleVariant ovTrue((short)TRUE); // true
@@ -576,51 +581,56 @@ COleVariant ovFalse((short)FALSE); // false
 
 bool GraphExportUtil::ExportToExcel(CString fileName)
 {
-   if (!m_Excel.CreateDispatch(_T("Excel.Application")))
+   // Excel
+   _Application excel;
+   if (!excel.CreateDispatch(_T("Excel.Application")))
    {
       AfxMessageBox(_T("An error occured while attempting to run Excel. Excel files cannot be created unless Microsoft Excel is installed. Maybe try a .csv file?"));
       return FALSE;
    }
 
    // Set up the spreadsheet
-   Workbooks workbooks = m_Excel.GetWorkbooks();
+   Workbooks workbooks = excel.GetWorkbooks();
    _Workbook workbook = workbooks.Add(ovOptional);
-
-   m_Worksheets = workbook.GetWorksheets();
+   Worksheets worksheets = workbook.GetWorksheets();
 
    // Delete "Sheet2" and "Sheet3"
    // Must leave "Sheet1"
-   long count = m_Worksheets.GetCount();
+   long count = worksheets.GetCount();
    for (long i = count; 1 < i; i--)
    {
-      _Worksheet ws = m_Worksheets.GetItem(COleVariant(i));
+      _Worksheet ws = worksheets.GetItem(COleVariant(i));
       ws.Delete();
    }
 
    // Name worksheet
-   _Worksheet ws = m_Worksheets.GetItem(COleVariant(1L));
+   _Worksheet ws = worksheets.GetItem(COleVariant(1L));
    ws.SetName(_T("Graph Data"));
 
    // write the table headings
    CString strCell;
    strCell.Format(_T("%s1"),GetColumnLabel(0));
    Range cell = ws.GetRange(COleVariant(strCell),COleVariant(strCell));
-   cell.SetValue2(COleVariant(this->GetTitle()));
+   cell.SetValue2(COleVariant(m_Title));
 
    strCell.Format(_T("%s2"),GetColumnLabel(0));
    Range cell2 = ws.GetRange(COleVariant(strCell),COleVariant(strCell));
-   cell2.SetValue2(COleVariant(this->GetSubTitle()));
+   cell2.SetValue2(COleVariant(m_SubTitle));
+
+   strCell.Format(_T("%s3"),GetColumnLabel(0));
+   Range cell3 = ws.GetRange(COleVariant(strCell),COleVariant(strCell));
+   cell3.SetValue2(COleVariant(m_YTitle));
 
    // Write data
    int colidx = 0;
-   for (const auto& series : this->m_SeriesData)
+   for (const auto& series : m_SeriesData)
    {
-      SetColumnData(1,m_SeriesNames[colidx],colidx,series);
+      SetColumnData(worksheets, 1, m_SeriesNames[colidx], colidx, series);
       colidx++;
    }
 
    // Save file
-   while (!CommitExcel(fileName))
+   while (!CommitExcel(excel, worksheets, fileName))
    {
       CString strMsg;
       CFileStatus status;
@@ -649,19 +659,62 @@ bool GraphExportUtil::ExportToExcel(CString fileName)
       }
    }
 
-//   AfxMessageBox(_T("Export Complete"),MB_ICONEXCLAMATION);
+   return true;
+}
+
+bool GraphExportUtil::ExportToCSV(CString filename)
+{
+   std::_tofstream ofile(filename.GetBuffer());
+
+   CString title (m_Title);
+   title.Replace(',',';'); // Title typically has comma, replace with semicolon so we don't gum up excel import of CSV's
+   ofile << title.GetBuffer() << std::endl;
+   if (!m_SubTitle.IsEmpty())
+   {
+      ofile << m_SubTitle.GetBuffer() << std::endl;
+   }
+
+   if (!m_YTitle.IsEmpty())
+   {
+      ofile << m_YTitle.GetBuffer() << std::endl;
+   }
+
+   // Write data one line per series
+   int colidx = 0;
+   for (const auto& series : m_SeriesData)
+   {
+      ofile << m_SeriesNames[colidx++].GetBuffer() << _T(",");
+      std::size_t nvals = series.size();
+      std::size_t ival(0);
+      for (auto val : series)
+      {
+         ofile << val;
+         if (++ival < nvals)
+         {
+            ofile << _T(",");
+         }
+      }
+
+      ofile << std::endl;
+   }
+
+   ofile.close();
+
+   CString msg;
+   msg.Format(_T("File successfully written to \"%s\""),filename);
+   AfxMessageBox(msg,MB_ICONEXCLAMATION);
 
    return true;
 }
 
 
-bool GraphExportUtil::CommitExcel(LPCTSTR strFilename)
+bool GraphExportUtil::CommitExcel(_Application& excel,Worksheets& worksheets,LPCTSTR strFilename)
 {
    // save the spreadsheet
    _Worksheet ws;
    TRY
    {
-      ws = m_Worksheets.GetItem(COleVariant(1L));
+      ws = worksheets.GetItem(COleVariant(1L));
       ws.SaveAs(strFilename,ovOptional,ovOptional,ovOptional,ovOptional,ovOptional,ovOptional,ovOptional,ovOptional,ovOptional);
    }
       CATCH(COleDispatchException,pException)
@@ -674,54 +727,57 @@ bool GraphExportUtil::CommitExcel(LPCTSTR strFilename)
       ws.Select(ovTrue);
 
    // show Excel
-   m_Excel.SetVisible(TRUE);
+   excel.SetVisible(TRUE);
 
    return TRUE;
 }
 
-void GraphExportUtil::SetColumnData(IndexType hTable,LPCTSTR strColumnHeading,ColumnIndexType colIdx,const std::vector<Float64>& values)
+void GraphExportUtil::SetColumnData(Worksheets& worksheets, IndexType hTable,LPCTSTR strColumnHeading,ColumnIndexType colIdx,const std::vector<Float64>& values)
 {
-   _Worksheet ws = m_Worksheets.GetItem(COleVariant((long)hTable));
+   _Worksheet ws = worksheets.GetItem(COleVariant((long)hTable));
 
    // write the column heading
    CString strCell;
-   strCell.Format(_T("%s3"),GetColumnLabel(colIdx));
+   strCell.Format(_T("%s4"),GetColumnLabel(colIdx));
 
    Range cell = ws.GetRange(COleVariant(strCell),COleVariant(strCell));
    cell.SetValue2(COleVariant(strColumnHeading));
 
-   // create a range that will hold all the data points
-   strCell.Format(_T("%s4"),GetColumnLabel(colIdx));
-   Range range = ws.GetRange(COleVariant(strCell),COleVariant(strCell));
-   range = range.GetResize(COleVariant((short)values.size()),COleVariant((short)1));
-
-   // create a safe array to hold the data points before putting them into excel
-   COleSafeArray array;
-   DWORD numElements[2];
-   numElements[0] = (DWORD)values.size(); // number of rows
-   numElements[1] = 2; // number of columns
-
-   array.Create(VT_R8,2,numElements); // 1 dim array of doubles
-
-
-   // fill up the array
-   long index[2];
-   long row = 0;
-
-   std::vector<Float64>::const_iterator iter;
-   for (iter = values.begin(); iter != values.end(); iter++)
+   if (!values.empty()) // only write title if no values
    {
-      Float64 value = *iter;
+      // create a range that will hold all the data points
+      strCell.Format(_T("%s5"),GetColumnLabel(colIdx));
+      Range range = ws.GetRange(COleVariant(strCell),COleVariant(strCell));
+      range = range.GetResize(COleVariant((short)values.size()),COleVariant((short)1));
 
-      index[0] = row++;
-      index[1] = 0;
+      // create a safe array to hold the data points before putting them into excel
+      COleSafeArray array;
+      DWORD numElements[2];
+      numElements[0] = (DWORD)values.size(); // number of rows
+      numElements[1] = 2; // number of columns
 
-      array.PutElement(index,&value);
+      array.Create(VT_R8,2,numElements); // 1 dim array of doubles
+
+
+      // fill up the array
+      long index[2];
+      long row = 0;
+
+      std::vector<Float64>::const_iterator iter;
+      for (iter = values.begin(); iter != values.end(); iter++)
+      {
+         Float64 value = *iter;
+
+         index[0] = row++;
+         index[1] = 0;
+
+         array.PutElement(index,&value);
+      }
+
+      // pump the array into the range in excel
+      range.SetValue2(COleVariant(array));
+      array.Detach(); // done with the array
    }
-
-   // pump the array into the range in excel
-   range.SetValue2(COleVariant(array));
-   array.Detach(); // done with the array
 }
 
 CString GraphExportUtil::GetColumnLabel(ColumnIndexType colIdx)

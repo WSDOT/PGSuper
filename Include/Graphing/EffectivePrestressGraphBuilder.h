@@ -42,6 +42,8 @@ public:
    virtual void UpdateXAxis() override;
    virtual void UpdateYAxis() override;
 
+   void ExportGraphData(LPCTSTR rstrDefaultFileName);
+
 protected:
    virtual CGirderGraphControllerBase* CreateGraphController() override;
    virtual bool UpdateNow() override;

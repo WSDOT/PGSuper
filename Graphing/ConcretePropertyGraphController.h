@@ -64,6 +64,8 @@ protected:
    afx_msg void OnDeckCastingRegionChanged();
    afx_msg void OnXAxis();
    afx_msg void OnShowGrid();
+   afx_msg void OnGraphExportClicked();
+   afx_msg void OnCommandUIGraphExport(CCmdUI* pCmdUI);
    //}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()

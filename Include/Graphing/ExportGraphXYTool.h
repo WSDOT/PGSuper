@@ -34,5 +34,7 @@ public:
    virtual ~CExportGraphXYTool();
 
    // returns true if successful
-   static bool ExportGraphData(const grGraphXY& rGraph);
+   static bool ExportGraphData(const grGraphXY& rGraph, LPCTSTR rstrDefaultFileName);
+
+   static CString GetTruncatedFileName();
 };

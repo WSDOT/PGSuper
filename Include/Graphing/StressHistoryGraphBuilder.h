@@ -53,6 +53,7 @@ public:
 
    void ShowGrid(bool bShowGrid);
 
+   void ExportGraphData(LPCTSTR rstrDefaultFileName);
 protected:
    void Init();
 

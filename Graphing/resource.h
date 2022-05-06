@@ -15,8 +15,6 @@
 #define IDD_ANALYSISRESULTS_GRAPH_CONTROLLER2 202
 #define IDD_INITIALSTRAIN_GRAPH_CONTROLLER 203
 #define IDD_SEGMENT_ANALYSISRESULTS_GRAPH_CONTROLLER 204
-#define IDD_GRAPH_EXPORT_DIALOG         209
-#define IDC_FILE_FORMAT                 271
 #define IDC_EVENT                       1096
 #define IDC_SIMPLE                      1478
 #define IDC_SIMPLE2                     1479
@@ -85,7 +83,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        212
+#define _APS_NEXT_RESOURCE_VALUE        214
 #define _APS_NEXT_COMMAND_VALUE         32774
 #define _APS_NEXT_CONTROL_VALUE         3073
 #define _APS_NEXT_SYMED_VALUE           3000

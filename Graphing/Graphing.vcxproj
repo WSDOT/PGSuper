@@ -148,7 +148,6 @@
     <ClCompile Include="AnalysisResultsGraphController.cpp" />
     <ClCompile Include="AnalysisResultsGraphDefinition.cpp" />
     <ClCompile Include="AnalysisResultsGraphViewControllerImp.cpp" />
-    <ClCompile Include="GraphExportDlg.cpp" />
     <ClCompile Include="ConcretePropertiesGraphViewControllerImp.cpp" />
     <ClCompile Include="ConcretePropertyGraphBuilder.cpp" />
     <ClCompile Include="ConcretePropertyGraphController.cpp" />
@@ -215,7 +214,6 @@
     <ClInclude Include="AnalysisResultsGraphController.h" />
     <ClInclude Include="AnalysisResultsGraphDefinition.h" />
     <ClInclude Include="AnalysisResultsGraphViewControllerImp.h" />
-    <ClInclude Include="GraphExportDlg.h" />
     <ClInclude Include="ConcretePropertiesGraphViewControllerImp.h" />
     <ClInclude Include="ConcretePropertyGraphController.h" />
     <ClInclude Include="DeflectionHistoryGraphController.h" />

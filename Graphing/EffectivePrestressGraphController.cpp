@@ -24,6 +24,7 @@
 #include "resource.h"
 #include "EffectivePrestressGraphController.h"
 #include <Graphing\EffectivePrestressGraphBuilder.h>
+#include <Graphing\ExportGraphXYTool.h>
 
 #include <EAF\EAFUtilities.h>
 #include <IFace\DocumentType.h>
@@ -35,6 +36,7 @@
 
 #include <EAF\EAFGraphBuilderBase.h>
 #include <EAF\EAFGraphView.h>
+#include <EAF\EAFDocument.h>
 
 #include <PgsExt\BridgeDescription2.h>
 
@@ -57,6 +59,8 @@ BEGIN_MESSAGE_MAP(CEffectivePrestressGraphController, CMultiIntervalGirderGraphC
    ON_CBN_SELCHANGE(IDC_DUCT, OnDuctChanged)
    ON_CONTROL_RANGE(BN_CLICKED, IDC_PERMANENT, IDC_TEMPORARY, OnRadioButton)
    ON_CONTROL_RANGE(BN_CLICKED, IDC_STRESS, IDC_FORCE, OnRadioButton)
+   ON_BN_CLICKED(IDC_EXPORT_GRAPH_BTN,OnGraphExportClicked)
+   ON_UPDATE_COMMAND_UI(IDC_EXPORT_GRAPH_BTN,OnCommandUIGraphExport)
    //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -251,6 +255,29 @@ void CEffectivePrestressGraphController::FillDuctCtrl()
       m_DuctIdx = (DuctIndexType)pcbDuct->GetItemData(curSel);
       pcbDuct->EnableWindow(TRUE);
    }
+}
+
+void CEffectivePrestressGraphController::OnGraphExportClicked()
+{
+   // Build default file name
+   CString strProjectFileNameNoPath = CExportGraphXYTool::GetTruncatedFileName();
+
+   const CGirderKey& girderKey = GetGirderKey();
+   CString girderName = GIRDER_LABEL(girderKey);
+
+   CString actionName = _T("Effective Prestress");
+
+   CString strDefaultFileName = strProjectFileNameNoPath + _T("_") + girderName + _T("_") + actionName;
+   strDefaultFileName.Replace(' ','_'); // prefer not to have spaces or ,'s in file names
+   strDefaultFileName.Replace(',','_');
+
+   ((CEffectivePrestressGraphBuilder*)GetGraphBuilder())->ExportGraphData(strDefaultFileName);
+}
+
+// this has to be implemented otherwise button will not be enabled.
+void CEffectivePrestressGraphController::OnCommandUIGraphExport(CCmdUI* pCmdUI)
+{
+   pCmdUI->Enable(TRUE);
 }
 
 IntervalIndexType CEffectivePrestressGraphController::GetFirstInterval()

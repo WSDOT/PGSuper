@@ -66,6 +66,8 @@ protected:
 	//{{AFX_MSG(CEffectivePrestressGraphController)
    afx_msg void OnDuctChanged();
    afx_msg void OnRadioButton(UINT nIDC);
+   afx_msg void OnGraphExportClicked();
+   afx_msg void OnCommandUIGraphExport(CCmdUI* pCmdUI);
    //}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()

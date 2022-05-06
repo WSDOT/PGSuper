@@ -49,6 +49,7 @@ public:
    // than updating the entire graph
    void ShowGrid(bool bShowGrid);
 
+   void ExportGraphData(LPCTSTR rstrDefaultFileName);
 protected:
 
    CStabilityGraphController* m_pGraphController;

@@ -50,6 +50,8 @@ protected:
 	//{{AFX_MSG(CGirderPropertiesGraphController)
    afx_msg void OnPropertyChanged();
    afx_msg void OnSectionPropertiesChanged();
+   afx_msg void OnGraphExportClicked();
+   afx_msg void OnCommandUIGraphExport(CCmdUI* pCmdUI);
    //}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()

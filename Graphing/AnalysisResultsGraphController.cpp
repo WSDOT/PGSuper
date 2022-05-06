@@ -25,12 +25,14 @@
 #include "AnalysisResultsGraphController.h"
 #include <Graphing\GraphingTypes.h>
 #include <Graphing\AnalysisResultsGraphBuilder.h>
+#include <Graphing\ExportGraphXYTool.h>
 
 #include <IFace\DocumentType.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
 #include <IFace\Bridge.h>
 
+#include <EAF\EAFDocument.h>
 #include <Hints.h>
 
 #ifdef _DEBUG
@@ -527,7 +529,20 @@ void CAnalysisResultsGraphController::OnIntervalsChanged()
 
 void CAnalysisResultsGraphController::OnGraphExportClicked()
 {
-   ((CAnalysisResultsGraphBuilder*)GetGraphBuilder())->ExportGraphData();
+   // Build default file name
+   CString strProjectFileNameNoPath = CExportGraphXYTool::GetTruncatedFileName();
+
+   const CGirderKey& girderKey = GetGirderKey();
+   CString girderName = GIRDER_LABEL(girderKey);
+
+   ActionType action = GetActionType();
+   CString actionName = GetActionName(action);
+
+   CString strDefaultFileName = strProjectFileNameNoPath + _T("_") + girderName + _T("_") + actionName;
+   strDefaultFileName.Replace(' ','_'); // prefer not to have spaces or ,'s in file names
+   strDefaultFileName.Replace(',','_');
+
+   ((CAnalysisResultsGraphBuilder*)GetGraphBuilder())->ExportGraphData(strDefaultFileName);
 }
 
 // this has to be implemented otherwise button will not be enabled.
@@ -535,7 +550,6 @@ void CAnalysisResultsGraphController::OnCommandUIGraphExport(CCmdUI* pCmdUI)
 {
    pCmdUI->Enable(TRUE);
 }
-
 
 void CAnalysisResultsGraphController::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {

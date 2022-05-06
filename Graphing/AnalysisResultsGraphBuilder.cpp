@@ -1229,7 +1229,7 @@ void CAnalysisResultsGraphBuilder::UpdateXAxisTitle()
    }
    else
    {
-      m_Graph.SetXAxisTitle(std::_tstring(_T("Distance From CL Bearing at Left End of Girder (")+m_pXFormat->UnitTag()+_T(")")).c_str());
+      m_Graph.SetXAxisTitle(std::_tstring(_T("Distance From Left End of Left-Most Girder (")+m_pXFormat->UnitTag()+_T(")")).c_str());
    }
 }
 
@@ -4131,7 +4131,7 @@ void CAnalysisResultsGraphBuilder::GetSecondaryXValues(const PoiList& vPoi,const
     }
 }
 
-void CAnalysisResultsGraphBuilder::ExportGraphData()
+void CAnalysisResultsGraphBuilder::ExportGraphData(LPCTSTR rstrDefaultFileName)
 {
-   CExportGraphXYTool::ExportGraphData(m_Graph);
+   CExportGraphXYTool::ExportGraphData(m_Graph, rstrDefaultFileName);
 }

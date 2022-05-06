@@ -9,3 +9,5 @@ Graph Controller Item | Description
 Span, Girder | Select the precast element
 Graph Type | Select Lifting or Hauling
 Show Grid | Toggles the grid
+
+**Exporting Graph Data**: Data from this graph can be exported to a file by clicking on the *Export Graph Data* button. See @ref ug_exporting_graph_data for more information.
