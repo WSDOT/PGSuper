@@ -3016,7 +3016,7 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
          IntervalIndexType erectionIntervalIdx = GetErectionInterval(vPoi);
          CSegmentKey segmentKey(vPoi.front().get().GetSegmentKey());
 
-         if (intervalIdx < erectionIntervalIdx && pfType == pgsTypes::pftGirder)
+         if (intervalIdx < erectionIntervalIdx && (pfType == pgsTypes::pftGirder || pfType == pgsTypes::pftDiaphragm))
          {
             GET_IFACE(IIntervals,pIntervals);
             IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
