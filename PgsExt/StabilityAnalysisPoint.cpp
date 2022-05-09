@@ -97,7 +97,7 @@ std::_tstring pgsStabilityAnalysisPoint::AsString(const unitmgtLengthData& lengt
    return os.str();
 }
 
-WBFL::Stability::IAnalysisPoint* pgsStabilityAnalysisPoint::Clone() const
+std::unique_ptr<WBFL::Stability::IAnalysisPoint> pgsStabilityAnalysisPoint::Clone() const
 {
-   return new pgsStabilityAnalysisPoint(*this);
+   return std::make_unique<pgsStabilityAnalysisPoint>(*this);
 }

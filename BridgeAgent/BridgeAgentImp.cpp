@@ -27520,8 +27520,8 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
    std::vector<IntervalIndexType> vPrestressIntervals{ releaseIntervalIdx,releaseIntervalIdx,tsInstallationIntervalIdx }; // straight, harped, temporary
    for( const pgsPointOfInterest& poi : vPoi)
    {
-      WBFL::Stability::IAnalysisPoint* pAnalysisPoint = new pgsStabilityAnalysisPoint(poi, POI_LIFT_SEGMENT);
-      pProblem->AddAnalysisPoint(pAnalysisPoint);
+      std::unique_ptr<WBFL::Stability::IAnalysisPoint> pAnalysisPoint(std::make_unique<pgsStabilityAnalysisPoint>(poi, POI_LIFT_SEGMENT));
+      //pProblem->AddAnalysisPoint(std::move(pAnalysisPoint)); // don't add here because move will make the pointer null 
 
       Float64 Ytg = -GetY(releaseIntervalIdx,poi,pgsTypes::TopGirder);
       Float64 Xleft = GetXleft(releaseIntervalIdx, poi);
@@ -27532,7 +27532,7 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
          for (int i = 0; i < 3; i++)
          {
             pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
-            gpPoint2d ecc = GetEccentricity(vPrestressIntervals[strandType], poi, strandType, &handlingConfig.GdrConfig);
+            auto ecc = GetEccentricity(vPrestressIntervals[strandType], poi, strandType, &handlingConfig.GdrConfig);
             Float64 Xps = Xleft - ecc.X();
             Float64 Yps = Ytg - ecc.Y();
             Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::Start, &handlingConfig.GdrConfig);
@@ -27545,7 +27545,7 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
          for (int i = 0; i < 3; i++)
          {
             pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
-            gpPoint2d ecc = GetEccentricity(vPrestressIntervals[strandType], poi, strandType);
+            auto ecc = GetEccentricity(vPrestressIntervals[strandType], poi, strandType);
             Float64 Xps = Xleft - ecc.X();
             Float64 Yps = Ytg - ecc.Y();
             Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::Start);
@@ -27564,6 +27564,8 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
             pProblem->AddFpe(vNames[i].c_str(), pAnalysisPoint->GetLocation(), Fpe, Xps, Yps);
          }
       }
+
+      pProblem->AddAnalysisPoint(std::move(pAnalysisPoint));
    }
 }
 
@@ -27692,16 +27694,16 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
 
    Float64 Yra = Hrc - (Hbg + Hg);
    pProblem->SetYRollAxis(Yra);
-   pProblem->SetHeightOfRollAxisAboveRoadway(Hrc);
-   pProblem->SetWheelLineSpacing(Wcc);
-   pProblem->SetTruckRotationalStiffness(Ktheta);
+   pProblem->SetHeightOfRollAxis(Hrc);
+   pProblem->SetSupportWidth(Wcc);
+   pProblem->SetRotationalStiffness(Ktheta);
 
    pProblem->SetSupportPlacementTolerance(pHaulingCriteria->GetHaulingSupportPlacementTolerance());
    pProblem->SetSweepTolerance(pHaulingCriteria->GetHaulingSweepTolerance());
    pProblem->SetSweepGrowth(pHaulingCriteria->GetHaulingSweepGrowth());
    pProblem->SetWindLoading((WBFL::Stability::WindType)pHaulingCriteria->GetHaulingWindType(),pHaulingCriteria->GetHaulingWindLoad());
 
-   pProblem->SetCrownSlope(pHaulingCriteria->GetNormalCrownSlope());
+   pProblem->SetSupportSlope(pHaulingCriteria->GetNormalCrownSlope());
    pProblem->SetSuperelevation(pHaulingCriteria->GetMaxSuperelevation());
 
    pProblem->SetCentrifugalForceType((WBFL::Stability::CFType)pHaulingCriteria->GetCentrifugalForceType());
@@ -27905,8 +27907,8 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
    std::vector<IntervalIndexType> vPrestressIntervals{ releaseIntervalIdx,releaseIntervalIdx,tsInstallationIntervalIdx }; // straight, harped, temporary
    for( const pgsPointOfInterest& poi : vPoi)
    {
-      WBFL::Stability::IAnalysisPoint* pAnalysisPoint = new pgsStabilityAnalysisPoint(poi, POI_HAUL_SEGMENT);
-      pProblem->AddAnalysisPoint(pAnalysisPoint);
+      std::unique_ptr<WBFL::Stability::IAnalysisPoint> pAnalysisPoint(std::make_unique<pgsStabilityAnalysisPoint>(poi, POI_HAUL_SEGMENT));
+      //pProblem->AddAnalysisPoint(std::move(pAnalysisPoint)); // don't add it here because move will make the pointer null
 
       Float64 Ytg = -GetY(releaseIntervalIdx, poi, pgsTypes::TopGirder);
       Float64 Xleft = GetXleft(releaseIntervalIdx, poi);
@@ -27917,7 +27919,7 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
          for (int i = 0; i < 3; i++)
          {
             pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
-            gpPoint2d ecc = GetEccentricity(vPrestressIntervals[strandType], poi, strandType, &handlingConfig.GdrConfig);
+            auto ecc = GetEccentricity(vPrestressIntervals[strandType], poi, strandType, &handlingConfig.GdrConfig);
             Float64 Xps = Xleft - ecc.X();
             Float64 Yps = Ytg - ecc.Y();
             Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::Start, &handlingConfig.GdrConfig);
@@ -27930,7 +27932,7 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
          for (int i = 0; i < 3; i++)
          {
             pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
-            gpPoint2d ecc = GetEccentricity(vPrestressIntervals[strandType], poi, strandType);
+            auto ecc = GetEccentricity(vPrestressIntervals[strandType], poi, strandType);
             Float64 Xps = Xleft - ecc.X();
             Float64 Yps = Ytg - ecc.Y();
             Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::Start);
@@ -27949,6 +27951,8 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
             pProblem->AddFpe(vNames[i].c_str(), pAnalysisPoint->GetLocation(), Fpe, Xps, Yps);
          }
       }
+
+      pProblem->AddAnalysisPoint(std::move(pAnalysisPoint));
    }
 }
 

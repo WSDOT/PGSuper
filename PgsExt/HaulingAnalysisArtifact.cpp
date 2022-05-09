@@ -255,7 +255,7 @@ void pgsWsdotHaulingAnalysisArtifact::Dump(dbgDumpContext& os) const
 
    for (const auto& sectionResult : results.vSectionResults)
    {
-      const WBFL::Stability::IAnalysisPoint* pAnalysisPoint = m_pStabilityProblem->GetAnalysisPoint(sectionResult.AnalysisPointIndex);
+      const auto& pAnalysisPoint = m_pStabilityProblem->GetAnalysisPoint(sectionResult.AnalysisPointIndex);
       Float64 loc = pAnalysisPoint->GetLocation();
       os <<_T("At ") << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << _T(" ft: ");
 
@@ -293,7 +293,7 @@ void pgsWsdotHaulingAnalysisArtifact::Dump(dbgDumpContext& os) const
    os << _T("=================================") <<endl;
    for (const auto& sectionResult : results.vSectionResults)
    {
-      const WBFL::Stability::IAnalysisPoint* pAnalysisPoint = m_pStabilityProblem->GetAnalysisPoint(sectionResult.AnalysisPointIndex);
+      const auto& pAnalysisPoint = m_pStabilityProblem->GetAnalysisPoint(sectionResult.AnalysisPointIndex);
       Float64 loc = pAnalysisPoint->GetLocation();
       os <<_T("At ") << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << _T(" ft: ");
 

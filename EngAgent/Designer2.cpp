@@ -8424,7 +8424,7 @@ public:
    static Float64 X;
    static bool Find(const WBFL::Stability::LiftingSectionResult& sectionResult) 
    { 
-      const WBFL::Stability::IAnalysisPoint* pAnalysisPoint = pStabilityProblem->GetAnalysisPoint(sectionResult.AnalysisPointIndex);
+      const auto& pAnalysisPoint = pStabilityProblem->GetAnalysisPoint(sectionResult.AnalysisPointIndex);
       return IsEqual(SectionFinder::X,pAnalysisPoint->GetLocation()); 
    }
 };
@@ -9204,7 +9204,7 @@ std::vector<DebondLevelType> pgsDesigner2::DesignDebondingForLifting(HANDLINGCON
       stress_demands.reserve(results.vSectionResults.size());
       for( const auto& sectionResult : results.vSectionResults)
       {
-         const WBFL::Stability::IAnalysisPoint* pAnalysisPoint = pStabilityProblem->GetAnalysisPoint(sectionResult.AnalysisPointIndex);
+         const auto& pAnalysisPoint = pStabilityProblem->GetAnalysisPoint(sectionResult.AnalysisPointIndex);
          Float64 poi_loc = pAnalysisPoint->GetLocation();
          if(poi_loc <= lft_end || rgt_end <= poi_loc)
          {
@@ -9228,8 +9228,8 @@ std::vector<DebondLevelType> pgsDesigner2::DesignDebondingForLifting(HANDLINGCON
             LOG(_T("Average force per strand = ") << ::ConvertFromSysUnits(Fpe/(nperm+ntemp),unitMeasure::Kip) << _T(" kip"));
 
             pgsStrandDesignTool::StressDemand demand;
-            ATLASSERT(((pgsStabilityAnalysisPoint*)pAnalysisPoint)->GetPointOfInterest().GetSegmentKey() == segmentKey);
-            demand.m_Poi = ((pgsStabilityAnalysisPoint*)pAnalysisPoint)->GetPointOfInterest();
+            ATLASSERT(((const pgsStabilityAnalysisPoint*)(pAnalysisPoint.get()))->GetPointOfInterest().GetSegmentKey() == segmentKey);
+            demand.m_Poi = ((const pgsStabilityAnalysisPoint*)(pAnalysisPoint.get()))->GetPointOfInterest();
             demand.m_TopStress = fTop;
             demand.m_BottomStress = fBot;
             demand.m_PrestressForcePerStrand = force_per_strand;
@@ -10340,7 +10340,7 @@ void pgsDesigner2::DumpLiftingArtifact(const WBFL::Stability::LiftingStabilityPr
    const WBFL::Stability::LiftingResults& results = artifact.GetLiftingResults();
    for(const auto& sectionResult : results.vSectionResults)
    {
-      const WBFL::Stability::IAnalysisPoint* pAnalysisPoint = pStabilityProblem->GetAnalysisPoint(sectionResult.AnalysisPointIndex);
+      const auto& pAnalysisPoint = pStabilityProblem->GetAnalysisPoint(sectionResult.AnalysisPointIndex);
       Float64 loc = pAnalysisPoint->GetLocation();
       os <<_T("At ") << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << _T(" ft: ");
 
@@ -10357,7 +10357,7 @@ void pgsDesigner2::DumpLiftingArtifact(const WBFL::Stability::LiftingStabilityPr
    WBFL::Stability::WindDirection wind = WBFL::Stability::Left;
    for(const auto& sectionResult : results.vSectionResults)
    {
-      const WBFL::Stability::IAnalysisPoint* pAnalysisPoint = pStabilityProblem->GetAnalysisPoint(sectionResult.AnalysisPointIndex);
+      const auto& pAnalysisPoint = pStabilityProblem->GetAnalysisPoint(sectionResult.AnalysisPointIndex);
       Float64 loc = pAnalysisPoint->GetLocation();
       os <<_T("At ") << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << _T(" ft: ");
 

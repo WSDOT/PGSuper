@@ -43,7 +43,7 @@ public:
 
    virtual std::_tstring  AsString(const unitmgtLengthData& lengthUnit,Float64 offset,bool bShowUnit) const override;
 
-   virtual WBFL::Stability::IAnalysisPoint* Clone() const override;
+   virtual std::unique_ptr<WBFL::Stability::IAnalysisPoint> Clone() const override;
 
 protected:
    pgsPointOfInterest m_Poi;
