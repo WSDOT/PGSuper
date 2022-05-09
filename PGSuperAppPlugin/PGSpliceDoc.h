@@ -88,7 +88,8 @@ protected:
    afx_msg void OnUpdateEditTemporarySupport(CCmdUI* pCmdUI);
    afx_msg void OnInsertTemporarySupport();
    afx_msg void OnDeleteTemporarySupport();
-	afx_msg void OnCopyTempSupportProps(UINT nID);
+   afx_msg void OnCopyTempSupportProps(UINT nID);
+   afx_msg void OnCopyTempSupportProps();
    afx_msg void OnUpdateCopyTempSupportProps(CCmdUI* pCmdUI);
    afx_msg BOOL OnCopyTempSupportPropsTb(NMHDR* pnmtb,LRESULT* plr);
 

@@ -84,6 +84,7 @@ BEGIN_MESSAGE_MAP(CPGSpliceDoc, CPGSDocBase)
    ON_UPDATE_COMMAND_UI_RANGE(FIRST_COPY_TEMP_SUP_PLUGIN,LAST_COPY_TEMP_SUP_PLUGIN,OnUpdateCopyTempSupportProps)
 	ON_UPDATE_COMMAND_UI(ID_COPY_TEMPSUPPORT_PROPS, OnUpdateCopyTempSupportProps)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_COPYTEMPSUPPORTPROPERTIES, OnUpdateCopyTempSupportProps)
+   ON_COMMAND(ID_EDIT_COPYTEMPSUPPORTPROPERTIES,OnCopyTempSupportProps)
 
    //}}AFX_MSG_MAP
 
@@ -510,13 +511,27 @@ void CPGSpliceDoc::OnDeleteTemporarySupport()
    }
 }
 
+void CPGSpliceDoc::OnCopyTempSupportProps()
+{
+   OnCopyTempSupportProps(INVALID_ID); // default
+}
+
 void CPGSpliceDoc::OnCopyTempSupportProps(UINT nID)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    try
    {
-      IDType cb_id = m_CopyTempSupportPropertiesCallbacksCmdMap.at(nID);
+      IDType cb_id;
+      if (nID == INVALID_ID)
+      {
+         cb_id = m_CopyTempSupportPropertiesCallbacksCmdMap.begin()->second;
+      }
+      else
+      {
+         cb_id = m_CopyTempSupportPropertiesCallbacksCmdMap.at(nID);
+      }
+
       CCopyTempSupportDlg dlg(m_pBroker, m_CopyTempSupportPropertiesCallbacks, cb_id);
       dlg.DoModal();
    }
