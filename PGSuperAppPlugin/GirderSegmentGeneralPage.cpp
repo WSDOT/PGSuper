@@ -105,10 +105,10 @@ void CGirderSegmentGeneralPage::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_RIGHT_TAPERED_LENGTH,   IDC_RIGHT_TAPERED_LENGTH_UNIT,   VariationLength[pgsTypes::sztRightTapered],   pDisplayUnits->GetSpanLengthUnit() );
    DDX_UnitValueAndTag(pDX, IDC_RIGHT_PRISMATIC_LENGTH, IDC_RIGHT_PRISMATIC_LENGTH_UNIT, VariationLength[pgsTypes::sztRightPrismatic], pDisplayUnits->GetSpanLengthUnit() );
 
-   DDX_UnitValueAndTag(pDX, IDC_LEFT_PRISMATIC_HEIGHT,  IDC_LEFT_PRISMATIC_HEIGHT_UNIT,  VariationHeight[pgsTypes::sztLeftPrismatic],  pDisplayUnits->GetSpanLengthUnit() );
-   DDX_UnitValueAndTag(pDX, IDC_LEFT_TAPERED_HEIGHT,    IDC_LEFT_TAPERED_HEIGHT_UNIT,    VariationHeight[pgsTypes::sztLeftTapered],    pDisplayUnits->GetSpanLengthUnit() );
-   DDX_UnitValueAndTag(pDX, IDC_RIGHT_TAPERED_HEIGHT,   IDC_RIGHT_TAPERED_HEIGHT_UNIT,   VariationHeight[pgsTypes::sztRightTapered],   pDisplayUnits->GetSpanLengthUnit() );
-   DDX_UnitValueAndTag(pDX, IDC_RIGHT_PRISMATIC_HEIGHT, IDC_RIGHT_PRISMATIC_HEIGHT_UNIT, VariationHeight[pgsTypes::sztRightPrismatic], pDisplayUnits->GetSpanLengthUnit() );
+   DDX_UnitValueAndTag(pDX, IDC_LEFT_PRISMATIC_HEIGHT,  IDC_LEFT_PRISMATIC_HEIGHT_UNIT,  VariationHeight[pgsTypes::sztLeftPrismatic],  pDisplayUnits->GetComponentDimUnit() );
+   DDX_UnitValueAndTag(pDX, IDC_LEFT_TAPERED_HEIGHT,    IDC_LEFT_TAPERED_HEIGHT_UNIT,    VariationHeight[pgsTypes::sztLeftTapered],    pDisplayUnits->GetComponentDimUnit() );
+   DDX_UnitValueAndTag(pDX, IDC_RIGHT_TAPERED_HEIGHT,   IDC_RIGHT_TAPERED_HEIGHT_UNIT,   VariationHeight[pgsTypes::sztRightTapered],   pDisplayUnits->GetComponentDimUnit() );
+   DDX_UnitValueAndTag(pDX, IDC_RIGHT_PRISMATIC_HEIGHT, IDC_RIGHT_PRISMATIC_HEIGHT_UNIT, VariationHeight[pgsTypes::sztRightPrismatic], pDisplayUnits->GetComponentDimUnit() );
 
    DDX_UnitValueAndTag(pDX, IDC_LEFT_PRISMATIC_FLANGE_DEPTH,  IDC_LEFT_PRISMATIC_FLANGE_DEPTH_UNIT,  VariationBottomFlangeDepth[pgsTypes::sztLeftPrismatic],  pDisplayUnits->GetComponentDimUnit() );
    DDX_UnitValueAndTag(pDX, IDC_LEFT_TAPERED_FLANGE_DEPTH,    IDC_LEFT_TAPERED_FLANGE_DEPTH_UNIT,    VariationBottomFlangeDepth[pgsTypes::sztLeftTapered],    pDisplayUnits->GetComponentDimUnit() );
@@ -310,8 +310,6 @@ BOOL CGirderSegmentGeneralPage::OnInitDialog()
    UpdateSlabOffsetControls();
 
    UpdateConcreteControls(true);
-
-   OnVariationTypeChanged();
 
    EnableToolTips(TRUE);
 
@@ -998,10 +996,10 @@ void CGirderSegmentGeneralPage::OnVariationTypeChanged()
       EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
       Float64 value = pSegment->GetBasicSegmentHeight();
-      Float64 height = ::ConvertFromSysUnits(value,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-      CString strHeight = ::FormatDimension(value,pDisplayUnits->GetSpanLengthUnit(),false);
+      Float64 height = ::ConvertFromSysUnits(value,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+      CString strHeight = ::FormatDimension(value,pDisplayUnits->GetComponentDimUnit(),false);
       m_ctrlSectionHeight[pgsTypes::sztLeftPrismatic].SetDefaultValue(height,strHeight);
-      m_ctrlSectionHeight[pgsTypes::sztRightPrismatic].SetDefaultValue(height,strHeight);
+      m_ctrlSectionHeight[pgsTypes::sztRightPrismatic].SetDefaultValue(height, strHeight);
    }
 
    UpdateSegmentVariationParameters(variationType);
@@ -1189,19 +1187,19 @@ Float64 CGirderSegmentGeneralPage::GetHeight(pgsTypes::SegmentZoneType segZone)
    switch( segZone )
    {
    case pgsTypes::sztLeftPrismatic:
-      height = GetValue(IDC_LEFT_PRISMATIC_HEIGHT,  pDisplayUnits->GetSpanLengthUnit() );
+      height = GetValue(IDC_LEFT_PRISMATIC_HEIGHT,  pDisplayUnits->GetComponentDimUnit() );
       break;
 
    case pgsTypes::sztLeftTapered:
-      height = GetValue(IDC_LEFT_TAPERED_HEIGHT, pDisplayUnits->GetSpanLengthUnit() );
+      height = GetValue(IDC_LEFT_TAPERED_HEIGHT, pDisplayUnits->GetComponentDimUnit() );
       break;
 
    case pgsTypes::sztRightTapered:
-      height = GetValue(IDC_RIGHT_TAPERED_HEIGHT,  pDisplayUnits->GetSpanLengthUnit() );
+      height = GetValue(IDC_RIGHT_TAPERED_HEIGHT,  pDisplayUnits->GetComponentDimUnit() );
       break;
 
    case pgsTypes::sztRightPrismatic:
-      height = GetValue(IDC_RIGHT_PRISMATIC_HEIGHT,  pDisplayUnits->GetSpanLengthUnit() );
+      height = GetValue(IDC_RIGHT_PRISMATIC_HEIGHT,  pDisplayUnits->GetComponentDimUnit() );
       break;
 
    default:
@@ -1705,4 +1703,14 @@ void CGirderSegmentGeneralPage::FillSlabOffsetComboBox()
    pcbSlabOffsetType->SetItemData(idx, (DWORD_PTR)pgsTypes::sotSegment);
 
    pcbSlabOffsetType->SetCurSel(m_SlabOffsetType == pgsTypes::sotSegment ? 1 : 0);
+}
+
+
+BOOL CGirderSegmentGeneralPage::OnSetActive()
+{
+   BOOL bResult = __super::OnSetActive();
+
+   OnVariationTypeChanged();
+
+   return bResult;
 }

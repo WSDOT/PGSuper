@@ -113,4 +113,5 @@ public:
    afx_msg void OnConcreteStrength();
    afx_msg void OnBnClickedBottomFlangeDepth();
    afx_msg void OnHelp();
+   virtual BOOL OnSetActive();
 };
