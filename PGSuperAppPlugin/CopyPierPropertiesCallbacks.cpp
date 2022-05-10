@@ -699,7 +699,7 @@ CCopyPierConnectionProperties::CCopyPierConnectionProperties()
 
 LPCTSTR CCopyPierConnectionProperties::GetName()
 {
-   return _T("Connection Geometries");
+   return _T("Connection Properties");
 }
 
 BOOL CCopyPierConnectionProperties::CanCopy(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)

@@ -12,22 +12,22 @@ Select the target Temporary Support To which the properties will be copied.
 
 Select Properties to be Copied
 -------------------------------
-By Default, there is only one option - Connections
+By Default, there is only one option - Connection Geometry
 
 Property | Description
 ---------|---------------
-Copy Connection Properties | Copy Temporary Support connection geometry.
+Connection Geometry | Copy Temporary Support connection geometry.
 
 Comparison Report
 -----------------
-This report provides an input echo of all temporary support connection geometries. Values on the selected "To" pier (highlighted in yellow) are compared all other temporary supports in the bridge.
+This report provides an input echo of all temporary support connection geometry. Values on the selected "To" temporary support (highlighted in yellow) are compared all other temporary supports in the bridge.
 
 Buttons
 --------
 
 Control Buttons | Description
 ----------------| -----------
-[Copy Now] | Press this button to copy the properties. 
+[Copy Now] | Press this button to copy the properties. This button is disabled when the properties of the From and To temporary supports are not compatible.
 [Close] | Close this window without copying properties
 [Help] | Opens this help topic.
 

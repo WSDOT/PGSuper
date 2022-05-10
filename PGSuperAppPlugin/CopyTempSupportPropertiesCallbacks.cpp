@@ -234,7 +234,7 @@ CCopyTempSupportConnectionProperties::CCopyTempSupportConnectionProperties()
 
 LPCTSTR CCopyTempSupportConnectionProperties::GetName()
 {
-   return _T("Connection Geometries");
+   return _T("Connection Geometry");
 }
 
 BOOL CCopyTempSupportConnectionProperties::CanCopy(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports)
