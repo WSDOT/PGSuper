@@ -164,7 +164,7 @@ void CSpanGirderReportDlg::UpdateSegmentComboBox()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   if (m_Mode == Mode::ChaptersOnly || m_Mode == Mode::GroupAndChapters)
+   if (m_Mode == Mode::ChaptersOnly || m_Mode == Mode::GroupAndChapters || m_Mode == Mode::GirderAndChapters)
    {
       return;
    }
@@ -340,8 +340,11 @@ BOOL CSpanGirderReportDlg::OnInitDialog()
 
 
       CComboBox* pSegmentBox = (CComboBox*)GetDlgItem(IDC_SEGMENT);
-      pSegmentBox->ShowWindow(SW_HIDE);
-      pSegmentBox->EnableWindow(FALSE);
+      if (pSegmentBox)
+      {
+         pSegmentBox->ShowWindow(SW_HIDE);
+         pSegmentBox->EnableWindow(FALSE);
+      }
 
       CComboBox* pGirderBox = (CComboBox*)GetDlgItem( IDC_GIRDER );
       CRect rGirder;
@@ -365,6 +368,13 @@ BOOL CSpanGirderReportDlg::OnInitDialog()
 
       pSpanBox->ShowWindow( SW_HIDE );
       pSpanBox->EnableWindow( FALSE );
+
+      CComboBox* pSegmentBox = (CComboBox*)GetDlgItem(IDC_SEGMENT);
+      if (pSegmentBox)
+      {
+         pSegmentBox->ShowWindow(SW_HIDE);
+         pSegmentBox->EnableWindow(FALSE);
+      }
 
       pGirderBox->ShowWindow( SW_HIDE );
       pGirderBox->EnableWindow( FALSE );
