@@ -157,7 +157,7 @@ CAutogenousShrinkageTable* CAutogenousShrinkageTable::PrepareTable(rptChapter* p
       }
    }
    
-   *pParagraph << Sub2(symbol(epsilon), _T("AS")) << _T(" = ") << pMaterials->GetSegmentAutogenousShrinkage(segmentKey) << rptNewLine;
+   *pParagraph << Sub2(symbol(epsilon), _T("AS")) << _T(" = ") << pMaterials->GetSegmentAutogenousShrinkage(segmentKey)*1e3 << _T("x") << Super2(_T("10"),_T("-3")) << rptNewLine;
 
    table->mod_e.ShowUnitTag(true);
    table->area.ShowUnitTag(true);

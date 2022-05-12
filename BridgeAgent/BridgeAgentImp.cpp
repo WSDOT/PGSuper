@@ -13538,20 +13538,19 @@ INCREMENTALSHRINKAGEDETAILS CBridgeAgentImp::GetIncrementalLongitudinalJointFree
    return details;
 }
 
-const Float64 autogenous_shrinkage_strain = 600.0E-6;
 Float64 CBridgeAgentImp::GetSegmentAutogenousShrinkage(const CSegmentKey& segmentKey) const
 {
-   return GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC ? autogenous_shrinkage_strain : 0.0; // PCI UHPC E.4.3.3
+   return m_ConcreteManager.GetSegmentAutogenousShrinkage(segmentKey);
 }
 
 Float64 CBridgeAgentImp::GetClosureJointAutogenousShrinkage(const CClosureKey& closureKey) const
 {
-   return GetClosureJointConcreteType(closureKey) == pgsTypes::PCI_UHPC ? autogenous_shrinkage_strain : 0.0; // PCI UHPC E.4.3.3
+   return m_ConcreteManager.GetClosureJointAutogenousShrinkage(closureKey);
 }
 
 Float64 CBridgeAgentImp::GetDeckAutogenousShrinkage() const
 {
-   return GetDeckConcreteType() == pgsTypes::PCI_UHPC ? autogenous_shrinkage_strain : 0.0; // PCI UHPC E.4.3.3
+   return m_ConcreteManager.GetDeckAutogenousShrinkage();
 }
 
 Float64 CBridgeAgentImp::GetSegmentCreepCoefficient(const CSegmentKey& segmentKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const

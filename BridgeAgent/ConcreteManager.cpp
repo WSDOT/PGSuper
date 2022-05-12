@@ -2177,6 +2177,42 @@ Float64 CConcreteManager::GetDeckAgingCoefficient(IndexType castingRegionIdx,Flo
    }
 }
 
+Float64 CConcreteManager::GetDeckConcreteFirstCrackingStrength() const
+{
+   IndexType castingRegionIdx = 0;
+   ValidateConcrete();
+   ValidateDeckConcrete();
+   auto* pDeckConcrete = m_pvDeckConcrete.empty() ? nullptr : m_pvDeckConcrete[castingRegionIdx].get(); // use region 0 because the deck material in all casting regions is the same
+   if (pDeckConcrete != nullptr)
+   {
+      const lrfdLRFDConcrete* pConcrete1 = dynamic_cast<const lrfdLRFDConcrete*>(pDeckConcrete);
+      const lrfdLRFDTimeDependentConcrete* pConcrete2 = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pDeckConcrete);
+      return (pConcrete1 ? pConcrete1->GetFirstCrackStrength() : pConcrete2->GetFirstCrackStrength());
+   }
+   else
+   {
+      return 0;
+   }
+}
+
+Float64 CConcreteManager::GetDeckAutogenousShrinkage() const
+{
+   IndexType castingRegionIdx = 0;
+   ValidateConcrete();
+   ValidateDeckConcrete();
+   const auto* pDeckConcrete = m_pvDeckConcrete.empty() ? nullptr : m_pvDeckConcrete[castingRegionIdx].get(); // use region 0 because the deck material in all casting regions is the same
+   if (pDeckConcrete != nullptr)
+   {
+      const lrfdLRFDConcrete* pConcrete1 = dynamic_cast<const lrfdLRFDConcrete*>(pDeckConcrete);
+      const lrfdLRFDTimeDependentConcrete* pConcrete2 = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pDeckConcrete);
+      return (pConcrete1 ? pConcrete1->GetAutogenousShrinkage() : pConcrete2->GetAutogenousShrinkage());
+   }
+   else
+   {
+      return 0;
+   }
+}
+
 const matConcreteBase* CConcreteManager::GetDeckConcrete(IndexType castingRegionIdx) const
 {
    ValidateConcrete();
@@ -2258,6 +2294,23 @@ Float64 CConcreteManager::GetSegmentConcreteFirstCrackingStrength(const CSegment
       std::shared_ptr<const lrfdLRFDConcrete> pConcrete1 = std::dynamic_pointer_cast<const lrfdLRFDConcrete>(m_pSegmentConcrete[segmentKey]);
       std::shared_ptr<const lrfdLRFDTimeDependentConcrete> pConcrete2 = std::dynamic_pointer_cast<const lrfdLRFDTimeDependentConcrete>(m_pSegmentConcrete[segmentKey]);
       return (pConcrete1 ? pConcrete1->GetFirstCrackStrength() : pConcrete2->GetFirstCrackStrength());
+   }
+   else
+   {
+      ATLASSERT(false); // this is a call for UHPC only so how did you get here?
+      return 0;
+   }
+}
+
+Float64 CConcreteManager::GetSegmentAutogenousShrinkage(const CSegmentKey& segmentKey) const
+{
+   ValidateConcrete();
+   ValidateSegmentConcrete();
+   if (m_pSegmentConcrete[segmentKey]->GetType() == matConcreteBase::PCI_UHPC)
+   {
+      std::shared_ptr<const lrfdLRFDConcrete> pConcrete1 = std::dynamic_pointer_cast<const lrfdLRFDConcrete>(m_pSegmentConcrete[segmentKey]);
+      std::shared_ptr<const lrfdLRFDTimeDependentConcrete> pConcrete2 = std::dynamic_pointer_cast<const lrfdLRFDTimeDependentConcrete>(m_pSegmentConcrete[segmentKey]);
+      return (pConcrete1 ? pConcrete1->GetAutogenousShrinkage() : pConcrete2->GetAutogenousShrinkage());
    }
    else
    {
@@ -2353,6 +2406,23 @@ Float64 CConcreteManager::GetClosureJointConcreteFirstCrackingStrength(const CCl
       std::shared_ptr<const lrfdLRFDConcrete> pConcrete1 = std::dynamic_pointer_cast<const lrfdLRFDConcrete>(m_pClosureConcrete[closureKey]);
       std::shared_ptr<const lrfdLRFDTimeDependentConcrete> pConcrete2 = std::dynamic_pointer_cast<const lrfdLRFDTimeDependentConcrete>(m_pClosureConcrete[closureKey]);
       return (pConcrete1 ? pConcrete1->GetFirstCrackStrength() : pConcrete2->GetFirstCrackStrength());
+   }
+   else
+   {
+      ATLASSERT(false); // this is a call for UHPC only so how did you get here?
+      return 0;
+   }
+}
+
+Float64 CConcreteManager::GetClosureJointAutogenousShrinkage(const CClosureKey& closureKey) const
+{
+   ValidateConcrete();
+   ValidateSegmentConcrete();
+   if (m_pClosureConcrete[closureKey]->GetType() == matConcreteBase::PCI_UHPC)
+   {
+      std::shared_ptr<const lrfdLRFDConcrete> pConcrete1 = std::dynamic_pointer_cast<const lrfdLRFDConcrete>(m_pClosureConcrete[closureKey]);
+      std::shared_ptr<const lrfdLRFDTimeDependentConcrete> pConcrete2 = std::dynamic_pointer_cast<const lrfdLRFDTimeDependentConcrete>(m_pClosureConcrete[closureKey]);
+      return (pConcrete1 ? pConcrete1->GetAutogenousShrinkage() : pConcrete2->GetAutogenousShrinkage());
    }
    else
    {
@@ -2556,6 +2626,7 @@ lrfdLRFDConcrete* CConcreteManager::CreateLRFDConcreteModel(const CConcreteMater
 
    pLRFDConcrete->SetFirstCrackStrength(concrete.Ffc);
    pLRFDConcrete->SetPostCrackingTensileStrength(concrete.Frr);
+   pLRFDConcrete->SetAutogenousShrinkage(concrete.AutogenousShrinkage);
 
 
    return pLRFDConcrete;
@@ -2607,6 +2678,7 @@ lrfdLRFDTimeDependentConcrete* CConcreteManager::CreateTimeDependentLRFDConcrete
 
    pConcrete->SetFirstCrackStrength(concrete.Ffc);
    pConcrete->SetPostCrackingTensileStrength(concrete.Frr);
+   pConcrete->SetAutogenousShrinkage(concrete.AutogenousShrinkage);
 
    return pConcrete;
 }

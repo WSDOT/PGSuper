@@ -48,7 +48,6 @@ public:
    Float64 WeightDensity;
    Float64 StrengthDensity;
    Float64 MaxAggregateSize;
-   Float64 FiberLength;
    bool    bUserEc; // if true, Ec is a user input value
    Float64 Ec; // 28-day secant modulus
 
@@ -71,6 +70,8 @@ public:
    // PCI-UHPC Parameters
    Float64 Ffc; // Concrete stress at first cracking
    Float64 Frr; // Post-cracking tensile strength
+   Float64 FiberLength;
+   Float64 AutogenousShrinkage; // Autogenous (chemical) shrinkage
    bool bPCTT; // Post-cure thermal treatment
 
    // Time Dependent Models - General

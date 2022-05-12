@@ -130,6 +130,8 @@ public:
    Float64 GetDeckCreepCoefficient(IndexType castingRegionIdx, Float64 t,Float64 tla) const;
    std::shared_ptr<matConcreteBaseCreepDetails> GetDeckCreepCoefficientDetails(IndexType castingRegionIdx, Float64 t,Float64 tla) const;
    Float64 GetDeckAgingCoefficient(IndexType castingRegionIdx, Float64 timeOfLoading) const;
+   Float64 GetDeckConcreteFirstCrackingStrength() const;
+   Float64 GetDeckAutogenousShrinkage() const;
    const matConcreteBase* GetDeckConcrete(IndexType castingRegionIdx) const;
 
    Float64 GetSegmentCastingTime(const CSegmentKey& segmentKey) const;
@@ -143,6 +145,7 @@ public:
    std::shared_ptr<matConcreteBaseCreepDetails> GetSegmentCreepCoefficientDetails(const CSegmentKey& segmentKey,Float64 t,Float64 tla) const;
    Float64 GetSegmentAgingCoefficient(const CSegmentKey& segmentKey,Float64 timeOfLoading) const;
    Float64 GetSegmentConcreteFirstCrackingStrength(const CSegmentKey& segmentKey) const;
+   Float64 GetSegmentAutogenousShrinkage(const CSegmentKey& segmentKey) const;
    const matConcreteBase* GetSegmentConcrete(const CSegmentKey& segmentKey) const;
 
    Float64 GetClosureJointCastingTime(const CClosureKey& closureKey) const;
@@ -157,6 +160,7 @@ public:
    Float64 GetClosureJointAgingCoefficient(const CClosureKey& closureKey,Float64 timeOfLoading) const;
    const matConcreteBase* GetClosureJointConcrete(const CClosureKey& closureKey) const;
    Float64 GetClosureJointConcreteFirstCrackingStrength(const CClosureKey& closureKey) const;
+   Float64 GetClosureJointAutogenousShrinkage(const CClosureKey& closureKey) const;
 
    Float64 GetRailingSystemCastingTime(pgsTypes::TrafficBarrierOrientation orientation) const;
    Float64 GetRailingSystemFc(pgsTypes::TrafficBarrierOrientation orientation,Float64 t) const;

@@ -32,7 +32,8 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 1 TEXTINCLUDE 
 BEGIN
-    "resource.h\0"
+    "resource.h\r\n"
+   "#include <WBFLGrid.h>\r\n"
     "\0"
 END
 
@@ -41,7 +42,7 @@ BEGIN
     "#include ""afxres.h""\r\n"
     "#include ""EAF\\EAFResources.h""\r\n"
     "#if !defined _NOGRID\r\n"
-    "#include ""grid\gxresrc.h""\r\n"
+    "#include ""grid\\gxresrc.h""\r\n"
     "#endif\r\n"
 END
 
@@ -60,7 +61,7 @@ BEGIN
     "#include ""res\\psgLib.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
     "#include ""afxres.rc""         // Standard components\r\n"
     "#endif\r\n"
-    "#include ""grid\\gxres.rc""               // Objective Grid resources\r\0"
+    "#include ""grid\\gxres.rc""               // Objective Grid resources\r\n"
 END
 
 #endif    // APSTUDIO_INVOKED
@@ -2004,7 +2005,7 @@ BEGIN
     LTEXT           "rad",IDC_STATIC,339,86,12,8
 END
 
-IDD_PCIUHPC_CONCRETE DIALOGEX 0, 0, 251, 98
+IDD_PCIUHPC_CONCRETE DIALOGEX 0, 0, 251, 130
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "PCI-UHPC"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -2019,7 +2020,10 @@ BEGIN
     LTEXT           "Fiber Length",IDC_FIBER_LABEL,28,54,40,8
     EDITTEXT        IDC_FIBER,166,51,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_FIBER_UNIT,210,53,19,8
-    CONTROL         "Post-cure thermal treatment",IDC_PCTT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,27,74,107,10
+    LTEXT           "Autogenous Shrinkage",IDC_STATIC,27,72,73,8
+    EDITTEXT        IDC_AUTOGENOUS_SHRINKAGE,166,67,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    CONTROL         "Post-cure thermal treatment",IDC_PCTT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,27,91,107,10
+    LTEXT           "x10^-3",IDC_STATIC,209,70,25,8
 END
 
 
@@ -2417,7 +2421,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 244
         TOPMARGIN, 7
-        BOTTOMMARGIN, 91
+        BOTTOMMARGIN, 123
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -3042,7 +3046,6 @@ LANGUAGE 9, 1
 #if !defined _NOGRID
 #include "grid\gxres.rc"               // Objective Grid resources
 #endif
-
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

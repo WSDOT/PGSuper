@@ -344,7 +344,7 @@ void CConcreteGeneralPage::OnCopyMaterial()
          pParent->m_AASHTO.m_Fct         = entry->GetAggSplittingStrength();
          pParent->m_AASHTO.m_bHasFct     = entry->HasAggSplittingStrength();
 
-         entry->GetPCIUHPC(&(pParent->m_PCIUHPC.m_ffc), &(pParent->m_PCIUHPC.m_frr), &(pParent->m_PCIUHPC.m_FiberLength), &(pParent->m_PCIUHPC.m_bPCTT));
+         entry->GetPCIUHPC(&(pParent->m_PCIUHPC.m_ffc), &(pParent->m_PCIUHPC.m_frr), &(pParent->m_PCIUHPC.m_FiberLength), &(pParent->m_PCIUHPC.m_AutogenousShrinkage), &(pParent->m_PCIUHPC.m_bPCTT));
 
          pParent->m_ACI.m_bUserParameters = entry->UserACIParameters();
          pParent->m_ACI.m_A               = entry->GetAlpha();

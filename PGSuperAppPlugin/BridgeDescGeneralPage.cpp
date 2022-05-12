@@ -2333,6 +2333,7 @@ void CBridgeDescGeneralPage::OnMoreProperties()
    dlg.m_PCIUHPC.m_ffc = m_JointConcrete.Ffc;
    dlg.m_PCIUHPC.m_frr = m_JointConcrete.Frr;
    dlg.m_PCIUHPC.m_FiberLength = m_JointConcrete.FiberLength;
+   dlg.m_PCIUHPC.m_AutogenousShrinkage = m_JointConcrete.AutogenousShrinkage;
    dlg.m_PCIUHPC.m_bPCTT = m_JointConcrete.bPCTT;
 
    if (dlg.DoModal() == IDOK)
@@ -2357,6 +2358,7 @@ void CBridgeDescGeneralPage::OnMoreProperties()
       m_JointConcrete.Ffc = dlg.m_PCIUHPC.m_ffc;
       m_JointConcrete.Frr = dlg.m_PCIUHPC.m_frr;
       m_JointConcrete.FiberLength = dlg.m_PCIUHPC.m_FiberLength;
+      m_JointConcrete.AutogenousShrinkage = dlg.m_PCIUHPC.m_AutogenousShrinkage;
       m_JointConcrete.bPCTT = dlg.m_PCIUHPC.m_bPCTT;
 
       m_strUserEc = dlg.m_General.m_strUserEc;

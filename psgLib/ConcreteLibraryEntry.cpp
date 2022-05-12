@@ -171,6 +171,7 @@ m_Frr(::ConvertToSysUnits(0.75,unitMeasure::KSI)),
 m_FiberLength(::ConvertToSysUnits(0.5,unitMeasure::Inch)),
 m_bPCTT(false),
 m_bHasFct(false),
+m_AutogenousShrinkage(0.3e-03),
 m_bUserACIParameters(false),
 m_CureMethod(pgsTypes::Moist),
 m_ACI209CementType(pgsTypes::TypeI),
@@ -242,11 +243,12 @@ bool ConcreteLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->EndUnit(); // AASHTO
 
    // Added version 7
-   pSave->BeginUnit(_T("PCIUHPC"), 1.0);
+   pSave->BeginUnit(_T("PCIUHPC"), 2.0);
    pSave->Property(_T("Ffc"), m_Ffc);
    pSave->Property(_T("Frr"), m_Frr);
    pSave->Property(_T("FiberLength"), m_FiberLength);
    pSave->Property(_T("PCTT"), m_bPCTT);
+   pSave->Property(_T("AutogenousShrinkage"), m_AutogenousShrinkage); // added in PCIUHPC 2.0
    pSave->EndUnit(); // PCIUHPC
 
    pSave->BeginUnit(_T("ACI"),1.0);
@@ -466,10 +468,18 @@ bool ConcreteLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          {
             // Added version 7
             if(!pLoad->BeginUnit(_T("PCIUHPC"))) THROW_LOAD(InvalidFileFormat,pLoad);
+            Float64 PCIUHPC_Version = pLoad->GetVersion();
+
             if (!pLoad->Property(_T("Ffc"), &m_Ffc)) THROW_LOAD(InvalidFileFormat, pLoad);
             if(!pLoad->Property(_T("Frr"), &m_Frr)) THROW_LOAD(InvalidFileFormat, pLoad);
             if (!pLoad->Property(_T("FiberLength"), &m_FiberLength)) THROW_LOAD(InvalidFileFormat, pLoad);
             if(!pLoad->Property(_T("PCTT"), &m_bPCTT)) THROW_LOAD(InvalidFileFormat, pLoad);
+
+            if (1 < PCIUHPC_Version)
+            {
+               if (!pLoad->Property(_T("AutogenousShrinkage"), &m_AutogenousShrinkage)) THROW_LOAD(InvalidFileFormat,pLoad); // added in PCIUHPC 2.0
+            }
+
             if(!pLoad->EndUnit()) THROW_LOAD(InvalidFileFormat, pLoad);
          }
 
@@ -708,6 +718,12 @@ bool ConcreteLibraryEntry::Compare(const ConcreteLibraryEntry& rOther, std::vect
          RETURN_ON_DIFFERENCE;
          vDifferences.push_back(new pgsLibraryEntryDifferenceBooleanItem(_T("PCTT"), m_bPCTT, rOther.m_bPCTT, _T("Checked"), _T("Unchecked")));
       }
+
+      if (!::IsEqual(m_AutogenousShrinkage, rOther.m_AutogenousShrinkage))
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceDoubleItem(_T("Autogenous Shrinkage"),m_AutogenousShrinkage, rOther.m_AutogenousShrinkage));
+      }
    }
 
    if ( m_bUserACIParameters != rOther.m_bUserACIParameters )
@@ -936,22 +952,23 @@ Float64 ConcreteLibraryEntry::GetAggSplittingStrength() const
    return m_Fct;
 }
 
-void ConcreteLibraryEntry::SetPCIUHPC(Float64 ffc, Float64 frr, Float64 fiberLength,bool bPCTT)
+void ConcreteLibraryEntry::SetPCIUHPC(Float64 ffc, Float64 frr, Float64 fiberLength,Float64 autogenousShrinkage,bool bPCTT)
 {
    m_Ffc = ffc;
    m_Frr = frr;
    m_FiberLength = fiberLength;
    m_bPCTT = bPCTT;
+   m_AutogenousShrinkage = autogenousShrinkage;
 }
 
-void ConcreteLibraryEntry::GetPCIUHPC(Float64* ffc, Float64* frr, Float64* fiberLength, bool* bPCTT) const
+void ConcreteLibraryEntry::GetPCIUHPC(Float64* ffc, Float64* frr, Float64* fiberLength,Float64* pAutogenousShrinkage, bool* bPCTT) const
 {
    *ffc = m_Ffc;
    *frr = m_Frr;
    *fiberLength = m_FiberLength;
    *bPCTT = m_bPCTT;
+   *pAutogenousShrinkage = m_AutogenousShrinkage;
 }
-
 
 bool ConcreteLibraryEntry::UserACIParameters() const
 {
@@ -1071,7 +1088,7 @@ bool ConcreteLibraryEntry::Edit(bool allowEditing,int nPage)
    dlg.m_General.m_Ec        = this->GetEc();
    dlg.m_General.m_Type      = this->GetType();
 
-   GetPCIUHPC(&dlg.m_PCIUHPC.m_ffc, &dlg.m_PCIUHPC.m_frr, &dlg.m_PCIUHPC.m_FiberLength, &dlg.m_PCIUHPC.m_bPCTT);
+   GetPCIUHPC(&dlg.m_PCIUHPC.m_ffc, &dlg.m_PCIUHPC.m_frr, &dlg.m_PCIUHPC.m_FiberLength, &dlg.m_PCIUHPC.m_AutogenousShrinkage, &dlg.m_PCIUHPC.m_bPCTT);
 
    dlg.m_AASHTO.m_EccK1       = this->GetModEK1();
    dlg.m_AASHTO.m_EccK2       = this->GetModEK2();
@@ -1115,7 +1132,7 @@ bool ConcreteLibraryEntry::Edit(bool allowEditing,int nPage)
       this->HasAggSplittingStrength(dlg.m_AASHTO.m_bHasFct);
       this->SetAggSplittingStrength(dlg.m_AASHTO.m_Fct);
 
-      SetPCIUHPC(dlg.m_PCIUHPC.m_ffc, dlg.m_PCIUHPC.m_frr, dlg.m_PCIUHPC.m_FiberLength, dlg.m_PCIUHPC.m_bPCTT);
+      SetPCIUHPC(dlg.m_PCIUHPC.m_ffc, dlg.m_PCIUHPC.m_frr, dlg.m_PCIUHPC.m_FiberLength, dlg.m_PCIUHPC.m_AutogenousShrinkage, dlg.m_PCIUHPC.m_bPCTT);
 
       this->UserACIParameters(dlg.m_ACI.m_bUserParameters);
       this->SetAlpha(dlg.m_ACI.m_A);
@@ -1160,6 +1177,7 @@ void ConcreteLibraryEntry::MakeCopy(const ConcreteLibraryEntry& rOther)
    m_Frr = rOther.m_Frr;
    m_FiberLength = rOther.m_FiberLength;
    m_bPCTT = rOther.m_bPCTT;
+   m_AutogenousShrinkage = rOther.m_AutogenousShrinkage;
 
 
    // ACI

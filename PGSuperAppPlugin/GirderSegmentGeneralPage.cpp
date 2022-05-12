@@ -828,6 +828,7 @@ void CGirderSegmentGeneralPage::OnMoreConcreteProperties()
    dlg.m_PCIUHPC.m_ffc = pSegment->Material.Concrete.Ffc;
    dlg.m_PCIUHPC.m_frr = pSegment->Material.Concrete.Frr;
    dlg.m_PCIUHPC.m_FiberLength = pSegment->Material.Concrete.FiberLength;
+   dlg.m_PCIUHPC.m_AutogenousShrinkage = pSegment->Material.Concrete.AutogenousShrinkage;
    dlg.m_PCIUHPC.m_bPCTT = pSegment->Material.Concrete.bPCTT;
 
    dlg.m_General.m_strUserEc  = m_strUserEc;
@@ -869,6 +870,7 @@ void CGirderSegmentGeneralPage::OnMoreConcreteProperties()
       pSegment->Material.Concrete.Ffc = dlg.m_PCIUHPC.m_ffc;
       pSegment->Material.Concrete.Frr = dlg.m_PCIUHPC.m_frr;
       pSegment->Material.Concrete.FiberLength = dlg.m_PCIUHPC.m_FiberLength;
+      pSegment->Material.Concrete.AutogenousShrinkage = dlg.m_PCIUHPC.m_AutogenousShrinkage;
       pSegment->Material.Concrete.bPCTT = dlg.m_PCIUHPC.m_bPCTT;
 
 

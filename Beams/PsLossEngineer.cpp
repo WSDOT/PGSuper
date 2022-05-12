@@ -627,9 +627,20 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
    {
       GET_IFACE(ISegmentData, pSegment);
       bool bPCTTGirder = pSegment->GetSegmentMaterial(segmentKey)->Concrete.bPCTT;
+      Float64 GdrAutogenousShrinkage = 0.0;
+      if (bUHPCGirder)
+      {
+         GdrAutogenousShrinkage = pMaterials->GetSegmentAutogenousShrinkage(segmentKey);
+      }
 
       GET_IFACE(IBridgeDescription, pBridgeDesc);
       bool bPCTTDeck = pBridgeDesc->GetDeckDescription()->Concrete.bPCTT;
+      Float64 DeckAutogenousShrinkage = 0.0;
+      if (bUHPCDeck)
+      {
+         DeckAutogenousShrinkage = pMaterials->GetDeckAutogenousShrinkage();
+      }
+
 
       pLoss = std::make_shared<lrfdPCIUHPCLosses>(poi.GetDistFromStart(),
          girder_length,
@@ -653,8 +664,8 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
          wobble,
          coeffFriction,
          angleChange,
-         GdrShrinkageK1, GdrShrinkageK2,
-         DeckShrinkageK1, DeckShrinkageK2,
+         GdrShrinkageK1, GdrShrinkageK2, GdrAutogenousShrinkage,
+         DeckShrinkageK1, DeckShrinkageK2, DeckAutogenousShrinkage,
          fc,
          fci,
          fcSlab,

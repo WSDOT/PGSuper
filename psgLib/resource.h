@@ -1433,6 +1433,7 @@
 #define IDC_FIBER                       1734
 #define IDC_FIBER_UNIT                  1735
 #define IDC_SLICE_COUNT                 1736
+#define IDC_AUTOGENOUS_SHRINKAGE        1737
 #define IDS_E_INVALIDVERSION            1750
 #define IDS_E_USERDEFINED               1752
 #define IDC_DIAPHRAGM_NOTE              1858
@@ -1466,7 +1467,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        333
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1737
+#define _APS_NEXT_CONTROL_VALUE         1738
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

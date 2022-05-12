@@ -284,6 +284,7 @@ void CClosureJointGeneralPage::OnMoreConcreteProperties()
    dlg.m_PCIUHPC.m_ffc = pParent->m_ClosureJoint.GetConcrete().Ffc;
    dlg.m_PCIUHPC.m_frr = pParent->m_ClosureJoint.GetConcrete().Frr;
    dlg.m_PCIUHPC.m_FiberLength = pParent->m_ClosureJoint.GetConcrete().FiberLength;
+   dlg.m_PCIUHPC.m_AutogenousShrinkage = pParent->m_ClosureJoint.GetConcrete().AutogenousShrinkage;
    dlg.m_PCIUHPC.m_bPCTT = pParent->m_ClosureJoint.GetConcrete().bPCTT;
 
    dlg.m_General.m_strUserEc  = m_strUserEc;
@@ -327,6 +328,7 @@ void CClosureJointGeneralPage::OnMoreConcreteProperties()
       pParent->m_ClosureJoint.GetConcrete().Ffc = dlg.m_PCIUHPC.m_ffc;
       pParent->m_ClosureJoint.GetConcrete().Frr = dlg.m_PCIUHPC.m_frr;
       pParent->m_ClosureJoint.GetConcrete().FiberLength = dlg.m_PCIUHPC.m_FiberLength;
+      pParent->m_ClosureJoint.GetConcrete().AutogenousShrinkage = dlg.m_PCIUHPC.m_AutogenousShrinkage;
       pParent->m_ClosureJoint.GetConcrete().bPCTT = dlg.m_PCIUHPC.m_bPCTT;
 
       m_strUserEc  = dlg.m_General.m_strUserEc;

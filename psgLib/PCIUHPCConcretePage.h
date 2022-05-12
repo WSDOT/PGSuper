@@ -52,6 +52,7 @@ public:
 	Float64 m_ffc;
 	Float64 m_frr;
 	Float64 m_FiberLength;
+	Float64 m_AutogenousShrinkage;
 	bool m_bPCTT;
 
    // Implementation

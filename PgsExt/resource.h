@@ -141,6 +141,7 @@
 #define IDC_FIBER_LABEL                 1733
 #define IDC_FIBER                       1734
 #define IDC_FIBER_UNIT                  1735
+#define IDC_AUTOGENOUS_SHRINKAGE        1737
 #define IDC_CONFIGURATION_GROUP         1804
 #define IDC_TITLE                       1805
 #define IDC_INTERVAL                    3016

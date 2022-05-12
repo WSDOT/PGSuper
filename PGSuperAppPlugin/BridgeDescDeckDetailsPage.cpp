@@ -909,6 +909,7 @@ void CBridgeDescDeckDetailsPage::OnMoreConcreteProperties()
    dlg.m_PCIUHPC.m_ffc = pDeck->Concrete.Ffc;
    dlg.m_PCIUHPC.m_frr = pDeck->Concrete.Frr;
    dlg.m_PCIUHPC.m_FiberLength = pDeck->Concrete.FiberLength;
+   dlg.m_PCIUHPC.m_AutogenousShrinkage = pDeck->Concrete.AutogenousShrinkage;
    dlg.m_PCIUHPC.m_bPCTT = pDeck->Concrete.bPCTT;
 
    matACI209Concrete concrete;
@@ -959,6 +960,7 @@ void CBridgeDescDeckDetailsPage::OnMoreConcreteProperties()
       pDeck->Concrete.Ffc = dlg.m_PCIUHPC.m_ffc;
       pDeck->Concrete.Frr = dlg.m_PCIUHPC.m_frr;
       pDeck->Concrete.FiberLength = dlg.m_PCIUHPC.m_FiberLength;
+      pDeck->Concrete.AutogenousShrinkage = dlg.m_PCIUHPC.m_AutogenousShrinkage;
       pDeck->Concrete.bPCTT = dlg.m_PCIUHPC.m_bPCTT;
 
       m_strUserEc  = dlg.m_General.m_strUserEc;

@@ -1026,6 +1026,7 @@ void CGirderDescGeneralPage::OnMoreConcreteProperties()
    dlg.m_PCIUHPC.m_ffc = pParent->m_pSegment->Material.Concrete.Ffc;
    dlg.m_PCIUHPC.m_frr = pParent->m_pSegment->Material.Concrete.Frr;
    dlg.m_PCIUHPC.m_FiberLength = pParent->m_pSegment->Material.Concrete.FiberLength;
+   dlg.m_PCIUHPC.m_AutogenousShrinkage = pParent->m_pSegment->Material.Concrete.AutogenousShrinkage;
    dlg.m_PCIUHPC.m_bPCTT = pParent->m_pSegment->Material.Concrete.bPCTT;
 
    dlg.m_AASHTO.m_EccK1       = pParent->m_pSegment->Material.Concrete.EcK1;
@@ -1064,6 +1065,7 @@ void CGirderDescGeneralPage::OnMoreConcreteProperties()
       pParent->m_pSegment->Material.Concrete.Ffc = dlg.m_PCIUHPC.m_ffc;
       pParent->m_pSegment->Material.Concrete.Frr = dlg.m_PCIUHPC.m_frr;
       pParent->m_pSegment->Material.Concrete.FiberLength = dlg.m_PCIUHPC.m_FiberLength;
+      pParent->m_pSegment->Material.Concrete.AutogenousShrinkage = dlg.m_PCIUHPC.m_AutogenousShrinkage;
       pParent->m_pSegment->Material.Concrete.bPCTT = dlg.m_PCIUHPC.m_bPCTT;
 
       pParent->m_pSegment->Material.Concrete.EcK1             = dlg.m_AASHTO.m_EccK1;

@@ -1,14 +1,14 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
-#include <WBFLGrid.h>
+
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include "afxres.h"
-
+#include <WBFLGrid.h>
 #if !defined _NOGRID
 #include "grid\gxresrc.h"
 #endif
@@ -37,9 +37,10 @@ END
 2 TEXTINCLUDE 
 BEGIN
     "#include ""afxres.h""\r\n"
-   "#if !defined _NOGRID\r\n"
-   "#include ""grid\gxresrc.h""\r\n"
-   "#endif\r\n"
+    "#include <WBFLGrid.h>\r\n"
+    "#if !defined _NOGRID\r\n"
+    "#include ""grid\\gxresrc.h""\r\n"
+    "#endif\r\0"
 END
 
 3 TEXTINCLUDE 
@@ -56,10 +57,10 @@ BEGIN
     "#endif\r\n"
     "#include ""afxres.rc""         // Standard components\r\n"
     "#endif\r\n"
-   "#if !defined _NOGRID\r\n"
-   "#include ""grid\\gxres.rc""\r\0"
-   "#endif\r\n"
-   END
+    "#if !defined _NOGRID\r\n"
+    "#include ""grid\\gxres.rc""\r\n"
+    "#endif\r\0"
+END
 
 #endif    // APSTUDIO_INVOKED
 
@@ -373,7 +374,7 @@ BEGIN
     PUSHBUTTON      "Help",IDC_HELP,208,124,50,14
 END
 
-IDD_PCIUHPC_CONCRETE DIALOGEX 0, 0, 251, 98
+IDD_PCIUHPC_CONCRETE DIALOGEX 0, 0, 251, 131
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "PCI-UHPC"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -388,7 +389,10 @@ BEGIN
     LTEXT           "Fiber Length",IDC_FIBER_LABEL,28,54,40,8
     EDITTEXT        IDC_FIBER,166,51,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_FIBER_UNIT,210,53,19,8
-    CONTROL         "Post-cure thermal treatment",IDC_PCTT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,27,71,107,10
+    LTEXT           "Autogenous Shrinkage",IDC_STATIC,27,72,73,8
+    EDITTEXT        IDC_AUTOGENOUS_SHRINKAGE,166,67,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "x10^-3",IDC_STATIC,209,70,25,8
+    CONTROL         "Post-cure thermal treatment",IDC_PCTT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,27,91,107,10
 END
 
 
@@ -549,7 +553,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 244
         TOPMARGIN, 7
-        BOTTOMMARGIN, 91
+        BOTTOMMARGIN, 124
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -630,7 +634,7 @@ LANGUAGE 9, 1
 #include "afxres.rc"         // Standard components
 #endif
 #if !defined _NOGRID
-#include "grid/gxres.rc"               // Objective Grid resources
+#include "grid\gxres.rc"
 #endif
 
 /////////////////////////////////////////////////////////////////////////////

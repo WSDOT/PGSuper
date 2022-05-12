@@ -213,8 +213,8 @@ public:
 
    //------------------------------------------------------------------------
    // Parameters for the PCI UHPC concrete
-   void SetPCIUHPC(Float64 ffc, Float64 frr, Float64 fiberLength, bool bPCTT);
-   void GetPCIUHPC(Float64* ffc, Float64* frr, Float64* pFiberLength,bool* bPCTT) const;
+   void SetPCIUHPC(Float64 ffc, Float64 frr, Float64 fiberLength,Float64 autogenousShrinkage, bool bPCTT);
+   void GetPCIUHPC(Float64* ffc, Float64* frr, Float64* pFiberLength,Float64* pAutogenousShrinkage,bool* bPCTT) const;
 
    //------------------------------------------------------------------------
    // Parameters for the ACI 209R-92 model
@@ -286,6 +286,7 @@ private:
    Float64 m_Ffc;
    Float64 m_Frr;
    bool m_bPCTT;
+   Float64 m_AutogenousShrinkage;
 
    // ACI Model Parameters
    bool m_bUserACIParameters;

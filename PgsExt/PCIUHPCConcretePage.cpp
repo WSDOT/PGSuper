@@ -74,6 +74,14 @@ void CPCIUHPCConcretePage::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_FRR, IDC_FRR_UNIT, m_frr, pDisplayUnits->Stress);
    DDX_UnitValueAndTag(pDX, IDC_FIBER, IDC_FIBER_UNIT, m_FiberLength, pDisplayUnits->ComponentDim);
 
+   if (!pDX->m_bSaveAndValidate)
+      m_AutogenousShrinkage *= 1.0e3;
+
+   DDX_Text(pDX, IDC_AUTOGENOUS_SHRINKAGE, m_AutogenousShrinkage);
+
+   if (pDX->m_bSaveAndValidate)
+      m_AutogenousShrinkage /= 1.0e3;
+
    DDX_Check_Bool(pDX, IDC_PCTT, m_bPCTT);
 
    if (bValidate)
@@ -82,6 +90,7 @@ void CPCIUHPCConcretePage::DoDataExchange(CDataExchange* pDX)
       DDV_UnitValueGreaterThanZero(pDX, IDC_FFC, m_ffc, pDisplayUnits->Stress);
       DDV_UnitValueGreaterThanZero(pDX, IDC_FRR, m_frr, pDisplayUnits->Stress);
       DDV_UnitValueGreaterThanZero(pDX, IDC_FIBER, m_FiberLength, pDisplayUnits->ComponentDim);
+      DDV_GreaterThanZero(pDX, IDC_AUTOGENOUS_SHRINKAGE, m_AutogenousShrinkage);
    }
 }
 
@@ -106,6 +115,7 @@ BOOL CPCIUHPCConcretePage::OnSetActive()
    GetDlgItem(IDC_FFC)->EnableWindow(bEnable);
    GetDlgItem(IDC_FRR)->EnableWindow(bEnable);
    GetDlgItem(IDC_FIBER)->EnableWindow(bEnable);
+   GetDlgItem(IDC_AUTOGENOUS_SHRINKAGE)->EnableWindow(bEnable);
    GetDlgItem(IDC_PCTT)->EnableWindow(bEnable);
 
    return __super::OnSetActive();

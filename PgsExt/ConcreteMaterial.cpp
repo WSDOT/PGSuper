@@ -80,6 +80,7 @@ CConcreteMaterial::CConcreteMaterial()
    Ffc = ::ConvertToSysUnits(1.5, unitMeasure::KSI);
    Frr = ::ConvertToSysUnits(0.75, unitMeasure::KSI);
    FiberLength = ::ConvertToSysUnits(0.5, unitMeasure::Inch);
+   AutogenousShrinkage = 0.0;
    bPCTT = false;
 
    bBasePropertiesOnInitialValues = false;
@@ -158,11 +159,6 @@ bool CConcreteMaterial::operator==(const CConcreteMaterial& rOther) const
       return false;
    }
 
-   if (FiberLength != rOther.FiberLength)
-   {
-      return false;
-   }
-
    if ( EcK1 != rOther.EcK1 )
    {
       return false;
@@ -209,6 +205,12 @@ bool CConcreteMaterial::operator==(const CConcreteMaterial& rOther) const
          return false;
 
       if (!IsEqual(Frr, rOther.Frr))
+         return false;
+
+      if (!IsEqual(AutogenousShrinkage,rOther.AutogenousShrinkage))
+         return false;
+
+      if (!IsEqual(FiberLength,rOther.FiberLength))
          return false;
 
       if (bPCTT != rOther.bPCTT)
@@ -335,10 +337,11 @@ HRESULT CConcreteMaterial::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->EndUnit(); // AASHTO
 
    // Added in Version 3
-   pStrSave->BeginUnit(_T("PCI_UHPC"), 1.0);
+   pStrSave->BeginUnit(_T("PCI_UHPC"), 2.0);
    pStrSave->put_Property(_T("Ffc"), CComVariant(Ffc));
    pStrSave->put_Property(_T("Frr"), CComVariant(Frr));
    pStrSave->put_Property(_T("FiberLength"), CComVariant(FiberLength));
+   pStrSave->put_Property(_T("AutogenousShrinkage"), CComVariant(AutogenousShrinkage)); // added in PCI_UHPC version 2
    pStrSave->put_Property(_T("PCTT"), CComVariant(bPCTT));
    pStrSave->EndUnit(); // PCI_UHPC
 
@@ -479,6 +482,9 @@ HRESULT CConcreteMaterial::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    {
       // added in Version 3
       pStrLoad->BeginUnit(_T("PCI_UHPC"));
+
+      Float64 uhpc_version;
+      pStrLoad->get_Version(&uhpc_version);
       
       var.vt = VT_R8;
       
@@ -490,6 +496,12 @@ HRESULT CConcreteMaterial::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       pStrLoad->get_Property(_T("FiberLength"), &var);
       FiberLength = var.dblVal;
+
+      if (1 < uhpc_version)
+      {
+         pStrLoad->get_Property(_T("AutogenousShrinkage"), &var); // added in PCI_UHPC version 2
+         AutogenousShrinkage = var.dblVal;
+      }
 
       var.vt = VT_BOOL;
       pStrLoad->get_Property(_T("PCTT"), &var);
