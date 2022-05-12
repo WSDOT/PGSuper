@@ -127,13 +127,13 @@ BEGIN
     CONTROL         "Top Deck",IDC_TOP_DECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,73,302,45,10
     CONTROL         "Bottom Deck",IDC_BOTTOM_DECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,73,312,56,10
     CONTROL         "Include Elevation Adjustments",IDC_ELEV_ADJUSTMENT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,330,113,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,349,113,10
     GROUPBOX        "Structural Analysis Method",IDC_ANALYSISTYPE,6,364,142,48,WS_GROUP
     CONTROL         "Simple Span",IDC_SIMPLE,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,374,97,10
     CONTROL         "Simple Spans made Continuous",IDC_SIMPLE2,"Button",BS_AUTORADIOBUTTON,13,385,119,10
     CONTROL         "Simple/Continuous Envelope",IDC_SIMPLE3,"Button",BS_AUTORADIOBUTTON,13,396,107,10
     CONTROL         "Include Unrecoverable Deflections\nPrior to Erection",IDC_PRECAMBER,
-                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,6,343,142,15
+                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,5,327,142,15
     PUSHBUTTON      "Export Graph Data",IDC_EXPORT_GRAPH_BTN,25,415,81,14
 END
 

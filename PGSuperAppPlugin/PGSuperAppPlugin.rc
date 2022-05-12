@@ -1,7 +1,6 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
-#include <WBFLGrid.h>
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -48,9 +47,9 @@ BEGIN
     "#endif\r\n"
     "#include ""afxres.h""\r\n"
     "#include <EAF\\EAFResources.h>\r\n"
-   "#if !defined _NOGRID\r\n"
-   "#include ""grid\gxresrc.h""\r\n"
-   "#endif\r\n"
+    "#if !defined _NOGRID\r\n"
+    "#include ""grid\\gxresrc.h""\r\n"
+    "#endif\r\0"
 END
 
 3 TEXTINCLUDE 
@@ -70,9 +69,9 @@ BEGIN
     "#include ""afxres.rc""         // Standard components\r\n"
     "#include ""afxprint.rc""       // printing/print preview resources\r\n"
     "#endif\r\n"
-   "#if !defined _NOGRID\r\n"
+    "#if !defined _NOGRID\r\n"
     "#include ""grid\\gxres.rc""\r\0"
-   "#endif\r\n"
+    "#endif\r\0"
 END
 
 #endif    // APSTUDIO_INVOKED
@@ -2926,7 +2925,7 @@ BEGIN
     LTEXT           "Start of Right Segment",IDC_AHEAD_SLAB_OFFSET_LABEL,164,191,74,8
     EDITTEXT        IDC_AHEAD_SLAB_OFFSET,240,188,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_AHEAD_SLAB_OFFSET_UNIT,284,190,19,8
-    GROUPBOX        "Elevation Adjustment at Installation",IDC_ADJUSTMENT_GROUP,7,215,319,34
+    GROUPBOX        "Elevation Adjustment at Installation",IDC_ADJUSTMENT_GROUP,7,215,319,34,WS_DISABLED
     LTEXT           "Elevation Adjustment",IDC_ADJUSTMENT_LABEL,15,230,69,8
     EDITTEXT        IDC_ADJUSTMENT,89,228,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_ADJUSTMENT_UNIT,133,230,19,8
@@ -4082,6 +4081,10 @@ BEGIN
         RIGHTMARGIN, 602
         TOPMARGIN, 7
         BOTTOMMARGIN, 281
+    END
+
+    IDD_TS_GENERAL, DIALOG
+    BEGIN
     END
 
     IDD_SEGMENT_GENERAL, DIALOG

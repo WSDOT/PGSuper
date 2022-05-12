@@ -657,4 +657,10 @@ void CTemporarySupportLayoutPage::UpdateSlabOffsetControls()
    GetDlgItem(IDC_ADJUSTMENT_LABEL)->ShowWindow(nShowCmd);
    GetDlgItem(IDC_ADJUSTMENT)->ShowWindow(nShowCmd);
    GetDlgItem(IDC_ADJUSTMENT_UNIT)->ShowWindow(nShowCmd);
+
+   // Temporary disable the elevation adjustment feature
+   GetDlgItem(IDC_ADJUSTMENT_GROUP)->EnableWindow(FALSE);
+   GetDlgItem(IDC_ADJUSTMENT_LABEL)->EnableWindow(FALSE);
+   GetDlgItem(IDC_ADJUSTMENT)->EnableWindow(FALSE);
+   GetDlgItem(IDC_ADJUSTMENT_UNIT)->EnableWindow(FALSE);
 }

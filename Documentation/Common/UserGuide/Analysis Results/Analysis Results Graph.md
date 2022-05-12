@@ -25,6 +25,8 @@ Include Elevation Adjustments | When checked, elevation adjustments are added to
 Structural Analysis Method | Select the structural analysis method
 Include Unrecoverable Deflections Prior to Erection | When checked, unrecoverable girder deflections from prior to erection are summed with responses after erection.
 
+**Note that the temporary support Elevation Adjustment feature has been disabled for this version of the program due to bugs that will be addressed in the next version. Any existing adjustments from previous versions of the program have been set to zero. If adjustments are needed, you will need to compute them by hand.**
+
 > NOTE: Analysis results for the Lifting and Hauling Intervals are for plumb girder subjected to self-weight and prestress loading only.
 
 **Exporting Results Data**: Data from graphs can be exported to a file by clicking on the *Export Graph Data* button. See @ref ug_exporting_graph_data for more information.

@@ -6414,6 +6414,30 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       }
    }
 
+   // There are multiple bugs in the elevation adjustment feature for temporary supports. This will be redone in version 8, so just zero out any adjustment values
+   // and let user know that this happened.
+   bool wereAdjustmentsZeroed(false);
+   SupportIndexType nTs = m_BridgeDescription.GetTemporarySupportCount();
+   for (SupportIndexType iTs = 0; iTs < nTs; iTs++)
+   {
+      CTemporarySupportData* tsData = m_BridgeDescription.GetTemporarySupport(iTs);
+      if (!IsZero(tsData->GetElevationAdjustment()))
+      {
+         tsData->SetElevationAdjustment(0.0);
+         wereAdjustmentsZeroed = true;
+      }
+   }
+
+   if (wereAdjustmentsZeroed)
+   {
+      GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      CString strMsg(_T("This project file contains temporary supports with non-zero elevation adjustments. The elevation adjustment feature has been disabled for this version of the program. All temporary support adjustments have been set to zero."));
+
+      pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidBridgeDescriptionInfo,strMsg);
+      pStatusCenter->Add(pStatusItem);
+   }
+
+
    ValidateBridgeModel();
 
    ASSERTVALID;
