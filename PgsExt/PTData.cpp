@@ -28,7 +28,7 @@ CLASS
 ****************************************************************************/
 
 #include <PgsExt\PTData.h>
-#include <Units\SysUnits.h>
+#include <Units\Convert.h>
 #include <StdIo.h>
 
 #include <Lrfd\StrandPool.h>
@@ -44,7 +44,7 @@ CLASS
 static char THIS_FILE[] = __FILE__;
 #endif
 
-Float64 gs_DefaultOffset2 = ::ConvertToSysUnits(6.0,unitMeasure::Inch);
+Float64 gs_DefaultOffset2 = WBFL::Units::ConvertToSysUnits(6.0,WBFL::Units::Measure::Inch);
 
 
 CComVariant GetOffsetTypeProperty(CDuctGeometry::OffsetType offsetType)
@@ -358,7 +358,7 @@ HRESULT CLinearDuctGeometry::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
 void CLinearDuctGeometry::Init()
 {
    m_MeasurementType = AlongGirder;
-   Float64 Y = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
+   Float64 Y = WBFL::Units::ConvertToSysUnits(2.0,WBFL::Units::Measure::Inch);
    AddPoint( 0.0,Y,CDuctGeometry::BottomGirder);
    AddPoint(-1.0,Y,CDuctGeometry::BottomGirder);
 }

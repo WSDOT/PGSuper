@@ -70,7 +70,7 @@ Float64 CDrawBeamTool::GetMinAspectRatio() const
    return m_MinAspectRatio;
 }
 
-void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC, const WBFL::Graphing::PointMapper& mapper,arvPhysicalConverter* pUnitConverter,IntervalIndexType firstPlottingIntervalIdx,IntervalIndexType lastPlottingIntervalIdx,const CGirderKey& girderKey,Float64 beamShift)
+void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC, const WBFL::Graphing::PointMapper& mapper,WBFL::Units::PhysicalConverter* pUnitConverter,IntervalIndexType firstPlottingIntervalIdx,IntervalIndexType lastPlottingIntervalIdx,const CGirderKey& girderKey,Float64 beamShift)
 {
    m_pBroker = pBroker;
    m_pUnitConverter = pUnitConverter;
@@ -211,7 +211,7 @@ void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC, const WBFL::Graphing::Po
    } // end of group loop
 }
 
-void CDrawBeamTool::DrawBeamSegment(IBroker* pBroker,CDC* pDC,const WBFL::Graphing::PointMapper& mapper,arvPhysicalConverter* pUnitConverter,IntervalIndexType firstPlottingIntervalIdx,IntervalIndexType lastPlottingIntervalIdx,const CSegmentKey& segmentKey,Float64 beamShift)
+void CDrawBeamTool::DrawBeamSegment(IBroker* pBroker,CDC* pDC,const WBFL::Graphing::PointMapper& mapper,WBFL::Units::PhysicalConverter* pUnitConverter,IntervalIndexType firstPlottingIntervalIdx,IntervalIndexType lastPlottingIntervalIdx,const CSegmentKey& segmentKey,Float64 beamShift)
 {
    m_pBroker = pBroker;
    m_pUnitConverter = pUnitConverter;

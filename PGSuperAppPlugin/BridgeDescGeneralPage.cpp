@@ -1751,7 +1751,7 @@ void CBridgeDescGeneralPage::OnDeckTypeChanged()
          if (pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth <= 0.0)
          {
             Float64 fillet = pParent->m_BridgeDesc.GetFillet();
-            pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth = Max(::ConvertToSysUnits(7.0, unitMeasure::Inch),fillet);
+            pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth = Max(WBFL::Units::ConvertToSysUnits(7.0, WBFL::Units::Measure::Inch),fillet);
          }
       }
    }
@@ -1767,7 +1767,7 @@ void CBridgeDescGeneralPage::OnDeckTypeChanged()
          if (pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth <= 0.0)
          {
             Float64 fillet = pParent->m_BridgeDesc.GetFillet();
-            pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth = Max(::ConvertToSysUnits(7.0, unitMeasure::Inch) - pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth, fillet);
+            pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth = Max(WBFL::Units::ConvertToSysUnits(7.0, WBFL::Units::Measure::Inch) - pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth, fillet);
          }
       }
    }

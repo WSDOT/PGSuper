@@ -46,7 +46,7 @@ extern CComModule _Module;
 
 #include <WBFLAtlExt.h>
 
-static const Float64 SPACING_TOLER=::ConvertToSysUnits( 1.0,unitMeasure::Millimeter);
+static const Float64 SPACING_TOLER=WBFL::Units::ConvertToSysUnits( 1.0,WBFL::Units::Measure::Millimeter);
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.

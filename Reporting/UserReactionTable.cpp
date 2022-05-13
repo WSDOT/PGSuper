@@ -89,7 +89,7 @@ rptRcTable* CUserReactionTable::Build(IBroker* pBroker,const CGirderKey& girderK
       strTitle.Format(_T("Girder Bearing Reactions due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
    }
 
-   rptRcTable* p_table = CreateUserLoadHeading<rptForceUnitTag,unitmgtForceData>( strTitle.GetBuffer(),
+   rptRcTable* p_table = CreateUserLoadHeading<rptForceUnitTag,WBFL::Units::ForceData>( strTitle.GetBuffer(),
                                                                                   true,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
    p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));

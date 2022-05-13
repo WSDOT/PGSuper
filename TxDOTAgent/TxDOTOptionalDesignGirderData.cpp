@@ -26,7 +26,7 @@
 #include "TxDOTOptionalDesignData.h"
 #include "TxDOTOptionalDesignUtilities.h"
 
-#include <Units\SysUnits.h>
+#include <Units\Convert.h>
 #include <Lrfd\StrandPool.h>
 #include <WbflAtlExt.h>
 #include <limits>
@@ -1091,7 +1091,7 @@ bool CTxDOTOptionalDesignGirderData::CheckAndBuildStrandRows(const GirderLibrary
       }
       else
       {
-         Float64 elev_in = ::ConvertFromSysUnits(elev, unitMeasure::Inch);
+         Float64 elev_in = WBFL::Units::ConvertFromSysUnits(elev, WBFL::Units::Measure::Inch);
          rErrMsg.Format(_T("Non-Standard strand input data at girder centerline specified a strand at %.3f in. from the girder bottom. There are no stands at this location in the library."),elev_in);
          return false;
       }
@@ -1126,7 +1126,7 @@ bool CTxDOTOptionalDesignGirderData::CheckAndBuildStrandRows(const GirderLibrary
       }
       else
       {
-         Float64 elev_in = ::ConvertFromSysUnits(elev, unitMeasure::Inch);
+         Float64 elev_in = WBFL::Units::ConvertFromSysUnits(elev, WBFL::Units::Measure::Inch);
          rErrMsg.Format(_T("Non-Standard strand input data at girder ends specified a strand at %.3f in. from the girder bottom. There are no stands at this location in the library."),elev_in);
          return false;
       }
@@ -1178,7 +1178,7 @@ bool CTxDOTOptionalDesignGirderData::CheckAndBuildStrandRows(const GirderLibrary
 
       if (shrow.NumStraightCL != shrow.NumStraightEnd)
       {
-         Float64 elev_in = ::ConvertFromSysUnits(shrow.RowElev, unitMeasure::Inch);
+         Float64 elev_in = WBFL::Units::ConvertFromSysUnits(shrow.RowElev, WBFL::Units::Measure::Inch);
          rErrMsg.Format(_T("The number of straight strands in each row at the C.L. and ends must be the same. They are not at row %.3f in. Ncl=%d, Nends=%d."),elev_in, shrow.NumStraightCL, shrow.NumStraightEnd);
          return false;
       }
@@ -1213,7 +1213,7 @@ bool CTxDOTOptionalDesignGirderData::CheckAndBuildStrandRows(const GirderLibrary
 
             if (shit_cl->NumHarpedCL != shit_end->NumHarpedEnd)
             {
-               Float64 elev_in = ::ConvertFromSysUnits(shit_cl->RowElev, unitMeasure::Inch);
+               Float64 elev_in = WBFL::Units::ConvertFromSysUnits(shit_cl->RowElev, WBFL::Units::Measure::Inch);
                rErrMsg.Format(_T("The number of harped strands at connecting locations must be the same. They are not at CL row %.3f in. Ncl=%d, Nends=%d."),elev_in, shit_cl->NumHarpedCL, shit_end->NumHarpedEnd);
                return false;
             }

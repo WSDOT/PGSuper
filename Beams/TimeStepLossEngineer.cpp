@@ -3683,11 +3683,11 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
    // Equilibrium Checks
    //
 #if defined _BETA_VERSION
-   Float64 incrementalAxialTolerance  = ::ConvertToSysUnits(0.1,unitMeasure::Newton);
-   Float64 incrementalMomentTolerance = ::ConvertToSysUnits(0.1,unitMeasure::KilonewtonMeter);
+   Float64 incrementalAxialTolerance  = WBFL::Units::ConvertToSysUnits(0.1,WBFL::Units::Measure::Newton);
+   Float64 incrementalMomentTolerance = WBFL::Units::ConvertToSysUnits(0.1,WBFL::Units::Measure::KilonewtonMeter);
 
-   Float64 axialTolerance  = ::ConvertToSysUnits(0.1*intervalIdx,unitMeasure::Newton) + 0.0001;
-   Float64 momentTolerance = ::ConvertToSysUnits(0.1*intervalIdx,unitMeasure::KilonewtonMeter) + 0.0001;
+   Float64 axialTolerance  = WBFL::Units::ConvertToSysUnits(0.1*intervalIdx,WBFL::Units::Measure::Newton) + 0.0001;
+   Float64 momentTolerance = WBFL::Units::ConvertToSysUnits(0.1*intervalIdx,WBFL::Units::Measure::KilonewtonMeter) + 0.0001;
 #endif
 
    // Check : Change in External Forces = Change in Internal Forces
@@ -4114,7 +4114,7 @@ void CTimeStepLossEngineer::BoundAnchorSet(const CPTData* pPTData,const CDuctDat
    m_pGirderTendonGeometry->GetDuctRange(girderKey, ductIdx, &Xgs, &Xge);
 
 
-   Float64 deltaX = ::ConvertToSysUnits(1.0,unitMeasure::Meter);
+   Float64 deltaX = WBFL::Units::ConvertToSysUnits(1.0,WBFL::Units::Measure::Meter);
    Float64 K = 1.5; // increase deltaX by 50% each time it is used... 
    // exponentially grow the values we are trying to bound the solution.
 
@@ -4232,7 +4232,7 @@ void CTimeStepLossEngineer::BoundAnchorSet(const CSegmentPTData* pPTData, const 
    const CPrecastSegmentData* pSegment = pPTData->GetSegment();
    const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
 
-   Float64 deltaX = ::ConvertToSysUnits(1.0, unitMeasure::Meter);
+   Float64 deltaX = WBFL::Units::ConvertToSysUnits(1.0, WBFL::Units::Measure::Meter);
    Float64 K = 1.5; // increase deltaX by 50% each time it is used... 
                     // exponentially grow the values we are trying to bound the solution.
 

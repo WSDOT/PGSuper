@@ -83,7 +83,7 @@ protected:
    void InitPjackEdits();
    void InitPjackEdits(UINT nCalcPjack,UINT nPjackEdit,UINT nPjackUnit,pgsTypes::StrandType strandType);
 
-   void FillHarpPointUnitComboBox(UINT nIDC, const unitmgtLengthData& lengthUnit);
+   void FillHarpPointUnitComboBox(UINT nIDC, const WBFL::Units::LengthData& lengthUnit);
    void ExchangeHarpPointLocations(CDataExchange* pDX, CStrandData* pStrands);
    void GetHarpPointLocations(CStrandData* pStrands);
    void GetHarpPointLocations(Float64* pXstart, Float64* pXlhp, Float64* pXrhp, Float64* pXe);

@@ -24,7 +24,7 @@
 #include "stdafx.h"
 #include "IBeamDistFactorEngineer.h"
 #include <PGSuperException.h>
-#include <Units\SysUnits.h>
+#include <Units\Convert.h>
 #include <PsgLib\TrafficBarrierEntry.h>
 #include <PsgLib\SpecLibraryEntry.h>
 #include <PgsExt\BridgeDescription2.h>
@@ -758,7 +758,7 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
       if ( gM1.ControllingMethod & MOMENT_SKEW_CORRECTION_APPLIED )
       {
          (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
-         Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
+         Float64 skew_delta_max = WBFL::Units::ConvertToSysUnits( 10.0, WBFL::Units::Measure::Degree );
          if (fabs(lldf.skew1 - lldf.skew2) < skew_delta_max)
          {
             (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("SkewCorrection_Moment_SI.png") : _T("SkewCorrection_Moment_US.png"))) << rptNewLine;
@@ -834,7 +834,7 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
       if ( gM1.ControllingMethod & MOMENT_SKEW_CORRECTION_APPLIED )
       {
          (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
-         Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
+         Float64 skew_delta_max = WBFL::Units::ConvertToSysUnits( 10.0, WBFL::Units::Measure::Degree );
          if (fabs(lldf.skew1 - lldf.skew2) < skew_delta_max)
          {
             (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("SkewCorrection_Moment_SI.png") : _T("SkewCorrection_Moment_US.png"))) << rptNewLine;

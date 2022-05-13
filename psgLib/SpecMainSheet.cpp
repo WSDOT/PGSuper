@@ -28,7 +28,7 @@
 #include "SpecMainSheet.h"
 #include <MfcTools\CustomDDX.h>
 
-#include <Units\sysUnits.h>
+#include <Units\Convert.h>
 #include <EAF\EAFApp.h>
 
 #include <IFace\DocumentType.h>
@@ -180,7 +180,7 @@ void CSpecMainSheet::ExchangeDescriptionData(CDataExchange* pDX)
 void CSpecMainSheet::ExchangeDeadLoadsData(CDataExchange* pDX)
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    // railing system distribution
    DDX_CBItemData(pDX,IDC_DIST_TRAFFIC_BARRIER_BASIS,m_Entry.m_TrafficBarrierDistributionType);
@@ -194,7 +194,7 @@ void CSpecMainSheet::ExchangeDeadLoadsData(CDataExchange* pDX)
 void CSpecMainSheet::ExchangeLiveLoadsData(CDataExchange* pDX)
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    DDX_Check_Bool(pDX, IDC_DUAL_TANDEM, m_Entry.m_bIncludeDualTandem);
 
@@ -224,7 +224,7 @@ void CSpecMainSheet::ExchangeLiveLoadsData(CDataExchange* pDX)
 void CSpecMainSheet::ExchangeGirderData(CDataExchange* pDX)
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    CString fciTag = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'ci (MPa))") : _T("sqrt(f'ci (KSI))"));
    CString fcTag  = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))")  : _T("sqrt(f'c (KSI))"));
@@ -357,7 +357,7 @@ void CSpecMainSheet::ExchangeGirderData(CDataExchange* pDX)
 void CSpecMainSheet::ExchangeLiftingData(CDataExchange* pDX)
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
 	DDX_Text(pDX, IDC_FS_CY_CRACK, m_Entry.m_CyLiftingCrackFs);
    DDV_NonNegativeDouble(pDX, IDC_FS_CY_CRACK, m_Entry.m_CyLiftingCrackFs);
@@ -476,7 +476,7 @@ void CSpecMainSheet::ExchangeWsdotHaulingData(CDataExchange* pDX)
 {
 
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    if (pDX->m_bSaveAndValidate)
    {
@@ -638,7 +638,7 @@ void CSpecMainSheet::ExchangeWsdotHaulingData(CDataExchange* pDX)
 void CSpecMainSheet::ExchangeKdotHaulingData(CDataExchange* pDX)
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    if (pDX->m_bSaveAndValidate)
    {
@@ -690,7 +690,7 @@ void CSpecMainSheet::ExchangeKdotHaulingData(CDataExchange* pDX)
 void CSpecMainSheet::ExchangeMomentCapacityData(CDataExchange* pDX)
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    DDX_CBIndex(pDX, IDC_MOMENT, m_Entry.m_Bs3LRFDOverReinforcedMomentCapacity );
    DDX_CBItemData(pDX, IDC_NEG_MOMENT, m_Entry.m_bIncludeForNegMoment);
@@ -799,7 +799,7 @@ void CSpecMainSheet::CheckShearCapacityMethod()
 void CSpecMainSheet::ExchangeShearCapacityData(CDataExchange* pDX)
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    DDX_Check_Bool(pDX, IDC_LIMIT_STRAIN, m_Entry.m_bLimitNetTensionStrainToPositiveValues);
 
@@ -872,7 +872,7 @@ void CSpecMainSheet::ExchangeCreepData(CDataExchange* pDX)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    DDX_UnitValueAndTag(pDX, IDC_XFER_TIME, IDC_XFER_TIME_TAG, m_Entry.m_XferTime, pDisplayUnits->Time );
    DDV_UnitValueGreaterThanZero(pDX, IDC_XFER_TIME,m_Entry.m_XferTime, pDisplayUnits->Time );
@@ -948,7 +948,7 @@ void CSpecMainSheet::ExchangeCreepData(CDataExchange* pDX)
 void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    DDX_UnitValueAndTag(pDX, IDC_SHIPPING_TIME, IDC_SHIPPING_TIME_TAG, m_Entry.m_ShippingTime, pDisplayUnits->Time2);
 
@@ -1179,7 +1179,7 @@ void CSpecMainSheet::ExchangeStrandData(CDataExchange* pDX)
 void CSpecMainSheet::ExchangeLimitsData(CDataExchange* pDX)
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    DDX_UnitValueAndTag(pDX, IDC_NWC_FC_SLAB,     IDC_NWC_FC_SLAB_UNIT,     m_Entry.m_MaxSlabFc[pgsTypes::Normal],             pDisplayUnits->Stress);
    DDX_UnitValueAndTag(pDX, IDC_NWC_GIRDER_FCI,  IDC_NWC_GIRDER_FCI_UNIT,  m_Entry.m_MaxSegmentFci[pgsTypes::Normal],          pDisplayUnits->Stress);
@@ -1221,7 +1221,7 @@ void CSpecMainSheet::ExchangeLimitsData(CDataExchange* pDX)
 void CSpecMainSheet::ExchangeClosureData(CDataExchange* pDX)
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    CString tagBeforeLosses = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'ci (MPa))") : _T("sqrt(f'ci (KSI))"));
    CString tagAfterLosses  = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))"));
@@ -1280,7 +1280,7 @@ void CSpecMainSheet::ExchangeClosureData(CDataExchange* pDX)
 void CSpecMainSheet::ExchangeDesignData(CDataExchange* pDX)
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    // Harped Strand Hold Down Force
 	DDX_Check_Bool(pDX, IDC_CHECK_HD,  m_Entry.m_DoCheckHoldDown);

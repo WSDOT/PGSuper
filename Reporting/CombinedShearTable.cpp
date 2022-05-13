@@ -143,7 +143,7 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderKey, &vGirderKeys);
    
-   RowIndexType row = CreateCombinedDeadLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table,pBroker,_T("Shear"),false,bRating,intervalIdx<liveLoadIntervalIdx,
+   RowIndexType row = CreateCombinedDeadLoadingTableHeading<rptForceUnitTag,WBFL::Units::ForceData>(&p_table,pBroker,_T("Shear"),false,bRating,intervalIdx<liveLoadIntervalIdx,
                                  analysisType,pDisplayUnits,pDisplayUnits->GetShearUnit());
    *p << p_table;
 
@@ -445,7 +445,7 @@ void CCombinedShearTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
    *pChapter << p;
 
    rptRcTable* p_table;
-   RowIndexType Nhrows = CreateCombinedLiveLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table,strLabel,false,bDesign,bPermit,bPedLoading,bRating,false,true,
+   RowIndexType Nhrows = CreateCombinedLiveLoadingTableHeading<rptForceUnitTag,WBFL::Units::ForceData>(&p_table,strLabel,false,bDesign,bPermit,bPedLoading,bRating,false,true,
                            analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
    RowIndexType row = Nhrows;
@@ -738,7 +738,7 @@ void CCombinedShearTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
    bool bPedLoading = pProductLoads->HasPedestrianLoad(girderKey);
 
    rptRcTable* p_table2;
-   RowIndexType row2 = CreateLimitStateTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table2,_T("Shear, Vu"),false,bDesign,bPermit,bRating,false,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
+   RowIndexType row2 = CreateLimitStateTableHeading<rptForceUnitTag,WBFL::Units::ForceData>(&p_table2,_T("Shear, Vu"),false,bDesign,bPermit,bRating,false,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
    *p << p_table2;
 
    if ( girderKey.groupIndex == ALL_GROUPS )

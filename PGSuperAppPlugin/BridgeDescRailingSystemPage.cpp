@@ -870,10 +870,10 @@ CString CBridgeDescRailingSystemPage::UpdateConcreteParametersToolTip(CRailingSy
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   const unitmgtDensityData& density = pDisplayUnits->GetDensityUnit();
-   const unitmgtLengthData&  aggsize = pDisplayUnits->GetComponentDimUnit();
-   const unitmgtStressData&  stress  = pDisplayUnits->GetStressUnit();
-   const unitmgtScalar&      scalar  = pDisplayUnits->GetScalarFormat();
+   const WBFL::Units::DensityData& density = pDisplayUnits->GetDensityUnit();
+   const WBFL::Units::LengthData&  aggsize = pDisplayUnits->GetComponentDimUnit();
+   const WBFL::Units::StressData&  stress  = pDisplayUnits->GetStressUnit();
+   const WBFL::Units::ScalarData&  scalar  = pDisplayUnits->GetScalarFormat();
 
    CString strTip;
    strTip.Format(_T("%-20s %s\r\n%-20s %s\r\n%-20s %s\r\n%-20s %s"),

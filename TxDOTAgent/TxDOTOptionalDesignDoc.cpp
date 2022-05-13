@@ -1189,7 +1189,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    Float64 gdr_width = pGdrEntry->GetBeamWidth(pgsTypes::metStart);
    if (spacing < gdr_width+Tol)
    {
-      gdr_width = ::ConvertFromSysUnits(gdr_width, unitMeasure::Feet);
+      gdr_width = WBFL::Units::ConvertFromSysUnits(gdr_width, WBFL::Units::Measure::Feet);
       TxDOTBrokerRetrieverException exc;
       exc.Message.Format(_T("The girder spacing must be greater than or equal to the girder width of %f feet"),gdr_width);
       throw exc;
@@ -1215,7 +1215,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
          }
          else
          {
-            maxSpc = ::ConvertFromSysUnits(maxSpc, unitMeasure::Feet);
+            maxSpc = WBFL::Units::ConvertFromSysUnits(maxSpc, WBFL::Units::Measure::Feet);
             maxSpc += gdr_width;
             TxDOTBrokerRetrieverException exc;
             exc.Message.Format(_T("For an adjacent-only beam, allowable Beam Spacing may not be greater than %f feet"),maxSpc+gdr_width);
@@ -1224,7 +1224,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
       }
       else if (joint_spacing < minSpc-Tol)
       {
-         minSpc = ::ConvertFromSysUnits(minSpc, unitMeasure::Feet);
+         minSpc = WBFL::Units::ConvertFromSysUnits(minSpc, WBFL::Units::Measure::Feet);
          minSpc += gdr_width;
          TxDOTBrokerRetrieverException exc;
          exc.Message.Format(_T("Beam Spacing may not be less than %f feet"),minSpc+gdr_width);
@@ -1244,7 +1244,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    {
       // spread uniform
       Float64 sd = m_ProjectData.GetSlabThickness();
-      sd = ::ConvertFromSysUnits(sd, unitMeasure::Inch);
+      sd = WBFL::Units::ConvertFromSysUnits(sd, WBFL::Units::Measure::Inch);
       if (sd < 4.0)
       {
          TxDOTBrokerRetrieverException exc;
@@ -1404,7 +1404,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    //       3) Another solution would be to create a TOGA-specific load details report,
    //          but this would require lots of new code, and create the risk of someone
    //          adding a new load type that could slip under the radar.
-   const Float64 SMALL_LOAD = ::ConvertToSysUnits(0.1,unitMeasure::NewtonPerMeter);
+   const Float64 SMALL_LOAD = WBFL::Units::ConvertToSysUnits(0.1,WBFL::Units::Measure::NewtonPerMeter);
 
    // w non-comp, dc
    w = m_ProjectData.GetWNonCompDc();

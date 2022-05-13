@@ -7086,8 +7086,8 @@ void CGirderModelManager::BuildLBAM(GirderIndexType gdrLineIdx,bool bContinuousM
 {
    try
    {
-      //pModel->put_ForceEquilibriumTolerance(::ConvertToSysUnits(0.25, unitMeasure::Kip));
-      //pModel->put_MomentEquilibriumTolerance(::ConvertToSysUnits(0.25, unitMeasure::KipFeet));
+      //pModel->put_ForceEquilibriumTolerance(WBFL::Units::ConvertToSysUnits(0.25, WBFL::Units::Measure::Kip));
+      //pModel->put_MomentEquilibriumTolerance(WBFL::Units::ConvertToSysUnits(0.25, WBFL::Units::Measure::KipFeet));
 
       // prepare load modifiers
       lrfdLoadModifier load_modifier;
@@ -9954,7 +9954,7 @@ void CGirderModelManager::AddLegalLiveLoad(ILBAMModel* pModel,ILibrary* pLibrary
    VARIANT_BOOL bRemoveLaneLoad    = VARIANT_FALSE; // don't remove lane load unless directed by the engineer
 
    bool bOver200 = false;
-   Float64 L = ::ConvertToSysUnits(200.0,unitMeasure::Feet);
+   Float64 L = WBFL::Units::ConvertToSysUnits(200.0,WBFL::Units::Measure::Feet);
    GET_IFACE(IBridge,pBridge);
    SpanIndexType nSpans = pBridge->GetSpanCount();
    for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
@@ -9998,7 +9998,7 @@ void CGirderModelManager::AddEmergencyLiveLoad(ILBAMModel* pModel, ILibrary* pLi
 
    // need to included a 200 plf lane load if spans are greater than 200 ft or if we have continuous spans
    VARIANT_BOOL bIncludeLaneLoad = VARIANT_FALSE;
-   Float64 L = ::ConvertToSysUnits(200.0, unitMeasure::Feet);
+   Float64 L = WBFL::Units::ConvertToSysUnits(200.0, WBFL::Units::Measure::Feet);
    GET_IFACE(IBridge, pBridge);
    SpanIndexType nSpans = pBridge->GetSpanCount();
    for (SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++)
@@ -14563,7 +14563,7 @@ void CGirderModelManager::GetSegmentSelfWeightLoad(const CSegmentKey& segmentKey
 
    GET_IFACE(IMaterials,pMaterial);
    Float64 density = pMaterial->GetSegmentWeightDensity(segmentKey,intervalIdx);
-   Float64 g = unitSysUnitsMgr::GetGravitationalAcceleration();
+   Float64 g = WBFL::Units::System::GetGravitationalAcceleration();
 
    // compute distributed load intensity at each section change
    GET_IFACE(ISectionProperties,pSectProp);
@@ -14617,7 +14617,7 @@ void CGirderModelManager::GetPrecastDiaphragmLoads(const CSegmentKey& segmentKey
 
    Float64 density = pMaterial->GetSegmentWeightDensity(segmentKey,releaseIntervalIdx); // cast with girder, using girder concrete
 
-   Float64 g = unitSysUnitsMgr::GetGravitationalAcceleration();
+   Float64 g = WBFL::Units::System::GetGravitationalAcceleration();
 
    std::vector<IntermedateDiaphragm> diaphragms = pBridge->GetPrecastDiaphragms(segmentKey);
    for(const auto& diaphragm : diaphragms)
@@ -14657,7 +14657,7 @@ void CGirderModelManager::GetIntermediateDiaphragmLoads(const CSpanKey& spanKey,
    IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
    Float64 density = pMaterial->GetDiaphragmWeightDensity(castDiaphragmIntervalIdx);
 
-   Float64 g = unitSysUnitsMgr::GetGravitationalAcceleration();
+   Float64 g = WBFL::Units::System::GetGravitationalAcceleration();
 
    Float64 start_brg_offset = 0;
    PierIndexType pierIdx = (PierIndexType)(spanKey.spanIndex);
@@ -14738,7 +14738,7 @@ void CGirderModelManager::GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIn
    IntervalIndexType castDiaphragmsIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
 
    Float64 density = (pBridge->GetDeckType() == pgsTypes::sdtNone ? pMaterial->GetSegmentWeightDensity(segmentKey, castDiaphragmsIntervalIdx) : pMaterial->GetDeckWeightDensity(0/*assume region 0*/,castDiaphragmsIntervalIdx));
-   Float64 g = unitSysUnitsMgr::GetGravitationalAcceleration();
+   Float64 g = WBFL::Units::System::GetGravitationalAcceleration();
    pBackSide->Density = density;
    pAheadSide->Density = density;
 
@@ -14944,7 +14944,7 @@ void CGirderModelManager::GetClosureJointLoads(const CClosureKey& closureKey,std
    GET_IFACE(IMaterials,pMaterials);
    Float64 density = pMaterials->GetClosureJointWeightDensity(closureKey,castCJIntervalIdx);
 
-   Float64 g = unitSysUnitsMgr::GetGravitationalAcceleration();
+   Float64 g = WBFL::Units::System::GetGravitationalAcceleration();
 
    Float64 Wleft   = Aleft   * density * g;
    Float64 Wcenter = Acenter * density * g;
@@ -15289,7 +15289,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
    Float64 deck_density = pMaterial->GetDeckWeightDensity(deckCastingRegionIdx, castDeckIntervalIdx);
-   Float64 deck_unit_weight = deck_density * unitSysUnitsMgr::GetGravitationalAcceleration();
+   Float64 deck_unit_weight = deck_density * WBFL::Units::System::GetGravitationalAcceleration();
 
 
    Float64 panel_support_width = 0;
@@ -16148,11 +16148,11 @@ void CGirderModelManager::GetMainSpanShearKeyLoad(const CSegmentKey& segmentKey,
    Float64 unit_weight;
    if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
    {
-      unit_weight = pMaterial->GetSegmentWeightDensity(segmentKey, castShearKeyIntervalIdx)*unitSysUnitsMgr::GetGravitationalAcceleration();
+      unit_weight = pMaterial->GetSegmentWeightDensity(segmentKey, castShearKeyIntervalIdx)*WBFL::Units::System::GetGravitationalAcceleration();
    }
    else
    {
-      unit_weight = pMaterial->GetDeckWeightDensity(0/*assume casting region 0*/,castShearKeyIntervalIdx)*unitSysUnitsMgr::GetGravitationalAcceleration();
+      unit_weight = pMaterial->GetDeckWeightDensity(0/*assume casting region 0*/,castShearKeyIntervalIdx)*WBFL::Units::System::GetGravitationalAcceleration();
    }
 
    Float64 unif_wt      = unif_area  * unit_weight;
@@ -16261,7 +16261,7 @@ void CGirderModelManager::GetMainSpanLongitudinalJointLoad(const CSegmentKey& se
    // unit weight of joint material
    GET_IFACE(IMaterials, pMaterial);
    Float64 density = pMaterial->GetLongitudinalJointWeightDensity(castLongitudinalJointIntervalIdx);
-   Float64 unit_weight = density * unitSysUnitsMgr::GetGravitationalAcceleration();
+   Float64 unit_weight = density * WBFL::Units::System::GetGravitationalAcceleration();
 
    PoiList vPoi;
    GetLinearLoadPointsOfInterest(segmentKey, &vPoi);

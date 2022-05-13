@@ -717,15 +717,15 @@ void CGirderDescLongRebarGrid::FillGrid(const CLongitudinalRebarData& rebarData)
 
          VERIFY(SetValueRange(CGXRange(nRow, col++), tmp));
 
-         Float64 distFromEnd = ::ConvertFromSysUnits(rebar.DistFromEnd,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+         Float64 distFromEnd = WBFL::Units::ConvertFromSysUnits(rebar.DistFromEnd,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
          VERIFY(SetValueRange(CGXRange(nRow, col++), distFromEnd));
 
-         Float64 barLength = ::ConvertFromSysUnits(rebar.BarLength,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+         Float64 barLength = WBFL::Units::ConvertFromSysUnits(rebar.BarLength,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
          VERIFY(SetValueRange(CGXRange(nRow, col++), barLength));
 
          VERIFY(SetValueRange(CGXRange(nRow, col++), rebar.Face == pgsTypes::BottomFace ? _T("Bottom") : _T("Top")));
 
-         Float64 cover = ::ConvertFromSysUnits(rebar.Cover, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+         Float64 cover = WBFL::Units::ConvertFromSysUnits(rebar.Cover, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
          VERIFY(SetValueRange(CGXRange(nRow, col++), cover));
 
          tmp.Format(_T("%s"), lrfdRebarPool::GetBarSize(rebar.BarSize).c_str());
@@ -733,7 +733,7 @@ void CGirderDescLongRebarGrid::FillGrid(const CLongitudinalRebarData& rebarData)
 
          VERIFY(SetValueRange(CGXRange(nRow, col++), (LONG)rebar.NumberOfBars));
 
-         Float64 barSpacing = ::ConvertFromSysUnits(rebar.BarSpacing, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+         Float64 barSpacing = WBFL::Units::ConvertFromSysUnits(rebar.BarSpacing, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
          VERIFY(SetValueRange(CGXRange(nRow, col++), barSpacing));
 
          SetStyleRange(CGXRange(nRow, col++), CGXStyle().SetValue(rebar.bExtendedLeft ? 1L : 0L).SetEnabled(TRUE).SetReadOnly(FALSE));
@@ -764,10 +764,10 @@ bool CGirderDescLongRebarGrid::GetRebarData(CLongitudinalRebarData* pRebarData)
       if (GetRowData(row,&rebarRow))
       {
          // values are in display units - must convert to system
-         rebarRow.DistFromEnd = ::ConvertToSysUnits(rebarRow.DistFromEnd, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-         rebarRow.BarLength   = ::ConvertToSysUnits(rebarRow.BarLength,   pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-         rebarRow.Cover       = ::ConvertToSysUnits(rebarRow.Cover,       pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-         rebarRow.BarSpacing  = ::ConvertToSysUnits(rebarRow.BarSpacing,  pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+         rebarRow.DistFromEnd = WBFL::Units::ConvertToSysUnits(rebarRow.DistFromEnd, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+         rebarRow.BarLength   = WBFL::Units::ConvertToSysUnits(rebarRow.BarLength,   pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+         rebarRow.Cover       = WBFL::Units::ConvertToSysUnits(rebarRow.Cover,       pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+         rebarRow.BarSpacing  = WBFL::Units::ConvertToSysUnits(rebarRow.BarSpacing,  pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
          pRebarData->RebarRows.push_back(rebarRow);
       }
       else

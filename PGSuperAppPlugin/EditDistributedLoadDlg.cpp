@@ -200,7 +200,7 @@ void CEditDistributedLoadDlg::DoDataExchange(CDataExchange* pDX)
          {
             if (0.0 <= lft_locval)
             {
-               m_Load.m_StartLocation = ::ConvertToSysUnits(lft_locval, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure );
+               m_Load.m_StartLocation = WBFL::Units::ConvertToSysUnits(lft_locval, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure );
             }
             else
             {
@@ -211,7 +211,7 @@ void CEditDistributedLoadDlg::DoDataExchange(CDataExchange* pDX)
 
             if (0.0 <= rgt_locval)
             {
-               m_Load.m_EndLocation = ::ConvertToSysUnits(rgt_locval, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+               m_Load.m_EndLocation = WBFL::Units::ConvertToSysUnits(rgt_locval, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
             }
             else
             {

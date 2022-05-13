@@ -87,7 +87,7 @@ private:
    // Sets all the cells to read only initially
    void SetInitialRowStyle(ROWCOL row);
 
-   const unitmgtLengthData* m_pUnit;
+   const WBFL::Units::LengthData* m_pUnit;
 public:
    afx_msg void OnDestroy();
 };

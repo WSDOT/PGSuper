@@ -188,7 +188,7 @@ void CGirderSpacingGrid::UpdateGrid()
    pgsTypes::SupportedBeamSpacing spacingType = m_pGirderGroup->GetBridgeDescription()->GetGirderSpacingType();
    bool bUseSameNumGirdersInAllGroups = m_pGirderGroup->GetBridgeDescription()->UseSameNumberOfGirdersInAllGroups();
 
-   const unitmgtLengthData& spacingUnit = IsGirderSpacing(spacingType) // if
+   const WBFL::Units::LengthData& spacingUnit = IsGirderSpacing(spacingType) // if
                                         ? pDisplayUnits->GetXSectionDimUnit()     // then (girder spacing)
                                         : pDisplayUnits->GetComponentDimUnit();   // else (joint spacing)
 
@@ -549,11 +549,11 @@ BOOL CGirderSpacingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 
    if (IsJointSpacing(spacingType))
    {
-      spacing = ::ConvertToSysUnits(spacing, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+      spacing = WBFL::Units::ConvertToSysUnits(spacing, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
    }
    else
    {
-      spacing = ::ConvertToSysUnits(spacing, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
+      spacing = WBFL::Units::ConvertToSysUnits(spacing, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
    }
    Float64 minGirderSpacing = m_MinGirderSpacing[nCol - 1];
    Float64 maxGirderSpacing = m_MaxGirderSpacing[nCol - 1];
@@ -591,12 +591,12 @@ BOOL CGirderSpacingGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
       if ( IsGirderSpacing(spacingType) )
       {
          // girder spacing
-         spacing = ::ConvertToSysUnits(spacing,pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
+         spacing = WBFL::Units::ConvertToSysUnits(spacing,pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
       }
       else
       {
          // joint spacing
-         spacing = ::ConvertToSysUnits(spacing,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+         spacing = WBFL::Units::ConvertToSysUnits(spacing,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
       }
 
       m_pGirderSpacing->SetGirderSpacing(GroupIndexType(nCol-1),spacing);

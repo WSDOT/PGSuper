@@ -32,7 +32,7 @@
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFAutoProgress.h>
-#include <UnitMgt\UnitValueNumericalFormatTools.h>
+#include <Units\UnitValueNumericalFormatTools.h>
 
 #include <IFace\Intervals.h>
 #include <IFace\Bridge.h>
@@ -124,15 +124,15 @@ void CEffectivePrestressGraphBuilder::UpdateYAxis()
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    if ( ((CEffectivePrestressGraphController*)m_pGraphController)->IsStressGraph() )
    {
-      const unitmgtStressData& stressUnit = pDisplayUnits->GetStressUnit();
-      m_pYFormat = new StressTool(stressUnit);
+      const WBFL::Units::StressData& stressUnit = pDisplayUnits->GetStressUnit();
+      m_pYFormat = new WBFL::Units::StressTool(stressUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
       m_Graph.SetYAxisTitle(std::_tstring(_T("fpe (")+m_pYFormat->UnitTag()+_T(")")).c_str());
    }
    else
    {
-      const unitmgtForceData& forceUnit = pDisplayUnits->GetGeneralForceUnit();
-      m_pYFormat = new ForceTool(forceUnit);
+      const WBFL::Units::ForceData& forceUnit = pDisplayUnits->GetGeneralForceUnit();
+      m_pYFormat = new WBFL::Units::ForceTool(forceUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
       m_Graph.SetYAxisTitle(std::_tstring(_T("Ppe (")+m_pYFormat->UnitTag()+_T(")")).c_str());
    }

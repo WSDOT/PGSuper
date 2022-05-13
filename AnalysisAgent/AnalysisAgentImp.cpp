@@ -6811,7 +6811,7 @@ std::shared_ptr<const lrfdCreepCoefficient> CAnalysisAgentImp::GetGirderCreepMod
    Float64 fci = GetConcreteStrengthAtTimeOfLoading(segmentKey, leRelease, pConfig);
    cc->SetFci(fci);
 
-   cc->SetCuringMethodTimeAdjustmentFactor(::ConvertToSysUnits(pSpecEntry->GetCuringMethodTimeAdjustmentFactor(), unitMeasure::Day));
+   cc->SetCuringMethodTimeAdjustmentFactor(WBFL::Units::ConvertToSysUnits(pSpecEntry->GetCuringMethodTimeAdjustmentFactor(), WBFL::Units::Measure::Day));
 
    if (pConfig == nullptr)
    {
@@ -6869,7 +6869,7 @@ std::shared_ptr<const lrfdCreepCoefficient2005> CAnalysisAgentImp::GetDeckCreepM
     GET_IFACE(ILibrary, pLib);
     GET_IFACE(ISpecification, pSpec);
     const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-    lrfd_cc->SetCuringMethodTimeAdjustmentFactor(::ConvertToSysUnits(pSpecEntry->GetCuringMethodTimeAdjustmentFactor(), unitMeasure::Day));
+    lrfd_cc->SetCuringMethodTimeAdjustmentFactor(WBFL::Units::ConvertToSysUnits(pSpecEntry->GetCuringMethodTimeAdjustmentFactor(), WBFL::Units::Measure::Day));
 
     m_DeckCreepModels.insert(std::make_pair(deckCastingRegionIdx, lrfd_cc));
 

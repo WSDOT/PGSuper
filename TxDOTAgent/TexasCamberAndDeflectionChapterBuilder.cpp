@@ -283,7 +283,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
       pProductForces->GetDeflLiveLoadDeflection(IProductForces::DeflectionLiveLoadEnvelope, poi, bat, &delta_oll, &temp );
 
       // get # of days for creep
-      Float64 max_days = ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
+      Float64 max_days = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day);
 
       // Populate the table
       RowIndexType row = 0;
@@ -519,8 +519,8 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
    *p<<_T("* Deflection due to haunch weight is not included in this value") << rptNewLine;
    *p<<_T("** Refer to the Camber Details tables in the Details report for more information") << rptNewLine;
 
-   Float64 min_days = ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Min(), unitMeasure::Day);
-   Float64 max_days = ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
+   Float64 min_days = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Min(), WBFL::Units::Measure::Day);
+   Float64 max_days = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day);
    if (max_days != min_days)
    {
       *p<<color(Red) << _T("Warning: Camber min and max timings in project criteria are different. Values for max timing are shown only.") << color(Black) << rptNewLine;

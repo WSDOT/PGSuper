@@ -75,64 +75,64 @@ HRESULT CBoxBeamFactory::FinalConstruct()
    m_DimNames.emplace_back(_T("EndBlockLength"));
    m_DimNames.emplace_back(_T("FlushExteriorFace"));
 
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 5.0,unitMeasure::Inch)); // H1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(29.5,unitMeasure::Inch)); // H2
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 5.0,unitMeasure::Inch)); // H3
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 4.0,unitMeasure::Inch)); // H4
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 3.0,unitMeasure::Inch)); // H5
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 5.0,unitMeasure::Inch)); // H6
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(17.0,unitMeasure::Inch)); // H7
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 3.0,unitMeasure::Inch)); // W1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 5.0,unitMeasure::Inch)); // W2
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(27.75,unitMeasure::Inch));// W3
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 5.0,unitMeasure::Inch)); // W4
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 5.0,unitMeasure::Inch)); // F1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 5.0,unitMeasure::Inch)); // F2
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 0.75,unitMeasure::Inch)); // C1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 1.0,unitMeasure::Inch)); // Jmax
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 0.0,unitMeasure::Inch)); // shear key
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 12.0,unitMeasure::Inch)); // end block
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 5.0,WBFL::Units::Measure::Inch)); // H1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(29.5,WBFL::Units::Measure::Inch)); // H2
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 5.0,WBFL::Units::Measure::Inch)); // H3
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 4.0,WBFL::Units::Measure::Inch)); // H4
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 3.0,WBFL::Units::Measure::Inch)); // H5
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 5.0,WBFL::Units::Measure::Inch)); // H6
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(17.0,WBFL::Units::Measure::Inch)); // H7
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 3.0,WBFL::Units::Measure::Inch)); // W1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 5.0,WBFL::Units::Measure::Inch)); // W2
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(27.75,WBFL::Units::Measure::Inch));// W3
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 5.0,WBFL::Units::Measure::Inch)); // W4
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 5.0,WBFL::Units::Measure::Inch)); // F1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 5.0,WBFL::Units::Measure::Inch)); // F2
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 0.75,WBFL::Units::Measure::Inch)); // C1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 1.0,WBFL::Units::Measure::Inch)); // Jmax
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 0.0,WBFL::Units::Measure::Inch)); // shear key
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 12.0,WBFL::Units::Measure::Inch)); // end block
    m_DefaultDims.emplace_back(0); // FlushExteriorFace
 
    // SI Units
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H2
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H3
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H4
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H5
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H6
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H7
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W2
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W3
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W4
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // F1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // F2
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // C1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // Jmax
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // shear key
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // end block
-   m_DimUnits[0].emplace_back((const unitLength*)BFDIMUNITBOOLEAN); // FlushExteriorFace
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // H1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // H2
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // H3
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // H4
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // H5
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // H6
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // H7
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W2
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W3
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W4
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // F1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // F2
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // C1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // Jmax
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // shear key
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // end block
+   m_DimUnits[0].emplace_back((const WBFL::Units::Length*)BFDIMUNITBOOLEAN); // FlushExteriorFace
 
    // US Units
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H2
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H3
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H4
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H5
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H6
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H7
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W2
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W3
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W4
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // F1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // F2
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // C1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // Jmax
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // shear key
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // end block
-   m_DimUnits[1].emplace_back((const unitLength*)BFDIMUNITBOOLEAN); // FlushExteriorFace
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // H1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // H2
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // H3
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // H4
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // H5
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // H6
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // H7
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W2
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W3
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W4
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // F1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // F2
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // C1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // Jmax
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // shear key
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // end block
+   m_DimUnits[1].emplace_back((const WBFL::Units::Length*)BFDIMUNITBOOLEAN); // FlushExteriorFace
 
    return S_OK;
 }

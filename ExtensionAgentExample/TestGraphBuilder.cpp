@@ -31,7 +31,7 @@
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <MathEx.h>
-#include <UnitMgt\UnitValueNumericalFormatTools.h>
+#include <Units\UnitValueNumericalFormatTools.h>
 
 #include <Colors.h>
 
@@ -105,8 +105,8 @@ void CTestGraphBuilder::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
    int graphType = m_GraphControls.GetGraphType();
 
    // first x axis
-   const unitmgtScalar& scalar = pDisplayUnits->GetScalarFormat();
-   arvPhysicalConverter* pFormat = new ScalarTool(scalar);
+   const WBFL::Units::ScalarData& scalar = pDisplayUnits->GetScalarFormat();
+   WBFL::Units::PhysicalConverter* pFormat = new WBFL::Units::ScalarTool(scalar);
    WBFL::Graphing::GraphXY graph(*pFormat,*pFormat);
 
    IndexType idx = graph.CreateDataSeries();
@@ -197,8 +197,8 @@ void CTestGraphBuilder2::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
    int graphType = m_GraphControls.GetGraphType();
 
    // first x axis
-   const unitmgtScalar& scalar = pDisplayUnits->GetScalarFormat();
-   arvPhysicalConverter* pFormat = new ScalarTool(scalar);
+   const WBFL::Units::ScalarData& scalar = pDisplayUnits->GetScalarFormat();
+   WBFL::Units::PhysicalConverter* pFormat = new WBFL::Units::ScalarTool(scalar);
    WBFL::Graphing::GraphXY graph(*pFormat,*pFormat);
 
    IndexType idx = graph.CreateDataSeries();
@@ -272,8 +272,8 @@ void CTestGraphBuilder3::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // first x axis
-   const unitmgtScalar& scalar = pDisplayUnits->GetScalarFormat();
-   arvPhysicalConverter* pFormat = new ScalarTool(scalar);
+   const WBFL::Units::ScalarData& scalar = pDisplayUnits->GetScalarFormat();
+   WBFL::Units::PhysicalConverter* pFormat = new WBFL::Units::ScalarTool(scalar);
    WBFL::Graphing::GraphXY graph(*pFormat,*pFormat);
 
    IndexType series1 = graph.CreateDataSeries(_T("f(x)=10^x"),    PS_SOLID,1,RED);

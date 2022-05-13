@@ -25,7 +25,7 @@
 
 #include <PgsExt\PierData2.h>
 
-#include <Units\SysUnits.h>
+#include <Units\Convert.h>
 #include <StdIo.h>
 #include <StrData.cpp>
 #include <WBFLCogo.h>
@@ -60,13 +60,13 @@ CPierData::CPierData()
 
    for ( int i = 0; i < 2; i++ )
    {
-      m_GirderEndDistance[i]            = ::ConvertToSysUnits(6.0,unitMeasure::Inch);
+      m_GirderEndDistance[i]            = WBFL::Units::ConvertToSysUnits(6.0,WBFL::Units::Measure::Inch);
       m_EndDistanceMeasurementType[i]   = ConnectionLibraryEntry::FromBearingNormalToPier;
 
-      m_GirderBearingOffset[i]          = ::ConvertToSysUnits(1.0,unitMeasure::Feet);
+      m_GirderBearingOffset[i]          = WBFL::Units::ConvertToSysUnits(1.0,WBFL::Units::Measure::Feet);
       m_BearingOffsetMeasurementType[i] = ConnectionLibraryEntry::NormalToPier;
 
-      m_SupportWidth[i]                 = ::ConvertToSysUnits(1.0,unitMeasure::Feet);
+      m_SupportWidth[i]                 = WBFL::Units::ConvertToSysUnits(1.0,WBFL::Units::Measure::Feet);
 
       m_DiaphragmHeight[i] = 0;
       m_DiaphragmWidth[i] = 0;

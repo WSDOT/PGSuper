@@ -192,9 +192,9 @@ void CGirderViewPrintJob::OnPrint(CDC* pDC, CPrintInfo* pInfo)
    // label
    // get length unit for labelling
    GET_IFACE(IEAFDisplayUnits,pdisp_units);
-   const unitmgtLengthData& rlen = pdisp_units->GetSpanLengthUnit();
+   const WBFL::Units::LengthData& rlen = pdisp_units->GetSpanLengthUnit();
    sysNumericFormatTool nf(rlen.Format, rlen.Width, rlen.Precision);
-   Float64 dist = ::ConvertFromSysUnits(m_pFrame->GetCurrentCutLocation(), rlen.UnitOfMeasure);
+   Float64 dist = WBFL::Units::ConvertFromSysUnits(m_pFrame->GetCurrentCutLocation(), rlen.UnitOfMeasure);
    CString msg;
    msg.Format(_T("Section Cut At %s %s"),nf.AsString(dist).c_str(), rlen.UnitOfMeasure.UnitTag().c_str());
 

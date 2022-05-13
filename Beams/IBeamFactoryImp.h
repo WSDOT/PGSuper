@@ -69,7 +69,7 @@ public:
                                   IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
                                   Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) const override;
    virtual const std::vector<std::_tstring>& GetDimensionNames() const override;
-   virtual const std::vector<const unitLength*>& GetDimensionUnits(bool bSIUnits) const override;
+   virtual const std::vector<const WBFL::Units::Length*>& GetDimensionUnits(bool bSIUnits) const override;
    virtual const std::vector<Float64>& GetDefaultDimensions() const override;
    virtual bool ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg) const override;
    virtual void SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const override;
@@ -124,7 +124,7 @@ public:
 private:
    std::vector<std::_tstring> m_DimNames;
    std::vector<Float64> m_DefaultDims;
-   std::array<std::vector<const unitLength*>,2> m_DimUnits;
+   std::array<std::vector<const WBFL::Units::Length*>,2> m_DimUnits;
 
    void GetDimensions(const IBeamFactory::Dimensions& dimensions,
                       Float64& d1,Float64& d2,Float64& d3,Float64& d4,Float64& d5,Float64& d6,Float64& h,

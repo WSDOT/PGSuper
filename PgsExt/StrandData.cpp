@@ -181,14 +181,14 @@ std::array<std::vector<Float64>, 4> CStrandRow::ms_oldHarpPoints;
 
 CStrandRow::CStrandRow()
 {
-   m_Z = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
+   m_Z = WBFL::Units::ConvertToSysUnits(2.0,WBFL::Units::Measure::Inch);
    m_Spacing = m_Z;
    m_StrandType = pgsTypes::Straight;
    m_nStrands = 0;
 
    for ( int i = 0; i < 4; i++ )
    {
-      m_Y[i]    = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
+      m_Y[i]    = WBFL::Units::ConvertToSysUnits(2.0,WBFL::Units::Measure::Inch);
       m_Face[i] = pgsTypes::BottomFace;
    }
 

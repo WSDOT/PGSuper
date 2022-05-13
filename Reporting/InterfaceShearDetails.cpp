@@ -456,7 +456,7 @@ void CInterfaceShearDetails::FillAvfTable(rptRcTable* pTable,RowIndexType row,co
 
 rptRcTable* CInterfaceShearDetails::CreateVniTable(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const std::vector<std::pair<SegmentIndexType,const pgsHorizontalShearArtifact*>>& vSegmentArtifacts, std::vector<std::pair<SegmentIndexType, const pgsHorizontalShearArtifact*>>& vClosureArtifacts)
 {
-   Float64 fy_max = ::ConvertToSysUnits(60.0, unitMeasure::KSI); // LRFD 5.7.4.2 (pre2017: 2013 5.8.4.1)
+   Float64 fy_max = WBFL::Units::ConvertToSysUnits(60.0, WBFL::Units::Measure::KSI); // LRFD 5.7.4.2 (pre2017: 2013 5.8.4.1)
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;

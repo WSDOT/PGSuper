@@ -42,7 +42,7 @@
 #include <IFace\DocumentType.h>
 #include <IFace\Intervals.h>
 
-#include <Units\SysUnits.h>
+#include <Units\Convert.h>
 
 #include <PgsExt\GirderLabel.h>
 #include <PgsExt\SplittingCheckEngineer.h>
@@ -2552,11 +2552,11 @@ Float64 CSpecAgentImp::GetMinStirrupSpacing(Float64 maxAggregateSize, Float64 ba
    Float64 abs_min_spc;
    if (pSpec->GetSpecificationUnits()==lrfdVersionMgr::SI)
    {
-      abs_min_spc = ::ConvertToSysUnits(25., unitMeasure::Millimeter);
+      abs_min_spc = WBFL::Units::ConvertToSysUnits(25., WBFL::Units::Measure::Millimeter);
    }
    else
    {
-      abs_min_spc = ::ConvertToSysUnits(1., unitMeasure::Inch);
+      abs_min_spc = WBFL::Units::ConvertToSysUnits(1., WBFL::Units::Measure::Inch);
    }
 
    // lrfd requirements are for clear distance, we want cl-to-cl spacing
@@ -2574,11 +2574,11 @@ Float64 CSpecAgentImp::GetMinTopFlangeThickness() const
    Float64 dim;
    if (pSpec->GetSpecificationUnits()==lrfdVersionMgr::SI)
    {
-      dim = ::ConvertToSysUnits(50., unitMeasure::Millimeter);
+      dim = WBFL::Units::ConvertToSysUnits(50., WBFL::Units::Measure::Millimeter);
    }
    else
    {
-      dim = ::ConvertToSysUnits(2., unitMeasure::Inch);
+      dim = WBFL::Units::ConvertToSysUnits(2., WBFL::Units::Measure::Inch);
    }
 
    return dim;
@@ -2614,22 +2614,22 @@ Float64 CSpecAgentImp::GetMinWebThickness() const
    {
       if (pSpec->GetSpecificationUnits()==lrfdVersionMgr::SI)
       {
-         dim = ::ConvertToSysUnits(165., unitMeasure::Millimeter);
+         dim = WBFL::Units::ConvertToSysUnits(165., WBFL::Units::Measure::Millimeter);
       }
       else
       {
-         dim = ::ConvertToSysUnits(6.5, unitMeasure::Inch);
+         dim = WBFL::Units::ConvertToSysUnits(6.5, WBFL::Units::Measure::Inch);
       }
    }
    else
    {
       if (pSpec->GetSpecificationUnits()==lrfdVersionMgr::SI)
       {
-         dim = ::ConvertToSysUnits(125., unitMeasure::Millimeter);
+         dim = WBFL::Units::ConvertToSysUnits(125., WBFL::Units::Measure::Millimeter);
       }
       else
       {
-         dim = ::ConvertToSysUnits(5., unitMeasure::Inch);
+         dim = WBFL::Units::ConvertToSysUnits(5., WBFL::Units::Measure::Inch);
       }
    }
 
@@ -2643,11 +2643,11 @@ Float64 CSpecAgentImp::GetMinBottomFlangeThickness() const
    Float64 dim;
    if (pSpec->GetSpecificationUnits()==lrfdVersionMgr::SI)
    {
-      dim = ::ConvertToSysUnits(125., unitMeasure::Millimeter);
+      dim = WBFL::Units::ConvertToSysUnits(125., WBFL::Units::Measure::Millimeter);
    }
    else
    {
-      dim = ::ConvertToSysUnits(5., unitMeasure::Inch);
+      dim = WBFL::Units::ConvertToSysUnits(5., WBFL::Units::Measure::Inch);
    }
 
    return dim;
@@ -4002,7 +4002,7 @@ Float64 CSpecAgentImp::GetRadiusOfCurvatureLimit(pgsTypes::DuctType ductType) co
    // and the location relative to the stress anchorage; subject to the manufacturer's recommendations"...
    // This is not an enforceable requirement... we will retain the 30 ft and 20 ft limitations but could
    // expend the Project Criteria to make this user defined input
-   return ::ConvertToSysUnits(ductType == pgsTypes::dtPlastic ? 30.0 : 20.0, unitMeasure::Feet);
+   return WBFL::Units::ConvertToSysUnits(ductType == pgsTypes::dtPlastic ? 30.0 : 20.0, WBFL::Units::Measure::Feet);
 }
 
 Float64 CSpecAgentImp::GetSegmentTendonRadiusOfCurvatureLimit(const CSegmentKey& segmentKey) const

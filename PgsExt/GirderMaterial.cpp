@@ -22,7 +22,7 @@
 
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\GirderMaterial.h>
-#include <Units\SysUnits.h>
+#include <Units\Convert.h>
 #include <StdIo.h>
 
 #include <Lrfd\StrandPool.h>

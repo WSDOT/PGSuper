@@ -66,28 +66,28 @@ HRESULT CVoidedSlabFactory::FinalConstruct()
    m_DimNames.emplace_back(_T("Number_of_Voids"));
    m_DimNames.emplace_back(_T("Jmax"));
 
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(18.0,unitMeasure::Inch)); // H
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(48.0,unitMeasure::Inch)); // W
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(10.0,unitMeasure::Inch)); // Void Diameter
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(12.5,unitMeasure::Inch)); // Void Spacing
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(18.0,WBFL::Units::Measure::Inch)); // H
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(48.0,WBFL::Units::Measure::Inch)); // W
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(10.0,WBFL::Units::Measure::Inch)); // Void Diameter
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(12.5,WBFL::Units::Measure::Inch)); // Void Spacing
    m_DefaultDims.emplace_back(3);                                           // Number of Voids
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(1.0,unitMeasure::Inch));  // Max Joint Spacing
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(1.0,WBFL::Units::Measure::Inch));  // Max Joint Spacing
 
    // SI Units
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H 
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // Void Diameter
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // Void Spacing
-   m_DimUnits[0].emplace_back((const unitLength*)BFDIMUNITSCALAR); // Number of Voids
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // Max joint size
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // H 
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // Void Diameter
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // Void Spacing
+   m_DimUnits[0].emplace_back((const WBFL::Units::Length*)BFDIMUNITSCALAR); // Number of Voids
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // Max joint size
 
    // US Units
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H 
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // Void Diameter
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // Void Spacing
-   m_DimUnits[1].emplace_back((const unitLength*)BFDIMUNITSCALAR);               // Number of Voids
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // Max joint size
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // H 
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // Void Diameter
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // Void Spacing
+   m_DimUnits[1].emplace_back((const WBFL::Units::Length*)BFDIMUNITSCALAR);               // Number of Voids
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // Max joint size
 
    return S_OK;
 }
@@ -374,7 +374,7 @@ const std::vector<Float64>& CVoidedSlabFactory::GetDefaultDimensions() const
    return m_DefaultDims;
 }
 
-const std::vector<const unitLength*>& CVoidedSlabFactory::GetDimensionUnits(bool bSIUnits) const
+const std::vector<const WBFL::Units::Length*>& CVoidedSlabFactory::GetDimensionUnits(bool bSIUnits) const
 {
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }

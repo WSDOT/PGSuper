@@ -92,7 +92,7 @@ END_MESSAGE_MAP()
 BOOL CSpecDesignPage::OnInitDialog()
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 	
    // set statics for strand slope
    CString sl05, sl06, sl07;

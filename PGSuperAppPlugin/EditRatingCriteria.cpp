@@ -112,9 +112,9 @@ txnDesignRatingData::txnDesignRatingData()
    ServiceIII_SH = 1.0;
    ServiceIII_PS = 1.0;
 
-   AllowableTensionCoefficient = ::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI);
+   AllowableTensionCoefficient = WBFL::Units::ConvertToSysUnits(0.19,WBFL::Units::Measure::SqrtKSI);
    bLimitTensileStress = true;
-   MaxTensileStress = ::ConvertToSysUnits(0.6, unitMeasure::KSI);
+   MaxTensileStress = WBFL::Units::ConvertToSysUnits(0.6, WBFL::Units::Measure::KSI);
    bRateForShear = true;
 }
 
@@ -202,9 +202,9 @@ txnLegalRatingData::txnLegalRatingData()
    ServiceIII_SH = 1.0;
    ServiceIII_PS = 1.0;
 
-   AllowableTensionCoefficient = ::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI);
+   AllowableTensionCoefficient = WBFL::Units::ConvertToSysUnits(0.19,WBFL::Units::Measure::SqrtKSI);
    bLimitTensileStress = true;
-   MaxTensileStress = ::ConvertToSysUnits(0.6, unitMeasure::KSI);
+   MaxTensileStress = WBFL::Units::ConvertToSysUnits(0.6, WBFL::Units::Measure::KSI);
 
    bRateForStress   = true;
    bRateForShear    = true;
@@ -341,9 +341,9 @@ txnPermitRatingData::txnPermitRatingData()
    ServiceIII_PS = 1.0;
 
    bRateForStress = false;
-   AllowableTensionCoefficient = ::ConvertToSysUnits(0.19, unitMeasure::SqrtKSI);
+   AllowableTensionCoefficient = WBFL::Units::ConvertToSysUnits(0.19, WBFL::Units::Measure::SqrtKSI);
    bLimitTensileStress = true;
-   MaxTensileStress = ::ConvertToSysUnits(0.6, unitMeasure::KSI);
+   MaxTensileStress = WBFL::Units::ConvertToSysUnits(0.6, WBFL::Units::Measure::KSI);
 
    bRateForShear = true;
    bCheckReinforcementYielding = true;

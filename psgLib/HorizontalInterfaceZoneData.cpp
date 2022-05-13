@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 #include "StdAfx.h"
 #include <PsgLib\HorizontalInterfaceZoneData.h>
-#include <Units\SysUnits.h>
+#include <Units\Convert.h>
 #include <Lrfd\RebarPool.h>
 #include <StdIo.h>
 #include <StrData.cpp>

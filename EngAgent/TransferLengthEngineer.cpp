@@ -485,7 +485,7 @@ void pgsTransferLengthEngineer::ReportTransferLengthDetails(const CSegmentKey& s
 ////////////////
 Float64 pgsMinuteTransferLength::GetTransferLength() const
 {
-   return ::ConvertToSysUnits(0.1, unitMeasure::Inch);
+   return WBFL::Units::ConvertToSysUnits(0.1, WBFL::Units::Measure::Inch);
 }
 
 void pgsMinuteTransferLength::ReportDetails(rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) const

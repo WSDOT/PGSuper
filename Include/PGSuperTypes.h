@@ -98,7 +98,7 @@ class dbgDumpContext;
 // no concrete strength will satisfy the stress limits
 #define NO_AVAILABLE_CONCRETE_STRENGTH -99999
 
-#define MIN_CURVE_RADIUS ::ConvertToSysUnits(0.01,unitMeasure::Feet)
+#define MIN_CURVE_RADIUS WBFL::Units::ConvertToSysUnits(0.01,WBFL::Units::Measure::Feet)
 
 typedef struct pgsTypes
 {

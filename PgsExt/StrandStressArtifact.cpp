@@ -46,7 +46,7 @@ static char THIS_FILE[] = __FILE__;
 
 #define STRAND(_x_) (_x_ == pgsTypes::Permanent ? 0 : 1)
 
-static Float64 STRESS_TOLERANCE = ::ConvertToSysUnits(1.0,unitMeasure::PSI);
+static Float64 STRESS_TOLERANCE = WBFL::Units::ConvertToSysUnits(1.0,WBFL::Units::Measure::PSI);
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================

@@ -310,7 +310,7 @@ void CHaunchBearingGrid::GetGridData(CDataExchange* pDX)
       }
       else
       {
-         Float64 slabOffset = ::ConvertToSysUnits(value, m_pUnit->UnitOfMeasure);
+         Float64 slabOffset = WBFL::Units::ConvertToSysUnits(value, m_pUnit->UnitOfMeasure);
 
          if (::IsLT(slabOffset,minSlabOffset))
          {

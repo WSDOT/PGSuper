@@ -500,7 +500,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(IBroker* pBroker, rptChapter*
       IndexType deckCastingRegionIdx = 0; // assume region zero to get properties that are common to all castings
       IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
       Float64 deck_density = pMaterial->GetDeckWeightDensity(deckCastingRegionIdx, castDeckIntervalIdx);
-      Float64 deck_unit_weight = deck_density; // *unitSysUnitsMgr::GetGravitationalAcceleration();
+      Float64 deck_unit_weight = deck_density; // *WBFL::Units::System::GetGravitationalAcceleration();
       *pNotePara << strDeckName << _T("unit weight with reinforcement = ") << density.SetValue(deck_unit_weight);
 
       pPara = new rptParagraph;

@@ -2594,7 +2594,7 @@ PoiIDPairType CSegmentModelManager::AddPointOfInterest(CSegmentModelData* pModel
 
 #if defined ENABLE_LOGGING
    Float64 Xpoi = poi.GetDistFromStart();
-   LOG("Adding POI " << femID.first << " at " << ::ConvertFromSysUnits(Xpoi,unitMeasure::Feet) << " ft");
+   LOG("Adding POI " << femID.first << " at " << WBFL::Units::ConvertFromSysUnits(Xpoi,WBFL::Units::Measure::Feet) << " ft");
 #endif
 
    return femID;

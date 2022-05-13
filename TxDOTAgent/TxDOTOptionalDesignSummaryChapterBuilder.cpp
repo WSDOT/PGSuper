@@ -590,7 +590,7 @@ static void camber_summary(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOpt
 
    (*p_table)(row,3) << length.SetValue(camber_diff);
 
-   if(IsZero(camber_diff, ::ConvertToSysUnits( 0.5,unitMeasure::Inch)))
+   if(IsZero(camber_diff, WBFL::Units::ConvertToSysUnits( 0.5,WBFL::Units::Measure::Inch)))
       (*p_table)(row,4) << color(Green) << _T("Ok") << color(Black);
    else
       (*p_table)(row,4) << color(Red) << _T("Design Deficiency") << color(Black);

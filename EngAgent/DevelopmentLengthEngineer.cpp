@@ -453,10 +453,10 @@ pgsPCIUHPCDevelopmentLength::pgsPCIUHPCDevelopmentLength(Float64 db, Float64 fpe
 
 Float64 pgsPCIUHPCDevelopmentLength::GetDevelopmentLength() const
 {
-   Float64 fps_ksi = ::ConvertFromSysUnits(m_fps, unitMeasure::KSI);
-   Float64 fpe_ksi = ::ConvertFromSysUnits(m_fpe, unitMeasure::KSI);
-   Float64 db_inch = ::ConvertFromSysUnits(m_db, unitMeasure::Inch);
+   Float64 fps_ksi = WBFL::Units::ConvertFromSysUnits(m_fps, WBFL::Units::Measure::KSI);
+   Float64 fpe_ksi = WBFL::Units::ConvertFromSysUnits(m_fpe, WBFL::Units::Measure::KSI);
+   Float64 db_inch = WBFL::Units::ConvertFromSysUnits(m_db, WBFL::Units::Measure::Inch);
    Float64 ld_inch = 20.0 * db_inch + 0.2 * (fps_ksi - fpe_ksi) * db_inch;
-   Float64 ld = ::ConvertToSysUnits(ld_inch, unitMeasure::Inch);
+   Float64 ld = WBFL::Units::ConvertToSysUnits(ld_inch, WBFL::Units::Measure::Inch);
    return ld;
 }

@@ -112,7 +112,7 @@ rptRcTable* CProductAxialTable::Build(IBroker* pBroker,const CGirderKey& girderK
    location.IncludeSpanAndGirder(pDocType->IsPGSpliceDocument() || girderKey.groupIndex == ALL_GROUPS);
    PoiAttributeType poiRefAttribute(girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : POI_ERECTED_SEGMENT);
 
-   RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(pBroker,p_table,false,false,bSegments,bConstruction,bDeck,bDeckPanels,bSidewalk,bShearKey,bLongitudinalJoint,bHasOverlay,bFutureOverlay,bDesign,bPedLoading,
+   RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,WBFL::Units::ForceData>(pBroker,p_table,false,false,bSegments,bConstruction,bDeck,bDeckPanels,bSidewalk,bShearKey,bLongitudinalJoint,bHasOverlay,bFutureOverlay,bDesign,bPedLoading,
                                                                                            bPermit,bRating,analysisType,bContinuousBeforeDeckCasting,
                                                                                            pRatingSpec,pDisplayUnits,pDisplayUnits->GetGeneralForceUnit());
    // Get the results

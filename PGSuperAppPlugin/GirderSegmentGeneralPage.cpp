@@ -548,7 +548,7 @@ void CGirderSegmentGeneralPage::UpdateEci()
       m_ctrlEc.GetWindowText(strEc);
       Float64 Ec;
       sysTokenizer::ParseDouble(strEc,&Ec);
-      Ec = ::ConvertToSysUnits(Ec,pDisplayUnits->GetModEUnit().UnitOfMeasure);
+      Ec = WBFL::Units::ConvertToSysUnits(Ec,pDisplayUnits->GetModEUnit().UnitOfMeasure);
 
       CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
       CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
@@ -649,7 +649,7 @@ void CGirderSegmentGeneralPage::UpdateEc()
       m_ctrlEci.GetWindowText(strEci);
       Float64 Eci;
       sysTokenizer::ParseDouble(strEci,&Eci);
-      Eci = ::ConvertToSysUnits(Eci,pDisplayUnits->GetModEUnit().UnitOfMeasure);
+      Eci = WBFL::Units::ConvertToSysUnits(Eci,pDisplayUnits->GetModEUnit().UnitOfMeasure);
 
       CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
       CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
@@ -707,7 +707,7 @@ void CGirderSegmentGeneralPage::UpdateFc()
 
       Float64 fci;
       sysTokenizer::ParseDouble(strFci, &fci);
-      fci = ::ConvertToSysUnits(fci,pDisplayUnits->GetStressUnit().UnitOfMeasure);
+      fci = WBFL::Units::ConvertToSysUnits(fci,pDisplayUnits->GetStressUnit().UnitOfMeasure);
 
       CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
       CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
@@ -745,7 +745,7 @@ void CGirderSegmentGeneralPage::UpdateFci()
 
       Float64 fc;
       sysTokenizer::ParseDouble(strFc, &fc);
-      fc = ::ConvertToSysUnits(fc,pDisplayUnits->GetStressUnit().UnitOfMeasure);
+      fc = WBFL::Units::ConvertToSysUnits(fc,pDisplayUnits->GetStressUnit().UnitOfMeasure);
 
       CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
       CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
@@ -798,7 +798,7 @@ void CGirderSegmentGeneralPage::OnMoreConcreteProperties()
    dlg.m_Ec28 = pSegment->Material.Concrete.Ec;
    dlg.m_bUserEci  = pSegment->Material.Concrete.bUserEci;
    dlg.m_bUserEc28 = pSegment->Material.Concrete.bUserEc;
-   dlg.m_TimeAtInitialStrength = ::ConvertToSysUnits(m_AgeAtRelease,unitMeasure::Day);
+   dlg.m_TimeAtInitialStrength = WBFL::Units::ConvertToSysUnits(m_AgeAtRelease,WBFL::Units::Measure::Day);
 
    dlg.m_General.m_Type        = pSegment->Material.Concrete.Type;
    dlg.m_General.m_AggSize     = pSegment->Material.Concrete.MaxAggregateSize;
@@ -974,10 +974,10 @@ void CGirderSegmentGeneralPage::UpdateConcreteParametersToolTip()
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
    CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
 
-   const unitmgtDensityData& density = pDisplayUnits->GetDensityUnit();
-   const unitmgtLengthData&  aggsize = pDisplayUnits->GetComponentDimUnit();
-   const unitmgtStressData&  stress  = pDisplayUnits->GetStressUnit();
-   const unitmgtScalar&      scalar  = pDisplayUnits->GetScalarFormat();
+   const WBFL::Units::DensityData& density = pDisplayUnits->GetDensityUnit();
+   const WBFL::Units::LengthData&  aggsize = pDisplayUnits->GetComponentDimUnit();
+   const WBFL::Units::StressData&  stress  = pDisplayUnits->GetStressUnit();
+   const WBFL::Units::ScalarData&  scalar  = pDisplayUnits->GetScalarFormat();
 
    CString strTip;
    strTip.Format(_T("%-20s %s\r\n%-20s %s\r\n%-20s %s\r\n%-20s %s"),
@@ -1020,7 +1020,7 @@ void CGirderSegmentGeneralPage::OnVariationTypeChanged()
       EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
       Float64 value = pSegment->GetBasicSegmentHeight();
-      Float64 height = ::ConvertFromSysUnits(value,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+      Float64 height = WBFL::Units::ConvertFromSysUnits(value,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
       CString strHeight = ::FormatDimension(value,pDisplayUnits->GetComponentDimUnit(),false);
       m_ctrlSectionHeight[pgsTypes::sztLeftPrismatic].SetDefaultValue(height,strHeight);
       m_ctrlSectionHeight[pgsTypes::sztRightPrismatic].SetDefaultValue(height, strHeight);
@@ -1267,7 +1267,7 @@ Float64 CGirderSegmentGeneralPage::GetLength(pgsTypes::SegmentZoneType segZone)
    return length;
 }
 
-Float64 CGirderSegmentGeneralPage::GetValue(UINT nIDC,const unitmgtLengthData& lengthUnit)
+Float64 CGirderSegmentGeneralPage::GetValue(UINT nIDC,const WBFL::Units::LengthData& lengthUnit)
 {
    CWnd* pWnd = GetDlgItem(nIDC);
    const int TEXT_BUFFER_SIZE = 400;
@@ -1279,7 +1279,7 @@ Float64 CGirderSegmentGeneralPage::GetValue(UINT nIDC,const unitmgtLengthData& l
       return 0;
    }
    
-   d = ::ConvertToSysUnits(d,lengthUnit.UnitOfMeasure );
+   d = WBFL::Units::ConvertToSysUnits(d,lengthUnit.UnitOfMeasure );
    return d;
 }
 

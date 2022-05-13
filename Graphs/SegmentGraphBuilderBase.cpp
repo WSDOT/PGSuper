@@ -32,7 +32,7 @@
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFAutoProgress.h>
-#include <UnitMgt\UnitValueNumericalFormatTools.h>
+#include <Units\UnitValueNumericalFormatTools.h>
 
 #include <Hints.h>
 
@@ -55,8 +55,8 @@ static char THIS_FILE[] = __FILE__;
 
 
 // create a dummy unit conversion tool to pacify the graph constructor
-static unitmgtLengthData DUMMY(unitMeasure::Meter);
-static LengthTool    DUMMY_TOOL(DUMMY);
+static WBFL::Units::LengthData DUMMY(WBFL::Units::Measure::Meter);
+static WBFL::Units::LengthTool DUMMY_TOOL(DUMMY);
 
 BEGIN_MESSAGE_MAP(CSegmentGraphBuilderBase, CEAFGraphBuilderBase)
 END_MESSAGE_MAP()
@@ -163,8 +163,8 @@ void CSegmentGraphBuilderBase::UpdateXAxis()
    }
 
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   const unitmgtLengthData& lengthUnit = pDisplayUnits->GetSpanLengthUnit();
-   m_pXFormat = new LengthTool(lengthUnit);
+   const WBFL::Units::LengthData& lengthUnit = pDisplayUnits->GetSpanLengthUnit();
+   m_pXFormat = new WBFL::Units::LengthTool(lengthUnit);
    m_Graph.SetXAxisValueFormat(*m_pXFormat);
    m_Graph.SetXAxisNumberOfMinorTics(0);
    m_Graph.XAxisNiceRange(false);
@@ -180,8 +180,8 @@ void CSegmentGraphBuilderBase::UpdateYAxis()
    }
 
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   const unitmgtStressData& stressUnit = pDisplayUnits->GetStressUnit();
-   m_pYFormat = new StressTool(stressUnit);
+   const WBFL::Units::StressData& stressUnit = pDisplayUnits->GetStressUnit();
+   m_pYFormat = new WBFL::Units::StressTool(stressUnit);
    m_Graph.SetYAxisValueFormat(*m_pYFormat);
    m_Graph.YAxisNiceRange(true);
    m_Graph.SetYAxisNumberOfMinorTics(5);
@@ -283,9 +283,9 @@ void CSegmentGraphBuilderBase::AddGraphPoints(IndexType series, const std::vecto
 void CSegmentGraphBuilderBase::AddGraphPoint(IndexType series, Float64 xval, Float64 yval)
 {
    // deal with unit conversion
-   arvPhysicalConverter* pcx = dynamic_cast<arvPhysicalConverter*>(m_pXFormat);
+   WBFL::Units::PhysicalConverter* pcx = dynamic_cast<WBFL::Units::PhysicalConverter*>(m_pXFormat);
    ASSERT(pcx);
-   arvPhysicalConverter* pcy = dynamic_cast<arvPhysicalConverter*>(m_pYFormat);
+   WBFL::Units::PhysicalConverter* pcy = dynamic_cast<WBFL::Units::PhysicalConverter*>(m_pYFormat);
    ASSERT(pcy);
    Float64 x = pcx->Convert(xval);
    x = IsZero(x,m_ZeroToleranceX) ? 0 : x;

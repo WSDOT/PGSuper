@@ -30,7 +30,7 @@
 
 #include "GraphColor.h"
 
-#include <UnitMgt\UnitValueNumericalFormatTools.h>
+#include <Units\UnitValueNumericalFormatTools.h>
 #include <PgsExt\HaulingAnalysisArtifact.h>
 
 #include <EAF\EAFUtilities.h>
@@ -60,8 +60,8 @@ static const int      CURVE_STYLE       = PS_SOLID;
 static const int      LIMIT_STYLE       = PS_DASH;
 
 // create a dummy unit conversion tool to pacify the graph constructor
-static unitmgtLengthData DUMMY(unitMeasure::Meter);
-static LengthTool    DUMMY_TOOL(DUMMY);
+static WBFL::Units::LengthData DUMMY(WBFL::Units::Measure::Meter);
+static WBFL::Units::LengthTool DUMMY_TOOL(DUMMY);
 
 BEGIN_MESSAGE_MAP(CStabilityGraphBuilder, CEAFGraphBuilderBase)
 END_MESSAGE_MAP()
@@ -152,16 +152,16 @@ int CStabilityGraphBuilder::InitializeGraphController(CWnd* pParent,UINT nID)
 
    // x axis
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   const unitmgtLengthData& lengthUnit = pDisplayUnits->GetSpanLengthUnit();
-   m_pXFormat = new LengthTool(lengthUnit);
+   const WBFL::Units::LengthData& lengthUnit = pDisplayUnits->GetSpanLengthUnit();
+   m_pXFormat = new WBFL::Units::LengthTool(lengthUnit);
    m_Graph.SetXAxisValueFormat(*m_pXFormat);
    m_Graph.SetXAxisNumberOfMinorTics(0);
    m_Graph.XAxisNiceRange(false);
    m_Graph.SetXAxisNumberOfMajorTics(11);
 
    // y axis
-   const unitmgtScalar& scalarUnit = pDisplayUnits->GetScalarFormat();
-   m_pYFormat = new ScalarTool(scalarUnit);
+   const WBFL::Units::ScalarData& scalarUnit = pDisplayUnits->GetScalarFormat();
+   m_pYFormat = new WBFL::Units::ScalarTool(scalarUnit);
    m_Graph.SetYAxisValueFormat(*m_pYFormat);
    m_Graph.YAxisNiceRange(true);
    m_Graph.SetYAxisNumberOfMinorTics(5);
@@ -193,8 +193,8 @@ void CStabilityGraphBuilder::UpdateXAxis()
    }
 
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   const unitmgtLengthData& lengthUnit = pDisplayUnits->GetSpanLengthUnit();
-   m_pXFormat = new LengthTool(lengthUnit);
+   const WBFL::Units::LengthData& lengthUnit = pDisplayUnits->GetSpanLengthUnit();
+   m_pXFormat = new WBFL::Units::LengthTool(lengthUnit);
    m_Graph.SetXAxisValueFormat(*m_pXFormat);
 }
 
@@ -346,9 +346,9 @@ bool CStabilityGraphBuilder::UpdateNow()
 void CStabilityGraphBuilder::AddGraphPoint(IndexType series, Float64 xval, Float64 yval)
 {
    // deal with unit conversion
-   arvPhysicalConverter* pcx = dynamic_cast<arvPhysicalConverter*>(m_pXFormat);
+   WBFL::Units::PhysicalConverter* pcx = dynamic_cast<WBFL::Units::PhysicalConverter*>(m_pXFormat);
    ASSERT(pcx);
-   arvPhysicalConverter* pcy = dynamic_cast<arvPhysicalConverter*>(m_pYFormat);
+   WBFL::Units::PhysicalConverter* pcy = dynamic_cast<WBFL::Units::PhysicalConverter*>(m_pYFormat);
    ASSERT(pcy);
    m_Graph.AddPoint(series, WBFL::Graphing::Point(pcx->Convert(xval),pcy->Convert(yval)));
 }

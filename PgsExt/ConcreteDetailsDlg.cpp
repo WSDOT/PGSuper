@@ -152,11 +152,11 @@ CString CConcreteDetailsDlg::UpdateEc(pgsTypes::ConcreteType type, const CString
          EAFGetBroker(&pBroker);
          GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-         const unitPressure& stress_unit = pDisplayUnits->GetStressUnit().UnitOfMeasure;
-         const unitDensity& density_unit = pDisplayUnits->GetDensityUnit().UnitOfMeasure;
+         const WBFL::Units::Pressure& stress_unit = pDisplayUnits->GetStressUnit().UnitOfMeasure;
+         const WBFL::Units::Density& density_unit = pDisplayUnits->GetDensityUnit().UnitOfMeasure;
 
-         fc       = ::ConvertToSysUnits(fc,      stress_unit);
-         density  = ::ConvertToSysUnits(density, density_unit);
+         fc       = WBFL::Units::ConvertToSysUnits(fc,      stress_unit);
+         density  = WBFL::Units::ConvertToSysUnits(density, density_unit);
 
          ec = k1*k2*lrfdConcreteUtil::ModE((matConcrete::Type)type,fc,density,false);
 

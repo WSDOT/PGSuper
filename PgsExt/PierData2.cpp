@@ -29,7 +29,7 @@
 
 #include "PierData.h"
 
-#include <Units\SysUnits.h>
+#include <Units\Convert.h>
 #include <StdIo.h>
 #include <StrData.cpp>
 #include <WBFLCogo.h>
@@ -72,24 +72,24 @@ CPierData2::CPierData2()
    m_PierModelType = pgsTypes::pmtIdealized;
 
    m_Concrete.bHasInitial = false;
-   m_Concrete.Fc = ::ConvertToSysUnits(4,unitMeasure::KSI);
-   m_Concrete.StrengthDensity = ::ConvertToSysUnits(0.145, unitMeasure::KipPerFeet3); // plan concrete LRFD Table 3.5.1-1
-   m_Concrete.WeightDensity = ::ConvertToSysUnits(0.155, unitMeasure::KipPerFeet3); // 10 kcf allowance for reinforcement (BDM Ch 3).
+   m_Concrete.Fc = WBFL::Units::ConvertToSysUnits(4,WBFL::Units::Measure::KSI);
+   m_Concrete.StrengthDensity = WBFL::Units::ConvertToSysUnits(0.145, WBFL::Units::Measure::KipPerFeet3); // plan concrete LRFD Table 3.5.1-1
+   m_Concrete.WeightDensity = WBFL::Units::ConvertToSysUnits(0.155, WBFL::Units::Measure::KipPerFeet3); // 10 kcf allowance for reinforcement (BDM Ch 3).
 
    m_RefColumnIdx = 0;
    m_TransverseOffset = 0;
    m_TransverseOffsetMeasurement = pgsTypes::omtAlignment;
-   m_XBeamHeight[pgsTypes::stLeft]  = ::ConvertToSysUnits(5,unitMeasure::Feet);
-   m_XBeamHeight[pgsTypes::stRight] = ::ConvertToSysUnits(5,unitMeasure::Feet);
+   m_XBeamHeight[pgsTypes::stLeft]  = WBFL::Units::ConvertToSysUnits(5,WBFL::Units::Measure::Feet);
+   m_XBeamHeight[pgsTypes::stRight] = WBFL::Units::ConvertToSysUnits(5,WBFL::Units::Measure::Feet);
    m_XBeamTaperHeight[pgsTypes::stLeft]  = 0;
    m_XBeamTaperHeight[pgsTypes::stRight] = 0;
    m_XBeamTaperLength[pgsTypes::stLeft]  = 0;
    m_XBeamTaperLength[pgsTypes::stRight] = 0;
    m_XBeamEndSlopeOffset[pgsTypes::stLeft] = 0;
    m_XBeamEndSlopeOffset[pgsTypes::stRight] = 0;
-   m_XBeamOverhang[pgsTypes::stLeft]  = ::ConvertToSysUnits(5,unitMeasure::Feet);
-   m_XBeamOverhang[pgsTypes::stRight] = ::ConvertToSysUnits(5,unitMeasure::Feet);
-   m_XBeamWidth = ::ConvertToSysUnits(5,unitMeasure::Feet);
+   m_XBeamOverhang[pgsTypes::stLeft]  = WBFL::Units::ConvertToSysUnits(5,WBFL::Units::Measure::Feet);
+   m_XBeamOverhang[pgsTypes::stRight] = WBFL::Units::ConvertToSysUnits(5,WBFL::Units::Measure::Feet);
+   m_XBeamWidth = WBFL::Units::ConvertToSysUnits(5,WBFL::Units::Measure::Feet);
 
    m_ColumnFixity = pgsTypes::cftFixed;
    CColumnData defaultColumn(this);
@@ -97,10 +97,10 @@ CPierData2::CPierData2()
 
    for ( int i = 0; i < 2; i++ )
    {
-      m_GirderEndDistance[i]            = ::ConvertToSysUnits(6.0,unitMeasure::Inch);
+      m_GirderEndDistance[i]            = WBFL::Units::ConvertToSysUnits(6.0,WBFL::Units::Measure::Inch);
       m_EndDistanceMeasurementType[i]   = ConnectionLibraryEntry::FromBearingNormalToPier;
 
-      m_GirderBearingOffset[i]          = ::ConvertToSysUnits(1.0,unitMeasure::Feet);
+      m_GirderBearingOffset[i]          = WBFL::Units::ConvertToSysUnits(1.0,WBFL::Units::Measure::Feet);
       m_BearingOffsetMeasurementType[i] = ConnectionLibraryEntry::NormalToPier;
 
       m_DiaphragmHeight[i] = 0;
@@ -2186,7 +2186,7 @@ void CPierData2::SetColumnCount(ColumnIndexType nColumns)
       // the number of columns is being increased... add columns on the right side of the pier
       ColumnIndexType nColumnsToAdd = nColumns - m_Columns.size();
       CColumnData column = m_Columns.back(); // right-most column
-      Float64 spacing = (m_ColumnSpacing.size() == 0 ? ::ConvertToSysUnits(10.0,unitMeasure::Feet) : m_ColumnSpacing.back()); // right-most spacing
+      Float64 spacing = (m_ColumnSpacing.size() == 0 ? WBFL::Units::ConvertToSysUnits(10.0,WBFL::Units::Measure::Feet) : m_ColumnSpacing.back()); // right-most spacing
       m_Columns.insert(m_Columns.end(),nColumnsToAdd,column);
       m_ColumnSpacing.insert(m_ColumnSpacing.end(),nColumnsToAdd,spacing);
    }

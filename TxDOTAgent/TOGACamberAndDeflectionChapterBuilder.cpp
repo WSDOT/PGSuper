@@ -213,7 +213,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
    pProductForces->GetDeflLiveLoadDeflection(IProductForces::DeflectionLiveLoadEnvelope, poi_fabr, bat, &delta_oll_fabr, &temp );
 
    // get # of days for creep
-   Float64 max_days = ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
+   Float64 max_days = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day);
 
    // Populate the table
    bool is_negative_camber = false;
@@ -315,7 +315,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
       *p<<color(Red) << _T("Warning:  Excess camber is negative indicating a potential sag in the beam.") << color(Black) << rptNewLine;
    }
 
-   Float64 min_days = ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Min(), unitMeasure::Day);
+   Float64 min_days = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Min(), WBFL::Units::Measure::Day);
    if (max_days != min_days)
    {
       *p<<color(Red) << _T("Warning: Camber min and max timings in project criteria are different. Values for max timing are shown only.") << color(Black) << rptNewLine;

@@ -52,7 +52,7 @@ public:
    virtual void CreateDistFactorEngineer(IBroker* pBroker, StatusItemIDType statusID, const pgsTypes::SupportedBeamSpacing* pSpacingType, const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect, IDistFactorEngineer** ppEng) const override;
    virtual void CreatePsLossEngineer(IBroker* pBroker, StatusItemIDType statusID, const CGirderKey& girderKey, IPsLossEngineer** ppEng) const override;
    virtual const std::vector<std::_tstring>& GetDimensionNames() const override;
-   virtual const std::vector<const unitLength*>& GetDimensionUnits(bool bSIUnits) const override;
+   virtual const std::vector<const WBFL::Units::Length*>& GetDimensionUnits(bool bSIUnits) const override;
    virtual const std::vector<Float64>& GetDefaultDimensions() const override;
    virtual bool IsPrismatic(const IBeamFactory::Dimensions& dimensions) const override;
    virtual bool IsPrismatic(const CSegmentKey& segmentKey) const override;
@@ -93,7 +93,7 @@ public:
 protected:
    std::vector<std::_tstring> m_DimNames;
    std::vector<Float64> m_DefaultDims;
-   std::vector<const unitLength*> m_DimUnits[2];
+   std::vector<const WBFL::Units::Length*> m_DimUnits[2];
 
    Float64 GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name) const;
 

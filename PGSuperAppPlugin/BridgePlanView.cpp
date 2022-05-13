@@ -57,7 +57,7 @@
 #include <WBFLDManip.h>
 #include <WBFLDManipTools.h>
 #include <DManipTools\DManipTools.h>
-#include <Units\SysUnits.h>
+#include <Units\Convert.h>
 
 #include <Material\Material.h>
 
@@ -2717,7 +2717,7 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
       }
       strategy_pier->DoFill(TRUE);
 
-      Float64 support_width = ::ConvertToSysUnits(6.0, unitMeasure::Inch); // a reasonable default. No other data
+      Float64 support_width = WBFL::Units::ConvertToSysUnits(6.0, WBFL::Units::Measure::Inch); // a reasonable default. No other data
       
       Float64 brg_offset;
       ConnectionLibraryEntry::BearingOffsetMeasurementType brg_offset_measurement_type;

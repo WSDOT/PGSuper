@@ -57,7 +57,7 @@ static char THIS_FILE[] = __FILE__;
 
 IMPLEMENT_DYNAMIC(CGirderSegmentStrandsPage, CPropertyPage)
 
-void DDX_UnitValueChoice(CDataExchange* pDX, UINT nIDC, UINT nIDCUnit, Float64& value, const unitmgtLengthData& lengthUnit)
+void DDX_UnitValueChoice(CDataExchange* pDX, UINT nIDC, UINT nIDCUnit, Float64& value, const WBFL::Units::LengthData& lengthUnit)
 {
    CComboBox* pCB = (CComboBox*)pDX->m_pDlgWnd->GetDlgItem(nIDCUnit);
    if (pDX->m_bSaveAndValidate)
@@ -91,14 +91,14 @@ void DDX_UnitValueChoice(CDataExchange* pDX, UINT nIDC, UINT nIDCUnit, Float64& 
       else
       {
          // this is a unit value
-         Float64 v = ::ConvertFromSysUnits(value, lengthUnit.UnitOfMeasure);
+         Float64 v = WBFL::Units::ConvertFromSysUnits(value, lengthUnit.UnitOfMeasure);
          DDX_Text(pDX, nIDC, v);
          pCB->SetCurSel(1);
       }
    }
 }
 
-void DDV_UnitValueChoice(CDataExchange* pDX, UINT nIDC, Float64& value, Float64 Ls, const unitmgtLengthData& lengthUnit)
+void DDV_UnitValueChoice(CDataExchange* pDX, UINT nIDC, Float64& value, Float64 Ls, const WBFL::Units::LengthData& lengthUnit)
 {
    if (pDX->m_bSaveAndValidate)
    {
@@ -509,7 +509,7 @@ void CGirderSegmentStrandsPage::OnUpdateStrandPjEdit(UINT nCheck,UINT nForceEdit
       CString val_as_text;
       pWnd->GetWindowText( val_as_text );
       Pjack = _tstof( val_as_text );
-      Pjack = ::ConvertToSysUnits( Pjack, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure );
+      Pjack = WBFL::Units::ConvertToSysUnits( Pjack, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure );
       
       m_Strands.SetLastUserPjack(strandType, Pjack);
       Pjack = GetMaxPjack(nStrands, strandType);
@@ -779,7 +779,7 @@ HBRUSH CGirderSegmentStrandsPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColo
    return hbr;
 }
 
-void CGirderSegmentStrandsPage::FillHarpPointUnitComboBox(UINT nIDC, const unitmgtLengthData& lengthUnit)
+void CGirderSegmentStrandsPage::FillHarpPointUnitComboBox(UINT nIDC, const WBFL::Units::LengthData& lengthUnit)
 {
    CComboBox* pCB = (CComboBox*)GetDlgItem(nIDC);
    pCB->AddString(_T("%"));

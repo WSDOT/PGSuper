@@ -129,7 +129,7 @@ void CSpanLengthGrid::CustomInit()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   const unitLength& um = pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure;
+   const WBFL::Units::Length& um = pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure;
    CString cv;
    cv.Format(_T("Length (%s)"), um.UnitTag().c_str());
 	SetStyleRange(CGXRange(0,1), CGXStyle()
@@ -238,13 +238,13 @@ void CSpanLengthGrid::GetSpanLengths(std::vector<Float64>& vSpanLengths)
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   const unitLength& um = pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure;
+   const WBFL::Units::Length& um = pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure;
 
    ROWCOL rows = GetRowCount();
    for ( ROWCOL row = 1; row <= rows; row++ )
    {
       Float64 L = _tstof(GetCellValue(row,1));
-      L = ::ConvertToSysUnits(L,um);
+      L = WBFL::Units::ConvertToSysUnits(L,um);
       vSpanLengths.push_back(L);
    }
 }

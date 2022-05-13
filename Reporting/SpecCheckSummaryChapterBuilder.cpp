@@ -292,7 +292,7 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroke
 
             *pPara << color(Red) << _T("WARNING: Screed Camber is greater than the ") << camberType.c_str() << _T(" camber at time of deck casting. The girder may end up with a sag.") << color(Black) << rptNewLine;
          }
-         else if ( IsEqual(C,D,::ConvertToSysUnits(0.25,unitMeasure::Inch)) )
+         else if ( IsEqual(C,D,WBFL::Units::ConvertToSysUnits(0.25,WBFL::Units::Measure::Inch)) )
          {
             pPara = new rptParagraph;
             *pChapter << pPara;

@@ -90,7 +90,7 @@ void CPrecastSegmentData::Init()
 
    m_bVariableBottomFlangeDepthEnabled = false;
 
-   m_VariationHeight[0] = ::ConvertToSysUnits(10,unitMeasure::Feet);
+   m_VariationHeight[0] = WBFL::Units::ConvertToSysUnits(10,WBFL::Units::Measure::Feet);
    m_VariationHeight[3] = m_VariationHeight[0];
 
    for ( int j = 0; j < 2; j++ )

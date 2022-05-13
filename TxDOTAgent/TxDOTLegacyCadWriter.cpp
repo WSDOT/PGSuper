@@ -300,7 +300,7 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
 	   /* 0a. ROADWAY WIDTH */
       value = pBridge->GetCurbToCurbWidth(0.00);
 
-      Float64 roadwayWidth = ::ConvertFromSysUnits( value, unitMeasure::Feet );
+      Float64 roadwayWidth = WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::Feet );
 
 	   /* 0b. NUMBER OF BEAMS */
       GirderIndexType nGirders = pBridge->GetGirderCount(segmentKey.groupIndex);
@@ -310,7 +310,7 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
       GirderIndexType spaceIdx = (segmentKey.girderIndex == nGirders-1 ? nGirders-2 : segmentKey.girderIndex);
       value = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex)->GetPier(pgsTypes::metStart)->GetGirderSpacing(pgsTypes::Ahead)->GetGirderSpacing(spaceIdx);
 
-      Float64 girderSpacing = ::ConvertFromSysUnits( value, unitMeasure::Feet );
+      Float64 girderSpacing = WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::Feet );
 
 	   //----- COL 0a ---- 
 	   workerB.WriteFloat64(roadwayWidth,_T("RoadW"),7,5,_T("%5.2f"));
@@ -379,7 +379,7 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
 	TCHAR    strandSize[4+1];
    const matPsStrand* strandMatP = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Straight);
    value = strandMatP->GetNominalDiameter();
-   value = ::ConvertFromSysUnits( value, unitMeasure::Inch );
+   value = WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::Inch );
 
 	/* Convert value to fraction representation */
 	txdString_ftofrac (charBuffer, sizeof(charBuffer)/sizeof(TCHAR), value); 
@@ -391,22 +391,22 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
 	/* 8. STRAND ECCENTRICITY AT CENTER LINE */
    value = pStrandGeometry->GetEccentricity( releaseIntervalIdx, pmid, pgsTypes::Permanent).Y();
 
-	Float64 strandEccCL = ::ConvertFromSysUnits( value, unitMeasure::Inch );
+	Float64 strandEccCL = WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::Inch );
 
 	/* 9. STRAND ECCENTRICITY AT END */
    value = pStrandGeometry->GetEccentricity( releaseIntervalIdx, pois, pgsTypes::Permanent).Y();
 
-	Float64 strandEccEnd = ::ConvertFromSysUnits( value, unitMeasure::Inch );
+	Float64 strandEccEnd = WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::Inch );
 
 	/* 12. CONCRETE RELEASE STRENGTH */
    value = pMaterial->GetSegmentDesignFc(segmentKey,releaseIntervalIdx);
 
-	Float64 concreteRelStrength = ::ConvertFromSysUnits( value, unitMeasure::KSI );
+	Float64 concreteRelStrength = WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::KSI );
 
 	/* 13. MINIMUM 28 DAY COMP. STRENGTH */
 	value = pMaterial->GetSegmentDesignFc(segmentKey,lastIntervalIdx);
 
-	Float64 min28dayCompStrength = ::ConvertFromSysUnits( value, unitMeasure::KSI );
+	Float64 min28dayCompStrength = WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::KSI );
 
 	/* 14. DESIGN LOAD COMPRESSIVE STRESS (TOP CL) */ 
    const pgsFlexuralStressArtifact* pArtifact;
@@ -422,7 +422,7 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
    fcTop = pArtifact->GetExternalEffects(pgsTypes::TopGirder);
 	value = -fcTop;
 
-	Float64 designLoadCompStress = ::ConvertFromSysUnits( value, unitMeasure::KSI );
+	Float64 designLoadCompStress = WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::KSI );
 
 	/* 15. DESIGN LOAD TENSILE STRESS (BOT CL) */
    task.intervalIdx = lastIntervalIdx;
@@ -433,13 +433,13 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
    ftBot = pArtifact->GetExternalEffects(pgsTypes::BottomGirder);
 	value = -ftBot;
 
-	Float64 designLoadTensileStress = ::ConvertFromSysUnits( value, unitMeasure::KSI );
+	Float64 designLoadTensileStress = WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::KSI );
 
    /* 16. REQUIRED MINIMUM ULTIMATE MOMENT CAPACITY */
    const MINMOMENTCAPDETAILS* mmcd = pMomentCapacity->GetMinMomentCapacityDetails(lastIntervalIdx,pmid,true);
    value = Max(mmcd->Mu,mmcd->MrMin);
 
-	int reqMinUltimateMomentCapacity = (int)Round(::ConvertFromSysUnits( value, unitMeasure::KipFeet ));
+	int reqMinUltimateMomentCapacity = (int)Round(WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::KipFeet ));
 
 	/* 17. LIVE LOAD DISTRIBUTION FACTOR */
    Float64 momentDistFactor = pDistFact->GetMomentDistFactor(spanKey,pgsTypes::StrengthI);
@@ -495,8 +495,8 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
       Float64 aend = pBridge->GetSlabOffset(segmentKey, pgsTypes::metEnd);
 
 
-      astart = ::ConvertFromSysUnits( astart, unitMeasure::Inch );
-      aend = ::ConvertFromSysUnits( aend, unitMeasure::Inch );
+      astart = WBFL::Units::ConvertFromSysUnits( astart, WBFL::Units::Measure::Inch );
+      aend = WBFL::Units::ConvertFromSysUnits( aend, WBFL::Units::Measure::Inch );
 
       workerB.WriteFloat64(astart,_T("Astart"),7,5,_T("%5.2f"));
       workerB.WriteFloat64(aend,_T("Aend"),7,5,_T("%5.2f"));
@@ -507,7 +507,7 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
       if (pSpec->IsAssumedExcessCamberInputEnabled())
       {
          value = pIBridgeDesc->GetAssumedExcessCamber(segmentKey.groupIndex, segmentKey.girderIndex);
-      	Float64 aecamber = ::ConvertFromSysUnits( value, unitMeasure::Inch );
+      	Float64 aecamber = WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::Inch );
          workerB.WriteFloat64(aecamber,_T("AECmbr"),7,5,_T("%5.2f"));
          extraSpacesForSlabOffset += 7;
       }
@@ -550,12 +550,12 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
          // value is measured down from top of girder... we want it measured up from the bottom
          value += Hg;
 
-         dstrandToEnd = ::ConvertFromSysUnits( value, unitMeasure::Inch );
+         dstrandToEnd = WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::Inch );
 
          pStrandGeometry->GetHighestHarpedStrandLocationHPs(segmentKey, &value);
          value += Hg;
 
-         dstrandToCL = ::ConvertFromSysUnits( value, unitMeasure::Inch );
+         dstrandToCL = WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::Inch );
       }
 
       // output
@@ -587,10 +587,10 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
          Float64 dstrandToCL(0);
 
          pStrandGeometry->GetHighestHarpedStrandLocationEnds(segmentKey, &value);
-         dstrandToEnd = ::ConvertFromSysUnits( value+Hg, unitMeasure::Inch );
+         dstrandToEnd = WBFL::Units::ConvertFromSysUnits( value+Hg, WBFL::Units::Measure::Inch );
 
          pStrandGeometry->GetHighestHarpedStrandLocationHPs(segmentKey, &value);
-         dstrandToCL = ::ConvertFromSysUnits( value+Hg, unitMeasure::Inch );
+         dstrandToCL = WBFL::Units::ConvertFromSysUnits( value+Hg, WBFL::Units::Measure::Inch );
 
          // output
          workerB.WriteInt32((Int32)numRaisedStraightStrands,_T("Nh"),(isExtendedVersion? 4:5),2,_T("%2d"));
@@ -642,7 +642,7 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
       value = pCamber->GetDCamberForGirderSchedule( pmid,CREEP_MAXTIME);
       value = IsZero(value) ? 0 : value;
 
-      Float64 initialCamber = ::ConvertFromSysUnits( value, unitMeasure::Inch );
+      Float64 initialCamber = WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::Inch );
 
    	/* 19. DEFLECTION (SLAB AND DIAPHRAGMS)  */
       value = pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftSlab,      pmid, bat, rtCumulative, false )
@@ -650,7 +650,7 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
             + pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftShearKey,  pmid, bat, rtCumulative, false );
       value = IsZero(value) ? 0 : value;
 
-      Float64 slabDiaphDeflection = ::ConvertFromSysUnits( value, unitMeasure::Inch );
+      Float64 slabDiaphDeflection = WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::Inch );
 
    	/* 20. DEFLECTION (OVERLAY)  */
       if ( pBridge->HasOverlay() )
@@ -663,14 +663,14 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
       value = 0;
       }
 
-      Float64 overlayDeflection = ::ConvertFromSysUnits( value, unitMeasure::Inch );
+      Float64 overlayDeflection = WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::Inch );
 
    	/* 21. DEFLECTION (OTHER)  */
       value =  pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftTrafficBarrier, pmid, bat, rtCumulative, false );
       value += pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftSidewalk,       pmid, bat, rtCumulative, false );
       value = IsZero(value) ? 0 : value;
 
-      Float64 otherDeflection = ::ConvertFromSysUnits( value, unitMeasure::Inch );
+      Float64 otherDeflection = WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::Inch );
 
    	/* 22. DEFLECTION (TOTAL)  */
       Float64 totalDeflection = slabDiaphDeflection + overlayDeflection + otherDeflection;
@@ -679,23 +679,23 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
       Float64 aps = pStrandGeometry->GetStrandArea(pmid,releaseIntervalIdx,pgsTypes::Permanent);
       value = pLosses->GetEffectivePrestressLoss(pmid,pgsTypes::Permanent,releaseIntervalIdx,pgsTypes::End) * aps;
 
-      Float64 initialLoss = ::ConvertFromSysUnits( value, unitMeasure::Kip );
+      Float64 initialLoss = WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::Kip );
 
    	/* 24. LOSSES (FINAL)  */
       value = pLosses->GetEffectivePrestressLoss(pmid,pgsTypes::Permanent,lastIntervalIdx,pgsTypes::End) * aps;
 
-      Float64 finalLoss = ::ConvertFromSysUnits( value, unitMeasure::Kip );
+      Float64 finalLoss = WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::Kip );
 
    	/* 25. Lifting location  */
       GET_IFACE2(pBroker,ISegmentLifting,pLifting);
-      Float64 liftLoc = ::ConvertFromSysUnits( pLifting->GetLeftLiftingLoopLocation(segmentKey), unitMeasure::Feet );
+      Float64 liftLoc = WBFL::Units::ConvertFromSysUnits( pLifting->GetLeftLiftingLoopLocation(segmentKey), WBFL::Units::Measure::Feet );
 
    	/* 26. Forward handling location  */
       GET_IFACE2(pBroker,ISegmentHauling,pHauling);
-      Float64 fwdLoc = ::ConvertFromSysUnits( pHauling->GetLeadingOverhang(segmentKey), unitMeasure::Feet );
+      Float64 fwdLoc = WBFL::Units::ConvertFromSysUnits( pHauling->GetLeadingOverhang(segmentKey), WBFL::Units::Measure::Feet );
 
    	/* 27. Trailing handling location  */
-      Float64 trlLoc = ::ConvertFromSysUnits( pHauling->GetTrailingOverhang(segmentKey), unitMeasure::Feet );
+      Float64 trlLoc = WBFL::Units::ConvertFromSysUnits( pHauling->GetTrailingOverhang(segmentKey), WBFL::Units::Measure::Feet );
 
       /* WRITE TO FILE */
       //==================
@@ -865,7 +865,7 @@ void TxDOTCadWriter::WriteFinalData(FILE *fp, bool isExtended, bool isIBeam, Int
    }
    else if (m_OutCome==NonStandardSection)
    {
-      Float64 spac = ::ConvertFromSysUnits(m_SectionSpacing , unitMeasure::Feet );
+      Float64 spac = WBFL::Units::ConvertFromSysUnits(m_SectionSpacing , WBFL::Units::Measure::Feet );
 	   _ftprintf(fp, _T("Warning: Non-standard debonding increment of %6.3f ft used  for beam %s in span %s. \n"),spac,LABEL_GIRDER(gdrIdx),LABEL_SPAN(spanIdx));
    }
 }
@@ -874,7 +874,7 @@ void TxDOTCadWriter::WriteRowData(CadWriterWorkerBee& workerB, const RowData& ro
 {
 	//----- COL 11 ----- 
    // elevation of row
-   Float64 row_elev = ::ConvertFromSysUnits( Hg + row.m_Elevation, unitMeasure::Inch );
+   Float64 row_elev = WBFL::Units::ConvertFromSysUnits( Hg + row.m_Elevation, WBFL::Units::Measure::Inch );
 
    if (m_isUBeam)
    {
@@ -939,7 +939,7 @@ std::_tstring MakeNonStandardStrandString(IBroker* pBroker, const pgsPointOfInte
          first=false;
 
       const StrandRowUtil::StrandRow& srow = *srit;
-      Float64 elev_in = RoundOff(::ConvertFromSysUnits( srow.Elevation, unitMeasure::Inch ),0.001);
+      Float64 elev_in = RoundOff(WBFL::Units::ConvertFromSysUnits( srow.Elevation, WBFL::Units::Measure::Inch ),0.001);
       os<<elev_in<<_T("(")<<srow.Count<<_T(")");
    }
 

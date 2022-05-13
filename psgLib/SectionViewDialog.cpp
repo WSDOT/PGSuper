@@ -74,7 +74,7 @@ CSectionViewDialog::CSectionViewDialog(const GirderLibraryEntry* pEntry,bool isE
    m_bDrawNumbers = true;
 
    // assume 0.6" diameter
-   m_Radius = ::ConvertToSysUnits(0.3,unitMeasure::Inch);
+   m_Radius = WBFL::Units::ConvertToSysUnits(0.3,WBFL::Units::Measure::Inch);
 
    // first get outer shape
    CComPtr<IBeamFactory> pFactory;
@@ -620,7 +620,7 @@ HBRUSH CSectionViewDialog::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 BOOL CSectionViewDialog::OnInitDialog() 
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    CDialog::OnInitDialog();
 	

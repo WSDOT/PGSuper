@@ -183,7 +183,7 @@ void CLongSteelGrid::OnUpdateEditRemoverows(CCmdUI* pCmdUI)
 void CLongSteelGrid::CustomInit()
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
 
 // Initialize the grid. For CWnd based grids this call is // 

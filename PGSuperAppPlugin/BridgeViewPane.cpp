@@ -175,7 +175,7 @@ void CBridgeViewPane::GetUniformStationingData(IBroker* pBroker, Float64 startSt
 {
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
    Float64 station_range = endStation - startStation;
-   Float64 station_step = (pDisplayUnits->GetUnitMode() == eafTypes::umUS ? ::ConvertToSysUnits(100.00, unitMeasure::Feet) : ::ConvertToSysUnits(100.00, unitMeasure::Meter));
+   Float64 station_step = (pDisplayUnits->GetUnitMode() == eafTypes::umUS ? WBFL::Units::ConvertToSysUnits(100.00, WBFL::Units::Measure::Feet) : WBFL::Units::ConvertToSysUnits(100.00, WBFL::Units::Measure::Meter));
    Float64 num_stations = station_range / station_step;
    if (10 < num_stations)
    {

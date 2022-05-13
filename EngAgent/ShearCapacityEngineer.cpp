@@ -22,7 +22,7 @@
 
 #include "StdAfx.h"
 #include "ShearCapacityEngineer.h"
-#include <Units\SysUnits.h>
+#include <Units\Convert.h>
 #include <PGSuperException.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
@@ -642,7 +642,7 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
    // See LRFD 5.7.2.5 (pre2017: 5.8.2.5)
    if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
    {
-      fy = min(fy,::ConvertToSysUnits(100.0,unitMeasure::KSI));
+      fy = min(fy,WBFL::Units::ConvertToSysUnits(100.0,WBFL::Units::Measure::KSI));
    }
 
    Float64 s;
@@ -1152,24 +1152,24 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
          Float64 dv    = pscd->dv;
          Float64 bv    = pscd->bv;
 
-         const unitLength* pLengthUnit = nullptr;
-         const unitStress* pStressUnit = nullptr;
-         const unitForce*  pForceUnit  = nullptr;
+         const WBFL::Units::Length* pLengthUnit = nullptr;
+         const WBFL::Units::Stress* pStressUnit = nullptr;
+         const WBFL::Units::Force*  pForceUnit  = nullptr;
          Float64 K; // main coefficient in equaion 5.7.3.3-3 (pre2017: 5.8.3.3-3)
          Float64 Kfct; // coefficient for fct if LWC
          if ( lrfdVersionMgr::GetUnits() == lrfdVersionMgr::US )
          {
-            pLengthUnit = &unitMeasure::Inch;
-            pStressUnit = &unitMeasure::KSI;
-            pForceUnit  = &unitMeasure::Kip;
+            pLengthUnit = &WBFL::Units::Measure::Inch;
+            pStressUnit = &WBFL::Units::Measure::KSI;
+            pForceUnit  = &WBFL::Units::Measure::Kip;
             K = 0.0316;
             Kfct = 4.7;
          }
          else
          {
-            pLengthUnit = &unitMeasure::Millimeter;
-            pStressUnit = &unitMeasure::MPa;
-            pForceUnit  = &unitMeasure::Newton;
+            pLengthUnit = &WBFL::Units::Measure::Millimeter;
+            pStressUnit = &WBFL::Units::Measure::MPa;
+            pForceUnit  = &WBFL::Units::Measure::Newton;
             K = 0.083;
             Kfct = 1.8;
          }
@@ -1189,11 +1189,11 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
          }
          else
          {
-            dv = ::ConvertFromSysUnits(dv, *pLengthUnit);
-            bv = ::ConvertFromSysUnits(bv, *pLengthUnit);
+            dv = WBFL::Units::ConvertFromSysUnits(dv, *pLengthUnit);
+            bv = WBFL::Units::ConvertFromSysUnits(bv, *pLengthUnit);
 
-            Float64 fc = ::ConvertFromSysUnits(pscd->fc, *pStressUnit);
-            Float64 fct = ::ConvertFromSysUnits(pscd->fct, *pStressUnit);
+            Float64 fc = WBFL::Units::ConvertFromSysUnits(pscd->fc, *pStressUnit);
+            Float64 fct = WBFL::Units::ConvertFromSysUnits(pscd->fct, *pStressUnit);
 
             // 5.7.3.3-3 (pre2017: 5.8.3.3-3)
             Vc = K * data.lambda * Beta * bv * dv;
@@ -1237,7 +1237,7 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
             {
                Vc *= sqrt(fc);
             }
-            Vc = ::ConvertToSysUnits(Vc, *pForceUnit);
+            Vc = WBFL::Units::ConvertToSysUnits(Vc, *pForceUnit);
          }
 
          pscd->Vc = Vc;
@@ -1294,17 +1294,17 @@ bool pgsShearCapacityEngineer::ComputeVs(const pgsPointOfInterest& poi, SHEARCAP
          Float64 fc, fpc, fct, Kfct, K;
          if (lrfdVersionMgr::GetUnits() == lrfdVersionMgr::SI )
          {
-            fc  = ::ConvertFromSysUnits(pscd->fc,  unitMeasure::MPa);
-            fpc = ::ConvertFromSysUnits(pscd->fpc, unitMeasure::MPa);
-            fct = ::ConvertFromSysUnits(pscd->fct, unitMeasure::MPa);
+            fc  = WBFL::Units::ConvertFromSysUnits(pscd->fc,  WBFL::Units::Measure::MPa);
+            fpc = WBFL::Units::ConvertFromSysUnits(pscd->fpc, WBFL::Units::Measure::MPa);
+            fct = WBFL::Units::ConvertFromSysUnits(pscd->fct, WBFL::Units::Measure::MPa);
             Kfct = 1.8;
             K = 1.14;
          }
          else
          {
-            fc  = ::ConvertFromSysUnits(pscd->fc,  unitMeasure::KSI);
-            fpc = ::ConvertFromSysUnits(pscd->fpc, unitMeasure::KSI);
-            fct = ::ConvertFromSysUnits(pscd->fct, unitMeasure::KSI);
+            fc  = WBFL::Units::ConvertFromSysUnits(pscd->fc,  WBFL::Units::Measure::KSI);
+            fpc = WBFL::Units::ConvertFromSysUnits(pscd->fpc, WBFL::Units::Measure::KSI);
+            fct = WBFL::Units::ConvertFromSysUnits(pscd->fct, WBFL::Units::Measure::KSI);
             Kfct = 4.7;
             K = 3.0;
          }
@@ -1352,7 +1352,7 @@ bool pgsShearCapacityEngineer::ComputeVs(const pgsPointOfInterest& poi, SHEARCAP
    else
    {
       Float64 Theta = pscd->Theta;
-      Theta = ::ConvertFromSysUnits( Theta, unitMeasure::Radian );
+      Theta = WBFL::Units::ConvertFromSysUnits( Theta, WBFL::Units::Measure::Radian );
       cot_theta = 1/tan(Theta);
    }
 

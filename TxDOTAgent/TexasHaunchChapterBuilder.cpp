@@ -252,18 +252,18 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
    }
 
    // Setup up some unit value prototypes
-   static unitmgtLength3Data large_volume_unit(unitMeasure::Feet3);
+   static WBFL::Units::Length3Data large_volume_unit(WBFL::Units::Measure::Feet3);
    if ( pDisplayUnits->GetUnitMode() == eafTypes::umUS )
-      large_volume_unit.Update(unitMeasure::Yard3,0.001,12,2,sysNumericFormatTool::Fixed);
+      large_volume_unit.Update(WBFL::Units::Measure::Yard3,0.001,12,2,sysNumericFormatTool::Fixed);
    else
-      large_volume_unit.Update(unitMeasure::Meter3,0.001,12,2,sysNumericFormatTool::Fixed);
+      large_volume_unit.Update(WBFL::Units::Measure::Meter3,0.001,12,2,sysNumericFormatTool::Fixed);
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, disp,   pDisplayUnits->GetDeflectionUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dispft, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLength3UnitValue, volume,  large_volume_unit, false);
 
    // X, Y, Z rounded up to nearest 1/8"
-   Float64 xyzToler = ::ConvertToSysUnits(0.125, unitMeasure::Inch); 
+   Float64 xyzToler = WBFL::Units::ConvertToSysUnits(0.125, WBFL::Units::Measure::Inch); 
 
    // Get the interfaces we need
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -417,7 +417,7 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
       (*pTable)(row,col) <<  Bold(LABEL_GIRDER(girder));
       row++;
 
-      const unitmgtLengthData& length_unit(pDisplayUnits->GetSpanLengthUnit()); // feet
+      const WBFL::Units::LengthData& length_unit(pDisplayUnits->GetSpanLengthUnit()); // feet
       rptFormattedLengthUnitValue cmpdim(&length_unit.UnitOfMeasure,length_unit.Tol,false,true,8,true,rptFormattedLengthUnitValue::RoundOff);
       cmpdim.SetFormat(length_unit.Format);
       cmpdim.SetWidth(length_unit.Width);

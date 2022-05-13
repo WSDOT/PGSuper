@@ -28,7 +28,7 @@
 #include <System\XStructuredLoad.h>
 
 #include "resource.h"
-#include <Units\sysUnits.h>
+#include <Units\Convert.h>
 #include "LiveLoadDlg.h"
 
 #include <MathEx.h>
@@ -62,13 +62,13 @@ m_VariableAxleIndex(INVALID_INDEX)
    m_LaneLoadSpanLength = 0; // always use lane load if it is defined
 
    // default to hs20-44
-   m_LaneLoad   = ::ConvertToSysUnits( 0.64, unitMeasure::KipPerFoot );
+   m_LaneLoad   = WBFL::Units::ConvertToSysUnits( 0.64, WBFL::Units::Measure::KipPerFoot );
    Axle axle;
-   axle.Weight =  ::ConvertToSysUnits(  8.0, unitMeasure::Kip );
+   axle.Weight =  WBFL::Units::ConvertToSysUnits(  8.0, WBFL::Units::Measure::Kip );
    AddAxle(axle);
 
-   axle.Weight =  ::ConvertToSysUnits( 32.0, unitMeasure::Kip );
-   axle.Spacing = ::ConvertToSysUnits( 14.0, unitMeasure::Feet );
+   axle.Weight =  WBFL::Units::ConvertToSysUnits( 32.0, WBFL::Units::Measure::Kip );
+   axle.Spacing = WBFL::Units::ConvertToSysUnits( 14.0, WBFL::Units::Measure::Feet );
    AddAxle(axle);
 
    AddAxle(axle);
@@ -274,7 +274,7 @@ bool LiveLoadLibraryEntry::IsEqual(const LiveLoadLibraryEntry& rOther,bool bCons
 bool LiveLoadLibraryEntry::Compare(const LiveLoadLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    bMustRename = false;
 

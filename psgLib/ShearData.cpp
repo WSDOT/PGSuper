@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 #include "StdAfx.h"
 #include <psgLib\ShearData.h>
-#include <Units\SysUnits.h>
+#include <Units\Convert.h>
 #include <StdIo.h>
 #include <StrData.cpp>
 #include <atlbase.h>

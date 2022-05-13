@@ -29,7 +29,7 @@
 
 #include "resource.h"
 #include "ConnectionEntryDlg.h"
-#include <Units\sysUnits.h>
+#include <Units\Convert.h>
 
 #include <MathEx.h>
 
@@ -428,7 +428,7 @@ bool ConnectionLibraryEntry::IsEqual(const ConnectionLibraryEntry& rOther,bool b
 bool ConnectionLibraryEntry::Compare(const ConnectionLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    bMustRename = false;
 

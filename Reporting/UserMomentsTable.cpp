@@ -81,7 +81,7 @@ rptRcTable* CUserMomentsTable::Build(IBroker* pBroker,const CGirderKey& girderKe
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    CString strTitle;
    strTitle.Format(_T("Moment due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
-   rptRcTable* p_table = CreateUserLoadHeading<rptMomentUnitTag,unitmgtMomentData>(strTitle.GetBuffer(),false,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetMomentUnit());
+   rptRcTable* p_table = CreateUserLoadHeading<rptMomentUnitTag,WBFL::Units::MomentData>(strTitle.GetBuffer(),false,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetMomentUnit());
 
    if (girderKey.groupIndex == ALL_GROUPS)
    {

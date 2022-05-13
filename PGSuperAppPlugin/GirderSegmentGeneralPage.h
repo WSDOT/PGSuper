@@ -114,7 +114,7 @@ protected:
    CString m_strUserEc;
    CString m_strUserEci;
 
-   Float64 GetValue(UINT nIDC,const unitmgtLengthData& lengthUnit);
+   Float64 GetValue(UINT nIDC,const WBFL::Units::LengthData& lengthUnit);
 
    void FillEventList();
    EventIDType CreateEvent();

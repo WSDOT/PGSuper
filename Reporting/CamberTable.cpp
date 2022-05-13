@@ -340,7 +340,7 @@ void CCamberTable::Build_Deck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
    (*table3)(0, col++) << COLHDR(Sub2(symbol(DELTA), _T("3")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
 
    Float64 days = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max());
-   days = ::ConvertFromSysUnits(days, unitMeasure::Day);
+   days = WBFL::Units::ConvertFromSysUnits(days, WBFL::Units::Measure::Day);
    std::_tostringstream os;
    os << days;
    (*table3)(0, col++) << COLHDR(Sub2(_T("D"), os.str().c_str()) << _T(" = ") << Sub2(symbol(DELTA), _T("4")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
@@ -804,7 +804,7 @@ void CCamberTable::Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey
    (*table3)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("3")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
 
    Float64 days = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max());
-   days = ::ConvertFromSysUnits(days,unitMeasure::Day);
+   days = WBFL::Units::ConvertFromSysUnits(days,WBFL::Units::Measure::Day);
    std::_tostringstream os;
    os << days;
    (*table3)(1,col++) << COLHDR(Sub2(_T("D"),os.str().c_str()) << _T(" = ") << Sub2(symbol(DELTA),_T("4")),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
@@ -1264,7 +1264,7 @@ void CCamberTable::Build_NoDeck_Y(IBroker* pBroker, const CSegmentKey& segmentKe
    (*table3)(0, col++) << COLHDR(Sub2(symbol(DELTA), _T("3")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
 
    Float64 days = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max());
-   days = ::ConvertFromSysUnits(days, unitMeasure::Day);
+   days = WBFL::Units::ConvertFromSysUnits(days, WBFL::Units::Measure::Day);
    std::_tostringstream os;
    os << days;
    (*table3)(0, col++) << COLHDR(Sub2(_T("D"), os.str().c_str()) << _T(" = ") << Sub2(symbol(DELTA), _T("4")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
@@ -1746,7 +1746,7 @@ void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKe
    (*table3)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("3")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
    Float64 days = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max());
-   days = ::ConvertFromSysUnits(days,unitMeasure::Day);
+   days = WBFL::Units::ConvertFromSysUnits(days,WBFL::Units::Measure::Day);
    std::_tostringstream os;
    os << days;
    (*table3)(1,col++) << COLHDR(Sub2(_T("D"),os.str().c_str()) << _T(" = ") << Sub2(symbol(DELTA),_T("4")),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );

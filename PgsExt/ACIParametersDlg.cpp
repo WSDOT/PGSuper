@@ -44,9 +44,9 @@ IMPLEMENT_DYNAMIC(CACIParametersDlg, CDialog)
 CACIParametersDlg::CACIParametersDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CACIParametersDlg::IDD, pParent)
 {
-   m_fc1 = ::ConvertToSysUnits(4.0,unitMeasure::KSI);
-   m_fc2 = ::ConvertToSysUnits(8.0,unitMeasure::KSI);
-   m_t1 = ::ConvertToSysUnits(1.0,unitMeasure::Day);
+   m_fc1 = WBFL::Units::ConvertToSysUnits(4.0,WBFL::Units::Measure::KSI);
+   m_fc2 = WBFL::Units::ConvertToSysUnits(8.0,WBFL::Units::Measure::KSI);
+   m_t1 = WBFL::Units::ConvertToSysUnits(1.0,WBFL::Units::Measure::Day);
 }
 
 CACIParametersDlg::~CACIParametersDlg()
@@ -94,10 +94,10 @@ void CACIParametersDlg::UpdateParameters()
 {
    UpdateData();
 
-   Float64 t1 = ::ConvertFromSysUnits(m_t1,unitMeasure::Day);
+   Float64 t1 = WBFL::Units::ConvertFromSysUnits(m_t1,WBFL::Units::Measure::Day);
    matACI209Concrete::ComputeParameters(m_fc1,t1,m_fc2,28,&m_A,&m_B);
 
-   m_A = ::ConvertToSysUnits(m_A,unitMeasure::Day);
+   m_A = WBFL::Units::ConvertToSysUnits(m_A,WBFL::Units::Measure::Day);
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);

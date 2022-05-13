@@ -250,7 +250,7 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
    LOG(_T("Allowable FS rollover FSrMin = ")<<FSrMin);
 
    Float64 location_accuracy = pCriteria->GetHaulingSupportLocationAccuracy();
-   const Float64 bigInc = Max(10*location_accuracy,ConvertToSysUnits(5.0,unitMeasure::Feet));
+   const Float64 bigInc = Max(10*location_accuracy,ConvertToSysUnits(5.0,WBFL::Units::Measure::Feet));
    const Float64 mediumInc = bigInc / 2;
    const Float64 smallInc = location_accuracy;
    const int bigStep = 1;
@@ -327,7 +327,7 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
          }
 #endif
 
-         LOG(_T("Trying Trailing Overhang = ") << ::ConvertFromSysUnits(shipping_config.LeftOverhang,unitMeasure::Feet) << _T(" ft") << _T("      Leading Overhang = ") << ::ConvertFromSysUnits(shipping_config.RightOverhang,unitMeasure::Feet) << _T(" ft"));
+         LOG(_T("Trying Trailing Overhang = ") << WBFL::Units::ConvertFromSysUnits(shipping_config.LeftOverhang,WBFL::Units::Measure::Feet) << _T(" ft") << _T("      Leading Overhang = ") << WBFL::Units::ConvertFromSysUnits(shipping_config.RightOverhang,WBFL::Units::Measure::Feet) << _T(" ft"));
 
          LOG_EXECUTION_TIME(AnalyzeHauling(segmentKey,true,shipping_config,pPOId,artifact.get()));
 

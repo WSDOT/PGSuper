@@ -239,7 +239,7 @@ void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter,CReportSpecific
       GET_IFACE2(pBroker, IIntervals, pIntervals);
       IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
       Float64 start = pIntervals->GetTime(storageIntervalIdx, pgsTypes::Start);
-      Float64 duration = ::ConvertFromSysUnits(details[0].t, unitMeasure::Day);
+      Float64 duration = WBFL::Units::ConvertFromSysUnits(details[0].t, WBFL::Units::Measure::Day);
       Float64 end = start + duration;
       (*pTable1)(0, 1) << _T("Storage Duration: Start ") << start << _T(" day, End ") << end << _T(" day, Duration ") << duration << _T(" days") << rptNewLine;;
 
@@ -442,7 +442,7 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecif
       GET_IFACE2(pBroker, IIntervals, pIntervals);
       IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
       Float64 start = pIntervals->GetTime(storageIntervalIdx, pgsTypes::Start);
-      Float64 duration = ::ConvertFromSysUnits(details[0].t, unitMeasure::Day);
+      Float64 duration = WBFL::Units::ConvertFromSysUnits(details[0].t, WBFL::Units::Measure::Day);
       Float64 end = start + duration;
       (*pTable1)(0, 1) << _T("Storage Duration: Start ") << start << _T(" day, End ") << end << _T(" day, Duration ") << duration << _T(" days") << rptNewLine;;
 

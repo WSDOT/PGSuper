@@ -143,7 +143,7 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
 
    bool bTimeStepMethod = pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP;
 
-   RowIndexType row = CreateCombinedDeadLoadingTableHeading<rptMomentUnitTag,unitmgtMomentData>(&p_table,pBroker,_T("Moment"),false,bRating,intervalIdx<liveLoadIntervalIdx,
+   RowIndexType row = CreateCombinedDeadLoadingTableHeading<rptMomentUnitTag,WBFL::Units::MomentData>(&p_table,pBroker,_T("Moment"),false,bRating,intervalIdx<liveLoadIntervalIdx,
                                                                                     analysisType,pDisplayUnits,pDisplayUnits->GetMomentUnit());
    *p << p_table;
 
@@ -384,7 +384,7 @@ void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter*
    *pChapter << p;
 
    rptRcTable* p_table;
-   RowIndexType Nhrows = CreateCombinedLiveLoadingTableHeading<rptMomentUnitTag,unitmgtMomentData>(&p_table,strLabel,false,bDesign,bPermit,bPedLoading,bRating,false,true,
+   RowIndexType Nhrows = CreateCombinedLiveLoadingTableHeading<rptMomentUnitTag,WBFL::Units::MomentData>(&p_table,strLabel,false,bDesign,bPermit,bPedLoading,bRating,false,true,
                            analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetMomentUnit());
 
    RowIndexType row = Nhrows;
@@ -690,7 +690,7 @@ void CCombinedMomentsTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* p
    bool bPedLoading = pProductLoads->HasPedestrianLoad(girderKey);
 
    rptRcTable * p_table2;
-   RowIndexType row2 = CreateLimitStateTableHeading<rptMomentUnitTag,unitmgtMomentData>(&p_table2,_T("Moment, Mu"),false,bDesign,bPermit,bRating,true,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetMomentUnit());
+   RowIndexType row2 = CreateLimitStateTableHeading<rptMomentUnitTag,WBFL::Units::MomentData>(&p_table2,_T("Moment, Mu"),false,bDesign,bPermit,bRating,true,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetMomentUnit());
    *p << p_table2;
 
    if ( girderKey.groupIndex == ALL_GROUPS )

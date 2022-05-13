@@ -61,7 +61,7 @@ void CACIConcretePage::DoDataExchange(CDataExchange* pDX)
 	CPropertyPage::DoDataExchange(pDX);
 
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    DDX_Check_Bool(pDX,IDC_USER,m_bUseACIParameters);
    DDX_CBItemData(pDX,IDC_CURE_METHOD,m_CureMethod);

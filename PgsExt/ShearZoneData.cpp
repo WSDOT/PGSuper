@@ -22,7 +22,7 @@
 
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\ShearZoneData.h>
-#include <Units\SysUnits.h>
+#include <Units\Convert.h>
 #include <StdIo.h>
 #include <StrData.cpp>
 #include <comdef.h> // for _variant_t

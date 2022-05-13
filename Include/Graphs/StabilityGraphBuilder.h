@@ -26,7 +26,7 @@
 #include <EAF\EAFAutoCalcGraphBuilder.h>
 #include <Graphing/GraphXY.h>
 
-class arvPhysicalConverter;
+class WBFL::Units::PhysicalConverter;
 class CStabilityGraphController;
 
 class GRAPHCLASS CStabilityGraphBuilder : public CEAFAutoCalcGraphBuilder
@@ -58,8 +58,8 @@ protected:
 
    CComPtr<IBroker> m_pBroker;
 
-   arvPhysicalConverter* m_pXFormat;
-   arvPhysicalConverter* m_pYFormat;
+   WBFL::Units::PhysicalConverter* m_pXFormat;
+   WBFL::Units::PhysicalConverter* m_pYFormat;
    WBFL::Graphing::GraphXY m_Graph;
 
    std::_tstring m_PrintSubtitle;

@@ -173,7 +173,7 @@ public:
       ATLASSERT(X>0.0); // should be weeding out negative values
 
       // This is VERY TxDOT I beam specific. Expect X locations at 2" spacing: 1.0, 3.0, 5.0,...
-      Float64 xin = ::ConvertFromSysUnits( X, unitMeasure::Inch );
+      Float64 xin = WBFL::Units::ConvertFromSysUnits( X, WBFL::Units::Measure::Inch );
       int index = (int)Round((xin-1.0)/2.0);
       TCHAR label = (index % 26) + _T('A');
 

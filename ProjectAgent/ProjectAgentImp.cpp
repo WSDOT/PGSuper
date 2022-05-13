@@ -30,7 +30,7 @@
 #include <map>
 #include <MathEx.h>
 #include <System\Time.h>
-#include <Units\SysUnits.h>
+#include <Units\Convert.h>
 #include <StrData.cpp>
 
 #include <GeomModel\GeomModel.h>
@@ -381,13 +381,13 @@ CProjectAgentImp::CProjectAgentImp()
    m_gPS[pgsTypes::ServiceIII_PermitSpecial] = 1.00;
    m_gLL[pgsTypes::ServiceIII_PermitSpecial] = COMPUTE_LLDF;
 
-   m_AllowableTensileStress[pgsTypes::lrDesign_Inventory] = TensionStressParams(::ConvertToSysUnits(0.19, unitMeasure::SqrtKSI), false, ::ConvertToSysUnits(0.6, unitMeasure::KSI));
-   m_AllowableTensileStress[pgsTypes::lrDesign_Operating] = TensionStressParams(::ConvertToSysUnits(0.19, unitMeasure::SqrtKSI), false, ::ConvertToSysUnits(0.6, unitMeasure::KSI));
-   m_AllowableTensileStress[pgsTypes::lrLegal_Routine]    = TensionStressParams(::ConvertToSysUnits(0.19, unitMeasure::SqrtKSI), false, ::ConvertToSysUnits(0.6, unitMeasure::KSI));
-   m_AllowableTensileStress[pgsTypes::lrLegal_Special]    = TensionStressParams(::ConvertToSysUnits(0.19, unitMeasure::SqrtKSI), false, ::ConvertToSysUnits(0.6, unitMeasure::KSI));
-   m_AllowableTensileStress[pgsTypes::lrLegal_Emergency]  = TensionStressParams(::ConvertToSysUnits(0.19, unitMeasure::SqrtKSI), false, ::ConvertToSysUnits(0.6, unitMeasure::KSI));
-   m_AllowableTensileStress[pgsTypes::lrPermit_Routine]   = TensionStressParams(::ConvertToSysUnits(0.19, unitMeasure::SqrtKSI), false, ::ConvertToSysUnits(0.6, unitMeasure::KSI));
-   m_AllowableTensileStress[pgsTypes::lrPermit_Special]   = TensionStressParams(::ConvertToSysUnits(0.19, unitMeasure::SqrtKSI), false, ::ConvertToSysUnits(0.6, unitMeasure::KSI));
+   m_AllowableTensileStress[pgsTypes::lrDesign_Inventory] = TensionStressParams(WBFL::Units::ConvertToSysUnits(0.19, WBFL::Units::Measure::SqrtKSI), false, WBFL::Units::ConvertToSysUnits(0.6, WBFL::Units::Measure::KSI));
+   m_AllowableTensileStress[pgsTypes::lrDesign_Operating] = TensionStressParams(WBFL::Units::ConvertToSysUnits(0.19, WBFL::Units::Measure::SqrtKSI), false, WBFL::Units::ConvertToSysUnits(0.6, WBFL::Units::Measure::KSI));
+   m_AllowableTensileStress[pgsTypes::lrLegal_Routine]    = TensionStressParams(WBFL::Units::ConvertToSysUnits(0.19, WBFL::Units::Measure::SqrtKSI), false, WBFL::Units::ConvertToSysUnits(0.6, WBFL::Units::Measure::KSI));
+   m_AllowableTensileStress[pgsTypes::lrLegal_Special]    = TensionStressParams(WBFL::Units::ConvertToSysUnits(0.19, WBFL::Units::Measure::SqrtKSI), false, WBFL::Units::ConvertToSysUnits(0.6, WBFL::Units::Measure::KSI));
+   m_AllowableTensileStress[pgsTypes::lrLegal_Emergency]  = TensionStressParams(WBFL::Units::ConvertToSysUnits(0.19, WBFL::Units::Measure::SqrtKSI), false, WBFL::Units::ConvertToSysUnits(0.6, WBFL::Units::Measure::KSI));
+   m_AllowableTensileStress[pgsTypes::lrPermit_Routine]   = TensionStressParams(WBFL::Units::ConvertToSysUnits(0.19, WBFL::Units::Measure::SqrtKSI), false, WBFL::Units::ConvertToSysUnits(0.6, WBFL::Units::Measure::KSI));
+   m_AllowableTensileStress[pgsTypes::lrPermit_Special]   = TensionStressParams(WBFL::Units::ConvertToSysUnits(0.19, WBFL::Units::Measure::SqrtKSI), false, WBFL::Units::ConvertToSysUnits(0.6, WBFL::Units::Measure::KSI));
 
    m_bCheckYieldStress[pgsTypes::lrDesign_Inventory] = false;
    m_bCheckYieldStress[pgsTypes::lrDesign_Operating] = false;
@@ -441,19 +441,19 @@ CProjectAgentImp::CProjectAgentImp()
    m_BeforeXferLosses              = 0;
    m_AfterXferLosses               = 0;
    m_LiftingLosses                 = 0;
-   m_ShippingLosses                = ::ConvertToSysUnits(20,unitMeasure::KSI);
+   m_ShippingLosses                = WBFL::Units::ConvertToSysUnits(20,WBFL::Units::Measure::KSI);
    m_BeforeTempStrandRemovalLosses = m_ShippingLosses;
    m_AfterTempStrandRemovalLosses  = m_ShippingLosses;
    m_AfterDeckPlacementLosses      = m_ShippingLosses;
    m_AfterSIDLLosses               = m_ShippingLosses;
    m_FinalLosses                   = m_ShippingLosses;
 
-   m_Dset_PT                = ::ConvertToSysUnits(0.375,unitMeasure::Inch);
-   m_WobbleFriction_PT      = ::ConvertToSysUnits(0.0002,unitMeasure::PerFeet);
+   m_Dset_PT                = WBFL::Units::ConvertToSysUnits(0.375,WBFL::Units::Measure::Inch);
+   m_WobbleFriction_PT      = WBFL::Units::ConvertToSysUnits(0.0002,WBFL::Units::Measure::PerFeet);
    m_FrictionCoefficient_PT = 0.25;
 
-   m_Dset_TTS                = ::ConvertToSysUnits(0.375,unitMeasure::Inch);
-   m_WobbleFriction_TTS      = ::ConvertToSysUnits(0.0002,unitMeasure::PerFeet);
+   m_Dset_TTS                = WBFL::Units::ConvertToSysUnits(0.375,WBFL::Units::Measure::Inch);
+   m_WobbleFriction_TTS      = WBFL::Units::ConvertToSysUnits(0.0002,WBFL::Units::Measure::PerFeet);
    m_FrictionCoefficient_TTS = 0.25;
 
 
@@ -5582,7 +5582,7 @@ void CProjectAgentImp::UpdateTimeDependentMaterials()
 
             pSegment->Material.Concrete.bACIUserParameters = true;
             matACI209Concrete::ComputeParameters(pSegment->Material.Concrete.Fci,ti,pSegment->Material.Concrete.Fc,28.0,&pSegment->Material.Concrete.A,&pSegment->Material.Concrete.B);
-            pSegment->Material.Concrete.A = ::ConvertToSysUnits(pSegment->Material.Concrete.A,unitMeasure::Day);
+            pSegment->Material.Concrete.A = WBFL::Units::ConvertToSysUnits(pSegment->Material.Concrete.A,WBFL::Units::Measure::Day);
 
             pSegment->Material.Concrete.bCEBFIPUserParameters = true;
             matCEBFIPConcrete::ComputeParameters(pSegment->Material.Concrete.Fci,ti,pSegment->Material.Concrete.Fc,28.0,&pSegment->Material.Concrete.S);
@@ -5606,7 +5606,7 @@ void CProjectAgentImp::UpdateTimeDependentMaterials()
 
    //   pDeck->Concrete.bACIUserParameters = true;
    //   matACI209Concrete::ComputeParameters(pDeck->Concrete.Fci,ti,pDeck->Concrete.Fc,28.0,&pDeck->Concrete.A,&pDeck->Concrete.B);
-   //   pDeck->Concrete.A = ::ConvertToSysUnits(pDeck->Concrete.A,unitMeasure::Day);
+   //   pDeck->Concrete.A = WBFL::Units::ConvertToSysUnits(pDeck->Concrete.A,WBFL::Units::Measure::Day);
 
    //   pDeck->Concrete.bCEBFIPUserParameters = true;
    //   matCEBFIPConcrete::ComputeParameters(pDeck->Concrete.Fci,ti,pDeck->Concrete.Fc,28.0,&pDeck->Concrete.S);
@@ -12281,8 +12281,8 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    pTimelineEvent->SetDay(0);
    pTimelineEvent->SetDescription(_T("Construct Girders, Erect Piers"));
    pTimelineEvent->GetConstructSegmentsActivity().Enable();
-   pTimelineEvent->GetConstructSegmentsActivity().SetTotalCuringDuration(  ::ConvertFromSysUnits(pSpecEntry->GetXferTime(),unitMeasure::Day));
-   pTimelineEvent->GetConstructSegmentsActivity().SetRelaxationTime(::ConvertFromSysUnits(pSpecEntry->GetXferTime(),unitMeasure::Day));
+   pTimelineEvent->GetConstructSegmentsActivity().SetTotalCuringDuration(  WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime(),WBFL::Units::Measure::Day));
+   pTimelineEvent->GetConstructSegmentsActivity().SetRelaxationTime(WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime(),WBFL::Units::Measure::Day));
    pTimelineEvent->GetConstructSegmentsActivity().AddSegments(segmentIDs);
 
    // assume piers are erected at the same time girders are being constructed
@@ -12302,7 +12302,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    // are removed all on the same day. Assuming max construction sequence (D120). The actual
    // don't matter unless the user switches to time-step analysis.
    pTimelineEvent = std::make_unique<CTimelineEvent>();
-   Float64 day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetCreepDuration1Max(),unitMeasure::Day);
+   Float64 day = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetCreepDuration1Max(),WBFL::Units::Measure::Day);
    Float64 maxDay = 28.0;
    day = Max(day,maxDay);
    maxDay += 1.0;
@@ -12320,7 +12320,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    if (IsNonstructuralDeck(deckType))
    {
       // deck is non-composite or there is no deck so creep can continue
-      deck_diaphragm_curing_duration = Min(::ConvertFromSysUnits(pSpecEntry->GetTotalCreepDuration() - pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day), 28.0);
+      deck_diaphragm_curing_duration = Min(WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetTotalCreepDuration() - pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day), 28.0);
    }
 
    if ( IsJointSpacing(m_BridgeDescription.GetGirderSpacingType()) && m_BridgeDescription.HasStructuralLongitudinalJoints() )
@@ -12334,7 +12334,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
       // 2) Joints
       // 3) Deck
       pTimelineEvent = std::make_unique<CTimelineEvent>();
-      day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
+      day = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day);
       day = Max(day, maxDay);
       pTimelineEvent->SetDay(day);
       pTimelineEvent->SetDescription(_T("Cast Diaphragms"));
@@ -12344,7 +12344,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
       pTimelineEvent.release();
 
       pTimelineEvent = std::make_unique<CTimelineEvent>();
-      day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day) + 1.0;
+      day = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day) + 1.0;
       day = Max(day, maxDay);
       pTimelineEvent->SetDay(day);
       pTimelineEvent->SetDescription(_T("Cast Longitudinal Joints"));
@@ -12360,7 +12360,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
       if ( deckType != pgsTypes::sdtNone)
       {
          pTimelineEvent = std::make_unique<CTimelineEvent>();
-         day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day) + 2.0;
+         day = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day) + 2.0;
          day = Max(day, maxDay);
          pTimelineEvent->SetDay(day);
 
@@ -12380,7 +12380,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    {
       // Cast deck & diaphragms
       pTimelineEvent = std::make_unique<CTimelineEvent>();
-      day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
+      day = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day);
       day = Max(day, maxDay);
       pTimelineEvent->SetDay(day);
       pTimelineEvent->SetDescription(_T("Cast Diaphragms"));
@@ -12394,7 +12394,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
       if (deckType != pgsTypes::sdtNone)
       {
          pTimelineEvent = std::make_unique<CTimelineEvent>();
-         day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
+         day = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day);
          day = Max(day, maxDay);
          pTimelineEvent->SetDay(day);
          pTimelineEvent->SetDescription(GetCastDeckEventName(deckType));
@@ -12411,7 +12411,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
 
    // traffic barrier/superimposed dead loads
    pTimelineEvent = std::make_unique<CTimelineEvent>();
-   day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetCreepDuration2Max(),unitMeasure::Day) + deck_diaphragm_curing_duration;
+   day = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetCreepDuration2Max(),WBFL::Units::Measure::Day) + deck_diaphragm_curing_duration;
    day = Max(day,maxDay);
    pTimelineEvent->SetDay( day ); // deck is continuous
    pTimelineEvent->GetApplyLoadActivity().ApplyRailingSystemLoad();
@@ -12437,7 +12437,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    if ( wearingSurface == pgsTypes::wstFutureOverlay )
    {
       pTimelineEvent = std::make_unique<CTimelineEvent>();
-      day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day) + deck_diaphragm_curing_duration + 1.0;
+      day = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day) + deck_diaphragm_curing_duration + 1.0;
       day = Max(day, maxDay);
       pTimelineEvent->SetDay( day ); 
       pTimelineEvent->SetDescription(_T("Final without Live Load"));
@@ -12449,7 +12449,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
 
    // live load
    pTimelineEvent = std::make_unique<CTimelineEvent>();
-   day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day) + deck_diaphragm_curing_duration + 1.0;
+   day = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day) + deck_diaphragm_curing_duration + 1.0;
    day = Max(day, maxDay);
    pTimelineEvent->SetDay( day );
    pTimelineEvent->SetDescription(_T("Final with Live Load"));

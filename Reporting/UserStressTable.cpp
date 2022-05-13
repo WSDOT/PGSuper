@@ -85,7 +85,7 @@ rptRcTable* CUserStressTable::Build(IBroker* pBroker,const CGirderKey& girderKey
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    CString strTitle;
    strTitle.Format(_T("%s Stresses due to User Defined Loads in Interval %d: %s"),(bGirderStresses ? _T("Girder") : _T("Deck")),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
-   rptRcTable* p_table = CreateUserLoadHeading<rptStressUnitTag,unitmgtStressData>(strTitle.GetBuffer(),false,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetStressUnit());
+   rptRcTable* p_table = CreateUserLoadHeading<rptStressUnitTag,WBFL::Units::StressData>(strTitle.GetBuffer(),false,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetStressUnit());
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {

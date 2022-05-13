@@ -28,7 +28,7 @@
 #include <System\IStructuredSave.h>
 #include <System\IStructuredLoad.h>
 #include <System\XStructuredLoad.h>
-#include <Units\sysUnits.h>
+#include <Units\Convert.h>
 
 #include <MathEx.h>
 
@@ -73,10 +73,10 @@ m_MaxSlope07(10),
 m_DoCheckHoldDown(false),
 m_DoDesignHoldDown(false),
 m_HoldDownForceType(HOLD_DOWN_TOTAL),
-m_HoldDownForce(ConvertToSysUnits(45,unitMeasure::Kip)),
+m_HoldDownForce(ConvertToSysUnits(45,WBFL::Units::Measure::Kip)),
 m_HoldDownFriction(0.0),
 m_bCheckHandlingWeightLimit(false),
-m_HandlingWeightLimit(ConvertToSysUnits(130,unitMeasure::Kip)),
+m_HandlingWeightLimit(ConvertToSysUnits(130,WBFL::Units::Measure::Kip)),
 m_DoCheckSplitting(true),
 m_DoCheckConfinement(true),
 m_DoDesignSplitting(true),
@@ -86,15 +86,15 @@ m_CyLiftingFailFs(1.5),
 m_CyCompStressServ(0.45),
 m_LiftingCompressionStressCoefficient_GlobalStress(0.65),
 m_LiftingCompressionStressCoefficient_PeakStress(0.70),
-m_CyTensStressServ(::ConvertToSysUnits(0.0948,unitMeasure::SqrtKSI)),
+m_CyTensStressServ(WBFL::Units::ConvertToSysUnits(0.0948,WBFL::Units::Measure::SqrtKSI)),
 m_CyDoTensStressServMax(true),
-m_CyTensStressServMax(::ConvertToSysUnits(0.200,unitMeasure::KSI)),
+m_CyTensStressServMax(WBFL::Units::ConvertToSysUnits(0.200,WBFL::Units::Measure::KSI)),
 m_CyTensStressLifting(0),
 m_CyDoTensStressLiftingMax(false),
 m_CyTensStressLiftingMax(0),
-m_CyTensStressServWithRebar( ::ConvertToSysUnits(0.24,unitMeasure::SqrtKSI)),
-m_TensStressLiftingWithRebar(::ConvertToSysUnits(0.24,unitMeasure::SqrtKSI)),
-m_TensStressHaulingWithRebar{ ::ConvertToSysUnits(0.24,unitMeasure::SqrtKSI),::ConvertToSysUnits(0.24,unitMeasure::SqrtKSI) },
+m_CyTensStressServWithRebar( WBFL::Units::ConvertToSysUnits(0.24,WBFL::Units::Measure::SqrtKSI)),
+m_TensStressLiftingWithRebar(WBFL::Units::ConvertToSysUnits(0.24,WBFL::Units::Measure::SqrtKSI)),
+m_TensStressHaulingWithRebar{ WBFL::Units::ConvertToSysUnits(0.24,WBFL::Units::Measure::SqrtKSI),WBFL::Units::ConvertToSysUnits(0.24,WBFL::Units::Measure::SqrtKSI) },
 m_SplittingZoneLengthFactor(4.0),
 m_LiftingUpwardImpact(0),
 m_LiftingDownwardImpact(0),
@@ -104,20 +104,20 @@ m_CuringMethod(CURING_ACCELERATED),
 m_EnableLiftingCheck(true),
 m_EnableLiftingDesign(true),
 m_PickPointHeight(0),
-m_MaxGirderSweepLifting(::ConvertToSysUnits(1./16.,unitMeasure::Inch)/::ConvertToSysUnits(10.0,unitMeasure::Feet)),
+m_MaxGirderSweepLifting(WBFL::Units::ConvertToSysUnits(1./16.,WBFL::Units::Measure::Inch)/WBFL::Units::ConvertToSysUnits(10.0,WBFL::Units::Measure::Feet)),
 m_EnableHaulingCheck(true),
 m_EnableHaulingDesign(true),
 m_HaulingAnalysisMethod(pgsTypes::hmWSDOT),
-m_MaxGirderSweepHauling(::ConvertToSysUnits(1. / 8., unitMeasure::Inch) / ::ConvertToSysUnits(10.0, unitMeasure::Feet)),
+m_MaxGirderSweepHauling(WBFL::Units::ConvertToSysUnits(1. / 8., WBFL::Units::Measure::Inch) / WBFL::Units::ConvertToSysUnits(10.0, WBFL::Units::Measure::Feet)),
 m_HaulingSweepGrowth(0.0), // PCI's value is 1.0", but we've never used this before so we'll default to 0.0
-m_HaulingSupportPlacementTolerance(ConvertToSysUnits(1.0,unitMeasure::Inch)),
-m_LiftingLoopTolerance(ConvertToSysUnits(1.0,unitMeasure::Inch)),
-m_MinCableInclination(ConvertToSysUnits(90.,unitMeasure::Degree)),
+m_HaulingSupportPlacementTolerance(ConvertToSysUnits(1.0,WBFL::Units::Measure::Inch)),
+m_LiftingLoopTolerance(ConvertToSysUnits(1.0,WBFL::Units::Measure::Inch)),
+m_MinCableInclination(ConvertToSysUnits(90.,WBFL::Units::Measure::Degree)),
 m_GlobalCompStressHauling(0.6),
 m_PeakCompStressHauling(0.6),
-m_TensStressHauling{ ::ConvertToSysUnits(0.0948,unitMeasure::SqrtKSI),::ConvertToSysUnits(0.24,unitMeasure::SqrtKSI) },
+m_TensStressHauling{ WBFL::Units::ConvertToSysUnits(0.0948,WBFL::Units::Measure::SqrtKSI),WBFL::Units::ConvertToSysUnits(0.24,WBFL::Units::Measure::SqrtKSI) },
 m_DoTensStressHaulingMax{ false,false },
-m_TensStressHaulingMax{ 0,::ConvertToSysUnits(0.2,unitMeasure::KSI) },
+m_TensStressHaulingMax{ 0,WBFL::Units::ConvertToSysUnits(0.2,WBFL::Units::Measure::KSI) },
 m_HaulingCrackFs(1.0),
 m_HaulingRollFs(1.5),
 m_bHasOldHaulTruck(false),
@@ -125,20 +125,20 @@ m_HaulingImpactUsage(pgsTypes::NormalCrown),
 m_RoadwayCrownSlope(0.0),
 m_RoadwaySuperelevation(0.06),
 m_TempStrandRemovalCompStress(0.45),
-m_TempStrandRemovalTensStress(::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI)),
-m_TempStrandRemovalTensStressWithRebar(::ConvertToSysUnits(0.24,unitMeasure::SqrtKSI)),
+m_TempStrandRemovalTensStress(WBFL::Units::ConvertToSysUnits(0.19,WBFL::Units::Measure::SqrtKSI)),
+m_TempStrandRemovalTensStressWithRebar(WBFL::Units::ConvertToSysUnits(0.24,WBFL::Units::Measure::SqrtKSI)),
 m_TempStrandRemovalDoTensStressMax(false),
-m_TempStrandRemovalTensStressMax(::ConvertToSysUnits(0.2,unitMeasure::KSI)),
+m_TempStrandRemovalTensStressMax(WBFL::Units::ConvertToSysUnits(0.2,WBFL::Units::Measure::KSI)),
 m_bCheckTemporaryStresses(true), // true is consistant with the original default value
 m_Bs1CompStress(0.6),
-m_Bs1TensStress(::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI)),
+m_Bs1TensStress(WBFL::Units::ConvertToSysUnits(0.19,WBFL::Units::Measure::SqrtKSI)),
 m_Bs1DoTensStressMax(false),
-m_Bs1TensStressMax(ConvertToSysUnits(0.2,unitMeasure::KSI)),
+m_Bs1TensStressMax(ConvertToSysUnits(0.2,WBFL::Units::Measure::KSI)),
 m_Bs2CompStress(0.6),
 m_bCheckBs2Tension(false), // false is consistent with the original features of the program (it didn't do this)
 m_Bs2TensStress(0.0),
 m_Bs2DoTensStressMax(false),
-m_Bs2TensStressMax(ConvertToSysUnits(0.2,unitMeasure::KSI)),
+m_Bs2TensStressMax(ConvertToSysUnits(0.2,WBFL::Units::Measure::KSI)),
 m_TrafficBarrierDistributionType(pgsTypes::tbdGirder),
 m_Bs2MaxGirdersTrafficBarrier(4),
 m_OverlayLoadDistribution(pgsTypes::olDistributeEvenly),
@@ -146,29 +146,29 @@ m_Bs3CompStressServ(0.6),
 m_Bs3CompStressService1A(0.4),
 m_Bs3TensStressServNc(0),
 m_Bs3DoTensStressServNcMax(false),
-m_Bs3TensStressServNcMax(ConvertToSysUnits(0.2,unitMeasure::KSI)),
+m_Bs3TensStressServNcMax(ConvertToSysUnits(0.2,WBFL::Units::Measure::KSI)),
 m_Bs3TensStressServSc(0),   
 m_Bs3DoTensStressServScMax(false),
-m_Bs3TensStressServScMax(ConvertToSysUnits(0.2,unitMeasure::KSI)),
+m_Bs3TensStressServScMax(ConvertToSysUnits(0.2,WBFL::Units::Measure::KSI)),
 m_Bs3IgnoreRangeOfApplicability(false),
 m_Bs3LRFDOverReinforcedMomentCapacity(0),
 m_CreepMethod(CREEP_LRFD),
-m_XferTime(::ConvertToSysUnits(24,unitMeasure::Hour)),
+m_XferTime(WBFL::Units::ConvertToSysUnits(24,WBFL::Units::Measure::Hour)),
 m_CreepFactor(2.00),
-m_CreepDuration1Min(::ConvertToSysUnits(10,unitMeasure::Day)),
-m_CreepDuration2Min(::ConvertToSysUnits(40,unitMeasure::Day)),
-m_CreepDuration1Max(::ConvertToSysUnits(90,unitMeasure::Day)),
-m_CreepDuration2Max(::ConvertToSysUnits(120,unitMeasure::Day)),
-m_TotalCreepDuration(::ConvertToSysUnits(2000,unitMeasure::Day)),
+m_CreepDuration1Min(WBFL::Units::ConvertToSysUnits(10,WBFL::Units::Measure::Day)),
+m_CreepDuration2Min(WBFL::Units::ConvertToSysUnits(40,WBFL::Units::Measure::Day)),
+m_CreepDuration1Max(WBFL::Units::ConvertToSysUnits(90,WBFL::Units::Measure::Day)),
+m_CreepDuration2Max(WBFL::Units::ConvertToSysUnits(120,WBFL::Units::Measure::Day)),
+m_TotalCreepDuration(WBFL::Units::ConvertToSysUnits(2000,WBFL::Units::Measure::Day)),
 m_CamberVariability(0.50),
 m_LossMethod(LOSSES_AASHTO_REFINED),
 m_BeforeXferLosses(0),
 m_AfterXferLosses(0),
 m_LiftingLosses(0),
 m_TimeDependentModel(TDM_AASHTO),
-m_ShippingLosses(::ConvertToSysUnits(20,unitMeasure::KSI)),
+m_ShippingLosses(WBFL::Units::ConvertToSysUnits(20,WBFL::Units::Measure::KSI)),
 m_FinalLosses(0),
-m_ShippingTime(::ConvertToSysUnits(10,unitMeasure::Day)),
+m_ShippingTime(WBFL::Units::ConvertToSysUnits(10,WBFL::Units::Measure::Day)),
 m_LldfMethod(LLDF_LRFD),
 m_bIgnoreSkewReductionForMoment(false),
 m_bUseRigidMethod(false),
@@ -177,8 +177,8 @@ m_AfterTempStrandRemovalLosses(0),
 m_AfterDeckPlacementLosses(0),
 m_AfterSIDLLosses(0),
 m_bUpdatePTParameters(false),
-m_Dset(::ConvertToSysUnits(0.375,unitMeasure::Inch)),
-m_WobbleFriction(::ConvertToSysUnits(0.0002,unitMeasure::PerFeet)),
+m_Dset(WBFL::Units::ConvertToSysUnits(0.375,WBFL::Units::Measure::Inch)),
+m_WobbleFriction(WBFL::Units::ConvertToSysUnits(0.0002,WBFL::Units::Measure::PerFeet)),
 m_FrictionCoefficient(0.25),
 m_SlabElasticGain(1.0),
 m_SlabPadElasticGain(1.0),
@@ -205,22 +205,22 @@ m_EnableSlabOffsetDesign(true),
 m_DesignStrandFillType(ftMinimizeHarping),
 m_EffFlangeWidthMethod(pgsTypes::efwmLRFD),
 m_ShearFlowMethod(pgsTypes::sfmClassical),
-m_MaxInterfaceShearConnectorSpacing(::ConvertToSysUnits(48.0,unitMeasure::Inch)),
+m_MaxInterfaceShearConnectorSpacing(WBFL::Units::ConvertToSysUnits(48.0,WBFL::Units::Measure::Inch)),
 m_bUseDeckWeightForPc(true),
 m_ShearCapacityMethod(pgsTypes::scmBTEquations),
 m_bLimitNetTensionStrainToPositiveValues(false),
 m_CuringMethodTimeAdjustmentFactor(7),
 m_MinLiftPoint(-1), // H
-m_LiftPointAccuracy(::ConvertToSysUnits(0.25,unitMeasure::Feet)),
+m_LiftPointAccuracy(WBFL::Units::ConvertToSysUnits(0.25,WBFL::Units::Measure::Feet)),
 m_MinHaulPoint(-1), // H
-m_HaulPointAccuracy(::ConvertToSysUnits(0.5,unitMeasure::Feet)),
+m_HaulPointAccuracy(WBFL::Units::ConvertToSysUnits(0.5,WBFL::Units::Measure::Feet)),
 m_UseMinTruckSupportLocationFactor(true),
 m_MinTruckSupportLocationFactor(0.1),
 m_OverhangGFactor(3.0),
 m_InteriorGFactor(1.0),
-m_PedestrianLoad(::ConvertToSysUnits(0.075,unitMeasure::KSF)),
-m_MinSidewalkWidth(::ConvertToSysUnits(2.0,unitMeasure::Feet)),
-m_MaxAngularDeviationBetweenGirders(::ConvertToSysUnits(5.0,unitMeasure::Degree)),
+m_PedestrianLoad(WBFL::Units::ConvertToSysUnits(0.075,WBFL::Units::Measure::KSF)),
+m_MinSidewalkWidth(WBFL::Units::ConvertToSysUnits(2.0,WBFL::Units::Measure::Feet)),
+m_MaxAngularDeviationBetweenGirders(WBFL::Units::ConvertToSysUnits(5.0,WBFL::Units::Measure::Degree)),
 m_MinGirderStiffnessRatio(0.90),
 m_LLDFGirderSpacingLocation(0.75),
 m_bIncludeDualTandem(true),
@@ -233,18 +233,18 @@ m_RelaxationLossMethod(RLM_REFINED),
 m_FcgpComputationMethod(FCGP_07FPU),
 m_ClosureCompStressAtStressing(0.60),
 m_ClosureTensStressPTZAtStressing(0.0),
-m_ClosureTensStressPTZWithRebarAtStressing(::ConvertToSysUnits(0.0948,unitMeasure::SqrtKSI)),
+m_ClosureTensStressPTZWithRebarAtStressing(WBFL::Units::ConvertToSysUnits(0.0948,WBFL::Units::Measure::SqrtKSI)),
 m_ClosureTensStressAtStressing(0.0),
-m_ClosureTensStressWithRebarAtStressing(::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI)),
+m_ClosureTensStressWithRebarAtStressing(WBFL::Units::ConvertToSysUnits(0.19,WBFL::Units::Measure::SqrtKSI)),
 m_ClosureCompStressAtService(0.45),
 m_ClosureCompStressWithLiveLoadAtService(0.60),
 m_ClosureTensStressPTZAtService(0.0),
-m_ClosureTensStressPTZWithRebarAtService(::ConvertToSysUnits(0.0948,unitMeasure::SqrtKSI)),
+m_ClosureTensStressPTZWithRebarAtService(WBFL::Units::ConvertToSysUnits(0.0948,WBFL::Units::Measure::SqrtKSI)),
 m_ClosureTensStressAtService(0.0),
-m_ClosureTensStressWithRebarAtService(::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI)),
+m_ClosureTensStressWithRebarAtService(WBFL::Units::ConvertToSysUnits(0.19,WBFL::Units::Measure::SqrtKSI)),
 m_ClosureCompStressFatigue(0.40),
 m_bCheckBottomFlangeClearance(false),
-m_Cmin(::ConvertToSysUnits(1.75,unitMeasure::Feet)),
+m_Cmin(WBFL::Units::ConvertToSysUnits(1.75,WBFL::Units::Measure::Feet)),
 m_DuctAreaPushRatio(2),
 m_DuctAreaPullRatio(2.5),
 m_DuctDiameterRatio(0.4),
@@ -252,7 +252,7 @@ m_LimitStateConcreteStrength(pgsTypes::lscStrengthAtTimeOfLoading),
 m_bUse90DayConcreteStrength(false),
 m_90DayConcreteStrengthFactor(1.15),
 m_HaunchLoadComputationType(pgsTypes::hlcZeroCamber),
-m_HaunchLoadCamberTolerance(::ConvertToSysUnits(0.5,unitMeasure::Inch)),
+m_HaunchLoadCamberTolerance(WBFL::Units::ConvertToSysUnits(0.5,WBFL::Units::Measure::Inch)),
 m_HaunchLoadCamberFactor(1.0),
 m_HaunchAnalysisSectionPropertiesType(pgsTypes::hspZeroHaunch),
 m_LiftingWindType(pgsTypes::Speed),
@@ -261,20 +261,20 @@ m_HaulingWindType(pgsTypes::Speed),
 m_HaulingWindLoad(0),
 m_CentrifugalForceType(pgsTypes::Favorable),
 m_HaulingSpeed(0),
-m_TurningRadius(::ConvertToSysUnits(1000,unitMeasure::Feet)),
+m_TurningRadius(WBFL::Units::ConvertToSysUnits(1000,WBFL::Units::Measure::Feet)),
 m_bCheckGirderInclination(true),
 m_InclinedGirder_FSmax(1.2),
 m_LiftingCamberMultiplier(1.0),
 m_HaulingCamberMultiplier(1.0),
-m_FinishedElevationTolerance(::ConvertToSysUnits(1.00,unitMeasure::Inch)),
+m_FinishedElevationTolerance(WBFL::Units::ConvertToSysUnits(1.00,WBFL::Units::Measure::Inch)),
 m_SlabOffsetRoundingMethod(pgsTypes::sormRoundNearest),
-m_SlabOffsetRoundingTolerance(::ConvertToSysUnits(0.25,unitMeasure::Inch)),
+m_SlabOffsetRoundingTolerance(WBFL::Units::ConvertToSysUnits(0.25,WBFL::Units::Measure::Inch)),
 m_PrincipalTensileStressMethod(pgsTypes::ptsmLRFD),
-m_PrincipalTensileStressCoefficient(::ConvertToSysUnits(0.110,unitMeasure::SqrtKSI)),
+m_PrincipalTensileStressCoefficient(WBFL::Units::ConvertToSysUnits(0.110,WBFL::Units::Measure::SqrtKSI)),
 m_PrincipalTensileStressTendonNearnessFactor(1.5),
 m_PrincipalTensileStressUngroutedMultiplier(1.0),
 m_PrincipalTensileStressGroutedMultiplier(0.0),
-m_PrincipalTensileStressFcThreshold(::ConvertToSysUnits(10.0,unitMeasure::KSI)),
+m_PrincipalTensileStressFcThreshold(WBFL::Units::ConvertToSysUnits(10.0,WBFL::Units::Measure::KSI)),
 m_bAlertTaperedSolePlateRequirement(true),
 m_TaperedSolePlateInclinationThreshold(0.01),
 m_bUseImpactForBearingReactions(false)
@@ -332,21 +332,21 @@ m_bUseImpactForBearingReactions(false)
    m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX]          = 0.80;
 
 
-   m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal]          = ::ConvertToSysUnits(0.37,unitMeasure::SqrtKSI);
-   m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight] = ::ConvertToSysUnits(0.20,unitMeasure::SqrtKSI);
-   m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight]  = ::ConvertToSysUnits(0.17,unitMeasure::SqrtKSI);
+   m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal]          = WBFL::Units::ConvertToSysUnits(0.37,WBFL::Units::Measure::SqrtKSI);
+   m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight] = WBFL::Units::ConvertToSysUnits(0.20,WBFL::Units::Measure::SqrtKSI);
+   m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight]  = WBFL::Units::ConvertToSysUnits(0.17,WBFL::Units::Measure::SqrtKSI);
 
-   m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal]          = ::ConvertToSysUnits(0.20,unitMeasure::SqrtKSI);
-   m_ShearModulusOfRuptureCoefficient[pgsTypes::SandLightweight] = ::ConvertToSysUnits(0.20,unitMeasure::SqrtKSI);
-   m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight]  = ::ConvertToSysUnits(0.17,unitMeasure::SqrtKSI);
+   m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal]          = WBFL::Units::ConvertToSysUnits(0.20,WBFL::Units::Measure::SqrtKSI);
+   m_ShearModulusOfRuptureCoefficient[pgsTypes::SandLightweight] = WBFL::Units::ConvertToSysUnits(0.20,WBFL::Units::Measure::SqrtKSI);
+   m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight]  = WBFL::Units::ConvertToSysUnits(0.17,WBFL::Units::Measure::SqrtKSI);
 
-   m_LiftingModulusOfRuptureCoefficient[pgsTypes::Normal]          = ::ConvertToSysUnits(0.24,unitMeasure::SqrtKSI);
-   m_LiftingModulusOfRuptureCoefficient[pgsTypes::SandLightweight] = ::ConvertToSysUnits(0.21,unitMeasure::SqrtKSI);
-   m_LiftingModulusOfRuptureCoefficient[pgsTypes::AllLightweight]  = ::ConvertToSysUnits(0.18,unitMeasure::SqrtKSI);
+   m_LiftingModulusOfRuptureCoefficient[pgsTypes::Normal]          = WBFL::Units::ConvertToSysUnits(0.24,WBFL::Units::Measure::SqrtKSI);
+   m_LiftingModulusOfRuptureCoefficient[pgsTypes::SandLightweight] = WBFL::Units::ConvertToSysUnits(0.21,WBFL::Units::Measure::SqrtKSI);
+   m_LiftingModulusOfRuptureCoefficient[pgsTypes::AllLightweight]  = WBFL::Units::ConvertToSysUnits(0.18,WBFL::Units::Measure::SqrtKSI);
 
-   m_HaulingModulusOfRuptureCoefficient[pgsTypes::Normal]          = ::ConvertToSysUnits(0.24,unitMeasure::SqrtKSI);
-   m_HaulingModulusOfRuptureCoefficient[pgsTypes::SandLightweight] = ::ConvertToSysUnits(0.21,unitMeasure::SqrtKSI);
-   m_HaulingModulusOfRuptureCoefficient[pgsTypes::AllLightweight]  = ::ConvertToSysUnits(0.18,unitMeasure::SqrtKSI);
+   m_HaulingModulusOfRuptureCoefficient[pgsTypes::Normal]          = WBFL::Units::ConvertToSysUnits(0.24,WBFL::Units::Measure::SqrtKSI);
+   m_HaulingModulusOfRuptureCoefficient[pgsTypes::SandLightweight] = WBFL::Units::ConvertToSysUnits(0.21,WBFL::Units::Measure::SqrtKSI);
+   m_HaulingModulusOfRuptureCoefficient[pgsTypes::AllLightweight]  = WBFL::Units::ConvertToSysUnits(0.18,WBFL::Units::Measure::SqrtKSI);
 
    m_PhiFlexureTensionPS[pgsTypes::Normal]      = 1.00;
    m_PhiFlexureTensionRC[pgsTypes::Normal]      = 0.90;
@@ -389,37 +389,37 @@ m_bUseImpactForBearingReactions(false)
    m_PhiClosureJointShear[pgsTypes::PCI_UHPC]        = 0.90;
 
 
-   m_MaxSlabFc[pgsTypes::Normal]             = ::ConvertToSysUnits(6.0,unitMeasure::KSI);
-   m_MaxSegmentFci[pgsTypes::Normal]         = ::ConvertToSysUnits(7.5,unitMeasure::KSI);
-   m_MaxSegmentFc[pgsTypes::Normal]          = ::ConvertToSysUnits(10.0,unitMeasure::KSI);
-   m_MaxClosureFci[pgsTypes::Normal]         = ::ConvertToSysUnits(6.0,unitMeasure::KSI);
-   m_MaxClosureFc[pgsTypes::Normal]          = ::ConvertToSysUnits(8.0,unitMeasure::KSI);
-   m_MaxConcreteUnitWeight[pgsTypes::Normal] = ::ConvertToSysUnits(165.,unitMeasure::LbfPerFeet3);
-   m_MaxConcreteAggSize[pgsTypes::Normal]    = ::ConvertToSysUnits(1.5,unitMeasure::Inch);
+   m_MaxSlabFc[pgsTypes::Normal]             = WBFL::Units::ConvertToSysUnits(6.0,WBFL::Units::Measure::KSI);
+   m_MaxSegmentFci[pgsTypes::Normal]         = WBFL::Units::ConvertToSysUnits(7.5,WBFL::Units::Measure::KSI);
+   m_MaxSegmentFc[pgsTypes::Normal]          = WBFL::Units::ConvertToSysUnits(10.0,WBFL::Units::Measure::KSI);
+   m_MaxClosureFci[pgsTypes::Normal]         = WBFL::Units::ConvertToSysUnits(6.0,WBFL::Units::Measure::KSI);
+   m_MaxClosureFc[pgsTypes::Normal]          = WBFL::Units::ConvertToSysUnits(8.0,WBFL::Units::Measure::KSI);
+   m_MaxConcreteUnitWeight[pgsTypes::Normal] = WBFL::Units::ConvertToSysUnits(165.,WBFL::Units::Measure::LbfPerFeet3);
+   m_MaxConcreteAggSize[pgsTypes::Normal]    = WBFL::Units::ConvertToSysUnits(1.5,WBFL::Units::Measure::Inch);
 
-   m_MaxSlabFc[pgsTypes::AllLightweight]             = ::ConvertToSysUnits(6.0,unitMeasure::KSI);
-   m_MaxSegmentFci[pgsTypes::AllLightweight]         = ::ConvertToSysUnits(7.5,unitMeasure::KSI);
-   m_MaxSegmentFc[pgsTypes::AllLightweight]          = ::ConvertToSysUnits(9.0,unitMeasure::KSI);
-   m_MaxClosureFci[pgsTypes::AllLightweight]         = ::ConvertToSysUnits(6.0,unitMeasure::KSI);
-   m_MaxClosureFc[pgsTypes::AllLightweight]          = ::ConvertToSysUnits(8.0,unitMeasure::KSI);
-   m_MaxConcreteUnitWeight[pgsTypes::AllLightweight] = ::ConvertToSysUnits(125.,unitMeasure::LbfPerFeet3);
-   m_MaxConcreteAggSize[pgsTypes::AllLightweight]    = ::ConvertToSysUnits(1.5,unitMeasure::Inch);
+   m_MaxSlabFc[pgsTypes::AllLightweight]             = WBFL::Units::ConvertToSysUnits(6.0,WBFL::Units::Measure::KSI);
+   m_MaxSegmentFci[pgsTypes::AllLightweight]         = WBFL::Units::ConvertToSysUnits(7.5,WBFL::Units::Measure::KSI);
+   m_MaxSegmentFc[pgsTypes::AllLightweight]          = WBFL::Units::ConvertToSysUnits(9.0,WBFL::Units::Measure::KSI);
+   m_MaxClosureFci[pgsTypes::AllLightweight]         = WBFL::Units::ConvertToSysUnits(6.0,WBFL::Units::Measure::KSI);
+   m_MaxClosureFc[pgsTypes::AllLightweight]          = WBFL::Units::ConvertToSysUnits(8.0,WBFL::Units::Measure::KSI);
+   m_MaxConcreteUnitWeight[pgsTypes::AllLightweight] = WBFL::Units::ConvertToSysUnits(125.,WBFL::Units::Measure::LbfPerFeet3);
+   m_MaxConcreteAggSize[pgsTypes::AllLightweight]    = WBFL::Units::ConvertToSysUnits(1.5,WBFL::Units::Measure::Inch);
 
-   m_MaxSlabFc[pgsTypes::SandLightweight]             = ::ConvertToSysUnits(6.0,unitMeasure::KSI);
-   m_MaxSegmentFci[pgsTypes::SandLightweight]         = ::ConvertToSysUnits(7.5,unitMeasure::KSI);
-   m_MaxSegmentFc[pgsTypes::SandLightweight]          = ::ConvertToSysUnits(9.0,unitMeasure::KSI);
-   m_MaxClosureFci[pgsTypes::SandLightweight]         = ::ConvertToSysUnits(6.0,unitMeasure::KSI);
-   m_MaxClosureFc[pgsTypes::SandLightweight]          = ::ConvertToSysUnits(8.0,unitMeasure::KSI);
-   m_MaxConcreteUnitWeight[pgsTypes::SandLightweight] = ::ConvertToSysUnits(125.,unitMeasure::LbfPerFeet3);
-   m_MaxConcreteAggSize[pgsTypes::SandLightweight]    = ::ConvertToSysUnits(1.5,unitMeasure::Inch);
+   m_MaxSlabFc[pgsTypes::SandLightweight]             = WBFL::Units::ConvertToSysUnits(6.0,WBFL::Units::Measure::KSI);
+   m_MaxSegmentFci[pgsTypes::SandLightweight]         = WBFL::Units::ConvertToSysUnits(7.5,WBFL::Units::Measure::KSI);
+   m_MaxSegmentFc[pgsTypes::SandLightweight]          = WBFL::Units::ConvertToSysUnits(9.0,WBFL::Units::Measure::KSI);
+   m_MaxClosureFci[pgsTypes::SandLightweight]         = WBFL::Units::ConvertToSysUnits(6.0,WBFL::Units::Measure::KSI);
+   m_MaxClosureFc[pgsTypes::SandLightweight]          = WBFL::Units::ConvertToSysUnits(8.0,WBFL::Units::Measure::KSI);
+   m_MaxConcreteUnitWeight[pgsTypes::SandLightweight] = WBFL::Units::ConvertToSysUnits(125.,WBFL::Units::Measure::LbfPerFeet3);
+   m_MaxConcreteAggSize[pgsTypes::SandLightweight]    = WBFL::Units::ConvertToSysUnits(1.5,WBFL::Units::Measure::Inch);
 
-   m_MaxSlabFc[pgsTypes::PCI_UHPC] = ::ConvertToSysUnits(6.0, unitMeasure::KSI);
-   m_MaxSegmentFci[pgsTypes::PCI_UHPC] = ::ConvertToSysUnits(10.0, unitMeasure::KSI);
-   m_MaxSegmentFc[pgsTypes::PCI_UHPC] = ::ConvertToSysUnits(20.0, unitMeasure::KSI);
-   m_MaxClosureFci[pgsTypes::PCI_UHPC] = ::ConvertToSysUnits(6.0, unitMeasure::KSI);
-   m_MaxClosureFc[pgsTypes::PCI_UHPC] = ::ConvertToSysUnits(8.0, unitMeasure::KSI);
-   m_MaxConcreteUnitWeight[pgsTypes::PCI_UHPC] = ::ConvertToSysUnits(165., unitMeasure::LbfPerFeet3);
-   m_MaxConcreteAggSize[pgsTypes::PCI_UHPC] = ::ConvertToSysUnits(1.5, unitMeasure::Inch);
+   m_MaxSlabFc[pgsTypes::PCI_UHPC] = WBFL::Units::ConvertToSysUnits(6.0, WBFL::Units::Measure::KSI);
+   m_MaxSegmentFci[pgsTypes::PCI_UHPC] = WBFL::Units::ConvertToSysUnits(10.0, WBFL::Units::Measure::KSI);
+   m_MaxSegmentFc[pgsTypes::PCI_UHPC] = WBFL::Units::ConvertToSysUnits(20.0, WBFL::Units::Measure::KSI);
+   m_MaxClosureFci[pgsTypes::PCI_UHPC] = WBFL::Units::ConvertToSysUnits(6.0, WBFL::Units::Measure::KSI);
+   m_MaxClosureFc[pgsTypes::PCI_UHPC] = WBFL::Units::ConvertToSysUnits(8.0, WBFL::Units::Measure::KSI);
+   m_MaxConcreteUnitWeight[pgsTypes::PCI_UHPC] = WBFL::Units::ConvertToSysUnits(165., WBFL::Units::Measure::LbfPerFeet3);
+   m_MaxConcreteAggSize[pgsTypes::PCI_UHPC] = WBFL::Units::ConvertToSysUnits(1.5, WBFL::Units::Measure::Inch);
 
    m_DoCheckStirrupSpacingCompatibility = true;
    m_bCheckSag = true;
@@ -427,8 +427,8 @@ m_bUseImpactForBearingReactions(false)
 
    m_StirrupSpacingCoefficient[0] = 0.8;
    m_StirrupSpacingCoefficient[1] = 0.4;
-   m_MaxStirrupSpacing[0] = ::ConvertToSysUnits(24.0,unitMeasure::Inch);
-   m_MaxStirrupSpacing[1] = ::ConvertToSysUnits(12.0,unitMeasure::Inch);
+   m_MaxStirrupSpacing[0] = WBFL::Units::ConvertToSysUnits(24.0,WBFL::Units::Measure::Inch);
+   m_MaxStirrupSpacing[1] = WBFL::Units::ConvertToSysUnits(12.0,WBFL::Units::Measure::Inch);
 }
 
 SpecLibraryEntry::SpecLibraryEntry(const SpecLibraryEntry& rOther) :
@@ -1296,7 +1296,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             // default value in SI units is 300mm
             // default value is US units is 12"
             // 12" = 305mm
-            m_MaxStirrupSpacing[1] = ::ConvertToSysUnits(300.0,unitMeasure::Millimeter);
+            m_MaxStirrupSpacing[1] = WBFL::Units::ConvertToSysUnits(300.0,WBFL::Units::Measure::Millimeter);
          }
 
       }
@@ -1639,7 +1639,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
          else
          {
-            m_OldHaulTruck.m_MaxOH = ::ConvertToSysUnits(15.0,unitMeasure::Feet);
+            m_OldHaulTruck.m_MaxOH = WBFL::Units::ConvertToSysUnits(15.0,WBFL::Units::Measure::Feet);
          }
       }
 
@@ -1920,7 +1920,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       }
       else
       {
-         m_OldHaulTruck.m_MaxWeight = ::ConvertToSysUnits(200,unitMeasure::Kip);
+         m_OldHaulTruck.m_MaxWeight = WBFL::Units::ConvertToSysUnits(200,WBFL::Units::Measure::Kip);
       }
 
       if ( 52 < version )
@@ -2048,10 +2048,10 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       }
       else
       {
-          m_CyTensStressServWithRebar  = ::ConvertToSysUnits(0.24,unitMeasure::SqrtKSI);
-          m_TensStressLiftingWithRebar = ::ConvertToSysUnits(0.24,unitMeasure::SqrtKSI);
-          m_TensStressHaulingWithRebar[pgsTypes::CrownSlope] = ::ConvertToSysUnits(0.24,unitMeasure::SqrtKSI);
-          m_TensStressHaulingWithRebar[pgsTypes::Superelevation] = ::ConvertToSysUnits(0.24,unitMeasure::SqrtKSI);
+          m_CyTensStressServWithRebar  = WBFL::Units::ConvertToSysUnits(0.24,WBFL::Units::Measure::SqrtKSI);
+          m_TensStressLiftingWithRebar = WBFL::Units::ConvertToSysUnits(0.24,WBFL::Units::Measure::SqrtKSI);
+          m_TensStressHaulingWithRebar[pgsTypes::CrownSlope] = WBFL::Units::ConvertToSysUnits(0.24,WBFL::Units::Measure::SqrtKSI);
+          m_TensStressHaulingWithRebar[pgsTypes::Superelevation] = WBFL::Units::ConvertToSysUnits(0.24,WBFL::Units::Measure::SqrtKSI);
       }
 
       // deal with verson 1.1
@@ -3176,11 +3176,11 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
-         Float64 duration_days = ::ConvertFromSysUnits(m_CreepDuration2Min,unitMeasure::Day);
-         Float64 xfer_days     = ::ConvertFromSysUnits(m_XferTime,unitMeasure::Day);
+         Float64 duration_days = WBFL::Units::ConvertFromSysUnits(m_CreepDuration2Min,WBFL::Units::Measure::Day);
+         Float64 xfer_days     = WBFL::Units::ConvertFromSysUnits(m_XferTime,WBFL::Units::Measure::Day);
          if (duration_days-30 > xfer_days)
          {
-            m_CreepDuration1Min = ::ConvertToSysUnits(duration_days-30,unitMeasure::Day);
+            m_CreepDuration1Min = WBFL::Units::ConvertToSysUnits(duration_days-30,WBFL::Units::Measure::Day);
             m_CreepDuration1Max = m_CreepDuration1Min;
          }
          else
@@ -3954,11 +3954,11 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          {
             if ( m_SpecificationUnits == lrfdVersionMgr::US )
             {
-               m_MaxInterfaceShearConnectorSpacing = ::ConvertToSysUnits(24.0,unitMeasure::Inch);
+               m_MaxInterfaceShearConnectorSpacing = WBFL::Units::ConvertToSysUnits(24.0,WBFL::Units::Measure::Inch);
             }
             else
             {
-               m_MaxInterfaceShearConnectorSpacing = ::ConvertToSysUnits(0.6, unitMeasure::Meter);
+               m_MaxInterfaceShearConnectorSpacing = WBFL::Units::ConvertToSysUnits(0.6, WBFL::Units::Measure::Meter);
             }
          }
 
@@ -4061,11 +4061,11 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             {
                if ( m_SpecificationUnits == lrfdVersionMgr::US )
                {
-                  m_MaxInterfaceShearConnectorSpacing = ::ConvertToSysUnits(24.0,unitMeasure::Inch);
+                  m_MaxInterfaceShearConnectorSpacing = WBFL::Units::ConvertToSysUnits(24.0,WBFL::Units::Measure::Inch);
                }
                else
                {
-                  m_MaxInterfaceShearConnectorSpacing = ::ConvertToSysUnits(0.6, unitMeasure::Meter);
+                  m_MaxInterfaceShearConnectorSpacing = WBFL::Units::ConvertToSysUnits(0.6, WBFL::Units::Measure::Meter);
                }
             }
          }
@@ -4242,13 +4242,13 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       {
          if ( m_SpecificationUnits == lrfdVersionMgr::SI )
          {
-            m_PedestrianLoad   = ::ConvertToSysUnits(3.6e-3,unitMeasure::MPa);
-            m_MinSidewalkWidth = ::ConvertToSysUnits(600.,unitMeasure::Millimeter);
+            m_PedestrianLoad   = WBFL::Units::ConvertToSysUnits(3.6e-3,WBFL::Units::Measure::MPa);
+            m_MinSidewalkWidth = WBFL::Units::ConvertToSysUnits(600.,WBFL::Units::Measure::Millimeter);
          }
          else
          {
-            m_PedestrianLoad   = ::ConvertToSysUnits(0.075,unitMeasure::KSF);
-            m_MinSidewalkWidth = ::ConvertToSysUnits(2.0,unitMeasure::Feet);
+            m_PedestrianLoad   = WBFL::Units::ConvertToSysUnits(0.075,WBFL::Units::Measure::KSF);
+            m_MinSidewalkWidth = WBFL::Units::ConvertToSysUnits(2.0,WBFL::Units::Measure::Feet);
          }
       }
       else
@@ -4466,7 +4466,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       {
          // This was the hard-coded default for versions before 5.x
          m_SlabOffsetRoundingMethod = pgsTypes::sormRoundNearest;
-         m_SlabOffsetRoundingTolerance = m_SpecificationUnits == lrfdVersionMgr::US ? ::ConvertToSysUnits(0.25, unitMeasure::Inch) : ::ConvertToSysUnits(5.0,unitMeasure::Millimeter);
+         m_SlabOffsetRoundingTolerance = m_SpecificationUnits == lrfdVersionMgr::US ? WBFL::Units::ConvertToSysUnits(0.25, WBFL::Units::Measure::Inch) : WBFL::Units::ConvertToSysUnits(5.0,WBFL::Units::Measure::Millimeter);
       }
 
       // Bearings was added in verison 79
@@ -4536,7 +4536,7 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther,bool bConsiderName
 bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    bMustRename = false;
 

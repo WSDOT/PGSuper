@@ -24,7 +24,7 @@
 #include "stdafx.h"
 #include "UBeamDistFactorEngineer.h"
 #include <PGSuperException.h>
-#include <Units\SysUnits.h>
+#include <Units\Convert.h>
 #include <PsgLib\TrafficBarrierEntry.h>
 #include <PsgLib\SpecLibraryEntry.h>
 #include <PgsExt\BridgeDescription2.h>
@@ -45,7 +45,7 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 // pre-convert constant values for performance
-static const Float64 D_18 = ::ConvertToSysUnits(18., unitMeasure::Inch);
+static const Float64 D_18 = WBFL::Units::ConvertToSysUnits(18., WBFL::Units::Measure::Inch);
 
 /////////////////////////////////////////////////////////////////////////////
 // CIBeamFactory
@@ -656,7 +656,7 @@ void CUBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierIdx, rptParagrap
          if ( gM1.ControllingMethod & MOMENT_SKEW_CORRECTION_APPLIED )
          {
             (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
-            Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
+            Float64 skew_delta_max = WBFL::Units::ConvertToSysUnits( 10.0, WBFL::Units::Measure::Degree );
             if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
                (*pPara) << rptRcImage(strImagePath + _T("SkewCorrection_Moment_TypeC.png")) << rptNewLine;
    
@@ -749,7 +749,7 @@ void CUBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierIdx, rptParagrap
          if ( gM1.ControllingMethod & MOMENT_SKEW_CORRECTION_APPLIED )
          {
             (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
-            Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
+            Float64 skew_delta_max = WBFL::Units::ConvertToSysUnits( 10.0, WBFL::Units::Measure::Degree );
             if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
                (*pPara) << rptRcImage(strImagePath + _T("SkewCorrection_Moment_TypeC.png")) << rptNewLine;
    

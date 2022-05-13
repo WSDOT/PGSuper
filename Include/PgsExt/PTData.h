@@ -231,7 +231,7 @@ private:
       {
          distLeftIP = -0.5;
 
-         highOffset = ::ConvertToSysUnits(6.0,unitMeasure::Inch);
+         highOffset = WBFL::Units::ConvertToSysUnits(6.0,WBFL::Units::Measure::Inch);
          highOffsetType = CDuctGeometry::TopGirder;
 
          distRightIP = -0.5;

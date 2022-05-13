@@ -30,7 +30,8 @@
 
 class CGirderGraphControllerBase;
 class CEAFGraphControlWindow;
-class arvPhysicalConverter;
+
+class WBFL::Units::PhysicalConverter;
 
 // This is an abstract base class for graphs that display girder along the X-axis
 class GRAPHCLASS CGirderGraphBuilderBase : public CEAFAutoCalcGraphBuilder
@@ -69,8 +70,8 @@ protected:
 
    CComPtr<IBroker> m_pBroker;
    WBFL::Graphing::GraphXY m_Graph;
-   arvPhysicalConverter* m_pXFormat;
-   arvPhysicalConverter* m_pYFormat;
+   WBFL::Units::PhysicalConverter* m_pXFormat;
+   WBFL::Units::PhysicalConverter* m_pYFormat;
 
    // zero tolerance values
    Float64 m_ZeroToleranceX;

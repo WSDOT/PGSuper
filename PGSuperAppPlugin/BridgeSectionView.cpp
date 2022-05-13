@@ -420,7 +420,7 @@ CString DumpPoints(IShape* pShape)
       point->get_Y(&y);
 
       CString str;
-      str.Format(_T("%f, %f\r\n"),::ConvertFromSysUnits(x,unitMeasure::Feet),::ConvertFromSysUnits(y,unitMeasure::Feet));
+      str.Format(_T("%f, %f\r\n"),WBFL::Units::ConvertFromSysUnits(x,WBFL::Units::Measure::Feet),WBFL::Units::ConvertFromSysUnits(y,WBFL::Units::Measure::Feet));
       strDump += str;
    }
 
@@ -851,7 +851,7 @@ void CBridgeSectionView::BuildTitleDisplayObjects()
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pdisp_units);
-   const unitStationFormat& station_format = pdisp_units->GetStationFormat();
+   const WBFL::Units::StationFormat& station_format = pdisp_units->GetStationFormat();
    CString strTitle;
    CString strStation = FormatStation(station_format,m_pFrame->GetCurrentCutLocation());
 
@@ -1067,7 +1067,7 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
       CComPtr<ICircle> wpcircle;
       wpcircle.CoCreateInstance(CLSID_Circle);
       wpcircle->putref_Center(pntWP);
-      wpcircle->put_Radius(::ConvertToSysUnits(0.75,unitMeasure::Inch)); // 1.5" diameter point
+      wpcircle->put_Radius(WBFL::Units::ConvertToSysUnits(0.75,WBFL::Units::Measure::Inch)); // 1.5" diameter point
       CComQIPtr<IShape> wpshape(wpcircle);
       draw_work_point_strategy->SetShape(wpshape);
       compound_strategy->AddStrategy(draw_work_point_strategy); // draw second so it goes over the girder shape
@@ -1707,7 +1707,7 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
 
    // get length unit so section can be labelled
    GET_IFACE2(pBroker,IEAFDisplayUnits,pdisp_units);
-   const unitmgtLengthData& rlen = pdisp_units->GetXSectionDimUnit();
+   const WBFL::Units::LengthData& rlen = pdisp_units->GetXSectionDimUnit();
 
    //
    // Create Girder Spacing Dimension Line
@@ -2603,7 +2603,7 @@ void CBridgeSectionView::BuildAlignmentDisplayObjects()
    // The alignment is at X=0 in Bridge Section Coordinates
    Float64 Xcl = 0;
    Float64 Ydeck = pAlignment->GetElevation(cut_station,0); // deck elevation at alignment
-   Float64 Yt = Ydeck + ::ConvertToSysUnits(1.0,unitMeasure::Feet); // add a little so it projects over the roadway surface
+   Float64 Yt = Ydeck + WBFL::Units::ConvertToSysUnits(1.0,WBFL::Units::Measure::Feet); // add a little so it projects over the roadway surface
 
    CComPtr<IPoint2d> pnt1;
    pnt1.CoCreateInstance(CLSID_Point2d);
@@ -2611,7 +2611,7 @@ void CBridgeSectionView::BuildAlignmentDisplayObjects()
 
    CComPtr<IPoint2d> pnt2;
    pnt2.CoCreateInstance(CLSID_Point2d);
-   pnt2->Move(Xcl,Yt - ::ConvertToSysUnits(3.0,unitMeasure::Feet));
+   pnt2->Move(Xcl,Yt - WBFL::Units::ConvertToSysUnits(3.0,WBFL::Units::Measure::Feet));
 
    CComPtr<iLineDisplayObject> doAlignment;
    CreateLineDisplayObject(pnt1,pnt2,&doAlignment);
@@ -2638,7 +2638,7 @@ void CBridgeSectionView::BuildAlignmentDisplayObjects()
    if ( !IsZero(BLO) )
    {
       Ydeck = pAlignment->GetElevation(cut_station,BLO);
-      Yt = Ydeck + ::ConvertToSysUnits(1.0,unitMeasure::Feet);
+      Yt = Ydeck + WBFL::Units::ConvertToSysUnits(1.0,WBFL::Units::Measure::Feet);
       pnt1.Release();
       pnt2.Release();
 
@@ -2646,7 +2646,7 @@ void CBridgeSectionView::BuildAlignmentDisplayObjects()
       pnt1->Move(Xcl+BLO,Yt);
 
       pnt2.CoCreateInstance(CLSID_Point2d);
-      pnt2->Move(Xcl+BLO,Yt - ::ConvertToSysUnits(3.0,unitMeasure::Feet));
+      pnt2->Move(Xcl+BLO,Yt - WBFL::Units::ConvertToSysUnits(3.0,WBFL::Units::Measure::Feet));
 
       CComPtr<iLineDisplayObject> doBridgeLine;
       CreateLineDisplayObject(pnt1,pnt2,&doBridgeLine);
@@ -2671,7 +2671,7 @@ void CBridgeSectionView::BuildAlignmentDisplayObjects()
       Float64 pgl_offset = -offset;
 
       Ydeck = pAlignment->GetElevation(cut_station, pgl_offset);
-      Yt = Ydeck + ::ConvertToSysUnits(1.0, unitMeasure::Feet);
+      Yt = Ydeck + WBFL::Units::ConvertToSysUnits(1.0, WBFL::Units::Measure::Feet);
       pnt1.Release();
       pnt2.Release();
 
@@ -2679,7 +2679,7 @@ void CBridgeSectionView::BuildAlignmentDisplayObjects()
       pnt1->Move(Xcl + pgl_offset, Yt);
 
       pnt2.CoCreateInstance(CLSID_Point2d);
-      pnt2->Move(Xcl + pgl_offset, Yt - ::ConvertToSysUnits(3.0, unitMeasure::Feet));
+      pnt2->Move(Xcl + pgl_offset, Yt - WBFL::Units::ConvertToSysUnits(3.0, WBFL::Units::Measure::Feet));
 
       CComPtr<iLineDisplayObject> doPGL;
       CreateLineDisplayObject(pnt1, pnt2, &doPGL);
@@ -2735,7 +2735,7 @@ void CBridgeSectionView::BuildRoadwayCrossSectionDisplayObjects()
    Float64 cut_station = m_pFrame->GetCurrentCutLocation();
    Float64 Xb = pPoi->ConvertRouteToBridgeLineCoordinate(cut_station);
 
-   Float64 feets = ::ConvertToSysUnits(1.0, unitMeasure::Feet); //  make sure alignment is also in there
+   Float64 feets = WBFL::Units::ConvertToSysUnits(1.0, WBFL::Units::Measure::Feet); //  make sure alignment is also in there
    Float64 left_offset = pBridge->GetLeftSlabEdgeOffset(Xb);
    left_offset = min(left_offset, 0.0);
    Float64 right_offset = pBridge->GetRightSlabEdgeOffset(Xb);

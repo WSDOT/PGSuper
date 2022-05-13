@@ -38,10 +38,10 @@ CColumnData::CColumnData(CPierData2* pPier) :
 m_pPier(pPier)
 {
    m_HeightMeasurementType = chtHeight;
-   m_Height = ::ConvertToSysUnits(20.0,unitMeasure::Feet);
+   m_Height = WBFL::Units::ConvertToSysUnits(20.0,WBFL::Units::Measure::Feet);
 
    m_ShapeType = cstCircle;
-   m_D1 = ::ConvertToSysUnits(4.0,unitMeasure::Feet);
+   m_D1 = WBFL::Units::ConvertToSysUnits(4.0,WBFL::Units::Measure::Feet);
    m_D2 = m_D1;
 
    m_TransverseFixity = pgsTypes::ctftTopFixedBottomFixed;

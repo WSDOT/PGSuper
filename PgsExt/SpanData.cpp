@@ -66,7 +66,7 @@ void CSpanData::Init(SpanIndexType spanIdx,CBridgeDescription* pBridge,CPierData
    m_GirderSpacing[pgsTypes::metStart].SetSpan(this);
    m_GirderSpacing[pgsTypes::metEnd].SetSpan(this);
 
-   m_SlabOffset[pgsTypes::metStart] = ::ConvertToSysUnits(10.0,unitMeasure::Inch);
+   m_SlabOffset[pgsTypes::metStart] = WBFL::Units::ConvertToSysUnits(10.0,WBFL::Units::Measure::Inch);
    m_SlabOffset[pgsTypes::metEnd]   = m_SlabOffset[pgsTypes::metStart];
 
 }

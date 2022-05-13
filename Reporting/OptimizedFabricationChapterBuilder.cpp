@@ -162,8 +162,8 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
       pPara = new rptParagraph;
       *pChapter << pPara;
 
-      Float64 fci_form_stripping_without_tts = (bUSUnits ? CeilOffTol(details.Fci_FormStripping_WithoutTTS, ::ConvertToSysUnits(100,unitMeasure::PSI)) 
-                                                        : CeilOffTol(details.Fci_FormStripping_WithoutTTS, ::ConvertToSysUnits(6,unitMeasure::MPa)) );
+      Float64 fci_form_stripping_without_tts = (bUSUnits ? CeilOffTol(details.Fci_FormStripping_WithoutTTS, WBFL::Units::ConvertToSysUnits(100,WBFL::Units::Measure::PSI)) 
+                                                        : CeilOffTol(details.Fci_FormStripping_WithoutTTS, WBFL::Units::ConvertToSysUnits(6,WBFL::Units::Measure::MPa)) );
       
       if ( 0 <  pStrandGeom->GetMaxStrands(segmentKey,pgsTypes::Temporary) )
       {
@@ -212,14 +212,14 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
             *pPara << _T("Jacking Force, ") << Sub2(_T("P"),_T("jack")) << _T(" = ") << force.SetValue(details.Pjack) << rptNewLine;
 
             Float64 fci[4];
-            fci[NO_TTS]          = (bUSUnits ? CeilOffTol(details.Fci[NO_TTS],          ::ConvertToSysUnits(100,unitMeasure::PSI)) 
-                                             : CeilOffTol(details.Fci[NO_TTS],          ::ConvertToSysUnits(6,  unitMeasure::MPa)));
-            fci[PS_TTS]          = (bUSUnits ? CeilOffTol(details.Fci[PS_TTS],          ::ConvertToSysUnits(100,unitMeasure::PSI)) 
-                                             : CeilOffTol(details.Fci[PS_TTS],          ::ConvertToSysUnits(6,  unitMeasure::MPa)));
-            fci[PT_TTS_REQUIRED] = (bUSUnits ? CeilOffTol(details.Fci[PT_TTS_REQUIRED], ::ConvertToSysUnits(100,unitMeasure::PSI)) 
-                                             : CeilOffTol(details.Fci[PT_TTS_REQUIRED], ::ConvertToSysUnits(6,  unitMeasure::MPa)));
-            fci[PT_TTS_OPTIONAL] = (bUSUnits ? CeilOffTol(details.Fci[PT_TTS_OPTIONAL], ::ConvertToSysUnits(100,unitMeasure::PSI)) 
-                                             : CeilOffTol(details.Fci[PT_TTS_OPTIONAL], ::ConvertToSysUnits(6,  unitMeasure::MPa)));
+            fci[NO_TTS]          = (bUSUnits ? CeilOffTol(details.Fci[NO_TTS],          WBFL::Units::ConvertToSysUnits(100,WBFL::Units::Measure::PSI)) 
+                                             : CeilOffTol(details.Fci[NO_TTS],          WBFL::Units::ConvertToSysUnits(6,  WBFL::Units::Measure::MPa)));
+            fci[PS_TTS]          = (bUSUnits ? CeilOffTol(details.Fci[PS_TTS],          WBFL::Units::ConvertToSysUnits(100,WBFL::Units::Measure::PSI)) 
+                                             : CeilOffTol(details.Fci[PS_TTS],          WBFL::Units::ConvertToSysUnits(6,  WBFL::Units::Measure::MPa)));
+            fci[PT_TTS_REQUIRED] = (bUSUnits ? CeilOffTol(details.Fci[PT_TTS_REQUIRED], WBFL::Units::ConvertToSysUnits(100,WBFL::Units::Measure::PSI)) 
+                                             : CeilOffTol(details.Fci[PT_TTS_REQUIRED], WBFL::Units::ConvertToSysUnits(6,  WBFL::Units::Measure::MPa)));
+            fci[PT_TTS_OPTIONAL] = (bUSUnits ? CeilOffTol(details.Fci[PT_TTS_OPTIONAL], WBFL::Units::ConvertToSysUnits(100,WBFL::Units::Measure::PSI)) 
+                                             : CeilOffTol(details.Fci[PT_TTS_OPTIONAL], WBFL::Units::ConvertToSysUnits(6,  WBFL::Units::Measure::MPa)));
             
 
             pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
@@ -325,8 +325,8 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
    //      *pPara << _T("Shipping Strength") << rptNewLine;
    //      pPara = new rptParagraph;
    //      *pChapter << pPara;
-   //      Float64 fc = (bUSUnits ? CeilOff(details.Fc, ::ConvertToSysUnits(100,unitMeasure::PSI)) 
-   //                            : CeilOff(details.Fc, ::ConvertToSysUnits(6,  unitMeasure::MPa)));
+   //      Float64 fc = (bUSUnits ? CeilOff(details.Fc, WBFL::Units::ConvertToSysUnits(100,WBFL::Units::Measure::PSI)) 
+   //                            : CeilOff(details.Fc, WBFL::Units::ConvertToSysUnits(6,  WBFL::Units::Measure::MPa)));
    //      *pPara << RPT_FC << _T(" = ") << stress.SetValue(details.Fc);
    //       *pPara << _T(" ") << symbol(RIGHT_DOUBLE_ARROW) << _T(" ") << stress.SetValue(fc) << rptNewLine;
 

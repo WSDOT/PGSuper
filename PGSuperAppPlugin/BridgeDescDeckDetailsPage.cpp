@@ -283,7 +283,7 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
             DDV_UnitValueZeroOrMore( pDX, IDC_OLAY_DEPTH,pParent->m_BridgeDesc.GetDeckDescription()->OverlayDepth, pDisplayUnits->GetComponentDimUnit() );
             DDV_UnitValueZeroOrMore( pDX, IDC_OLAY_DENSITY,pParent->m_BridgeDesc.GetDeckDescription()->OverlayDensity, pDisplayUnits->GetDensityUnit());
 
-            Float64 g = unitSysUnitsMgr::GetGravitationalAcceleration();
+            Float64 g = WBFL::Units::System::GetGravitationalAcceleration();
             pParent->m_BridgeDesc.GetDeckDescription()->OverlayWeight = pParent->m_BridgeDesc.GetDeckDescription()->OverlayDepth * pParent->m_BridgeDesc.GetDeckDescription()->OverlayDensity * g;
          }
          else
@@ -918,7 +918,7 @@ void CBridgeDescDeckDetailsPage::OnMoreConcreteProperties()
    concrete.SetA(pDeck->Concrete.A);
    concrete.SetBeta(pDeck->Concrete.B);
    Float64 fci = concrete.GetFc(m_AgeAtContinuity);
-   dlg.m_TimeAtInitialStrength = ::ConvertToSysUnits(m_AgeAtContinuity,unitMeasure::Day);
+   dlg.m_TimeAtInitialStrength = WBFL::Units::ConvertToSysUnits(m_AgeAtContinuity,WBFL::Units::Measure::Day);
    dlg.m_fci = fci;
    dlg.m_fc28 = pDeck->Concrete.Fc;
 
@@ -1026,10 +1026,10 @@ void CBridgeDescDeckDetailsPage::UpdateConcreteParametersToolTip()
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   const unitmgtDensityData& density = pDisplayUnits->GetDensityUnit();
-   const unitmgtLengthData&  aggsize = pDisplayUnits->GetComponentDimUnit();
-   const unitmgtScalar&      scalar  = pDisplayUnits->GetScalarFormat();
-   const unitmgtStressData&  stress  = pDisplayUnits->GetStressUnit();
+   const WBFL::Units::DensityData& density = pDisplayUnits->GetDensityUnit();
+   const WBFL::Units::LengthData&  aggsize = pDisplayUnits->GetComponentDimUnit();
+   const WBFL::Units::ScalarData&  scalar  = pDisplayUnits->GetScalarFormat();
+   const WBFL::Units::StressData&  stress  = pDisplayUnits->GetStressUnit();
 
    const CDeckDescription2* pDeck = pParent->m_BridgeDesc.GetDeckDescription();
 
@@ -1068,14 +1068,14 @@ void CBridgeDescDeckDetailsPage::OnAddDeckEdgePoint()
    CDeckPoint newPoint;
    if ( pDeck->DeckEdgePoints.size() == 0 )
    {
-      newPoint.LeftEdge = ::ConvertToSysUnits(15.0,unitMeasure::Feet);
-      newPoint.RightEdge = ::ConvertToSysUnits(15.0,unitMeasure::Feet);
-      newPoint.Station = ::ConvertToSysUnits(100.0,unitMeasure::Feet);
+      newPoint.LeftEdge = WBFL::Units::ConvertToSysUnits(15.0,WBFL::Units::Measure::Feet);
+      newPoint.RightEdge = WBFL::Units::ConvertToSysUnits(15.0,WBFL::Units::Measure::Feet);
+      newPoint.Station = WBFL::Units::ConvertToSysUnits(100.0,WBFL::Units::Measure::Feet);
    }
    else
    {
       newPoint = pDeck->DeckEdgePoints.back();
-      newPoint.Station += ::ConvertToSysUnits(100.0,unitMeasure::Feet);
+      newPoint.Station += WBFL::Units::ConvertToSysUnits(100.0,WBFL::Units::Measure::Feet);
    }
    pDeck->DeckEdgePoints.push_back(newPoint);
 

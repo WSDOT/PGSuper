@@ -90,7 +90,7 @@ Float64 pgsStabilityAnalysisPoint::GetLocation() const
    }
 }
 
-std::_tstring pgsStabilityAnalysisPoint::AsString(const unitmgtLengthData& lengthUnit,Float64 offset,bool bShowUnit) const
+std::_tstring pgsStabilityAnalysisPoint::AsString(const WBFL::Units::LengthData& lengthUnit,Float64 offset,bool bShowUnit) const
 {
    std::_tostringstream os;
    os << _T("(") << m_Poi.GetAttributes(m_RefAttribute,true) << _T(") ") << FormatDimension(m_Poi.GetDistFromStart()-offset,lengthUnit,bShowUnit).GetBuffer() << std::endl;

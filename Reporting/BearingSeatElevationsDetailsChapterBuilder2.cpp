@@ -304,7 +304,7 @@ void CBearingSeatElevationsDetailsChapterBuilder2::BuildBearingsTables(CComPtr<I
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
    if ( pDeck->WearingSurface == pgsTypes::wstOverlay && !pDeck->bInputAsDepthAndDensity )
    {
-      Float64 density = ::ConvertToSysUnits(140.0,unitMeasure::LbfPerFeet3);
+      Float64 density = WBFL::Units::ConvertToSysUnits(140.0,WBFL::Units::Measure::LbfPerFeet3);
 
       *pPara << _T("NOTE: overlay depth estimated based on a unit weight of ") << ::FormatDimension(density,pDisplayUnits->GetDensityUnit(),true) << rptNewLine;
       *pPara << ::FormatDimension(pDeck->OverlayWeight,pDisplayUnits->GetOverlayWeightUnit(),true) << _T("/") << ::FormatDimension(density,pDisplayUnits->GetDensityUnit(),true) << _T(" = ") << ::FormatDimension(pBridge->GetOverlayDepth(),pDisplayUnits->GetComponentDimUnit(),true) << rptNewLine;

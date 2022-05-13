@@ -139,7 +139,7 @@ void CCombinedAxialTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
 
    bool bTimeStepMethod = pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP;
 
-   RowIndexType row = CreateCombinedDeadLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table,pBroker,_T("Axial"),false,bRating,doLimitState,
+   RowIndexType row = CreateCombinedDeadLoadingTableHeading<rptForceUnitTag,WBFL::Units::ForceData>(&p_table,pBroker,_T("Axial"),false,bRating,doLimitState,
                                                                                     analysisType,pDisplayUnits,pDisplayUnits->GetGeneralForceUnit());
    *p << p_table;
 
@@ -379,7 +379,7 @@ void CCombinedAxialTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
    *pChapter << p;
 
    rptRcTable* p_table;
-   RowIndexType Nhrows = CreateCombinedLiveLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table,strLabel,false,bDesign,bPermit,bPedLoading,bRating,false,true,
+   RowIndexType Nhrows = CreateCombinedLiveLoadingTableHeading<rptForceUnitTag,WBFL::Units::ForceData>(&p_table,strLabel,false,bDesign,bPermit,bPedLoading,bRating,false,true,
                            analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetGeneralForceUnit());
 
    RowIndexType row = Nhrows;
@@ -684,7 +684,7 @@ void CCombinedAxialTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
    bool bPedLoading = pProductLoads->HasPedestrianLoad(girderKey);
 
    rptRcTable * p_table2;
-   RowIndexType row2 = CreateLimitStateTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table2,_T("Axial, Pu"),false,bDesign,bPermit,bRating,false,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetGeneralForceUnit());
+   RowIndexType row2 = CreateLimitStateTableHeading<rptForceUnitTag,WBFL::Units::ForceData>(&p_table2,_T("Axial, Pu"),false,bDesign,bPermit,bRating,false,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetGeneralForceUnit());
    *p << p_table2;
 
    if ( girderKey.groupIndex == ALL_GROUPS )

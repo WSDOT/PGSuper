@@ -2072,7 +2072,7 @@ bool CBridgeAgentImp::BuildCogoModel()
             // locate the PI
             CComPtr<IPoint2d> pi;
             Float64 distance = pi_station - prev_curve_ST_station; // if zero, then the pi is at the end of the previous curve... skip it
-            Float64 tolerance = ::ConvertToSysUnits(0.009, unitMeasure::Feet); // input accuracy is 0.01 ft
+            Float64 tolerance = WBFL::Units::ConvertToSysUnits(0.009, WBFL::Units::Measure::Feet); // input accuracy is 0.01 ft
             if (!IsZero(distance,tolerance))
             {
                locate->ByDistDir(pbt, distance, CComVariant(back_tangent), 0.00, &pi);
@@ -2171,7 +2171,7 @@ bool CBridgeAgentImp::BuildCogoModel()
                if ( TS_station < prev_curve_ST_station )
                {
                   // this curve starts before the previous curve ends
-                  if ( IsEqual(TS_station,prev_curve_ST_station, ::ConvertToSysUnits(0.01,unitMeasure::Feet) ) )
+                  if ( IsEqual(TS_station,prev_curve_ST_station, WBFL::Units::ConvertToSysUnits(0.01,WBFL::Units::Measure::Feet) ) )
                   {
                      // these 2 stations are within a 0.01 ft of each other... tweak this curve so it
                      // starts where the previous curve ends
@@ -2413,7 +2413,7 @@ bool CBridgeAgentImp::BuildCogoModel()
 
          Float64 BVC = pvi_station - L1;
          Float64 EVC = pvi_station + L2;
-         Float64 tolerance = ::ConvertToSysUnits(0.006,unitMeasure::Feet); // sometimes users enter the BVC as the start point
+         Float64 tolerance = WBFL::Units::ConvertToSysUnits(0.006,WBFL::Units::Measure::Feet); // sometimes users enter the BVC as the start point
                                                                            // and the numbers work out such that it differs by 0.01ft
                                                                            // select a tolerance so that this isn't a problem
          if( IsLT(BVC,prev_EVC,tolerance) || IsLT(pvi_station,prev_EVC,tolerance) || IsLT(EVC,prev_EVC,tolerance) )
@@ -3345,9 +3345,9 @@ bool CBridgeAgentImp::LayoutDeck(const CBridgeDescription2* pBridgeDesc)
       else
       {
          // depth not explicitly input... estimate based on 140 pcf material
-         Float64 density = ::ConvertToSysUnits(140.0,unitMeasure::LbfPerFeet3);
+         Float64 density = WBFL::Units::ConvertToSysUnits(140.0,WBFL::Units::Measure::LbfPerFeet3);
          m_Bridge->put_WearingSurfaceDensity(density);
-         Float64 g = unitSysUnitsMgr::GetGravitationalAcceleration();
+         Float64 g = WBFL::Units::System::GetGravitationalAcceleration();
          Float64 depth = (pDeck->OverlayWeight/g) / density;
          m_Bridge->put_WearingSurfaceDepth(depth);
       }
@@ -6360,7 +6360,7 @@ void CBridgeAgentImp::LayoutHandlingPoi(const CSegmentKey& segmentKey,
    { 
       // when lifting with inclined cables, add poi's just outboard of the lift points to capture the jump in the
       // horizontal cable force moment diagram
-      Float64 offset = ::ConvertToSysUnits(0.01, unitMeasure::Feet);
+      Float64 offset = WBFL::Units::ConvertToSysUnits(0.01, WBFL::Units::Measure::Feet);
       if (!IsZero(leftOverhang))
       {
          pgsPointOfInterest leftPoi(segmentKey, leftOverhang - offset);
@@ -10698,7 +10698,7 @@ Float64 CBridgeAgentImp::GetOverlayWeight() const
    m_Bridge->get_WearingSurfaceDepth(&depth);
    m_Bridge->get_WearingSurfaceDensity(&density);
    
-   Float64 weight = depth*density*unitSysUnitsMgr::GetGravitationalAcceleration();
+   Float64 weight = depth*density*WBFL::Units::System::GetGravitationalAcceleration();
    return weight;
 }
 
@@ -12604,7 +12604,7 @@ std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails
          elevDetails.TopBrgElevation =  elevDetails.BrgSeatElevation + elevDetails.BrgHeight;
 
          elevDetails.BearingDeduct = elevDetails.FinishedGradeElevation - elevDetails.BrgSeatElevation;
-         elevDetails.BearingDeduct = RoundOff(elevDetails.BearingDeduct, ::ConvertToSysUnits(0.125, unitMeasure::Inch) ); // TxDOT standard rounding
+         elevDetails.BearingDeduct = RoundOff(elevDetails.BearingDeduct, WBFL::Units::ConvertToSysUnits(0.125, WBFL::Units::Measure::Inch) ); // TxDOT standard rounding
 
          vElevDetails.push_back(elevDetails);
       }
@@ -14929,7 +14929,7 @@ Float64 CBridgeAgentImp::GetVertStirrupBarNominalDiameter(const pgsPointOfIntere
 
 Float64 CBridgeAgentImp::GetAlpha(const pgsPointOfInterest& poi) const
 {
-   return ::ConvertToSysUnits(90.,unitMeasure::Degree);
+   return WBFL::Units::ConvertToSysUnits(90.,WBFL::Units::Measure::Degree);
 }
 
 Float64 CBridgeAgentImp::GetVertStirrupAvs(const pgsPointOfInterest& poi, matRebar::Size* pSize, Float64* pSingleBarArea, Float64* pCount, Float64* pSpacing) const
@@ -23051,7 +23051,7 @@ Float64 CBridgeAgentImp::GetSegmentWeightPerLength(const CSegmentKey& segmentKey
    IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(segmentKey);
    Float64 ag = GetAg(pgsTypes::sptGross,releaseIntervalIdx,pgsPointOfInterest(segmentKey,0.00));
    Float64 dens = GetSegmentWeightDensity(segmentKey,releaseIntervalIdx);
-   Float64 weight_per_length = ag * dens * unitSysUnitsMgr::GetGravitationalAcceleration();
+   Float64 weight_per_length = ag * dens * WBFL::Units::System::GetGravitationalAcceleration();
    return weight_per_length;
 }
 
@@ -23064,7 +23064,7 @@ Float64 CBridgeAgentImp::GetSegmentWeight(const CSegmentKey& segmentKey) const
 
    IntervalIndexType releaseIntervalIdx = m_IntervalManager.GetPrestressReleaseInterval(segmentKey);
    Float64 density = GetSegmentWeightDensity(segmentKey,releaseIntervalIdx);
-   Float64 g = unitSysUnitsMgr::GetGravitationalAcceleration();
+   Float64 g = WBFL::Units::System::GetGravitationalAcceleration();
    Float64 Wg = V*density*g;
    return Wg;
 }
@@ -23705,7 +23705,7 @@ Float64 CBridgeAgentImp::GetSidewalkWeight(pgsTypes::TrafficBarrierOrientation o
       Float64 area = w*(tl + tr)/2;
       Float64 density = GetRailingSystemWeightDensity(orientation,railingSystemIntervalIdx);
       Float64 mpl = area * density; // mass per length
-      Float64 g = unitSysUnitsMgr::GetGravitationalAcceleration();
+      Float64 g = WBFL::Units::System::GetGravitationalAcceleration();
       Wsw = mpl * g;
    }
 
@@ -23761,7 +23761,7 @@ Float64 CBridgeAgentImp::GetExteriorBarrierWeight(pgsTypes::TrafficBarrierOrient
       Float64 density = GetRailingSystemWeightDensity(orientation,railingSystemIntervalIdx);
 
       Float64 mplBarrier = area * density;
-      Float64 g = unitSysUnitsMgr::GetGravitationalAcceleration();
+      Float64 g = WBFL::Units::System::GetGravitationalAcceleration();
       Wext = mplBarrier * g;
    }
    else
@@ -23804,7 +23804,7 @@ Float64 CBridgeAgentImp::GetInteriorBarrierWeight(pgsTypes::TrafficBarrierOrient
          IntervalIndexType railingSystemIntervalIdx = GetInstallRailingSystemInterval();
          Float64 density = GetRailingSystemWeightDensity(orientation,railingSystemIntervalIdx);
          Float64 mplBarrier = area * density;
-         Float64 g = unitSysUnitsMgr::GetGravitationalAcceleration();
+         Float64 g = WBFL::Units::System::GetGravitationalAcceleration();
          Wint = mplBarrier * g;
       }
       else
@@ -31403,7 +31403,7 @@ const CBridgeAgentImp::SectProp& CBridgeAgentImp::GetSectionProperties(IntervalI
 #if defined _DEBUG
          Float64 Ag;
          shapeprops->get_Area(&Ag);
-         LOG(_T("Interval = ") << intervalIdx << _T(" Group = ") << LABEL_GROUP(segmentKey.groupIndex) << _T(" Girder = ") << LABEL_GIRDER(segmentKey.girderIndex) << _T(" Segment = ") << LABEL_SEGMENT(segmentKey.segmentIndex) << _T(" x = ") << ::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Feet) << _T(" ft") << _T(" Ag = ") << ::ConvertFromSysUnits(Ag, unitMeasure::Inch2) << _T(" in2") << _T(" Eg = ") << ::ConvertFromSysUnits(Egdr, unitMeasure::KSI) << _T(" KSI"));
+         LOG(_T("Interval = ") << intervalIdx << _T(" Group = ") << LABEL_GROUP(segmentKey.groupIndex) << _T(" Girder = ") << LABEL_GIRDER(segmentKey.girderIndex) << _T(" Segment = ") << LABEL_SEGMENT(segmentKey.segmentIndex) << _T(" x = ") << WBFL::Units::ConvertFromSysUnits(poi.GetDistFromStart(), WBFL::Units::Measure::Feet) << _T(" ft") << _T(" Ag = ") << WBFL::Units::ConvertFromSysUnits(Ag, WBFL::Units::Measure::Inch2) << _T(" in2") << _T(" Eg = ") << WBFL::Units::ConvertFromSysUnits(Egdr, WBFL::Units::Measure::KSI) << _T(" KSI"));
 #endif
 
          // Q slab
@@ -32335,7 +32335,7 @@ void CBridgeAgentImp::LayoutSegmentRebar(const CSegmentKey& segmentKey)
                std::unique_ptr<pgsGirderDescriptionStatusItem> pStatusItem = std::make_unique<pgsGirderDescriptionStatusItem>(segmentKey,EGD_LONG_REINF,m_StatusGroupID,m_scidGirderDescriptionWarning,os.str().c_str());
                pStatusCenter->Add(pStatusItem.release());
             }
-            else if ( clear < ::ConvertToSysUnits(1.0,unitMeasure::Inch) )
+            else if ( clear < WBFL::Units::ConvertToSysUnits(1.0,WBFL::Units::Measure::Inch) )
             {
                std::_tostringstream os;
                os << SEGMENT_LABEL(segmentKey)

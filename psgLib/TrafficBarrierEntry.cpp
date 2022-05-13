@@ -35,7 +35,7 @@ CLASS
 
 #include "resource.h"
 #include "TrafficBarrierDlg.h"
-#include <Units\sysUnits.h>
+#include <Units\Convert.h>
 
 #include <MathEx.h>
 #include <WBFLGenericBridge.h>
@@ -65,14 +65,14 @@ typedef enum Configuration
 //======================== LIFECYCLE  =======================================
 TrafficBarrierEntry::TrafficBarrierEntry() :
 m_WeightMethod(Compute),
-m_Weight(::ConvertToSysUnits(0.100,unitMeasure::KipPerFoot)),
+m_Weight(WBFL::Units::ConvertToSysUnits(0.100,WBFL::Units::Measure::KipPerFoot)),
 m_CurbOffset(0)
 {
    m_BarrierPoints.CoCreateInstance(CLSID_Point2dCollection);
    m_bStructurallyContinuous = false;
 
-   Float64 fc = ::ConvertToSysUnits(4.0,unitMeasure::KSI);
-   Float64 density = ::ConvertToSysUnits(155.0,unitMeasure::LbmPerFeet3);
+   Float64 fc = WBFL::Units::ConvertToSysUnits(4.0,WBFL::Units::Measure::KSI);
+   Float64 density = WBFL::Units::ConvertToSysUnits(155.0,WBFL::Units::Measure::LbmPerFeet3);
 
    lrfdVersionMgr::Units old_units = lrfdVersionMgr::GetUnits();
    lrfdVersionMgr::SetUnits(lrfdVersionMgr::US);
@@ -409,7 +409,7 @@ bool TrafficBarrierEntry::IsEqual(const TrafficBarrierEntry& rOther,bool bConsid
 bool TrafficBarrierEntry::Compare(const TrafficBarrierEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences,bool &bMustRename, bool bReturnOnFirstDifference, bool considerName) const
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    bMustRename = false;
    
@@ -676,7 +676,7 @@ void TrafficBarrierEntry::CopyPoints(IPoint2dCollection* points1,IPoint2dCollect
 
 void TrafficBarrierEntry::ConvertDimensionsToPoints(Float64 x1,Float64 x2,Float64 x3,Float64 x4,Float64 x5,Float64 y1,Float64 y2,Float64 y3)
 {
-   Float64 y4 = ::ConvertToSysUnits(7.0,unitMeasure::Inch);
+   Float64 y4 = WBFL::Units::ConvertToSysUnits(7.0,WBFL::Units::Measure::Inch);
    CComPtr<ITrafficBarrier> barrier;
    barrier.CoCreateInstance(CLSID_TrafficBarrier);
    barrier->put_X1(x1);

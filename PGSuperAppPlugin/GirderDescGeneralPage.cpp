@@ -719,7 +719,7 @@ void CGirderDescGeneralPage::UpdateEci()
       m_ctrlEc.GetWindowText(strEc);
       Float64 Ec;
       sysTokenizer::ParseDouble(strEc,&Ec);
-      Ec = ::ConvertToSysUnits(Ec,pDisplayUnits->GetModEUnit().UnitOfMeasure);
+      Ec = WBFL::Units::ConvertToSysUnits(Ec,pDisplayUnits->GetModEUnit().UnitOfMeasure);
 
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -845,7 +845,7 @@ void CGirderDescGeneralPage::UpdateEc()
       m_ctrlEci.GetWindowText(strEci);
       Float64 Eci;
       sysTokenizer::ParseDouble(strEci,&Eci);
-      Eci = ::ConvertToSysUnits(Eci,pDisplayUnits->GetModEUnit().UnitOfMeasure);
+      Eci = WBFL::Units::ConvertToSysUnits(Eci,pDisplayUnits->GetModEUnit().UnitOfMeasure);
 
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -908,7 +908,7 @@ void CGirderDescGeneralPage::UpdateFc()
 
          Float64 fci;
          sysTokenizer::ParseDouble(strFci, &fci);
-         fci = ::ConvertToSysUnits(fci,pDisplayUnits->GetStressUnit().UnitOfMeasure);
+         fci = WBFL::Units::ConvertToSysUnits(fci,pDisplayUnits->GetStressUnit().UnitOfMeasure);
 
          CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
          Float64 fc;
@@ -953,7 +953,7 @@ void CGirderDescGeneralPage::UpdateFci()
 
          Float64 fc;
          sysTokenizer::ParseDouble(strFc, &fc);
-         fc = ::ConvertToSysUnits(fc,pDisplayUnits->GetStressUnit().UnitOfMeasure);
+         fc = WBFL::Units::ConvertToSysUnits(fc,pDisplayUnits->GetStressUnit().UnitOfMeasure);
 
          CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -1008,7 +1008,7 @@ void CGirderDescGeneralPage::OnMoreConcreteProperties()
 
    EventIDType constructionEventID = pParent->m_TimelineMgr.GetSegmentConstructionEventID(pParent->m_pSegment->GetID());
    Float64 ageAtRelease = pParent->m_TimelineMgr.GetEventByID(constructionEventID)->GetConstructSegmentsActivity().GetTotalCuringDuration();
-   dlg.m_TimeAtInitialStrength = ::ConvertToSysUnits(ageAtRelease,unitMeasure::Day);
+   dlg.m_TimeAtInitialStrength = WBFL::Units::ConvertToSysUnits(ageAtRelease,WBFL::Units::Measure::Day);
 
    dlg.m_fci = pParent->m_pSegment->Material.Concrete.Fci;
    dlg.m_Eci = pParent->m_pSegment->Material.Concrete.Eci;
@@ -1188,10 +1188,10 @@ void CGirderDescGeneralPage::UpdateConcreteParametersToolTip()
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-   const unitmgtDensityData& density = pDisplayUnits->GetDensityUnit();
-   const unitmgtLengthData&  aggsize = pDisplayUnits->GetComponentDimUnit();
-   const unitmgtStressData&  stress  = pDisplayUnits->GetStressUnit();
-   const unitmgtScalar&      scalar  = pDisplayUnits->GetScalarFormat();
+   const WBFL::Units::DensityData& density = pDisplayUnits->GetDensityUnit();
+   const WBFL::Units::LengthData&  aggsize = pDisplayUnits->GetComponentDimUnit();
+   const WBFL::Units::StressData&  stress  = pDisplayUnits->GetStressUnit();
+   const WBFL::Units::ScalarData&  scalar  = pDisplayUnits->GetScalarFormat();
 
    CString strTip;
    strTip.Format(_T("%-20s %s\r\n%-20s %s\r\n%-20s %s\r\n%-20s %s"),

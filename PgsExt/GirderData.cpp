@@ -23,7 +23,7 @@
 #include <PgsExt\PgsExtLib.h>
 
 #include <PgsExt\GirderData.h>
-#include <Units\SysUnits.h>
+#include <Units\Convert.h>
 #include <StdIo.h>
 
 #include <psgLib\StructuredSave.h>

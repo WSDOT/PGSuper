@@ -242,7 +242,7 @@ void CRatingDialog::ExchangeLoadFactorData(CDataExchange* pDX,pgsTypes::SpecialP
 void CRatingDialog::ExchangeLoadFactorData(CDataExchange* pDX,CLiveLoadFactorModel* pModel)
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    DDX_UnitValueAndTag(pDX,IDC_LOWER_VEHICLE_WEIGHT,IDC_LOWER_VEHICLE_WEIGHT_UNIT,pModel->m_Wlower,pDisplayUnits->GeneralForce);
    DDX_UnitValueAndTag(pDX,IDC_UPPER_VEHICLE_WEIGHT,IDC_UPPER_VEHICLE_WEIGHT_UNIT,pModel->m_Wupper,pDisplayUnits->GeneralForce);
@@ -380,7 +380,7 @@ void CRatingDialog::ExchangeLoadFactorData(CDataExchange* pDX,CLiveLoadFactorMod
 void CRatingDialog::ExchangeLoadFactorData(CDataExchange* pDX,CLiveLoadFactorModel2* pModel)
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    DDX_UnitValueAndTag(pDX,IDC_LOWER_VEHICLE_WEIGHT,IDC_LOWER_VEHICLE_WEIGHT_UNIT,pModel->m_PWRlower,pDisplayUnits->ForcePerLength);
    DDX_UnitValueAndTag(pDX,IDC_UPPER_VEHICLE_WEIGHT,IDC_UPPER_VEHICLE_WEIGHT_UNIT,pModel->m_PWRupper,pDisplayUnits->ForcePerLength);

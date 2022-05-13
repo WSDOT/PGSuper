@@ -242,7 +242,7 @@ void CAssumedExcessCamberSpanGrid::GetGridData(CDataExchange* pDX)
       }
       else
       {
-         Float64 assumedExcessCamber = ::ConvertToSysUnits(value, m_pUnit->UnitOfMeasure);
+         Float64 assumedExcessCamber = WBFL::Units::ConvertToSysUnits(value, m_pUnit->UnitOfMeasure);
 
          CGXStyle style;
          GetStyleRowCol(row, 0, style);

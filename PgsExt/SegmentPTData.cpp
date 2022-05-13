@@ -53,13 +53,13 @@ CSegmentDuctData::CSegmentDuctData()
    DuctGeometryType = Parabolic;
    JackingEnd = pgsTypes::jeStart;
 
-   DuctPoint[Left].first = ::ConvertToSysUnits(2.0, unitMeasure::Inch);
+   DuctPoint[Left].first = WBFL::Units::ConvertToSysUnits(2.0, WBFL::Units::Measure::Inch);
    DuctPoint[Left].second = pgsTypes::TopFace;
 
-   DuctPoint[Middle].first = ::ConvertToSysUnits(2.0, unitMeasure::Inch);
+   DuctPoint[Middle].first = WBFL::Units::ConvertToSysUnits(2.0, WBFL::Units::Measure::Inch);
    DuctPoint[Middle].second = pgsTypes::BottomFace;
 
-   DuctPoint[Right].first = ::ConvertToSysUnits(2.0, unitMeasure::Inch);
+   DuctPoint[Right].first = WBFL::Units::ConvertToSysUnits(2.0, WBFL::Units::Measure::Inch);
    DuctPoint[Right].second = pgsTypes::TopFace;
 }
 
@@ -84,13 +84,13 @@ CSegmentDuctData::CSegmentDuctData(const CPrecastSegmentData* pSegment)
    DuctGeometryType = Parabolic;
    JackingEnd = pgsTypes::jeStart;
 
-   DuctPoint[Left].first = ::ConvertToSysUnits(2.0, unitMeasure::Inch);
+   DuctPoint[Left].first = WBFL::Units::ConvertToSysUnits(2.0, WBFL::Units::Measure::Inch);
    DuctPoint[Left].second = pgsTypes::TopFace;
 
-   DuctPoint[Middle].first = ::ConvertToSysUnits(2.0, unitMeasure::Inch);
+   DuctPoint[Middle].first = WBFL::Units::ConvertToSysUnits(2.0, WBFL::Units::Measure::Inch);
    DuctPoint[Middle].second = pgsTypes::BottomFace;
 
-   DuctPoint[Right].first = ::ConvertToSysUnits(2.0, unitMeasure::Inch);
+   DuctPoint[Right].first = WBFL::Units::ConvertToSysUnits(2.0, WBFL::Units::Measure::Inch);
    DuctPoint[Right].second = pgsTypes::TopFace;
 
    Init(pSegment);

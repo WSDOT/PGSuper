@@ -34,7 +34,7 @@
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFAutoProgress.h>
-#include <UnitMgt\UnitValueNumericalFormatTools.h>
+#include <Units\UnitValueNumericalFormatTools.h>
 
 #include <IFace\Intervals.h>
 #include <IFace\Bridge.h>
@@ -56,8 +56,8 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 // create a dummy unit conversion tool to pacify the graph constructor
-static unitmgtLengthData DUMMY(unitMeasure::Meter);
-static LengthTool    DUMMY_TOOL(DUMMY);
+static WBFL::Units::LengthData DUMMY(WBFL::Units::Measure::Meter);
+static WBFL::Units::LengthTool DUMMY_TOOL(DUMMY);
 
 BEGIN_MESSAGE_MAP(CDeflectionHistoryGraphBuilder, CEAFGraphBuilderBase)
 END_MESSAGE_MAP()
@@ -346,9 +346,9 @@ void CDeflectionHistoryGraphBuilder::PlotDeflection(Float64 x,const pgsPointOfIn
 void CDeflectionHistoryGraphBuilder::AddGraphPoint(IndexType series, Float64 xval, Float64 yval)
 {
    // deal with unit conversion
-   const arvPhysicalConverter* pcx = dynamic_cast<const arvPhysicalConverter*>(m_Graph.GetXAxisValueFormat());
+   const WBFL::Units::PhysicalConverter* pcx = dynamic_cast<const WBFL::Units::PhysicalConverter*>(m_Graph.GetXAxisValueFormat());
    ASSERT(pcx);
-   const arvPhysicalConverter* pcy = dynamic_cast<const arvPhysicalConverter*>(m_Graph.GetYAxisValueFormat());
+   const WBFL::Units::PhysicalConverter* pcy = dynamic_cast<const WBFL::Units::PhysicalConverter*>(m_Graph.GetYAxisValueFormat());
    ASSERT(pcy);
    Float64 x = pcx->Convert(xval);
    Float64 y = pcy->Convert(yval);
@@ -378,7 +378,7 @@ void CDeflectionHistoryGraphBuilder::UpdateXAxis()
    delete m_pTimeFormat;
    delete m_pIntervalFormat;
 
-   m_pTimeFormat = new ScalarTool(m_Time);
+   m_pTimeFormat = new WBFL::Units::ScalarTool(m_Time);
    m_pIntervalFormat = new IntervalTool(m_Interval);
    m_Graph.SetXAxisValueFormat(*m_pTimeFormat);
    m_Graph.SetXAxisNumberOfMajorTics(11);
@@ -417,8 +417,8 @@ void CDeflectionHistoryGraphBuilder::UpdateYAxis()
    }
 
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   const unitmgtLengthData& deflectionUnit = pDisplayUnits->GetDeflectionUnit();
-   m_pYFormat = new DeflectionTool(deflectionUnit);
+   const WBFL::Units::LengthData& deflectionUnit = pDisplayUnits->GetDeflectionUnit();
+   m_pYFormat = new WBFL::Units::DeflectionTool(deflectionUnit);
    m_Graph.SetYAxisValueFormat(*m_pYFormat);
    m_Graph.SetYAxisTitle(std::_tstring(_T("Deflection (")+m_pYFormat->UnitTag()+_T(")")).c_str());
    m_Graph.YAxisNiceRange(true);

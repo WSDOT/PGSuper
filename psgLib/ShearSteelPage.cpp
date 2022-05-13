@@ -46,7 +46,7 @@ static char THIS_FILE[] = __FILE__;
 
 const DWORD CShearSteelPage::IDD = IDD_EDIT_SHEAR_STEEL;
 
-static Float64 zone_bar_spacing_tolerance = ::ConvertToSysUnits(0.0001, unitMeasure::Feet);
+static Float64 zone_bar_spacing_tolerance = WBFL::Units::ConvertToSysUnits(0.0001, WBFL::Units::Measure::Feet);
 
 /////////////////////////////////////////////////////////////////////////////
 // CShearSteelPage property page
@@ -79,7 +79,7 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
    DDX_Control(pDX,IDC_MILD_STEEL_SELECTOR,m_cbRebar);
 
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    DDX_Check_Bool(pDX,IDC_SYMMETRICAL,m_ShearData.bAreZonesSymmetrical);
    DDX_Check_Bool(pDX,IDC_ROUGHENED,           m_ShearData.bIsRoughenedSurface);
@@ -166,9 +166,9 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
             lsi.ZoneNum = zn;
             if ( !IsEqual(lsi.ZoneLength,Float64_Max) )
             {
-               lsi.ZoneLength = ::ConvertToSysUnits(lsi.ZoneLength, pDisplayUnits->XSectionDim.UnitOfMeasure);
+               lsi.ZoneLength = WBFL::Units::ConvertToSysUnits(lsi.ZoneLength, pDisplayUnits->XSectionDim.UnitOfMeasure);
             }
-            lsi.BarSpacing = ::ConvertToSysUnits(lsi.BarSpacing, pDisplayUnits->ComponentDim.UnitOfMeasure);
+            lsi.BarSpacing = WBFL::Units::ConvertToSysUnits(lsi.BarSpacing, pDisplayUnits->ComponentDim.UnitOfMeasure);
 
             if (IsEqual(lsi.ZoneLength, lsi.BarSpacing, zone_bar_spacing_tolerance))
             {
@@ -227,10 +227,10 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
          CShearZoneData2 inf(*it);
          if ( !IsEqual(inf.ZoneLength,Float64_Max) )
          {
-            inf.ZoneLength = ::ConvertFromSysUnits((*it).ZoneLength, pDisplayUnits->XSectionDim.UnitOfMeasure);
+            inf.ZoneLength = WBFL::Units::ConvertFromSysUnits((*it).ZoneLength, pDisplayUnits->XSectionDim.UnitOfMeasure);
          }
 
-         inf.BarSpacing     = ::ConvertFromSysUnits((*it).BarSpacing, pDisplayUnits->ComponentDim.UnitOfMeasure);
+         inf.BarSpacing     = WBFL::Units::ConvertFromSysUnits((*it).BarSpacing, pDisplayUnits->ComponentDim.UnitOfMeasure);
          vec.push_back(inf);
       }
       m_pGrid->FillGrid(vec, m_ShearData.bAreZonesSymmetrical);

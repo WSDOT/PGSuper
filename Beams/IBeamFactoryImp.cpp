@@ -96,64 +96,64 @@ HRESULT CIBeamFactory::FinalConstruct()
    m_DimNames.emplace_back(_T("EndBlockTransition"));
 
    // Default beam is a W74G
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(2.875,unitMeasure::Inch)); // D1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(2.625,unitMeasure::Inch)); // D2
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(2.000,unitMeasure::Inch)); // D3
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(6.000,unitMeasure::Inch)); // D4
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(3.000,unitMeasure::Inch)); // D5
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(0.000,unitMeasure::Inch)); // D6
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(74.00,unitMeasure::Inch)); // H
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(6.000,unitMeasure::Inch)); // T1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(6.000,unitMeasure::Inch)); // T2
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(0.000, unitMeasure::Inch)); // W1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(16.50,unitMeasure::Inch)); // W2
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(2.000,unitMeasure::Inch)); // W3
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(0.000, unitMeasure::Inch)); // W4
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(9.500, unitMeasure::Inch)); // W5
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(0.000, unitMeasure::Inch)); // C1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(0.000,unitMeasure::Inch)); // EndBlockWidth
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(0.000,unitMeasure::Feet)); // EndBlockLength
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(0.000,unitMeasure::Feet)); // EndBlockTransition
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(2.875,WBFL::Units::Measure::Inch)); // D1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(2.625,WBFL::Units::Measure::Inch)); // D2
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(2.000,WBFL::Units::Measure::Inch)); // D3
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(6.000,WBFL::Units::Measure::Inch)); // D4
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(3.000,WBFL::Units::Measure::Inch)); // D5
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(0.000,WBFL::Units::Measure::Inch)); // D6
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(74.00,WBFL::Units::Measure::Inch)); // H
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(6.000,WBFL::Units::Measure::Inch)); // T1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(6.000,WBFL::Units::Measure::Inch)); // T2
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(0.000, WBFL::Units::Measure::Inch)); // W1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(16.50,WBFL::Units::Measure::Inch)); // W2
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(2.000,WBFL::Units::Measure::Inch)); // W3
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(0.000, WBFL::Units::Measure::Inch)); // W4
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(9.500, WBFL::Units::Measure::Inch)); // W5
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(0.000, WBFL::Units::Measure::Inch)); // C1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(0.000,WBFL::Units::Measure::Inch)); // EndBlockWidth
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(0.000,WBFL::Units::Measure::Feet)); // EndBlockLength
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(0.000,WBFL::Units::Measure::Feet)); // EndBlockTransition
 
    // SI Units
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D2
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D3
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D4
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D5
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D6
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // T1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // T2
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W2
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W3
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W4
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W5
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // C1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // EndBlockWidth
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // EndBlockLength
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // EndBlockTransition
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // D1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // D2
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // D3
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // D4
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // D5
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // D6
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // H
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // T1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // T2
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W2
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W3
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W4
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W5
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // C1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // EndBlockWidth
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // EndBlockLength
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // EndBlockTransition
 
    // US Units
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D2
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D3
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D4
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D5
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D6
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // T1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // T2
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W2
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W3
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W4
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W5
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // C1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // EndBlockWidth
-   m_DimUnits[1].emplace_back(&unitMeasure::Feet); // EndBlockLength
-   m_DimUnits[1].emplace_back(&unitMeasure::Feet); // EndBlockTransition
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // D1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // D2
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // D3
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // D4
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // D5
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // D6
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // H
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // T1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // T2
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W2
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W3
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W4
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W5
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // C1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // EndBlockWidth
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Feet); // EndBlockLength
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Feet); // EndBlockTransition
 
    return S_OK;
 }
@@ -470,7 +470,7 @@ const std::vector<Float64>& CIBeamFactory::GetDefaultDimensions() const
    return m_DefaultDims;
 }
 
-const std::vector<const unitLength*>& CIBeamFactory::GetDimensionUnits(bool bSIUnits) const
+const std::vector<const WBFL::Units::Length*>& CIBeamFactory::GetDimensionUnits(bool bSIUnits) const
 {
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
@@ -534,7 +534,7 @@ bool CIBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimension
 
    if ( h <= 0.0 )
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][H];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][H];
       std::_tostringstream os;
       os << _T("H must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
@@ -543,7 +543,7 @@ bool CIBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimension
 
    if (h < (d1+d2+d3+d4+d5+d6))
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][H];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][H];
       std::_tostringstream os;
       os << _T("H must be greater than sum of the flange depth dimenions D1 through D6 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
@@ -592,7 +592,7 @@ bool CIBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimension
 
    if ( t1 <= 0.0 )
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][T1];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][T1];
       std::_tostringstream os;
       os << _T("T1 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
@@ -601,7 +601,7 @@ bool CIBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimension
    
    if ( t2 <= 0.0 )
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][T2];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][T2];
       std::_tostringstream os;
       os << _T("T2 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();

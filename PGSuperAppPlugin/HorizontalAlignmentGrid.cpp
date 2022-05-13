@@ -134,7 +134,7 @@ void CHorizontalAlignmentGrid::CustomInit()
    CHorizontalAlignmentPage* pParent = (CHorizontalAlignmentPage*)GetParent();
 
    GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
-   const unitmgtLengthData& alignment_unit = pDisplayUnits->GetAlignmentLengthUnit();
+   const WBFL::Units::LengthData& alignment_unit = pDisplayUnits->GetAlignmentLengthUnit();
    std::_tstring strUnitTag = alignment_unit.UnitOfMeasure.UnitTag();
 
    // Initialize the grid. For CWnd based grids this call is // 
@@ -275,7 +275,7 @@ void CHorizontalAlignmentGrid::SetRowData(ROWCOL nRow,CompoundCurveData& data)
    UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
    Float64 station = data.PIStation;
-   station = ::ConvertFromSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   station = WBFL::Units::ConvertFromSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    CComPtr<IStation> objStation;
    objStation.CoCreateInstance(CLSID_Station);
@@ -299,13 +299,13 @@ void CHorizontalAlignmentGrid::SetRowData(ROWCOL nRow,CompoundCurveData& data)
       SetValueRange(CGXRange(nRow,2),CString(bstrAngle));
    }
 
-   Float64 radius = ::ConvertFromSysUnits(data.Radius,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   Float64 radius = WBFL::Units::ConvertFromSysUnits(data.Radius,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    SetValueRange(CGXRange(nRow,3),radius );
 
-   Float64 entry_spiral = ::ConvertFromSysUnits(data.EntrySpiral,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   Float64 entry_spiral = WBFL::Units::ConvertFromSysUnits(data.EntrySpiral,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    SetValueRange(CGXRange(nRow,4),entry_spiral );
 
-   Float64 exit_spiral = ::ConvertFromSysUnits(data.ExitSpiral,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   Float64 exit_spiral = WBFL::Units::ConvertFromSysUnits(data.ExitSpiral,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    SetValueRange(CGXRange(nRow,5),exit_spiral );
 
    GetParam()->EnableUndo(TRUE);
@@ -329,7 +329,7 @@ bool CHorizontalAlignmentGrid::GetRowData(ROWCOL nRow,Float64* pStation,Float64*
 
    Float64 station_value;
    station->get_Value(&station_value);
-   station_value = ::ConvertToSysUnits(station_value,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   station_value = WBFL::Units::ConvertToSysUnits(station_value,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    *pStation = station_value;
 
    // assume input is an angle
@@ -363,15 +363,15 @@ bool CHorizontalAlignmentGrid::GetRowData(ROWCOL nRow,Float64* pStation,Float64*
 
    CString strRadius = GetCellValue(nRow,3);
    *pRadius = _tstof(strRadius);
-   *pRadius = ::ConvertToSysUnits(*pRadius,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   *pRadius = WBFL::Units::ConvertToSysUnits(*pRadius,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    CString strEntrySpiral = GetCellValue(nRow,4);
    *pEntrySpiral = _tstof(strEntrySpiral);
-   *pEntrySpiral = ::ConvertToSysUnits(*pEntrySpiral,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   *pEntrySpiral = WBFL::Units::ConvertToSysUnits(*pEntrySpiral,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    CString strExitSpiral = GetCellValue(nRow,5);
    *pExitSpiral = _tstof(strExitSpiral);
-   *pExitSpiral = ::ConvertToSysUnits(*pExitSpiral,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   *pExitSpiral = WBFL::Units::ConvertToSysUnits(*pExitSpiral,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    if ( ::IsLT(*pRadius,0.0) || ::IsLT(*pEntrySpiral,0.0) || ::IsLT(*pExitSpiral,0.0) )
    {

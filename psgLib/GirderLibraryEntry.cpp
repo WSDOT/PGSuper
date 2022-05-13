@@ -155,7 +155,7 @@ m_bUseDifferentHarpedGridAtEnds(true),
 m_HarpingPointLocation(0.25),
 m_HarpPointMeasure(mtFractionOfGirderLength),
 m_bMinHarpingPointLocation(false),
-m_MinHarpingPointLocation(::ConvertToSysUnits(5.0,unitMeasure::Feet)),
+m_MinHarpingPointLocation(WBFL::Units::ConvertToSysUnits(5.0,WBFL::Units::Measure::Feet)),
 m_HarpPointReference(mlBearing),
 m_LongitudinalBarType(matRebar::A615),
 m_LongitudinalBarGrade(matRebar::Grade60),
@@ -171,16 +171,16 @@ m_bCheckMaxNumDebondedStrandsPerSection(false),
 m_MaxDebondedStrandsPerSection(0.40),
 m_MinDebondLengthDB(60),
 m_bCheckMinDebondLength(false),
-m_MinDebondLength(::ConvertToSysUnits(3.0,unitMeasure::Feet)), // not aashto, but reasonable
+m_MinDebondLength(WBFL::Units::ConvertToSysUnits(3.0,WBFL::Units::Measure::Feet)), // not aashto, but reasonable
 m_bCheckDebondingSymmetry(true),
 m_bCheckAdjacentDebonding(true),
 m_bCheckDebondingInWebWidthProjections(true),
 m_MaxDebondLengthBySpanFraction(0.20), //  LRFD 9th Edition, default to 20%
 m_MaxDebondLengthByHardDistance(-1.0),
-m_MinFilletValue(::ConvertToSysUnits(0.75,unitMeasure::Inch)),
+m_MinFilletValue(WBFL::Units::ConvertToSysUnits(0.75,WBFL::Units::Measure::Inch)),
 m_DoCheckMinHaunchAtBearingLines(false),
 m_MinHaunchAtBearingLines(0.0),
-m_ExcessiveSlabOffsetWarningTolerance(::ConvertToSysUnits(0.25,unitMeasure::Inch)),
+m_ExcessiveSlabOffsetWarningTolerance(WBFL::Units::ConvertToSysUnits(0.25,WBFL::Units::Measure::Inch)),
 m_DragCoefficient(2.2),
 m_PrecamberLimit(80),
 m_DoReportBearingElevationsAtGirderEdges(false),
@@ -259,17 +259,17 @@ m_pCompatibilityData(nullptr)
    m_StirrupSizeBarComboColl.push_back(cbo);
 
    // Spacings
-   m_AvailableBarSpacings.push_back(::ConvertToSysUnits(3.0, unitMeasure::Inch));
-   m_AvailableBarSpacings.push_back(::ConvertToSysUnits(4.0, unitMeasure::Inch));
-   m_AvailableBarSpacings.push_back(::ConvertToSysUnits(6.0, unitMeasure::Inch));
-   m_AvailableBarSpacings.push_back(::ConvertToSysUnits(9.0, unitMeasure::Inch));
-   m_AvailableBarSpacings.push_back(::ConvertToSysUnits(12.0, unitMeasure::Inch));
-   m_AvailableBarSpacings.push_back(::ConvertToSysUnits(18.0, unitMeasure::Inch));
+   m_AvailableBarSpacings.push_back(WBFL::Units::ConvertToSysUnits(3.0, WBFL::Units::Measure::Inch));
+   m_AvailableBarSpacings.push_back(WBFL::Units::ConvertToSysUnits(4.0, WBFL::Units::Measure::Inch));
+   m_AvailableBarSpacings.push_back(WBFL::Units::ConvertToSysUnits(6.0, WBFL::Units::Measure::Inch));
+   m_AvailableBarSpacings.push_back(WBFL::Units::ConvertToSysUnits(9.0, WBFL::Units::Measure::Inch));
+   m_AvailableBarSpacings.push_back(WBFL::Units::ConvertToSysUnits(12.0, WBFL::Units::Measure::Inch));
+   m_AvailableBarSpacings.push_back(WBFL::Units::ConvertToSysUnits(18.0, WBFL::Units::Measure::Inch));
 
-   m_MaxSpacingChangeInZone          = ::ConvertToSysUnits(6.0,unitMeasure::Inch);
+   m_MaxSpacingChangeInZone          = WBFL::Units::ConvertToSysUnits(6.0,WBFL::Units::Measure::Inch);
    m_MaxShearCapacityChangeInZone    = 0.50;
    m_MinZoneLengthSpacings           = 3;
-   m_MinZoneLengthLength             = ::ConvertToSysUnits(12.0,unitMeasure::Inch);
+   m_MinZoneLengthLength             = WBFL::Units::ConvertToSysUnits(12.0,WBFL::Units::Measure::Inch);
    m_DoExtendBarsIntoDeck            = true;
    m_DoBarsActAsConfinement          = true;
    m_LongShearCapacityIncreaseMethod   = isAddingRebar;
@@ -1272,8 +1272,8 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
          DiaphragmLayoutRule rule1;
          rule1.Description = _T("40-80ft");
-         rule1.MinSpan = ::ConvertToSysUnits(40,unitMeasure::Feet);
-         rule1.MaxSpan = ::ConvertToSysUnits(80,unitMeasure::Feet);
+         rule1.MinSpan = WBFL::Units::ConvertToSysUnits(40,WBFL::Units::Measure::Feet);
+         rule1.MaxSpan = WBFL::Units::ConvertToSysUnits(80,WBFL::Units::Measure::Feet);
          rule1.Height = H;
          rule1.Thickness = W;
          rule1.MeasureLocation = mlBearing;
@@ -1286,8 +1286,8 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
          DiaphragmLayoutRule rule2a;
          rule2a.Description = _T("80-120ft (Mid-Span)");
-         rule2a.MinSpan = ::ConvertToSysUnits(80,unitMeasure::Feet);
-         rule2a.MaxSpan = ::ConvertToSysUnits(120,unitMeasure::Feet);
+         rule2a.MinSpan = WBFL::Units::ConvertToSysUnits(80,WBFL::Units::Measure::Feet);
+         rule2a.MaxSpan = WBFL::Units::ConvertToSysUnits(120,WBFL::Units::Measure::Feet);
          rule2a.Height = H;
          rule2a.Thickness = W;
          rule2a.MeasureLocation = mlBearing;
@@ -1300,8 +1300,8 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
          DiaphragmLayoutRule rule2b;
          rule2b.Description = _T("80-120ft (1/3 points)");
-         rule2b.MinSpan = ::ConvertToSysUnits(80,unitMeasure::Feet);
-         rule2b.MaxSpan = ::ConvertToSysUnits(120,unitMeasure::Feet);
+         rule2b.MinSpan = WBFL::Units::ConvertToSysUnits(80,WBFL::Units::Measure::Feet);
+         rule2b.MaxSpan = WBFL::Units::ConvertToSysUnits(120,WBFL::Units::Measure::Feet);
          rule2b.Height = H;
          rule2b.Thickness = W;
          rule2b.MeasureLocation = mlBearing;
@@ -1314,8 +1314,8 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
          DiaphragmLayoutRule rule3a;
          rule3a.Description = _T("Greater than 120ft (Mid-Span)");
-         rule3a.MinSpan = ::ConvertToSysUnits(120,unitMeasure::Feet);
-         rule3a.MaxSpan = ::ConvertToSysUnits(999,unitMeasure::Feet);
+         rule3a.MinSpan = WBFL::Units::ConvertToSysUnits(120,WBFL::Units::Measure::Feet);
+         rule3a.MaxSpan = WBFL::Units::ConvertToSysUnits(999,WBFL::Units::Measure::Feet);
          rule3a.Height = H;
          rule3a.Thickness = W;
          rule3a.MeasureLocation = mlBearing;
@@ -1328,8 +1328,8 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
          DiaphragmLayoutRule rule3b;
          rule3b.Description = _T("Greater than 120ft (1/4 points)");
-         rule3b.MinSpan = ::ConvertToSysUnits(120,unitMeasure::Feet);
-         rule3b.MaxSpan = ::ConvertToSysUnits(999,unitMeasure::Feet);
+         rule3b.MinSpan = WBFL::Units::ConvertToSysUnits(120,WBFL::Units::Measure::Feet);
+         rule3b.MaxSpan = WBFL::Units::ConvertToSysUnits(999,WBFL::Units::Measure::Feet);
          rule3b.Height = H;
          rule3b.Thickness = W;
          rule3b.MeasureLocation = mlBearing;
@@ -3096,7 +3096,7 @@ bool GirderLibraryEntry::IsEqual(const GirderLibraryEntry& rOther,bool bConsider
 bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName,bool bCompareSeedValues) const
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(m_pBeamFactory);
    bool bSplicedGirder = (splicedBeamFactory == nullptr ? false : true);
@@ -5501,7 +5501,7 @@ pgsCompatibilityData* GirderLibraryEntry::GetCompatibilityData() const
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
 
-static const Float64 TwoInches = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
+static const Float64 TwoInches = WBFL::Units::ConvertToSysUnits(2.0,WBFL::Units::Measure::Inch);
 
 GirderLibraryEntry::HarpedStrandAdjustment::HarpedStrandAdjustment() : 
 m_AllowVertAdjustment(false), 

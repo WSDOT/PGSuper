@@ -35,7 +35,7 @@
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFAutoProgress.h>
-#include <UnitMgt\UnitValueNumericalFormatTools.h>
+#include <Units\UnitValueNumericalFormatTools.h>
 #include <PgsExt\SegmentArtifact.h>
 #include <PgsExt\RatingArtifact.h>
 
@@ -173,8 +173,8 @@ inline std::_tstring Axial_Stress_String(const std::_tstring& loadName)
 
 
 // create a dummy unit conversion tool to pacify the graph constructor
-static unitmgtLengthData DUMMY(unitMeasure::Meter);
-static LengthTool        DUMMY_TOOL(DUMMY);
+static WBFL::Units::LengthData DUMMY(WBFL::Units::Measure::Meter);
+static WBFL::Units::LengthTool DUMMY_TOOL(DUMMY);
 
 // Pen styles for stresses at top and bottom of girder
 #define PS_STRESS_TOP_GIRDER     PS_SOLID
@@ -1135,73 +1135,73 @@ void CAnalysisResultsGraphBuilder::UpdateYAxisUnits()
    {
    case actionMoment:
       {
-      const unitmgtMomentData& momentUnit = pDisplayUnits->GetMomentUnit();
-      m_pYFormat = new MomentTool(momentUnit);
+      const WBFL::Units::MomentData& momentUnit = pDisplayUnits->GetMomentUnit();
+      m_pYFormat = new WBFL::Units::MomentTool(momentUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
-      std::_tstring strYAxisTitle = _T("Moment (") + ((MomentTool*)m_pYFormat)->UnitTag() + _T(")");
+      std::_tstring strYAxisTitle = _T("Moment (") + ((WBFL::Units::MomentTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
       }
    case actionShear:
       {
-      const unitmgtForceData& shearUnit = pDisplayUnits->GetShearUnit();
-      m_pYFormat = new ShearTool(shearUnit);
+      const WBFL::Units::ForceData& shearUnit = pDisplayUnits->GetShearUnit();
+      m_pYFormat = new WBFL::Units::ShearTool(shearUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
-      std::_tstring strYAxisTitle = _T("Shear (") + ((ShearTool*)m_pYFormat)->UnitTag() + _T(")");
+      std::_tstring strYAxisTitle = _T("Shear (") + ((WBFL::Units::ShearTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
       }
    case actionAxial:
       {
-      const unitmgtForceData& axialUnit = pDisplayUnits->GetGeneralForceUnit();
-      m_pYFormat = new ForceTool(axialUnit);
+      const WBFL::Units::ForceData& axialUnit = pDisplayUnits->GetGeneralForceUnit();
+      m_pYFormat = new WBFL::Units::ForceTool(axialUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
-      std::_tstring strYAxisTitle = _T("Axial (") + ((ForceTool*)m_pYFormat)->UnitTag() + _T(")");
+      std::_tstring strYAxisTitle = _T("Axial (") + ((WBFL::Units::ForceTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
       }
    case actionDeflection:
    case actionXDeflection:
    {
-      const unitmgtLengthData& deflectionUnit = pDisplayUnits->GetDeflectionUnit();
-      m_pYFormat = new DeflectionTool(deflectionUnit);
+      const WBFL::Units::LengthData& deflectionUnit = pDisplayUnits->GetDeflectionUnit();
+      m_pYFormat = new WBFL::Units::DeflectionTool(deflectionUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
-      std::_tstring strYAxisTitle = _T("Deflection (") + ((DeflectionTool*)m_pYFormat)->UnitTag() + _T(")");
+      std::_tstring strYAxisTitle = _T("Deflection (") + ((WBFL::Units::DeflectionTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
       }
    case actionRotation:
       {
-      const unitmgtAngleData& rotationUnit = pDisplayUnits->GetRadAngleUnit();
-      m_pYFormat = new RotationTool(rotationUnit);
+      const WBFL::Units::AngleData& rotationUnit = pDisplayUnits->GetRadAngleUnit();
+      m_pYFormat = new WBFL::Units::RotationTool(rotationUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
-      std::_tstring strYAxisTitle = _T("Rotation (") + ((RotationTool*)m_pYFormat)->UnitTag() + _T(")");
+      std::_tstring strYAxisTitle = _T("Rotation (") + ((WBFL::Units::RotationTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
       }
    case actionStress:
    case actionPrincipalWebStress:
    {
-      const unitmgtStressData& stressUnit = pDisplayUnits->GetStressUnit();
-      m_pYFormat = new StressTool(stressUnit);
+      const WBFL::Units::StressData& stressUnit = pDisplayUnits->GetStressUnit();
+      m_pYFormat = new WBFL::Units::StressTool(stressUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
-      std::_tstring strYAxisTitle = _T("Stress (") + ((StressTool*)m_pYFormat)->UnitTag() + _T(")");
+      std::_tstring strYAxisTitle = _T("Stress (") + ((WBFL::Units::StressTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
       }
    case actionReaction:
       {
-      const unitmgtForceData& shearUnit = pDisplayUnits->GetShearUnit();
-      m_pYFormat = new ShearTool(shearUnit);
+      const WBFL::Units::ForceData& shearUnit = pDisplayUnits->GetShearUnit();
+      m_pYFormat = new WBFL::Units::ShearTool(shearUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
-      std::_tstring strYAxisTitle = _T("Reaction (") + ((ShearTool*)m_pYFormat)->UnitTag() + _T(")");
+      std::_tstring strYAxisTitle = _T("Reaction (") + ((WBFL::Units::ShearTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
       }
    case actionLoadRating:
    {
       const auto& scalar = pDisplayUnits->GetScalarFormat();
-      m_pYFormat = new ScalarTool(scalar);
+      m_pYFormat = new WBFL::Units::ScalarTool(scalar);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
       m_Graph.SetYAxisTitle(_T("Rating Factor"));
       break;

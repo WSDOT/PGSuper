@@ -173,9 +173,9 @@ void CTxDOTOptionalDesignGirderInputPage::DoDataExchange(CDataExchange* pDX)
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   Float64 min_fc  = ::ConvertToSysUnits( 4.0,  unitMeasure::KSI); 
-   Float64 max_fci = ::ConvertToSysUnits(10.0,  unitMeasure::KSI); 
-   Float64 max_fc  = ::ConvertToSysUnits(15.0,  unitMeasure::KSI); 
+   Float64 min_fc  = WBFL::Units::ConvertToSysUnits( 4.0,  WBFL::Units::Measure::KSI); 
+   Float64 max_fci = WBFL::Units::ConvertToSysUnits(10.0,  WBFL::Units::Measure::KSI); 
+   Float64 max_fc  = WBFL::Units::ConvertToSysUnits(15.0,  WBFL::Units::Measure::KSI); 
 
    // precaster opt
    DDX_CBItemData(pDX, IDC_OPT_FILLTYPE_COMBO, (int&)m_OptStrandFillType);

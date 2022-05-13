@@ -161,7 +161,7 @@ void CTogaDirectFillDlg::UpdateNoStrandsCtrls()
    Float64 ecc;
    if (m_pGirderData->ComputeDirectFillEccentricity(&m_GirderLibraryEntry, &ecc))
    {
-      ecc = ::ConvertFromSysUnits(ecc, unitMeasure::Inch);
+      ecc = WBFL::Units::ConvertFromSysUnits(ecc, WBFL::Units::Measure::Inch);
       msg.Format(_T("No. Strands = %d; No. Debonded = %d.\nEccentricity, C.L. = %.3f in"), nos, ndb, ecc);
    }
    else

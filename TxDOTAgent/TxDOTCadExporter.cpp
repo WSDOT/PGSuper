@@ -597,7 +597,7 @@ HRESULT CTxDOTCadExporter::ExportHaunchDeflectionData(IBroker* pBroker, const st
          }
 
          // Write X, Y, and Z decimal in format rounded up to nearest 1/8" accuracy
-         Float64 xyzToler = ::ConvertToSysUnits(0.125, unitMeasure::Inch);
+         Float64 xyzToler = WBFL::Units::ConvertToSysUnits(0.125, WBFL::Units::Measure::Inch);
 
          CString fmtStr;
          Float64 val;
@@ -635,11 +635,11 @@ HRESULT CTxDOTCadExporter::ExportHaunchDeflectionData(IBroker* pBroker, const st
          }
 
          // DL Defl Deck @ Pt A{ 1 / 4 pt }
-         val = ConvertFromSysUnits((delta_slab2 + delta_slab3) / 2.0, unitMeasure::Feet);
+         val = ConvertFromSysUnits((delta_slab2 + delta_slab3) / 2.0, WBFL::Units::Measure::Feet);
          pExporter->WriteFloatToCell(1, _T("A_Val"), rowNum, val);
 
          // DL Defl Deck @ Pt B {1/2 pt} 
-         val = ConvertFromSysUnits(delta_slab5, unitMeasure::Feet);
+         val = ConvertFromSysUnits(delta_slab5, WBFL::Units::Measure::Feet);
          pExporter->WriteFloatToCell(1, _T("B_Val"), rowNum, val);
 
          pProgress->Increment();
@@ -804,11 +804,11 @@ void raised_strand_research(IBroker* pBroker, const std::vector<CGirderKey>& gir
       GET_IFACE2(pBroker, IBridge, pBridge);
       Float64 span_length = pBridge->GetSpanLength(segmentKey.groupIndex);
 
-      span_length = ConvertFromSysUnits(span_length, unitMeasure::Feet);
+      span_length = ConvertFromSysUnits(span_length, WBFL::Units::Measure::Feet);
       m_Log << _T(",") << span_length;
 
       Float64 gdr_hght = pGirderEntry->GetBeamHeight(pgsTypes::metEnd);
-      gdr_hght = ConvertFromSysUnits(gdr_hght, unitMeasure::Inch);
+      gdr_hght = ConvertFromSysUnits(gdr_hght, WBFL::Units::Measure::Inch);
       m_Log << _T(",") << gdr_hght;
 
       GET_IFACE2(pBroker, IArtifact, pIArtifact);
@@ -863,11 +863,11 @@ void raised_strand_research(IBroker* pBroker, const std::vector<CGirderKey>& gir
       m_Log << _T(",") << ndb;
 
       Float64 fci = pSegment->Material.Concrete.Fci;
-      fci = ::ConvertFromSysUnits(fci, unitMeasure::KSI);
+      fci = WBFL::Units::ConvertFromSysUnits(fci, WBFL::Units::Measure::KSI);
       m_Log << _T(",") << fci;
 
       Float64 fc = pSegment->Material.Concrete.Fc;
-      fc = ::ConvertFromSysUnits(fc, unitMeasure::KSI);
+      fc = WBFL::Units::ConvertFromSysUnits(fc, WBFL::Units::Measure::KSI);
       m_Log << _T(",") << fc;
 
       if (passed)

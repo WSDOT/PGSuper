@@ -66,7 +66,7 @@ void CConcreteEntryGeneralPage::DoDataExchange(CDataExchange* pDX)
    try
    {
       CEAFApp* pApp = EAFGetApp();
-      const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+      const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
       CPropertyPage::DoDataExchange(pDX);
 
@@ -208,7 +208,7 @@ HBRUSH CConcreteEntryGeneralPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColo
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    HBRUSH hbr = CPropertyPage::OnCtlColor(pDC, pWnd, nCtlColor);
 

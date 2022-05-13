@@ -51,12 +51,12 @@ CBridgeDescription::CBridgeDescription()
 
    m_AlignmentOffset = 0;
 
-   m_SlabOffset     = ::ConvertToSysUnits( 10.0, unitMeasure::Inch );
+   m_SlabOffset     = WBFL::Units::ConvertToSysUnits( 10.0, WBFL::Units::Measure::Inch );
    m_SlabOffsetType = pgsTypes::sotBridge;
 
    m_nGirders = 0;
 
-   m_GirderSpacing     = ::ConvertToSysUnits(5.0,unitMeasure::Feet);
+   m_GirderSpacing     = WBFL::Units::ConvertToSysUnits(5.0,WBFL::Units::Measure::Feet);
    m_GirderSpacingType = pgsTypes::sbsUniform;
    m_GirderOrientation = pgsTypes::Plumb;
 
@@ -742,7 +742,7 @@ void CBridgeDescription::CreateFirstSpan(const CPierData* pFirstPier,const CSpan
    else
    {
       nextPier = new CPierData();
-      nextPier->SetStation( firstPier->GetStation() + ::ConvertToSysUnits(100.0,unitMeasure::Feet) );
+      nextPier->SetStation( firstPier->GetStation() + WBFL::Units::ConvertToSysUnits(100.0,WBFL::Units::Measure::Feet) );
    }
 
    firstPier->SetBridgeDescription(this);
@@ -778,7 +778,7 @@ void CBridgeDescription::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceT
       if (!pPierData)
       {
          ASSERT(false); // span length < 0 and a pier isn't provided
-         newSpanLength = ::ConvertToSysUnits(100.0,unitMeasure::Feet);
+         newSpanLength = WBFL::Units::ConvertToSysUnits(100.0,WBFL::Units::Measure::Feet);
       }
    }
 

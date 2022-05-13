@@ -28,7 +28,7 @@
 #include "LiveLoadAxleGrid.h"
 #include "LiveLoadDlg.h"
 #include <system\tokenizer.h>
-#include <Units\sysUnits.h>
+#include <Units\Convert.h>
 #include <EAF\EAFApp.h>
 
 #ifdef _DEBUG
@@ -274,7 +274,7 @@ BOOL CLiveLoadAxleGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 void CLiveLoadAxleGrid::ResetGrid()
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
 	this->GetParam( )->EnableUndo(FALSE);
 
@@ -339,7 +339,7 @@ void CLiveLoadAxleGrid::ResetGrid()
 void CLiveLoadAxleGrid::UploadData(CDataExchange* pDX, CLiveLoadDlg* dlg)
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    AxleIndexType nAxles = (AxleIndexType)dlg->m_Axles.size();
    for (AxleIndexType axleIdx = 0; axleIdx < nAxles; axleIdx++)
@@ -351,10 +351,10 @@ void CLiveLoadAxleGrid::UploadData(CDataExchange* pDX, CLiveLoadDlg* dlg)
    for (LiveLoadLibraryEntry::AxleContainer::const_iterator it = dlg->m_Axles.begin(); it!=dlg->m_Axles.end(); it++)
    {
       Float64 weight = it->Weight;
-      weight = ::ConvertFromSysUnits(weight, pDisplayUnits->GeneralForce.UnitOfMeasure  );
+      weight = WBFL::Units::ConvertFromSysUnits(weight, pDisplayUnits->GeneralForce.UnitOfMeasure  );
 
       Float64 spacing = it->Spacing;
-      spacing = ::ConvertFromSysUnits(spacing, pDisplayUnits->SpanLength.UnitOfMeasure );
+      spacing = WBFL::Units::ConvertFromSysUnits(spacing, pDisplayUnits->SpanLength.UnitOfMeasure );
 
       SetValueRange(CGXRange(nRow, 1), weight);
 
@@ -372,10 +372,10 @@ void CLiveLoadAxleGrid::UploadData(CDataExchange* pDX, CLiveLoadDlg* dlg)
    if (dlg->m_VariableAxleIndex != FIXED_AXLE_TRUCK)
    {
       Float64 min_spc = dlg->m_Axles[dlg->m_VariableAxleIndex].Spacing;
-      min_spc = ::ConvertFromSysUnits(min_spc, pDisplayUnits->SpanLength.UnitOfMeasure);
+      min_spc = WBFL::Units::ConvertFromSysUnits(min_spc, pDisplayUnits->SpanLength.UnitOfMeasure);
 
       Float64 max_spc = dlg->m_MaxVariableAxleSpacing;
-      max_spc = ::ConvertFromSysUnits(max_spc, pDisplayUnits->SpanLength.UnitOfMeasure);
+      max_spc = WBFL::Units::ConvertFromSysUnits(max_spc, pDisplayUnits->SpanLength.UnitOfMeasure);
 
       ATLASSERT(max_spc>min_spc);
       
@@ -579,10 +579,10 @@ CLiveLoadAxleGrid::SpacingType CLiveLoadAxleGrid::ParseAxleRow(ROWCOL nRow, CDat
    }
 
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
-   *pWeight = ::ConvertToSysUnits(*pWeight, pDisplayUnits->GeneralForce.UnitOfMeasure);
-   *pSpacingMin = ::ConvertToSysUnits(*pSpacingMin, pDisplayUnits->SpanLength.UnitOfMeasure);
-   *pSpacingMax = ::ConvertToSysUnits(*pSpacingMax, pDisplayUnits->SpanLength.UnitOfMeasure);
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   *pWeight = WBFL::Units::ConvertToSysUnits(*pWeight, pDisplayUnits->GeneralForce.UnitOfMeasure);
+   *pSpacingMin = WBFL::Units::ConvertToSysUnits(*pSpacingMin, pDisplayUnits->SpanLength.UnitOfMeasure);
+   *pSpacingMax = WBFL::Units::ConvertToSysUnits(*pSpacingMax, pDisplayUnits->SpanLength.UnitOfMeasure);
 
 
    return spctype;

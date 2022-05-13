@@ -859,12 +859,12 @@ void CSegmentTendonGrid::GetPjack(ROWCOL nRow, CSegmentDuctData* pDuct)
    pDuct->bPjCalc = ComputePjackMax(nRow);
 
    pDuct->Pj = _tstof(GetCellValue(nRow, nPjackCol));
-   pDuct->Pj = ::ConvertToSysUnits(pDuct->Pj, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure);
+   pDuct->Pj = WBFL::Units::ConvertToSysUnits(pDuct->Pj, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure);
 
    if (pDuct->bPjCalc)
    {
       pDuct->LastUserPj = _tstof(GetCellValue(nRow, nPjackUserCol));
-      pDuct->LastUserPj = ::ConvertToSysUnits(pDuct->LastUserPj, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure);
+      pDuct->LastUserPj = WBFL::Units::ConvertToSysUnits(pDuct->LastUserPj, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure);
    }
    else
    {
@@ -883,15 +883,15 @@ void CSegmentTendonGrid::GetDuctPoints(ROWCOL nRow, CSegmentDuctData* pDuct)
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
    Float64 value = _tstof(GetCellValue(nRow,nLeftEndYCol));
-   pDuct->DuctPoint[CSegmentDuctData::Left].first = ::ConvertToSysUnits(value,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+   pDuct->DuctPoint[CSegmentDuctData::Left].first = WBFL::Units::ConvertToSysUnits(value,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
    pDuct->DuctPoint[CSegmentDuctData::Left].second = (pgsTypes::FaceType)(_tstoi(GetCellValue(nRow,nLeftEndDatumCol)));
 
    value = _tstof(GetCellValue(nRow, nMiddleYCol));
-   pDuct->DuctPoint[CSegmentDuctData::Middle].first = ::ConvertToSysUnits(value, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+   pDuct->DuctPoint[CSegmentDuctData::Middle].first = WBFL::Units::ConvertToSysUnits(value, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
    pDuct->DuctPoint[CSegmentDuctData::Middle].second = (pgsTypes::FaceType)(_tstoi(GetCellValue(nRow, nMiddleDatumCol)));
 
    value = _tstof(GetCellValue(nRow, nRightEndYCol));
-   pDuct->DuctPoint[CSegmentDuctData::Right].first = ::ConvertToSysUnits(value, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+   pDuct->DuctPoint[CSegmentDuctData::Right].first = WBFL::Units::ConvertToSysUnits(value, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
    pDuct->DuctPoint[CSegmentDuctData::Right].second = (pgsTypes::FaceType)(_tstoi(GetCellValue(nRow, nRightEndDatumCol)));
 }
 

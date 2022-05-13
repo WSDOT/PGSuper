@@ -534,7 +534,7 @@ bool CTOGAStrandFillGrid::UpdateData(bool doCheckData)
             EAFGetBroker(&pBroker);
             GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-            leftDebond  = ::ConvertToSysUnits(leftDebond,  pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
+            leftDebond  = WBFL::Units::ConvertToSysUnits(leftDebond,  pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
          }
 
          rightDebond = leftDebond;

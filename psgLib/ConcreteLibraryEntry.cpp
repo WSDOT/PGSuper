@@ -29,7 +29,7 @@
 
 #include "resource.h"
 #include "ConcreteEntryDlg.h"
-#include <Units\sysUnits.h>
+#include <Units\Convert.h>
 
 #include <MathEx.h>
 #include <Material\Concrete.h>
@@ -152,12 +152,12 @@ CString ConcreteLibraryEntry::GetCEBFIPCementType(pgsTypes::CEBFIPCementType typ
 
 //======================== LIFECYCLE  =======================================
 ConcreteLibraryEntry::ConcreteLibraryEntry() :
-m_Fc(::ConvertToSysUnits(4.,unitMeasure::KSI)),
-m_Ec(::ConvertToSysUnits(4200.,unitMeasure::KSI)),
+m_Fc(WBFL::Units::ConvertToSysUnits(4.,WBFL::Units::Measure::KSI)),
+m_Ec(WBFL::Units::ConvertToSysUnits(4200.,WBFL::Units::Measure::KSI)),
 m_bUserEc(false),
-m_Ds(::ConvertToSysUnits(160.,unitMeasure::LbfPerFeet3)),
-m_Dw(::ConvertToSysUnits(160.,unitMeasure::LbfPerFeet3)),
-m_AggSize(::ConvertToSysUnits(0.75,unitMeasure::Inch)),
+m_Ds(WBFL::Units::ConvertToSysUnits(160.,WBFL::Units::Measure::LbfPerFeet3)),
+m_Dw(WBFL::Units::ConvertToSysUnits(160.,WBFL::Units::Measure::LbfPerFeet3)),
+m_AggSize(WBFL::Units::ConvertToSysUnits(0.75,WBFL::Units::Measure::Inch)),
 m_EccK1(1.0),
 m_EccK2(1.0),
 m_CreepK1(1.0),
@@ -166,9 +166,9 @@ m_ShrinkageK1(1.0),
 m_ShrinkageK2(1.0),
 m_Type(pgsTypes::Normal),
 m_Fct(0), // need a good default value
-m_Ffc(::ConvertToSysUnits(1.5,unitMeasure::KSI)),
-m_Frr(::ConvertToSysUnits(0.75,unitMeasure::KSI)),
-m_FiberLength(::ConvertToSysUnits(0.5,unitMeasure::Inch)),
+m_Ffc(WBFL::Units::ConvertToSysUnits(1.5,WBFL::Units::Measure::KSI)),
+m_Frr(WBFL::Units::ConvertToSysUnits(0.75,WBFL::Units::Measure::KSI)),
+m_FiberLength(WBFL::Units::ConvertToSysUnits(0.5,WBFL::Units::Measure::Inch)),
 m_bPCTT(false),
 m_bHasFct(false),
 m_AutogenousShrinkage(0.3e-03),
@@ -590,7 +590,7 @@ bool ConcreteLibraryEntry::IsEqual(const ConcreteLibraryEntry& rOther,bool bCons
 bool ConcreteLibraryEntry::Compare(const ConcreteLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    bMustRename = false;
 

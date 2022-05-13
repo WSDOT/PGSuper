@@ -90,7 +90,7 @@ CGirderSelectStrandsPage::CGirderSelectStrandsPage()
 {
    m_DrawNumbers = TRUE;
 
-   m_Radius = ::ConvertToSysUnits(0.3,unitMeasure::Inch) * 1.5;
+   m_Radius = WBFL::Units::ConvertToSysUnits(0.3,WBFL::Units::Measure::Inch) * 1.5;
 
    m_pToolTip = nullptr;
 }
@@ -1056,7 +1056,7 @@ void CGirderSelectStrandsPage::UpdateStrandAdjustments()
       CComPtr<IBroker> pBroker;
       EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-      const unitmgtLengthData& measUnit = pDisplayUnits->GetComponentDimUnit();
+      const WBFL::Units::LengthData& measUnit = pDisplayUnits->GetComponentDimUnit();
 
       // Unit tag
       GetDlgItem(IDC_HARP_END_UNIT)->SetWindowText(measUnit.UnitOfMeasure.UnitTag().c_str());
@@ -1238,7 +1238,7 @@ void CGirderSelectStrandsPage::OnCbnSelchangeHarpEndCb()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   const unitmgtLengthData& measUnit = pDisplayUnits->GetComponentDimUnit();
+   const WBFL::Units::LengthData& measUnit = pDisplayUnits->GetComponentDimUnit();
 
    CComboBox* pcb = (CComboBox*)GetDlgItem(IDC_HARP_END_CB);
    int idx = pcb->GetCurSel();
@@ -1262,7 +1262,7 @@ void CGirderSelectStrandsPage::OnCbnSelchangeHarpHpCb()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   const unitmgtLengthData& measUnit = pDisplayUnits->GetComponentDimUnit();
+   const WBFL::Units::LengthData& measUnit = pDisplayUnits->GetComponentDimUnit();
 
    CComboBox* pcb = (CComboBox*)GetDlgItem(IDC_HARP_HP_CB);
    int idx = pcb->GetCurSel();
@@ -1415,7 +1415,7 @@ void CGirderSelectStrandsPage::UpdatePjackEditEx(StrandIndexType nStrands, UINT 
       CString val_as_text;
       pWnd->GetWindowText( val_as_text );
       Pjack = _tstof( val_as_text );
-      Pjack = ::ConvertToSysUnits( Pjack, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure );
+      Pjack = WBFL::Units::ConvertToSysUnits( Pjack, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure );
       
       switch( nCheckBox )
       {

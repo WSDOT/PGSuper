@@ -43,7 +43,7 @@ class PGSEXTCLASS rptPointOfInterest : public rptLengthUnitValue
 {
 public:
    //------------------------------------------------------------------------
-   rptPointOfInterest(const unitLength* pUnitOfMeasure = 0,
+   rptPointOfInterest(const WBFL::Units::Length* pUnitOfMeasure = 0,
                       Float64 zeroTolerance = 0.,
                       bool bShowUnitTag = true);
 

@@ -17,7 +17,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-static Float64 gs_Millimeter = ::ConvertToSysUnits(1.0, unitMeasure::Millimeter);
+static Float64 gs_Millimeter = WBFL::Units::ConvertToSysUnits(1.0, WBFL::Units::Measure::Millimeter);
 
 void DDX_DuctGeometry(CDataExchange* pDX,CLinearDuctGrid& grid,CLinearDuctGeometry& ductGeometry)
 {

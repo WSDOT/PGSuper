@@ -596,7 +596,7 @@ Float64 CGirderDescDebondGrid::GetDebondLength(ROWCOL row,ROWCOL col)
    length = _tstof(strDebondLength);
 
    // this is in display units... convert to system units
-   length = ::ConvertToSysUnits(length,pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
+   length = WBFL::Units::ConvertToSysUnits(length,pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
 
    return length;
 }

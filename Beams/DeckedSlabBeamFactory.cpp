@@ -67,37 +67,37 @@ HRESULT CDeckedSlabBeamFactory::FinalConstruct()
    m_DimNames.emplace_back(_T("Jmax"));
    m_DimNames.emplace_back(_T("EndBlockLength"));
 
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(77.75,unitMeasure::Inch)); // A
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(9.0,unitMeasure::Inch));   // B
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(12.0,unitMeasure::Inch));  // C
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(1.75,unitMeasure::Inch));  // F
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(6.0,unitMeasure::Inch));   // W
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(8.0,unitMeasure::Inch));   // Tt
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(7.0,unitMeasure::Inch));   // Tb
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(1.0,unitMeasure::Inch));   // Max Joint Spacing
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(36.0,unitMeasure::Inch));  // End Block Length
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(77.75,WBFL::Units::Measure::Inch)); // A
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(9.0,WBFL::Units::Measure::Inch));   // B
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(12.0,WBFL::Units::Measure::Inch));  // C
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(1.75,WBFL::Units::Measure::Inch));  // F
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(6.0,WBFL::Units::Measure::Inch));   // W
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(8.0,WBFL::Units::Measure::Inch));   // Tt
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(7.0,WBFL::Units::Measure::Inch));   // Tb
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(1.0,WBFL::Units::Measure::Inch));   // Max Joint Spacing
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(36.0,WBFL::Units::Measure::Inch));  // End Block Length
 
    // SI Units
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // A 
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // B
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // C
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // F
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // Tt
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // Tb
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // Max joint size
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // End Block Length
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // A 
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // B
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // C
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // F
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // Tt
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // Tb
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // Max joint size
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // End Block Length
 
    // US Units
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // A 
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // B
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // C
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // F
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // Tt
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // Tb
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // Max joint size
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // End Block Length
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // A 
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // B
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // C
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // F
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // Tt
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // Tb
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // Max joint size
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // End Block Length
 
    return S_OK;
 }
@@ -402,7 +402,7 @@ const std::vector<Float64>& CDeckedSlabBeamFactory::GetDefaultDimensions() const
    return m_DefaultDims;
 }
 
-const std::vector<const unitLength*>& CDeckedSlabBeamFactory::GetDimensionUnits(bool bSIUnits) const
+const std::vector<const WBFL::Units::Length*>& CDeckedSlabBeamFactory::GetDimensionUnits(bool bSIUnits) const
 {
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }

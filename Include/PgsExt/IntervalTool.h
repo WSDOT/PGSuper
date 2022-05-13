@@ -22,12 +22,12 @@
 #pragma once
 
 #include <PgsExt\PgsExtExp.h>
-#include <UnitMgt\UnitValueNumericalFormatTools.h>
+#include <Units\UnitValueNumericalFormatTools.h>
 
-class PGSEXTCLASS IntervalTool : public ScalarTool
+class PGSEXTCLASS IntervalTool : public WBFL::Units::ScalarTool
 {
 public:
-   IntervalTool(const unitmgtScalar& umd);
+   IntervalTool(const WBFL::Units::ScalarData& umd);
    void SetLastValue(Float64 value);
    virtual std::_tstring AsString(Float64 value) const override;
 

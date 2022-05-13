@@ -30,7 +30,7 @@
 
 #include "resource.h"
 #include "DuctEntryDlg.h"
-#include <Units\sysUnits.h>
+#include <Units\Convert.h>
 
 #include <EAF\EAFApp.h>
 
@@ -151,7 +151,7 @@ bool DuctLibraryEntry::IsEqual(const DuctLibraryEntry& rOther,bool bConsiderName
 bool DuctLibraryEntry::Compare(const DuctLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    bMustRename = false;
 

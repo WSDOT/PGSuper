@@ -24,7 +24,7 @@
 #include "stdafx.h"
 #include "VoidedSlabDistFactorEngineer.h"
 #include <PGSuperException.h>
-#include <Units\SysUnits.h>
+#include <Units\Convert.h>
 #include <PsgLib\TrafficBarrierEntry.h>
 #include <PsgLib\SpecLibraryEntry.h>
 #include <PgsExt\BridgeDescription2.h>
@@ -827,7 +827,7 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
          (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
          if(lldf.Method != LLDF_TXDOT)
          {
-            Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
+            Float64 skew_delta_max = WBFL::Units::ConvertToSysUnits( 10.0, WBFL::Units::Measure::Degree );
             if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
                (*pPara) << rptRcImage(strImagePath + _T("SkewCorrection_Moment_TypeC.png")) << rptNewLine;
          }
@@ -948,7 +948,7 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
          (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
          if(lldf.Method != LLDF_TXDOT)
          {
-            Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
+            Float64 skew_delta_max = WBFL::Units::ConvertToSysUnits( 10.0, WBFL::Units::Measure::Degree );
             if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
                (*pPara) << rptRcImage(strImagePath + _T("SkewCorrection_Moment_TypeC.png")) << rptNewLine;
          }

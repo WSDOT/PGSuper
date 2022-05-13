@@ -67,7 +67,7 @@ public:
                                   IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
                                   Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) const override;
    virtual const std::vector<std::_tstring>& GetDimensionNames() const override;
-   virtual const std::vector<const unitLength*>& GetDimensionUnits(bool bSIUnits) const override;
+   virtual const std::vector<const WBFL::Units::Length*>& GetDimensionUnits(bool bSIUnits) const override;
    virtual const std::vector<Float64>& GetDefaultDimensions() const override;
    virtual bool ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg) const override;
    virtual void SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const override;
@@ -122,7 +122,7 @@ public:
 private:
    std::vector<std::_tstring> m_DimNames;
    std::vector<Float64> m_DefaultDims;
-   std::vector<const unitLength*> m_DimUnits[2];
+   std::vector<const WBFL::Units::Length*> m_DimUnits[2];
 
    void CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,pgsTypes::MemberEndType end,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection) const;
 

@@ -39,7 +39,7 @@ void CBearingData2::Init()
    bNeedsDefaults = true;
 
    Shape = bsRectangular;
-   Length =  ::ConvertToSysUnits(1.0,unitMeasure::Feet);
+   Length =  WBFL::Units::ConvertToSysUnits(1.0,WBFL::Units::Measure::Feet);
    Width  = Length;
    BearingCount = 1;
    Spacing = 0.0;

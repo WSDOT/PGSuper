@@ -139,7 +139,7 @@ inline void TxDOTDebondTool::Compute()
    m_NumDebonded = m_pStrandGeometry->GetNumDebondedStrands(m_SegmentKey,pgsTypes::Straight,pgsTypes::dbetEither);
 
    // standard debond increment
-   Float64 three_feet = ::ConvertToSysUnits( 3.0,unitMeasure::Feet);
+   Float64 three_feet = WBFL::Units::ConvertToSysUnits( 3.0,WBFL::Units::Measure::Feet);
 
    StrandIndexType nss = m_pStrandGeometry->GetStrandCount(m_SegmentKey,pgsTypes::Straight);
 

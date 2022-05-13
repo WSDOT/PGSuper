@@ -2414,7 +2414,7 @@ void CPsLossEngineer::ReportInitialRelaxation(rptChapter* pChapter,bool bTempora
    (*table)(0,2) << COLHDR(RPT_FPY, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,3) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR0")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-   (*table)(1,0) << ::ConvertFromSysUnits( pLosses->GetInitialAge(), unitMeasure::Day );
+   (*table)(1,0) << WBFL::Units::ConvertFromSysUnits( pLosses->GetInitialAge(), WBFL::Units::Measure::Day );
    (*table)(1,1) << stress.SetValue( pLosses->GetFpjPermanent() );
    (*table)(1,2) << stress.SetValue( pLosses->GetFpyPermanent() );
    (*table)(1,3) << stress.SetValue( pLosses->PermanentStrand_RelaxationLossesBeforeTransfer() );
@@ -2449,7 +2449,7 @@ void CPsLossEngineer::ReportInitialRelaxation(rptChapter* pChapter,bool bTempora
       (*table)(0,2) << COLHDR(RPT_FPY, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*table)(0,3) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR0")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-      (*table)(1,0) << ::ConvertFromSysUnits( pLosses->GetInitialAge(), unitMeasure::Day );
+      (*table)(1,0) << WBFL::Units::ConvertFromSysUnits( pLosses->GetInitialAge(), WBFL::Units::Measure::Day );
       (*table)(1,1) << stress.SetValue( pLosses->GetFpjTemporary() );
       (*table)(1,2) << stress.SetValue( pLosses->GetFpyTemporary() );
       (*table)(1,3) << stress.SetValue( pLosses->TemporaryStrand_RelaxationLossesBeforeTransfer() );

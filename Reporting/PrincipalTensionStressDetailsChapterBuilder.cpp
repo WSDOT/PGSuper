@@ -137,7 +137,7 @@ rptChapter* CPrincipalTensionStressDetailsChapterBuilder::Build(CReportSpecifica
          else if (pArtifact->GetApplicability() == pgsPrincipalTensionStressArtifact::ConcreteStrength)
          {
             INIT_UV_PROTOTYPE(rptStressUnitValue, stress_u, pDisplayUnits->GetStressUnit(), true);
-            *pPara << _T("Concrete strength does not exceed the ") << stress_u.SetValue(::ConvertToSysUnits(threshold, unitMeasure::KSI)) << _T(" threshold") << rptNewLine;
+            *pPara << _T("Concrete strength does not exceed the ") << stress_u.SetValue(WBFL::Units::ConvertToSysUnits(threshold, WBFL::Units::Measure::KSI)) << _T(" threshold") << rptNewLine;
          }
          else
          {

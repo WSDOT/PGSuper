@@ -1106,7 +1106,7 @@ void CGirderDescPrestressPage::UpdatePjackEditEx(StrandIndexType nStrands, UINT 
       CString val_as_text;
       pWnd->GetWindowText( val_as_text );
       Pjack = _tstof( val_as_text );
-      Pjack = ::ConvertToSysUnits( Pjack, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure );
+      Pjack = WBFL::Units::ConvertToSysUnits( Pjack, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure );
 
       pgsTypes::StrandType strandType;
       switch( nCheckBox )
@@ -1905,7 +1905,7 @@ void CGirderDescPrestressPage::OnSelchangeHpComboHp()
          pWnd->GetWindowText(strOffset);
          Float64 offset = _tstof(strOffset);
 
-         offset = ::ConvertToSysUnits(offset,  pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+         offset = WBFL::Units::ConvertToSysUnits(offset,  pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
          ConfigStrandFillVector harpFill( ComputeHarpedStrandFillVector() );
 
@@ -1953,7 +1953,7 @@ void CGirderDescPrestressPage::OnSelchangeHpComboEnd()
             CWnd* pWnd = GetDlgItem(nIDC);
             pWnd->GetWindowText(strOffset);
             Float64 offset = _tstof(strOffset);
-            offset = ::ConvertToSysUnits(offset,  pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+            offset = WBFL::Units::ConvertToSysUnits(offset,  pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
             ConfigStrandFillVector harpFill( ComputeHarpedStrandFillVector() );
 
@@ -2741,7 +2741,7 @@ void CGirderDescPrestressPage::ConvertPJackFromNumPerm(StrandIndexType numStraig
       CString val_as_text;
       pWnd->GetWindowText( val_as_text );
       Float64 Pjack = _tstof( val_as_text );
-      Pjack = ::ConvertToSysUnits( Pjack, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure );
+      Pjack = WBFL::Units::ConvertToSysUnits( Pjack, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure );
 
       StrandIndexType num_perm = numStraight+numHarped;
       if (num_perm>0)
@@ -2799,7 +2799,7 @@ void CGirderDescPrestressPage::ConvertPJackToNumPerm(StrandIndexType numStraight
          CString val_as_text;
          pWnd->GetWindowText( val_as_text );
          Float64 Pjack = _tstof( val_as_text );
-         jack_straight = ::ConvertToSysUnits( Pjack, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure );
+         jack_straight = WBFL::Units::ConvertToSysUnits( Pjack, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure );
       }
 
       Float64 jack_harped = 0;
@@ -2814,7 +2814,7 @@ void CGirderDescPrestressPage::ConvertPJackToNumPerm(StrandIndexType numStraight
          CString val_as_text;
          pWnd->GetWindowText( val_as_text );
          Float64 Pjack = _tstof( val_as_text );
-         jack_harped = ::ConvertToSysUnits( Pjack, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure );
+         jack_harped = WBFL::Units::ConvertToSysUnits( Pjack, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure );
       }
 
       pParent->m_pSegment->Strands.SetPjack(pgsTypes::Straight, jack_straight);

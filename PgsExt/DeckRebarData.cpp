@@ -40,8 +40,8 @@ CLASS
 //======================== LIFECYCLE  =======================================
 CDeckRebarData::CDeckRebarData()
 {
-   TopCover    = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
-   BottomCover = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
+   TopCover    = WBFL::Units::ConvertToSysUnits(2.0,WBFL::Units::Measure::Inch);
+   BottomCover = WBFL::Units::ConvertToSysUnits(2.0,WBFL::Units::Measure::Inch);
 
    TopRebarType = matRebar::A615;
    TopRebarGrade = matRebar::Grade60;
@@ -51,12 +51,12 @@ CDeckRebarData::CDeckRebarData()
    BottomRebarGrade = matRebar::Grade60;
    BottomRebarSize = matRebar::bsNone;
 
-   TopSpacing    = ::ConvertToSysUnits(18.0,unitMeasure::Inch);
-   BottomSpacing = ::ConvertToSysUnits(18.0,unitMeasure::Inch);
+   TopSpacing    = WBFL::Units::ConvertToSysUnits(18.0,WBFL::Units::Measure::Inch);
+   BottomSpacing = WBFL::Units::ConvertToSysUnits(18.0,WBFL::Units::Measure::Inch);
 
    // default values are for LRFD imperical deck design
-   TopLumpSum    = ::ConvertToSysUnits(0.18,unitMeasure::Inch2PerFoot);
-   BottomLumpSum = ::ConvertToSysUnits(0.27,unitMeasure::Inch2PerFoot);
+   TopLumpSum    = WBFL::Units::ConvertToSysUnits(0.18,WBFL::Units::Measure::Inch2PerFoot);
+   BottomLumpSum = WBFL::Units::ConvertToSysUnits(0.27,WBFL::Units::Measure::Inch2PerFoot);
 }
 
 CDeckRebarData::CDeckRebarData(const CDeckRebarData& rOther)

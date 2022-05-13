@@ -25,7 +25,7 @@
 #include <Graphs/GraphsExp.h>
 #include <Graphing/PointMapper.h>
 #include <PgsExt\BridgeDescription2.h>
-#include <UnitMgt\UnitValueNumericalFormatTools.h>
+#include <Units\UnitValueNumericalFormatTools.h>
 
 interface IGirder;
 interface IPointOfInterest;
@@ -60,10 +60,10 @@ public:
    // GET_IFACE(IPointOfInterest,pPoi);
    // Float64 beamShift = -1*pPoi->ConvertPoiToGirderlineCoordinate(pgsPointOfInterest(segmentKey,0.0));
 
-   void DrawBeam(IBroker* pBroker,CDC* pDC,const WBFL::Graphing::PointMapper& beamMapper,arvPhysicalConverter* pUnitConverter,IntervalIndexType firstPlottingIntervalIdx,IntervalIndexType lastPlottingIntervalIdx,const CGirderKey& girderKey,Float64 beamShift);
+   void DrawBeam(IBroker* pBroker,CDC* pDC,const WBFL::Graphing::PointMapper& beamMapper, WBFL::Units::PhysicalConverter* pUnitConverter,IntervalIndexType firstPlottingIntervalIdx,IntervalIndexType lastPlottingIntervalIdx,const CGirderKey& girderKey,Float64 beamShift);
 
    // Just draw one segment
-   void DrawBeamSegment(IBroker* pBroker,CDC* pDC,const WBFL::Graphing::PointMapper& beamMapper,arvPhysicalConverter* pUnitConverter, IntervalIndexType firstPlottingIntervalIdx, IntervalIndexType lastPlottingIntervalIdx,const CSegmentKey& segmentKey,Float64 beamShift);
+   void DrawBeamSegment(IBroker* pBroker,CDC* pDC,const WBFL::Graphing::PointMapper& beamMapper, WBFL::Units::PhysicalConverter* pUnitConverter, IntervalIndexType firstPlottingIntervalIdx, IntervalIndexType lastPlottingIntervalIdx,const CSegmentKey& segmentKey,Float64 beamShift);
 
    // Support size in device coord's
    CSize GetSupportSize(CDC* pDC) const;
@@ -72,7 +72,7 @@ public:
 
 protected:
    IBroker* m_pBroker;
-   arvPhysicalConverter* m_pUnitConverter;
+   WBFL::Units::PhysicalConverter* m_pUnitConverter;
    
    CSize m_SupportSize;
 

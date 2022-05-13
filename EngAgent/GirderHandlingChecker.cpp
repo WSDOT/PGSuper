@@ -207,7 +207,7 @@ void pgsGirderHandlingChecker::GetRequirementsForAlternativeTensileStress(const 
     pMaterial->GetLongitudinalRebarProperties(span,gdr,&Es,&fs,&fu);
     fs *= 0.5;
 
-    Float64 fsMax = (bUnitsSI ? ::ConvertToSysUnits(206.0,unitMeasure::MPa) : ::ConvertToSysUnits(30.0,unitMeasure::KSI) );
+    Float64 fsMax = (bUnitsSI ? WBFL::Units::ConvertToSysUnits(206.0,WBFL::Units::Measure::MPa) : WBFL::Units::ConvertToSysUnits(30.0,WBFL::Units::Measure::KSI) );
     if ( fsMax < fs )
        fs = fsMax;
 

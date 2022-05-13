@@ -999,9 +999,9 @@ void pgsKdotHaulingAnalysisArtifact::Write1250Data(const CSegmentKey& segmentKey
 
       Float64 fTop, fBottom, Capacity;
       pStress->GetConcreteTensileStress(&fTop, &fBottom, &Capacity);
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100005, ")<<loc<<_T(", ")<< ::ConvertFromSysUnits(fTop , unitMeasure::MPa) <<_T(", 50, ")<<gdr<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100006, ")<<loc<<_T(", ")<< ::ConvertFromSysUnits(fBottom , unitMeasure::MPa) <<_T(", 50, ")<<gdr<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100007, ")<<loc<<_T(", ")<< ::ConvertFromSysUnits(Capacity , unitMeasure::MPa) <<_T(", 50, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100005, ")<<loc<<_T(", ")<< WBFL::Units::ConvertFromSysUnits(fTop , WBFL::Units::Measure::MPa) <<_T(", 50, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100006, ")<<loc<<_T(", ")<< WBFL::Units::ConvertFromSysUnits(fBottom , WBFL::Units::Measure::MPa) <<_T(", 50, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100007, ")<<loc<<_T(", ")<< WBFL::Units::ConvertFromSysUnits(Capacity , WBFL::Units::Measure::MPa) <<_T(", 50, ")<<gdr<<std::endl;
    }
 }
 
@@ -1136,22 +1136,22 @@ void pgsKdotHaulingAnalysisArtifact::Dump(dbgDumpContext& os) const
    {
       const pgsPointOfInterest& rpoi = *iter;
       Float64 loc = rpoi.GetDistFromStart();
-      os <<_T("--- At ") << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << _T(" ft: ");
+      os <<_T("--- At ") << WBFL::Units::ConvertFromSysUnits(loc,WBFL::Units::Measure::Feet) << _T(" ft: ");
       std::map<pgsPointOfInterest,pgsKdotHaulingStressAnalysisArtifact>::const_iterator found;
       found = m_HaulingStressAnalysisArtifacts.find( rpoi );
 
       os<<endl;
       Float64 fps, ftot, ftcap, fccap;
       found->second.GetTopFiberStress(&fps, &ftot);
-      os<<_T("TopStress fps=")<<::ConvertFromSysUnits(fps,unitMeasure::KSI)<<_T("ksi, ftot=")<<::ConvertFromSysUnits(ftot,unitMeasure::KSI)<<_T("ksi")<<endl;
+      os<<_T("TopStress fps=")<<WBFL::Units::ConvertFromSysUnits(fps,WBFL::Units::Measure::KSI)<<_T("ksi, ftot=")<<WBFL::Units::ConvertFromSysUnits(ftot,WBFL::Units::Measure::KSI)<<_T("ksi")<<endl;
 
       found->second.GetBottomFiberStress(&fps, &ftot);
-      os<<_T("BotStress fps=")<<::ConvertFromSysUnits(fps,unitMeasure::KSI)<<_T("ksi, ftot=")<<::ConvertFromSysUnits(ftot,unitMeasure::KSI)<<_T("ksi")<<endl;
+      os<<_T("BotStress fps=")<<WBFL::Units::ConvertFromSysUnits(fps,WBFL::Units::Measure::KSI)<<_T("ksi, ftot=")<<WBFL::Units::ConvertFromSysUnits(ftot,WBFL::Units::Measure::KSI)<<_T("ksi")<<endl;
 
       found->second.GetConcreteTensileStress(&fps, &ftot, &ftcap);
       fccap = found->second.GetCompressiveCapacity();
       bool passed = found->second.Passed();
-      os<<_T("Capacity Tens = ")<<::ConvertFromSysUnits(ftcap,unitMeasure::KSI)<<_T("ksi, Comp =")<<::ConvertFromSysUnits(fccap,unitMeasure::KSI)<<_T("ksi, Passed =")<<passed<<endl;
+      os<<_T("Capacity Tens = ")<<WBFL::Units::ConvertFromSysUnits(ftcap,WBFL::Units::Measure::KSI)<<_T("ksi, Comp =")<<WBFL::Units::ConvertFromSysUnits(fccap,WBFL::Units::Measure::KSI)<<_T("ksi, Passed =")<<passed<<endl;
    }
 
    os <<_T(" Dump Complete")<<endl;

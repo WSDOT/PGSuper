@@ -97,13 +97,13 @@ BOOL DoParseTemplateFile(const LPCTSTR lpszPathName, CString& girderEntry,
       std::_tstring str = tokenizer[5].c_str();
       did_parse = sysTokenizer::ParseDouble(str.c_str(), &girderUnitWeight);
       // value stored in file is pcf
-      girderUnitWeight = ::ConvertToSysUnits(girderUnitWeight, unitMeasure::LbfPerFeet3);
+      girderUnitWeight = WBFL::Units::ConvertToSysUnits(girderUnitWeight, WBFL::Units::Measure::LbfPerFeet3);
       ATLASSERT(did_parse);
    }
 
    if (!did_parse)
    {
-      girderUnitWeight = ::ConvertToSysUnits(150.0, unitMeasure::LbfPerFeet3);
+      girderUnitWeight = WBFL::Units::ConvertToSysUnits(150.0, WBFL::Units::Measure::LbfPerFeet3);
    }
 
    return TRUE;

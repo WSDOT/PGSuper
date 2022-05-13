@@ -251,7 +251,7 @@ void CTemporarySupportDrawStrategyImpl::DrawStrongBack(iPointDisplayObject* pDO,
    long wx1,wy1;
    long wx2,wy2;
 
-   Float64 strong_back_height_above_girder = ::ConvertToSysUnits(1.0,unitMeasure::Feet);
+   Float64 strong_back_height_above_girder = WBFL::Units::ConvertToSysUnits(1.0,WBFL::Units::Measure::Feet);
 
    pMap->WPtoLP(x-m_LeftBrgOffset,y,&wx1,&wy1);
    pMap->WPtoLP(x-m_LeftBrgOffset,strong_back_height_above_girder,&wx2,&wy2);

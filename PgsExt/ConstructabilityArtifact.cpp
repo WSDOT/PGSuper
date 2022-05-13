@@ -46,7 +46,7 @@ m_bIsSlabOffsetApplicable(false)
    m_ProvidedStart = 0;
    m_ProvidedEnd = 0;
    m_Required = 0;
-   m_SlabOffsetWarningTolerance = ::ConvertToSysUnits(0.25,unitMeasure::Inch); // WSDOT standard
+   m_SlabOffsetWarningTolerance = WBFL::Units::ConvertToSysUnits(0.25,WBFL::Units::Measure::Inch); // WSDOT standard
    m_MinimumRequiredFillet = 0;
    m_ProvidedFillet = 0;
 

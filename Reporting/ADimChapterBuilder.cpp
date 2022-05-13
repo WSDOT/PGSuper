@@ -167,7 +167,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
    else
    {
       days = pSpecEntry->GetCreepDuration2Max(); // haunch is always computined using max time for construction
-      days = ::ConvertFromSysUnits(days, unitMeasure::Day);
+      days = WBFL::Units::ConvertFromSysUnits(days, WBFL::Units::Measure::Day);
    }
    std::_tostringstream os;
    os << days;

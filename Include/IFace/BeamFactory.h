@@ -168,9 +168,9 @@ interface IBeamFactory : IUnknown
    // Returns a vector of length unit objects representing the units of measure of each
    // dimension. 
    // Note that we play a game here to allow scalars and booleans into the system if the values are: 
-   // (const unitLength*) BFDIMUNITSCALAR : The dimension is a scalar.
-   // (const unitLength*) BFDIMUNITBOOLEAN: // The dimension is a boolean.
-   virtual const std::vector<const unitLength*>& GetDimensionUnits(bool bSIUnits) const = 0;
+   // (const WBFL::Units::Length*) BFDIMUNITSCALAR : The dimension is a scalar.
+   // (const WBFL::Units::Length*) BFDIMUNITBOOLEAN: // The dimension is a boolean.
+   virtual const std::vector<const WBFL::Units::Length*>& GetDimensionUnits(bool bSIUnits) const = 0;
 
    //---------------------------------------------------------------------------------
    // Returns a defaults for the dimensions. Values are order to match the vector returned by

@@ -90,13 +90,13 @@ void CTxDOTOptionalDesignBridgeInputPage::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag( pDX, IDC_BEAM_SPACING,   IDC_BEAM_SPACING_UNITS,  m_BeamSpacing, pDisplayUnits->GetSpanLengthUnit() );
    DDV_UnitValueGreaterThanZero( pDX, IDC_BEAM_SPACING,m_BeamSpacing, pDisplayUnits->GetSpanLengthUnit() );
 
-   Float64 min_span_length = ::ConvertToSysUnits(20.0, unitMeasure::Feet);
+   Float64 min_span_length = WBFL::Units::ConvertToSysUnits(20.0, WBFL::Units::Measure::Feet);
 
    DDX_UnitValueAndTag( pDX, IDC_SPAN_LENGTH,   IDC_SPAN_LENGTH_UNITS,  m_SpanLength, pDisplayUnits->GetSpanLengthUnit() );
    DDV_UnitValueLimitOrMore( pDX, IDC_SPAN_LENGTH,m_SpanLength, min_span_length, pDisplayUnits->GetSpanLengthUnit() );
 
    Float64 min_slab_thickness = 0.0; // lower limit of 4.0 will be checked for spread beams at model generation time
-   Float64 max_slab_thickness = ::ConvertToSysUnits(24.0, unitMeasure::Inch);
+   Float64 max_slab_thickness = WBFL::Units::ConvertToSysUnits(24.0, WBFL::Units::Measure::Inch);
 
    DDX_UnitValueAndTag( pDX, IDC_SLAB_THICKNESS,   IDC_SLAB_THICKNESS_UNITS,  m_SlabThickness, pDisplayUnits->GetComponentDimUnit() );
    DDV_UnitValueRange( pDX, IDC_SLAB_THICKNESS,m_SlabThickness,min_slab_thickness, max_slab_thickness, pDisplayUnits->GetComponentDimUnit() );
@@ -119,8 +119,8 @@ void CTxDOTOptionalDesignBridgeInputPage::DoDataExchange(CDataExchange* pDX)
       DDV_MinMaxDouble(pDX, m_LldfShear, 0.0, 999);
    }
 
-   Float64 min_ec  = ::ConvertToSysUnits( 2000.0,  unitMeasure::KSI); 
-   Float64 max_ec  = ::ConvertToSysUnits(10000.0,  unitMeasure::KSI); 
+   Float64 min_ec  = WBFL::Units::ConvertToSysUnits( 2000.0,  WBFL::Units::Measure::KSI); 
+   Float64 max_ec  = WBFL::Units::ConvertToSysUnits(10000.0,  WBFL::Units::Measure::KSI); 
 
    DDX_UnitValueAndTag(pDX,IDC_EC_SLAB, IDC_EC_SLAB_UNITS, m_EcSlab, pDisplayUnits->GetStressUnit() );
    DDV_UnitValueRange( pDX, IDC_EC_SLAB,m_EcSlab,min_ec, max_ec, pDisplayUnits->GetStressUnit() );
@@ -128,9 +128,9 @@ void CTxDOTOptionalDesignBridgeInputPage::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX,IDC_EC_BEAM, IDC_EC_BEAM_UNITS, m_EcBeam, pDisplayUnits->GetStressUnit() );
    DDV_UnitValueRange( pDX, IDC_EC_BEAM,m_EcBeam,min_ec, max_ec, pDisplayUnits->GetStressUnit() );
 
-   Float64 min_fc  = ::ConvertToSysUnits( 4.0,  unitMeasure::KSI); 
-   Float64 max_fci = ::ConvertToSysUnits(10.0,  unitMeasure::KSI); 
-   Float64 max_fc  = ::ConvertToSysUnits(15.0,  unitMeasure::KSI); 
+   Float64 min_fc  = WBFL::Units::ConvertToSysUnits( 4.0,  WBFL::Units::Measure::KSI); 
+   Float64 max_fci = WBFL::Units::ConvertToSysUnits(10.0,  WBFL::Units::Measure::KSI); 
+   Float64 max_fc  = WBFL::Units::ConvertToSysUnits(15.0,  WBFL::Units::Measure::KSI); 
 
    DDX_UnitValueAndTag(pDX,IDC_FC_SLAB, IDC_FC_SLAB_UNITS, m_FcSlab, pDisplayUnits->GetStressUnit() );
    DDV_UnitValueRange( pDX,IDC_FC_SLAB,m_FcSlab,min_fc, max_fc, pDisplayUnits->GetStressUnit() );

@@ -57,7 +57,7 @@ CTrafficBarrierDlg::CTrafficBarrierDlg(bool allowEditing,
 
    m_BarrierPoints.CoCreateInstance(CLSID_Point2dCollection);
 
-   m_Ec = ::ConvertToSysUnits(lrfdConcreteUtil::ModE(matConcrete::Normal, 4.0,155.0,false),unitMeasure::KSI);
+   m_Ec = WBFL::Units::ConvertToSysUnits(lrfdConcreteUtil::ModE(matConcrete::Normal, 4.0,155.0,false),WBFL::Units::Measure::KSI);
 
    m_bStructurallyContinuous = false;
 }
@@ -66,7 +66,7 @@ CTrafficBarrierDlg::CTrafficBarrierDlg(bool allowEditing,
 void CTrafficBarrierDlg::DoDataExchange(CDataExchange* pDX)
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
 
    CDialog::DoDataExchange(pDX);

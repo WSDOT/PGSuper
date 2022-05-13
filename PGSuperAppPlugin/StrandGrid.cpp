@@ -417,22 +417,22 @@ CStrandRow CStrandGrid::GetStrandRow(ROWCOL nRow)
 
    // Left End
    Float64 value = _tstof(GetCellValue(nRow,col++));
-   strandRow.m_Y[ZoneBreakType::Start] = ::ConvertToSysUnits(value,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+   strandRow.m_Y[ZoneBreakType::Start] = WBFL::Units::ConvertToSysUnits(value,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
    strandRow.m_Face[ZoneBreakType::Start] = (pgsTypes::FaceType)(_tstoi(GetCellValue(nRow,col++)));
 
    // Left Harp Point
    value = _tstof(GetCellValue(nRow,col++));
-   strandRow.m_Y[ZoneBreakType::LeftBreak] = ::ConvertToSysUnits(value,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+   strandRow.m_Y[ZoneBreakType::LeftBreak] = WBFL::Units::ConvertToSysUnits(value,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
    strandRow.m_Face[ZoneBreakType::LeftBreak] = (pgsTypes::FaceType)(_tstoi(GetCellValue(nRow,col++)));
 
    // Right Harp Point
    value = _tstof(GetCellValue(nRow,col++));
-   strandRow.m_Y[ZoneBreakType::RightBreak] = ::ConvertToSysUnits(value,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+   strandRow.m_Y[ZoneBreakType::RightBreak] = WBFL::Units::ConvertToSysUnits(value,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
    strandRow.m_Face[ZoneBreakType::RightBreak] = (pgsTypes::FaceType)(_tstoi(GetCellValue(nRow,col++)));
 
    // Right End
    value = _tstof(GetCellValue(nRow,col++));
-   strandRow.m_Y[ZoneBreakType::End] = ::ConvertToSysUnits(value,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+   strandRow.m_Y[ZoneBreakType::End] = WBFL::Units::ConvertToSysUnits(value,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
    strandRow.m_Face[ZoneBreakType::End] = (pgsTypes::FaceType)(_tstoi(GetCellValue(nRow,col++)));
 
    strandRow.m_bIsExtendedStrand[pgsTypes::metStart] = GetCellValue(nRow,col++) == _T("1") ? true : false;
@@ -440,11 +440,11 @@ CStrandRow CStrandGrid::GetStrandRow(ROWCOL nRow)
 
    strandRow.m_bIsDebonded[pgsTypes::metStart] = GetCellValue(nRow,col++) == _T("1") ? true : false;
    value = _tstof(GetCellValue(nRow,col++));
-   strandRow.m_DebondLength[pgsTypes::metStart] = ::ConvertToSysUnits(value,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+   strandRow.m_DebondLength[pgsTypes::metStart] = WBFL::Units::ConvertToSysUnits(value,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
 
    strandRow.m_bIsDebonded[pgsTypes::metEnd]   = GetCellValue(nRow,col++) == _T("1") ? true : false;
    value = _tstof(GetCellValue(nRow,col++));
-   strandRow.m_DebondLength[pgsTypes::metEnd] = ::ConvertToSysUnits(value,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+   strandRow.m_DebondLength[pgsTypes::metEnd] = WBFL::Units::ConvertToSysUnits(value,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
 
    return strandRow;
 }
@@ -937,10 +937,10 @@ ROWCOL CRowStrandGrid::SetSpecializedColumnStyles(ROWCOL nRow, ROWCOL col)
 ROWCOL CRowStrandGrid::GetSpecializedColumnValues(ROWCOL nRow, ROWCOL col, CStrandRow& strandRow, IEAFDisplayUnits* pDisplayUnits)
 {
    Float64 value = _tstof(GetCellValue(nRow, col++));
-   strandRow.m_Z = ::ConvertToSysUnits(value, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+   strandRow.m_Z = WBFL::Units::ConvertToSysUnits(value, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
    value = _tstof(GetCellValue(nRow, col++));
-   strandRow.m_Spacing = ::ConvertToSysUnits(value, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+   strandRow.m_Spacing = WBFL::Units::ConvertToSysUnits(value, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
    strandRow.m_nStrands = _tstoi(GetCellValue(nRow, col++));
 
@@ -1048,7 +1048,7 @@ ROWCOL CPointStrandGrid::SetSpecializedColumnStyles(ROWCOL nRow, ROWCOL col)
 ROWCOL CPointStrandGrid::GetSpecializedColumnValues(ROWCOL nRow, ROWCOL col, CStrandRow& strandRow, IEAFDisplayUnits* pDisplayUnits)
 {
    Float64 value = _tstof(GetCellValue(nRow, col++));
-   strandRow.m_Z = ::ConvertToSysUnits(value, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+   strandRow.m_Z = WBFL::Units::ConvertToSysUnits(value, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
    strandRow.m_nStrands = 1;
 

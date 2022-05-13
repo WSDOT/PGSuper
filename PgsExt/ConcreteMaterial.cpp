@@ -22,7 +22,7 @@
 
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\ConcreteMaterial.h>
-#include <Units\SysUnits.h>
+#include <Units\Convert.h>
 
 #include <StdIo.h>
 
@@ -42,13 +42,13 @@ CLASS
 ****************************************************************************/
 
 // Make conversions static so they are only done once
-static const Float64 gs_Fci    = ::ConvertToSysUnits( 4.0, unitMeasure::KSI );
-static const Float64 gs_Fc     = ::ConvertToSysUnits(5.0,unitMeasure::KSI);
-static const Float64 gs_StrengthDensity = ::ConvertToSysUnits(160.,unitMeasure::LbfPerFeet3);
+static const Float64 gs_Fci    = WBFL::Units::ConvertToSysUnits( 4.0, WBFL::Units::Measure::KSI );
+static const Float64 gs_Fc     = WBFL::Units::ConvertToSysUnits(5.0,WBFL::Units::Measure::KSI);
+static const Float64 gs_StrengthDensity = WBFL::Units::ConvertToSysUnits(160.,WBFL::Units::Measure::LbfPerFeet3);
 static const Float64 gs_WeightDensity = gs_StrengthDensity;
-static const Float64 gs_MaxAggregateSize = ::ConvertToSysUnits(0.75,unitMeasure::Inch);
-static const Float64 gs_Eci = ::ConvertToSysUnits(4200., unitMeasure::KSI);
-static const Float64 gs_Ec = ::ConvertToSysUnits(4700., unitMeasure::KSI);
+static const Float64 gs_MaxAggregateSize = WBFL::Units::ConvertToSysUnits(0.75,WBFL::Units::Measure::Inch);
+static const Float64 gs_Eci = WBFL::Units::ConvertToSysUnits(4200., WBFL::Units::Measure::KSI);
+static const Float64 gs_Ec = WBFL::Units::ConvertToSysUnits(4700., WBFL::Units::Measure::KSI);
 
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
@@ -77,9 +77,9 @@ CConcreteMaterial::CConcreteMaterial()
    bHasFct = false;
    Fct = 0;
 
-   Ffc = ::ConvertToSysUnits(1.5, unitMeasure::KSI);
-   Frr = ::ConvertToSysUnits(0.75, unitMeasure::KSI);
-   FiberLength = ::ConvertToSysUnits(0.5, unitMeasure::Inch);
+   Ffc = WBFL::Units::ConvertToSysUnits(1.5, WBFL::Units::Measure::KSI);
+   Frr = WBFL::Units::ConvertToSysUnits(0.75, WBFL::Units::Measure::KSI);
+   FiberLength = WBFL::Units::ConvertToSysUnits(0.5, WBFL::Units::Measure::Inch);
    AutogenousShrinkage = 0.0;
    bPCTT = false;
 

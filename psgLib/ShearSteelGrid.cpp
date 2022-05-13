@@ -147,7 +147,7 @@ void CShearSteelGrid::InsertRow(bool bAppend)
 	ROWCOL nRow = 0;
 
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
 	// if there are no cells selected,
 	// copy the current cell's coordinates
@@ -270,7 +270,7 @@ void CShearSteelGrid::SetSymmetry(bool isSymmetrical)
 void CShearSteelGrid::CustomInit()
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
 // Initialize the grid. For CWnd based grids this call is // 
 // essential. For view based grids this initialization is done 

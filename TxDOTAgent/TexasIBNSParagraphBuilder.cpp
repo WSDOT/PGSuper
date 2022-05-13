@@ -454,7 +454,7 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, const std::vec
                for (OptionalDesignHarpedFillUtil::StrandRowIter srit = strandrows.begin(); srit != strandrows.end(); srit++)
                {
                   const OptionalDesignHarpedFillUtil::StrandRow& srow = *srit;
-                  Float64 elev_in = RoundOff(::ConvertFromSysUnits(srow.Elevation, unitMeasure::Inch), 0.001);
+                  Float64 elev_in = RoundOff(WBFL::Units::ConvertFromSysUnits(srow.Elevation, WBFL::Units::Measure::Inch), 0.001);
 
                   (*p_table)(row, 0) << elev_in;
                   (*p_table)(row++, 1) << srow.fillListString << _T(" (") << srow.fillListString.size() * 2 << _T(")");

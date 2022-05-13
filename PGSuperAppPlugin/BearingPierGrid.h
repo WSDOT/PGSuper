@@ -65,7 +65,7 @@ public:
 template <class G_TYPE> class BearingGridDataGetter
 {
 public:
-   CBearingData2 GetBrgData(G_TYPE* pGrid, ROWCOL row, const unitmgtLengthData* pCompUnit, CDataExchange* pDX);
+   CBearingData2 GetBrgData(G_TYPE* pGrid, ROWCOL row, const WBFL::Units::LengthData* pCompUnit, CDataExchange* pDX);
 
 // grid columns of interest
    ROWCOL m_BearingShapeCol;
@@ -134,13 +134,13 @@ private:
    // set up styles for interior rows
    void SetRowStyle(ROWCOL nRow);
 
-   const unitmgtLengthData* m_pCompUnit;
+   const WBFL::Units::LengthData* m_pCompUnit;
    BearingPierData m_BearingPierData;
    BearingGridDataGetter<CBearingPierGrid> m_DGetter;
 };
 
 // Template instantiation
-template <class G_TYPE> CBearingData2 BearingGridDataGetter<G_TYPE>::GetBrgData(G_TYPE* pGrid, ROWCOL row, const unitmgtLengthData* pCompUnit, CDataExchange* pDX)
+template <class G_TYPE> CBearingData2 BearingGridDataGetter<G_TYPE>::GetBrgData(G_TYPE* pGrid, ROWCOL row, const WBFL::Units::LengthData* pCompUnit, CDataExchange* pDX)
 {
    CBearingData2 bd;
 
@@ -185,7 +185,7 @@ template <class G_TYPE> CBearingData2 BearingGridDataGetter<G_TYPE>::GetBrgData(
       str = pGrid->GetCellValue(row, m_BearingSpacingCol);
       if (sysTokenizer::ParseDouble(str, &val))
       {
-         val = ::ConvertToSysUnits(val, pCompUnit->UnitOfMeasure);
+         val = WBFL::Units::ConvertToSysUnits(val, pCompUnit->UnitOfMeasure);
 
          bd.Spacing = val;
 
@@ -208,7 +208,7 @@ template <class G_TYPE> CBearingData2 BearingGridDataGetter<G_TYPE>::GetBrgData(
    str = pGrid->GetCellValue(row, m_BearingLengthCol);
    if (sysTokenizer::ParseDouble(str, &val))
    {
-      val = ::ConvertToSysUnits(val, pCompUnit->UnitOfMeasure);
+      val = WBFL::Units::ConvertToSysUnits(val, pCompUnit->UnitOfMeasure);
 
       bd.Length = val;
 
@@ -232,7 +232,7 @@ template <class G_TYPE> CBearingData2 BearingGridDataGetter<G_TYPE>::GetBrgData(
       str = pGrid->GetCellValue(row, m_BearingWidthCol);
       if (sysTokenizer::ParseDouble(str, &val))
       {
-         val = ::ConvertToSysUnits(val, pCompUnit->UnitOfMeasure);
+         val = WBFL::Units::ConvertToSysUnits(val, pCompUnit->UnitOfMeasure);
 
          bd.Width = val;
 
@@ -256,7 +256,7 @@ template <class G_TYPE> CBearingData2 BearingGridDataGetter<G_TYPE>::GetBrgData(
    val;
    if (sysTokenizer::ParseDouble(str, &val))
    {
-      val = ::ConvertToSysUnits(val, pCompUnit->UnitOfMeasure);
+      val = WBFL::Units::ConvertToSysUnits(val, pCompUnit->UnitOfMeasure);
 
       bd.Height = val;
 
@@ -278,7 +278,7 @@ template <class G_TYPE> CBearingData2 BearingGridDataGetter<G_TYPE>::GetBrgData(
    str = pGrid->GetCellValue(row, m_BearingRecessHeightCol);
    if (sysTokenizer::ParseDouble(str, &val))
    {
-      val = ::ConvertToSysUnits(val, pCompUnit->UnitOfMeasure);
+      val = WBFL::Units::ConvertToSysUnits(val, pCompUnit->UnitOfMeasure);
 
       bd.RecessHeight = val;
 
@@ -300,7 +300,7 @@ template <class G_TYPE> CBearingData2 BearingGridDataGetter<G_TYPE>::GetBrgData(
    str = pGrid->GetCellValue(row, m_BearingRecessLengthCol);
    if (sysTokenizer::ParseDouble(str, &val))
    {
-      val = ::ConvertToSysUnits(val, pCompUnit->UnitOfMeasure);
+      val = WBFL::Units::ConvertToSysUnits(val, pCompUnit->UnitOfMeasure);
 
       bd.RecessLength = val;
 
@@ -323,7 +323,7 @@ template <class G_TYPE> CBearingData2 BearingGridDataGetter<G_TYPE>::GetBrgData(
    str = pGrid->GetCellValue(row, m_BearingSolePlateCol);
    if (sysTokenizer::ParseDouble(str, &val))
    {
-      val = ::ConvertToSysUnits(val, pCompUnit->UnitOfMeasure);
+      val = WBFL::Units::ConvertToSysUnits(val, pCompUnit->UnitOfMeasure);
 
       bd.SolePlateHeight = val;
 

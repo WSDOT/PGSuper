@@ -815,7 +815,7 @@ rptRcTable* CRatingSummaryTable::BuildLoadPosting(IBroker* pBroker,const std::ve
 
    bool bLoadPostingRequired = false;
    bool bMustCloseBridge = false; // MBE 6A.8.1 and .3 - bridges not capable of carrying a minimum gross live load of weight of three tons must be closed.
-   Float64 RTmin = ::ConvertToSysUnits(3.0, unitMeasure::Ton);
+   Float64 RTmin = WBFL::Units::ConvertToSysUnits(3.0, WBFL::Units::Measure::Ton);
 
    RowIndexType row = table->GetNumberOfHeaderRows();
    VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
@@ -906,11 +906,11 @@ rptRcTable* CRatingSummaryTable::BuildEmergencyVehicleLoadPosting(IBroker* pBrok
    }
 
 
-   Float64 wgtEV2 = ::ConvertToSysUnits(57.5, unitMeasure::Kip);
-   Float64 wgtEV3 = ::ConvertToSysUnits(86.0, unitMeasure::Kip);
+   Float64 wgtEV2 = WBFL::Units::ConvertToSysUnits(57.5, WBFL::Units::Measure::Kip);
+   Float64 wgtEV3 = WBFL::Units::ConvertToSysUnits(86.0, WBFL::Units::Measure::Kip);
 
-   Float64 axleEV2 = ::ConvertToSysUnits(33.5, unitMeasure::Kip);
-   Float64 tandemEV3 = ::ConvertToSysUnits(62.0, unitMeasure::Kip);
+   Float64 axleEV2 = WBFL::Units::ConvertToSysUnits(33.5, WBFL::Units::Measure::Kip);
+   Float64 tandemEV3 = WBFL::Units::ConvertToSysUnits(62.0, WBFL::Units::Measure::Kip);
 
    ATLASSERT(RF3 < 1.0);
 

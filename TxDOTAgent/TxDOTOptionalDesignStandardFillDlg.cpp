@@ -230,8 +230,8 @@ void CTxDOTOptionalDesignStandardFillDlg::UpdateControls()
 
       Float64 toLower, toUpper;
       m_pGirderData->ComputeToRange(pLib, m_NumStrands, &toLower, &toUpper);
-      toLower = ::ConvertFromSysUnits(toLower, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-      toUpper = ::ConvertFromSysUnits(toUpper, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+      toLower = WBFL::Units::ConvertFromSysUnits(toLower, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+      toUpper = WBFL::Units::ConvertFromSysUnits(toUpper, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
       CString umsg;
       umsg.Format(_T("(Valid Range: %.3f to %.3f)"),toLower, toUpper);
@@ -274,8 +274,8 @@ void CTxDOTOptionalDesignStandardFillDlg::OnBnClickedOptCompute()
    Float64 eccEnds, eccCL;
    m_pGirderData->ComputeEccentricities(pLib,m_NumStrands,m_To,&eccEnds,&eccCL);
 
-   eccEnds = ::ConvertFromSysUnits(eccEnds,unitMeasure::Inch);
-   eccCL = ::ConvertFromSysUnits(eccCL,unitMeasure::Inch);
+   eccEnds = WBFL::Units::ConvertFromSysUnits(eccEnds,WBFL::Units::Measure::Inch);
+   eccCL = WBFL::Units::ConvertFromSysUnits(eccCL,WBFL::Units::Measure::Inch);
 
    CEccentricityDlg dlg;
    if (eccCL != eccEnds)

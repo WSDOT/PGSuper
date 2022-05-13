@@ -206,7 +206,7 @@ void CCrownSlopeGrid::CustomInit()
    CCrownSlopePage* pParent = (CCrownSlopePage*)GetParent();
 
    GET_IFACE2(pParent->GetBroker(), IEAFDisplayUnits, pDisplayUnits);
-   const unitmgtLengthData& alignment_unit = pDisplayUnits->GetAlignmentLengthUnit();
+   const WBFL::Units::LengthData& alignment_unit = pDisplayUnits->GetAlignmentLengthUnit();
    std::_tstring strUnitTag = alignment_unit.UnitOfMeasure.UnitTag();
 
    // Initialize the grid. For CWnd based grids this call is // 
@@ -400,7 +400,7 @@ void CCrownSlopeGrid::SetRowData(ROWCOL nRow, const RoadwaySectionTemplate& data
    UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
    Float64 station = data.Station;
-   station = ::ConvertFromSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   station = WBFL::Units::ConvertFromSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    ROWCOL col = 0;
    SetValueRange(CGXRange(nRow,col++),nRow-1); // row num
@@ -417,7 +417,7 @@ void CCrownSlopeGrid::SetRowData(ROWCOL nRow, const RoadwaySectionTemplate& data
 
    for (const auto& segment : data.SegmentDataVec)
    {
-      Float64 length = ::ConvertFromSysUnits(segment.Length, pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+      Float64 length = WBFL::Units::ConvertFromSysUnits(segment.Length, pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
       m_LengthCols.insert(col);
       SetValueRange(CGXRange(nRow,col++),length);
       m_SlopeCols.insert(col);
@@ -450,7 +450,7 @@ bool CCrownSlopeGrid::GetRowData(ROWCOL nRow,RoadwaySectionTemplate& data)
 
    Float64 station_value;
    station->get_Value(&station_value);
-   station_value = ::ConvertToSysUnits(station_value,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   station_value = WBFL::Units::ConvertToSysUnits(station_value,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    data.Station = station_value;
 
    CString strVal = GetCellValue(nRow,2);
@@ -478,7 +478,7 @@ bool CCrownSlopeGrid::GetRowData(ROWCOL nRow,RoadwaySectionTemplate& data)
          return false;
       }
 
-      seg.Length = ::ConvertToSysUnits(length,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+      seg.Length = WBFL::Units::ConvertToSysUnits(length,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
       col++;
       strVal = GetCellValue(nRow,col);

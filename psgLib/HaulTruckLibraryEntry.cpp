@@ -30,7 +30,7 @@
 
 #include "resource.h"
 #include "HaulTruckDlg.h"
-#include <Units\sysUnits.h>
+#include <Units\Convert.h>
 
 #include <EAF\EAFApp.h>
 
@@ -42,13 +42,13 @@ static char THIS_FILE[] = __FILE__;
 
 HaulTruckLibraryEntry::HaulTruckLibraryEntry()
 {
-   m_Hbg       = ::ConvertToSysUnits(72,unitMeasure::Inch);
-   m_Hrc       = ::ConvertToSysUnits(24,unitMeasure::Inch);
-   m_Wcc       = ::ConvertToSysUnits(72,unitMeasure::Inch);
-   m_Ktheta    = ::ConvertToSysUnits(40000,unitMeasure::KipInchPerRadian);
-   m_Lmax      = ::ConvertToSysUnits(130,unitMeasure::Feet);
-   m_MaxOH     = ::ConvertToSysUnits(15,unitMeasure::Feet);
-   m_MaxWeight = ::ConvertToSysUnits(200,unitMeasure::Kip);
+   m_Hbg       = WBFL::Units::ConvertToSysUnits(72,WBFL::Units::Measure::Inch);
+   m_Hrc       = WBFL::Units::ConvertToSysUnits(24,WBFL::Units::Measure::Inch);
+   m_Wcc       = WBFL::Units::ConvertToSysUnits(72,WBFL::Units::Measure::Inch);
+   m_Ktheta    = WBFL::Units::ConvertToSysUnits(40000,WBFL::Units::Measure::KipInchPerRadian);
+   m_Lmax      = WBFL::Units::ConvertToSysUnits(130,WBFL::Units::Measure::Feet);
+   m_MaxOH     = WBFL::Units::ConvertToSysUnits(15,WBFL::Units::Measure::Feet);
+   m_MaxWeight = WBFL::Units::ConvertToSysUnits(200,WBFL::Units::Measure::Kip);
 }
 
 HaulTruckLibraryEntry::HaulTruckLibraryEntry(const HaulTruckLibraryEntry& rOther) :

@@ -197,7 +197,7 @@ void CStrandRowGrid::FillGrid(const CTxDOTOptionalDesignGirderData::AvailableStr
          .SetValue(crow));
 
       // Elevation
-      Float64 elev = ::ConvertFromSysUnits(avail_row.RowElev ,unitMeasure::Inch);
+      Float64 elev = WBFL::Units::ConvertFromSysUnits(avail_row.RowElev ,WBFL::Units::Measure::Inch);
       CString strelev;
       strelev.Format(_T("%.3f"),elev);
 

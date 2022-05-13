@@ -178,7 +178,7 @@ pgsDesignCodes::OutcomeType pgsGirderLiftingChecker::DesignLifting(const CSegmen
    while ( loc <= maxLoc )
    {
       LOG(_T(""));
-      LOG(_T("Trying location ") << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << _T(" ft"));
+      LOG(_T("Trying location ") << WBFL::Units::ConvertFromSysUnits(loc,WBFL::Units::Measure::Feet) << _T(" ft"));
 
       WBFL::Stability::LiftingCheckArtifact curr_artifact;
       config.LeftOverhang = loc;

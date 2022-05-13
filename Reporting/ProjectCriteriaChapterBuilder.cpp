@@ -1139,11 +1139,11 @@ void write_creep(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDispl
 
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time, pDisplayUnits->GetWholeDaysUnit(), true );
 
-   *pPara<< _T("# of hours from stressing to prestress transfer : ")<<::ConvertFromSysUnits(pSpecEntry->GetXferTime(),unitMeasure::Hour)<<rptNewLine;
-   *pPara<< _T("# of days from prestress transfer until removal of temporary strands / diaphram casting : ")<<::ConvertFromSysUnits(pSpecEntry->GetCreepDuration1Min(),unitMeasure::Day) << _T(" Min");
-   *pPara<< _T(", ") << ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration1Max(),unitMeasure::Day) << _T(" Max") <<rptNewLine;
-   *pPara<< _T("# of days from prestress transfer until slab-girder continuity is achieved : ")<<::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Min(),unitMeasure::Day) << _T(" Min");
-   *pPara<< _T(", ") << ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(),unitMeasure::Day) << _T(" Max") << rptNewLine;
+   *pPara<< _T("# of hours from stressing to prestress transfer : ")<<WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime(),WBFL::Units::Measure::Hour)<<rptNewLine;
+   *pPara<< _T("# of days from prestress transfer until removal of temporary strands / diaphram casting : ")<<WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetCreepDuration1Min(),WBFL::Units::Measure::Day) << _T(" Min");
+   *pPara<< _T(", ") << WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetCreepDuration1Max(),WBFL::Units::Measure::Day) << _T(" Max") <<rptNewLine;
+   *pPara<< _T("# of days from prestress transfer until slab-girder continuity is achieved : ")<<WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Min(),WBFL::Units::Measure::Day) << _T(" Min");
+   *pPara<< _T(", ") << WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(),WBFL::Units::Measure::Day) << _T(" Max") << rptNewLine;
 
    *pPara << rptNewLine << rptNewLine;
 

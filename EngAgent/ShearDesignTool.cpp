@@ -477,12 +477,12 @@ void pgsShearDesignTool::DumpDesignParameters()
    LOG(_T("---------------------------------------------------------------"));
    LOG(_T("pgsShearDesignTool: Current Shear design parameters"));
    LOG(_T(""));
-   LOG(_T("f'c  = ") << ::ConvertFromSysUnits(m_pArtifact->GetConcreteStrength(),unitMeasure::KSI) << _T(" KSI"));
-   LOG(_T("f'ci = ") << ::ConvertFromSysUnits(m_pArtifact->GetReleaseStrength(),unitMeasure::KSI) <<_T(" KSI"));
+   LOG(_T("f'c  = ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetConcreteStrength(),WBFL::Units::Measure::KSI) << _T(" KSI"));
+   LOG(_T("f'ci = ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetReleaseStrength(),WBFL::Units::Measure::KSI) <<_T(" KSI"));
    LOG(_T("Np = ") << m_pArtifact->GetNumStraightStrands()+ m_pArtifact->GetNumHarpedStrands());
-   LOG(_T("Ns = ") << m_pArtifact->GetNumStraightStrands() << _T("   Pjack = ") << ::ConvertFromSysUnits(m_pArtifact->GetPjackStraightStrands(), unitMeasure::Kip) << _T(" Kip"));
-   LOG(_T("Nh = ") << m_pArtifact->GetNumHarpedStrands() << _T("   Pjack = ") << ::ConvertFromSysUnits(m_pArtifact->GetPjackHarpedStrands(), unitMeasure::Kip) << _T(" Kip"));
-   LOG(_T("Nt = ") << m_pArtifact->GetNumTempStrands() << _T("   Pjack = ") << ::ConvertFromSysUnits(m_pArtifact->GetPjackTempStrands(), unitMeasure::Kip) << _T(" Kip"));
+   LOG(_T("Ns = ") << m_pArtifact->GetNumStraightStrands() << _T("   Pjack = ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetPjackStraightStrands(), WBFL::Units::Measure::Kip) << _T(" Kip"));
+   LOG(_T("Nh = ") << m_pArtifact->GetNumHarpedStrands() << _T("   Pjack = ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetPjackHarpedStrands(), WBFL::Units::Measure::Kip) << _T(" Kip"));
+   LOG(_T("Nt = ") << m_pArtifact->GetNumTempStrands() << _T("   Pjack = ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetPjackTempStrands(), WBFL::Units::Measure::Kip) << _T(" Kip"));
 
    LOG(_T("---------------------------------------------------------------"));
    LOG(_T(""));
@@ -1454,9 +1454,9 @@ bool pgsShearDesignTool::LayoutPrimaryStirrupZones() const
       {
          // Round zone length so it will look good in stirrup dialog grids
          GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-         zone_len = ::ConvertFromSysUnits(zone_len,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+         zone_len = WBFL::Units::ConvertFromSysUnits(zone_len,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
          zone_len = RoundOff(zone_len,0.0001); // three decimal places
-         zone_len = ::ConvertToSysUnits(zone_len,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+         zone_len = WBFL::Units::ConvertToSysUnits(zone_len,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
 
          // Store current zone data in zone collection
          zone_data.ZoneNum = nzones_designed++;
@@ -2316,7 +2316,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
                         ATLASSERT(false);
                      }
    
-                     LOG(_T("location = ")<< ::ConvertFromSysUnits(location,unitMeasure::Feet)<<_T(" demand = ")<< ::ConvertFromSysUnits(demand,unitMeasure::Kip)<<_T(", capacity = ")<< ::ConvertFromSysUnits(capacity,unitMeasure::Kip)<<_T(", additional as rebar needed = ")<< ::ConvertFromSysUnits(as,unitMeasure::Inch2));
+                     LOG(_T("location = ")<< WBFL::Units::ConvertFromSysUnits(location,WBFL::Units::Measure::Feet)<<_T(" demand = ")<< WBFL::Units::ConvertFromSysUnits(demand,WBFL::Units::Measure::Kip)<<_T(", capacity = ")<< WBFL::Units::ConvertFromSysUnits(capacity,WBFL::Units::Measure::Kip)<<_T(", additional as rebar needed = ")<< WBFL::Units::ConvertFromSysUnits(as,WBFL::Units::Measure::Inch2));
 
                      if (b9thEdition)
                      {
@@ -2347,11 +2347,11 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
                      Float64 fps = l_artifact.GetFps();
                      if (fps == 0.0)
                      {
-                        fps = ConvertToSysUnits(170.0, unitMeasure::KSI); // No strands exist - just take a shot at a reasonable final
+                        fps = ConvertToSysUnits(170.0, WBFL::Units::Measure::KSI); // No strands exist - just take a shot at a reasonable final
                      }
    
                      Float64 as = (demand-capacity)/fps;
-                     LOG(_T("location = ")<< ::ConvertFromSysUnits(location,unitMeasure::Feet)<<_T(" demand = ")<< ::ConvertFromSysUnits(demand,unitMeasure::Kip)<<_T(", capacity = ")<< ::ConvertFromSysUnits(capacity,unitMeasure::Kip)<<_T(", additional as strand needed = ")<< ::ConvertFromSysUnits(as,unitMeasure::Inch2));
+                     LOG(_T("location = ")<< WBFL::Units::ConvertFromSysUnits(location,WBFL::Units::Measure::Feet)<<_T(" demand = ")<< WBFL::Units::ConvertFromSysUnits(demand,WBFL::Units::Measure::Kip)<<_T(", capacity = ")<< WBFL::Units::ConvertFromSysUnits(capacity,WBFL::Units::Measure::Kip)<<_T(", additional as strand needed = ")<< WBFL::Units::ConvertFromSysUnits(as,WBFL::Units::Measure::Inch2));
 
                      if (b9thEdition)
                      {
@@ -2363,7 +2363,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
                         if (aps_fps < as_fy)
                         {
                            as = as_fy / fps - aps;
-                           LOG(_T("ApsFps < AsFy so add more Aps = ") << ConvertFromSysUnits(as, unitMeasure::Inch2));
+                           LOG(_T("ApsFps < AsFy so add more Aps = ") << ConvertFromSysUnits(as, WBFL::Units::Measure::Inch2));
                         }
                      }
                      As = Max(As, as);
@@ -2390,7 +2390,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
       else
       {
          m_LongReinfShearAs = As;
-         LOG(_T("*** Exiting pgsShearDesignTool::DesignLongReinfShear - As =")<<  ::ConvertFromSysUnits(m_LongReinfShearAs,unitMeasure::Inch2));
+         LOG(_T("*** Exiting pgsShearDesignTool::DesignLongReinfShear - As =")<<  WBFL::Units::ConvertFromSysUnits(m_LongReinfShearAs,WBFL::Units::Measure::Inch2));
          return (m_LongShearCapacityIncreaseMethod == GirderLibraryEntry::isAddingRebar) ? sdRestartWithAdditionalLongRebar : sdRestartWithAdditionalStrands;
       }
    }

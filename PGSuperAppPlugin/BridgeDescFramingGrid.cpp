@@ -634,7 +634,7 @@ CPierData2* CBridgeDescFramingGrid::GetPierRowData(ROWCOL nRow)
    m_objStation->FromString(CComBSTR(strStation),unitMode);
    Float64 station;
    m_objStation->get_Value(&station);
-   station = ::ConvertToSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   station = WBFL::Units::ConvertToSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    pPier->SetStation(station);
 
    // Orientation
@@ -677,7 +677,7 @@ CTemporarySupportData CBridgeDescFramingGrid::GetTemporarySupportRowData(ROWCOL 
    m_objStation->FromString(CComBSTR(strStation),unitMode);
    Float64 station;
    m_objStation->get_Value(&station);
-   station = ::ConvertToSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   station = WBFL::Units::ConvertToSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    tsData.SetStation(station);
 
    // Orientation

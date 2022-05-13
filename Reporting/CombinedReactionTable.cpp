@@ -207,7 +207,7 @@ void CCombinedReactionTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter
    bool bDoLimitStates = false; // liveLoadIntervalIdx <= intervalIdx && tableType == BearingReactionsTable;
    rptRcTable* p_table = nullptr;
 
-   RowIndexType row = CreateCombinedDeadLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table,pBroker,(tableType==PierReactionsTable ? _T("Girder Line Pier Reactions"): _T("Girder Bearing Reactions")),
+   RowIndexType row = CreateCombinedDeadLoadingTableHeading<rptForceUnitTag,WBFL::Units::ForceData>(&p_table,pBroker,(tableType==PierReactionsTable ? _T("Girder Line Pier Reactions"): _T("Girder Bearing Reactions")),
                                  true ,bRating,bDoLimitStates,
                                  analysisType,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
@@ -396,7 +396,7 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
    strLabel += std::_tstring(bIncludeImpact ? _T(" (With Impact)") : _T(" (Without Impact)"));
 
    rptRcTable* p_table=0;
-   RowIndexType Nhrows = CreateCombinedLiveLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table, strLabel.c_str(),
+   RowIndexType Nhrows = CreateCombinedLiveLoadingTableHeading<rptForceUnitTag,WBFL::Units::ForceData>(&p_table, strLabel.c_str(),
                                  true,bDesign,bPermit,bPedLoading,bRating,false, bIncludeImpact,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
    *p << p_table;
 
@@ -736,7 +736,7 @@ void CCombinedReactionTable::BuildBearingLimitStateTable(IBroker* pBroker, rptCh
    strLabel += std::_tstring(bIncludeImpact ? _T(" (With Impact)") : _T(" (Without Impact)"));
 
    rptRcTable * p_table;
-   RowIndexType row = CreateLimitStateTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table, strLabel.c_str(),
+   RowIndexType row = CreateLimitStateTableHeading<rptForceUnitTag,WBFL::Units::ForceData>(&p_table, strLabel.c_str(),
                              true,bDesign,bPermit,bRating,false,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
    *p << p_table;
 

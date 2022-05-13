@@ -485,7 +485,7 @@ void pgsBarrierSidewalkLoadDistributionTool::BuildGeometryModel()
    m_RefLine->ThroughPoints(rightSlabEdgePoint, leftSlabEdgePoint);
 
    // Create tangent lines to deck by creating points slightly further along deck
-   Float64 nextStation = midStation + ::ConvertToSysUnits(1.0,unitMeasure::Feet);
+   Float64 nextStation = midStation + WBFL::Units::ConvertToSysUnits(1.0,WBFL::Units::Measure::Feet);
 
    CComPtr<IPoint2d> leftSlabEdgePoint1, rightSlabEdgePoint1;
    m_pIBridge->GetLeftSlabEdgePoint( nextStation, midDirection, pgsTypes::pcLocal, &leftSlabEdgePoint1);

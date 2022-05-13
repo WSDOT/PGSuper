@@ -35,7 +35,7 @@
 #include <MathEx.h>
 #include <PsgLib\LibraryManager.h>
 
-#include <Units\SysUnits.h>
+#include <Units\Convert.h>
 
 #include <EAF\EAFInterfaceCache.h>
 

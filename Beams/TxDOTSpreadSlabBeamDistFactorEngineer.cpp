@@ -24,7 +24,7 @@
 #include "stdafx.h"
 #include "TxDOTSpreadSlabBeamDistFactorEngineer.h"
 #include <PGSuperException.h>
-#include <Units\SysUnits.h>
+#include <Units\Convert.h>
 #include <PsgLib\TrafficBarrierEntry.h>
 #include <PsgLib\SpecLibraryEntry.h>
 #include <PgsExt\BridgeDescription2.h>
@@ -45,7 +45,7 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 // pre-convert constant values for performance
-static const Float64 D_18 = ::ConvertToSysUnits(18., unitMeasure::Inch);
+static const Float64 D_18 = WBFL::Units::ConvertToSysUnits(18., WBFL::Units::Measure::Inch);
 
 /////////////////////////////////////////////////////////////////////////////
 

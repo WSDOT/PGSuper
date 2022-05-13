@@ -35,35 +35,35 @@ HRESULT PSGLIBFUNC ConfigureUnitServer(IUnitServer* server)
 {
    // this is not a general-purpose conversion. 
    // We assume a configuration and enforce it by assertion
-   unitMass mass = unitSysUnitsMgr::GetMassUnit();
+   WBFL::Units::Mass mass = WBFL::Units::System::GetMassUnit();
    if (mass.UnitTag() != _T("kg"))
    {
       ATLASSERT(false);
       return E_FAIL;
    }
 
-   unitLength length = unitSysUnitsMgr::GetLengthUnit();
+   WBFL::Units::Length length = WBFL::Units::System::GetLengthUnit();
    if (length.UnitTag() != _T("m"))
    {
       ATLASSERT(false);
       return E_FAIL;
    }
 
-   unitTime time = unitSysUnitsMgr::GetTimeUnit();
+   WBFL::Units::Time time = WBFL::Units::System::GetTimeUnit();
    if (time.UnitTag() != _T("sec"))
    {
       ATLASSERT(false);
       return E_FAIL;
    }
 
-   unitTemperature temp = unitSysUnitsMgr::GetTemperatureUnit();
+   WBFL::Units::Temperature temp = WBFL::Units::System::GetTemperatureUnit();
    if (temp.UnitTag() != _T("C"))
    {
       ATLASSERT(false);
       return E_FAIL;
    }
 
-   unitAngle angle = unitSysUnitsMgr::GetAngleUnit();
+   WBFL::Units::Angle angle = WBFL::Units::System::GetAngleUnit();
    if (angle.UnitTag() != _T("rad"))
    {
       ATLASSERT(false);

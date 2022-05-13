@@ -293,7 +293,7 @@ BOOL CSpecLossPage::IsFractionalShippingLoss()
 void CSpecLossPage::OnShippingLossMethodChanged() 
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    CWnd* pTag = GetDlgItem(IDC_SHIPPING_TAG);
 

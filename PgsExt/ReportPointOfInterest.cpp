@@ -35,7 +35,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-rptPointOfInterest::rptPointOfInterest(const unitLength* pUnitOfMeasure,
+rptPointOfInterest::rptPointOfInterest(const WBFL::Units::Length* pUnitOfMeasure,
                                        Float64 zeroTolerance,
                                        bool bShowUnitTag) :
 rptLengthUnitValue(pUnitOfMeasure,zeroTolerance,bShowUnitTag),m_bPrefixAttributes(true),m_bIncludeSpanAndGirder(false)

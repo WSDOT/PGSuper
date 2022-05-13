@@ -270,26 +270,26 @@ void write_segment_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptC
 
    (*pTable)(0,0) << rptRcImage( std::_tstring(rptStyleManager::GetImagePath()) + factory->GetImage());
 
-   std::vector<const unitLength*> units = factory->GetDimensionUnits(bUnitsSI);
+   std::vector<const WBFL::Units::Length*> units = factory->GetDimensionUnits(bUnitsSI);
    GirderLibraryEntry::Dimensions dimensions = pGdrEntry->GetDimensions();
    GirderLibraryEntry::Dimensions::iterator dim_iter;
-   std::vector<const unitLength*>::iterator unit_iter;
+   std::vector<const WBFL::Units::Length*>::iterator unit_iter;
    for ( dim_iter = dimensions.begin(), unit_iter = units.begin(); 
          dim_iter != dimensions.end() && unit_iter != units.end(); 
          dim_iter++, unit_iter++ )
    {
-      const unitLength* pUnit = *unit_iter;
-      if ( pUnit == (const unitLength*)BFDIMUNITBOOLEAN)
+      const WBFL::Units::Length* pUnit = *unit_iter;
+      if ( pUnit == (const WBFL::Units::Length*)BFDIMUNITBOOLEAN)
       {
          (*pTable)(0,1) << (*dim_iter).first.c_str() << ((*dim_iter).second==0 ? _T(" = False") : _T(" = True")) << rptNewLine;
       }
-      else if ( pUnit == (const unitLength*)BFDIMUNITSCALAR)
+      else if ( pUnit == (const WBFL::Units::Length*)BFDIMUNITSCALAR)
       {
          (*pTable)(0,1) << (*dim_iter).first.c_str() << _T(" = ") << (*dim_iter).second << rptNewLine;
       }
       else
       {
-         const unitmgtLengthData& length_unit(pDisplayUnits->GetComponentDimUnit());
+         const WBFL::Units::LengthData& length_unit(pDisplayUnits->GetComponentDimUnit());
          rptFormattedLengthUnitValue cmpdim(pUnit,length_unit.Tol, true, !bUnitsSI, 8, false, rptFormattedLengthUnitValue::RoundOff);
          cmpdim.SetFormat(length_unit.Format);
          cmpdim.SetWidth(length_unit.Width);
@@ -301,7 +301,7 @@ void write_segment_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptC
 
    if (IsTopWidthSpacing(pBridgeDesc->GetGirderSpacingType()))
    {
-      const unitmgtLengthData& length_unit(pDisplayUnits->GetComponentDimUnit());
+      const WBFL::Units::LengthData& length_unit(pDisplayUnits->GetComponentDimUnit());
       rptFormattedLengthUnitValue cmpdim(&length_unit.UnitOfMeasure, length_unit.Tol, true, !bUnitsSI, 8, false, rptFormattedLengthUnitValue::RoundOff);
       cmpdim.SetFormat(length_unit.Format);
       cmpdim.SetWidth(length_unit.Width);

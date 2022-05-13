@@ -67,7 +67,7 @@ void CShearDesignPage::DoDataExchange(CDataExchange* pDX)
    CPropertyPage::DoDataExchange(pDX);
 
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    // dad is a friend of the entry. use him to transfer data.
    CGirderMainSheet* pDad = (CGirderMainSheet*)GetParent();
@@ -86,7 +86,7 @@ void CShearDesignPage::DoDataExchange(CDataExchange* pDX)
       std::vector<Float64>::size_type size = m_BarSpacings.size();
       for (std::vector<Float64>::size_type sf=0; sf<size; sf++)
       {
-         Float32 conval = (Float32)::ConvertFromSysUnits(m_BarSpacings[sf], pDisplayUnits->ComponentDim.UnitOfMeasure);
+         Float32 conval = (Float32)WBFL::Units::ConvertFromSysUnits(m_BarSpacings[sf], pDisplayUnits->ComponentDim.UnitOfMeasure);
 
          std::_tstring str(ftool.AsString(conval));
          boost::trim(str);
@@ -207,7 +207,7 @@ void CShearDesignPage::DoDataExchange(CDataExchange* pDX)
             }
             else
             {
-               db = ::ConvertToSysUnits(db, pDisplayUnits->ComponentDim.UnitOfMeasure);
+               db = WBFL::Units::ConvertToSysUnits(db, pDisplayUnits->ComponentDim.UnitOfMeasure);
 
                if(db<=0.0)
                {

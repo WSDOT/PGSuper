@@ -365,10 +365,10 @@ void CConcreteManager::ValidateConcrete() const
 
    // per 5.4.2.1 f'c must exceed 28 MPa (4 ksi)
    bool bSI = lrfdVersionMgr::GetUnits() == lrfdVersionMgr::SI ? true : false;
-   Float64 fcMin = bSI ? ::ConvertToSysUnits(28, unitMeasure::MPa) : ::ConvertToSysUnits(4, unitMeasure::KSI);
+   Float64 fcMin = bSI ? WBFL::Units::ConvertToSysUnits(28, WBFL::Units::Measure::MPa) : WBFL::Units::ConvertToSysUnits(4, WBFL::Units::Measure::KSI);
 
    Float64 fcMax = (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::EighthEdition2017 ? 10.0 : 15.0); // KSI... limit went from 10ksi to 15ksi in 8th edition
-   fcMax = ::ConvertToSysUnits(fcMax, unitMeasure::KSI);
+   fcMax = WBFL::Units::ConvertToSysUnits(fcMax, WBFL::Units::Measure::KSI);
 
    // check railing system
    if ( !IsConcreteDensityInRange(m_pRailingConcrete[pgsTypes::tboLeft]->GetStrengthDensity(),(pgsTypes::ConcreteType)m_pRailingConcrete[pgsTypes::tboLeft]->GetType()) )
@@ -461,7 +461,7 @@ void CConcreteManager::ValidateConcrete() const
 
          if (bUHPCGirder && slabConcreteType != pgsTypes::PCI_UHPC)
          {
-            if (fc28 < ::ConvertToSysUnits(6.0, unitMeasure::KSI) || slabConcreteType != pgsTypes::Normal)
+            if (fc28 < WBFL::Units::ConvertToSysUnits(6.0, WBFL::Units::Measure::KSI) || slabConcreteType != pgsTypes::Normal)
             {
                // PCI UHPC SDG E.C4.2 recommends deck concrete by normal weight and have a minimum f'c of 6 ksi
                CString strMsg(_T("PCI UHPC SDG E.C4.2 recommends that PCI-UHPC girders with conventional concrete deck, the deck should be normal weight concrete and have a minimum specified compressive strength of 6.0 KSI"));
@@ -472,7 +472,7 @@ void CConcreteManager::ValidateConcrete() const
          }
 
          Float64 max_wc = pLimits->GetMaxConcreteUnitWeight(slabConcreteType);
-         Float64 MaxWc = ::ConvertFromSysUnits(max_wc,pDisplayUnits->GetDensityUnit().UnitOfMeasure);
+         Float64 MaxWc = WBFL::Units::ConvertFromSysUnits(max_wc,pDisplayUnits->GetDensityUnit().UnitOfMeasure);
 
          Float64 strength_density = pDeckConcrete->GetStrengthDensity();
          if ( max_wc < strength_density && !IsEqual(max_wc,strength_density,0.0001) )
@@ -520,7 +520,7 @@ void CConcreteManager::ValidateConcrete() const
          }
 
          Float64 max_agg_size = pLimits->GetMaxConcreteAggSize(slabConcreteType);
-         Float64 MaxAggSize = ::ConvertFromSysUnits(max_agg_size,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+         Float64 MaxAggSize = WBFL::Units::ConvertFromSysUnits(max_agg_size,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
          Float64 agg_size = pDeckConcrete->GetMaxAggregateSize();
          if ( max_agg_size < agg_size && !IsEqual(max_agg_size,agg_size))
@@ -584,7 +584,7 @@ void CConcreteManager::ValidateConcrete() const
       //}
 
       Float64 max_wc = pLimits->GetMaxConcreteUnitWeight(jointConcreteType);
-      Float64 MaxWc = ::ConvertFromSysUnits(max_wc, pDisplayUnits->GetDensityUnit().UnitOfMeasure);
+      Float64 MaxWc = WBFL::Units::ConvertFromSysUnits(max_wc, pDisplayUnits->GetDensityUnit().UnitOfMeasure);
 
       Float64 strength_density = m_pLongitudinalJointConcrete->GetStrengthDensity();
       if (max_wc < strength_density && !IsEqual(max_wc, strength_density, 0.0001))
@@ -632,7 +632,7 @@ void CConcreteManager::ValidateConcrete() const
       }
 
       Float64 max_agg_size = pLimits->GetMaxConcreteAggSize(jointConcreteType);
-      Float64 MaxAggSize = ::ConvertFromSysUnits(max_agg_size, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+      Float64 MaxAggSize = WBFL::Units::ConvertFromSysUnits(max_agg_size, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
       Float64 agg_size = m_pLongitudinalJointConcrete->GetMaxAggregateSize();
       if (max_agg_size < agg_size && !IsEqual(max_agg_size, agg_size))
@@ -705,7 +705,7 @@ void CConcreteManager::ValidateSegmentConcrete() const
             pSectProp->GetSegmentVolumeAndSurfaceArea(segmentKey, &V, &S);
             Float64 vsSegment = IsZero(S) ? DBL_MAX : V/S;
 
-            vsSegment = ::RoundOff(vsSegment,::ConvertToSysUnits(0.5,unitMeasure::Millimeter));
+            vsSegment = ::RoundOff(vsSegment,WBFL::Units::ConvertToSysUnits(0.5,WBFL::Units::Measure::Millimeter));
 
             m_pSegmentConcrete[segmentKey]->SetVSRatio(vsSegment);
 
@@ -716,7 +716,7 @@ void CConcreteManager::ValidateSegmentConcrete() const
                pSectProp->GetClosureJointVolumeAndSurfaceArea(closureKey, &V, &S);
                Float64 vsClosure = IsZero(S) ? DBL_MAX : V/S;
 
-               vsClosure = ::RoundOff(vsClosure,::ConvertToSysUnits(0.5,unitMeasure::Millimeter));
+               vsClosure = ::RoundOff(vsClosure,WBFL::Units::ConvertToSysUnits(0.5,WBFL::Units::Measure::Millimeter));
 
                m_pClosureConcrete[closureKey]->SetVSRatio(vsClosure);
             }
@@ -761,7 +761,7 @@ void CConcreteManager::ValidateDeckConcrete() const
          pSectProp->GetDeckVolumeAndSurfaceArea(&V, &S);
          Float64 vsDeck = IsZero(S) ? DBL_MAX : V / S;
 
-         vsDeck = ::RoundOff(vsDeck, ::ConvertToSysUnits(0.5, unitMeasure::Millimeter));
+         vsDeck = ::RoundOff(vsDeck, WBFL::Units::ConvertToSysUnits(0.5, WBFL::Units::Measure::Millimeter));
 
          pDeckConcrete->SetVSRatio(vsDeck);
       }
@@ -785,13 +785,13 @@ void CConcreteManager::ValidateLongitudinalJointConcrete() const
       //Float64 V = pSectProp->GetDeckVolume();
       //Float64 vsJoint = IsZero(S) ? DBL_MAX : V / S;
 
-      //vsDeck = ::RoundOff(vsJoint, ::ConvertToSysUnits(0.5, unitMeasure::Millimeter));
+      //vsDeck = ::RoundOff(vsJoint, WBFL::Units::ConvertToSysUnits(0.5, WBFL::Units::Measure::Millimeter));
 
       //m_pLongitudinalJointConcrete->SetVSRatio(vsJoint);
       
       // Assume a 9" joint that is 6" thick
       // V/S = A*l/P*l = A/P A = 9*6, P = 9+9, V/S = 3
-      m_pLongitudinalJointConcrete->SetVSRatio(::ConvertToSysUnits(3.0, unitMeasure::Inch));
+      m_pLongitudinalJointConcrete->SetVSRatio(WBFL::Units::ConvertToSysUnits(3.0, WBFL::Units::Measure::Inch));
    }
 
    m_bIsLongitudinalJointValidated = true;
@@ -811,19 +811,19 @@ void CConcreteManager::ValidateConcreteParameters(std::shared_ptr<matConcreteBas
    Float64 fcMin, fcMax;
    if (concreteType == pgsTypes::PCI_UHPC)
    {
-      fcMin = ::ConvertToSysUnits(17.4, unitMeasure::KSI);
-      fcMax = ::ConvertToSysUnits(99999.0, unitMeasure::KSI); // this is a dummy value - we aren't going to check fcMax below
+      fcMin = WBFL::Units::ConvertToSysUnits(17.4, WBFL::Units::Measure::KSI);
+      fcMax = WBFL::Units::ConvertToSysUnits(99999.0, WBFL::Units::Measure::KSI); // this is a dummy value - we aren't going to check fcMax below
    }
    else
    {
       // per 5.4.2.1 f'c must exceed 28 MPa (4 ksi)
       bool bSI = lrfdVersionMgr::GetUnits() == lrfdVersionMgr::SI ? true : false;
-      fcMin = bSI ? ::ConvertToSysUnits(28, unitMeasure::MPa) : ::ConvertToSysUnits(4, unitMeasure::KSI);
+      fcMin = bSI ? WBFL::Units::ConvertToSysUnits(28, WBFL::Units::Measure::MPa) : WBFL::Units::ConvertToSysUnits(4, WBFL::Units::Measure::KSI);
       // the LRFD doesn't say that this specifically applies to closure joints,
       // but we are going to assume that it does.
 
       fcMax = (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::EighthEdition2017 ? 10.0 : 15.0); // KSI... limit went from 10ksi to 15ksi in 8th edition
-      fcMax = ::ConvertToSysUnits(fcMax, unitMeasure::KSI);
+      fcMax = WBFL::Units::ConvertToSysUnits(fcMax, WBFL::Units::Measure::KSI);
    }
 
    Float64 max_fci, max_fc;
@@ -868,7 +868,7 @@ void CConcreteManager::ValidateConcreteParameters(std::shared_ptr<matConcreteBas
       pStatusCenter->Add(pStatusItem);
    }
 
-   if (  max_fci < fci && !IsEqual(max_fci,fci,::ConvertToSysUnits(0.001,unitMeasure::KSI)) && concreteType != pgsTypes::PCI_UHPC )
+   if (  max_fci < fci && !IsEqual(max_fci,fci,WBFL::Units::ConvertToSysUnits(0.001,WBFL::Units::Measure::KSI)) && concreteType != pgsTypes::PCI_UHPC )
    {
       std::_tostringstream os;
       os << strLabel << _T(": Initial concrete strength (") << (LPCTSTR)::FormatDimension(fci,pDisplayUnits->GetStressUnit()) <<  _T(") exceeds the normal value of ") << (LPCTSTR)::FormatDimension(max_fci,pDisplayUnits->GetStressUnit());
@@ -879,7 +879,7 @@ void CConcreteManager::ValidateConcreteParameters(std::shared_ptr<matConcreteBas
       pStatusCenter->Add(pStatusItem);
    }
 
-   if (  max_fc < fc28 && !IsEqual(max_fc,fc28,::ConvertToSysUnits(0.001,unitMeasure::KSI)) && concreteType != pgsTypes::PCI_UHPC )
+   if (  max_fc < fc28 && !IsEqual(max_fc,fc28,WBFL::Units::ConvertToSysUnits(0.001,WBFL::Units::Measure::KSI)) && concreteType != pgsTypes::PCI_UHPC )
    {
       std::_tostringstream os;
       os << strLabel << _T(": Concrete strength (") << (LPCTSTR)::FormatDimension(fc28,pDisplayUnits->GetStressUnit()) << _T(") exceeds the normal value of ") << (LPCTSTR)::FormatDimension(max_fc,pDisplayUnits->GetStressUnit());
@@ -899,7 +899,7 @@ void CConcreteManager::ValidateConcreteParameters(std::shared_ptr<matConcreteBas
          pStatusCenter->Add(pStatusItem);
       }
 
-      Float64 fci_min = ::ConvertToSysUnits(10.0, unitMeasure::KSI);
+      Float64 fci_min = WBFL::Units::ConvertToSysUnits(10.0, WBFL::Units::Measure::KSI);
       if (fci < fci_min)
       {
          std::_tostringstream os;

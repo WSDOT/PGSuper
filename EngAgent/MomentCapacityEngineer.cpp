@@ -702,12 +702,12 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
          default:                         strErrorCode.Format(_T("0x%X"), hr);
          }
 
-         const unitmgtLengthData& unit = pDisplayUnits->GetSpanLengthUnit();
+         const WBFL::Units::LengthData& unit = pDisplayUnits->GetSpanLengthUnit();
          CString msg;
          msg.Format(_T("An unknown error occured while computing %s moment capacity for %s at %f %s from the left end of the girder.\n(hr = %s)\n(Location ID = %d).\nPlease send your file to technical support."),
             (bPositiveMoment ? _T("positive") : _T("negative")),
             SEGMENT_LABEL(segmentKey),
-            ::ConvertFromSysUnits(poi.GetDistFromStart(), unit.UnitOfMeasure),
+            WBFL::Units::ConvertFromSysUnits(poi.GetDistFromStart(), unit.UnitOfMeasure),
             unit.UnitOfMeasure.UnitTag().c_str(),
             strErrorCode,
             poi.GetID()
@@ -972,7 +972,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
    }
 
 
-   WATCHX(MomCap,0, _T("X = ") << ::ConvertFromSysUnits(poi.GetDistFromStart(),unitMeasure::Feet) << _T(" ft") << _T("   Mn = ") << ::ConvertFromSysUnits(Mn,unitMeasure::KipFeet) << _T(" kip-ft") << _T(" My/Mx = ") << My/Mn << _T(" fps_avg = ") << ::ConvertFromSysUnits(fps_avg,unitMeasure::KSI) << _T(" KSI"));
+   WATCHX(MomCap,0, _T("X = ") << WBFL::Units::ConvertFromSysUnits(poi.GetDistFromStart(),WBFL::Units::Measure::Feet) << _T(" ft") << _T("   Mn = ") << WBFL::Units::ConvertFromSysUnits(Mn,WBFL::Units::Measure::KipFeet) << _T(" kip-ft") << _T(" My/Mx = ") << My/Mn << _T(" fps_avg = ") << WBFL::Units::ConvertFromSysUnits(fps_avg,WBFL::Units::Measure::KSI) << _T(" KSI"));
 
    mcd.fps_avg = fps_avg;
    mcd.fpt_avg_segment = fpt_avg_segment;
@@ -3041,7 +3041,7 @@ void pgsMomentCapacityEngineer::DumpSection(const pgsPointOfInterest& poi,IGener
 {
    std::_tostringstream os;
    std::_tstring strMn(bPositiveMoment ? _T("+M") : _T("-M"));
-   os << _T("GeneralSection_") << strMn << _T("_Span_") << LABEL_SPAN(poi.GetSegmentKey().groupIndex) << _T("_Girder_") << LABEL_GIRDER(poi.GetSegmentKey().segmentIndex) << _T("_") << ::ConvertFromSysUnits(poi.GetDistFromStart(),unitMeasure::Feet) << ".txt";
+   os << _T("GeneralSection_") << strMn << _T("_Span_") << LABEL_SPAN(poi.GetSegmentKey().groupIndex) << _T("_Girder_") << LABEL_GIRDER(poi.GetSegmentKey().segmentIndex) << _T("_") << WBFL::Units::ConvertFromSysUnits(poi.GetDistFromStart(),WBFL::Units::Measure::Feet) << ".txt";
    std::_tofstream file(os.str().c_str());
 
    IndexType shape_count;
@@ -3065,7 +3065,7 @@ void pgsMomentCapacityEngineer::DumpSection(const pgsPointOfInterest& poi,IGener
          point->get_X(&x);
          point->get_Y(&y);
 
-         file << ::ConvertFromSysUnits(x,unitMeasure::Inch) << "," << ::ConvertFromSysUnits(y,unitMeasure::Inch) << std::endl;
+         file << WBFL::Units::ConvertFromSysUnits(x,WBFL::Units::Measure::Inch) << "," << WBFL::Units::ConvertFromSysUnits(y,WBFL::Units::Measure::Inch) << std::endl;
 
          point.Release();
       }

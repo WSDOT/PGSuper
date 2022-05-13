@@ -263,8 +263,8 @@ pgsHaulingAnalysisArtifact* pgsKdotGirderHaulingChecker::DesignHauling(const CSe
    Float64 inc = bigInc;
    bool bLargeStepSize = true;
 
-   LOG(_T("softMinHaulingDistance = ") << ::ConvertFromSysUnits(softMinHaulingDistance, unitMeasure::Feet)<<_T(" ft"));
-   LOG(_T("hardMinHaulingDistance = ") << ::ConvertFromSysUnits(hardMinHaulingDistance, unitMeasure::Feet)<<_T(" ft"));
+   LOG(_T("softMinHaulingDistance = ") << WBFL::Units::ConvertFromSysUnits(softMinHaulingDistance, WBFL::Units::Measure::Feet)<<_T(" ft"));
+   LOG(_T("hardMinHaulingDistance = ") << WBFL::Units::ConvertFromSysUnits(hardMinHaulingDistance, WBFL::Units::Measure::Feet)<<_T(" ft"));
 
    Float64 loc = hardMinHaulingDistance;
 
@@ -347,7 +347,7 @@ pgsHaulingAnalysisArtifact* pgsKdotGirderHaulingChecker::DesignHauling(const CSe
    pArtifact->SetOverhangs(loc, loc);
    pArtifact->SetDesignOverhang(loc);
 
-   LOG(_T("Exiting pgsKdotGirderHaulingChecker::DesignHauling. Overhang location is ")<<::ConvertFromSysUnits(loc, unitMeasure::Feet)<<_T(" ft"));
+   LOG(_T("Exiting pgsKdotGirderHaulingChecker::DesignHauling. Overhang location is ")<<WBFL::Units::ConvertFromSysUnits(loc, WBFL::Units::Measure::Feet)<<_T(" ft"));
 
    return pArtifact.release();
 }
@@ -414,7 +414,7 @@ void pgsKdotGirderHaulingChecker::PrepareHaulingAnalysisArtifact(const CSegmentK
 
    GET_IFACE(IMaterials,pMaterial);
    Float64 density = pMaterial->GetSegmentWeightDensity(segmentKey,haulSegmentIntervalIdx);
-   Float64 total_weight = volume * density * unitSysUnitsMgr::GetGravitationalAcceleration();
+   Float64 total_weight = volume * density * WBFL::Units::System::GetGravitationalAcceleration();
    pArtifact->SetGirderWeight(total_weight);
 
    Float64 span_len = girder_length - Loh - Roh;
@@ -532,7 +532,7 @@ void pgsKdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& segm
 
    bool bSISpec = lrfdVersionMgr::GetVersion() == lrfdVersionMgr::SI ? true : false;
    // Use calculator object to deal with casting yard higher allowable stress
-   Float64 fsMax = (bSISpec ? ::ConvertToSysUnits(206.0,unitMeasure::MPa) : ::ConvertToSysUnits(30.0,unitMeasure::KSI) );
+   Float64 fsMax = (bSISpec ? WBFL::Units::ConvertToSysUnits(206.0,WBFL::Units::Measure::MPa) : WBFL::Units::ConvertToSysUnits(30.0,WBFL::Units::Measure::KSI) );
    pgsAlternativeTensileStressCalculator altCalc(segmentKey, haulSegmentIntervalIdx, pBridge, pGdr, pShapes, pSectProps, pRebarGeom, pMaterials, pPoi, true/*limit bar stress*/, fsMax, true/*girder stresses*/);
 
    Float64 AsMax = 0;

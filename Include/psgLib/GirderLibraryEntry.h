@@ -43,7 +43,7 @@
 #include <GeomModel/GeomModel.h>
 
 #include <System\SubjectT.h>
-#include <Units\sysUnits.h>
+#include <Units\Convert.h>
 
 #include <MathEx.h>
 
@@ -1004,7 +1004,7 @@ private:
 
       PrestressDesignStrategy()
       {
-         m_MaxFci = ::ConvertToSysUnits(15.0,unitMeasure::KSI);
+         m_MaxFci = WBFL::Units::ConvertToSysUnits(15.0,WBFL::Units::Measure::KSI);
          m_MaxFc = m_MaxFci;
       }
 

@@ -1310,8 +1310,8 @@ void CConstructabilityCheckTable::BuildRegularCamberCheck(rptChapter* pChapter,I
    GET_IFACE2( pBroker, ISpecification, pSpec );
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
-   Float64 min_days =  ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Min(), unitMeasure::Day);
-   Float64 max_days =  ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
+   Float64 min_days =  WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Min(), WBFL::Units::Measure::Day);
+   Float64 max_days =  WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day);
 
    rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
@@ -1552,7 +1552,7 @@ void CConstructabilityCheckTable::BuildRegularCamberCheck(rptChapter* pChapter,I
 
                *p << color(Red) << _T("WARNING: Screed camber (C) is greater than the ") << camberType.c_str() << _T(" camber at time of deck casting, D. The girder may end up with a sag.") << color(Black) << rptNewLine;
             }
-            else if (IsEqual(C, D, ::ConvertToSysUnits(0.25, unitMeasure::Inch)))
+            else if (IsEqual(C, D, WBFL::Units::ConvertToSysUnits(0.25, WBFL::Units::Measure::Inch)))
             {
                rptParagraph* p = new rptParagraph;
                *pChapter << p;
@@ -1672,7 +1672,7 @@ void CConstructabilityCheckTable::BuildTimeStepCamberCheck(rptChapter* pChapter,
 
                *p << color(Red) << _T("WARNING: Screed Camber, C, is greater than the camber at time of deck casting, D. The girder may end up with a sag.") << color(Black) << rptNewLine;
             }
-            else if (IsEqual(C, Dmin, ::ConvertToSysUnits(0.25, unitMeasure::Inch)))
+            else if (IsEqual(C, Dmin, WBFL::Units::ConvertToSysUnits(0.25, WBFL::Units::Measure::Inch)))
             {
                rptParagraph* p = new rptParagraph;
                *pChapter << p;
@@ -1727,7 +1727,7 @@ void CConstructabilityCheckTable::BuildTimeStepCamberCheck(rptChapter* pChapter,
 
                *p << color(Red) << _T("WARNING: Screed Camber, C, is greater than the camber at time of deck casting, D. The girder may end up with a sag.") << color(Black) << rptNewLine;
             }
-            else if (IsEqual(C, Dmin, ::ConvertToSysUnits(0.25, unitMeasure::Inch)))
+            else if (IsEqual(C, Dmin, WBFL::Units::ConvertToSysUnits(0.25, WBFL::Units::Measure::Inch)))
             {
                rptParagraph* p = new rptParagraph;
                *pChapter << p;

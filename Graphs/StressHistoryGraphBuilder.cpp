@@ -33,7 +33,7 @@
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFAutoProgress.h>
-#include <UnitMgt\UnitValueNumericalFormatTools.h>
+#include <Units\UnitValueNumericalFormatTools.h>
 #include <PgsExt\LoadFactors.h>
 #include <PgsExt\IntervalTool.h>
 
@@ -57,8 +57,8 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 // create a dummy unit conversion tool to pacify the graph constructor
-static unitmgtLengthData DUMMY(unitMeasure::Meter);
-static LengthTool    DUMMY_TOOL(DUMMY);
+static WBFL::Units::LengthData DUMMY(WBFL::Units::Measure::Meter);
+static WBFL::Units::LengthTool DUMMY_TOOL(DUMMY);
 
 BEGIN_MESSAGE_MAP(CStressHistoryGraphBuilder, CEAFGraphBuilderBase)
 END_MESSAGE_MAP()
@@ -188,7 +188,7 @@ int CStressHistoryGraphBuilder::InitializeGraphController(CWnd* pParent,UINT nID
    m_pGraphController->CheckDlgButton(IDC_TIME_LOG,BST_CHECKED);
 
    // x axis
-   m_pTimeFormat = new ScalarTool(m_Time);
+   m_pTimeFormat = new WBFL::Units::ScalarTool(m_Time);
    m_pIntervalFormat = new IntervalTool(m_Interval);
    m_Graph.SetXAxisValueFormat(*m_pTimeFormat);
    m_Graph.SetXAxisNumberOfMajorTics(11);
@@ -196,8 +196,8 @@ int CStressHistoryGraphBuilder::InitializeGraphController(CWnd* pParent,UINT nID
 
    // y axis
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   const unitmgtStressData& stressUnit = pDisplayUnits->GetStressUnit();
-   m_pYFormat = new StressTool(stressUnit);
+   const WBFL::Units::StressData& stressUnit = pDisplayUnits->GetStressUnit();
+   m_pYFormat = new WBFL::Units::StressTool(stressUnit);
    m_Graph.SetYAxisValueFormat(*m_pYFormat);
    m_Graph.SetYAxisTitle(std::_tstring(_T("Stress (")+m_pYFormat->UnitTag()+_T(")")).c_str());
    m_Graph.YAxisNiceRange(true);
@@ -423,9 +423,9 @@ void CStressHistoryGraphBuilder::PlotStressPoints(Float64 x,const pgsPointOfInte
 void CStressHistoryGraphBuilder::AddGraphPoint(IndexType series, Float64 xval, Float64 yval)
 {
    // deal with unit conversion
-   const arvPhysicalConverter* pcx = dynamic_cast<const arvPhysicalConverter*>(m_Graph.GetXAxisValueFormat());
+   const WBFL::Units::PhysicalConverter* pcx = dynamic_cast<const WBFL::Units::PhysicalConverter*>(m_Graph.GetXAxisValueFormat());
    ASSERT(pcx);
-   const arvPhysicalConverter* pcy = dynamic_cast<const arvPhysicalConverter*>(m_Graph.GetYAxisValueFormat());
+   const WBFL::Units::PhysicalConverter* pcy = dynamic_cast<const WBFL::Units::PhysicalConverter*>(m_Graph.GetYAxisValueFormat());
    ASSERT(pcy);
    Float64 x = pcx->Convert(xval);
    Float64 y = pcy->Convert(yval);
@@ -490,8 +490,8 @@ void CStressHistoryGraphBuilder::UpdateYAxis()
    }
 
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   const unitmgtStressData& stressUnit = pDisplayUnits->GetStressUnit();
-   m_pYFormat = new StressTool(stressUnit);
+   const WBFL::Units::StressData& stressUnit = pDisplayUnits->GetStressUnit();
+   m_pYFormat = new WBFL::Units::StressTool(stressUnit);
    m_Graph.SetYAxisValueFormat(*m_pYFormat);
    m_Graph.SetYAxisTitle(std::_tstring(_T("Stress (")+m_pYFormat->UnitTag()+_T(")")).c_str());
 }

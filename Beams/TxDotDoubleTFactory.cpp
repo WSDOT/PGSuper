@@ -71,46 +71,46 @@ HRESULT CTxDotDoubleTFactory::FinalConstruct()
    m_DimNames.emplace_back(_T("W2"));
    m_DimNames.emplace_back(_T("J"));
 
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 0.0,unitMeasure::Inch)); // C1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 0.0,unitMeasure::Inch)); // C2
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(27.0,unitMeasure::Inch)); // H1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 3.0,unitMeasure::Inch)); // H2
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 6.0,unitMeasure::Inch)); // H3
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 0.0,unitMeasure::Inch)); // T1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 6.5,unitMeasure::Inch)); // T2
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 1.5,unitMeasure::Inch)); // T3
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 3.0,unitMeasure::Inch)); // F1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(24.0,unitMeasure::Inch)); // W1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(48.0,unitMeasure::Inch)); // W2
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 1.0,unitMeasure::Inch)); // J
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 0.0,WBFL::Units::Measure::Inch)); // C1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 0.0,WBFL::Units::Measure::Inch)); // C2
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(27.0,WBFL::Units::Measure::Inch)); // H1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 3.0,WBFL::Units::Measure::Inch)); // H2
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 6.0,WBFL::Units::Measure::Inch)); // H3
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 0.0,WBFL::Units::Measure::Inch)); // T1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 6.5,WBFL::Units::Measure::Inch)); // T2
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 1.5,WBFL::Units::Measure::Inch)); // T3
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 3.0,WBFL::Units::Measure::Inch)); // F1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(24.0,WBFL::Units::Measure::Inch)); // W1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(48.0,WBFL::Units::Measure::Inch)); // W2
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 1.0,WBFL::Units::Measure::Inch)); // J
 
    // SI Units
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // C1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // C2
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H2
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H3
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // T1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // T2
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // T3
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // F1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W2
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // J
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // C1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // C2
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // H1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // H2
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // H3
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // T1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // T2
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // T3
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // F1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W2
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // J
 
    // US Units
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // C1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // C2
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H2
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H3
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // T1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // T2
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // T3
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // F1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W2
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // J
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // C1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // C2
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // H1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // H2
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // H3
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // T1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // T2
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // T3
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // F1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W2
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // J
    
 
    return S_OK;
@@ -341,7 +341,7 @@ const std::vector<Float64>& CTxDotDoubleTFactory::GetDefaultDimensions() const
    return m_DefaultDims;
 }
 
-const std::vector<const unitLength*>& CTxDotDoubleTFactory::GetDimensionUnits(bool bSIUnits) const
+const std::vector<const WBFL::Units::Length*>& CTxDotDoubleTFactory::GetDimensionUnits(bool bSIUnits) const
 {
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }

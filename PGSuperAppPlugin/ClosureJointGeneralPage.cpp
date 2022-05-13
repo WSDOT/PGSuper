@@ -254,7 +254,7 @@ void CClosureJointGeneralPage::OnMoreConcreteProperties()
    dlg.m_Ec28 = pParent->m_ClosureJoint.GetConcrete().Ec;
    dlg.m_bUserEci     = pParent->m_ClosureJoint.GetConcrete().bUserEci;
    dlg.m_bUserEc28    = pParent->m_ClosureJoint.GetConcrete().bUserEc;
-   dlg.m_TimeAtInitialStrength = ::ConvertToSysUnits(m_AgeAtContinuity,unitMeasure::Day);
+   dlg.m_TimeAtInitialStrength = WBFL::Units::ConvertToSysUnits(m_AgeAtContinuity,WBFL::Units::Measure::Day);
 
    dlg.m_General.m_Type        = pParent->m_ClosureJoint.GetConcrete().Type;
    dlg.m_General.m_AggSize     = pParent->m_ClosureJoint.GetConcrete().MaxAggregateSize;
@@ -459,7 +459,7 @@ void CClosureJointGeneralPage::UpdateEci()
       m_ctrlEc.GetWindowText(strEc);
       Float64 Ec;
       sysTokenizer::ParseDouble(strEc,&Ec);
-      Ec = ::ConvertToSysUnits(Ec,pDisplayUnits->GetModEUnit().UnitOfMeasure);
+      Ec = WBFL::Units::ConvertToSysUnits(Ec,pDisplayUnits->GetModEUnit().UnitOfMeasure);
 
       CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
 
@@ -558,7 +558,7 @@ void CClosureJointGeneralPage::UpdateEc()
       m_ctrlEci.GetWindowText(strEci);
       Float64 Eci;
       sysTokenizer::ParseDouble(strEci,&Eci);
-      Eci = ::ConvertToSysUnits(Eci,pDisplayUnits->GetModEUnit().UnitOfMeasure);
+      Eci = WBFL::Units::ConvertToSysUnits(Eci,pDisplayUnits->GetModEUnit().UnitOfMeasure);
 
       CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
 
@@ -614,7 +614,7 @@ void CClosureJointGeneralPage::UpdateFc()
 
       Float64 fci;
       sysTokenizer::ParseDouble(strFci, &fci);
-      fci = ::ConvertToSysUnits(fci,pDisplayUnits->GetStressUnit().UnitOfMeasure);
+      fci = WBFL::Units::ConvertToSysUnits(fci,pDisplayUnits->GetStressUnit().UnitOfMeasure);
 
       CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
       Float64 fc;
@@ -651,7 +651,7 @@ void CClosureJointGeneralPage::UpdateFci()
 
       Float64 fc;
       sysTokenizer::ParseDouble(strFc, &fc);
-      fc = ::ConvertToSysUnits(fc,pDisplayUnits->GetStressUnit().UnitOfMeasure);
+      fc = WBFL::Units::ConvertToSysUnits(fc,pDisplayUnits->GetStressUnit().UnitOfMeasure);
 
       CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
 
@@ -761,10 +761,10 @@ void CClosureJointGeneralPage::UpdateConcreteParametersToolTip()
 
    CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
 
-   const unitmgtDensityData& density = pDisplayUnits->GetDensityUnit();
-   const unitmgtLengthData&  aggsize = pDisplayUnits->GetComponentDimUnit();
-   const unitmgtStressData&  stress  = pDisplayUnits->GetStressUnit();
-   const unitmgtScalar&      scalar  = pDisplayUnits->GetScalarFormat();
+   const WBFL::Units::DensityData& density = pDisplayUnits->GetDensityUnit();
+   const WBFL::Units::LengthData&  aggsize = pDisplayUnits->GetComponentDimUnit();
+   const WBFL::Units::StressData&  stress  = pDisplayUnits->GetStressUnit();
+   const WBFL::Units::ScalarData&  scalar  = pDisplayUnits->GetScalarFormat();
 
    CString strTip;
    strTip.Format(_T("%-20s %s\r\n%-20s %s\r\n%-20s %s\r\n%-20s %s"),

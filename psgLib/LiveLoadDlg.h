@@ -29,7 +29,7 @@
 #endif // _MSC_VER > 1000
 // LiveLoadDlg.h : header file
 //
-#include <Units\sysUnits.h>
+#include <Units\Convert.h>
 #include "LiveLoadAxleGrid.h"
 #include <psgLib\LiveLoadLibraryEntry.h>
 

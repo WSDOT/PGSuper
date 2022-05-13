@@ -412,7 +412,7 @@ void CHaunchSegmentGrid::GetGridData(CDataExchange* pDX)
                }
                else
                {
-                  slabOffset[end] = ::ConvertToSysUnits(value, m_pUnit->UnitOfMeasure);
+                  slabOffset[end] = WBFL::Units::ConvertToSysUnits(value, m_pUnit->UnitOfMeasure);
                   if (IsLT(slabOffset[end], minSlabOffset))
                   {
                      AfxMessageBox(strMinValError, MB_ICONERROR | MB_OK);

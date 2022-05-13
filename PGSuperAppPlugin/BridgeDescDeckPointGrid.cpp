@@ -172,7 +172,7 @@ BOOL CBridgeDescDeckPointGrid::OnValidateCell(ROWCOL nRow,ROWCOL nCol)
 
       Float64 station;
       m_objStation->get_Value(&station);
-      station = ::ConvertToSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+      station = WBFL::Units::ConvertToSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
       CDeckPoint prevPoint, nextPoint;
       prevPoint.Station = station - 100;
@@ -339,14 +339,14 @@ void CBridgeDescDeckPointGrid::SetPointRowData(ROWCOL row,const CDeckPoint& poin
       .SetValue(point.MeasurementType == pgsTypes::omtBridge ? _T("Bridge Line") : _T("Alignment"))
       );
 
-   Float64 offset = ::ConvertFromSysUnits(point.LeftEdge,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   Float64 offset = WBFL::Units::ConvertFromSysUnits(point.LeftEdge,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    SetStyleRange(CGXRange(row,3),CGXStyle()
       .SetControl(GX_IDS_CTRL_EDIT)
       .SetHorizontalAlignment(DT_RIGHT)
       .SetValue(offset)
       );
 
-   offset = ::ConvertFromSysUnits(point.RightEdge,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   offset = WBFL::Units::ConvertFromSysUnits(point.RightEdge,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    SetStyleRange(CGXRange(row,4),CGXStyle()
       .SetControl(GX_IDS_CTRL_EDIT)
       .SetHorizontalAlignment(DT_RIGHT)
@@ -369,7 +369,7 @@ void CBridgeDescDeckPointGrid::GetPointRowData(ROWCOL row,CDeckPoint* pPoint)
 
    Float64 station;
    m_objStation->get_Value(&station);
-   pPoint->Station = ::ConvertToSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   pPoint->Station = WBFL::Units::ConvertToSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    // Datum
    CString strDatum = GetCellValue(row,2);
@@ -377,11 +377,11 @@ void CBridgeDescDeckPointGrid::GetPointRowData(ROWCOL row,CDeckPoint* pPoint)
 
    // Left Edge
    Float64 offset = _tstof(GetCellValue(row,3));
-   pPoint->LeftEdge = ::ConvertToSysUnits(offset,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   pPoint->LeftEdge = WBFL::Units::ConvertToSysUnits(offset,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    // Right Edge
    offset = _tstof(GetCellValue(row,4));
-   pPoint->RightEdge = ::ConvertToSysUnits(offset,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   pPoint->RightEdge = WBFL::Units::ConvertToSysUnits(offset,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 }
 
 void CBridgeDescDeckPointGrid::SetTransitionRowData(ROWCOL row,const CDeckPoint& point)

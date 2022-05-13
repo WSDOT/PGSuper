@@ -720,7 +720,7 @@ bool CStrandFillGrid::UpdateData(bool doCheckData)
                return false;
             }
 
-            leftDebond  = ::ConvertToSysUnits(leftDebond,  pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
+            leftDebond  = WBFL::Units::ConvertToSysUnits(leftDebond,  pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
          }
 
          if (m_pParent->m_bSymmetricDebond)
@@ -748,7 +748,7 @@ bool CStrandFillGrid::UpdateData(bool doCheckData)
                   return false;
                }
 
-               rightDebond = ::ConvertToSysUnits(rightDebond, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
+               rightDebond = WBFL::Units::ConvertToSysUnits(rightDebond, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
 
                if ((leftDebond < 0.0 || rightDebond < 0.0) && doCheckData)
                {

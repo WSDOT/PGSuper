@@ -60,7 +60,7 @@ void CConnectionEntryDlg::DoDataExchange(CDataExchange* pDX)
 	CDialog::DoDataExchange(pDX);
 
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    CString image_name = GetImageName(m_BearingOffsetMeasurementType,m_EndDistanceMeasurementType);
 

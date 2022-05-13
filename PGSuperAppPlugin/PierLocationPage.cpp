@@ -369,8 +369,8 @@ BOOL CPierLocationPage::IsValidStation(Float64* pStation)
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   UnitModeType unitMode = pDisplayUnits->GetStationFormat().GetUnitOfMeasure() == unitStationFormat::Feet ? umUS : umSI;
-   const unitLength& displayUnit = (unitMode == umUS ? unitMeasure::Feet : unitMeasure::Meter);
+   UnitModeType unitMode = pDisplayUnits->GetStationFormat().GetUnitOfMeasure() == WBFL::Units::StationFormat::UnitOfMeasure::Feet ? umUS : umSI;
+   const WBFL::Units::Length& displayUnit = (unitMode == umUS ? WBFL::Units::Measure::Feet : WBFL::Units::Measure::Meter);
 
    CWnd* pWnd = GetDlgItem(IDC_STATION);
    CString strStation;
@@ -379,7 +379,7 @@ BOOL CPierLocationPage::IsValidStation(Float64* pStation)
    if ( SUCCEEDED(hr) )
    {
       m_objStation->get_Value(pStation);
-      *pStation = ::ConvertToSysUnits( *pStation, displayUnit );
+      *pStation = WBFL::Units::ConvertToSysUnits( *pStation, displayUnit );
       bResult = TRUE;
    }
    else

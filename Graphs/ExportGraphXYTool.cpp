@@ -24,7 +24,7 @@
 #include "resource.h"
 #include <Graphs\ExportGraphXYTool.h>
 
-#include <UnitMgt\UnitValueNumericalFormatTools.h>
+#include <Units\UnitValueNumericalFormatTools.h>
 #include <MfcTools\ExcelWrapper.h>
 #include <Graphing\GraphXY.h>
 #include <EAF\EAFDocument.h>

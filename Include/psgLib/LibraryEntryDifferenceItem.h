@@ -24,7 +24,7 @@
 
 #include "psgLibLib.h"
 #include <MFCTools\Format.h>
-#include <UnitMgt\UnitMgt.h>
+#include <Units\Units.h>
 
 
 class PSGLIBCLASS pgsLibraryEntryDifferenceItem
@@ -148,17 +148,17 @@ protected:
    PSGLIBTPL pgsLibraryEntryDifferenceUnitValueItemT<u>; \
    typedef pgsLibraryEntryDifferenceUnitValueItemT<u> t;
 
-DECLARE_UNIT_VALUE_DIFFERENCE_ITEM(unitmgtLengthData,pgsLibraryEntryDifferenceLengthItem);
-DECLARE_UNIT_VALUE_DIFFERENCE_ITEM(unitmgtForceData,pgsLibraryEntryDifferenceForceItem);
-DECLARE_UNIT_VALUE_DIFFERENCE_ITEM(unitmgtForcePerLengthData,pgsLibraryEntryDifferenceForcePerLengthItem);
-DECLARE_UNIT_VALUE_DIFFERENCE_ITEM(unitmgtStressData,pgsLibraryEntryDifferenceStressItem);
-DECLARE_UNIT_VALUE_DIFFERENCE_ITEM(unitmgtDensityData,pgsLibraryEntryDifferenceDensityItem);
+DECLARE_UNIT_VALUE_DIFFERENCE_ITEM(WBFL::Units::LengthData,pgsLibraryEntryDifferenceLengthItem);
+DECLARE_UNIT_VALUE_DIFFERENCE_ITEM(WBFL::Units::ForceData,pgsLibraryEntryDifferenceForceItem);
+DECLARE_UNIT_VALUE_DIFFERENCE_ITEM(WBFL::Units::ForcePerLengthData,pgsLibraryEntryDifferenceForcePerLengthItem);
+DECLARE_UNIT_VALUE_DIFFERENCE_ITEM(WBFL::Units::StressData,pgsLibraryEntryDifferenceStressItem);
+DECLARE_UNIT_VALUE_DIFFERENCE_ITEM(WBFL::Units::DensityData,pgsLibraryEntryDifferenceDensityItem);
 
 
 #define DECLARE_UNIT_VALUE_KEYWORD_DIFFERENCE_ITEM(u,t) \
    PSGLIBTPL pgsLibraryEntryDifferenceUnitValueKeywordItemT<u>; \
    typedef pgsLibraryEntryDifferenceUnitValueKeywordItemT<u> t;
 
-DECLARE_UNIT_VALUE_KEYWORD_DIFFERENCE_ITEM(unitmgtLengthData,pgsLibraryEntryDifferenceLengthKeywordItem);
+DECLARE_UNIT_VALUE_KEYWORD_DIFFERENCE_ITEM(WBFL::Units::LengthData,pgsLibraryEntryDifferenceLengthKeywordItem);
 
 #define RETURN_ON_DIFFERENCE if ( bReturnOnFirstDifference ) { ATLASSERT(vDifferences.size() == 0); return false; }

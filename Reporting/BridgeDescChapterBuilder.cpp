@@ -416,8 +416,8 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
       CComPtr<IDirection> fwdTangent;
       if (IsZero(hc_data.Radius))
       {
-         pRoadway->GetBearing(hc_data.PIStation - ::ConvertToSysUnits(1.0, unitMeasure::Feet), &bkTangent);
-         pRoadway->GetBearing(hc_data.PIStation + ::ConvertToSysUnits(1.0, unitMeasure::Feet), &fwdTangent);
+         pRoadway->GetBearing(hc_data.PIStation - WBFL::Units::ConvertToSysUnits(1.0, WBFL::Units::Measure::Feet), &bkTangent);
+         pRoadway->GetBearing(hc_data.PIStation + WBFL::Units::ConvertToSysUnits(1.0, WBFL::Units::Measure::Feet), &fwdTangent);
       }
       else
       {
@@ -684,7 +684,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
 
             CComBSTR bstrDC;
             delta.Release();
-            hc->get_DegreeCurvature(::ConvertToSysUnits(100.0, unitMeasure::Feet), dcHighway, &delta);
+            hc->get_DegreeCurvature(WBFL::Units::ConvertToSysUnits(100.0, WBFL::Units::Measure::Feet), dcHighway, &delta);
             delta->get_Value(&delta_value);
             angle_formatter->put_Signed(VARIANT_TRUE);
             angle_formatter->Format(delta_value, CComBSTR("°,\',\""), &bstrDC);

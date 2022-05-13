@@ -55,7 +55,7 @@ void CInplacePierStationEditEvents::Handle_OnChanged(iDisplayObject* pDO)
       return;
 
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   const unitStationFormat& station_format = pDisplayUnits->GetStationFormat();
+   const WBFL::Units::StationFormat& station_format = pDisplayUnits->GetStationFormat();
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();

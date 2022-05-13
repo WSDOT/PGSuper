@@ -1377,9 +1377,9 @@ void CPGSDocBase::ModifyTemplate(LPCTSTR strTemplate)
    //GET_IFACE(IBridgeDescription, pIBridgeDesc);
    //CDeckDescription2 deck = *(pIBridgeDesc->GetDeckDescription());
    //deck.bInputAsDepthAndDensity = false;
-   //deck.OverlayDepth = ::ConvertToSysUnits(3.0, unitMeasure::Inch);
-   //deck.OverlayWeight = ::ConvertToSysUnits(35.0, unitMeasure::PSF);
-   //deck.OverlayDensity = ::ConvertToSysUnits(140.0,unitMeasure::PCF);
+   //deck.OverlayDepth = WBFL::Units::ConvertToSysUnits(3.0, WBFL::Units::Measure::Inch);
+   //deck.OverlayWeight = WBFL::Units::ConvertToSysUnits(35.0, WBFL::Units::Measure::PSF);
+   //deck.OverlayDensity = WBFL::Units::ConvertToSysUnits(140.0,WBFL::Units::Measure::PCF);
    //pIBridgeDesc->SetDeckDescription(deck);
 
    //// Update seed values to match library
@@ -1421,7 +1421,7 @@ void CPGSDocBase::ModifyTemplate(LPCTSTR strTemplate)
    //   {
    //      CDeckDescription2 deck = *bridgeDesc.GetDeckDescription();
    //      deck.bInputAsDepthAndDensity = true;
-   //      deck.OverlayDepth = ::ConvertToSysUnits(3.0, unitMeasure::Inch);
+   //      deck.OverlayDepth = WBFL::Units::ConvertToSysUnits(3.0, WBFL::Units::Measure::Inch);
    //      deck.WearingSurface = pgsTypes::wstFutureOverlay;
    //      pIBridgeDesc->SetDeckDescription(deck);
    //   }
@@ -1463,7 +1463,7 @@ void CPGSDocBase::ModifyTemplate(LPCTSTR strTemplate)
    //   bool bLimit;
    //   Float64 max;
    //   Float64 coefficient = pRatingSpec->GetAllowableTensionCoefficient(ratingType, &bLimit, &max);
-   //   pRatingSpec->SetAllowableTensionCoefficient(ratingType, coefficient, true, ::ConvertToSysUnits(0.6, unitMeasure::KSI));
+   //   pRatingSpec->SetAllowableTensionCoefficient(ratingType, coefficient, true, WBFL::Units::ConvertToSysUnits(0.6, WBFL::Units::Measure::KSI));
    //}
 
    //

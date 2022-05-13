@@ -265,7 +265,7 @@ const std::vector<Float64>& CBoxBeamFactoryImpl::GetDefaultDimensions() const
    return m_DefaultDims;
 }
 
-const std::vector<const unitLength*>& CBoxBeamFactoryImpl::GetDimensionUnits(bool bSIUnits) const
+const std::vector<const WBFL::Units::Length*>& CBoxBeamFactoryImpl::GetDimensionUnits(bool bSIUnits) const
 {
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }

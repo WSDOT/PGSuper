@@ -138,7 +138,7 @@ void CShearBarsLegsGrid::InsertRow(bool bAppend)
 	ROWCOL nRow = 0;
 
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
 	// if there are no cells selected,
 	// copy the current cell's coordinates

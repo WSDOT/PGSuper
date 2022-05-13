@@ -67,13 +67,13 @@ void FillComboWithUnitFloatRange(Float64 selectedVal, Float64 minVal, Float64 ma
    Float64 toler = pow(10.0, -precision-1); // tolerance on equals
 
    // First convert to output units
-   selectedVal = ::ConvertFromSysUnits(selectedVal, tunit);
+   selectedVal = WBFL::Units::ConvertFromSysUnits(selectedVal, tunit);
 
    // Minval and max val set upper and lower bounds
-   minVal = ::ConvertFromSysUnits(minVal, tunit);
-   maxVal = ::ConvertFromSysUnits(maxVal, tunit);
+   minVal = WBFL::Units::ConvertFromSysUnits(minVal, tunit);
+   maxVal = WBFL::Units::ConvertFromSysUnits(maxVal, tunit);
 
-   incrVal = ::ConvertFromSysUnits(incrVal, tunit);
+   incrVal = WBFL::Units::ConvertFromSysUnits(incrVal, tunit);
 
    // string for value to be selected
    std::_tstring selectedStr = tool.AsString(selectedVal);

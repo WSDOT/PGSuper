@@ -199,8 +199,8 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    GET_IFACE2( pBroker, ISpecification, pSpec );
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
-   Float64 min_days =  ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Min(), unitMeasure::Day);
-   Float64 max_days =  ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
+   Float64 min_days =  WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Min(), WBFL::Units::Measure::Day);
+   Float64 max_days =  WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day);
 
    GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
    PoiList pmid;
@@ -604,21 +604,21 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       {
          (*pTable)(++row,0) << _T("H1 (##)");
          Float64 Hg = pSectProp->GetHg(releaseIntervalIdx,poiStart);
-         Float64 H1 = pBridgeDesc->GetSlabOffset() + Hg + ::ConvertToSysUnits(3.0,unitMeasure::Inch);
+         Float64 H1 = pBridgeDesc->GetSlabOffset() + Hg + WBFL::Units::ConvertToSysUnits(3.0,WBFL::Units::Measure::Inch);
          (*pTable)(row,  1) << gdim.SetValue(H1);
       }
       else
       {
          (*pTable)(++row,0) << _T("H1 at End 1 (##)");
          Float64 Hg = pSectProp->GetHg(releaseIntervalIdx,poiStart);
-         Float64 H1 = pSegment->GetSlabOffset(pgsTypes::metStart) + Hg + ::ConvertToSysUnits(3.0,unitMeasure::Inch);
+         Float64 H1 = pSegment->GetSlabOffset(pgsTypes::metStart) + Hg + WBFL::Units::ConvertToSysUnits(3.0,WBFL::Units::Measure::Inch);
          (*pTable)(row,  1) << gdim.SetValue(H1);
 
          (*pTable)(++row,0) << _T("H1 at End 2 (##)");
          pgsPointOfInterest poiEnd(poiStart);
          poiEnd.SetDistFromStart(pBridge->GetSegmentLength(segmentKey));
          Hg = pSectProp->GetHg(releaseIntervalIdx,poiEnd);
-         H1 = pSegment->GetSlabOffset(pgsTypes::metEnd) + Hg + ::ConvertToSysUnits(3.0,unitMeasure::Inch);
+         H1 = pSegment->GetSlabOffset(pgsTypes::metEnd) + Hg + WBFL::Units::ConvertToSysUnits(3.0,WBFL::Units::Measure::Inch);
          (*pTable)(row,  1) << gdim.SetValue(H1);
       }
    }
@@ -726,7 +726,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
 
             *p << color(Red) << _T("WARNING: Screed camber (C) is greater than the ") << camberType.c_str() << _T(" camber at time of deck casting, D. The girder may end up with a sag.") << color(Black) << rptNewLine;
          }
-         else if (IsEqual(C, D, ::ConvertToSysUnits(0.25, unitMeasure::Inch)))
+         else if (IsEqual(C, D, WBFL::Units::ConvertToSysUnits(0.25, WBFL::Units::Measure::Inch)))
          {
             rptParagraph* p = new rptParagraph;
             *pChapter << p;
@@ -865,7 +865,7 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,cons
       return STIRRUP_ERROR_BARSIZE;
    }
 
-   if ( !IsEqual(v,1.0) && !IsEqual(spacing,::ConvertToSysUnits(1.5,unitMeasure::Inch)) )
+   if ( !IsEqual(v,1.0) && !IsEqual(spacing,WBFL::Units::ConvertToSysUnits(1.5,WBFL::Units::Measure::Inch)) )
    {
       return STIRRUP_ERROR_STARTZONE;
    }
@@ -983,7 +983,7 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,cons
 
    if ( familyCLSID == CLSID_WFBeamFamily || familyCLSID == CLSID_UBeamFamily )
    {
-      if ( !IsEqual(spacing,::ConvertToSysUnits(18.0,unitMeasure::Inch)) )
+      if ( !IsEqual(spacing,WBFL::Units::ConvertToSysUnits(18.0,WBFL::Units::Measure::Inch)) )
       {
          return STIRRUP_ERROR_LASTZONE;
       }
@@ -996,7 +996,7 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,cons
       GET_IFACE2(pBroker,IGirder, pGirder);
       Float64 H = pGirder->GetHeight(poi);
 
-      Float64 lastZoneSpacing = Min(H - ::ConvertToSysUnits(3.0, unitMeasure::Inch), ::ConvertToSysUnits(18.0, unitMeasure::Inch));
+      Float64 lastZoneSpacing = Min(H - WBFL::Units::ConvertToSysUnits(3.0, WBFL::Units::Measure::Inch), WBFL::Units::ConvertToSysUnits(18.0, WBFL::Units::Measure::Inch));
       if (!IsEqual(spacing, lastZoneSpacing))
       {
          return STIRRUP_ERROR_LASTZONE;
@@ -1004,7 +1004,7 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,cons
    }
    else
    {
-      if ( !IsEqual(spacing,::ConvertToSysUnits(9.0,unitMeasure::Inch)) )
+      if ( !IsEqual(spacing,WBFL::Units::ConvertToSysUnits(9.0,WBFL::Units::Measure::Inch)) )
       {
          return STIRRUP_ERROR_LASTZONE;
       }

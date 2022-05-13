@@ -144,7 +144,7 @@ void CWsdotHaulingDlg::OnCbnSelchangeWindType()
    pgsTypes::WindType windType = (pgsTypes::WindType)pcbWindType->GetItemData(curSel);
    CDataExchange dx(this,false);
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDispUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDispUnits = pApp->GetDisplayUnits();
    if ( windType == pgsTypes::Speed )
    {
       DDX_Tag(&dx,IDC_WIND_LOAD_UNIT,pDispUnits->Velocity);

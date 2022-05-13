@@ -1196,7 +1196,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
       (*pTable2)(row2,col2++) << _T(""); //(*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Mre[TIMESTEP_RE]);
 
       (*pTable2)(row2,col2++) << _T(""); //tsDetails.er;
-      (*pTable2)(row2,col2++) << _T(""); //::ConvertFromSysUnits(tsDetails.rr,pDisplayUnits->GetCurvatureUnit().UnitOfMeasure);
+      (*pTable2)(row2,col2++) << _T(""); //WBFL::Units::ConvertFromSysUnits(tsDetails.rr,pDisplayUnits->GetCurvatureUnit().UnitOfMeasure);
 
       (*pTable2)(row2,col2++) << _T(""); //force.SetValue(tsDetails.Girder.dP);
       (*pTable2)(row2,col2++) << _T(""); //moment.SetValue(tsDetails.Girder.dM);

@@ -2984,8 +2984,8 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSDocBase* pDoc, IB
    GET_IFACE2_NOCHECK(pBroker, ICamber, pCamber);
 
    // assume a typical cover
-   Float64 top_cover = ::ConvertToSysUnits(1.0,unitMeasure::Inch);
-   Float64 bot_cover = ::ConvertToSysUnits(1.0,unitMeasure::Inch);
+   Float64 top_cover = WBFL::Units::ConvertToSysUnits(1.0,WBFL::Units::Measure::Inch);
+   Float64 bot_cover = WBFL::Units::ConvertToSysUnits(1.0,WBFL::Units::Measure::Inch);
 
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
       

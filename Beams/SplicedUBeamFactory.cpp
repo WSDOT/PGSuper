@@ -69,49 +69,49 @@ HRESULT CSplicedUBeamFactory::FinalConstruct()
    m_DimNames.emplace_back(_T("W5"));
 
    // Default beam is a U54G4
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(54.00,unitMeasure::Inch)); // D1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(6.000,unitMeasure::Inch)); // D2
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(6.000,unitMeasure::Inch)); // D3
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(0.000,unitMeasure::Inch)); // D4
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(0.000,unitMeasure::Inch)); // D5
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(0.000,unitMeasure::Inch)); // D6
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(0.000,unitMeasure::Inch)); // D7
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(7.000,unitMeasure::Inch)); // T
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(48.00,unitMeasure::Inch)); // W1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(63.425,unitMeasure::Inch)); // W2
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(12.00,unitMeasure::Inch)); // W3
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(0.000,unitMeasure::Inch)); // W4
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(0.000,unitMeasure::Inch)); // W5
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(54.00,WBFL::Units::Measure::Inch)); // D1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(6.000,WBFL::Units::Measure::Inch)); // D2
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(6.000,WBFL::Units::Measure::Inch)); // D3
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(0.000,WBFL::Units::Measure::Inch)); // D4
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(0.000,WBFL::Units::Measure::Inch)); // D5
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(0.000,WBFL::Units::Measure::Inch)); // D6
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(0.000,WBFL::Units::Measure::Inch)); // D7
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(7.000,WBFL::Units::Measure::Inch)); // T
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(48.00,WBFL::Units::Measure::Inch)); // W1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(63.425,WBFL::Units::Measure::Inch)); // W2
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(12.00,WBFL::Units::Measure::Inch)); // W3
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(0.000,WBFL::Units::Measure::Inch)); // W4
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(0.000,WBFL::Units::Measure::Inch)); // W5
 
    // SI Units
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D2
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D3
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D4
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D5
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D6
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D7
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // T
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W2
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W3
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W4
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W5
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // D1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // D2
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // D3
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // D4
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // D5
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // D6
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // D7
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // T
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W2
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W3
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W4
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W5
 
    // US Units
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D2
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D3
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D4
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D5
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D6
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D7
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // T
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W2
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W3
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W4
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W5
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // D1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // D2
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // D3
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // D4
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // D5
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // D6
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // D7
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // T
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W2
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W3
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W4
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W5
 
    return S_OK;
 }
@@ -350,7 +350,7 @@ const std::vector<Float64>& CSplicedUBeamFactory::GetDefaultDimensions() const
    return m_DefaultDims;
 }
 
-const std::vector<const unitLength*>& CSplicedUBeamFactory::GetDimensionUnits(bool bSIUnits) const
+const std::vector<const WBFL::Units::Length*>& CSplicedUBeamFactory::GetDimensionUnits(bool bSIUnits) const
 {
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
@@ -378,7 +378,7 @@ bool CSplicedUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool 
    
    if ( d1 <= 0.0 )
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][0];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][0];
       std::_tostringstream os;
       os << _T("D1 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
@@ -387,7 +387,7 @@ bool CSplicedUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool 
 
    if ( d2 <= 0.0 )
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][1];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][1];
       std::_tostringstream os;
       os << _T("D2 must be greater than 0.0") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
@@ -396,7 +396,7 @@ bool CSplicedUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool 
 
    if ( d3 < 0.0 )
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][2];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][2];
       std::_tostringstream os;
       os << _T("D3 must be greater than or equal to 0.0") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
@@ -405,16 +405,16 @@ bool CSplicedUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool 
 
    if ( d1 < d2+d3 )
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][0];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][0];
       std::_tostringstream os;
-      os << _T("D1 must be greater than or equal to D2 + D3 (") << ::ConvertFromSysUnits(d2+d3,*pUnit) << _T(" ") << pUnit->UnitTag() << _T(")") << std::ends;
+      os << _T("D1 must be greater than or equal to D2 + D3 (") << WBFL::Units::ConvertFromSysUnits(d2+d3,*pUnit) << _T(" ") << pUnit->UnitTag() << _T(")") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( w1 <= 0.0 )
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][8];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][8];
       std::_tostringstream os;
       os << _T("W1 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
@@ -431,7 +431,7 @@ bool CSplicedUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool 
 
    if ( w3 < 0.0 )
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][10];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][10];
       std::_tostringstream os;
       os << _T("W3 must be greater than or equal to 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
@@ -440,7 +440,7 @@ bool CSplicedUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool 
    
    if ( t <= 0.0 )
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][7];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][7];
       std::_tostringstream os;
       os << _T("T must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
@@ -450,7 +450,7 @@ bool CSplicedUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool 
 
    if (IsZero(w4) && (!IsZero(d6) || !IsZero(d7)))
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][11];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][11];
       std::_tostringstream os;
       os << _T("D6 and D7 must be 0.0 when W4 is 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
@@ -459,7 +459,7 @@ bool CSplicedUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool 
 
    if (IsZero(w5) && (!IsZero(d4) || !IsZero(d5)))
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][12];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][12];
       std::_tostringstream os;
       os << _T("D4 and D5 must be 0.0 when W5 is 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();

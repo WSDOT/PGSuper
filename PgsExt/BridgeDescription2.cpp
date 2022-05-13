@@ -60,10 +60,10 @@ CBridgeDescription2::CBridgeDescription2()
    m_Deck.SetBridgeDescription(this);
    m_TimelineManager.SetBridgeDescription(this);
 
-   m_SlabOffset     = ::ConvertToSysUnits( 10.0, unitMeasure::Inch );
+   m_SlabOffset     = WBFL::Units::ConvertToSysUnits( 10.0, WBFL::Units::Measure::Inch );
    m_SlabOffsetType = pgsTypes::sotBridge;
 
-   m_Fillet     = ::ConvertToSysUnits( 0.75, unitMeasure::Inch );
+   m_Fillet     = WBFL::Units::ConvertToSysUnits( 0.75, WBFL::Units::Measure::Inch );
 
    m_AssumedExcessCamber = 0.0;
    m_AssumedExcessCamberType = pgsTypes::aecBridge;
@@ -117,10 +117,10 @@ CBridgeDescription2::CBridgeDescription2(const CBridgeDescription2& rOther)
    m_Deck.SetBridgeDescription(this);
    m_TimelineManager.SetBridgeDescription(this);
 
-   m_SlabOffset     = ::ConvertToSysUnits( 10.0, unitMeasure::Inch );
+   m_SlabOffset     = WBFL::Units::ConvertToSysUnits( 10.0, WBFL::Units::Measure::Inch );
    m_SlabOffsetType = pgsTypes::sotBridge;
 
-   m_Fillet     = ::ConvertToSysUnits( 0.75, unitMeasure::Inch );
+   m_Fillet     = WBFL::Units::ConvertToSysUnits( 0.75, WBFL::Units::Measure::Inch );
 
    m_pGirderLibraryEntry = nullptr;
 
@@ -1160,7 +1160,7 @@ void CBridgeDescription2::CreateFirstSpan(const CPierData2* pFirstPier,const CSp
    else
    {
       nextPier = new CPierData2();
-      nextPier->SetStation( firstPier->GetStation() + ::ConvertToSysUnits(100.0,unitMeasure::Feet) );
+      nextPier->SetStation( firstPier->GetStation() + WBFL::Units::ConvertToSysUnits(100.0,WBFL::Units::Measure::Feet) );
    }
 
    firstPier->SetBridgeDescription(this);
@@ -1246,7 +1246,7 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
          // an older version of PGSuper. The older files load correctly so this really isn't a problem.
 
          // Just so we don't have problems in release builds, make the new span length 100 ft and keep going
-         newSpanLength = ::ConvertToSysUnits(100.0,unitMeasure::Feet);
+         newSpanLength = WBFL::Units::ConvertToSysUnits(100.0,WBFL::Units::Measure::Feet);
       }
       else
       {

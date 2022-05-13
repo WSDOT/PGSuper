@@ -53,7 +53,7 @@ CGirderDescDebondPage::CGirderDescDebondPage()
 	//{{AFX_DATA_INIT(CGirderDescDebondPage)
 	//}}AFX_DATA_INIT
 
-   m_Radius = ::ConvertToSysUnits(0.3,unitMeasure::Inch) * 1.5;
+   m_Radius = WBFL::Units::ConvertToSysUnits(0.3,WBFL::Units::Measure::Inch) * 1.5;
 
 }
 

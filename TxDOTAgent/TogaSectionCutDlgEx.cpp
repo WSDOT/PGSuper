@@ -103,8 +103,8 @@ void CTogaSectionCutDlgEx::DoDataExchange(CDataExchange* pDX)
       CString str;
       std::_tstring tag;
       Float64 lower, upper;
-      lower = ::ConvertFromSysUnits(m_LowerBound, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-      upper = ::ConvertFromSysUnits(m_UpperBound, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+      lower = WBFL::Units::ConvertFromSysUnits(m_LowerBound, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+      upper = WBFL::Units::ConvertFromSysUnits(m_UpperBound, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
       tag = pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag();
       str.Format(_T("Enter a Value Between %g and %g %s"),lower, upper, tag.c_str());
       pprompt->SetWindowText(str);

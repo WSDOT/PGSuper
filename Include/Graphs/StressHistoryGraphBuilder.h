@@ -29,7 +29,7 @@
 #include <PgsExt\PointOfInterest.h>
 
 class CStressHistoryGraphController;
-class arvPhysicalConverter;
+class WBFL::Units::PhysicalConverter;
 interface ILimitStateForces;
 interface ICombinedForces;
 interface IIntervals;
@@ -63,11 +63,11 @@ protected:
 
    CComPtr<IBroker> m_pBroker;
 
-   unitmgtScalar m_Time;
-   unitmgtScalar m_Interval;
-   arvPhysicalConverter* m_pTimeFormat;
-   arvPhysicalConverter* m_pIntervalFormat;
-   arvPhysicalConverter* m_pYFormat;
+   WBFL::Units::ScalarData m_Time;
+   WBFL::Units::ScalarData m_Interval;
+   WBFL::Units::PhysicalConverter* m_pTimeFormat;
+   WBFL::Units::PhysicalConverter* m_pIntervalFormat;
+   WBFL::Units::PhysicalConverter* m_pYFormat;
    WBFL::Graphing::GraphXY m_Graph;
 
    std::array<bool, 4> m_bPlot;

@@ -647,7 +647,7 @@ void CTogaGirderModelSectionView::BuildDimensionDisplayObjects(CTxDOTOptionalDes
    CComPtr<iTextBlock> textBlock;
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   const unitmgtLengthData& length_unit = pDisplayUnits->GetComponentDimUnit();
+   const WBFL::Units::LengthData& length_unit = pDisplayUnits->GetComponentDimUnit();
 
    textBlock.CoCreateInstance(CLSID_TextBlock);
    strDim = FormatDimension(top_width,length_unit);

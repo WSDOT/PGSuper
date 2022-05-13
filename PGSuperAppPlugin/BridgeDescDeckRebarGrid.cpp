@@ -132,9 +132,9 @@ void CBridgeDescDeckRebarGrid::AddRow()
    rebarData.RebarGrade  = pParent->m_RebarData.TopRebarGrade;
    rebarData.RebarType   = pParent->m_RebarData.TopRebarType;
    rebarData.RebarSize   = matRebar::bs4;
-   rebarData.Spacing     = ::ConvertToSysUnits(18,unitMeasure::Inch);
-   rebarData.LeftCutoff  = ::ConvertToSysUnits(10,unitMeasure::Feet);
-   rebarData.RightCutoff = ::ConvertToSysUnits(10,unitMeasure::Feet);
+   rebarData.Spacing     = WBFL::Units::ConvertToSysUnits(18,WBFL::Units::Measure::Inch);
+   rebarData.LeftCutoff  = WBFL::Units::ConvertToSysUnits(10,WBFL::Units::Measure::Feet);
+   rebarData.RightCutoff = WBFL::Units::ConvertToSysUnits(10,WBFL::Units::Measure::Feet);
 
    PutRowData(nRow,rebarData);
 
@@ -421,25 +421,25 @@ bool CBridgeDescDeckRebarGrid::GetRowData(ROWCOL nRow, CDeckRebarData::NegMoment
    // spacing
    CString strSpacing = GetCellValue(nRow,4);
    Float64 spacing = _tstof(strSpacing);
-   spacing = ::ConvertToSysUnits(spacing,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+   spacing = WBFL::Units::ConvertToSysUnits(spacing,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
    pRebarData->Spacing = spacing;
 
    // lump sum area
    CString strAs = GetCellValue(nRow,6);
    Float64 As = _tstof(strAs);
-   As = ::ConvertToSysUnits(As,pDisplayUnits->GetAvOverSUnit().UnitOfMeasure);
+   As = WBFL::Units::ConvertToSysUnits(As,pDisplayUnits->GetAvOverSUnit().UnitOfMeasure);
    pRebarData->LumpSum = As;
 
    // left offset
    CString strCutoff = GetCellValue(nRow,7);
    Float64 cutoff = _tstof(strCutoff);
-   cutoff = ::ConvertToSysUnits(cutoff,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+   cutoff = WBFL::Units::ConvertToSysUnits(cutoff,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
    pRebarData->LeftCutoff = cutoff;
 
    // right offset
    strCutoff = GetCellValue(nRow,8);
    cutoff = _tstof(strCutoff);
-   cutoff = ::ConvertToSysUnits(cutoff,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+   cutoff = WBFL::Units::ConvertToSysUnits(cutoff,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
    pRebarData->RightCutoff = cutoff;
 
    return true;
@@ -527,24 +527,24 @@ void CBridgeDescDeckRebarGrid::PutRowData(ROWCOL nRow, const CDeckRebarData::Neg
 
    // spacing
    Float64 spacing = rebarData.Spacing;
-   spacing = ::ConvertFromSysUnits(spacing,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+   spacing = WBFL::Units::ConvertFromSysUnits(spacing,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
    SetValueRange(CGXRange(nRow,4),spacing);
 
    // lump sum area
    Float64 As = rebarData.LumpSum;
-   As = ::ConvertFromSysUnits(As,pDisplayUnits->GetAvOverSUnit().UnitOfMeasure);
+   As = WBFL::Units::ConvertFromSysUnits(As,pDisplayUnits->GetAvOverSUnit().UnitOfMeasure);
    SetValueRange(CGXRange(nRow,6),As);
 
    // Cutoffs - don't input cut-offs for non-continuous side of pier
 
    // left cutoff
    Float64 cutoff = rebarData.LeftCutoff;
-   cutoff = ::ConvertFromSysUnits(cutoff,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+   cutoff = WBFL::Units::ConvertFromSysUnits(cutoff,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
    SetValueRange(CGXRange(nRow,7),cutoff);
 
    // right cutoff
    cutoff = rebarData.RightCutoff;
-   cutoff = ::ConvertFromSysUnits(cutoff,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+   cutoff = WBFL::Units::ConvertFromSysUnits(cutoff,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
    SetValueRange(CGXRange(nRow,8),cutoff);
 
    UpdateCutoff(nRow,pPier);

@@ -530,7 +530,7 @@ private:
             {
                // Controlling state matches current state. We can potentially store a decrease.
                // Update only if new value is more than 150 psi less than current
-               if ( strength < (m_CurrentState.m_Strength-::ConvertToSysUnits(0.15,unitMeasure::KSI)) )
+               if ( strength < (m_CurrentState.m_Strength-WBFL::Units::ConvertToSysUnits(0.15,WBFL::Units::Measure::KSI)) )
                {
                   // We have a decrease, see if it's been stored before
                   Int16 incr; // note assignment below - a bit tricky
@@ -541,7 +541,7 @@ private:
                      // NOTE: I first tried a raw 100psi increment and reg014.pgs, reg021.pgs girder B would not converge. 
                      //       Hence, 100,200,400,1600... ~rdp
                      Float64 factor = pow(2.,incr-1);
-                     Float64 test_strength = strength + factor * ::ConvertToSysUnits(0.1,unitMeasure::KSI);
+                     Float64 test_strength = strength + factor * WBFL::Units::ConvertToSysUnits(0.1,WBFL::Units::Measure::KSI);
 
                      // this ISA decrease, so don't allow an increase
                      test_strength = Min(test_strength, m_CurrentState.m_Strength);

@@ -56,7 +56,7 @@ CTOGAGirderSelectStrandsDlg::CTOGAGirderSelectStrandsDlg(CWnd* pParent /*=nullpt
 {
    m_DrawNumbers = TRUE;
 
-   m_Radius = ::ConvertToSysUnits(0.3,unitMeasure::Inch) * 1.5;
+   m_Radius = WBFL::Units::ConvertToSysUnits(0.3,WBFL::Units::Measure::Inch) * 1.5;
 
    m_pToolTip = nullptr;
 }

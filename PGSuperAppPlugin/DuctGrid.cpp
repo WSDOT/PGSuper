@@ -744,9 +744,9 @@ void CDuctGrid::GetDuctData(ROWCOL row,CDuctData& duct,EventIndexType& stressing
    duct.JackingEnd       = (pgsTypes::JackingEndType)_tstoi(GetCellValue(row,nJackEndCol));
    duct.bPjCalc          = ComputePjackMax(row);
    duct.Pj               = _tstof(GetCellValue(row,nPjackCol));
-   duct.Pj               = ::ConvertToSysUnits(duct.Pj,pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure);
+   duct.Pj               = WBFL::Units::ConvertToSysUnits(duct.Pj,pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure);
    duct.LastUserPj       = _tstof(GetCellValue(row,nPjackUserCol));
-   duct.LastUserPj       = ::ConvertToSysUnits(duct.LastUserPj,pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure);
+   duct.LastUserPj       = WBFL::Units::ConvertToSysUnits(duct.LastUserPj,pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure);
    duct.DuctGeometryType = (CDuctGeometry::GeometryType)_tstoi(GetCellValue(row,nDuctGeomTypeCol));
 
    stressingEvent = (EventIndexType)_tstoi(GetCellValue(row,nEventCol)) + m_LastSegmentErectionEventIdx;
@@ -778,8 +778,8 @@ void CDuctGrid::SetDuctData(ROWCOL row,const CDuctData& duct,EventIndexType stre
    SetValueRange(CGXRange(row,nNumStrandCol),   (LONG)duct.nStrands);
    SetValueRange(CGXRange(row,nJackEndCol),     (LONG)duct.JackingEnd);
    SetValueRange(CGXRange(row,nPjackCheckCol),  (LONG)!duct.bPjCalc);
-   SetValueRange(CGXRange(row,nPjackCol),       ::ConvertFromSysUnits(duct.Pj,        pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure));
-   SetValueRange(CGXRange(row,nPjackUserCol),   ::ConvertFromSysUnits(duct.LastUserPj,pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure));
+   SetValueRange(CGXRange(row,nPjackCol),       WBFL::Units::ConvertFromSysUnits(duct.Pj,        pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure));
+   SetValueRange(CGXRange(row,nPjackUserCol),   WBFL::Units::ConvertFromSysUnits(duct.LastUserPj,pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure));
    SetValueRange(CGXRange(row,nDuctGeomTypeCol),(LONG)duct.DuctGeometryType);
    SetValueRange(CGXRange(row,nEventCol),       (LONG)(stressingEvent- m_LastSegmentErectionEventIdx));
    

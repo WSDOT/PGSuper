@@ -68,31 +68,31 @@ HRESULT CDoubleTeeFactory::FinalConstruct()
    std::sort(m_DimNames.begin(),m_DimNames.end());
 
    // Default beam is a 4' wide tri-beam
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 6.0,unitMeasure::Inch)); // D1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(21.0,unitMeasure::Inch)); // D2
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(7.25,unitMeasure::Inch)); // T1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(5.25,unitMeasure::Inch)); // T2
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(12.0,unitMeasure::Inch)); // W1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(6.000,unitMeasure::Feet)); // Wmax
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(4.000,unitMeasure::Feet)); // Wmin
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 6.0,WBFL::Units::Measure::Inch)); // D1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(21.0,WBFL::Units::Measure::Inch)); // D2
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(7.25,WBFL::Units::Measure::Inch)); // T1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(5.25,WBFL::Units::Measure::Inch)); // T2
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(12.0,WBFL::Units::Measure::Inch)); // W1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(6.000,WBFL::Units::Measure::Feet)); // Wmax
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(4.000,WBFL::Units::Measure::Feet)); // Wmin
 
    // SI Units
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D2
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // T1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // T2
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W1
-   m_DimUnits[0].emplace_back(&unitMeasure::Meter);      // Wmax
-   m_DimUnits[0].emplace_back(&unitMeasure::Meter);      // Wmin
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // D1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // D2
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // T1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // T2
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Meter);      // Wmax
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Meter);      // Wmin
 
    // US Units
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D2
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // T1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // T2
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W1
-   m_DimUnits[1].emplace_back(&unitMeasure::Feet); // Wmax
-   m_DimUnits[1].emplace_back(&unitMeasure::Feet); // Wmin
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // D1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // D2
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // T1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // T2
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Feet); // Wmax
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Feet); // Wmin
 
    return S_OK;
 }
@@ -385,7 +385,7 @@ const std::vector<Float64>& CDoubleTeeFactory::GetDefaultDimensions() const
    return m_DefaultDims;
 }
 
-const std::vector<const unitLength*>& CDoubleTeeFactory::GetDimensionUnits(bool bSIUnits) const
+const std::vector<const WBFL::Units::Length*>& CDoubleTeeFactory::GetDimensionUnits(bool bSIUnits) const
 {
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
@@ -400,7 +400,7 @@ bool CDoubleTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimen
 
    if ( d1 <= 0.0 )
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][0];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][0];
       std::_tostringstream os;
       os << _T("D1 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
@@ -417,7 +417,7 @@ bool CDoubleTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimen
 
    if ( w <= 0.0 )
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][4];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][4];
       std::_tostringstream os;
       os << _T("W must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
@@ -427,7 +427,7 @@ bool CDoubleTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimen
    
    if ( t1 <= 0.0 )
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][2];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][2];
       std::_tostringstream os;
       os << _T("T1 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
@@ -436,7 +436,7 @@ bool CDoubleTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimen
    
    if ( t2 <= 0.0 )
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][3];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][3];
       std::_tostringstream os;
       os << _T("T2 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();

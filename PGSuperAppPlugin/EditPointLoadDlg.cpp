@@ -155,7 +155,7 @@ void CEditPointLoadDlg::DoDataExchange(CDataExchange* pDX)
       {
          if (0.0 <= locval)
          {
-            m_Load.m_Location = ::ConvertToSysUnits(locval, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+            m_Load.m_Location = WBFL::Units::ConvertToSysUnits(locval, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
          }
          else
          {

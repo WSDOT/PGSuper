@@ -42,8 +42,8 @@ static char THIS_FILE[] = __FILE__;
 
 CLiveLoadFactorModel::CLiveLoadFactorModel()
 {
-   m_Wlower = ::ConvertToSysUnits(100.0,unitMeasure::Kip);
-   m_Wupper = ::ConvertToSysUnits(150.0,unitMeasure::Kip);
+   m_Wlower = WBFL::Units::ConvertToSysUnits(100.0,WBFL::Units::Measure::Kip);
+   m_Wupper = WBFL::Units::ConvertToSysUnits(150.0,WBFL::Units::Measure::Kip);
 
    m_LiveLoadFactorType     = pgsTypes::gllBilinear;
    m_LiveLoadFactorModifier = pgsTypes::gllmInterpolate;
@@ -1089,8 +1089,8 @@ bool CLiveLoadFactorModel::LoadMe(sysIStructuredLoad* pLoad)
 
 CLiveLoadFactorModel2::CLiveLoadFactorModel2()
 {
-   m_PWRlower = ::ConvertToSysUnits(2.0,unitMeasure::KipPerFoot);
-   m_PWRupper = ::ConvertToSysUnits(3.0,unitMeasure::KipPerFoot);
+   m_PWRlower = WBFL::Units::ConvertToSysUnits(2.0,WBFL::Units::Measure::KipPerFoot);
+   m_PWRupper = WBFL::Units::ConvertToSysUnits(3.0,WBFL::Units::Measure::KipPerFoot);
 
    m_LiveLoadFactorType     = pgsTypes::gllLinear;
    m_LiveLoadFactorModifier = pgsTypes::gllmInterpolate;
@@ -2296,7 +2296,7 @@ m_SpecificationVersion(lrfrVersionMgr::SecondEditionWith2016Interims)
 
    m_LiveLoadFactorModels[pgsTypes::lrPermit_Routine].SetLiveLoadFactorType(pgsTypes::gllBilinearWithWeight);
    m_LiveLoadFactorModels[pgsTypes::lrPermit_Routine].SetADTT(100,1000,5000,-1);
-   m_LiveLoadFactorModels[pgsTypes::lrPermit_Routine].SetVehicleWeight(::ConvertToSysUnits(100,unitMeasure::Kip),::ConvertToSysUnits(150,unitMeasure::Kip));
+   m_LiveLoadFactorModels[pgsTypes::lrPermit_Routine].SetVehicleWeight(WBFL::Units::ConvertToSysUnits(100,WBFL::Units::Measure::Kip),WBFL::Units::ConvertToSysUnits(150,WBFL::Units::Measure::Kip));
    m_LiveLoadFactorModels[pgsTypes::lrPermit_Routine].SetLowerLiveLoadFactor(1.40,1.60,1.80,1.80);
    m_LiveLoadFactorModels[pgsTypes::lrPermit_Routine].SetUpperLiveLoadFactor(1.10,1.20,1.30,1.30);
 
@@ -2335,7 +2335,7 @@ m_SpecificationVersion(lrfrVersionMgr::SecondEditionWith2016Interims)
 
    m_LiveLoadFactorModels2[pgsTypes::lrPermit_Routine].SetLiveLoadFactorType(pgsTypes::gllBilinearWithWeight);
    m_LiveLoadFactorModels2[pgsTypes::lrPermit_Routine].SetADTT(100,1000,5000,-1);
-   m_LiveLoadFactorModels2[pgsTypes::lrPermit_Routine].SetPermitWeightRatio(::ConvertToSysUnits(2.0,unitMeasure::KipPerFoot),::ConvertToSysUnits(3.0,unitMeasure::KipPerFoot));
+   m_LiveLoadFactorModels2[pgsTypes::lrPermit_Routine].SetPermitWeightRatio(WBFL::Units::ConvertToSysUnits(2.0,WBFL::Units::Measure::KipPerFoot),WBFL::Units::ConvertToSysUnits(3.0,WBFL::Units::Measure::KipPerFoot));
    m_LiveLoadFactorModels2[pgsTypes::lrPermit_Routine].SetLowerLiveLoadFactor(1.30,1.35,1.40,1.40);
    m_LiveLoadFactorModels2[pgsTypes::lrPermit_Routine].SetMiddleLiveLoadFactor(1.20,1.25,1.35,1.35);
    m_LiveLoadFactorModels2[pgsTypes::lrPermit_Routine].SetUpperLiveLoadFactor(1.15,1.20,1.30,1.30);
@@ -2825,7 +2825,7 @@ bool RatingLibraryEntry::IsEqual(const RatingLibraryEntry& rOther,bool bConsider
 bool RatingLibraryEntry::Compare(const RatingLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    bMustRename = false;
 

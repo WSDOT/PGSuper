@@ -70,49 +70,49 @@ HRESULT CNUBeamFactory::FinalConstruct()
    m_DimNames.emplace_back(_T("C1"));
 
    // Default beam is Caltrans Super Girder
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 3.000,unitMeasure::Inch)); // D1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 1.750,unitMeasure::Inch)); // D2
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(54.875,unitMeasure::Inch)); // D3
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 6.000,unitMeasure::Inch)); // D4
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 6.375,unitMeasure::Inch)); // D5
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(10.000,unitMeasure::Inch)); // R1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(10.000,unitMeasure::Inch)); // R2
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 2.500,unitMeasure::Inch)); // R3
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 2.500,unitMeasure::Inch)); // R4
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 7.000,unitMeasure::Inch)); // T
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(48.000,unitMeasure::Inch)); // W1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(43.000,unitMeasure::Inch)); // W2
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 1.000,unitMeasure::Inch)); // C1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 3.000,WBFL::Units::Measure::Inch)); // D1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 1.750,WBFL::Units::Measure::Inch)); // D2
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(54.875,WBFL::Units::Measure::Inch)); // D3
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 6.000,WBFL::Units::Measure::Inch)); // D4
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 6.375,WBFL::Units::Measure::Inch)); // D5
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(10.000,WBFL::Units::Measure::Inch)); // R1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(10.000,WBFL::Units::Measure::Inch)); // R2
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 2.500,WBFL::Units::Measure::Inch)); // R3
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 2.500,WBFL::Units::Measure::Inch)); // R4
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 7.000,WBFL::Units::Measure::Inch)); // T
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(48.000,WBFL::Units::Measure::Inch)); // W1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(43.000,WBFL::Units::Measure::Inch)); // W2
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 1.000,WBFL::Units::Measure::Inch)); // C1
 
    // SI Units
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D2
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D3
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D4
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D5
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // R1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // R2
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // R3
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // R4
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // T
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W2
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // C1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // D1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // D2
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // D3
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // D4
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // D5
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // R1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // R2
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // R3
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // R4
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // T
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W2
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // C1
 
    // US Units
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D2
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D3
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D4
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D5
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // R1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // R2
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // R3
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // R4
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // T
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W2
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // C1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // D1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // D2
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // D3
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // D4
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // D5
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // R1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // R2
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // R3
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // R4
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // T
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W2
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // C1
 
    return S_OK;
 }
@@ -324,7 +324,7 @@ const std::vector<Float64>& CNUBeamFactory::GetDefaultDimensions() const
    return m_DefaultDims;
 }
 
-const std::vector<const unitLength*>& CNUBeamFactory::GetDimensionUnits(bool bSIUnits) const
+const std::vector<const WBFL::Units::Length*>& CNUBeamFactory::GetDimensionUnits(bool bSIUnits) const
 {
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
@@ -354,7 +354,7 @@ bool CNUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
    
    if ( d1 <= 0.0 )
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][0];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][0];
       std::_tostringstream os;
       os << _T("D1 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
@@ -379,7 +379,7 @@ bool CNUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
 
    if ( d4 <= 0.0 )
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][3];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][3];
       std::_tostringstream os;
       os << _T("D4 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
@@ -396,7 +396,7 @@ bool CNUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
 
    if ( r1 < 0.0 )
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][5];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][5];
       std::_tostringstream os;
       os << _T("R1 must be zero or greater") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
@@ -421,7 +421,7 @@ bool CNUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
 
    if ( r4 < 0.0 )
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][8];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][8];
       std::_tostringstream os;
       os << _T("R4 must be zero or greater") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
@@ -430,7 +430,7 @@ bool CNUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
 
    if ( w1 <= 0.0 )
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][10];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][10];
       std::_tostringstream os;
       os << _T("W1 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
@@ -447,7 +447,7 @@ bool CNUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
    
    if ( t <= 0.0 )
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][9];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][9];
       std::_tostringstream os;
       os << _T("T must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
