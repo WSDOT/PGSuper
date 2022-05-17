@@ -878,10 +878,11 @@ void CSegmentAnalysisResultsGraphBuilder::ProductLoadGraph(IndexType graphIdx,co
          std::vector<Float64> deflections;
          if (PL_UNRECOVERABLE == pfType && rtCumulative == resultsType)
          {
-            if (bIncludeUnrecoverableDefl)
+            GET_IFACE(IIntervals,pIntervals);
+            IntervalIndexType haulInterval = pIntervals->GetHaulSegmentInterval(vPoi.front().get().GetSegmentKey());
+
+            if (bIncludeUnrecoverableDefl && intervalIdx >= haulInterval) // modulus hardening doesn't happen until after storage
             {
-               GET_IFACE(IIntervals,pIntervals);
-               IntervalIndexType haulInterval = pIntervals->GetHaulSegmentInterval(vPoi.front().get().GetSegmentKey());
                IProductForces2::sagInterval sagInt = intervalIdx == haulInterval ? IProductForces2::sagHauling : IProductForces2::sagErection;
 
                deflections = pForces->GetPermanentGirderDeflectionFromStorage(sagInt,bat[analysisIdx],vPoi);
