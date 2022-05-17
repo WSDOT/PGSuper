@@ -208,9 +208,9 @@
     <ClInclude Include="..\Include\Graphing\StabilityGraphViewController.h" />
     <ClInclude Include="..\Include\Graphing\StressHistoryGraphBuilder.h" />
     <ClInclude Include="..\Include\Graphing\StressHistoryGraphViewController.h" />
-    <ClInclude Include="..\Include\SegmentAnalysisResultsGraphBuilder.h" />
-    <ClInclude Include="..\Include\SegmentAnalysisResultsGraphViewController.h" />
-    <ClInclude Include="..\Include\SegmentGraphBuilderBase.h" />
+    <ClInclude Include="..\Include\Graphing\SegmentAnalysisResultsGraphBuilder.h" />
+    <ClInclude Include="..\Include\Graphing\SegmentAnalysisResultsGraphViewController.h" />
+    <ClInclude Include="..\Include\Graphing\SegmentGraphBuilderBase.h" />
     <ClInclude Include="AnalysisResultsGraphController.h" />
     <ClInclude Include="AnalysisResultsGraphDefinition.h" />
     <ClInclude Include="AnalysisResultsGraphViewControllerImp.h" />
