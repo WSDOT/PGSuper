@@ -336,7 +336,7 @@ void CDeflectionHistoryGraphBuilder::PlotDeflection(Float64 x,const pgsPointOfIn
    bool bIncludePrestress = true;
    bool bIncludeLiveLoad  = false;
    bool bIncludeElevationAdjustment = ((CDeflectionHistoryGraphController*)m_pGraphController)->IncludeElevationAdjustment();
-   bool bIncludePrecamber = ((CDeflectionHistoryGraphController*)m_pGraphController)->IncludePrecamber();
+   bool bIncludePrecamber = ((CDeflectionHistoryGraphController*)m_pGraphController)->IncludeUnrecoverableDefl();
 
    Float64 Ymin, Ymax;
    pLimitStateForces->GetDeflection(intervalIdx,pgsTypes::ServiceI,poi,bat,bIncludePrestress,bIncludeLiveLoad,bIncludeElevationAdjustment,bIncludePrecamber,bIncludePrecamber,&Ymin,&Ymax);

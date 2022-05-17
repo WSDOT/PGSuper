@@ -34,8 +34,8 @@ public:
    void IncludeElevationAdjustment(bool bAdjust);
    bool IncludeElevationAdjustment() const;
 
-   void IncludePrecamber(bool bInclude);
-   bool IncludePrecamber() const;
+   void IncludeUnrecoverableDefl(bool bInclude);
+   bool IncludeUnrecoverableDefl() const;
 
    bool ShowGrid() const;
    void ShowGrid(bool bShowGrid);
@@ -45,7 +45,7 @@ protected:
 
 	//{{AFX_MSG(CStressHistoryGraphController)
    afx_msg void OnElevAdjustment();
-   afx_msg void OnPrecamber();
+   afx_msg void OnUnrecoverableDefl();
    afx_msg void OnShowGrid();
    afx_msg void OnGraphExportClicked();
    afx_msg void OnCommandUIGraphExport(CCmdUI* pCmdUI);

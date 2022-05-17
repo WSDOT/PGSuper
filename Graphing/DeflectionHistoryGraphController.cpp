@@ -44,7 +44,7 @@ CDeflectionHistoryGraphController::CDeflectionHistoryGraphController()
 BEGIN_MESSAGE_MAP(CDeflectionHistoryGraphController, CLocationGraphController)
 	//{{AFX_MSG_MAP(CStressHistoryGraphController)
    ON_BN_CLICKED(IDC_ELEV_ADJUSTMENT,OnElevAdjustment)
-   ON_BN_CLICKED(IDC_PRECAMBER,OnPrecamber)
+   ON_BN_CLICKED(IDC_PRECAMBER, OnUnrecoverableDefl)
    ON_BN_CLICKED(IDC_GRID, OnShowGrid)
    ON_BN_CLICKED(IDC_EXPORT_GRAPH_BTN,OnGraphExportClicked)
    ON_UPDATE_COMMAND_UI(IDC_EXPORT_GRAPH_BTN,OnCommandUIGraphExport)
@@ -72,7 +72,7 @@ void CDeflectionHistoryGraphController::OnElevAdjustment()
    UpdateGraph();
 }
 
-void CDeflectionHistoryGraphController::OnPrecamber()
+void CDeflectionHistoryGraphController::OnUnrecoverableDefl()
 {
    UpdateGraph();
 }
@@ -103,16 +103,16 @@ bool CDeflectionHistoryGraphController::IncludeElevationAdjustment() const
    return IsDlgButtonChecked(IDC_ELEV_ADJUSTMENT) == BST_CHECKED ? true : false;
 }
 
-void CDeflectionHistoryGraphController::IncludePrecamber(bool bInclude)
+void CDeflectionHistoryGraphController::IncludeUnrecoverableDefl(bool bInclude)
 {
-   if (IncludePrecamber() != bInclude)
+   if (IncludeUnrecoverableDefl() != bInclude)
    {
       CheckDlgButton(IDC_PRECAMBER, bInclude ? BST_CHECKED : BST_UNCHECKED);
       UpdateGraph();
    }
 }
 
-bool CDeflectionHistoryGraphController::IncludePrecamber() const
+bool CDeflectionHistoryGraphController::IncludeUnrecoverableDefl() const
 {
    return IsDlgButtonChecked(IDC_PRECAMBER) == BST_CHECKED ? true : false;
 }
