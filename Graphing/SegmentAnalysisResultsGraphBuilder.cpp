@@ -208,7 +208,7 @@ CSegmentAnalysisResultsGraphBuilder::~CSegmentAnalysisResultsGraphBuilder()
 
 void CSegmentAnalysisResultsGraphBuilder::Init()
 {
-   SetName(_T("Analysis Results - At Casting Yard"));
+   SetName(_T("Analysis Results - Before Erection"));
 
    InitDocumentation(EAFGetDocument()->GetDocumentationSetName(),IDH_ANALYSIS_RESULTS);
 
@@ -336,7 +336,7 @@ void CSegmentAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CSegmentK
    m_pGraphDefinitions->AddGraphDefinition(CSegmentAnalysisResultsGraphDefinition(graphID++,pProductLoads->GetProductLoadName(pgsTypes::pftDiaphragm),pgsTypes::pftDiaphragm,vAllIntervals,ACTIONS_ALL | ACTIONS_X_DEFLECTION));
 
    // Special case for unrecoverable delfection from girder load
-   m_pGraphDefinitions->AddGraphDefinition(CSegmentAnalysisResultsGraphDefinition(graphID++,_T("Unrecoverable Girder Dead Load Deflection"),pgsTypes::ProductForceType(PL_UNRECOVERABLE),vUnrecoverableDeflIntervals,ACTIONS_DEFLECTION));
+   m_pGraphDefinitions->AddGraphDefinition(CSegmentAnalysisResultsGraphDefinition(graphID++,_T("Unrecoverable Girder Deflection"),pgsTypes::ProductForceType(PL_UNRECOVERABLE),vUnrecoverableDeflIntervals,ACTIONS_DEFLECTION));
 
    // Combined Results
    m_pGraphDefinitions->AddGraphDefinition(CSegmentAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetLoadCombinationName(lcDC), lcDC, vAllIntervals,  ACTIONS_ALL | ACTIONS_X_DEFLECTION) );

@@ -461,8 +461,8 @@ void CPGSuperDocProxyAgent::CreateGraphView(LPCTSTR lpszGraph, IEAFViewControlle
    IndexType nGraphs = pGraphMgr->GetGraphBuilderCount();
    for (IndexType graphIdx = 0; graphIdx < nGraphs; graphIdx++)
    {
-      auto pGraphBuilder = pGraphMgr->GetGraphBuilder(graphIdx);
-      if (CString(lpszGraph).Compare(pGraphBuilder->GetName()) == 0)
+      auto& pGraphBuilder = pGraphMgr->GetGraphBuilder(graphIdx);
+      if (CString(lpszGraph).Compare(pGraphBuilder->GetName().c_str()) == 0)
       {
          CreateGraphView(graphIdx, ppViewController);
          return;

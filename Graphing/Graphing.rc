@@ -132,8 +132,7 @@ BEGIN
     CONTROL         "Simple Span",IDC_SIMPLE,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,374,97,10
     CONTROL         "Simple Spans made Continuous",IDC_SIMPLE2,"Button",BS_AUTORADIOBUTTON,13,385,119,10
     CONTROL         "Simple/Continuous Envelope",IDC_SIMPLE3,"Button",BS_AUTORADIOBUTTON,13,396,107,10
-    CONTROL         "Include Unrecoverable Deflections\nPrior to Erection",IDC_PRECAMBER,
-                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,5,327,142,15
+    CONTROL         "Include Unrecoverable Deflections",IDC_PRECAMBER,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,5,327,142,15
     PUSHBUTTON      "Export Graph Data",IDC_EXPORT_GRAPH_BTN,25,415,81,14
 END
 
@@ -296,8 +295,7 @@ BEGIN
     CONTROL         "Top Girder",IDC_TOP_GIRDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,344,49,10
     CONTROL         "Bottom Girder",IDC_BOTTOM_GIRDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,60,345,60,10
     COMBOBOX        IDC_SEGMENT,6,25,67,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Include Unrecoverable Deflections\nPrior to Erection",IDC_PRECAMBER,
-                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,6,359,142,15
+    CONTROL         "Include Unrecoverable Deflections",IDC_PRECAMBER,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,6,359,142,15
     PUSHBUTTON      "Export Graph Data",IDC_EXPORT_GRAPH_BTN,23,380,81,14
 END
 
