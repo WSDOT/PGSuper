@@ -103,6 +103,9 @@
     <ClCompile Include="ExportGraphXYTool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Graphs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AnalysisResultsGraphController.h">
@@ -244,9 +247,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Graphs\SegmentGraphBuilderBase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Graphing\SegmentGraphBuilderBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
