@@ -32,6 +32,7 @@
 #include <MFCTools\CustomDDX.h>
 #include <PgsExt\GirderLabel.h>
 #include <PGSuperUnits.h>
+#include <EAF\EAFDocument.h>
 #include "..\Documentation\PGSuper.hh"
 
 // CSelectCrackedSectionDlg dialog
@@ -50,8 +51,6 @@ CSelectCrackedSectionDlg::CSelectCrackedSectionDlg(IBroker* pBroker,std::shared_
    , m_pRptSpec(pRptSpec)
 {
    m_pBroker = pBroker;
-   m_GroupIdx   = INVALID_INDEX;
-   m_GirderIdx = INVALID_INDEX;
    m_MomentType = 0;
 }
 
@@ -62,25 +61,25 @@ CSelectCrackedSectionDlg::~CSelectCrackedSectionDlg()
 void CSelectCrackedSectionDlg::DoDataExchange(CDataExchange* pDX)
 {
    CDialog::DoDataExchange(pDX);
-   DDX_Control(pDX, IDC_SPAN, m_cbSpan);
+   DDX_Control(pDX, IDC_SPAN, m_cbGroup);
    DDX_Control(pDX, IDC_GIRDER, m_cbGirder);
    DDX_Control(pDX, IDC_SLIDER, m_Slider);
    DDX_Control(pDX, IDC_LOCATION, m_Label);
 
-   GroupIndexType groupIdx;
+   GroupIndexType grpIdx;
    GirderIndexType gdrIdx;
    if ( pDX->m_bSaveAndValidate )
    {
-      DDX_CBIndex(pDX, IDC_SPAN,   (int&)groupIdx);
+      DDX_CBIndex(pDX, IDC_SPAN,   (int&)grpIdx);
       DDX_CBIndex(pDX, IDC_GIRDER, (int&)gdrIdx);
-      m_GroupIdx = groupIdx;
-      m_GirderIdx = gdrIdx;
+      m_GirderKey = CGirderKey(grpIdx, gdrIdx);
+
    }
    else
    {
-      groupIdx = m_GroupIdx;
-      gdrIdx = m_GirderIdx;
-      DDX_CBIndex(pDX, IDC_SPAN,   (int&)groupIdx);
+      grpIdx = m_GirderKey.groupIndex;
+      gdrIdx = m_GirderKey.girderIndex;;
+      DDX_CBIndex(pDX, IDC_SPAN,   (int&)grpIdx);
       DDX_CBIndex(pDX, IDC_GIRDER, (int&)gdrIdx);
    }
 
@@ -102,12 +101,10 @@ END_MESSAGE_MAP()
 
 BOOL CSelectCrackedSectionDlg::OnInitDialog()
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
    GET_IFACE( IBridge, pBridge );
+   m_GirderKey = m_InitialPOI.GetSegmentKey();
 
-   m_GroupIdx = m_InitialPOI.GetSegmentKey().groupIndex;
-   m_GirderIdx = m_InitialPOI.GetSegmentKey().girderIndex;
+   CDialog::OnInitDialog();
 
    CComboBox* pSpanBox = (CComboBox*)GetDlgItem( IDC_SPAN );
    GroupIndexType cGroup = pBridge->GetGirderGroupCount();
@@ -116,12 +113,10 @@ BOOL CSelectCrackedSectionDlg::OnInitDialog()
       CString strSpan(pgsGirderLabel::GetGroupLabel(i).c_str());
       pSpanBox->AddString(strSpan);
    }
-   pSpanBox->SetCurSel((int)m_GroupIdx);
-   UpdateGirderComboBox(m_GroupIdx);
+   pSpanBox->SetCurSel((int)m_GirderKey.groupIndex);
+   UpdateGirderComboBox();
 
    UpdatePOI();
-
-   CDialog::OnInitDialog();
 
    // initial the slider range
    m_Slider.SetRange(0,(int)(m_vPOI.size()-1)); // the range is number of spaces along slider... 
@@ -163,26 +158,25 @@ void CSelectCrackedSectionDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pS
    CDialog::OnHScroll(nSBCode, nPos, pScrollBar);
 }
 
-void CSelectCrackedSectionDlg::UpdateGirderComboBox(GroupIndexType groupIdx)
+void CSelectCrackedSectionDlg::UpdateGirderComboBox()
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   GET_IFACE(IBridge, pBridge);
 
-   GET_IFACE( IBridge, pBridge );
+   Uint16 curSel = m_cbGirder.GetCurSel();
+   m_cbGirder.ResetContent();
 
-   CComboBox* pcbGirder = (CComboBox*)GetDlgItem(IDC_GIRDER);
-   Uint16 curSel = pcbGirder->GetCurSel();
-   pcbGirder->ResetContent();
-
-   GirderIndexType cGirder = pBridge->GetGirderCount( groupIdx );
-   for ( GirderIndexType j = 0; j < cGirder; j++ )
+   GirderIndexType cGirder = pBridge->GetGirderCount(m_GirderKey.groupIndex);
+   for (GirderIndexType j = 0; j < cGirder; j++)
    {
       CString strGdr;
-      strGdr.Format( _T("Girder %s"), LABEL_GIRDER(j));
-      pcbGirder->AddString( strGdr );
+      strGdr.Format(_T("Girder %s"), LABEL_GIRDER(j));
+      m_cbGirder.AddString(strGdr);
    }
 
-   if ( pcbGirder->SetCurSel(curSel == CB_ERR ? 0 : curSel) == CB_ERR )
-      pcbGirder->SetCurSel(0);
+   if (m_cbGirder.SetCurSel(curSel == CB_ERR ? 0 : curSel) == CB_ERR)
+      m_cbGirder.SetCurSel(0);
+
+   m_GirderKey.girderIndex = m_cbGirder.GetCurSel();
 }
 
 void CSelectCrackedSectionDlg::UpdateSliderLabel()
@@ -214,15 +208,15 @@ void CSelectCrackedSectionDlg::UpdateSliderLabel()
 
 void CSelectCrackedSectionDlg::OnSpanChanged()
 {
-   m_GroupIdx = m_cbSpan.GetCurSel();
-   UpdateGirderComboBox(m_GroupIdx);
+   m_GirderKey.groupIndex = m_cbGroup.GetCurSel();
+   UpdateGirderComboBox();
    UpdatePOI();
    UpdateSliderLabel();
 }
 
 void CSelectCrackedSectionDlg::OnGirderChanged()
 {
-   m_GirderIdx = m_cbGirder.GetCurSel();
+   m_GirderKey.girderIndex = m_cbGirder.GetCurSel();
    UpdatePOI();
    UpdateSliderLabel();
 }
@@ -232,23 +226,19 @@ void CSelectCrackedSectionDlg::UpdatePOI()
    GET_IFACE(IPointOfInterest,pPOI);
 
    m_vPOI.clear();
-   pPOI->GetPointsOfInterest(CSegmentKey(m_GroupIdx, m_GirderIdx, 0), &m_vPOI);
-
+   pPOI->GetPointsOfInterest(CSegmentKey(m_GirderKey, ALL_SEGMENTS), &m_vPOI);
    if (m_Slider.GetSafeHwnd() != nullptr )
    {
       m_Slider.SetRange(0,int(m_vPOI.size()-1)); // the range is number of spaces along slider... 
                                                  // subtract one so we don't go past the end of the array
    }
-
 }
 
 void CSelectCrackedSectionDlg::InitFromRptSpec()
 {
    pgsPointOfInterest poi = m_pRptSpec->GetPOI();
 
-#pragma Reminder("UPDATE: assuming precast girder")
-   m_GroupIdx = poi.GetSegmentKey().groupIndex;
-   m_GirderIdx = poi.GetSegmentKey().girderIndex;
+   m_GirderKey = poi.GetSegmentKey();
 
    int cur_pos = 0;
    for(const pgsPointOfInterest& p : m_vPOI)
@@ -268,6 +258,5 @@ void CSelectCrackedSectionDlg::InitFromRptSpec()
 
 void CSelectCrackedSectionDlg::OnHelp()
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   EAFHelp(AfxGetApp()->m_pszHelpFilePath,IDH_CRACKED_SECTION_DETAILS_REPORT);
+   EAFHelp(EAFGetDocument()->GetDocumentationSetName(), IDH_CRACKED_SECTION_DETAILS_REPORT);
 }

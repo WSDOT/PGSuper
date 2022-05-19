@@ -33,6 +33,7 @@
 #include <MFCTools\CustomDDX.h>
 #include <PgsExt\GirderLabel.h>
 #include <PGSuperUnits.h>
+#include <EAF\EAFDocument.h>
 #include "..\Documentation\PGSuper.hh"
 
 // CSelectMomentCapacitySectionDlg dialog
@@ -98,36 +99,22 @@ END_MESSAGE_MAP()
 
 BOOL CSelectMomentCapacitySectionDlg::OnInitDialog()
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
    GET_IFACE( IBridge, pBridge );
    m_GirderKey = m_InitialPOI.GetSegmentKey();
 
-   GET_IFACE(IDocumentType,pDocType);
-   bool isPGSuper = pDocType->IsPGSuperDocument();
+   CDialog::OnInitDialog();
 
    CComboBox* pcbGroup = (CComboBox*)GetDlgItem( IDC_GROUP );
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
-      CString strLabel;
-      if (isPGSuper)
-      {
-         strLabel.Format(_T("Span %s"), LABEL_SPAN(grpIdx));
-      }
-      else
-      {
-         strLabel.Format(_T("Group %d"), LABEL_GROUP(grpIdx));
-      }
-
+      CString strLabel(pgsGirderLabel::GetGroupLabel(grpIdx).c_str());
       pcbGroup->AddString(strLabel);
    }
    pcbGroup->SetCurSel((int)m_GirderKey.groupIndex);
    UpdateGirderComboBox();
 
    UpdatePOI();
-
-   CDialog::OnInitDialog();
 
    // initial the slider range
    m_Slider.SetRange(0,(int)(m_vPOI.size()-1)); // the range is number of spaces along slider... 
@@ -169,24 +156,23 @@ void CSelectMomentCapacitySectionDlg::OnHScroll(UINT nSBCode, UINT nPos, CScroll
 
 void CSelectMomentCapacitySectionDlg::UpdateGirderComboBox()
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   GET_IFACE(IBridge, pBridge);
 
-   GET_IFACE( IBridge, pBridge );
+   Uint16 curSel = m_cbGirder.GetCurSel();
+   m_cbGirder.ResetContent();
 
-   CComboBox* pcbGirder = (CComboBox*)GetDlgItem(IDC_GIRDER);
-   Uint16 curSel = pcbGirder->GetCurSel();
-   pcbGirder->ResetContent();
-
-   GirderIndexType nGirders = pBridge->GetGirderCount(m_GirderKey.groupIndex);
-   for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+   GirderIndexType cGirder = pBridge->GetGirderCount(m_GirderKey.groupIndex);
+   for (GirderIndexType j = 0; j < cGirder; j++)
    {
       CString strGdr;
-      strGdr.Format( _T("Girder %s"), LABEL_GIRDER(gdrIdx));
-      pcbGirder->AddString( strGdr );
+      strGdr.Format(_T("Girder %s"), LABEL_GIRDER(j));
+      m_cbGirder.AddString(strGdr);
    }
 
-   if ( pcbGirder->SetCurSel(curSel == CB_ERR ? 0 : curSel) == CB_ERR )
-      pcbGirder->SetCurSel(0);
+   if (m_cbGirder.SetCurSel(curSel == CB_ERR ? 0 : curSel) == CB_ERR)
+      m_cbGirder.SetCurSel(0);
+
+   m_GirderKey.girderIndex = m_cbGirder.GetCurSel();
 }
 
 void CSelectMomentCapacitySectionDlg::UpdateSliderLabel()
@@ -262,6 +248,5 @@ void CSelectMomentCapacitySectionDlg::InitFromRptSpec()
 
 void CSelectMomentCapacitySectionDlg::OnHelp()
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   EAFHelp(AfxGetApp()->m_pszHelpFilePath,IDH_MOMENT_CAPACITY_DETAILS_REPORT);
+   EAFHelp(EAFGetDocument()->GetDocumentationSetName(), IDH_MOMENT_CAPACITY_DETAILS_REPORT);
 }

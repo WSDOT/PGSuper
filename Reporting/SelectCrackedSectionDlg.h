@@ -52,8 +52,7 @@ public:
 
    pgsPointOfInterest m_InitialPOI;
 
-   GroupIndexType m_GroupIdx;
-   GirderIndexType m_GirderIdx;
+   CGirderKey m_GirderKey;
    int m_MomentType;
 
    pgsPointOfInterest GetPOI();
@@ -64,13 +63,13 @@ private:
 
    PoiList m_vPOI;
 
-   CComboBox m_cbSpan;
+   CComboBox m_cbGroup;
    CComboBox m_cbGirder;
    CSliderCtrl m_Slider;
    CStatic m_Label;
    int m_SliderPos;
 
-   void UpdateGirderComboBox(GroupIndexType groupIdx);
+   void UpdateGirderComboBox();
    void UpdateSliderLabel();
    void UpdatePOI();
 
