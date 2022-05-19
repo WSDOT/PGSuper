@@ -48,16 +48,17 @@ void CGrapherBase::InitCommonGraphBuilders()
 {
    GET_IFACE(IGraphManager,pGraphMgr);
 
-   pGraphMgr->SortByName(false);
+   pGraphMgr->SortByName(false); // don't sort alphabetically
 
-   pGraphMgr->AddGraphBuilder(new CSegmentAnalysisResultsGraphBuilder);
-   pGraphMgr->AddGraphBuilder(new CAnalysisResultsGraphBuilder);
-   pGraphMgr->AddGraphBuilder(new CEffectivePrestressGraphBuilder);
-   pGraphMgr->AddGraphBuilder(new CStabilityGraphBuilder);
-   pGraphMgr->AddGraphBuilder(new CStressHistoryGraphBuilder);
-   pGraphMgr->AddGraphBuilder(new CGirderPropertiesGraphBuilder);
+   // add the graphs to the graph manager in near alphabetical order
+   pGraphMgr->AddGraphBuilder(new CSegmentAnalysisResultsGraphBuilder); // Analysis Results - Before Erection
+   pGraphMgr->AddGraphBuilder(new CAnalysisResultsGraphBuilder); // Analysis Results - After Erection
    pGraphMgr->AddGraphBuilder(new CConcretePropertyGraphBuilder);
    pGraphMgr->AddGraphBuilder(new CDeflectionHistoryGraphBuilder);
+   pGraphMgr->AddGraphBuilder(new CEffectivePrestressGraphBuilder);
+   pGraphMgr->AddGraphBuilder(new CGirderPropertiesGraphBuilder);
+   pGraphMgr->AddGraphBuilder(new CStabilityGraphBuilder);
+   pGraphMgr->AddGraphBuilder(new CStressHistoryGraphBuilder);
 }
 
 STDMETHODIMP CGrapherBase::SetBroker(IBroker* pBroker)
