@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 48.00    7   7.33  Chiltipin Creek    1     1     Tx34          34  1/2  270  11.48   7.25   8.00   8.00                                               6  30.5  6.5  4.700  5.000   2.642    -3.205     3271   0.610  0.767   3.473 -0.964 -0.080 -0.055 -1.099  94.80  256.81    1.00    1.00    1.00    1.51    1.62    1.96    2.10    1.20 
+ 48.00    7   7.33  Chiltipin Creek    1     1     Tx34          34  1/2  270  11.48   7.25   8.00   8.00                                               6  30.5  6.5  4.700  5.000   2.642    -3.205     3271   0.610  0.767   3.472 -0.964 -0.080 -0.055 -1.099  94.80  256.81    1.00    1.00    1.00    1.51    1.62    1.96    2.10    1.20 
 
 
 The Specification Check was Not Successful
@@ -9,17 +9,7 @@ Bursting check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 48.00    7   7.33  Chiltipin Creek    1     2     Tx34          34  1/2  270  11.48   7.25   8.00   8.00                                               6  30.5  6.5  4.700  5.000   2.708    -3.283     3326   0.610  0.767   3.473 -1.061 -0.077 -0.053 -1.191  94.80  254.49    1.00    1.00    1.00    1.51    1.60    1.96    2.08    1.14 
-
-
-The Specification Check was Not Successful
-Ultimate vertical shear capacity check failed for Strength I Limit State
-Bursting check failed.
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 48.00    7   7.33  Chiltipin Creek    1     4     Tx34          32  1/2  270  11.64   8.26   8.00   8.00                                               6  24.5  6.5  4.700  5.000   2.686    -3.191     3236   0.610  0.767   3.343 -1.061 -0.077  0.000 -1.138  84.55  230.25    1.00    1.00    1.00    1.46    1.41    1.89    2.06    1.12 
+ 48.00    7   7.33  Chiltipin Creek    1     2     Tx34          34  1/2  270  11.48   7.25   8.00   8.00                                               6  30.5  6.5  4.700  5.000   2.708    -3.283     3326   0.610  0.767   3.472 -1.061 -0.077 -0.053 -1.191  94.80  254.49    1.00    1.00    1.00    1.51    1.60    1.96    2.08    1.14 
 
 
 The Specification Check was Not Successful
@@ -29,16 +19,7 @@ Bursting check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 48.00    7   7.33  Chiltipin Creek    2     1     Tx34          34  1/2  270  11.48   7.25   8.00   8.00                                               6  30.5  6.5  4.700  5.000   2.642    -3.205     3271   0.610  0.767   3.473 -0.964 -0.080 -0.055 -1.099  94.80  256.81    1.00    1.00    1.00    1.51    1.62    1.96    2.10    1.20 
-
-
-The Specification Check was Not Successful
-Bursting check failed.
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 48.00    7   7.33  Chiltipin Creek    2     2     Tx34          34  1/2  270  11.48   7.25   8.00   8.00                                               6  30.5  6.5  4.700  5.000   2.708    -3.283     3326   0.610  0.767   3.473 -1.061 -0.077 -0.053 -1.191  94.80  254.49    1.00    1.00    1.00    1.51    1.60    1.96    2.08    1.14 
+ 48.00    7   7.33  Chiltipin Creek    1     4     Tx34          32  1/2  270  11.64   8.26   8.00   8.00                                               6  24.5  6.5  4.700  5.000   2.686    -3.191     3236   0.610  0.767   3.342 -1.061 -0.077  0.000 -1.138  84.55  230.25    1.00    1.00    1.00    1.46    1.41    1.89    2.06    1.12 
 
 
 The Specification Check was Not Successful
@@ -48,7 +29,16 @@ Bursting check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 48.00    7   7.33  Chiltipin Creek    2     4     Tx34          32  1/2  270  11.64   8.26   8.00   8.00                                               6  24.5  6.5  4.700  5.000   2.686    -3.191     3236   0.610  0.767   3.343 -1.061 -0.077  0.000 -1.138  84.55  230.25    1.00    1.00    1.00    1.46    1.41    1.89    2.06    1.12 
+ 48.00    7   7.33  Chiltipin Creek    2     1     Tx34          34  1/2  270  11.48   7.25   8.00   8.00                                               6  30.5  6.5  4.700  5.000   2.642    -3.205     3271   0.610  0.767   3.472 -0.964 -0.080 -0.055 -1.099  94.80  256.81    1.00    1.00    1.00    1.51    1.62    1.96    2.10    1.20 
+
+
+The Specification Check was Not Successful
+Bursting check failed.
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 48.00    7   7.33  Chiltipin Creek    2     2     Tx34          34  1/2  270  11.48   7.25   8.00   8.00                                               6  30.5  6.5  4.700  5.000   2.708    -3.283     3326   0.610  0.767   3.472 -1.061 -0.077 -0.053 -1.191  94.80  254.49    1.00    1.00    1.00    1.51    1.60    1.96    2.08    1.14 
 
 
 The Specification Check was Not Successful
@@ -58,16 +48,7 @@ Bursting check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 48.00    7   7.33  Chiltipin Creek    3     1     Tx34          34  1/2  270  11.48   7.25   8.00   8.00                                               6  30.5  6.5  4.700  5.000   2.642    -3.205     3271   0.610  0.767   3.473 -0.964 -0.080 -0.055 -1.099  94.80  256.81    1.00    1.00    1.00    1.51    1.62    1.96    2.10    1.20 
-
-
-The Specification Check was Not Successful
-Bursting check failed.
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 48.00    7   7.33  Chiltipin Creek    3     2     Tx34          34  1/2  270  11.48   7.25   8.00   8.00                                               6  30.5  6.5  4.700  5.000   2.708    -3.283     3326   0.610  0.767   3.473 -1.061 -0.077 -0.053 -1.191  94.80  254.49    1.00    1.00    1.00    1.51    1.60    1.96    2.08    1.14 
+ 48.00    7   7.33  Chiltipin Creek    2     4     Tx34          32  1/2  270  11.64   8.26   8.00   8.00                                               6  24.5  6.5  4.700  5.000   2.686    -3.191     3236   0.610  0.767   3.342 -1.061 -0.077  0.000 -1.138  84.55  230.25    1.00    1.00    1.00    1.46    1.41    1.89    2.06    1.12 
 
 
 The Specification Check was Not Successful
@@ -77,7 +58,16 @@ Bursting check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 48.00    7   7.33  Chiltipin Creek    3     4     Tx34          32  1/2  270  11.64   8.26   8.00   8.00                                               6  24.5  6.5  4.700  5.000   2.686    -3.191     3236   0.610  0.767   3.343 -1.061 -0.077  0.000 -1.138  84.55  230.25    1.00    1.00    1.00    1.46    1.41    1.89    2.06    1.12 
+ 48.00    7   7.33  Chiltipin Creek    3     1     Tx34          34  1/2  270  11.48   7.25   8.00   8.00                                               6  30.5  6.5  4.700  5.000   2.642    -3.205     3271   0.610  0.767   3.472 -0.964 -0.080 -0.055 -1.099  94.80  256.81    1.00    1.00    1.00    1.51    1.62    1.96    2.10    1.20 
+
+
+The Specification Check was Not Successful
+Bursting check failed.
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 48.00    7   7.33  Chiltipin Creek    3     2     Tx34          34  1/2  270  11.48   7.25   8.00   8.00                                               6  30.5  6.5  4.700  5.000   2.708    -3.283     3326   0.610  0.767   3.472 -1.061 -0.077 -0.053 -1.191  94.80  254.49    1.00    1.00    1.00    1.51    1.60    1.96    2.08    1.14 
 
 
 The Specification Check was Not Successful
@@ -87,16 +77,7 @@ Bursting check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 48.00    7   7.33  Chiltipin Creek    4     1     Tx34          34  1/2  270  11.48   7.25   8.00   8.00                                               6  30.5  6.5  4.700  5.000   2.642    -3.205     3271   0.610  0.767   3.473 -0.964 -0.080 -0.055 -1.099  94.80  256.81    1.00    1.00    1.00    1.51    1.62    1.96    2.10    1.20 
-
-
-The Specification Check was Not Successful
-Bursting check failed.
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 48.00    7   7.33  Chiltipin Creek    4     2     Tx34          34  1/2  270  11.48   7.25   8.00   8.00                                               6  30.5  6.5  4.700  5.000   2.708    -3.283     3326   0.610  0.767   3.473 -1.061 -0.077 -0.053 -1.191  94.80  254.49    1.00    1.00    1.00    1.51    1.60    1.96    2.08    1.14 
+ 48.00    7   7.33  Chiltipin Creek    3     4     Tx34          32  1/2  270  11.64   8.26   8.00   8.00                                               6  24.5  6.5  4.700  5.000   2.686    -3.191     3236   0.610  0.767   3.342 -1.061 -0.077  0.000 -1.138  84.55  230.25    1.00    1.00    1.00    1.46    1.41    1.89    2.06    1.12 
 
 
 The Specification Check was Not Successful
@@ -106,7 +87,26 @@ Bursting check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 48.00    7   7.33  Chiltipin Creek    4     4     Tx34          32  1/2  270  11.64   8.26   8.00   8.00                                               6  24.5  6.5  4.700  5.000   2.686    -3.191     3236   0.610  0.767   3.343 -1.061 -0.077  0.000 -1.138  84.55  230.25    1.00    1.00    1.00    1.46    1.41    1.89    2.06    1.12 
+ 48.00    7   7.33  Chiltipin Creek    4     1     Tx34          34  1/2  270  11.48   7.25   8.00   8.00                                               6  30.5  6.5  4.700  5.000   2.642    -3.205     3271   0.610  0.767   3.472 -0.964 -0.080 -0.055 -1.099  94.80  256.81    1.00    1.00    1.00    1.51    1.62    1.96    2.10    1.20 
+
+
+The Specification Check was Not Successful
+Bursting check failed.
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 48.00    7   7.33  Chiltipin Creek    4     2     Tx34          34  1/2  270  11.48   7.25   8.00   8.00                                               6  30.5  6.5  4.700  5.000   2.708    -3.283     3326   0.610  0.767   3.472 -1.061 -0.077 -0.053 -1.191  94.80  254.49    1.00    1.00    1.00    1.51    1.60    1.96    2.08    1.14 
+
+
+The Specification Check was Not Successful
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Bursting check failed.
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 48.00    7   7.33  Chiltipin Creek    4     4     Tx34          32  1/2  270  11.64   8.26   8.00   8.00                                               6  24.5  6.5  4.700  5.000   2.686    -3.191     3236   0.610  0.767   3.342 -1.061 -0.077  0.000 -1.138  84.55  230.25    1.00    1.00    1.00    1.46    1.41    1.89    2.06    1.12 
 
 
 The Specification Check was Not Successful

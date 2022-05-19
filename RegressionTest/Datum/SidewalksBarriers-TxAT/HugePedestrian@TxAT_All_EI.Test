@@ -28,7 +28,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 50.00    6   9.00    K4 Template      1     2     K4+3    *      0  0.6  270   0.00   0.00  13.50  13.50                                               0   0.0  0.0  4.000  5.000  21.668    -92.85    17754   0.736  0.884  -1.445 -0.785 -43.02 -0.053 -43.85   0.00    0.00    1.00   13.00   13.00    0.00    0.00    0.00    0.00    0.00 
+ 50.00    6   9.00    K4 Template      1     2     K4+3    *      0  0.6  270   0.00   0.00  13.50  13.50                                               0   0.0  0.0  4.000  5.000  21.668    -92.85    17754   0.736  0.884  -1.446 -0.785 -43.02 -0.053 -43.85   0.00    0.00    1.00   13.00   13.00    0.00    0.00    0.00    0.00    0.00 
 
 
 The Specification Check was Not Successful
@@ -54,7 +54,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 50.00    6   9.00    K4 Template      1     4     K4+3    *      0  0.6  270   0.00   0.00  13.50  13.50                                               0   0.0  0.0  4.000  5.000  21.668    -92.85    17754   0.736  0.884  -1.445 -0.785 -43.02 -0.053 -43.85   0.00    0.00    1.00   13.00   13.00    0.00    0.00    0.00    0.00    0.00 
+ 50.00    6   9.00    K4 Template      1     4     K4+3    *      0  0.6  270   0.00   0.00  13.50  13.50                                               0   0.0  0.0  4.000  5.000  21.668    -92.85    17754   0.736  0.884  -1.446 -0.785 -43.02 -0.053 -43.85   0.00    0.00    1.00   13.00   13.00    0.00    0.00    0.00    0.00    0.00 
 
 
 The Specification Check was Not Successful
@@ -236,7 +236,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 50.00    6   9.00    K4 Template      4     1     K4+3    *      0  0.6  270   0.00   0.00  13.50  13.50                                               0   0.0  0.0  4.000  5.000  24.188    -93.87    17745   0.867  0.867  -1.445 -0.706 -44.44 -0.055 -45.20   0.00    0.00    1.00   13.00   13.00    0.00    0.00    0.00    0.00    0.00 
+ 50.00    6   9.00    K4 Template      4     1     K4+3    *      0  0.6  270   0.00   0.00  13.50  13.50                                               0   0.0  0.0  4.000  5.000  24.188    -93.87    17745   0.867  0.867  -1.446 -0.706 -44.44 -0.055 -45.20   0.00    0.00    1.00   13.00   13.00    0.00    0.00    0.00    0.00    0.00 
 
 
 The Specification Check was Not Successful
@@ -262,7 +262,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 50.00    6   9.00    K4 Template      4     2     K4+3    *      0  0.6  270   0.00   0.00  13.50  13.50                                               0   0.0  0.0  4.000  5.000  21.668    -92.85    17754   0.736  0.884  -1.445 -0.785 -43.02 -0.053 -43.85   0.00    0.00    1.00   13.00   13.00    0.00    0.00    0.00    0.00    0.00 
+ 50.00    6   9.00    K4 Template      4     2     K4+3    *      0  0.6  270   0.00   0.00  13.50  13.50                                               0   0.0  0.0  4.000  5.000  21.668    -92.85    17754   0.736  0.884  -1.446 -0.785 -43.02 -0.053 -43.85   0.00    0.00    1.00   13.00   13.00    0.00    0.00    0.00    0.00    0.00 
 
 
 The Specification Check was Not Successful
@@ -288,7 +288,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 50.00    6   9.00    K4 Template      4     4     K4+3    *      0  0.6  270   0.00   0.00  13.50  13.50                                               0   0.0  0.0  4.000  5.000  21.668    -92.85    17754   0.736  0.884  -1.445 -0.785 -43.02 -0.053 -43.85   0.00    0.00    1.00   13.00   13.00    0.00    0.00    0.00    0.00    0.00 
+ 50.00    6   9.00    K4 Template      4     4     K4+3    *      0  0.6  270   0.00   0.00  13.50  13.50                                               0   0.0  0.0  4.000  5.000  21.668    -92.85    17754   0.736  0.884  -1.446 -0.785 -43.02 -0.053 -43.85   0.00    0.00    1.00   13.00   13.00    0.00    0.00    0.00    0.00    0.00 
 
 
 The Specification Check was Not Successful

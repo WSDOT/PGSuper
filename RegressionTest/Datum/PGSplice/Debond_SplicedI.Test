@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Debnd                                                          Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.58    6   7.17                     1     1    WF95P    *      8  0.6  270  43.76  43.60   9.00   9.00   4   0.00    0     0                                               5.000 10.258   1.839    -1.857    10228   0.670  0.755  -1.858 -0.450  0.000 -0.036 -0.486  -6.87   35.51    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00 
+ 40.58    6   7.17                     1     1    WF95P    *      8  0.6  270  43.76  43.60   9.00   9.00   4   0.00    0     0                                               5.000 10.258   1.839    -1.856    10228   0.670  0.755  -1.858 -0.450  0.000 -0.036 -0.486  -6.87   35.51    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00 
 Warning: Irregular, Non-standard debonding increments used for beam 1 in span 1. Cannot write debonding information to TxDOT CAD format.
 
 

@@ -32,7 +32,7 @@ Duct Size check failed for Duct 3.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 26.00    5   6.48   Cascade River     1     2    WF60P    *      6  1/2  270  -0.30  -0.93   5.25   5.25                                              3.077  6.313   6.313     6.313     4515   0.555  0.706   2.491 -1.364  0.000 -0.130 -1.495   3.97   66.34    0.00    0.00    0.00    1.19    0.34    1.55    0.58    0.89 
+ 26.00    5   6.48   Cascade River     1     2    WF60P    *      6  1/2  270  -0.30  -0.93   5.25   5.25                                              3.077  6.313   6.313     6.313     4515   0.555  0.706   2.490 -1.364  0.000 -0.130 -1.495   3.97   66.34    0.00    0.00    0.00    1.19    0.34    1.55    0.58    0.89 
 
 
 The Specification Check was Not Successful

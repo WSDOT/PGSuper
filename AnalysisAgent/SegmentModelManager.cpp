@@ -2841,6 +2841,7 @@ CSegmentModelData CSegmentModelManager::BuildSegmentModel(const CSegmentKey& seg
 
    bool bModelLeftCantilever  = true;
    bool bModelRightCantilever = true;
+   pBridge->ModelCantilevers(segmentKey, leftSupportDistance, rightSupportDistance, &bModelLeftCantilever, &bModelRightCantilever);
    pgsGirderModelFactory().CreateGirderModel(m_pBroker,intervalIdx,segmentKey,leftSupportDistance,Ls-rightSupportDistance,Ls,Ec,lcid,bModelLeftCantilever,bModelRightCantilever,vPoi,&model_data.Model,&model_data.PoiMap);
 
    // create loadings for all product load types

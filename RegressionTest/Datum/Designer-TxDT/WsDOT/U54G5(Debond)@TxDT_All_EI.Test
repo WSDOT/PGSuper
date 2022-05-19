@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Debnd                                                          Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 34.25    4   8.00                     1     1    (Debo          64  0.6  270  16.09  15.76  11.25  11.25  16   0.00    0     0                                               6.400  6.400   6.652    -4.514    11905   1.016  1.016   4.605 -2.376 -0.127 -0.150 -2.653 263.31  428.99    1.75    5.00    5.00    1.73    2.17    2.25    2.89    1.53 
+ 34.25    4   8.00                     1     1    (Debo          64  0.6  270  16.09  15.76  11.25  11.25  16   0.00    0     0                                               6.400  6.400   6.652    -4.514    11905   1.016  1.016   4.603 -2.376 -0.127 -0.150 -2.653 263.31  428.99    1.75    5.00    5.00    1.73    2.17    2.25    2.89    1.53 
                                                                                                                 4.00   25     6    0   0   0   0   0 
 Warning: The number of debonded sections exceeds ten for beam 1 in span 1. Cannot write debonding information to TxDOT CAD format.
 
@@ -20,7 +20,7 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Debnd                                                          Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 34.25    4   8.00                     1     2    (Debo          54  0.6  270  16.58  16.33  12.25  12.25  12   0.00    0     0                                               4.000  5.200   5.801    -3.712     9622   0.557  0.773   5.193 -2.120 -0.148 -0.174 -2.443 225.90  445.56    1.75    5.00    5.00    2.70    2.83    3.50    3.73    2.16 
+ 34.25    4   8.00                     1     2    (Debo          54  0.6  270  16.58  16.33  12.25  12.25  12   0.00    0     0                                               4.000  5.200   5.801    -3.712     9622   0.557  0.773   5.189 -2.120 -0.148 -0.174 -2.443 225.90  445.56    1.75    5.00    5.00    2.70    2.83    3.50    3.73    2.16 
                                                                                                                 4.00   25     2    0   0   0   0   0 
 Warning: The number of debonded sections exceeds ten for beam 2 in span 1. Cannot write debonding information to TxDOT CAD format.
 

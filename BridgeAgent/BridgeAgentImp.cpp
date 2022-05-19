@@ -4958,34 +4958,39 @@ void CBridgeAgentImp::LayoutSpecialPoi(const CSegmentKey& segmentKey,Float64 seg
    LayoutPoiForTemporarySupports(segmentKey);
 }
 
-void CBridgeAgentImp::ModelCantilevers(const CSegmentKey& segmentKey,bool* pbStartCantilever,bool* pbEndCantilever) const
+void CBridgeAgentImp::ModelCantilevers(const CSegmentKey& segmentKey, bool* pbLeftCantilever,bool* pbRightCantilever) const
+{
+   Float64 start_offset = GetSegmentStartEndDistance(segmentKey);
+   Float64 end_offset = GetSegmentEndEndDistance(segmentKey);
+   ModelCantilevers(segmentKey, start_offset, end_offset, pbLeftCantilever, pbRightCantilever);
+}
+
+void CBridgeAgentImp::ModelCantilevers(const CSegmentKey& segmentKey, Float64 leftSupportDistance, Float64 rightSupportDistance, bool* pbLeftCantilever, bool* pbRightCantilever) const
 {
    // This method determines if the overhangs at the ends of a segment are modeled as cantilevers
    ASSERT_SEGMENT_KEY(segmentKey);
 
-   *pbStartCantilever = false;
-   *pbEndCantilever   = false;
+   *pbLeftCantilever = false;
+   *pbRightCantilever = false;
 
    // Overhangs are modeled as cantilevers if they are longer than the height of the segment at the CL Bearing
-   Float64 segment_length       = GetSegmentLength(segmentKey);
-   Float64 start_offset         = GetSegmentStartEndDistance(segmentKey);
-   Float64 end_offset           = GetSegmentEndEndDistance(segmentKey);
+   Float64 segment_length = GetSegmentLength(segmentKey);
 
    // this method gets called from LayoutEndSizePoi during POI validation... if we call this->GetPointsOfInterest() we get
    // recursion and stack overflow.... since we don't know the validation state of the POIs, we will just have to create
-   // POIs on the stack, even though this is not the most efficient way to call GetHeight()
-   pgsPointOfInterest poiStartBrg(segmentKey, start_offset);
-   pgsPointOfInterest poiEndBrg(segmentKey, segment_length - end_offset);
+   // POIs on the fly, even though this is not the most efficient way to call GetHeight()
+   pgsPointOfInterest poiStartBrg(segmentKey, leftSupportDistance);
+   pgsPointOfInterest poiEndBrg(segmentKey, segment_length - rightSupportDistance);
 
    Float64 segment_height_start = GetHeight(poiStartBrg);
-   Float64 segment_height_end   = GetHeight(poiEndBrg);
+   Float64 segment_height_end = GetHeight(poiEndBrg);
 
    // the cantilevers at the ends of the segment are modeled as flexural members
    // if the cantilever length exceeds the height of the girder. From LRFD 5.5.1.2.1, B-Regions
    // are beyond one member depth on either side of the discontinuity in geoemtry or force.
    // In this case, the discontinuity in force is the bearing reaction
-   *pbStartCantilever = (::IsLT(segment_height_start,start_offset) ? true : false);
-   *pbEndCantilever   = (::IsLT(segment_height_end,  end_offset)   ? true : false);
+   *pbLeftCantilever = (::IsLT(segment_height_start, leftSupportDistance) ? true : false);
+   *pbRightCantilever = (::IsLT(segment_height_end, rightSupportDistance) ? true : false);
 }
 
 void CBridgeAgentImp::LayoutEndSizePoi(const CSegmentKey& segmentKey,Float64 segmentOffset)

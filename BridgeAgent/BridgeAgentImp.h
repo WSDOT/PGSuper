@@ -306,7 +306,8 @@ public:
    virtual void GetSpansForSegment(const CSegmentKey& segmentKey,SpanIndexType* pStartSpanIdx,SpanIndexType* pEndSpanIdx) const override;
    virtual void ResolveSegmentVariation(const CPrecastSegmentData* pSegment, std::array<Float64, 4>& Xhp) const override;
    virtual GDRCONFIG GetSegmentConfiguration(const CSegmentKey& segmentKey) const override;
-   virtual void ModelCantilevers(const CSegmentKey& segmentKey,bool* pbStartCantilever,bool* pbEndCantilever) const override;
+   virtual void ModelCantilevers(const CSegmentKey& segmentKey,bool* pbLeftCantilever,bool* pbRightCantilever) const override;
+   virtual void ModelCantilevers(const CSegmentKey& segmentKey, Float64 leftSupportDistance, Float64 rightSupportDistance, bool* pbLeftCantilever, bool* pbRightCantilever) const override;
    virtual bool GetSpan(Float64 station,SpanIndexType* pSpanIdx) const override;
    virtual void GetPoint(const CSegmentKey& segmentKey,Float64 Xpoi,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppPoint) const override;
    virtual void GetPoint(const pgsPointOfInterest& poi,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppPoint) const override;

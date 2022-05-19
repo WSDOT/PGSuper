@@ -319,7 +319,8 @@ interface IBridge : IUnknown
    // Segment cantilevers are to be modeled if the cantilever length is
    // at least the depth of the non-composite member. This method
    // provides a uniform means of determining if cantilevers are to be modeled
-   virtual void ModelCantilevers(const CSegmentKey& segmentKey,bool* pbStartCantilever,bool* pbEndCantilever) const = 0;
+   virtual void ModelCantilevers(const CSegmentKey& segmentKey,bool* pbLeftCantilever,bool* pbRightCantilever) const = 0;
+   virtual void ModelCantilevers(const CSegmentKey& segmentKey, Float64 leftSupportDistance, Float64 rightSupportDistance,bool* pbLeftCantilever, bool* pbRightCantilever) const = 0;
 
    // Grade of segment
    virtual Float64 GetSegmentSlope(const CSegmentKey& segmentKey) const = 0;
