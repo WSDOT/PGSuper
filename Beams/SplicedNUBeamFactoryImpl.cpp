@@ -594,7 +594,7 @@ bool CSplicedNUBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& d
    return true;
 }
 
-void CSplicedNUBeamFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
+void CSplicedNUBeamFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
 {
    pSave->BeginUnit(_T("NUBeamDimensions"),2.0);
    for(const auto& name : m_DimNames)
@@ -605,7 +605,7 @@ void CSplicedNUBeamFactory::SaveSectionDimensions(sysIStructuredSave* pSave,cons
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CSplicedNUBeamFactory::LoadSectionDimensions(sysIStructuredLoad* pLoad) const
+IBeamFactory::Dimensions CSplicedNUBeamFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
 {
    Float64 parent_version;
    if ( pLoad->GetParentUnit() == _T("GirderLibraryEntry") )

@@ -34,7 +34,7 @@ class pgsLibraryEntryDifferenceItem;
 class DuctLibraryEntry;
 class DuctLibraryEntryObserver;
 #pragma warning(disable:4231)
-PSGLIBTPL sysSubjectT<DuctLibraryEntryObserver, DuctLibraryEntry>;
+PSGLIBTPL WBFL::System::SubjectT<DuctLibraryEntryObserver, DuctLibraryEntry>;
 
 /*****************************************************************************
 CLASS 
@@ -45,7 +45,7 @@ CLASS
 class PSGLIBCLASS DuctLibraryEntryObserver
 {
 public:
-   virtual void Update(DuctLibraryEntry* pSubject, Int32 hint)=0;
+   virtual void Update(DuctLibraryEntry& subject, Int32 hint)=0;
 };
 
 /*****************************************************************************
@@ -56,7 +56,7 @@ CLASS
 *****************************************************************************/
 
 class PSGLIBCLASS DuctLibraryEntry : public libLibraryEntry, public ISupportIcon,
-       public sysSubjectT<DuctLibraryEntryObserver, DuctLibraryEntry>
+       public WBFL::System::SubjectT<DuctLibraryEntryObserver, DuctLibraryEntry>
 {
 public:
    DuctLibraryEntry();
@@ -75,11 +75,11 @@ public:
 
    //------------------------------------------------------------------------
    // Save to structured storage
-   virtual bool SaveMe(sysIStructuredSave* pSave);
+   virtual bool SaveMe(WBFL::System::IStructuredSave* pSave);
 
    //------------------------------------------------------------------------
    // Load from structured storage
-   virtual bool LoadMe(sysIStructuredLoad* pLoad);
+   virtual bool LoadMe(WBFL::System::IStructuredLoad* pLoad);
 
    //------------------------------------------------------------------------
    // Set/Get Outside Diameter

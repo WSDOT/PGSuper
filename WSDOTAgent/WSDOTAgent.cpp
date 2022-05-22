@@ -82,25 +82,25 @@ HRESULT RegisterAgent(bool bRegister)
 {
    HRESULT hr = S_OK;
 
-   hr = sysComCatMgr::RegWithCategory(CLSID_WSDOTAgent,CATID_PGSuperExtensionAgent,bRegister);
+   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_WSDOTAgent,CATID_PGSuperExtensionAgent,bRegister);
    if ( FAILED(hr) )
    {
       return hr;
    }
 
-   hr = sysComCatMgr::RegWithCategory(CLSID_WSDOTAgent,CATID_PGSpliceExtensionAgent,bRegister);
+   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_WSDOTAgent,CATID_PGSpliceExtensionAgent,bRegister);
    if ( FAILED(hr) )
    {
       return hr;
    }
 
-   hr = sysComCatMgr::RegWithCategory(CLSID_PGSuperComponentInfo,CATID_PGSuperComponentInfo,bRegister);
+   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_PGSuperComponentInfo,CATID_PGSuperComponentInfo,bRegister);
    if ( FAILED(hr) )
    {
       return hr;
    }
 
-   hr = sysComCatMgr::RegWithCategory(CLSID_PGSpliceComponentInfo,CATID_PGSpliceComponentInfo,bRegister);
+   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_PGSpliceComponentInfo,CATID_PGSpliceComponentInfo,bRegister);
    if ( FAILED(hr) )
    {
       return hr;

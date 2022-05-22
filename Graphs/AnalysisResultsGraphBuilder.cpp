@@ -1843,7 +1843,7 @@ void CAnalysisResultsGraphBuilder::ProductLoadGraph(IndexType graphIdx,const CAn
          }
          case actionShear:
          {
-            std::vector<sysSectionValue> shears(pForces->GetShear(intervalIdx, pfType, vPoi, bat[analysisIdx], resultsType));
+            std::vector<WBFL::System::SectionValue> shears(pForces->GetShear(intervalIdx, pfType, vPoi, bat[analysisIdx], resultsType));
             AddGraphPoints(data_series_id[analysisIdx], xVals, shears);
             break;
          }
@@ -1940,7 +1940,7 @@ void CAnalysisResultsGraphBuilder::CombinedLoadGraph(IndexType graphIdx,const CA
 
       case actionShear:
          {
-            std::vector<sysSectionValue> shear = pForces->GetShear( intervalIdx, combination_type, vPoi, bat[analysisIdx], resultsType );
+            std::vector<WBFL::System::SectionValue> shear = pForces->GetShear( intervalIdx, combination_type, vPoi, bat[analysisIdx], resultsType );
             AddGraphPoints(data_series_id[analysisIdx], xVals, shear);
             break;
          }
@@ -2111,7 +2111,7 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx,const 
             GET_IFACE(ILimitStateForces2,pForces);
             if ( analysisType == pgsTypes::Envelope )
             {
-               std::vector<sysSectionValue> shearMin, shearMax;
+               std::vector<WBFL::System::SectionValue> shearMin, shearMax;
                pForces->GetShear( intervalIdx, limitState, vPoi, pgsTypes::MinSimpleContinuousEnvelope, &shearMin, &shearMax );
                AddGraphPoints(min_data_series, xVals, shearMin);
 
@@ -2120,7 +2120,7 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx,const 
             }
             else
             {
-               std::vector<sysSectionValue> shearMin, shearMax;
+               std::vector<WBFL::System::SectionValue> shearMin, shearMax;
                pForces->GetShear( intervalIdx, limitState, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, &shearMin, &shearMax );
                AddGraphPoints(min_data_series, xVals, shearMin);
                AddGraphPoints(max_data_series, xVals, shearMax);
@@ -2450,7 +2450,7 @@ void CAnalysisResultsGraphBuilder::LiveLoadGraph(IndexType graphIdx,const CAnaly
 
    case actionShear:
       {
-         std::vector<sysSectionValue> Vmin, Vmax;
+         std::vector<WBFL::System::SectionValue> Vmin, Vmax;
          if ( analysisType == pgsTypes::Envelope )
          {
             pForces->GetCombinedLiveLoadShear(intervalIdx, llType, vPoi, pgsTypes::MinSimpleContinuousEnvelope, true, &Vmin, &Vmax);
@@ -2696,7 +2696,7 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(IndexType graphIdx,con
 
    case actionShear:
       {
-         std::vector<sysSectionValue> Vmin, Vmax;
+         std::vector<WBFL::System::SectionValue> Vmin, Vmax;
          if ( analysisType == pgsTypes::Envelope )
          {
             if ( vehicleIdx != INVALID_INDEX )

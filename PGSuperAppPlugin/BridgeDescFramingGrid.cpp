@@ -88,9 +88,6 @@ CBridgeDescFramingGrid::CBridgeDescFramingGrid():
 
 CBridgeDescFramingGrid::~CBridgeDescFramingGrid()
 {
-   DeleteTransactions(m_PierTransactions);
-   DeleteTransactions(m_SpanTransactions);
-   DeleteTransactions(m_TempSupportTransactions);
 }
 
 BEGIN_MESSAGE_MAP(CBridgeDescFramingGrid, CGXGridWnd)
@@ -456,37 +453,34 @@ bool CBridgeDescFramingGrid::EnableRemoveTemporarySupportBtn()
    return true;
 }
 
-std::vector<txnTransaction*> CBridgeDescFramingGrid::GetPierTransactions(PierIndexType pierIdx)
+void CBridgeDescFramingGrid::GetTransactions(CEAFMacroTxn& macro)
 {
-   std::map<PierIndexType,std::vector<txnTransaction*>>::iterator found(m_PierTransactions.find(pierIdx));
-   if ( found == m_PierTransactions.end())
-   {
-      return std::vector<txnTransaction*>();
-   }
+   std::for_each(std::begin(m_PierTransactions), std::end(m_PierTransactions),
+      [&macro](auto& txns)
+      {
+         std::for_each(std::begin(txns.second), std::end(txns.second), [&macro](auto& txn) {macro.AddTransaction(std::move(txn)); });
+      }
+   );
 
-   return found->second;
-}
+   m_PierTransactions.clear();
 
-std::vector<txnTransaction*> CBridgeDescFramingGrid::GetSpanTransactions(SpanIndexType spanIdx)
-{
-   std::map<SpanIndexType,std::vector<txnTransaction*>>::iterator found(m_SpanTransactions.find(spanIdx));
-   if ( found == m_SpanTransactions.end())
-   {
-      return std::vector<txnTransaction*>();
-   }
+   std::for_each(std::begin(m_SpanTransactions), std::end(m_SpanTransactions), 
+      [&macro](auto& txns)
+      {
+         std::for_each(std::begin(txns.second), std::end(txns.second), [&macro](auto& txn) {macro.AddTransaction(std::move(txn)); });
+      }
+   );
+ 
+   m_SpanTransactions.clear();
 
-   return found->second;
-}
+   std::for_each(std::begin(m_TempSupportTransactions), std::end(m_TempSupportTransactions), 
+      [&macro](auto& txns)
+      {
+         std::for_each(std::begin(txns.second), std::end(txns.second), [&macro](auto& txn) {macro.AddTransaction(std::move(txn)); });
+      }
+   );
 
-std::vector<txnTransaction*> CBridgeDescFramingGrid::GetTemporarySupportTransactions(SupportIndexType tsIdx)
-{
-   std::map<SupportIndexType,std::vector<txnTransaction*>>::iterator found(m_TempSupportTransactions.find(tsIdx));
-   if ( found == m_TempSupportTransactions.end())
-   {
-      return std::vector<txnTransaction*>();
-   }
-
-   return found->second;
+   m_TempSupportTransactions.clear();
 }
 
 void CBridgeDescFramingGrid::CustomInit()
@@ -1478,8 +1472,8 @@ void CBridgeDescFramingGrid::EditPier(PierIndexType pierIdx)
    if ( dlg.DoModal() == IDOK )
    {
       pDlg->m_BridgeDesc = *dlg.GetBridgeDescription();
-      txnTransaction* pPierTransaction = dlg.GetExtensionPageTransaction();
-      SavePierTransaction(pierIdx,pPierTransaction);
+      auto pPierTransaction = dlg.GetExtensionPageTransaction();
+      SavePierTransaction(pierIdx,std::move(pPierTransaction));
       FillGrid(pDlg->m_BridgeDesc);
    }
 }
@@ -1617,69 +1611,52 @@ SupportIndexType CBridgeDescFramingGrid::GetTemporarySupportIndex(ROWCOL nRow)
    return INVALID_INDEX;
 }
 
-void CBridgeDescFramingGrid::SavePierTransaction(PierIndexType pierIdx,txnTransaction* pTxn)
+void CBridgeDescFramingGrid::SavePierTransaction(PierIndexType pierIdx,std::unique_ptr<CEAFTransaction>&& pTxn)
 {
    if ( pTxn == nullptr )
    {
       return;
    }
 
-   std::map<PierIndexType,std::vector<txnTransaction*>>::iterator found(m_PierTransactions.find(pierIdx));
+   auto found(m_PierTransactions.find(pierIdx));
    if ( found == m_PierTransactions.end())
    {
-      m_PierTransactions.insert(std::make_pair(pierIdx,std::vector<txnTransaction*>()));
+      m_PierTransactions.insert(std::make_pair(pierIdx,std::vector<std::unique_ptr<CEAFTransaction>>()));
       found = m_PierTransactions.find(pierIdx);
    }
-   found->second.push_back(pTxn);
+   found->second.emplace_back(std::move(pTxn));
 }
 
-void CBridgeDescFramingGrid::SaveSpanTransaction(SpanIndexType spanIdx,txnTransaction* pTxn)
+void CBridgeDescFramingGrid::SaveSpanTransaction(SpanIndexType spanIdx, std::unique_ptr<CEAFTransaction>&& pTxn)
 {
    if ( pTxn == nullptr )
    {
       return;
    }
 
-   std::map<SpanIndexType,std::vector<txnTransaction*>>::iterator found(m_SpanTransactions.find(spanIdx));
+   auto found(m_SpanTransactions.find(spanIdx));
    if ( found == m_SpanTransactions.end())
    {
-      m_SpanTransactions.insert(std::make_pair(spanIdx,std::vector<txnTransaction*>()));
+      m_SpanTransactions.insert(std::make_pair(spanIdx, std::vector<std::unique_ptr<CEAFTransaction>>()));
       found = m_SpanTransactions.find(spanIdx);
    }
-   found->second.push_back(pTxn);
+   found->second.emplace_back(std::move(pTxn));
 }
 
-void CBridgeDescFramingGrid::SaveTemporarySupportTransaction(SupportIndexType tsIdx,txnTransaction* pTxn)
+void CBridgeDescFramingGrid::SaveTemporarySupportTransaction(SupportIndexType tsIdx, std::unique_ptr<CEAFTransaction>&& pTxn)
 {
    if ( pTxn == nullptr )
    {
       return;
    }
 
-   std::map<SupportIndexType,std::vector<txnTransaction*>>::iterator found(m_TempSupportTransactions.find(tsIdx));
+   auto found(m_TempSupportTransactions.find(tsIdx));
    if ( found == m_TempSupportTransactions.end())
    {
-      m_TempSupportTransactions.insert(std::make_pair(tsIdx,std::vector<txnTransaction*>()));
+      m_TempSupportTransactions.insert(std::make_pair(tsIdx,std::vector<std::unique_ptr<CEAFTransaction>>()));
       found = m_TempSupportTransactions.find(tsIdx);
    }
-   found->second.push_back(pTxn);
-}
-
-void CBridgeDescFramingGrid::DeleteTransactions(std::map<IndexType,std::vector<txnTransaction*>>& transactions)
-{
-   std::map<IndexType,std::vector<txnTransaction*>>::iterator iter(transactions.begin());
-   std::map<IndexType,std::vector<txnTransaction*>>::iterator iterEnd(transactions.end());
-   for ( ; iter != iterEnd; iter++ )
-   {
-      std::vector<txnTransaction*>& vTransactions(iter->second);
-      std::vector<txnTransaction*>::iterator txnIter(vTransactions.begin());
-      std::vector<txnTransaction*>::iterator txnIterEnd(vTransactions.end());
-      for ( ; txnIter != txnIterEnd; txnIter++ )
-      {
-         txnTransaction* pTxn = *txnIter;
-         delete pTxn;
-      }
-   }
+   found->second.emplace_back(std::move(pTxn));
 }
 
 void CBridgeDescFramingGrid::OnKillFocus(CWnd* pNewWnd)

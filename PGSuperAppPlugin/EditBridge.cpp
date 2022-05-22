@@ -53,9 +53,9 @@ void txnEditBridgeDescription::Undo()
    DoExecute(0);
 }
 
-txnTransaction* txnEditBridgeDescription::CreateClone() const
+std::unique_ptr<CEAFTransaction>txnEditBridgeDescription::CreateClone() const
 {
-   return new txnEditBridgeDescription(m_BridgeDescription[0],m_BridgeDescription[1]);
+   return std::make_unique<txnEditBridgeDescription>(m_BridgeDescription[0],m_BridgeDescription[1]);
 }
 
 std::_tstring txnEditBridgeDescription::Name() const
@@ -63,12 +63,12 @@ std::_tstring txnEditBridgeDescription::Name() const
    return _T("Edit Bridge");
 }
 
-bool txnEditBridgeDescription::IsUndoable()
+bool txnEditBridgeDescription::IsUndoable() const
 {
    return true;
 }
 
-bool txnEditBridgeDescription::IsRepeatable()
+bool txnEditBridgeDescription::IsRepeatable() const
 {
    return false;
 }

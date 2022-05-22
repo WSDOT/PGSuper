@@ -197,7 +197,7 @@ m_Capacity(capacity), m_Demand(demand), m_Passed(passed)
 
 void rptCapacityToDemand::Init()
 {
-   m_FormatTool.SetFormat(sysNumericFormatTool::Fixed);
+   m_FormatTool.SetFormat(WBFL::System::NumericFormatTool::Format::Fixed);
    m_FormatTool.SetPrecision(2);
 }
 

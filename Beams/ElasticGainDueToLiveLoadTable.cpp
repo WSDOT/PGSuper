@@ -60,7 +60,7 @@ CElasticGainDueToLiveLoadTable* CElasticGainDueToLiveLoadTable::PrepareTable(rpt
    CElasticGainDueToLiveLoadTable* table = new CElasticGainDueToLiveLoadTable( numColumns, pDisplayUnits);
    rptStyleManager::ConfigureTable(table);
 
-   table->scalar.SetFormat(sysNumericFormatTool::Fixed);
+   table->scalar.SetFormat(WBFL::System::NumericFormatTool::Format::Fixed);
    table->scalar.SetWidth(5);
    table->scalar.SetPrecision(2);
 

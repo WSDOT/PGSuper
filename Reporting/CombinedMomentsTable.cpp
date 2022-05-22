@@ -1154,14 +1154,14 @@ bool CCombinedMomentsTable::AssertValid() const
    return true;
 }
 
-void CCombinedMomentsTable::Dump(dbgDumpContext& os) const
+void CCombinedMomentsTable::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CCombinedMomentsTable") << endl;
+   os << _T("Dump for CCombinedMomentsTable") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CCombinedMomentsTable::TestMe(dbgLog& rlog)
+bool CCombinedMomentsTable::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CCombinedMomentsTable");
 

@@ -91,7 +91,7 @@ void CTxDOTOptionalDesignStandardFillDlg::DoDataExchange(CDataExchange* pDX)
 
    DDX_CBStringExactCase(pDX, IDC_OPT_NUM_STRANDS, m_strNumStrands);
 
-   bool st = sysTokenizer::ParseULong(m_strNumStrands, (unsigned long*)&m_NumStrands);  // save num strands as integral value as well
+   bool st = WBFL::System::Tokenizer::ParseULong(m_strNumStrands, (unsigned long*)&m_NumStrands);  // save num strands as integral value as well
    ASSERT(st);
 
    // only parse To value if we have harped strands
@@ -173,7 +173,7 @@ void CTxDOTOptionalDesignStandardFillDlg::OnCbnSelchangeOptNumStrands()
    if (sel!=CB_ERR)
    {
       pBox->GetLBText(sel,m_strNumStrands);
-      bool st = sysTokenizer::ParseULong(m_strNumStrands, (unsigned long*)&m_NumStrands);  // save num strands as integral value as well
+      bool st = WBFL::System::Tokenizer::ParseULong(m_strNumStrands, (unsigned long*)&m_NumStrands);  // save num strands as integral value as well
       ASSERT(st);
    }
    else

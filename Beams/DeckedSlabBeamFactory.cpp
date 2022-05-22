@@ -479,7 +479,7 @@ bool CDeckedSlabBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& 
    return true;
 }
 
-void CDeckedSlabBeamFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
+void CDeckedSlabBeamFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
 {
    pSave->BeginUnit(_T("DeckedSlabBeamDimensions"),2.0);
    for(const auto& name : m_DimNames)
@@ -490,7 +490,7 @@ void CDeckedSlabBeamFactory::SaveSectionDimensions(sysIStructuredSave* pSave,con
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CDeckedSlabBeamFactory::LoadSectionDimensions(sysIStructuredLoad* pLoad) const
+IBeamFactory::Dimensions CDeckedSlabBeamFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
 {
    Float64 parent_version;
    if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))

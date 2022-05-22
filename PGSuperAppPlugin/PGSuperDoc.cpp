@@ -242,20 +242,20 @@ bool CPGSuperDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,int
          newGirderData.m_BearingData[pgsTypes::metEnd] = dlg.m_SpanGdrDetailsBearingsPage.m_Bearings[pgsTypes::metEnd];
       }
 
-      txnTransaction* pTxn = new txnEditGirder(girderKey,newGirderData);
+      std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditGirder>(girderKey,newGirderData));
 
-      txnTransaction* pExtensionTxn = dlg.GetExtensionPageTransaction();
+      auto pExtensionTxn = dlg.GetExtensionPageTransaction();
       if ( pExtensionTxn )
       {
-         txnMacroTxn* pMacro = new pgsMacroTxn;
+         std::unique_ptr<CEAFMacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
          pMacro->Name(pTxn->Name());
-         pMacro->AddTransaction(pTxn);
-         pMacro->AddTransaction(pExtensionTxn);
-         pTxn = pMacro;
+         pMacro->AddTransaction(std::move(pTxn));
+         pMacro->AddTransaction(std::move(pExtensionTxn));
+         pTxn = std::move(pMacro);
       }
 
       GET_IFACE(IEAFTransactions,pTransactions);
-      pTransactions->Execute(pTxn);
+      pTransactions->Execute(std::move(pTxn));
 
       return true;
    }
@@ -292,9 +292,9 @@ void CPGSuperDoc::OnProjectAnalysis()
    {
       if ( currAnalysisType != dlg.m_AnalysisType )
       {
-         txnEditAnalysisType* pTxn = new txnEditAnalysisType(currAnalysisType,dlg.m_AnalysisType);
+         std::unique_ptr<txnEditAnalysisType> pTxn(std::make_unique<txnEditAnalysisType>(currAnalysisType,dlg.m_AnalysisType));
          GET_IFACE(IEAFTransactions,pTransactions);
-         pTransactions->Execute(pTxn);
+         pTransactions->Execute(std::move(pTxn));
       }
    }
 }
@@ -486,11 +486,9 @@ void CPGSuperDoc::DoDesignGirder(const std::vector<CGirderKey>& girderKeys, bool
          bool doDesignSO = dlg.GetSlabOffsetDesign(&slabOffsetDType, &fromSpan, &fromGirder);
 
          // Create our transaction and execute
+         std::unique_ptr<txnDesignGirder> pTxn(std::make_unique<txnDesignGirder>(pArtifacts, slabOffsetDType, fromSpan, fromGirder));
          GET_IFACE(IEAFTransactions, pTransactions);
-
-         txnDesignGirder* pTxn = new txnDesignGirder(pArtifacts, slabOffsetDType, fromSpan, fromGirder);
-
-         pTransactions->Execute(pTxn);
+         pTransactions->Execute(std::move(pTxn));
       }
    }
 }

@@ -97,9 +97,9 @@ BOOL CResolveGirderSpacingDlg::OnInitDialog()
    CDialog::OnInitDialog();
 
    // fill up the list of girder spacings
-   sysTokenizer tokenizer(_T("\n"));
+   WBFL::System::Tokenizer tokenizer(_T("\n"));
    tokenizer.push_back(m_strSpacings);
-   sysTokenizer::iterator iter;
+   WBFL::System::Tokenizer::iterator iter;
    for ( iter = tokenizer.begin(); iter != tokenizer.end(); iter++ )
    {
       std::_tstring strItem = *iter;

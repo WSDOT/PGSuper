@@ -1115,7 +1115,7 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
       }
 
 #if defined ENABLE_LOGGING
-      sysTime startTime;
+      WBFL::System::Time startTime;
 #endif
 
       ConfigureStressCheckTasks(segmentKey);
@@ -1446,7 +1446,7 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
       LOG(_T("Design Complete for span ") << LABEL_SPAN(spanIdx) << _T(" girder ") << LABEL_GIRDER(gdrIdx));
       LOG(_T("************************************************************"));
    #if defined ENABLE_LOGGING
-      sysTime endTime;
+      WBFL::System::Time endTime;
       long duration = endTime.Seconds() - startTime.Seconds();
       long min = duration / 60;
       long sec = duration - min*60;
@@ -4840,10 +4840,10 @@ void pgsDesigner2::CheckShear(bool bDesign,const CSegmentKey& segmentKey,Interva
          poi_4demand = m_CriticalSections[csZoneIdx].first.GetPointOfInterest();
       }
 
-      sysSectionValue Vmin, Vmax;
+      WBFL::System::SectionValue Vmin, Vmax;
       if ( analysisType == pgsTypes::Envelope )
       {
-         sysSectionValue min,max;
+         WBFL::System::SectionValue min,max;
          pLimitStateForces->GetShear(intervalIdx,limitState,poi_4demand,pgsTypes::MaxSimpleContinuousEnvelope,&min,&max);
          Vmax = max;
 
@@ -10280,14 +10280,14 @@ bool pgsDesigner2::AssertValid() const
    return true;
 }
 
-void pgsDesigner2::Dump(dbgDumpContext& os) const
+void pgsDesigner2::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for pgsDesigner2") << endl;
+   os << _T("Dump for pgsDesigner2") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool pgsDesigner2::TestMe(dbgLog& rlog)
+bool pgsDesigner2::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("pgsDesigner2");
 
@@ -10330,13 +10330,13 @@ void pgsDesigner2::GetBridgeAnalysisType(GirderIndexType gdr,const StressCheckTa
    batBottom = pProdForces->GetBridgeAnalysisType(task.stressType == pgsTypes::Compression ? pgsTypes::Minimize : pgsTypes::Maximize);
 }
 
-void pgsDesigner2::DumpLiftingArtifact(const WBFL::Stability::LiftingStabilityProblem* pStabilityProblem,const WBFL::Stability::LiftingCheckArtifact& artifact,dbgDumpContext& os) const
+void pgsDesigner2::DumpLiftingArtifact(const WBFL::Stability::LiftingStabilityProblem* pStabilityProblem,const WBFL::Stability::LiftingCheckArtifact& artifact,WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for WBFL::Stability::LiftingCheckArtifact") << endl;
-   os << _T("===================================") <<endl;
+   os << _T("Dump for WBFL::Stability::LiftingCheckArtifact") << WBFL::Debug::endl;
+   os << _T("===================================") << WBFL::Debug::endl;
 
-   os <<_T(" Stress Artifacts")<<endl;
-   os << _T("================") <<endl;
+   os <<_T(" Stress Artifacts")<< WBFL::Debug::endl;
+   os << _T("================") << WBFL::Debug::endl;
    const WBFL::Stability::LiftingResults& results = artifact.GetLiftingResults();
    for(const auto& sectionResult : results.vSectionResults)
    {
@@ -10347,11 +10347,11 @@ void pgsDesigner2::DumpLiftingArtifact(const WBFL::Stability::LiftingStabilityPr
       // NOTE: min_stress and max_stress are backwards to match the original log file dump code from pgsLiftingAnalysisArtifact
       Float64 min_stress = Max(sectionResult.fMaxDirect[WBFL::Stability::Top],sectionResult.fMaxDirect[WBFL::Stability::Bottom]);
       Float64 max_stress = Min(sectionResult.fMinDirect[WBFL::Stability::Top],sectionResult.fMinDirect[WBFL::Stability::Bottom]);
-      os<<_T("Total Stress: Min =")<<WBFL::Units::ConvertFromSysUnits(min_stress,WBFL::Units::Measure::KSI)<<_T("ksi, Max=")<<WBFL::Units::ConvertFromSysUnits(max_stress,WBFL::Units::Measure::KSI)<<_T("ksi")<<endl;
+      os<<_T("Total Stress: Min =")<<WBFL::Units::ConvertFromSysUnits(min_stress,WBFL::Units::Measure::KSI)<<_T("ksi, Max=")<<WBFL::Units::ConvertFromSysUnits(max_stress,WBFL::Units::Measure::KSI)<<_T("ksi")<< WBFL::Debug::endl;
    }
 
-   os <<_T(" Cracking Artifacts")<<endl;
-   os << _T("==================") <<endl;
+   os <<_T(" Cracking Artifacts")<< WBFL::Debug::endl;
+   os << _T("==================") << WBFL::Debug::endl;
    // we don't do impact or wind for lifting so these values will work
    WBFL::Stability::ImpactDirection impact = WBFL::Stability::NoImpact;
    WBFL::Stability::WindDirection wind = WBFL::Stability::Left;
@@ -10374,6 +10374,6 @@ void pgsDesigner2::DumpLiftingArtifact(const WBFL::Stability::LiftingStabilityPr
 
       Float64 stress = sectionResult.f[impact][wind][corner];
       Float64 fs = sectionResult.FScr[impact][wind][corner];
-      os<<_T(" Lateral Stress = ")<<WBFL::Units::ConvertFromSysUnits(stress,WBFL::Units::Measure::KSI)<<_T("ksi, FS =")<<fs<<endl;
+      os<<_T(" Lateral Stress = ")<<WBFL::Units::ConvertFromSysUnits(stress,WBFL::Units::Measure::KSI)<<_T("ksi, FS =")<<fs<< WBFL::Debug::endl;
    }
 }

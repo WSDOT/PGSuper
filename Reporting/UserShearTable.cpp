@@ -111,9 +111,9 @@ rptRcTable* CUserShearTable::Build(IBroker* pBroker,const CGirderKey& girderKey,
       PoiList vPoi;
       pIPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey, ALL_SEGMENTS), POI_ERECTED_SEGMENT, &vPoi);
 
-      std::vector<sysSectionValue> minDC, maxDC;
-      std::vector<sysSectionValue> minDW, maxDW;
-      std::vector<sysSectionValue> minLLIM, maxLLIM;
+      std::vector<WBFL::System::SectionValue> minDC, maxDC;
+      std::vector<WBFL::System::SectionValue> minDW, maxDW;
+      std::vector<WBFL::System::SectionValue> minLLIM, maxLLIM;
 
 
       maxDC = pForces2->GetShear( intervalIdx, pgsTypes::pftUserDC, vPoi, maxBAT, rtIncremental );
@@ -193,14 +193,14 @@ bool CUserShearTable::AssertValid() const
    return true;
 }
 
-void CUserShearTable::Dump(dbgDumpContext& os) const
+void CUserShearTable::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CUserShearTable") << endl;
+   os << _T("Dump for CUserShearTable") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CUserShearTable::TestMe(dbgLog& rlog)
+bool CUserShearTable::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CUserShearTable");
 

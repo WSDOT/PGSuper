@@ -407,7 +407,7 @@ void CCatalogServerAppMixin::UpdateCache()
          {
             // There aren't any update pending... set the last update date to now, otherwise
             // pgsuper will check for updates every day until there are some
-            sysDate now;
+            WBFL::System::Date now;
             SetLastCacheUpdateDate(now);
          }
       }
@@ -508,8 +508,8 @@ bool CCatalogServerAppMixin::IsTimeToUpdateCache() const
    }
    else 
    {
-      sysDate now;
-      sysDate last_update = GetLastCacheUpdateDate();
+      WBFL::System::Date now;
+      WBFL::System::Date last_update = GetLastCacheUpdateDate();
 
       Int16 update_frequency = 0; // in days
       if ( m_CacheUpdateFrequency == Daily )
@@ -528,7 +528,7 @@ bool CCatalogServerAppMixin::IsTimeToUpdateCache() const
          update_frequency = 30;
       }
 
-      sysDate next_update = last_update;
+      WBFL::System::Date next_update = last_update;
       next_update += update_frequency;
 
       if ( next_update <= now )
@@ -688,7 +688,7 @@ bool CCatalogServerAppMixin::DoCacheUpdate()
    if ( bSuccessful )
    {
       DeleteCache(strSaveCache);
-      sysDate now;
+      WBFL::System::Date now;
       SetLastCacheUpdateDate(now);
    }
    else
@@ -716,17 +716,17 @@ bool CCatalogServerAppMixin::DoCacheUpdate()
    return bSuccessful;
 }
 
-sysDate CCatalogServerAppMixin::GetLastCacheUpdateDate() const
+WBFL::System::Date CCatalogServerAppMixin::GetLastCacheUpdateDate() const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CEAFApp* pApp = EAFGetApp();
    CAutoRegistry autoReg(GetAppName(),pApp);
 
-   JulTy last_update = pApp->GetProfileInt(_T("Settings"),_T("LastCacheUpdate"),0);
-   return sysDate(last_update);
+   WBFL::System::JulTy last_update = pApp->GetProfileInt(_T("Settings"),_T("LastCacheUpdate"),0);
+   return WBFL::System::Date(last_update);
 }
 
-void CCatalogServerAppMixin::SetLastCacheUpdateDate(const sysDate& date)
+void CCatalogServerAppMixin::SetLastCacheUpdateDate(const WBFL::System::Date& date)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CEAFApp* pApp = EAFGetApp();

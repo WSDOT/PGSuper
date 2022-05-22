@@ -200,14 +200,14 @@ bool CContinuityCheck::AssertValid() const
    return true;
 }
 
-void CContinuityCheck::Dump(dbgDumpContext& os) const
+void CContinuityCheck::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CContinuityCheck") << endl;
+   os << _T("Dump for CContinuityCheck") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CContinuityCheck::TestMe(dbgLog& rlog)
+bool CContinuityCheck::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CContinuityCheck");
 

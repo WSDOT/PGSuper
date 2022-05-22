@@ -74,7 +74,7 @@ static char THIS_FILE[] = __FILE__;
 //}
 ///*
 //// call unit test routines for all packages belonging to this dll.
-//bool WINAPI UnitTest(dbgLog& rlog)
+//bool WINAPI UnitTest(WBFL::Debug::Log& rlog)
 //{
 //   return CUnitTest::TestMe(rlog);
 //}

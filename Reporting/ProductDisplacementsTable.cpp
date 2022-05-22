@@ -711,14 +711,14 @@ bool CProductDeflectionsTable::AssertValid() const
    return true;
 }
 
-void CProductDeflectionsTable::Dump(dbgDumpContext& os) const
+void CProductDeflectionsTable::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CProductDeflectionsTable") << endl;
+   os << _T("Dump for CProductDeflectionsTable") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CProductDeflectionsTable::TestMe(dbgLog& rlog)
+bool CProductDeflectionsTable::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CProductDeflectionsTable");
 

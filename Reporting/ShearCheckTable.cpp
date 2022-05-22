@@ -260,14 +260,14 @@ bool CShearCheckTable::AssertValid() const
    return true;
 }
 
-void CShearCheckTable::Dump(dbgDumpContext& os) const
+void CShearCheckTable::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CShearCheckTable") << endl;
+   os << _T("Dump for CShearCheckTable") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CShearCheckTable::TestMe(dbgLog& rlog)
+bool CShearCheckTable::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CShearCheckTable");
 

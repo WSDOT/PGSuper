@@ -193,7 +193,7 @@ void WriteSpanTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,
 
       Float64 pM, VStart, VEnd;
       Float64 nm;
-      sysSectionValue nM;
+      WBFL::System::SectionValue nM;
       pDistFact->GetDistributionFactors(poi_start, pgsTypes::StrengthI, &pM, &nm, &VStart);
       nM.Left() = nm;
 
@@ -316,7 +316,7 @@ void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pierIdx,
    {
       (*pTable)(row,0) << _T("Girder ") << LABEL_GIRDER(gdrIdx);
 
-      sysSectionValue nM;
+      WBFL::System::SectionValue nM;
       if ( bNegMoments )
       {
          if ( pierIdx == 0 )

@@ -491,7 +491,7 @@ bool CUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool bSIUnit
    return true;
 }
 
-void CUBeamFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
+void CUBeamFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
 {
    pSave->BeginUnit(_T("UBeamDimensions"),1.0);
    for(const auto& name : m_DimNames)
@@ -502,7 +502,7 @@ void CUBeamFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamF
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CUBeamFactory::LoadSectionDimensions(sysIStructuredLoad* pLoad) const
+IBeamFactory::Dimensions CUBeamFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
 {
    Float64 parent_version;
    if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))

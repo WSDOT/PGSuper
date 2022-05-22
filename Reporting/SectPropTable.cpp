@@ -96,7 +96,7 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
    bool bAsymmetricGirders = pBridge->HasAsymmetricGirders();
 
    rptRcScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Automatic );
+   scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Automatic );
    scalar.SetWidth(6);
    scalar.SetPrecision(2);
 
@@ -328,14 +328,14 @@ bool CSectionPropertiesTable::AssertValid() const
    return true;
 }
 
-void CSectionPropertiesTable::Dump(dbgDumpContext& os) const
+void CSectionPropertiesTable::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CSectionPropertiesTable") << endl;
+   os << _T("Dump for CSectionPropertiesTable") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CSectionPropertiesTable::TestMe(dbgLog& rlog)
+bool CSectionPropertiesTable::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CSectionPropertiesTable");
 

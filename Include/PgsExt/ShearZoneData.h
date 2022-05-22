@@ -46,8 +46,8 @@
 // FORWARD DECLARATIONS
 //
 #include <psgLib\ShearZoneData.h>
-   class sysIStructuredLoad;
-   class sysIStructuredSave;
+   class WBFL::System::IStructuredLoad;
+   class WBFL::System::IStructuredSave;
    class CShearData;
 
 // MISCELLANEOUS
@@ -109,11 +109,11 @@ public:
 
    // GROUP: OPERATIONS
 
-	HRESULT Load(sysIStructuredLoad* pStrLoad, bool bConvertToShearDataVersion9, 
+	HRESULT Load(WBFL::System::IStructuredLoad* pStrLoad, bool bConvertToShearDataVersion9, 
                 matRebar::Size ConfinementBarSize,Uint32 NumConfinementZones, 
                 bool bDoStirrupsEngageDeck);
 
-	HRESULT Save(sysIStructuredSave* pStrSave);
+	HRESULT Save(WBFL::System::IStructuredSave* pStrSave);
 
    CShearZoneData2 Convert() const;
 

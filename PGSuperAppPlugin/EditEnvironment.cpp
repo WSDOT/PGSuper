@@ -69,9 +69,9 @@ void txnEditEnvironment::Execute(int i)
    pEnvironment->SetRelHumidity( m_RelHumidity[i] );
 }
 
-txnTransaction* txnEditEnvironment::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnEditEnvironment::CreateClone() const
 {
-   return new txnEditEnvironment(m_ExposureCondition[0], m_ExposureCondition[1],
+   return std::make_unique<txnEditEnvironment>(m_ExposureCondition[0], m_ExposureCondition[1],
                                  m_RelHumidity[0],       m_RelHumidity[1]);
 }
 
@@ -80,12 +80,12 @@ std::_tstring txnEditEnvironment::Name() const
    return _T("Edit Environmental Conditions");
 }
 
-bool txnEditEnvironment::IsUndoable()
+bool txnEditEnvironment::IsUndoable() const
 {
    return true;
 }
 
-bool txnEditEnvironment::IsRepeatable()
+bool txnEditEnvironment::IsRepeatable() const
 {
    return false;
 }

@@ -113,7 +113,7 @@ rptChapter* CMomentCapacityChapterBuilder::Build(CReportSpecification* pRptSpec,
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), true );
 
    rptRcScalar strain;
-   strain.SetFormat(sysNumericFormatTool::Automatic);
+   strain.SetFormat(WBFL::System::NumericFormatTool::Format::Automatic);
    strain.SetWidth(7);
    strain.SetPrecision(3);
 

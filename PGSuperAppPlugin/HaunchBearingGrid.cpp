@@ -302,7 +302,7 @@ void CHaunchBearingGrid::GetGridData(CDataExchange* pDX)
    {
       CString strValue = GetCellValue(row, _STARTCOL + 2);
       Float64 value;
-      if (strValue.IsEmpty() || !sysTokenizer::ParseDouble(strValue, &value) || value < 0)
+      if (strValue.IsEmpty() || !WBFL::System::Tokenizer::ParseDouble(strValue, &value) || value < 0)
       {
          AfxMessageBox( _T("Value is not a number - must be a positive number"), MB_ICONEXCLAMATION);
          SetCurrentCell(row, _STARTCOL+2,GX_SCROLLINVIEW|GX_DISPLAYEDITWND);

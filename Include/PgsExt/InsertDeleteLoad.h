@@ -24,24 +24,24 @@
 #define INCLUDED_INSERTDELETELOAD_H_
 #include <PgsExt\PgsExtExp.h>
 
-#include <System\Transaction.h>
+#include <EAF\EAFTransaction.h>
 #include <IFace\Project.h>
 #include <PgsExt\PointLoadData.h>
 #include <PgsExt\DistributedLoadData.h>
 #include <PgsExt\MomentLoadData.h>
 #include <PgsExt\TimelineManager.h>
 
-class PGSEXTCLASS txnInsertPointLoad : public txnTransaction
+class PGSEXTCLASS txnInsertPointLoad : public CEAFTransaction
 {
 public:
    txnInsertPointLoad(const CPointLoadData& loadData,EventIDType loadingEventID,CTimelineManager* pTimelineMgr);
    virtual ~txnInsertPointLoad();
-   virtual txnTransaction* CreateClone() const override;
+   virtual std::unique_ptr<CEAFTransaction> CreateClone() const override;
    virtual std::_tstring Name() const override;
    virtual bool Execute() override;
    virtual void Undo() override;
-   virtual bool IsUndoable() override;
-   virtual bool IsRepeatable() override;
+   virtual bool IsUndoable() const override;
+   virtual bool IsRepeatable() const override;
 
 private:
    CollectionIndexType m_LoadIdx;
@@ -51,16 +51,16 @@ private:
    CTimelineManager m_OldTimelineMgr;
 };
 
-class PGSEXTCLASS txnDeletePointLoad : public txnTransaction
+class PGSEXTCLASS txnDeletePointLoad : public CEAFTransaction
 {
 public:
    txnDeletePointLoad(LoadIDType loadID);
    virtual std::_tstring Name() const override;
-   virtual txnTransaction* CreateClone() const override;
+   virtual std::unique_ptr<CEAFTransaction> CreateClone() const override;
    virtual bool Execute() override;
    virtual void Undo() override;
-   virtual bool IsUndoable() override;
-   virtual bool IsRepeatable() override;
+   virtual bool IsUndoable() const override;
+   virtual bool IsRepeatable() const override;
 
 private:
    LoadIDType m_LoadID;
@@ -68,17 +68,17 @@ private:
    EventIDType m_LoadingEventID;
 };
 
-class PGSEXTCLASS txnEditPointLoad : public txnTransaction
+class PGSEXTCLASS txnEditPointLoad : public CEAFTransaction
 {
 public:
    txnEditPointLoad(LoadIDType loadID,const CPointLoadData& oldLoadData,EventIDType oldLoadingEventID,const CPointLoadData& newLoadData,EventIDType newLoadingEventID,CTimelineManager* pTimelineMgr);
    virtual ~txnEditPointLoad();
    virtual std::_tstring Name() const override;
-   virtual txnTransaction* CreateClone() const override;
+   virtual std::unique_ptr<CEAFTransaction> CreateClone() const override;
    virtual bool Execute() override;
    virtual void Undo() override;
-   virtual bool IsUndoable() override;
-   virtual bool IsRepeatable() override;
+   virtual bool IsUndoable() const override;
+   virtual bool IsRepeatable() const override;
 
 private:
    void DoExecute(int i);
@@ -89,17 +89,17 @@ private:
    CTimelineManager m_OldTimelineMgr;
 };
 
-class PGSEXTCLASS txnInsertDistributedLoad : public txnTransaction
+class PGSEXTCLASS txnInsertDistributedLoad : public CEAFTransaction
 {
 public:
    txnInsertDistributedLoad(const CDistributedLoadData& loadData,EventIDType loadingEventID,CTimelineManager* pTimelineMgr);
    virtual ~txnInsertDistributedLoad();
-   virtual txnTransaction* CreateClone() const override;
+   virtual std::unique_ptr<CEAFTransaction> CreateClone() const override;
    virtual std::_tstring Name() const override;
    virtual bool Execute() override;
    virtual void Undo() override;
-   virtual bool IsUndoable() override;
-   virtual bool IsRepeatable() override;
+   virtual bool IsUndoable() const override;
+   virtual bool IsRepeatable() const override;
 
 private:
    CollectionIndexType m_LoadIdx;
@@ -109,16 +109,16 @@ private:
    CTimelineManager m_OldTimelineMgr;
 };
 
-class PGSEXTCLASS txnDeleteDistributedLoad : public txnTransaction
+class PGSEXTCLASS txnDeleteDistributedLoad : public CEAFTransaction
 {
 public:
    txnDeleteDistributedLoad(LoadIDType loadID);
    virtual std::_tstring Name() const override;
-   virtual txnTransaction* CreateClone() const override;
+   virtual std::unique_ptr<CEAFTransaction> CreateClone() const override;
    virtual bool Execute() override;
    virtual void Undo() override;
-   virtual bool IsUndoable() override;
-   virtual bool IsRepeatable() override;
+   virtual bool IsUndoable() const override;
+   virtual bool IsRepeatable() const override;
 
 private:
    LoadIDType m_LoadID;
@@ -126,17 +126,17 @@ private:
    EventIDType m_LoadingEventID;
 };
 
-class PGSEXTCLASS txnEditDistributedLoad : public txnTransaction
+class PGSEXTCLASS txnEditDistributedLoad : public CEAFTransaction
 {
 public:
    txnEditDistributedLoad(LoadIDType loadID,const CDistributedLoadData& oldLoadData,EventIDType oldLoadingEventID,const CDistributedLoadData& newLoadData,EventIDType newLoadingEventID,CTimelineManager* pTimelineMgr);
    virtual ~txnEditDistributedLoad();
    virtual std::_tstring Name() const override;
-   virtual txnTransaction* CreateClone() const override;
+   virtual std::unique_ptr<CEAFTransaction> CreateClone() const override;
    virtual bool Execute() override;
    virtual void Undo() override;
-   virtual bool IsUndoable() override;
-   virtual bool IsRepeatable() override;
+   virtual bool IsUndoable() const override;
+   virtual bool IsRepeatable() const override;
 
 private:
    void DoExecute(int i);
@@ -147,17 +147,17 @@ private:
    CTimelineManager m_OldTimelineMgr;
 };
 
-class PGSEXTCLASS txnInsertMomentLoad : public txnTransaction
+class PGSEXTCLASS txnInsertMomentLoad : public CEAFTransaction
 {
 public:
    txnInsertMomentLoad(const CMomentLoadData& loadData,EventIDType loadingEventID,CTimelineManager* pTimelineMgr);
    virtual ~txnInsertMomentLoad();
-   virtual txnTransaction* CreateClone() const override;
+   virtual std::unique_ptr<CEAFTransaction> CreateClone() const override;
    virtual std::_tstring Name() const override;
    virtual bool Execute() override;
    virtual void Undo() override;
-   virtual bool IsUndoable() override;
-   virtual bool IsRepeatable() override;
+   virtual bool IsUndoable() const override;
+   virtual bool IsRepeatable() const override;
 
 private:
    CollectionIndexType m_LoadIdx;
@@ -167,16 +167,16 @@ private:
    CTimelineManager m_OldTimelineMgr;
 };
 
-class PGSEXTCLASS txnDeleteMomentLoad : public txnTransaction
+class PGSEXTCLASS txnDeleteMomentLoad : public CEAFTransaction
 {
 public:
    txnDeleteMomentLoad(LoadIDType loadID);
    virtual std::_tstring Name() const override;
-   virtual txnTransaction* CreateClone() const override;
+   virtual std::unique_ptr<CEAFTransaction> CreateClone() const override;
    virtual bool Execute() override;
    virtual void Undo() override;
-   virtual bool IsUndoable() override;
-   virtual bool IsRepeatable() override;
+   virtual bool IsUndoable() const override;
+   virtual bool IsRepeatable() const override;
 
 private:
    LoadIDType m_LoadID;
@@ -184,17 +184,17 @@ private:
    EventIDType m_LoadingEventID;
 };
 
-class PGSEXTCLASS txnEditMomentLoad : public txnTransaction
+class PGSEXTCLASS txnEditMomentLoad : public CEAFTransaction
 {
 public:
    txnEditMomentLoad(LoadIDType loadID,const CMomentLoadData& oldLoadData,EventIDType oldLoadingEventID,const CMomentLoadData& newLoadData,EventIDType newLoadingEventID,CTimelineManager* pTimelineMgr);
    virtual ~txnEditMomentLoad();
    virtual std::_tstring Name() const override;
-   virtual txnTransaction* CreateClone() const override;
+   virtual std::unique_ptr<CEAFTransaction> CreateClone() const override;
    virtual bool Execute() override;
    virtual void Undo() override;
-   virtual bool IsUndoable() override;
-   virtual bool IsRepeatable() override;
+   virtual bool IsUndoable() const override;
+   virtual bool IsRepeatable() const override;
 
 private:
    void DoExecute(int i);

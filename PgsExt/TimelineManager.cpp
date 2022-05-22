@@ -3008,144 +3008,144 @@ Uint32 CTimelineManager::ValidateEvent(const CTimelineEvent* pTimelineEvent) con
 std::_tstring CTimelineManager::GetErrorMessage(Uint32 errorCode) const
 {
    std::_tostringstream os;
-   if (sysFlags<Uint32>::IsSet(errorCode, TLM_OVERLAPS_PREVIOUS_EVENT))
+   if (WBFL::System::Flags<Uint32>::IsSet(errorCode, TLM_OVERLAPS_PREVIOUS_EVENT))
    {
       os << _T("This event begins before the activities in the previous event have completed.") << std::endl << std::endl;
    }
 
-   if (sysFlags<Uint32>::IsSet(errorCode, TLM_OVERRUNS_NEXT_EVENT))
+   if (WBFL::System::Flags<Uint32>::IsSet(errorCode, TLM_OVERRUNS_NEXT_EVENT))
    {
       os << _T("The activities in this event end after the next event begins.") << std::endl << std::endl;
    }
 
-   if (sysFlags<Uint32>::IsSet(errorCode, TLM_EVENT_NOT_FOUND))
+   if (WBFL::System::Flags<Uint32>::IsSet(errorCode, TLM_EVENT_NOT_FOUND))
    {
       os << _T("Event not found") << std::endl << std::endl;
    }
 
-   if (sysFlags<Uint32>::IsSet(errorCode, TLM_CAST_DECK_ACTIVITY_REQUIRED))
+   if (WBFL::System::Flags<Uint32>::IsSet(errorCode, TLM_CAST_DECK_ACTIVITY_REQUIRED))
    {
       os << _T("The timeline does not include an activity for casting the deck.") << std::endl << std::endl;
    }
 
-   if (sysFlags<Uint32>::IsSet(errorCode, TLM_OVERLAY_ACTIVITY_REQUIRED))
+   if (WBFL::System::Flags<Uint32>::IsSet(errorCode, TLM_OVERLAY_ACTIVITY_REQUIRED))
    {
       os << _T("The timeline does not include an activity for installing the overlay.") << std::endl << std::endl;
    }
 
-   if (sysFlags<Uint32>::IsSet(errorCode, TLM_INTERMEDIATE_DIAPHRAGM_ACTIVITY_REQUIRED))
+   if (WBFL::System::Flags<Uint32>::IsSet(errorCode, TLM_INTERMEDIATE_DIAPHRAGM_ACTIVITY_REQUIRED))
    {
       os << _T("The timeline does not include an activity for installing intermediate diaphragms.") << std::endl << std::endl;
    }
 
-   if (sysFlags<Uint32>::IsSet(errorCode, TLM_RAILING_SYSTEM_ACTIVITY_REQUIRED))
+   if (WBFL::System::Flags<Uint32>::IsSet(errorCode, TLM_RAILING_SYSTEM_ACTIVITY_REQUIRED))
    {
       os << _T("The timeline does not include an activity for installing the traffic barrier/railing system.") << std::endl << std::endl;
    }
 
-   if (sysFlags<Uint32>::IsSet(errorCode, TLM_LIVELOAD_ACTIVITY_REQUIRED))
+   if (WBFL::System::Flags<Uint32>::IsSet(errorCode, TLM_LIVELOAD_ACTIVITY_REQUIRED))
    {
       os << _T("The timeline does not include an activity for opening the bridge to traffic.") << std::endl << std::endl;
    }
 
-   if (sysFlags<Uint32>::IsSet(errorCode, TLM_USER_LOAD_ACTIVITY_REQUIRED))
+   if (WBFL::System::Flags<Uint32>::IsSet(errorCode, TLM_USER_LOAD_ACTIVITY_REQUIRED))
    {
       os << _T("The timeline does not include activities for one or more user defined loads.") << std::endl << std::endl;
    }
 
-   if (sysFlags<Uint32>::IsSet(errorCode, TLM_CONSTRUCT_SEGMENTS_ACTIVITY_REQUIRED))
+   if (WBFL::System::Flags<Uint32>::IsSet(errorCode, TLM_CONSTRUCT_SEGMENTS_ACTIVITY_REQUIRED))
    {
       os << _T("The timeline does not include activites for constructing the following segments:") << std::endl;
       std::for_each(std::cbegin(m_ConstructSegmentActivityError), std::cend(m_ConstructSegmentActivityError), [&os](const auto& segmentKey) {os << SEGMENT_LABEL(segmentKey) << std::endl; });
       os << std::endl;
    }
 
-   if (sysFlags<Uint32>::IsSet(errorCode, TLM_ERECT_SEGMENTS_ACTIVITY_REQUIRED))
+   if (WBFL::System::Flags<Uint32>::IsSet(errorCode, TLM_ERECT_SEGMENTS_ACTIVITY_REQUIRED))
    {
       os << _T("The timeline does not include activites for erecting the following segments:") << std::endl;
       std::for_each(std::cbegin(m_ErectSegmentActivityError), std::cend(m_ErectSegmentActivityError), [&os](const auto& segmentKey) {os << SEGMENT_LABEL(segmentKey) << std::endl; });
       os << std::endl;
    }
 
-   if (sysFlags<Uint32>::IsSet(errorCode, TLM_SEGMENT_ERECTION_ERROR))
+   if (WBFL::System::Flags<Uint32>::IsSet(errorCode, TLM_SEGMENT_ERECTION_ERROR))
    {
       os << _T("The following segments are erected before their supporting elements (Pier or Temporary Support) have been constructed:") << std::endl;
       std::for_each(std::cbegin(m_SegmentErectionError), std::cend(m_SegmentErectionError), [&os](const auto& segmentKey) {os << SEGMENT_LABEL(segmentKey) << std::endl; });
       os << std::endl;
    }
 
-   if (sysFlags<Uint32>::IsSet(errorCode, TLM_TEMPORARY_SUPPORT_REMOVAL_ERROR))
+   if (WBFL::System::Flags<Uint32>::IsSet(errorCode, TLM_TEMPORARY_SUPPORT_REMOVAL_ERROR))
    {
       os << _T("The following temporary supports has been removed while they are still supporting segments:") << std::endl;
       std::for_each(std::cbegin(m_TemporarySupportRemovalError), std::cend(m_TemporarySupportRemovalError), [&os](const auto& tsIdx) {os << _T("Temporary Support ") << LABEL_INDEX(tsIdx) << std::endl; });
       os << std::endl;
    }
 
-   if (sysFlags<Uint32>::IsSet(errorCode, TLM_CAST_CLOSURE_JOINT_ACTIVITY_REQUIRED))
+   if (WBFL::System::Flags<Uint32>::IsSet(errorCode, TLM_CAST_CLOSURE_JOINT_ACTIVITY_REQUIRED))
    {
       os << _T("The timeline does not include activities for casting the following closure joints:") << std::endl;
       std::for_each(std::cbegin(m_CastClosureJointActivityError), std::cend(m_CastClosureJointActivityError), [&os](const auto& cjKey) {os << _T("Group ") << LABEL_GROUP(cjKey.groupIndex) << _T(", Closure ") << LABEL_SEGMENT(cjKey.segmentIndex) << std::endl; });
       os << std::endl;
    }
 
-   if (sysFlags<Uint32>::IsSet(errorCode, TLM_CLOSURE_JOINT_ERROR))
+   if (WBFL::System::Flags<Uint32>::IsSet(errorCode, TLM_CLOSURE_JOINT_ERROR))
    {
       os << _T("The following closure joints are cast before the adjacent segments have been erected:") << std::endl;
       std::for_each(std::cbegin(m_ClosureJointError), std::cend(m_ClosureJointError), [&os](const auto& cjKey) {os << _T("Group ") << LABEL_GROUP(cjKey.groupIndex) << _T(", Closure ") << LABEL_SEGMENT(cjKey.segmentIndex) << std::endl; });
       os << std::endl;
    }
 
-   if (sysFlags<Uint32>::IsSet(errorCode, TLM_ERECT_PIERS_ACTIVITY_REQUIRED))
+   if (WBFL::System::Flags<Uint32>::IsSet(errorCode, TLM_ERECT_PIERS_ACTIVITY_REQUIRED))
    {
       os << _T("The timeline does not include activities for constructing the following piers or temporary supports:") << std::endl;
       std::for_each(std::cbegin(m_ErectPiersActivityError), std::cend(m_ErectPiersActivityError), [&os](const auto& pair) {if(pair.first != INVALID_INDEX) os << _T("Pier ") << LABEL_PIER(pair.first) << std::endl; else os << _T("Temporary Support ") << LABEL_TEMPORARY_SUPPORT(pair.second) << std::endl; });
       os << std::endl;
    }
 
-   if (sysFlags<Uint32>::IsSet(errorCode, TLM_REMOVE_TEMPORARY_SUPPORTS_ACTIVITY_REQUIRED))
+   if (WBFL::System::Flags<Uint32>::IsSet(errorCode, TLM_REMOVE_TEMPORARY_SUPPORTS_ACTIVITY_REQUIRED))
    {
       os << _T("The timeline does not include activities for removing the following temporary supports:") << std::endl;
       std::for_each(std::cbegin(m_RemoveTemporarySupportsActivityError), std::cend(m_RemoveTemporarySupportsActivityError), [&os](const auto& tsIdx) {os << _T("Temporary Support ") << LABEL_TEMPORARY_SUPPORT(tsIdx) << std::endl; });
       os << std::endl;
    }
 
-   if (sysFlags<Uint32>::IsSet(errorCode, TLM_STRESS_TENDONS_ACTIVITY_REQUIRED))
+   if (WBFL::System::Flags<Uint32>::IsSet(errorCode, TLM_STRESS_TENDONS_ACTIVITY_REQUIRED))
    {
       os << _T("The timeline does not include activites for stressing the following tendons:") << std::endl;
       std::for_each(std::cbegin(m_StressTendonsActivityError), std::cend(m_StressTendonsActivityError), [&os](const auto& key) {os << GIRDER_LABEL(key.girderKey) << _T(", Duct ") << LABEL_DUCT(key.ductIdx) << std::endl; });
       os << std::endl;
    }
 
-   if (sysFlags<Uint32>::IsSet(errorCode, TLM_STRONGBACK_ERECTION_ERROR))
+   if (WBFL::System::Flags<Uint32>::IsSet(errorCode, TLM_STRONGBACK_ERECTION_ERROR))
    {
       os << _T("The following strongbacks are erected before the segments that support them:") << std::endl;
       std::for_each(std::cbegin(m_StrongBackErectionError), std::cend(m_StrongBackErectionError), [&os](const auto& tsIdx) {os << _T("Temporary Support ") << LABEL_TEMPORARY_SUPPORT(tsIdx) << std::endl; });
       os << std::endl;
    }
 
-   if (sysFlags<Uint32>::IsSet(errorCode, TLM_RAILING_SYSTEM_ERROR))
+   if (WBFL::System::Flags<Uint32>::IsSet(errorCode, TLM_RAILING_SYSTEM_ERROR))
    {
       os << _T("The traffic barrier/railing system has been installed before the deck was cast.") << std::endl << std::endl;
    }
 
-   if (sysFlags<Uint32>::IsSet(errorCode, TLM_STRESS_TENDON_ERROR))
+   if (WBFL::System::Flags<Uint32>::IsSet(errorCode, TLM_STRESS_TENDON_ERROR))
    {
       os << _T("The following tendons are stressed before the segments and closure joints have been assembled:") << std::endl;
       std::for_each(std::cbegin(m_StressTendonError), std::cend(m_StressTendonError), [&os](const auto& key) {os << GIRDER_LABEL(key.girderKey) << _T(", Duct ") << LABEL_DUCT(key.ductIdx) << std::endl; });
       os << std::endl;
    }
 
-   if (sysFlags<Uint32>::IsSet(errorCode, TLM_LOAD_RATING_ERROR))
+   if (WBFL::System::Flags<Uint32>::IsSet(errorCode, TLM_LOAD_RATING_ERROR))
    {
       os << _T("Bridge must be open to traffic before load rating.") << std::endl << std::endl;
    }
 
-   if (sysFlags<Uint32>::IsSet(errorCode, TLM_INTERMEDIATE_DIAPHRAGM_LOADING_ERROR))
+   if (WBFL::System::Flags<Uint32>::IsSet(errorCode, TLM_INTERMEDIATE_DIAPHRAGM_LOADING_ERROR))
    {
       os << _T("Intermediate diaphragm loads are applied before segments are erected or after the deck is cast. They must be applied after all segments are erected up until deck casting. To fix the problem add an Apply Load activity with intermediate diaphragms loads at or before the event containing the Cast Deck activity to the timeline.") << std::endl << std::endl;
    }
 
-   if (sysFlags<Uint32>::IsSet(errorCode, TLM_USER_LOAD_ERROR))
+   if (WBFL::System::Flags<Uint32>::IsSet(errorCode, TLM_USER_LOAD_ERROR))
    {
       os << _T("User defined loads are applied before segments are erected. They must be applied after all segments are erected. To fix the problem add an Apply Load activity with user defined loads at or after the event containing the last Erect Segment activity to the timeline.") << std::endl << std::endl;
    }

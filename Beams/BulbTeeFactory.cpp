@@ -703,7 +703,7 @@ bool CBulbTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensi
    return true;
 }
 
-void CBulbTeeFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
+void CBulbTeeFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
 {
    // NOTE:
    // Version 2, added D8
@@ -718,7 +718,7 @@ void CBulbTeeFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBea
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CBulbTeeFactory::LoadSectionDimensions(sysIStructuredLoad* pLoad) const
+IBeamFactory::Dimensions CBulbTeeFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
 {
    Float64 parent_version;
    if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))

@@ -297,9 +297,9 @@ void pgsKdotHaulingStressAnalysisArtifact::MakeAssignment(const pgsKdotHaulingSt
 //======================== DEBUG      =======================================
 #if defined _DEBUG
 
-void pgsKdotHaulingStressAnalysisArtifact::Dump(dbgDumpContext& os) const
+void pgsKdotHaulingStressAnalysisArtifact::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << "Dump for pgsKdotHaulingStressAnalysisArtifact" << endl;
+   os << "Dump for pgsKdotHaulingStressAnalysisArtifact" << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
@@ -1126,11 +1126,11 @@ void pgsKdotHaulingAnalysisArtifact::MakeAssignment(const pgsKdotHaulingAnalysis
 
 //======================== DEBUG      =======================================
 #if defined _DEBUG
-void pgsKdotHaulingAnalysisArtifact::Dump(dbgDumpContext& os) const
+void pgsKdotHaulingAnalysisArtifact::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for pgsKdotHaulingAnalysisArtifact") << endl;
-   os <<_T(" Stress Artifacts: ")<<endl;
-   os << _T("================") <<endl;
+   os << _T("Dump for pgsKdotHaulingAnalysisArtifact") << WBFL::Debug::endl;
+   os <<_T(" Stress Artifacts: ")<< WBFL::Debug::endl;
+   os << _T("================") << WBFL::Debug::endl;
    std::vector<pgsPointOfInterest>::const_iterator iter;
    for (iter=m_HaulingPois.begin(); iter!=m_HaulingPois.end(); iter++)
    {
@@ -1140,22 +1140,22 @@ void pgsKdotHaulingAnalysisArtifact::Dump(dbgDumpContext& os) const
       std::map<pgsPointOfInterest,pgsKdotHaulingStressAnalysisArtifact>::const_iterator found;
       found = m_HaulingStressAnalysisArtifacts.find( rpoi );
 
-      os<<endl;
+      os<< WBFL::Debug::endl;
       Float64 fps, ftot, ftcap, fccap;
       found->second.GetTopFiberStress(&fps, &ftot);
-      os<<_T("TopStress fps=")<<WBFL::Units::ConvertFromSysUnits(fps,WBFL::Units::Measure::KSI)<<_T("ksi, ftot=")<<WBFL::Units::ConvertFromSysUnits(ftot,WBFL::Units::Measure::KSI)<<_T("ksi")<<endl;
+      os<<_T("TopStress fps=")<<WBFL::Units::ConvertFromSysUnits(fps,WBFL::Units::Measure::KSI)<<_T("ksi, ftot=")<<WBFL::Units::ConvertFromSysUnits(ftot,WBFL::Units::Measure::KSI)<<_T("ksi")<< WBFL::Debug::endl;
 
       found->second.GetBottomFiberStress(&fps, &ftot);
-      os<<_T("BotStress fps=")<<WBFL::Units::ConvertFromSysUnits(fps,WBFL::Units::Measure::KSI)<<_T("ksi, ftot=")<<WBFL::Units::ConvertFromSysUnits(ftot,WBFL::Units::Measure::KSI)<<_T("ksi")<<endl;
+      os<<_T("BotStress fps=")<<WBFL::Units::ConvertFromSysUnits(fps,WBFL::Units::Measure::KSI)<<_T("ksi, ftot=")<<WBFL::Units::ConvertFromSysUnits(ftot,WBFL::Units::Measure::KSI)<<_T("ksi")<< WBFL::Debug::endl;
 
       found->second.GetConcreteTensileStress(&fps, &ftot, &ftcap);
       fccap = found->second.GetCompressiveCapacity();
       bool passed = found->second.Passed();
-      os<<_T("Capacity Tens = ")<<WBFL::Units::ConvertFromSysUnits(ftcap,WBFL::Units::Measure::KSI)<<_T("ksi, Comp =")<<WBFL::Units::ConvertFromSysUnits(fccap,WBFL::Units::Measure::KSI)<<_T("ksi, Passed =")<<passed<<endl;
+      os<<_T("Capacity Tens = ")<<WBFL::Units::ConvertFromSysUnits(ftcap,WBFL::Units::Measure::KSI)<<_T("ksi, Comp =")<<WBFL::Units::ConvertFromSysUnits(fccap,WBFL::Units::Measure::KSI)<<_T("ksi, Passed =")<<passed<< WBFL::Debug::endl;
    }
 
-   os <<_T(" Dump Complete")<<endl;
-   os << _T("=============") <<endl;
+   os <<_T(" Dump Complete")<< WBFL::Debug::endl;
+   os << _T("=============") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 

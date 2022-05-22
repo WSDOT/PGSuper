@@ -516,10 +516,10 @@ void pgsBridgeDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
                pNextSpan = pPier->GetNextSpan();
             }
 
-            txnEditBridge* pTxn = new txnEditBridge(*pBridgeDesc->GetBridgeDescription(), bridge);
+            std::unique_ptr<txnEditBridge> pTxn(std::make_unique<txnEditBridge>(*pBridgeDesc->GetBridgeDescription(), bridge));
 
             GET_IFACE(IEAFTransactions,pTransactions);
-            pTransactions->Execute(pTxn);
+            pTransactions->Execute(std::move(pTxn));
          }
       }
       else if (pItem->m_IssueType == pgsBridgeDescriptionStatusItem::Bearings)

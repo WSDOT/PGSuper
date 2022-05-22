@@ -148,14 +148,14 @@ bool pgsStrandSlopeArtifact::AssertValid() const
    return true;
 }
 
-void pgsStrandSlopeArtifact::Dump(dbgDumpContext& os) const
+void pgsStrandSlopeArtifact::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << "Dump for pgsStrandSlopeArtifact" << endl;
+   os << "Dump for pgsStrandSlopeArtifact" << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool pgsStrandSlopeArtifact::TestMe(dbgLog& rlog)
+bool pgsStrandSlopeArtifact::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("pgsStrandSlopeArtifact");
 

@@ -1107,14 +1107,14 @@ bool CProductReactionTable::AssertValid() const
    return true;
 }
 
-void CProductReactionTable::Dump(dbgDumpContext& os) const
+void CProductReactionTable::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CProductReactionTable") << endl;
+   os << _T("Dump for CProductReactionTable") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CProductReactionTable::TestMe(dbgLog& rlog)
+bool CProductReactionTable::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CProductReactionTable");
 

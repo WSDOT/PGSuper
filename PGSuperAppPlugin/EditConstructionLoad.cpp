@@ -65,9 +65,9 @@ void txnEditConstructionLoad::DoExecute(int i)
    pLoads->SetConstructionLoad(m_Load[i]);
 }
 
-txnTransaction* txnEditConstructionLoad::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnEditConstructionLoad::CreateClone() const
 {
-   return new txnEditConstructionLoad(m_Load[0],m_Load[1]);
+   return std::make_unique<txnEditConstructionLoad>(m_Load[0],m_Load[1]);
 }
 
 std::_tstring txnEditConstructionLoad::Name() const
@@ -75,12 +75,12 @@ std::_tstring txnEditConstructionLoad::Name() const
    return _T("Edit Construction Load");
 }
 
-bool txnEditConstructionLoad::IsUndoable()
+bool txnEditConstructionLoad::IsUndoable() const
 {
    return true;
 }
 
-bool txnEditConstructionLoad::IsRepeatable()
+bool txnEditConstructionLoad::IsRepeatable() const
 {
    return false;
 }

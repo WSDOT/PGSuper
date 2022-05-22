@@ -494,7 +494,7 @@ bool CTxDotDoubleTFactory::ValidateDimensions(const IBeamFactory::Dimensions& di
    return true;
 }
 
-void CTxDotDoubleTFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
+void CTxDotDoubleTFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
 {
    pSave->BeginUnit(_T("TxDOTDoubleTeeDimensions"),1.0);
    for(const auto& name : m_DimNames)
@@ -505,7 +505,7 @@ void CTxDotDoubleTFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CTxDotDoubleTFactory::LoadSectionDimensions(sysIStructuredLoad* pLoad) const
+IBeamFactory::Dimensions CTxDotDoubleTFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
 {
    Float64 parent_version;
    if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))

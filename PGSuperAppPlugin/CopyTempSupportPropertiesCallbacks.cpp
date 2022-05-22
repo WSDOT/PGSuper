@@ -212,9 +212,9 @@ void txnCopyTempSupportConnectionProperties::Undo()
    }
 }
 
-txnTransaction* txnCopyTempSupportConnectionProperties::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnCopyTempSupportConnectionProperties::CreateClone() const
 {
-   return new txnCopyTempSupportConnectionProperties(m_FromTempSupportIdx,m_ToTempSupports);
+   return std::make_unique<txnCopyTempSupportConnectionProperties>(m_FromTempSupportIdx,m_ToTempSupports);
 }
 
 std::_tstring txnCopyTempSupportConnectionProperties::Name() const
@@ -242,9 +242,9 @@ BOOL CCopyTempSupportConnectionProperties::CanCopy(PierIndexType fromTempSupport
    return CanCopyConnectionData(fromTempSupportIdx, toTempSupports);
 }
 
-txnTransaction* CCopyTempSupportConnectionProperties::CreateCopyTransaction(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports)
+std::unique_ptr<CEAFTransaction> CCopyTempSupportConnectionProperties::CreateCopyTransaction(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports)
 {
-   return new txnCopyTempSupportConnectionProperties(fromTempSupportIdx, toTempSupports);
+   return std::make_unique<txnCopyTempSupportConnectionProperties>(fromTempSupportIdx, toTempSupports);
 }
 
 UINT CCopyTempSupportConnectionProperties::GetTempSupportEditorTabIndex()

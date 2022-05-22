@@ -62,10 +62,10 @@ BOOL DoParseTemplateFile(const LPCTSTR lpszPathName, CString& girderEntry,
 
    // comma delimited file in format of:
    // GirderEntryName, EndConnection, StartConnection, ProjectCriteria
-   sysTokenizer tokenizer(_T(","));
+   WBFL::System::Tokenizer tokenizer(_T(","));
    tokenizer.push_back(line);
 
-   sysTokenizer::size_type nitems = tokenizer.size();
+   WBFL::System::Tokenizer::size_type nitems = tokenizer.size();
    if (nitems<4) // Don't limit to allow new items to be added
    {
       CString msg;
@@ -95,7 +95,7 @@ BOOL DoParseTemplateFile(const LPCTSTR lpszPathName, CString& girderEntry,
    if (nitems>5)
    {
       std::_tstring str = tokenizer[5].c_str();
-      did_parse = sysTokenizer::ParseDouble(str.c_str(), &girderUnitWeight);
+      did_parse = WBFL::System::Tokenizer::ParseDouble(str.c_str(), &girderUnitWeight);
       // value stored in file is pcf
       girderUnitWeight = WBFL::Units::ConvertToSysUnits(girderUnitWeight, WBFL::Units::Measure::LbfPerFeet3);
       ATLASSERT(did_parse);

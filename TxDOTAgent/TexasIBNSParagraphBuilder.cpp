@@ -113,7 +113,7 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IBroker* pBroker
       INIT_UV_PROTOTYPE( rptLengthUnitValue, uloc, pDisplayUnits->GetSpanLengthUnit(), true);
       INIT_UV_PROTOTYPE( rptLengthUnitValue, ucomp,    pDisplayUnits->GetComponentDimUnit(), true );
 
-      uloc.SetFormat(sysNumericFormatTool::Automatic);
+      uloc.SetFormat(WBFL::System::NumericFormatTool::Format::Automatic);
 
       const ColumnIndexType num_cols=13;
       std::_tostringstream os;
@@ -516,7 +516,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),       true );
    INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(),       true );
    rptRcScalar df;
-   df.SetFormat(sysNumericFormatTool::Fixed);
+   df.SetFormat(WBFL::System::NumericFormatTool::Format::Fixed);
    df.SetWidth(8);
    df.SetPrecision(5);
 

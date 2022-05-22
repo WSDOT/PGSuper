@@ -314,22 +314,22 @@ void CBridgeModelViewChildFrame::NorthUp(bool bNorthUp)
    UINT bridge_settings = pDoc->GetBridgeEditorSettings();
    if (bNorthUp)
    {
-      sysFlags<UINT>::Set(&bridge_settings, IDB_PV_NORTH_UP);
+      WBFL::System::Flags<UINT>::Set(&bridge_settings, IDB_PV_NORTH_UP);
    }
    else
    {
-      sysFlags<UINT>::Clear(&bridge_settings, IDB_PV_NORTH_UP);
+      WBFL::System::Flags<UINT>::Clear(&bridge_settings, IDB_PV_NORTH_UP);
    }
    pDoc->SetBridgeEditorSettings(bridge_settings);
 
    UINT alignment_settings = pDoc->GetAlignmentEditorSettings();
-   if (sysFlags<UINT>::IsSet(bridge_settings, IDB_PV_NORTH_UP))
+   if (WBFL::System::Flags<UINT>::IsSet(bridge_settings, IDB_PV_NORTH_UP))
    {
-      sysFlags<UINT>::Set(&alignment_settings, IDA_AP_NORTH_UP);
+      WBFL::System::Flags<UINT>::Set(&alignment_settings, IDA_AP_NORTH_UP);
    }
    else
    {
-      sysFlags<UINT>::Clear(&alignment_settings, IDA_AP_NORTH_UP);
+      WBFL::System::Flags<UINT>::Clear(&alignment_settings, IDA_AP_NORTH_UP);
    }
    pDoc->SetAlignmentEditorSettings(alignment_settings);
 }
@@ -345,17 +345,17 @@ void CBridgeModelViewChildFrame::ShowLabels(bool bShowLabels)
    UINT settings = pDoc->GetBridgeEditorSettings();
    if (bShowLabels)
    {
-      sysFlags<UINT>::Set(&settings, IDB_PV_LABEL_PIERS);
-      sysFlags<UINT>::Set(&settings, IDB_PV_LABEL_GIRDERS);
-      sysFlags<UINT>::Set(&settings, IDB_PV_LABEL_BEARINGS);
-      sysFlags<UINT>::Set(&settings, IDB_CS_LABEL_GIRDERS);
+      WBFL::System::Flags<UINT>::Set(&settings, IDB_PV_LABEL_PIERS);
+      WBFL::System::Flags<UINT>::Set(&settings, IDB_PV_LABEL_GIRDERS);
+      WBFL::System::Flags<UINT>::Set(&settings, IDB_PV_LABEL_BEARINGS);
+      WBFL::System::Flags<UINT>::Set(&settings, IDB_CS_LABEL_GIRDERS);
    }
    else
    {
-      sysFlags<UINT>::Clear(&settings, IDB_PV_LABEL_PIERS);
-      sysFlags<UINT>::Clear(&settings, IDB_PV_LABEL_GIRDERS);
-      sysFlags<UINT>::Clear(&settings, IDB_PV_LABEL_BEARINGS);
-      sysFlags<UINT>::Clear(&settings, IDB_CS_LABEL_GIRDERS);
+      WBFL::System::Flags<UINT>::Clear(&settings, IDB_PV_LABEL_PIERS);
+      WBFL::System::Flags<UINT>::Clear(&settings, IDB_PV_LABEL_GIRDERS);
+      WBFL::System::Flags<UINT>::Clear(&settings, IDB_PV_LABEL_BEARINGS);
+      WBFL::System::Flags<UINT>::Clear(&settings, IDB_CS_LABEL_GIRDERS);
    }
 
    pDoc->SetBridgeEditorSettings(settings);
@@ -373,11 +373,11 @@ void CBridgeModelViewChildFrame::ShowDimensions(bool bShowDimensions)
    UINT settings = pDoc->GetBridgeEditorSettings();
    if (bShowDimensions)
    {
-      sysFlags<UINT>::Set(&settings, IDB_CS_SHOW_DIMENSIONS);
+      WBFL::System::Flags<UINT>::Set(&settings, IDB_CS_SHOW_DIMENSIONS);
    }
    else
    {
-      sysFlags<UINT>::Clear(&settings, IDB_CS_SHOW_DIMENSIONS);
+      WBFL::System::Flags<UINT>::Clear(&settings, IDB_CS_SHOW_DIMENSIONS);
    }
    pDoc->SetBridgeEditorSettings(settings);
 }
@@ -393,13 +393,13 @@ void CBridgeModelViewChildFrame::ShowBridge(bool bShowBridge)
    UINT settings = pDoc->GetAlignmentEditorSettings();
    if (bShowBridge)
    {
-      sysFlags<UINT>::Set(&settings, IDA_AP_DRAW_BRIDGE);
-      sysFlags<UINT>::Set(&settings, IDP_AP_DRAW_BRIDGE);
+      WBFL::System::Flags<UINT>::Set(&settings, IDA_AP_DRAW_BRIDGE);
+      WBFL::System::Flags<UINT>::Set(&settings, IDP_AP_DRAW_BRIDGE);
    }
    else
    {
-      sysFlags<UINT>::Clear(&settings, IDA_AP_DRAW_BRIDGE);
-      sysFlags<UINT>::Clear(&settings, IDP_AP_DRAW_BRIDGE);
+      WBFL::System::Flags<UINT>::Clear(&settings, IDA_AP_DRAW_BRIDGE);
+      WBFL::System::Flags<UINT>::Clear(&settings, IDP_AP_DRAW_BRIDGE);
    }
 
    pDoc->SetAlignmentEditorSettings(settings);
@@ -416,11 +416,11 @@ void CBridgeModelViewChildFrame::Schematic(bool bSchematic)
    UINT settings = pDoc->GetAlignmentEditorSettings();
    if (bSchematic)
    {
-      sysFlags<UINT>::Set(&settings, IDP_AP_DRAW_ISOTROPIC);
+      WBFL::System::Flags<UINT>::Set(&settings, IDP_AP_DRAW_ISOTROPIC);
    }
    else
    {
-      sysFlags<UINT>::Clear(&settings, IDP_AP_DRAW_ISOTROPIC);
+      WBFL::System::Flags<UINT>::Clear(&settings, IDP_AP_DRAW_ISOTROPIC);
    }
    pDoc->SetAlignmentEditorSettings(settings);
 }
@@ -436,11 +436,11 @@ void CBridgeModelViewChildFrame::ShowRwCrossSection(bool bShow)
    UINT settings = pDoc->GetBridgeEditorSettings();
    if (bShow)
    {
-      sysFlags<UINT>::Set(&settings, IDB_CS_DRAW_RW_CS);
+      WBFL::System::Flags<UINT>::Set(&settings, IDB_CS_DRAW_RW_CS);
    }
    else
    {
-      sysFlags<UINT>::Clear(&settings, IDB_CS_DRAW_RW_CS);
+      WBFL::System::Flags<UINT>::Clear(&settings, IDB_CS_DRAW_RW_CS);
    }
    pDoc->SetBridgeEditorSettings(settings);
 }
@@ -1048,13 +1048,13 @@ void CBridgeModelViewChildFrame::OnBoundaryCondition(UINT nIDC)
       EAFGetBroker(&pBroker);
 
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-      txnEditBoundaryConditions* pTxn;
+      std::unique_ptr<txnEditBoundaryConditions> pTxn;
 
       const CPierData2* pPier = pIBridgeDesc->GetPier(pierIdx);
       if ( pPier->IsBoundaryPier() )
       {
          pgsTypes::BoundaryConditionType oldConnectionType = pPier->GetBoundaryConditionType();
-         pTxn = new txnEditBoundaryConditions(pierIdx,oldConnectionType,newBoundaryConditionType);
+         pTxn = std::make_unique<txnEditBoundaryConditions>(pierIdx,oldConnectionType,newBoundaryConditionType);
       }
       else
       {
@@ -1078,9 +1078,9 @@ void CBridgeModelViewChildFrame::OnBoundaryCondition(UINT nIDC)
             newClosureEventIdx = GetDefaultCastClosureJointEvent(pIBridgeDesc, pGroup);
          }
 
-         pTxn = new txnEditBoundaryConditions(pierIdx,oldConnectionType,oldClosureEventIdx,newSegmentConnectionType,newClosureEventIdx);
+         pTxn = std::make_unique<txnEditBoundaryConditions>(pierIdx,oldConnectionType,oldClosureEventIdx,newSegmentConnectionType,newClosureEventIdx);
       }
-      txnTxnManager::GetInstance()->Execute(pTxn);
+      CEAFTxnManager::GetInstance()->Execute(std::move(pTxn));
    }
 
    SupportIndexType tsIdx;
@@ -1098,7 +1098,6 @@ void CBridgeModelViewChildFrame::OnBoundaryCondition(UINT nIDC)
       EAFGetBroker(&pBroker);
 
       GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
-      txnEditBoundaryConditions* pTxn;
 
       const CTemporarySupportData* pTS = pIBridgeDesc->GetTemporarySupport(tsIdx);
       pgsTypes::TemporarySupportType supportType = pTS->GetSupportType();
@@ -1122,8 +1121,8 @@ void CBridgeModelViewChildFrame::OnBoundaryCondition(UINT nIDC)
          newClosureEventIdx = GetDefaultCastClosureJointEvent(pIBridgeDesc, pGroup);
       }
 
-      pTxn = new txnEditBoundaryConditions(tsIdx, supportType, oldConnectionType, oldClosureEventIdx, supportType, newConnectionType, newClosureEventIdx);
-      txnTxnManager::GetInstance()->Execute(pTxn);
+      std::unique_ptr<txnEditBoundaryConditions> pTxn(std::make_unique<txnEditBoundaryConditions>(tsIdx, supportType, oldConnectionType, oldClosureEventIdx, supportType, newConnectionType, newClosureEventIdx));
+      CEAFTxnManager::GetInstance()->Execute(std::move(pTxn));
    }
 }
 
@@ -1205,13 +1204,13 @@ void CBridgeModelViewChildFrame::OnTemporarySupportType(UINT nIDC)
       GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
       const CTemporarySupportData* pTS = pIBridgeDesc->GetTemporarySupport(tsIdx);
 
-      txnEditBoundaryConditions* pTxn;
+      std::unique_ptr<txnEditBoundaryConditions> pTxn;
       pgsTypes::TemporarySupportType oldSupportType = pTS->GetSupportType();
       pgsTypes::TempSupportSegmentConnectionType oldConnectionType = pTS->GetConnectionType();
       if (oldConnectionType == pgsTypes::tsctClosureJoint)
       {
          // if there is a closure joint we can toggle between erection tower and strong back
-         pTxn = new txnEditBoundaryConditions(tsIdx, oldSupportType, newSupportType);
+         pTxn = std::make_unique<txnEditBoundaryConditions>(tsIdx, oldSupportType, newSupportType);
       }
       else
       {
@@ -1242,9 +1241,9 @@ void CBridgeModelViewChildFrame::OnTemporarySupportType(UINT nIDC)
             newClosureEventIdx = GetDefaultCastClosureJointEvent(pIBridgeDesc, pGroup);
          }
 
-         pTxn = new txnEditBoundaryConditions(tsIdx, oldSupportType, oldConnectionType, oldClosureEventIdx, newSupportType, newConnectionType, newClosureEventIdx);
+         pTxn = std::make_unique<txnEditBoundaryConditions>(tsIdx, oldSupportType, oldConnectionType, oldClosureEventIdx, newSupportType, newConnectionType, newClosureEventIdx);
       }
-      txnTxnManager::GetInstance()->Execute(pTxn);
+      CEAFTxnManager::GetInstance()->Execute(std::move(pTxn));
    }
 }
 
@@ -1384,24 +1383,24 @@ void CBridgeModelViewChildFrame::OnUpdateNorth(CCmdUI* pCmdUI)
  
    UINT bridge_settings = pDoc->GetBridgeEditorSettings();
    UINT alignment_settings = pDoc->GetAlignmentEditorSettings();
-   pCmdUI->SetCheck(sysFlags<UINT>::IsSet(bridge_settings,IDB_PV_NORTH_UP) || sysFlags<UINT>::IsSet(alignment_settings, IDA_AP_NORTH_UP)  ? BST_CHECKED : BST_UNCHECKED);
+   pCmdUI->SetCheck(WBFL::System::Flags<UINT>::IsSet(bridge_settings,IDB_PV_NORTH_UP) || WBFL::System::Flags<UINT>::IsSet(alignment_settings, IDA_AP_NORTH_UP)  ? BST_CHECKED : BST_UNCHECKED);
 }
 
 void CBridgeModelViewChildFrame::OnNorth()
 {
    CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
    UINT bridge_settings = pDoc->GetBridgeEditorSettings();
-   sysFlags<UINT>::Toggle(&bridge_settings, IDB_PV_NORTH_UP);
+   WBFL::System::Flags<UINT>::Toggle(&bridge_settings, IDB_PV_NORTH_UP);
    pDoc->SetBridgeEditorSettings(bridge_settings);
 
    UINT alignment_settings = pDoc->GetAlignmentEditorSettings();
-   if (sysFlags<UINT>::IsSet(bridge_settings, IDB_PV_NORTH_UP))
+   if (WBFL::System::Flags<UINT>::IsSet(bridge_settings, IDB_PV_NORTH_UP))
    {
-      sysFlags<UINT>::Set(&alignment_settings, IDA_AP_NORTH_UP);
+      WBFL::System::Flags<UINT>::Set(&alignment_settings, IDA_AP_NORTH_UP);
    }
    else
    {
-      sysFlags<UINT>::Clear(&alignment_settings, IDA_AP_NORTH_UP);
+      WBFL::System::Flags<UINT>::Clear(&alignment_settings, IDA_AP_NORTH_UP);
    }
    pDoc->SetAlignmentEditorSettings(alignment_settings);
 }
@@ -1413,7 +1412,7 @@ void CBridgeModelViewChildFrame::OnUpdateShowLabels(CCmdUI* pCmdUI)
    if (m_SettingsBar.GetCheckedRadioButton(IDC_BRIDGE, IDC_ALIGNMENT) == IDC_BRIDGE)
    {
       UINT settings = pDoc->GetBridgeEditorSettings();
-      pCmdUI->SetCheck(sysFlags<UINT>::IsSet(settings, IDB_PV_LABEL_PIERS) || sysFlags<UINT>::IsSet(settings, IDB_PV_LABEL_GIRDERS) || sysFlags<UINT>::IsSet(settings, IDB_PV_LABEL_BEARINGS) || sysFlags<UINT>::IsSet(settings, IDB_CS_LABEL_GIRDERS) ? BST_CHECKED : BST_UNCHECKED);
+      pCmdUI->SetCheck(WBFL::System::Flags<UINT>::IsSet(settings, IDB_PV_LABEL_PIERS) || WBFL::System::Flags<UINT>::IsSet(settings, IDB_PV_LABEL_GIRDERS) || WBFL::System::Flags<UINT>::IsSet(settings, IDB_PV_LABEL_BEARINGS) || WBFL::System::Flags<UINT>::IsSet(settings, IDB_CS_LABEL_GIRDERS) ? BST_CHECKED : BST_UNCHECKED);
       pCmdUI->Enable(TRUE);
    }
    else
@@ -1428,10 +1427,10 @@ void CBridgeModelViewChildFrame::OnShowLabels()
    if (m_SettingsBar.GetCheckedRadioButton(IDC_BRIDGE, IDC_ALIGNMENT) == IDC_BRIDGE)
    {
       UINT settings = pDoc->GetBridgeEditorSettings();
-      sysFlags<UINT>::Toggle(&settings, IDB_PV_LABEL_PIERS);
-      sysFlags<UINT>::Toggle(&settings, IDB_PV_LABEL_GIRDERS);
-      sysFlags<UINT>::Toggle(&settings, IDB_PV_LABEL_BEARINGS);
-      sysFlags<UINT>::Toggle(&settings, IDB_CS_LABEL_GIRDERS);
+      WBFL::System::Flags<UINT>::Toggle(&settings, IDB_PV_LABEL_PIERS);
+      WBFL::System::Flags<UINT>::Toggle(&settings, IDB_PV_LABEL_GIRDERS);
+      WBFL::System::Flags<UINT>::Toggle(&settings, IDB_PV_LABEL_BEARINGS);
+      WBFL::System::Flags<UINT>::Toggle(&settings, IDB_CS_LABEL_GIRDERS);
       pDoc->SetBridgeEditorSettings(settings);
    }
 }
@@ -1443,7 +1442,7 @@ void CBridgeModelViewChildFrame::OnUpdateDimensions(CCmdUI* pCmdUI)
    if (m_SettingsBar.GetCheckedRadioButton(IDC_BRIDGE, IDC_ALIGNMENT) == IDC_BRIDGE)
    {
       UINT settings = pDoc->GetBridgeEditorSettings();
-      pCmdUI->SetCheck(sysFlags<UINT>::IsSet(settings, IDB_CS_SHOW_DIMENSIONS) ? BST_CHECKED : BST_UNCHECKED);
+      pCmdUI->SetCheck(WBFL::System::Flags<UINT>::IsSet(settings, IDB_CS_SHOW_DIMENSIONS) ? BST_CHECKED : BST_UNCHECKED);
       pCmdUI->Enable(TRUE);
    }
    else
@@ -1458,7 +1457,7 @@ void CBridgeModelViewChildFrame::OnDimensions()
    if (m_SettingsBar.GetCheckedRadioButton(IDC_BRIDGE, IDC_ALIGNMENT) == IDC_BRIDGE)
    {
       UINT settings = pDoc->GetBridgeEditorSettings();
-      sysFlags<UINT>::Toggle(&settings, IDB_CS_SHOW_DIMENSIONS);
+      WBFL::System::Flags<UINT>::Toggle(&settings, IDB_CS_SHOW_DIMENSIONS);
       pDoc->SetBridgeEditorSettings(settings);
    }
 }
@@ -1474,7 +1473,7 @@ void CBridgeModelViewChildFrame::OnUpdateBridge(CCmdUI* pCmdUI)
    else
    {
       UINT settings = pDoc->GetAlignmentEditorSettings();
-      pCmdUI->SetCheck(sysFlags<UINT>::IsSet(settings, IDA_AP_DRAW_BRIDGE) || sysFlags<UINT>::IsSet(settings, IDP_AP_DRAW_BRIDGE) ? BST_CHECKED : BST_UNCHECKED);
+      pCmdUI->SetCheck(WBFL::System::Flags<UINT>::IsSet(settings, IDA_AP_DRAW_BRIDGE) || WBFL::System::Flags<UINT>::IsSet(settings, IDP_AP_DRAW_BRIDGE) ? BST_CHECKED : BST_UNCHECKED);
       pCmdUI->Enable(TRUE);
    }
 }
@@ -1485,8 +1484,8 @@ void CBridgeModelViewChildFrame::OnBridge()
    if (m_SettingsBar.GetCheckedRadioButton(IDC_BRIDGE, IDC_ALIGNMENT) == IDC_ALIGNMENT)
    {
       UINT settings = pDoc->GetAlignmentEditorSettings();
-      sysFlags<UINT>::Toggle(&settings, IDA_AP_DRAW_BRIDGE);
-      sysFlags<UINT>::Toggle(&settings, IDP_AP_DRAW_BRIDGE);
+      WBFL::System::Flags<UINT>::Toggle(&settings, IDA_AP_DRAW_BRIDGE);
+      WBFL::System::Flags<UINT>::Toggle(&settings, IDP_AP_DRAW_BRIDGE);
       pDoc->SetAlignmentEditorSettings(settings);
    }
 }
@@ -1497,7 +1496,7 @@ void CBridgeModelViewChildFrame::OnRwCrossSection()
    if (m_SettingsBar.GetCheckedRadioButton(IDC_BRIDGE, IDC_ALIGNMENT) == IDC_BRIDGE)
    {
       UINT settings = pDoc->GetBridgeEditorSettings();
-      sysFlags<UINT>::Toggle(&settings, IDB_CS_DRAW_RW_CS);
+      WBFL::System::Flags<UINT>::Toggle(&settings, IDB_CS_DRAW_RW_CS);
       pDoc->SetBridgeEditorSettings(settings);
    }
 }
@@ -1509,7 +1508,7 @@ void CBridgeModelViewChildFrame::OnUpdateRwCrossSection(CCmdUI* pCmdUI)
    if (m_SettingsBar.GetCheckedRadioButton(IDC_BRIDGE, IDC_ALIGNMENT) == IDC_BRIDGE)
    {
       UINT settings = pDoc->GetBridgeEditorSettings();
-      pCmdUI->SetCheck(sysFlags<UINT>::IsSet(settings, IDB_CS_DRAW_RW_CS) ? BST_CHECKED : BST_UNCHECKED);
+      pCmdUI->SetCheck(WBFL::System::Flags<UINT>::IsSet(settings, IDB_CS_DRAW_RW_CS) ? BST_CHECKED : BST_UNCHECKED);
       pCmdUI->Enable(TRUE);
    }
    else
@@ -1529,7 +1528,7 @@ void CBridgeModelViewChildFrame::OnUpdateSchematic(CCmdUI* pCmdUI)
    else
    {
       UINT settings = pDoc->GetAlignmentEditorSettings();
-      pCmdUI->SetCheck(sysFlags<UINT>::IsSet(settings, IDP_AP_DRAW_ISOTROPIC) ? BST_UNCHECKED : BST_CHECKED);
+      pCmdUI->SetCheck(WBFL::System::Flags<UINT>::IsSet(settings, IDP_AP_DRAW_ISOTROPIC) ? BST_UNCHECKED : BST_CHECKED);
       pCmdUI->Enable(TRUE);
    }
 }
@@ -1540,7 +1539,7 @@ void CBridgeModelViewChildFrame::OnSchematic()
    if (m_SettingsBar.GetCheckedRadioButton(IDC_BRIDGE, IDC_ALIGNMENT) == IDC_ALIGNMENT)
    {
       UINT settings = pDoc->GetAlignmentEditorSettings();
-      sysFlags<UINT>::Toggle(&settings, IDP_AP_DRAW_ISOTROPIC);
+      WBFL::System::Flags<UINT>::Toggle(&settings, IDP_AP_DRAW_ISOTROPIC);
       pDoc->SetAlignmentEditorSettings(settings);
    }
 }

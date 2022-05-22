@@ -448,7 +448,7 @@ bool CDoubleTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimen
    return true;
 }
 
-void CDoubleTeeFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
+void CDoubleTeeFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
 {
    pSave->BeginUnit(_T("DoubleTeeDimensions"),1.0);
    for ( const auto& name : m_DimNames)
@@ -459,7 +459,7 @@ void CDoubleTeeFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IB
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CDoubleTeeFactory::LoadSectionDimensions(sysIStructuredLoad* pLoad) const
+IBeamFactory::Dimensions CDoubleTeeFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
 {
    IBeamFactory::Dimensions dimensions;
 

@@ -130,7 +130,7 @@ public:
    #if defined _DEBUG
    //------------------------------------------------------------------------
    // Dumps the contents of the class to the given stream.
-   virtual void Dump(dbgDumpContext& os) const;
+   virtual void Dump(WBFL::Debug::LogContext& os) const;
    #endif // _DEBUG
 
 protected:
@@ -283,7 +283,7 @@ public:
    #if defined _DEBUG
    //------------------------------------------------------------------------
    // Dumps the contents of the object to the given dump context.
-   virtual void Dump(dbgDumpContext& os) const override;
+   virtual void Dump(WBFL::Debug::LogContext& os) const override;
    #endif // _DEBUG
 
 private:

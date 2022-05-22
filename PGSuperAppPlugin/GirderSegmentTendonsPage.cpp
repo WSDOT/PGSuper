@@ -232,11 +232,11 @@ void CGirderSegmentTendonsPage::UpdateStrandList(UINT nIDC)
    int cur_sel = pList->GetCurSel();
    Int64 cur_key = (Int64)pList->GetItemData( cur_sel );
    // remove the coating flag from the current key
-   sysFlags<Int64>::Clear(&cur_key,matPsStrand::None);
-   sysFlags<Int64>::Clear(&cur_key,matPsStrand::GritEpoxy);
+   WBFL::System::Flags<Int64>::Clear(&cur_key,matPsStrand::None);
+   WBFL::System::Flags<Int64>::Clear(&cur_key,matPsStrand::GritEpoxy);
 
    matPsStrand::Coating coating = (matPsStrand::None);
-   sysFlags<Int64>::Set(&cur_key,coating); // add the coating flag for the strand type we are changing to
+   WBFL::System::Flags<Int64>::Set(&cur_key,coating); // add the coating flag for the strand type we are changing to
 
    pList->ResetContent();
 

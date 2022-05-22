@@ -504,7 +504,7 @@ void CDrawBeamTool::DrawSegmentEndSupport(Float64 beamShift, IntervalIndexType i
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    if ((intervalIdx < releaseIntervalIdx)
       ||
-      (bIsHaulingInterval && intervalIdx != pIntervals->GetHaulSegmentInterval(segmentKey) && sysFlags<DWORD>::IsSet(m_dwStyle, DBS_HAULED_SEGMENTS_ONLY))
+      (bIsHaulingInterval && intervalIdx != pIntervals->GetHaulSegmentInterval(segmentKey) && WBFL::System::Flags<DWORD>::IsSet(m_dwStyle, DBS_HAULED_SEGMENTS_ONLY))
       )
    {
       // the prestress has not been released yet so the segment doesn't exist... so there aren't any supports

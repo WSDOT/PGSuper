@@ -386,9 +386,9 @@ bool pgsLongReinfShearArtifact::AssertValid() const
    return true;
 }
 
-void pgsLongReinfShearArtifact::Dump(dbgDumpContext& os) const
+void pgsLongReinfShearArtifact::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << "Dump for pgsLongReinfShearArtifact" << endl;
+   os << "Dump for pgsLongReinfShearArtifact" << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
@@ -617,9 +617,9 @@ bool pgsVerticalShearArtifact::AssertValid() const
    return true;
 }
 
-void pgsVerticalShearArtifact::Dump(dbgDumpContext& os) const
+void pgsVerticalShearArtifact::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << "Dump for pgsVerticalShearArtifact" << endl;
+   os << "Dump for pgsVerticalShearArtifact" << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
@@ -1144,9 +1144,9 @@ bool pgsHorizontalShearArtifact::AssertValid() const
    return true;
 }
 
-void pgsHorizontalShearArtifact::Dump(dbgDumpContext& os) const
+void pgsHorizontalShearArtifact::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << "Dump for pgsHorizontalShearArtifact" << endl;
+   os << "Dump for pgsHorizontalShearArtifact" << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
@@ -1310,9 +1310,9 @@ bool pgsStirrupDetailArtifact::AssertValid() const
    return true;
 }
 
-void pgsStirrupDetailArtifact::Dump(dbgDumpContext& os) const
+void pgsStirrupDetailArtifact::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << "Dump for pgsStirrupDetailArtifact" << endl;
+   os << "Dump for pgsStirrupDetailArtifact" << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
@@ -1488,9 +1488,9 @@ bool pgsStirrupCheckAtPoisArtifact::AssertValid() const
    return true;
 }
 
-void pgsStirrupCheckAtPoisArtifact::Dump(dbgDumpContext& os) const
+void pgsStirrupCheckAtPoisArtifact::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << "Dump for pgsStirrupCheckAtPoisArtifact" << endl;
+   os << "Dump for pgsStirrupCheckAtPoisArtifact" << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 

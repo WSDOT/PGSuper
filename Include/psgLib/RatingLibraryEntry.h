@@ -34,7 +34,7 @@ class pgsLibraryEntryDifferenceItem;
 class CRatingDialog;
 class RatingLibraryEntry;
 class RatingLibraryEntryObserver;
-PSGLIBTPL sysSubjectT<RatingLibraryEntryObserver, RatingLibraryEntry>;
+PSGLIBTPL WBFL::System::SubjectT<RatingLibraryEntryObserver, RatingLibraryEntry>;
 
 // Live Load, Load Factor Model before LRFR2013
 class PSGLIBCLASS CLiveLoadFactorModel
@@ -77,11 +77,11 @@ public:
 
    //------------------------------------------------------------------------
    // Save to structured storage
-   bool SaveMe(sysIStructuredSave* pSave);
+   bool SaveMe(WBFL::System::IStructuredSave* pSave);
 
    //------------------------------------------------------------------------
    // Load from structured storage
-   bool LoadMe(sysIStructuredLoad* pLoad);
+   bool LoadMe(WBFL::System::IStructuredLoad* pLoad);
 
 private:
    Float64 m_Wlower, m_Wupper; // vehicle weight boundaries
@@ -139,11 +139,11 @@ public:
 
    //------------------------------------------------------------------------
    // Save to structured storage
-   bool SaveMe(sysIStructuredSave* pSave);
+   bool SaveMe(WBFL::System::IStructuredSave* pSave);
 
    //------------------------------------------------------------------------
    // Load from structured storage
-   bool LoadMe(sysIStructuredLoad* pLoad);
+   bool LoadMe(WBFL::System::IStructuredLoad* pLoad);
 
 private:
    Float64 m_PWRlower, m_PWRupper; // permit weight ratiot boundaries
@@ -176,7 +176,7 @@ public:
 
    // called by our subject to let us now he's changed, along with an optional
    // hint
-   virtual void Update(RatingLibraryEntry* pSubject, Int32 hint)=0;
+   virtual void Update(RatingLibraryEntry& subject, Int32 hint)=0;
 };
 
 
@@ -196,7 +196,7 @@ LOG
 *****************************************************************************/
 
 class PSGLIBCLASS RatingLibraryEntry : public libLibraryEntry, public ISupportIcon,
-       public sysSubjectT<RatingLibraryEntryObserver, RatingLibraryEntry>
+       public WBFL::System::SubjectT<RatingLibraryEntryObserver, RatingLibraryEntry>
 {
    // the dialog is our friend.
    friend CRatingDialog;
@@ -228,11 +228,11 @@ public:
 
    //------------------------------------------------------------------------
    // Save to structured storage
-   virtual bool SaveMe(sysIStructuredSave* pSave);
+   virtual bool SaveMe(WBFL::System::IStructuredSave* pSave);
 
    //------------------------------------------------------------------------
    // Load from structured storage
-   virtual bool LoadMe(sysIStructuredLoad* pLoad);
+   virtual bool LoadMe(WBFL::System::IStructuredLoad* pLoad);
 
    // Compares this library entry with rOther. Returns true if the entries are the same.
    // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items

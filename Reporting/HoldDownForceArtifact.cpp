@@ -195,14 +195,14 @@ bool CHoldDownForceCheck::AssertValid() const
    return true;
 }
 
-void CHoldDownForceCheck::Dump(dbgDumpContext& os) const
+void CHoldDownForceCheck::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CHoldDownForceCheck") << endl;
+   os << _T("Dump for CHoldDownForceCheck") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CHoldDownForceCheck::TestMe(dbgLog& rlog)
+bool CHoldDownForceCheck::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CHoldDownForceCheck");
 

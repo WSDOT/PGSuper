@@ -193,14 +193,14 @@ bool CUserAxialTable::AssertValid() const
    return true;
 }
 
-void CUserAxialTable::Dump(dbgDumpContext& os) const
+void CUserAxialTable::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CUserAxialTable") << endl;
+   os << _T("Dump for CUserAxialTable") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CUserAxialTable::TestMe(dbgLog& rlog)
+bool CUserAxialTable::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CUserAxialTable");
 

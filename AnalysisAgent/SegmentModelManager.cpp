@@ -129,12 +129,12 @@ Float64 CSegmentModelManager::GetAxial(IntervalIndexType intervalIdx,pgsTypes::P
    return axial.front();
 }
 
-sysSectionValue CSegmentModelManager::GetShear(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi,ResultsType resultsType) const
+WBFL::System::SectionValue CSegmentModelManager::GetShear(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi,ResultsType resultsType) const
 {
    PoiList vPoi;
    vPoi.push_back(poi);
 
-   std::vector<sysSectionValue> shears = GetShear(intervalIdx,pfType,vPoi,resultsType);
+   std::vector<WBFL::System::SectionValue> shears = GetShear(intervalIdx,pfType,vPoi,resultsType);
    ATLASSERT(shears.size() == 1);
 
    return shears.front();
@@ -263,7 +263,7 @@ Float64 CSegmentModelManager::GetReaction(IntervalIndexType intervalIdx,pgsTypes
 
 std::vector<Float64> CSegmentModelManager::GetAxial(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const PoiList& vPoi,ResultsType resultsType) const
 {
-   std::vector<sysSectionValue> vFx,vFy,vMz;
+   std::vector<WBFL::System::SectionValue> vFx,vFy,vMz;
    std::vector<Float64> vDx,vDy,vRz;
 
    if ( pfType == pgsTypes::pftPretension )
@@ -278,13 +278,13 @@ std::vector<Float64> CSegmentModelManager::GetAxial(IntervalIndexType intervalId
 
    std::vector<Float64> axial;
    axial.reserve(vPoi.size());
-   std::transform(std::cbegin(vPoi), std::cend(vPoi), std::cbegin(vFx), std::back_inserter(axial), [](const pgsPointOfInterest& poi, const sysSectionValue& fx) {return (IsZero(poi.GetDistFromStart()) ? -fx.Right() : fx.Left());});
+   std::transform(std::cbegin(vPoi), std::cend(vPoi), std::cbegin(vFx), std::back_inserter(axial), [](const pgsPointOfInterest& poi, const WBFL::System::SectionValue& fx) {return (IsZero(poi.GetDistFromStart()) ? -fx.Right() : fx.Left());});
    return axial;
 }
 
 std::vector<Float64> CSegmentModelManager::GetMoment(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const PoiList& vPoi,ResultsType resultsType) const
 {
-   std::vector<sysSectionValue> vFx,vFy,vMz;
+   std::vector<WBFL::System::SectionValue> vFx,vFy,vMz;
    std::vector<Float64> vDx,vDy,vRz;
 
    if ( pfType == pgsTypes::pftPretension )
@@ -299,16 +299,16 @@ std::vector<Float64> CSegmentModelManager::GetMoment(IntervalIndexType intervalI
 
    std::vector<Float64> moments;
    moments.reserve(vPoi.size());
-   std::transform(std::cbegin(vPoi), std::cend(vPoi), std::cbegin(vMz), std::back_inserter(moments), [](const pgsPointOfInterest& poi, const sysSectionValue& mz) {return (IsZero(poi.GetDistFromStart()) ? -mz.Right() : mz.Left());});
+   std::transform(std::cbegin(vPoi), std::cend(vPoi), std::cbegin(vMz), std::back_inserter(moments), [](const pgsPointOfInterest& poi, const WBFL::System::SectionValue& mz) {return (IsZero(poi.GetDistFromStart()) ? -mz.Right() : mz.Left());});
 
    return moments;
 }
 
-std::vector<sysSectionValue> CSegmentModelManager::GetShear(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const PoiList& vPoi,ResultsType resultsType) const
+std::vector<WBFL::System::SectionValue> CSegmentModelManager::GetShear(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const PoiList& vPoi,ResultsType resultsType) const
 {
    // NOTE: shear due to prestressing is a little funny. It is sufficient to use the shear from the
    // equivalent loading.
-   std::vector<sysSectionValue> vFx,vFy,vMz;
+   std::vector<WBFL::System::SectionValue> vFx,vFy,vMz;
    std::vector<Float64> vDx,vDy,vRz;
 
    if ( pfType == pgsTypes::pftPretension )
@@ -330,7 +330,7 @@ std::vector<Float64> CSegmentModelManager::GetDeflection(IntervalIndexType inter
    // If we need to be more precise, we can use the method of virtual work and integrate the
    // M/EI diagram for the prestress moment based on P*e.
 
-   std::vector<sysSectionValue> vFx,vFy,vMz;
+   std::vector<WBFL::System::SectionValue> vFx,vFy,vMz;
    std::vector<Float64> vDx,vDy,vRz;
    if ( pfType == pgsTypes::pftPretension || pfType == pgsTypes::pftPostTensioning)
    {
@@ -612,7 +612,7 @@ std::vector<Float64> CSegmentModelManager::GetPretensionXDeflection(IntervalInde
    // M/EI diagram for the prestress moment based on P*e.
 
    std::vector<Float64> result;
-   std::vector<sysSectionValue> vFx, vFy, vMz;
+   std::vector<WBFL::System::SectionValue> vFx, vFy, vMz;
    std::vector<Float64> vDx, vDy, vRz;
    // For elastic analysis we assume that the deflection due to the pretension force does not
    // change with time. The only change in deflection that we account for is due to rigid body
@@ -775,7 +775,7 @@ std::vector<Float64> CSegmentModelManager::GetPretensionXDeflection(IntervalInde
 
 std::vector<Float64> CSegmentModelManager::GetRotation(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const PoiList& vPoi,ResultsType resultsType) const
 {
-   std::vector<sysSectionValue> vFx,vFy,vMz;
+   std::vector<WBFL::System::SectionValue> vFx,vFy,vMz;
    std::vector<Float64> vDx,vDy,vRz;
 
    if ( pfType == pgsTypes::pftPretension)
@@ -855,12 +855,12 @@ Float64 CSegmentModelManager::GetAxial(IntervalIndexType intervalIdx,LoadingComb
    return forces.front();
 }
 
-sysSectionValue CSegmentModelManager::GetShear(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const pgsPointOfInterest& poi,ResultsType resultsType) const
+WBFL::System::SectionValue CSegmentModelManager::GetShear(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const pgsPointOfInterest& poi,ResultsType resultsType) const
 {
    PoiList vPoi;
    vPoi.push_back(poi);
 
-   std::vector<sysSectionValue> shears = GetShear(intervalIdx,comboType,vPoi,resultsType);
+   std::vector<WBFL::System::SectionValue> shears = GetShear(intervalIdx,comboType,vPoi,resultsType);
    ATLASSERT(shears.size() == 1);
    return shears.front();
 }
@@ -1003,16 +1003,16 @@ std::vector<Float64> CSegmentModelManager::GetAxial(IntervalIndexType intervalId
    return vF;
 }
 
-std::vector<sysSectionValue> CSegmentModelManager::GetShear(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const PoiList& vPoi,ResultsType resultsType) const
+std::vector<WBFL::System::SectionValue> CSegmentModelManager::GetShear(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const PoiList& vPoi,ResultsType resultsType) const
 {
-   std::vector<sysSectionValue> vShear;
+   std::vector<WBFL::System::SectionValue> vShear;
 
    // before release, there aren't any results
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(vPoi.front().get().GetSegmentKey());
    if ( intervalIdx < releaseIntervalIdx )
    {
-      vShear.resize(vPoi.size(),sysSectionValue(0,0));
+      vShear.resize(vPoi.size(),WBFL::System::SectionValue(0,0));
       return vShear;
    }
 
@@ -1030,7 +1030,7 @@ std::vector<sysSectionValue> CSegmentModelManager::GetShear(IntervalIndexType in
       for ( auto iter = range.first; iter != range.second; iter++ )
       {
          const std::_tstring& strLoadingName(iter->second);
-         std::vector<sysSectionValue> vS = GetShear(intervalIdx,strLoadingName.c_str(),vPoi,resultsType);
+         std::vector<WBFL::System::SectionValue> vS = GetShear(intervalIdx,strLoadingName.c_str(),vPoi,resultsType);
          if ( vShear.size() == 0 )
          {
             vShear = vS;
@@ -1045,7 +1045,7 @@ std::vector<sysSectionValue> CSegmentModelManager::GetShear(IntervalIndexType in
    std::vector<pgsTypes::ProductForceType> pfTypes = CProductLoadMap::GetProductForces(m_pBroker,comboType);
    for( const auto& pfType : pfTypes)
    {
-      std::vector<sysSectionValue> vS = GetShear(intervalIdx,pfType,vPoi,resultsType);
+      std::vector<WBFL::System::SectionValue> vS = GetShear(intervalIdx,pfType,vPoi,resultsType);
       if ( vShear.size() == 0 )
       {
          vShear = vS;
@@ -1272,12 +1272,12 @@ void CSegmentModelManager::GetStress(IntervalIndexType intervalIdx,LoadingCombin
 }
 
 ////////////////////////////
-void CSegmentModelManager::GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const pgsPointOfInterest& poi,sysSectionValue* pMin,sysSectionValue* pMax) const
+void CSegmentModelManager::GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const pgsPointOfInterest& poi,WBFL::System::SectionValue* pMin,WBFL::System::SectionValue* pMax) const
 {
    PoiList vPoi;
    vPoi.push_back(poi);
 
-   std::vector<sysSectionValue> vMin, vMax;
+   std::vector<WBFL::System::SectionValue> vMin, vMax;
    GetShear(intervalIdx,ls,vPoi,&vMin,&vMax);
 
    ATLASSERT(vMin.size() == 1);
@@ -1358,9 +1358,9 @@ void CSegmentModelManager::GetAxial(IntervalIndexType intervalIdx,pgsTypes::Limi
    std::transform(forces.cbegin(), forces.cend(), std::back_inserter(*pMax), [&gDCMax](const auto& value) {return gDCMax*value;});
 }
 
-void CSegmentModelManager::GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const PoiList& vPoi,std::vector<sysSectionValue>* pMin,std::vector<sysSectionValue>* pMax) const
+void CSegmentModelManager::GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const PoiList& vPoi,std::vector<WBFL::System::SectionValue>* pMin,std::vector<WBFL::System::SectionValue>* pMax) const
 {
-   std::vector<sysSectionValue> shears = GetShear(intervalIdx,lcDC,vPoi,rtCumulative);
+   std::vector<WBFL::System::SectionValue> shears = GetShear(intervalIdx,lcDC,vPoi,rtCumulative);
 
    GET_IFACE(ILoadFactors,pILoadFactors);
    const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
@@ -1579,23 +1579,23 @@ std::vector<Float64> CSegmentModelManager::GetAxial(IntervalIndexType intervalId
    CSegmentModelData* pModelData = GetSegmentModel(vPoi.front().get().GetSegmentKey(),intervalIdx);
    LoadCaseIDType lcid = GetLoadCaseID(pModelData,strLoadingName);
 
-   std::vector<sysSectionValue> vFx, vFy, vMz;
+   std::vector<WBFL::System::SectionValue> vFx, vFy, vMz;
    std::vector<Float64> vDx, vDy, vRz;
    GetSectionResults(intervalIdx,lcid,vPoi,&vFx,&vFy,&vMz,&vDx,&vDy,&vRz);
 
    std::vector<Float64> results;
    results.reserve(vPoi.size());
-   std::transform(std::cbegin(vPoi), std::cend(vPoi), std::cbegin(vFx), std::back_inserter(results), [](const pgsPointOfInterest& poi,const sysSectionValue& Fx) {return IsZero(poi.GetDistFromStart()) ? -Fx.Right() : Fx.Left();});
+   std::transform(std::cbegin(vPoi), std::cend(vPoi), std::cbegin(vFx), std::back_inserter(results), [](const pgsPointOfInterest& poi,const WBFL::System::SectionValue& Fx) {return IsZero(poi.GetDistFromStart()) ? -Fx.Right() : Fx.Left();});
    return results;
 }
 
-std::vector<sysSectionValue> CSegmentModelManager::GetShear(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const PoiList& vPoi,ResultsType resultsType) const
+std::vector<WBFL::System::SectionValue> CSegmentModelManager::GetShear(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const PoiList& vPoi,ResultsType resultsType) const
 {
    // Assuming that the loading ID sequence for all models is the same
    CSegmentModelData* pModelData = GetSegmentModel(vPoi.front().get().GetSegmentKey(),intervalIdx);
    LoadCaseIDType lcid = GetLoadCaseID(pModelData,strLoadingName);
 
-   std::vector<sysSectionValue> vFx, vFy, vMz;
+   std::vector<WBFL::System::SectionValue> vFx, vFy, vMz;
    std::vector<Float64> vDx, vDy, vRz;
    GetSectionResults(intervalIdx,lcid,vPoi,&vFx,&vFy,&vMz,&vDx,&vDy,&vRz);
 
@@ -1608,13 +1608,13 @@ std::vector<Float64> CSegmentModelManager::GetMoment(IntervalIndexType intervalI
    CSegmentModelData* pModelData = GetSegmentModel(vPoi.front().get().GetSegmentKey(),intervalIdx);
    LoadCaseIDType lcid = GetLoadCaseID(pModelData,strLoadingName);
 
-   std::vector<sysSectionValue> vFx, vFy, vMz;
+   std::vector<WBFL::System::SectionValue> vFx, vFy, vMz;
    std::vector<Float64> vDx, vDy, vRz;
    GetSectionResults(intervalIdx,lcid,vPoi,&vFx,&vFy,&vMz,&vDx,&vDy,&vRz);
 
    std::vector<Float64> results;
    results.reserve(vPoi.size());
-   std::transform(std::cbegin(vPoi), std::cend(vPoi), std::cbegin(vMz), std::back_inserter(results), [](const pgsPointOfInterest& poi, const sysSectionValue& Mz) {return IsZero(poi.GetDistFromStart()) ? -Mz.Right() : Mz.Left();});
+   std::transform(std::cbegin(vPoi), std::cend(vPoi), std::cbegin(vMz), std::back_inserter(results), [](const pgsPointOfInterest& poi, const WBFL::System::SectionValue& Mz) {return IsZero(poi.GetDistFromStart()) ? -Mz.Right() : Mz.Left();});
    return results;
 }
 
@@ -1624,7 +1624,7 @@ std::vector<Float64> CSegmentModelManager::GetDeflection(IntervalIndexType inter
    CSegmentModelData* pModelData = GetSegmentModel(vPoi.front().get().GetSegmentKey(),intervalIdx);
    LoadCaseIDType lcid = GetLoadCaseID(pModelData,strLoadingName);
 
-   std::vector<sysSectionValue> vFx, vFy, vMz;
+   std::vector<WBFL::System::SectionValue> vFx, vFy, vMz;
    std::vector<Float64> vDx, vDy, vRz;
    GetSectionResults(intervalIdx,lcid,vPoi,&vFx,&vFy,&vMz,&vDx,&vDy,&vRz);
 
@@ -1637,7 +1637,7 @@ std::vector<Float64> CSegmentModelManager::GetRotation(IntervalIndexType interva
    CSegmentModelData* pModelData = GetSegmentModel(vPoi.front().get().GetSegmentKey(),intervalIdx);
    LoadCaseIDType lcid = GetLoadCaseID(pModelData,strLoadingName);
 
-   std::vector<sysSectionValue> vFx, vFy, vMz;
+   std::vector<WBFL::System::SectionValue> vFx, vFy, vMz;
    std::vector<Float64> vDx, vDy, vRz;
    GetSectionResults(intervalIdx,lcid,vPoi,&vFx,&vFy,&vMz,&vDx,&vDy,&vRz);
 
@@ -2143,7 +2143,7 @@ CSegmentModelManager::LoadCombinationMap& CSegmentModelManager::GetLoadCombinati
    return found->second;
 }
 
-void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadCaseIDType lcid,const PoiList& vPoi,ResultsType resultsType,std::vector<sysSectionValue>* pvFx,std::vector<sysSectionValue>* pvFy,std::vector<sysSectionValue>* pvMz,std::vector<Float64>* pvDx,std::vector<Float64>* pvDy,std::vector<Float64>* pvRz) const
+void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadCaseIDType lcid,const PoiList& vPoi,ResultsType resultsType,std::vector<WBFL::System::SectionValue>* pvFx,std::vector<WBFL::System::SectionValue>* pvFy,std::vector<WBFL::System::SectionValue>* pvMz,std::vector<Float64>* pvDx,std::vector<Float64>* pvDy,std::vector<Float64>* pvRz) const
 {
 #if defined _DEBUG
    GET_IFACE(IIntervals,pIntervals);
@@ -2153,13 +2153,13 @@ void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadC
 
    if ( resultsType == rtIncremental )
    {
-      std::vector<sysSectionValue> fxPrev, fyPrev, mzPrev, fxThis, fyThis, mzThis;
+      std::vector<WBFL::System::SectionValue> fxPrev, fyPrev, mzPrev, fxThis, fyThis, mzThis;
       std::vector<Float64>         dxPrev, dyPrev, rzPrev, dxThis, dyThis, rzThis;
       if ( intervalIdx == 0 )
       {
-         fxPrev.resize(vPoi.size(),sysSectionValue(0.0,0.0));
-         fyPrev.resize(vPoi.size(),sysSectionValue(0.0,0.0));
-         mzPrev.resize(vPoi.size(),sysSectionValue(0.0,0.0));
+         fxPrev.resize(vPoi.size(),WBFL::System::SectionValue(0.0,0.0));
+         fyPrev.resize(vPoi.size(),WBFL::System::SectionValue(0.0,0.0));
+         mzPrev.resize(vPoi.size(),WBFL::System::SectionValue(0.0,0.0));
          dxPrev.resize(vPoi.size(),0.0);
          dyPrev.resize(vPoi.size(),0.0);
          rzPrev.resize(vPoi.size(),0.0);
@@ -2185,7 +2185,7 @@ void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadC
    }
 }
 
-void CSegmentModelManager::GetPrestressSectionResults(IntervalIndexType intervalIdx,const PoiList& vPoi,ResultsType resultsType,std::vector<sysSectionValue>* pvFx,std::vector<sysSectionValue>* pvFy,std::vector<sysSectionValue>* pvMz,std::vector<Float64>* pvDx,std::vector<Float64>* pvDy,std::vector<Float64>* pvRz) const
+void CSegmentModelManager::GetPrestressSectionResults(IntervalIndexType intervalIdx,const PoiList& vPoi,ResultsType resultsType,std::vector<WBFL::System::SectionValue>* pvFx,std::vector<WBFL::System::SectionValue>* pvFy,std::vector<WBFL::System::SectionValue>* pvMz,std::vector<Float64>* pvDx,std::vector<Float64>* pvDy,std::vector<Float64>* pvRz) const
 {
    // all requests for pretension results come to the segment model manager
    // however, the segment model manager needs the intervalIdx to be less then the erection interval
@@ -2195,13 +2195,13 @@ void CSegmentModelManager::GetPrestressSectionResults(IntervalIndexType interval
 
    if ( resultsType == rtIncremental )
    {
-      std::vector<sysSectionValue> fxPrev, fyPrev, mzPrev, fxThis, fyThis, mzThis;
+      std::vector<WBFL::System::SectionValue> fxPrev, fyPrev, mzPrev, fxThis, fyThis, mzThis;
       std::vector<Float64>         dxPrev, dyPrev, rzPrev, dxThis, dyThis, rzThis;
       if ( intervalIdx == 0 )
       {
-         fxPrev.resize(vPoi.size(),sysSectionValue(0.0,0.0));
-         fyPrev.resize(vPoi.size(),sysSectionValue(0.0,0.0));
-         mzPrev.resize(vPoi.size(),sysSectionValue(0.0,0.0));
+         fxPrev.resize(vPoi.size(),WBFL::System::SectionValue(0.0,0.0));
+         fyPrev.resize(vPoi.size(),WBFL::System::SectionValue(0.0,0.0));
+         mzPrev.resize(vPoi.size(),WBFL::System::SectionValue(0.0,0.0));
          dxPrev.resize(vPoi.size(),0.0);
          dyPrev.resize(vPoi.size(),0.0);
          rzPrev.resize(vPoi.size(),0.0);
@@ -2227,11 +2227,11 @@ void CSegmentModelManager::GetPrestressSectionResults(IntervalIndexType interval
    }
 }
 
-void CSegmentModelManager::GetPrestressSectionResults(IntervalIndexType intervalIdx,const PoiList& vPoi,std::vector<sysSectionValue>* pvFx,std::vector<sysSectionValue>* pvFy,std::vector<sysSectionValue>* pvMz,std::vector<Float64>* pvDx,std::vector<Float64>* pvDy,std::vector<Float64>* pvRz) const
+void CSegmentModelManager::GetPrestressSectionResults(IntervalIndexType intervalIdx,const PoiList& vPoi,std::vector<WBFL::System::SectionValue>* pvFx,std::vector<WBFL::System::SectionValue>* pvFy,std::vector<WBFL::System::SectionValue>* pvMz,std::vector<Float64>* pvDx,std::vector<Float64>* pvDy,std::vector<Float64>* pvRz) const
 {
-   pvFx->resize(vPoi.size(),sysSectionValue(0,0));
-   pvFy->resize(vPoi.size(),sysSectionValue(0,0));
-   pvMz->resize(vPoi.size(),sysSectionValue(0,0));
+   pvFx->resize(vPoi.size(),WBFL::System::SectionValue(0,0));
+   pvFy->resize(vPoi.size(),WBFL::System::SectionValue(0,0));
+   pvMz->resize(vPoi.size(),WBFL::System::SectionValue(0,0));
    pvDx->resize(vPoi.size(),0.0);
    pvDy->resize(vPoi.size(),0.0);
    pvRz->resize(vPoi.size(),0.0);
@@ -2242,7 +2242,7 @@ void CSegmentModelManager::GetPrestressSectionResults(IntervalIndexType interval
       LoadCaseIDType lcidMx, lcidMy;
       GetLoadCaseID(strandType,&lcidMx,&lcidMy);
 
-      std::vector<sysSectionValue> fx, fy, mz;
+      std::vector<WBFL::System::SectionValue> fx, fy, mz;
       std::vector<Float64> dx, dy, rz;
       GetSectionResults(intervalIdx,lcidMx,vPoi,&fx,&fy,&mz,&dx,&dy,&rz);
       
@@ -2256,7 +2256,7 @@ void CSegmentModelManager::GetPrestressSectionResults(IntervalIndexType interval
    }
 }
 
-void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadCaseIDType lcid,const PoiList& vPoi,std::vector<sysSectionValue>* pvFx,std::vector<sysSectionValue>* pvFy,std::vector<sysSectionValue>* pvMz,std::vector<Float64>* pvDx,std::vector<Float64>* pvDy,std::vector<Float64>* pvRz) const
+void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadCaseIDType lcid,const PoiList& vPoi,std::vector<WBFL::System::SectionValue>* pvFx,std::vector<WBFL::System::SectionValue>* pvFy,std::vector<WBFL::System::SectionValue>* pvMz,std::vector<Float64>* pvDx,std::vector<Float64>* pvDy,std::vector<Float64>* pvRz) const
 {
    GET_IFACE(IIntervals, pIntervals);
 
@@ -2302,7 +2302,7 @@ void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadC
          // interval is before release (so no pretension effects)
          // or interval is before post-tension and the request is for PT results (so no PT effects)
          // or the POI is off the segment
-         sysSectionValue fx(0,0), fy(0,0), mz(0,0);
+         WBFL::System::SectionValue fx(0,0), fy(0,0), mz(0,0);
          Float64 dx(0), dy(0), rz(0);
 
          pvFx->push_back(fx);
@@ -2337,9 +2337,9 @@ void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadC
 
          ar = results->ComputePOIForces(lcid,poi_id.second,mftRight,lotGlobal,&FxRight,&FyRight,&MzRight);
 
-         sysSectionValue fx(FxLeft,FxRight);
-         sysSectionValue fy(FyLeft,FyRight);
-         sysSectionValue mz(MzLeft,MzRight);
+         WBFL::System::SectionValue fx(FxLeft,FxRight);
+         WBFL::System::SectionValue fy(FyLeft,FyRight);
+         WBFL::System::SectionValue mz(MzLeft,MzRight);
 
          pvFx->push_back(fx);
          pvFy->push_back(fy);
@@ -2575,12 +2575,12 @@ Float64 CSegmentModelManager::GetReaction(IntervalIndexType intervalIdx,LoadCase
    return fy;
 }
 
-void CSegmentModelManager::ZeroResults(const PoiList& vPoi,std::vector<sysSectionValue>* pvFx,std::vector<sysSectionValue>* pvFy,std::vector<sysSectionValue>* pvMz,std::vector<Float64>* pvDx,std::vector<Float64>* pvDy,std::vector<Float64>* pvRz) const
+void CSegmentModelManager::ZeroResults(const PoiList& vPoi,std::vector<WBFL::System::SectionValue>* pvFx,std::vector<WBFL::System::SectionValue>* pvFy,std::vector<WBFL::System::SectionValue>* pvMz,std::vector<Float64>* pvDx,std::vector<Float64>* pvDy,std::vector<Float64>* pvRz) const
 {
    IndexType size = vPoi.size();
-   pvFx->resize(size,sysSectionValue(0,0));
-   pvFy->resize(size,sysSectionValue(0,0));
-   pvMz->resize(size,sysSectionValue(0,0));
+   pvFx->resize(size,WBFL::System::SectionValue(0,0));
+   pvFy->resize(size,WBFL::System::SectionValue(0,0));
+   pvMz->resize(size,WBFL::System::SectionValue(0,0));
 
    pvDx->resize(size,0.0);
    pvDy->resize(size,0.0);

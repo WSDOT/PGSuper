@@ -158,7 +158,7 @@ bool CTestAgentImp::RunTest(long type,
                             const std::_tstring& outputFileName,
                             const std::_tstring& poiFileName)
 {
-   sysAutoVariable<bool> bIsTesting(&m_bIsTesting, true);
+   WBFL::System::AutoVariable<bool> bIsTesting(&m_bIsTesting, true);
 
    // use run unit tests with numeric labeling
    pgsAutoGirderLabel auto_label;
@@ -375,7 +375,7 @@ bool CTestAgentImp::RunTestEx(long type, const std::vector<SpanGirderHashType>& 
                             const std::_tstring& outputFileName,
                             const std::_tstring& poiFileName)
 {
-   sysAutoVariable<bool> bIsTesting(&m_bIsTesting, true);
+   WBFL::System::AutoVariable<bool> bIsTesting(&m_bIsTesting, true);
    pgsAutoGirderLabel auto_label;
    pgsAutoPierLabel auto_plabel;
 
@@ -877,14 +877,14 @@ bool CTestAgentImp::RunHL93Test(std::_tofstream& resultsFile, std::_tofstream& p
       poiFile<<locn<<_T(", ")<< bridgeId<< _T(", 7, 1, ")<<loc<<_T(", 2, -1, -1, -1,  0,  0,  0, -1,  0,  0,  0,  0,  0,  0,  0")<<std::endl;
 
       Float64         pm, nm;
-      sysSectionValue sps, sns;
+      WBFL::System::SectionValue sps, sns;
       Float64         pd, nd;
       // get live load results
 
       if ( analysisType == pgsTypes::Envelope )
       {
          Float64 dummy;
-         sysSectionValue svDummy;
+         WBFL::System::SectionValue svDummy;
 
          pForce->GetLiveLoadMoment(liveLoadIntervalIdx, pgsTypes::lltDesign, rpoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &dummy, &pm);
          pForce->GetLiveLoadMoment(liveLoadIntervalIdx, pgsTypes::lltDesign, rpoi, pgsTypes::MinSimpleContinuousEnvelope, true, false, &nm, &dummy);
@@ -1449,7 +1449,7 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34000, ")<<loc<<_T(", ")<< QUIET(WBFL::Units::ConvertFromSysUnits(max, WBFL::Units::Measure::NewtonMillimeter)) <<_T(", 8, ")<< SEGMENT(segmentKey) <<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34001, ")<<loc<<_T(", ")<< QUIET(WBFL::Units::ConvertFromSysUnits(min, WBFL::Units::Measure::NewtonMillimeter)) <<_T(", 8, ")<< SEGMENT(segmentKey) <<std::endl;
 
-         sysSectionValue smin, smax, svDummy;
+         WBFL::System::SectionValue smin, smax, svDummy;
          pLsForces->GetShear( liveLoadIntervalIdx, pgsTypes::StrengthI, poi, pgsTypes::MaxSimpleContinuousEnvelope, &svDummy, &smax );
          pLsForces->GetShear( liveLoadIntervalIdx, pgsTypes::StrengthI, poi, pgsTypes::MinSimpleContinuousEnvelope, &smin, &svDummy );
          if ( poi.HasAttribute(POI_ERECTED_SEGMENT | POI_0L) )
@@ -1523,7 +1523,7 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34000, ")<<loc<<_T(", ")<< QUIET(WBFL::Units::ConvertFromSysUnits(max, WBFL::Units::Measure::NewtonMillimeter)) <<_T(", 8, ")<<SEGMENT(segmentKey)<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34001, ")<<loc<<_T(", ")<< QUIET(WBFL::Units::ConvertFromSysUnits(min, WBFL::Units::Measure::NewtonMillimeter)) <<_T(", 8, ")<<SEGMENT(segmentKey)<<std::endl;
 
-         sysSectionValue smin, smax;
+         WBFL::System::SectionValue smin, smax;
          pLsForces->GetShear( liveLoadIntervalIdx, pgsTypes::StrengthI, poi, bat, &smin, &smax );
          if ( poi.HasAttribute(POI_ERECTED_SEGMENT | POI_0L) )
          {
@@ -3038,7 +3038,7 @@ void CTestAgentImp::ProcessTestReport(const CTestCommandLineInfo& rCmdInfo)
             ::AfxMessageBox(msg);
          }
       }
-      catch(const sysXBase& e)
+      catch(const WBFL::System::XBase& e)
       {
          std::_tstring msg;
          e.GetErrorMessage(&msg);

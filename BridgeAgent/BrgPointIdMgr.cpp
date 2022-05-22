@@ -107,14 +107,14 @@ bool CBrgPointIdMgr::AssertValid() const
    return true;
 }
 
-void CBrgPointIdMgr::Dump(dbgDumpContext& os) const
+void CBrgPointIdMgr::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << "Dump for CBrgPointIdMgr" << endl;
+   os << "Dump for CBrgPointIdMgr" << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CBrgPointIdMgr::TestMe(dbgLog& rlog)
+bool CBrgPointIdMgr::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CBrgPointIdMgr");
 

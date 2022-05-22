@@ -188,14 +188,14 @@ bool CCastingYardMomentsTable::AssertValid() const
    return true;
 }
 
-void CCastingYardMomentsTable::Dump(dbgDumpContext& os) const
+void CCastingYardMomentsTable::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CCastingYardMomentsTable") << endl;
+   os << _T("Dump for CCastingYardMomentsTable") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CCastingYardMomentsTable::TestMe(dbgLog& rlog)
+bool CCastingYardMomentsTable::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CCastingYardMomentsTable");
 

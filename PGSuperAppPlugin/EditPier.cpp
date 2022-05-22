@@ -39,9 +39,9 @@ txnEditPier::~txnEditPier()
 {
 }
 
-txnTransaction* txnEditPier::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnEditPier::CreateClone() const
 {
-   return new txnEditPier(m_PierIdx,m_BridgeDescription[0],m_BridgeDescription[1]);
+   return std::make_unique<txnEditPier>(m_PierIdx,m_BridgeDescription[0],m_BridgeDescription[1]);
 }
 
 std::_tstring txnEditPier::Name() const

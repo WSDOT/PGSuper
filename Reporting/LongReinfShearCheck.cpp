@@ -395,14 +395,14 @@ bool CLongReinfShearCheck::AssertValid() const
    return true;
 }
 
-void CLongReinfShearCheck::Dump(dbgDumpContext& os) const
+void CLongReinfShearCheck::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CLongReinfShearCheck") << endl;
+   os << _T("Dump for CLongReinfShearCheck") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CLongReinfShearCheck::TestMe(dbgLog& rlog)
+bool CLongReinfShearCheck::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CLongReinfShearCheck");
 

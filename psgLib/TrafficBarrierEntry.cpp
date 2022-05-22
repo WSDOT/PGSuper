@@ -104,7 +104,7 @@ TrafficBarrierEntry& TrafficBarrierEntry::operator= (const TrafficBarrierEntry& 
 }
 
 //======================== OPERATIONS =======================================
-bool TrafficBarrierEntry::SaveMe(sysIStructuredSave* pSave)
+bool TrafficBarrierEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
 {
    pSave->BeginUnit(_T("TrafficBarrierEntry"), 7.0);
 
@@ -149,7 +149,7 @@ bool TrafficBarrierEntry::SaveMe(sysIStructuredSave* pSave)
    return false;
 }
 
-bool TrafficBarrierEntry::LoadMe(sysIStructuredLoad* pLoad)
+bool TrafficBarrierEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 {
    m_BarrierPoints->Clear();
 
@@ -753,16 +753,16 @@ bool TrafficBarrierEntry::AssertValid() const
    return libLibraryEntry::AssertValid();
 }
 
-void TrafficBarrierEntry::Dump(dbgDumpContext& os) const
+void TrafficBarrierEntry::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for TrafficBarrierEntry ")<< GetName() <<endl;
+   os << _T("Dump for TrafficBarrierEntry ")<< GetName() << WBFL::Debug::endl;
 
    libLibraryEntry::Dump( os );
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool TrafficBarrierEntry::TestMe(dbgLog& rlog)
+bool TrafficBarrierEntry::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("TrafficBarrierEntry");
 

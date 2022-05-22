@@ -23,22 +23,22 @@
 #ifndef INCLUDED_INSERTDELETESPAN_H_
 #define INCLUDED_INSERTDELETESPAN_H_
 
-#include <System\Transaction.h>
+#include <EAF\EAFTransaction.h>
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\PierData2.h>
 #include <PgsExt\GirderSpacing2.h>
 #include <IFace\Project.h>
 
-class txnInsertSpan : public txnTransaction
+class txnInsertSpan : public CEAFTransaction
 {
 public:
    txnInsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType face,Float64 spanLength,bool bCreateNewGroup,EventIndexType pierErectionEventIdx);
    virtual std::_tstring Name() const;
-   virtual txnTransaction* CreateClone() const;
+   virtual std::unique_ptr<CEAFTransaction>CreateClone() const;
    virtual bool Execute();
    virtual void Undo();
-   virtual bool IsUndoable();
-   virtual bool IsRepeatable();
+   virtual bool IsUndoable() const;
+   virtual bool IsRepeatable() const;
 
 private:
    PierIndexType m_RefPierIdx;
@@ -54,21 +54,21 @@ private:
    ConnectionLibraryEntry::EndDistanceMeasurementType m_EndDistMeasure[2];
 };
 
-class txnDeleteSpan : public txnTransaction
+class txnDeleteSpan : public CEAFTransaction
 {
 public:
    txnDeleteSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType face,pgsTypes::BoundaryConditionType boundaryCondition);
    txnDeleteSpan(PierIndexType refPierIdx, pgsTypes::PierFaceType face, pgsTypes::PierSegmentConnectionType segmentConnection, EventIndexType castClosureEventIdx);
+   txnDeleteSpan(const txnDeleteSpan& other);
    ~txnDeleteSpan();
    virtual std::_tstring Name() const;
-   virtual txnTransaction* CreateClone() const;
+   virtual std::unique_ptr<CEAFTransaction>CreateClone() const;
    virtual bool Execute();
    virtual void Undo();
-   virtual bool IsUndoable();
-   virtual bool IsRepeatable();
+   virtual bool IsUndoable() const;
+   virtual bool IsRepeatable() const;
 
 private:
-   txnDeleteSpan(const txnDeleteSpan& other);
    PierIndexType m_RefPierIdx;
    pgsTypes::PierFaceType m_PierFace;
    pgsTypes::BoundaryConditionType m_BoundaryCondition;

@@ -705,7 +705,7 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
 
       // create a graph for dv and 0.5d*dv*cot(theta)
       // create intercept lines as well since we are looping on poi.
-      LOG(endl<<_T("Critical Section Intercept graph"));
+      LOG(WBFL::Debug::endl<<_T("Critical Section Intercept graph"));
       LOG(_T("Location , Dv, Theta, 0.5*Dv*cotan(theta), Y"));
       for(const pgsPointOfInterest& poi : vPoi)
       {
@@ -766,7 +766,7 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
          LOG(poi.GetDistFromStart()<<_T(", ")<<csdp.Dv<<_T(", ")<<csdp.Theta<<_T(", ")<<csdp.CotanThetaDv05<<_T(", ")<<x);
       }
 
-      LOG(_T("End of intercept values")<<endl);
+      LOG(_T("End of intercept values")<< WBFL::Debug::endl);
 
       // now that the graphs are created, find the intsection of the unity line with the dv and 0.5dvcot(theta) lines
       // determine intersections
@@ -1482,7 +1482,7 @@ Float64 CEngAgentImp::GetVertHarpedStrandForce(const pgsPointOfInterest& poi,Int
    pgsTypes::BridgeAnalysisType batMin = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
 
    GET_IFACE(ILimitStateForces,pLsForces);
-   sysSectionValue Vmin, Vmax, dummy;
+   WBFL::System::SectionValue Vmin, Vmax, dummy;
    pLsForces->GetShear(intervalIdx,pgsTypes::StrengthI,poi,batMax,&dummy,&Vmax);
    pLsForces->GetShear(intervalIdx,pgsTypes::StrengthI,poi,batMin,&Vmin,&dummy);
 
@@ -2201,7 +2201,7 @@ Float64 CEngAgentImp::GetGirderTendonVerticalForce(const pgsPointOfInterest& poi
    pgsTypes::BridgeAnalysisType batMin = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
 
    GET_IFACE(ILimitStateForces,pLsForces);
-   sysSectionValue Vmin, Vmax, dummy;
+   WBFL::System::SectionValue Vmin, Vmax, dummy;
    pLsForces->GetShear(intervalIdx,pgsTypes::StrengthI,poi,batMax,&dummy,&Vmax);
    pLsForces->GetShear(intervalIdx,pgsTypes::StrengthI,poi,batMin,&Vmin,&dummy);
 
@@ -2275,7 +2275,7 @@ Float64 CEngAgentImp::GetSegmentTendonVerticalForce(const pgsPointOfInterest& po
    pgsTypes::BridgeAnalysisType batMin = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
 
    GET_IFACE(ILimitStateForces, pLsForces);
-   sysSectionValue Vmin, Vmax, dummy;
+   WBFL::System::SectionValue Vmin, Vmax, dummy;
    pLsForces->GetShear(intervalIdx, pgsTypes::StrengthI, poi, batMax, &dummy, &Vmax);
    pLsForces->GetShear(intervalIdx, pgsTypes::StrengthI, poi, batMin, &Vmin, &dummy);
 
@@ -3140,7 +3140,7 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
    else
    {
       rptRcScalar scalar;
-      scalar.SetFormat( sysNumericFormatTool::Fixed );
+      scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Fixed );
       scalar.SetWidth(6);
       scalar.SetPrecision(3);
       scalar.SetTolerance(1.0e-6);

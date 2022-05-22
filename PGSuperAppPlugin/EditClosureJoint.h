@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <System\Transaction.h>
+#include <EAF\EAFTransaction.h>
 #include <PgsExt\ClosureJointData.h>
 #include <PgsExt\TimelineManager.h>
 
@@ -41,7 +41,7 @@ struct txnEditClosureJointData
    CTimelineManager m_TimelineMgr;
 };
 
-class txnEditClosureJoint : public txnTransaction
+class txnEditClosureJoint : public CEAFTransaction
 {
 public:
    txnEditClosureJoint(const CSegmentKey& closureKey,const txnEditClosureJointData& newData);
@@ -50,10 +50,10 @@ public:
 
    virtual bool Execute();
    virtual void Undo();
-   virtual txnTransaction* CreateClone() const;
+   virtual std::unique_ptr<CEAFTransaction> CreateClone() const;
    virtual std::_tstring Name() const;
-   virtual bool IsUndoable();
-   virtual bool IsRepeatable();
+   virtual bool IsUndoable() const;
+   virtual bool IsRepeatable() const;
 
 private:
    void SetClosureJointData(const CSegmentKey& closureKey,const txnEditClosureJointData& data);

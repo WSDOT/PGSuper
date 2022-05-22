@@ -31,9 +31,7 @@
 
 // PROJECT INCLUDES
 //
-#if !defined INCLUDED_SYSTEM_ISTRUCTUREDLOAD_H_
 #include <System\IStructuredLoad.h>
-#endif
 
 // LOCAL INCLUDES
 //
@@ -48,12 +46,12 @@
 CLASS 
    CStructuredLoad
 
-   Implements the sysIStructuredLoad interface with the IStructuredLoad
+   Implements the WBFL::System::IStructuredLoad interface with the IStructuredLoad
    interface.
 
 
 DESCRIPTION
-   Implements the sysIStructuredLoad interface with the IStructuredLoad
+   Implements the WBFL::System::IStructuredLoad interface with the IStructuredLoad
    interface.  
 
    
@@ -66,14 +64,14 @@ LOG
    rab : 08.20.1998 : Created file
 *****************************************************************************/
 
-class PSGLIBCLASS CStructuredLoad : public sysIStructuredLoad
+class PSGLIBCLASS CStructuredLoad : public WBFL::System::IStructuredLoad
 {
 public:
    // GROUP: LIFECYCLE
 
    //------------------------------------------------------------------------
    // Default constructor
-   CStructuredLoad(IStructuredLoad* pStrLoad);
+   CStructuredLoad(::IStructuredLoad* pStrLoad);
 
    //------------------------------------------------------------------------
    // Destructor
@@ -182,7 +180,7 @@ protected:
 
 private:
    // GROUP: DATA MEMBERS
-   IStructuredLoad* m_pStrLoad;
+   ::IStructuredLoad* m_pStrLoad;
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS
@@ -199,14 +197,14 @@ public:
 
    //------------------------------------------------------------------------
    // Dumps the contents of the object to the given dump context.
-   virtual void Dump(dbgDumpContext& os) const;
+   virtual void Dump(WBFL::Debug::LogContext& os) const;
    #endif // _DEBUG
 
    #if defined _UNITTEST
    //------------------------------------------------------------------------
    // Runs a self-diagnostic test.  Returns true if the test passed,
    // otherwise false.
-   static bool TestMe(dbgLog& rlog);
+   static bool TestMe(WBFL::Debug::Log& rlog);
    #endif // _UNITTEST
 };
 

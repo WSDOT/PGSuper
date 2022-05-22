@@ -496,7 +496,7 @@ void write_moment_data_table(IBroker* pBroker,
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
    rptRcScalar strain;
-   strain.SetFormat( sysNumericFormatTool::Automatic);
+   strain.SetFormat( WBFL::System::NumericFormatTool::Format::Automatic);
    strain.SetWidth(7);
    strain.SetPrecision(3);
 
@@ -742,7 +742,7 @@ void write_crack_moment_data_table(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptSqrtPressureValue, fr_coefficient, pDisplayUnits->GetTensionCoefficientUnit(), false );
    
    rptRcScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Automatic );
+   scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Automatic );
    scalar.SetWidth(6);
    scalar.SetPrecision(2);
    scalar.SetTolerance(1.0e-6);

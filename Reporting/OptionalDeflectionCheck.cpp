@@ -156,14 +156,14 @@ bool COptionalDeflectionCheck::AssertValid() const
    return true;
 }
 
-void COptionalDeflectionCheck::Dump(dbgDumpContext& os) const
+void COptionalDeflectionCheck::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for COptionalDeflectionCheck") << endl;
+   os << _T("Dump for COptionalDeflectionCheck") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool COptionalDeflectionCheck::TestMe(dbgLog& rlog)
+bool COptionalDeflectionCheck::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("COptionalDeflectionCheck");
 

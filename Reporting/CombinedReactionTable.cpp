@@ -1031,14 +1031,14 @@ bool CCombinedReactionTable::AssertValid() const
    return true;
 }
 
-void CCombinedReactionTable::Dump(dbgDumpContext& os) const
+void CCombinedReactionTable::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CCombinedReactionTable") << endl;
+   os << _T("Dump for CCombinedReactionTable") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CCombinedReactionTable::TestMe(dbgLog& rlog)
+bool CCombinedReactionTable::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CCombinedReactionTable");
 

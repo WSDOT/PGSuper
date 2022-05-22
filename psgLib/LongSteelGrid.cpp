@@ -575,7 +575,7 @@ BOOL CLongSteelGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
    if (nCol==7  && !s.IsEmpty( ))
 	{
       long l;
-      if (!sysTokenizer::ParseLong(s, &l))
+      if (!WBFL::System::Tokenizer::ParseLong(s, &l))
 		{
 			SetWarningText (_T("Value must be an integer"));
 			return FALSE;
@@ -585,7 +585,7 @@ BOOL CLongSteelGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 	else if ((nCol==2 || nCol==3 || nCol==5 || nCol==8)  && !s.IsEmpty( ))
 	{
       Float64 d;
-      if (!sysTokenizer::ParseDouble(s, &d))
+      if (!WBFL::System::Tokenizer::ParseDouble(s, &d))
 		{
 			SetWarningText (_T("Value must be a number"));
 			return FALSE;

@@ -671,11 +671,11 @@ void pgsPointOfInterest::RemoveAttributes(PoiAttributeType attrib)
    IndexType index = GetIndex(GetReference(attrib));
    if ( index == INVALID_INDEX )
    {
-      sysFlags<PoiAttributeType>::Clear(&m_Attributes,attrib);
+      WBFL::System::Flags<PoiAttributeType>::Clear(&m_Attributes,attrib);
    }
    else
    {
-      sysFlags<PoiAttributeType>::Clear(&m_RefAttributes[index],attrib);
+      WBFL::System::Flags<PoiAttributeType>::Clear(&m_RefAttributes[index],attrib);
    }
 
    UPDATE_ATTRIBUTES;
@@ -700,7 +700,7 @@ PoiAttributeType pgsPointOfInterest::GetReference(PoiAttributeType attrib)
    PoiAttributeType poiRef = 0;
    for ( IndexType index = 0; index < gs_nRefAttributes; index++ )
    {
-      if ( sysFlags<PoiAttributeType>::IsSet(attrib,gs_RefAttributes[index]) )
+      if ( WBFL::System::Flags<PoiAttributeType>::IsSet(attrib,gs_RefAttributes[index]) )
       {
          poiRef |= gs_RefAttributes[index];
       }
@@ -837,7 +837,7 @@ bool pgsPointOfInterest::HasAttribute(PoiAttributeType attribute) const
    IndexType index = GetIndex(targetReference);
    if ( index == INVALID_INDEX )
    {
-      return sysFlags<PoiAttributeType>::IsSet(m_Attributes,attribute);
+      return WBFL::System::Flags<PoiAttributeType>::IsSet(m_Attributes,attribute);
    }
    else
    {
@@ -851,9 +851,9 @@ bool pgsPointOfInterest::HasAttribute(PoiAttributeType attribute) const
       else
       {
          PoiAttributeType attrib    = attribute;
-         sysFlags<PoiAttributeType>::Clear(&refAttrib,targetReference);
-         sysFlags<PoiAttributeType>::Clear(&attrib,   targetReference);
-         return sysFlags<PoiAttributeType>::IsSet(refAttrib,attrib);
+         WBFL::System::Flags<PoiAttributeType>::Clear(&refAttrib,targetReference);
+         WBFL::System::Flags<PoiAttributeType>::Clear(&attrib,   targetReference);
+         return WBFL::System::Flags<PoiAttributeType>::IsSet(refAttrib,attrib);
       }
    }
 }
@@ -883,12 +883,12 @@ bool pgsPointOfInterest::AtSamePlace(const pgsPointOfInterest& other) const
 
 bool pgsPointOfInterest::IsHarpingPoint() const
 {
-   return sysFlags<PoiAttributeType>::IsSet( m_Attributes, POI_HARPINGPOINT );
+   return WBFL::System::Flags<PoiAttributeType>::IsSet( m_Attributes, POI_HARPINGPOINT );
 }
 
 bool pgsPointOfInterest::IsConcentratedLoad() const
 {
-   return sysFlags<PoiAttributeType>::IsSet( m_Attributes, POI_CONCLOAD );
+   return WBFL::System::Flags<PoiAttributeType>::IsSet( m_Attributes, POI_CONCLOAD );
 }
 
 bool pgsPointOfInterest::IsMidSpan(PoiAttributeType reference) const
@@ -900,18 +900,18 @@ bool pgsPointOfInterest::IsMidSpan(PoiAttributeType reference) const
    }
    else
    {
-      return sysFlags<PoiAttributeType>::IsSet( m_RefAttributes[index], POI_5L );
+      return WBFL::System::Flags<PoiAttributeType>::IsSet( m_RefAttributes[index], POI_5L );
    }
 }
 
 bool pgsPointOfInterest::IsAtH() const
 {
-   return sysFlags<PoiAttributeType>::IsSet( m_Attributes, POI_H );
+   return WBFL::System::Flags<PoiAttributeType>::IsSet( m_Attributes, POI_H );
 }
 
 bool pgsPointOfInterest::IsAt15H() const
 {
-   return sysFlags<PoiAttributeType>::IsSet( m_Attributes, POI_15H );
+   return WBFL::System::Flags<PoiAttributeType>::IsSet( m_Attributes, POI_15H );
 }
 
 Uint16 pgsPointOfInterest::IsTenthPoint(PoiAttributeType refAttribute) const
@@ -934,7 +934,7 @@ void pgsPointOfInterest::MakeTenthPoint(PoiAttributeType refAttribute,Uint16 ten
    ATLASSERT(index != INVALID_INDEX);
    ATLASSERT(tenthPoint <= 11);
    SetAttributeTenthPoint(tenthPoint,&m_RefAttributes[index]);
-   sysFlags<PoiAttributeType>::Set(&m_RefAttributes[index],refAttribute);
+   WBFL::System::Flags<PoiAttributeType>::Set(&m_RefAttributes[index],refAttribute);
 
    UPDATE_ATTRIBUTES;
    ASSERTVALID;
@@ -999,47 +999,47 @@ void pgsPointOfInterest::SetAttributeTenthPoint(Uint16 tenthPoint, PoiAttributeT
 
 Uint16 pgsPointOfInterest::GetAttributeTenthPoint(PoiAttributeType attribute)
 {
-   if ( sysFlags<PoiAttributeType>::IsSet(attribute,POI_0L) )
+   if ( WBFL::System::Flags<PoiAttributeType>::IsSet(attribute,POI_0L) )
    {
       return 1;
    }
-   else if (sysFlags<PoiAttributeType>::IsSet(attribute,POI_1L) )
+   else if (WBFL::System::Flags<PoiAttributeType>::IsSet(attribute,POI_1L) )
    {
       return 2;
    }
-   else if (sysFlags<PoiAttributeType>::IsSet(attribute,POI_2L) )
+   else if (WBFL::System::Flags<PoiAttributeType>::IsSet(attribute,POI_2L) )
    {
       return 3;
    }
-   else if (sysFlags<PoiAttributeType>::IsSet(attribute,POI_3L) )
+   else if (WBFL::System::Flags<PoiAttributeType>::IsSet(attribute,POI_3L) )
    {
       return 4;
    }
-   else if (sysFlags<PoiAttributeType>::IsSet(attribute,POI_4L) )
+   else if (WBFL::System::Flags<PoiAttributeType>::IsSet(attribute,POI_4L) )
    {
       return 5;
    }
-   else if (sysFlags<PoiAttributeType>::IsSet(attribute,POI_5L) )
+   else if (WBFL::System::Flags<PoiAttributeType>::IsSet(attribute,POI_5L) )
    {
       return 6;
    }
-   else if (sysFlags<PoiAttributeType>::IsSet(attribute,POI_6L) )
+   else if (WBFL::System::Flags<PoiAttributeType>::IsSet(attribute,POI_6L) )
    {
       return 7;
    }
-   else if (sysFlags<PoiAttributeType>::IsSet(attribute,POI_7L) )
+   else if (WBFL::System::Flags<PoiAttributeType>::IsSet(attribute,POI_7L) )
    {
       return 8;
    }
-   else if (sysFlags<PoiAttributeType>::IsSet(attribute,POI_8L) )
+   else if (WBFL::System::Flags<PoiAttributeType>::IsSet(attribute,POI_8L) )
    {
       return 9;
    }
-   else if (sysFlags<PoiAttributeType>::IsSet(attribute,POI_9L) )
+   else if (WBFL::System::Flags<PoiAttributeType>::IsSet(attribute,POI_9L) )
    {
       return 10;
    }
-   else if (sysFlags<PoiAttributeType>::IsSet(attribute,POI_10L) )
+   else if (WBFL::System::Flags<PoiAttributeType>::IsSet(attribute,POI_10L) )
    {
       return 11;
    }
@@ -1427,17 +1427,17 @@ void pgsPointOfInterest::UpdateAttributeString()
          PoiAttributeType refAttribute = gs_RefAttributes[i];
          std::_tstring strReference = gs_strRefAttributes[i];
 
-         if (sysFlags<PoiAttributeType>::IsSet(m_RefAttributes[i], POI_PICKPOINT))
+         if (WBFL::System::Flags<PoiAttributeType>::IsSet(m_RefAttributes[i], POI_PICKPOINT))
          {
             os << _T("(POI_PICKPOINT | ") << strReference << _T(") | ");
          }
 
-         if (sysFlags<PoiAttributeType>::IsSet(m_RefAttributes[i], POI_BUNKPOINT))
+         if (WBFL::System::Flags<PoiAttributeType>::IsSet(m_RefAttributes[i], POI_BUNKPOINT))
          {
             os << _T("(POI_BUNKPOINT | ") << strReference << _T(") | ");
          }
 
-         if (sysFlags<PoiAttributeType>::IsSet(m_RefAttributes[i], POI_CANTILEVER))
+         if (WBFL::System::Flags<PoiAttributeType>::IsSet(m_RefAttributes[i], POI_CANTILEVER))
          {
             os << _T("(POI_CANTILEVER | ") << strReference << _T(") | ");
          }
@@ -1509,137 +1509,137 @@ void pgsPointOfInterest::UpdateAttributeString()
       os << _T("(POI_15H | ");
    }
 
-   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_CRITSECTSHEAR1))
+   if (WBFL::System::Flags<PoiAttributeType>::IsSet(m_Attributes, POI_CRITSECTSHEAR1))
    {
       os << _T("POI_CRITSECTSHEAR1 | ");
    }
 
-   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_CRITSECTSHEAR2))
+   if (WBFL::System::Flags<PoiAttributeType>::IsSet(m_Attributes, POI_CRITSECTSHEAR2))
    {
       os << _T("POI_CRITSECTSHEAR2 | ");
    }
 
-   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_HARPINGPOINT))
+   if (WBFL::System::Flags<PoiAttributeType>::IsSet(m_Attributes, POI_HARPINGPOINT))
    {
       os << _T("POI_HARPINGPOINT | ");
    }
 
-   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_CONCLOAD))
+   if (WBFL::System::Flags<PoiAttributeType>::IsSet(m_Attributes, POI_CONCLOAD))
    {
       os << _T("POI_CONCLOAD | ");
    }
 
-   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_DIAPHRAGM))
+   if (WBFL::System::Flags<PoiAttributeType>::IsSet(m_Attributes, POI_DIAPHRAGM))
    {
       os << _T("POI_DIAPHRAGM | ");
    }
 
-   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_PSXFER))
+   if (WBFL::System::Flags<PoiAttributeType>::IsSet(m_Attributes, POI_PSXFER))
    {
       os << _T("POI_PSXFER | ");
    }
 
-   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_PSDEV))
+   if (WBFL::System::Flags<PoiAttributeType>::IsSet(m_Attributes, POI_PSDEV))
    {
       os << _T("POI_PSDEV | ");
    }
 
-   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_DEBOND))
+   if (WBFL::System::Flags<PoiAttributeType>::IsSet(m_Attributes, POI_DEBOND))
    {
       os << _T("POI_DEBOND | ");
    }
 
-   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_DECKBARCUTOFF))
+   if (WBFL::System::Flags<PoiAttributeType>::IsSet(m_Attributes, POI_DECKBARCUTOFF))
    {
       os << _T("POI_DECKBARCUTOFF | ");
    }
 
-   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_BARCUTOFF))
+   if (WBFL::System::Flags<PoiAttributeType>::IsSet(m_Attributes, POI_BARCUTOFF))
    {
       os << _T("POI_BARCUTOFF | ");
    }
 
-   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_BARDEVELOP))
+   if (WBFL::System::Flags<PoiAttributeType>::IsSet(m_Attributes, POI_BARDEVELOP))
    {
       os << _T("POI_BARDEVELOP | ");
    }
 
-   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_FACEOFSUPPORT))
+   if (WBFL::System::Flags<PoiAttributeType>::IsSet(m_Attributes, POI_FACEOFSUPPORT))
    {
       os << _T("POI_FACEOFSUPPORT | ");
    }
 
-   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_CLOSURE))
+   if (WBFL::System::Flags<PoiAttributeType>::IsSet(m_Attributes, POI_CLOSURE))
    {
       os << _T("POI_CLOSURE | ");
    }
 
-   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_SECTCHANGE_TRANSITION))
+   if (WBFL::System::Flags<PoiAttributeType>::IsSet(m_Attributes, POI_SECTCHANGE_TRANSITION))
    {
       os << _T("POI_SECTCHANGE_TRANSITION | ");
    }
 
-   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_SECTCHANGE_RIGHTFACE))
+   if (WBFL::System::Flags<PoiAttributeType>::IsSet(m_Attributes, POI_SECTCHANGE_RIGHTFACE))
    {
       os << _T("POI_SECTCHANGE_RIGHTFACE | ");
    }
 
-   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_SECTCHANGE_LEFTFACE))
+   if (WBFL::System::Flags<PoiAttributeType>::IsSet(m_Attributes, POI_SECTCHANGE_LEFTFACE))
    {
       os << _T("POI_SECTCHANGE_LEFTFACE | ");
    }
 
-   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_DUCT_START))
+   if (WBFL::System::Flags<PoiAttributeType>::IsSet(m_Attributes, POI_DUCT_START))
    {
       os << _T("POI_DUCT_START | ");
    }
 
-   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_DUCT_END))
+   if (WBFL::System::Flags<PoiAttributeType>::IsSet(m_Attributes, POI_DUCT_END))
    {
       os << _T("POI_DUCT_END | ");
    }
 
-   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_CASTING_BOUNDARY_START))
+   if (WBFL::System::Flags<PoiAttributeType>::IsSet(m_Attributes, POI_CASTING_BOUNDARY_START))
    {
       os << _T("POI_CASTING_BOUNDARY_START | ");
    }
 
-   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_CASTING_BOUNDARY_END))
+   if (WBFL::System::Flags<PoiAttributeType>::IsSet(m_Attributes, POI_CASTING_BOUNDARY_END))
    {
       os << _T("POI_CASTING_BOUNDARY_END | ");
    }
 
-   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_INTERMEDIATE_TEMPSUPPORT))
+   if (WBFL::System::Flags<PoiAttributeType>::IsSet(m_Attributes, POI_INTERMEDIATE_TEMPSUPPORT))
    {
       os << _T("POI_INTERMEDIATE_TEMPSUPPORT | ");
    }
 
-   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_INTERMEDIATE_PIER))
+   if (WBFL::System::Flags<PoiAttributeType>::IsSet(m_Attributes, POI_INTERMEDIATE_PIER))
    {
       os << _T("POI_INTERMEDIATE_PIER | ");
    }
 
-   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_BOUNDARY_PIER))
+   if (WBFL::System::Flags<PoiAttributeType>::IsSet(m_Attributes, POI_BOUNDARY_PIER))
    {
       os << _T("POI_BOUNDARY_PIER | ");
    }
 
-   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_ABUTMENT))
+   if (WBFL::System::Flags<PoiAttributeType>::IsSet(m_Attributes, POI_ABUTMENT))
    {
       os << _T("POI_ABUTMENT | ");
    }
 
-   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_STIRRUP_ZONE))
+   if (WBFL::System::Flags<PoiAttributeType>::IsSet(m_Attributes, POI_STIRRUP_ZONE))
    {
       os << _T("POI_STIRRUP_ZONE | ");
    }
 
-   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_START_FACE))
+   if (WBFL::System::Flags<PoiAttributeType>::IsSet(m_Attributes, POI_START_FACE))
    {
       os << _T("POI_START_FACE | ");
    }
 
-   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_END_FACE))
+   if (WBFL::System::Flags<PoiAttributeType>::IsSet(m_Attributes, POI_END_FACE))
    {
       os << _T("POI_END_FACE | ");
    }

@@ -146,14 +146,14 @@ bool pgsHoldDownForceArtifact::AssertValid() const
    return true;
 }
 
-void pgsHoldDownForceArtifact::Dump(dbgDumpContext& os) const
+void pgsHoldDownForceArtifact::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << "Dump for pgsHoldDownForceArtifact" << endl;
+   os << "Dump for pgsHoldDownForceArtifact" << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool pgsHoldDownForceArtifact::TestMe(dbgLog& rlog)
+bool pgsHoldDownForceArtifact::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("pgsHoldDownForceArtifact");
 

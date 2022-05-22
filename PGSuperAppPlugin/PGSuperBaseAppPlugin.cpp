@@ -258,7 +258,7 @@ void CPGSAppPluginBase::Process1250Testing(const CPGSBaseCommandLineInfo& rCmdIn
             ::AfxMessageBox(msg);
          }
       }
-      catch(const sysXBase& e)
+      catch(const WBFL::System::XBase& e)
       {
          std::_tstring msg;
          e.GetErrorMessage(&msg);

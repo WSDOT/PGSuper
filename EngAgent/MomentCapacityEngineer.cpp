@@ -1167,9 +1167,9 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
 
 #if defined _DEBUG
    pgsMomentCapacityEngineer* pThis = const_cast<pgsMomentCapacityEngineer*>(this);
-   pThis->m_Log << _T("Dist from end ") << poi.GetDistFromStart() << endl;
-   pThis->m_Log << _T("-------------------------") << endl;
-   pThis->m_Log << endl;
+   pThis->m_Log << _T("Dist from end ") << poi.GetDistFromStart() << WBFL::Debug::endl;
+   pThis->m_Log << _T("-------------------------") << WBFL::Debug::endl;
+   pThis->m_Log << WBFL::Debug::endl;
 #endif
 
    return mcd;
@@ -3019,14 +3019,14 @@ bool pgsMomentCapacityEngineer::AssertValid() const
    return true;
 }
 
-void pgsMomentCapacityEngineer::Dump(dbgDumpContext& os) const
+void pgsMomentCapacityEngineer::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for pgsMomentCapacityEngineer") << endl;
+   os << _T("Dump for pgsMomentCapacityEngineer") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool pgsMomentCapacityEngineer::TestMe(dbgLog& rlog)
+bool pgsMomentCapacityEngineer::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("pgsMomentCapacityEngineer");
 

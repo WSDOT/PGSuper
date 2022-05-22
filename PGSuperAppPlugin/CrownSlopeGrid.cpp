@@ -455,7 +455,7 @@ bool CCrownSlopeGrid::GetRowData(ROWCOL nRow,RoadwaySectionTemplate& data)
 
    CString strVal = GetCellValue(nRow,2);
    data.LeftSlope = 0.0;
-   if (!strVal.IsEmpty() && !sysTokenizer::ParseDouble(strVal, &data.LeftSlope))
+   if (!strVal.IsEmpty() && !WBFL::System::Tokenizer::ParseDouble(strVal, &data.LeftSlope))
 	{
       return false;
 	}
@@ -468,7 +468,7 @@ bool CCrownSlopeGrid::GetRowData(ROWCOL nRow,RoadwaySectionTemplate& data)
       RoadwaySegmentData seg;
       strVal = GetCellValue(nRow,col);
       Float64 length = 0.0;
-      if (!strVal.IsEmpty() && !sysTokenizer::ParseDouble(strVal, &length))
+      if (!strVal.IsEmpty() && !WBFL::System::Tokenizer::ParseDouble(strVal, &length))
 	   {
          return false;
 	   }
@@ -483,7 +483,7 @@ bool CCrownSlopeGrid::GetRowData(ROWCOL nRow,RoadwaySectionTemplate& data)
       col++;
       strVal = GetCellValue(nRow,col);
       seg.Slope = 0.0;
-      if (!strVal.IsEmpty() && !sysTokenizer::ParseDouble(strVal, &seg.Slope))
+      if (!strVal.IsEmpty() && !WBFL::System::Tokenizer::ParseDouble(strVal, &seg.Slope))
 	   {
          return false;
 	   }
@@ -495,7 +495,7 @@ bool CCrownSlopeGrid::GetRowData(ROWCOL nRow,RoadwaySectionTemplate& data)
 
    strVal = GetCellValue(nRow,col);
    data.RightSlope = 0.0;
-   if (!strVal.IsEmpty() && !sysTokenizer::ParseDouble(strVal, &data.RightSlope))
+   if (!strVal.IsEmpty() && !WBFL::System::Tokenizer::ParseDouble(strVal, &data.RightSlope))
 	{
       return false;
 	}
@@ -616,7 +616,7 @@ BOOL CCrownSlopeGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
    else if (nCol == 2)
    {
       CString strVal = GetCellValue(nRow, 2);
-      if (!strVal.IsEmpty() && !sysTokenizer::ParseDouble(strVal, &bogus))
+      if (!strVal.IsEmpty() && !WBFL::System::Tokenizer::ParseDouble(strVal, &bogus))
       {
          CString msg;
          msg.Format(_T("Leftmost slope value not a number for template %d"), nRow - 1);
@@ -632,7 +632,7 @@ BOOL CCrownSlopeGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
       {
          // rightmost column
          CString strVal = GetCellValue(nRow, nCol);
-         if (!strVal.IsEmpty() && !sysTokenizer::ParseDouble(strVal, &bogus))
+         if (!strVal.IsEmpty() && !WBFL::System::Tokenizer::ParseDouble(strVal, &bogus))
          {
             CString msg;
             msg.Format(_T("Rightmost slope value not a number for template %d"), nRow - 1);
@@ -646,7 +646,7 @@ BOOL CCrownSlopeGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
          {
             CString strVal = GetCellValue(nRow, nCol);
             Float64 length;
-            if (!strVal.IsEmpty() && !sysTokenizer::ParseDouble(strVal, &length))
+            if (!strVal.IsEmpty() && !WBFL::System::Tokenizer::ParseDouble(strVal, &length))
             {
                CString msg;
                msg.Format(_T("Length value not a number for template %d"), nRow - 1);
@@ -665,7 +665,7 @@ BOOL CCrownSlopeGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
          else // even cols have slope
             {
             CString strVal = GetCellValue(nRow, nCol);
-            if (!strVal.IsEmpty() && !sysTokenizer::ParseDouble(strVal, &bogus))
+            if (!strVal.IsEmpty() && !WBFL::System::Tokenizer::ParseDouble(strVal, &bogus))
             {
                CString msg;
                msg.Format(_T("A slope value is not a number for template %d"), nRow - 1);

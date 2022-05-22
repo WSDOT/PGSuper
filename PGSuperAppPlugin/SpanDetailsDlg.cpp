@@ -275,7 +275,7 @@ void CSpanDetailsDlg::DestroyExtensionPages()
    m_ExtensionPages.clear();
 }
 
-txnTransaction* CSpanDetailsDlg::GetExtensionPageTransaction()
+std::unique_ptr<CEAFTransaction> CSpanDetailsDlg::GetExtensionPageTransaction()
 {
    if (0 < m_Macro.GetTxnCount())
    {
@@ -295,10 +295,10 @@ void CSpanDetailsDlg::NotifyExtensionPages()
    {
       IEditSpanCallback* pCallback = pageIter->first;
       CPropertyPage* pPage = pageIter->second;
-      txnTransaction* pTxn = pCallback->OnOK(pPage,this);
+      auto pTxn = pCallback->OnOK(pPage,this);
       if ( pTxn )
       {
-         m_Macro.AddTransaction(pTxn);
+         m_Macro.AddTransaction(std::move(pTxn));
       }
    }
 }

@@ -243,12 +243,12 @@ bool pgsWsdotHaulingAnalysisArtifact::AssertValid() const
    return true;
 }
 
-void pgsWsdotHaulingAnalysisArtifact::Dump(dbgDumpContext& os) const
+void pgsWsdotHaulingAnalysisArtifact::Dump(WBFL::Debug::LogContext& os) const
 {
    ATLASSERT(m_pStabilityProblem != nullptr);
-   os << _T("Dump for pgsWsdotHaulingAnalysisArtifact") << endl;
-   os <<_T(" Stress Artifacts - Normal Crown Slope: ")<<endl;
-   os << _T("=================================") <<endl;
+   os << _T("Dump for pgsWsdotHaulingAnalysisArtifact") << WBFL::Debug::endl;
+   os <<_T(" Stress Artifacts - Normal Crown Slope: ")<< WBFL::Debug::endl;
+   os << _T("=================================") << WBFL::Debug::endl;
    WBFL::Stability::WindDirection wind = WBFL::Stability::Left;
    WBFL::Stability::WindDirection cf   = WBFL::Stability::Left;
    const WBFL::Stability::HaulingResults& results = m_HaulingArtifact.GetHaulingResults();
@@ -259,80 +259,80 @@ void pgsWsdotHaulingAnalysisArtifact::Dump(dbgDumpContext& os) const
       Float64 loc = pAnalysisPoint->GetLocation();
       os <<_T("At ") << WBFL::Units::ConvertFromSysUnits(loc,WBFL::Units::Measure::Feet) << _T(" ft: ");
 
-      os<<endl;
+      os<< WBFL::Debug::endl;
       Float64 fps = sectionResult.fps[WBFL::Stability::TopLeft];
       Float64 fup = sectionResult.f[WBFL::Stability::CrownSlope][WBFL::Stability::ImpactUp][wind][WBFL::Stability::TopLeft];
       Float64 fno = sectionResult.f[WBFL::Stability::CrownSlope][WBFL::Stability::NoImpact][wind][WBFL::Stability::TopLeft];
       Float64 fdown = sectionResult.f[WBFL::Stability::CrownSlope][WBFL::Stability::ImpactDown][wind][WBFL::Stability::TopLeft];
-      os<<_T("Top Left Corner       fps=")<<WBFL::Units::ConvertFromSysUnits(fps,WBFL::Units::Measure::KSI)<<_T("ksi, fup=")<<WBFL::Units::ConvertFromSysUnits(fup,WBFL::Units::Measure::KSI)<<_T("ksi, fno=")<<WBFL::Units::ConvertFromSysUnits(fno,WBFL::Units::Measure::KSI)<<_T("ksi, fdown=")<<WBFL::Units::ConvertFromSysUnits(fdown,WBFL::Units::Measure::KSI)<<_T("ksi")<<endl;
+      os<<_T("Top Left Corner       fps=")<<WBFL::Units::ConvertFromSysUnits(fps,WBFL::Units::Measure::KSI)<<_T("ksi, fup=")<<WBFL::Units::ConvertFromSysUnits(fup,WBFL::Units::Measure::KSI)<<_T("ksi, fno=")<<WBFL::Units::ConvertFromSysUnits(fno,WBFL::Units::Measure::KSI)<<_T("ksi, fdown=")<<WBFL::Units::ConvertFromSysUnits(fdown,WBFL::Units::Measure::KSI)<<_T("ksi")<< WBFL::Debug::endl;
 
       fps = sectionResult.fps[WBFL::Stability::TopRight];
       fup = sectionResult.f[WBFL::Stability::CrownSlope][WBFL::Stability::ImpactUp][wind][WBFL::Stability::TopRight];
       fno = sectionResult.f[WBFL::Stability::CrownSlope][WBFL::Stability::NoImpact][wind][WBFL::Stability::TopRight];
       fdown = sectionResult.f[WBFL::Stability::CrownSlope][WBFL::Stability::ImpactDown][wind][WBFL::Stability::TopRight];
-      os << _T("Top Right Corner    fps=") << WBFL::Units::ConvertFromSysUnits(fps, WBFL::Units::Measure::KSI) << _T("ksi, fup=") << WBFL::Units::ConvertFromSysUnits(fup, WBFL::Units::Measure::KSI) << _T("ksi, fno=") << WBFL::Units::ConvertFromSysUnits(fno, WBFL::Units::Measure::KSI) << _T("ksi, fdown=") << WBFL::Units::ConvertFromSysUnits(fdown, WBFL::Units::Measure::KSI) << _T("ksi") << endl;
+      os << _T("Top Right Corner    fps=") << WBFL::Units::ConvertFromSysUnits(fps, WBFL::Units::Measure::KSI) << _T("ksi, fup=") << WBFL::Units::ConvertFromSysUnits(fup, WBFL::Units::Measure::KSI) << _T("ksi, fno=") << WBFL::Units::ConvertFromSysUnits(fno, WBFL::Units::Measure::KSI) << _T("ksi, fdown=") << WBFL::Units::ConvertFromSysUnits(fdown, WBFL::Units::Measure::KSI) << _T("ksi") << WBFL::Debug::endl;
 
       fps = sectionResult.fps[WBFL::Stability::BottomLeft];
       fup = sectionResult.f[WBFL::Stability::CrownSlope][WBFL::Stability::ImpactUp][wind][WBFL::Stability::BottomLeft];
       fno = sectionResult.f[WBFL::Stability::CrownSlope][WBFL::Stability::NoImpact][wind][WBFL::Stability::BottomLeft];
       fdown = sectionResult.f[WBFL::Stability::CrownSlope][WBFL::Stability::ImpactDown][wind][WBFL::Stability::BottomLeft];
-      os<<_T("Bottom Left Corner    fps=")<<WBFL::Units::ConvertFromSysUnits(fps,WBFL::Units::Measure::KSI)<<_T("ksi, fup=")<<WBFL::Units::ConvertFromSysUnits(fup,WBFL::Units::Measure::KSI)<<_T("ksi, fno=")<<WBFL::Units::ConvertFromSysUnits(fno,WBFL::Units::Measure::KSI)<<_T("ksi, fdown=")<<WBFL::Units::ConvertFromSysUnits(fdown,WBFL::Units::Measure::KSI)<<_T("ksi")<<endl;
+      os<<_T("Bottom Left Corner    fps=")<<WBFL::Units::ConvertFromSysUnits(fps,WBFL::Units::Measure::KSI)<<_T("ksi, fup=")<<WBFL::Units::ConvertFromSysUnits(fup,WBFL::Units::Measure::KSI)<<_T("ksi, fno=")<<WBFL::Units::ConvertFromSysUnits(fno,WBFL::Units::Measure::KSI)<<_T("ksi, fdown=")<<WBFL::Units::ConvertFromSysUnits(fdown,WBFL::Units::Measure::KSI)<<_T("ksi")<< WBFL::Debug::endl;
 
       fps = sectionResult.fps[WBFL::Stability::BottomRight];
       fup = sectionResult.f[WBFL::Stability::CrownSlope][WBFL::Stability::ImpactUp][wind][WBFL::Stability::BottomRight];
       fno = sectionResult.f[WBFL::Stability::CrownSlope][WBFL::Stability::NoImpact][wind][WBFL::Stability::BottomRight];
       fdown = sectionResult.f[WBFL::Stability::CrownSlope][WBFL::Stability::ImpactDown][wind][WBFL::Stability::BottomRight];
-      os << _T("Bottom Right Corner fps=") << WBFL::Units::ConvertFromSysUnits(fps, WBFL::Units::Measure::KSI) << _T("ksi, fup=") << WBFL::Units::ConvertFromSysUnits(fup, WBFL::Units::Measure::KSI) << _T("ksi, fno=") << WBFL::Units::ConvertFromSysUnits(fno, WBFL::Units::Measure::KSI) << _T("ksi, fdown=") << WBFL::Units::ConvertFromSysUnits(fdown, WBFL::Units::Measure::KSI) << _T("ksi") << endl;
+      os << _T("Bottom Right Corner fps=") << WBFL::Units::ConvertFromSysUnits(fps, WBFL::Units::Measure::KSI) << _T("ksi, fup=") << WBFL::Units::ConvertFromSysUnits(fup, WBFL::Units::Measure::KSI) << _T("ksi, fno=") << WBFL::Units::ConvertFromSysUnits(fno, WBFL::Units::Measure::KSI) << _T("ksi, fdown=") << WBFL::Units::ConvertFromSysUnits(fdown, WBFL::Units::Measure::KSI) << _T("ksi") << WBFL::Debug::endl;
 
       Float64 max_stress = Max(sectionResult.fMax[WBFL::Stability::CrownSlope][WBFL::Stability::Top],sectionResult.fMax[WBFL::Stability::CrownSlope][WBFL::Stability::Bottom]);
       Float64 min_stress = Min(sectionResult.fMin[WBFL::Stability::CrownSlope][WBFL::Stability::Top],sectionResult.fMin[WBFL::Stability::CrownSlope][WBFL::Stability::Bottom]);
-      os<<_T("Controlling Stress: Min =")<<WBFL::Units::ConvertFromSysUnits(min_stress,WBFL::Units::Measure::KSI)<<_T("ksi, Max=")<<WBFL::Units::ConvertFromSysUnits(max_stress,WBFL::Units::Measure::KSI)<<_T("ksi")<<endl;
+      os<<_T("Controlling Stress: Min =")<<WBFL::Units::ConvertFromSysUnits(min_stress,WBFL::Units::Measure::KSI)<<_T("ksi, Max=")<<WBFL::Units::ConvertFromSysUnits(max_stress,WBFL::Units::Measure::KSI)<<_T("ksi")<< WBFL::Debug::endl;
    }
 
-   os <<_T(" Stress Artifacts - Max Superelevation: ")<<endl;
-   os << _T("=================================") <<endl;
+   os <<_T(" Stress Artifacts - Max Superelevation: ")<< WBFL::Debug::endl;
+   os << _T("=================================") << WBFL::Debug::endl;
    for (const auto& sectionResult : results.vSectionResults)
    {
       const auto& pAnalysisPoint = m_pStabilityProblem->GetAnalysisPoint(sectionResult.AnalysisPointIndex);
       Float64 loc = pAnalysisPoint->GetLocation();
       os <<_T("At ") << WBFL::Units::ConvertFromSysUnits(loc,WBFL::Units::Measure::Feet) << _T(" ft: ");
 
-      os<<endl;
+      os<< WBFL::Debug::endl;
       Float64 fps = sectionResult.fps[WBFL::Stability::TopLeft];
       Float64 fup = sectionResult.f[WBFL::Stability::Superelevation][WBFL::Stability::ImpactUp][wind][WBFL::Stability::TopLeft];
       Float64 fno = sectionResult.f[WBFL::Stability::Superelevation][WBFL::Stability::NoImpact][wind][WBFL::Stability::TopLeft];
       Float64 fdown = sectionResult.f[WBFL::Stability::Superelevation][WBFL::Stability::ImpactDown][wind][WBFL::Stability::TopLeft];
-      os << _T("Top Left Corner     fps=") << WBFL::Units::ConvertFromSysUnits(fps, WBFL::Units::Measure::KSI) << _T("ksi, fup=") << WBFL::Units::ConvertFromSysUnits(fup, WBFL::Units::Measure::KSI) << _T("ksi, fno=") << WBFL::Units::ConvertFromSysUnits(fno, WBFL::Units::Measure::KSI) << _T("ksi, fdown=") << WBFL::Units::ConvertFromSysUnits(fdown, WBFL::Units::Measure::KSI) << _T("ksi") << endl;
+      os << _T("Top Left Corner     fps=") << WBFL::Units::ConvertFromSysUnits(fps, WBFL::Units::Measure::KSI) << _T("ksi, fup=") << WBFL::Units::ConvertFromSysUnits(fup, WBFL::Units::Measure::KSI) << _T("ksi, fno=") << WBFL::Units::ConvertFromSysUnits(fno, WBFL::Units::Measure::KSI) << _T("ksi, fdown=") << WBFL::Units::ConvertFromSysUnits(fdown, WBFL::Units::Measure::KSI) << _T("ksi") << WBFL::Debug::endl;
 
       fps = sectionResult.fps[WBFL::Stability::TopRight];
       fup = sectionResult.f[WBFL::Stability::Superelevation][WBFL::Stability::ImpactUp][wind][WBFL::Stability::TopRight];
       fno = sectionResult.f[WBFL::Stability::Superelevation][WBFL::Stability::NoImpact][wind][WBFL::Stability::TopRight];
       fdown = sectionResult.f[WBFL::Stability::Superelevation][WBFL::Stability::ImpactDown][wind][WBFL::Stability::TopRight];
-      os << _T("Top Right Corner    fps=") << WBFL::Units::ConvertFromSysUnits(fps, WBFL::Units::Measure::KSI) << _T("ksi, fup=") << WBFL::Units::ConvertFromSysUnits(fup, WBFL::Units::Measure::KSI) << _T("ksi, fno=") << WBFL::Units::ConvertFromSysUnits(fno, WBFL::Units::Measure::KSI) << _T("ksi, fdown=") << WBFL::Units::ConvertFromSysUnits(fdown, WBFL::Units::Measure::KSI) << _T("ksi") << endl;
+      os << _T("Top Right Corner    fps=") << WBFL::Units::ConvertFromSysUnits(fps, WBFL::Units::Measure::KSI) << _T("ksi, fup=") << WBFL::Units::ConvertFromSysUnits(fup, WBFL::Units::Measure::KSI) << _T("ksi, fno=") << WBFL::Units::ConvertFromSysUnits(fno, WBFL::Units::Measure::KSI) << _T("ksi, fdown=") << WBFL::Units::ConvertFromSysUnits(fdown, WBFL::Units::Measure::KSI) << _T("ksi") << WBFL::Debug::endl;
 
       fps = sectionResult.fps[WBFL::Stability::BottomLeft];
       fup = sectionResult.f[WBFL::Stability::Superelevation][WBFL::Stability::ImpactUp][wind][WBFL::Stability::BottomLeft];
       fno = sectionResult.f[WBFL::Stability::Superelevation][WBFL::Stability::NoImpact][wind][WBFL::Stability::BottomLeft];
       fdown = sectionResult.f[WBFL::Stability::Superelevation][WBFL::Stability::ImpactDown][wind][WBFL::Stability::BottomLeft];
-      os << _T("Bottom Left Corner  fps=") << WBFL::Units::ConvertFromSysUnits(fps, WBFL::Units::Measure::KSI) << _T("ksi, fup=") << WBFL::Units::ConvertFromSysUnits(fup, WBFL::Units::Measure::KSI) << _T("ksi, fno=") << WBFL::Units::ConvertFromSysUnits(fno, WBFL::Units::Measure::KSI) << _T("ksi, fdown=") << WBFL::Units::ConvertFromSysUnits(fdown, WBFL::Units::Measure::KSI) << _T("ksi") << endl;
+      os << _T("Bottom Left Corner  fps=") << WBFL::Units::ConvertFromSysUnits(fps, WBFL::Units::Measure::KSI) << _T("ksi, fup=") << WBFL::Units::ConvertFromSysUnits(fup, WBFL::Units::Measure::KSI) << _T("ksi, fno=") << WBFL::Units::ConvertFromSysUnits(fno, WBFL::Units::Measure::KSI) << _T("ksi, fdown=") << WBFL::Units::ConvertFromSysUnits(fdown, WBFL::Units::Measure::KSI) << _T("ksi") << WBFL::Debug::endl;
 
       fps = sectionResult.fps[WBFL::Stability::BottomRight];
       fup = sectionResult.f[WBFL::Stability::Superelevation][WBFL::Stability::ImpactUp][wind][WBFL::Stability::BottomRight];
       fno = sectionResult.f[WBFL::Stability::Superelevation][WBFL::Stability::NoImpact][wind][WBFL::Stability::BottomRight];
       fdown = sectionResult.f[WBFL::Stability::Superelevation][WBFL::Stability::ImpactDown][wind][WBFL::Stability::BottomRight];
-      os << _T("Bottom Right Corner fps=") << WBFL::Units::ConvertFromSysUnits(fps, WBFL::Units::Measure::KSI) << _T("ksi, fup=") << WBFL::Units::ConvertFromSysUnits(fup, WBFL::Units::Measure::KSI) << _T("ksi, fno=") << WBFL::Units::ConvertFromSysUnits(fno, WBFL::Units::Measure::KSI) << _T("ksi, fdown=") << WBFL::Units::ConvertFromSysUnits(fdown, WBFL::Units::Measure::KSI) << _T("ksi") << endl;
+      os << _T("Bottom Right Corner fps=") << WBFL::Units::ConvertFromSysUnits(fps, WBFL::Units::Measure::KSI) << _T("ksi, fup=") << WBFL::Units::ConvertFromSysUnits(fup, WBFL::Units::Measure::KSI) << _T("ksi, fno=") << WBFL::Units::ConvertFromSysUnits(fno, WBFL::Units::Measure::KSI) << _T("ksi, fdown=") << WBFL::Units::ConvertFromSysUnits(fdown, WBFL::Units::Measure::KSI) << _T("ksi") << WBFL::Debug::endl;
 
       Float64 max_stress = Max(sectionResult.fMax[WBFL::Stability::Superelevation][WBFL::Stability::Top], sectionResult.fMax[WBFL::Stability::Superelevation][WBFL::Stability::Bottom]);
       Float64 min_stress = Min(sectionResult.fMin[WBFL::Stability::Superelevation][WBFL::Stability::Top], sectionResult.fMin[WBFL::Stability::Superelevation][WBFL::Stability::Bottom]);
-      os << _T("Controlling Stress: Min =") << WBFL::Units::ConvertFromSysUnits(min_stress, WBFL::Units::Measure::KSI) << _T("ksi, Max=") << WBFL::Units::ConvertFromSysUnits(max_stress, WBFL::Units::Measure::KSI) << _T("ksi") << endl;
+      os << _T("Controlling Stress: Min =") << WBFL::Units::ConvertFromSysUnits(min_stress, WBFL::Units::Measure::KSI) << _T("ksi, Max=") << WBFL::Units::ConvertFromSysUnits(max_stress, WBFL::Units::Measure::KSI) << _T("ksi") << WBFL::Debug::endl;
    }
-   os <<_T(" Dump Complete")<<endl;
-   os << _T("=============") <<endl;
+   os <<_T(" Dump Complete")<< WBFL::Debug::endl;
+   os << _T("=============") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool pgsWsdotHaulingAnalysisArtifact::TestMe(dbgLog& rlog)
+bool pgsWsdotHaulingAnalysisArtifact::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("pgsWsdotHaulingAnalysisArtifact");
 

@@ -458,7 +458,7 @@ void CClosureJointGeneralPage::UpdateEci()
       CString strEc;
       m_ctrlEc.GetWindowText(strEc);
       Float64 Ec;
-      sysTokenizer::ParseDouble(strEc,&Ec);
+      WBFL::System::Tokenizer::ParseDouble(strEc,&Ec);
       Ec = WBFL::Units::ConvertToSysUnits(Ec,pDisplayUnits->GetModEUnit().UnitOfMeasure);
 
       CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
@@ -557,7 +557,7 @@ void CClosureJointGeneralPage::UpdateEc()
       CString strEci;
       m_ctrlEci.GetWindowText(strEci);
       Float64 Eci;
-      sysTokenizer::ParseDouble(strEci,&Eci);
+      WBFL::System::Tokenizer::ParseDouble(strEci,&Eci);
       Eci = WBFL::Units::ConvertToSysUnits(Eci,pDisplayUnits->GetModEUnit().UnitOfMeasure);
 
       CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
@@ -613,7 +613,7 @@ void CClosureJointGeneralPage::UpdateFc()
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       Float64 fci;
-      sysTokenizer::ParseDouble(strFci, &fci);
+      WBFL::System::Tokenizer::ParseDouble(strFci, &fci);
       fci = WBFL::Units::ConvertToSysUnits(fci,pDisplayUnits->GetStressUnit().UnitOfMeasure);
 
       CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
@@ -650,7 +650,7 @@ void CClosureJointGeneralPage::UpdateFci()
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       Float64 fc;
-      sysTokenizer::ParseDouble(strFc, &fc);
+      WBFL::System::Tokenizer::ParseDouble(strFc, &fc);
       fc = WBFL::Units::ConvertToSysUnits(fc,pDisplayUnits->GetStressUnit().UnitOfMeasure);
 
       CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();

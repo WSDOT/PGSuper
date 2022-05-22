@@ -201,7 +201,7 @@ BOOL CLiveLoadAxleGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 	if (nCol==1)
 	{
       Float64 d;
-      if (!sysTokenizer::ParseDouble(s, &d))
+      if (!WBFL::System::Tokenizer::ParseDouble(s, &d))
 		{
 			SetWarningText (_T("Value must be a number"));
 			return FALSE;
@@ -218,14 +218,14 @@ BOOL CLiveLoadAxleGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 	else if (nCol==2)
 	{
       LPCTSTR delims[] = {_T("-"),_T(" "), 0};
-      sysTokenizer tokizerd(delims);
+      WBFL::System::Tokenizer tokizerd(delims);
       tokizerd.push_back(s);
 
-      sysTokenizer::size_type npd = tokizerd.size();
+      WBFL::System::Tokenizer::size_type npd = tokizerd.size();
       if (npd==1 || npd==2)
       {
          Float64 d;
-         if (!sysTokenizer::ParseDouble(tokizerd[0].c_str(), &d))
+         if (!WBFL::System::Tokenizer::ParseDouble(tokizerd[0].c_str(), &d))
 		   {
 			   SetWarningText (_T("Axle spacing value(s) must be a single number or two numbers separated by a dash"));
 			   return FALSE;
@@ -240,7 +240,7 @@ BOOL CLiveLoadAxleGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
          if (npd==2)
          {
             Float64 dmax;
-            if (!sysTokenizer::ParseDouble(tokizerd[1].c_str(), &dmax))
+            if (!WBFL::System::Tokenizer::ParseDouble(tokizerd[1].c_str(), &dmax))
 		      {
 			      SetWarningText (_T("Axle spacing value(s) must be a single number or two numbers separated by a dash"));
 			      return FALSE;
@@ -456,7 +456,7 @@ CLiveLoadAxleGrid::SpacingType CLiveLoadAxleGrid::ParseAxleRow(ROWCOL nRow, CDat
 	CString s = GetCellValue(nRow, 1);
 
    Float64 d;
-   if (!sysTokenizer::ParseDouble(s, &d))
+   if (!WBFL::System::Tokenizer::ParseDouble(s, &d))
 	{
       if (bEmitErrorMsg)
       {
@@ -487,14 +487,14 @@ CLiveLoadAxleGrid::SpacingType CLiveLoadAxleGrid::ParseAxleRow(ROWCOL nRow, CDat
    	s = GetCellValue(nRow, 2);
 
       LPCTSTR delims[] = {_T("-"),_T(" "), 0};
-      sysTokenizer tokizerd(delims);
+      WBFL::System::Tokenizer tokizerd(delims);
       tokizerd.push_back(s);
 
-      sysTokenizer::size_type npd = tokizerd.size();
+      WBFL::System::Tokenizer::size_type npd = tokizerd.size();
       if (npd==1 || npd==2)
       {
          Float64 d;
-         if (!sysTokenizer::ParseDouble(tokizerd[0].c_str(), &d))
+         if (!WBFL::System::Tokenizer::ParseDouble(tokizerd[0].c_str(), &d))
 		   {
             if (bEmitErrorMsg)
             {
@@ -522,7 +522,7 @@ CLiveLoadAxleGrid::SpacingType CLiveLoadAxleGrid::ParseAxleRow(ROWCOL nRow, CDat
          if (npd==2)
          {
             Float64 dmax;
-            if (!sysTokenizer::ParseDouble(tokizerd[1].c_str(), &dmax))
+            if (!WBFL::System::Tokenizer::ParseDouble(tokizerd[1].c_str(), &dmax))
 		      {
                if (bEmitErrorMsg)
                {

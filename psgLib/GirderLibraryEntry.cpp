@@ -376,7 +376,7 @@ GirderLibraryEntry& GirderLibraryEntry::operator= (const GirderLibraryEntry& rOt
 
 //======================== OPERATIONS =======================================
 
-bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
+bool GirderLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
 {
    USES_CONVERSION;
    pSave->BeginUnit(_T("GirderLibraryEntry"), CURRENT_VERSION);
@@ -744,7 +744,7 @@ std::_tstring GirderLibraryEntry::TranslateCLSID(const std::_tstring& strCLSID)
    return strCLSID;
 }
 
-bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
+bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 {
    USES_CONVERSION;
 
@@ -826,7 +826,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             CString strMsg;
             strMsg.Format(_T("Unable to create the \"%s\" section, published by %s.\n\nError code %#x\n%s\nContact the publisher for assistance.\n%s"), strSectionName.c_str(), strPublisher.c_str(), hr, errorMsgBuffer, strPublisherContactInfo.c_str());
 
-            sysXStructuredLoad ex(sysXStructuredLoad::UserDefined,_T(__FILE__),__LINE__);
+            WBFL::System::XStructuredLoad ex(WBFL::System::XStructuredLoad::UserDefined,_T(__FILE__),__LINE__);
             ex.SetExtendedMessage(strMsg);
 
             LocalFree(errorMsgBuffer);
@@ -2953,7 +2953,7 @@ HRESULT GirderLibraryEntry::CreateBeamFactory(const std::_tstring& strCLSID)
    return hr;
 }
 
-void GirderLibraryEntry::LoadIBeamDimensions(sysIStructuredLoad* pLoad)
+void GirderLibraryEntry::LoadIBeamDimensions(WBFL::System::IStructuredLoad* pLoad)
 {
    CLSID clsid;
    ::CLSIDFromString(_T("{EF144A97-4C75-4234-AF3C-71DC89B1C8F8}"),&clsid);

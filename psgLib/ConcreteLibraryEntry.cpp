@@ -204,7 +204,7 @@ ConcreteLibraryEntry& ConcreteLibraryEntry::operator= (const ConcreteLibraryEntr
 }
 
 //======================== OPERATIONS =======================================
-bool ConcreteLibraryEntry::SaveMe(sysIStructuredSave* pSave)
+bool ConcreteLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
 {
    pSave->BeginUnit(_T("ConcreteMaterialEntry"), 7.0);
 
@@ -272,7 +272,7 @@ bool ConcreteLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    return false;
 }
 
-bool ConcreteLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
+bool ConcreteLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 {
    if(pLoad->BeginUnit(_T("ConcreteMaterialEntry")))
    {
@@ -1218,22 +1218,22 @@ bool ConcreteLibraryEntry::AssertValid() const
    return libLibraryEntry::AssertValid();
 }
 
-void ConcreteLibraryEntry::Dump(dbgDumpContext& os) const
+void ConcreteLibraryEntry::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for ConcreteLibraryEntry")<<endl;
-   os << _T("   m_Fc =")<< m_Fc <<endl;
-   os << _T("   m_Ec =")<< m_Ds << endl;
-   os << _T("   m_D  =")<< m_Dw <<endl;
-   os << _T("   m_AggSize ")<< m_AggSize <<endl;
-   os << _T("   m_EccK1 ") << m_EccK1 << endl;
-   os << _T("   m_EccK2 ") << m_EccK2 << endl;
+   os << _T("Dump for ConcreteLibraryEntry")<< WBFL::Debug::endl;
+   os << _T("   m_Fc =")<< m_Fc << WBFL::Debug::endl;
+   os << _T("   m_Ec =")<< m_Ds << WBFL::Debug::endl;
+   os << _T("   m_D  =")<< m_Dw << WBFL::Debug::endl;
+   os << _T("   m_AggSize ")<< m_AggSize << WBFL::Debug::endl;
+   os << _T("   m_EccK1 ") << m_EccK1 << WBFL::Debug::endl;
+   os << _T("   m_EccK2 ") << m_EccK2 << WBFL::Debug::endl;
 
    libLibraryEntry::Dump( os );
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool ConcreteLibraryEntry::TestMe(dbgLog& rlog)
+bool ConcreteLibraryEntry::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("ConcreteLibraryEntry");
 

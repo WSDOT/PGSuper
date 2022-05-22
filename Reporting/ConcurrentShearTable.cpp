@@ -117,7 +117,7 @@ void CConcurrentShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
    pgsTypes::BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
 
    // Fill up the table
-   sysSectionValue Vmin, Vmax;
+   WBFL::System::SectionValue Vmin, Vmax;
    RowIndexType row = p_table->GetNumberOfHeaderRows();
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
@@ -179,14 +179,14 @@ bool CConcurrentShearTable::AssertValid() const
    return true;
 }
 
-void CConcurrentShearTable::Dump(dbgDumpContext& os) const
+void CConcurrentShearTable::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CConcurrentShearTable") << endl;
+   os << _T("Dump for CConcurrentShearTable") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CConcurrentShearTable::TestMe(dbgLog& rlog)
+bool CConcurrentShearTable::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CConcurrentShearTable");
 

@@ -147,14 +147,14 @@ bool pgsLongRebarInstance::AssertValid() const
    return true;
 }
 
-void pgsLongRebarInstance::Dump(dbgDumpContext& os) const
+void pgsLongRebarInstance::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << "Dump for pgsLongRebarInstance" << endl;
+   os << "Dump for pgsLongRebarInstance" << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool pgsLongRebarInstance::TestMe(dbgLog& rlog)
+bool pgsLongRebarInstance::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("pgsLongRebarInstance");
 

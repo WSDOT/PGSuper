@@ -127,8 +127,8 @@ public:
 
    // GROUP: OPERATIONS
 
-	HRESULT Load(sysIStructuredLoad* pStrLoad);
-	HRESULT Save(sysIStructuredSave* pStrSave);
+	HRESULT Load(WBFL::System::IStructuredLoad* pStrLoad);
+	HRESULT Save(WBFL::System::IStructuredSave* pStrSave);
 
    // copy shear data from a girder entry
    void CopyGirderEntryData(const GirderLibraryEntry* pGirderEntry);

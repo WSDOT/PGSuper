@@ -65,7 +65,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const std::v
    location.IncludeSpanAndGirder(true);
 
    rptRcScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Fixed );
+   scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Fixed );
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
    scalar.SetTolerance(1.0e-6);
@@ -664,7 +664,7 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,const std::vect
    rptCapacityToDemand rating_factor;
 
    rptRcScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Fixed );
+   scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Fixed );
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
    scalar.SetTolerance(1.0e-6);

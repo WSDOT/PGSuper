@@ -257,7 +257,7 @@ CTxDOTOptionalDesignGirderData::StrandRowContainer CStrandRowGrid::GetData()
          CTxDOTOptionalDesignGirderData::StrandRow strrow;
 
          long strandcnt;
-         sysTokenizer::ParseLong(strStrands, &strandcnt);  // save num strands as integral value as well
+         WBFL::System::Tokenizer::ParseLong(strStrands, &strandcnt);  // save num strands as integral value as well
 
          strrow.StrandsInRow = (StrandIndexType)strandcnt;
 
@@ -289,11 +289,11 @@ void CStrandRowGrid::ComputeStrands(StrandIndexType* pNum, Float64* pCg)
       if (strStrands!=_T("0"))
       {
          long strandcnt;
-         sysTokenizer::ParseLong(strStrands, &strandcnt);  // save num strands as integral value as well
+         WBFL::System::Tokenizer::ParseLong(strStrands, &strandcnt);  // save num strands as integral value as well
 
          CString strRow = GetCellValue(row,1);
          Float64 rowht;
-         sysTokenizer::ParseDouble(strRow, &rowht);  // save num strands as integral value as well
+         WBFL::System::Tokenizer::ParseDouble(strRow, &rowht);  // save num strands as integral value as well
 
          noStrands += (StrandIndexType)strandcnt;
 

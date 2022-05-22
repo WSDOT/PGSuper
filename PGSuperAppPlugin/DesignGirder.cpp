@@ -92,7 +92,7 @@ void txnDesignGirder::Undo()
    DoExecute(0);
 }
 
-txnTransaction* txnDesignGirder::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnDesignGirder::CreateClone() const
 {
    std::vector<const pgsGirderDesignArtifact*> artifacts;
    for (DesignDataConstIter iter = m_DesignDataColl.begin(); iter!=m_DesignDataColl.end(); iter++)
@@ -100,7 +100,7 @@ txnTransaction* txnDesignGirder::CreateClone() const
       artifacts.push_back(&(iter->m_DesignArtifact));
    }
 
-   return new txnDesignGirder(artifacts, m_NewSlabOffsetType, m_FromSpanIdx, m_FromGirderIdx);
+   return std::make_unique<txnDesignGirder>(artifacts, m_NewSlabOffsetType, m_FromSpanIdx, m_FromGirderIdx);
 }
 
 std::_tstring txnDesignGirder::Name() const
@@ -128,12 +128,12 @@ std::_tstring txnDesignGirder::Name() const
    return os.str();
 }
 
-bool txnDesignGirder::IsUndoable()
+bool txnDesignGirder::IsUndoable() const
 {
    return true;
 }
 
-bool txnDesignGirder::IsRepeatable()
+bool txnDesignGirder::IsRepeatable() const
 {
    return false;
 }

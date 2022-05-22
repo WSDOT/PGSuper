@@ -31,6 +31,7 @@
 #include "ClosureJointStirrupsPage.h"
 
 #include <IFace\ExtendUI.h>
+#include <EAF\EAFMacroTxn.h>
 
 // CClosureJointDlg
 
@@ -63,7 +64,7 @@ public:
 
    // Returns a macro transaction object that contains editing transactions
    // for all the extension pages. The caller is responsble for deleting this object
-   txnTransaction* GetExtensionPageTransaction();
+   std::unique_ptr<CEAFTransaction> GetExtensionPageTransaction();
 
    bool WasEventCreated() { return m_General.m_bWasEventCreated; }
 
@@ -78,7 +79,7 @@ protected:
    void DestroyExtensionPages();
 
 
-   txnMacroTxn m_Macro;
+   CEAFMacroTxn m_Macro;
    std::vector<std::pair<IEditClosureJointCallback*,CPropertyPage*>> m_ExtensionPages;
    std::vector<EditSplicedGirderExtension> m_SplicedGirderExtensionPages;
    void NotifyExtensionPages();

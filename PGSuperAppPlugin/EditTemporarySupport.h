@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <System\Transaction.h>
+#include <EAF\EAFTransaction.h>
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\TemporarySupportData.h>
 #include "EditBridge.h"
@@ -33,7 +33,7 @@ class txnEditTemporarySupport : public txnEditBridgeDescription
 public:
    txnEditTemporarySupport(SupportIndexType tsIndex,const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc);
    virtual ~txnEditTemporarySupport();
-   virtual txnTransaction* CreateClone() const;
+   virtual std::unique_ptr<CEAFTransaction>CreateClone() const;
    virtual std::_tstring Name() const;
 
 private:

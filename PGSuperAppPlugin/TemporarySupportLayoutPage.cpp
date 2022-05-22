@@ -221,7 +221,7 @@ void CTemporarySupportLayoutPage::DoDataExchange(CDataExchange* pDX)
       int result = pTimelineMgr->Validate();
       if (result != TLM_SUCCESS)
       {
-         if (sysFlags<Uint32>::IsSet(result,TLM_STRONGBACK_ERECTION_ERROR))
+         if (WBFL::System::Flags<Uint32>::IsSet(result,TLM_STRONGBACK_ERECTION_ERROR))
          {
             pDX->PrepareCtrl(IDC_ERECTION_EVENT);
             CString strMsg = pTimelineMgr->GetErrorMessage(result).c_str();
@@ -229,7 +229,7 @@ void CTemporarySupportLayoutPage::DoDataExchange(CDataExchange* pDX)
             AfxMessageBox(strMsg, MB_ICONEXCLAMATION);
             pDX->Fail();
          }
-         else if (sysFlags<Uint32>::IsSet(result, TLM_TEMPORARY_SUPPORT_REMOVAL_ERROR))
+         else if (WBFL::System::Flags<Uint32>::IsSet(result, TLM_TEMPORARY_SUPPORT_REMOVAL_ERROR))
          {
             pDX->PrepareCtrl(IDC_REMOVAL_EVENT);
             CString strMsg = pTimelineMgr->GetErrorMessage(result).c_str();

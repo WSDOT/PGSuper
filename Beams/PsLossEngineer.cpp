@@ -2535,7 +2535,7 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pCh
       INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,      pDisplayUnits->GetStressUnit(),          false );
 
       rptRcScalar scalar;
-      scalar.SetFormat( sysNumericFormatTool::Automatic );
+      scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Automatic );
       scalar.SetWidth(6);
       scalar.SetPrecision(2);
 
@@ -2679,7 +2679,7 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLosses(rptChapter* pChapter,cons
       INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,      pDisplayUnits->GetStressUnit(),          false );
 
       rptRcScalar scalar;
-      scalar.SetFormat( sysNumericFormatTool::Automatic );
+      scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Automatic );
       scalar.SetWidth(6);
       scalar.SetPrecision(2);
 

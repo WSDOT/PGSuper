@@ -290,7 +290,7 @@ void CTxDOTAgentImp::ProcessTOGAReport(const CTxDOTCommandLineInfo& rCmdInfo)
          ::AfxMessageBox(msg);
       }
    }
-   catch(const sysXBase& e)
+   catch(const WBFL::System::XBase& e)
    {
       std::_tstring msg;
       e.GetErrorMessage(&msg);

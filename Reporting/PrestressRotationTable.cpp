@@ -238,14 +238,14 @@ bool CPrestressRotationTable::AssertValid() const
    return true;
 }
 
-void CPrestressRotationTable::Dump(dbgDumpContext& os) const
+void CPrestressRotationTable::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CPrestressRotationTable") << endl;
+   os << _T("Dump for CPrestressRotationTable") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CPrestressRotationTable::TestMe(dbgLog& rlog)
+bool CPrestressRotationTable::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CPrestressRotationTable");
 

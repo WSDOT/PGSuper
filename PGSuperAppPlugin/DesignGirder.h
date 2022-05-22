@@ -23,7 +23,7 @@
 #ifndef INCLUDED_DESIGNGIRDER_H_
 #define INCLUDED_DESIGNGIRDER_H_
 
-#include <System\Transaction.h>
+#include <EAF\EAFTransaction.h>
 #include <PgsExt\GirderDesignArtifact.h>
 #include <PgsExt\StrandData.h>
 #include <PgsExt\GirderMaterial.h>
@@ -40,7 +40,7 @@ typedef enum SlabOffsetDesignSelectionType
 } SlabOffsetType;
 
 
-class txnDesignGirder : public txnTransaction
+class txnDesignGirder : public CEAFTransaction
 {
 public:
    txnDesignGirder(std::vector<const pgsGirderDesignArtifact*>& artifacts, SlabOffsetDesignSelectionType soSelectionType, SpanIndexType fromSpan, GirderIndexType fromGirder);
@@ -48,10 +48,10 @@ public:
 
    virtual bool Execute();
    virtual void Undo();
-   virtual txnTransaction* CreateClone() const;
+   virtual std::unique_ptr<CEAFTransaction> CreateClone() const;
    virtual std::_tstring Name() const;
-   virtual bool IsUndoable();
-   virtual bool IsRepeatable();
+   virtual bool IsUndoable() const;
+   virtual bool IsRepeatable() const;
 
 private:
    txnDesignGirder();

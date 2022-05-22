@@ -32,14 +32,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-pgsMacroTxn::pgsMacroTxn()
-{
-}
-
-pgsMacroTxn::~pgsMacroTxn()
-{
-}
-
 bool pgsMacroTxn::Execute()
 {
    CComPtr<IBroker> pBroker;
@@ -50,7 +42,7 @@ bool pgsMacroTxn::Execute()
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);
 
-   bool bResult = txnMacroTxn::Execute();
+   bool bResult = CEAFMacroTxn::Execute();
 
    return bResult;
 }
@@ -65,25 +57,13 @@ void pgsMacroTxn::Undo()
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);
 
-   txnMacroTxn::Undo();
+   CEAFMacroTxn::Undo();
 }
 
-txnTransaction* pgsMacroTxn::CreateClone() const
+std::unique_ptr<CEAFTransaction> pgsMacroTxn::CreateClone() const
 {
-   txnMacroTxn* pClone = new pgsMacroTxn;
-
-   TxnConstIterator begin = m_Transactions.begin();
-   TxnConstIterator end   = m_Transactions.end();
-   while ( begin != end )
-   {
-      TransactionPtr pTxn = *begin++;
-
-      // Use the reference version.
-      // We are not giving up ownership of the txn
-      pClone->AddTransaction(*pTxn);
-   }
-
-   pClone->Name(m_Name);
-
-   return pClone;
+   std::unique_ptr<pgsMacroTxn> clone(std::make_unique<pgsMacroTxn>());
+   clone->Name(m_Name);
+   std::for_each(std::begin(m_Transactions), std::end(m_Transactions), [&clone](auto& txn) {clone->AddTransaction(*txn); });
+   return clone;
 }

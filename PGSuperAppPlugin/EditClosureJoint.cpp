@@ -100,9 +100,9 @@ void txnEditClosureJoint::Undo()
    }
 }
 
-txnTransaction* txnEditClosureJoint::CreateClone() const
+std::unique_ptr<CEAFTransaction>txnEditClosureJoint::CreateClone() const
 {
-   return new txnEditClosureJoint(m_ClosureKey,m_NewData);
+   return std::make_unique<txnEditClosureJoint>(m_ClosureKey,m_NewData);
 }
 
 std::_tstring txnEditClosureJoint::Name() const
@@ -120,12 +120,12 @@ std::_tstring txnEditClosureJoint::Name() const
    return os.str();
 }
 
-bool txnEditClosureJoint::IsUndoable()
+bool txnEditClosureJoint::IsUndoable() const
 {
    return true;
 }
 
-bool txnEditClosureJoint::IsRepeatable()
+bool txnEditClosureJoint::IsRepeatable() const
 {
    return false;
 }

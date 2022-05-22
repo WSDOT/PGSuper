@@ -1775,14 +1775,14 @@ bool CConstructabilityCheckTable::AssertValid() const
    return true;
 }
 
-void CConstructabilityCheckTable::Dump(dbgDumpContext& os) const
+void CConstructabilityCheckTable::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CConstructabilityCheckTable") << endl;
+   os << _T("Dump for CConstructabilityCheckTable") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CConstructabilityCheckTable::TestMe(dbgLog& rlog)
+bool CConstructabilityCheckTable::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CConstructabilityCheckTable");
 

@@ -27,6 +27,7 @@
 
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <EAF\EAFTxnManager.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -94,6 +95,6 @@ void CInplaceTemporarySupportStationEditEvents::Handle_OnChanged(iDisplayObject*
       }
    }
 
-   txnEditTemporarySupportStation* pTxn = new txnEditTemporarySupportStation(m_TSIdx,old_station,new_station);
-   txnTxnManager::GetInstance()->Execute(pTxn);
+   std::unique_ptr<txnEditTemporarySupportStation> pTxn(std::make_unique<txnEditTemporarySupportStation>(m_TSIdx,old_station,new_station));
+   CEAFTxnManager::GetInstance()->Execute(std::move(pTxn));
 }

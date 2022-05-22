@@ -465,12 +465,12 @@ Float64 CGirderModelManager::GetAxial(IntervalIndexType intervalIdx,pgsTypes::Pr
    return axial.front();
 }
 
-sysSectionValue CGirderModelManager::GetShear(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
+WBFL::System::SectionValue CGirderModelManager::GetShear(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
 {
    PoiList vPoi;
    vPoi.push_back(poi);
 
-   std::vector<sysSectionValue> shears = GetShear(intervalIdx,pfType,vPoi,bat,resultsType);
+   std::vector<WBFL::System::SectionValue> shears = GetShear(intervalIdx,pfType,vPoi,bat,resultsType);
    ATLASSERT(shears.size() == 1);
 
    return shears.front();
@@ -696,12 +696,12 @@ void CGirderModelManager::GetLiveLoadAxial(IntervalIndexType intervalIdx,pgsType
    }
 }
 
-void CGirderModelManager::GetLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,sysSectionValue* pVmin,sysSectionValue* pVmax,VehicleIndexType* pMminTruck,VehicleIndexType* pMmaxTruck) const
+void CGirderModelManager::GetLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,WBFL::System::SectionValue* pVmin,WBFL::System::SectionValue* pVmax,VehicleIndexType* pMminTruck,VehicleIndexType* pMmaxTruck) const
 {
    PoiList vPoi;
    vPoi.push_back(poi);
 
-   std::vector<sysSectionValue> Vmin, Vmax;
+   std::vector<WBFL::System::SectionValue> Vmin, Vmax;
    std::vector<VehicleIndexType> MminTruck, MmaxTruck;
    GetLiveLoadShear(intervalIdx,llType,vPoi,bat,bIncludeImpact,bIncludeLLDF,&Vmin,&Vmax,pMminTruck ? &MminTruck : nullptr, pMmaxTruck ? &MmaxTruck : nullptr);
 
@@ -1069,7 +1069,7 @@ void CGirderModelManager::GetVehicularLiveLoadAxial(IntervalIndexType intervalId
    }
 }
 
-void CGirderModelManager::GetVehicularLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,sysSectionValue* pVmin,sysSectionValue* pVmax,
+void CGirderModelManager::GetVehicularLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,WBFL::System::SectionValue* pVmin,WBFL::System::SectionValue* pVmax,
                                AxleConfiguration* pMinLeftAxleConfig,
                                AxleConfiguration* pMinRightAxleConfig,
                                AxleConfiguration* pMaxLeftAxleConfig,
@@ -1078,7 +1078,7 @@ void CGirderModelManager::GetVehicularLiveLoadShear(IntervalIndexType intervalId
    PoiList vPoi;
    vPoi.push_back(poi);
 
-   std::vector<sysSectionValue> Vmin, Vmax;
+   std::vector<WBFL::System::SectionValue> Vmin, Vmax;
    std::vector<AxleConfiguration> minLeftAxleConfig,minRightAxleConfig,maxLeftAxleConfig,maxRightAxleConfig;
    GetVehicularLiveLoadShear(intervalIdx,llType,vehicleIdx,vPoi,bat,
                              bIncludeImpact, bIncludeLLDF,&Vmin,&Vmax,
@@ -1509,12 +1509,12 @@ std::vector<Float64> CGirderModelManager::GetAxial(IntervalIndexType intervalIdx
    return results;
 }
 
-std::vector<sysSectionValue> CGirderModelManager::GetShear(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
+std::vector<WBFL::System::SectionValue> CGirderModelManager::GetShear(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
 {
    ATLASSERT(pfType != pgsTypes::pftPostTensioning);
    ATLASSERT(pfType != pgsTypes::pftPretension); // pretension results are obtained from the segment models
 
-   std::vector<sysSectionValue> results;
+   std::vector<WBFL::System::SectionValue> results;
    results.reserve(vPoi.size());
 
    // after erection - results are in the girder models
@@ -1555,7 +1555,7 @@ std::vector<sysSectionValue> CGirderModelManager::GetShear(IntervalIndexType int
       result->get_YLeft(&FyLeft);
       result->get_YRight(&FyRight);
 
-      sysSectionValue V(-FyLeft,FyRight);
+      WBFL::System::SectionValue V(-FyLeft,FyRight);
 
       results.push_back(V);
    }
@@ -1988,7 +1988,7 @@ void CGirderModelManager::GetLiveLoadAxial(IntervalIndexType intervalIdx,pgsType
    } // next poi
 }
 
-void CGirderModelManager::GetLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<sysSectionValue>* pVmin,std::vector<sysSectionValue>* pVmax,std::vector<VehicleIndexType>* pMminTruck,std::vector<VehicleIndexType>* pMmaxTruck) const
+void CGirderModelManager::GetLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<WBFL::System::SectionValue>* pVmin,std::vector<WBFL::System::SectionValue>* pVmax,std::vector<VehicleIndexType>* pMminTruck,std::vector<VehicleIndexType>* pMmaxTruck) const
 {
    USES_CONVERSION;
 
@@ -2060,8 +2060,8 @@ void CGirderModelManager::GetLiveLoadShear(IntervalIndexType intervalIdx,pgsType
       minResults->GetResult(idx,&FyMinLeft, pMmaxTruck ? &FyMinLeftConfig  : nullptr,
                                 &FyMinRight,pMmaxTruck ? &FyMinRightConfig : nullptr);
 
-      sysSectionValue minValues(-FyMaxLeft,FyMaxRight);
-      sysSectionValue maxValues(-FyMinLeft,FyMinRight);
+      WBFL::System::SectionValue minValues(-FyMaxLeft,FyMaxRight);
+      WBFL::System::SectionValue maxValues(-FyMinLeft,FyMinRight);
 
       pVmin->push_back( minValues );
       pVmax->push_back( maxValues );
@@ -2669,7 +2669,7 @@ void CGirderModelManager::GetVehicularLiveLoadAxial(IntervalIndexType intervalId
    } // next poi
 }
 
-void CGirderModelManager::GetVehicularLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<sysSectionValue>* pVmin,std::vector<sysSectionValue>* pVmax,
+void CGirderModelManager::GetVehicularLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<WBFL::System::SectionValue>* pVmin,std::vector<WBFL::System::SectionValue>* pVmax,
                                std::vector<AxleConfiguration>* pMinLeftAxleConfig,
                                std::vector<AxleConfiguration>* pMinRightAxleConfig,
                                std::vector<AxleConfiguration>* pMaxLeftAxleConfig,
@@ -2740,8 +2740,8 @@ void CGirderModelManager::GetVehicularLiveLoadShear(IntervalIndexType intervalId
       minResults->GetResult(idx,&FyMinLeft, pMaxLeftAxleConfig  ? &minLeftConfig  : nullptr,
                                 &FyMinRight,pMaxRightAxleConfig ? &minRightConfig : nullptr);
 
-      sysSectionValue minValues(-FyMaxLeft,FyMaxRight);
-      sysSectionValue maxValues(-FyMinLeft,FyMinRight);
+      WBFL::System::SectionValue minValues(-FyMaxLeft,FyMaxRight);
+      WBFL::System::SectionValue maxValues(-FyMinLeft,FyMinRight);
 
       pVmin->push_back( minValues );
       pVmax->push_back( maxValues );
@@ -3229,12 +3229,12 @@ void CGirderModelManager::GetCombinedLiveLoadAxial(IntervalIndexType intervalIdx
    *pMax = Pmax.front();
 }
 
-void CGirderModelManager::GetCombinedLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,sysSectionValue* pVmin,sysSectionValue* pVmax) const
+void CGirderModelManager::GetCombinedLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,WBFL::System::SectionValue* pVmin,WBFL::System::SectionValue* pVmax) const
 {
    PoiList vPoi;
    vPoi.push_back(poi);
 
-   std::vector<sysSectionValue> Vmin, Vmax;
+   std::vector<WBFL::System::SectionValue> Vmin, Vmax;
    GetCombinedLiveLoadShear(intervalIdx,llType,vPoi,bat,bIncludeImpact,&Vmin,&Vmax);
 
    ATLASSERT( Vmin.size() == 1 && Vmax.size() == 1 );
@@ -3348,11 +3348,11 @@ std::vector<Float64> CGirderModelManager::GetAxial(IntervalIndexType intervalIdx
    return results;
 }
 
-std::vector<sysSectionValue> CGirderModelManager::GetShear(IntervalIndexType intervalIdx,LoadingCombinationType combo,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
+std::vector<WBFL::System::SectionValue> CGirderModelManager::GetShear(IntervalIndexType intervalIdx,LoadingCombinationType combo,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
 {
    ATLASSERT(combo != lcPS);
 
-   std::vector<sysSectionValue> results;
+   std::vector<WBFL::System::SectionValue> results;
    results.reserve(vPoi.size());
 
    CGirderModelData* pModelData = UpdateLBAMPois(vPoi);
@@ -3795,7 +3795,7 @@ void CGirderModelManager::GetCombinedLiveLoadAxial(IntervalIndexType intervalIdx
    }
 }
 
-void CGirderModelManager::GetCombinedLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact, std::vector<sysSectionValue>* pVmin,std::vector<sysSectionValue>* pVmax) const
+void CGirderModelManager::GetCombinedLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact, std::vector<WBFL::System::SectionValue>* pVmin,std::vector<WBFL::System::SectionValue>* pVmax) const
 {
    pVmax->clear();
    pVmin->clear();
@@ -3837,8 +3837,8 @@ void CGirderModelManager::GetCombinedLiveLoadShear(IntervalIndexType intervalIdx
       Float64 FyMinLeft, FyMinRight;
       minResults->GetResult(idx,&FyMinLeft,nullptr,&FyMinRight,nullptr);
 
-      sysSectionValue minValue(-FyMaxLeft,FyMaxRight);
-      sysSectionValue maxValue(-FyMinLeft,FyMinRight);
+      WBFL::System::SectionValue minValue(-FyMaxLeft,FyMaxRight);
+      WBFL::System::SectionValue maxValue(-FyMinLeft,FyMinRight);
 
       pVmin->push_back( minValue );
       pVmax->push_back( maxValue );
@@ -4045,12 +4045,12 @@ void CGirderModelManager::GetCombinedLiveLoadStress(IntervalIndexType intervalId
 
 ///////////////////////////////////////////
 // ILimitStateForces
-void CGirderModelManager::GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,sysSectionValue* pMin,sysSectionValue* pMax) const
+void CGirderModelManager::GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,WBFL::System::SectionValue* pMin,WBFL::System::SectionValue* pMax) const
 {
    PoiList vPoi;
    vPoi.push_back(poi);
 
-   std::vector<sysSectionValue> vMin, vMax;
+   std::vector<WBFL::System::SectionValue> vMin, vMax;
    GetShear(intervalIdx,limitState,vPoi,bat,&vMin,&vMax);
 
    ATLASSERT(vMin.size() == 1);
@@ -4147,7 +4147,7 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,pgsTypes::Limi
    *pMax = vMax.front();
 }
 
-void CGirderModelManager::GetConcurrentShear(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,sysSectionValue* pMin,sysSectionValue* pMax) const
+void CGirderModelManager::GetConcurrentShear(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,WBFL::System::SectionValue* pMin,WBFL::System::SectionValue* pMax) const
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -4248,8 +4248,8 @@ void CGirderModelManager::GetConcurrentShear(IntervalIndexType intervalIdx,pgsTy
    minShearsRight->get_Item(0,&result);
    result->get_YRight(&FyMinRight);
    
-   *pMax = sysSectionValue(-FyMaxLeft,FyMaxRight); // shear concurrent with Max moment
-   *pMin = sysSectionValue(-FyMinLeft,FyMinRight); // shear concurrent with Min moment
+   *pMax = WBFL::System::SectionValue(-FyMaxLeft,FyMaxRight); // shear concurrent with Max moment
+   *pMin = WBFL::System::SectionValue(-FyMinLeft,FyMinRight); // shear concurrent with Min moment
 }
 
 void CGirderModelManager::GetViMmax(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,Float64* pVi,Float64* pMmax) const
@@ -4257,14 +4257,14 @@ void CGirderModelManager::GetViMmax(IntervalIndexType intervalIdx,pgsTypes::Limi
    GET_IFACE(ISpecification,pSpec);
 
    Float64 Mu_max, Mu_min;
-   sysSectionValue Vi_min, Vi_max;
+   WBFL::System::SectionValue Vi_min, Vi_max;
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
    if ( analysisType == pgsTypes::Envelope )
    {
       Float64 Mmin,Mmax;
-      sysSectionValue Vimin, Vimax;
+      WBFL::System::SectionValue Vimin, Vimax;
 
       GetMoment( intervalIdx, limitState, poi, pgsTypes::MaxSimpleContinuousEnvelope, &Mmin, &Mmax );
       GetConcurrentShear(  intervalIdx, limitState, poi, pgsTypes::MaxSimpleContinuousEnvelope, &Vimin, &Vimax );
@@ -4354,7 +4354,7 @@ void CGirderModelManager::GetAxial(IntervalIndexType intervalIdx,pgsTypes::Limit
    }
 }
 
-void CGirderModelManager::GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<sysSectionValue>* pMin,std::vector<sysSectionValue>* pMax) const
+void CGirderModelManager::GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<WBFL::System::SectionValue>* pMin,std::vector<WBFL::System::SectionValue>* pMax) const
 {
    pMin->clear();
    pMax->clear();
@@ -5187,9 +5187,9 @@ std::vector<Float64> CGirderModelManager::GetAxial(IntervalIndexType intervalIdx
    return results;
 }
 
-std::vector<sysSectionValue> CGirderModelManager::GetShear(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
+std::vector<WBFL::System::SectionValue> CGirderModelManager::GetShear(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
 {
-   std::vector<sysSectionValue> results;
+   std::vector<WBFL::System::SectionValue> results;
    results.reserve(vPoi.size());
 
    CGirderModelData* pModelData = UpdateLBAMPois(vPoi);
@@ -5228,7 +5228,7 @@ std::vector<sysSectionValue> CGirderModelManager::GetShear(IntervalIndexType int
       result->get_YLeft(&FyLeft);
       result->get_YRight(&FyRight);
 
-      sysSectionValue V(-FyLeft,FyRight);
+      WBFL::System::SectionValue V(-FyLeft,FyRight);
       results.push_back(V);
    }
 

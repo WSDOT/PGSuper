@@ -73,7 +73,7 @@ HaulTruckLibraryEntry& HaulTruckLibraryEntry::operator= (const HaulTruckLibraryE
 }
 
 //======================== OPERATIONS =======================================
-bool HaulTruckLibraryEntry::SaveMe(sysIStructuredSave* pSave)
+bool HaulTruckLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
 {
    pSave->BeginUnit(_T("HaulTruckEntry"), 1.0);
    pSave->Property(_T("Name"),GetName().c_str());
@@ -89,7 +89,7 @@ bool HaulTruckLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    return true;
 }
 
-bool HaulTruckLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
+bool HaulTruckLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 {
    if(pLoad->BeginUnit(_T("HaulTruckEntry")))
    {

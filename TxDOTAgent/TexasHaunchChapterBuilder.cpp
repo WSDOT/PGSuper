@@ -254,9 +254,9 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
    // Setup up some unit value prototypes
    static WBFL::Units::Length3Data large_volume_unit(WBFL::Units::Measure::Feet3);
    if ( pDisplayUnits->GetUnitMode() == eafTypes::umUS )
-      large_volume_unit.Update(WBFL::Units::Measure::Yard3,0.001,12,2,sysNumericFormatTool::Fixed);
+      large_volume_unit.Update(WBFL::Units::Measure::Yard3,0.001,12,2,WBFL::System::NumericFormatTool::Format::Fixed);
    else
-      large_volume_unit.Update(WBFL::Units::Measure::Meter3,0.001,12,2,sysNumericFormatTool::Fixed);
+      large_volume_unit.Update(WBFL::Units::Measure::Meter3,0.001,12,2,WBFL::System::NumericFormatTool::Format::Fixed);
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, disp,   pDisplayUnits->GetDeflectionUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dispft, pDisplayUnits->GetSpanLengthUnit(), false );

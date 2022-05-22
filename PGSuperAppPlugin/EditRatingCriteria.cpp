@@ -756,9 +756,9 @@ void txnEditRatingCriteria::Execute(int i)
    pRatingSpec->SetSpecialPermitType(m_Data[i].m_Permit.SpecialPermitType);
 }
 
-txnTransaction* txnEditRatingCriteria::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnEditRatingCriteria::CreateClone() const
 {
-   return new txnEditRatingCriteria(m_Data[0],m_Data[1]);
+   return std::make_unique<txnEditRatingCriteria>(m_Data[0],m_Data[1]);
 }
 
 std::_tstring txnEditRatingCriteria::Name() const
@@ -766,12 +766,12 @@ std::_tstring txnEditRatingCriteria::Name() const
    return _T("Edit Rating Criteria");
 }
 
-bool txnEditRatingCriteria::IsUndoable()
+bool txnEditRatingCriteria::IsUndoable() const
 {
    return true;
 }
 
-bool txnEditRatingCriteria::IsRepeatable()
+bool txnEditRatingCriteria::IsRepeatable() const
 {
    return false;
 }

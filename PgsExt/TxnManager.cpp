@@ -30,21 +30,21 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-txnTxnManager* pgsTxnManagerFactory::CreateTransactionManager()
+std::unique_ptr<CEAFTxnManager> pgsTxnManagerFactory::CreateTransactionManager()
 {
-   return new pgsTxnManager;
+   return std::make_unique<pgsTxnManager>();
 }
 
-void pgsTxnManager::Execute(txnTransaction* pTxn)
+void pgsTxnManager::Execute(std::unique_ptr<CEAFTransaction>&& pTxn)
 {
    try
    {
-      txnTxnManager::Execute(pTxn);
+      CEAFTxnManager::Execute(std::move(pTxn));
    }
    catch (...)
    {
-      m_TxnHistory.push_back(TxnItem(pTxn));
-      m_Mode = txnTxnManager::RepeatMode;
+      m_TxnHistory.emplace_back(std::move(pTxn));
+      m_Mode = CEAFTxnManager::Mode::Repeat;
       throw;
    }
 }

@@ -537,14 +537,14 @@ bool CStrandEccTable::AssertValid() const
    return true;
 }
 
-void CStrandEccTable::Dump(dbgDumpContext& os) const
+void CStrandEccTable::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CStrandEccTable") << endl;
+   os << _T("Dump for CStrandEccTable") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CStrandEccTable::TestMe(dbgLog& rlog)
+bool CStrandEccTable::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CStrandEccTable");
 

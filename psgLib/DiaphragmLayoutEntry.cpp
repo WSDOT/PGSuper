@@ -73,7 +73,7 @@ DiaphragmLayoutEntry& DiaphragmLayoutEntry::operator= (const DiaphragmLayoutEntr
 }
 
 //======================== OPERATIONS =======================================
-bool DiaphragmLayoutEntry::SaveMe(sysIStructuredSave* pSave)
+bool DiaphragmLayoutEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
 {
    pSave->BeginUnit(_T("DiaphragmLayoutEntry"), 1.0);
 
@@ -93,7 +93,7 @@ bool DiaphragmLayoutEntry::SaveMe(sysIStructuredSave* pSave)
    return false;
 }
 
-bool DiaphragmLayoutEntry::LoadMe(sysIStructuredLoad* pLoad)
+bool DiaphragmLayoutEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 {
    if(pLoad->BeginUnit(_T("DiaphragmLayoutEntry")))
    {
@@ -232,20 +232,20 @@ bool DiaphragmLayoutEntry::AssertValid() const
    return libLibraryEntry::AssertValid();
 }
 
-void DiaphragmLayoutEntry::Dump(dbgDumpContext& os) const
+void DiaphragmLayoutEntry::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for DiaphragmLayoutEntry")<<endl;
+   os << _T("Dump for DiaphragmLayoutEntry")<< WBFL::Debug::endl;
    libLibraryEntry::Dump( os );
    for (DiaphragmLayoutVec::const_iterator it = m_DiaphragmLayoutVec.begin(); it!=m_DiaphragmLayoutVec.end(); it++)
    {
-      os<<_T(" EndOfRange = ")<< (*it).EndOfRange<<endl;
-      os<<_T(" NumberOfDiaphragms = ")<< (*it).NumberOfDiaphragms<<endl;
+      os<<_T(" EndOfRange = ")<< (*it).EndOfRange<< WBFL::Debug::endl;
+      os<<_T(" NumberOfDiaphragms = ")<< (*it).NumberOfDiaphragms<< WBFL::Debug::endl;
    }
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool DiaphragmLayoutEntry::TestMe(dbgLog& rlog)
+bool DiaphragmLayoutEntry::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("DiaphragmLayoutEntry");
 

@@ -49,7 +49,7 @@
 #include <EAF\EAFAutoProgress.h>
 #include <EAF\EAFProjectLog.h>
 
-#include <System\StructuredLoadXmlPrs.h>
+#include <System\StructuredLoadXml.h>
 
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
@@ -961,7 +961,7 @@ void CTxDOTOptionalDesignDoc::InitializeLibraryManager()
 
    CComBSTR bpath(strMasterLibaryFile);
 
-   FileStream ifile;
+   WBFL::System::FileStream ifile;
    if ( ifile.open(bpath) )
    {
       // try to load file
@@ -970,7 +970,7 @@ void CTxDOTOptionalDesignDoc::InitializeLibraryManager()
          // clear out library
          m_LibMgr.ClearAllEntries();
 
-         sysStructuredLoadXmlPrs load;
+         WBFL::System::StructuredLoadXml load;
          load.BeginLoad( &ifile );
 
          // Problem : Library Editor application specific code is in the
@@ -995,10 +995,10 @@ void CTxDOTOptionalDesignDoc::InitializeLibraryManager()
          // success!
          WATCH(_T("Master Library loaded successfully"));
       }
-      catch( sysXStructuredLoad& e )
+      catch(WBFL::System::XStructuredLoad& e )
       {
          TxDOTBrokerRetrieverException exc;
-         if ( e.GetExplicitReason() == sysXStructuredLoad::CantInitializeTheParser )
+         if ( e.GetReasonCode() == WBFL::System::XStructuredLoad::CantInitializeTheParser )
          {
             exc.Message = _T("Failed to initialize the xml parser. This is an installation issue.");
          }

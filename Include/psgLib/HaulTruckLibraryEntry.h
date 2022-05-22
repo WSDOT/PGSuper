@@ -34,7 +34,7 @@ class pgsLibraryEntryDifferenceItem;
 class HaulTruckLibraryEntry;
 class HaulTruckLibraryEntryObserver;
 #pragma warning(disable:4231)
-PSGLIBTPL sysSubjectT<HaulTruckLibraryEntryObserver, HaulTruckLibraryEntry>;
+PSGLIBTPL WBFL::System::SubjectT<HaulTruckLibraryEntryObserver, HaulTruckLibraryEntry>;
 
 /*****************************************************************************
 CLASS 
@@ -45,7 +45,7 @@ CLASS
 class PSGLIBCLASS HaulTruckLibraryEntryObserver
 {
 public:
-   virtual void Update(HaulTruckLibraryEntry* pSubject, Int32 hint)=0;
+   virtual void Update(HaulTruckLibraryEntry& subject, Int32 hint)=0;
 };
 
 /*****************************************************************************
@@ -56,7 +56,7 @@ CLASS
 *****************************************************************************/
 
 class PSGLIBCLASS HaulTruckLibraryEntry : public libLibraryEntry, public ISupportIcon,
-       public sysSubjectT<HaulTruckLibraryEntryObserver, HaulTruckLibraryEntry>
+       public WBFL::System::SubjectT<HaulTruckLibraryEntryObserver, HaulTruckLibraryEntry>
 {
 public:
    HaulTruckLibraryEntry();
@@ -103,11 +103,11 @@ public:
 
    //------------------------------------------------------------------------
    // Save to structured storage
-   virtual bool SaveMe(sysIStructuredSave* pSave);
+   virtual bool SaveMe(WBFL::System::IStructuredSave* pSave);
 
    //------------------------------------------------------------------------
    // Load from structured storage
-   virtual bool LoadMe(sysIStructuredLoad* pLoad);
+   virtual bool LoadMe(WBFL::System::IStructuredLoad* pLoad);
 
    //------------------------------------------------------------------------
    // Compares this library entry with rOther. Returns true if the entries are the same.

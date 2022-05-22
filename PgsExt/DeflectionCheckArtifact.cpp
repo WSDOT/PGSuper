@@ -173,14 +173,14 @@ bool pgsDeflectionCheckArtifact::AssertValid() const
    return true;
 }
 
-void pgsDeflectionCheckArtifact::Dump(dbgDumpContext& os) const
+void pgsDeflectionCheckArtifact::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << "Dump for pgsDeflectionCheckArtifact" << endl;
+   os << "Dump for pgsDeflectionCheckArtifact" << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool pgsDeflectionCheckArtifact::TestMe(dbgLog& rlog)
+bool pgsDeflectionCheckArtifact::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("pgsDeflectionCheckArtifact");
 

@@ -97,7 +97,7 @@ bool CHorizontalInterfaceZoneData::operator != (const CHorizontalInterfaceZoneDa
 }
 
 //======================== OPERATIONS =======================================
-HRESULT CHorizontalInterfaceZoneData::Load(sysIStructuredLoad* pStrLoad)
+HRESULT CHorizontalInterfaceZoneData::Load(WBFL::System::IStructuredLoad* pStrLoad)
 {
    HRESULT hr = S_OK;
 
@@ -136,7 +136,7 @@ HRESULT CHorizontalInterfaceZoneData::Load(sysIStructuredLoad* pStrLoad)
    return hr;
 }
 
-HRESULT CHorizontalInterfaceZoneData::Save(sysIStructuredSave* pStrSave)
+HRESULT CHorizontalInterfaceZoneData::Save(WBFL::System::IStructuredSave* pStrSave)
 {
    HRESULT hr = S_OK;
 

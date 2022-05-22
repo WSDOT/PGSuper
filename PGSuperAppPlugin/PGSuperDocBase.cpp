@@ -104,7 +104,7 @@
 
 #include "PGSuperException.h"
 #include <System\FileStream.h>
-#include <System\StructuredLoadXmlPrs.h>
+#include <System\StructuredLoadXml.h>
 
 #include <MFCTools\AutoRegistry.h>
 
@@ -355,7 +355,8 @@ m_bAutoCalcEnabled(true)
    m_bSelectingSegment = false;
    m_bClearingSelection = false;
 
-   txnTxnManager::SetTransactionManagerFactory(&m_TxnMgrFactory);
+   std::unique_ptr<pgsTxnManagerFactory> txnMgrFactory(std::make_unique<pgsTxnManagerFactory>());
+   CEAFTxnManager::SetTransactionManagerFactory(std::move(txnMgrFactory));
 }
 
 CPGSDocBase::~CPGSDocBase()
@@ -451,12 +452,12 @@ bool CPGSDocBase::EditAlignmentDescription(int nPage)
 
    if ( dlg.DoModal() == IDOK )
    {
-      txnEditAlignment* pTxn = new txnEditAlignment(pAlignment->GetAlignmentData2(),     dlg.m_AlignmentPage.m_AlignmentData,
+      std::unique_ptr<txnEditAlignment> pTxn(std::make_unique<txnEditAlignment>(pAlignment->GetAlignmentData2(),     dlg.m_AlignmentPage.m_AlignmentData,
                                                     pAlignment->GetProfileData2(),       dlg.m_ProfilePage.m_ProfileData,
-                                                    pAlignment->GetRoadwaySectionData(), dlg.m_CrownSlopePage.m_RoadwaySectionData );
+                                                    pAlignment->GetRoadwaySectionData(), dlg.m_CrownSlopePage.m_RoadwaySectionData ));
 
       GET_IFACE(IEAFTransactions,pTransactions);
-      pTransactions->Execute(pTxn);
+      pTransactions->Execute(std::move(pTxn));
 
       return true;
    }
@@ -487,23 +488,23 @@ bool CPGSDocBase::EditBridgeDescription(int nPage)
    if ( dlg.DoModal() == IDOK )
    {
 
-      txnTransaction* pTxn = new txnEditBridge(*pOldBridgeDesc,      dlg.GetBridgeDescription(),
+      std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc,      dlg.GetBridgeDescription(),
                                               oldExposureCondition, dlg.m_EnvironmentalPage.m_Exposure == 0 ? expNormal : expSevere,
-                                              oldRelHumidity,       dlg.m_EnvironmentalPage.m_RelHumidity);
+                                              oldRelHumidity,       dlg.m_EnvironmentalPage.m_RelHumidity));
 
 
-      txnTransaction* pExtensionTxn = dlg.GetExtensionPageTransaction();
+      auto pExtensionTxn = dlg.GetExtensionPageTransaction();
       if ( pExtensionTxn )
       {
-         txnMacroTxn* pMacro = new pgsMacroTxn;
+         std::unique_ptr<CEAFMacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
          pMacro->Name(pTxn->Name());
-         pMacro->AddTransaction(pTxn);
-         pMacro->AddTransaction(pExtensionTxn);
-         pTxn = pMacro;
+         pMacro->AddTransaction(std::move(pTxn));
+         pMacro->AddTransaction(std::move(pExtensionTxn));
+         pTxn = std::move(pMacro);
       }
 
       GET_IFACE(IEAFTransactions,pTransactions);
-      pTransactions->Execute(pTxn);
+      pTransactions->Execute(std::move(pTxn));
 
       return true;
    }
@@ -528,19 +529,19 @@ bool CPGSDocBase::EditPierDescription(PierIndexType pierIdx, int nPage)
 
    if ( dlg.DoModal() == IDOK )
    {
-      txnTransaction* pTxn = new txnEditPier(pierIdx,*pBridgeDesc,*dlg.GetBridgeDescription());
-      txnTransaction* pExtensionTxn = dlg.GetExtensionPageTransaction();
-      if ( pExtensionTxn != nullptr )
+      std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditPier>(pierIdx,*pBridgeDesc,*dlg.GetBridgeDescription()));
+      auto pExtensionTxn = dlg.GetExtensionPageTransaction();
+      if ( pExtensionTxn )
       {
-         txnMacroTxn* pMacro = new pgsMacroTxn;
+         std::unique_ptr<CEAFMacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
          pMacro->Name(pTxn->Name());
-         pMacro->AddTransaction(pTxn);
-         pMacro->AddTransaction(pExtensionTxn);
-         pTxn = pMacro;
+         pMacro->AddTransaction(std::move(pTxn));
+         pMacro->AddTransaction(std::move(pExtensionTxn));
+         pTxn = std::move(pMacro);
       }
 
       GET_IFACE(IEAFTransactions,pTransactions);
-      pTransactions->Execute(pTxn);
+      pTransactions->Execute(std::move(pTxn));
    }
 
    return true;
@@ -566,19 +567,19 @@ bool CPGSDocBase::EditSpanDescription(SpanIndexType spanIdx, int nPage)
 
    if ( dlg.DoModal() == IDOK )
    {
-      txnTransaction* pTxn = new txnEditSpan(spanIdx,*pBridgeDesc,*dlg.GetBridgeDescription());
+      std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditSpan>(spanIdx,*pBridgeDesc,*dlg.GetBridgeDescription()));
 
-      txnTransaction* pExtensionTxn = dlg.GetExtensionPageTransaction();
+      auto pExtensionTxn = dlg.GetExtensionPageTransaction();
       if ( pExtensionTxn )
       {
-         txnMacroTxn* pMacro = new pgsMacroTxn;
+         std::unique_ptr<CEAFMacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
          pMacro->Name(pTxn->Name());
-         pMacro->AddTransaction(pTxn);
-         pMacro->AddTransaction(pExtensionTxn);
-         pTxn = pMacro;
+         pMacro->AddTransaction(std::move(pTxn));
+         pMacro->AddTransaction(std::move(pExtensionTxn));
+         pTxn = std::move(pMacro);
       }
       GET_IFACE(IEAFTransactions,pTransactions);
-      pTransactions->Execute(pTxn);
+      pTransactions->Execute(std::move(pTxn));
    }
 
    return true;
@@ -599,13 +600,13 @@ void CPGSDocBase::OnEditHaunch()
       enumExposureCondition oldExposureCondition = pEnvironment->GetExposureCondition();
       Float64 oldRelHumidity = pEnvironment->GetRelHumidity();
 
-      txnTransaction* pTxn = new txnEditBridge(*pOldBridgeDesc,     dlg.m_BridgeDesc,
+      std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc,     dlg.m_BridgeDesc,
                                               oldExposureCondition, oldExposureCondition, 
-                                              oldRelHumidity,       oldRelHumidity);
+                                              oldRelHumidity,       oldRelHumidity));
 
 
       GET_IFACE(IEAFTransactions,pTransactions);
-      pTransactions->Execute(pTxn);
+      pTransactions->Execute(std::move(pTxn));
    }
 }
 
@@ -639,13 +640,13 @@ bool CPGSDocBase::DoEditBearing()
       // dialog modifies descr
       dlg.ModifyBridgeDescr(&newBridgeDesc);
 
-      txnTransaction* pTxn = new txnEditBridge(*pOldBridgeDesc,     newBridgeDesc,
+      std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc,     newBridgeDesc,
                                               oldExposureCondition, oldExposureCondition, 
-                                              oldRelHumidity,       oldRelHumidity);
+                                              oldRelHumidity,       oldRelHumidity));
 
 
       GET_IFACE(IEAFTransactions,pTransactions);
-      pTransactions->Execute(pTxn);
+      pTransactions->Execute(std::move(pTxn));
 
       return true;
    }
@@ -785,10 +786,10 @@ bool CPGSDocBase::EditDirectSelectionPrestressing(const CSegmentKey& segmentKey)
       UpdatePrestressForce(segmentKey, pgsTypes::Temporary, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
 
       // Fire our transaction
-      txnEditPrecastSegment* pTxn = new txnEditPrecastSegment(segmentKey,newSegmentData);
+      std::unique_ptr<txnEditPrecastSegment> pTxn(std::make_unique<txnEditPrecastSegment>(segmentKey,newSegmentData));
 
       GET_IFACE(IEAFTransactions,pTransactions);
-      pTransactions->Execute(pTxn);
+      pTransactions->Execute(std::move(pTxn));
 
       return true;
    }
@@ -861,10 +862,10 @@ bool CPGSDocBase::EditDirectRowInputPrestressing(const CSegmentKey& segmentKey)
       UpdatePrestressForce(segmentKey, pgsTypes::Temporary, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
 
       // Fire our transaction
-      txnEditPrecastSegment* pTxn = new txnEditPrecastSegment(segmentKey,newSegmentData);
+      std::unique_ptr<txnEditPrecastSegment> pTxn(std::make_unique<txnEditPrecastSegment>(segmentKey,newSegmentData));
 
       GET_IFACE(IEAFTransactions,pTransactions);
-      pTransactions->Execute(pTxn);
+      pTransactions->Execute(std::move(pTxn));
 
       return true;
    }
@@ -949,10 +950,10 @@ bool CPGSDocBase::EditDirectStrandInputPrestressing(const CSegmentKey& segmentKe
       UpdatePrestressForce(segmentKey, pgsTypes::Temporary, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
 
       // Fire our transaction
-      txnEditPrecastSegment* pTxn = new txnEditPrecastSegment(segmentKey, newSegmentData);
+      std::unique_ptr<txnEditPrecastSegment> pTxn(std::make_unique<txnEditPrecastSegment>(segmentKey, newSegmentData));
 
       GET_IFACE(IEAFTransactions, pTransactions);
-      pTransactions->Execute(pTxn);
+      pTransactions->Execute(std::move(pTxn));
 
       return true;
    }
@@ -971,9 +972,9 @@ void CPGSDocBase::AddPointLoad(const CPointLoadData& loadData)
    CEditPointLoadDlg dlg(loadData,pTimelineMgr);
    if ( dlg.DoModal() == IDOK )
    {
-      txnInsertPointLoad* pTxn = new txnInsertPointLoad(dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : nullptr);
+      std::unique_ptr<txnInsertPointLoad> pTxn(std::make_unique<txnInsertPointLoad>(dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : nullptr));
       GET_IFACE(IEAFTransactions,pTransactions);
-      pTransactions->Execute(pTxn);
+      pTransactions->Execute(std::move(pTxn));
    }
 }
 
@@ -1004,9 +1005,9 @@ bool CPGSDocBase::EditPointLoadByID(LoadIDType loadID)
       // only update if changed
       if (*pLoadData != dlg.m_Load || eventID != dlg.m_EventID)
       {
-         txnEditPointLoad* pTxn = new txnEditPointLoad(loadID, *pLoadData, eventID, dlg.m_Load, dlg.m_EventID, dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : nullptr);
+         std::unique_ptr<txnEditPointLoad> pTxn(std::make_unique<txnEditPointLoad>(loadID, *pLoadData, eventID, dlg.m_Load, dlg.m_EventID, dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : nullptr));
          GET_IFACE(IEAFTransactions, pTransactions);
-         pTransactions->Execute(pTxn);
+         pTransactions->Execute(std::move(pTxn));
          return true;
       }
    }
@@ -1023,9 +1024,9 @@ void CPGSDocBase::DeletePointLoad(CollectionIndexType loadIdx)
 
 void CPGSDocBase::DeletePointLoadByID(LoadIDType loadID)
 {
-   txnDeletePointLoad* pTxn = new txnDeletePointLoad(loadID);
+   std::unique_ptr<txnDeletePointLoad> pTxn(std::make_unique<txnDeletePointLoad>(loadID));
    GET_IFACE(IEAFTransactions,pTransactions);
-   pTransactions->Execute(pTxn);
+   pTransactions->Execute(std::move(pTxn));
 }
 
 void CPGSDocBase::AddDistributedLoad(const CDistributedLoadData& loadData)
@@ -1038,9 +1039,9 @@ void CPGSDocBase::AddDistributedLoad(const CDistributedLoadData& loadData)
    CEditDistributedLoadDlg dlg(loadData,pTimelineMgr);
    if ( dlg.DoModal() == IDOK )
    {
-      txnInsertDistributedLoad* pTxn = new txnInsertDistributedLoad(dlg.m_Load,dlg.m_EventID,&dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : nullptr);
+      std::unique_ptr<txnInsertDistributedLoad> pTxn(std::make_unique<txnInsertDistributedLoad>(dlg.m_Load,dlg.m_EventID,&dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : nullptr));
       GET_IFACE(IEAFTransactions,pTransactions);
-      pTransactions->Execute(pTxn);
+      pTransactions->Execute(std::move(pTxn));
    }
 }
 
@@ -1069,9 +1070,9 @@ bool CPGSDocBase::EditDistributedLoadByID(LoadIDType loadID)
       // only update if changed
       if (*pLoadData != dlg.m_Load || eventID != dlg.m_EventID)
       {
-         txnEditDistributedLoad* pTxn = new txnEditDistributedLoad(loadID, *pLoadData, eventID, dlg.m_Load, dlg.m_EventID, dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : nullptr);
+         std::unique_ptr<txnEditDistributedLoad> pTxn(std::make_unique<txnEditDistributedLoad>(loadID, *pLoadData, eventID, dlg.m_Load, dlg.m_EventID, dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : nullptr));
          GET_IFACE(IEAFTransactions, pTransactions);
-         pTransactions->Execute(pTxn);
+         pTransactions->Execute(std::move(pTxn));
          return true;
       }
    }
@@ -1088,10 +1089,9 @@ void CPGSDocBase::DeleteDistributedLoad(CollectionIndexType loadIdx)
 
 void CPGSDocBase::DeleteDistributedLoadByID(LoadIDType loadID)
 {
-   txnDeleteDistributedLoad* pTxn = new txnDeleteDistributedLoad(loadID);
-
+   std::unique_ptr<txnDeleteDistributedLoad> pTxn(std::make_unique<txnDeleteDistributedLoad>(loadID));
    GET_IFACE(IEAFTransactions, pTransactions);
-   pTransactions->Execute(pTxn);
+   pTransactions->Execute(std::move(pTxn));
 }
 
 void CPGSDocBase::AddMomentLoad(const CMomentLoadData& loadData)
@@ -1104,9 +1104,9 @@ void CPGSDocBase::AddMomentLoad(const CMomentLoadData& loadData)
    CEditMomentLoadDlg dlg(loadData,pTimelineMgr);
    if ( dlg.DoModal() == IDOK )
    {
-      txnInsertMomentLoad* pTxn = new txnInsertMomentLoad(dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : nullptr);
+      std::unique_ptr<txnInsertMomentLoad> pTxn(std::make_unique<txnInsertMomentLoad>(dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : nullptr));
       GET_IFACE(IEAFTransactions,pTransactions);
-      pTransactions->Execute(pTxn);
+      pTransactions->Execute(std::move(pTxn));
    }
 }
 
@@ -1135,9 +1135,9 @@ bool CPGSDocBase::EditMomentLoadByID(LoadIDType loadID)
       // only update if changed
       if (*pLoadData != dlg.m_Load || eventID != dlg.m_EventID)
       {
-         txnEditMomentLoad* pTxn = new txnEditMomentLoad(loadID, *pLoadData, eventID, dlg.m_Load, dlg.m_EventID, dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : nullptr);
+         std::unique_ptr<txnEditMomentLoad> pTxn(std::make_unique<txnEditMomentLoad>(loadID, *pLoadData, eventID, dlg.m_Load, dlg.m_EventID, dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : nullptr));
          GET_IFACE(IEAFTransactions, pTransactions);
-         pTransactions->Execute(pTxn);
+         pTransactions->Execute(std::move(pTxn));
          return true;
       }
    }
@@ -1154,18 +1154,17 @@ void CPGSDocBase::DeleteMomentLoad(CollectionIndexType loadIdx)
 
 void CPGSDocBase::DeleteMomentLoadByID(LoadIDType loadID)
 {
-   txnDeleteMomentLoad* pTxn = new txnDeleteMomentLoad(loadID);
-
+   std::unique_ptr<txnDeleteMomentLoad> pTxn(std::make_unique<txnDeleteMomentLoad>(loadID));
    GET_IFACE(IEAFTransactions, pTransactions);
-   pTransactions->Execute(pTxn);
+   pTransactions->Execute(std::move(pTxn));
 }
 
 void CPGSDocBase::UIHint(const CString& strText, UINT hint)
 {
    Uint32 hintSettings = GetUIHintSettings();
-   if (sysFlags<Uint32>::IsClear(hintSettings, hint) && EAFShowUIHints(strText))
+   if (WBFL::System::Flags<Uint32>::IsClear(hintSettings, hint) && EAFShowUIHints(strText))
    {
-      sysFlags<Uint32>::Set(&hintSettings, hint);
+      WBFL::System::Flags<Uint32>::Set(&hintSettings, hint);
       SetUIHintSettings(hintSettings);
    }
 }
@@ -1189,9 +1188,9 @@ bool CPGSDocBase::EditTimeline()
 
    if (dlg.DoModal() == IDOK)
    {
-      txnEditTimeline* pTxn = new txnEditTimeline(*pBridgeDesc->GetTimelineManager(), dlg.m_TimelineManager);
+      std::unique_ptr<txnEditTimeline> pTxn(std::make_unique<txnEditTimeline>(*pBridgeDesc->GetTimelineManager(), dlg.m_TimelineManager));
       GET_IFACE(IEAFTransactions, pTransactions);
-      pTransactions->Execute(pTxn);
+      pTransactions->Execute(std::move(pTxn));
       return true;
    }
 
@@ -1211,9 +1210,9 @@ bool CPGSDocBase::EditCastDeckActivity()
    CCastDeckDlg dlg(strName, *pTimelineMgr, castDeckEventIdx, FALSE);
    if (dlg.DoModal() == IDOK)
    {
-      txnEditTimeline* pTxn = new txnEditTimeline(*pTimelineMgr, dlg.m_TimelineMgr);
+      std::unique_ptr<txnEditTimeline> pTxn(std::make_unique<txnEditTimeline>(*pTimelineMgr, dlg.m_TimelineMgr));
       GET_IFACE(IEAFTransactions, pTransactions);
-      pTransactions->Execute(pTxn);
+      pTransactions->Execute(std::move(pTxn));
       return true;
    }
 
@@ -1235,9 +1234,9 @@ bool CPGSDocBase::EditEffectiveFlangeWidth()
    int new_choice = AfxChoose(_T("Effective Flange Width"), strQuestion, strResponses, choice, TRUE, &helpHandler);
    if (choice != new_choice && 0 <= new_choice)
    {
-      txnEditEffectiveFlangeWidth* pTxn = new txnEditEffectiveFlangeWidth(pEFW->IgnoreEffectiveFlangeWidthLimits(), new_choice == 0 ? false : true);
+      std::unique_ptr<txnEditEffectiveFlangeWidth> pTxn(std::make_unique<txnEditEffectiveFlangeWidth>(pEFW->IgnoreEffectiveFlangeWidthLimits(), new_choice == 0 ? false : true));
       GET_IFACE(IEAFTransactions, pTransactions);
-      pTransactions->Execute(pTxn);
+      pTransactions->Execute(std::move(pTxn));
       return true;
    }
 
@@ -1305,9 +1304,9 @@ bool CPGSDocBase::SelectProjectCriteria()
             }
          }
 
-         txnEditProjectCriteria* pTxn = new txnEditProjectCriteria(cur_spec.c_str(), dlg.m_Spec.c_str(), analysisType, newAnalysisType, wearingSurfaceType, newWearingSurfaceType);
+         std::unique_ptr<txnEditProjectCriteria> pTxn(std::make_unique<txnEditProjectCriteria>(cur_spec.c_str(), dlg.m_Spec.c_str(), analysisType, newAnalysisType, wearingSurfaceType, newWearingSurfaceType));
          GET_IFACE(IEAFTransactions, pTransactions);
-         pTransactions->Execute(pTxn);
+         pTransactions->Execute(std::move(pTxn));
          return true;
       }
    }
@@ -2376,7 +2375,7 @@ HRESULT CPGSDocBase::LoadTheDocument(IStructuredLoad* pStrLoad)
 
       CString strFileName = m_FileCompatibilityState.GetFileName();
 
-      if (sysFlags<Uint32>::IsClear(hintSettings, UIHINT_FILESAVEWARNING))
+      if (WBFL::System::Flags<Uint32>::IsClear(hintSettings, UIHINT_FILESAVEWARNING))
       {
          // if the hint flag is clear, that means we want to warn if appropreate
          if (m_FileCompatibilityState.PromptToMakeCopy(strFileName, strAppVersion))
@@ -2390,7 +2389,7 @@ HRESULT CPGSDocBase::LoadTheDocument(IStructuredLoad* pStrLoad)
                   // the don't warn me again flag was set...
 
                   // update the hint settings
-                  sysFlags<Uint32>::Set(&hintSettings, UIHINT_FILESAVEWARNING);
+                  WBFL::System::Flags<Uint32>::Set(&hintSettings, UIHINT_FILESAVEWARNING);
                   SetUIHintSettings(hintSettings);
 
                   // Save the default option to the registry
@@ -2615,18 +2614,18 @@ void CPGSDocBase::OnFileProjectProperties()
 
    if ( dlg.DoModal() == IDOK )
    {
-      txnEditProjectProperties* pTxn = new txnEditProjectProperties( pProjProp->GetBridgeName(), dlg.m_Bridge,
+      std::unique_ptr<txnEditProjectProperties> pTxn(std::make_unique<txnEditProjectProperties>( pProjProp->GetBridgeName(), dlg.m_Bridge,
                                                                      pProjProp->GetBridgeID(),   dlg.m_BridgeID,
                                                                      pProjProp->GetJobNumber(),  dlg.m_JobNumber,
                                                                      pProjProp->GetEngineer(),   dlg.m_Engineer,
                                                                      pProjProp->GetCompany(),    dlg.m_Company,
-                                                                     pProjProp->GetComments(),   dlg.m_Comments );
+                                                                     pProjProp->GetComments(),   dlg.m_Comments ));
 
          
       ShowProjectPropertiesOnNewProject(dlg.m_bShowProjectProperties);
 
       GET_IFACE(IEAFTransactions,pTransactions);
-      pTransactions->Execute(pTxn);
+      pTransactions->Execute(std::move(pTxn));
    }
 }
 
@@ -2818,9 +2817,9 @@ void CPGSDocBase::OnProjectEnvironment()
    {
       if ( expCond != dlg.m_Exposure || relHumidity != dlg.m_RelHumidity )
       {
-         txnEditEnvironment* pTxn = new txnEditEnvironment(ec,dlg.m_Exposure == 0 ? expNormal : expSevere,relHumidity,dlg.m_RelHumidity);
+         std::unique_ptr<txnEditEnvironment> pTxn(std::make_unique<txnEditEnvironment>(ec,dlg.m_Exposure == 0 ? expNormal : expSevere,relHumidity,dlg.m_RelHumidity));
          GET_IFACE(IEAFTransactions,pTransactions);
-         pTransactions->Execute(pTxn);
+         pTransactions->Execute(std::move(pTxn));
       }
    }
 }
@@ -2997,22 +2996,22 @@ void CPGSDocBase::OnRatingSpec()
       newData.m_Legal   = dlg.m_LegalPage.m_Data;
       newData.m_Permit  = dlg.m_PermitPage.m_Data;
 
-      txnTransaction* pExtensionTxn = dlg.GetExtensionPageTransaction();
+      auto pExtensionTxn = dlg.GetExtensionPageTransaction();
 
       if ( oldData != newData || pExtensionTxn )
       {
-         txnTransaction* pTxn = new txnEditRatingCriteria(oldData,newData);
+         std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditRatingCriteria>(oldData,newData));
          if ( pExtensionTxn )
          {
-            txnMacroTxn* pMacro = new pgsMacroTxn;
+            std::unique_ptr<CEAFMacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
             pMacro->Name(pTxn->Name());
-            pMacro->AddTransaction(pTxn);
-            pMacro->AddTransaction(pExtensionTxn);
-            pTxn = pMacro;
+            pMacro->AddTransaction(std::move(pTxn));
+            pMacro->AddTransaction(std::move(pExtensionTxn));
+            pTxn = std::move(pMacro);
          }
 
          GET_IFACE(IEAFTransactions,pTransactions);
-         pTransactions->Execute(pTxn);
+         pTransactions->Execute(std::move(pTxn));
       }
    }
 }
@@ -3167,9 +3166,9 @@ void CPGSDocBase::OnLoadsLoadModifiers()
       newLoadModifiers.RedundancyLevel = (r == 0 ? ILoadModifiers::High : (r == 1 ? ILoadModifiers::Normal : ILoadModifiers::Low));
       newLoadModifiers.ImportanceLevel = (i == 0 ? ILoadModifiers::High : (i == 1 ? ILoadModifiers::Normal : ILoadModifiers::Low));
 
-      txnEditLoadModifiers* pTxn = new txnEditLoadModifiers(loadModifiers,newLoadModifiers);
+      std::unique_ptr<txnEditLoadModifiers> pTxn(std::make_unique<txnEditLoadModifiers>(loadModifiers,newLoadModifiers));
       GET_IFACE(IEAFTransactions,pTransactions);
-      pTransactions->Execute(pTxn);
+      pTransactions->Execute(std::move(pTxn));
    }
 }
 
@@ -3184,9 +3183,9 @@ void CPGSDocBase::OnLoadsLoadFactors()
    dlg.m_LoadFactors = loadFactors;
    if ( dlg.DoModal() == IDOK )
    {
-      txnEditLoadFactors* pTxn = new txnEditLoadFactors(loadFactors,dlg.m_LoadFactors);
+      std::unique_ptr<txnEditLoadFactors> pTxn(std::make_unique<txnEditLoadFactors>(loadFactors,dlg.m_LoadFactors));
       GET_IFACE(IEAFTransactions,pTransactions);
-      pTransactions->Execute(pTxn);
+      pTransactions->Execute(std::move(pTxn));
    }
 }
 
@@ -3800,10 +3799,10 @@ void CPGSDocBase::OnLoadsLldf(pgsTypes::DistributionFactorMethod method,LldfRang
    {
       GET_IFACE(ILiveLoads,pLiveLoads);
 
-      txnEditLLDF* pTxn = new txnEditLLDF(*pOldBridgeDesc,dlg.m_BridgeDesc,
-                                          pLiveLoads->GetLldfRangeOfApplicabilityAction(),dlg.m_LldfRangeOfApplicabilityAction);
+      std::unique_ptr<txnEditLLDF> pTxn(std::make_unique<txnEditLLDF>(*pOldBridgeDesc,dlg.m_BridgeDesc,
+                                          pLiveLoads->GetLldfRangeOfApplicabilityAction(),dlg.m_LldfRangeOfApplicabilityAction));
       GET_IFACE(IEAFTransactions,pTransactions);
-      pTransactions->Execute(pTxn);
+      pTransactions->Execute(std::move(pTxn));
    }
 }
 
@@ -3836,9 +3835,9 @@ void CPGSDocBase::OnConstructionLoads()
 
    if ( dlg.DoModal() == IDOK )
    {
-      txnEditConstructionLoad* pTxn = new txnEditConstructionLoad(load,dlg.m_Load);
+      std::unique_ptr<txnEditConstructionLoad> pTxn(std::make_unique<txnEditConstructionLoad>(load,dlg.m_Load));
       GET_IFACE(IEAFTransactions,pTransactions);
-      pTransactions->Execute(pTxn);
+      pTransactions->Execute(std::move(pTxn));
    }
 }
 
@@ -3927,9 +3926,9 @@ void CPGSDocBase::OnLiveLoads()
       newPermit.m_LaneImpact                    = dlg.m_PermitLaneImpact;
       newPermit.m_PedestrianLoadApplicationType = dlg.m_PermitPedesType;
 
-      txnEditLiveLoad* pTxn = new txnEditLiveLoad(oldDesign,newDesign,oldFatigue,newFatigue,oldPermit,newPermit,oldLiveLoadEvent,dlg.m_LiveLoadEvent);
+      std::unique_ptr<txnEditLiveLoad> pTxn(std::make_unique<txnEditLiveLoad>(oldDesign,newDesign,oldFatigue,newFatigue,oldPermit,newPermit,oldLiveLoadEvent,dlg.m_LiveLoadEvent));
       GET_IFACE(IEAFTransactions,pTransactions);
-      pTransactions->Execute(pTxn);
+      pTransactions->Execute(std::move(pTxn));
    }
 }
 
@@ -4376,9 +4375,9 @@ void CPGSDocBase::DeletePier(PierIndexType deletePierIdx,pgsTypes::PierFaceType 
             }
          }
       }
-      txnDeleteSpan* pTxn = new txnDeleteSpan(deletePierIdx, deleteSpanOnPierFace, bc);
+      std::unique_ptr<txnDeleteSpan> pTxn(std::make_unique<txnDeleteSpan>(deletePierIdx, deleteSpanOnPierFace, bc));
       GET_IFACE(IEAFTransactions, pTransactions);
-      pTransactions->Execute(pTxn);
+      pTransactions->Execute(std::move(pTxn));
    }
    else
    {
@@ -4389,9 +4388,9 @@ void CPGSDocBase::DeletePier(PierIndexType deletePierIdx,pgsTypes::PierFaceType 
          auto closureID = pPier->GetClosureJoint(0)->GetID();
          castClosureJointEventIdx = pBridgeDesc->GetTimelineManager()->GetCastClosureJointEventIndex(closureID);
       }
-      txnDeleteSpan* pTxn = new txnDeleteSpan(deletePierIdx, deleteSpanOnPierFace, connection, castClosureJointEventIdx);
+      std::unique_ptr<txnDeleteSpan> pTxn(std::make_unique<txnDeleteSpan>(deletePierIdx, deleteSpanOnPierFace, connection, castClosureJointEventIdx));
       GET_IFACE(IEAFTransactions, pTransactions);
-      pTransactions->Execute(pTxn);
+      pTransactions->Execute(std::move(pTxn));
    }
 
 }
@@ -4424,9 +4423,9 @@ void CPGSDocBase::OnInsert()
 
 void CPGSDocBase::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace,Float64 spanLength,bool bCreateNewGroup,EventIndexType eventIdx)
 {
-   txnInsertSpan* pTxn = new txnInsertSpan(refPierIdx,pierFace,spanLength,bCreateNewGroup,eventIdx);
+   std::unique_ptr<txnInsertSpan> pTxn(std::make_unique<txnInsertSpan>(refPierIdx, pierFace, spanLength, bCreateNewGroup, eventIdx));
    GET_IFACE(IEAFTransactions,pTransactions);
-   pTransactions->Execute(pTxn);
+   pTransactions->Execute(std::move(pTxn));
 }
 
 void CPGSDocBase::OnOptionsLabels() 
@@ -4522,9 +4521,9 @@ void CPGSDocBase::OnLosses()
       newData.AfterSIDLLosses               = dlg.m_Pretensioning.AfterSIDLLosses;
       newData.FinalLosses                   = dlg.m_Pretensioning.FinalLosses;
 
-      txnEditLossParameters* pTxn = new txnEditLossParameters(oldData,newData);
+      std::unique_ptr<txnEditLossParameters> pTxn(std::make_unique<txnEditLossParameters>(oldData, newData));
       GET_IFACE(IEAFTransactions,pTransactions);
-      pTransactions->Execute(pTxn);
+      pTransactions->Execute(std::move(pTxn));
    }
 }
 
@@ -4768,7 +4767,7 @@ void CPGSDocBase::LoadDocumentSettings()
    }
 
    // lambda express that checks the if the independent flag (indFlag) is set and sets or clears the dependent flag (depFlag) accordingly
-   auto sync_flags = [](UINT& settings, UINT indFlag, UINT depFlag) { sysFlags<UINT>::IsSet(settings, indFlag) ? sysFlags<UINT>::Set(&settings, depFlag) : sysFlags<UINT>::Clear(&settings, depFlag); };
+   auto sync_flags = [](UINT& settings, UINT indFlag, UINT depFlag) { WBFL::System::Flags<UINT>::IsSet(settings, indFlag) ? WBFL::System::Flags<UINT>::Set(&settings, depFlag) : WBFL::System::Flags<UINT>::Clear(&settings, depFlag); };
 
    // bridge model editor settings
    // turn on all settings for default

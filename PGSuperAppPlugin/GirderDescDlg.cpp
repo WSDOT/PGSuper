@@ -176,7 +176,7 @@ void CGirderDescDlg::DestroyExtensionPages()
    m_ExtensionPages.clear();
 }
 
-txnTransaction* CGirderDescDlg::GetExtensionPageTransaction()
+std::unique_ptr<CEAFTransaction> CGirderDescDlg::GetExtensionPageTransaction()
 {
    if ( 0 < m_Macro.GetTxnCount() )
    {
@@ -196,10 +196,10 @@ void CGirderDescDlg::NotifyExtensionPages()
    {
       IEditGirderCallback* pCallback = pageIter->first;
       CPropertyPage* pPage = pageIter->second;
-      txnTransaction* pTxn = pCallback->OnOK(pPage,this);
+      auto pTxn = pCallback->OnOK(pPage,this);
       if ( pTxn )
       {
-         m_Macro.AddTransaction(pTxn);
+         m_Macro.AddTransaction(std::move(pTxn));
       }
    }
 }

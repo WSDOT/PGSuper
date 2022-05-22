@@ -157,7 +157,7 @@ BOOL CPsgLibApp::InitInstance()
    // This call will initialize the grid library
 	GXInit();
 
-   sysComCatMgr::CreateCategory(L"PGSLibrary Editor Components",CATID_PGSuperLibraryManagerPlugin);
+   WBFL::System::ComCatMgr::CreateCategory(L"PGSLibrary Editor Components",CATID_PGSuperLibraryManagerPlugin);
 
    return CWinApp::InitInstance();
 }
@@ -635,23 +635,23 @@ HRESULT pgslibLoadLibrary(IStructuredLoad* pStrLoad,psgLibraryManager* pLibMgr,e
          pStrLoad->EndUnit(); // _T("LIBRARY_EDITOR")
       }
    }
-   catch (const sysXStructuredLoad& rLoad)
+   catch (const WBFL::System::XStructuredLoad& rLoad)
    {
-      sysXStructuredLoad::Reason reason = rLoad.GetExplicitReason();
+      WBFL::System::XStructuredLoad::Reason reason = rLoad.GetReasonCode();
       CString cmsg;
       if (bIsMasterLibrary)
       {
          cmsg = _T("Error loading Master Library\n\n");
       }
-      if (reason == sysXStructuredLoad::InvalidFileFormat)
+      if (reason == WBFL::System::XStructuredLoad::InvalidFileFormat)
       {
          cmsg += _T("Invalid file format. The file may have been corrupted. Extended error information is as follows: ");
       }
-      else if (reason == sysXStructuredLoad::BadVersion)
+      else if (reason == WBFL::System::XStructuredLoad::BadVersion)
       {
          cmsg += _T("Data file was written by a newer program version. Please upgrade this software. Extended error information is as follows: ");
       }
-      else if (reason == sysXStructuredLoad::UserDefined)
+      else if (reason == WBFL::System::XStructuredLoad::UserDefined)
       {
          //cmsg = _T("Error reading file. Extended error information is as follows:");
       }
@@ -693,7 +693,7 @@ HRESULT RegisterComponents(bool bRegister)
    HRESULT hr = S_OK;
 
    // Need to register the library application plugin with the PGSuperAppPlugin category
-   hr = sysComCatMgr::RegWithCategory(CLSID_LibraryAppPlugin,CATID_BridgeLinkAppPlugin,bRegister);
+   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_LibraryAppPlugin,CATID_BridgeLinkAppPlugin,bRegister);
    if ( FAILED(hr) )
    {
       return hr;

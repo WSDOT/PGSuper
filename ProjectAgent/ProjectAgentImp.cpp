@@ -98,7 +98,7 @@ void use_library_entry( pgsLibraryEntryObserver* pObserver, LPCTSTR lpcstrKey, E
    *ppEntry = pProjectEntry; // Reference count has been added.
    if ( *ppEntry )
    {
-      (*ppEntry)->Attach( pObserver );
+      (*ppEntry)->Attach( *pObserver );
    }
 }
 
@@ -111,11 +111,11 @@ void release_library_entry( pgsLibraryEntryObserver* pObserver, EntryType* pEntr
    }
 
    // Release from the project library
-   pEntry->Detach( pObserver );
+   pEntry->Detach( *pObserver );
 
    // Release it because we are no longer using it for input data
    pEntry->Release();
-   pEntry = 0;
+   pEntry = nullptr;
 }
 
 // pre-declare some needed functions
@@ -10165,7 +10165,7 @@ std::vector<libEntryUsageRecord> CProjectAgentImp::GetLibraryUsageRecords() cons
    return m_pLibMgr->GetInUseLibraryEntries();
 }
 
-void CProjectAgentImp::GetMasterLibraryInfo(std::_tstring& strServer, std::_tstring& strConfiguration, std::_tstring& strMasterLib,sysTime& time) const
+void CProjectAgentImp::GetMasterLibraryInfo(std::_tstring& strServer, std::_tstring& strConfiguration, std::_tstring& strMasterLib,WBFL::System::Time& time) const
 {
    m_pLibMgr->GetMasterLibraryInfo(strServer,strConfiguration,strMasterLib);
    time = m_pLibMgr->GetTimeStamp();
@@ -10638,35 +10638,35 @@ void CProjectAgentImp::FirePendingEvents()
          m_bFiringEvents = true;
 
 
-         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_PROJECTPROPERTIES))
+         if (WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents, EVT_PROJECTPROPERTIES))
          {
             Fire_ProjectPropertiesChanged();
          }
 
-         //if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_UNITS) )
+         //if ( WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents,EVT_UNITS) )
          //   Fire_UnitsChanged(m_Units);
 
-         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_ANALYSISTYPE))
+         if (WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents, EVT_ANALYSISTYPE))
          {
             Fire_AnalysisTypeChanged();
          }
 
-         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_EXPOSURECONDITION))
+         if (WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents, EVT_EXPOSURECONDITION))
          {
             Fire_ExposureConditionChanged();
          }
 
-         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_RELHUMIDITY))
+         if (WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents, EVT_RELHUMIDITY))
          {
             Fire_RelHumidityChanged();
          }
 
-         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_GIRDERFAMILY))
+         if (WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents, EVT_GIRDERFAMILY))
          {
             Fire_BridgeChanged(nullptr);
          }
 
-         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_BRIDGE))
+         if (WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents, EVT_BRIDGE))
          {
             // eliminate duplicates
             m_PendingBridgeChangedHints.erase(std::unique(m_PendingBridgeChangedHints.begin(), m_PendingBridgeChangedHints.end()), m_PendingBridgeChangedHints.end());
@@ -10683,41 +10683,41 @@ void CProjectAgentImp::FirePendingEvents()
          //
          // pretty much all the event handers do the same thing when the bridge or girder family changes
          // no sence firing two events
-         //   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_GIRDERFAMILY) )
+         //   if ( WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents,EVT_GIRDERFAMILY) )
          //      Fire_GirderFamilyChanged();
 
 
-         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_SPECIFICATION))
+         if (WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents, EVT_SPECIFICATION))
          {
             SpecificationChanged(true);
          }
 
-         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_RATING_SPECIFICATION))
+         if (WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents, EVT_RATING_SPECIFICATION))
          {
             RatingSpecificationChanged(true);
          }
 
-         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_LIBRARYCONFLICT))
+         if (WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents, EVT_LIBRARYCONFLICT))
          {
             Fire_OnLibraryConflictResolved();
          }
 
-         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_LOADMODIFIER))
+         if (WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents, EVT_LOADMODIFIER))
          {
             Fire_LoadModifiersChanged();
          }
 
-         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_CONSTRUCTIONLOAD))
+         if (WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents, EVT_CONSTRUCTIONLOAD))
          {
             Fire_ConstructionLoadChanged();
          }
 
-         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_LIVELOAD))
+         if (WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents, EVT_LIVELOAD))
          {
             Fire_LiveLoadChanged();
          }
 
-         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_LOSSPARAMETERS))
+         if (WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents, EVT_LOSSPARAMETERS))
          {
             Fire_OnLossParametersChanged();
          }

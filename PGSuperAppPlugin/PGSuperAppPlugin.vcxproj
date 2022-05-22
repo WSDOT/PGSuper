@@ -574,6 +574,7 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Hints.h" />
+    <ClInclude Include="..\Include\PGSuperUIUtil.h" />
     <ClInclude Include="AbutmentConnectionsPage.h" />
     <ClInclude Include="AlignmentDescriptionDlg.h" />
     <ClInclude Include="AlignmentDisplayObjectEvents.h" />
@@ -593,6 +594,7 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClInclude Include="CopyTempSupportDlg.h" />
     <ClInclude Include="CopyTempSupportPropertiesCallbacks.h" />
     <ClInclude Include="DrawDeckRegionControl.h" />
+    <ClInclude Include="EditAnalysisType.h" />
     <ClInclude Include="FileSaveWarningDlg.h" />
     <ClInclude Include="GirderDescGeneralPage.h" />
     <ClInclude Include="BridgeDescLiftingPage.h" />

@@ -310,7 +310,7 @@ BOOL CTimelineGrid::OnValidateCell(ROWCOL nRow,ROWCOL nCol)
       CString strDay;
       pControl->GetCurrentText(strDay);
       Float64 day;
-      VERIFY(sysTokenizer::ParseDouble(strDay,&day));
+      VERIFY(WBFL::System::Tokenizer::ParseDouble(strDay,&day));
 
       if ( day < 0 )
       {
@@ -367,7 +367,7 @@ BOOL CTimelineGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
       // the event Occurrence day changed
       CString strDay = GetValueRowCol(nRow,nCol);
       Float64 day; 
-      VERIFY(sysTokenizer::ParseDouble(strDay,&day));
+      VERIFY(WBFL::System::Tokenizer::ParseDouble(strDay,&day));
 
       if ( day < 0 )
       {
@@ -380,7 +380,7 @@ BOOL CTimelineGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
    {
       CString strElapsedTime = GetValueRowCol(nRow,nCol);
       Float64 elapsed_time; 
-      VERIFY(sysTokenizer::ParseDouble(strElapsedTime,&elapsed_time));
+      VERIFY(WBFL::System::Tokenizer::ParseDouble(strElapsedTime,&elapsed_time));
 
       if ( elapsed_time < 0 )
       {

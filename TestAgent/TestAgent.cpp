@@ -126,13 +126,13 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
 HRESULT RegisterAgent(bool bRegister)
 {
    HRESULT hr = S_OK;
-   hr = sysComCatMgr::RegWithCategory(CLSID_TestAgent,CATID_PGSuperAgent,bRegister);
+   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TestAgent,CATID_PGSuperAgent,bRegister);
    if ( FAILED(hr) )
    {
       return hr;
    }
 
-   hr = sysComCatMgr::RegWithCategory(CLSID_TestAgent,CATID_PGSpliceAgent,bRegister);
+   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TestAgent,CATID_PGSpliceAgent,bRegister);
    if ( FAILED(hr) )
    {
       return hr;

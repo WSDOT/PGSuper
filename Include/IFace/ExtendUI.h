@@ -32,7 +32,7 @@
 // are likely to break.
 /////////////////////////////////////////////////////////////////////////////////////////
 
-class txnTransaction;
+class CEAFTransaction;
 
 interface IEditBridgeCallback;
 interface IEditSplicedGirderCallback;
@@ -87,7 +87,7 @@ interface IEditPierCallback
    // Called by the framework when stand alone editing is complete. Return a transaction object if you
    // want the editing the occured on this extension page to be in the transaction queue for undo/redo,
    // otherwise return nullptr
-   virtual txnTransaction* OnOK(CPropertyPage* pPropertyPage,IEditPierData* pEditPierData) = 0;
+   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPropertyPage,IEditPierData* pEditPierData) = 0;
 
    // Return the ID of EditBridgeCallback or INVALID_ID if extensions to the Bridge dialog are not related to
    // the Pier dialog
@@ -114,7 +114,7 @@ interface ICopyPierPropertiesCallback
    // called by the framework when you need to create a transaction object that
    // will cause your Pier data to be copied. Allocate the transaction object
    // on the heap. The framework will delete it when it is no longer needed.
-   virtual txnTransaction* CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) = 0;
+   virtual std::unique_ptr<CEAFTransaction> CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) = 0;
 
    // UI has an edit button for this callback. Returns the tab index that will be opened
    virtual UINT GetPierEditorTabIndex() = 0;
@@ -140,7 +140,7 @@ interface ICopyTemporarySupportPropertiesCallback
    // called by the framework when you need to create a transaction object that
    // will cause your TempSupport data to be copied. Allocate the transaction object
    // on the heap. The framework will delete it when it is no longer needed.
-   virtual txnTransaction* CreateCopyTransaction(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports) = 0;
+   virtual std::unique_ptr<CEAFTransaction> CreateCopyTransaction(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports) = 0;
 
    // UI has an edit button for this callback. Returns the tab index that will be opened
    virtual UINT GetTempSupportEditorTabIndex() = 0;
@@ -164,7 +164,7 @@ interface IEditTemporarySupportCallback
    // Called by the framework when stand alone editing is complete. Return a transaction object if you
    // want the editing the occured on this extension page to be in the transaction queue for undo/redo,
    // otherwise return nullptr
-   virtual txnTransaction* OnOK(CPropertyPage* pPropertyPage,IEditTemporarySupportData* pEditTemporarySupportData) = 0;
+   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPropertyPage,IEditTemporarySupportData* pEditTemporarySupportData) = 0;
 
    // Return the ID of EditBridgeCallback or INVALID_ID if extensions to the Bridge dialog are not related to
    // the Pier dialog
@@ -186,7 +186,7 @@ interface IEditSpanData
 interface IEditSpanCallback
 {
    virtual CPropertyPage* CreatePropertyPage(IEditSpanData* pSpanData) = 0;
-   virtual txnTransaction* OnOK(CPropertyPage* pPage,IEditSpanData* pSpanData) = 0;
+   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPage,IEditSpanData* pSpanData) = 0;
 
    // Return the ID of EditBridgeCallback or INVALID_ID if extensions to the Bridge dialog are not related to
    // the Span dialog
@@ -205,7 +205,7 @@ interface IEditSegmentData
 interface IEditSegmentCallback
 {
    virtual CPropertyPage* CreatePropertyPage(IEditSegmentData* pSegmentData) = 0;
-   virtual txnTransaction* OnOK(CPropertyPage* pPage,IEditSegmentData* pSegmentData) = 0;
+   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPage,IEditSegmentData* pSegmentData) = 0;
 
    // Return the ID of EditSplicedGirderCallback or INVALID_ID if extensions to the Spliced Girder dialog are not related to
    // the Segment dialog
@@ -224,7 +224,7 @@ interface IEditClosureJointData
 interface IEditClosureJointCallback
 {
    virtual CPropertyPage* CreatePropertyPage(IEditClosureJointData* pClosureJointData) = 0;
-   virtual txnTransaction* OnOK(CPropertyPage* pPage,IEditClosureJointData* pClosureJointData) = 0;
+   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPage,IEditClosureJointData* pClosureJointData) = 0;
 
    // Return the ID of EditSplicedGirderCallback or INVALID_ID if extensions to the Spliced Girder dialog are not related to
    // the Segment dialog
@@ -243,7 +243,7 @@ interface IEditSplicedGirderData
 interface IEditSplicedGirderCallback
 {
    virtual CPropertyPage* CreatePropertyPage(IEditSplicedGirderData* pGirderData) = 0;
-   virtual txnTransaction* OnOK(CPropertyPage* pPage,IEditSplicedGirderData* pGirderData) = 0;
+   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPage,IEditSplicedGirderData* pGirderData) = 0;
 
    // Called by the framework after editing segment data from the Spliced Girder general page completes successfully
    // so that data from the Segment and Spliced Girder editing dialogs can be made consistent with each other
@@ -263,7 +263,7 @@ interface IEditGirderData
 interface IEditGirderCallback
 {
    virtual CPropertyPage* CreatePropertyPage(IEditGirderData* pGirderData) = 0;
-   virtual txnTransaction* OnOK(CPropertyPage* pPage,IEditGirderData* pGirderData) = 0;
+   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPage,IEditGirderData* pGirderData) = 0;
 };
 
 // Extend the Edit Bridge Dialog
@@ -275,7 +275,7 @@ interface IEditBridgeData
 interface IEditBridgeCallback
 {
    virtual CPropertyPage* CreatePropertyPage(IEditBridgeData* pBridgeData) = 0;
-   virtual txnTransaction* OnOK(CPropertyPage* pPage,IEditBridgeData* pBridgeData) = 0;
+   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPage,IEditBridgeData* pBridgeData) = 0;
 
    // Called by the framework after editing pier data from the Framing page completes successfully
    // so that data from the Pier and Bridge editing dialogs can be made consistent with each other
@@ -309,7 +309,7 @@ interface ICopyGirderPropertiesCallback
    // called by the framework when you need to create a transaction object that
    // will cause your girder data to be copied. Allocate the transaction object
    // on the heap. The framework will delete it when it is no longer needed.
-   virtual txnTransaction* CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) = 0;
+   virtual std::unique_ptr<CEAFTransaction> CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) = 0;
 
    // UI has an edit button for this callback. Returns the tab index that will be opened
    virtual UINT GetGirderEditorTabIndex() = 0;
@@ -327,7 +327,7 @@ interface IEditLoadRatingOptions
 interface IEditLoadRatingOptionsCallback
 {
    virtual CPropertyPage* CreatePropertyPage(IEditLoadRatingOptions* pLoadRatingOptions) = 0;
-   virtual txnTransaction* OnOK(CPropertyPage* pPage,IEditLoadRatingOptions* pLoadRatingOptions) = 0;
+   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPage,IEditLoadRatingOptions* pLoadRatingOptions) = 0;
 };
 
 /////////////////////////////////////////////////////////

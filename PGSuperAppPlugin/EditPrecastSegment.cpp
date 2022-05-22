@@ -105,9 +105,9 @@ void txnEditPrecastSegment::Undo()
    }
 }
 
-txnTransaction* txnEditPrecastSegment::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnEditPrecastSegment::CreateClone() const
 {
-   return new txnEditPrecastSegment(m_SegmentKey,m_NewSegmentData);
+   return std::make_unique<txnEditPrecastSegment>(m_SegmentKey,m_NewSegmentData);
 }
 
 std::_tstring txnEditPrecastSegment::Name() const
@@ -117,12 +117,12 @@ std::_tstring txnEditPrecastSegment::Name() const
    return os.str();
 }
 
-bool txnEditPrecastSegment::IsUndoable()
+bool txnEditPrecastSegment::IsUndoable() const
 {
    return true;
 }
 
-bool txnEditPrecastSegment::IsRepeatable()
+bool txnEditPrecastSegment::IsRepeatable() const
 {
    return false;
 }

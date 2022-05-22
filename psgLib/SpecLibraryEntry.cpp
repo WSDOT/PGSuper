@@ -490,7 +490,7 @@ HICON  SpecLibraryEntry::GetIcon() const
    return ::LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_SPECIFICATION_ENTRY) );
 }
 
-bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
+bool SpecLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
 {
    pSave->BeginUnit(_T("SpecificationLibraryEntry"), CURRENT_VERSION);
    pSave->Property(_T("Name"),this->GetName().c_str());
@@ -1058,7 +1058,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    return true;
 }
 
-bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
+bool SpecLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 {
    Int16 temp;
    pgsTypes::ShearCapacityMethod shear_capacity_method = m_ShearCapacityMethod; // used as a temporary storage for shear capacity method before file version 18

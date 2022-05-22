@@ -334,7 +334,7 @@ void CClosureJointGeometryPage::DoDataExchange(CDataExchange* pDX)
       if (bCheckTimeline)
       {
          int result = pTimelineMgr->Validate();
-         if (sysFlags<Uint32>::IsSet(result, TLM_CLOSURE_JOINT_ERROR))
+         if (WBFL::System::Flags<Uint32>::IsSet(result, TLM_CLOSURE_JOINT_ERROR))
          {
             pDX->PrepareCtrl(IDC_EVENT);
             auto strError = pTimelineMgr->GetErrorMessage(result);

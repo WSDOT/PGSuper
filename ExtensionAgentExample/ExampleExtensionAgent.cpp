@@ -33,6 +33,7 @@
 #include <EAF\EAFStatusCenter.h>
 #include <EAF\EAFMenu.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <EAF\EAFTransaction.h>
 
 // Includes for reporting
 #include <IReportManager.h>
@@ -449,7 +450,7 @@ CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditBridgeData* pBrid
    return new CPropertyPage(IDD_EDIT_PIER_PAGE);
 }
 
-txnTransaction* CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditBridgeData* pBridgeData)
+std::unique_ptr<CEAFTransaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditBridgeData* pBridgeData)
 {
    return nullptr;
 }
@@ -480,7 +481,7 @@ CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditPierData* pEditPi
    return nullptr;
 }
 
-txnTransaction* CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditPierData* pEditPierData)
+std::unique_ptr<CEAFTransaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditPierData* pEditPierData)
 {
    CEditPierPage* pMyPage = (CEditPierPage*)pPage;
    m_bCheck = pMyPage->m_bCheck;
@@ -504,7 +505,7 @@ CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditTemporarySupportD
    return nullptr;
 }
 
-txnTransaction* CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditTemporarySupportData* pEditTemporarySupportData)
+std::unique_ptr<CEAFTransaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditTemporarySupportData* pEditTemporarySupportData)
 {
    return nullptr;
 }
@@ -521,7 +522,7 @@ CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditSpanData* pEditSp
    return nullptr;
 }
 
-txnTransaction* CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditSpanData* pSpanData)
+std::unique_ptr<CEAFTransaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditSpanData* pSpanData)
 {
    return nullptr;
 }
@@ -532,7 +533,7 @@ CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditSegmentData* pSeg
    return new CPropertyPage(IDD_EDIT_PIER_PAGE);
 }
 
-txnTransaction* CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditSegmentData* pSegmentData)
+std::unique_ptr<CEAFTransaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditSegmentData* pSegmentData)
 {
    return nullptr;
 }
@@ -553,7 +554,7 @@ CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditClosureJointData*
    return new CPropertyPage(IDD_EDIT_PIER_PAGE);
 }
 
-txnTransaction* CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditClosureJointData* pClosureJointData)
+std::unique_ptr<CEAFTransaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditClosureJointData* pClosureJointData)
 {
    return nullptr;
 }
@@ -569,7 +570,7 @@ CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditSplicedGirderData
    return new CPropertyPage(IDD_EDIT_PIER_PAGE);
 }
 
-txnTransaction* CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditSplicedGirderData* pGirderData)
+std::unique_ptr<CEAFTransaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditSplicedGirderData* pGirderData)
 {
    return nullptr;
 }
@@ -588,7 +589,7 @@ CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditGirderData* pGird
    return new CPropertyPage(IDD_EDIT_PIER_PAGE);
 }
 
-txnTransaction* CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditGirderData* pGirderData)
+std::unique_ptr<CEAFTransaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditGirderData* pGirderData)
 {
    return nullptr;
 }

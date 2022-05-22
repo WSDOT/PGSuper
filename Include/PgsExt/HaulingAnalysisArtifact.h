@@ -66,7 +66,7 @@ public:
    virtual pgsHaulingAnalysisArtifact* Clone() const = 0;
 
 #if defined _DEBUG
-   virtual void Dump(dbgDumpContext& os) const = 0;
+   virtual void Dump(WBFL::Debug::LogContext& os) const = 0;
 #endif
 
    virtual void Write1250Data(const CSegmentKey& segmentKey,std::_tofstream& resultsFile, std::_tofstream& poiFile,IBroker* pBroker, const std::_tstring& pid, const std::_tstring& bridgeId) const = 0;
@@ -160,14 +160,14 @@ public:
    //------------------------------------------------------------------------
    // Dumps the contents of the object to the given dump context.
    const WBFL::Stability::HaulingStabilityProblem* m_pStabilityProblem; // need this for dump
-   virtual void Dump(dbgDumpContext& os) const override;
+   virtual void Dump(WBFL::Debug::LogContext& os) const override;
    #endif // _DEBUG
 
    #if defined _UNITTEST
    //------------------------------------------------------------------------
    // Runs a self-diagnostic test.  Returns true if the test passed,
    // otherwise false.
-   static bool TestMe(dbgLog& rlog);
+   static bool TestMe(WBFL::Debug::Log& rlog);
    #endif // _UNITTEST
 };
 

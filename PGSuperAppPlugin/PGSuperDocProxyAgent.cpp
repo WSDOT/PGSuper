@@ -41,7 +41,7 @@
 #include "PGSuperDoc.h"
 #include "Hints.h"
 
-#include <System\TxnManager.h>
+#include <EAF\EAFTxnManager.h>
 
 #include <psgLib\psgLib.h>
 
@@ -589,7 +589,7 @@ STDMETHODIMP CPGSuperDocProxyAgent::Init2()
 
 STDMETHODIMP CPGSuperDocProxyAgent::Reset()
 {
-   txnTxnManager::GetInstance()->Clear();
+   CEAFTxnManager::GetInstance()->Clear();
    return S_OK;
 }
 

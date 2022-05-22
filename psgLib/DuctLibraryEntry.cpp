@@ -70,7 +70,7 @@ DuctLibraryEntry& DuctLibraryEntry::operator= (const DuctLibraryEntry& rOther)
 }
 
 //======================== OPERATIONS =======================================
-bool DuctLibraryEntry::SaveMe(sysIStructuredSave* pSave)
+bool DuctLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
 {
    pSave->BeginUnit(_T("DuctEntry"), 2.0);
 
@@ -85,7 +85,7 @@ bool DuctLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    return false;
 }
 
-bool DuctLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
+bool DuctLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 {
    if(pLoad->BeginUnit(_T("DuctEntry")))
    {

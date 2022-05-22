@@ -129,7 +129,7 @@ public:
    HaulTruckLibrary* GetHaulTruckLibrary();
    const HaulTruckLibrary* GetHaulTruckLibrary() const;
 
-   virtual bool LoadMe(sysIStructuredLoad* pLoad);
+   virtual bool LoadMe(WBFL::System::IStructuredLoad* pLoad);
 
    void SetMasterLibraryInfo(LPCTSTR strPublisher,LPCTSTR strConfiguration,LPCTSTR strLibFile);
    void GetMasterLibraryInfo(std::_tstring& strServer,std::_tstring& strConfiguration,std::_tstring& strLibFile) const;
@@ -182,14 +182,14 @@ public:
 
    //------------------------------------------------------------------------
    // Dumps the contents of the object to the given dump context.
-   virtual void Dump(dbgDumpContext& os) const;
+   virtual void Dump(WBFL::Debug::LogContext& os) const;
    #endif // _DEBUG
 
    #if defined UNIT_TEST
    //------------------------------------------------------------------------
    // Runs a self-diagnostic test.  Returns true if the test passed,
    // otherwise false.
-   static bool TestMe(dbgLog& rlog);
+   static bool TestMe(WBFL::Debug::Log& rlog);
    #endif // UNIT_TEST
 };
 

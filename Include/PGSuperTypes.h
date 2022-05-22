@@ -34,7 +34,6 @@
 #include <PgsExt\Keys.h> // goes with GDRCONFIG
 static long g_Ncopies = 0; // keeps track of the number of times GDRCONFIG is copied
 
-class dbgDumpContext;
 #include <Material\Rebar.h>
 
 // Constants for consistent behavior of tooltips

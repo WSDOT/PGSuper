@@ -35,7 +35,7 @@ class REPORTINGCLASS rptCreepCoefficient : public rptRcScalar
 public:
    rptCreepCoefficient()
    {
-      SetFormat(sysNumericFormatTool::Fixed);
+      SetFormat(WBFL::System::NumericFormatTool::Format::Fixed);
       //SetWidth(6);
       SetPrecision(4);
    }

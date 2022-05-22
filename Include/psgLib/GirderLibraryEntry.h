@@ -63,7 +63,7 @@ class CGirderMainSheet;
 class GirderLibraryEntry;
 class GirderLibraryEntryObserver;
 
-PSGLIBTPL sysSubjectT<GirderLibraryEntryObserver, GirderLibraryEntry>;
+PSGLIBTPL WBFL::System::SubjectT<GirderLibraryEntryObserver, GirderLibraryEntry>;
 
 interface IStrandGrid;
 interface IBeamFactory;
@@ -92,7 +92,7 @@ public:
    //------------------------------------------------------------------------
    // called by our subject to let us now he's changed, along with an optional
    // hint
-   virtual void Update(GirderLibraryEntry* pSubject, Int32 hint)=0;
+   virtual void Update(GirderLibraryEntry& subject, Int32 hint)=0;
 };
 
 /*****************************************************************************
@@ -144,7 +144,7 @@ private:
 };
 
 class PSGLIBCLASS GirderLibraryEntry : public libLibraryEntry, public ISupportIcon,
-       public sysSubjectT<GirderLibraryEntryObserver, GirderLibraryEntry>
+       public WBFL::System::SubjectT<GirderLibraryEntryObserver, GirderLibraryEntry>
 {
 public:
    typedef std::map<std::_tstring,CClassFactoryHolder> ClassFactoryCollection;
@@ -363,11 +363,11 @@ public:
 
    //------------------------------------------------------------------------
    // Save to structured storage
-   virtual bool SaveMe(sysIStructuredSave* pSave);
+   virtual bool SaveMe(WBFL::System::IStructuredSave* pSave);
 
    //------------------------------------------------------------------------
    // Load from structured storage
-   virtual bool LoadMe(sysIStructuredLoad* pLoad);
+   virtual bool LoadMe(WBFL::System::IStructuredLoad* pLoad);
 
    //------------------------------------------------------------------------
    // Check entry for errors and return a vector of errors
@@ -1058,7 +1058,7 @@ private:
    void AddDimension(const std::_tstring& name,Float64 value);
 
    HRESULT CreateBeamFactory(const std::_tstring& strCLSID);
-   void LoadIBeamDimensions(sysIStructuredLoad* pLoad);
+   void LoadIBeamDimensions(WBFL::System::IStructuredLoad* pLoad);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

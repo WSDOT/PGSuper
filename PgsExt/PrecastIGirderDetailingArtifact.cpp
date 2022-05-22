@@ -185,14 +185,14 @@ bool pgsPrecastIGirderDetailingArtifact::AssertValid() const
    return true;
 }
 
-void pgsPrecastIGirderDetailingArtifact::Dump(dbgDumpContext& os) const
+void pgsPrecastIGirderDetailingArtifact::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << "Dump for pgsPrecastIGirderDetailingArtifact" << endl;
+   os << "Dump for pgsPrecastIGirderDetailingArtifact" << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool pgsPrecastIGirderDetailingArtifact::TestMe(dbgLog& rlog)
+bool pgsPrecastIGirderDetailingArtifact::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("pgsPrecastIGirderDetailingArtifact");
 

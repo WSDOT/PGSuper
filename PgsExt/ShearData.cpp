@@ -172,7 +172,7 @@ bool CShearData::operator != (const CShearData& rOther) const
 }
 
 //======================== OPERATIONS =======================================
-HRESULT CShearData::Load(sysIStructuredLoad* pStrLoad)
+HRESULT CShearData::Load(WBFL::System::IStructuredLoad* pStrLoad)
 {
    USES_CONVERSION;
 
@@ -386,7 +386,7 @@ HRESULT CShearData::Load(sysIStructuredLoad* pStrLoad)
    return hr;
 }
 
-HRESULT CShearData::Save(sysIStructuredSave* pStrSave)
+HRESULT CShearData::Save(WBFL::System::IStructuredSave* pStrSave)
 {
    HRESULT hr = S_OK;
 

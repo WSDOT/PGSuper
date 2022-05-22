@@ -743,7 +743,7 @@ bool CPCIDeckedBulbTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions
    return true;
 }
 
-void CPCIDeckedBulbTeeFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
+void CPCIDeckedBulbTeeFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
 {
    pSave->BeginUnit(_T("PCIDeckedBulbTeeDimensions"),1.0);
    for( const auto& name : m_DimNames)
@@ -754,7 +754,7 @@ void CPCIDeckedBulbTeeFactory::SaveSectionDimensions(sysIStructuredSave* pSave,c
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CPCIDeckedBulbTeeFactory::LoadSectionDimensions(sysIStructuredLoad* pLoad) const
+IBeamFactory::Dimensions CPCIDeckedBulbTeeFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
 {
    Float64 parent_version;
    if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))

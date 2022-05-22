@@ -26,6 +26,7 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <EAF\EAFTxnManager.h>
 #include <PgsExt\BridgeDescription2.h>
 #include "MovePierDlg.h"
 #include "EditPierStation.h"
@@ -82,8 +83,8 @@ void CInplacePierStationEditEvents::Handle_OnChanged(iDisplayObject* pDO)
    {
       if ( !IsEqual(old_station,new_station) )
       {
-         txnEditPierStation* pTxn = new txnEditPierStation(m_PierIdx,old_station,new_station,dlg.m_Option);
-         txnTxnManager::GetInstance()->Execute(pTxn);
+         std::unique_ptr<txnEditPierStation> pTxn(std::make_unique<txnEditPierStation>(m_PierIdx,old_station,new_station,dlg.m_Option));
+         CEAFTxnManager::GetInstance()->Execute(std::move(pTxn));
       }
    }
 }

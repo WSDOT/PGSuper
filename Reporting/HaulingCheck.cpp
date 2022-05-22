@@ -191,14 +191,14 @@ bool CHaulingCheck::AssertValid() const
    return true;
 }
 
-void CHaulingCheck::Dump(dbgDumpContext& os) const
+void CHaulingCheck::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CHaulingCheck") << endl;
+   os << _T("Dump for CHaulingCheck") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CHaulingCheck::TestMe(dbgLog& rlog)
+bool CHaulingCheck::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CHaulingCheck");
 

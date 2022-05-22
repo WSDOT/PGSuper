@@ -75,21 +75,21 @@ BOOL CPGSuperAppPluginApp::InitInstance()
 
    // Register the component categories PGSuper needs
    // This should be done in the installer, but do it again here just in case
-   sysComCatMgr::CreateCategory(L"PGSuper Agent",                   CATID_PGSuperAgent);
-   sysComCatMgr::CreateCategory(L"PGSuper Extension Agent",         CATID_PGSuperExtensionAgent);
-   sysComCatMgr::CreateCategory(L"PGSuper Beam Family",             CATID_PGSuperBeamFamily);
-   sysComCatMgr::CreateCategory(L"PGSuper Project Importer Plugin", CATID_PGSuperProjectImporter);
-   sysComCatMgr::CreateCategory(L"PGSuper Data Importer Plugin",    CATID_PGSuperDataImporter);
-   sysComCatMgr::CreateCategory(L"PGSuper Data Exporter Plugin",    CATID_PGSuperDataExporter);
-   sysComCatMgr::CreateCategory(L"PGSuper Component Information",   CATID_PGSuperComponentInfo);
+   WBFL::System::ComCatMgr::CreateCategory(L"PGSuper Agent",                   CATID_PGSuperAgent);
+   WBFL::System::ComCatMgr::CreateCategory(L"PGSuper Extension Agent",         CATID_PGSuperExtensionAgent);
+   WBFL::System::ComCatMgr::CreateCategory(L"PGSuper Beam Family",             CATID_PGSuperBeamFamily);
+   WBFL::System::ComCatMgr::CreateCategory(L"PGSuper Project Importer Plugin", CATID_PGSuperProjectImporter);
+   WBFL::System::ComCatMgr::CreateCategory(L"PGSuper Data Importer Plugin",    CATID_PGSuperDataImporter);
+   WBFL::System::ComCatMgr::CreateCategory(L"PGSuper Data Exporter Plugin",    CATID_PGSuperDataExporter);
+   WBFL::System::ComCatMgr::CreateCategory(L"PGSuper Component Information",   CATID_PGSuperComponentInfo);
 
-   sysComCatMgr::CreateCategory(L"PGSplice Agent",                   CATID_PGSpliceAgent);
-   sysComCatMgr::CreateCategory(L"PGSplice Extension Agent",         CATID_PGSpliceExtensionAgent);
-   sysComCatMgr::CreateCategory(L"PGSplice Beam Family",             CATID_PGSpliceBeamFamily);
-   sysComCatMgr::CreateCategory(L"PGSplice Project Importer Plugin", CATID_PGSpliceProjectImporter);
-   sysComCatMgr::CreateCategory(L"PGSplice Data Importer Plugin",    CATID_PGSpliceDataImporter);
-   sysComCatMgr::CreateCategory(L"PGSplice Data Exporter Plugin",    CATID_PGSpliceDataExporter);
-   sysComCatMgr::CreateCategory(L"PGSplice Component Information",   CATID_PGSpliceComponentInfo);
+   WBFL::System::ComCatMgr::CreateCategory(L"PGSplice Agent",                   CATID_PGSpliceAgent);
+   WBFL::System::ComCatMgr::CreateCategory(L"PGSplice Extension Agent",         CATID_PGSpliceExtensionAgent);
+   WBFL::System::ComCatMgr::CreateCategory(L"PGSplice Beam Family",             CATID_PGSpliceBeamFamily);
+   WBFL::System::ComCatMgr::CreateCategory(L"PGSplice Project Importer Plugin", CATID_PGSpliceProjectImporter);
+   WBFL::System::ComCatMgr::CreateCategory(L"PGSplice Data Importer Plugin",    CATID_PGSpliceDataImporter);
+   WBFL::System::ComCatMgr::CreateCategory(L"PGSplice Data Exporter Plugin",    CATID_PGSpliceDataExporter);
+   WBFL::System::ComCatMgr::CreateCategory(L"PGSplice Component Information",   CATID_PGSpliceComponentInfo);
 
 	return CWinApp::InitInstance();
 }
@@ -148,33 +148,33 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
 
 HRESULT Register(bool bRegister)
 {
-   HRESULT hr = sysComCatMgr::RegWithCategory(CLSID_PGSuperComponentInfo,CATID_BridgeLinkComponentInfo,bRegister);
+   HRESULT hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_PGSuperComponentInfo,CATID_BridgeLinkComponentInfo,bRegister);
    if ( FAILED(hr) )
       return hr;
 
-   hr = sysComCatMgr::RegWithCategory(CLSID_PGSpliceComponentInfo,CATID_BridgeLinkComponentInfo,bRegister);
+   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_PGSpliceComponentInfo,CATID_BridgeLinkComponentInfo,bRegister);
    if ( FAILED(hr) )
       return hr;
 
    // Need to register the library application plugin with the BridgeLinkAppPlugin category
 
    // PGSuper
-   hr = sysComCatMgr::RegWithCategory(CLSID_PGSuperAppPlugin,CATID_BridgeLinkAppPlugin,bRegister);
+   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_PGSuperAppPlugin,CATID_BridgeLinkAppPlugin,bRegister);
    if ( FAILED(hr) )
       return hr;
 
    // PGSuper Project Importers
-   hr = sysComCatMgr::RegWithCategory(CLSID_PGSuperProjectImporterAppPlugin,CATID_BridgeLinkAppPlugin,bRegister);
+   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_PGSuperProjectImporterAppPlugin,CATID_BridgeLinkAppPlugin,bRegister);
    if ( FAILED(hr) )
       return hr;
 
    // PGSplice
-   hr = sysComCatMgr::RegWithCategory(CLSID_PGSpliceAppPlugin,CATID_BridgeLinkAppPlugin,bRegister);
+   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_PGSpliceAppPlugin,CATID_BridgeLinkAppPlugin,bRegister);
    if ( FAILED(hr) )
       return hr;
 
    // PGSplice Project Importers
-   hr = sysComCatMgr::RegWithCategory(CLSID_PGSpliceProjectImporterAppPlugin,CATID_BridgeLinkAppPlugin,bRegister);
+   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_PGSpliceProjectImporterAppPlugin,CATID_BridgeLinkAppPlugin,bRegister);
    if ( FAILED(hr) )
       return hr;
 

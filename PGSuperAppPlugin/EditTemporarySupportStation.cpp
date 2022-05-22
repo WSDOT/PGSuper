@@ -53,9 +53,9 @@ void txnEditTemporarySupportStation::Undo()
    DoExecute(0);
 }
 
-txnTransaction* txnEditTemporarySupportStation::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnEditTemporarySupportStation::CreateClone() const
 {
-   return new txnEditTemporarySupportStation(m_TsIdx,m_Station[0],m_Station[1]);
+   return std::make_unique<txnEditTemporarySupportStation>(m_TsIdx,m_Station[0],m_Station[1]);
 }
 
 std::_tstring txnEditTemporarySupportStation::Name() const
@@ -65,12 +65,12 @@ std::_tstring txnEditTemporarySupportStation::Name() const
    return os.str();
 }
 
-bool txnEditTemporarySupportStation::IsUndoable()
+bool txnEditTemporarySupportStation::IsUndoable() const
 {
    return true;
 }
 
-bool txnEditTemporarySupportStation::IsRepeatable()
+bool txnEditTemporarySupportStation::IsRepeatable() const
 {
    return false;
 }

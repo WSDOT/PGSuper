@@ -210,7 +210,7 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,const CGirderKey&
       std::vector<Float64> dummy;
       std::vector<Float64> Pmin, Pmax;
       std::vector<Float64> Mmin, Mmax;
-      std::vector<sysSectionValue> Vmin, Vmax, Vdummy;
+      std::vector<WBFL::System::SectionValue> Vmin, Vmax, Vdummy;
       std::vector<Float64> Dmin, Dmax;
 
       std::vector<AxleConfiguration> dummyConfig, 

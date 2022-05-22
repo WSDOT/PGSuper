@@ -234,7 +234,7 @@ void CAssumedExcessCamberSpanGrid::GetGridData(CDataExchange* pDX)
    {
       CString strValue = GetCellValue(row, 1);
       Float64 value;
-      if (strValue.IsEmpty() || !sysTokenizer::ParseDouble(strValue, &value))
+      if (strValue.IsEmpty() || !WBFL::System::Tokenizer::ParseDouble(strValue, &value))
       {
          AfxMessageBox( _T("Assumed Excess Camber value is not a number - must be a number zero or greater"), MB_ICONERROR | MB_OK);
          SetCurrentCell(row,1,GX_SCROLLINVIEW|GX_DISPLAYEDITWND);

@@ -53,9 +53,9 @@ void txnEditSpanLength::Undo()
    DoExecute(0);
 }
 
-txnTransaction* txnEditSpanLength::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnEditSpanLength::CreateClone() const
 {
-   return new txnEditSpanLength(m_SpanIdx,m_SpanLength[0],m_SpanLength[1]);
+   return std::make_unique<txnEditSpanLength>(m_SpanIdx,m_SpanLength[0],m_SpanLength[1]);
 }
 
 std::_tstring txnEditSpanLength::Name() const
@@ -65,12 +65,12 @@ std::_tstring txnEditSpanLength::Name() const
    return os.str();
 }
 
-bool txnEditSpanLength::IsUndoable()
+bool txnEditSpanLength::IsUndoable() const
 {
    return true;
 }
 
-bool txnEditSpanLength::IsRepeatable()
+bool txnEditSpanLength::IsRepeatable() const
 {
    return false;
 }

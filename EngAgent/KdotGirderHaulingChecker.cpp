@@ -378,14 +378,14 @@ bool pgsKdotGirderHaulingChecker::AssertValid() const
    return true;
 }
 
-void pgsKdotGirderHaulingChecker::Dump(dbgDumpContext& os) const
+void pgsKdotGirderHaulingChecker::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << "Dump for pgsKdotGirderHaulingChecker" << endl;
+   os << "Dump for pgsKdotGirderHaulingChecker" << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool pgsKdotGirderHaulingChecker::TestMe(dbgLog& rlog)
+bool pgsKdotGirderHaulingChecker::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("pgsKdotGirderHaulingChecker");
 

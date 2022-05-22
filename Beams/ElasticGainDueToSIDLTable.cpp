@@ -101,7 +101,7 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
    table->m_bHasSidewalk  = bHasSidewalk;
    table->m_bHasOverlay   = bHasOverlay;
 
-   table->scalar.SetFormat(sysNumericFormatTool::Fixed);
+   table->scalar.SetFormat(WBFL::System::NumericFormatTool::Format::Fixed);
    table->scalar.SetWidth(5);
    table->scalar.SetPrecision(2);
 

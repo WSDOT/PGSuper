@@ -637,16 +637,16 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const PoiList& vPoi,p
    // remove all POIs that are in a critical section zone
    vMyPoi.erase(std::remove_if(vMyPoi.begin(), vMyPoi.end(), [&](const pgsPointOfInterest& poi) {return GetCriticalSectionZone(poi,criticalSections) != INVALID_INDEX;}), vMyPoi.end());
 
-   std::vector<sysSectionValue> vDCmin, vDCmax;
-   std::vector<sysSectionValue> vDWmin, vDWmax;
-   std::vector<sysSectionValue> vCRmin, vCRmax;
-   std::vector<sysSectionValue> vSHmin, vSHmax;
-   std::vector<sysSectionValue> vREmin, vREmax;
-   std::vector<sysSectionValue> vPSmin, vPSmax;
-   std::vector<sysSectionValue> vLLIMmin,vLLIMmax;
-   std::vector<sysSectionValue> vUnused;
+   std::vector<WBFL::System::SectionValue> vDCmin, vDCmax;
+   std::vector<WBFL::System::SectionValue> vDWmin, vDWmax;
+   std::vector<WBFL::System::SectionValue> vCRmin, vCRmax;
+   std::vector<WBFL::System::SectionValue> vSHmin, vSHmax;
+   std::vector<WBFL::System::SectionValue> vREmin, vREmax;
+   std::vector<WBFL::System::SectionValue> vPSmin, vPSmax;
+   std::vector<WBFL::System::SectionValue> vLLIMmin,vLLIMmax;
+   std::vector<WBFL::System::SectionValue> vUnused;
    std::vector<VehicleIndexType> vMinTruckIndex, vMaxTruckIndex, vUnusedIndex;
-   std::vector<sysSectionValue> vPLmin, vPLmax;
+   std::vector<WBFL::System::SectionValue> vPLmin, vPLmax;
 
    pgsTypes::LiveLoadType llType = GetLiveLoadType(ratingType);
 
@@ -796,7 +796,7 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const PoiList& vPoi,p
          // need to compute gLL based on axle weights
          if ( ::IsStrengthLimitState(limitState) )
          {
-            sysSectionValue Vmin, Vmax, Dummy;
+            WBFL::System::SectionValue Vmin, Vmax, Dummy;
             AxleConfiguration MinLeftAxleConfig, MaxLeftAxleConfig, MinRightAxleConfig, MaxRightAxleConfig, DummyLeftAxleConfig, DummyRightAxleConfig;
             pProdForces->GetVehicularLiveLoadShear(loadRatingIntervalIdx,llType,truck_index,poi,batMin,true,true,&Vmin,&Dummy,&MinLeftAxleConfig,&MinRightAxleConfig,&DummyLeftAxleConfig,&DummyRightAxleConfig);
             pProdForces->GetVehicularLiveLoadShear(loadRatingIntervalIdx,llType,truck_index,poi,batMax,true,true,&Dummy,&Vmax,&DummyLeftAxleConfig,&DummyRightAxleConfig,&MaxLeftAxleConfig,&MaxRightAxleConfig);

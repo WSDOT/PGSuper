@@ -23,10 +23,10 @@
 #ifndef INCLUDED_EDITENVIRONMENTTXN_H_
 #define INCLUDED_EDITENVIRONMENTTXN_H_
 
-#include <System\Transaction.h>
+#include <EAF\EAFTransaction.h>
 #include <IFace\Project.h>
 
-class txnEditEnvironment : public txnTransaction
+class txnEditEnvironment : public CEAFTransaction
 {
 public:
    txnEditEnvironment(enumExposureCondition oldExposureCondition, enumExposureCondition newExposureCondition,
@@ -36,10 +36,10 @@ public:
 
    virtual bool Execute();
    virtual void Undo();
-   virtual txnTransaction* CreateClone() const;
+   virtual std::unique_ptr<CEAFTransaction> CreateClone() const;
    virtual std::_tstring Name() const;
-   virtual bool IsUndoable();
-   virtual bool IsRepeatable();
+   virtual bool IsUndoable() const;
+   virtual bool IsRepeatable() const;
 
 private:
    void Execute(int i);

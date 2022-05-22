@@ -127,7 +127,7 @@ CElasticGainDueToDeckPlacementTable* CElasticGainDueToDeckPlacementTable::Prepar
    table->m_bHasDeckPanel = bHasDeckPanel;
    table->m_bHasUserLoads = bHasUserLoads;
    table->m_bHasLongitudinalJoints = bHasLongitudinalJoints;
-   table->scalar.SetFormat(sysNumericFormatTool::Fixed);
+   table->scalar.SetFormat(WBFL::System::NumericFormatTool::Format::Fixed);
    table->scalar.SetWidth(5);
    table->scalar.SetPrecision(2);
 

@@ -639,20 +639,20 @@ void CCopyGirderDlg::OnOK()
    UpdateData(TRUE);
 
    // execute transactions
-   pgsMacroTxn* pMacro = new pgsMacroTxn;
+   std::unique_ptr<pgsMacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
    pMacro->Name(_T("Copy Girder Properties Macro"));
 
    std::vector<ICopyGirderPropertiesCallback*> callbacks = GetSelectedCopyGirderPropertiesCallbacks();
    for (auto callback : callbacks)
    {
-      txnTransaction* pTxn = callback->CreateCopyTransaction(m_FromGirderKey, m_ToGirderKeys);
-      pMacro->AddTransaction(pTxn);
+      std::unique_ptr<CEAFTransaction> txn = callback->CreateCopyTransaction(m_FromGirderKey, m_ToGirderKeys);
+      pMacro->AddTransaction(std::move(txn));
    }
 
-   if (pMacro->GetTxnCount() > 0)
+   if (0 < pMacro->GetTxnCount())
    {
       GET_IFACE(IEAFTransactions, pTransactions);
-      pTransactions->Execute(pMacro);
+      pTransactions->Execute(std::move(pMacro));
    }
 
    UpdateReport();

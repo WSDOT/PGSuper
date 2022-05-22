@@ -257,14 +257,14 @@ bool pgsGirderLiftingChecker::AssertValid() const
    return true;
 }
 
-void pgsGirderLiftingChecker::Dump(dbgDumpContext& os) const
+void pgsGirderLiftingChecker::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << "Dump for pgsGirderLiftingChecker" << endl;
+   os << "Dump for pgsGirderLiftingChecker" << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool pgsGirderLiftingChecker::TestMe(dbgLog& rlog)
+bool pgsGirderLiftingChecker::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("pgsGirderLiftingChecker");
 

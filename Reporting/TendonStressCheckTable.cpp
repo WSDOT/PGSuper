@@ -326,14 +326,14 @@ bool CTendonStressCheckTable::AssertValid() const
    return true;
 }
 
-void CTendonStressCheckTable::Dump(dbgDumpContext& os) const
+void CTendonStressCheckTable::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CTendonStressCheckTable") << endl;
+   os << _T("Dump for CTendonStressCheckTable") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CTendonStressCheckTable::TestMe(dbgLog& rlog)
+bool CTendonStressCheckTable::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CTendonStressCheckTable");
 

@@ -650,14 +650,14 @@ bool CFlexuralStressCheckTable::AssertValid() const
    return true;
 }
 
-void CFlexuralStressCheckTable::Dump(dbgDumpContext& os) const
+void CFlexuralStressCheckTable::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CCombinedMomentsTable") << endl;
+   os << _T("Dump for CCombinedMomentsTable") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CFlexuralStressCheckTable::TestMe(dbgLog& rlog)
+bool CFlexuralStressCheckTable::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CFlexuralStressCheckTable");
 

@@ -712,7 +712,7 @@ bool CStrandFillGrid::UpdateData(bool doCheckData)
          CString strval = style.GetValue();
          if( !strval.IsEmpty())
          {
-            bool st = sysTokenizer::ParseDouble(strval, &leftDebond);
+            bool st = WBFL::System::Tokenizer::ParseDouble(strval, &leftDebond);
             if(!st && doCheckData)
             {
                AfxMessageBox( _T("Debond length is not a number - value must be zero or greater"), MB_ICONEXCLAMATION);
@@ -740,7 +740,7 @@ bool CStrandFillGrid::UpdateData(bool doCheckData)
             CString strval = style.GetValue();
             if( !strval.IsEmpty())
             {
-               bool st = sysTokenizer::ParseDouble(strval, &rightDebond);
+               bool st = WBFL::System::Tokenizer::ParseDouble(strval, &rightDebond);
                if(!st && doCheckData)
                {
                   AfxMessageBox( _T("Debond length is not a number - must be zero or greater"), MB_ICONEXCLAMATION);

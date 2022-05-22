@@ -132,7 +132,7 @@ bool CShearZoneData2::operator != (const CShearZoneData2& rOther) const
 }
 
 //======================== OPERATIONS =======================================
-HRESULT CShearZoneData2::Load(sysIStructuredLoad* pStrLoad, bool bConvertToShearDataVersion9, 
+HRESULT CShearZoneData2::Load(WBFL::System::IStructuredLoad* pStrLoad, bool bConvertToShearDataVersion9, 
                 matRebar::Size confinementBarSize,Uint32 NumConfinementZones, 
                 bool bDoStirrupsEngageDeck)
 {
@@ -340,7 +340,7 @@ HRESULT CShearZoneData2::Load(sysIStructuredLoad* pStrLoad, bool bConvertToShear
    return hr;
 }
 
-HRESULT CShearZoneData2::Save(sysIStructuredSave* pStrSave)
+HRESULT CShearZoneData2::Save(WBFL::System::IStructuredSave* pStrSave)
 {
    HRESULT hr = S_OK;
 

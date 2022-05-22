@@ -80,7 +80,7 @@ protected:
    Float64 ComputeShift(const CGirderKey& girderKey);
    void GetXValues(const PoiList& vPoi,std::vector<Float64>* pXVals);
    void AddGraphPoints(IndexType series, const std::vector<Float64>& xvals,const std::vector<Float64>& yvals);
-   void AddGraphPoints(IndexType series, const std::vector<Float64>& xvals,const std::vector<sysSectionValue>& yvals);
+   void AddGraphPoints(IndexType series, const std::vector<Float64>& xvals,const std::vector<WBFL::System::SectionValue>& yvals);
    void AddGraphPoint(IndexType series, Float64 xval, Float64 yval);
    void DrawGraphNow(CWnd* pGraphWnd,CDC* pDC);
 

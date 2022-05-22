@@ -340,14 +340,14 @@ bool CVehicularLoadReactionTable::AssertValid() const
    return true;
 }
 
-void CVehicularLoadReactionTable::Dump(dbgDumpContext& os) const
+void CVehicularLoadReactionTable::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CVehicularLoadReactionTable") << endl;
+   os << _T("Dump for CVehicularLoadReactionTable") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CVehicularLoadReactionTable::TestMe(dbgLog& rlog)
+bool CVehicularLoadReactionTable::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CVehicularLoadReactionTable");
 

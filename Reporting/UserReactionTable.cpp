@@ -212,14 +212,14 @@ bool CUserReactionTable::AssertValid() const
    return true;
 }
 
-void CUserReactionTable::Dump(dbgDumpContext& os) const
+void CUserReactionTable::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CUserReactionTable") << endl;
+   os << _T("Dump for CUserReactionTable") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CUserReactionTable::TestMe(dbgLog& rlog)
+bool CUserReactionTable::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CUserReactionTable");
 

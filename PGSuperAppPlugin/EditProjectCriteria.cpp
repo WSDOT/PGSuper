@@ -75,9 +75,9 @@ void txnEditProjectCriteria::Execute(int i)
    pBridgeDesc->SetWearingSurfaceType(m_WearingSurfaceType[i]);
 }
 
-txnTransaction* txnEditProjectCriteria::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnEditProjectCriteria::CreateClone() const
 {
-   return new txnEditProjectCriteria(m_strProjectCriteria[0].c_str(),m_strProjectCriteria[1].c_str(),m_AnalysisType[0],m_AnalysisType[1],m_WearingSurfaceType[0],m_WearingSurfaceType[1]);
+   return std::make_unique<txnEditProjectCriteria>(m_strProjectCriteria[0].c_str(),m_strProjectCriteria[1].c_str(),m_AnalysisType[0],m_AnalysisType[1],m_WearingSurfaceType[0],m_WearingSurfaceType[1]);
 }
 
 std::_tstring txnEditProjectCriteria::Name() const
@@ -85,12 +85,12 @@ std::_tstring txnEditProjectCriteria::Name() const
    return _T("Edit Design Criteria");
 }
 
-bool txnEditProjectCriteria::IsUndoable()
+bool txnEditProjectCriteria::IsUndoable() const
 {
    return true;
 }
 
-bool txnEditProjectCriteria::IsRepeatable()
+bool txnEditProjectCriteria::IsRepeatable() const
 {
    return false;
 }

@@ -323,14 +323,14 @@ bool CStrandStressCheckTable::AssertValid() const
    return true;
 }
 
-void CStrandStressCheckTable::Dump(dbgDumpContext& os) const
+void CStrandStressCheckTable::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CStrandStressCheckTable") << endl;
+   os << _T("Dump for CStrandStressCheckTable") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CStrandStressCheckTable::TestMe(dbgLog& rlog)
+bool CStrandStressCheckTable::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CStrandStressCheckTable");
 

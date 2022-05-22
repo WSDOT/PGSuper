@@ -112,11 +112,11 @@ void RegisterPlugins(bool bRegister)
    // Importer/Exporter Plugins
 
    // PGSuper
-   sysComCatMgr::RegWithCategory(CLSID_PGSuperDataExporter,    CATID_PGSuperDataExporter,    bRegister);
-   //sysComCatMgr::RegWithCategory(CLSID_PGSuperDataExporter,    CATID_PGSpliceDataExporter,   bRegister);
+   WBFL::System::ComCatMgr::RegWithCategory(CLSID_PGSuperDataExporter,    CATID_PGSuperDataExporter,    bRegister);
+   //WBFL::System::ComCatMgr::RegWithCategory(CLSID_PGSuperDataExporter,    CATID_PGSpliceDataExporter,   bRegister);
   // The KDOT component info objects provides information about this entire plug-in component
    // This information is used in the "About" dialog
-   HRESULT hr = sysComCatMgr::RegWithCategory(CLSID_KDOTComponentInfo, CATID_PGSuperComponentInfo, bRegister);
+   HRESULT hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_KDOTComponentInfo, CATID_PGSuperComponentInfo, bRegister);
 }
 
 /////////////////////////////////////////////////////////////////////////////

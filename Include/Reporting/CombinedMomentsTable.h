@@ -132,14 +132,14 @@ public:
 
    //------------------------------------------------------------------------
    // Dumps the contents of the object to the given dump context.
-   virtual void Dump(dbgDumpContext& os) const;
+   virtual void Dump(WBFL::Debug::LogContext& os) const;
    #endif // _DEBUG
 
    #if defined _UNITTEST
    //------------------------------------------------------------------------
    // Runs a self-diagnostic test.  Returns true if the test passed,
    // otherwise false.
-   static bool TestMe(dbgLog& rlog);
+   static bool TestMe(WBFL::Debug::Log& rlog);
    #endif // _UNITTEST
 };
 
@@ -1154,8 +1154,8 @@ inline void SumPedAndLiveLoad(ILiveLoads::PedestrianLoadApplicationType appType,
    }
 }
 
-inline void SumPedAndLiveLoad(ILiveLoads::PedestrianLoadApplicationType appType, std::vector<sysSectionValue>& minLL, std::vector<sysSectionValue>& maxLL,
-                              const std::vector<sysSectionValue>& minPed, const std::vector<sysSectionValue>& maxPed)
+inline void SumPedAndLiveLoad(ILiveLoads::PedestrianLoadApplicationType appType, std::vector<WBFL::System::SectionValue>& minLL, std::vector<WBFL::System::SectionValue>& maxLL,
+                              const std::vector<WBFL::System::SectionValue>& minPed, const std::vector<WBFL::System::SectionValue>& maxPed)
 {
    ATLASSERT(minLL.size()==minPed.size());
    ATLASSERT(maxLL.size()==maxPed.size());
@@ -1167,9 +1167,9 @@ inline void SumPedAndLiveLoad(ILiveLoads::PedestrianLoadApplicationType appType,
    else if (appType==ILiveLoads::PedConcurrentWithVehicular)
    {
       // summ values
-      std::vector<sysSectionValue>::iterator minIt = minLL.begin();
-      std::vector<sysSectionValue>::iterator minEnd = minLL.end();
-      std::vector<sysSectionValue>::const_iterator minPedIt = minPed.begin();
+      std::vector<WBFL::System::SectionValue>::iterator minIt = minLL.begin();
+      std::vector<WBFL::System::SectionValue>::iterator minEnd = minLL.end();
+      std::vector<WBFL::System::SectionValue>::const_iterator minPedIt = minPed.begin();
       while(minIt != minEnd)
       {
          *minIt += *minPedIt;
@@ -1177,9 +1177,9 @@ inline void SumPedAndLiveLoad(ILiveLoads::PedestrianLoadApplicationType appType,
          minPedIt++;
       }
 
-      std::vector<sysSectionValue>::iterator maxIt = maxLL.begin();
-      std::vector<sysSectionValue>::iterator maxEnd = maxLL.end();
-      std::vector<sysSectionValue>::const_iterator maxPedIt = maxPed.begin();
+      std::vector<WBFL::System::SectionValue>::iterator maxIt = maxLL.begin();
+      std::vector<WBFL::System::SectionValue>::iterator maxEnd = maxLL.end();
+      std::vector<WBFL::System::SectionValue>::const_iterator maxPedIt = maxPed.begin();
       while(maxIt != maxEnd)
       {
          *maxIt += *maxPedIt;
@@ -1190,9 +1190,9 @@ inline void SumPedAndLiveLoad(ILiveLoads::PedestrianLoadApplicationType appType,
    else if (appType==ILiveLoads::PedEnvelopeWithVehicular)
    {
       // envelope values
-      std::vector<sysSectionValue>::iterator minIt = minLL.begin();
-      std::vector<sysSectionValue>::iterator minEnd = minLL.end();
-      std::vector<sysSectionValue>::const_iterator minPedIt = minPed.begin();
+      std::vector<WBFL::System::SectionValue>::iterator minIt = minLL.begin();
+      std::vector<WBFL::System::SectionValue>::iterator minEnd = minLL.end();
+      std::vector<WBFL::System::SectionValue>::const_iterator minPedIt = minPed.begin();
       while(minIt != minEnd)
       {
          minIt->Left()  = Min(minIt->Left(), minPedIt->Left());
@@ -1201,9 +1201,9 @@ inline void SumPedAndLiveLoad(ILiveLoads::PedestrianLoadApplicationType appType,
          minPedIt++;
       }
 
-      std::vector<sysSectionValue>::iterator maxIt = maxLL.begin();
-      std::vector<sysSectionValue>::iterator maxEnd = maxLL.end();
-      std::vector<sysSectionValue>::const_iterator maxPedIt = maxPed.begin();
+      std::vector<WBFL::System::SectionValue>::iterator maxIt = maxLL.begin();
+      std::vector<WBFL::System::SectionValue>::iterator maxEnd = maxLL.end();
+      std::vector<WBFL::System::SectionValue>::const_iterator maxPedIt = maxPed.begin();
       while(maxIt != maxEnd)
       {
          maxIt->Left()  = Max(maxIt->Left(), maxPedIt->Left());

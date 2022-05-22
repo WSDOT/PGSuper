@@ -57,7 +57,7 @@ STDAPI DllRegisterServer(void)
     HRESULT hr = _AtlModule.DllRegisterServer();
 
     // Register document plugin
-   sysComCatMgr::RegWithCategory(CLSID_LibMgrDocPlugin, CATID_PGSuperLibraryManagerPlugin, true);
+   WBFL::System::ComCatMgr::RegWithCategory(CLSID_LibMgrDocPlugin, CATID_PGSuperLibraryManagerPlugin, true);
 
 	return hr;
 }
@@ -69,7 +69,7 @@ STDAPI DllUnregisterServer(void)
 	HRESULT hr = _AtlModule.DllUnregisterServer();
 
    // Unregister document plugin
-   sysComCatMgr::RegWithCategory(CLSID_LibMgrDocPlugin, CATID_PGSuperLibraryManagerPlugin, false);
+   WBFL::System::ComCatMgr::RegWithCategory(CLSID_LibMgrDocPlugin, CATID_PGSuperLibraryManagerPlugin, false);
 
 	return hr;
 }

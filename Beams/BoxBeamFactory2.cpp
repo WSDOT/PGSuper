@@ -287,7 +287,7 @@ bool CBoxBeamFactory2::ValidateDimensions(const IBeamFactory::Dimensions& dimens
    return true;
 }
 
-void CBoxBeamFactory2::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
+void CBoxBeamFactory2::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
 {
    pSave->BeginUnit(_T("AASHTOBoxBeamDimensions"),2.0);
    for ( const auto& name : m_DimNames)
@@ -298,7 +298,7 @@ void CBoxBeamFactory2::SaveSectionDimensions(sysIStructuredSave* pSave,const IBe
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CBoxBeamFactory2::LoadSectionDimensions(sysIStructuredLoad* pLoad) const
+IBeamFactory::Dimensions CBoxBeamFactory2::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
 {
    Float64 parent_version;
    if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))

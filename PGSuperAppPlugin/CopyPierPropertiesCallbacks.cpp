@@ -303,9 +303,9 @@ txnCopyPierAllProperties::~txnCopyPierAllProperties()
 {
 }
 
-txnTransaction* txnCopyPierAllProperties::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnCopyPierAllProperties::CreateClone() const
 {
-   return new txnCopyPierAllProperties(m_FromPierIdx,m_ToPiers);
+   return std::make_unique<txnCopyPierAllProperties>(m_FromPierIdx,m_ToPiers);
 }
 
 std::_tstring txnCopyPierAllProperties::Name() const
@@ -429,9 +429,9 @@ void txnCopyPierConnectionProperties::Undo()
    }
 }
 
-txnTransaction* txnCopyPierConnectionProperties::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnCopyPierConnectionProperties::CreateClone() const
 {
-   return new txnCopyPierConnectionProperties(m_FromPierIdx,m_ToPiers);
+   return std::make_unique<txnCopyPierConnectionProperties>(m_FromPierIdx,m_ToPiers);
 }
 
 std::_tstring txnCopyPierConnectionProperties::Name() const
@@ -534,9 +534,9 @@ void txnCopyPierDiaphragmProperties::Undo()
    }
 }
 
-txnTransaction* txnCopyPierDiaphragmProperties::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnCopyPierDiaphragmProperties::CreateClone() const
 {
-   return new txnCopyPierDiaphragmProperties(m_FromPierIdx,m_ToPiers);
+   return std::make_unique<txnCopyPierDiaphragmProperties>(m_FromPierIdx,m_ToPiers);
 }
 
 std::_tstring txnCopyPierDiaphragmProperties::Name() const
@@ -641,9 +641,9 @@ void txnCopyPierModelProperties::Undo()
    }
 }
 
-txnTransaction* txnCopyPierModelProperties::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnCopyPierModelProperties::CreateClone() const
 {
-   return new txnCopyPierModelProperties(m_FromPierIdx,m_ToPiers);
+   return std::make_unique<txnCopyPierModelProperties>(m_FromPierIdx,m_ToPiers);
 }
 
 std::_tstring txnCopyPierModelProperties::Name() const
@@ -670,9 +670,9 @@ BOOL CCopyPierAllProperties::CanCopy(PierIndexType fromPierIdx,const std::vector
    return CanCopyConnectionData(fromPierIdx, toPiers);
 }
 
-txnTransaction* CCopyPierAllProperties::CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
+std::unique_ptr<CEAFTransaction> CCopyPierAllProperties::CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
 {
-   return new txnCopyPierAllProperties(fromPierIdx, toPiers);
+   return std::make_unique<txnCopyPierAllProperties>(fromPierIdx, toPiers);
 }
 
 UINT CCopyPierAllProperties::GetPierEditorTabIndex()
@@ -707,9 +707,9 @@ BOOL CCopyPierConnectionProperties::CanCopy(PierIndexType fromPierIdx,const std:
    return CanCopyConnectionData(fromPierIdx, toPiers);
 }
 
-txnTransaction* CCopyPierConnectionProperties::CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
+std::unique_ptr<CEAFTransaction> CCopyPierConnectionProperties::CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
 {
-   return new txnCopyPierConnectionProperties(fromPierIdx, toPiers);
+   return std::make_unique<txnCopyPierConnectionProperties>(fromPierIdx, toPiers);
 }
 
 UINT CCopyPierConnectionProperties::GetPierEditorTabIndex()
@@ -744,9 +744,9 @@ BOOL CCopyPierDiaphragmProperties::CanCopy(PierIndexType fromPierIdx,const std::
    return TRUE;
 }
 
-txnTransaction* CCopyPierDiaphragmProperties::CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
+std::unique_ptr<CEAFTransaction> CCopyPierDiaphragmProperties::CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
 {
-   return new txnCopyPierDiaphragmProperties(fromPierIdx, toPiers);
+   return std::make_unique<txnCopyPierDiaphragmProperties>(fromPierIdx, toPiers);
 }
 
 UINT CCopyPierDiaphragmProperties::GetPierEditorTabIndex()
@@ -782,9 +782,9 @@ BOOL CCopyPierModelProperties::CanCopy(PierIndexType fromPierIdx,const std::vect
    return TRUE;
 }
 
-txnTransaction* CCopyPierModelProperties::CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
+std::unique_ptr<CEAFTransaction> CCopyPierModelProperties::CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
 {
-   return new txnCopyPierModelProperties(fromPierIdx, toPiers);
+   return std::make_unique<txnCopyPierModelProperties>(fromPierIdx, toPiers);
 }
 
 UINT CCopyPierModelProperties::GetPierEditorTabIndex()

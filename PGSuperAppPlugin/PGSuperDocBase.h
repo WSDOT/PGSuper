@@ -442,8 +442,6 @@ protected:
    StatusCallbackIDType m_scidInformationalError;
    StatusGroupIDType m_StatusGroupID;
 
-   pgsTxnManagerFactory m_TxnMgrFactory;
-
    virtual void LoadToolbarState() override;
    virtual void SaveToolbarState() override;
 

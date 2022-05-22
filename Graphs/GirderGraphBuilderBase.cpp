@@ -276,10 +276,10 @@ void CGirderGraphBuilderBase::AddGraphPoints(IndexType series, const std::vector
    }
 }
 
-void CGirderGraphBuilderBase::AddGraphPoints(IndexType series, const std::vector<Float64>& xvals,const std::vector<sysSectionValue>& yvals)
+void CGirderGraphBuilderBase::AddGraphPoints(IndexType series, const std::vector<Float64>& xvals,const std::vector<WBFL::System::SectionValue>& yvals)
 {
    std::vector<Float64>::const_iterator xIter;
-   std::vector<sysSectionValue>::const_iterator yIter;
+   std::vector<WBFL::System::SectionValue>::const_iterator yIter;
    for ( xIter = xvals.begin(), yIter = yvals.begin(); xIter != xvals.end() && yIter != yvals.end(); xIter++, yIter++ )
    {
       Float64 X = *xIter;

@@ -167,7 +167,7 @@ public:
 // IEditBridgeCallback
 public:
    virtual CPropertyPage* CreatePropertyPage(IEditBridgeData* pBridgeData) override;
-   virtual txnTransaction* OnOK(CPropertyPage* pPage,IEditBridgeData* pBridgeData) override;
+   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPage,IEditBridgeData* pBridgeData) override;
    virtual void EditPier_OnOK(CPropertyPage* pBridgePropertyPage,CPropertyPage* pPierPropertyPage) override;
    virtual void EditTemporarySupport_OnOK(CPropertyPage* pBridgePropertyPage,CPropertyPage* pTempSupportPropertyPage) override;
    virtual void EditSpan_OnOK(CPropertyPage* pBridgePropertyPage,CPropertyPage* pSpanPropertyPage) override;
@@ -176,48 +176,48 @@ public:
 public:
    virtual CPropertyPage* CreatePropertyPage(IEditPierData* pEditPierData) override;
    virtual CPropertyPage* CreatePropertyPage(IEditPierData* pEditPierData,CPropertyPage* pBridgePropertyPage) override;
-   virtual txnTransaction* OnOK(CPropertyPage* pPage,IEditPierData* pEditPierData) override;
+   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPage,IEditPierData* pEditPierData) override;
    virtual IDType GetEditBridgeCallbackID() override;
 
 // IEditTemporarySupportCallback
 public:
    virtual CPropertyPage* CreatePropertyPage(IEditTemporarySupportData* pEditTemporarySupportData) override;
    virtual CPropertyPage* CreatePropertyPage(IEditTemporarySupportData* pEditTemporarySupportData,CPropertyPage* pBridgePropertyPage) override;
-   virtual txnTransaction* OnOK(CPropertyPage* pPage,IEditTemporarySupportData* pEditTemporarySupportData) override;
+   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPage,IEditTemporarySupportData* pEditTemporarySupportData) override;
    //virtual IDType GetEditBridgeCallbackID() override;
 
 // IEditSpanCallback
 public:
    virtual CPropertyPage* CreatePropertyPage(IEditSpanData* pEditSpanData) override;
    virtual CPropertyPage* CreatePropertyPage(IEditSpanData* pEditSpanData,CPropertyPage* pBridgePropertyPage) override;
-   virtual txnTransaction* OnOK(CPropertyPage* pPage,IEditSpanData* pEditSpanData) override;
+   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPage,IEditSpanData* pEditSpanData) override;
    //virtual IDType GetEditBridgeCallbackID() override;
 
 // IEditSegmentCallback
 public:
    virtual CPropertyPage* CreatePropertyPage(IEditSegmentData* pSegmentData) override;
-   virtual txnTransaction* OnOK(CPropertyPage* pPage,IEditSegmentData* pSegmentData) override;
+   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPage,IEditSegmentData* pSegmentData) override;
    virtual IDType GetEditSplicedGirderCallbackID() override;
    virtual CPropertyPage* CreatePropertyPage(IEditSegmentData* pEditSegmentData,CPropertyPage* pSplicedGirderPropertyPage) override;
 
 // IEditClosureJointCallback
 public:
    virtual CPropertyPage* CreatePropertyPage(IEditClosureJointData* pClosureJointData) override;
-   virtual txnTransaction* OnOK(CPropertyPage* pPage,IEditClosureJointData* pClosureJointData) override;
+   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPage,IEditClosureJointData* pClosureJointData) override;
    //virtual IDType GetEditSplicedGirderCallbackID() override;
    virtual CPropertyPage* CreatePropertyPage(IEditClosureJointData* pEditClosureJointData,CPropertyPage* pSplicedGirderPropertyPage) override;
 
 // IEditSplicedGirderCallback
 public:
    virtual CPropertyPage* CreatePropertyPage(IEditSplicedGirderData* pGirderData) override;
-   virtual txnTransaction* OnOK(CPropertyPage* pPage,IEditSplicedGirderData* pGirderData) override;
+   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPage,IEditSplicedGirderData* pGirderData) override;
    virtual void EditSegment_OnOK(CPropertyPage* pSplicedGirderPropertyPage,CPropertyPage* pSegmentPropertyPage) override;
    virtual void EditClosureJoint_OnOK(CPropertyPage* pSplicedGirderPropertyPage,CPropertyPage* pClosureJointPropertyPage) override;
 
 // IEditGirderCallback
 public:
    virtual CPropertyPage* CreatePropertyPage(IEditGirderData* pGirderData) override;
-   virtual txnTransaction* OnOK(CPropertyPage* pPage,IEditGirderData* pGirderData) override;
+   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPage,IEditGirderData* pGirderData) override;
 
 
 // IExtendUIEventSink

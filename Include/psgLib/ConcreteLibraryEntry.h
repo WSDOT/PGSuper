@@ -35,9 +35,7 @@
 
 // LOCAL INCLUDES
 //
-#if !defined INCLUDED_SYSTEM_SUBJECTT_H_
 #include <System\SubjectT.h>
-#endif
 
 // FORWARD DECLARATIONS
 //
@@ -45,7 +43,7 @@ class pgsLibraryEntryDifferenceItem;
 class ConcreteLibraryEntry;
 class ConcreteLibraryEntryObserver;
 #pragma warning(disable:4231)
-PSGLIBTPL sysSubjectT<ConcreteLibraryEntryObserver, ConcreteLibraryEntry>;
+PSGLIBTPL WBFL::System::SubjectT<ConcreteLibraryEntryObserver, ConcreteLibraryEntry>;
 
 // MISCELLANEOUS
 //
@@ -70,7 +68,7 @@ public:
    //------------------------------------------------------------------------
    // called by our subject to let us now he's changed, along with an optional
    // hint
-   virtual void Update(ConcreteLibraryEntry* pSubject, Int32 hint)=0;
+   virtual void Update(ConcreteLibraryEntry& subject, Int32 hint)=0;
 };
 
 /*****************************************************************************
@@ -88,7 +86,7 @@ LOG
 *****************************************************************************/
 
 class PSGLIBCLASS ConcreteLibraryEntry : public libLibraryEntry, public ISupportIcon,
-       public sysSubjectT<ConcreteLibraryEntryObserver, ConcreteLibraryEntry>
+   public WBFL::System::SubjectT<ConcreteLibraryEntryObserver, ConcreteLibraryEntry>
 {
 public:
    static CString GetConcreteType(pgsTypes::ConcreteType type);
@@ -128,11 +126,11 @@ public:
 
    //------------------------------------------------------------------------
    // Save to structured storage
-   virtual bool SaveMe(sysIStructuredSave* pSave);
+   virtual bool SaveMe(WBFL::System::IStructuredSave* pSave);
 
    //------------------------------------------------------------------------
    // Load from structured storage
-   virtual bool LoadMe(sysIStructuredLoad* pLoad);
+   virtual bool LoadMe(WBFL::System::IStructuredLoad* pLoad);
 /*
    //------------------------------------------------------------------------
    // Description: Attaches an observer. The observer will be notified
@@ -314,14 +312,14 @@ public:
 
    //------------------------------------------------------------------------
    // Dumps the contents of the object to the given dump context.
-   virtual void Dump(dbgDumpContext& os) const;
+   virtual void Dump(WBFL::Debug::LogContext& os) const;
    #endif // _DEBUG
 
    #if defined _UNITTEST
    //------------------------------------------------------------------------
    // Runs a self-diagnostic test.  Returns true if the test passed,
    // otherwise false.
-   static bool TestMe(dbgLog& rlog);
+   static bool TestMe(WBFL::Debug::Log& rlog);
    #endif // _UNITTEST
 };
 

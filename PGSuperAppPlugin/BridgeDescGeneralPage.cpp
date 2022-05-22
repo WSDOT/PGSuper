@@ -2225,9 +2225,9 @@ void CBridgeDescGeneralPage::UIHint(const CString& strText,UINT mask)
    CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
 
    Uint32 hintSettings = pDoc->GetUIHintSettings();
-   if ( sysFlags<Uint32>::IsClear(hintSettings,mask) && EAFShowUIHints(strText))
+   if ( WBFL::System::Flags<Uint32>::IsClear(hintSettings,mask) && EAFShowUIHints(strText))
    {
-      sysFlags<Uint32>::Set(&hintSettings,mask);
+      WBFL::System::Flags<Uint32>::Set(&hintSettings,mask);
       pDoc->SetUIHintSettings(hintSettings);
    }
 }

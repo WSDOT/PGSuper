@@ -1680,7 +1680,7 @@ void write_ex_table(IBroker* pBroker,
    //location.IncludeSpanAndGirder(span == ALL_SPANS);
 
    rptRcScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Automatic );
+   scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Automatic );
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
 
@@ -1986,7 +1986,7 @@ void write_btsummary_table(IBroker* pBroker,
    //location.IncludeSpanAndGirder(span == ALL_SPANS);
 
    rptRcScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Automatic );
+   scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Automatic );
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
 
@@ -2370,7 +2370,7 @@ void write_Vc_table(IBroker* pBroker,
    //location.IncludeSpanAndGirder(span == ALL_SPANS);
 
    rptRcScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Automatic );
+   scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Automatic );
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
 
@@ -2950,7 +2950,7 @@ void write_theta_table(IBroker* pBroker,
 //   location.IncludeSpanAndGirder(span == ALL_SPANS);
 
    rptRcScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Automatic );
+   scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Automatic );
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
 
@@ -3056,7 +3056,7 @@ void write_Vn_table(IBroker* pBroker,
 //   location.IncludeSpanAndGirder(span == ALL_SPANS);
 
    rptRcScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Automatic );
+   scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Automatic );
    scalar.SetWidth(5);
    scalar.SetPrecision(2);
 

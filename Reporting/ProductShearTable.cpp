@@ -136,8 +136,8 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,const CGirderKey& girderK
 
 
       // Get the results for this span (it is faster to get them as a vector rather than individually)
-      std::vector<sysSectionValue> segment;
-      std::vector<sysSectionValue> girder;
+      std::vector<WBFL::System::SectionValue> segment;
+      std::vector<WBFL::System::SectionValue> girder;
       if ( bSegments )
       {
          segment = pForces2->GetShear(erectSegmentIntervalIdx, pgsTypes::pftGirder,   vPoi,maxBAT, rtCumulative);
@@ -148,10 +148,10 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,const CGirderKey& girderK
          girder = pForces2->GetShear(erectSegmentIntervalIdx, pgsTypes::pftGirder,   vPoi,maxBAT, rtCumulative);
       }
 
-      std::vector<sysSectionValue> diaphragm = pForces2->GetShear(lastIntervalIdx,     pgsTypes::pftDiaphragm,vPoi,maxBAT, rtCumulative);
+      std::vector<WBFL::System::SectionValue> diaphragm = pForces2->GetShear(lastIntervalIdx,     pgsTypes::pftDiaphragm,vPoi,maxBAT, rtCumulative);
 
-      std::vector<sysSectionValue> minSlab, maxSlab;
-      std::vector<sysSectionValue> minSlabPad, maxSlabPad;
+      std::vector<WBFL::System::SectionValue> minSlab, maxSlab;
+      std::vector<WBFL::System::SectionValue> minSlabPad, maxSlabPad;
       if (bDeck)
       {
          maxSlab = pForces2->GetShear(lastIntervalIdx, pgsTypes::pftSlab, vPoi, maxBAT, rtCumulative);
@@ -161,35 +161,35 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,const CGirderKey& girderK
          minSlabPad = pForces2->GetShear(lastIntervalIdx, pgsTypes::pftSlabPad, vPoi, minBAT, rtCumulative);
       }
 
-      std::vector<sysSectionValue> minConstruction, maxConstruction;
+      std::vector<WBFL::System::SectionValue> minConstruction, maxConstruction;
       if ( bConstruction )
       {
          maxConstruction = pForces2->GetShear(lastIntervalIdx, pgsTypes::pftConstruction, vPoi, maxBAT, rtCumulative );
          minConstruction = pForces2->GetShear(lastIntervalIdx, pgsTypes::pftConstruction, vPoi, minBAT, rtCumulative );
       }
 
-      std::vector<sysSectionValue> minDeckPanel, maxDeckPanel;
+      std::vector<WBFL::System::SectionValue> minDeckPanel, maxDeckPanel;
       if ( bDeckPanels )
       {
          maxDeckPanel = pForces2->GetShear(lastIntervalIdx, pgsTypes::pftSlabPanel, vPoi, maxBAT, rtCumulative );
          minDeckPanel = pForces2->GetShear(lastIntervalIdx, pgsTypes::pftSlabPanel, vPoi, minBAT, rtCumulative );
       }
 
-      std::vector<sysSectionValue> dummy;
-      std::vector<sysSectionValue> minOverlay, maxOverlay;
-      std::vector<sysSectionValue> minTrafficBarrier, maxTrafficBarrier;
-      std::vector<sysSectionValue> minSidewalk, maxSidewalk;
-      std::vector<sysSectionValue> minShearKey, maxShearKey;
-      std::vector<sysSectionValue> minLongitudinalJoint, maxLongitudinalJoint;
-      std::vector<sysSectionValue> minPedestrian, maxPedestrian;
-      std::vector<sysSectionValue> minDesignLL, maxDesignLL;
-      std::vector<sysSectionValue> minFatigueLL, maxFatigueLL;
-      std::vector<sysSectionValue> minPermitLL, maxPermitLL;
-      std::vector<sysSectionValue> minLegalRoutineLL, maxLegalRoutineLL;
-      std::vector<sysSectionValue> minLegalSpecialLL, maxLegalSpecialLL;
-      std::vector<sysSectionValue> minLegalEmergencyLL, maxLegalEmergencyLL;
-      std::vector<sysSectionValue> minPermitRoutineLL, maxPermitRoutineLL;
-      std::vector<sysSectionValue> minPermitSpecialLL, maxPermitSpecialLL;
+      std::vector<WBFL::System::SectionValue> dummy;
+      std::vector<WBFL::System::SectionValue> minOverlay, maxOverlay;
+      std::vector<WBFL::System::SectionValue> minTrafficBarrier, maxTrafficBarrier;
+      std::vector<WBFL::System::SectionValue> minSidewalk, maxSidewalk;
+      std::vector<WBFL::System::SectionValue> minShearKey, maxShearKey;
+      std::vector<WBFL::System::SectionValue> minLongitudinalJoint, maxLongitudinalJoint;
+      std::vector<WBFL::System::SectionValue> minPedestrian, maxPedestrian;
+      std::vector<WBFL::System::SectionValue> minDesignLL, maxDesignLL;
+      std::vector<WBFL::System::SectionValue> minFatigueLL, maxFatigueLL;
+      std::vector<WBFL::System::SectionValue> minPermitLL, maxPermitLL;
+      std::vector<WBFL::System::SectionValue> minLegalRoutineLL, maxLegalRoutineLL;
+      std::vector<WBFL::System::SectionValue> minLegalSpecialLL, maxLegalSpecialLL;
+      std::vector<WBFL::System::SectionValue> minLegalEmergencyLL, maxLegalEmergencyLL;
+      std::vector<WBFL::System::SectionValue> minPermitRoutineLL, maxPermitRoutineLL;
+      std::vector<WBFL::System::SectionValue> minPermitSpecialLL, maxPermitSpecialLL;
 
       std::vector<VehicleIndexType> dummyTruck;
       std::vector<VehicleIndexType> minDesignLLtruck;
@@ -643,14 +643,14 @@ bool CProductShearTable::AssertValid() const
    return true;
 }
 
-void CProductShearTable::Dump(dbgDumpContext& os) const
+void CProductShearTable::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CProductShearTable") << endl;
+   os << _T("Dump for CProductShearTable") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CProductShearTable::TestMe(dbgLog& rlog)
+bool CProductShearTable::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CProductShearTable");
 

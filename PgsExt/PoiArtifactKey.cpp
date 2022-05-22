@@ -142,14 +142,14 @@ bool pgsPoiArtifactKey::AssertValid() const
    return true;
 }
 
-void pgsPoiArtifactKey::Dump(dbgDumpContext& os) const
+void pgsPoiArtifactKey::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << "Dump for pgsPoiArtifactKey" << endl;
+   os << "Dump for pgsPoiArtifactKey" << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool pgsPoiArtifactKey::TestMe(dbgLog& rlog)
+bool pgsPoiArtifactKey::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("pgsPoiArtifactKey");
 

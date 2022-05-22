@@ -218,14 +218,14 @@ bool CUserRotationTable::AssertValid() const
    return true;
 }
 
-void CUserRotationTable::Dump(dbgDumpContext& os) const
+void CUserRotationTable::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CUserRotationTable") << endl;
+   os << _T("Dump for CUserRotationTable") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CUserRotationTable::TestMe(dbgLog& rlog)
+bool CUserRotationTable::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CUserRotationTable");
 

@@ -196,14 +196,14 @@ bool CStirrupDetailingCheckTable::AssertValid() const
    return true;
 }
 
-void CStirrupDetailingCheckTable::Dump(dbgDumpContext& os) const
+void CStirrupDetailingCheckTable::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CStirrupDetailingCheckTable") << endl;
+   os << _T("Dump for CStirrupDetailingCheckTable") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CStirrupDetailingCheckTable::TestMe(dbgLog& rlog)
+bool CStirrupDetailingCheckTable::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CStirrupDetailingCheckTable");
 

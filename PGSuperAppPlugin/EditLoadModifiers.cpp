@@ -50,9 +50,9 @@ void txnEditLoadModifiers::Undo()
    DoExecute(0);
 }
 
-txnTransaction* txnEditLoadModifiers::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnEditLoadModifiers::CreateClone() const
 {
-   return new txnEditLoadModifiers(m_LoadModifiers[0],m_LoadModifiers[1]);
+   return std::make_unique<txnEditLoadModifiers>(m_LoadModifiers[0],m_LoadModifiers[1]);
 }
 
 std::_tstring txnEditLoadModifiers::Name() const
@@ -62,12 +62,12 @@ std::_tstring txnEditLoadModifiers::Name() const
    return os.str();
 }
 
-bool txnEditLoadModifiers::IsUndoable()
+bool txnEditLoadModifiers::IsUndoable() const
 {
    return true;
 }
 
-bool txnEditLoadModifiers::IsRepeatable()
+bool txnEditLoadModifiers::IsRepeatable() const
 {
    return false;
 }

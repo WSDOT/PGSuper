@@ -59,21 +59,21 @@ pgsLibraryEntryObserver::~pgsLibraryEntryObserver()
 
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
-void pgsLibraryEntryObserver::Update(ConcreteLibraryEntry* pSubject, Int32 hint)
+void pgsLibraryEntryObserver::Update(ConcreteLibraryEntry& subject, Int32 hint)
 {
    // no action required
    GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
    pDoc->SetModified();
 }
 
-void pgsLibraryEntryObserver::Update(GirderLibraryEntry* pSubject, Int32 hint)
+void pgsLibraryEntryObserver::Update(GirderLibraryEntry& subject, Int32 hint)
 {
    m_pAgent->HoldEvents();
    if (hint & LibraryHints::EntryRenamed)
    {
-      if (m_pAgent->m_BridgeDescription.GetGirderLibraryEntry() == pSubject)
+      if (m_pAgent->m_BridgeDescription.GetGirderLibraryEntry() == &subject)
       {
-         m_pAgent->m_BridgeDescription.RenameGirder(pSubject->GetName().c_str());
+         m_pAgent->m_BridgeDescription.RenameGirder(subject.GetName().c_str());
       }
 
 #if defined _USE_MULTITHREADING
@@ -90,16 +90,16 @@ void pgsLibraryEntryObserver::Update(GirderLibraryEntry* pSubject, Int32 hint)
             std::_tstring strGirderName;
             pGirderGroup->GetGirderTypeGroup(gdrGroupIdx,&firstGdrIdx,&lastGdrIdx,&strGirderName);
 
-            if (pGirderGroup->GetGirderLibraryEntry(firstGdrIdx) == pSubject )
+            if (pGirderGroup->GetGirderLibraryEntry(firstGdrIdx) == &subject )
             {
 #if defined _USE_MULTITHREADING
                // must capture by value into the lambda expression... as the loop progresses
                // pGirderGroup and gdrGroupIdx change values. If we capture by reference the values
                // will get changed when they should be constant during each async call.
-               std::future<void> f(std::async([=]{pGirderGroup->RenameGirder(gdrGroupIdx, pSubject->GetName().c_str());}));
+               std::future<void> f(std::async([=]{pGirderGroup->RenameGirder(gdrGroupIdx, subject.GetName().c_str());}));
                vFutures.push_back(std::move(f));
 #else
-               pGirderGroup->RenameGirder(gdrGroupIdx, pSubject->GetName().c_str());
+               pGirderGroup->RenameGirder(gdrGroupIdx, subject.GetName().c_str());
 #endif
             }
          }
@@ -132,11 +132,11 @@ void pgsLibraryEntryObserver::Update(GirderLibraryEntry* pSubject, Int32 hint)
    pDoc->SetModified();
 }
 
-void pgsLibraryEntryObserver::Update(SpecLibraryEntry* pSubject, Int32 hint)
+void pgsLibraryEntryObserver::Update(SpecLibraryEntry& subject, Int32 hint)
 {
    m_pAgent->HoldEvents();
    if (hint & LibraryHints::EntryRenamed)
-      m_pAgent->m_Spec = pSubject->GetName();
+      m_pAgent->m_Spec = subject.GetName();
 
    if (hint & LibraryHints::EntryEdited)
    {
@@ -149,11 +149,11 @@ void pgsLibraryEntryObserver::Update(SpecLibraryEntry* pSubject, Int32 hint)
    pDoc->SetModified();
 }
 
-void pgsLibraryEntryObserver::Update(RatingLibraryEntry* pSubject, Int32 hint)
+void pgsLibraryEntryObserver::Update(RatingLibraryEntry& subject, Int32 hint)
 {
    m_pAgent->HoldEvents();
    if (hint & LibraryHints::EntryRenamed)
-      m_pAgent->m_RatingSpec = pSubject->GetName();
+      m_pAgent->m_RatingSpec = subject.GetName();
 
    if (hint & LibraryHints::EntryEdited)
    {
@@ -166,22 +166,22 @@ void pgsLibraryEntryObserver::Update(RatingLibraryEntry* pSubject, Int32 hint)
    pDoc->SetModified();
 }
 
-void pgsLibraryEntryObserver::Update(TrafficBarrierEntry* pSubject, Int32 hint)
+void pgsLibraryEntryObserver::Update(TrafficBarrierEntry& subject, Int32 hint)
 {
    m_pAgent->HoldEvents();
    if (hint & LibraryHints::EntryRenamed)
    {
-      if ( m_pAgent->m_BridgeDescription.GetLeftRailingSystem()->GetExteriorRailing() == pSubject )
-         m_pAgent->m_BridgeDescription.GetLeftRailingSystem()->strExteriorRailing = pSubject->GetName();
+      if ( m_pAgent->m_BridgeDescription.GetLeftRailingSystem()->GetExteriorRailing() == &subject )
+         m_pAgent->m_BridgeDescription.GetLeftRailingSystem()->strExteriorRailing = subject.GetName();
 
-      if ( m_pAgent->m_BridgeDescription.GetLeftRailingSystem()->GetInteriorRailing() == pSubject )
-         m_pAgent->m_BridgeDescription.GetLeftRailingSystem()->strInteriorRailing = pSubject->GetName();
+      if ( m_pAgent->m_BridgeDescription.GetLeftRailingSystem()->GetInteriorRailing() == &subject )
+         m_pAgent->m_BridgeDescription.GetLeftRailingSystem()->strInteriorRailing = subject.GetName();
 
-      if ( m_pAgent->m_BridgeDescription.GetRightRailingSystem()->GetExteriorRailing() == pSubject )
-         m_pAgent->m_BridgeDescription.GetRightRailingSystem()->strExteriorRailing = pSubject->GetName();
+      if ( m_pAgent->m_BridgeDescription.GetRightRailingSystem()->GetExteriorRailing() == &subject )
+         m_pAgent->m_BridgeDescription.GetRightRailingSystem()->strExteriorRailing = subject.GetName();
 
-      if ( m_pAgent->m_BridgeDescription.GetRightRailingSystem()->GetInteriorRailing() == pSubject )
-         m_pAgent->m_BridgeDescription.GetRightRailingSystem()->strInteriorRailing = pSubject->GetName();
+      if ( m_pAgent->m_BridgeDescription.GetRightRailingSystem()->GetInteriorRailing() == &subject )
+         m_pAgent->m_BridgeDescription.GetRightRailingSystem()->strInteriorRailing = subject.GetName();
    }
 
    if (hint & LibraryHints::EntryEdited)
@@ -195,7 +195,7 @@ void pgsLibraryEntryObserver::Update(TrafficBarrierEntry* pSubject, Int32 hint)
    pDoc->SetModified();
 }
 
-void pgsLibraryEntryObserver::Update(LiveLoadLibraryEntry* pSubject, Int32 hint)
+void pgsLibraryEntryObserver::Update(LiveLoadLibraryEntry& subject, Int32 hint)
 {
    m_pAgent->HoldEvents();
    if ( hint & LibraryHints::EntryRenamed )
@@ -211,7 +211,7 @@ void pgsLibraryEntryObserver::Update(LiveLoadLibraryEntry* pSubject, Int32 hint)
          CProjectAgentImp::LiveLoadSelectionIterator end   = m_pAgent->m_SelectedLiveLoads[llType].end();
 
          CProjectAgentImp::LiveLoadSelection key;
-         key.pEntry = pSubject;
+         key.pEntry = &subject;
          CProjectAgentImp::LiveLoadSelectionIterator found = std::find(begin,end,key);
 
          if ( found != end )
@@ -221,8 +221,8 @@ void pgsLibraryEntryObserver::Update(LiveLoadLibraryEntry* pSubject, Int32 hint)
             bWasEntryUsed = true;
             std::_tstring strOldName = ll.EntryName;
             
-            ll.EntryName = pSubject->GetName(); // this changes the value of the key that the collection is sorted on... we have to remove and re-insert to ensure proper sorting
-            ll.pEntry = pSubject;
+            ll.EntryName = subject.GetName(); // this changes the value of the key that the collection is sorted on... we have to remove and re-insert to ensure proper sorting
+            ll.pEntry = &subject;
 
             m_pAgent->m_SelectedLiveLoads[llType].erase(found);
             m_pAgent->m_SelectedLiveLoads[llType].insert(ll);
@@ -232,7 +232,7 @@ void pgsLibraryEntryObserver::Update(LiveLoadLibraryEntry* pSubject, Int32 hint)
 
       if (bWasEntryUsed)
       {
-         m_pAgent->Fire_LiveLoadNameChanged(strOldName.c_str(), pSubject->GetName().c_str());
+         m_pAgent->Fire_LiveLoadNameChanged(strOldName.c_str(), subject.GetName().c_str());
       }
    }
 
@@ -247,7 +247,7 @@ void pgsLibraryEntryObserver::Update(LiveLoadLibraryEntry* pSubject, Int32 hint)
    pDoc->SetModified();
 }
 
-void pgsLibraryEntryObserver::Update(DuctLibraryEntry* pSubject,Int32 hint)
+void pgsLibraryEntryObserver::Update(DuctLibraryEntry& subject,Int32 hint)
 {
    m_pAgent->HoldEvents();
    if ( hint & LibraryHints::EntryRenamed )
@@ -265,9 +265,9 @@ void pgsLibraryEntryObserver::Update(DuctLibraryEntry* pSubject,Int32 hint)
             for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
             {
                CDuctData* pDuct = pPTData->GetDuct(ductIdx);
-               if ( pDuct->pDuctLibEntry == pSubject )
+               if ( pDuct->pDuctLibEntry == &subject )
                {
-                  pDuct->Name = pSubject->GetName();
+                  pDuct->Name = subject.GetName();
                }
             }
          }
@@ -285,7 +285,7 @@ void pgsLibraryEntryObserver::Update(DuctLibraryEntry* pSubject,Int32 hint)
    pDoc->SetModified();
 }
 
-void pgsLibraryEntryObserver::Update(HaulTruckLibraryEntry* pSubject,Int32 hint)
+void pgsLibraryEntryObserver::Update(HaulTruckLibraryEntry& subject,Int32 hint)
 {
    m_pAgent->HoldEvents();
    if ( hint & LibraryHints::EntryRenamed )
@@ -309,9 +309,9 @@ void pgsLibraryEntryObserver::Update(HaulTruckLibraryEntry* pSubject,Int32 hint)
                for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
                {
                   CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
-                  if (pSegment->HandlingData.pHaulTruckLibraryEntry == pSubject)
+                  if (pSegment->HandlingData.pHaulTruckLibraryEntry == &subject)
                   {
-                     pSegment->HandlingData.HaulTruckName = pSubject->GetName();
+                     pSegment->HandlingData.HaulTruckName = subject.GetName();
                   }
                }
             }
@@ -328,7 +328,7 @@ void pgsLibraryEntryObserver::Update(HaulTruckLibraryEntry* pSubject,Int32 hint)
                CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
                if (pSegment->HandlingData.pHaulTruckLibraryEntry == pSubject)
                {
-                  pSegment->HandlingData.HaulTruckName = pSubject->GetName();
+                  pSegment->HandlingData.HaulTruckName = subject.GetName();
                }
             }
          }
@@ -391,14 +391,14 @@ bool pgsLibraryEntryObserver::AssertValid() const
    return true;
 }
 
-void pgsLibraryEntryObserver::Dump(dbgDumpContext& os) const
+void pgsLibraryEntryObserver::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << "Dump for pgsLibraryEntryObserver" << endl;
+   os << "Dump for pgsLibraryEntryObserver" << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool pgsLibraryEntryObserver::TestMe(dbgLog& rlog)
+bool pgsLibraryEntryObserver::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("pgsLibraryEntryObserver");
 

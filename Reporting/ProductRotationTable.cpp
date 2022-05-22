@@ -981,14 +981,14 @@ bool CProductRotationTable::AssertValid() const
    return true;
 }
 
-void CProductRotationTable::Dump(dbgDumpContext& os) const
+void CProductRotationTable::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CProductRotationTable") << endl;
+   os << _T("Dump for CProductRotationTable") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CProductRotationTable::TestMe(dbgLog& rlog)
+bool CProductRotationTable::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CProductRotationTable");
 

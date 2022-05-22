@@ -338,10 +338,10 @@ void CTrafficBarrierGrid::DownloadData(CDataExchange* pDX, IPoint2dCollection* p
 void CTrafficBarrierGrid::ParseRow(ROWCOL nRow, CDataExchange* pDX, Float64* pX,Float64* pY)
 {
 	CString s = GetCellValue(nRow, 1);
-   sysTokenizer::ParseDouble(s, pX);
+   WBFL::System::Tokenizer::ParseDouble(s, pX);
 
 	s = GetCellValue(nRow, 2);
-   sysTokenizer::ParseDouble(s, pY);
+   WBFL::System::Tokenizer::ParseDouble(s, pY);
 }
 
 void CTrafficBarrierGrid::OnChangedSelection(const CGXRange* pChangedRect,BOOL bIsDragging, BOOL bKey)

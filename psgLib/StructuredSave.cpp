@@ -39,7 +39,7 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CStructuredSave::CStructuredSave(IStructuredSave* pStrSave)
+CStructuredSave::CStructuredSave(::IStructuredSave* pStrSave)
 {
    m_pStrSave = pStrSave;
    m_pStrSave->AddRef();
@@ -218,14 +218,14 @@ bool CStructuredSave::AssertValid() const
    return true;
 }
 
-void CStructuredSave::Dump(dbgDumpContext& os) const
+void CStructuredSave::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << "Dump for CStructuredSave" << endl;
+   os << "Dump for CStructuredSave" << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CStructuredSave::TestMe(dbgLog& rlog)
+bool CStructuredSave::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CStructuredSave");
 

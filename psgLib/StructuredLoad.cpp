@@ -39,7 +39,7 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CStructuredLoad::CStructuredLoad(IStructuredLoad* pStrLoad)
+CStructuredLoad::CStructuredLoad(::IStructuredLoad* pStrLoad)
 {
    m_pStrLoad = pStrLoad;
    m_pStrLoad->AddRef();
@@ -248,14 +248,14 @@ bool CStructuredLoad::AssertValid() const
    return true;
 }
 
-void CStructuredLoad::Dump(dbgDumpContext& os) const
+void CStructuredLoad::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CStructuredLoad") << endl;
+   os << _T("Dump for CStructuredLoad") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CStructuredLoad::TestMe(dbgLog& rlog)
+bool CStructuredLoad::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CStructuredLoad");
 

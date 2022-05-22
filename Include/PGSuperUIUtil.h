@@ -32,7 +32,7 @@ inline void StoreFloatInCb(CComboBox* pcb, int idx, Float64 fval)
    pcb->SetItemData(idx, dval);
 }
 
-inline int PutFloatInCB(Float64 fval, CComboBox* pcb, sysNumericFormatTool& tool)
+inline int PutFloatInCB(Float64 fval, CComboBox* pcb, WBFL::System::NumericFormatTool& tool)
 {
    std::_tstring str = tool.AsString(fval);
    int idx = pcb->AddString(str.c_str());
@@ -60,8 +60,8 @@ void FillComboWithUnitFloatRange(Float64 selectedVal, Float64 minVal, Float64 ma
 {
    pfcCtrl->ResetContent();
 
-   sysNumericFormatTool tool;
-   tool.SetFormat( sysNumericFormatTool::Fixed );
+   WBFL::System::NumericFormatTool tool;
+   tool.SetFormat( WBFL::System::NumericFormatTool::Format::Fixed );
    tool.SetPrecision(precision);
 
    Float64 toler = pow(10.0, -precision-1); // tolerance on equals

@@ -174,7 +174,7 @@ std::vector<TimeStepCombinedPrincipalWebStressDetailsAtWebSection> pgsPrincipalW
       pgsTypes::BridgeAnalysisType maxBat = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
       pgsTypes::BridgeAnalysisType minBat = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
 
-      sysSectionValue dummy, Vmin, Vmax;
+      WBFL::System::SectionValue dummy, Vmin, Vmax;
       pProductForces->GetLiveLoadShear(interval, pgsTypes::lltDesign, poi, maxBat, true, true, &dummy, &Vmax);
       pProductForces->GetLiveLoadShear(interval, pgsTypes::lltDesign, poi, minBat, true, true, &Vmin, &dummy);
       // Want max absolute value, but to retain sign. 
@@ -582,18 +582,18 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
       Float64 Vnc, Vc;
       if (method == pgsTypes::ptsmLRFD)
       {
-         sysSectionValue dummy, Vmin, Vmax;
+         WBFL::System::SectionValue dummy, Vmin, Vmax;
          pLSForces->GetShear(intervalIdx, limitState, poi, maxBat, &dummy, &Vmax);
          pLSForces->GetShear(intervalIdx, limitState, poi, minBat, &Vmin, &dummy);
          Vc = Max(fabs(Vmin.Left()), fabs(Vmin.Right()), fabs(Vmax.Left()), fabs(Vmax.Right()));
       }
       else
       {
-         sysSectionValue V_nc = GetNonCompositeShear(maxBat, noncompositeIntervalIdx, limitState, poi);
+         WBFL::System::SectionValue V_nc = GetNonCompositeShear(maxBat, noncompositeIntervalIdx, limitState, poi);
          Vnc = Max(fabs(V_nc.Left()), fabs(V_nc.Right()));
          details.Vnc = Vnc;
 
-         sysSectionValue dummy, Vmin, Vmax;
+         WBFL::System::SectionValue dummy, Vmin, Vmax;
          GetCompositeShear(maxBat, intervalIdx, limitState, poi, &dummy, &Vmax);
          GetCompositeShear(minBat, intervalIdx, limitState, poi, &Vmin, &dummy);
          Vc = Max(fabs(Vmin.Left()), fabs(Vmin.Right()), fabs(Vmax.Left()), fabs(Vmax.Right()));
@@ -641,7 +641,7 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
    return details;
 }
 
-sysSectionValue pgsPrincipalWebStressEngineer::GetNonCompositeShear(pgsTypes::BridgeAnalysisType bat,IntervalIndexType intervalIdx, pgsTypes::LimitState limitState, const pgsPointOfInterest& poi) const
+WBFL::System::SectionValue pgsPrincipalWebStressEngineer::GetNonCompositeShear(pgsTypes::BridgeAnalysisType bat,IntervalIndexType intervalIdx, pgsTypes::LimitState limitState, const pgsPointOfInterest& poi) const
 {
    GET_IFACE(ILoadFactors, pILoadFactors);
    const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
@@ -659,22 +659,22 @@ sysSectionValue pgsPrincipalWebStressEngineer::GetNonCompositeShear(pgsTypes::Br
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    GET_IFACE(ICombinedForces, pCombinedForces);
-   sysSectionValue Vdc = pCombinedForces->GetShear(intervalIdx, lcDC, poi, bat, rtCumulative);
-   sysSectionValue Vdw = pCombinedForces->GetShear(intervalIdx, lcDW, poi, bat, rtCumulative);
-   sysSectionValue Vnc = gDC*Vdc + gDW*Vdw;
+   WBFL::System::SectionValue Vdc = pCombinedForces->GetShear(intervalIdx, lcDC, poi, bat, rtCumulative);
+   WBFL::System::SectionValue Vdw = pCombinedForces->GetShear(intervalIdx, lcDW, poi, bat, rtCumulative);
+   WBFL::System::SectionValue Vnc = gDC*Vdc + gDW*Vdw;
 
    return Vnc;
 }
 
-void pgsPrincipalWebStressEngineer::GetCompositeShear(pgsTypes::BridgeAnalysisType bat, IntervalIndexType intervalIdx, pgsTypes::LimitState limitState, const pgsPointOfInterest& poi, sysSectionValue* pVmin, sysSectionValue* pVmax) const
+void pgsPrincipalWebStressEngineer::GetCompositeShear(pgsTypes::BridgeAnalysisType bat, IntervalIndexType intervalIdx, pgsTypes::LimitState limitState, const pgsPointOfInterest& poi, WBFL::System::SectionValue* pVmin, WBFL::System::SectionValue* pVmax) const
 {
    GET_IFACE(ILimitStateForces, pLimitStateForces);
-   sysSectionValue Vu_min, Vu_max;
+   WBFL::System::SectionValue Vu_min, Vu_max;
    pLimitStateForces->GetShear(intervalIdx, limitState, poi, bat, &Vu_min, &Vu_max);
 
    GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType noncompositeIntervalIdx = pIntervals->GetLastNoncompositeInterval();
-   sysSectionValue Vnc = GetNonCompositeShear(bat, noncompositeIntervalIdx, limitState, poi);
+   WBFL::System::SectionValue Vnc = GetNonCompositeShear(bat, noncompositeIntervalIdx, limitState, poi);
 
    *pVmin = Vu_min - Vnc;
    *pVmax = Vu_max - Vnc;

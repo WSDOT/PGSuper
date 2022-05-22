@@ -96,7 +96,7 @@ LiveLoadLibraryEntry& LiveLoadLibraryEntry::operator= (const LiveLoadLibraryEntr
 }
 
 //======================== OPERATIONS =======================================
-bool LiveLoadLibraryEntry::SaveMe(sysIStructuredSave* pSave)
+bool LiveLoadLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
 {
    pSave->BeginUnit(_T("LiveLoadLibraryEntry"), 2.0);
 
@@ -130,7 +130,7 @@ bool LiveLoadLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    return false;
 }
 
-bool LiveLoadLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
+bool LiveLoadLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 {
    if(pLoad->BeginUnit(_T("LiveLoadLibraryEntry")))
    {
@@ -568,22 +568,22 @@ bool LiveLoadLibraryEntry::AssertValid() const
    return libLibraryEntry::AssertValid();
 }
 
-void LiveLoadLibraryEntry::Dump(dbgDumpContext& os) const
+void LiveLoadLibraryEntry::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for LiveLoadLibraryEntry ")<< GetName() <<endl;
+   os << _T("Dump for LiveLoadLibraryEntry ")<< GetName() << WBFL::Debug::endl;
 
-   os << _T("   m_IsNotional                = ")<< m_IsNotional <<endl;
-   os << _T("   m_LiveLoadConfigurationType = ")<< m_LiveLoadConfigurationType<<endl;
-   os << _T("   m_LaneLoad                  = ")<< m_LaneLoad<<endl;
-   os << _T("   m_MaxVariableAxleSpacing    = ")<< m_MaxVariableAxleSpacing<<endl;
-   os << _T("   m_VariableAxleIndex         = ")<< m_VariableAxleIndex<<endl;
+   os << _T("   m_IsNotional                = ")<< m_IsNotional << WBFL::Debug::endl;
+   os << _T("   m_LiveLoadConfigurationType = ")<< m_LiveLoadConfigurationType<< WBFL::Debug::endl;
+   os << _T("   m_LaneLoad                  = ")<< m_LaneLoad<< WBFL::Debug::endl;
+   os << _T("   m_MaxVariableAxleSpacing    = ")<< m_MaxVariableAxleSpacing<< WBFL::Debug::endl;
+   os << _T("   m_VariableAxleIndex         = ")<< m_VariableAxleIndex<< WBFL::Debug::endl;
 
    AxleIndexType size = m_Axles.size();
-   os << _T("   Number of Axles = ")<<size<<endl;
+   os << _T("   Number of Axles = ")<<size<< WBFL::Debug::endl;
    for (AxleIndexType iaxl=0; iaxl<size; iaxl++)
    {
-      os<<_T("    Axle ")<<iaxl<<_T(" Weight  = ")<<m_Axles[iaxl].Weight<<endl;
-      os<<_T("    Axle ")<<iaxl<<_T(" Spacing = ")<<m_Axles[iaxl].Spacing<<endl;
+      os<<_T("    Axle ")<<iaxl<<_T(" Weight  = ")<<m_Axles[iaxl].Weight<< WBFL::Debug::endl;
+      os<<_T("    Axle ")<<iaxl<<_T(" Spacing = ")<<m_Axles[iaxl].Spacing<< WBFL::Debug::endl;
    }
 
    libLibraryEntry::Dump( os );
@@ -591,7 +591,7 @@ void LiveLoadLibraryEntry::Dump(dbgDumpContext& os) const
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool LiveLoadLibraryEntry::TestMe(dbgLog& rlog)
+bool LiveLoadLibraryEntry::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("LiveLoadLibraryEntry");
 

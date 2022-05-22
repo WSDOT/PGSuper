@@ -429,14 +429,14 @@ bool pgsShearCapacityEngineer::AssertValid() const
    return true;
 }
 
-void pgsShearCapacityEngineer::Dump(dbgDumpContext& os) const
+void pgsShearCapacityEngineer::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for pgsShearCapacityEngineer") << endl;
+   os << _T("Dump for pgsShearCapacityEngineer") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool pgsShearCapacityEngineer::TestMe(dbgLog& rlog)
+bool pgsShearCapacityEngineer::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("pgsShearCapacityEngineer");
 
@@ -469,17 +469,17 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
    // Applied forces
 
    Float64 Mu_max, Mu_min;
-   sysSectionValue Vu_min, Vu_max;
-   sysSectionValue Vi_min, Vi_max; // shear that is concurrent with Mmin and Mmax
-   sysSectionValue Vd_min, Vd_max;
+   WBFL::System::SectionValue Vu_min, Vu_max;
+   WBFL::System::SectionValue Vi_min, Vi_max; // shear that is concurrent with Mmin and Mmax
+   WBFL::System::SectionValue Vd_min, Vd_max;
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
    if ( analysisType == pgsTypes::Envelope )
    {
       Float64 Mmin,Mmax;
-      sysSectionValue Vmin, Vmax;
-      sysSectionValue Vimin, Vimax; // shear that is concurrent with Mmin and Mmax
+      WBFL::System::SectionValue Vmin, Vmax;
+      WBFL::System::SectionValue Vimin, Vimax; // shear that is concurrent with Mmin and Mmax
 
       pLsForces->GetMoment( intervalIdx, limitState, poi, pgsTypes::MaxSimpleContinuousEnvelope, &Mmin, &Mmax );
       pLsForces->GetShear(  intervalIdx, limitState, poi, pgsTypes::MaxSimpleContinuousEnvelope, &Vmin, &Vmax );

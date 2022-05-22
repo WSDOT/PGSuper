@@ -866,7 +866,7 @@ void CSegmentAnalysisResultsGraphBuilder::ProductLoadGraph(IndexType graphIdx,co
       }
       case actionShear:
       {
-         std::vector<sysSectionValue> shears(pForces->GetShear(intervalIdx, pfType, vPoi, bat[analysisIdx], resultsType));
+         std::vector<WBFL::System::SectionValue> shears(pForces->GetShear(intervalIdx, pfType, vPoi, bat[analysisIdx], resultsType));
          AddGraphPoints(data_series_id[analysisIdx], xVals, shears);
          break;
       }
@@ -1005,7 +1005,7 @@ void CSegmentAnalysisResultsGraphBuilder::CombinedLoadGraph(IndexType graphIdx,c
 
       case actionShear:
          {
-            std::vector<sysSectionValue> shear = pForces->GetShear( intervalIdx, combination_type, vPoi, bat[analysisIdx], resultsType );
+            std::vector<WBFL::System::SectionValue> shear = pForces->GetShear( intervalIdx, combination_type, vPoi, bat[analysisIdx], resultsType );
             AddGraphPoints(data_series_id[analysisIdx], xVals, shear);
             break;
          }
@@ -1121,7 +1121,7 @@ void CSegmentAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx
       else
       {
          GET_IFACE(ILimitStateForces2,pForces);
-         std::vector<sysSectionValue> shearMin,shearMax;
+         std::vector<WBFL::System::SectionValue> shearMin,shearMax;
          pForces->GetShear(intervalIdx,limitState,vPoi,bridgeAnalysisType,&shearMin,&shearMax);
          AddGraphPoints(min_data_series,xVals,shearMin);
          AddGraphPoints(max_data_series,xVals,shearMax);

@@ -76,9 +76,9 @@ void txnEditAlignment::Execute(int i)
    pAlignment->SetRoadwaySectionData(m_SectionData[i]);
 }
 
-txnTransaction* txnEditAlignment::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnEditAlignment::CreateClone() const
 {
-   return new txnEditAlignment(m_AlignmentData[0], m_AlignmentData[1],
+   return std::make_unique<txnEditAlignment>(m_AlignmentData[0], m_AlignmentData[1],
                                m_ProfileData[0],   m_ProfileData[1],
                                m_SectionData[0],   m_SectionData[1]);
 }
@@ -88,12 +88,12 @@ std::_tstring txnEditAlignment::Name() const
    return _T("Edit Alignment");
 }
 
-bool txnEditAlignment::IsUndoable()
+bool txnEditAlignment::IsUndoable() const
 {
    return true;
 }
 
-bool txnEditAlignment::IsRepeatable()
+bool txnEditAlignment::IsRepeatable() const
 {
    return false;
 }

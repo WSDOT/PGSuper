@@ -195,14 +195,14 @@ bool CUserDeflectionsTable::AssertValid() const
    return true;
 }
 
-void CUserDeflectionsTable::Dump(dbgDumpContext& os) const
+void CUserDeflectionsTable::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CUserDeflectionsTable") << endl;
+   os << _T("Dump for CUserDeflectionsTable") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CUserDeflectionsTable::TestMe(dbgLog& rlog)
+bool CUserDeflectionsTable::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CUserDeflectionsTable");
 

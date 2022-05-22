@@ -40,8 +40,8 @@
 
 // FORWARD DECLARATIONS
 //
-   class sysIStructuredLoad;
-   class sysIStructuredSave;
+   class WBFL::System::IStructuredLoad;
+   class WBFL::System::IStructuredSave;
 // MISCELLANEOUS
 //
 
@@ -92,8 +92,8 @@ public:
 
    // GROUP: OPERATIONS
 
-	HRESULT Load(sysIStructuredLoad* pStrLoad);
-	HRESULT Save(sysIStructuredSave* pStrSave);
+	HRESULT Load(WBFL::System::IStructuredLoad* pStrLoad);
+	HRESULT Save(WBFL::System::IStructuredSave* pStrSave);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

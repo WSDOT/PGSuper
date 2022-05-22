@@ -3367,7 +3367,7 @@ void pgsStrandDesignTool::GetHandlingDesignPointsOfInterest(const CSegmentKey& s
          {
             // if the only flag that is set is support point attribute, remove it
             // otherwise, clear the support point attribute bit and add the poi back
-            sysFlags<PoiAttributeType>::Clear(&attributes,supportAttribute);
+            WBFL::System::Flags<PoiAttributeType>::Clear(&attributes,supportAttribute);
             poi.SetReferencedAttributes(attributes);
             poi.SetID(INVALID_ID);
             VERIFY(m_PoiMgr.AddPointOfInterest(poi) != INVALID_ID);
@@ -3440,14 +3440,14 @@ void pgsStrandDesignTool::GetHandlingDesignPointsOfInterest(const CSegmentKey& s
 void pgsStrandDesignTool::ClearHandingAttributes(pgsPointOfInterest& poi)
 {
    PoiAttributeType attributes = poi.GetReferencedAttributes(POI_LIFT_SEGMENT);
-   sysFlags<PoiAttributeType>::Clear(&attributes,POI_PICKPOINT);
+   WBFL::System::Flags<PoiAttributeType>::Clear(&attributes,POI_PICKPOINT);
    if ( attributes != 0 )
    {
       poi.SetReferencedAttributes(attributes);
    }
 
    attributes = poi.GetReferencedAttributes(POI_HAUL_SEGMENT);
-   sysFlags<PoiAttributeType>::Clear(&attributes,POI_BUNKPOINT);
+   WBFL::System::Flags<PoiAttributeType>::Clear(&attributes,POI_BUNKPOINT);
    if ( attributes != 0 )
    {
       poi.SetReferencedAttributes(attributes);

@@ -765,7 +765,7 @@ void raised_strand_research(IBroker* pBroker, const std::vector<CGirderKey>& gir
    GET_IFACE2(pBroker, IPointOfInterest, pIPOI);
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
 
-   dbgLogDumpContext m_Log;
+   WBFL::Debug::LogDumpContext m_Log;
    ILogFile* __pLogFile__;
    DWORD __dwCookie__;
    HRESULT _xxHRxx_ = ::CoCreateInstance(CLSID_SysAgent, 0, CLSCTX_INPROC_SERVER, IID_ILogFile, (void**)&__pLogFile__);

@@ -196,14 +196,14 @@ bool pgsFlexuralCapacityArtifact::AssertValid() const
    return true;
 }
 
-void pgsFlexuralCapacityArtifact::Dump(dbgDumpContext& os) const
+void pgsFlexuralCapacityArtifact::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << "Dump for pgsFlexuralCapacityArtifact" << endl;
+   os << "Dump for pgsFlexuralCapacityArtifact" << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool pgsFlexuralCapacityArtifact::TestMe(dbgLog& rlog)
+bool pgsFlexuralCapacityArtifact::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("pgsFlexuralCapacityArtifact");
 

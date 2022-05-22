@@ -655,7 +655,7 @@ interface ILibrary : IUnknown
    virtual HaulTruckLibrary*       GetHaulTruckLibrary() = 0;
 
    virtual std::vector<libEntryUsageRecord> GetLibraryUsageRecords() const = 0;
-   virtual void GetMasterLibraryInfo(std::_tstring& strServer, std::_tstring& strConfiguration, std::_tstring& strMasterLib,sysTime& time) const = 0;
+   virtual void GetMasterLibraryInfo(std::_tstring& strServer, std::_tstring& strConfiguration, std::_tstring& strMasterLib,WBFL::System::Time& time) const = 0;
 
    virtual const RatingLibrary* GetRatingLibrary() const = 0;
    virtual RatingLibrary* GetRatingLibrary() = 0;

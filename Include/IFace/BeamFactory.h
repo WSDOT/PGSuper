@@ -186,11 +186,11 @@ interface IBeamFactory : IUnknown
 
    //---------------------------------------------------------------------------------
    // Saves the section dimensions to the storage unit
-   virtual void SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const = 0;
+   virtual void SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const = 0;
 
    //---------------------------------------------------------------------------------
    // Load the section dimensions from the storage unit
-   virtual IBeamFactory::Dimensions LoadSectionDimensions(sysIStructuredLoad* pLoad) const = 0;
+   virtual IBeamFactory::Dimensions LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const = 0;
 
    //---------------------------------------------------------------------------------
    // Returns true if the non-composite beam section is prismatic

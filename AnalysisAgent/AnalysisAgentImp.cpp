@@ -1340,11 +1340,11 @@ Float64 CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,pgsTypes::Prod
    return results.front();
 }
 
-sysSectionValue CAnalysisAgentImp::GetShear(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
+WBFL::System::SectionValue CAnalysisAgentImp::GetShear(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
 {
    PoiList vPoi;
    vPoi.push_back(poi);
-   std::vector<sysSectionValue> results = GetShear(intervalIdx,pfType,vPoi,bat,resultsType);
+   std::vector<WBFL::System::SectionValue> results = GetShear(intervalIdx,pfType,vPoi,bat,resultsType);
    ATLASSERT(results.size() == 1);
    return results.front();
 }
@@ -1893,7 +1893,7 @@ void CAnalysisAgentImp::GetLiveLoadAxial(IntervalIndexType intervalIdx,pgsTypes:
    m_pGirderModelManager->GetLiveLoadAxial(intervalIdx,llType,poi,bat,bIncludeImpact,bIncludeLLDF,pMmin,pMmax,pMminTruck,pMmaxTruck);
 }
 
-void CAnalysisAgentImp::GetLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,sysSectionValue* pVmin,sysSectionValue* pVmax,VehicleIndexType* pMminTruck,VehicleIndexType* pMmaxTruck) const
+void CAnalysisAgentImp::GetLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,WBFL::System::SectionValue* pVmin,WBFL::System::SectionValue* pVmax,VehicleIndexType* pMminTruck,VehicleIndexType* pMmaxTruck) const
 {
    return m_pGirderModelManager->GetLiveLoadShear(intervalIdx,llType,poi,bat,bIncludeImpact,bIncludeLLDF,pVmin,pVmax,pMminTruck,pMmaxTruck);
 }
@@ -1933,7 +1933,7 @@ void CAnalysisAgentImp::GetVehicularLiveLoadAxial(IntervalIndexType intervalIdx,
    m_pGirderModelManager->GetVehicularLiveLoadAxial(intervalIdx,llType,vehicleIdx,poi,bat,bIncludeImpact,bIncludeLLDF,pMmin,pMmax,pMinAxleConfig,pMaxAxleConfig);
 }
 
-void CAnalysisAgentImp::GetVehicularLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,sysSectionValue* pVmin,sysSectionValue* pVmax,AxleConfiguration* pMinLeftAxleConfig,AxleConfiguration* pMinRightAxleConfig,AxleConfiguration* pMaxLeftAxleConfig,AxleConfiguration* pMaxRightAxleConfig) const
+void CAnalysisAgentImp::GetVehicularLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,WBFL::System::SectionValue* pVmin,WBFL::System::SectionValue* pVmax,AxleConfiguration* pMinLeftAxleConfig,AxleConfiguration* pMinRightAxleConfig,AxleConfiguration* pMaxLeftAxleConfig,AxleConfiguration* pMaxRightAxleConfig) const
 {
    m_pGirderModelManager->GetVehicularLiveLoadShear(intervalIdx,llType,vehicleIdx,poi,bat,bIncludeImpact,bIncludeLLDF,pVmin,pVmax,pMinLeftAxleConfig,pMinRightAxleConfig,pMaxLeftAxleConfig,pMaxRightAxleConfig);
 }
@@ -2575,12 +2575,12 @@ std::vector<Float64> CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,p
    return results;
 }
 
-std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
+std::vector<WBFL::System::SectionValue> CAnalysisAgentImp::GetShear(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
 {
    USES_CONVERSION;
    InitializeAnalysis(vPoi);
 
-   std::vector<sysSectionValue> results;
+   std::vector<WBFL::System::SectionValue> results;
    results.reserve(vPoi.size());
 
    if ( pfType == pgsTypes::pftPretension || pfType == pgsTypes::pftPostTensioning )
@@ -2588,7 +2588,7 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(IntervalIndexType inter
       // pre and post-tensioning don't cause external shear forces.
       // There is a vertical component of prestress, Vp, that is used
       // in shear analysis, but that isn't this...
-      results.resize(vPoi.size(),sysSectionValue(0,0));
+      results.resize(vPoi.size(),WBFL::System::SectionValue(0,0));
       return results;
    }
 
@@ -2602,7 +2602,7 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(IntervalIndexType inter
          
          if ( resultsType == rtCumulative )
          {
-            results.resize(vPoi.size(),sysSectionValue(0,0));
+            results.resize(vPoi.size(),WBFL::System::SectionValue(0,0));
             GET_IFACE(ILosses,pLosses);
             GET_IFACE(IIntervals,pIntervals);
             IntervalIndexType releaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(vPoi.front().get().GetSegmentKey());
@@ -2612,7 +2612,7 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(IntervalIndexType inter
                if ( 0 < pIntervals->GetDuration(iIdx) )
                {
                   CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,pfType - pgsTypes::pftCreep);
-                  std::vector<sysSectionValue> fy = GetShear(iIdx,strLoadingName,vPoi,bat,rtIncremental);
+                  std::vector<WBFL::System::SectionValue> fy = GetShear(iIdx,strLoadingName,vPoi,bat,rtIncremental);
                   std::transform(results.cbegin(),results.cend(),fy.cbegin(),results.begin(),[](const auto& a, const auto& b) {return a + b;});
                }
             }
@@ -2628,13 +2628,13 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(IntervalIndexType inter
             }
             else
             {
-               results.resize(vPoi.size(),sysSectionValue(0,0));
+               results.resize(vPoi.size(),WBFL::System::SectionValue(0,0));
             }
          }
       }
       else
       {
-         results.resize(vPoi.size(),sysSectionValue(0,0));
+         results.resize(vPoi.size(),WBFL::System::SectionValue(0,0));
       }
       return results;
    }
@@ -2653,8 +2653,8 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(IntervalIndexType inter
          // the incremental result at the time of erection is being requested. this is when
          // we switch between segment models and girder models. the incremental results
          // is the cumulative result this interval minus the cumulative result in the previous interval
-         std::vector<sysSectionValue> Vprev = GetShear(intervalIdx-1,pfType,vPoi,bat,rtCumulative);
-         std::vector<sysSectionValue> Vthis = GetShear(intervalIdx,  pfType,vPoi,bat,rtCumulative);
+         std::vector<WBFL::System::SectionValue> Vprev = GetShear(intervalIdx-1,pfType,vPoi,bat,rtCumulative);
+         std::vector<WBFL::System::SectionValue> Vthis = GetShear(intervalIdx,  pfType,vPoi,bat,rtCumulative);
          std::transform(Vthis.cbegin(),Vthis.cend(),Vprev.cbegin(),std::back_inserter(results),[](const auto& a, const auto& b) {return a - b;});
       }
       else
@@ -3628,7 +3628,7 @@ void CAnalysisAgentImp::GetLiveLoadAxial(IntervalIndexType intervalIdx,pgsTypes:
    m_pGirderModelManager->GetLiveLoadAxial(intervalIdx,llType,vPoi,bat,bIncludeImpact,bIncludeLLDF,pMmin,pMmax,pMminTruck,pMmaxTruck);
 }
 
-void CAnalysisAgentImp::GetLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<sysSectionValue>* pVmin,std::vector<sysSectionValue>* pVmax,std::vector<VehicleIndexType>* pMinTruck,std::vector<VehicleIndexType>* pMaxTruck) const
+void CAnalysisAgentImp::GetLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<WBFL::System::SectionValue>* pVmin,std::vector<WBFL::System::SectionValue>* pVmax,std::vector<VehicleIndexType>* pMinTruck,std::vector<VehicleIndexType>* pMaxTruck) const
 {
    m_pGirderModelManager->GetLiveLoadShear(intervalIdx,llType,vPoi,bat,bIncludeImpact,bIncludeLLDF,pVmin,pVmax,pMinTruck,pMaxTruck);
 }
@@ -3658,7 +3658,7 @@ void CAnalysisAgentImp::GetVehicularLiveLoadAxial(IntervalIndexType intervalIdx,
    m_pGirderModelManager->GetVehicularLiveLoadAxial(intervalIdx,llType,vehicleIdx,vPoi,bat,bIncludeImpact,bIncludeLLDF,pMmin,pMmax,pMinAxleConfig,pMaxAxleConfig);
 }
 
-void CAnalysisAgentImp::GetVehicularLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<sysSectionValue>* pVmin,std::vector<sysSectionValue>* pVmax,std::vector<AxleConfiguration>* pMinLeftAxleConfig,std::vector<AxleConfiguration>* pMinRightAxleConfig,std::vector<AxleConfiguration>* pMaxLeftAxleConfig,std::vector<AxleConfiguration>* pMaxRightAxleConfig) const
+void CAnalysisAgentImp::GetVehicularLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<WBFL::System::SectionValue>* pVmin,std::vector<WBFL::System::SectionValue>* pVmax,std::vector<AxleConfiguration>* pMinLeftAxleConfig,std::vector<AxleConfiguration>* pMinRightAxleConfig,std::vector<AxleConfiguration>* pMaxLeftAxleConfig,std::vector<AxleConfiguration>* pMaxRightAxleConfig) const
 {
    m_pGirderModelManager->GetVehicularLiveLoadShear(intervalIdx,llType,vehicleIdx,vPoi,bat,bIncludeImpact,bIncludeLLDF,pVmin,pVmax,pMinLeftAxleConfig,pMinRightAxleConfig,pMaxLeftAxleConfig,pMaxRightAxleConfig);
 }
@@ -3695,12 +3695,12 @@ Float64 CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,LoadingCombina
    return results.front();
 }
 
-sysSectionValue CAnalysisAgentImp::GetShear(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
+WBFL::System::SectionValue CAnalysisAgentImp::GetShear(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
 {
    PoiList vPoi;
    vPoi.push_back(poi);
 
-   std::vector<sysSectionValue> V( GetShear(intervalIdx,comboType,vPoi,bat,resultsType) );
+   std::vector<WBFL::System::SectionValue> V( GetShear(intervalIdx,comboType,vPoi,bat,resultsType) );
 
    ATLASSERT(V.size() == 1);
 
@@ -3770,12 +3770,12 @@ void CAnalysisAgentImp::GetCombinedLiveLoadAxial(IntervalIndexType intervalIdx,p
    *pMax = Pmax.front();
 }
 
-void CAnalysisAgentImp::GetCombinedLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,sysSectionValue* pVmin,sysSectionValue* pVmax) const
+void CAnalysisAgentImp::GetCombinedLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,WBFL::System::SectionValue* pVmin,WBFL::System::SectionValue* pVmax) const
 {
    PoiList vPoi;
    vPoi.push_back(poi);
 
-   std::vector<sysSectionValue> Vmin, Vmax;
+   std::vector<WBFL::System::SectionValue> Vmin, Vmax;
    GetCombinedLiveLoadShear(intervalIdx,llType,vPoi,bat,bIncludeImpact,&Vmin,&Vmax);
 
    ATLASSERT( Vmin.size() == 1 && Vmax.size() == 1 );
@@ -3949,12 +3949,12 @@ std::vector<Float64> CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,L
    return results;
 }
 
-std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
+std::vector<WBFL::System::SectionValue> CAnalysisAgentImp::GetShear(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
 {
    USES_CONVERSION;
    InitializeAnalysis(vPoi);
 
-   std::vector<sysSectionValue> results;
+   std::vector<WBFL::System::SectionValue> results;
    results.reserve(vPoi.size());
 
    if ( comboType == lcPS )
@@ -3968,7 +3968,7 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(IntervalIndexType inter
       for ( ; pfIter != pfIterEnd; pfIter++ )
       {
          pgsTypes::ProductForceType pfType = *pfIter;
-         std::vector<sysSectionValue> V = GetShear(intervalIdx,pfType,vPoi,bat,resultsType);
+         std::vector<WBFL::System::SectionValue> V = GetShear(intervalIdx,pfType,vPoi,bat,resultsType);
 
          // add V to results and assign answer to results
          std::transform(V.cbegin(),V.cend(),results.cbegin(),results.begin(),[](const auto& a, const auto& b) {return a + b;});
@@ -3987,7 +3987,7 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(IntervalIndexType inter
          
          if ( resultsType == rtCumulative )
          {
-            results.resize(vPoi.size(),sysSectionValue(0,0));
+            results.resize(vPoi.size(),WBFL::System::SectionValue(0,0));
             GET_IFACE(IIntervals,pIntervals);
             IntervalIndexType releaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(girderKey);
             for ( IntervalIndexType iIdx = releaseIntervalIdx; iIdx <= intervalIdx; iIdx++ )
@@ -3996,7 +3996,7 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(IntervalIndexType inter
                {
                   GET_IFACE(ILosses,pLosses);
                   CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,comboType - lcCR);
-                  std::vector<sysSectionValue> fy = GetShear(iIdx,strLoadingName,vPoi,bat,rtIncremental);
+                  std::vector<WBFL::System::SectionValue> fy = GetShear(iIdx,strLoadingName,vPoi,bat,rtIncremental);
                   std::transform(results.cbegin(),results.cend(),fy.cbegin(),results.begin(),[](const auto& a, const auto& b) {return a + b;});
                }
             }
@@ -4012,13 +4012,13 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(IntervalIndexType inter
             }
             else
             {
-               results.resize(vPoi.size(),sysSectionValue(0,0));
+               results.resize(vPoi.size(),WBFL::System::SectionValue(0,0));
             }
          }
       }
       else
       {
-         results.resize(vPoi.size(),sysSectionValue(0,0));
+         results.resize(vPoi.size(),WBFL::System::SectionValue(0,0));
       }
       return results;
    }
@@ -4036,8 +4036,8 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(IntervalIndexType inter
          // the incremental result at the time of erection is being requested. this is when
          // we switch between segment models and girder models. the incremental results
          // is the cumulative result this interval minus the cumulative result in the previous interval
-         std::vector<sysSectionValue> Vprev = GetShear(intervalIdx-1,comboType,vPoi,bat,rtCumulative);
-         std::vector<sysSectionValue> Vthis = GetShear(intervalIdx,  comboType,vPoi,bat,rtCumulative);
+         std::vector<WBFL::System::SectionValue> Vprev = GetShear(intervalIdx-1,comboType,vPoi,bat,rtCumulative);
+         std::vector<WBFL::System::SectionValue> Vthis = GetShear(intervalIdx,  comboType,vPoi,bat,rtCumulative);
          std::transform(Vthis.cbegin(),Vthis.cend(),Vprev.cbegin(),std::back_inserter(results),[](const auto& a, const auto& b) {return a - b;});
       }
       else
@@ -4518,7 +4518,7 @@ void CAnalysisAgentImp::GetCombinedLiveLoadAxial(IntervalIndexType intervalIdx,p
    m_pGirderModelManager->GetCombinedLiveLoadAxial(intervalIdx,llType,vPoi,bat,pMmin,pMmax);
 }
 
-void CAnalysisAgentImp::GetCombinedLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,std::vector<sysSectionValue>* pVmin,std::vector<sysSectionValue>* pVmax) const
+void CAnalysisAgentImp::GetCombinedLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,std::vector<WBFL::System::SectionValue>* pVmin,std::vector<WBFL::System::SectionValue>* pVmax) const
 {
    m_pGirderModelManager->GetCombinedLiveLoadShear(intervalIdx,llType,vPoi,bat,bIncludeImpact,pVmin,pVmax);
 }
@@ -4561,12 +4561,12 @@ void CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,pgsTypes::LimitSt
    *pMax = Pmax.front();
 }
 
-void CAnalysisAgentImp::GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,sysSectionValue* pMin,sysSectionValue* pMax) const
+void CAnalysisAgentImp::GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,WBFL::System::SectionValue* pMin,WBFL::System::SectionValue* pMax) const
 {
    PoiList vPoi;
    vPoi.push_back(poi);
 
-   std::vector<sysSectionValue> Vmin, Vmax;
+   std::vector<WBFL::System::SectionValue> Vmin, Vmax;
    GetShear(intervalIdx,limitState,vPoi,bat,&Vmin,&Vmax);
 
    ATLASSERT(Vmin.size() == 1);
@@ -4830,7 +4830,7 @@ void CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,pgsTypes::LimitSt
    }
 }
 
-void CAnalysisAgentImp::GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<sysSectionValue>* pMin,std::vector<sysSectionValue>* pMax) const
+void CAnalysisAgentImp::GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<WBFL::System::SectionValue>* pMin,std::vector<WBFL::System::SectionValue>* pMax) const
 {
    USES_CONVERSION;
    InitializeAnalysis(vPoi);
@@ -4894,13 +4894,13 @@ void CAnalysisAgentImp::GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitSt
          pLoadFactors->GetRE(limitState, &gREMin, &gREMax);
       }
 
-      std::vector<sysSectionValue> vVcr = GetShear(intervalIdx,lcCR,vPoi,bat,rtCumulative);
-      std::vector<sysSectionValue> vVsh = GetShear(intervalIdx,lcSH,vPoi,bat,rtCumulative);
-      std::vector<sysSectionValue> vVre = GetShear(intervalIdx,lcRE,vPoi,bat,rtCumulative);
+      std::vector<WBFL::System::SectionValue> vVcr = GetShear(intervalIdx,lcCR,vPoi,bat,rtCumulative);
+      std::vector<WBFL::System::SectionValue> vVsh = GetShear(intervalIdx,lcSH,vPoi,bat,rtCumulative);
+      std::vector<WBFL::System::SectionValue> vVre = GetShear(intervalIdx,lcRE,vPoi,bat,rtCumulative);
 
       if ( !IsEqual(gCRMin,1.0) )
       {
-         std::vector<sysSectionValue> vVcrMin;
+         std::vector<WBFL::System::SectionValue> vVcrMin;
          vVcrMin.reserve(vVcr.size());
          std::transform(vVcr.cbegin(),vVcr.cend(),std::back_inserter(vVcrMin), [&gCRMin](const auto& value) {return value*gCRMin;});
          std::transform(pMin->cbegin(),pMin->cend(),vVcrMin.cbegin(),pMin->begin(),[](const auto& a, const auto& b) {return a + b;});
@@ -4912,7 +4912,7 @@ void CAnalysisAgentImp::GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitSt
 
       if ( !IsEqual(gCRMax,1.0) )
       {
-         std::vector<sysSectionValue> vVcrMax;
+         std::vector<WBFL::System::SectionValue> vVcrMax;
          vVcrMax.reserve(vVcr.size());
          std::transform(vVcr.cbegin(),vVcr.cend(),std::back_inserter(vVcrMax), [&gCRMax](const auto& value) {return value*gCRMax;});
          std::transform(pMax->cbegin(),pMax->cend(),vVcrMax.cbegin(),pMax->begin(),[](const auto& a, const auto& b) {return a + b;});
@@ -4924,7 +4924,7 @@ void CAnalysisAgentImp::GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitSt
 
       if ( !IsEqual(gSHMin,1.0) )
       {
-         std::vector<sysSectionValue> vVshMin;
+         std::vector<WBFL::System::SectionValue> vVshMin;
          vVshMin.reserve(vVsh.size());
          std::transform(vVsh.cbegin(),vVsh.cend(),std::back_inserter(vVshMin), [&gSHMin](const auto& value) {return value*gSHMin;});
          std::transform(pMin->cbegin(),pMin->cend(),vVshMin.cbegin(),pMin->begin(),[](const auto& a, const auto& b) {return a + b;});
@@ -4936,7 +4936,7 @@ void CAnalysisAgentImp::GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitSt
 
       if ( !IsEqual(gSHMax,1.0) )
       {
-         std::vector<sysSectionValue> vVshMax;
+         std::vector<WBFL::System::SectionValue> vVshMax;
          vVshMax.reserve(vVsh.size());
          std::transform(vVsh.cbegin(),vVsh.cend(),std::back_inserter(vVshMax), [&gSHMax](const auto& value) {return value*gSHMax;});
          std::transform(pMax->cbegin(),pMax->cend(),vVshMax.cbegin(),pMax->begin(),[](const auto& a, const auto& b) {return a + b;});
@@ -4948,7 +4948,7 @@ void CAnalysisAgentImp::GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitSt
 
       if ( !IsEqual(gREMin,1.0) )
       {
-         std::vector<sysSectionValue> vVreMin;
+         std::vector<WBFL::System::SectionValue> vVreMin;
          vVreMin.reserve(vVre.size());
          std::transform(vVre.cbegin(),vVre.cend(),std::back_inserter(vVreMin), [&gREMin](const auto& value) {return value*gREMin;});
          std::transform(pMin->cbegin(),pMin->cend(),vVreMin.cbegin(),pMin->begin(),[](const auto& a, const auto& b) {return a + b;});
@@ -4960,7 +4960,7 @@ void CAnalysisAgentImp::GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitSt
 
       if ( !IsEqual(gREMax,1.0) )
       {
-         std::vector<sysSectionValue> vVreMax;
+         std::vector<WBFL::System::SectionValue> vVreMax;
          vVreMax.reserve(vVre.size());
          std::transform(vVre.cbegin(),vVre.cend(),std::back_inserter(vVreMax), [&gREMax](const auto& value) {return value*gREMax;});
          std::transform(pMax->cbegin(),pMax->cend(),vVreMax.cbegin(),pMax->begin(),[](const auto& a, const auto& b) {return a + b;});
@@ -5830,11 +5830,11 @@ Float64 CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,LPCTSTR strLoa
    return results.front();
 }
 
-sysSectionValue CAnalysisAgentImp::GetShear(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
+WBFL::System::SectionValue CAnalysisAgentImp::GetShear(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
 {
    PoiList vPoi;
    vPoi.push_back(poi);
-   std::vector<sysSectionValue> results( GetShear(intervalIdx,strLoadingName,vPoi,bat,resultsType) );
+   std::vector<WBFL::System::SectionValue> results( GetShear(intervalIdx,strLoadingName,vPoi,bat,resultsType) );
    ATLASSERT(results.size() == 1);
    return results.front();
 }
@@ -5928,12 +5928,12 @@ std::vector<Float64> CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,L
    return results;
 }
 
-std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
+std::vector<WBFL::System::SectionValue> CAnalysisAgentImp::GetShear(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
 {
    USES_CONVERSION;
    InitializeAnalysis(vPoi);
 
-   std::vector<sysSectionValue> results;
+   std::vector<WBFL::System::SectionValue> results;
    results.reserve(vPoi.size());
 
    try
@@ -5950,8 +5950,8 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(IntervalIndexType inter
          // the incremental result at the time of erection is being requested. this is when
          // we switch between segment models and girder models. the incremental results
          // is the cumulative result this interval minus the cumulative result in the previous interval
-         std::vector<sysSectionValue> Vprev = GetShear(intervalIdx-1,strLoadingName,vPoi,bat,rtCumulative);
-         std::vector<sysSectionValue> Vthis = GetShear(intervalIdx,  strLoadingName,vPoi,bat,rtCumulative);
+         std::vector<WBFL::System::SectionValue> Vprev = GetShear(intervalIdx-1,strLoadingName,vPoi,bat,rtCumulative);
+         std::vector<WBFL::System::SectionValue> Vthis = GetShear(intervalIdx,  strLoadingName,vPoi,bat,rtCumulative);
          std::transform(Vthis.cbegin(),Vthis.cend(),Vprev.cbegin(),std::back_inserter(results),[](const auto& a, const auto& b) {return a - b;});
       }
       else
@@ -6592,7 +6592,7 @@ void CAnalysisAgentImp::GetDesignStress(const StressCheckTask& task,const pgsPoi
 }
 
 //////////////////////////////////////////////////////////////////////
-void CAnalysisAgentImp::GetConcurrentShear(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,sysSectionValue* pMin,sysSectionValue* pMax) const
+void CAnalysisAgentImp::GetConcurrentShear(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,WBFL::System::SectionValue* pMin,WBFL::System::SectionValue* pMax) const
 {
    try
    {

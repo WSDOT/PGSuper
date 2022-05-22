@@ -81,7 +81,7 @@ void CShearDesignPage::DoDataExchange(CDataExchange* pDX)
       m_pGrid->FillGrid(m_StirrupSizeBarComboColl);
 
       // Fill bar spacings
-      sysNumericFormatTool ftool(sysNumericFormatTool::Automatic,pDisplayUnits->ComponentDim.Width,pDisplayUnits->ComponentDim.Precision);
+      WBFL::System::NumericFormatTool ftool(WBFL::System::NumericFormatTool::Format::Automatic,pDisplayUnits->ComponentDim.Width,pDisplayUnits->ComponentDim.Precision);
       std::_tostringstream  os_spacings;
       std::vector<Float64>::size_type size = m_BarSpacings.size();
       for (std::vector<Float64>::size_type sf=0; sf<size; sf++)
@@ -179,10 +179,10 @@ void CShearDesignPage::DoDataExchange(CDataExchange* pDX)
       GetDlgItem(IDC_EDIT_BAR_SPACINGS)->GetWindowText(str_spacings);
 
       LPCTSTR delims[] = {_T(","),_T(" "), 0};
-      sysTokenizer tokizerd(delims);
+      WBFL::System::Tokenizer tokizerd(delims);
       tokizerd.push_back(str_spacings);
 
-      sysTokenizer::size_type nps = tokizerd.size();
+      WBFL::System::Tokenizer::size_type nps = tokizerd.size();
 
       if (nps==0)
       {
@@ -194,10 +194,10 @@ void CShearDesignPage::DoDataExchange(CDataExchange* pDX)
       {
          m_BarSpacings.clear();
 
-         for (sysTokenizer::size_type ips=0; ips<nps; ips++)
+         for (WBFL::System::Tokenizer::size_type ips=0; ips<nps; ips++)
          {
             Float64 db;
-            if (!sysTokenizer::ParseDouble(tokizerd[ips].c_str(), &db))
+            if (!WBFL::System::Tokenizer::ParseDouble(tokizerd[ips].c_str(), &db))
             {
                CString msg;
                msg.Format(_T("Error - Item %d in the list of Bar Spacing values is not a number. Please enter a comma-delimited list of spacings."), ips+1);

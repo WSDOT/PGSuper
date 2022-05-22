@@ -204,14 +204,14 @@ bool CUserMomentsTable::AssertValid() const
    return true;
 }
 
-void CUserMomentsTable::Dump(dbgDumpContext& os) const
+void CUserMomentsTable::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CUserMomentsTable") << endl;
+   os << _T("Dump for CUserMomentsTable") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CUserMomentsTable::TestMe(dbgLog& rlog)
+bool CUserMomentsTable::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CUserMomentsTable");
 

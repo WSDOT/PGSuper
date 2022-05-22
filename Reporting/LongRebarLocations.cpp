@@ -193,14 +193,14 @@ bool CLongRebarLocations::AssertValid() const
    return true;
 }
 
-void CLongRebarLocations::Dump(dbgDumpContext& os) const
+void CLongRebarLocations::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CLongRebarLocations") << endl;
+   os << _T("Dump for CLongRebarLocations") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CLongRebarLocations::TestMe(dbgLog& rlog)
+bool CLongRebarLocations::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CLongRebarLocations");
 

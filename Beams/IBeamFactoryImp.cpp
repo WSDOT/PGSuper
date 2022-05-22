@@ -627,7 +627,7 @@ bool CIBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimension
    return true;
 }
 
-void CIBeamFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
+void CIBeamFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
 {
    pSave->BeginUnit(_T("IBeamDimensions"),3.0); // bumped version number for 2.0 to 3.0 when changing to PrecastBeam2 object
    for(const auto& name : m_DimNames)
@@ -638,7 +638,7 @@ void CIBeamFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamF
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CIBeamFactory::LoadSectionDimensions(sysIStructuredLoad* pLoad) const
+IBeamFactory::Dimensions CIBeamFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
 {
    Float64 parent_version;
    if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))

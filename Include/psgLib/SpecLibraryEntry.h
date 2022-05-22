@@ -36,13 +36,9 @@
 
 #include <psgLib\OldHaulTruck.h>
 
-#if !defined INCLUDED_SYSTEM_SUBJECTT_H_
 #include <System\SubjectT.h>
-#endif
 
-#if !defined INCLUDED_LRFD_VERSIONMGR_H_
 #include <Lrfd\VersionMgr.h>
-#endif
 
 // LOCAL INCLUDES
 //
@@ -54,7 +50,7 @@ class CSpecMainSheet;
 class SpecLibraryEntry;
 class SpecLibraryEntryObserver;
 #pragma warning(disable:4231)
-PSGLIBTPL sysSubjectT<SpecLibraryEntryObserver, SpecLibraryEntry>;
+PSGLIBTPL WBFL::System::SubjectT<SpecLibraryEntryObserver, SpecLibraryEntry>;
 
 #define LOSSES_AASHTO_REFINED       0
 #define LOSSES_AASHTO_LUMPSUM       1
@@ -132,7 +128,7 @@ public:
    //------------------------------------------------------------------------
    // called by our subject to let us now he's changed, along with an optional
    // hint
-   virtual void Update(SpecLibraryEntry* pSubject, Int32 hint)=0;
+   virtual void Update(SpecLibraryEntry& subject, Int32 hint)=0;
 };
 
 
@@ -152,7 +148,7 @@ LOG
 *****************************************************************************/
 
 class PSGLIBCLASS SpecLibraryEntry : public libLibraryEntry, public ISupportIcon,
-       public sysSubjectT<SpecLibraryEntryObserver, SpecLibraryEntry>
+       public WBFL::System::SubjectT<SpecLibraryEntryObserver, SpecLibraryEntry>
 {
    // the dialog is our friend.
    friend CSpecMainSheet;
@@ -173,10 +169,10 @@ public:
    virtual bool Edit(bool allowEditing,int nPage=0);
 
    // Save to structured storage
-   virtual bool SaveMe(sysIStructuredSave* pSave);
+   virtual bool SaveMe(WBFL::System::IStructuredSave* pSave);
 
    // Load from structured storage
-   virtual bool LoadMe(sysIStructuredLoad* pLoad);
+   virtual bool LoadMe(WBFL::System::IStructuredLoad* pLoad);
 
    // Compares this library entry with rOther. Returns true if the entries are the same.
    // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items

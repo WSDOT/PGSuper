@@ -432,20 +432,20 @@ void CCopyPierDlg::OnOK()
    UpdateData(TRUE);
 
    // execute transactions
-   pgsMacroTxn* pMacro = new pgsMacroTxn;
+   std::unique_ptr<pgsMacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
    pMacro->Name(_T("Copy Pier Properties"));
 
    std::vector<ICopyPierPropertiesCallback*> callbacks = GetSelectedCopyPierPropertiesCallbacks();
    for (auto callback : callbacks)
    {
-      txnTransaction* pTxn = callback->CreateCopyTransaction(m_FromPierIdx, m_ToPiers);
-      pMacro->AddTransaction(pTxn);
+      auto txn = callback->CreateCopyTransaction(m_FromPierIdx, m_ToPiers);
+      pMacro->AddTransaction(std::move(txn));
    }
 
-   if (pMacro->GetTxnCount() > 0)
+   if (0 < pMacro->GetTxnCount())
    {
       GET_IFACE(IEAFTransactions, pTransactions);
-      pTransactions->Execute(pMacro);
+      pTransactions->Execute(std::move(pMacro));
    }
 
    UpdateReport();

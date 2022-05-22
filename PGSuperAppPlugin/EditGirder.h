@@ -23,7 +23,7 @@
 #ifndef INCLUDED_EDITGIRDER_H_
 #define INCLUDED_EDITGIRDER_H_
 
-#include <System\Transaction.h>
+#include <EAF\EAFTransaction.h>
 #include <PgsExt\SplicedGirderData.h>
 #include <PsgLib\ShearData.h>
 #include <PgsExt\LongitudinalRebarData.h>
@@ -56,7 +56,7 @@ struct txnEditGirderData
    std::array<CBearingData2, 2> m_BearingData;  // index is pgsTypes::MemberEndType
 };
 
-class txnEditGirder : public txnTransaction
+class txnEditGirder : public CEAFTransaction
 {
 public:
    txnEditGirder(const CGirderKey& girderKey,const txnEditGirderData& newGirderData);
@@ -65,10 +65,10 @@ public:
 
    virtual bool Execute();
    virtual void Undo();
-   virtual txnTransaction* CreateClone() const;
+   virtual std::unique_ptr<CEAFTransaction>CreateClone() const;
    virtual std::_tstring Name() const;
-   virtual bool IsUndoable();
-   virtual bool IsRepeatable();
+   virtual bool IsUndoable() const;
+   virtual bool IsRepeatable() const;
 
 private:
    void SetGirderData(const CGirderKey& girderKey,const txnEditGirderData& gdrData,bool bUndo);

@@ -23,9 +23,9 @@
 #ifndef INCLUDED_EDITPROJECTCRITERIATXN_H_
 #define INCLUDED_EDITPROJECTCRITERIATXN_H_
 
-#include <System\Transaction.h>
+#include <EAF\EAFTransaction.h>
 
-class txnEditProjectCriteria : public txnTransaction
+class txnEditProjectCriteria : public CEAFTransaction
 {
 public:
    txnEditProjectCriteria(LPCTSTR strOldCriteria,LPCTSTR strNewCriteria,pgsTypes::AnalysisType oldAnalysisType,pgsTypes::AnalysisType newAnalysisType,pgsTypes::WearingSurfaceType oldWearingSurfaceType,pgsTypes::WearingSurfaceType newWearingSurfaceType);
@@ -34,10 +34,10 @@ public:
 
    virtual bool Execute();
    virtual void Undo();
-   virtual txnTransaction* CreateClone() const;
+   virtual std::unique_ptr<CEAFTransaction>CreateClone() const;
    virtual std::_tstring Name() const;
-   virtual bool IsUndoable();
-   virtual bool IsRepeatable();
+   virtual bool IsUndoable() const;
+   virtual bool IsRepeatable() const;
 
 private:
    void Execute(int i);

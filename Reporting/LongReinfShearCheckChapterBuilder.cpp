@@ -535,7 +535,7 @@ void create_table2_design(rptChapter* pChapter,IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptAngleUnitValue,     angle,    pDisplayUnits->GetAngleUnit(),        false );
 
    rptRcScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Automatic );
+   scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Automatic );
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
 
@@ -636,7 +636,7 @@ void create_table3_design(rptChapter* pChapter, IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptAngleUnitValue,     angle,    pDisplayUnits->GetAngleUnit(),        false );
 
    rptRcScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Automatic );
+   scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Automatic );
    scalar.SetWidth(6); 
    scalar.SetPrecision(3);
 
@@ -857,7 +857,7 @@ void create_table2_rating(rptChapter* pChapter,IBroker* pBroker,
    location.IncludeSpanAndGirder(true);
 
    rptRcScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Automatic );
+   scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Automatic );
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
 
@@ -962,7 +962,7 @@ void create_table3_rating(rptChapter* pChapter,IBroker* pBroker,
    location.IncludeSpanAndGirder(true);
 
    rptRcScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Automatic );
+   scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Automatic );
    scalar.SetWidth(6); 
    scalar.SetPrecision(3);
 

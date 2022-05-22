@@ -497,7 +497,7 @@ bool CMultiWeb2Factory::ValidateDimensions(const IBeamFactory::Dimensions& dimen
    return true;
 }
 
-void CMultiWeb2Factory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
+void CMultiWeb2Factory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
 {
    pSave->BeginUnit(_T("MultiWeb2Dimensions"),1.0);
    for(const auto& name : m_DimNames)
@@ -508,7 +508,7 @@ void CMultiWeb2Factory::SaveSectionDimensions(sysIStructuredSave* pSave,const IB
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CMultiWeb2Factory::LoadSectionDimensions(sysIStructuredLoad* pLoad) const
+IBeamFactory::Dimensions CMultiWeb2Factory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
 {
    Float64 parent_version;
    if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))

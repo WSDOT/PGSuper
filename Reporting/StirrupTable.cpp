@@ -286,14 +286,14 @@ bool CStirrupTable::AssertValid() const
    return true;
 }
 
-void CStirrupTable::Dump(dbgDumpContext& os) const
+void CStirrupTable::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CStirrupTable") << endl;
+   os << _T("Dump for CStirrupTable") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CStirrupTable::TestMe(dbgLog& rlog)
+bool CStirrupTable::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CStirrupTable");
 

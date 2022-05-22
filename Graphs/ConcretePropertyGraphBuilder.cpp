@@ -100,19 +100,19 @@ void CConcretePropertyGraphBuilder::Init()
 
    m_Time.Width = 7;
    m_Time.Precision = 0;
-   m_Time.Format = sysNumericFormatTool::Fixed;
+   m_Time.Format = WBFL::System::NumericFormatTool::Format::Fixed;
 
    m_Interval.Width = 7;
    m_Interval.Precision = 1;
-   m_Interval.Format = sysNumericFormatTool::Fixed;
+   m_Interval.Format = WBFL::System::NumericFormatTool::Format::Fixed;
 
    m_StrainScalar.Width = 5;
    m_StrainScalar.Precision = 0;
-   m_StrainScalar.Format = sysNumericFormatTool::Fixed;
+   m_StrainScalar.Format = WBFL::System::NumericFormatTool::Format::Fixed;
 
    m_CreepScalar.Width = 6;
    m_CreepScalar.Precision = 3;
-   m_CreepScalar.Format = sysNumericFormatTool::Fixed;
+   m_CreepScalar.Format = WBFL::System::NumericFormatTool::Format::Fixed;
 }
 
 CConcretePropertyGraphBuilder::~CConcretePropertyGraphBuilder()

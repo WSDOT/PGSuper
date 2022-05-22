@@ -210,7 +210,7 @@ ConnectionLibraryEntry& ConnectionLibraryEntry::operator= (const ConnectionLibra
 }
 
 //======================== OPERATIONS =======================================
-bool ConnectionLibraryEntry::SaveMe(sysIStructuredSave* pSave)
+bool ConnectionLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
 {
    pSave->BeginUnit(_T("ConnectionLibraryEntry"), 6.0);
 
@@ -250,7 +250,7 @@ bool ConnectionLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    return true;
 }
 
-bool ConnectionLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
+bool ConnectionLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 {
    if(pLoad->BeginUnit(_T("ConnectionLibraryEntry")))
    {
@@ -668,22 +668,22 @@ bool ConnectionLibraryEntry::AssertValid() const
    return libLibraryEntry::AssertValid();
 }
 
-void ConnectionLibraryEntry::Dump(dbgDumpContext& os) const
+void ConnectionLibraryEntry::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for ConnectionLibraryEntry")<<endl;
-   os << _T("   m_GirderEndDistance     =")<< m_GirderEndDistance <<endl;
-   os << _T("   m_GirderBearingOffset   =")<< m_GirderBearingOffset << endl;
-   os << _T("   m_DiaphragmHeight       =")<< m_DiaphragmHeight <<endl;
-   os << _T("   m_DiaphragmWidth        =")<< m_DiaphragmWidth <<endl;
-   os << _T("   m_DiaphragmLoadType     =")<<m_DiaphragmLoadType     <<endl;
-   os << _T("   m_DiaphragmLoadLocation =")<<m_DiaphragmLoadLocation <<endl;
+   os << _T("Dump for ConnectionLibraryEntry")<< WBFL::Debug::endl;
+   os << _T("   m_GirderEndDistance     =")<< m_GirderEndDistance << WBFL::Debug::endl;
+   os << _T("   m_GirderBearingOffset   =")<< m_GirderBearingOffset << WBFL::Debug::endl;
+   os << _T("   m_DiaphragmHeight       =")<< m_DiaphragmHeight << WBFL::Debug::endl;
+   os << _T("   m_DiaphragmWidth        =")<< m_DiaphragmWidth << WBFL::Debug::endl;
+   os << _T("   m_DiaphragmLoadType     =")<<m_DiaphragmLoadType     << WBFL::Debug::endl;
+   os << _T("   m_DiaphragmLoadLocation =")<<m_DiaphragmLoadLocation << WBFL::Debug::endl;
 
    libLibraryEntry::Dump( os );
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool ConnectionLibraryEntry::TestMe(dbgLog& rlog)
+bool ConnectionLibraryEntry::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("ConnectionLibraryEntry");
 

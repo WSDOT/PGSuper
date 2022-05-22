@@ -158,9 +158,9 @@ void txnEditGirder::Undo()
    }
 }
 
-txnTransaction* txnEditGirder::CreateClone() const
+std::unique_ptr<CEAFTransaction>txnEditGirder::CreateClone() const
 {
-   return new txnEditGirder(m_GirderKey,m_NewGirderData);
+   return std::make_unique<txnEditGirder>(m_GirderKey,m_NewGirderData);
 }
 
 std::_tstring txnEditGirder::Name() const
@@ -178,12 +178,12 @@ std::_tstring txnEditGirder::Name() const
    return os.str();
 }
 
-bool txnEditGirder::IsUndoable()
+bool txnEditGirder::IsUndoable() const
 {
    return true;
 }
 
-bool txnEditGirder::IsRepeatable()
+bool txnEditGirder::IsRepeatable() const
 {
    return false;
 }

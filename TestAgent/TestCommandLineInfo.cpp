@@ -173,7 +173,7 @@ void CTestCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast)
             // span
             bMyParameter = true;
             long lsp;
-            if (sysTokenizer::ParseLong(lpszParam, &lsp))
+            if (WBFL::System::Tokenizer::ParseLong(lpszParam, &lsp))
             {
                // Span number is one based on command line, but zero based inside the program
                m_TxSpan = SpanIndexType(lsp - 1);

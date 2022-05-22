@@ -186,14 +186,14 @@ bool CStrandSlopeCheck::AssertValid() const
    return true;
 }
 
-void CStrandSlopeCheck::Dump(dbgDumpContext& os) const
+void CStrandSlopeCheck::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CStrandSlopeCheck") << endl;
+   os << _T("Dump for CStrandSlopeCheck") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CStrandSlopeCheck::TestMe(dbgLog& rlog)
+bool CStrandSlopeCheck::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CStrandSlopeCheck");
 

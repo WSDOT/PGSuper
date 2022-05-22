@@ -141,10 +141,10 @@ CString CConcreteDetailsDlg::UpdateEc(pgsTypes::ConcreteType type, const CString
    CString strEc;
    Float64 fc, density, k1,k2;
    Float64 ec = 0;
-   if (sysTokenizer::ParseDouble(strFc, &fc) && 
-       sysTokenizer::ParseDouble(strDensity,&density) &&
-       sysTokenizer::ParseDouble(strK1,&k1) &&
-       sysTokenizer::ParseDouble(strK2,&k2) &&
+   if (WBFL::System::Tokenizer::ParseDouble(strFc, &fc) && 
+       WBFL::System::Tokenizer::ParseDouble(strDensity,&density) &&
+       WBFL::System::Tokenizer::ParseDouble(strK1,&k1) &&
+       WBFL::System::Tokenizer::ParseDouble(strK2,&k2) &&
        0 <= density && 0 <= fc && 0 <= k1 && 0 <= k2
        )
    {

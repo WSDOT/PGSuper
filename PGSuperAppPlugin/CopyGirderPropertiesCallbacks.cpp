@@ -273,9 +273,9 @@ void txnCopyGirderAllProperties::Undo()
    }
 }
 
-txnTransaction* txnCopyGirderAllProperties::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnCopyGirderAllProperties::CreateClone() const
 {
-   return new txnCopyGirderAllProperties(m_FromGirderKey,m_ToGirderKeys);
+   return std::make_unique<txnCopyGirderAllProperties>(m_FromGirderKey,m_ToGirderKeys);
 }
 
 std::_tstring txnCopyGirderAllProperties::Name() const
@@ -353,9 +353,9 @@ void txnCopyGirderStirrups::Undo()
    }
 }
 
-txnTransaction* txnCopyGirderStirrups::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnCopyGirderStirrups::CreateClone() const
 {
-   return new txnCopyGirderStirrups(m_FromGirderKey,m_ToGirderKeys);
+   return std::make_unique<txnCopyGirderStirrups>(m_FromGirderKey,m_ToGirderKeys);
 }
 
 std::_tstring txnCopyGirderStirrups::Name() const
@@ -465,9 +465,9 @@ void txnCopyGirderPrestressing::Undo()
    }
 }
 
-txnTransaction* txnCopyGirderPrestressing::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnCopyGirderPrestressing::CreateClone() const
 {
-   return new txnCopyGirderPrestressing(m_FromGirderKey,m_ToGirderKeys);
+   return std::make_unique<txnCopyGirderPrestressing>(m_FromGirderKey,m_ToGirderKeys);
 }
 
 std::_tstring txnCopyGirderPrestressing::Name() const
@@ -545,9 +545,9 @@ void txnCopyGirderHandling::Undo()
    }
 }
 
-txnTransaction* txnCopyGirderHandling::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnCopyGirderHandling::CreateClone() const
 {
-   return new txnCopyGirderHandling(m_FromGirderKey,m_ToGirderKeys);
+   return std::make_unique<txnCopyGirderHandling>(m_FromGirderKey,m_ToGirderKeys);
 }
 
 std::_tstring txnCopyGirderHandling::Name() const
@@ -625,9 +625,9 @@ void txnCopyGirderMaterial::Undo()
    }
 }
 
-txnTransaction* txnCopyGirderMaterial::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnCopyGirderMaterial::CreateClone() const
 {
-   return new txnCopyGirderMaterial(m_FromGirderKey,m_ToGirderKeys);
+   return std::make_unique<txnCopyGirderMaterial>(m_FromGirderKey,m_ToGirderKeys);
 }
 
 std::_tstring txnCopyGirderMaterial::Name() const
@@ -705,9 +705,9 @@ void txnCopyGirderRebar::Undo()
    }
 }
 
-txnTransaction* txnCopyGirderRebar::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnCopyGirderRebar::CreateClone() const
 {
-   return new txnCopyGirderRebar(m_FromGirderKey,m_ToGirderKeys);
+   return std::make_unique<txnCopyGirderRebar>(m_FromGirderKey,m_ToGirderKeys);
 }
 
 std::_tstring txnCopyGirderRebar::Name() const
@@ -733,9 +733,9 @@ BOOL CCopyGirderAllProperties::CanCopy(const CGirderKey& fromGirderKey,const std
    return TRUE;
 }
 
-txnTransaction* CCopyGirderAllProperties::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
+std::unique_ptr<CEAFTransaction> CCopyGirderAllProperties::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
 {
-   return new txnCopyGirderAllProperties(fromGirderKey,toGirderKeys);
+   return std::make_unique<txnCopyGirderAllProperties>(fromGirderKey,toGirderKeys);
 }
 
 UINT CCopyGirderAllProperties::GetGirderEditorTabIndex()
@@ -769,9 +769,9 @@ BOOL CCopyGirderMaterial::CanCopy(const CGirderKey& fromGirderKey,const std::vec
    return TRUE;
 }
 
-txnTransaction* CCopyGirderMaterial::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
+std::unique_ptr<CEAFTransaction> CCopyGirderMaterial::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
 {
-   return new txnCopyGirderMaterial(fromGirderKey,toGirderKeys);
+   return std::make_unique<txnCopyGirderMaterial>(fromGirderKey,toGirderKeys);
 }
 
 UINT CCopyGirderMaterial::GetGirderEditorTabIndex()
@@ -830,9 +830,9 @@ BOOL CCopyGirderRebar::CanCopy(const CGirderKey& fromGirderKey,const std::vector
    return TRUE;
 }
 
-txnTransaction* CCopyGirderRebar::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
+std::unique_ptr<CEAFTransaction> CCopyGirderRebar::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
 {
-   return new txnCopyGirderRebar(fromGirderKey,toGirderKeys);
+   return std::make_unique<txnCopyGirderRebar>(fromGirderKey,toGirderKeys);
 }
 
 UINT CCopyGirderRebar::GetGirderEditorTabIndex()
@@ -869,9 +869,9 @@ BOOL CCopyGirderStirrups::CanCopy(const CGirderKey& fromGirderKey,const std::vec
    return TRUE;
 }
 
-txnTransaction* CCopyGirderStirrups::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
+std::unique_ptr<CEAFTransaction> CCopyGirderStirrups::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
 {
-   return new txnCopyGirderStirrups(fromGirderKey,toGirderKeys);
+   return std::make_unique<txnCopyGirderStirrups>(fromGirderKey,toGirderKeys);
 }
 
 UINT CCopyGirderStirrups::GetGirderEditorTabIndex()
@@ -934,9 +934,9 @@ BOOL CCopyGirderPrestressing::CanCopy(const CGirderKey& fromGirderKey,const std:
    return TRUE;
 }
 
-txnTransaction* CCopyGirderPrestressing::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
+std::unique_ptr<CEAFTransaction> CCopyGirderPrestressing::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
 {
-   return new txnCopyGirderPrestressing(fromGirderKey,toGirderKeys);
+   return std::make_unique<txnCopyGirderPrestressing>(fromGirderKey,toGirderKeys);
 }
 
 UINT CCopyGirderPrestressing::GetGirderEditorTabIndex()
@@ -986,9 +986,9 @@ BOOL CCopyGirderHandling::CanCopy(const CGirderKey& fromGirderKey,const std::vec
    return TRUE;
 }
 
-txnTransaction* CCopyGirderHandling::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
+std::unique_ptr<CEAFTransaction> CCopyGirderHandling::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
 {
-   return new txnCopyGirderHandling(fromGirderKey,toGirderKeys);
+   return std::make_unique<txnCopyGirderHandling>(fromGirderKey, toGirderKeys);
 }
 
 UINT CCopyGirderHandling::GetGirderEditorTabIndex()

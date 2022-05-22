@@ -285,14 +285,14 @@ bool CFlexuralCapacityCheckTable::AssertValid() const
    return true;
 }
 
-void CFlexuralCapacityCheckTable::Dump(dbgDumpContext& os) const
+void CFlexuralCapacityCheckTable::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CFlexuralCapacityCheckTable") << endl;
+   os << _T("Dump for CFlexuralCapacityCheckTable") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CFlexuralCapacityCheckTable::TestMe(dbgLog& rlog)
+bool CFlexuralCapacityCheckTable::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CFlexuralCapacityCheckTable");
 

@@ -705,7 +705,7 @@ bool CNUDeckedBulbTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions&
    return true;
 }
 
-void CNUDeckedBulbTeeFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
+void CNUDeckedBulbTeeFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
 {
    pSave->BeginUnit(_T("NUDeckedBulbTeeDimensions"),1.0);
    for( const auto& name : m_DimNames)
@@ -716,7 +716,7 @@ void CNUDeckedBulbTeeFactory::SaveSectionDimensions(sysIStructuredSave* pSave,co
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CNUDeckedBulbTeeFactory::LoadSectionDimensions(sysIStructuredLoad* pLoad) const
+IBeamFactory::Dimensions CNUDeckedBulbTeeFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
 {
    Float64 parent_version;
    if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))

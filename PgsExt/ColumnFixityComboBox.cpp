@@ -62,12 +62,12 @@ void CColumnFixityComboBox::UpdateFixity()
 {
    if ( GetSafeHwnd() )
    {
-      if ( sysFlags<UINT>::IsSet(m_Fixity,COLUMN_FIXITY_FIXED) )
+      if ( WBFL::System::Flags<UINT>::IsSet(m_Fixity,COLUMN_FIXITY_FIXED) )
       {
          AddFixity(pgsTypes::cftFixed);
       }
 
-      if ( sysFlags<UINT>::IsSet(m_Fixity,COLUMN_FIXITY_PINNED) )
+      if ( WBFL::System::Flags<UINT>::IsSet(m_Fixity,COLUMN_FIXITY_PINNED) )
       {
          AddFixity(pgsTypes::cftPinned);
       }

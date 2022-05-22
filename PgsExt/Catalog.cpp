@@ -98,7 +98,7 @@ public:
       }
 
       // get version numbers
-      sysTokenizer tokenizer(_T("."));
+      WBFL::System::Tokenizer tokenizer(_T("."));
       tokenizer.push_back(newstr);
       if (tokenizer.size() != 3)// should always be the case
       {
@@ -106,7 +106,7 @@ public:
       }
 
       Uint32 n = 0;
-      sysTokenizer::iterator iter;
+      WBFL::System::Tokenizer::iterator iter;
       for ( iter = tokenizer.begin(); iter != tokenizer.end(); iter++ )
       {
          long vn; 

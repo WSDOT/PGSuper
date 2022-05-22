@@ -219,7 +219,7 @@ void CAssumedExcessCamberGirderGrid::GetGridData(CDataExchange* pDX)
 
          CString strValue = GetCellValue(row, col);
          Float64 value;
-         if (strValue.IsEmpty() || !sysTokenizer::ParseDouble(strValue, &value))
+         if (strValue.IsEmpty() || !WBFL::System::Tokenizer::ParseDouble(strValue, &value))
          {
             CString strError;
             strError.Format(_T("Assumed Excess Camber value at Span %s, Girder %s is not a number - must be a positive number"), LABEL_SPAN(spanIdx), LABEL_GIRDER(gdrIdx));

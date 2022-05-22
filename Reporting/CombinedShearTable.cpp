@@ -171,22 +171,22 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
       GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,&vPoi,&poiRefAttribute);
       poiRefAttribute = (girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : poiRefAttribute);
 
-      std::vector<sysSectionValue> dummy;
-      std::vector<sysSectionValue> minServiceI, maxServiceI;
-      std::vector<sysSectionValue> minDCinc, maxDCinc;
-      std::vector<sysSectionValue> minDCcum, maxDCcum;
-      std::vector<sysSectionValue> minDWinc, maxDWinc;
-      std::vector<sysSectionValue> minDWcum, maxDWcum;
-      std::vector<sysSectionValue> minDWRatinginc, maxDWRatinginc;
-      std::vector<sysSectionValue> minDWRatingcum, maxDWRatingcum;
-      std::vector<sysSectionValue> minCRinc, maxCRinc;
-      std::vector<sysSectionValue> minCRcum, maxCRcum;
-      std::vector<sysSectionValue> minSHinc, maxSHinc;
-      std::vector<sysSectionValue> minSHcum, maxSHcum;
-      std::vector<sysSectionValue> minREinc, maxREinc;
-      std::vector<sysSectionValue> minREcum, maxREcum;
-      std::vector<sysSectionValue> minPSinc, maxPSinc;
-      std::vector<sysSectionValue> minPScum, maxPScum;
+      std::vector<WBFL::System::SectionValue> dummy;
+      std::vector<WBFL::System::SectionValue> minServiceI, maxServiceI;
+      std::vector<WBFL::System::SectionValue> minDCinc, maxDCinc;
+      std::vector<WBFL::System::SectionValue> minDCcum, maxDCcum;
+      std::vector<WBFL::System::SectionValue> minDWinc, maxDWinc;
+      std::vector<WBFL::System::SectionValue> minDWcum, maxDWcum;
+      std::vector<WBFL::System::SectionValue> minDWRatinginc, maxDWRatinginc;
+      std::vector<WBFL::System::SectionValue> minDWRatingcum, maxDWRatingcum;
+      std::vector<WBFL::System::SectionValue> minCRinc, maxCRinc;
+      std::vector<WBFL::System::SectionValue> minCRcum, maxCRcum;
+      std::vector<WBFL::System::SectionValue> minSHinc, maxSHinc;
+      std::vector<WBFL::System::SectionValue> minSHcum, maxSHcum;
+      std::vector<WBFL::System::SectionValue> minREinc, maxREinc;
+      std::vector<WBFL::System::SectionValue> minREcum, maxREcum;
+      std::vector<WBFL::System::SectionValue> minPSinc, maxPSinc;
+      std::vector<WBFL::System::SectionValue> minPScum, maxPScum;
 
       if ( minBAT == maxBAT )
       {
@@ -476,16 +476,16 @@ void CCombinedShearTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
       GetCombinedResultsPoi(pBroker,thisGirderKey,liveLoadInteravlIdx,&vPoi,&poiRefAttribute);
       poiRefAttribute = (girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : poiRefAttribute);
 
-      std::vector<sysSectionValue> dummy;
-      std::vector<sysSectionValue> minPedestrianLL,    maxPedestrianLL;
-      std::vector<sysSectionValue> minDesignLL,        maxDesignLL;
-      std::vector<sysSectionValue> minFatigueLL,       maxFatigueLL;
-      std::vector<sysSectionValue> minPermitLL,        maxPermitLL;
-      std::vector<sysSectionValue> minLegalRoutineLL,  maxLegalRoutineLL;
-      std::vector<sysSectionValue> minLegalSpecialLL, maxLegalSpecialLL;
-      std::vector<sysSectionValue> minLegalEmergencyLL, maxLegalEmergencyLL;
-      std::vector<sysSectionValue> minPermitRoutineLL, maxPermitRoutineLL;
-      std::vector<sysSectionValue> minPermitSpecialLL, maxPermitSpecialLL;
+      std::vector<WBFL::System::SectionValue> dummy;
+      std::vector<WBFL::System::SectionValue> minPedestrianLL,    maxPedestrianLL;
+      std::vector<WBFL::System::SectionValue> minDesignLL,        maxDesignLL;
+      std::vector<WBFL::System::SectionValue> minFatigueLL,       maxFatigueLL;
+      std::vector<WBFL::System::SectionValue> minPermitLL,        maxPermitLL;
+      std::vector<WBFL::System::SectionValue> minLegalRoutineLL,  maxLegalRoutineLL;
+      std::vector<WBFL::System::SectionValue> minLegalSpecialLL, maxLegalSpecialLL;
+      std::vector<WBFL::System::SectionValue> minLegalEmergencyLL, maxLegalEmergencyLL;
+      std::vector<WBFL::System::SectionValue> minPermitRoutineLL, maxPermitRoutineLL;
+      std::vector<WBFL::System::SectionValue> minPermitSpecialLL, maxPermitSpecialLL;
 
       if ( bPedLoading )
       {
@@ -762,22 +762,22 @@ void CCombinedShearTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
       poiRefAttribute = (girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : poiRefAttribute);
 
       // create second table for BSS3 Limit states
-      std::vector<sysSectionValue> dummy;
-      std::vector<sysSectionValue> minServiceI,   maxServiceI;
-      std::vector<sysSectionValue> minServiceIA,  maxServiceIA;
-      std::vector<sysSectionValue> minServiceIII, maxServiceIII;
-      std::vector<sysSectionValue> minFatigueI,   maxFatigueI;
-      std::vector<sysSectionValue> minStrengthI,  maxStrengthI;
-      std::vector<sysSectionValue> minStrengthII, maxStrengthII;
-      std::vector<sysSectionValue> minStrengthI_Inventory, maxStrengthI_Inventory;
-      std::vector<sysSectionValue> minStrengthI_Operating, maxStrengthI_Operating;
-      std::vector<sysSectionValue> minStrengthI_Legal_Routine, maxStrengthI_Legal_Routine;
-      std::vector<sysSectionValue> minStrengthI_Legal_Special, maxStrengthI_Legal_Special;
-      std::vector<sysSectionValue> minStrengthI_Legal_Emergency, maxStrengthI_Legal_Emergency;
-      std::vector<sysSectionValue> minStrengthII_Permit_Routine, maxStrengthII_Permit_Routine;
-      std::vector<sysSectionValue> minServiceI_Permit_Routine, maxServiceI_Permit_Routine;
-      std::vector<sysSectionValue> minStrengthII_Permit_Special, maxStrengthII_Permit_Special;
-      std::vector<sysSectionValue> minServiceI_Permit_Special, maxServiceI_Permit_Special;
+      std::vector<WBFL::System::SectionValue> dummy;
+      std::vector<WBFL::System::SectionValue> minServiceI,   maxServiceI;
+      std::vector<WBFL::System::SectionValue> minServiceIA,  maxServiceIA;
+      std::vector<WBFL::System::SectionValue> minServiceIII, maxServiceIII;
+      std::vector<WBFL::System::SectionValue> minFatigueI,   maxFatigueI;
+      std::vector<WBFL::System::SectionValue> minStrengthI,  maxStrengthI;
+      std::vector<WBFL::System::SectionValue> minStrengthII, maxStrengthII;
+      std::vector<WBFL::System::SectionValue> minStrengthI_Inventory, maxStrengthI_Inventory;
+      std::vector<WBFL::System::SectionValue> minStrengthI_Operating, maxStrengthI_Operating;
+      std::vector<WBFL::System::SectionValue> minStrengthI_Legal_Routine, maxStrengthI_Legal_Routine;
+      std::vector<WBFL::System::SectionValue> minStrengthI_Legal_Special, maxStrengthI_Legal_Special;
+      std::vector<WBFL::System::SectionValue> minStrengthI_Legal_Emergency, maxStrengthI_Legal_Emergency;
+      std::vector<WBFL::System::SectionValue> minStrengthII_Permit_Routine, maxStrengthII_Permit_Routine;
+      std::vector<WBFL::System::SectionValue> minServiceI_Permit_Routine, maxServiceI_Permit_Routine;
+      std::vector<WBFL::System::SectionValue> minStrengthII_Permit_Special, maxStrengthII_Permit_Special;
+      std::vector<WBFL::System::SectionValue> minServiceI_Permit_Special, maxServiceI_Permit_Special;
 
       if ( bDesign )
       {
@@ -1071,14 +1071,14 @@ bool CCombinedShearTable::AssertValid() const
    return true;
 }
 
-void CCombinedShearTable::Dump(dbgDumpContext& os) const
+void CCombinedShearTable::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CCombinedShearTable") << endl;
+   os << _T("Dump for CCombinedShearTable") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CCombinedShearTable::TestMe(dbgLog& rlog)
+bool CCombinedShearTable::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CCombinedShearTable");
 

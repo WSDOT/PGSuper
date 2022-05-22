@@ -717,7 +717,7 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
       m_StrandKey[strandType] = pPool->GetStrandKey(pParent->m_pSegment->Strands.GetStrandMaterial(strandType));
    }
 
-   if ( sysFlags<Int64>::IsSet(m_StrandKey[pgsTypes::Straight],matPsStrand::GritEpoxy) ) // straight and harped share epoxy coated settings
+   if ( WBFL::System::Flags<Int64>::IsSet(m_StrandKey[pgsTypes::Straight],matPsStrand::GritEpoxy) ) // straight and harped share epoxy coated settings
    {
       CheckDlgButton(IDC_EPOXY,BST_CHECKED);
    }
@@ -2843,13 +2843,13 @@ void CGirderDescPrestressPage::OnDropdownHpComboEnd()
 void CGirderDescPrestressPage::OnEpoxyChanged()
 {
    // straight and harped always have the same epoxy setting
-   sysFlags<Int64>::Clear(&m_StrandKey[pgsTypes::Straight],matPsStrand::None);
-   sysFlags<Int64>::Clear(&m_StrandKey[pgsTypes::Straight],matPsStrand::GritEpoxy);
-   sysFlags<Int64>::Set(&m_StrandKey[pgsTypes::Straight],IsDlgButtonChecked(IDC_EPOXY) == BST_CHECKED ? matPsStrand::GritEpoxy : matPsStrand::None);
+   WBFL::System::Flags<Int64>::Clear(&m_StrandKey[pgsTypes::Straight],matPsStrand::None);
+   WBFL::System::Flags<Int64>::Clear(&m_StrandKey[pgsTypes::Straight],matPsStrand::GritEpoxy);
+   WBFL::System::Flags<Int64>::Set(&m_StrandKey[pgsTypes::Straight],IsDlgButtonChecked(IDC_EPOXY) == BST_CHECKED ? matPsStrand::GritEpoxy : matPsStrand::None);
 
-   sysFlags<Int64>::Clear(&m_StrandKey[pgsTypes::Harped], matPsStrand::None);
-   sysFlags<Int64>::Clear(&m_StrandKey[pgsTypes::Harped], matPsStrand::GritEpoxy);
-   sysFlags<Int64>::Set(&m_StrandKey[pgsTypes::Harped], IsDlgButtonChecked(IDC_EPOXY) == BST_CHECKED ? matPsStrand::GritEpoxy : matPsStrand::None);
+   WBFL::System::Flags<Int64>::Clear(&m_StrandKey[pgsTypes::Harped], matPsStrand::None);
+   WBFL::System::Flags<Int64>::Clear(&m_StrandKey[pgsTypes::Harped], matPsStrand::GritEpoxy);
+   WBFL::System::Flags<Int64>::Set(&m_StrandKey[pgsTypes::Harped], IsDlgButtonChecked(IDC_EPOXY) == BST_CHECKED ? matPsStrand::GritEpoxy : matPsStrand::None);
 
    UpdateStrandList(IDC_STRAIGHT_STRAND_SIZE);
    UpdateStrandList(IDC_HARPED_STRAND_SIZE);
@@ -2864,8 +2864,8 @@ void CGirderDescPrestressPage::UpdateStrandList(UINT nIDC)
    int cur_sel = pList->GetCurSel();
    Int64 cur_key = (Int64)pList->GetItemData( cur_sel );
    // remove the coating flag from the current key
-   sysFlags<Int64>::Clear(&cur_key,matPsStrand::None);
-   sysFlags<Int64>::Clear(&cur_key,matPsStrand::GritEpoxy);
+   WBFL::System::Flags<Int64>::Clear(&cur_key,matPsStrand::None);
+   WBFL::System::Flags<Int64>::Clear(&cur_key,matPsStrand::GritEpoxy);
 
    BOOL bIsEpoxy = FALSE;
    if ( nIDC == IDC_STRAIGHT_STRAND_SIZE || nIDC == IDC_HARPED_STRAND_SIZE)
@@ -2873,7 +2873,7 @@ void CGirderDescPrestressPage::UpdateStrandList(UINT nIDC)
       bIsEpoxy = IsDlgButtonChecked(IDC_EPOXY) == BST_CHECKED ? TRUE : FALSE;
    }
    matPsStrand::Coating coating = (bIsEpoxy ? matPsStrand::GritEpoxy : matPsStrand::None);
-   sysFlags<Int64>::Set(&cur_key,coating); // add the coating flag for the strand type we are changing to
+   WBFL::System::Flags<Int64>::Set(&cur_key,coating); // add the coating flag for the strand type we are changing to
 
    pList->ResetContent();
 
@@ -3104,7 +3104,7 @@ void CGirderDescPrestressPage::EditDirectRowInput()
       m_StrandKey[pgsTypes::Harped] = pPool->GetStrandKey(pParent->m_pSegment->Strands.GetStrandMaterial(pgsTypes::Harped));
       m_StrandKey[pgsTypes::Temporary] = pPool->GetStrandKey(pParent->m_pSegment->Strands.GetStrandMaterial(pgsTypes::Temporary));
 
-      CheckDlgButton(IDC_EPOXY,sysFlags<Int64>::IsSet(m_StrandKey[pgsTypes::Straight],matPsStrand::GritEpoxy) ? BST_CHECKED : BST_UNCHECKED);
+      CheckDlgButton(IDC_EPOXY,WBFL::System::Flags<Int64>::IsSet(m_StrandKey[pgsTypes::Straight],matPsStrand::GritEpoxy) ? BST_CHECKED : BST_UNCHECKED);
 
       UpdateStrandList(IDC_STRAIGHT_STRAND_SIZE);
       UpdateStrandList(IDC_HARPED_STRAND_SIZE);
@@ -3140,7 +3140,7 @@ void CGirderDescPrestressPage::EditDirectStrandInput()
       m_StrandKey[pgsTypes::Harped] = pPool->GetStrandKey(pParent->m_pSegment->Strands.GetStrandMaterial(pgsTypes::Harped));
       m_StrandKey[pgsTypes::Temporary] = pPool->GetStrandKey(pParent->m_pSegment->Strands.GetStrandMaterial(pgsTypes::Temporary));
 
-      CheckDlgButton(IDC_EPOXY, sysFlags<Int64>::IsSet(m_StrandKey[pgsTypes::Straight], matPsStrand::GritEpoxy) ? BST_CHECKED : BST_UNCHECKED);
+      CheckDlgButton(IDC_EPOXY, WBFL::System::Flags<Int64>::IsSet(m_StrandKey[pgsTypes::Straight], matPsStrand::GritEpoxy) ? BST_CHECKED : BST_UNCHECKED);
 
       UpdateStrandList(IDC_STRAIGHT_STRAND_SIZE);
       UpdateStrandList(IDC_HARPED_STRAND_SIZE);

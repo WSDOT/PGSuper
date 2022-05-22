@@ -59,11 +59,11 @@ if ( level >= lvl && m_Level < lvl ) \
 #if defined ENABLE_LOGGING
 
 #if !defined INCLUDED_WBFLTOOLS_LOGDUMPCONTEXT_H_
-#include <WBFLTools\LogDumpContext.h>
+#include <WBFLTools\LogContext.h>
 #endif
 
 #define DECLARE_LOGFILE \
-mutable dbgLogDumpContext m_Log;
+mutable LogContext m_Log;
 
 #else
 
@@ -85,13 +85,13 @@ mutable dbgLogDumpContext m_Log;
    __pLogFile__ = 0; \
    LOG(std::_tstring(_T(##name))+std::_tstring(_T(" Log Opened")))
 
-#define LOG(x) m_Log << x << endl
-#define LOGX(x) m_Log << _T(__FILE__) << _T(" ") << _T("(") << __LINE__ << _T(") ") << x << endl
+#define LOG(x) m_Log << x << WBFL::Debug::endl
+#define LOGX(x) m_Log << _T(__FILE__) << _T(" ") << _T("(") << __LINE__ << _T(") ") << x << WBFL::Debug::endl
 
 #define LOG_EXECUTION_TIME(_x_) \
-   { sysTime startTime; \
+   { WBFL::System::Time startTime; \
    _x_; \
-   sysTime endTime; \
+   WBFL::System::Time endTime; \
    LOG((endTime.Seconds() - startTime.Seconds()) << _T(" sec : ") << _T(#_x_)); }
 
 #define CLOSE_LOGFILE m_Log.SetLog(nullptr,0)
@@ -109,7 +109,7 @@ mutable dbgLogDumpContext m_Log;
 
 #if defined ENABLE_LOGGING
 
-#define SHARED_LOGFILE dbgLogDumpContext&
+#define SHARED_LOGFILE LogContext&
 #define LOGFILE m_Log
 #define DECLARE_SHARED_LOGFILE SHARED_LOGFILE LOGFILE
 
@@ -124,7 +124,7 @@ mutable dbgLogDumpContext m_Log;
 
 
 #if defined ENABLE_LOGGING
-#define LOGGER *(const_cast<dbgLogDumpContext*>(&m_Log))
+#define LOGGER *(const_cast<LogContext*>(&m_Log))
 #else
 #define LOGGER nullptr
 #endif

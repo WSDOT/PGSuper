@@ -416,14 +416,14 @@ bool CGirderDetailingCheck::AssertValid() const
    return true;
 }
 
-void CGirderDetailingCheck::Dump(dbgDumpContext& os) const
+void CGirderDetailingCheck::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for CGirderDetailingCheck") << endl;
+   os << _T("Dump for CGirderDetailingCheck") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
 #if defined _UNITTEST
-bool CGirderDetailingCheck::TestMe(dbgLog& rlog)
+bool CGirderDetailingCheck::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("CGirderDetailingCheck");
 

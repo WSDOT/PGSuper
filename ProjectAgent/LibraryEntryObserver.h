@@ -87,14 +87,14 @@ public:
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
-   virtual void Update(ConcreteLibraryEntry* pSubject, Int32 hint) override;
-   virtual void Update(GirderLibraryEntry* pSubject, Int32 hint) override;
-   virtual void Update(SpecLibraryEntry* pSubject, Int32 hint) override;
-   virtual void Update(RatingLibraryEntry* pSubject, Int32 hint) override;
-   virtual void Update(TrafficBarrierEntry* pSubject, Int32 hint) override;
-   virtual void Update(LiveLoadLibraryEntry* pSubject,Int32 hint) override;
-   virtual void Update(DuctLibraryEntry* pSubject,Int32 hint) override;
-   virtual void Update(HaulTruckLibraryEntry* pSubject,Int32 hint) override;
+   virtual void Update(ConcreteLibraryEntry& subject, Int32 hint) override;
+   virtual void Update(GirderLibraryEntry& subject, Int32 hint) override;
+   virtual void Update(SpecLibraryEntry& subject, Int32 hint) override;
+   virtual void Update(RatingLibraryEntry& subject, Int32 hint) override;
+   virtual void Update(TrafficBarrierEntry& subject, Int32 hint) override;
+   virtual void Update(LiveLoadLibraryEntry& subject,Int32 hint) override;
+   virtual void Update(DuctLibraryEntry& subject,Int32 hint) override;
+   virtual void Update(HaulTruckLibraryEntry& subject,Int32 hint) override;
 
    // GROUP: ACCESS
    void SetAgent(CProjectAgentImp* pAgent);
@@ -134,14 +134,14 @@ public:
 
    //------------------------------------------------------------------------
    // Dumps the contents of the object to the given dump context.
-   virtual void Dump(dbgDumpContext& os) const;
+   virtual void Dump(WBFL::Debug::LogContext& os) const;
    #endif // _DEBUG
 
    #if defined _UNITTEST
    //------------------------------------------------------------------------
    // Runs a self-diagnostic test.  Returns true if the test passed,
    // otherwise false.
-   static bool TestMe(dbgLog& rlog);
+   static bool TestMe(WBFL::Debug::Log& rlog);
    #endif // _UNITTEST
 };
 

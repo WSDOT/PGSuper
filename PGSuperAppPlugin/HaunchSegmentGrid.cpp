@@ -404,7 +404,7 @@ void CHaunchSegmentGrid::GetGridData(CDataExchange* pDX)
                pgsTypes::MemberEndType end = (pgsTypes::MemberEndType)i;
                CString strValue = GetCellValue(row, col);
                Float64 value;
-               if (strValue.IsEmpty() || !sysTokenizer::ParseDouble(strValue, &value) || value < 0)
+               if (strValue.IsEmpty() || !WBFL::System::Tokenizer::ParseDouble(strValue, &value) || value < 0)
                {
                   AfxMessageBox(_T("Value is not a number - must be a positive number"), MB_ICONEXCLAMATION);
                   SetCurrentCell(row,col, GX_SCROLLINVIEW | GX_DISPLAYEDITWND);

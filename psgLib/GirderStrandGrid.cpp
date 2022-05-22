@@ -357,7 +357,7 @@ BOOL CGirderStrandGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 	if ((nCol==1 || nCol==2) && !s.IsEmpty( ))
 	{
       Float64 d;
-      if (!sysTokenizer::ParseDouble(s, &d))
+      if (!WBFL::System::Tokenizer::ParseDouble(s, &d))
 		{
 			SetWarningText (_T("Value must be a number"));
 			return FALSE;

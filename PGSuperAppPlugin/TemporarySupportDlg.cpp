@@ -197,7 +197,7 @@ void CTemporarySupportDlg::DestroyExtensionPages()
    m_ExtensionPages.clear();
 }
 
-txnTransaction* CTemporarySupportDlg::GetExtensionPageTransaction()
+std::unique_ptr<CEAFTransaction> CTemporarySupportDlg::GetExtensionPageTransaction()
 {
    if ( 0 < m_Macro.GetTxnCount() )
       return m_Macro.CreateClone();
@@ -213,10 +213,10 @@ void CTemporarySupportDlg::NotifyExtensionPages()
    {
       IEditTemporarySupportCallback* pCallback = pageIter->first;
       CPropertyPage* pPage = pageIter->second;
-      txnTransaction* pTxn = pCallback->OnOK(pPage,this);
+      auto pTxn = pCallback->OnOK(pPage,this);
       if ( pTxn )
       {
-         m_Macro.AddTransaction(pTxn);
+         m_Macro.AddTransaction(std::move(pTxn));
       }
    }
 }

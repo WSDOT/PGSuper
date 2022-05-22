@@ -313,7 +313,7 @@ const HaulTruckLibrary* psgLibraryManager::GetHaulTruckLibrary() const
    return pc; 
 }
 
-bool psgLibraryManager::LoadMe(sysIStructuredLoad* pLoad)
+bool psgLibraryManager::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 {
    bool bResult = libLibraryManager::LoadMe(pLoad);
    return bResult;
@@ -372,24 +372,24 @@ bool psgLibraryManager::AssertValid() const
    return libLibraryManager::AssertValid();
 }
 
-void psgLibraryManager::Dump(dbgDumpContext& os) const
+void psgLibraryManager::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << _T("Dump for psgLibraryManager")<<endl;
+   os << _T("Dump for psgLibraryManager")<< WBFL::Debug::endl;
 
-   os << _T(" m_ConcLibIdx = ")<< m_ConcLibIdx << endl;
-   os << _T(" m_ConnLibIdx = ")<< m_ConnLibIdx << endl;
-   os << _T(" m_GirdLibIdx = ")<< m_GirdLibIdx << endl;
-   os << _T(" m_DiapLibIdx = ")<< m_DiapLibIdx << endl;
-   os << _T(" m_BarrLibIdx = ")<< m_BarrLibIdx << endl;
-   os << _T(" m_SpecLibIdx = ")<< m_SpecLibIdx << endl;
-   os << _T(" m_RatingLibIdx = ")<< m_RatingLibIdx << endl;
+   os << _T(" m_ConcLibIdx = ")<< m_ConcLibIdx << WBFL::Debug::endl;
+   os << _T(" m_ConnLibIdx = ")<< m_ConnLibIdx << WBFL::Debug::endl;
+   os << _T(" m_GirdLibIdx = ")<< m_GirdLibIdx << WBFL::Debug::endl;
+   os << _T(" m_DiapLibIdx = ")<< m_DiapLibIdx << WBFL::Debug::endl;
+   os << _T(" m_BarrLibIdx = ")<< m_BarrLibIdx << WBFL::Debug::endl;
+   os << _T(" m_SpecLibIdx = ")<< m_SpecLibIdx << WBFL::Debug::endl;
+   os << _T(" m_RatingLibIdx = ")<< m_RatingLibIdx << WBFL::Debug::endl;
 
    libLibraryManager::Dump( os );
 }
 #endif // _DEBUG
 
 #if defined UNIT_TEST
-bool psgLibraryManager::TestMe(dbgLog& rlog)
+bool psgLibraryManager::TestMe(WBFL::Debug::Log& rlog)
 {
    TESTME_PROLOGUE("psgLibraryManager");
 

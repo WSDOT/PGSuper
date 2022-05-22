@@ -759,7 +759,7 @@ Float64 CLiveLoadFactorModel::GetServiceLiveLoadFactor(Int16 adtt) const
    return -9999; // something obviously bogus until this gets implemented
 }
 
-bool CLiveLoadFactorModel::SaveMe(sysIStructuredSave* pSave)
+bool CLiveLoadFactorModel::SaveMe(WBFL::System::IStructuredSave* pSave)
 {
    pSave->BeginUnit(_T("LoadFactors"),1.0);
    pSave->Property(_T("LiveLoadFactorType"),(long)m_LiveLoadFactorType);
@@ -834,7 +834,7 @@ bool CLiveLoadFactorModel::SaveMe(sysIStructuredSave* pSave)
    return true;
 }
 
-bool CLiveLoadFactorModel::LoadMe(sysIStructuredLoad* pLoad)
+bool CLiveLoadFactorModel::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 {
    if ( !pLoad->BeginUnit(_T("LoadFactors")) )
    {
@@ -1852,7 +1852,7 @@ Float64 CLiveLoadFactorModel2::GetServiceLiveLoadFactor(Int16 adtt) const
    return -9999; // something obviously bogus until this gets implemented
 }
 
-bool CLiveLoadFactorModel2::SaveMe(sysIStructuredSave* pSave)
+bool CLiveLoadFactorModel2::SaveMe(WBFL::System::IStructuredSave* pSave)
 {
    pSave->BeginUnit(_T("LoadFactors"),1.0);
    pSave->Property(_T("LiveLoadFactorType"),(long)m_LiveLoadFactorType);
@@ -1931,7 +1931,7 @@ bool CLiveLoadFactorModel2::SaveMe(sysIStructuredSave* pSave)
    return true;
 }
 
-bool CLiveLoadFactorModel2::LoadMe(sysIStructuredLoad* pLoad)
+bool CLiveLoadFactorModel2::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 {
    if ( !pLoad->BeginUnit(_T("LoadFactors")) )
    {
@@ -2397,7 +2397,7 @@ HICON  RatingLibraryEntry::GetIcon() const
    return ::LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_RATING_ENTRY) );
 }
 
-bool RatingLibraryEntry::SaveMe(sysIStructuredSave* pSave)
+bool RatingLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
 {
    pSave->BeginUnit(_T("RatingLibraryEntry"), CURRENT_VERSION);
 
@@ -2513,7 +2513,7 @@ bool RatingLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    return true;
 }
 
-bool RatingLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
+bool RatingLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 {
    if ( !pLoad->BeginUnit(_T("RatingLibraryEntry")) )
    {

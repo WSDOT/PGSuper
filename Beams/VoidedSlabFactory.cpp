@@ -494,7 +494,7 @@ bool CVoidedSlabFactory::ValidateDimensions(const IBeamFactory::Dimensions& dime
    return true;
 }
 
-void CVoidedSlabFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
+void CVoidedSlabFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
 {
    pSave->BeginUnit(_T("VoidedSlabDimensions"),2.0);
    for(const auto& name : m_DimNames)
@@ -505,7 +505,7 @@ void CVoidedSlabFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const I
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CVoidedSlabFactory::LoadSectionDimensions(sysIStructuredLoad* pLoad) const
+IBeamFactory::Dimensions CVoidedSlabFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
 {
    Float64 parent_version;
    if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))
