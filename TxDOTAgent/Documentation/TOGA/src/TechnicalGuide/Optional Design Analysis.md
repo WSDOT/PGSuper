@@ -25,7 +25,7 @@ The purpose of the  Equivalent Original Girder analysis model is to calibrate th
 
 If the stress factor for either top stress or bottom stress is less than 1.0. A "Design Deficiency" warning is reported.
 
-> Note that stress factors are only used in stress computations and not for any other part of the analysis.
+> Note that stress factors are only used in stress computations internal to TOGA and not for any other part of the analysis. **This means that stress results from exported PGSuper files WILL NOT match TOGA stress results. Be very careful when comparing these, or other, values.**
 
 Check Input Concrete Strength
 -----------------------------

@@ -573,7 +573,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
                     (pow(fmax/t,2) < fc_reqd) )   // that strength will exceed the max limit on allowable
                {
                   // too bad... this isn't going to work
-                  fc_reqd = -1;
+                  fc_reqd = NO_AVAILABLE_CONCRETE_STRENGTH;
                }
 
                if ( MaxIndex(fTop,fBot) == 0 )
@@ -609,8 +609,25 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
       m_RequiredUltimateMoment = Max(pOrigCap->GetDemand(),pOrigCap->GetMinCapacity());
 
       // Required concrete strengths - fabricator model
-      m_RequiredFci =  Max(m_GirderArtifact.GetRequiredReleaseStrength(),        ::ConvertToSysUnits(4.0, unitMeasure::KSI));
-      m_RequiredFc  =  Max(m_GirderArtifact.GetRequiredGirderConcreteStrength(), ::ConvertToSysUnits(5.0, unitMeasure::KSI));
+      Float64 fciReqd = m_GirderArtifact.GetRequiredReleaseStrength();
+      if (NO_AVAILABLE_CONCRETE_STRENGTH != fciReqd)
+      {
+         m_RequiredFci = Max(fciReqd,::ConvertToSysUnits(4.0,unitMeasure::KSI));
+      }
+      else
+      {
+         m_RequiredFci = Float64_Max;
+      }
+
+      Float64 fcReqd = m_GirderArtifact.GetRequiredGirderConcreteStrength();
+      if (NO_AVAILABLE_CONCRETE_STRENGTH != fcReqd)
+      {
+         m_RequiredFc = Max(fcReqd,::ConvertToSysUnits(5.0,unitMeasure::KSI));
+      }
+      else
+      {
+         m_RequiredFc = Float64_Max;
+      }
 
       // Get camber from fabricator model
       m_FabricatorMaximumCamber = pCamber->GetDCamberForGirderScheduleUnfactored(fabr_ms_poi,CREEP_MAXTIME);
