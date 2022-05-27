@@ -1519,12 +1519,12 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
             else
             {
                pIPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey, bSimpleSpanSegmentsThisGraph ? segIdx : ALL_SEGMENTS), &vPoi);
-               if (bSimpleSpanSegmentsThisGraph)
+
+               // There are some blips (bugs likely) in computing deflections within closure joints. Clean out off-segment POIs to make graphs look pretty
+               if (bSimpleSpanSegmentsThisGraph || actionType==actionDeflection || actionType == actionRotation)
                {
                   // these POI are between segments so they don't apply
                   vPoi.erase(std::remove_if(vPoi.begin(), vPoi.end(), [pIPoi](const auto& poi) {return pIPoi->IsOffSegment(poi); }), vPoi.end());
-                  //pIPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
-                  //pIPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
                }
             }
 
@@ -1857,7 +1857,7 @@ void CAnalysisResultsGraphBuilder::ProductLoadGraph(IndexType graphIdx,const CAn
          {
             bool bIncludeElevationAdjustment = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludeElevationAdjustment();
             bool bIncludeUnrecoverableDefl = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludeUnrecoverableDefl();
-            std::vector<Float64> deflections(pForces->GetDeflection(intervalIdx, pfType, vPoi, bat[analysisIdx], resultsType, bIncludeElevationAdjustment, bIncludeUnrecoverableDefl,bIncludeUnrecoverableDefl));
+            std::vector<Float64> deflections(pForces->GetDeflection(intervalIdx, pfType, vPoi, bat[analysisIdx], resultsType, bIncludeElevationAdjustment, bIncludeUnrecoverableDefl, bIncludeUnrecoverableDefl));
             AddGraphPoints(data_series_id[analysisIdx], xVals, deflections);
             break;
          }
@@ -1871,7 +1871,7 @@ void CAnalysisResultsGraphBuilder::ProductLoadGraph(IndexType graphIdx,const CAn
          {
             bool bIncludeSlopeAdjustment = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludeElevationAdjustment();
             bool bIncludeUnrecoverableDefl = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludeUnrecoverableDefl();
-            std::vector<Float64> rotations(pForces->GetRotation(intervalIdx, pfType, vPoi, bat[analysisIdx], resultsType, bIncludeSlopeAdjustment, bIncludeUnrecoverableDefl));
+            std::vector<Float64> rotations(pForces->GetRotation(intervalIdx, pfType, vPoi, bat[analysisIdx], resultsType, bIncludeSlopeAdjustment, bIncludeUnrecoverableDefl, bIncludeUnrecoverableDefl));
             AddGraphPoints(data_series_id[analysisIdx], xVals, rotations);
             break;
          }
@@ -1972,7 +1972,7 @@ void CAnalysisResultsGraphBuilder::CombinedLoadGraph(IndexType graphIdx,const CA
          {
             bool bIncludeSlopeAdjustment = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludeElevationAdjustment();
             bool bIncludeUnrecoverableDefl = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludeUnrecoverableDefl();
-            std::vector<Float64> rotations = pForces->GetRotation( intervalIdx, combination_type, vPoi, bat[analysisIdx], resultsType, bIncludeSlopeAdjustment, bIncludeUnrecoverableDefl );
+            std::vector<Float64> rotations = pForces->GetRotation( intervalIdx, combination_type, vPoi, bat[analysisIdx], resultsType, bIncludeSlopeAdjustment,bIncludeUnrecoverableDefl, bIncludeUnrecoverableDefl );
             AddGraphPoints(data_series_id[analysisIdx], xVals, rotations);
             break;
          }

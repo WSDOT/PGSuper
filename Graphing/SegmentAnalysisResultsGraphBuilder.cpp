@@ -333,7 +333,8 @@ void CSegmentAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CSegmentK
       m_pGraphDefinitions->AddGraphDefinition(CSegmentAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftRelaxation), pgsTypes::pftRelaxation, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION) );
    }
 
-   m_pGraphDefinitions->AddGraphDefinition(CSegmentAnalysisResultsGraphDefinition(graphID++,pProductLoads->GetProductLoadName(pgsTypes::pftDiaphragm),pgsTypes::pftDiaphragm,vAllIntervals,ACTIONS_ALL | ACTIONS_X_DEFLECTION));
+   // Diaphragm loads never occur 
+//   m_pGraphDefinitions->AddGraphDefinition(CSegmentAnalysisResultsGraphDefinition(graphID++,pProductLoads->GetProductLoadName(pgsTypes::pftDiaphragm),pgsTypes::pftDiaphragm,vAllIntervals,ACTIONS_ALL | ACTIONS_X_DEFLECTION));
 
    // Special case for unrecoverable delfection from girder load
    m_pGraphDefinitions->AddGraphDefinition(CSegmentAnalysisResultsGraphDefinition(graphID++,_T("Unrecoverable Girder Deflection"),pgsTypes::ProductForceType(PL_UNRECOVERABLE),vUnrecoverableDeflIntervals,ACTIONS_DEFLECTION));
@@ -664,6 +665,21 @@ void CSegmentAnalysisResultsGraphBuilder::UpdateGraphData()
    PoiList vPoi;
    pIPoi->GetPointsOfInterest(segmentKey, &vPoi);
 
+   // previous call can return poi's that are not within segment. Trim those off
+   GET_IFACE(IBridge,pBridge);
+   Float64 Ls = pBridge->GetSegmentLength(segmentKey);
+   while (true)
+   {
+      if (vPoi.back().get().GetDistFromStart() > Ls)
+      {
+         vPoi.pop_back();
+      }
+      else
+      {
+         break;
+      }
+   }
+
    // Map POI coordinates to X-values for the graph
    Shift(true);
    std::vector<Float64> xVals;
@@ -885,7 +901,7 @@ void CSegmentAnalysisResultsGraphBuilder::ProductLoadGraph(IndexType graphIdx,co
             {
                IProductForces2::sagInterval sagInt = intervalIdx == haulInterval ? IProductForces2::sagHauling : IProductForces2::sagErection;
 
-               deflections = pForces->GetPermanentGirderDeflectionFromStorage(sagInt,bat[analysisIdx],vPoi);
+               deflections = pForces->GetUnrecoverableGirderDeflectionFromStorage(sagInt,bat[analysisIdx],vPoi);
             }
             else
             {
@@ -908,9 +924,38 @@ void CSegmentAnalysisResultsGraphBuilder::ProductLoadGraph(IndexType graphIdx,co
       }
       case actionRotation:
       {
-         bool bIncludeSlopeAdjustment = false;
          bool bIncludeUnrecoverableDefl = IncludeUnrecoverableDefl(intervalIdx);
-         std::vector<Float64> rotations(pForces->GetRotation(intervalIdx, pfType, vPoi, bat[analysisIdx], resultsType, bIncludeSlopeAdjustment, bIncludeUnrecoverableDefl));
+         std::vector<Float64> rotations;
+
+         if (PL_UNRECOVERABLE == pfType) 
+         {
+            GET_IFACE(IIntervals,pIntervals);
+            const CSegmentKey& segmentKey = vPoi.front().get().GetSegmentKey();
+            IntervalIndexType haulInterval = pIntervals->GetHaulSegmentInterval(segmentKey);
+            IntervalIndexType erectInterval = pIntervals->GetErectSegmentInterval(segmentKey);
+            IProductForces2::sagInterval sagInt = intervalIdx == haulInterval ? IProductForces2::sagHauling : IProductForces2::sagErection;
+
+            bool showUnrec = (bIncludeUnrecoverableDefl && intervalIdx >= haulInterval) &&
+                           ((rtCumulative == resultsType) ||
+                           (sagInt == IProductForces2::sagHauling && intervalIdx == haulInterval) ||
+                           (sagInt == IProductForces2::sagErection && intervalIdx == erectInterval));
+
+            if (showUnrec) 
+            {
+               rotations = pForces->GetUnrecoverableGirderRotationFromStorage(sagInt,bat[analysisIdx],vPoi);
+            }
+            else
+            {
+               rotations.assign(vPoi.size(),0.0);
+            }
+         }
+         else
+         {
+            bool bIncludeSlopeAdjustment = false;
+            bool bIncludePreCamber = false;
+            rotations = pForces->GetRotation(intervalIdx,pfType,vPoi,bat[analysisIdx],resultsType,bIncludeSlopeAdjustment,bIncludePreCamber,bIncludeUnrecoverableDefl);
+         }
+
          AddGraphPoints(data_series_id[analysisIdx], xVals, rotations);
          break;
       }
@@ -1004,7 +1049,7 @@ void CSegmentAnalysisResultsGraphBuilder::CombinedLoadGraph(IndexType graphIdx,c
          {
             bool bIncludeSlopeAdjustment = false;
             bool bIncludeUnrecoverableDefl = IncludeUnrecoverableDefl(intervalIdx);
-            std::vector<Float64> rotations = pForces->GetRotation( intervalIdx, combination_type, vPoi, bat[analysisIdx], resultsType, bIncludeSlopeAdjustment, bIncludeUnrecoverableDefl );
+            std::vector<Float64> rotations = pForces->GetRotation( intervalIdx, combination_type, vPoi, bat[analysisIdx], resultsType, bIncludeSlopeAdjustment, false, bIncludeUnrecoverableDefl );
             AddGraphPoints(data_series_id[analysisIdx], xVals, rotations);
             break;
          }

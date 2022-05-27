@@ -33,6 +33,7 @@
 
 #include <WBFLSTL.h>
 #include <MathEx.h>
+#include <Math\MathUtils.h>
 
 #include <PgsExt\LoadFactors.h>
 #include <PgsExt\GirderModelFactory.h>
@@ -3025,7 +3026,7 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
                // Girder deflection at hauling is tricky special case. 
                // This is where we first see the permanent deflection due to the increase in modulus over time.
                // Get permanent deflection caused by modulus change (stiffening) adjusted to zero at truck dunnage locations
-               std::vector<Float64> permDeflStorage = GetPermanentGirderDeflectionFromStorage(sagHauling,bat,vPoi);
+               std::vector<Float64> permDeflStorage = GetUnrecoverableGirderDeflectionFromStorage(sagHauling,bat,vPoi);
 
                // Add deflection for hauling based on modulus at hauling
                deflections = m_pSegmentModelManager->GetDeflection(haulingIntervalIdx,pgsTypes::pftGirder,vPoi,rtCumulative);
@@ -3092,25 +3093,13 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
             pPoi->GroupBySegment(vPoi, &lPoi);
             for (const auto& vSegmentPoi : lPoi)
             {
-               CSegmentKey segmentKey(vSegmentPoi.front().get().GetSegmentKey());
-               const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
-               pgsTypes::DropInType dropInType = pSegment->IsDropIn();
-
-               // Old code
-               //// Get the storage deflection
-               //std::vector<Float64> dStorage = GetDeflection(storageIntervalIdx, pfType, vPoi, bat, resultsType);
-               //// Get the increment of deflection associated with moving the girder from storage to its erected configuration
-               //std::vector<Float64> dInc = m_pGirderModelManager->GetDeflection(erectionIntervalIdx, _T("Girder_Incremental"), vPoi, bat, rtIncremental);
-               //// Sum to get deflection at erection
-               //std::transform(dStorage.cbegin(), dStorage.cend(), dInc.cbegin(), std::back_inserter(deflections), [](const auto& a, const auto& b) {return a + b; });
-
                // Get total deflection after erection using modulus at erection
                std::vector<Float64> dInc = m_pGirderModelManager->GetDeflection(intervalIdx, pfType, vSegmentPoi, bat, resultsType);
 
                if (bIncludePreErectionUnrecov)
                {
                   // Get permanent deflection caused by modulus change (stiffening) adjusted to zero at erection support locations 
-                  std::vector<Float64> dStorage = GetPermanentGirderDeflectionFromStorage(sagErection,bat,vSegmentPoi);
+                  std::vector<Float64> dStorage = GetUnrecoverableGirderDeflectionFromStorage(sagErection,bat,vSegmentPoi);
 
                   // Sum to get total deflection at erection
                   std::vector<Float64>::iterator deftotd = deflIter;
@@ -3151,77 +3140,70 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
    return deflections;
 }
 
-std::vector<Float64> CAnalysisAgentImp::GetPermanentGirderDeflectionFromStorage(sagInterval sagint, pgsTypes::BridgeAnalysisType bat, const PoiList& vPoi) const
+std::shared_ptr<mathLinFunc2d> CAnalysisAgentImp::GetUnrecoverableDeflectionVariables(sagInterval sagint,pgsTypes::BridgeAnalysisType bat,IntervalIndexType storageIntervalIdx,const CSegmentKey& segmentKey,Float64* pDeflectionFactor) const
 {
-   CSegmentKey segmentKey(vPoi.front().get().GetSegmentKey());
-   GET_IFACE(IIntervals, pIntervals);
-   IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
+   // Common function to get girder dead load deflection adjustments needed to compute unrecoverable deflections from storage
+   GET_IFACE(IMaterials,pMaterials);
+   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IPointOfInterest,pPoi);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
 
-   // raw storage deflections
-   std::vector<Float64> deflections( m_pSegmentModelManager->GetDeflection(storageIntervalIdx, pgsTypes::pftGirder, vPoi, rtCumulative) );
-
-   // Get support locations where we want deflections to be zero, or match with supporting segment at a strongback
-   GET_IFACE_NOCHECK(IMaterials, pMaterials);
-
-   // Factor deflections to determine permanent deflection due to modulus change from curing. 
-   // This must be done before rigid body translation below, otherwise our operation is not linear
-   Float64 deflFactor;
+   // Deflections are Factored  to determine permanent deflection due to modulus change from curing. 
    IntervalIndexType baseIntervalIdx;
+   Float64 deflFactor;
    if (sagHauling == sagint)
    {
       baseIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
 
-      Float64 Ecstor = pMaterials->GetSegmentEc(segmentKey, storageIntervalIdx);
-      Float64 EcHaul = pMaterials->GetSegmentEc(segmentKey, baseIntervalIdx);
+      Float64 Ecstor = pMaterials->GetSegmentEc(segmentKey,storageIntervalIdx);
+      Float64 EcHaul = pMaterials->GetSegmentEc(segmentKey,baseIntervalIdx);
       deflFactor = (1.0 - Ecstor / EcHaul);
    }
    else // erection
    {
-       baseIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
+      baseIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
 
-      Float64 Ecstor = pMaterials->GetSegmentEc(segmentKey, storageIntervalIdx);
-      Float64 EcErect = pMaterials->GetSegmentEc(segmentKey, baseIntervalIdx);
+      Float64 Ecstor = pMaterials->GetSegmentEc(segmentKey,storageIntervalIdx);
+      Float64 EcErect = pMaterials->GetSegmentEc(segmentKey,baseIntervalIdx);
       deflFactor = (1.0 - Ecstor / EcErect);
    }
 
-   if (deflFactor != 1.0)
-   {
-      std::for_each(deflections.begin(), deflections.end(), [deflFactor](auto& defl) {defl *= deflFactor; });
-   }
+   *pDeflectionFactor = deflFactor;
 
-   GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+
    // See if we have a free end (i.e. segment is freely supported by the adjacent segment at endType)
    pgsTypes::DropInType dropInType = pSegment->IsDropIn();
 
-   std::vector<pgsPointOfInterest> vSupportPoi = m_pSegmentModelManager->GetDeflectionDatumLocationsForSegment(segmentKey, baseIntervalIdx, dropInType);
+   // Get support locations where we want deflections to be zero, or match with supporting segment at a strongback
+   std::vector<pgsPointOfInterest> vSupportPoi = m_pSegmentModelManager->GetDeflectionDatumLocationsForSegment(segmentKey,baseIntervalIdx,dropInType);
 
-   // Perform rigid body movement on segment so deflection at both supports is zero, or matches supporting segment for dropins.
-   std::vector<Float64>::iterator deflIter = deflections.begin();
+   Float64 XgStart,DyStart,XgEnd,DyEnd;
+   XgStart = pPoi->ConvertPoiToGirderPathCoordinate(vSupportPoi.front());
+   XgEnd = pPoi->ConvertPoiToGirderPathCoordinate(vSupportPoi.back());
+
+   // we can now create our math function class
+   std::shared_ptr<mathLinFunc2d> pMathFunction;
+
    if (vSupportPoi.size() == 1)
    {
-      // Only one support location. Simply translate all values to zero out that location
-      Float64 Dy = deflFactor * GetDeflection(storageIntervalIdx, pgsTypes::pftGirder, vSupportPoi.front(), bat, rtCumulative);
+      // Only one support location. Simply translate all values to zero out at same deflection that location
+      DyStart = deflFactor * GetDeflection(storageIntervalIdx,pgsTypes::pftGirder,vSupportPoi.front(),bat,rtCumulative);
+      DyEnd = DyStart;
 
-      for (const auto& poi : vPoi)
-      {
-         *deflIter -= Dy;
-         deflIter++;
-      }
+      pMathFunction = std::make_shared<mathLinFunc2d>(0,DyStart);  // slope==0, Y is constant
    }
    else
    {
-      GET_IFACE_NOCHECK(IPointOfInterest, pPoi);
-
       // Get deflections at storage at datums. This is distance we need to move deflections to get to zero at these locations
-      Float64 DyStart = deflFactor * GetDeflection(storageIntervalIdx, pgsTypes::pftGirder, vSupportPoi.front(), bat, rtCumulative);
-      Float64 DyEnd   = deflFactor * GetDeflection(storageIntervalIdx, pgsTypes::pftGirder, vSupportPoi.back(),  bat, rtCumulative);
+      DyStart = deflFactor * GetDeflection(storageIntervalIdx,pgsTypes::pftGirder,vSupportPoi.front(),bat,rtCumulative);
+      DyEnd = deflFactor * GetDeflection(storageIntervalIdx,pgsTypes::pftGirder,vSupportPoi.back(),bat,rtCumulative);
 
       if (sagErection == sagint && pgsTypes::ditNotDropIn != dropInType)
       {
          // Check if this is a drop in. If so, we need to adjust deflections at the free end(s) of the drop in to match the supporting segment
          bool isDropInAtStart = pgsTypes::ditYesFreeBothEnds == dropInType || pgsTypes::ditYesFreeStartEnd == dropInType;
-         bool isDropInAtEnd = pgsTypes::ditYesFreeBothEnds == dropInType   || pgsTypes::ditYesFreeEndEnd == dropInType;
+         bool isDropInAtEnd = pgsTypes::ditYesFreeBothEnds == dropInType || pgsTypes::ditYesFreeEndEnd == dropInType;
 
          if (isDropInAtStart)
          {
@@ -3231,9 +3213,9 @@ std::vector<Float64> CAnalysisAgentImp::GetPermanentGirderDeflectionFromStorage(
             CSegmentKey prevSegKey = prevSeg->GetSegmentKey();
 
             PoiList endPois;
-            pPoi->GetPointsOfInterest(prevSeg->GetSegmentKey(), POI_10L | POI_ERECTED_SEGMENT, &endPois);
+            pPoi->GetPointsOfInterest(prevSeg->GetSegmentKey(),POI_10L | POI_ERECTED_SEGMENT,&endPois);
 
-            Float64 DyDropinStart = GetPermanentGirderDeflectionFromStorage(sagint, bat, endPois).front();
+            Float64 DyDropinStart = GetUnrecoverableGirderDeflectionFromStorage(sagint,bat,endPois).front();
             DyStart -= DyDropinStart;
          }
 
@@ -3245,28 +3227,84 @@ std::vector<Float64> CAnalysisAgentImp::GetPermanentGirderDeflectionFromStorage(
             CSegmentKey nextSegKey = nextSeg->GetSegmentKey();
 
             PoiList endPois;
-            pPoi->GetPointsOfInterest(nextSeg->GetSegmentKey(), POI_0L | POI_ERECTED_SEGMENT, &endPois);
+            pPoi->GetPointsOfInterest(nextSeg->GetSegmentKey(),POI_0L | POI_ERECTED_SEGMENT,&endPois);
 
-            Float64 DyDropinEnd = GetPermanentGirderDeflectionFromStorage(sagint, bat, endPois).front();
+            Float64 DyDropinEnd = GetUnrecoverableGirderDeflectionFromStorage(sagint,bat,endPois).front();
             DyEnd -= DyDropinEnd;
          }
       }
 
-      // Use linear translation to move & rotate deflection into place at end supports
-      Float64 XgStart = pPoi->ConvertPoiToGirderPathCoordinate(vSupportPoi.front());
-      Float64 XgEnd = pPoi->ConvertPoiToGirderPathCoordinate(vSupportPoi.back());
+      // Y deflection along segment is linearly interpolated using values at support locations
+      pMathFunction = std::make_shared<mathLinFunc2d>(GenerateLineFunc2dFromPoints(XgStart,DyStart,XgEnd,DyEnd));
+   }
 
-      for (const auto& poi : vPoi)
-      {
-         Float64 Xg = pPoi->ConvertPoiToGirderPathCoordinate(poi);
-         Float64 d = ::LinInterp(Xg - XgStart, DyStart, DyEnd, XgEnd - XgStart);
+   return pMathFunction;
+}
 
-         *deflIter -= d;
-         deflIter++;
-      }
+std::vector<Float64> CAnalysisAgentImp::GetUnrecoverableGirderDeflectionFromStorage(sagInterval sagint, pgsTypes::BridgeAnalysisType bat, const PoiList& vPoi) const
+{
+   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IPointOfInterest,pPoi);
+   CSegmentKey segmentKey(vPoi.front().get().GetSegmentKey());
+   IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
+
+   // Raw storage deflections
+   std::vector<Float64> deflections( m_pSegmentModelManager->GetDeflection(storageIntervalIdx, pgsTypes::pftGirder, vPoi, rtCumulative) );
+
+   // Deflections are Factored  to determine permanent deflection due to modulus change from curing. 
+   Float64 deflFactor;
+   // Deflections are also rigidly translated such that they are zero at the new support locations. Linear function class performs the translation
+   std::shared_ptr<mathFunction2d> pDeflectionFunct = GetUnrecoverableDeflectionVariables(sagint,bat,storageIntervalIdx,segmentKey,&deflFactor);
+
+   // First factor deflections. This must be done before rigid body translation, otherwise our operation is not linear
+   if (deflFactor != 1.0)
+   {
+      std::for_each(deflections.begin(),deflections.end(),[deflFactor](auto& defl) {defl *= deflFactor; });
+   }
+
+   // Perform rigid body movement on segment so deflection at both supports is zero, or matches supporting segment for dropins.
+   std::vector<Float64>::iterator deflIter = deflections.begin();
+   // Use linear translation functions to move & rotate deflection into place at end supports
+   for (const auto& poi : vPoi)
+   {
+      Float64 Xg = pPoi->ConvertPoiToGirderPathCoordinate(poi);
+      Float64 d = pDeflectionFunct->Evaluate(Xg);
+
+      *deflIter -= d;
+      deflIter++;
    }
 
    return deflections;
+}
+
+
+std::vector<Float64> CAnalysisAgentImp::GetUnrecoverableGirderRotationFromStorage(sagInterval sagint,pgsTypes::BridgeAnalysisType bat,const PoiList& vPoi) const
+{
+   GET_IFACE(IIntervals,pIntervals);
+   CSegmentKey segmentKey(vPoi.front().get().GetSegmentKey());
+   IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
+
+   // raw storage rotations
+   std::vector<Float64> rotations(m_pSegmentModelManager->GetRotation(storageIntervalIdx,pgsTypes::pftGirder,vPoi,rtCumulative));
+
+   // Rotations are Factored  to determine permanent effect due to modulus change from curing. 
+   Float64 deflFactor;
+   // Deflections also must rigidly translated such that they are zero at the new support locations. Linear function class performs the translation
+   std::shared_ptr<mathLinFunc2d> pDeflectionFunct = GetUnrecoverableDeflectionVariables(sagint,bat,storageIntervalIdx,segmentKey,&deflFactor);
+
+   // First factor raw rotations. This must be done before rigid body translation, otherwise our operation is not linear
+   if (deflFactor != 1.0)
+   {
+      std::for_each(rotations.begin(),rotations.end(),[deflFactor](auto& defl) {defl *= deflFactor; });
+   }
+
+   // In our case, we only need the rotation part of the rigid body translation. OurLin2dfunction class will do that for us.
+   Float64 slope = pDeflectionFunct->GetSlope();
+   Float64 deflAngle = atan(slope);
+
+   std::for_each(rotations.begin(),rotations.end(),[deflAngle](auto& defl) {defl += deflAngle; });
+
+   return rotations;
 }
 
 std::vector<Float64> CAnalysisAgentImp::GetXDeflection(IntervalIndexType intervalIdx, pgsTypes::ProductForceType pfType, const PoiList& vPoi, pgsTypes::BridgeAnalysisType bat, ResultsType resultsType) const
@@ -3394,8 +3432,8 @@ std::vector<Float64> CAnalysisAgentImp::GetRotation(IntervalIndexType intervalId
       {
          if ( intervalIdx <= erectionIntervalIdx )
          {
-            beforeErectionFirstIntervalIdx = intervalIdx;
-            beforeErectionLastIntervalIdx = intervalIdx;
+            beforeErectionFirstIntervalIdx = bIncludePreErectionUnrecov ? intervalIdx : 1;
+            beforeErectionLastIntervalIdx = bIncludePreErectionUnrecov ? intervalIdx : 0;
             afterErectionFirstIntervalIdx = 1;
             afterErectionLastIntervalIdx = 0;
          }
@@ -3410,11 +3448,12 @@ std::vector<Float64> CAnalysisAgentImp::GetRotation(IntervalIndexType intervalId
       }
       else
       {
-         beforeErectionFirstIntervalIdx = releaseIntervalIdx;
+         beforeErectionFirstIntervalIdx = bIncludePreErectionUnrecov ? releaseIntervalIdx : erectionIntervalIdx;
          beforeErectionLastIntervalIdx = Min(erectionIntervalIdx,intervalIdx);
          afterErectionFirstIntervalIdx = erectionIntervalIdx+1;
          afterErectionLastIntervalIdx = intervalIdx;
       }
+
       GET_IFACE_NOCHECK(ILosses,pLosses);
       GET_IFACE_NOCHECK(IPointOfInterest,pPoi);
       GET_IFACE_NOCHECK(IBridgeDescription, pIBridgeDesc);
@@ -3507,7 +3546,7 @@ std::vector<Float64> CAnalysisAgentImp::GetRotation(IntervalIndexType intervalId
                std::transform(girder_pt_rotations.cbegin(), girder_pt_rotations.cend(), rotations.cbegin(), rotations.begin(), [](const auto& a, const auto& b) {return a + b; });
             }
          }
-         else if (erectionIntervalIdx <= intervalIdx && pfType == pgsTypes::pftGirder)
+         else if (erectionIntervalIdx <= intervalIdx && pfType == pgsTypes::pftGirder && rtCumulative == resultsType)
          {
             // girder deflection is tricky. girder deflection at and after erection is the segment deflection during storage
             // plus all the incremental deflections that happen thereafter
@@ -3527,6 +3566,13 @@ std::vector<Float64> CAnalysisAgentImp::GetRotation(IntervalIndexType intervalId
             {
                std::vector<Float64> rInc = m_pGirderModelManager->GetRotation(intIdx, pfType, vPoi, bat, rtIncremental);
                std::transform(rInc.cbegin(), rInc.cend(), rotations.cbegin(), rotations.begin(), [](const auto& a, const auto& b) {return a + b;});
+            }
+
+            if (!bIncludePreErectionUnrecov)
+            {
+               // subtract out unrecoverable girder rotation if requested
+               std::vector<Float64> dUrecov = GetUnrecoverableGirderRotationFromStorage(sagErection,bat,vPoi);
+               std::transform(dUrecov.cbegin(),dUrecov.cend(),rotations.cbegin(),rotations.begin(),[](const auto& a,const auto& b) {return b - a; });
             }
          }
          else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
@@ -4167,7 +4213,7 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
                // Girder deflection at hauling is tricky special case. 
                // This is where we first see the permanent deflection due to the increase in modulus over time.
                // Get permanent deflection caused by modulus change (stiffening) adjusted to zero at truck dunnage locations
-               std::vector<Float64> permDeflStorage = GetPermanentGirderDeflectionFromStorage(sagHauling,bat,vPoi);
+               std::vector<Float64> permDeflStorage = GetUnrecoverableGirderDeflectionFromStorage(sagHauling,bat,vPoi);
 
                // Add deflection for hauling based on modulus at hauling
                deflection = m_pSegmentModelManager->GetDeflection(intervalIdx,comboType,vPoi,resultsType);
@@ -4407,7 +4453,7 @@ std::vector<Float64> CAnalysisAgentImp::GetRotation(IntervalIndexType intervalId
       default: ATLASSERT(false); // should not happen
       }
 
-      rotation = GetRotation(intervalIdx,pfType,vPoi,bat,resultsType,false);
+      rotation = GetRotation(intervalIdx,pfType,vPoi,bat,resultsType,bIncludeSlopeAdjustment,bIncludePrecamber, bIncludePreErectionUnrecov);
    }
    else
    {
@@ -4430,7 +4476,7 @@ std::vector<Float64> CAnalysisAgentImp::GetRotation(IntervalIndexType intervalId
          }
          else
          {
-            rotation = m_pGirderModelManager->GetRotation(intervalIdx,comboType,vPoi,bat,resultsType);
+            rotation = m_pGirderModelManager->GetRotation(intervalIdx,comboType,vPoi,bat,resultsType,bIncludePreErectionUnrecov);
          }
       }
       catch(...)
@@ -5377,7 +5423,7 @@ void CAnalysisAgentImp::GetRotation(IntervalIndexType intervalIdx,pgsTypes::Limi
       }
       else
       {
-         m_pGirderModelManager->GetRotation(intervalIdx,limitState,vPoi,bat,bIncludePrestress,bIncludeLiveLoad,pMin,pMax);
+         m_pGirderModelManager->GetRotation(intervalIdx,limitState,vPoi,bat,bIncludePrestress,bIncludeLiveLoad,bIncludePreErectionUnrecov,pMin,pMax);
       }
    }
    catch(...)

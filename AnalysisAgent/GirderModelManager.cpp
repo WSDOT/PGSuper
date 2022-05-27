@@ -3539,7 +3539,7 @@ std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType interv
    return deflection;
 }
 
-std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType intervalIdx,LoadingCombinationType combo,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
+std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType intervalIdx,LoadingCombinationType combo,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludePreErectionUnrecov) const
 {
    ATLASSERT(combo != lcCR && combo != lcSH && combo != lcRE && combo != lcPS); // this are time-step analysis load combinations
 
@@ -3587,7 +3587,8 @@ std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType interval
 
    std::vector<Float64> badGirderRotation;
    std::vector<Float64> goodGirderRotation;
-   if (combo == lcDC && (resultsType == rtCumulative || (resultsType == rtIncremental && intervalIdx == erectionIntervalIdx)))
+   bool bDoApplyStorageCorrection = combo == lcDC && (resultsType == rtCumulative || (resultsType == rtIncremental && intervalIdx == erectionIntervalIdx)) && bIncludePreErectionUnrecov;
+   if (bDoApplyStorageCorrection)
    {
       // the DC combination contains girder rotations based on the full weight of the girder being applied at erection.
       // this is not the correct rotation... the correct rotation is the rotation at storage plus the incremental
@@ -3597,7 +3598,7 @@ std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType interval
       CComBSTR bstrLoadGroup( GetLoadGroupName(pgsTypes::pftGirder) );
       badGirderRotation  = GetRotation(intervalIdx,OLE2T(bstrLoadGroup),vPoi,bat,rtCumulative); // get bad rotation (use the string version instead of the pfType version so the girder load name doesn't get altered)
       GET_IFACE(IProductForces2, pProdForces);
-      goodGirderRotation = pProdForces->GetRotation(intervalIdx,pgsTypes::pftGirder,vPoi,bat,rtCumulative);
+      goodGirderRotation = pProdForces->GetRotation(intervalIdx,pgsTypes::pftGirder,vPoi,bat,rtCumulative,false,false,bIncludePreErectionUnrecov);
    }
 
    IndexType nResults;
@@ -3614,7 +3615,7 @@ std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType interval
 
       ATLASSERT(IsEqual(Rz,Rzr));
 
-      if (combo == lcDC && (resultsType == rtCumulative || (resultsType == rtIncremental && intervalIdx == erectionIntervalIdx)))
+      if (bDoApplyStorageCorrection)
       {
          Float64 badRz  = badGirderRotation[idx];
          Float64 goodRz = goodGirderRotation[idx];
@@ -4536,7 +4537,7 @@ void CGirderModelManager::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::
    }
 }
 
-void CGirderModelManager::GetRotation(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,bool bIncludeLiveLoad,std::vector<Float64>* pMin,std::vector<Float64>* pMax) const
+void CGirderModelManager::GetRotation(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,bool bIncludeLiveLoad,bool bIncludePreErectionUnrecov,std::vector<Float64>* pMin,std::vector<Float64>* pMax) const
 {
    pMin->clear();
    pMax->clear();
@@ -4567,7 +4568,7 @@ void CGirderModelManager::GetRotation(IntervalIndexType intervalIdx,pgsTypes::Li
    CComBSTR bstrLoadGroup( GetLoadGroupName(pgsTypes::pftGirder) );
    std::vector<Float64> badGirderRotation  = GetRotation(intervalIdx,OLE2T(bstrLoadGroup),vPoi,bat,rtCumulative);
    GET_IFACE(IProductForces2, pProdForces);
-   std::vector<Float64> goodGirderRotation = pProdForces->GetRotation(intervalIdx,pgsTypes::pftGirder,vPoi,bat,rtCumulative);
+   std::vector<Float64> goodGirderRotation = pProdForces->GetRotation(intervalIdx,pgsTypes::pftGirder,vPoi,bat,rtCumulative,false,false,bIncludePreErectionUnrecov);
 
    GET_IFACE(ILoadFactors,pILoadFactors);
    const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
@@ -4600,7 +4601,7 @@ void CGirderModelManager::GetRotation(IntervalIndexType intervalIdx,pgsTypes::Li
       // prestress deflection is not included in the LBAM models... get the product results load
       // and add them in
       GET_IFACE(IProductForces2, pProductForces);
-      std::vector<Float64> deltaPS = pProductForces->GetRotation(intervalIdx,pgsTypes::pftPretension,vPoi,bat,rtCumulative,false);
+      std::vector<Float64> deltaPS = pProductForces->GetRotation(intervalIdx,pgsTypes::pftPretension,vPoi,bat,rtCumulative,false,false,bIncludePreErectionUnrecov);
       std::transform(deltaPS.cbegin(),deltaPS.cend(),pMin->cbegin(),pMin->begin(),[](const auto& a, const auto& b) {return a + b;});
       std::transform(deltaPS.cbegin(),deltaPS.cend(),pMax->cbegin(),pMax->begin(),[](const auto& a, const auto& b) {return a + b;});
 

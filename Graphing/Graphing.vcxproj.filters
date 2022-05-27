@@ -240,16 +240,16 @@
     <ClInclude Include="SegmentGraphControllerBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Include\SegmentAnalysisResultsGraphBuilder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\SegmentAnalysisResultsGraphViewController.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\SegmentGraphBuilderBase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\Include\Graphing\ExportGraphXYTool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Graphing\SegmentAnalysisResultsGraphBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Graphing\SegmentAnalysisResultsGraphViewController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Graphing\SegmentGraphBuilderBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

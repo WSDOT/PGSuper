@@ -2016,7 +2016,7 @@ void CSpecAgentImp::GetSegmentAllowableTensionStressCoefficient(const pgsPointOf
       else
       {
          // if this is a non-stressing interval, use allowables from Table 5.9.2.3.2b-1 (pre2017: 5.9.4.2.2-1)
-         GET_IFACE(IDocumentType, pDocType);
+         GET_IFACE_NOCHECK(IDocumentType, pDocType);
          if ( task.intervalIdx < railingSystemIntervalIdx && pDocType->IsPGSuperDocument())
          {
             // this is a PGSuper only stress limit
