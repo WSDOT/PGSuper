@@ -666,19 +666,7 @@ void CSegmentAnalysisResultsGraphBuilder::UpdateGraphData()
    pIPoi->GetPointsOfInterest(segmentKey, &vPoi);
 
    // previous call can return poi's that are not within segment. Trim those off
-   GET_IFACE(IBridge,pBridge);
-   Float64 Ls = pBridge->GetSegmentLength(segmentKey);
-   while (true)
-   {
-      if (vPoi.back().get().GetDistFromStart() > Ls)
-      {
-         vPoi.pop_back();
-      }
-      else
-      {
-         break;
-      }
-   }
+   vPoi.erase(std::remove_if(vPoi.begin(),vPoi.end(),[pIPoi](const auto& poi) {return pIPoi->IsOffSegment(poi); }),vPoi.end());
 
    // Map POI coordinates to X-values for the graph
    Shift(true);
