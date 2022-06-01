@@ -675,6 +675,9 @@ void CSegmentAnalysisResultsGraphController::FillDropListCtrl_Intervals(bool bRe
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
    IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
+   IntervalIndexType firstSegmentErectionIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(segmentKey);
+   IntervalIndexType lastSegmentErectionIntervalIdx = pIntervals->GetLastSegmentErectionInterval(segmentKey);
+   IntervalIndexType nSegmentErectionIntervals = lastSegmentErectionIntervalIdx - firstSegmentErectionIntervalIdx + 1;
    IntervalIndexType firstIntervalIdx = GetFirstInterval();
    IntervalIndexType lastIntervalIdx = GetLastInterval();
    for (IntervalIndexType intervalIdx = firstIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++)
@@ -684,7 +687,7 @@ void CSegmentAnalysisResultsGraphController::FillDropListCtrl_Intervals(bool bRe
          CString strInterval;
          strInterval.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
 
-         if (intervalIdx == erectSegmentIntervalIdx)
+         if (intervalIdx == erectSegmentIntervalIdx && 1 < nSegmentErectionIntervals)
          {
             strInterval += _T(" - Current Segment");
          }
@@ -794,6 +797,9 @@ void CSegmentAnalysisResultsGraphController::FillSelectListCtrl_Intervals(bool b
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
    IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
+   IntervalIndexType firstSegmentErectionIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(segmentKey);
+   IntervalIndexType lastSegmentErectionIntervalIdx = pIntervals->GetLastSegmentErectionInterval(segmentKey);
+   IntervalIndexType nSegmentErectionIntervals = lastSegmentErectionIntervalIdx - firstSegmentErectionIntervalIdx + 1;
    IntervalIndexType firstIntervalIdx = GetFirstInterval();
    IntervalIndexType lastIntervalIdx  = GetLastInterval();
    for ( IntervalIndexType intervalIdx = firstIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++ )
@@ -809,7 +815,7 @@ void CSegmentAnalysisResultsGraphController::FillSelectListCtrl_Intervals(bool b
 
          str.Format(_T("%d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
 
-         if (intervalIdx == erectSegmentIntervalIdx)
+         if (intervalIdx == erectSegmentIntervalIdx && 1 < nSegmentErectionIntervals)
          {
             str += _T(" - Current Segment");
          }
