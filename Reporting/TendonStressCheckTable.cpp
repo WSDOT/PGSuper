@@ -133,7 +133,7 @@ void CTendonStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
          x = pAllowable->GetSegmentTendonAllowableCoefficientAfterLosses(segmentKey);
          (*p_table)(4, 0) << _T("At service limit state after losses, ") << RPT_FPE << _T(" (") << x << RPT_FPY << _T(")");
 
-         (*p_table)(0, 1) << COLHDR(_T("Allowable") << rptNewLine << _T("Stress"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+         (*p_table)(0, 1) << COLHDR(_T("Stress") << rptNewLine << _T("Limit"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
          (*p_table)(0, 2) << COLHDR(_T("Tendon") << rptNewLine << _T("Stress"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
          (*p_table)(0, 3) << _T("Status") << rptNewLine << _T("(C/D)");
 
@@ -238,7 +238,7 @@ void CTendonStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
       x = pAllowable->GetGirderTendonAllowableCoefficientAfterLosses(girderKey);
       (*p_table)(4,0) << _T("At service limit state after losses, ") << RPT_FPE << _T(" (") << x << RPT_FPY << _T(")");
    
-      (*p_table)(0,1) << COLHDR(_T("Allowable") << rptNewLine << _T("Stress"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(0,1) << COLHDR(_T("Stress") << rptNewLine << _T("Limit"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*p_table)(0,2) << COLHDR(_T("Tendon") << rptNewLine << _T("Stress"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*p_table)(0,3) << _T("Status") << rptNewLine << _T("(C/D)");
 
