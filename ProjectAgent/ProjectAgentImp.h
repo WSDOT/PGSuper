@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -361,7 +361,18 @@ public:
    virtual void SetBearingData(GroupIndexType grpIdx, PierIndexType pierIdx, pgsTypes::PierFaceType face, const CBearingData2* pBearingData) override;
    virtual void SetBearingData(GroupIndexType grpIdx, PierIndexType pierIdx, pgsTypes::PierFaceType face, GirderIndexType gdrIdx, const CBearingData2* pBearingData) override;
    virtual const CBearingData2* GetBearingData(PierIDType pierID, pgsTypes::PierFaceType face, GirderIndexType gdrIdx) const override;
-   virtual bool IsCompatibleGirder(const CGirderKey& girderKey, LPCTSTR lpszGirderName) const override;
+   virtual void SetConnectionGeometry(PierIndexType pierIdx, pgsTypes::PierFaceType face, 
+                                      Float64 endDist, ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasure,
+                                      Float64 bearingOffset, ConnectionLibraryEntry::BearingOffsetMeasurementType bearingOffsetMeasurementType) override;
+   virtual void GetConnectionGeometry(PierIndexType pierIdx, pgsTypes::PierFaceType face, 
+                                      Float64* endDist, ConnectionLibraryEntry::EndDistanceMeasurementType* endDistMeasure,
+                                      Float64* bearingOffset, ConnectionLibraryEntry::BearingOffsetMeasurementType* bearingOffsetMeasurementType) const override;
+   virtual void SetPierDiaphragmData(PierIndexType pierIdx, pgsTypes::PierFaceType face,
+                                    Float64 height, Float64 width, ConnectionLibraryEntry::DiaphragmLoadType loadType, Float64 loadLocation) override;
+   virtual void GetPierDiaphragmData(PierIndexType pierIdx, pgsTypes::PierFaceType face,
+                                    Float64* pHeight, Float64* pWidth, ConnectionLibraryEntry::DiaphragmLoadType* pLoadType, Float64* pLoadLocation) const override;
+
+  virtual bool IsCompatibleGirder(const CGirderKey& girderKey, LPCTSTR lpszGirderName) const override;
    virtual bool AreGirdersCompatible(GroupIndexType groupIdx) const override;
    virtual bool AreGirdersCompatible(const std::vector<std::_tstring>& vGirderNames) const override;
    virtual bool AreGirdersCompatible(const CBridgeDescription2& bridgeDescription,const std::vector<std::_tstring>& vGirderNames) const override;
@@ -376,6 +387,9 @@ public:
 
    virtual const CStrandData* GetStrandData(const CSegmentKey& segmentKey) const override;
    virtual void SetStrandData(const CSegmentKey& segmentKey,const CStrandData& strands) override;
+
+   virtual const CSegmentPTData* GetSegmentPTData(const CSegmentKey& segmentKey) const override;
+   virtual void SetSegmentPTData(const CSegmentKey& segmentKey,const CSegmentPTData& strands) override;
 
    virtual const CHandlingData* GetHandlingData(const CSegmentKey& segmentKey) const override;
    virtual void SetHandlingData(const CSegmentKey& segmentKey,const CHandlingData& handling) override;
@@ -427,10 +441,10 @@ public:
    virtual void GetRequiredSlabOffsetRoundingParameters(pgsTypes::SlabOffsetRoundingMethod* pMethod, Float64* pTolerance) const override;
    virtual void GetTaperedSolePlateRequirements(bool* pbCheckTaperedSolePlate, Float64* pTaperedSolePlateThreshold) const override;
    virtual ISpecification::PrincipalWebStressCheckType GetPrincipalWebStressCheckType(const CSegmentKey& segmentKey) const override;
+   virtual lrfdVersionMgr::Version GetSpecificationType() const override;
 
 // IRatingSpecification
 public:
-   virtual bool AlwaysLoadRate() const override;
    virtual bool IsRatingEnabled() const override;
    virtual bool IsRatingEnabled(pgsTypes::LoadRatingType ratingType) const override;
    virtual void EnableRating(pgsTypes::LoadRatingType ratingType,bool bEnable) override;

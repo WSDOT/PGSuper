@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,6 +25,8 @@
 #include "BridgeModelViewChildFrame.h"
 #include "BridgePlanView.h"
 #include "PGSuperImportPluginDocTemplate.h"
+#include <MFCTools\AutoRegistry.h>
+#include "PGSuperCommandLineInfo.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -48,6 +50,52 @@ const CRuntimeClass* CPGSuperProjectImporterAppPlugin::GetDocTemplateRuntimeClas
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    return RUNTIME_CLASS(CPGSuperImportPluginDocTemplate);
+}
+
+LPCTSTR CPGSuperProjectImporterAppPlugin::GetCatalogServerKey() const
+{
+   return _T("CatalogServer2");
+}
+
+LPCTSTR CPGSuperProjectImporterAppPlugin::GetPublisherKey() const
+{
+   return _T("Publisher2");
+}
+
+LPCTSTR CPGSuperProjectImporterAppPlugin::GetMasterLibraryCacheKey() const
+{
+   return _T("MasterLibraryCache2");
+}
+
+LPCTSTR CPGSuperProjectImporterAppPlugin::GetMasterLibraryURLKey() const
+{
+   return _T("MasterLibraryURL2");
+}
+
+LPCTSTR CPGSuperProjectImporterAppPlugin::GetWorkgroupTemplatesCacheKey() const
+{
+   return _T("WorkgroupTemplatesCache2");
+}
+
+CString CPGSuperProjectImporterAppPlugin::GetCacheFolder() const
+{
+   CAutoRegistry autoReg(GetAppName());
+
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CWinApp* pMyApp     = AfxGetApp();
+   CEAFApp* pParentApp = EAFGetApp();
+
+   LPWSTR path;
+   HRESULT hr = ::SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_DEFAULT, NULL, &path);
+
+   if ( SUCCEEDED(hr) )
+   {
+      return CString(path) + CString(_T("\\PGSuperV3\\"));
+   }
+   else
+   {
+      return pParentApp->GetAppLocation() + CString(_T("PGSuperV3\\"));
+   }
 }
 
 CString CPGSuperProjectImporterAppPlugin::GetTemplateFileExtension()
@@ -79,4 +127,15 @@ CPGSImportPluginDocTemplateBase* CPGSuperProjectImporterAppPlugin::CreateDocTemp
       m_hMenuShared,1);
 
    return pDocTemplate;
+}
+
+CEAFCommandLineInfo* CPGSuperProjectImporterAppPlugin::CreateCommandLineInfo() const
+{
+   return new CPGSuperProjectImporterCommandLineInfo();
+}
+
+CString CPGSuperProjectImporterAppPlugin::GetUsageMessage()
+{
+   CPGSuperProjectImporterCommandLineInfo pgsCmdInfo;
+   return pgsCmdInfo.GetUsageMessage();
 }

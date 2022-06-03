@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -42,7 +42,7 @@ m_strVehicleName(_T("Unknown"))
    m_RatingType = pgsTypes::lrDesign_Inventory;
 
    m_VehicleIndex = INVALID_INDEX;
-   m_VehicleWeight = -999999;
+   m_VehicleWeight = -99999;
 
    m_SystemFactor = 1.0;
    m_ConditionFactor = 1.0;

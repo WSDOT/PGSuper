@@ -6,3 +6,4 @@ The Concrete Details window allows you to edit the properties of concrete materi
 * @subpage ug_library_dialogs_concrete_aashto
 * @subpage ug_library_dialogs_concrete_aci209
 * @subpage ug_library_dialogs_concrete_cebfip
+* @subpage ug_library_dialogs_concrete_pciuhpc

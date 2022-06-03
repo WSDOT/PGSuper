@@ -1,7 +1,7 @@
 #include "..\Include\PgsExt\GirderLabel.h"
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -74,13 +74,29 @@ std::_tstring pgsGirderLabel::GetGirderLabel(const CGirderKey& girderKey, bool f
    if ( forceSpan || pDocType->IsPGSuperDocument() )
    {
       std::_tostringstream os;
-      os << _T("Span ") << LABEL_SPAN(girderKey.groupIndex) << _T(", Girder ") << LABEL_GIRDER(girderKey.girderIndex);
+      if (girderKey.groupIndex != ALL_GROUPS)
+      {
+         os << _T("Span ") << LABEL_SPAN(girderKey.groupIndex) << _T(", Girder ") << LABEL_GIRDER(girderKey.girderIndex);
+      }
+      else
+      {
+         os << _T("All Spans, Girder ") << LABEL_GIRDER(girderKey.girderIndex);
+      }
+
       return os.str();
    }
    else
    {
       std::_tostringstream os;
-      os << _T("Group ") << LABEL_GROUP(girderKey.groupIndex) << _T(", Girder ") << LABEL_GIRDER(girderKey.girderIndex);
+      if (girderKey.groupIndex != ALL_GROUPS)
+      {
+         os << _T("Group ") << LABEL_GROUP(girderKey.groupIndex) << _T(", Girder ") << LABEL_GIRDER(girderKey.girderIndex);
+      }
+      else
+      {
+         os << _T("All Groups, Girder ") << LABEL_GIRDER(girderKey.girderIndex);
+      }
+
       return os.str();
    }
 }
@@ -225,6 +241,86 @@ LPCTSTR GetBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasu
       else
       {
          return bAbutment ? _T("Measured From and Normal to Abutment Line") : _T("Measured From and Normal to Pier Line");
+      }
+
+   default:
+      ATLASSERT(false);
+      return _T("");
+   }
+}
+
+LPCTSTR PGSEXTFUNC GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType type, bool bAbbreviation)
+{
+   switch( type )
+   {
+   case ConnectionLibraryEntry::FromBearingAlongGirder:
+      if (bAbbreviation)
+      {
+         return _T("FCLB-AG");
+      }
+      else
+      {
+         return _T("Measured From CL Bearing along Girder");
+      }
+
+   case ConnectionLibraryEntry::FromBearingNormalToPier:
+      if ( bAbbreviation )
+      {
+         return _T("FCLB-NCLB");
+      }
+      else
+      {
+         return _T("Measured From and Normal to CL Bearing");
+      }
+
+   case ConnectionLibraryEntry::FromPierAlongGirder:
+      if ( bAbbreviation )
+      {
+         return _T("FTS-AG");
+      }
+      else
+      {
+         return _T("Measured From Temporary Support Line, Along Girder Centerline");
+      }
+
+   case ConnectionLibraryEntry::FromPierNormalToPier:
+      if ( bAbbreviation )
+      {
+         return  _T("FTS-NTS");
+      }
+      else
+      {
+         return _T("Measured From and Normal to Temporary Support Line");
+      }
+
+   default:
+      ATLASSERT(false);
+      return _T("");
+   }
+}
+
+LPCTSTR PGSEXTFUNC GetTempSupportBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType type, bool bAbbreviation)
+{
+   switch( type )
+   {
+   case ConnectionLibraryEntry::AlongGirder:
+      if ( bAbbreviation )
+      {
+         return _T("FTS-AG");
+      }
+      else
+      {
+         return  _T("Measured From Temporary Support Line, Along Girder Centerline");
+      }
+
+   case ConnectionLibraryEntry::NormalToPier:
+      if ( bAbbreviation )
+      {
+         return _T("FTS-NTS");
+      }
+      else
+      {
+         return _T("Measured From and Normal to Temporary Support Line");
       }
 
    default:

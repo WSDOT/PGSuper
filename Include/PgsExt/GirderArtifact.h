@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -109,10 +109,10 @@ public:
    bool IsGirderWithRebarAllowableStressApplicable(const StressCheckTask& task,pgsTypes::StressLocation stressLocation) const;
    bool IsDeckWithRebarAllowableStressApplicable(const StressCheckTask& task,pgsTypes::StressLocation stressLocation) const;
 
-   Float64 GetRequiredGirderConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState) const;
+   Float64 GetRequiredGirderConcreteStrength(pgsTypes::StressType stressType,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState) const;
    Float64 GetRequiredGirderConcreteStrength() const;
    Float64 GetRequiredDeckConcreteStrength() const;
-   Float64 GetRequiredDeckConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState) const;
+   Float64 GetRequiredDeckConcreteStrength(pgsTypes::StressType stressType, IntervalIndexType intervalIdx,pgsTypes::LimitState limitState) const;
    Float64 GetRequiredReleaseStrength() const;
 
    bool Passed() const;

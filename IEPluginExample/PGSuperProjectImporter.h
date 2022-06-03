@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // IEPluginExample
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,6 +26,8 @@
 
 #include <Plugins\PGSuperIEPlugin.h>
 #include "resource.h"       // main symbols
+
+class CBridgeDescription2;
 
 /////////////////////////////////////////////////////////////////////////////
 // CPGSuperProjectImporter
@@ -56,9 +58,11 @@ public:
    STDMETHOD(GetItemText)(/*[out,retval]*/BSTR*  bstrText) const override;
    STDMETHOD(GetIcon)(/*[out]*/HICON* phIcon) const override;
    STDMETHOD(Import)(/*[in]*/IBroker* pBroker) override;
+   STDMETHOD(GetCLSID)(CLSID* pCLSID) const override;
 
 private:
    void BuildBridge(IBroker* pBroker);
    void SetSpecification(IBroker* pBroker);
    void InitGirderData(IBroker* pBroker);
+   void InitTimelineManager(IBroker* pBroker,CBridgeDescription2& bridge);
 };

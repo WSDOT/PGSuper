@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -53,8 +53,8 @@ public:
 	//}}AFX_VIRTUAL
 
    void SortCurves();
-   void SetCurveData(std::vector<HorzCurveData>& curves);
-   bool GetCurveData(std::vector<HorzCurveData>& curves);
+   void SetCurveData(std::vector<CompoundCurveData>& curves);
+   bool GetCurveData(std::vector<CompoundCurveData>& curves);
 
 // Implementation
 public:
@@ -78,7 +78,7 @@ public:
 
    // get data for a row
    bool GetRowData(ROWCOL nRow,Float64* pStation,Float64* pFwdTangent,bool *pbFwdTangent,Float64* pRadius,Float64* pEntrySpiral,Float64* pExitSpiral);
-   void SetRowData(ROWCOL nRow,HorzCurveData& data);
+   void SetRowData(ROWCOL nRow,CompoundCurveData& data);
 
    virtual int GetColWidth(ROWCOL nCol);
 

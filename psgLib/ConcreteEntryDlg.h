@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,6 +27,7 @@
 
 #include "ConcreteEntryGeneralPage.h"
 #include "AASHTOConcretePage.h"
+#include "PCIUHPCConcretePage.h"
 #include "ACIConcretePage.h"
 #include "CEBFIPConcretePage.h"
 
@@ -56,6 +57,7 @@ public:
 
    CConcreteEntryGeneralPage m_General;
    CAASHTOConcretePage m_AASHTO;
+   CPCIUHPCConcretePage m_PCIUHPC;
    CACIConcretePage m_ACI;
    CCEBFIPConcretePage m_CEBFIP;
 

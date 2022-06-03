@@ -3,6 +3,7 @@ Technical Guide {#technical_guide}
 The purpose of this Technical Guide is to detail the algorithms and computational methods used by this software.
 
 Topics
+* @subpage tg_07_strands
 * @subpage tg_anchor_set
 * @subpage tg_bearing_seat_geometry
 * @subpage tg_biaxial_stresses
@@ -21,6 +22,7 @@ Topics
 * @subpage tg_fatigue
 * @subpage tg_flexural_resistance_factor
 * @subpage tg_girder_spacing
+* @subpage tg_grade_300
 * @subpage tg_interface_shear
 * @subpage tg_lateral_deflections
 * @subpage tg_lightweight_concrete
@@ -46,4 +48,5 @@ Topics
 * @subpage tg_structural_analysis_models
 * @subpage tg_tensile_stress_limits
 * @subpage tg_time_dependent_material_models
+* @subpage tg_transfer_length
 * @subpage tg_uhpc

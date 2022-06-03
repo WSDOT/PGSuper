@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -216,6 +216,7 @@ void CSpecMainSheet::ExchangeLiveLoadsData(CDataExchange* pDX)
    DDV_MinMaxDouble(pDX, m_Entry.m_LLDFGirderSpacingLocation, 0.0, 1.0);
 
    DDX_Check_Bool(pDX, IDC_LANESBEAMS, m_Entry.m_LimitDistributionFactorsToLanesBeams);
+   DDX_Check_Bool(pDX, IDC_EXT_ADJACENT_LLDF_RULE, m_Entry.m_ExteriorLiveLoadDistributionGTAdjacentInteriorRule);
 
    DDX_Check_Bool(pDX, IDC_RIGID_METHOD, m_Entry.m_bUseRigidMethod);
 }
@@ -382,9 +383,6 @@ void CSpecMainSheet::ExchangeLiftingData(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_SLWC_FR, IDC_SLWC_FR_UNIT, m_Entry.m_LiftingModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_SLWC_FR_UNIT,tag);
 
-   DDX_UnitValueAndTag(pDX, IDC_UHPC_FR, IDC_UHPC_FR_UNIT, m_Entry.m_LiftingModulusOfRuptureCoefficient[pgsTypes::UHPC], pDisplayUnits->SqrtPressure);
-   DDX_Text(pDX, IDC_UHPC_FR_UNIT, tag);
-
    DDX_UnitValueAndTag(pDX, IDC_PICK_POINT_HEIGHT, IDC_PICK_POINT_HEIGHT_UNITS, m_Entry.m_PickPointHeight, pDisplayUnits->ComponentDim);
    DDV_UnitValueZeroOrMore(pDX, IDC_PICK_POINT_HEIGHT,m_Entry.m_PickPointHeight, pDisplayUnits->ComponentDim );
    DDX_UnitValueAndTag(pDX, IDC_LIFTING_LOOP_TOLERANCE, IDC_LIFTING_LOOP_TOLERANCE_UNITS, m_Entry.m_LiftingLoopTolerance, pDisplayUnits->ComponentDim );
@@ -517,24 +515,22 @@ void CSpecMainSheet::ExchangeWsdotHaulingData(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_SLWC_FR, IDC_SLWC_FR_UNIT, m_Entry.m_HaulingModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_SLWC_FR_UNIT,tag);
 
-   DDX_UnitValueAndTag(pDX, IDC_UHPC_FR, IDC_UHPC_FR_UNIT, m_Entry.m_HaulingModulusOfRuptureCoefficient[pgsTypes::UHPC], pDisplayUnits->SqrtPressure);
-   DDX_Text(pDX, IDC_UHPC_FR_UNIT, tag);
 
-   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION_CROWN, IDC_HAULING_TENSION_CROWN_UNIT, m_Entry.m_TensStressHaulingNormalCrown, pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION_CROWN, IDC_HAULING_TENSION_CROWN_UNIT, m_Entry.m_TensStressHauling[pgsTypes::CrownSlope], pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_HAULING_TENSION_CROWN_UNIT,tag);
-   DDV_UnitValueZeroOrMore(pDX, IDC_HAULING_TENSION_CROWN_UNIT,m_Entry.m_TensStressHaulingNormalCrown, pDisplayUnits->SqrtPressure );
-   DDX_Check_Bool(pDX, IDC_CHECK_HAULING_TENSION_MAX_CROWN, m_Entry.m_DoTensStressHaulingMaxNormalCrown);
-   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION_MAX_CROWN, IDC_HAULING_TENSION_MAX_UNIT_CROWN, m_Entry.m_TensStressHaulingMaxNormalCrown, pDisplayUnits->Stress );
-   if (m_Entry.m_DoTensStressHaulingMaxNormalCrown)
+   DDV_UnitValueZeroOrMore(pDX, IDC_HAULING_TENSION_CROWN_UNIT,m_Entry.m_TensStressHauling[pgsTypes::CrownSlope], pDisplayUnits->SqrtPressure );
+   DDX_Check_Bool(pDX, IDC_CHECK_HAULING_TENSION_MAX_CROWN, m_Entry.m_DoTensStressHaulingMax[pgsTypes::CrownSlope]);
+   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION_MAX_CROWN, IDC_HAULING_TENSION_MAX_UNIT_CROWN, m_Entry.m_TensStressHaulingMax[pgsTypes::CrownSlope], pDisplayUnits->Stress );
+   if (m_Entry.m_DoTensStressHaulingMax[pgsTypes::CrownSlope])
    {
-      DDV_UnitValueGreaterThanZero(pDX, IDC_HAULING_TENSION_MAX_CROWN,m_Entry.m_TensStressHaulingMaxNormalCrown, pDisplayUnits->Stress );
+      DDV_UnitValueGreaterThanZero(pDX, IDC_HAULING_TENSION_MAX_CROWN,m_Entry.m_TensStressHaulingMax[pgsTypes::CrownSlope], pDisplayUnits->Stress );
    }
 
-   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION_WITH_REBAR_CROWN, IDC_HAULING_TENSION_WITH_REBAR_UNIT_CROWN, m_Entry.m_TensStressHaulingWithRebarNormalCrown, pDisplayUnits->SqrtPressure  );
+   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION_WITH_REBAR_CROWN, IDC_HAULING_TENSION_WITH_REBAR_UNIT_CROWN, m_Entry.m_TensStressHaulingWithRebar[pgsTypes::CrownSlope], pDisplayUnits->SqrtPressure  );
    DDX_Text(pDX,IDC_HAULING_TENSION_WITH_REBAR_UNIT_CROWN,tag);
-   DDV_UnitValueZeroOrMore(pDX, IDC_HAULING_TENSION_WITH_REBAR_CROWN,m_Entry.m_TensStressHaulingWithRebarNormalCrown, pDisplayUnits->SqrtPressure );
+   DDV_UnitValueZeroOrMore(pDX, IDC_HAULING_TENSION_WITH_REBAR_CROWN,m_Entry.m_TensStressHaulingWithRebar[pgsTypes::CrownSlope], pDisplayUnits->SqrtPressure );
 
-   if (pDX->m_bSaveAndValidate && m_Entry.m_TensStressHaulingWithRebarNormalCrown < m_Entry.m_TensStressHaulingNormalCrown)
+   if (pDX->m_bSaveAndValidate && m_Entry.m_TensStressHaulingWithRebar[pgsTypes::CrownSlope] < m_Entry.m_TensStressHauling[pgsTypes::CrownSlope])
    {
       AfxMessageBox(_T("Allowable tensile stress with bonded reinforcement for the normal crown case must be greater than or equal to that without"),MB_OK | MB_ICONWARNING);
       pDX->Fail();
@@ -542,21 +538,21 @@ void CSpecMainSheet::ExchangeWsdotHaulingData(CDataExchange* pDX)
 
 
    
-   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION_SUPER, IDC_HAULING_TENSION_SUPER_UNIT, m_Entry.m_TensStressHaulingMaxSuper, pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION_SUPER, IDC_HAULING_TENSION_SUPER_UNIT, m_Entry.m_TensStressHauling[pgsTypes::Superelevation], pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_HAULING_TENSION_SUPER_UNIT,tag);
-   DDV_UnitValueZeroOrMore(pDX, IDC_HAULING_TENSION_SUPER_UNIT,m_Entry.m_TensStressHaulingMaxSuper, pDisplayUnits->SqrtPressure );
-   DDX_Check_Bool(pDX, IDC_CHECK_HAULING_TENSION_MAX_SUPER, m_Entry.m_DoTensStressHaulingMaxMaxSuper);
-   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION_MAX_SUPER, IDC_HAULING_TENSION_MAX_UNIT_SUPER, m_Entry.m_TensStressHaulingMaxMaxSuper, pDisplayUnits->Stress );
-   if (m_Entry.m_DoTensStressHaulingMaxMaxSuper)
+   DDV_UnitValueZeroOrMore(pDX, IDC_HAULING_TENSION_SUPER_UNIT,m_Entry.m_TensStressHauling[pgsTypes::Superelevation], pDisplayUnits->SqrtPressure );
+   DDX_Check_Bool(pDX, IDC_CHECK_HAULING_TENSION_MAX_SUPER, m_Entry.m_DoTensStressHaulingMax[pgsTypes::Superelevation]);
+   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION_MAX_SUPER, IDC_HAULING_TENSION_MAX_UNIT_SUPER, m_Entry.m_TensStressHaulingMax[pgsTypes::Superelevation], pDisplayUnits->Stress );
+   if (m_Entry.m_DoTensStressHaulingMax[pgsTypes::Superelevation])
    {
-      DDV_UnitValueGreaterThanZero(pDX, IDC_HAULING_TENSION_MAX_SUPER,m_Entry.m_TensStressHaulingMaxMaxSuper, pDisplayUnits->Stress );
+      DDV_UnitValueGreaterThanZero(pDX, IDC_HAULING_TENSION_MAX_SUPER,m_Entry.m_TensStressHaulingMax[pgsTypes::Superelevation], pDisplayUnits->Stress );
    }
 
-   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION_WITH_REBAR_SUPER, IDC_HAULING_TENSION_WITH_REBAR_UNIT_SUPER, m_Entry.m_TensStressHaulingWithRebarMaxSuper, pDisplayUnits->SqrtPressure  );
+   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION_WITH_REBAR_SUPER, IDC_HAULING_TENSION_WITH_REBAR_UNIT_SUPER, m_Entry.m_TensStressHaulingWithRebar[pgsTypes::Superelevation], pDisplayUnits->SqrtPressure  );
    DDX_Text(pDX,IDC_HAULING_TENSION_WITH_REBAR_UNIT_SUPER,tag);
-   DDV_UnitValueZeroOrMore(pDX, IDC_HAULING_TENSION_WITH_REBAR_SUPER,m_Entry.m_TensStressHaulingWithRebarMaxSuper, pDisplayUnits->SqrtPressure );
+   DDV_UnitValueZeroOrMore(pDX, IDC_HAULING_TENSION_WITH_REBAR_SUPER,m_Entry.m_TensStressHaulingWithRebar[pgsTypes::Superelevation], pDisplayUnits->SqrtPressure );
 
-   if (pDX->m_bSaveAndValidate && m_Entry.m_TensStressHaulingWithRebarMaxSuper < m_Entry.m_TensStressHaulingMaxSuper)
+   if (pDX->m_bSaveAndValidate && m_Entry.m_TensStressHaulingWithRebar[pgsTypes::Superelevation] < m_Entry.m_TensStressHauling[pgsTypes::Superelevation])
    {
       AfxMessageBox(_T("Allowable tensile stress with bonded reinforcement for the max. superelevation case must be greater than or equal to that without"),MB_OK | MB_ICONWARNING);
       pDX->Fail();
@@ -664,21 +660,21 @@ void CSpecMainSheet::ExchangeKdotHaulingData(CDataExchange* pDX)
    }
 
    // Use the normal crown values for KDOT
-   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION, IDC_HAULING_TENSION_UNIT, m_Entry.m_TensStressHaulingNormalCrown, pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION, IDC_HAULING_TENSION_UNIT, m_Entry.m_TensStressHauling[pgsTypes::CrownSlope], pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_HAULING_TENSION_UNIT,tag);
-   DDV_UnitValueZeroOrMore(pDX, IDC_HAULING_TENSION_UNIT,m_Entry.m_TensStressHaulingNormalCrown, pDisplayUnits->SqrtPressure );
-   DDX_Check_Bool(pDX, IDC_CHECK_HAULING_TENSION_MAX, m_Entry.m_DoTensStressHaulingMaxNormalCrown);
-   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION_MAX, IDC_HAULING_TENSION_MAX_UNIT, m_Entry.m_TensStressHaulingMaxNormalCrown, pDisplayUnits->Stress );
-   if (m_Entry.m_DoTensStressHaulingMaxNormalCrown)
+   DDV_UnitValueZeroOrMore(pDX, IDC_HAULING_TENSION_UNIT,m_Entry.m_TensStressHauling[pgsTypes::CrownSlope], pDisplayUnits->SqrtPressure );
+   DDX_Check_Bool(pDX, IDC_CHECK_HAULING_TENSION_MAX, m_Entry.m_DoTensStressHaulingMax[pgsTypes::CrownSlope]);
+   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION_MAX, IDC_HAULING_TENSION_MAX_UNIT, m_Entry.m_TensStressHaulingMax[pgsTypes::CrownSlope], pDisplayUnits->Stress );
+   if (m_Entry.m_DoTensStressHaulingMax[pgsTypes::CrownSlope])
    {
-      DDV_UnitValueGreaterThanZero(pDX, IDC_HAULING_TENSION_MAX,m_Entry.m_TensStressHaulingMaxNormalCrown, pDisplayUnits->Stress );
+      DDV_UnitValueGreaterThanZero(pDX, IDC_HAULING_TENSION_MAX,m_Entry.m_TensStressHaulingMax[pgsTypes::CrownSlope], pDisplayUnits->Stress );
    }
 
-   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION_WITH_REBAR, IDC_HAULING_TENSION_WITH_REBAR_UNIT, m_Entry.m_TensStressHaulingWithRebarNormalCrown, pDisplayUnits->SqrtPressure  );
+   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION_WITH_REBAR, IDC_HAULING_TENSION_WITH_REBAR_UNIT, m_Entry.m_TensStressHaulingWithRebar[pgsTypes::CrownSlope], pDisplayUnits->SqrtPressure  );
    DDX_Text(pDX,IDC_HAULING_TENSION_WITH_REBAR_UNIT,tag);
-   DDV_UnitValueZeroOrMore(pDX, IDC_HAULING_TENSION_WITH_REBAR,m_Entry.m_TensStressHaulingWithRebarNormalCrown, pDisplayUnits->SqrtPressure );
+   DDV_UnitValueZeroOrMore(pDX, IDC_HAULING_TENSION_WITH_REBAR,m_Entry.m_TensStressHaulingWithRebar[pgsTypes::CrownSlope], pDisplayUnits->SqrtPressure );
 
-   if (pDX->m_bSaveAndValidate && m_Entry.m_TensStressHaulingWithRebarNormalCrown < m_Entry.m_TensStressHaulingNormalCrown)
+   if (pDX->m_bSaveAndValidate && m_Entry.m_TensStressHaulingWithRebar[pgsTypes::CrownSlope] < m_Entry.m_TensStressHauling[pgsTypes::CrownSlope])
    {
       AfxMessageBox(_T("Allowable tensile stress with bonded reinforcement must be greater than or equal to that without"),MB_OK | MB_ICONWARNING);
       pDX->Fail();
@@ -700,6 +696,10 @@ void CSpecMainSheet::ExchangeMomentCapacityData(CDataExchange* pDX)
    DDX_CBItemData(pDX, IDC_NEG_MOMENT, m_Entry.m_bIncludeForNegMoment);
    DDX_Check_Bool(pDX, IDC_INCLUDE_STRAND_FOR_NEG_MOMENT, m_Entry.m_bIncludeStrand_NegMoment);
    DDX_Check_Bool(pDX, IDC_INCLUDE_REBAR_MOMENT, m_Entry.m_bIncludeRebar_Moment );
+   DDX_Check_Bool(pDX, IDC_CONSIDER_REINFORCEMENT_STRAIN_LIMITS, m_Entry.m_bConsiderReinforcementStrainLimit);
+
+   DDX_Text(pDX, IDC_SLICE_COUNT, m_Entry.m_nMomentCapacitySlices);
+   DDV_MinMaxInt(pDX, m_Entry.m_nMomentCapacitySlices, 10, 100);
 
    CString tag;
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2016Interims )
@@ -714,17 +714,14 @@ void CSpecMainSheet::ExchangeMomentCapacityData(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_FR,      IDC_FR_LABEL,      m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal],          pDisplayUnits->SqrtPressure );
    DDX_UnitValueAndTag(pDX, IDC_ALWC_FR, IDC_ALWC_FR_LABEL, m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight],  pDisplayUnits->SqrtPressure );
    DDX_UnitValueAndTag(pDX, IDC_SLWC_FR, IDC_SLWC_FR_LABEL, m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
-   DDX_UnitValueAndTag(pDX, IDC_UHPC_FR, IDC_UHPC_FR_LABEL, m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::UHPC],            pDisplayUnits->SqrtPressure);
 
    DDX_Text(pDX, IDC_FR_UNIT,     tag);
    DDX_Text(pDX, IDC_ALWC_FR_UNIT,tag);
    DDX_Text(pDX, IDC_SLWC_FR_UNIT,tag);
-   DDX_Text(pDX, IDC_UHPC_FR_UNIT, tag);
 
    DDV_UnitValueZeroOrMore(pDX, IDC_FR,      m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal],          pDisplayUnits->SqrtPressure );
    DDV_UnitValueZeroOrMore(pDX, IDC_ALWC_FR, m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight],  pDisplayUnits->SqrtPressure );
    DDV_UnitValueZeroOrMore(pDX, IDC_SLWC_FR, m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
-   DDV_UnitValueZeroOrMore(pDX, IDC_UHPC_FR, m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::UHPC],            pDisplayUnits->SqrtPressure);
 
    // NOTE: this looks goofy, but it is correct. There is only one LWC entry for both all and sand lightweight
    // but it is easier to have 3 sets of values so the application is consistent.
@@ -743,59 +740,59 @@ void CSpecMainSheet::ExchangeMomentCapacityData(CDataExchange* pDX)
    DDX_Text(pDX,IDC_LWC_PHI_TENSION_SPLICED, m_Entry.m_PhiFlexureTensionSpliced[pgsTypes::SandLightweight]);
    DDX_Text(pDX,IDC_LWC_PHI_COMPRESSION,     m_Entry.m_PhiFlexureCompression[pgsTypes::SandLightweight]);
 
-   DDX_Text(pDX, IDC_UHPC_PHI_TENSION_RC,      m_Entry.m_PhiFlexureTensionRC[pgsTypes::UHPC]);
-   DDX_Text(pDX, IDC_UHPC_PHI_TENSION_PS,      m_Entry.m_PhiFlexureTensionPS[pgsTypes::UHPC]);
-   DDX_Text(pDX, IDC_UHPC_PHI_TENSION_SPLICED, m_Entry.m_PhiFlexureTensionSpliced[pgsTypes::UHPC]);
-   DDX_Text(pDX, IDC_UHPC_PHI_COMPRESSION,     m_Entry.m_PhiFlexureCompression[pgsTypes::UHPC]);
+   DDX_Text(pDX, IDC_UHPC_PHI_TENSION_RC,      m_Entry.m_PhiFlexureTensionRC[pgsTypes::PCI_UHPC]);
+   DDX_Text(pDX, IDC_UHPC_PHI_TENSION_PS,      m_Entry.m_PhiFlexureTensionPS[pgsTypes::PCI_UHPC]);
+   DDX_Text(pDX, IDC_UHPC_PHI_TENSION_SPLICED, m_Entry.m_PhiFlexureTensionSpliced[pgsTypes::PCI_UHPC]);
+   DDX_Text(pDX, IDC_UHPC_PHI_COMPRESSION,     m_Entry.m_PhiFlexureCompression[pgsTypes::PCI_UHPC]);
 
    DDX_Text(pDX, IDC_NWC_JOINT_PHI,           m_Entry.m_PhiClosureJointFlexure[pgsTypes::Normal]);
    DDX_Text(pDX, IDC_LWC_JOINT_PHI,           m_Entry.m_PhiClosureJointFlexure[pgsTypes::AllLightweight]);
    DDX_Text(pDX, IDC_LWC_JOINT_PHI,           m_Entry.m_PhiClosureJointFlexure[pgsTypes::SandLightweight]);
-   DDX_Text(pDX, IDC_UHPC_JOINT_PHI,          m_Entry.m_PhiClosureJointFlexure[pgsTypes::UHPC]);
+   DDX_Text(pDX, IDC_UHPC_JOINT_PHI,          m_Entry.m_PhiClosureJointFlexure[pgsTypes::PCI_UHPC]);
 }
 
 void CSpecMainSheet::CheckShearCapacityMethod()
 {
    // makes sure the shear capacity method is consistent with the specification version that is selected
    if ( GetSpecVersion() < lrfdVersionMgr::FourthEdition2007 &&  // if we are before 4th Edition
-        m_Entry.m_ShearCapacityMethod == scmVciVcw ) // Vci/Vcw is not a valid option
+        m_Entry.m_ShearCapacityMethod == pgsTypes::scmVciVcw ) // Vci/Vcw is not a valid option
    {
       // force to the general method
       if ( GetSpecVersion() <= lrfdVersionMgr::FourthEdition2007 )
       {
-         m_Entry.m_ShearCapacityMethod = scmBTTables;
+         m_Entry.m_ShearCapacityMethod = pgsTypes::scmBTTables;
       }
       else
       {
-         m_Entry.m_ShearCapacityMethod = scmBTEquations;
+         m_Entry.m_ShearCapacityMethod = pgsTypes::scmBTEquations;
       }
    }
 
    // The general method from the 2007 spec becomes the tables method in the 2008 spec
    // make that adjustment here
-   if ( GetSpecVersion() < lrfdVersionMgr::FourthEditionWith2008Interims && m_Entry.m_ShearCapacityMethod == scmBTEquations )
+   if ( GetSpecVersion() < lrfdVersionMgr::FourthEditionWith2008Interims && m_Entry.m_ShearCapacityMethod == pgsTypes::scmBTEquations )
    {
-      m_Entry.m_ShearCapacityMethod = scmBTTables;
+      m_Entry.m_ShearCapacityMethod = pgsTypes::scmBTTables;
    }
 
    if ( GetSpecVersion() < lrfdVersionMgr::SecondEditionWith2000Interims &&  // if we are before 2nd Edition + 2000
-        m_Entry.m_ShearCapacityMethod == scmWSDOT2001 ) // WSDOT 2001 is not a valid option
+        m_Entry.m_ShearCapacityMethod == pgsTypes::scmWSDOT2001 ) // WSDOT 2001 is not a valid option
    {
       // force to the general method
       if ( GetSpecVersion() <= lrfdVersionMgr::FourthEdition2007 )
       {
-         m_Entry.m_ShearCapacityMethod = scmBTTables;
+         m_Entry.m_ShearCapacityMethod = pgsTypes::scmBTTables;
       }
       else
       {
-         m_Entry.m_ShearCapacityMethod = scmBTEquations;
+         m_Entry.m_ShearCapacityMethod = pgsTypes::scmBTEquations;
       }
    }
 
    if ( GetSpecVersion() < lrfdVersionMgr::FourthEdition2007 &&  // if we are before 4th Edition
-        m_Entry.m_ShearCapacityMethod == scmWSDOT2007 ) // WSDOT 2007 is not a valid option
+        m_Entry.m_ShearCapacityMethod == pgsTypes::scmWSDOT2007 ) // WSDOT 2007 is not a valid option
    {
-      m_Entry.m_ShearCapacityMethod = scmWSDOT2001; // force to WSDOT 2001
+      m_Entry.m_ShearCapacityMethod = pgsTypes::scmWSDOT2001; // force to WSDOT 2001
    }
 }
 
@@ -836,34 +833,29 @@ void CSpecMainSheet::ExchangeShearCapacityData(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_FR,      IDC_FR_LABEL,      m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal],          pDisplayUnits->SqrtPressure );
    DDX_UnitValueAndTag(pDX, IDC_ALWC_FR, IDC_FR_LABEL_ALWC, m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight],  pDisplayUnits->SqrtPressure );
    DDX_UnitValueAndTag(pDX, IDC_SLWC_FR, IDC_FR_LABEL_SLWC, m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
-   DDX_UnitValueAndTag(pDX, IDC_UHPC_FR, IDC_FR_LABEL_UHPC, m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::UHPC],            pDisplayUnits->SqrtPressure);
 
    DDX_Text(pDX, IDC_FR_UNIT,      tag);
    DDX_Text(pDX, IDC_ALWC_FR_UNIT, tag);
    DDX_Text(pDX, IDC_SLWC_FR_UNIT, tag);
-   DDX_Text(pDX, IDC_UHPC_FR_UNIT, tag);
 
    DDV_UnitValueZeroOrMore(pDX, IDC_FR ,     m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal],          pDisplayUnits->SqrtPressure );
    DDV_UnitValueZeroOrMore(pDX, IDC_SLWC_FR, m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
    DDV_UnitValueZeroOrMore(pDX, IDC_ALWC_FR, m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight],  pDisplayUnits->SqrtPressure );
-   DDV_UnitValueZeroOrMore(pDX, IDC_UHPC_FR, m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::UHPC],            pDisplayUnits->SqrtPressure);
-
-   DDX_UnitValueAndTag(pDX, IDC_UHPC_FIBER_SHEAR_STRENGTH, IDC_UHPC_FIBER_SHEAR_STRENGTH_UNIT, m_Entry.m_UHPCFiberShearStrength, pDisplayUnits->Stress);
 
    DDX_Text(pDX,IDC_NWC_PHI,m_Entry.m_PhiShear[pgsTypes::Normal]);
    DDX_Text(pDX,IDC_LWC_PHI,m_Entry.m_PhiShear[pgsTypes::SandLightweight]);
    DDX_Text(pDX, IDC_LWC_PHI, m_Entry.m_PhiShear[pgsTypes::AllLightweight]);
-   DDX_Text(pDX, IDC_UHPC_PHI, m_Entry.m_PhiShear[pgsTypes::UHPC]);
+   DDX_Text(pDX, IDC_UHPC_PHI, m_Entry.m_PhiShear[pgsTypes::PCI_UHPC]);
 
    DDX_Text(pDX,IDC_NWC_PHI_DEBOND,m_Entry.m_PhiShearDebonded[pgsTypes::Normal]);
    DDX_Text(pDX,IDC_LWC_PHI_DEBOND,m_Entry.m_PhiShearDebonded[pgsTypes::SandLightweight]);
    DDX_Text(pDX, IDC_LWC_PHI_DEBOND, m_Entry.m_PhiShearDebonded[pgsTypes::AllLightweight]);
-   DDX_Text(pDX, IDC_UHPC_PHI_DEBOND, m_Entry.m_PhiShearDebonded[pgsTypes::UHPC]);
+   DDX_Text(pDX, IDC_UHPC_PHI_DEBOND, m_Entry.m_PhiShearDebonded[pgsTypes::PCI_UHPC]);
 
    DDX_Text(pDX,IDC_NWC_JOINT_PHI,  m_Entry.m_PhiClosureJointShear[pgsTypes::Normal]);
    DDX_Text(pDX,IDC_LWC_JOINT_PHI,  m_Entry.m_PhiClosureJointShear[pgsTypes::AllLightweight]);
    DDX_Text(pDX, IDC_LWC_JOINT_PHI, m_Entry.m_PhiClosureJointShear[pgsTypes::SandLightweight]);
-   DDX_Text(pDX, IDC_UHPC_JOINT_PHI, m_Entry.m_PhiClosureJointShear[pgsTypes::UHPC]);
+   DDX_Text(pDX, IDC_UHPC_JOINT_PHI, m_Entry.m_PhiClosureJointShear[pgsTypes::PCI_UHPC]);
 
    DDX_UnitValueAndTag(pDX, IDC_SMAX, IDC_SMAX_UNIT, m_Entry.m_MaxInterfaceShearConnectorSpacing, pDisplayUnits->ComponentDim );
 
@@ -1213,13 +1205,13 @@ void CSpecMainSheet::ExchangeLimitsData(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_LWC_UNIT_WEIGHT, IDC_LWC_UNIT_WEIGHT_UNIT, m_Entry.m_MaxConcreteUnitWeight[pgsTypes::AllLightweight], pDisplayUnits->Density);
    DDX_UnitValueAndTag(pDX, IDC_LWC_AGG_SIZE,    IDC_LWC_AGG_SIZE_UNIT,    m_Entry.m_MaxConcreteAggSize[pgsTypes::AllLightweight],    pDisplayUnits->ComponentDim);
 
-   DDX_UnitValueAndTag(pDX, IDC_UHPC_FC_SLAB, IDC_UHPC_FC_SLAB_UNIT, m_Entry.m_MaxSlabFc[pgsTypes::UHPC], pDisplayUnits->Stress);
-   DDX_UnitValueAndTag(pDX, IDC_UHPC_GIRDER_FCI, IDC_UHPC_GIRDER_FCI_UNIT, m_Entry.m_MaxSegmentFci[pgsTypes::UHPC], pDisplayUnits->Stress);
-   DDX_UnitValueAndTag(pDX, IDC_UHPC_GIRDER_FC, IDC_UHPC_GIRDER_FC_UNIT, m_Entry.m_MaxSegmentFc[pgsTypes::UHPC], pDisplayUnits->Stress);
-   DDX_UnitValueAndTag(pDX, IDC_UHPC_CLOSURE_FCI, IDC_UHPC_CLOSURE_FCI_UNIT, m_Entry.m_MaxClosureFci[pgsTypes::UHPC], pDisplayUnits->Stress);
-   DDX_UnitValueAndTag(pDX, IDC_UHPC_CLOSURE_FC, IDC_UHPC_CLOSURE_FC_UNIT, m_Entry.m_MaxClosureFc[pgsTypes::UHPC], pDisplayUnits->Stress);
-   DDX_UnitValueAndTag(pDX, IDC_UHPC_UNIT_WEIGHT, IDC_UHPC_UNIT_WEIGHT_UNIT, m_Entry.m_MaxConcreteUnitWeight[pgsTypes::UHPC], pDisplayUnits->Density);
-   DDX_UnitValueAndTag(pDX, IDC_UHPC_AGG_SIZE, IDC_UHPC_AGG_SIZE_UNIT, m_Entry.m_MaxConcreteAggSize[pgsTypes::UHPC], pDisplayUnits->ComponentDim);
+   DDX_UnitValueAndTag(pDX, IDC_UHPC_FC_SLAB, IDC_UHPC_FC_SLAB_UNIT, m_Entry.m_MaxSlabFc[pgsTypes::PCI_UHPC], pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_UHPC_GIRDER_FCI, IDC_UHPC_GIRDER_FCI_UNIT, m_Entry.m_MaxSegmentFci[pgsTypes::PCI_UHPC], pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_UHPC_GIRDER_FC, IDC_UHPC_GIRDER_FC_UNIT, m_Entry.m_MaxSegmentFc[pgsTypes::PCI_UHPC], pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_UHPC_CLOSURE_FCI, IDC_UHPC_CLOSURE_FCI_UNIT, m_Entry.m_MaxClosureFci[pgsTypes::PCI_UHPC], pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_UHPC_CLOSURE_FC, IDC_UHPC_CLOSURE_FC_UNIT, m_Entry.m_MaxClosureFc[pgsTypes::PCI_UHPC], pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_UHPC_UNIT_WEIGHT, IDC_UHPC_UNIT_WEIGHT_UNIT, m_Entry.m_MaxConcreteUnitWeight[pgsTypes::PCI_UHPC], pDisplayUnits->Density);
+   DDX_UnitValueAndTag(pDX, IDC_UHPC_AGG_SIZE, IDC_UHPC_AGG_SIZE_UNIT, m_Entry.m_MaxConcreteAggSize[pgsTypes::PCI_UHPC], pDisplayUnits->ComponentDim);
 
    DDX_Check_Bool(pDX, IDC_CHECK_STIRRUP_COMPATIBILITY, m_Entry.m_DoCheckStirrupSpacingCompatibility);
    DDX_Check_Bool(pDX, IDC_CHECK_GIRDER_SAG, m_Entry.m_bCheckSag);
@@ -1338,9 +1330,6 @@ void CSpecMainSheet::ExchangeDesignData(CDataExchange* pDX)
 	DDX_Check_Bool(pDX, IDC_DESIGN_SPLITTING, m_Entry.m_DoDesignSplitting);
 	DDX_Text(pDX, IDC_N, m_Entry.m_SplittingZoneLengthFactor);
    DDV_GreaterThanZero(pDX, IDC_N, m_Entry.m_SplittingZoneLengthFactor);
-
-   DDX_UnitValueAndTag(pDX, IDC_UHPC_F1, IDC_UHPC_F1_UNIT, m_Entry.m_UHPCStregthAtFirstCrack, pDisplayUnits->Stress);
-   DDV_UnitValueZeroOrMore(pDX, IDC_UHPC_F1, m_Entry.m_UHPCStregthAtFirstCrack, pDisplayUnits->Stress);
 
    // Confinement Reinforcement
 	DDX_Check_Bool(pDX, IDC_CHECK_CONFINEMENT,  m_Entry.m_DoCheckConfinement);

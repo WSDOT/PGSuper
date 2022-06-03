@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -125,18 +125,6 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
       else
       {
          // if only permit rating is enabled, there aren't any stresses to report
-         bRating = false;
-      }
-   }
-   else
-   {
-      // include load rating results if we are always load rating
-      GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
-      bRating = pRatingSpec->AlwaysLoadRate();
-
-      // if none of the rating types are enabled, skip the rating
-      if (!pRatingSpec->IsRatingEnabled())
-      {
          bRating = false;
       }
    }

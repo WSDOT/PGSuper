@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -871,7 +871,8 @@ void CBridgePlanView::UpdateSegmentTooltips()
                FormatDimension(fc, pDisplayUnits->GetStressUnit())
             );
 
-            const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Permanent);
+            const matPsStrand* pStraightStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Straight);
+            const matPsStrand* pHarpedStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Harped);
             const matPsStrand* pTempStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Temporary);
 
             StrandIndexType Ns = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Straight);
@@ -882,31 +883,23 @@ void CBridgePlanView::UpdateSegmentTooltips()
             std::_tstring harp_type(LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(segmentKey)));
 
             CString strMsg4;
-            if (pStrandGeom->GetMaxStrands(segmentKey, pgsTypes::Temporary) != 0)
+            if (Nsd == 0)
             {
-               if (Nsd == 0)
-               {
-                  strMsg4.Format(_T("\n\nPermanent Strand\n%s\n# Straight: %2d\n# %s: %2d\n\nTemporary Strands\n%s\n# Temporary: %2d"),
-                     pStrand->GetName().c_str(), Ns, harp_type.c_str(), Nh, pTempStrand->GetName().c_str(), Nt);
-               }
-               else
-               {
-                  strMsg4.Format(_T("\n\nPermanent Strands\n%s\n# Straight: %2d (%2d Debonded)\n# %s: %2d\n\nTemporary Strands\n%s\n# Temporary: %2d"),
-                     pStrand->GetName().c_str(), Ns, Nsd, harp_type.c_str(), Nh, pTempStrand->GetName().c_str(), Nt);
-               }
+               strMsg4.Format(_T("\n\nStraight Strands\n%s\n# Straight: %2d"), pStraightStrand->GetName().c_str(), Ns);
             }
             else
             {
-               if (Nsd == 0)
-               {
-                  strMsg4.Format(_T("\n\nPermanent Strands\n%s\n# Straight: %2d\n# %s: %2d"),
-                     pStrand->GetName().c_str(), Ns, harp_type.c_str(), Nh);
-               }
-               else
-               {
-                  strMsg4.Format(_T("\n\nPermanent Strands\n%s\n# Straight: %2d (%2d Debonded)\n# %s: %2d"),
-                     pStrand->GetName().c_str(), Ns, Nsd, harp_type.c_str(), Nh);
-               }
+               strMsg4.Format(_T("\n\nStraight Strands\n%s\n# Straight: %2d (%2d Debonded)"), pStraightStrand->GetName().c_str(), Ns, Nsd);
+            }
+            CString strHarped;
+            strHarped.Format(_T("\n\n%s Strands\n%s\n# %s: %2d"), harp_type.c_str(), pHarpedStrand->GetName().c_str(), harp_type.c_str(), Nh);
+            strMsg4 += strHarped;
+
+            if (pStrandGeom->GetMaxStrands(segmentKey, pgsTypes::Temporary) != 0)
+            {
+               CString strTemp;
+               strTemp.Format(_T("\n\nTemporary Strands\n%s\n# Temporary: %2d"),pTempStrand->GetName().c_str(), Nt);
+               strMsg4 += strTemp;
             }
 
             CString strMsg5;
@@ -1470,6 +1463,8 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
 
    GET_IFACE2(pBroker, IBridge, pBridge);
    GET_IFACE2(pBroker, IRoadway, pRoadway);
+   GET_IFACE2(pBroker, IRoadwayData, pRoadwayData);
+   bool bIsPGLOffsetFromAlignment = (pRoadwayData->GetRoadwaySectionData().AlignmentPointIdx != pRoadwayData->GetRoadwaySectionData().ProfileGradePointIdx) ? true : false;
 
    // show that part of the alignment from 1/n of the first span length before the start of the bridge
    // to 1/n of the last span length beyond the end of the bridge
@@ -1532,6 +1527,10 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
 
    Float64 alignment_offset = pBridge->GetAlignmentOffset();
 
+   // display object for PGL
+   CComPtr<iPolyLineDisplayObject> doPGL;
+   doPGL.CoCreateInstance(CLSID_PolyLineDisplayObject);
+
    // model the alignment as a series of individual points
    CComPtr<IDirection> bearing;
    bearing.CoCreateInstance(CLSID_Direction);
@@ -1555,17 +1554,68 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
 
    for ( const auto& station : vStations)
    {
-      CComPtr<IPoint2d> p;
-      pRoadway->GetPoint(station,0.00,bearing,pgsTypes::pcGlobal,&p);
-      doAlignment->AddPoint(p);
+      CComPtr<IPoint2d> pntAlignment;
+      pRoadway->GetPoint(station,0.00,bearing,pgsTypes::pcGlobal,&pntAlignment);
+      doAlignment->AddPoint(pntAlignment);
 
-      if ( alignment_offset != 0 )
+      Float64 pgl_offset = 0;
+      if (bIsPGLOffsetFromAlignment)
       {
-         p.Release();
-         CComPtr<IDirection> normal;
-         pRoadway->GetBearingNormal(station,&normal);
-         pRoadway->GetPoint(station,alignment_offset,normal,pgsTypes::pcGlobal,&p);
-         doCLBridge->AddPoint(p);
+         IndexType alignmentIdx = pRoadway->GetAlignmentPointIndex(station); // get index of crown point corresponding to the alignment
+         Float64 offset = pRoadway->GetProfileGradeLineOffset(alignmentIdx, station); // get the offset from the alignment point to the PGL
+
+         ATLASSERT(!IsZero(offset)); // only drawing PGL if it is offset from alignment so this better not be zero
+         pgl_offset = -offset;
+      }
+
+      CComPtr<IDirection> normal;
+      if (!IsZero(alignment_offset) || !IsZero(pgl_offset))
+      {
+         pRoadway->GetBearingNormal(station, &normal);
+      }
+
+      if ( !IsZero(alignment_offset) )
+      {
+         CComPtr<IPoint2d> pntBridgeLine;
+         pRoadway->GetPoint(station,alignment_offset,normal,pgsTypes::pcGlobal,&pntBridgeLine);
+         doCLBridge->AddPoint(pntBridgeLine);
+      }
+
+      CComPtr<IPoint2d> pntPGL;
+      if (!IsZero(pgl_offset))
+      {
+         pRoadway->GetPoint(station, pgl_offset, normal, pgsTypes::pcGlobal, &pntPGL);
+         doPGL->AddPoint(pntPGL);
+      }
+
+      if (IsEqual(station, vStations.front()))
+      {
+         CComPtr<iTextBlock> doText;
+         doText.CoCreateInstance(CLSID_TextBlock);
+         doText->SetPosition(pntAlignment);
+         doText->SetText(pRoadwayData->GetAlignmentData2().Name.c_str());
+         doText->SetTextAlign(TA_BOTTOM | TA_LEFT);
+         doText->SetBkMode(TRANSPARENT);
+         CComPtr<IDirection> bearing;
+         pRoadway->GetBearing(station, &bearing);
+         Float64 dir;
+         bearing->get_Value(&dir);
+         long angle = long(1800.*dir / M_PI);
+         angle = (900 < angle && angle < 2700) ? angle - 1800 : angle;
+         doText->SetAngle(angle);
+         display_list->AddDisplayObject(doText);
+
+         if (bIsPGLOffsetFromAlignment)
+         {
+            doText.Release();
+            doText.CoCreateInstance(CLSID_TextBlock);
+            doText->SetPosition(pntPGL);
+            doText->SetText(_T("PGL"));
+            doText->SetTextAlign(TA_BOTTOM | TA_LEFT);
+            doText->SetBkMode(TRANSPARENT);
+            doText->SetAngle(angle);
+            display_list->AddDisplayObject(doText);
+         }
       }
    }
 
@@ -1574,6 +1624,11 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
    doAlignment->put_PointType(plpNone);
    doAlignment->Commit();
 
+   doPGL->put_Width(PROFILE_LINE_WEIGHT);
+   doPGL->put_Color(PROFILE_COLOR);
+   doPGL->put_PointType(plpNone);
+   doPGL->Commit();
+
    doCLBridge->put_Width(BRIDGELINE_LINE_WEIGHT);
    doCLBridge->put_Color(BRIDGE_COLOR);
    doCLBridge->put_PointType(plpNone);
@@ -1581,10 +1636,16 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
 
    display_list->AddDisplayObject(dispObj);
 
-   if ( alignment_offset != 0 )
+   if ( !IsZero(alignment_offset) )
    {
       CComQIPtr<iDisplayObject> dispObj2(doCLBridge);
       display_list->AddDisplayObject(dispObj2);
+   }
+
+   if(bIsPGLOffsetFromAlignment)
+   {
+      CComQIPtr<iDisplayObject> dispObj3(doPGL);
+      display_list->AddDisplayObject(dispObj3);
    }
 
    dispObj->SetSelectionType(stAll);

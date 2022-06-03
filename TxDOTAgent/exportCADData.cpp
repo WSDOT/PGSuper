@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -48,6 +48,7 @@ exportCADData::exportCADData(IBroker* pBroker,CWnd* pParent /*=nullptr*/)
 {
    m_pBroker  = pBroker;
 	//{{AFX_DATA_INIT(exportCADData)
+   m_ExportDataType = cdtGirderDesignData;
    m_FileFormatType = ctxExcel;
 	//}}AFX_DATA_INIT
 
@@ -65,7 +66,8 @@ void exportCADData::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(exportCADData)
-	DDX_CBEnum(pDX, IDC_FILE_FORMAT, m_FileFormatType);
+   DDX_CBEnum(pDX, IDC_EXPORT_TYPE, m_ExportDataType);
+   DDX_CBEnum(pDX, IDC_FILE_FORMAT, m_FileFormatType);
 	//}}AFX_DATA_MAP
 
    if ( pDX->m_bSaveAndValidate )
@@ -89,6 +91,7 @@ BEGIN_MESSAGE_MAP(exportCADData, CDialog)
 	//}}AFX_MSG_MAP
    ON_BN_CLICKED(IDC_SELECT_ALL, &exportCADData::OnBnClickedSelectAll)
    ON_BN_CLICKED(IDC_CLEAR_ALL, &exportCADData::OnBnClickedClearAll)
+   ON_CBN_SELCHANGE(IDC_EXPORT_TYPE, &exportCADData::OnCbnSelchangeExportType)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -191,4 +194,15 @@ void exportCADData::OnBnClickedSelectAll()
 void exportCADData::OnBnClickedClearAll()
 {
    m_pGrid->SetAllValues(false);
+}
+
+
+void exportCADData::OnCbnSelchangeExportType()
+{
+   CComboBox* pBox = (CComboBox*)GetDlgItem(IDC_EXPORT_TYPE);
+   int sel = pBox->GetCurSel();
+
+   int show = (sel == cdtLegacyTextGirderData) ? SW_HIDE : SW_SHOW;
+   pBox = (CComboBox*)GetDlgItem(IDC_FILE_FORMAT);
+   pBox->ShowWindow(show);
 }

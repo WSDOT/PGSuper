@@ -1,6 +1,6 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 18.25    5   0.00                     1     1     Slab          42  0.6  270   9.57   9.42  11.25  11.25   4    2.0   18     4    2   2   0   0   0   4.000  5.000   3.002    -3.376     3116   0.307  0.567   7.148 -1.340  0.000 -0.206 -1.546 222.35  485.50    1.00   14.00   14.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 18.25    5   0.00                     1     1     Slab          42  0.6  270   9.57   9.42  11.25  11.25   4    2.0   18     4    2   2   0   0   0   4.000  5.000   2.985    -3.348     3115   0.295  0.562   7.153 -1.340  0.000 -0.206 -1.546 222.35  485.50    1.00   14.00   14.00    2.49    1.48    3.23    1.92    2.88 
 
 
 The Specification Check was Not Successful
@@ -8,20 +8,20 @@ Compression stress check failed for Service I Limit State in Interval 2 Prestres
 Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Tension stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Compression stress check failed for Service I Limit State in Interval 12 Install composite overlay
-Compression stress check failed for Service I Limit State in Interval 18 Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 18 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Bursting zone check failed.
+Bursting check failed.
 Confinement zone check failed.
 Lifting checks failed
 Hauling checks failed
 Slab Offset ("A" Dimension) check failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 18.25    5   0.00                     1     2     Slab          42  0.6  270   9.57   9.42  11.25  11.25   4    2.0   18     4    2   2   0   0   0   4.000  5.000   2.958    -3.304     3036   0.276  0.460   7.148 -1.340  0.000 -0.206 -1.546 222.35  485.50    1.00   14.00   14.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 18.25    5   0.00                     1     2     Slab          42  0.6  270   9.57   9.42  11.25  11.25   4    2.0   18     4    2   2   0   0   0   4.000  5.000   2.942    -3.279     2991   0.265  0.456   7.153 -1.340  0.000 -0.206 -1.546 222.35  485.50    1.00   14.00   14.00    2.77    1.82    3.59    3.48    3.21 
 
 
 The Specification Check was Not Successful
@@ -29,11 +29,11 @@ Compression stress check failed for Service I Limit State in Interval 2 Prestres
 Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Tension stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Compression stress check failed for Service I Limit State in Interval 12 Install composite overlay
-Compression stress check failed for Service I Limit State in Interval 18 Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 18 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Bursting zone check failed.
+Bursting check failed.
 Confinement zone check failed.
 Lifting checks failed
 Hauling checks failed

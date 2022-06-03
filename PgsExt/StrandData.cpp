@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -531,7 +531,7 @@ bool CStrandData::operator==(const CStrandData& rOther) const
       return false;
    }
 
-   if ( m_NumPermStrandsType == pgsTypes::sdtDirectRowInput || m_NumPermStrandsType == pgsTypes::sdtDirectStrandInput )
+   if ( IsDirectStrandModel(m_NumPermStrandsType))
    {
       for (Uint16 i = 0; i < 4; i++)
       {
@@ -749,7 +749,7 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
          m_NumPermStrandsType = (pgsTypes::StrandDefinitionType)var.lVal;
       }
 
-      if (m_NumPermStrandsType == pgsTypes::sdtDirectRowInput || m_NumPermStrandsType == pgsTypes::sdtDirectStrandInput)
+      if (IsDirectStrandModel(m_NumPermStrandsType))
       {
          // added in version 13 for sdtDirectRowInput and version 17 for sdtDirectStrandInput
          hr = pStrLoad->BeginUnit(_T("StrandRows"));
@@ -1107,7 +1107,7 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
          m_AdjustableStrandType = pgsTypes::asHarped;
       }
 
-      if ( 5.0 <= version && (m_NumPermStrandsType != pgsTypes::sdtDirectRowInput && m_NumPermStrandsType != pgsTypes::sdtDirectStrandInput) )
+      if ( 5.0 <= version && !IsDirectStrandModel(m_NumPermStrandsType))
       {
          // not writing this data if NumPermStrandsType is sdtDirectRowInput... this was added in version 13 of the data block
          // not writing this data if NumPermStrandsType is sdtDirectStrandInput... this was added in version 17 of the data block
@@ -1186,7 +1186,7 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
          var.Clear();
          var.vt = VT_I4;
          hr = pStrLoad->get_Property(_T("StrandMaterialKey"),&var);
-         Int32 key = var.lVal;
+         Int64 key = var.lVal;
          if ( version < 15 )
          {
             key |= matPsStrand::None; // add default encoding for stand coating type... added in version 15
@@ -1203,7 +1203,7 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
          var.Clear();
          var.vt = VT_I4;
          hr = pStrLoad->get_Property(_T("StraightStrandMaterialKey"),&var);
-         Int32 key = var.lVal;
+         Int64 key = var.lVal;
          if ( version < 15 )
          {
             key |= matPsStrand::None; // add default encoding for stand coating type... added in version 15
@@ -1240,7 +1240,7 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
       THROW_LOAD(InvalidFileFormat,pStrLoad);
    }
 
-   if ( m_NumPermStrandsType == pgsTypes::sdtDirectRowInput || m_NumPermStrandsType == pgsTypes::sdtDirectStrandInput)
+   if ( IsDirectStrandModel(m_NumPermStrandsType))
    {
       ProcessStrandRowData();
    }
@@ -1263,7 +1263,7 @@ HRESULT CStrandData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
    pStrSave->put_Property(_T("NumPermStrandsType"), CComVariant(m_NumPermStrandsType));
 
-   if ( m_NumPermStrandsType == pgsTypes::sdtDirectRowInput || m_NumPermStrandsType == pgsTypes::sdtDirectStrandInput )
+   if ( IsDirectStrandModel(m_NumPermStrandsType))
    {
       // added in version 13 for sdtDirectRowInput and version 17 for sdtDirectStrandInput
       pStrSave->BeginUnit(_T("StrandRows"),2.0);
@@ -1409,7 +1409,7 @@ HRESULT CStrandData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->put_Property(_T("TempStrandUsage"),CComVariant(m_TempStrandUsage));
    pStrSave->put_Property(_T("AdjustableStrandType"),CComVariant(m_AdjustableStrandType)); // added version 14.
 
-   if ( m_NumPermStrandsType != pgsTypes::sdtDirectRowInput && m_NumPermStrandsType != pgsTypes::sdtDirectStrandInput )
+   if ( IsGridBasedStrandModel(m_NumPermStrandsType))
    {
       // not writing this data if NumPermStrandsType is sdtDirectRowInput... this was added in version 13 of the data block
       pStrSave->put_Property(_T("SymmetricDebond"),CComVariant(m_bSymmetricDebond));
@@ -1452,7 +1452,7 @@ HRESULT CStrandData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    ///////////////// Added with data block version 11
    // version 15... strand pool key began including a value for strand coating type
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
-   Int32 key = pPool->GetStrandKey(m_StrandMaterial[pgsTypes::Straight]);
+   Int64 key = pPool->GetStrandKey(m_StrandMaterial[pgsTypes::Straight]);
    pStrSave->put_Property(_T("StraightStrandMaterialKey"),CComVariant(key));
    
    key = pPool->GetStrandKey(m_StrandMaterial[pgsTypes::Harped]);
@@ -1682,7 +1682,7 @@ bool CStrandData::GetStrandRow(pgsTypes::StrandType strandType, StrandIndexType 
 
 void CStrandData::SetStrandCount(pgsTypes::StrandType strandType,StrandIndexType nStrands)
 {
-   ATLASSERT( m_NumPermStrandsType != pgsTypes::sdtDirectRowInput && m_NumPermStrandsType != pgsTypes::sdtDirectStrandInput);
+   ATLASSERT(!IsDirectStrandModel(m_NumPermStrandsType));
    m_Nstrands[strandType] = nStrands;
 }
 
@@ -2194,5 +2194,13 @@ void CStrandData::ProcessStrandRowData()
 #if defined _DEBUG
 void CStrandData::AssertValid()
 {
+   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+
+   // permanent strands must be the same grade and type
+   // which implies strands all have same properties (such as ultimate and yield strands and modulus of elasticity)
+   // this assumption of them being all the same is inherent throught the software
+   ATLASSERT(pPool->CompareStrands(m_StrandMaterial[pgsTypes::Straight], m_StrandMaterial[pgsTypes::Harped]));
+   //ATLASSERT(pPool->CompareStrands(m_StrandMaterial[pgsTypes::Straight], m_StrandMaterial[pgsTypes::Temporary]));
+   //ATLASSERT(pPool->CompareStrands(m_StrandMaterial[pgsTypes::Harped], m_StrandMaterial[pgsTypes::Temporary]));
 }
 #endif

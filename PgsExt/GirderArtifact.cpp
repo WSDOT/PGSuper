@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -295,17 +295,17 @@ bool pgsGirderArtifact::IsDeckWithRebarAllowableStressApplicable(const StressChe
    return false;
 }
 
-Float64 pgsGirderArtifact::GetRequiredGirderConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState) const
+Float64 pgsGirderArtifact::GetRequiredGirderConcreteStrength(pgsTypes::StressType stressType, IntervalIndexType intervalIdx,pgsTypes::LimitState limitState) const
 {
    Float64 f = 0;
    for (const auto& item : m_SegmentArtifacts)
    {
       const auto& artifact(item.second);
       ATLASSERT(item.first == artifact.GetSegmentKey());
-      Float64 required = artifact.GetRequiredSegmentConcreteStrength(intervalIdx,limitState);
+      Float64 required = artifact.GetRequiredSegmentConcreteStrength(stressType,intervalIdx,limitState);
       if ( required < 0 )
       {
-         ATLASSERT(required == -99999); // there is not a concrete strength that will work
+         ATLASSERT(required == NO_AVAILABLE_CONCRETE_STRENGTH); // there is not a concrete strength that will work
          return required;
       }
 
@@ -324,7 +324,7 @@ Float64 pgsGirderArtifact::GetRequiredGirderConcreteStrength() const
       Float64 required = artifact.GetRequiredSegmentConcreteStrength();
       if ( required < 0 )
       {
-         ATLASSERT(required == -99999); // there is not a concrete strength that will work
+         ATLASSERT(required == NO_AVAILABLE_CONCRETE_STRENGTH); // there is not a concrete strength that will work
          return required;
       }
 
@@ -333,17 +333,17 @@ Float64 pgsGirderArtifact::GetRequiredGirderConcreteStrength() const
    return f;
 }
 
-Float64 pgsGirderArtifact::GetRequiredDeckConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState) const
+Float64 pgsGirderArtifact::GetRequiredDeckConcreteStrength(pgsTypes::StressType stressType, IntervalIndexType intervalIdx,pgsTypes::LimitState limitState) const
 {
    Float64 f = 0;
    for (const auto& item : m_SegmentArtifacts)
    {
       const auto& artifact(item.second);
       ATLASSERT(item.first == artifact.GetSegmentKey());
-      Float64 required = artifact.GetRequiredDeckConcreteStrength(intervalIdx,limitState);
+      Float64 required = artifact.GetRequiredDeckConcreteStrength(stressType,intervalIdx,limitState);
       if ( required < 0 )
       {
-         ATLASSERT(required == -99999); // there is not a concrete strength that will work
+         ATLASSERT(required == NO_AVAILABLE_CONCRETE_STRENGTH); // there is not a concrete strength that will work
          return required;
       }
 
@@ -362,7 +362,7 @@ Float64 pgsGirderArtifact::GetRequiredDeckConcreteStrength() const
       Float64 required = artifact.GetRequiredDeckConcreteStrength();
       if ( required < 0 )
       {
-         ATLASSERT(required == -99999); // there is not a concrete strength that will work
+         ATLASSERT(required == NO_AVAILABLE_CONCRETE_STRENGTH); // there is not a concrete strength that will work
          return required;
       }
 
@@ -381,7 +381,7 @@ Float64 pgsGirderArtifact::GetRequiredReleaseStrength() const
       Float64 required = artifact.GetRequiredReleaseStrength();
       if ( required < 0 )
       {
-         ATLASSERT(required == -99999); // there is not a concrete strength that will work
+         ATLASSERT(required == NO_AVAILABLE_CONCRETE_STRENGTH); // there is not a concrete strength that will work
          return required;
       }
 

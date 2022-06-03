@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -447,12 +447,8 @@ void CGirderSelectStrandsPage::OnPaint()
    CComPtr<IPoint2d> objOrg;
    shape_box->get_BottomCenter(&objOrg);
 
-   gpPoint2d orgin;
-   Float64 x,y;
-   objOrg->get_X(&x);
-   objOrg->get_Y(&y);
-   orgin.X() = x;
-   orgin.Y() = y;
+   GraphPoint orgin;
+   objOrg->Location(&orgin.X(), &orgin.Y());
 
    // Get height and width of the area occupied by all possible strand locations
 
@@ -486,12 +482,12 @@ void CGirderSelectStrandsPage::OnPaint()
                               IBeamFactory::BeamTop, 0.0, IBeamFactory::BeamBottom, 0.0, 
                               end_incr, hp_incr, &strand_mover);
 
-   gpRect2d strand_bounds = ComputeStrandBounds(strand_mover, absol_end_offset, absol_hp_offset);
+   auto strand_bounds = ComputeStrandBounds(strand_mover, absol_end_offset, absol_hp_offset);
 
-   gpSize2d world_size;
+   GraphSize world_size;
    world_size.Dx() = Max(top_width,bottom_width,strand_bounds.Width());
-
    world_size.Dy() = Max(height,strand_bounds.Height());
+
    if ( IsZero(world_size.Dy()) )
    {
       world_size.Dy() = world_size.Dx()/2;
@@ -587,7 +583,9 @@ void CGirderSelectStrandsPage::DrawShape(CDC* pDC,IShape* shape,grlibPointMapper
    objPoints->get__Enum(&enumPoints);
    while ( enumPoints->Next(1,&point,nullptr) != S_FALSE )
    {
-      mapper.WPtoDP(point,&dx,&dy);
+      GraphPoint pnt;
+      point->Location(&pnt.X(), &pnt.Y());
+      mapper.WPtoDP(pnt,&dx,&dy);
 
       points[i] = CPoint(dx,dy);
 
@@ -741,7 +739,7 @@ void CGirderSelectStrandsPage::DrawStrands(CDC* pDC, grlibPointMapper& Mapper, I
    pDC->SelectObject(pOldPen);
 }
 
-void PrintNumber(CDC* pDC, grlibPointMapper& Mapper, const gpPoint2d& loc, StrandIndexType strandIdx)
+void PrintNumber(CDC* pDC, grlibPointMapper& Mapper, const GraphPoint& loc, StrandIndexType strandIdx)
 {
    long x, y;
    Mapper.WPtoDP(loc.X(), loc.Y(), &x, &y);
@@ -781,7 +779,7 @@ StrandIndexType CGirderSelectStrandsPage::DrawStrand(CDC* pDC, grlibPointMapper&
    index++;
 
    if ( m_DrawNumbers )
-      PrintNumber(pDC, Mapper, gpPoint2d(x,y), index);
+      PrintNumber(pDC, Mapper, GraphPoint(x,y), index);
 
    if (0.0 < x)
    {
@@ -806,7 +804,7 @@ StrandIndexType CGirderSelectStrandsPage::DrawStrand(CDC* pDC, grlibPointMapper&
 
       index++;
 
-      gpPoint2d np(-x,y);
+      GraphPoint np(-x,y);
       if ( m_DrawNumbers )
          PrintNumber(pDC, Mapper, np, index);
    }
@@ -1456,9 +1454,6 @@ Float64 CGirderSelectStrandsPage::GetMaxPjack(StrandIndexType nStrands,pgsTypes:
    EAFGetBroker(&pBroker);
    GET_IFACE2( pBroker, IPretensionForce, pPSForce );
 
-   if ( strandType == pgsTypes::Permanent )
-      strandType = pgsTypes::Straight;
-
 
    // TRICK CODE
    // If strand stresses are limited immediate prior to transfer, prestress losses must be computed between jacking and prestress transfer in 
@@ -1496,9 +1491,6 @@ Float64 CGirderSelectStrandsPage::GetMaxPjack(StrandIndexType nStrands,pgsTypes:
 
 Float64 CGirderSelectStrandsPage::GetUltPjack(StrandIndexType nStrands,pgsTypes::StrandType strandType)
 {
-   if ( strandType == pgsTypes::Permanent )
-      strandType = pgsTypes::Straight;
-
    const matPsStrand* pStrand = m_pStrands->GetStrandMaterial(strandType);
 
    // Ultimate strength of strand group

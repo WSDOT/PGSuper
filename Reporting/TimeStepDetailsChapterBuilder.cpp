@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -171,9 +171,55 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       pPara->SetName(str);
    }
 
+
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    IntervalIndexType firstIntervalIdx = (rptIntervalIdx == INVALID_INDEX ? 0 : rptIntervalIdx);
-   IntervalIndexType lastIntervalIdx  = (rptIntervalIdx == INVALID_INDEX ? nIntervals-1 : rptIntervalIdx);
+   IntervalIndexType lastIntervalIdx = (rptIntervalIdx == INVALID_INDEX ? nIntervals - 1 : rptIntervalIdx);
+
+   if (vPoi.size() == 1)
+   {
+      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+      *pChapter << pPara;
+      pPara->SetName(_T("Creep Details"));
+      *pPara << pPara->GetName() << rptNewLine;
+
+      ReportCreepDetails(pChapter, pBroker, vPoi.front(), firstIntervalIdx, lastIntervalIdx, pDisplayUnits);
+
+      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+      *pChapter << pPara;
+      pPara->SetName(_T("Shrinkage Details"));
+      *pPara << pPara->GetName() << rptNewLine;
+
+      ReportShrinkageDetails(pChapter, pBroker, vPoi.front(), firstIntervalIdx, lastIntervalIdx, pDisplayUnits);
+
+      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+      *pChapter << pPara;
+      pPara->SetName(_T("Relaxation Details"));
+      *pPara << pPara->GetName() << rptNewLine;
+
+      ReportStrandRelaxationDetails(pChapter, pBroker, vPoi.front(), firstIntervalIdx, lastIntervalIdx, pDisplayUnits);
+
+      if (0 < nSegmentDucts)
+      {
+         ReportSegmentTendonRelaxationDetails(pChapter, pBroker, vPoi.front(), firstIntervalIdx, lastIntervalIdx, pDisplayUnits);
+      }
+
+      if (0 < nGirderDucts)
+      {
+         ReportGirderTendonRelaxationDetails(pChapter, pBroker, vPoi.front(), firstIntervalIdx, lastIntervalIdx, pDisplayUnits);
+      }
+   }
+   else
+   {
+      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+      *pChapter << pPara;
+      pPara->SetName(_T("Creep, Shrinkage and Relaxation Details"));
+      *pPara << pPara->GetName() << rptNewLine;
+      pPara = new rptParagraph;
+      *pChapter << pPara;
+      *pPara << _T("Creep, shrinkage and relaxation details for multiple cross sections results in a very large report. Create a Time Step Details report for a specific section to see the calculation details at that section.") << rptNewLine;
+   }
+
    for ( IntervalIndexType intervalIdx = firstIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++ )
    {
       CGirderKey prevGirderKey;
@@ -254,7 +300,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
          pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pChapter) << pPara;
-         (*pPara) << _T("Composite Transformed Section Properties") << rptNewLine;
+         (*pPara) << _T("Composite Transformed Section Properties using Age Adjusted Modulus") << rptNewLine;
          pPara = new rptParagraph;
          (*pChapter) << pPara;
          (*pPara) << rptRcImage(strImagePath + _T("TransformedProperties.png")) << rptNewLine;
@@ -263,145 +309,151 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          *pPara << Sub2(_T("Y"),_T("tr")) << _T(" is measured positive upwards from the top of girder (at the girder/deck interface).") << rptNewLine;
          *pPara << rptNewLine;
 
-         // Unrestrained creep deformation in concrete parts due to loads applied in previous intervals
-         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-         (*pChapter) << pPara;
-         (*pPara) << _T("Unrestrained creep deformation of concrete components due to loads applied in previous intervals") << rptNewLine;
-         pPara = new rptParagraph;
-         (*pChapter) << pPara;
-         (*pPara) << rptRcImage(strImagePath + _T("FreeCreep_Axial.png")) << rptNewLine;
-         (*pPara) << rptRcImage(strImagePath + _T("FreeCreep_Curvature.png")) << rptNewLine;
-         rptRcTable* pFreeCreepTable = BuildFreeCreepDeformationTable(tsDetails, bHasDeck, pDisplayUnits);
-         *pPara << pFreeCreepTable << rptNewLine;
-         *pPara << rptNewLine;
-
-         // Unrestrained shrinkage during this interval
-         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-         (*pChapter) << pPara;
-         (*pPara) << _T("Unrestrained shrinkage deformation of concrete components") << rptNewLine;
-         pPara = new rptParagraph;
-         (*pChapter) << pPara;
-         *pPara << _T("Girder: ") << DELTA_ESH << Super2(_T("x10"), _T("6")) << _T(" = ") << tsDetails.Girder.Shrinkage.esi*1E6 << rptNewLine;
-
-         if (bHasDeck)
+         Float64 duration = pIntervals->GetDuration(intervalIdx);
+         if (0 < duration)
          {
-            *pPara << _T("Deck: ") << DELTA_ESH << Super2(_T("x10"), _T("6")) << _T(" = ") << tsDetails.Deck.Shrinkage.esi*1E6 << rptNewLine;
-         }
-
-         *pPara << rptNewLine;
-
-         // Unrestrained strand relaxation
-         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-         (*pChapter) << pPara;
-         (*pPara) << _T("Apparent unrestrained deformation of strands due to relaxation") << rptNewLine;
-         pPara = new rptParagraph;
-         (*pChapter) << pPara;
-         (*pPara) << rptRcImage(strImagePath + _T("ApparentRelaxationStrain.png")) << rptNewLine;
-         rptRcTable* pStrandRelaxationTable = BuildStrandRelaxationTable(tsDetails, pDisplayUnits);
-         (*pPara) << pStrandRelaxationTable << rptNewLine;
-         (*pPara) << rptNewLine;
-
-         // Unrestrained tendon relaxation
-         if (0 < nSegmentDucts)
-         {
+            // Unrestrained creep deformation in concrete parts due to loads applied in previous intervals
             pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
             (*pChapter) << pPara;
-            (*pPara) << _T("Apparent unrestrained deformation of segment tendons due to relaxation") << rptNewLine;
+            (*pPara) << _T("Unrestrained creep deformation of concrete components due to loads applied in previous intervals") << rptNewLine;
+            pPara = new rptParagraph;
+            (*pChapter) << pPara;
+            (*pPara) << rptRcImage(strImagePath + _T("FreeCreep_Axial.png")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + _T("FreeCreep_Curvature.png")) << rptNewLine;
+            rptRcTable* pFreeCreepTable = BuildFreeCreepDeformationTable(tsDetails, bHasDeck, pDisplayUnits);
+            *pPara << pFreeCreepTable << rptNewLine;
+            *pPara << rptNewLine;
+
+            // Unrestrained shrinkage during this interval
+            pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+            (*pChapter) << pPara;
+            (*pPara) << _T("Unrestrained shrinkage deformation of concrete components") << rptNewLine;
+            pPara = new rptParagraph;
+            (*pChapter) << pPara;
+            *pPara << _T("Girder: ") << DELTA_ESH << Super2(_T("x10"), _T("6")) << _T(" = ") << tsDetails.Girder.Shrinkage.esi * 1E6 << rptNewLine;
+
+            if (bHasDeck)
+            {
+               *pPara << _T("Deck: ") << DELTA_ESH << Super2(_T("x10"), _T("6")) << _T(" = ") << tsDetails.Deck.Shrinkage.esi * 1E6 << rptNewLine;
+            }
+
+            *pPara << rptNewLine;
+
+            // Unrestrained strand relaxation
+            pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+            (*pChapter) << pPara;
+            (*pPara) << _T("Apparent unrestrained deformation of strands due to relaxation") << rptNewLine;
             pPara = new rptParagraph;
             (*pChapter) << pPara;
             (*pPara) << rptRcImage(strImagePath + _T("ApparentRelaxationStrain.png")) << rptNewLine;
-            rptRcTable* pTendonRelaxationTable = BuildSegmentTendonRelaxationTable(tsDetails, pDisplayUnits);
-            (*pPara) << pTendonRelaxationTable << rptNewLine;
+            rptRcTable* pStrandRelaxationTable = BuildStrandRelaxationTable(tsDetails, pDisplayUnits);
+            (*pPara) << pStrandRelaxationTable << rptNewLine;
             (*pPara) << rptNewLine;
-         }
 
-         if ( 0 < nGirderDucts )
-         {
+            // Unrestrained tendon relaxation
+            if (0 < nSegmentDucts)
+            {
+               pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+               (*pChapter) << pPara;
+               (*pPara) << _T("Apparent unrestrained deformation of segment tendons due to relaxation") << rptNewLine;
+               pPara = new rptParagraph;
+               (*pChapter) << pPara;
+               (*pPara) << rptRcImage(strImagePath + _T("ApparentRelaxationStrain.png")) << rptNewLine;
+               rptRcTable* pTendonRelaxationTable = BuildSegmentTendonRelaxationTable(tsDetails, pDisplayUnits);
+               (*pPara) << pTendonRelaxationTable << rptNewLine;
+               (*pPara) << rptNewLine;
+            }
+
+            if (0 < nGirderDucts)
+            {
+               pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+               (*pChapter) << pPara;
+               (*pPara) << _T("Apparent unrestrained deformation of girder tendons due to relaxation") << rptNewLine;
+               pPara = new rptParagraph;
+               (*pChapter) << pPara;
+               (*pPara) << rptRcImage(strImagePath + _T("ApparentRelaxationStrain.png")) << rptNewLine;
+               rptRcTable* pTendonRelaxationTable = BuildGirderTendonRelaxationTable(tsDetails, pDisplayUnits);
+               (*pPara) << pTendonRelaxationTable << rptNewLine;
+               (*pPara) << rptNewLine;
+            }
+
+            // Forces required to fully restrain each component
             pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
             (*pChapter) << pPara;
-            (*pPara) << _T("Apparent unrestrained deformation of girder tendons due to relaxation") << rptNewLine;
+            (*pPara) << _T("Component Restraining Forces") << rptNewLine;
             pPara = new rptParagraph;
             (*pChapter) << pPara;
-            (*pPara) << rptRcImage(strImagePath + _T("ApparentRelaxationStrain.png")) << rptNewLine;
-            rptRcTable* pTendonRelaxationTable = BuildGirderTendonRelaxationTable(tsDetails,pDisplayUnits);
-            (*pPara) << pTendonRelaxationTable << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + _T("IncrementalRestrainingForce_Axial.png")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + _T("IncrementalRestrainingForce_Moment.png")) << rptNewLine;
+            rptRcTable* pComponentRestrainingForcesTable = BuildComponentRestrainingForceTable(tsDetails, bHasDeck, pDisplayUnits);
+            (*pPara) << pComponentRestrainingForcesTable << rptNewLine;
             (*pPara) << rptNewLine;
+
+
+            // Forces required to fully restrain each component
+            pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+            (*pChapter) << pPara;
+            (*pPara) << _T("Section Restraining Forces") << rptNewLine;
+            pPara = new rptParagraph;
+            (*pChapter) << pPara;
+            (*pPara) << rptRcImage(strImagePath + _T("TotalRestrainingForce_Axial.png")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + _T("TotalRestrainingForce_Moment.png")) << rptNewLine;
+            rptRcTable* pSectionRestrainingForcesTable = BuildSectionRestrainingForceTable(tsDetails, pDisplayUnits);
+            (*pPara) << pSectionRestrainingForcesTable << rptNewLine;
+            (*pPara) << rptNewLine;
+
+            // Deformations required to fully restrain each component
+            pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+            (*pChapter) << pPara;
+            (*pPara) << _T("Section Restraining Deformations") << rptNewLine;
+            pPara = new rptParagraph;
+            (*pChapter) << pPara;
+            (*pPara) << rptRcImage(strImagePath + _T("TotalRestrainingDeformation_Axial.png")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + _T("TotalRestrainingDeformation_Curvature.png")) << rptNewLine;
+            rptRcTable* pSectionRestrainingDeformationTable = BuildSectionRestrainingDeformationTable(tsDetails, pDisplayUnits);
+            (*pPara) << pSectionRestrainingDeformationTable << rptNewLine;
+            (*pPara) << _T("Section restraining deformations are computed at multiple sections along the girder. It is assumed that deformations vary linerally between sections. The girder is analyzed for these deformations. The resulting section forces are listed in the Restrained Section Forces table below.") << rptNewLine;
+            (*pPara) << rptNewLine;
+
+            // Forces due to the external restraints of the strutural system
+            pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+            (*pChapter) << pPara;
+            (*pPara) << _T("Restrained Section Forces") << rptNewLine;
+            pPara = new rptParagraph;
+            (*pChapter) << pPara;
+            rptRcTable* pRestrainedSectionForcesTable = BuildRestrainedSectionForceTable(tsDetails, pDisplayUnits);
+            (*pPara) << pRestrainedSectionForcesTable << rptNewLine;
+            (*pPara) << _T("The restrained section forces are the secondary forces due to the structural system restraining the deformations due to creep, shrinkage, and relaxation.") << rptNewLine;
+            *pPara << rptNewLine;
+
+            // Restrained component forces
+            pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+            (*pChapter) << pPara;
+            (*pPara) << _T("Restrained Component Forces") << rptNewLine;
+            pPara = new rptParagraph;
+            (*pChapter) << pPara;
+            (*pPara) << rptRcImage(strImagePath + _T("RestrainedComponentForces_Axial.png")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + _T("RestrainedComponentForces_Moment.png")) << rptNewLine;
+            rptRcTable* pRestrainedComponentForcesTable = BuildRestrainedComponentForceTable(tsDetails, bHasDeck, pDisplayUnits);
+            (*pPara) << pRestrainedComponentForcesTable << rptNewLine;
+            *pPara << rptNewLine;
          }
+         else
+         {
+            // Incremental Forces due to loads applied during this interval
+            pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+            (*pChapter) << pPara;
+            (*pPara) << _T("Incremental forces due to external loads and restrained component forces during this interval.") << rptNewLine;
 
-         // Forces required to fully restrain each component
-         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-         (*pChapter) << pPara;
-         (*pPara) << _T("Component Restraining Forces") << rptNewLine;
-         pPara = new rptParagraph;
-         (*pChapter) << pPara;
-         (*pPara) << rptRcImage(strImagePath + _T("IncrementalRestrainingForce_Axial.png")) << rptNewLine;
-         (*pPara) << rptRcImage(strImagePath + _T("IncrementalRestrainingForce_Moment.png")) << rptNewLine;
-         rptRcTable* pComponentRestrainingForcesTable = BuildComponentRestrainingForceTable(tsDetails, bHasDeck, pDisplayUnits);
-         (*pPara) << pComponentRestrainingForcesTable << rptNewLine;
-         (*pPara) << rptNewLine;
+            pPara = new rptParagraph;
+            (*pChapter) << pPara;
+            (*pPara) << rptRcImage(strImagePath + _T("IncrementalForce_Axial.png")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + _T("IncrementalForce_Moment.png")) << rptNewLine;
 
-
-         // Forces required to fully restrain each component
-         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-         (*pChapter) << pPara;
-         (*pPara) << _T("Section Restraining Forces") << rptNewLine;
-         pPara = new rptParagraph;
-         (*pChapter) << pPara;
-         (*pPara) << rptRcImage(strImagePath + _T("TotalRestrainingForce_Axial.png")) << rptNewLine;
-         (*pPara) << rptRcImage(strImagePath + _T("TotalRestrainingForce_Moment.png")) << rptNewLine;
-         rptRcTable* pSectionRestrainingForcesTable = BuildSectionRestrainingForceTable(tsDetails, pDisplayUnits);
-         (*pPara) << pSectionRestrainingForcesTable << rptNewLine;
-         (*pPara) << rptNewLine;
-
-         // Deformations required to fully restrain each component
-         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-         (*pChapter) << pPara;
-         (*pPara) << _T("Section Restraining Deformations") << rptNewLine;
-         pPara = new rptParagraph;
-         (*pChapter) << pPara;
-         (*pPara) << rptRcImage(strImagePath + _T("TotalRestrainingDeformation_Axial.png")) << rptNewLine;
-         (*pPara) << rptRcImage(strImagePath + _T("TotalRestrainingDeformation_Curvature.png")) << rptNewLine;
-         rptRcTable* pSectionRestrainingDeformationTable = BuildSectionRestrainingDeformationTable(tsDetails, pDisplayUnits);
-         (*pPara) << pSectionRestrainingDeformationTable << rptNewLine;
-         (*pPara) << _T("Section restraining deformations are computed at multiple sections along the girder. It is assumed that deformations vary linerally between sections. The girder is analyzed for these deformations. The resulting section forces are listed in the Restrained Section Forces table below.") << rptNewLine;
-         (*pPara) << rptNewLine;
-
-         // Forces due to the external restraints of the strutural system
-         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-         (*pChapter) << pPara;
-         (*pPara) << _T("Restrained Section Forces") << rptNewLine;
-         pPara = new rptParagraph;
-         (*pChapter) << pPara;
-         rptRcTable* pRestrainedSectionForcesTable = BuildRestrainedSectionForceTable(tsDetails, pDisplayUnits);
-         (*pPara) << pRestrainedSectionForcesTable << rptNewLine;
-         (*pPara) << _T("The restrained section forces are the secondary forces due to the structural system restraining the deformations due to creep, shrinkage, and relaxation.") << rptNewLine;
-         *pPara << rptNewLine;
-
-         // Restrained component forces
-         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-         (*pChapter) << pPara;
-         (*pPara) << _T("Restrained Component Forces") << rptNewLine;
-         pPara = new rptParagraph;
-         (*pChapter) << pPara;
-         (*pPara) << rptRcImage(strImagePath + _T("RestrainedComponentForces_Axial.png")) << rptNewLine;
-         (*pPara) << rptRcImage(strImagePath + _T("RestrainedComponentForces_Moment.png")) << rptNewLine;
-         rptRcTable* pRestrainedComponentForcesTable = BuildRestrainedComponentForceTable(tsDetails, bHasDeck, pDisplayUnits);
-         (*pPara) << pRestrainedComponentForcesTable << rptNewLine;
-         *pPara << rptNewLine;
-
-         // Incremental Forces due to loads applied during this interval
-         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-         (*pChapter) << pPara;
-         (*pPara) << _T("Incremental forces due to external loads and restrained component forces during this interval.") << rptNewLine;
-
-         pPara = new rptParagraph;
-         (*pChapter) << pPara;
-         (*pPara) << rptRcImage(strImagePath + _T("IncrementalForce_Axial.png")) << rptNewLine;
-         (*pPara) << rptRcImage(strImagePath + _T("IncrementalForce_Moment.png")) << rptNewLine;
-
-         rptRcTable* pIncForcesTable = BuildIncrementalForceTable(pBroker,vLoads,tsDetails, bHasDeck, pDisplayUnits);
-         (*pPara) << pIncForcesTable << rptNewLine;
-         *pPara << rptNewLine;
+            rptRcTable* pIncForcesTable = BuildIncrementalForceTable(pBroker, vLoads, tsDetails, bHasDeck, pDisplayUnits);
+            (*pPara) << pIncForcesTable << rptNewLine;
+            *pPara << rptNewLine;
+         }
 
          // Incremental stresses due to loads applied during this interval
          pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
@@ -471,40 +523,6 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       }
    }
 
-   if ( vPoi.size() == 1 )
-   {
-      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
-      *pChapter << pPara;
-      pPara->SetName(_T("Creep Details"));
-      *pPara << pPara->GetName() << rptNewLine;
-
-      ReportCreepDetails(pChapter,pBroker,vPoi.front(),firstIntervalIdx,lastIntervalIdx,pDisplayUnits);
-
-      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
-      *pChapter << pPara;
-      pPara->SetName(_T("Shrinkage Details"));
-      *pPara << pPara->GetName() << rptNewLine;
-
-      ReportShrinkageDetails(pChapter,pBroker,vPoi.front(),firstIntervalIdx,lastIntervalIdx,pDisplayUnits);
-
-      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
-      *pChapter << pPara;
-      pPara->SetName(_T("Relaxation Details"));
-      *pPara << pPara->GetName() << rptNewLine;
-
-      ReportStrandRelaxationDetails(pChapter,pBroker,vPoi.front(),firstIntervalIdx,lastIntervalIdx,pDisplayUnits);
-      
-      if (0 < nSegmentDucts)
-      {
-         ReportSegmentTendonRelaxationDetails(pChapter, pBroker, vPoi.front(), firstIntervalIdx, lastIntervalIdx, pDisplayUnits);
-      }
-
-      if ( 0 < nGirderDucts )
-      {
-         ReportGirderTendonRelaxationDetails(pChapter,pBroker,vPoi.front(),firstIntervalIdx,lastIntervalIdx,pDisplayUnits);
-      }
-   }
-
    return pChapter;
 }
 
@@ -536,7 +554,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIntervalTable(const TIME_STEP_D
 
 rptRcTable* CTimeStepDetailsChapterBuilder::BuildConcreteTable(const TIME_STEP_DETAILS& tsDetails, const CSegmentKey& segmentKey,IMaterials* pMaterials, IEAFDisplayUnits* pDisplayUnits) const
 {
-   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(7);
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(13);
    pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_LEFT));
    pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CJ_LEFT));
    pTable->SetNumberOfHeaderRows(2);
@@ -545,40 +563,59 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildConcreteTable(const TIME_STEP_D
    pTable->SetRowSpan(1, 0, SKIP_CELL);
    (*pTable)(0, 0) << _T("Component");
 
-   pTable->SetColumnSpan(0, 1, 2);
-   pTable->SetColumnSpan(0, 2, SKIP_CELL);
+   pTable->SetColumnSpan(0, 1, 3);
    (*pTable)(0, 1) << _T("Start");
 
-   pTable->SetColumnSpan(0, 3, 2);
-   pTable->SetColumnSpan(0, 4, SKIP_CELL);
-   (*pTable)(0, 3) << _T("Middle");
+   pTable->SetColumnSpan(0, 4, 6);
+   (*pTable)(0, 4) << _T("Middle");
 
-   pTable->SetColumnSpan(0, 5, 2);
-   pTable->SetColumnSpan(0, 6, SKIP_CELL);
-   (*pTable)(0, 5) << _T("End");
+   pTable->SetColumnSpan(0, 10, 3);
+   (*pTable)(0, 10) << _T("End");
 
-   (*pTable)(1, 1) << COLHDR(Sub2(_T("f"), _T("c")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-   (*pTable)(1, 2) << COLHDR(Sub2(_T("E"), _T("c")), rptStressUnitTag, pDisplayUnits->GetModEUnit());
-   (*pTable)(1, 3) << COLHDR(Sub2(_T("f"), _T("c")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-   (*pTable)(1, 4) << COLHDR(Sub2(_T("E"), _T("c")), rptStressUnitTag, pDisplayUnits->GetModEUnit());
-   (*pTable)(1, 5) << COLHDR(Sub2(_T("f"), _T("c")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-   (*pTable)(1, 6) << COLHDR(Sub2(_T("E"), _T("c")), rptStressUnitTag, pDisplayUnits->GetModEUnit());
+   ColumnIndexType col = 1;
+   // start
+   (*pTable)(1, col++) << _T("Age") << rptNewLine << _T("(days)");
+   (*pTable)(1, col++) << COLHDR(Sub2(_T("f"), _T("c")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(1, col++) << COLHDR(Sub2(_T("E"), _T("c")), rptStressUnitTag, pDisplayUnits->GetModEUnit());
+   // middle
+   (*pTable)(1, col++) << _T("Age") << rptNewLine << _T("(days)");
+   (*pTable)(1, col++) << COLHDR(Sub2(_T("f"), _T("c")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(1, col++) << COLHDR(Sub2(_T("E"), _T("c")), rptStressUnitTag, pDisplayUnits->GetModEUnit());
+   (*pTable)(1, col++) << symbol(chi) << _T("(") << Sub2(_T("i"),_T("m")) << _T(")");
+   (*pTable)(1, col++) << CREEP(Sub2(_T("i"), _T("e")), Sub2(_T("i"), _T("m")));
+   (*pTable)(1, col++) << COLHDR(Sub2(_T("E"), _T("ce")), rptStressUnitTag, pDisplayUnits->GetModEUnit());
+   // end
+   (*pTable)(1, col++) << _T("Age") << rptNewLine << _T("(days)");
+   (*pTable)(1, col++) << COLHDR(Sub2(_T("f"), _T("c")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(1, col++) << COLHDR(Sub2(_T("E"), _T("c")), rptStressUnitTag, pDisplayUnits->GetModEUnit());
 
    INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
    INIT_UV_PROTOTYPE(rptStressUnitValue, modE, pDisplayUnits->GetModEUnit(), false);
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
-   ColumnIndexType col = 0;
-
+   col = 0;
    (*pTable)(row, col++) << _T("Girder");
    for (int t = 0; t < 3; t++)
    {
       pgsTypes::IntervalTimeType timeType = (pgsTypes::IntervalTimeType)(t);
+      Float64 age = pMaterials->GetSegmentConcreteAge(segmentKey, tsDetails.intervalIdx, timeType);
       Float64 fc = pMaterials->GetSegmentFc(segmentKey, tsDetails.intervalIdx, timeType);
       Float64 Ec = pMaterials->GetSegmentEc(segmentKey, tsDetails.intervalIdx, timeType);
 
+      (*pTable)(row, col++) << age;
       (*pTable)(row, col++) << stress.SetValue(fc);
       (*pTable)(row, col++) << modE.SetValue(Ec);
+
+      if (timeType == pgsTypes::Middle)
+      {
+         Float64 X = pMaterials->GetSegmentAgingCoefficient(segmentKey, tsDetails.intervalIdx);
+         Float64 Y = pMaterials->GetSegmentCreepCoefficient(segmentKey, tsDetails.intervalIdx, pgsTypes::Middle, tsDetails.intervalIdx, pgsTypes::End);
+         Float64 Ece = pMaterials->GetSegmentAgeAdjustedEc(segmentKey, tsDetails.intervalIdx);
+
+         (*pTable)(row, col++) << X;
+         (*pTable)(row, col++) << Y;
+         (*pTable)(row, col++) << modE.SetValue(Ece);
+      }
    }
    row++;
 
@@ -597,11 +634,24 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildConcreteTable(const TIME_STEP_D
       for (int t = 0; t < 3; t++)
       {
          pgsTypes::IntervalTimeType timeType = (pgsTypes::IntervalTimeType)(t);
+         Float64 age = pMaterials->GetDeckConcreteAge(regionIdx, tsDetails.intervalIdx, timeType);
          Float64 fc = pMaterials->GetDeckFc(regionIdx, tsDetails.intervalIdx, timeType);
          Float64 Ec = pMaterials->GetDeckEc(regionIdx, tsDetails.intervalIdx, timeType);
 
+         (*pTable)(row, col++) << age;
          (*pTable)(row, col++) << stress.SetValue(fc);
          (*pTable)(row, col++) << modE.SetValue(Ec);
+
+         if (timeType == pgsTypes::Middle)
+         {
+            Float64 X = pMaterials->GetDeckAgingCoefficient(regionIdx, tsDetails.intervalIdx);
+            Float64 Y = pMaterials->GetDeckCreepCoefficient(regionIdx, tsDetails.intervalIdx, pgsTypes::Middle, tsDetails.intervalIdx, pgsTypes::End);
+            Float64 Ece = pMaterials->GetDeckAgeAdjustedEc(regionIdx, tsDetails.intervalIdx);
+
+            (*pTable)(row, col++) << X;
+            (*pTable)(row, col++) << Y;
+            (*pTable)(row, col++) << modE.SetValue(Ece);
+         }
       }
       row++;
    }
@@ -633,7 +683,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildComponentPropertiesTable(const 
    rowIdx = pTable->GetNumberOfHeaderRows();
    colIdx = 0;
    (*pTable)(rowIdx,colIdx++) << _T("Girder");
-   (*pTable)(rowIdx,colIdx++) << modE.SetValue(tsDetails.Girder.E);
+   (*pTable)(rowIdx,colIdx++) << modE.SetValue(tsDetails.Girder.Ea);
    (*pTable)(rowIdx,colIdx++) << area.SetValue(tsDetails.Girder.An);
    (*pTable)(rowIdx,colIdx++) << momI.SetValue(tsDetails.Girder.In);
    (*pTable)(rowIdx,colIdx++) << ecc.SetValue(tsDetails.Girder.Yn);
@@ -684,7 +734,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildComponentPropertiesTable(const 
       rowIdx++;
       colIdx = 0;
       (*pTable)(rowIdx, colIdx++) << _T("Deck");
-      (*pTable)(rowIdx, colIdx++) << modE.SetValue(tsDetails.Deck.E);
+      (*pTable)(rowIdx, colIdx++) << modE.SetValue(tsDetails.Deck.Ea);
       (*pTable)(rowIdx, colIdx++) << area.SetValue(tsDetails.Deck.An);
       (*pTable)(rowIdx, colIdx++) << momI.SetValue(tsDetails.Deck.In);
       (*pTable)(rowIdx, colIdx++) << ecc.SetValue(tsDetails.Deck.Yn);
@@ -788,7 +838,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildSectionPropertiesTable(const TI
    rowIdx = pTable->GetNumberOfHeaderRows();
    colIdx = 0;
    (*pTable)(rowIdx,colIdx++) << _T("Composite Section");
-   (*pTable)(rowIdx,colIdx++) << modE.SetValue(tsDetails.Girder.E);
+   (*pTable)(rowIdx,colIdx++) << modE.SetValue(tsDetails.Girder.Ea);
    (*pTable)(rowIdx,colIdx++) << area.SetValue(tsDetails.Atr);
    (*pTable)(rowIdx,colIdx++) << momI.SetValue(tsDetails.Itr);
    (*pTable)(rowIdx,colIdx++) << ecc.SetValue(tsDetails.Ytr);
@@ -1267,12 +1317,12 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildRestrainedComponentForceTable(c
 
    rowIdx++;
    colIdx = 1;
-   (*pTable)(rowIdx,colIdx++) << COLHDR(Overline(symbol(DELTA) << _T("P")) << Sub(_T("r")),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
-   (*pTable)(rowIdx,colIdx++) << COLHDR(Overline(symbol(DELTA) << _T("M")) << Sub(_T("r")),rptMomentUnitTag,pDisplayUnits->GetSmallMomentUnit());
-   (*pTable)(rowIdx,colIdx++) << COLHDR(Overline(symbol(DELTA) << _T("P")) << Sub(_T("r")),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
-   (*pTable)(rowIdx,colIdx++) << COLHDR(Overline(symbol(DELTA) << _T("M")) << Sub(_T("r")),rptMomentUnitTag,pDisplayUnits->GetSmallMomentUnit());
-   (*pTable)(rowIdx,colIdx++) << COLHDR(Overline(symbol(DELTA) << _T("P")) << Sub(_T("r")),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
-   (*pTable)(rowIdx,colIdx++) << COLHDR(Overline(symbol(DELTA) << _T("M")) << Sub(_T("r")),rptMomentUnitTag,pDisplayUnits->GetSmallMomentUnit());
+   (*pTable)(rowIdx,colIdx++) << COLHDR(symbol(DELTA) << _T("P") << Sub(_T("k")),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+   (*pTable)(rowIdx,colIdx++) << COLHDR(symbol(DELTA) << _T("M") << Sub(_T("k")),rptMomentUnitTag,pDisplayUnits->GetSmallMomentUnit());
+   (*pTable)(rowIdx,colIdx++) << COLHDR(symbol(DELTA) << _T("P") << Sub(_T("k")),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+   (*pTable)(rowIdx,colIdx++) << COLHDR(symbol(DELTA) << _T("M") << Sub(_T("k")),rptMomentUnitTag,pDisplayUnits->GetSmallMomentUnit());
+   (*pTable)(rowIdx,colIdx++) << COLHDR(symbol(DELTA) << _T("P") << Sub(_T("k")),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+   (*pTable)(rowIdx,colIdx++) << COLHDR(symbol(DELTA) << _T("M") << Sub(_T("k")),rptMomentUnitTag,pDisplayUnits->GetSmallMomentUnit());
 
 
    rowIdx = pTable->GetNumberOfHeaderRows();
@@ -1756,7 +1806,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
    INIT_UV_PROTOTYPE(rptStressUnitValue,     stress,      pDisplayUnits->GetStressUnit(),    false);
 
    IndexType nLoads = vLoads.size();
-   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nLoads+3);
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nLoads+3+3);
    pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CJ_LEFT));
    pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CJ_LEFT));
    pTable->SetNumberOfHeaderRows(2);
@@ -1785,6 +1835,14 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
 
    pTable->SetRowSpan(rowIdx,colIdx,2);
    (*pTable)(rowIdx,colIdx++) << COLHDR(_T("Cumulative") << rptNewLine << _T("Total"),rptStressUnitTag,pDisplayUnits->GetStressUnit());
+
+   pTable->SetColumnSpan(rowIdx, colIdx, 3);
+   (*pTable)(rowIdx, colIdx) << _T("Cumulative Losses");
+   rowIdx++;
+   (*pTable)(rowIdx, colIdx++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftCreep), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(rowIdx, colIdx++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftShrinkage), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(rowIdx, colIdx++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftRelaxation), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+
 
    // Label the rows in column 0
    rowIdx = pTable->GetNumberOfHeaderRows();
@@ -1830,10 +1888,10 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
    }
 
    // fill the table
-   Float64 f_top_girder[2] = {0,0};
-   Float64 f_bot_girder[2] = {0,0};
-   Float64 f_top_deck[2]   = {0,0};
-   Float64 f_bot_deck[2]   = {0,0};
+   std::array<Float64, 2> f_top_girder = {0,0};
+   std::array<Float64, 2> f_bot_girder = {0,0};
+   std::array<Float64, 2> f_top_deck   = {0,0};
+   std::array<Float64, 2> f_bot_deck   = {0,0};
    colIdx = 1;
    for ( IndexType i = 0; i < nLoads; i++, colIdx++ )
    {
@@ -1880,7 +1938,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
       }
    } // next loading
 
-   // Totals
+   // Incremental Totals
    rowIdx = pTable->GetNumberOfHeaderRows();
 
    // Girder
@@ -1945,6 +2003,64 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
    for (const auto& tsTendon : tsDetails.GirderTendons)
    {
       (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsTendon.fpe);
+   }
+
+
+   // Cumulative Time-Dependent Effects
+   colIdx++;
+   rowIdx = pTable->GetNumberOfHeaderRows();
+
+   // Girder
+   (*pTable)(rowIdx, colIdx) << _T(""); //stress.SetValue(f_top_girder[rtCumulative]);
+   (*pTable)(rowIdx, colIdx+1) << _T(""); //stress.SetValue(f_top_girder[rtCumulative]);
+   (*pTable)(rowIdx, colIdx+2) << _T(""); //stress.SetValue(f_top_girder[rtCumulative]);
+   rowIdx++;
+
+   (*pTable)(rowIdx, colIdx) << _T(""); //stress.SetValue(f_bot_girder[rtCumulative]);
+   (*pTable)(rowIdx, colIdx+1) << _T(""); //stress.SetValue(f_bot_girder[rtCumulative]);
+   (*pTable)(rowIdx, colIdx+2) << _T(""); //stress.SetValue(f_bot_girder[rtCumulative]);
+   rowIdx++;
+
+   // Strands
+   for (int i = 0; i < 3; i++)
+   {
+      pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+      (*pTable)(rowIdx, colIdx) << stress.SetValue(tsDetails.Strands[strandType].fpei[pgsTypes::pftCreep]);
+      (*pTable)(rowIdx, colIdx+1) << stress.SetValue(tsDetails.Strands[strandType].fpei[pgsTypes::pftShrinkage]);
+      (*pTable)(rowIdx, colIdx+2) << stress.SetValue(tsDetails.Strands[strandType].fpei[pgsTypes::pftRelaxation]);
+      rowIdx++;
+   }
+
+   if (bHasDeck)
+   {
+      // Deck
+      (*pTable)(rowIdx, colIdx) << _T(""); //stress.SetValue(f_top_deck[rtCumulative]);
+      (*pTable)(rowIdx, colIdx+1) << _T(""); //stress.SetValue(f_top_deck[rtCumulative]);
+      (*pTable)(rowIdx, colIdx+2) << _T(""); //stress.SetValue(f_top_deck[rtCumulative]);
+      rowIdx++;
+
+      (*pTable)(rowIdx, colIdx) << _T(""); //stress.SetValue(f_bot_deck[rtCumulative]);
+      (*pTable)(rowIdx, colIdx+1) << _T(""); //stress.SetValue(f_bot_deck[rtCumulative]);
+      (*pTable)(rowIdx, colIdx+2) << _T(""); //stress.SetValue(f_bot_deck[rtCumulative]);
+      rowIdx++;
+   }
+
+   // Segment Tendons
+   for (const auto& tsTendon : tsDetails.SegmentTendons)
+   {
+      (*pTable)(rowIdx, colIdx) << stress.SetValue(tsTendon.fpei[pgsTypes::pftCreep]);
+      (*pTable)(rowIdx, colIdx+1) << stress.SetValue(tsTendon.fpei[pgsTypes::pftShrinkage]);
+      (*pTable)(rowIdx, colIdx+2) << stress.SetValue(tsTendon.fpei[pgsTypes::pftRelaxation]);
+      rowIdx++;
+   }
+
+   // Girder Tendons
+   for (const auto& tsTendon : tsDetails.GirderTendons)
+   {
+      (*pTable)(rowIdx, colIdx) << stress.SetValue(tsTendon.fpei[pgsTypes::pftCreep]);
+      (*pTable)(rowIdx, colIdx+1) << stress.SetValue(tsTendon.fpei[pgsTypes::pftShrinkage]);
+      (*pTable)(rowIdx, colIdx+2) << stress.SetValue(tsTendon.fpei[pgsTypes::pftRelaxation]);
+      rowIdx++;
    }
 
    return pTable;
@@ -2230,240 +2346,470 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
          }
       }
 
-      rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nColumns);
-      *pPara << pTable << rptNewLine;
-
-      RowIndexType rowIdx = 0;
-      ColumnIndexType colIdx = 0;
-      (*pTable)(rowIdx,colIdx++) << _T("Interval");
-      (*pTable)(rowIdx,colIdx++) << Sub2(_T("t"),_T("b")) << rptNewLine << _T("(day)");
-      (*pTable)(rowIdx,colIdx++) << Sub2(_T("t"),_T("e")) << rptNewLine << _T("(day)");
-      (*pTable)(rowIdx,colIdx++) << _T("Loading") << rptNewLine << _T("Interval");
-
-      if ( model == pgsTypes::tdmAASHTO )
       {
-         (*pTable)(rowIdx,colIdx++) << Sub2(_T("t"),_T("i")) << rptNewLine << _T("(day)");
-         if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims )
-         {
-            (*pTable)(rowIdx,colIdx++) << COLHDR(RPT_FC,rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-            (*pTable)(rowIdx,colIdx++) << Sub2(_T("k"),_T("c")) << _T("(") << Sub2(_T("t"),_T("b")) << _T(")");
-            (*pTable)(rowIdx,colIdx++) << Sub2(_T("k"),_T("c")) << _T("(") << Sub2(_T("t"),_T("e")) << _T(")");
-            (*pTable)(rowIdx,colIdx++) << Sub2(_T("k"),_T("f"));
-         }
-         else if ( lrfdVersionMgr::SeventhEditionWith2015Interims <= lrfdVersionMgr::GetVersion() )
-         {
-            (*pTable)(rowIdx,colIdx++) << COLHDR(RPT_FCI,rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-            (*pTable)(rowIdx,colIdx++) << Sub2(_T("k"),_T("vs"));
-            (*pTable)(rowIdx,colIdx++) << Sub2(_T("k"),_T("hc"));
-            (*pTable)(rowIdx,colIdx++) << Sub2(_T("k"),_T("f"));
-            (*pTable)(rowIdx,colIdx++) << Sub2(_T("k"),_T("td")) << _T("(") << Sub2(_T("t"),_T("b")) << _T(" - ") << Sub2(_T("t"),_T("i")) << _T(")");
-            (*pTable)(rowIdx,colIdx++) << Sub2(_T("k"),_T("td")) << _T("(") << Sub2(_T("t"),_T("e")) << _T(" - ") << Sub2(_T("t"),_T("i")) << _T(")");
-         }
+         ColumnIndexType nCol = nColumns;
+         if (model == pgsTypes::tdmAASHTO)
+            nCol -= 4;
+         else if (model == pgsTypes::tdmACI209)
+            nCol -= 5;
+         else if (model == pgsTypes::tdmCEBFIP)
+            nCol -= 4;
          else
-         {
-            (*pTable)(rowIdx,colIdx++) << COLHDR(RPT_FCI,rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-            (*pTable)(rowIdx,colIdx++) << Sub2(_T("k"),_T("vs"));
-            (*pTable)(rowIdx,colIdx++) << Sub2(_T("k"),_T("hc"));
-            (*pTable)(rowIdx,colIdx++) << Sub2(_T("k"),_T("f"));
-            (*pTable)(rowIdx,colIdx++) << Sub2(_T("k"),_T("td")) << _T("(") << Sub2(_T("t"),_T("b")) << _T(" - ") << Sub2(_T("t"),_T("i")) << _T(")");
-            (*pTable)(rowIdx,colIdx++) << Sub2(_T("k"),_T("td")) << _T("(") << Sub2(_T("t"),_T("e")) << _T(" - ") << Sub2(_T("t"),_T("i")) << _T(")");
-         }
-      }
-      else if ( model == pgsTypes::tdmACI209 )
-      {
-         (*pTable)(rowIdx,colIdx++) << Sub2(_T("t"),_T("la")) << rptNewLine << _T("(day)");
-         (*pTable)(rowIdx,colIdx++) << Sub2(symbol(gamma),_T("t")) << _T("(") << Sub2(_T("t"),_T("b")) << _T(")");
-         (*pTable)(rowIdx,colIdx++) << Sub2(symbol(gamma),_T("t")) << _T("(") << Sub2(_T("t"),_T("e")) << _T(")");
-         (*pTable)(rowIdx,colIdx++) << Sub2(symbol(gamma),_T("la")) << _T("(") << Sub2(_T("t"),_T("b")) << _T(")");
-         (*pTable)(rowIdx,colIdx++) << Sub2(symbol(gamma),_T("la")) << _T("(") << Sub2(_T("t"),_T("e")) << _T(")");
-         (*pTable)(rowIdx,colIdx++) << Sub2(symbol(gamma),symbol(lambda));
-         (*pTable)(rowIdx,colIdx++) << Sub2(symbol(gamma),_T("vs"));
-      }
-      else if ( model == pgsTypes::tdmCEBFIP )
-      {
-         (*pTable)(rowIdx,colIdx++) << Sub2(_T("t"),_T("o")) << rptNewLine << _T("(day)");
-         (*pTable)(rowIdx,colIdx++) << COLHDR(_T("h"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-         (*pTable)(rowIdx,colIdx++) << Sub2(symbol(beta),_T("H"));
-         (*pTable)(rowIdx,colIdx++) << Sub2(symbol(beta),_T("c")) << _T("(") << Sub2(_T("t"),_T("b")) << _T(")");
-         (*pTable)(rowIdx,colIdx++) << Sub2(symbol(beta),_T("c")) << _T("(") << Sub2(_T("t"),_T("e")) << _T(")");
-         (*pTable)(rowIdx,colIdx++) << symbol(beta) << _T("(") << Sub2(_T("t"),_T("o")) << _T(")");
-         (*pTable)(rowIdx,colIdx++) << symbol(beta) << _T("((") << RPT_FC << Sub2(_T(")"),_T("28")) << _T(")");
-         (*pTable)(rowIdx,colIdx++) << Sub2(symbol(psi),_T("RH"));
-         (*pTable)(rowIdx,colIdx++) << Sub2(symbol(psi),_T("o"));
-      }
-      else
-      {
-         ATLASSERT(false);
-      }
+            ATLASSERT(false);
 
-      if ( model == pgsTypes::tdmAASHTO )
-      {
-         if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims )
-         {
-            (*pTable)(rowIdx,colIdx++) << CREEP_tb_ti;
-            (*pTable)(rowIdx,colIdx++) << CREEP_te_ti;
-         }
-         else
-         {
-            (*pTable)(rowIdx,colIdx++) << CREEP_tb_ti_ti;
-            (*pTable)(rowIdx,colIdx++) << CREEP_te_ti_ti;
-         }
-      }
-      else if ( model == pgsTypes::tdmACI209 )
-      {
-         (*pTable)(rowIdx,colIdx++) << CREEP_tb_tla;
-         (*pTable)(rowIdx,colIdx++) << CREEP_te_tla;
-      }
-      else if ( model == pgsTypes::tdmCEBFIP )
-      {
-         (*pTable)(rowIdx,colIdx++) << CREEP_tb_to;
-         (*pTable)(rowIdx,colIdx++) << CREEP_te_to;
-      }
-      else
-      {
-         ATLASSERT(false);
-      }
+         *pPara << _T("Creep coefficients used to compute age adjusted modulus") << rptNewLine;
+         rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nCol);
+         *pPara << pTable << rptNewLine;
 
+         RowIndexType rowIdx = 0;
+         ColumnIndexType colIdx = 0;
+         (*pTable)(rowIdx, colIdx++) << _T("Interval");
+         (*pTable)(rowIdx, colIdx++) << Sub2(_T("t"), _T("e")) << rptNewLine << _T("(day)");
 
-      rowIdx = pTable->GetNumberOfHeaderRows();
-
-      if ( i == 1 && firstIntervalIdx < compositeDeckIntervalIdx )
-      {
-         // we reporting for the deck, make the first interval
-         // when the deck becomes composite (values are just 0 before this)
-         firstIntervalIdx = compositeDeckIntervalIdx;
-      }
-      
-      for ( IntervalIndexType intervalIdx = firstIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++ )
-      {
-         if ( firstIntervalIdx != lastIntervalIdx && (intervalIdx < releaseIntervalIdx || ::IsZero(pIntervals->GetDuration(intervalIdx))) )
+         if (model == pgsTypes::tdmAASHTO)
          {
-            continue;
-         }
-   
-         const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,intervalIdx);
-         const TIME_STEP_DETAILS& tsDetails(pDetails->TimeStepDetails[intervalIdx]);
-         const TIME_STEP_CONCRETE* pConcrete;
-         if ( i == 0 )
-         {
-            pConcrete = &tsDetails.Girder;
-         }
-         else
-         {
-            pConcrete = &tsDetails.Deck;
-         }
-
-         colIdx = 0;
-         pTable->SetRowSpan(rowIdx, colIdx++, intervalIdx - firstIntervalIdx); // interval
-         pTable->SetRowSpan(rowIdx, colIdx++, intervalIdx - firstIntervalIdx); // t_ib
-         pTable->SetRowSpan(rowIdx, colIdx++, intervalIdx - firstIntervalIdx); // t_ie
-
-         Float64 startAge, endAge;
-         if ( i == 0 )
-         {
-            if ( bIsInClosure )
+            (*pTable)(rowIdx, colIdx++) << Sub2(_T("t"), _T("i")) << rptNewLine << _T("(day)");
+            if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims)
             {
-               startAge = pMaterials->GetClosureJointConcreteAge(closureKey,intervalIdx,pgsTypes::Start);
-               endAge   = pMaterials->GetClosureJointConcreteAge(closureKey,intervalIdx,pgsTypes::End);
+               (*pTable)(rowIdx, colIdx++) << COLHDR(RPT_FC, rptStressUnitTag, pDisplayUnits->GetStressUnit());
+               (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("c")) << _T("(") << Sub2(_T("t"), _T("b")) << _T(")");
+               (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("c")) << _T("(") << Sub2(_T("t"), _T("e")) << _T(")");
+               (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("f"));
+            }
+            else if (lrfdVersionMgr::SeventhEditionWith2015Interims <= lrfdVersionMgr::GetVersion())
+            {
+               (*pTable)(rowIdx, colIdx++) << COLHDR(RPT_FCI, rptStressUnitTag, pDisplayUnits->GetStressUnit());
+               (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("vs"));
+               (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("hc"));
+               (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("f"));
+               (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("td")) << _T("(") << Sub2(_T("t"), _T("e")) << _T(" - ") << Sub2(_T("t"), _T("i")) << _T(")");
             }
             else
             {
-               startAge = pMaterials->GetSegmentConcreteAge(segmentKey,intervalIdx,pgsTypes::Start);
-               endAge   = pMaterials->GetSegmentConcreteAge(segmentKey,intervalIdx,pgsTypes::End);
+               (*pTable)(rowIdx, colIdx++) << COLHDR(RPT_FCI, rptStressUnitTag, pDisplayUnits->GetStressUnit());
+               (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("vs"));
+               (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("hc"));
+               (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("f"));
+               (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("td")) << _T("(") << Sub2(_T("t"), _T("e")) << _T(" - ") << Sub2(_T("t"), _T("i")) << _T(")");
             }
+         }
+         else if (model == pgsTypes::tdmACI209)
+         {
+            (*pTable)(rowIdx, colIdx++) << Sub2(_T("t"), _T("la")) << rptNewLine << _T("(day)");
+            (*pTable)(rowIdx, colIdx++) << Sub2(symbol(gamma), _T("t")) << _T("(") << Sub2(_T("t"), _T("m")) << _T(")");
+            (*pTable)(rowIdx, colIdx++) << Sub2(symbol(gamma), _T("la")) << _T("(") << Sub2(_T("t"), _T("m")) << _T(")");
+            (*pTable)(rowIdx, colIdx++) << Sub2(symbol(gamma), symbol(lambda));
+            (*pTable)(rowIdx, colIdx++) << Sub2(symbol(gamma), _T("vs"));
+         }
+         else if (model == pgsTypes::tdmCEBFIP)
+         {
+            (*pTable)(rowIdx, colIdx++) << Sub2(_T("t"), _T("o")) << rptNewLine << _T("(day)");
+            (*pTable)(rowIdx, colIdx++) << COLHDR(_T("h"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+            (*pTable)(rowIdx, colIdx++) << Sub2(symbol(beta), _T("H"));
+            (*pTable)(rowIdx, colIdx++) << Sub2(symbol(beta), _T("c")) << _T("(") << Sub2(_T("t"), _T("m")) << _T(")");
+            (*pTable)(rowIdx, colIdx++) << symbol(beta) << _T("(") << Sub2(_T("t"), _T("o")) << _T(")");
+            (*pTable)(rowIdx, colIdx++) << symbol(beta) << _T("((") << RPT_FC << Sub2(_T(")"), _T("28")) << _T(")");
+            (*pTable)(rowIdx, colIdx++) << Sub2(symbol(psi), _T("RH"));
+            (*pTable)(rowIdx, colIdx++) << Sub2(symbol(psi), _T("o"));
          }
          else
          {
-            startAge = pMaterials->GetDeckConcreteAge(deckCastingRegionIdx,intervalIdx,pgsTypes::Start);
-            endAge   = pMaterials->GetDeckConcreteAge(deckCastingRegionIdx,intervalIdx,pgsTypes::End);
+            ATLASSERT(false);
          }
 
-         for ( IntervalIndexType prevIntervalIdx = firstIntervalIdx; prevIntervalIdx < intervalIdx; prevIntervalIdx++ )
+         if (model == pgsTypes::tdmAASHTO)
          {
-            colIdx = 0;
-
-            if ( prevIntervalIdx == firstIntervalIdx)
+            if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims)
             {
-               (*pTable)(rowIdx,colIdx++) << LABEL_INTERVAL(intervalIdx);
-               (*pTable)(rowIdx,colIdx++) << startAge;
-               (*pTable)(rowIdx,colIdx++) << endAge;
+               (*pTable)(rowIdx, colIdx++) << CREEP_te_ti;
             }
             else
             {
-               colIdx += 3;
+               (*pTable)(rowIdx, colIdx++) << CREEP_te_ti_ti;
+            }
+         }
+         else if (model == pgsTypes::tdmACI209)
+         {
+            (*pTable)(rowIdx, colIdx++) << CREEP_te_tla;
+         }
+         else if (model == pgsTypes::tdmCEBFIP)
+         {
+            (*pTable)(rowIdx, colIdx++) << CREEP_te_to;
+         }
+         else
+         {
+            ATLASSERT(false);
+         }
+
+
+         rowIdx = pTable->GetNumberOfHeaderRows();
+
+         if (i == 0 && firstIntervalIdx < releaseIntervalIdx)
+         {
+            // we are reporting for the segment, make the first interval
+            // when the segment first gets loaded (ie., at release)
+            firstIntervalIdx = releaseIntervalIdx;
+         }
+         else if (i == 1 && firstIntervalIdx < compositeDeckIntervalIdx)
+         {
+            // we reporting for the deck, make the first interval
+            // when the deck becomes composite (values are just 0 before this)
+            firstIntervalIdx = compositeDeckIntervalIdx;
+         }
+
+
+         for (IntervalIndexType intervalIdx = firstIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++)
+         {
+            if (firstIntervalIdx != lastIntervalIdx && (intervalIdx < releaseIntervalIdx || ::IsZero(pIntervals->GetDuration(intervalIdx))))
+            {
+               continue;
             }
 
-            ATLASSERT(::IsEqual(startAge,pConcrete->Creep[prevIntervalIdx].pStartDetails->age));
-            ATLASSERT(::IsEqual(endAge,  pConcrete->Creep[prevIntervalIdx].pEndDetails->age  ));
-
-            (*pTable)(rowIdx,colIdx++) << LABEL_INTERVAL(prevIntervalIdx);
-            (*pTable)(rowIdx,colIdx++) << pConcrete->Creep[prevIntervalIdx].pStartDetails->age_at_loading;
-
-            if ( model == pgsTypes::tdmAASHTO )
+            std::shared_ptr<matConcreteBaseCreepDetails> pCreep;
+            if (i == 0)
             {
-               lrfdLRFDTimeDependentConcreteCreepDetails* pStartDetails = (lrfdLRFDTimeDependentConcreteCreepDetails*)(pConcrete->Creep[prevIntervalIdx].pStartDetails.get());
-               lrfdLRFDTimeDependentConcreteCreepDetails* pEndDetails   = (lrfdLRFDTimeDependentConcreteCreepDetails*)(pConcrete->Creep[prevIntervalIdx].pEndDetails.get());
-               if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims )
+               if (bIsInClosure)
                {
-                  (*pTable)(rowIdx,colIdx++) << stress.SetValue(pStartDetails->fci);
-                  (*pTable)(rowIdx,colIdx++) << pStartDetails->kc;
-                  (*pTable)(rowIdx,colIdx++) << pEndDetails->kc;
-                  (*pTable)(rowIdx,colIdx++) << pStartDetails->kf;
-               }
-               else if ( lrfdVersionMgr::SeventhEditionWith2015Interims <= lrfdVersionMgr::GetVersion() )
-               {
-                  (*pTable)(rowIdx,colIdx++) << stress.SetValue(pStartDetails->fci);
-                  (*pTable)(rowIdx,colIdx++) << pStartDetails->kvs;
-                  (*pTable)(rowIdx,colIdx++) << pStartDetails->khc;
-                  (*pTable)(rowIdx,colIdx++) << pStartDetails->kf;
-                  (*pTable)(rowIdx,colIdx++) << pStartDetails->ktd;
-                  (*pTable)(rowIdx,colIdx++) << pEndDetails->ktd;
+                  pCreep = pMaterials->GetClosureJointCreepCoefficientDetails(closureKey, intervalIdx, pgsTypes::Middle, intervalIdx, pgsTypes::End);
                }
                else
                {
-                  (*pTable)(rowIdx,colIdx++) << stress.SetValue(pStartDetails->fci);
-                  (*pTable)(rowIdx,colIdx++) << pStartDetails->kvs;
-                  (*pTable)(rowIdx,colIdx++) << pStartDetails->khc;
-                  (*pTable)(rowIdx,colIdx++) << pStartDetails->kf;
-                  (*pTable)(rowIdx,colIdx++) << pStartDetails->ktd;
-                  (*pTable)(rowIdx,colIdx++) << pEndDetails->ktd;
+                  pCreep = pMaterials->GetSegmentCreepCoefficientDetails(segmentKey, intervalIdx, pgsTypes::Middle, intervalIdx, pgsTypes::End);
                }
             }
-            else if ( model == pgsTypes::tdmACI209 )
+            else
             {
-               matACI209ConcreteCreepDetails* pStartDetails = (matACI209ConcreteCreepDetails*)(pConcrete->Creep[prevIntervalIdx].pStartDetails.get());
-               matACI209ConcreteCreepDetails* pEndDetails   = (matACI209ConcreteCreepDetails*)(pConcrete->Creep[prevIntervalIdx].pEndDetails.get());
-               (*pTable)(rowIdx,colIdx++) << pStartDetails->time_factor;
-               (*pTable)(rowIdx,colIdx++) << pEndDetails->time_factor;
-               (*pTable)(rowIdx,colIdx++) << pStartDetails->loading_age_factor;
-               (*pTable)(rowIdx,colIdx++) << pEndDetails->loading_age_factor;
-               (*pTable)(rowIdx,colIdx++) << pStartDetails->humidity_factor;
-               (*pTable)(rowIdx,colIdx++) << pStartDetails->vs_factor;
+               pCreep = pMaterials->GetDeckCreepCoefficientDetails(deckCastingRegionIdx, intervalIdx, pgsTypes::Middle, intervalIdx, pgsTypes::End);
             }
-            else if ( model == pgsTypes::tdmCEBFIP )
+
+            colIdx = 0;
+
+            Float64 endAge;
+            if (i == 0)
             {
-               matCEBFIPConcreteCreepDetails* pStartDetails = (matCEBFIPConcreteCreepDetails*)(pConcrete->Creep[prevIntervalIdx].pStartDetails.get());
-               matCEBFIPConcreteCreepDetails* pEndDetails   = (matCEBFIPConcreteCreepDetails*)(pConcrete->Creep[prevIntervalIdx].pEndDetails.get());
-               (*pTable)(rowIdx,colIdx++) << ecc.SetValue(pStartDetails->h);
-               (*pTable)(rowIdx,colIdx++) << pStartDetails->Bh;
-               (*pTable)(rowIdx,colIdx++) << pStartDetails->Bc;
-               (*pTable)(rowIdx,colIdx++) << pEndDetails->Bc;
-               (*pTable)(rowIdx,colIdx++) << pStartDetails->Bt;
-               (*pTable)(rowIdx,colIdx++) << pStartDetails->Bfc;
-               (*pTable)(rowIdx,colIdx++) << pStartDetails->Yrh;
-               (*pTable)(rowIdx,colIdx++) << pStartDetails->Yo;
+               if (bIsInClosure)
+               {
+                  endAge = pMaterials->GetClosureJointConcreteAge(closureKey, intervalIdx, pgsTypes::End);
+               }
+               else
+               {
+                  endAge = pMaterials->GetSegmentConcreteAge(segmentKey, intervalIdx, pgsTypes::End);
+               }
+            }
+            else
+            {
+               endAge = pMaterials->GetDeckConcreteAge(deckCastingRegionIdx, intervalIdx, pgsTypes::End);
+            }
+
+            colIdx = 0;
+            (*pTable)(rowIdx, colIdx++) << LABEL_INTERVAL(intervalIdx);
+            (*pTable)(rowIdx, colIdx++) << endAge;
+
+            ATLASSERT(::IsEqual(endAge, pCreep->age));
+
+            (*pTable)(rowIdx, colIdx++) << pCreep->age_at_loading;
+
+            if (model == pgsTypes::tdmAASHTO)
+            {
+               lrfdLRFDTimeDependentConcreteCreepDetails* pDetails = (lrfdLRFDTimeDependentConcreteCreepDetails*)(pCreep.get());
+               if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims)
+               {
+                  (*pTable)(rowIdx, colIdx++) << stress.SetValue(pDetails->fci);
+                  (*pTable)(rowIdx, colIdx++) << pDetails->kc;
+                  (*pTable)(rowIdx, colIdx++) << pDetails->kf;
+               }
+               else if (lrfdVersionMgr::SeventhEditionWith2015Interims <= lrfdVersionMgr::GetVersion())
+               {
+                  (*pTable)(rowIdx, colIdx++) << stress.SetValue(pDetails->fci);
+                  (*pTable)(rowIdx, colIdx++) << pDetails->kvs;
+                  (*pTable)(rowIdx, colIdx++) << pDetails->khc;
+                  (*pTable)(rowIdx, colIdx++) << pDetails->kf;
+                  (*pTable)(rowIdx, colIdx++) << pDetails->ktd;
+               }
+               else
+               {
+                  (*pTable)(rowIdx, colIdx++) << stress.SetValue(pDetails->fci);
+                  (*pTable)(rowIdx, colIdx++) << pDetails->kvs;
+                  (*pTable)(rowIdx, colIdx++) << pDetails->khc;
+                  (*pTable)(rowIdx, colIdx++) << pDetails->kf;
+                  (*pTable)(rowIdx, colIdx++) << pDetails->ktd;
+               }
+            }
+            else if (model == pgsTypes::tdmACI209)
+            {
+               matACI209ConcreteCreepDetails* pDetails = (matACI209ConcreteCreepDetails*)(pCreep.get());
+               (*pTable)(rowIdx, colIdx++) << pDetails->time_factor;
+               (*pTable)(rowIdx, colIdx++) << pDetails->loading_age_factor;
+               (*pTable)(rowIdx, colIdx++) << pDetails->humidity_factor;
+               (*pTable)(rowIdx, colIdx++) << pDetails->vs_factor;
+            }
+            else if (model == pgsTypes::tdmCEBFIP)
+            {
+               matCEBFIPConcreteCreepDetails* pDetails = (matCEBFIPConcreteCreepDetails*)(pCreep.get());
+               (*pTable)(rowIdx, colIdx++) << ecc.SetValue(pDetails->h);
+               (*pTable)(rowIdx, colIdx++) << pDetails->Bh;
+               (*pTable)(rowIdx, colIdx++) << pDetails->Bc;
+               (*pTable)(rowIdx, colIdx++) << pDetails->Bt;
+               (*pTable)(rowIdx, colIdx++) << pDetails->Bfc;
+               (*pTable)(rowIdx, colIdx++) << pDetails->Yrh;
+               (*pTable)(rowIdx, colIdx++) << pDetails->Yo;
             }
             else
             {
                ATLASSERT(false);
             }
 
-            (*pTable)(rowIdx,colIdx++) << pConcrete->ec[prevIntervalIdx].Cs;
-            (*pTable)(rowIdx,colIdx++) << pConcrete->ec[prevIntervalIdx].Ce;
+            (*pTable)(rowIdx, colIdx++) << pCreep->Ct;
 
             rowIdx++;
-         } // next previous interval
-      } // next interval
+         } // next interval
+      } // end of scope
+
+      {
+         *pPara << _T("Creep coefficients used to compute unrestrained creep deformations") << rptNewLine;
+      
+         rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nColumns);
+         *pPara << pTable << rptNewLine;
+
+         RowIndexType rowIdx = 0;
+         ColumnIndexType colIdx = 0;
+         (*pTable)(rowIdx, colIdx++) << _T("Interval");
+         (*pTable)(rowIdx, colIdx++) << Sub2(_T("t"), _T("b")) << rptNewLine << _T("(day)");
+         (*pTable)(rowIdx, colIdx++) << Sub2(_T("t"), _T("e")) << rptNewLine << _T("(day)");
+         (*pTable)(rowIdx, colIdx++) << _T("Loading") << rptNewLine << _T("Interval");
+
+         if (model == pgsTypes::tdmAASHTO)
+         {
+            (*pTable)(rowIdx, colIdx++) << Sub2(_T("t"), _T("i")) << rptNewLine << _T("(day)");
+            if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims)
+            {
+               (*pTable)(rowIdx, colIdx++) << COLHDR(RPT_FC, rptStressUnitTag, pDisplayUnits->GetStressUnit());
+               (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("c")) << _T("(") << Sub2(_T("t"), _T("b")) << _T(")");
+               (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("c")) << _T("(") << Sub2(_T("t"), _T("e")) << _T(")");
+               (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("f"));
+            }
+            else if (lrfdVersionMgr::SeventhEditionWith2015Interims <= lrfdVersionMgr::GetVersion())
+            {
+               (*pTable)(rowIdx, colIdx++) << COLHDR(RPT_FCI, rptStressUnitTag, pDisplayUnits->GetStressUnit());
+               (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("vs"));
+               (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("hc"));
+               (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("f"));
+               (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("td")) << _T("(") << Sub2(_T("t"), _T("b")) << _T(" - ") << Sub2(_T("t"), _T("i")) << _T(")");
+               (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("td")) << _T("(") << Sub2(_T("t"), _T("e")) << _T(" - ") << Sub2(_T("t"), _T("i")) << _T(")");
+            }
+            else
+            {
+               (*pTable)(rowIdx, colIdx++) << COLHDR(RPT_FCI, rptStressUnitTag, pDisplayUnits->GetStressUnit());
+               (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("vs"));
+               (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("hc"));
+               (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("f"));
+               (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("td")) << _T("(") << Sub2(_T("t"), _T("b")) << _T(" - ") << Sub2(_T("t"), _T("i")) << _T(")");
+               (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("td")) << _T("(") << Sub2(_T("t"), _T("e")) << _T(" - ") << Sub2(_T("t"), _T("i")) << _T(")");
+            }
+         }
+         else if (model == pgsTypes::tdmACI209)
+         {
+            (*pTable)(rowIdx, colIdx++) << Sub2(_T("t"), _T("la")) << rptNewLine << _T("(day)");
+            (*pTable)(rowIdx, colIdx++) << Sub2(symbol(gamma), _T("t")) << _T("(") << Sub2(_T("t"), _T("b")) << _T(")");
+            (*pTable)(rowIdx, colIdx++) << Sub2(symbol(gamma), _T("t")) << _T("(") << Sub2(_T("t"), _T("e")) << _T(")");
+            (*pTable)(rowIdx, colIdx++) << Sub2(symbol(gamma), _T("la")) << _T("(") << Sub2(_T("t"), _T("b")) << _T(")");
+            (*pTable)(rowIdx, colIdx++) << Sub2(symbol(gamma), _T("la")) << _T("(") << Sub2(_T("t"), _T("e")) << _T(")");
+            (*pTable)(rowIdx, colIdx++) << Sub2(symbol(gamma), symbol(lambda));
+            (*pTable)(rowIdx, colIdx++) << Sub2(symbol(gamma), _T("vs"));
+         }
+         else if (model == pgsTypes::tdmCEBFIP)
+         {
+            (*pTable)(rowIdx, colIdx++) << Sub2(_T("t"), _T("o")) << rptNewLine << _T("(day)");
+            (*pTable)(rowIdx, colIdx++) << COLHDR(_T("h"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+            (*pTable)(rowIdx, colIdx++) << Sub2(symbol(beta), _T("H"));
+            (*pTable)(rowIdx, colIdx++) << Sub2(symbol(beta), _T("c")) << _T("(") << Sub2(_T("t"), _T("b")) << _T(")");
+            (*pTable)(rowIdx, colIdx++) << Sub2(symbol(beta), _T("c")) << _T("(") << Sub2(_T("t"), _T("e")) << _T(")");
+            (*pTable)(rowIdx, colIdx++) << symbol(beta) << _T("(") << Sub2(_T("t"), _T("o")) << _T(")");
+            (*pTable)(rowIdx, colIdx++) << symbol(beta) << _T("((") << RPT_FC << Sub2(_T(")"), _T("28")) << _T(")");
+            (*pTable)(rowIdx, colIdx++) << Sub2(symbol(psi), _T("RH"));
+            (*pTable)(rowIdx, colIdx++) << Sub2(symbol(psi), _T("o"));
+         }
+         else
+         {
+            ATLASSERT(false);
+         }
+
+         if (model == pgsTypes::tdmAASHTO)
+         {
+            if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims)
+            {
+               (*pTable)(rowIdx, colIdx++) << CREEP_tb_ti;
+               (*pTable)(rowIdx, colIdx++) << CREEP_te_ti;
+            }
+            else
+            {
+               (*pTable)(rowIdx, colIdx++) << CREEP_tb_ti_ti;
+               (*pTable)(rowIdx, colIdx++) << CREEP_te_ti_ti;
+            }
+         }
+         else if (model == pgsTypes::tdmACI209)
+         {
+            (*pTable)(rowIdx, colIdx++) << CREEP_tb_tla;
+            (*pTable)(rowIdx, colIdx++) << CREEP_te_tla;
+         }
+         else if (model == pgsTypes::tdmCEBFIP)
+         {
+            (*pTable)(rowIdx, colIdx++) << CREEP_tb_to;
+            (*pTable)(rowIdx, colIdx++) << CREEP_te_to;
+         }
+         else
+         {
+            ATLASSERT(false);
+         }
+
+
+         rowIdx = pTable->GetNumberOfHeaderRows();
+
+         if (i == 0 && firstIntervalIdx < releaseIntervalIdx)
+         {
+            // we are reporting for the segment, make the first interval
+            // when the segment first gets loaded (ie., at release)
+            firstIntervalIdx = releaseIntervalIdx;
+         }
+         else if (i == 1 && firstIntervalIdx < compositeDeckIntervalIdx)
+         {
+            // we reporting for the deck, make the first interval
+            // when the deck becomes composite (values are just 0 before this)
+            firstIntervalIdx = compositeDeckIntervalIdx;
+         }
+
+
+         for (IntervalIndexType intervalIdx = firstIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++)
+         {
+            if (firstIntervalIdx != lastIntervalIdx && (intervalIdx < releaseIntervalIdx || ::IsZero(pIntervals->GetDuration(intervalIdx))))
+            {
+               continue;
+            }
+
+            const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi, intervalIdx);
+            const TIME_STEP_DETAILS& tsDetails(pDetails->TimeStepDetails[intervalIdx]);
+            const TIME_STEP_CONCRETE* pConcrete;
+            if (i == 0)
+            {
+               pConcrete = &tsDetails.Girder;
+            }
+            else
+            {
+               pConcrete = &tsDetails.Deck;
+            }
+
+            colIdx = 0;
+            pTable->SetRowSpan(rowIdx, colIdx++, intervalIdx - firstIntervalIdx); // interval
+            pTable->SetRowSpan(rowIdx, colIdx++, intervalIdx - firstIntervalIdx); // t_ib
+            pTable->SetRowSpan(rowIdx, colIdx++, intervalIdx - firstIntervalIdx); // t_ie
+
+            Float64 startAge, endAge;
+            if (i == 0)
+            {
+               if (bIsInClosure)
+               {
+                  startAge = pMaterials->GetClosureJointConcreteAge(closureKey, intervalIdx, pgsTypes::Start);
+                  endAge = pMaterials->GetClosureJointConcreteAge(closureKey, intervalIdx, pgsTypes::End);
+               }
+               else
+               {
+                  startAge = pMaterials->GetSegmentConcreteAge(segmentKey, intervalIdx, pgsTypes::Start);
+                  endAge = pMaterials->GetSegmentConcreteAge(segmentKey, intervalIdx, pgsTypes::End);
+               }
+            }
+            else
+            {
+               startAge = pMaterials->GetDeckConcreteAge(deckCastingRegionIdx, intervalIdx, pgsTypes::Start);
+               endAge = pMaterials->GetDeckConcreteAge(deckCastingRegionIdx, intervalIdx, pgsTypes::End);
+            }
+
+            for (IntervalIndexType prevIntervalIdx = firstIntervalIdx; prevIntervalIdx < intervalIdx; prevIntervalIdx++)
+            {
+               colIdx = 0;
+
+               if (prevIntervalIdx == firstIntervalIdx)
+               {
+                  (*pTable)(rowIdx, colIdx++) << LABEL_INTERVAL(intervalIdx);
+                  (*pTable)(rowIdx, colIdx++) << startAge;
+                  (*pTable)(rowIdx, colIdx++) << endAge;
+               }
+               else
+               {
+                  colIdx += 3;
+               }
+
+               ATLASSERT(::IsEqual(startAge, pConcrete->Creep[prevIntervalIdx].pStartDetails->age));
+               ATLASSERT(::IsEqual(endAge, pConcrete->Creep[prevIntervalIdx].pEndDetails->age));
+
+               (*pTable)(rowIdx, colIdx++) << LABEL_INTERVAL(prevIntervalIdx);
+               (*pTable)(rowIdx, colIdx++) << pConcrete->Creep[prevIntervalIdx].pStartDetails->age_at_loading;
+
+               if (model == pgsTypes::tdmAASHTO)
+               {
+                  lrfdLRFDTimeDependentConcreteCreepDetails* pStartDetails = (lrfdLRFDTimeDependentConcreteCreepDetails*)(pConcrete->Creep[prevIntervalIdx].pStartDetails.get());
+                  lrfdLRFDTimeDependentConcreteCreepDetails* pEndDetails = (lrfdLRFDTimeDependentConcreteCreepDetails*)(pConcrete->Creep[prevIntervalIdx].pEndDetails.get());
+                  if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims)
+                  {
+                     (*pTable)(rowIdx, colIdx++) << stress.SetValue(pStartDetails->fci);
+                     (*pTable)(rowIdx, colIdx++) << pStartDetails->kc;
+                     (*pTable)(rowIdx, colIdx++) << pEndDetails->kc;
+                     (*pTable)(rowIdx, colIdx++) << pStartDetails->kf;
+                  }
+                  else if (lrfdVersionMgr::SeventhEditionWith2015Interims <= lrfdVersionMgr::GetVersion())
+                  {
+                     (*pTable)(rowIdx, colIdx++) << stress.SetValue(pStartDetails->fci);
+                     (*pTable)(rowIdx, colIdx++) << pStartDetails->kvs;
+                     (*pTable)(rowIdx, colIdx++) << pStartDetails->khc;
+                     (*pTable)(rowIdx, colIdx++) << pStartDetails->kf;
+                     (*pTable)(rowIdx, colIdx++) << pStartDetails->ktd;
+                     (*pTable)(rowIdx, colIdx++) << pEndDetails->ktd;
+                  }
+                  else
+                  {
+                     (*pTable)(rowIdx, colIdx++) << stress.SetValue(pStartDetails->fci);
+                     (*pTable)(rowIdx, colIdx++) << pStartDetails->kvs;
+                     (*pTable)(rowIdx, colIdx++) << pStartDetails->khc;
+                     (*pTable)(rowIdx, colIdx++) << pStartDetails->kf;
+                     (*pTable)(rowIdx, colIdx++) << pStartDetails->ktd;
+                     (*pTable)(rowIdx, colIdx++) << pEndDetails->ktd;
+                  }
+               }
+               else if (model == pgsTypes::tdmACI209)
+               {
+                  matACI209ConcreteCreepDetails* pStartDetails = (matACI209ConcreteCreepDetails*)(pConcrete->Creep[prevIntervalIdx].pStartDetails.get());
+                  matACI209ConcreteCreepDetails* pEndDetails = (matACI209ConcreteCreepDetails*)(pConcrete->Creep[prevIntervalIdx].pEndDetails.get());
+                  (*pTable)(rowIdx, colIdx++) << pStartDetails->time_factor;
+                  (*pTable)(rowIdx, colIdx++) << pEndDetails->time_factor;
+                  (*pTable)(rowIdx, colIdx++) << pStartDetails->loading_age_factor;
+                  (*pTable)(rowIdx, colIdx++) << pEndDetails->loading_age_factor;
+                  (*pTable)(rowIdx, colIdx++) << pStartDetails->humidity_factor;
+                  (*pTable)(rowIdx, colIdx++) << pStartDetails->vs_factor;
+               }
+               else if (model == pgsTypes::tdmCEBFIP)
+               {
+                  matCEBFIPConcreteCreepDetails* pStartDetails = (matCEBFIPConcreteCreepDetails*)(pConcrete->Creep[prevIntervalIdx].pStartDetails.get());
+                  matCEBFIPConcreteCreepDetails* pEndDetails = (matCEBFIPConcreteCreepDetails*)(pConcrete->Creep[prevIntervalIdx].pEndDetails.get());
+                  (*pTable)(rowIdx, colIdx++) << ecc.SetValue(pStartDetails->h);
+                  (*pTable)(rowIdx, colIdx++) << pStartDetails->Bh;
+                  (*pTable)(rowIdx, colIdx++) << pStartDetails->Bc;
+                  (*pTable)(rowIdx, colIdx++) << pEndDetails->Bc;
+                  (*pTable)(rowIdx, colIdx++) << pStartDetails->Bt;
+                  (*pTable)(rowIdx, colIdx++) << pStartDetails->Bfc;
+                  (*pTable)(rowIdx, colIdx++) << pStartDetails->Yrh;
+                  (*pTable)(rowIdx, colIdx++) << pStartDetails->Yo;
+               }
+               else
+               {
+                  ATLASSERT(false);
+               }
+
+               (*pTable)(rowIdx, colIdx++) << pConcrete->ec[prevIntervalIdx].Cs;
+               (*pTable)(rowIdx, colIdx++) << pConcrete->ec[prevIntervalIdx].Ce;
+
+               rowIdx++;
+            } // next previous interval
+         } // next interval
+      } // end of scope
    } // next element type (girder,deck)
 }
 
@@ -2482,7 +2828,7 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
       return;
    }
 
-   GET_IFACE2(pBroker,ILosses,pLosses);
+   GET_IFACE2_NOCHECK(pBroker,ILosses,pLosses);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    GET_IFACE2(pBroker,IMaterials,pMaterials);
@@ -2859,8 +3205,8 @@ void CTimeStepDetailsChapterBuilder::ReportStrandRelaxationDetails(rptChapter* p
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    pgsTypes::TimeDependentModel model = pLossParams->GetTimeDependentModel();
-   const matPsStrand* pPermanentStrand = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
-   const matPsStrand* pTemporaryStrand = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
+   const matPsStrand* pPermanentStrand = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Straight); // ok to use straight since we are just getting material properties, not strand size
+   const matPsStrand* pTemporaryStrand = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Temporary);
    if ( pPermanentStrand == pTemporaryStrand )
    {
       if ( model == pgsTypes::tdmAASHTO || model == pgsTypes::tdmACI209 )
@@ -2938,6 +3284,7 @@ void CTimeStepDetailsChapterBuilder::ReportStrandRelaxationDetails(rptChapter* p
       }
    }
 
+   (*pPara) << symbol(DELTA) << RPT_STRESS(_T("r")) << _T(" = -") << symbol(DELTA) << RPT_STRESS(_T("pR")) << rptNewLine;
    (*pPara) << Sub2(_T("t"),_T("b")) << _T(" = time from stressing to the beginning of the interval") << rptNewLine;
    (*pPara) << Sub2(_T("t"),_T("e")) << _T(" = time from stressing to the end of the interval") << rptNewLine;
 

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -166,13 +166,13 @@ private:
    // GROUP: DATA MEMBERS
    pgsPointOfInterest m_POI;
 
-   Float64 m_Stress[4][4][2];
-   // Index 0 = perm/temp strand (0 = straight, 1 = harped, 2 = temporary, 3 = permanent)
+   Float64 m_Stress[3][4][2];
+   // Index 0 = perm/temp strand (0 = straight, 1 = harped, 2 = temporary)
    // Index 1 = Stress type (0 = jacking, 1 = befer xfer, 2 = after xfer, 3 = after losses)
    // Index 2 = Stress magnitude (0 = capacity, 1 = demand)
 
-   bool m_bIsApplicable[4][4];
-   // Index 0 = perm/temp strand (0 = straight, 1 = harped, 2 = temporary, 3 = permanent)
+   bool m_bIsApplicable[3][4];
+   // Index 0 = perm/temp strand (0 = straight, 1 = harped, 2 = temporary)
    // Index 1 = Stress type (0 = jacking, 1 = befer xfer, 2 = after xfer, 3 = after losses)
 
    // GROUP: LIFECYCLE

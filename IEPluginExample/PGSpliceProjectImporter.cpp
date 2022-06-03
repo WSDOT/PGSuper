@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // IEPluginExample
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -34,6 +34,13 @@ HRESULT CPGSpliceProjectImporter::FinalConstruct()
 
 /////////////////////////////////////////////////////////////////////////////
 // CPGSpliceProjectImporter
+
+STDMETHODIMP CPGSpliceProjectImporter::GetCLSID(CLSID* pCLSID) const
+{
+   *pCLSID = CLSID_PGSuperProjectImporter;
+   return S_OK;
+}
+
 STDMETHODIMP CPGSpliceProjectImporter::GetItemText(BSTR*  bstrText) const
 {
    CComBSTR bstrItemText("Example Importer");

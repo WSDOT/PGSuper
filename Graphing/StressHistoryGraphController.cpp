@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,8 +24,10 @@
 #include "resource.h"
 #include "StressHistoryGraphController.h"
 #include <Graphing\StressHistoryGraphBuilder.h>
+#include <Graphing\ExportGraphXYTool.h>
 
 #include <IFace\Bridge.h>
+#include <EAF\EAFDocument.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -46,6 +48,8 @@ BEGIN_MESSAGE_MAP(CStressHistoryGraphController, CLocationGraphController)
    ON_BN_CLICKED(IDC_TOPGIRDER, OnTopGirder)
    ON_BN_CLICKED(IDC_BOTTOMGIRDER, OnBottomGirder)
    ON_BN_CLICKED(IDC_GRID, OnShowGrid)
+   ON_BN_CLICKED(IDC_EXPORT_GRAPH_BTN,OnGraphExportClicked)
+   ON_UPDATE_COMMAND_UI(IDC_EXPORT_GRAPH_BTN,OnCommandUIGraphExport)
    //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -151,4 +155,35 @@ void CStressHistoryGraphController::OnTopGirder()
 void CStressHistoryGraphController::OnBottomGirder()
 {
    ((CStressHistoryGraphBuilder*)GetGraphBuilder())->Stresses(pgsTypes::BottomGirder, Stresses(pgsTypes::BottomGirder));
+}
+
+void CStressHistoryGraphController::OnGraphExportClicked()
+{
+   CComboBox* pcbLocation = (CComboBox*)GetDlgItem(IDC_POI);
+   int curSel = pcbLocation->GetCurSel();
+   if (curSel == CB_ERR)
+   {
+      ::AfxMessageBox(_T("No Location is Selected. Please selection a location"),MB_ICONERROR);
+      return;
+   }
+
+   // Build default file name
+   CString strProjectFileNameNoPath = CExportGraphXYTool::GetTruncatedFileName();
+
+   CString girderName;
+   pcbLocation->GetLBText(curSel,girderName);
+
+   CString actionName = _T("Stress History");
+
+   CString strDefaultFileName = strProjectFileNameNoPath + _T("_") + girderName + _T("_") + actionName;
+   strDefaultFileName.Replace(' ','_'); // prefer not to have spaces or ,'s in file names
+   strDefaultFileName.Replace(',','_');
+
+   ((CStressHistoryGraphBuilder*)GetGraphBuilder())->ExportGraphData(strDefaultFileName);
+}
+
+// this has to be implemented otherwise button will not be enabled.
+void CStressHistoryGraphController::OnCommandUIGraphExport(CCmdUI* pCmdUI)
+{
+   pCmdUI->Enable(TRUE);
 }

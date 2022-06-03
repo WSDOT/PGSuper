@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -766,7 +766,7 @@ bool pgsPointOfInterest::MergeAttributes(const pgsPointOfInterest& rOther)
 
    if ((HasAttribute(POI_CASTING_BOUNDARY_START) && rOther.HasAttribute(POI_CASTING_BOUNDARY_END)) || (HasAttribute(POI_CASTING_BOUNDARY_END) && rOther.HasAttribute(POI_CASTING_BOUNDARY_START)))
    {
-      // POIs for end points of deck casting regions cannot be merged. The POIs are in different different casting regions
+      // POIs for end points of deck casting regions cannot be merged. The POIs are in different casting regions
       return false;
    }
 

@@ -1,12 +1,12 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.83    5   6.00                     1     1    WF66G    *      0  0.6  270   0.00   0.00  11.50  11.50                                               0   0.0  0.0  4.900  6.400   3.834    -3.997     9425   0.552  0.671  -4.488 -1.541 -0.209 -0.296 -2.046   0.00    0.00    3.00    5.50    5.50 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 27.83    5   6.00                     1     1    WF66G    *      0  0.6  270   0.00   0.00  11.50  11.50                                               0   0.0  0.0  4.900  6.400   3.834    -3.997     9425   0.552  0.671  -4.495 -1.541 -0.209 -0.296 -2.046   0.00    0.00    3.00    5.50    5.50    0.00    0.00    0.00    0.00    0.00 
 
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 11 Cast Deck
-Compression stress check failed for Service I Limit State in Interval 19 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 19 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 18 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -16,16 +16,16 @@ Lifting checks failed
 Hauling checks failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.83    5   6.00                     1     2    WF66G    *      0  0.6  270   0.00   0.00  11.50  11.50                                               0   0.0  0.0  4.900  6.400   3.842    -4.004     9439   0.552  0.671  -4.558 -1.553 -0.209 -0.296 -2.057   0.00    0.00    3.00    5.50    5.50 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 27.83    5   6.00                     1     2    WF66G    *      0  0.6  270   0.00   0.00  11.50  11.50                                               0   0.0  0.0  4.900  6.400   3.842    -4.004     9439   0.552  0.671  -4.568 -1.553 -0.209 -0.296 -2.057   0.00    0.00    3.00    5.50    5.50    0.00    0.00    0.00    0.00    0.00 
 
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 11 Cast Deck
-Compression stress check failed for Service I Limit State in Interval 19 Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 19 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 19 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 18 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 18 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State

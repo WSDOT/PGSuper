@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -457,6 +457,8 @@ void CSegmentTendonGrid::OnCalcPjack(ROWCOL nRow)
       // Set Pjack to the max value
       UpdateMaxPjack(nRow);
    }
+
+   ResizeColWidthsToFit(CGXRange(0, 0, GetRowCount(), GetColCount()));
 }
 
 CSegmentDuctData CSegmentTendonGrid::GetDuctRow(ROWCOL nRow)
@@ -506,10 +508,10 @@ void CSegmentTendonGrid::AppendRow(const CSegmentDuctData& duct)
    SetValueRange(CGXRange(nRow, nPjackCheckCol), (LONG)!duct.bPjCalc);
 
    CString strValue;
-   strValue.Format(_T("%s"), ::FormatDimension(duct.Pj, pDisplayUnits->GetForcePerLengthUnit(), false));
+   strValue.Format(_T("%s"), ::FormatDimension(duct.Pj, pDisplayUnits->GetGeneralForceUnit(), false));
    SetValueRange(CGXRange(nRow, nPjackCol), strValue);
 
-   strValue.Format(_T("%s"), ::FormatDimension(duct.LastUserPj, pDisplayUnits->GetForcePerLengthUnit(), false));
+   strValue.Format(_T("%s"), ::FormatDimension(duct.LastUserPj, pDisplayUnits->GetGeneralForceUnit(), false));
    SetValueRange(CGXRange(nRow, nPjackUserCol), strValue);
 
    SetValueRange(CGXRange(nRow, nJackEndCol), (LONG)duct.JackingEnd);
@@ -526,10 +528,9 @@ void CSegmentTendonGrid::AppendRow(const CSegmentDuctData& duct)
    SetValueRange(CGXRange(nRow, nRightEndYCol), strValue);
    SetValueRange(CGXRange(nRow, nRightEndDatumCol), (LONG)duct.DuctPoint[CSegmentDuctData::Right].second);
 
-   ResizeColWidthsToFit(CGXRange(0,0,GetRowCount(),GetColCount()));
-
    UpdateDuctPoints(nRow);
    UpdateNumStrandsList(nRow);
+   OnCalcPjack(nRow);
 
    GetParam()->EnableUndo(TRUE);
    GetParam()->SetLockReadOnly(TRUE);
@@ -860,8 +861,15 @@ void CSegmentTendonGrid::GetPjack(ROWCOL nRow, CSegmentDuctData* pDuct)
    pDuct->Pj = _tstof(GetCellValue(nRow, nPjackCol));
    pDuct->Pj = ::ConvertToSysUnits(pDuct->Pj, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure);
 
-   pDuct->LastUserPj = _tstof(GetCellValue(nRow, nPjackUserCol));
-   pDuct->LastUserPj = ::ConvertToSysUnits(pDuct->LastUserPj, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure);
+   if (pDuct->bPjCalc)
+   {
+      pDuct->LastUserPj = _tstof(GetCellValue(nRow, nPjackUserCol));
+      pDuct->LastUserPj = ::ConvertToSysUnits(pDuct->LastUserPj, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure);
+   }
+   else
+   {
+      pDuct->LastUserPj = pDuct->Pj;
+   }
 }
 
 pgsTypes::JackingEndType CSegmentTendonGrid::GetJackingEnd(ROWCOL nRow)

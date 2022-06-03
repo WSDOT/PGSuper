@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,6 +24,7 @@
 #include "resource.h"
 #include <Graphing\AnalysisResultsGraphBuilder.h>
 #include <Graphing\DrawBeamTool.h>
+#include <Graphing\ExportGraphXYTool.h>
 #include "AnalysisResultsGraphController.h"
 #include "AnalysisResultsGraphDefinition.h"
 #include "AnalysisResultsGraphViewControllerImp.h"
@@ -207,7 +208,7 @@ CAnalysisResultsGraphBuilder::~CAnalysisResultsGraphBuilder()
 
 void CAnalysisResultsGraphBuilder::Init()
 {
-   SetName(_T("Analysis Results"));
+   SetName(_T("Analysis Results - After Erection"));
 
    InitDocumentation(EAFGetDocument()->GetDocumentationSetName(),IDH_ANALYSIS_RESULTS);
 
@@ -392,13 +393,6 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CGirderKey& gird
    for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
    {
       vAllIntervals.push_back(intervalIdx);
-   }
-
-   // bridge site intervals
-   std::vector<IntervalIndexType> vBridgeSiteIntervals;
-   for ( IntervalIndexType intervalIdx = erectSegmentIntervalIdx+1; intervalIdx < nIntervals; intervalIdx++ )
-   {
-      vBridgeSiteIntervals.push_back(intervalIdx);
    }
 
    // intervals only after live load is applied
@@ -1235,7 +1229,7 @@ void CAnalysisResultsGraphBuilder::UpdateXAxisTitle()
    }
    else
    {
-      m_Graph.SetXAxisTitle(std::_tstring(_T("Distance From CL Bearing at Left End of Girder (")+m_pXFormat->UnitTag()+_T(")")).c_str());
+      m_Graph.SetXAxisTitle(std::_tstring(_T("Distance From Left End of Left-Most Girder (")+m_pXFormat->UnitTag()+_T(")")).c_str());
    }
 }
 
@@ -1424,9 +1418,6 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
       return;
    }
 
-   // Get the X locations for the graph
-   GET_IFACE(IPointOfInterest, pIPoi);
-
    // If the segments are simple span elements, we want to draw a graph for each segment individually.
    // Determine if the segments are simple spans during the intervals being graphed
    GET_IFACE(IIntervals, pIntervals);
@@ -1494,50 +1485,54 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
 
       SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
 
-      SegmentIndexType endSegmentIdx = (bSimpleSpanSegments ? nSegments-1 : 0);
-      for (SegmentIndexType segIdx = 0; segIdx <= endSegmentIdx; segIdx++)
+      for (IndexType graphIdx = 0; graphIdx < nSelectedGraphs; graphIdx++)
       {
-         CSegmentKey segmentKey(thisGirderKey, segIdx);
-         IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-         IntervalIndexType segmentErectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
-         IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
+         IDType graphID = ((CAnalysisResultsGraphController*)m_pGraphController)->SelectedGraphIndexToGraphID(graphIdx);
+         const CAnalysisResultsGraphDefinition& graphDef = m_pGraphDefinitions->GetGraphDefinition(graphID);
 
-         //if ((lastPlottingIntervalIdx < releaseIntervalIdx) // this is before release for this segment, so this segment doesn't exist yet
-         //   ||
-         //   ((firstPlottingIntervalIdx <= firstSegmentErectionIntervalIdx && firstSegmentErectionIntervalIdx <= lastPlottingIntervalIdx) && (lastPlottingIntervalIdx < segmentErectionIntervalIdx)) // results are for erected segments AND current segment is not yet erected
-         //   )
-         //{
-         //   continue;
-         //}
-         //
-         PoiList vPoi;
-
-         // Pois for pricipal web stress are unique. 
-         ActionType actionType = ((CAnalysisResultsGraphController*)m_pGraphController)->GetActionType();
-         if (actionPrincipalWebStress == actionType)
+         bool bSimpleSpanSegmentsThisGraph = bSimpleSpanSegments;
+         if (graphDef.m_GraphType == graphProduct && graphDef.m_LoadType.ProductLoadType == pgsTypes::pftPretension)
          {
-            GET_IFACE(IPrincipalWebStress, pPrincipalWebStress);
-            pPrincipalWebStress->GetPrincipalWebStressPointsOfInterest(CSegmentKey(thisGirderKey, bSimpleSpanSegments ? segIdx : ALL_SEGMENTS), lastPlottingIntervalIdx, &vPoi);
+            // pretensioning is always simple span
+            bSimpleSpanSegmentsThisGraph = true;
          }
-         else
+         
+         SegmentIndexType endSegmentIdx = (bSimpleSpanSegmentsThisGraph ? nSegments-1 : 0);
+         for (SegmentIndexType segIdx = 0; segIdx <= endSegmentIdx; segIdx++)
          {
-            pIPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey, bSimpleSpanSegments ? segIdx : ALL_SEGMENTS), &vPoi);
-            if (bSimpleSpanSegments)
+            CSegmentKey segmentKey(thisGirderKey, segIdx);
+            IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+            IntervalIndexType segmentErectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
+            IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
+            // Get the X locations for the graph - we have to do this for each graph type because some
+            // items graph as simple spans and some graph on the continuous span
+            GET_IFACE(IPointOfInterest, pIPoi);
+            PoiList vPoi;
+
+            // Pois for pricipal web stress are unique. 
+            ActionType actionType = ((CAnalysisResultsGraphController*)m_pGraphController)->GetActionType();
+            if (actionPrincipalWebStress == actionType)
             {
-               // these POI are between segments so they don't apply
-               vPoi.erase(std::remove_if(vPoi.begin(), vPoi.end(), [pIPoi](const auto& poi) {return pIPoi->IsOffSegment(poi); }), vPoi.end());
-               //pIPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
-               //pIPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
+               GET_IFACE(IPrincipalWebStress, pPrincipalWebStress);
+               pPrincipalWebStress->GetPrincipalWebStressPointsOfInterest(CSegmentKey(thisGirderKey, bSimpleSpanSegmentsThisGraph ? segIdx : ALL_SEGMENTS), lastPlottingIntervalIdx, &vPoi);
             }
-         }
+            else
+            {
+               pIPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey, bSimpleSpanSegmentsThisGraph ? segIdx : ALL_SEGMENTS), &vPoi);
 
-         // Map POI coordinates to X-values for the graph
-         std::vector<Float64> xVals;
-         Shift(girderKey.groupIndex == ALL_GROUPS ? false : true);
-         GetXValues(vPoi,&xVals);
+               // There are some blips (bugs likely) in computing deflections within closure joints. Clean out off-segment POIs to make graphs look pretty
+               if (bSimpleSpanSegmentsThisGraph || actionType==actionDeflection || actionType == actionRotation)
+               {
+                  // these POI are between segments so they don't apply
+                  vPoi.erase(std::remove_if(vPoi.begin(), vPoi.end(), [pIPoi](const auto& poi) {return pIPoi->IsOffSegment(poi); }), vPoi.end());
+               }
+            }
 
-         for ( IndexType graphIdx = 0; graphIdx < nSelectedGraphs; graphIdx++ )
-         {
+            // Map POI coordinates to X-values for the graph
+            std::vector<Float64> xVals;
+            Shift(girderKey.groupIndex == ALL_GROUPS ? false : true);
+            GetXValues(vPoi, &xVals);
+
             IntervalIndexType intervalIdx = INVALID_INDEX;
             if ( graphMode == CAnalysisResultsGraphController::Loading)
             {
@@ -1563,9 +1558,6 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
                // skip it
                continue;
             }
-
-            IDType graphID = ((CAnalysisResultsGraphController*)m_pGraphController)->SelectedGraphIndexToGraphID(graphIdx);
-            const CAnalysisResultsGraphDefinition& graphDef = m_pGraphDefinitions->GetGraphDefinition(graphID);
 
             IndexType selectedGraphIdx = m_pGraphDefinitions->GetGraphIndex(graphID);
 
@@ -1864,8 +1856,8 @@ void CAnalysisResultsGraphBuilder::ProductLoadGraph(IndexType graphIdx,const CAn
          case actionDeflection:
          {
             bool bIncludeElevationAdjustment = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludeElevationAdjustment();
-            bool bIncludePrecamber = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludePrecamber();
-            std::vector<Float64> deflections(pForces->GetDeflection(intervalIdx, pfType, vPoi, bat[analysisIdx], resultsType, bIncludeElevationAdjustment, bIncludePrecamber));
+            bool bIncludeUnrecoverableDefl = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludeUnrecoverableDefl();
+            std::vector<Float64> deflections(pForces->GetDeflection(intervalIdx, pfType, vPoi, bat[analysisIdx], resultsType, bIncludeElevationAdjustment, bIncludeUnrecoverableDefl, bIncludeUnrecoverableDefl));
             AddGraphPoints(data_series_id[analysisIdx], xVals, deflections);
             break;
          }
@@ -1878,8 +1870,8 @@ void CAnalysisResultsGraphBuilder::ProductLoadGraph(IndexType graphIdx,const CAn
          case actionRotation:
          {
             bool bIncludeSlopeAdjustment = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludeElevationAdjustment();
-            bool bIncludePrecamber = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludePrecamber();
-            std::vector<Float64> rotations(pForces->GetRotation(intervalIdx, pfType, vPoi, bat[analysisIdx], resultsType, bIncludeSlopeAdjustment, bIncludePrecamber));
+            bool bIncludeUnrecoverableDefl = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludeUnrecoverableDefl();
+            std::vector<Float64> rotations(pForces->GetRotation(intervalIdx, pfType, vPoi, bat[analysisIdx], resultsType, bIncludeSlopeAdjustment, bIncludeUnrecoverableDefl, bIncludeUnrecoverableDefl));
             AddGraphPoints(data_series_id[analysisIdx], xVals, rotations);
             break;
          }
@@ -1963,8 +1955,8 @@ void CAnalysisResultsGraphBuilder::CombinedLoadGraph(IndexType graphIdx,const CA
       case actionDeflection:
          {
             bool bIncludeElevationAdjustment = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludeElevationAdjustment();
-            bool bIncludePrecamber = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludePrecamber();
-            std::vector<Float64> displ = pForces->GetDeflection( intervalIdx, combination_type, vPoi, bat[analysisIdx], resultsType, bIncludeElevationAdjustment, bIncludePrecamber );
+            bool bIncludeUnrecoverableDefl = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludeUnrecoverableDefl();
+            std::vector<Float64> displ = pForces->GetDeflection( intervalIdx, combination_type, vPoi, bat[analysisIdx], resultsType, bIncludeElevationAdjustment, bIncludeUnrecoverableDefl,bIncludeUnrecoverableDefl);
             AddGraphPoints(data_series_id[analysisIdx], xVals, displ);
             break;
          }
@@ -1979,8 +1971,8 @@ void CAnalysisResultsGraphBuilder::CombinedLoadGraph(IndexType graphIdx,const CA
       case actionRotation:
          {
             bool bIncludeSlopeAdjustment = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludeElevationAdjustment();
-            bool bIncludePrecamber = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludePrecamber();
-            std::vector<Float64> rotations = pForces->GetRotation( intervalIdx, combination_type, vPoi, bat[analysisIdx], resultsType, bIncludeSlopeAdjustment, bIncludePrecamber );
+            bool bIncludeUnrecoverableDefl = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludeUnrecoverableDefl();
+            std::vector<Float64> rotations = pForces->GetRotation( intervalIdx, combination_type, vPoi, bat[analysisIdx], resultsType, bIncludeSlopeAdjustment,bIncludeUnrecoverableDefl, bIncludeUnrecoverableDefl );
             AddGraphPoints(data_series_id[analysisIdx], xVals, rotations);
             break;
          }
@@ -2204,20 +2196,20 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx,const 
          bool bIncPrestress = (graphType == graphDemand ? true : false);
          bool bIncludeLiveLoad = false;
          bool bIncludeElevationAdjustment = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludeElevationAdjustment();
-         bool bIncludePrecamber = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludePrecamber();
+         bool bIncludeUnrecoverableDefl = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludeUnrecoverableDefl();
          if ( analysisType == pgsTypes::Envelope )
          {
             std::vector<Float64> dispmn, dispmx;
-            pForces->GetDeflection( intervalIdx, limitState, vPoi, pgsTypes::MinSimpleContinuousEnvelope, bIncPrestress, bIncludeLiveLoad, bIncludeElevationAdjustment, bIncludePrecamber, &dispmn, &dispmx);
+            pForces->GetDeflection( intervalIdx, limitState, vPoi, pgsTypes::MinSimpleContinuousEnvelope, bIncPrestress, bIncludeLiveLoad, bIncludeElevationAdjustment,bIncludeUnrecoverableDefl, bIncludeUnrecoverableDefl, &dispmn, &dispmx);
             AddGraphPoints(min_data_series, xVals, dispmn);
 
-            pForces->GetDeflection( intervalIdx, limitState, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, bIncPrestress, bIncludeLiveLoad, bIncludeElevationAdjustment, bIncludePrecamber, &dispmn, &dispmx);
+            pForces->GetDeflection( intervalIdx, limitState, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, bIncPrestress, bIncludeLiveLoad, bIncludeElevationAdjustment, bIncludeUnrecoverableDefl,bIncludeUnrecoverableDefl, &dispmn, &dispmx);
             AddGraphPoints(max_data_series, xVals, dispmx);
          }
          else
          {
             std::vector<Float64> dispmn, dispmx;
-            pForces->GetDeflection( intervalIdx, limitState, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncPrestress, bIncludeLiveLoad, bIncludeElevationAdjustment, bIncludePrecamber, &dispmn, &dispmx);
+            pForces->GetDeflection( intervalIdx, limitState, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncPrestress, bIncludeLiveLoad, bIncludeElevationAdjustment, bIncludeUnrecoverableDefl, bIncludeUnrecoverableDefl, &dispmn, &dispmx);
             AddGraphPoints(min_data_series, xVals, dispmn);
             AddGraphPoints(max_data_series, xVals, dispmx);
          }
@@ -2251,20 +2243,20 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx,const 
          bool bIncPrestress = (graphType == graphDemand ? true : false);
          bool bIncludeLiveLoad = false;
          bool bIncludeSlopeAdjustment = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludeElevationAdjustment();
-         bool bIncludePrecamber = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludePrecamber();
+         bool bIncludeUnrecoverableDefl = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludeUnrecoverableDefl();
          if ( analysisType == pgsTypes::Envelope )
          {
             std::vector<Float64> minRotation, maxRotation;
-            pForces->GetRotation( intervalIdx, limitState, vPoi, pgsTypes::MinSimpleContinuousEnvelope, bIncPrestress, bIncludeLiveLoad, bIncludeSlopeAdjustment, bIncludePrecamber, &minRotation, &maxRotation);
+            pForces->GetRotation( intervalIdx, limitState, vPoi, pgsTypes::MinSimpleContinuousEnvelope, bIncPrestress, bIncludeLiveLoad, bIncludeSlopeAdjustment, bIncludeUnrecoverableDefl, bIncludeUnrecoverableDefl, &minRotation, &maxRotation);
             AddGraphPoints(min_data_series, xVals, minRotation);
 
-            pForces->GetRotation( intervalIdx, limitState, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, bIncPrestress, bIncludeLiveLoad, bIncludeSlopeAdjustment, bIncludePrecamber, &minRotation, &maxRotation);
+            pForces->GetRotation( intervalIdx, limitState, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, bIncPrestress, bIncludeLiveLoad, bIncludeSlopeAdjustment, bIncludeUnrecoverableDefl, bIncludeUnrecoverableDefl, &minRotation, &maxRotation);
             AddGraphPoints(max_data_series, xVals, maxRotation);
          }
          else
          {
             std::vector<Float64> minRotation, maxRotation;
-            pForces->GetRotation( intervalIdx, limitState, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncPrestress, bIncludeLiveLoad, bIncludeSlopeAdjustment, bIncludePrecamber, &minRotation, &maxRotation);
+            pForces->GetRotation( intervalIdx, limitState, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncPrestress, bIncludeLiveLoad, bIncludeSlopeAdjustment, bIncludeUnrecoverableDefl, bIncludeUnrecoverableDefl, &minRotation, &maxRotation);
             AddGraphPoints(min_data_series, xVals, minRotation);
             AddGraphPoints(max_data_series, xVals, maxRotation);
          }
@@ -4137,4 +4129,9 @@ void CAnalysisResultsGraphBuilder::GetSecondaryXValues(const PoiList& vPoi,const
          pvPoi->push_back(poi);
       }
     }
+}
+
+void CAnalysisResultsGraphBuilder::ExportGraphData(LPCTSTR rstrDefaultFileName)
+{
+   CExportGraphXYTool::ExportGraphData(m_Graph, rstrDefaultFileName);
 }

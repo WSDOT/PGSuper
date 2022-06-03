@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -286,6 +286,8 @@ void CClosureJointGeometryPage::DoDataExchange(CDataExchange* pDX)
    {
       // copy the page local data to the bridge model on the property sheet
       bool bCheckTimeline = false;
+      CTimelineEvent* pClosureEvent = nullptr;
+      CTimelineManager* pTimelineMgr = GetTimelineManager();
       if ( m_bIsPier )
       {
          CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
@@ -302,6 +304,14 @@ void CClosureJointGeometryPage::DoDataExchange(CDataExchange* pDX)
          pParent->m_pPier->SetDiaphragmLoadType(pgsTypes::Ahead,ConnectionLibraryEntry::ApplyAtBearingCenterline);
 
          bCheckTimeline = ::IsSegmentContinuousOverPier(pParent->m_pPier->GetSegmentConnectionType()) ? false : true;
+
+         if (bCheckTimeline)
+         {
+            auto cjID = pParent->m_pPier->GetClosureJoint(0)->GetID();
+            auto eventID = pTimelineMgr->GetCastClosureJointEventID(cjID);
+            pClosureEvent = pTimelineMgr->GetEventByID(eventID);
+            ATLASSERT(pClosureEvent->GetCastClosureJointActivity().IsEnabled());
+         }
       }
       else
       {
@@ -311,11 +321,18 @@ void CClosureJointGeometryPage::DoDataExchange(CDataExchange* pDX)
          pParent->m_pTS->SetBearingOffset(m_BearingOffset,m_BearingOffsetMeasurementType);
 
          bCheckTimeline = pParent->m_pTS->GetConnectionType() == pgsTypes::tsctClosureJoint ? true : false;
+
+         if (bCheckTimeline)
+         {
+            auto cjID = pParent->m_pTS->GetClosureJoint(0)->GetID();
+            auto eventID = pTimelineMgr->GetCastClosureJointEventID(cjID);
+            pClosureEvent = pTimelineMgr->GetEventByID(eventID);
+            ATLASSERT(pClosureEvent->GetCastClosureJointActivity().IsEnabled());
+         }
       }
 
       if (bCheckTimeline)
       {
-         CTimelineManager* pTimelineMgr = GetTimelineManager();
          int result = pTimelineMgr->Validate();
          if (sysFlags<Uint32>::IsSet(result, TLM_CLOSURE_JOINT_ERROR))
          {
@@ -325,6 +342,24 @@ void CClosureJointGeometryPage::DoDataExchange(CDataExchange* pDX)
             strMsg.Format(_T("%s\r\n\r\nPlease correct the closure joint installation event."), strError.c_str());
             AfxMessageBox(strMsg, MB_OK | MB_ICONERROR);
             pDX->Fail();
+         }
+
+         // we could have added something to the event that makes it's duration change... set the event and force the timeline to adjust
+         result = pTimelineMgr->ValidateEvent(pClosureEvent);
+         if (result != TLM_SUCCESS)
+         {
+            auto strError = pTimelineMgr->GetErrorMessage(result);
+            CString strMsg;
+            strMsg.Format(_T("%s\r\n\r\nShould the timeline be adjusted to accomodate the closure joint installation event?"), strError.c_str());
+            if (AfxMessageBox(strMsg, MB_YESNO) == IDYES)
+            {
+               result = pTimelineMgr->SetEventByID(pClosureEvent->GetID(), *pClosureEvent, true); // use the reference version... the pointer version of this function deletes the old event, which is the event we are inserting
+               ATLASSERT(result == TLM_SUCCESS);
+            }
+            else
+            {
+               pDX->Fail();
+            }
          }
       }
    }

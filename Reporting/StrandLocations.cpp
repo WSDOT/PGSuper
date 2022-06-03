@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -76,8 +76,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
    rptParagraph* pHead;
    pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pHead;
-   pHead->SetName(_T("Strand Locations"));
-   *pHead << pHead->GetName() << rptNewLine;
+   *pHead << _T("Strand Locations") << rptNewLine;
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;

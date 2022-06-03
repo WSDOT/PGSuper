@@ -1,18 +1,18 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 38.33    4  10.42                     1     1    WF58G    *     41  0.6  270  24.67  10.65  11.00  11.00                                              13  54.0  7.0  7.500  8.500   4.091    -4.747    10309   0.987  0.979   3.653 -1.526 -0.136 -0.210 -1.872 171.34  257.13    1.75    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 38.33    4  10.42                     1     1    WF58G    *     41  0.6  270  24.67  10.65  11.00  11.00                                              13  54.0  7.0  7.500  8.500   4.091    -4.747    10309   0.987  0.979   3.650 -1.526 -0.136 -0.210 -1.872 171.34  257.13    1.75    5.00    5.00    1.37    1.09    1.78    1.51    1.25 
 
 
 The Specification Check was Not Successful
-Tension stress check failed for Service III Limit State in Interval 19 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Hauling checks failed
 Slab Offset ("A" Dimension) check failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 38.33    4  10.42                     1     2    WF58G    *     41  0.6  270  24.67  10.65  11.00  11.00                                              13  54.0  7.0  7.500  8.500   3.960    -4.483     9423   0.838  0.979   3.551 -1.514 -0.132 -0.203 -1.848 171.97  258.29    1.75    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 38.33    4  10.42                     1     2    WF58G    *     41  0.6  270  24.67  10.65  11.00  11.00                                              13  54.0  7.0  7.500  8.500   3.960    -4.483     9423   0.838  0.979   3.547 -1.514 -0.132 -0.203 -1.848 171.97  258.29    1.75    5.00    5.00    1.64    1.16    2.13    1.55    1.47 
 
 
 The Specification Check was Not Successful
@@ -20,21 +20,21 @@ Hauling checks failed
 Slab Offset ("A" Dimension) check failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 38.33    4  10.42                     2     1    WF58G    *     41  0.6  270  24.67  10.65  11.00  11.00                                              13  54.0  7.0  7.500  8.500   4.093    -4.753    10328   0.991  0.979   3.653 -1.526 -0.136 -0.210 -1.872 171.34  257.13    1.75    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 38.33    4  10.42                     2     1    WF58G    *     41  0.6  270  24.67  10.65  11.00  11.00                                              13  54.0  7.0  7.500  8.500   4.093    -4.753    10328   0.991  0.979   3.650 -1.526 -0.136 -0.210 -1.872 171.34  257.13    1.75    5.00    5.00    1.37    1.09    1.77    1.51    1.24 
 
 
 The Specification Check was Not Successful
-Tension stress check failed for Service III Limit State in Interval 19 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Hauling checks failed
 Slab Offset ("A" Dimension) check failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 38.33    4  10.42                     2     2    WF58G    *     41  0.6  270  24.67  10.65  11.00  11.00                                              13  54.0  7.0  7.500  8.500   3.960    -4.483     9423   0.838  0.979   3.551 -1.514 -0.132 -0.203 -1.848 171.97  258.28    1.75    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 38.33    4  10.42                     2     2    WF58G    *     41  0.6  270  24.67  10.65  11.00  11.00                                              13  54.0  7.0  7.500  8.500   3.960    -4.483     9423   0.838  0.979   3.547 -1.514 -0.132 -0.203 -1.848 171.97  258.28    1.75    5.00    5.00    1.64    1.16    2.13    1.55    1.47 
 
 
 The Specification Check was Not Successful

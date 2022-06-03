@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,7 @@ pgsPrincipalTensionSectionArtifact::pgsPrincipalTensionSectionArtifact()
    m_fmax = -99999;
    m_Yg = -99999;
    m_strWebLocation = _T("Undefined");
-   m_fcReqd = -99999;
+   m_fcReqd = NO_AVAILABLE_CONCRETE_STRENGTH;
 }
 
 pgsPrincipalTensionSectionArtifact::pgsPrincipalTensionSectionArtifact(const pgsPointOfInterest& poi, Float64 fAllow, Float64 fmax, Float64 Yg, LPCTSTR lpszWebLocation, Float64 fcReqd)

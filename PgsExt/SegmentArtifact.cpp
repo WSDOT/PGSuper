@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -214,12 +214,12 @@ pgsSegmentStabilityArtifact* pgsSegmentArtifact::GetSegmentStabilityArtifact()
    return &m_StabilityArtifact;
 }
 
-void pgsSegmentArtifact::SetLiftingCheckArtifact(const stbLiftingCheckArtifact* artifact)
+void pgsSegmentArtifact::SetLiftingCheckArtifact(const WBFL::Stability::LiftingCheckArtifact* artifact)
 {
    m_pLiftingCheckArtifact = artifact;
 }
 
-const stbLiftingCheckArtifact* pgsSegmentArtifact::GetLiftingCheckArtifact() const
+const WBFL::Stability::LiftingCheckArtifact* pgsSegmentArtifact::GetLiftingCheckArtifact() const
 {
    return m_pLiftingCheckArtifact;
 }
@@ -410,7 +410,7 @@ bool pgsSegmentArtifact::IsWithRebarAllowableStressApplicable(const StressCheckT
    ATLASSERT(attribute == 0 || attribute == POI_CLOSURE);
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
 
    const auto& vArtifacts(GetFlexuralStressArtifacts(task));
    for( const auto& artifact : vArtifacts)
@@ -667,11 +667,11 @@ bool pgsSegmentArtifact::DidPrincipalTensionStressPass() const
    return m_PrincipalTensionStressArtifact.Passed();
 }
 
-Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
+Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength(pgsTypes::StressType stressType, IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
 
    Float64 fc_reqd = 0;
 
@@ -679,7 +679,7 @@ Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength(IntervalIndexType
    {
       const auto& key(item.first);
 
-      if ( key.intervalIdx == intervalIdx && key.limitState == ls )
+      if ( key.intervalIdx == intervalIdx && key.limitState == ls && key.stressType == stressType)
       {
          for( const auto& artifact : item.second)
          {
@@ -695,7 +695,7 @@ Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength(IntervalIndexType
                pgsTypes::StressLocation stressLocation = (i == 0 ? pgsTypes::TopGirder : pgsTypes::BottomGirder);
                if ( artifact.IsApplicable(stressLocation) )
                {
-                  Float64 fc = artifact.GetRequiredConcreteStrength(stressLocation);
+                  Float64 fc = artifact.GetRequiredConcreteStrength(stressType,stressLocation);
 
                   if ( fc < 0 ) 
                   {
@@ -715,7 +715,7 @@ Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength(IntervalIndexType
    return fc_reqd;
 }
 
-Float64 pgsSegmentArtifact::GetRequiredClosureJointConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
+Float64 pgsSegmentArtifact::GetRequiredClosureJointConcreteStrength(pgsTypes::StressType stressType, IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -743,7 +743,7 @@ Float64 pgsSegmentArtifact::GetRequiredClosureJointConcreteStrength(IntervalInde
                pgsTypes::StressLocation stressLocation = (i == 0 ? pgsTypes::TopGirder : pgsTypes::BottomGirder);
                if ( artifact.IsApplicable(stressLocation) )
                {
-                  Float64 fc = artifact.GetRequiredConcreteStrength(stressLocation);
+                  Float64 fc = artifact.GetRequiredConcreteStrength(stressType,stressLocation);
 
                   if ( fc < 0 ) 
                   {
@@ -763,7 +763,7 @@ Float64 pgsSegmentArtifact::GetRequiredClosureJointConcreteStrength(IntervalInde
    return fc_reqd;
 }
 
-Float64 pgsSegmentArtifact::GetRequiredDeckConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
+Float64 pgsSegmentArtifact::GetRequiredDeckConcreteStrength(pgsTypes::StressType stressType, IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
 {
    Float64 fc_reqd = 0;
 
@@ -780,7 +780,7 @@ Float64 pgsSegmentArtifact::GetRequiredDeckConcreteStrength(IntervalIndexType in
                pgsTypes::StressLocation stressLocation = (i == 0 ? pgsTypes::TopDeck : pgsTypes::BottomDeck);
                if ( artifact.IsApplicable(stressLocation) )
                {
-                  Float64 fc = artifact.GetRequiredConcreteStrength(stressLocation);
+                  Float64 fc = artifact.GetRequiredConcreteStrength(stressType,stressLocation);
 
                   if ( fc < 0 ) 
                   {
@@ -834,7 +834,7 @@ Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength() const
             pgsTypes::StressLocation stressLocation = (i == 0 ? pgsTypes::TopGirder : pgsTypes::BottomGirder );
             if ( artifact.IsApplicable(stressLocation) )
             {
-               Float64 fc = artifact.GetRequiredConcreteStrength(stressLocation);
+               Float64 fc = Max(artifact.GetRequiredConcreteStrength(pgsTypes::Compression,stressLocation),artifact.GetRequiredConcreteStrength(pgsTypes::Tension,stressLocation));
 
                if ( fc < 0 ) 
                {
@@ -852,13 +852,15 @@ Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength() const
 
    if (m_pHaulingAnalysisArtifact != nullptr)
    {
-      Float64 fc_reqd_hauling_comp1, fc_reqd_hauling_tens1, fc_reqd_hauling_tens_wbar1;
-      m_pHaulingAnalysisArtifact->GetRequiredConcreteStrength(pgsTypes::CrownSlope,&fc_reqd_hauling_comp1,&fc_reqd_hauling_tens1, &fc_reqd_hauling_tens_wbar1);
+       Float64 fc_reqd_hauling_comp1, fc_reqd_hauling_tens1, fc_reqd_hauling_tens_wbar1;
+       m_pHaulingAnalysisArtifact->GetRequiredConcreteStrength(pgsTypes::CrownSlope, &fc_reqd_hauling_comp1, &fc_reqd_hauling_tens1, &fc_reqd_hauling_tens_wbar1);
+       Float64 fc_reqd_hauling_1 = Max(fc_reqd_hauling_comp1, fc_reqd_hauling_tens1, fc_reqd_hauling_tens_wbar1);
 
-      Float64 fc_reqd_hauling_comp2, fc_reqd_hauling_tens2, fc_reqd_hauling_tens_wbar2;
-      m_pHaulingAnalysisArtifact->GetRequiredConcreteStrength(pgsTypes::Superelevation,&fc_reqd_hauling_comp2,&fc_reqd_hauling_tens2, &fc_reqd_hauling_tens_wbar2);
+       Float64 fc_reqd_hauling_comp2, fc_reqd_hauling_tens2, fc_reqd_hauling_tens_wbar2;
+       m_pHaulingAnalysisArtifact->GetRequiredConcreteStrength(pgsTypes::Superelevation, &fc_reqd_hauling_comp2, &fc_reqd_hauling_tens2, &fc_reqd_hauling_tens_wbar2);
+       Float64 fc_reqd_hauling_2 = Max(fc_reqd_hauling_comp2, fc_reqd_hauling_tens2, fc_reqd_hauling_tens_wbar2);
 
-      Float64 fc_reqd_hauling = Max(fc_reqd_hauling_tens_wbar1,fc_reqd_hauling_comp2,fc_reqd_hauling_tens_wbar1,fc_reqd_hauling_comp2);
+       Float64 fc_reqd_hauling = Max(fc_reqd_hauling_1,fc_reqd_hauling_2);
 
       if ( fc_reqd_hauling < 0 ) // there is no concrete strength that will work
       {
@@ -905,7 +907,7 @@ Float64 pgsSegmentArtifact::GetRequiredClosureJointConcreteStrength() const
                pgsTypes::StressLocation stressLocation = (i == 0 ? pgsTypes::TopGirder : pgsTypes::BottomGirder );
                if ( artifact.IsApplicable(stressLocation) )
                {
-                  Float64 fc = artifact.GetRequiredConcreteStrength(stressLocation);
+                  Float64 fc = Max(artifact.GetRequiredConcreteStrength(pgsTypes::Compression,stressLocation), artifact.GetRequiredConcreteStrength(pgsTypes::Tension,stressLocation));
 
                   if ( fc < 0 ) 
                   {
@@ -956,7 +958,7 @@ Float64 pgsSegmentArtifact::GetRequiredDeckConcreteStrength() const
             pgsTypes::StressLocation stressLocation = (i == 0 ? pgsTypes::TopDeck : pgsTypes::BottomDeck);
             if ( artifact.IsApplicable(stressLocation) )
             {
-               Float64 fc = artifact.GetRequiredConcreteStrength(stressLocation);
+               Float64 fc = Max(artifact.GetRequiredConcreteStrength(pgsTypes::Compression,stressLocation), artifact.GetRequiredConcreteStrength(pgsTypes::Tension,stressLocation));
 
                if ( fc < 0 ) 
                {
@@ -1011,11 +1013,11 @@ Float64 pgsSegmentArtifact::GetRequiredReleaseStrength() const
  
    if (m_pLiftingCheckArtifact != nullptr)
    {
-      Float64 fc_reqd_lifting_comp = m_pLiftingCheckArtifact->RequiredFcCompression();
-      Float64 fc_reqd_lifting_tens_norebar = m_pLiftingCheckArtifact->RequiredFcTension();
-      Float64 fc_reqd_lifting_tens_withrebar = m_pLiftingCheckArtifact->RequiredFcTensionWithRebar();
+       Float64 fc_reqd_lifting_comp = m_pLiftingCheckArtifact->RequiredFcCompression();
+       Float64 fc_reqd_lifting_tens_norebar = m_pLiftingCheckArtifact->RequiredFcTension();
+       Float64 fc_reqd_lifting_tens_withrebar = m_pLiftingCheckArtifact->RequiredFcTensionWithRebar();
 
-      Float64 fc_reqd_lifting = Max(fc_reqd_lifting_comp,fc_reqd_lifting_tens_norebar,fc_reqd_lifting_tens_withrebar);
+       Float64 fc_reqd_lifting = Max(fc_reqd_lifting_comp, fc_reqd_lifting_tens_norebar, fc_reqd_lifting_tens_withrebar);
 
       fc_reqd = Max(fc_reqd,fc_reqd_lifting);
    }

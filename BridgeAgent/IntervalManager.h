@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -173,6 +173,9 @@ public:
    // returns the index of the interval when a user defined load is applied
    IntervalIndexType GetUserLoadInterval(const CSpanKey& spanKey,UserLoads::LoadCase loadCase,LoadIDType userLoadID) const;
 
+   // returns true if a user defined loads is applied in this interval
+   bool IsUserDefinedLoadingInterval(IntervalIndexType intervalIdx) const;
+
    // returns the interval index when a temporary support is erected
    IntervalIndexType GetTemporarySupportErectionInterval(SupportIndexType tsIdx) const;
 
@@ -217,6 +220,19 @@ protected:
       Float64        End;           // End of interval
       Float64        Duration;      // Interval duration
       std::_tstring  Description;   // Description of activity occuring during this interval
+      bool operator<(const CInterval& other) const;
+      
+      // the following are only applicable to intervals related to deck casting
+      enum class Type 
+      {
+         CastDeckRegion, // this interval represents the point in time when a deck region is cast
+         CastDeckRegionAndClosureJoint, // this interval represents the point in time when a deck region and closure joint are cast together
+         Curing, // this interval represents a duration of time while a deck region is curing
+         CompositeDeckRegion // this interval represents the point in time when a deck region becomes composite with the girder
+      };
+      Type Type; // the interval type
+      std::vector<IndexType> CastingRegions; // vector of region indicies of deck casting regions applicable to this interval
+
 #if defined _DEBUG
       void AssertValid() const;
 #endif
@@ -232,18 +248,19 @@ protected:
    // returns a list of closure joints that are casting during the timeline event
    std::vector<CClosureKey> GetClosureJoints(const CTimelineEvent* pTimelineEvent);
 
+   // keeps track of when tendons are stressed
    std::map<CSegmentKey, IntervalIndexType> m_SegmentTendonStressingIntervals;
    std::map<CGirderTendonKey,IntervalIndexType> m_GirderTendonStressingIntervals;
 
    // keeps track of when piers are erected
    std::map<PierIndexType,IntervalIndexType> m_ErectPierIntervals;
 
-   // Keeps track of when temporary supports are erected and removed
+   // keeps track of when temporary supports are erected and removed
    std::map<SupportIndexType,IntervalIndexType> m_ErectTemporarySupportIntervals;
    std::map<SupportIndexType,IntervalIndexType> m_RemoveTemporarySupportIntervals;
 
 
-   // keep trakc of the interval when key activities occur for each segment
+   // keeps track of the interval when key activities occur for each segment
    std::map<CSegmentKey,IntervalIndexType> m_StressStrandIntervals;
    std::map<CSegmentKey,IntervalIndexType> m_ReleaseIntervals;
    std::map<CSegmentKey, IntervalIndexType> m_SegmentLiftingIntervals;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -511,7 +511,7 @@ int CTimelineManager::SetEventByID(EventIDType id,const CTimelineEvent& timeline
       auto* pTimelineEvent = *iter;
       if ( pTimelineEvent->GetID() == id )
       {
-         return SetEventByIndex(std::distance(m_TimelineEvents.cbegin(),iter),pTimelineEvent,bAdjustTimeline);
+         return SetEventByIndex(std::distance(m_TimelineEvents.cbegin(),iter), timelineEvent,bAdjustTimeline);
       }
    }
 
@@ -2311,32 +2311,36 @@ Uint32 CTimelineManager::Validate() const
    }
    
    // Check user defined loads
-   for (const auto& load : m_pLoadManager->m_PointLoads)
+   if (m_pLoadManager)
    {
-      if ( !IsUserDefinedLoadApplied(load.m_ID) )
+      for (const auto& load : m_pLoadManager->m_PointLoads)
       {
-         error |= TLM_USER_LOAD_ACTIVITY_REQUIRED;
+         if (!IsUserDefinedLoadApplied(load.m_ID))
+         {
+            error |= TLM_USER_LOAD_ACTIVITY_REQUIRED;
+         }
       }
-   }
 
-   for (const auto& load : m_pLoadManager->m_DistributedLoads)
-   {
-      if ( !IsUserDefinedLoadApplied(load.m_ID) )
+      for (const auto& load : m_pLoadManager->m_DistributedLoads)
       {
-         error |= TLM_USER_LOAD_ACTIVITY_REQUIRED;
+         if (!IsUserDefinedLoadApplied(load.m_ID))
+         {
+            error |= TLM_USER_LOAD_ACTIVITY_REQUIRED;
+         }
       }
-   }
 
-   for (const auto& load : m_pLoadManager->m_MomentLoads)
-   {
-      if ( !IsUserDefinedLoadApplied(load.m_ID) )
+      for (const auto& load : m_pLoadManager->m_MomentLoads)
       {
-         error |= TLM_USER_LOAD_ACTIVITY_REQUIRED;
+         if (!IsUserDefinedLoadApplied(load.m_ID))
+         {
+            error |= TLM_USER_LOAD_ACTIVITY_REQUIRED;
+         }
       }
    }
 
    // Make sure railing system is installed after the deck, or if there is no
    // deck, after the last segment is erected
+   EventIndexType diaphragmEventIdx = GetIntermediateDiaphragmsLoadEventIndex();
    if (m_pBridgeDesc->GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone)
    {
       EventIndexType lastSegmentErectionEventIdx = GetLastSegmentErectionEventIndex();
@@ -2354,7 +2358,6 @@ Uint32 CTimelineManager::Validate() const
       }
 
       // Make sure intermediate diaphragms are installed before the deck is cast
-      EventIndexType diaphragmEventIdx = GetIntermediateDiaphragmsLoadEventIndex();
       if (castDeckEventIdx < diaphragmEventIdx)
       {
          error |= TLM_INTERMEDIATE_DIAPHRAGM_LOADING_ERROR;
@@ -2530,6 +2533,47 @@ Uint32 CTimelineManager::Validate() const
                   error |= TLM_SEGMENT_ERECTION_ERROR;
                }
             }
+
+            // Make sure intermediate diaphragms are installed after the segments are erected
+            if (diaphragmEventIdx < erectSegmentEventIdx)
+            {
+               error |= TLM_INTERMEDIATE_DIAPHRAGM_LOADING_ERROR;
+               m_SegmentErectionError.emplace_back(pSegment->GetSegmentKey());
+            }
+
+            if (m_pLoadManager)
+            {
+               for (const auto& load : m_pLoadManager->m_PointLoads)
+               {
+                  EventIndexType eventIdx = FindUserLoadEventIndex(load.m_ID);
+                  if (eventIdx < erectSegmentEventIdx)
+                  {
+                     error |= TLM_USER_LOAD_ERROR;
+                     m_SegmentErectionError.emplace_back(pSegment->GetSegmentKey());
+                  }
+               }
+
+               for (const auto& load : m_pLoadManager->m_DistributedLoads)
+               {
+                  EventIndexType eventIdx = FindUserLoadEventIndex(load.m_ID);
+                  if (eventIdx < erectSegmentEventIdx)
+                  {
+                     error |= TLM_USER_LOAD_ERROR;
+                     m_SegmentErectionError.emplace_back(pSegment->GetSegmentKey());
+                  }
+               }
+
+               for (const auto& load : m_pLoadManager->m_MomentLoads)
+               {
+                  EventIndexType eventIdx = FindUserLoadEventIndex(load.m_ID);
+                  if (eventIdx < erectSegmentEventIdx)
+                  {
+                     error |= TLM_USER_LOAD_ERROR;
+                     m_SegmentErectionError.emplace_back(pSegment->GetSegmentKey());
+                  }
+               }
+            }
+
 
             // Returns a vector of all the temporary supports that support this segment
             if (gdrIdx == 0)
@@ -3098,7 +3142,12 @@ std::_tstring CTimelineManager::GetErrorMessage(Uint32 errorCode) const
 
    if (sysFlags<Uint32>::IsSet(errorCode, TLM_INTERMEDIATE_DIAPHRAGM_LOADING_ERROR))
    {
-      os << _T("Intermediate diaphragms are cast after the deck. Add an Apply Load activity at or before the event containing the Cast Deck activity.") << std::endl << std::endl;
+      os << _T("Intermediate diaphragm loads are applied before segments are erected or after the deck is cast. They must be applied after all segments are erected up until deck casting. To fix the problem add an Apply Load activity with intermediate diaphragms loads at or before the event containing the Cast Deck activity to the timeline.") << std::endl << std::endl;
+   }
+
+   if (sysFlags<Uint32>::IsSet(errorCode, TLM_USER_LOAD_ERROR))
+   {
+      os << _T("User defined loads are applied before segments are erected. They must be applied after all segments are erected. To fix the problem add an Apply Load activity with user defined loads at or after the event containing the last Erect Segment activity to the timeline.") << std::endl << std::endl;
    }
 
    return os.str();

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,6 +28,18 @@
 #include <PgsExt\ReportPointOfInterest.h>
 #include <Lrfd\Lrfd.h>
 #include <WBFLRCCapacity.h>
+
+struct PIER_DIAPHRAGM_LOAD_DETAILS
+{
+   Float64 TribWidth;
+   Float64 Height;
+   Float64 Width;
+   Float64 SkewAngle;
+   Float64 Density;
+   Float64 P;
+   Float64 M;
+   Float64 MomentArm;
+};
 
 struct SLAB_OFFSET_AT_SECTION
 {
@@ -63,45 +75,45 @@ struct SLABOFFSETDETAILS
 
 struct MOMENTCAPACITYDETAILS
 {
-   Float64 Mr;        // Nominal resistance (Mr = Phi*Mn);
-   Float64 Mn;        // Nominal moment capacity
-   Float64 Phi;       // Strength reduction factor
-   Float64 PPR;       // Partial prestress ratio at this section
-   Float64 MomentArm; // Distance between dc and de
-   Float64 c;         // Distance from extreme compression fiber to the neutral axis
-   Float64 dc;        // Distance from extreme compression fiber to the resultant compressive force
-   Float64 de;        // Distance from extreme compression fiber to the resultant tensile force (used to compute c/de)
-   Float64 de_shear;  // Distance from extreme compression fiber to the resultant tensile force for only those strands in tension (used for shear)
-   Float64 C;         // Resultant compressive force
-   Float64 T;         // Resultant tensile force
+   Float64 Mr{ 0.0 };        // Nominal resistance (Mr = Phi*Mn);
+   Float64 Mn{ 0.0 };        // Nominal moment capacity
+   Float64 Phi{ 0.0 };       // Strength reduction factor
+   Float64 PPR{ 0.0 };       // Partial prestress ratio at this section
+   Float64 MomentArm{ 0.0 }; // Distance between dc and de
+   Float64 c{ 0.0 };         // Distance from extreme compression fiber to the neutral axis
+   Float64 dc{ 0.0 };        // Distance from extreme compression fiber to the resultant compressive force
+   Float64 de{ 0.0 };        // Distance from extreme compression fiber to the resultant tensile force (used to compute c/de)
+   Float64 de_shear{ 0.0 };  // Distance from extreme compression fiber to the resultant tensile force for only those strands in tension (used for shear)
+   Float64 C{ 0.0 };         // Resultant compressive force
+   Float64 T{ 0.0 };         // Resultant tensile force
 
-   int Method;        // LRFD_METHOD or WSDOT_METHOD
+   int Method{ LRFD_METHOD };        // LRFD_METHOD or WSDOT_METHOD
                       // WSDOT_METHOD = variable phi factor
                       // LRFD_METHOD = over reinforce capacity per C5.7.3.3.1 (removed from spec 2005)
 
    // WSDOT_METHOD
-   Float64 dt;        // Depth from extreme compression fiber to cg of lowest piece of reinforcement
-   Float64 et;        // Net tensile strain
-   Float64 etl;       // Tension Control Strain Limit
-   Float64 ecl;       // Compression Control Strain Limit
+   Float64 dt{ 0.0 };        // Depth from extreme compression fiber to cg of lowest piece of reinforcement
+   Float64 et{ 0.0 };        // Net tensile strain
+   Float64 etl{ 0.0 };       // Tension Control Strain Limit
+   Float64 ecl{ 0.0 };       // Compression Control Strain Limit
 
-   Float64 fps_avg;   // Average stress in strands at nominal resistance
-   Float64 fpt_avg_segment;  // Average stress in segment tendons at nominal resistance
-   Float64 fpt_avg_girder;  // Average stress in girder tendons at nominal resistance
+   Float64 fps_avg{ 0.0 };   // Average stress in strands at nominal resistance
+   Float64 fpt_avg_segment{ 0.0 };  // Average stress in segment tendons at nominal resistance
+   Float64 fpt_avg_girder{ 0.0 };  // Average stress in girder tendons at nominal resistance
 
    // LRFD_METHOD 
    // For C5.7.3.3.1... Capacity of over reinforced section  (removed from spec 2005)
-   bool    bOverReinforced; // True if section is over reinforced
-   bool    bRectSection;    // True if rectangular section behavior
-   Float64 Beta1Slab;       // Beta1 for slab only... B1 and f'c of slab are used in these calcs
-   Float64 FcSlab;
-   Float64 hf;
-   Float64 b;
-   Float64 bw;
-   Float64 MnMin;           // Minimum nominal capacity of a over reinforced section (Eqn C5.7.3.3.1-1 or 2)
+   bool    bOverReinforced{ false }; // True if section is over reinforced
+   bool    bRectSection{ true };    // True if rectangular section behavior
+   Float64 Beta1Slab{ 0.0 };       // Beta1 for slab only... B1 and f'c of slab are used in these calcs
+   Float64 FcSlab{ 0.0 };
+   Float64 hf{ 0.0 };
+   Float64 b{ 0.0 };
+   Float64 bw{ 0.0 };
+   Float64 MnMin{ 0.0 };           // Minimum nominal capacity of a over reinforced section (Eqn C5.7.3.3.1-1 or 2)
 
-   Float64 fpe_ps; // Effective prestress
-   Float64 eps_initial; // Initial strain in strands
+   Float64 fpe_ps{ 0.0 }; // Effective prestress
+   Float64 eps_initial{ 0.0 }; // Initial strain in strands
 
    std::vector<Float64> fpe_pt_segment; // Effective prestress in segment tendons
    std::vector<Float64> ept_initial_segment; // Initial strain in segment tendons
@@ -111,7 +123,11 @@ struct MOMENTCAPACITYDETAILS
 
    // solution object provides the full equilibrium state of the moment
    // capacity solution
+   CComPtr<IGeneralSection> Section; // this is the section that is analyzed
    CComPtr<IMomentCapacitySolution> CapacitySolution;
+   
+   enum class ControllingType { Concrete, ReinforcementStrain, Development };
+   ControllingType Controlling{ ControllingType::Concrete };
 };
 
 struct CRACKINGMOMENTDETAILS
@@ -178,7 +194,7 @@ struct SHEARCAPACITYDETAILS
    };
 
    // [IN]
-   ShearCapacityMethod Method; // General or Simplified per LRFD 5.8.3.4.3 (Vci/Vcw - added to LRFD in 2007) (removed from LRFD in 2017)
+   pgsTypes::ShearCapacityMethod Method; // General or Simplified per LRFD 5.8.3.4.3 (Vci/Vcw - added to LRFD in 2007) (removed from LRFD in 2017)
    Float64 Nu;
    Float64 Mu;
    Float64 RealMu; // Actual Mu computed from structural analysis. Same as Mu if MuLimitUsed is false
@@ -241,9 +257,8 @@ struct SHEARCAPACITYDETAILS
    Float64 sxe_tbl;
    Float64 Theta;
    Float64 FiberStress;// coefficient for compute the contribution of fibers in UHPC to the shear capacity (taken as 0.75 ksi for now)
-   Float64 Vc;
+   Float64 Vc; // Shear strength of concrete (= Vcf for PCI UHPC)
    Float64 Vs;
-   Float64 Vf; // capacity of UHPC fibers
    Float64 Vn1;  // [Eqn 5.8.3.3-1]
    Float64 Vn2;  // [Eqn 5.8.3.3-2]
    Float64 Vn;   // Nominal shear resistance
@@ -400,7 +415,7 @@ struct CREEPCOEFFICIENTDETAILS
 
    // before 2005 interim
    Float64 kf;
-   Float64 kc;
+   //Float64 kc; // this is stored in ktd because it is actually a time-development factor
 
    // 2005 and later
    Float64 kvs;
@@ -604,8 +619,7 @@ struct TIME_STEP_CONCRETE
       P = 0;
       M = 0;
 
-      int n = sizeof(dPi)/sizeof(dPi[0]);
-      for ( int i = 0; i < n ; i++ )
+      for (int i = 0; i < pftTimeStepSize; i++)
       {
          dei[i] = 0;
          ei[i]  = 0;
@@ -675,6 +689,7 @@ struct TIME_STEP_STRAND
 
    // Loss/Gain during this interval (change in effective prestress this interval)
    std::array<Float64, pftTimeStepSize> dfpei; // = dP/Aps
+   std::array<Float64, pftTimeStepSize> fpei; // = fpei[load] from previous interval plus dfpei[load] from this interval
    Float64 dfpe; // summation of dfpei
 
    // Effective prestress
@@ -714,8 +729,7 @@ struct TIME_STEP_STRAND
       de = 0;
       e = 0;
 
-      int n = sizeof(dPi)/sizeof(dPi[0]);
-      for ( int i = 0; i < n; i++ )
+      for ( int i = 0; i < pftTimeStepSize; i++ )
       {
          dei[i] = 0;
          ei[i] = 0;
@@ -724,6 +738,7 @@ struct TIME_STEP_STRAND
          Pi[i]  = 0;
 
          dfpei[i] = 0;
+         fpei[i] = 0;
       }
 
       dfpe = 0;
@@ -781,8 +796,7 @@ struct TIME_STEP_REBAR
       de = 0;
       e = 0;
 
-      int n = sizeof(dPi)/sizeof(dPi[0]);
-      for ( int i = 0; i < n; i++ )
+      for (int i = 0; i < pftTimeStepSize; i++)
       {
          dei[i] = 0;
          ei[i] = 0;
@@ -914,8 +928,7 @@ struct TIME_STEP_DETAILS
       Itr = 0;
       Ea  = 0;
 
-      int n = sizeof(dPi)/sizeof(dPi[0]);
-      for ( int i = 0; i < n ; i++ )
+      for (int i = 0; i < pftTimeStepSize; i++)
       {
          dPi[i] = 0;
          dMi[i] = 0;
@@ -1058,27 +1071,6 @@ struct LOSSDETAILS
 #if defined _DEBUG
    pgsPointOfInterest POI; // this is the POI that this loss details applies to
 #endif
-};
-
-struct XFERLENGTHDETAILS
-{
-   bool bMinuteValue; // if true, the transfer length was set to a very small value
-   Float64 db; // strand diameter
-   Int16 ndb; // number of strand diameters used for xfer length
-   bool bEpoxy; // is strand grit epoxy coated
-   Float64 lt; // transfer length
-};
-
-struct STRANDDEVLENGTHDETAILS
-{
-    // details of bonded and debonded strand development and transfer
-    // length calculations... see LRFD 5.9.4.3.1 and 5.9.4.3.2 (pre2017: 5.11.4.1  and 5.11.4.2)
-    Float64 db; // strand diameter
-    Float64 fpe;
-    Float64 fps;
-    Float64 k;
-    Float64 ld; // development length
-    XFERLENGTHDETAILS ltDetails; // transfer length
 };
 
 #define NO_TTS          0 // lifting without TTS

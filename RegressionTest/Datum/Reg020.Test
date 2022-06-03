@@ -1,6 +1,6 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 48.25    6   8.00                     1     1    U48G4    *     48  0.6  270  15.34  11.09  12.50  12.50                                              5.000  6.000  10.416    -7.716    14507   0.935  1.385   2.714 -2.452  0.000 -0.112 -2.564 183.81  402.54    0.00    0.00    0.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 48.25    6   8.00                     1     1    U48G4    *     48  0.6  270  15.34  11.09  12.50  12.50                                              5.000  6.000  10.416    -7.716    14507   0.935  1.385   5.024 -2.452  0.000 -0.112 -2.564 183.81  402.54    0.00    0.00    0.00    0.86    0.41    1.12    0.68    0.00 
 
 
 The Specification Check was Not Successful
@@ -9,10 +9,10 @@ Compression stress check failed for Service I Limit State in Interval 2 Prestres
 Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 11 Cast Deck, Apply User Defined Loads
 Tension stress check failed for Service I Limit State in Interval 11 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 17 Apply User Defined Loads, Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 17 Apply User Defined Loads, Open to Traffic
-Compression stress check failed for Service IA Limit State in Interval 17 Apply User Defined Loads, Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 17 Apply User Defined Loads, Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 16 Apply User Defined Loads, Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 16 Apply User Defined Loads, Open to Traffic
+Compression stress check failed for Service IA Limit State in Interval 16 Apply User Defined Loads, Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 16 Apply User Defined Loads, Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -22,9 +22,9 @@ Lifting checks failed
 Hauling checks failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 48.25    6   8.00                     1     2    U48G4    *     48  0.6  270  15.34  11.09  12.50  12.50                                              5.000  6.000   6.249    -4.899     9462   0.489  0.997   2.714 -2.107  0.000 -0.115 -2.222 183.81  402.54    0.00    0.00    0.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 48.25    6   8.00                     1     2    U48G4    *     48  0.6  270  15.34  11.09  12.50  12.50                                              5.000  6.000   6.249    -4.899     9462   0.489  0.997   5.024 -2.107  0.000 -0.115 -2.222 183.81  402.54    0.00    0.00    0.00    2.69    1.86    3.49    2.79    1.46 
 
 
 The Specification Check was Not Successful
@@ -32,10 +32,10 @@ Stresses in the prestressing strands are too high.
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 11 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 17 Apply User Defined Loads, Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 17 Apply User Defined Loads, Open to Traffic
-Compression stress check failed for Service IA Limit State in Interval 17 Apply User Defined Loads, Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 17 Apply User Defined Loads, Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 16 Apply User Defined Loads, Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 16 Apply User Defined Loads, Open to Traffic
+Compression stress check failed for Service IA Limit State in Interval 16 Apply User Defined Loads, Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 16 Apply User Defined Loads, Open to Traffic
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Lifting checks failed
 Hauling checks failed

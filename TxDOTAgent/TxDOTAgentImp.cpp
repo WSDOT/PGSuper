@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -57,6 +57,7 @@
 #include "TexasStressChecksChapterBuilder.h"
 #include "TexasMomentCapacityChapterBuilder.h"
 #include "TexasShearChapterBuilder.h"
+#include "TexasLoadRatingSummaryChapterBuilder.h"
 #include "TOGATitlePageBuilder.h"
 
 #include "TxDOTOptionalDesignSummaryChapterBuilder.h"
@@ -170,6 +171,7 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasCamberAndDeflectionChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasHaunchChapterBuilder) );
 //   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CBearingDeductChapterBuilder) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasLoadRatingSummaryChapterBuilder(false)) );
    pRptMgr->AddReportBuilder( pRptBuilder.release() );
 
    // Texas Summary report - long form
@@ -191,6 +193,7 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasStressChecksChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasMomentCapacityChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasShearChapterBuilder) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasLoadRatingSummaryChapterBuilder(false)) );
    pRptMgr->AddReportBuilder( pRptBuilder.release() );
 
    // TOGA Long Form

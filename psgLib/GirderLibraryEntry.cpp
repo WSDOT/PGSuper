@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -5218,7 +5218,7 @@ CShearData2 GirderLibraryEntry::LegacyShearData::ConvertToShearData() const
    if (!m_ShearZoneInfo.empty())
    {
       sdata.ShearZones.clear();
-      Uint32 zn = 1;
+      Uint32 zn = 0;
       for ( ShearZoneInfoVec::const_iterator it = m_ShearZoneInfo.begin(); it!=m_ShearZoneInfo.end(); it++)
       {
          const ShearZoneInfo& rinfo = *it;
@@ -5228,7 +5228,7 @@ CShearData2 GirderLibraryEntry::LegacyShearData::ConvertToShearData() const
          zdata.ZoneLength = rinfo.ZoneLength;
          zdata.nVertBars = rinfo.nVertBars;
 
-         if (zn<=m_LastConfinementZone)
+         if (zn < m_LastConfinementZone)
          {
             zdata.ConfinementBarSize = rinfo.VertBarSize;
          }

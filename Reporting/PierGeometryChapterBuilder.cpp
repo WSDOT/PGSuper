@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -107,6 +107,10 @@ void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDispl
    GET_IFACE2(pBroker, IBridge,      pBridge ); 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    GET_IFACE2(pBroker, IRoadway, pAlignment);
+   GET_IFACE2(pBroker, IRoadwayData, pRoadwayData);
+
+   bool bOffsetPGL = (pRoadwayData->GetRoadwaySectionData().AlignmentPointIdx != pRoadwayData->GetRoadwaySectionData().ProfileGradePointIdx) ? true : false;
+
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, offset, pDisplayUnits->GetAlignmentLengthUnit(), false );
@@ -126,7 +130,7 @@ void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDispl
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(7,_T(""));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(bOffsetPGL ? 8 : 7,_T(""));
    *pPara << pTable << rptNewLine;
 
    pTable->SetNumberOfHeaderRows(2);
@@ -134,30 +138,45 @@ void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDispl
    pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
    pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
-   pTable->SetRowSpan(0,0,2);
-   (*pTable)(0,0) << _T("");
+   ColumnIndexType col = 0;
+   pTable->SetRowSpan(0,col,2);
+   (*pTable)(0,col++) << _T("");
 
-   pTable->SetRowSpan(0,1,2);
-   (*pTable)(0,1) << _T("Station");
+   pTable->SetRowSpan(0, col,2);
+   (*pTable)(0, col++) << _T("Station");
 
-   pTable->SetRowSpan(0,2,2);
-   (*pTable)(0,2) << _T("Bearing");
+   pTable->SetRowSpan(0, col,2);
+   (*pTable)(0, col++) << _T("Bearing");
 
-   pTable->SetRowSpan(0,3,2);
-   (*pTable)(0,3) << _T("Skew Angle");
+   pTable->SetRowSpan(0,col,2);
+   (*pTable)(0, col++) << _T("Skew Angle");
 
-   pTable->SetColumnSpan(0,4,3);
-   (*pTable)(0,4) << _T("Alignment Intersection");
-   (*pTable)(1,4) << _T("East") << rptNewLine << _T("(X)");
-   (*pTable)(1,5) << _T("North") << rptNewLine << _T("(Y)");
-   (*pTable)(1,6) << COLHDR(_T("Elev"),rptLengthUnitTag,pDisplayUnits->GetAlignmentLengthUnit());
+   pTable->SetColumnSpan(0, col,3);
+   if (bOffsetPGL)
+   {
+      (*pTable)(0, col) << _T("Alignment Intersection");
+   }
+   else
+   {
+      (*pTable)(0, col) << _T("Alignment\\PGL Intersection");
+   }
+   (*pTable)(1, col++) << _T("East") << rptNewLine << _T("(X)");
+   (*pTable)(1, col++) << _T("North") << rptNewLine << _T("(Y)");
+   (*pTable)(1, col++) << COLHDR(_T("Elev"),rptLengthUnitTag,pDisplayUnits->GetAlignmentLengthUnit());
 
+   if (bOffsetPGL)
+   {
+      pTable->SetRowSpan(0, col, 2);
+      (*pTable)(0, col++) << COLHDR(_T("PGL Elev"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit());
+   }
    const CPierData2* pPier = pBridgeDesc->GetPier(0);
    RowIndexType row = pTable->GetNumberOfHeaderRows();
    while ( pPier != nullptr )
    {
-      ColumnIndexType col = 0;
+      col = 0;
       PierIndexType pierIdx = pPier->GetIndex();
+
+      Float64 station = pPier->GetStation();
 
       CComPtr<IDirection> bearing;
       CComPtr<IAngle> skew;
@@ -179,7 +198,7 @@ void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDispl
 
       (*pTable)(row,col++) << LABEL_PIER_EX(pPier->IsAbutment(), pierIdx);
 
-      (*pTable)(row,col++) << rptRcStation(pPier->GetStation(), &pDisplayUnits->GetStationFormat() );
+      (*pTable)(row,col++) << rptRcStation(station, &pDisplayUnits->GetStationFormat() );
       (*pTable)(row,col++) << RPT_BEARING(OLE2T(bstrBearing));
       (*pTable)(row,col++) << RPT_ANGLE(OLE2T(bstrAngle));
 
@@ -192,7 +211,14 @@ void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDispl
       pntAlignment->get_Y(&y);
       (*pTable)(row,col++) << offset.SetValue(x);
       (*pTable)(row,col++) << offset.SetValue(y);
-      (*pTable)(row,col++) << offset.SetValue( pAlignment->GetElevation(pPier->GetStation(),0.0) );
+      (*pTable)(row,col++) << offset.SetValue( pAlignment->GetElevation(station,0.0) );
+
+      if (bOffsetPGL)
+      {
+         IndexType pglIdx = pAlignment->GetProfileGradeLineIndex(station);
+         Float64 pgl_offset = pAlignment->GetAlignmentOffset(pglIdx,station);
+         (*pTable)(row, col++) << offset.SetValue(pAlignment->GetElevation(station, pgl_offset));
+      }
 
       if ( pPier->GetNextSpan() )
       {

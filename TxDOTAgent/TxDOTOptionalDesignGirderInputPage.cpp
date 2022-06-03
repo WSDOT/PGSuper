@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -518,8 +518,7 @@ void CTxDOTOptionalDesignGirderInputPage::UpdateStrandSizeList(long StrandSizeLi
       if ( idx != CB_ERR )
       { 
          // if there wasn't an error adding the size, add a data item
-         Int32 key;
-         key = pPool->GetStrandKey( pStrand );
+         auto key = pPool->GetStrandKey( pStrand );
 
          if ( pList->SetItemData( idx, key ) == CB_ERR )
          {

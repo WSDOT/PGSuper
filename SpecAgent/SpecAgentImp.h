@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,6 +31,9 @@
 #include <EAF\EAFInterfaceCache.h>
 #include <IFace\ResistanceFactors.h>
 #include <IFace\InterfaceShearRequirements.h>
+#include <IFace\SplittingChecks.h>
+
+#include <PgsExt\LRFDSplittingCheckEngineer.h>
 
 class GirderLibraryEntry;
 class SpecLibraryEntry;
@@ -48,6 +51,7 @@ class ATL_NO_VTABLE CSpecAgentImp :
    public IAllowableTendonStress,
    public IAllowableConcreteStress,
    public ITransverseReinforcementSpec,
+   public ISplittingChecks,
    public IPrecastIGirderDetailsSpec,
    public ISegmentHaulingSpecCriteria,
    public IKdotGirderHaulingSpecCriteria,
@@ -74,6 +78,7 @@ BEGIN_COM_MAP(CSpecAgentImp)
    COM_INTERFACE_ENTRY(IAllowableTendonStress)
    COM_INTERFACE_ENTRY(IAllowableConcreteStress)
    COM_INTERFACE_ENTRY(ITransverseReinforcementSpec)
+   COM_INTERFACE_ENTRY(ISplittingChecks)
    COM_INTERFACE_ENTRY(IPrecastIGirderDetailsSpec)
    COM_INTERFACE_ENTRY(ISegmentLiftingSpecCriteria)
    COM_INTERFACE_ENTRY(ISegmentHaulingSpecCriteria)
@@ -155,6 +160,10 @@ public:
 public:
    virtual Float64 GetAllowableCompressionStress(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation, const StressCheckTask& task) const override;
    virtual Float64 GetAllowableTensionStress(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation, const StressCheckTask& task,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone) const override;
+   virtual void ReportSegmentAllowableCompressionStress(const pgsPointOfInterest& poi, const StressCheckTask& task, rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits) const override;
+   virtual void ReportSegmentAllowableTensionStress(const pgsPointOfInterest& poi, const StressCheckTask& task, const pgsSegmentArtifact* pSegmentArtifact, rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits) const override;
+   virtual void ReportClosureJointAllowableCompressionStress(const pgsPointOfInterest& poi, const StressCheckTask& task, rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits) const override;
+   virtual void ReportClosureJointAllowableTensionStress(const pgsPointOfInterest& poi, const StressCheckTask& task, const pgsSegmentArtifact* pSegmentArtifact, rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits) const override;
 
    virtual Float64 GetAllowableTensionStress(pgsTypes::LoadRatingType ratingType,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation) const override;
 
@@ -197,22 +206,31 @@ public:
    virtual bool CheckFinalDeadLoadTensionStress() const override;
 
    virtual Float64 GetAllowableSegmentPrincipalWebTensionStress(const CSegmentKey& segmentKey) const override;
+   virtual void ReportAllowableSegmentPrincipalWebTensionStress(const CSegmentKey& segmentKey, rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits) const override;
    virtual Float64 GetAllowableClosureJointPrincipalWebTensionStress(const CClosureKey& closureKey) const override;
+   virtual void ReportAllowableClosureJointPrincipalWebTensionStress(const CClosureKey& closureKey, rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits) const override;
    virtual Float64 GetAllowablePrincipalWebTensionStress(const pgsPointOfInterest& poi) const override;
    virtual Float64 GetAllowablePrincipalWebTensionStressCoefficient() const override;
-   virtual Float64 GetprincipalTensileStressFcThreshold() const override;
+   virtual Float64 GetPrincipalTensileStressFcThreshold() const override;
+   virtual Float64 GetPrincipalTensileStressRequiredConcreteStrength(const pgsPointOfInterest& poi, Float64 stress) const override;
+
+   virtual Float64 GetAllowableUHPCTensionStressLimitCoefficient() const override;
 
 // ITransverseReinforcementSpec
 public:
-   virtual Float64 GetMaxSplittingStress(Float64 fyRebar) const override;
-   virtual Float64 GetSplittingZoneLength( Float64 girderHeight ) const override;
-   virtual Float64 CSpecAgentImp::GetSplittingZoneLengthFactor() const override;
-   virtual Float64 GetUHPCStrengthAtFirstCrack() const override;
    virtual matRebar::Size GetMinConfinmentBarSize() const override;
    virtual Float64 GetMaxConfinmentBarSpacing() const override;
    virtual Float64 GetMinConfinmentAvS() const override;
    virtual void GetMaxStirrupSpacing(Float64 dv,Float64* sUnderLimit, Float64* sOverLimit) const override;
    virtual Float64 GetMinStirrupSpacing(Float64 maxAggregateSize, Float64 barDiameter) const override;
+
+// ISplittingChecks
+public:
+   virtual Float64 GetSplittingZoneLength(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType) const override;
+   virtual std::shared_ptr<pgsSplittingCheckArtifact> CheckSplitting(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig = nullptr) const override;
+   virtual Float64 GetAsRequired(const pgsSplittingCheckArtifact* pArtifact) const override;
+   virtual void ReportSplittingChecks(IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, rptChapter* pChapter) const override;
+   virtual void ReportSplittingCheckDetails(IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, rptChapter* pChapter) const override;
 
 // IPrecastIGirderDetailsSpec
 public:
@@ -250,8 +268,8 @@ public:
    virtual Float64 GetLiftingCamberMultiplier() const override;
    virtual pgsTypes::WindType GetLiftingWindType() const override;
    virtual Float64 GetLiftingWindLoad() const override;
-   virtual stbLiftingCriteria GetLiftingStabilityCriteria(const CSegmentKey& segmentKey) const override;
-   virtual stbLiftingCriteria GetLiftingStabilityCriteria(const CSegmentKey& segmentKey,const HANDLINGCONFIG& liftConfig) const override;
+   virtual WBFL::Stability::LiftingCriteria GetLiftingStabilityCriteria(const CSegmentKey& segmentKey) const override;
+   virtual WBFL::Stability::LiftingCriteria GetLiftingStabilityCriteria(const CSegmentKey& segmentKey,const HANDLINGCONFIG& liftConfig) const override;
 
 // ISegmentHaulingSpecCriteria
 public:
@@ -260,18 +278,14 @@ public:
    virtual void GetHaulingImpact(Float64* pDownward, Float64* pUpward) const override;
    virtual Float64 GetHaulingCrackingFs() const override;
    virtual Float64 GetHaulingRolloverFs() const override;
-   virtual void GetHaulingAllowableTensileConcreteStressParametersNormalCrown(Float64* factor,bool* pbMax,Float64* fmax) const override;
-   virtual Float64 GetHaulingAllowableTensileConcreteStressNormalCrown(const CSegmentKey& segmentKey) const override;
-   virtual void GetHaulingAllowableTensileConcreteStressParametersMaxSuper(Float64* factor,bool* pbMax,Float64* fmax) const override;
-   virtual Float64 GetHaulingAllowableTensileConcreteStressMaxSuper(const CSegmentKey& segmentKey) const override;
+   virtual void GetHaulingAllowableTensileConcreteStressParameters(pgsTypes::HaulingSlope slope,Float64* factor,bool* pbMax,Float64* fmax) const override;
+   virtual Float64 GetHaulingAllowableTensileConcreteStress(const CSegmentKey& segmentKey, pgsTypes::HaulingSlope slope) const override;
    virtual Float64 GetHaulingAllowableGlobalCompressiveConcreteStress(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetHaulingAllowablePeakCompressiveConcreteStress(const CSegmentKey& segmentKey) const override;
-   virtual Float64 GetHaulingAllowableTensionFactorNormalCrown() const override;
-   virtual Float64 GetHaulingAllowableTensionFactorMaxSuper() const override;
+   virtual Float64 GetHaulingAllowableTensionFactor(pgsTypes::HaulingSlope slope) const override;
    virtual Float64 GetHaulingAllowableGlobalCompressionFactor() const override;
    virtual Float64 GetHaulingAllowablePeakCompressionFactor() const override;
-   virtual Float64 GetHaulingAllowableTensileConcreteStressExNormalCrown(const CSegmentKey& segmentKey,Float64 fc, bool includeRebar) const override;
-   virtual Float64 GetHaulingAllowableTensileConcreteStressExMaxSuper(const CSegmentKey& segmentKey,Float64 fc, bool includeRebar) const override;
+   virtual Float64 GetHaulingAllowableTensileConcreteStressEx(const CSegmentKey& segmentKey, pgsTypes::HaulingSlope slope,Float64 fc, bool includeRebar) const override;
    virtual Float64 GetHaulingAllowableGlobalCompressiveConcreteStressEx(const CSegmentKey& segmentKey, Float64 fc) const override;
    virtual Float64 GetHaulingAllowablePeakCompressiveConcreteStressEx(const CSegmentKey& segmentKey, Float64 fc) const override;
    virtual pgsTypes::HaulingImpact GetHaulingImpactUsage() const override;
@@ -288,10 +302,8 @@ public:
    virtual Float64 GetAllowableDistanceBetweenSupports(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetAllowableLeadingOverhang(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetMaxGirderWgt(const CSegmentKey& segmentKey) const override;
-   virtual Float64 GetHaulingWithMildRebarAllowableStressNormalCrown(const CSegmentKey& segmentKey) const override;
-   virtual Float64 GetHaulingWithMildRebarAllowableStressFactorNormalCrown() const override;
-   virtual Float64 GetHaulingWithMildRebarAllowableStressMaxSuper(const CSegmentKey& segmentKey) const override;
-   virtual Float64 GetHaulingWithMildRebarAllowableStressFactorMaxSuper(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetHaulingWithMildRebarAllowableStress(const CSegmentKey& segmentKey, pgsTypes::HaulingSlope slope) const override;
+   virtual Float64 GetHaulingWithMildRebarAllowableStressFactor(pgsTypes::HaulingSlope slope) const override;
    virtual Float64 GetHaulingModulusOfRupture(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetHaulingModulusOfRupture(const CSegmentKey& segmentKey,Float64 fci,pgsTypes::ConcreteType concType) const override;
    virtual Float64 GetHaulingModulusOfRuptureFactor(pgsTypes::ConcreteType concType) const override;
@@ -302,8 +314,8 @@ public:
    virtual pgsTypes::CFType GetCentrifugalForceType() const override;
    virtual Float64 GetHaulingSpeed() const override;
    virtual Float64 GetTurningRadius() const override;
-   virtual stbHaulingCriteria GetHaulingStabilityCriteria(const CSegmentKey& segmentKey) const override;
-   virtual stbHaulingCriteria GetHaulingStabilityCriteria(const CSegmentKey& segmentKey,const HANDLINGCONFIG& haulConfig) const override;
+   virtual WBFL::Stability::HaulingCriteria GetHaulingStabilityCriteria(const CSegmentKey& segmentKey) const override;
+   virtual WBFL::Stability::HaulingCriteria GetHaulingStabilityCriteria(const CSegmentKey& segmentKey,const HANDLINGCONFIG& haulConfig) const override;
 
 // IKdotGirderHaulingSpecCriteria
 public:
@@ -347,7 +359,7 @@ public:
 
 // IInterfaceShearRequirements 
 public:
-   virtual ShearFlowMethod GetShearFlowMethod() const override;
+   virtual pgsTypes::ShearFlowMethod GetShearFlowMethod() const override;
    virtual Float64 GetMaxShearConnectorSpacing(const pgsPointOfInterest& poi) const override;
 
 // IDuctLimits
@@ -369,6 +381,10 @@ private:
    DWORD m_dwBridgeDescCookie;
 
    StatusCallbackIDType m_scidHaulTruckError;
+
+   const pgsSplittingCheckEngineer* GetSplittingCheckEngineer(const CSegmentKey& segmentKey) const;
+   pgsPCIUHPCSplittingCheckEngineer m_PCIUHPCSplittingCheckEngineer;
+   pgsLRFDSplittingCheckEngineer m_LRFDSplittingCheckEngineer;
 
    const GirderLibraryEntry* GetGirderEntry(const CSegmentKey& segmentKey) const;
    const SpecLibraryEntry* GetSpec() const;

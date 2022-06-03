@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,6 @@
 #include <Reporting\PGSuperTitlePageBuilder.h>
 #include <Reporting\SpanGirderReportSpecificationBuilder.h>
 
-#include <Reporting\GirderComparisonChapterBuilder.h>
 #include <Reporting\OptimizedFabricationChapterBuilder.h>
 #include <Reporting\DesignOutcomeChapterBuilder.h>
 #include <Reporting\PrincipalTensionStressDetailsChapterBuilder.h>
@@ -99,16 +98,6 @@ HRESULT CPGSuperReporterImp::InitReportBuilders()
    //pRptBuilder->AddTitlePageBuilder(nullptr); // no title page for this report
    pRptBuilder->SetReportSpecificationBuilder( pMultiGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CDesignOutcomeChapterBuilder) );
-   pRptMgr->AddReportBuilder( pRptBuilder.release() );
-
-   // Girder Comparison Report
-   pRptBuilder = std::make_unique<CReportBuilder>(_T("Girder Comparison Report"));
-#if defined _DEBUG || defined _BETA_VERSION
-   pRptBuilder->IncludeTimingChapter();
-#endif
-   pRptBuilder->AddTitlePageBuilder( std::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
-   pRptBuilder->SetReportSpecificationBuilder( pSpanRptSpecBuilder );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CGirderComparisonChapterBuilder) );
    pRptMgr->AddReportBuilder( pRptBuilder.release() );
 
    // Fabrication Options Report

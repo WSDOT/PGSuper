@@ -1,22 +1,22 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 39.40    9   4.50                     1     1    W58MG    *     31  0.6  270  24.68  15.47  19.09  19.09                                               7  46.3  3.0  6.000  8.992   4.834    -5.166     6856   0.470  0.565   2.808 -2.469  0.000 -0.228 -2.696 141.17  350.38    1.97    3.94    3.94 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 39.40    9   4.50                     1     1    W58MG    *     31  0.6  270  24.68  15.47  19.09  19.09                                               7  46.3  3.0  6.000  8.992   4.834    -5.166     6856   0.470  0.565   5.082 -2.469  0.000 -0.228 -2.696 141.17  350.38    1.97    3.94    3.94    1.54    1.32    1.99    2.27    0.82 
 
 
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic
-Bursting zone check failed.
+Tension stress check failed for Service III Limit State in Interval 17 Open to Traffic
+Bursting check failed.
 Lifting checks failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 39.40    9   4.50                     1     2    W58MG          43  0.6  270  24.30   6.56  19.09  19.09                                              17  56.1  5.9  5.800  8.992   4.510    -4.809     6404   0.445  0.565   2.239 -2.108  0.000 -0.233 -2.341 169.22  456.58    2.46    2.46    2.46 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 39.40    9   4.50                     1     2    W58MG          43  0.6  270  24.30   6.56  19.09  19.09                                              17  56.1  5.9  5.800  8.992   4.510    -4.809     6404   0.445  0.565   4.197 -2.108  0.000 -0.233 -2.341 169.22  456.58    2.46    2.46    2.46    2.52    1.13    3.26    2.03    0.61 
 
 
 The Specification Check was Not Successful
-Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 17 Open to Traffic
 Stirrup detailing checks failed for the Strength I Limit State.
 Confinement zone check failed.
 Lifting checks failed

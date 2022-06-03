@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -37,6 +37,7 @@ public:
       MomentOfInertia,
       Centroid,
       SectionModulus,
+      AreaPrestress,
       KernPoint,
       StrandEccentricity,
       TendonEccentricity,
@@ -61,6 +62,7 @@ public:
 
    virtual void CreateViewController(IEAFViewController** ppController) override;
 
+   void ExportGraphData(LPCTSTR rstrDefaultFileName);
 protected:
    virtual CGirderGraphControllerBase* CreateGraphController() override;
    virtual bool UpdateNow() override;

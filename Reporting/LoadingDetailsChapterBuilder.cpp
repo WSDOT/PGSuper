@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -121,24 +121,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
    bool bDesign = m_bDesign;
-   bool bRating;
-   
-   if ( m_bRating )
-   {
-      bRating = true;
-   }
-   else
-   {
-      // include load rating results if we are always load rating
-      bRating = pRatingSpec->AlwaysLoadRate();
-
-
-      // if none of the rating types are enabled, skip the rating
-      if (!pRatingSpec->IsRatingEnabled())
-      {
-         bRating = false;
-      }
-   }
+   bool bRating = m_bRating;
 
    GET_IFACE2(pBroker,IDocumentType, pDocType);
    bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
@@ -1242,6 +1225,8 @@ void CLoadingDetailsChapterBuilder::ReportCastInPlaceDiaphragmLoad(rptChapter* p
    INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(),       false);
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dist,   pDisplayUnits->GetSpanLengthUnit(),   false);
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,    pDisplayUnits->GetComponentDimUnit(), false);
+   INIT_UV_PROTOTYPE(rptAngleUnitValue, angle, pDisplayUnits->GetAngleUnit(), false);
+   INIT_UV_PROTOTYPE(rptDensityUnitValue, density, pDisplayUnits->GetDensityUnit(), false);
 
    std::vector<DiaphragmLoad> diap_loads; // these are the actual loads that have been generated from the user input/diaphragm rules
    pProdLoads->GetIntermediateDiaphragmLoads(spanKey, &diap_loads);
@@ -1306,17 +1291,24 @@ void CLoadingDetailsChapterBuilder::ReportCastInPlaceDiaphragmLoad(rptChapter* p
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(5,_T(""));
-   *pPara << p_table;
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(10,_T(""));
+   *pPara << p_table << rptNewLine;
+   *pPara << _T("Diaphragm weight, P = (Unit Weight)(H)(W)(Trib Width)/cos(Skew)") << rptNewLine;
 
    p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
    p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
-   (*p_table)(0, 0) << _T("Pier");
-   (*p_table)(0, 1) << _T("Location");
-   (*p_table)(0, 2) << COLHDR(_T("P"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
-   (*p_table)(0, 3) << COLHDR(_T("Moment") << rptNewLine << _T("Arm"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*p_table)(0, 4) << COLHDR(_T("M"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   ColumnIndexType colIdx = 0;
+   (*p_table)(0, colIdx++) << _T("Pier");
+   (*p_table)(0, colIdx++) << _T("Location");
+   (*p_table)(0, colIdx++) << COLHDR(_T("Unit Weight"), rptDensityUnitTag, pDisplayUnits->GetDensityUnit());
+   (*p_table)(0, colIdx++) << COLHDR(_T("H"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*p_table)(0, colIdx++) << COLHDR(_T("W"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*p_table)(0, colIdx++) << COLHDR(_T("Trib. Width"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*p_table)(0, colIdx++) << COLHDR(_T("Skew"), rptAngleUnitTag, pDisplayUnits->GetAngleUnit());
+   (*p_table)(0, colIdx++) << COLHDR(_T("P"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+   (*p_table)(0, colIdx++) << COLHDR(_T("Moment") << rptNewLine << _T("Arm"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*p_table)(0, colIdx++) << COLHDR(_T("M"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
 
    RowIndexType row = p_table->GetNumberOfHeaderRows();
 
@@ -1328,22 +1320,28 @@ void CLoadingDetailsChapterBuilder::ReportCastInPlaceDiaphragmLoad(rptChapter* p
    PierIndexType endPierIdx   = (PierIndexType)(endSpanIdx+1);
    for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
    {
-      Float64 Pback, Mback, backMomentArm, Pahead, Mahead, aheadMomentArm;
-      pProdLoads->GetPierDiaphragmLoads( pierIdx, spanKey.girderIndex, &Pback, &Mback, &backMomentArm, &Pahead, &Mahead, &aheadMomentArm);
+      PIER_DIAPHRAGM_LOAD_DETAILS backSide, aheadSide;
+      pProdLoads->GetPierDiaphragmLoads(pierIdx, spanKey.girderIndex, &backSide, &aheadSide);
 
       if (0 < pierIdx && pierIdx < nPiers - 1)
       {
          p_table->SetRowSpan(row, 0, 2);
       }
 
-      (*p_table)(row, 0) << LABEL_PIER(pierIdx);
+      colIdx = 0;
+      (*p_table)(row, colIdx++) << LABEL_PIER(pierIdx);
 
       if (0 < pierIdx)
       {
-         (*p_table)(row, 1) << _T("Back Bearing");
-         (*p_table)(row, 2) << force.SetValue(-Pback);
-         (*p_table)(row, 3) << dist.SetValue(backMomentArm);
-         (*p_table)(row, 4) << moment.SetValue(Mback);
+         (*p_table)(row, colIdx++) << _T("Back Bearing");
+         (*p_table)(row, colIdx++) << density.SetValue(backSide.Density);
+         (*p_table)(row, colIdx++) << dist.SetValue(backSide.Height);
+         (*p_table)(row, colIdx++) << dist.SetValue(backSide.Width);
+         (*p_table)(row, colIdx++) << dist.SetValue(backSide.TribWidth);
+         (*p_table)(row, colIdx++) << angle.SetValue(backSide.SkewAngle);
+         (*p_table)(row, colIdx++) << force.SetValue(-backSide.P);
+         (*p_table)(row, colIdx++) << dist.SetValue(backSide.MomentArm);
+         (*p_table)(row, colIdx++) << moment.SetValue(backSide.M);
 
          row++;
       }
@@ -1351,10 +1349,16 @@ void CLoadingDetailsChapterBuilder::ReportCastInPlaceDiaphragmLoad(rptChapter* p
 
       if (pierIdx < nPiers - 1)
       {
-         (*p_table)(row, 1) << _T("Ahead Bearing");
-         (*p_table)(row, 2) << force.SetValue(-Pahead);
-         (*p_table)(row, 3) << dist.SetValue(aheadMomentArm);
-         (*p_table)(row, 4) << moment.SetValue(Mahead);
+         colIdx = 1;
+         (*p_table)(row, colIdx++) << _T("Ahead Bearing");
+         (*p_table)(row, colIdx++) << density.SetValue(aheadSide.Density);
+         (*p_table)(row, colIdx++) << dist.SetValue(aheadSide.Height);
+         (*p_table)(row, colIdx++) << dist.SetValue(aheadSide.Width);
+         (*p_table)(row, colIdx++) << dist.SetValue(aheadSide.TribWidth);
+         (*p_table)(row, colIdx++) << angle.SetValue(aheadSide.SkewAngle);
+         (*p_table)(row, colIdx++) << force.SetValue(-aheadSide.P);
+         (*p_table)(row, colIdx++) << dist.SetValue(aheadSide.MomentArm);
+         (*p_table)(row, colIdx++) << moment.SetValue(aheadSide.M);
 
          row++;
       }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -525,30 +525,32 @@ std::vector<const CTemporarySupportData*> CPrecastSegmentData::GetTemporarySuppo
    return tempSupports;
 }
 
-bool CPrecastSegmentData::IsDropIn() const
+bool RemoveStrongbacksSupports(const CTemporarySupportData* pTS)
+{
+   return (pTS->GetSupportType() == pgsTypes::StrongBack ? true : false);
+}
+
+pgsTypes::DropInType CPrecastSegmentData::IsDropIn() const
 {
    std::vector<const CPierData2*> vPiers(GetPiers());
-   std::vector<const CTemporarySupportData*> vTS(GetTemporarySupports());
    IndexType nPiers = vPiers.size();
+   std::vector<const CTemporarySupportData*> vTS(GetTemporarySupports());
    IndexType nTS = vTS.size();
-   if ( nPiers == 0 && nTS == 2 )
+
+   std::vector<const CTemporarySupportData*> vTowers = vTS;
+   vTowers.erase(std::remove_if(vTowers.begin(), vTowers.end(), RemoveStrongbacksSupports), vTowers.end());
+   IndexType nTowers = vTowers.size();
+   IndexType nStrongBacks = nTS - nTowers; // only two types
+
+   if ( nPiers == 0 && nTowers == 0 && nStrongBacks == 2)
    {
-      // segment is supported by exactly 2 temporary supports... there is a chance it 
-      // could be a drop-in segment
-
-      const CTemporarySupportData* pLeftTS = vTS.front();
-      const CTemporarySupportData* pRightTS = vTS.back();
-
-      if ( pLeftTS->GetSupportType() == pgsTypes::StrongBack && pRightTS->GetSupportType() == pgsTypes::StrongBack )
-      {
-         // the temporary supports are both strong backs... segment is a drop-in
-         return true;
-      }
+      // segment is supported only by 2 strongbacks. Both ends are supported by adjacent segments
+      return pgsTypes::ditYesFreeBothEnds;
    }
-   else if ( nPiers == 1 && nTS == 1 )
+   else if ( nPiers == 1 && nTowers==0 && nStrongBacks >= 1 )
    {
-      // segment is supported by one pier and one temporary support.... if this is the first or last segment
-      // it could be a "drop-in" in the sense that it is suspended by an adjacent segment
+      // segment is supported only by one pier and one strongback...
+      // it could be a "drop-in" in the sense that one Free end is suspended by an adjacent segment
       const CPierData2* pPier1;
       const CTemporarySupportData* pTS1;
       GetSupport(pgsTypes::metStart,&pPier1,&pTS1);
@@ -557,22 +559,132 @@ bool CPrecastSegmentData::IsDropIn() const
       const CTemporarySupportData* pTS2;
       GetSupport(pgsTypes::metEnd,&pPier2,&pTS2);
 
-      if ( GetPrevSegment() == nullptr && pPier1 && pTS2 && pTS2->GetSupportType() == pgsTypes::StrongBack)
+      // Determine which end is free
+      if (pPier1 != nullptr)
       {
-         // this is the first segment and it supported by a pier at the start and a TS at the end, and the end is a strong back
-         // then this segment hangs on the next segment so treat it as a drop-in segment
-         return true;
+         if (GetPrevSegment() == nullptr || pPier1->GetClosureJoint(0) != nullptr && pTS2 != nullptr)
+         {
+            return pgsTypes::ditYesFreeEndEnd;
+         }
       }
-
-      if ( GetNextSegment() == nullptr && pTS1 && pPier2 && pTS1->GetSupportType() == pgsTypes::StrongBack )
+      else if (pPier2 != nullptr)
       {
-         // this is the last segment and it supported by a TS at the start and a pier at the end, and the start is a strong back
-         // then this segment hangs on the previous segment so treat it as a drop-in segment
-         return true;
+         if (GetNextSegment() == nullptr || pPier2->GetClosureJoint(0) != nullptr && pTS1 != nullptr)
+         {
+            return pgsTypes::ditYesFreeStartEnd;
+         }
+      }
+   }
+   else if (nPiers == 1 && nTowers == 1 && nStrongBacks == 0)
+   {
+      // segment is supported only by one pier and one tower...
+      // it could be a "drop-in" in the sense that one Free end is suspended by the adjacent segment that has full fixity at the tower end 
+      const CPierData2* pPier1;
+      const CTemporarySupportData* pTS1;
+      GetSupport(pgsTypes::metStart, &pPier1, &pTS1);
+
+      const CPierData2* pPier2;
+      const CTemporarySupportData* pTS2;
+      GetSupport(pgsTypes::metEnd, &pPier2, &pTS2);
+
+      // Determine which end is free
+      if (pPier1 != nullptr && pTS2 != nullptr)
+      {
+         // pier on left, tower on right. See if adjacent segment at tower is fixed
+         ATLASSERT(pTS2->GetSupportType() == pgsTypes::ErectionTower);
+         if (pTS2->GetClosureJoint(0) != nullptr )
+         {
+            // consider segment stabley fixed if adequate rigid supports
+            const CPrecastSegmentData* pNextSeg = this->GetNextSegment();
+            const std::vector<const CPierData2*> vPiers = pNextSeg->GetPiers();
+            IndexType nNextPiers = vPiers.size();
+            if (nNextPiers > 1)
+            {
+               return pgsTypes::ditYesFreeEndEnd; // 2 or more piers will fix adjacent segment
+            }
+            else if (nNextPiers==1)
+            {
+               std::vector<const CTemporarySupportData*> vTS = pNextSeg->GetTemporarySupports();
+               vTS.erase(std::remove_if(vTS.begin(), vTS.end(), RemoveStrongbacksSupports), vTS.end());
+               if (vTS.size() > 1)
+               {
+                  return pgsTypes::ditYesFreeEndEnd; // 1 pier plus 2 or more towers will fix segment
+               }
+            }
+         }
+      }
+      else if (pPier2 != nullptr && pTS1 != nullptr)
+      {
+         // pier on right, tower on left
+         ATLASSERT(pTS1->GetSupportType() == pgsTypes::ErectionTower);
+         if (pTS1->GetClosureJoint(0) != nullptr)
+         {
+            // consider segment stabley fixed if adequate rigid supports
+            const CPrecastSegmentData* pPrevSeg = this->GetPrevSegment();
+            const std::vector<const CPierData2*> vPiers = pPrevSeg->GetPiers();
+            IndexType nPrevPiers = vPiers.size();
+            if (nPrevPiers > 1)
+            {
+               return pgsTypes::ditYesFreeStartEnd; // 2 or more piers will fix adjacent segment
+            }
+            else if (nPrevPiers == 1)
+            {
+               std::vector<const CTemporarySupportData*> vTS = pPrevSeg->GetTemporarySupports();
+               vTS.erase(std::remove_if(vTS.begin(), vTS.end(), RemoveStrongbacksSupports), vTS.end());
+               if (vTS.size() > 1)
+               {
+                  return pgsTypes::ditYesFreeStartEnd; // 1 pier plus 2 or more towers will fix segment
+               }
+            }
+         }
+      }
+   }
+   else if (nPiers == 0 && nTowers == 1 && nStrongBacks >= 1)
+   {
+      // segment is supported only by one erection tower and one strongback...
+      // it could be a "drop-in" in the sense that one Free end is suspended by an adjacent segment
+      const CPierData2* pPier1;
+      const CTemporarySupportData* pTS1;
+      GetSupport(pgsTypes::metStart, &pPier1, &pTS1);
+
+      const CPierData2* pPier2;
+      const CTemporarySupportData* pTS2;
+      GetSupport(pgsTypes::metEnd, &pPier2, &pTS2);
+
+      // Determine which end is free, if any
+      if (pTS1 != nullptr && pTS1->GetClosureJoint(0) != nullptr)
+      {
+         if ( pTS2 != nullptr && pTS2->GetSupportType() == pgsTypes::StrongBack)
+         {
+            return pgsTypes::ditYesFreeEndEnd;
+         }
+      }
+      else if (pTS2 != nullptr && pTS2->GetClosureJoint(0) != nullptr)
+      {
+         if (pTS1 != nullptr && pTS1->GetSupportType() == pgsTypes::StrongBack)
+         {
+            return pgsTypes::ditYesFreeStartEnd;
+         }
+      }
+   }
+   else if (nPiers == 0 && nTowers == 2 )
+   {
+      // segment supported by towers at both ends. Could be a drop in if closures at both towers
+      const CPierData2* pPier1;
+      const CTemporarySupportData* pTS1;
+      GetSupport(pgsTypes::metStart, &pPier1, &pTS1);
+
+      const CPierData2* pPier2;
+      const CTemporarySupportData* pTS2;
+      GetSupport(pgsTypes::metEnd, &pPier2, &pTS2);
+
+      if (pTS1 != nullptr && pTS1->GetClosureJoint(0) != nullptr && pTS2 != nullptr && pTS2->GetClosureJoint(0) != nullptr)
+      {
+         return pgsTypes::ditYesFreeBothEnds;
       }
    }
 
-   return false;
+   return pgsTypes::ditNotDropIn;
 }
 
 bool CPrecastSegmentData::IsPropped() const
@@ -1400,7 +1512,6 @@ void CPrecastSegmentData::AssertValid()
 
    Strands.AssertValid();
    Tendons.AssertValid();
-   Material.AssertValid();
    ShearData.AssertValid();
    LongitudinalRebarData.AssertValid();
    HandlingData.AssertValid();

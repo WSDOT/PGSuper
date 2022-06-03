@@ -1,4 +1,4 @@
-﻿Slab Offset ("A" Dimension, "X" Dimension) {#tg_slab_offset}
+Slab Offset ("A" Dimension, "X" Dimension) {#tg_slab_offset}
 ======================================
 The slab offset is the vertical distance from the top of slab to the top of girder measured at the intersection of the girder and bearing centerlines. The slab offset defines the depth of the haunch at those locations as shown in figure below for an I-Beam. The slab offset also defines the top of girder elevation at erection. 
 
@@ -160,10 +160,13 @@ For pretensioned girder bridges, these computations are also limited to a single
 
 Stirrup Length and Precast Deck Panel Leveling Bolt Considerations
 --------------------------------------------------------------------
-For bridges on sharp crown vertical curves, the slab haunch depth can become excessive to the point where projecting stirrups are too short to properly engage the deck reinforcement to form a composite section. Similarly the length of leveling bolts in precast deck panels may need adjustment. A warning will be added to the slab haunch specification check when the variation in haunch depth along the precast element exceeds 2".
+For bridges on sharp crown vertical curves, the slab haunch depth can become excessive to the point where projecting stirrups are too short to properly engage the deck reinforcement to form a composite section. Similarly the length of leveling bolts in precast deck panels may need adjustment. A warning will be added to the slab haunch specification check when the variation in haunch depth along the precast element exceeds 2 inches.
 
 TxDOT Conventions
-------------
-Many agencies have their own nomenclature for slab offset dimensions and TxDOT is no exception. The figure below illustrates TxDOT's "X", "Y" and "Z" dimensions. These are reported in the TxDOT Summary and Girder Schedule reports. **Note that reported values for  "X", "Y" and "Z" are rounded up to the nearest 1/8".**
+------------------
+Many agencies have their own nomenclature for slab offset dimensions and TxDOT is no exception. The figure below illustrates TxDOT's "X", "Y" and "Z" dimensions. These are reported in the TxDOT Summary and Girder Schedule reports.
+
+> NOTE: that reported values for  "X", "Y" and "Z" are rounded up to the nearest 1/8"
 
 ![](TxDOT_SlabOffset.png)
+

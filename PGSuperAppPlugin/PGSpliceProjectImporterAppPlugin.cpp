@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -22,9 +22,11 @@
 
 #include "stdafx.h"
 #include "PGSpliceProjectImporterAppPlugin.h"
+#include "PGSpliceDoc.h"
 #include "BridgeModelViewChildFrame.h"
 #include "BridgePlanView.h"
 #include "PGSpliceImportPluginDocTemplate.h"
+#include "PGSpliceCommandLineInfo.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -73,10 +75,21 @@ CPGSImportPluginDocTemplateBase* CPGSpliceProjectImporterAppPlugin::CreateDocTem
    CPGSpliceImportPluginDocTemplate* pDocTemplate = new CPGSpliceImportPluginDocTemplate(
 		IDR_PGSPLICEPROJECTIMPORTER,
       this,
-		RUNTIME_CLASS(CPGSuperDoc),
+		RUNTIME_CLASS(CPGSpliceDoc),
 		RUNTIME_CLASS(CBridgeModelViewChildFrame),
 		RUNTIME_CLASS(CBridgePlanView),
       m_hMenuShared,1);
 
    return pDocTemplate;
+}
+
+CEAFCommandLineInfo* CPGSpliceProjectImporterAppPlugin::CreateCommandLineInfo() const
+{
+   return new CPGSpliceProjectImporterCommandLineInfo();
+}
+
+CString CPGSpliceProjectImporterAppPlugin::GetUsageMessage()
+{
+   CPGSpliceProjectImporterCommandLineInfo pgsCmdInfo;
+   return pgsCmdInfo.GetUsageMessage();
 }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -373,9 +373,9 @@ int CDeckEdgeBuilder::BeginSpline(IPath* pPath,IPoint2d* pPoint,ICubicSpline** p
          CComQIPtr<IMeasure2> measure(m_CogoEngine);
          measure->Direction(prev_point, pPoint, &tangent);
       }
-      else if ( type == petHorzCurve )
+      else if ( type == petCompoundCurve )
       {
-         CComQIPtr<IHorzCurve> hc(punk);
+         CComQIPtr<ICompoundCurve> hc(punk);
          hc->get_FwdTangentBrg(&tangent);
       }
       else if ( type == petLineSegment )
@@ -460,7 +460,7 @@ int CDeckEdgeBuilder::EndParallel(IPath* pPath,Float64 startStation,Float64 endS
    m_Alignment->CreateSubPath(CComVariant(startStation),CComVariant(endStation),&subPath);
 
    CComPtr<IPath> edgeSubPath;
-   subPath->CreateParallelPath(-offset,&edgeSubPath);
+   subPath->CreateOffsetPath(-offset,&edgeSubPath);
 
    CollectionIndexType nPathElements;
    edgeSubPath->get_Count(&nPathElements);

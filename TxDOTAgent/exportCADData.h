@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -46,6 +46,9 @@ public:
 	//{{AFX_DATA(exportCADData)
 	enum { IDD = IDD_EXPORT_TXDOTCADDATA };
 
+	enum cdtExportDataType { cdtGirderDesignData, cdtHaunchAndDeflectionData, cdtLegacyTextGirderData };
+	cdtExportDataType m_ExportDataType;
+
    enum ctxFileFormatType { ctxExcel, ctxCSV, ctxLegacy };
    ctxFileFormatType	m_FileFormatType;
 	//}}AFX_DATA
@@ -78,6 +81,7 @@ private:
 public:
    afx_msg void OnBnClickedSelectAll();
    afx_msg void OnBnClickedClearAll();
+	afx_msg void OnCbnSelchangeExportType();
 };
 
 

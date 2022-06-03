@@ -4,7 +4,6 @@ LIBRARY      "PGSuperLibrary.dll"
 
 EXPORTS
     ; Explicit exports can go here
-   UnitTest @1
 	DllCanUnloadNow		PRIVATE
 	DllGetClassObject	PRIVATE
 	DllRegisterServer	PRIVATE

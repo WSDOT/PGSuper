@@ -28,7 +28,9 @@ var PGSuperDrive = "F:";
 var objNet = new ActiveXObject( "WScript.Network" );
 var machine = objNet.ComputerName;
 machine = machine.toUpperCase();
-if (machine=="RDPTHINKPAD")
+if (machine=="RICHARDSDELL")
+   PGSuperDrive = "C:";
+else if (machine=="ACERI7WIN7")
    PGSuperDrive = "C:";
 else if (machine=="HQB0630025")
    PGSuperDrive = "F:";

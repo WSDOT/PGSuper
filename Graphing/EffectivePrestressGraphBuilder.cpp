@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,6 +24,7 @@
 #include "resource.h"
 #include <Graphing\EffectivePrestressGraphBuilder.h>
 #include <Graphing\DrawBeamTool.h>
+#include <Graphing\ExportGraphXYTool.h>
 #include "EffectivePrestressGraphController.h"
 #include "EffectivePrestressGraphViewControllerImp.h"
 #include "..\Documentation\PGSuper.hh"
@@ -133,7 +134,7 @@ void CEffectivePrestressGraphBuilder::UpdateYAxis()
       const unitmgtForceData& forceUnit = pDisplayUnits->GetGeneralForceUnit();
       m_pYFormat = new ForceTool(forceUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
-      m_Graph.SetYAxisTitle(std::_tstring(_T("Fpe (")+m_pYFormat->UnitTag()+_T(")")).c_str());
+      m_Graph.SetYAxisTitle(std::_tstring(_T("Ppe (")+m_pYFormat->UnitTag()+_T(")")).c_str());
    }
 }
 
@@ -409,6 +410,7 @@ void CEffectivePrestressGraphBuilder::UpdatePretensionGraphData(GroupIndexType g
    std::vector<Float64> xVals;
    GetXValues(vPoi,&xVals);
 
+   GET_IFACE_NOCHECK(IStrandGeometry, pStrandGeom);
    GET_IFACE(IPretensionForce,pPSForce);
    GET_IFACE(IIntervals,pIntervals);
 
@@ -469,16 +471,13 @@ void CEffectivePrestressGraphBuilder::UpdatePretensionGraphData(GroupIndexType g
                                     // release so there isn't any elastic shortening effect, only initial relaxation
          }
 
-         if ( bStresses )
+         Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, time, true/*include elastic effects*/);
+         if (bStresses)
          {
-            Float64 fpe = pPSForce->GetEffectivePrestress(poi,strandType,intervalIdx,time);
-            AddGraphPoint(dataSeries,X,fpe);
+            Float64 Aps = pStrandGeom->GetStrandArea(poi, intervalIdx, strandType);
+            Fpe = IsZero(Aps) ? 0.0 : Fpe / Aps; // now a stress
          }
-         else
-         {
-            Float64 Fpe = pPSForce->GetPrestressForce(poi,strandType,intervalIdx,time,true/*include elastic effects*/);
-            AddGraphPoint(dataSeries,X,Fpe);
-         }
+         AddGraphPoint(dataSeries, X, Fpe);
 
          if ( (bPermanent && intervalIdx == releaseIntervalIdx)
               ||
@@ -487,16 +486,13 @@ void CEffectivePrestressGraphBuilder::UpdatePretensionGraphData(GroupIndexType g
          {
             // if this is at release, also plot at the end of the interval so we capture the
             // elastic shortening that occurs during this interval
-            if ( bStresses )
+            Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::End);
+            if (bStresses)
             {
-               Float64 fpe = pPSForce->GetEffectivePrestress(poi,strandType,intervalIdx,pgsTypes::End);
-               AddGraphPoint(dataSeries2,X,fpe);
+               Float64 Aps = pStrandGeom->GetStrandArea(poi, intervalIdx, strandType);
+               Fpe = IsZero(Aps) ? 0.0 : Fpe / Aps; // now a stress
             }
-            else
-            {
-               Float64 Fpe = pPSForce->GetPrestressForce(poi,strandType,intervalIdx,pgsTypes::End);
-               AddGraphPoint(dataSeries2,X,Fpe);
-            }
+            AddGraphPoint(dataSeries2, X, Fpe);
          }
       } // next poi
    } // next interval
@@ -519,4 +515,9 @@ void CEffectivePrestressGraphBuilder::GetBeamDrawIntervals(IntervalIndexType* pF
       *pFirstIntervalIdx = intervalIdx;
       *pLastIntervalIdx = *pFirstIntervalIdx;
    }
+}
+
+void CEffectivePrestressGraphBuilder::ExportGraphData(LPCTSTR rstrDefaultFileName)
+{
+   CExportGraphXYTool::ExportGraphData(m_Graph,rstrDefaultFileName);
 }

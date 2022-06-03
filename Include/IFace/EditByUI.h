@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -46,6 +46,11 @@
 #define EPD_CONNECTION     3
 #define EPD_BEARINGS       4
 
+// Temporary support editing
+#define ETS_GENERAL        0
+#define ETS_CONNECTION     1
+#define ETS_SPACING        2
+
 // Span Editing
 #define ESD_GENERAL        0
 #define ESD_CONNECTION     1
@@ -65,9 +70,10 @@
 // PGSplice Edit Girder Segment Pages
 #define EGS_GENERAL        0
 #define EGS_PRESTRESSING   1
-#define EGS_LONG_REINF     2
-#define EGS_STIRRUPS       3
-#define EGS_TRANSPORTATION 4
+#define EGS_TENDONS        2
+#define EGS_LONG_REINF     3
+#define EGS_STIRRUPS       4
+#define EGS_TRANSPORTATION 5
 
 /*****************************************************************************
 INTERFACE
@@ -94,10 +100,13 @@ interface IEditByUI : IUnknown
    virtual void EditBridgeDescription(int nPage) = 0;
    virtual void EditAlignmentDescription(int nPage) = 0;
    virtual bool EditSegmentDescription(const CSegmentKey& segmentKey, int nPage) = 0;
+   virtual bool EditSegmentDescription() = 0;
    virtual bool EditClosureJointDescription(const CClosureKey& closureKey, int nPage) = 0;
    virtual bool EditGirderDescription(const CGirderKey& girderKey, int nPage) = 0;
+   virtual bool EditGirderDescription() = 0;
    virtual bool EditSpanDescription(SpanIndexType spanIdx, int nPage) = 0;
    virtual bool EditPierDescription(PierIndexType pierIdx, int nPage) = 0;
+   virtual bool EditTemporarySupportDescription(PierIndexType pierIdx, int nPage) = 0;
    virtual void EditLiveLoads() = 0;
    virtual void EditLiveLoadDistributionFactors(pgsTypes::DistributionFactorMethod method,LldfRangeOfApplicabilityAction roaAction) = 0;
    virtual bool EditPointLoad(CollectionIndexType loadIdx) = 0;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -67,7 +67,7 @@ public:
 protected:
    bool IsDensityInRange(Float64 density,pgsTypes::ConcreteType type);
    bool IsStrengthInRange(Float64 fc, pgsTypes::ConcreteType type);
-   pgsTypes::ConcreteType GetConreteType();
+   pgsTypes::ConcreteType GetConcreteType();
 
 	// Generated message map functions
 	//{{AFX_MSG(CConcreteEntryDlg)

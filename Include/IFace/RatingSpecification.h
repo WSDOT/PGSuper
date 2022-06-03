@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -42,9 +42,6 @@ DEFINE_GUID(IID_IRatingSpecification,
 0x10198680, 0x3270, 0x4adb, 0xa7, 0x68, 0xa6, 0xc0, 0x10, 0x69, 0xd9, 0xc0);
 interface IRatingSpecification : IUnknown
 {
-   // returns true if a load rating is to be performed along with the analysis
-   virtual bool AlwaysLoadRate() const = 0;
-
    // returns true if any one of the rating types is enabled
    virtual bool IsRatingEnabled() const = 0;
 

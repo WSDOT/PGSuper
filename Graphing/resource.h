@@ -2,6 +2,8 @@
 // Microsoft Visual C++ generated include file.
 // Used by Graphing.rc
 //
+#define IDOK2                           3
+#define IDCANCEL2                       4
 #define IDD_ANALYSISRESULTS_GRAPH_CONTROLLER 103
 #define IDD_PGSUPER_STABILITY_BAR       195
 #define IDD_PGSPLICE_STABILITY_BAR      196
@@ -10,7 +12,9 @@
 #define IDD_GIRDER_PROPERTIES_GRAPH_CONTROLLER 199
 #define IDD_CONCRETE_PROPERTY_GRAPH_CONTROLLER 200
 #define IDD_DEFLECTIONHISTORY_GRAPH_CONTROLLER 201
+#define IDD_ANALYSISRESULTS_GRAPH_CONTROLLER2 202
 #define IDD_INITIALSTRAIN_GRAPH_CONTROLLER 203
+#define IDD_SEGMENT_ANALYSISRESULTS_GRAPH_CONTROLLER 204
 #define IDC_EVENT                       1096
 #define IDC_SIMPLE                      1478
 #define IDC_SIMPLE2                     1479
@@ -22,6 +26,7 @@
 #define IDC_GROUP                       3012
 #define IDC_GIRDER                      3013
 #define IDC_SEGMENT                     3014
+#define IDC_GIRDER2                     3014
 #define IDC_CLOSURE                     3015
 #define IDC_INTERVAL                    3016
 #define IDC_CLOSURE2                    3016
@@ -71,14 +76,16 @@
 #define IDC_NET_DECK                    3070
 #define IDC_PERMANENT                   3070
 #define IDC_TEMPORARY                   3071
+#define IDC_EXPORT_GRAPH                3072
+#define IDC_EXPORT_GRAPH_BTN            3072
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        209
+#define _APS_NEXT_RESOURCE_VALUE        214
 #define _APS_NEXT_COMMAND_VALUE         32774
-#define _APS_NEXT_CONTROL_VALUE         3072
+#define _APS_NEXT_CONTROL_VALUE         3073
 #define _APS_NEXT_SYMED_VALUE           3000
 #endif
 #endif

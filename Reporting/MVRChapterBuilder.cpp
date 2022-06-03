@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -115,25 +115,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
    bool bDesign = m_bDesign;
-   bool bRating;
-   
-   if ( m_bRating )
-   {
-      bRating = true;
-   }
-   else
-   {
-      // include load rating results if we are always load rating
-      GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
-      bRating = pRatingSpec->AlwaysLoadRate();
-
-      // if none of the rating types are enabled, skip the rating
-      if (!pRatingSpec->IsRatingEnabled())
-      {
-         bRating = false;
-      }
-   }
-
+   bool bRating = m_bRating;
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    bool bPedestrian = pProductLoads->HasPedestrianLoad();
@@ -309,7 +291,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
          *p << _T("$ Pedestrian values are per girder") << rptNewLine;
       }
 
-      *p << (pBearingDesign->BearingLiveLoadReactionsIncludeImpact() ? LIVELOAD_PER_LANE_NO_IMPACT : LIVELOAD_PER_LANE) << rptNewLine;
+      *p << (pBearingDesign->BearingLiveLoadReactionsIncludeImpact() ? LIVELOAD_PER_LANE : LIVELOAD_PER_LANE_NO_IMPACT) << rptNewLine;
       *p << rptNewLine;
       LiveLoadTableFooter(pBroker,p, girderKey,bDesign,bRating);
    }
@@ -358,7 +340,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
             *p << _T("$ Pedestrian values are per girder") << rptNewLine;
          }
 
-         *p << (pBearingDesign->BearingLiveLoadReactionsIncludeImpact() ? LIVELOAD_PER_LANE_NO_IMPACT : LIVELOAD_PER_LANE) << rptNewLine;
+         *p << (pBearingDesign->BearingLiveLoadReactionsIncludeImpact() ? LIVELOAD_PER_LANE : LIVELOAD_PER_LANE_NO_IMPACT) << rptNewLine;
          *p << rptNewLine;
          LiveLoadTableFooter(pBroker, p, thisGirderKey, bDesign, bRating);
 
@@ -453,7 +435,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
             CCombinedReactionTable().Build(pBroker,pChapter, girderKey,pDisplayUnits,intervalIdx,analysisType,BearingReactionsTable, bDesign, bRating);
          }
 
-         if ( pSpecEntry->GetShearCapacityMethod() == scmVciVcw )
+         if ( pSpecEntry->GetShearCapacityMethod() == pgsTypes::scmVciVcw )
          {
             p = new rptParagraph(rptStyleManager::GetHeadingStyle());
             *pChapter << p;

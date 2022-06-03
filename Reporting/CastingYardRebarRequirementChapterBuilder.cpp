@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -393,13 +393,6 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
    // allowable tension stresses are checked in the Service I limit state before live load is applied and in the
    // Service III limit state after live load is applied
    pgsTypes::LimitState limitState = (liveLoadIntervalIdx <= intervalIdx ? pgsTypes::ServiceIII : pgsTypes::ServiceI);
-
-   GET_IFACE2(pBroker,IDocumentType, pDocType);
-   if (pDocType->IsPGSpliceDocument() && overlayIntervalIdx != INVALID_INDEX && overlayIntervalIdx == intervalIdx && liveLoadIntervalIdx < overlayIntervalIdx)
-   {
-      limitState = pgsTypes::ServiceI;
-   }
-
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,       pDisplayUnits->GetSpanLengthUnit(), false );
    location.IncludeSpanAndGirder(segmentKey.segmentIndex == ALL_SEGMENTS || poi.GetID() != INVALID_ID);

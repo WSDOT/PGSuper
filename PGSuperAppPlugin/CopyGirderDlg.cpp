@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,14 +29,21 @@
 #include "PGSuperDoc.h"
 #include "PGSpliceDoc.h"
 #include "CopyGirderDlg.h"
+#include "CopyGirderPropertiesCallbacks.h"
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\Selection.h>
 #include <IFace\Transactions.h>
+#include <IFace\EditByUI.h>
 
 #include <PgsExt\MacroTxn.h>
 #include <PgsExt\BridgeDescription2.h>
+#include <EAF\EAFCustSiteVars.h>
+
+#include <IReportManager.h>
+#include <Reporting\CopyGirderPropertiesReportSpecification.h>
+#include <Reporting\CopyGirderPropertiesChapterBuilder.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -47,11 +54,10 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CCopyGirderDlg dialog
 
-
-CCopyGirderDlg::CCopyGirderDlg(IBroker* pBroker, std::map<IDType,ICopyGirderPropertiesCallback*>& rCopyGirderPropertiesCallbacks, CWnd* pParent /*=nullptr*/)
+CCopyGirderDlg::CCopyGirderDlg(IBroker* pBroker, const std::map<IDType,ICopyGirderPropertiesCallback*>&  rcopyGirderPropertiesCallbacks, IDType selectedID, CWnd* pParent)
 	: CDialog(CCopyGirderDlg::IDD, pParent),
    m_pBroker(pBroker),
-   m_rCopyGirderPropertiesCallbacks(rCopyGirderPropertiesCallbacks)
+   m_CopyGirderPropertiesCallbacks(rcopyGirderPropertiesCallbacks)
 {
 	//{{AFX_DATA_INIT(CCopyGirderDlg)
 	//}}AFX_DATA_INIT
@@ -59,41 +65,46 @@ CCopyGirderDlg::CCopyGirderDlg(IBroker* pBroker, std::map<IDType,ICopyGirderProp
    // keep selection around
    GET_IFACE(ISelection,pSelection);
    m_FromSelection = pSelection->GetSelection();
-}
+   if (m_FromSelection.Type != CSelection::Girder && m_FromSelection.Type != CSelection::Segment)
+   {
+      // A girder is not selected so force the selection to be the first girder
+      m_FromSelection.Type = CSelection::Girder;
+      m_FromSelection.GroupIdx = (m_FromSelection.GroupIdx == INVALID_INDEX ? 0 : m_FromSelection.GroupIdx);
+      m_FromSelection.GirderIdx = (m_FromSelection.GirderIdx == INVALID_INDEX ? 0 : m_FromSelection.GirderIdx);
+   }
 
-std::vector<IDType> CCopyGirderDlg::GetCallbackIDs()
-{
-   return m_CallbackIDs;
-}
+   CEAFDocument* pDoc = EAFGetDocument();
+   m_bIsPGSplice = pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) != FALSE;
 
+   // Special case here if selected ID is INVALID_ID
+   if (INVALID_ID == selectedID)
+   {
+      for (auto callback : rcopyGirderPropertiesCallbacks)
+      {
+         m_SelectedIDs.insert(callback.first);
+      }
+   }
+   else
+   {
+      m_SelectedIDs.insert(selectedID);
+   }
+}
 
 void CCopyGirderDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CCopyGirderDlg)
-   DDX_Control(pDX, IDC_LIST, m_PropertiesList);
-
    DDX_Control(pDX, IDC_FROM_SPAN,   m_FromGroup);
    DDX_Control(pDX, IDC_FROM_GIRDER, m_FromGirder);
    DDX_Control(pDX, IDC_TO_SPAN,     m_ToGroup);
    DDX_Control(pDX, IDC_TO_GIRDER,   m_ToGirder);
+   DDX_Control(pDX, IDC_PROPERTY_LIST,   m_SelectedPropertyTypesCL);
 	//}}AFX_DATA_MAP
 
    if ( pDX->m_bSaveAndValidate )
    {
       m_FromGirderKey = GetFromGirder();
       m_ToGirderKeys  = GetToGirders();
-
-      m_CallbackIDs.clear();
-      int nItems = m_PropertiesList.GetCount();
-      for ( int idx = 0; idx < nItems; idx++ )
-      {
-         if ( m_PropertiesList.GetCheck(idx) == BST_CHECKED )
-         {
-            IDType callbackID = (IDType)m_PropertiesList.GetItemData(idx);
-            m_CallbackIDs.push_back(callbackID);
-         }
-      }
 
       // Save selection for next time we open
       m_FromSelection.Type = CSelection::Girder;
@@ -107,33 +118,34 @@ void CCopyGirderDlg::DoDataExchange(CDataExchange* pDX)
       pBut->SetCheck(BST_CHECKED);
       GetDlgItem(IDC_SELECT_GIRDERS)->EnableWindow(false);
 
-      if ( m_FromSelection.Type == CSelection::Girder || m_FromSelection.Type == CSelection::Segment )
+      if ( m_FromSelection.Type == CSelection::Pier || m_FromSelection.Type == CSelection::Segment )
       {
          m_FromGroup.SetCurSel((int)m_FromSelection.GroupIdx);
-         OnFromGroupChanged();
          m_FromGirder.SetCurSel((int)m_FromSelection.GirderIdx);
 
-         m_ToGroup.SetCurSel((int)m_FromSelection.GroupIdx+1);
-         OnToGroupChanged();
+         m_ToGroup.SetCurSel((int)m_FromSelection.GroupIdx+ (m_bIsPGSplice? 0:1));
       }
-
-      CopyToSelectionChanged();
    }
 }
 
-
 BEGIN_MESSAGE_MAP(CCopyGirderDlg, CDialog)
 	//{{AFX_MSG_MAP(CCopyGirderDlg)
+	ON_WM_SIZE()
    ON_CBN_SELCHANGE(IDC_FROM_SPAN,OnFromGroupChanged)
    ON_CBN_SELCHANGE(IDC_TO_SPAN,OnToGroupChanged)
    ON_CBN_SELCHANGE(IDC_TO_GIRDER,OnToGirderChanged)
    ON_CBN_SELCHANGE(IDC_FROM_GIRDER,OnFromGirderChanged)
 	ON_BN_CLICKED(ID_HELP, OnHelp)
+	ON_BN_CLICKED(IDC_EDIT, OnEdit)
+	ON_BN_CLICKED(IDC_PRINT, OnPrint)
+	//}}AFX_MSG_MAP
    ON_BN_CLICKED(IDC_RADIO1, &CCopyGirderDlg::OnBnClickedRadio)
    ON_BN_CLICKED(IDC_RADIO2, &CCopyGirderDlg::OnBnClickedRadio)
-	//}}AFX_MSG_MAP
    ON_BN_CLICKED(IDC_SELECT_GIRDERS, &CCopyGirderDlg::OnBnClickedSelectGirders)
-   ON_CLBN_CHKCHANGE(IDC_LIST,&CCopyGirderDlg::OnCopyItemStateChanged)
+   ON_COMMAND_RANGE(CCS_CMENU_BASE, CCS_CMENU_MAX, OnCmenuSelected)
+   ON_WM_DESTROY()
+   ON_NOTIFY_EX(TTN_NEEDTEXT,0,OnToolTipNotify)
+   ON_CLBN_CHKCHANGE(IDC_PROPERTY_LIST, &CCopyGirderDlg::OnLbnChkchangePropertyList)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -141,6 +153,20 @@ END_MESSAGE_MAP()
 
 BOOL CCopyGirderDlg::OnInitDialog() 
 {
+   // Want to keep our size GE original size
+   CRect rect;
+   GetWindowRect(&rect);
+   m_cxMin = rect.Width();
+   m_cyMin = rect.Height();
+
+   // set up report window
+   GET_IFACE(IReportManager, pReportMgr);
+   CReportDescription rptDesc = pReportMgr->GetReportDescription(_T("Copy Girder Properties Report"));
+   std::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
+   std::shared_ptr<CReportSpecification> pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
+
+   m_pRptSpec = std::dynamic_pointer_cast<CCopyGirderPropertiesReportSpecification, CReportSpecification>(pRptSpec);
+
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    HICON hIcon = (HICON)LoadImage(AfxGetResourceHandle(),MAKEINTRESOURCE(IDI_COPY_PROPERTIES),IMAGE_ICON,0,0,LR_DEFAULTSIZE);
    SetIcon(hIcon,FALSE);
@@ -152,20 +178,108 @@ BOOL CCopyGirderDlg::OnInitDialog()
    CComboBox* pcbToGroup = (CComboBox*)GetDlgItem(IDC_TO_SPAN);
    CComboBox* pcbToGirder = (CComboBox*)GetDlgItem(IDC_TO_GIRDER);
    FillComboBoxes(*pcbFromGroup,*pcbFromGirder,false,false);
-   FillComboBoxes(*pcbToGroup,  *pcbToGirder,  pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) ? false : true, true );
+   FillComboBoxes(*pcbToGroup,  *pcbToGirder,  m_bIsPGSplice ? false : true, true );
+
 
    CDialog::OnInitDialog();
 
-   if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
+   InitSelectedPropertyList();
+
+   OnFromGroupChangedNoUpdate();
+   OnToGroupChangedNoUpdate();
+
+   EnableToolTips(TRUE);
+
+   if ( m_bIsPGSplice )
    {
       // in PGSplice, copying can only happen within a group
       // disable the to group combo box and keep it in sync with the from group combo box
       m_ToGroup.EnableWindow(FALSE);
+
+      // don't allow multi-select. if desired, it will be difficult to modify the grid control
+      GetDlgItem(IDC_RADIO2)->ShowWindow(FALSE); 
+      GetDlgItem(IDC_SELECT_GIRDERS)->ShowWindow(FALSE); 
    }
 
+   // set up reporting window
+   UpdateReportData();
+
+   GET_IFACE(IReportManager,pRptMgr);
+   std::shared_ptr<CReportSpecificationBuilder> nullSpecBuilder;
+   m_pBrowser = pRptMgr->CreateReportBrowser(GetSafeHwnd(),pRptSpec,nullSpecBuilder);
+   m_pBrowser->GetBrowserWnd()->ModifyStyle(0,WS_BORDER);
+
+   // restore the size of the window
+   {
+      CEAFApp* pApp = EAFGetApp();
+      WINDOWPLACEMENT wp;
+      if (pApp->ReadWindowPlacement(CString("Window Positions"),CString("CopyGirderDialog"),&wp))
+      {
+         HMONITOR hMonitor = MonitorFromRect(&wp.rcNormalPosition, MONITOR_DEFAULTTONULL); // get the monitor that has maximum overlap with the dialog rectangle (returns null if none)
+         if (hMonitor != NULL)
+         {
+            // if dialog is within a monitor, set its position... otherwise the default position will be sued
+            SetWindowPos(NULL, wp.rcNormalPosition.left, wp.rcNormalPosition.top, wp.rcNormalPosition.right - wp.rcNormalPosition.left, wp.rcNormalPosition.bottom - wp.rcNormalPosition.top, 0);
+         }
+      }
+   }
 
    return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+void CCopyGirderDlg::OnSize(UINT nType, int cx, int cy)
+{
+	CDialog::OnSize(nType, cx, cy);
+
+   if (m_pBrowser)
+   {
+      CRect clientRect;
+      GetClientRect( &clientRect );
+
+      CRect sizeRect(0,0,7,7);
+      MapDialogRect(&sizeRect);
+
+      CRect hiddenRect;
+      GetDlgItem(IDC_BROWSER)->GetWindowRect(&hiddenRect);
+      ScreenToClient(hiddenRect);
+      m_pBrowser->Move(hiddenRect.TopLeft());
+      m_pBrowser->Size(hiddenRect.Size());
+
+      // bottom buttons
+      CRect btnSizeRect(0,0,50,14);
+      MapDialogRect( &btnSizeRect );
+
+      CRect btnRect;
+      btnRect.bottom = clientRect.bottom - sizeRect.Height();
+      btnRect.right  = clientRect.right  - LONG(sizeRect.Width() * 3); 
+      btnRect.left   = btnRect.right   - btnSizeRect.Width();
+      btnRect.top    = btnRect.bottom  - btnSizeRect.Height();
+
+      CButton* pButton = (CButton*)GetDlgItem(ID_HELP);
+      pButton->MoveWindow( btnRect, FALSE );
+
+      CRect printRect(btnRect); // put print button directly above Help
+
+      CRect horizOffsetRect(0,0,66,0); // horizontal spacing between buttons
+      MapDialogRect( &horizOffsetRect );
+      CSize horizOffset(-1*horizOffsetRect.Width(),0);
+
+      btnRect += horizOffset;
+      pButton = (CButton*)GetDlgItem(IDCANCEL);
+      pButton->MoveWindow( btnRect, FALSE );
+
+      btnRect += horizOffset;
+      pButton = (CButton*)GetDlgItem(IDOK);
+      pButton->MoveWindow( btnRect, FALSE );
+
+      CSize vertOffset(0, int(btnSizeRect.Height() * 1.75));
+      printRect -= vertOffset;
+      pButton = (CButton*)GetDlgItem(IDC_PRINT);
+      pButton->MoveWindow( printRect, FALSE );
+
+      Invalidate();
+   }
 }
 
 void CCopyGirderDlg::FillComboBoxes(CComboBox& cbGroup,CComboBox& cbGirder, bool bIncludeAllGroups, bool bIncludeAllGirders)
@@ -173,7 +287,7 @@ void CCopyGirderDlg::FillComboBoxes(CComboBox& cbGroup,CComboBox& cbGirder, bool
    cbGroup.ResetContent();
 
    CString strGroupLabel;
-   BOOL bIsPGSuper = EAFGetDocument()->IsKindOf(RUNTIME_CLASS(CPGSuperDoc));
+   BOOL bIsPGSuper = !m_bIsPGSplice;
    if (bIsPGSuper)
    {
       strGroupLabel = _T("Span");
@@ -247,97 +361,126 @@ void CCopyGirderDlg::FillGirderComboBox(CComboBox& cbGirder,GroupIndexType grpId
       cbGirder.SetCurSel(0);
 }
 
+void CCopyGirderDlg::UpdateReportData()
+{
+   GET_IFACE(IReportManager,pReportMgr);
+   std::shared_ptr<CReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
+
+   CGirderKey gdrKey = GetFromGirder();
+
+   std::vector<ICopyGirderPropertiesCallback*> callbacks = GetSelectedCopyGirderPropertiesCallbacks();
+
+   // We know we put at least one of our own chapter builders into the report builder. Find it and set its data
+   CollectionIndexType numchs = pBuilder->GetChapterBuilderCount();
+   for (CollectionIndexType ich = 0; ich < numchs; ich++)
+   {
+      std::shared_ptr<CChapterBuilder> pChb = pBuilder->GetChapterBuilder(ich);
+      std::shared_ptr<CCopyGirderPropertiesChapterBuilder> pRptCpBuilder = std::dynamic_pointer_cast<CCopyGirderPropertiesChapterBuilder,CChapterBuilder>(pChb);
+
+      if (pRptCpBuilder)
+      {
+         pRptCpBuilder->SetCopyGirderProperties(callbacks, gdrKey);
+      }
+   }
+}
+
+void CCopyGirderDlg::UpdateReport()
+{
+   if ( m_pBrowser )
+   {
+      UpdateReportData();
+
+      GET_IFACE(IReportManager,pReportMgr);
+      std::shared_ptr<CReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
+
+      std::shared_ptr<CReportSpecification> pRptSpec = std::dynamic_pointer_cast<CReportSpecification,CCopyGirderPropertiesReportSpecification>(m_pRptSpec);
+
+      std::shared_ptr<rptReport> pReport = pBuilder->CreateReport( pRptSpec );
+      m_pBrowser->UpdateReport( pReport, true );
+   }
+}
+
+std::vector<ICopyGirderPropertiesCallback*> CCopyGirderDlg::GetSelectedCopyGirderPropertiesCallbacks()
+{
+   // double duty here. saving selected ids and returning callbacks
+   m_SelectedIDs.clear();
+   std::vector<ICopyGirderPropertiesCallback*> callbacks;
+
+   int nProps = m_SelectedPropertyTypesCL.GetCount();
+   for ( int ch = 0; ch < nProps; ch++ )
+   {
+      if ( m_SelectedPropertyTypesCL.GetCheck( ch ) == 1 )
+      {
+         IDType id = (IDType)m_SelectedPropertyTypesCL.GetItemData(ch);
+         m_SelectedIDs.insert(id);
+
+         std::map<IDType, ICopyGirderPropertiesCallback*>::const_iterator it = m_CopyGirderPropertiesCallbacks.find(id);
+         if (it != m_CopyGirderPropertiesCallbacks.end())
+         {
+            callbacks.push_back(it->second);
+         }
+         else
+         {
+            ATLASSERT(0); 
+         }
+      }
+   }
+
+   return callbacks;
+}
+
 void CCopyGirderDlg::OnFromGroupChanged() 
 {
+   OnFromGroupChangedNoUpdate();
+
+   EnableCopyNow();
+   UpdateReport(); // Report needs to show newly selected girder
+}
+
+void CCopyGirderDlg::OnFromGroupChangedNoUpdate()
+{
    int curSel = m_FromGroup.GetCurSel();
-   if ( curSel != CB_ERR )
+   if (curSel != CB_ERR)
    {
       GroupIndexType groupIdx = (GroupIndexType)m_FromGroup.GetItemData(curSel);
-      FillGirderComboBox(m_FromGirder,groupIdx,false);
+      FillGirderComboBox(m_FromGirder, groupIdx, false);
    }
    else
    {
-      FillGirderComboBox(m_FromGirder,0,false);
+      FillGirderComboBox(m_FromGirder, 0, false);
    }
-
-   if ( EAFGetDocument()->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
-   {
-      m_ToGroup.SetCurSel(m_FromGroup.GetCurSel());
-   }
-
-   CopyToSelectionChanged();
-   EnableCopyNow(TRUE);
 }
 
 void CCopyGirderDlg::OnToGroupChanged() 
 {
+   OnToGroupChangedNoUpdate();
+   EnableCopyNow();
+}
+
+void CCopyGirderDlg::OnToGroupChangedNoUpdate()
+{
    int curSel = m_ToGroup.GetCurSel();
-   if ( curSel != CB_ERR )
+   if (curSel != CB_ERR)
    {
       GroupIndexType groupIdx = (GroupIndexType)m_ToGroup.GetItemData(curSel);
-      FillGirderComboBox(m_ToGirder,groupIdx,true);
+      FillGirderComboBox(m_ToGirder, groupIdx, true);
    }
    else
    {
-      FillGirderComboBox(m_ToGirder,0,true);
+      FillGirderComboBox(m_ToGirder, 0, true);
    }
-
-   CopyToSelectionChanged();
-   EnableCopyNow(TRUE);
 }
 
 void CCopyGirderDlg::OnToGirderChanged()
 {
-   CopyToSelectionChanged();
-   EnableCopyNow(TRUE);
+   EnableCopyNow();
 }
 
 void CCopyGirderDlg::OnFromGirderChanged()
 {
-   CopyToSelectionChanged();
-   EnableCopyNow(TRUE);
-}
+   EnableCopyNow();
 
-void CCopyGirderDlg::CopyToSelectionChanged() 
-{
-   CGirderKey copyFrom = GetFromGirder();
-   std::vector<CGirderKey> copyTo = GetToGirders();
-
-   std::map<IDType,int> buttonStates;
-   int nItems = m_PropertiesList.GetCount();
-   for ( int idx = 0; idx < nItems; idx++ )
-   {
-      IDType callbackID = (IDType)m_PropertiesList.GetItemData(idx);
-      buttonStates.insert(std::make_pair(callbackID,m_PropertiesList.GetCheck(idx)));
-   }
-
-   m_PropertiesList.ResetContent();
-
-   CEAFDocument* pEAFDoc = EAFGetDocument();
-   CPGSDocBase* pDoc = (CPGSDocBase*)pEAFDoc;
-
-   const std::map<IDType,ICopyGirderPropertiesCallback*>& callbacks = pDoc->GetCopyGirderPropertiesCallbacks();
-   std::map<IDType,ICopyGirderPropertiesCallback*>::const_iterator iter(callbacks.begin());
-   std::map<IDType,ICopyGirderPropertiesCallback*>::const_iterator end(callbacks.end());
-   for ( ; iter != end; iter++ )
-   {
-      IDType callbackID = iter->first;
-      ICopyGirderPropertiesCallback* pCallback = iter->second;
-      if ( pCallback->CanCopy(copyFrom,copyTo) )
-      {
-         LPCTSTR strName = pCallback->GetName();
-         int idx = m_PropertiesList.AddString(strName);
-         m_PropertiesList.SetItemData(idx,(DWORD_PTR)callbackID);
-
-         int checked = BST_CHECKED;
-         std::map<IDType,int>::iterator found = buttonStates.find(callbackID);
-         if ( found != buttonStates.end() )
-         {
-            checked = found->second;
-         }
-         m_PropertiesList.SetCheck(idx,checked);
-      }
-   }
+   UpdateReport();
 }
 
 CGirderKey CCopyGirderDlg::GetFromGirder()
@@ -440,11 +583,8 @@ void CCopyGirderDlg::OnBnClickedRadio()
    {
       OnBnClickedSelectGirders();
    }
-   else
-   {
-      CopyToSelectionChanged();
-   }
-   EnableCopyNow(TRUE);
+
+   EnableCopyNow();
 }
 
 void CCopyGirderDlg::OnBnClickedSelectGirders()
@@ -474,8 +614,7 @@ void CCopyGirderDlg::OnBnClickedSelectGirders()
          m_MultiDialogSelections.push_back(girderKey);
       }
 
-      CopyToSelectionChanged();
-      EnableCopyNow(TRUE);
+      EnableCopyNow();
    }
    else
    {
@@ -497,46 +636,305 @@ void CCopyGirderDlg::OnOK()
    // CDialog::OnOK(); // we are completely bypassing the default implementation and doing our own thing
    // want the dialog to stay open until the Close buttom is pressed
 
-
    UpdateData(TRUE);
 
    // execute transactions
    pgsMacroTxn* pMacro = new pgsMacroTxn;
-   pMacro->Name(_T("Copy Girder Properties"));
+   pMacro->Name(_T("Copy Girder Properties Macro"));
 
-   std::vector<IDType> callbackIDs = GetCallbackIDs();
-   std::vector<IDType>::iterator iter(callbackIDs.begin());
-   std::vector<IDType>::iterator end(callbackIDs.end());
-   for ( ; iter != end; iter++ )
+   std::vector<ICopyGirderPropertiesCallback*> callbacks = GetSelectedCopyGirderPropertiesCallbacks();
+   for (auto callback : callbacks)
    {
-      IDType callbackID = *iter;
-      std::map<IDType,ICopyGirderPropertiesCallback*>::iterator found(m_rCopyGirderPropertiesCallbacks.find(callbackID));
-      ATLASSERT(found != m_rCopyGirderPropertiesCallbacks.end());
-      ICopyGirderPropertiesCallback* pCallback = found->second;
-
-      txnTransaction* pTxn = pCallback->CreateCopyTransaction(m_FromGirderKey,m_ToGirderKeys);
-      if ( pTxn )
-      {
-         pMacro->AddTransaction(pTxn);
-      }
+      txnTransaction* pTxn = callback->CreateCopyTransaction(m_FromGirderKey, m_ToGirderKeys);
+      pMacro->AddTransaction(pTxn);
    }
 
-   if ( 0 < pMacro->GetTxnCount() )
+   if (pMacro->GetTxnCount() > 0)
    {
-      GET_IFACE(IEAFTransactions,pTransactions);
+      GET_IFACE(IEAFTransactions, pTransactions);
       pTransactions->Execute(pMacro);
    }
 
-   CopyToSelectionChanged();
-   EnableCopyNow(FALSE);
+   UpdateReport();
+   EnableCopyNow();
 }
 
-void CCopyGirderDlg::OnCopyItemStateChanged()
+void CCopyGirderDlg::OnEdit()
 {
-   EnableCopyNow(TRUE);
+   CGirderKey fromKey = GetFromGirder();
+
+   GET_IFACE(IEditByUI, pEditByUI);
+   UINT tab = 0; // use if nothing is selected
+   std::vector<ICopyGirderPropertiesCallback*> callbacks = GetSelectedCopyGirderPropertiesCallbacks();
+   if (!callbacks.empty())
+   {
+      tab = callbacks.front()->GetGirderEditorTabIndex();
+   }
+
+   pEditByUI->EditGirderDescription(fromKey, tab);
+
+   UpdateReport(); // we update whether any changes are made or not
+   EnableCopyNow();
 }
 
-void CCopyGirderDlg::EnableCopyNow(BOOL bEnable)
+void CCopyGirderDlg::OnPrint() 
 {
+   m_pBrowser->Print(true);
+}
+
+void CCopyGirderDlg::EnableCopyNow()
+{
+   // Must be able to copy all to girders before enabling control
+   CGirderKey copyFrom = GetFromGirder();
+   std::vector<CGirderKey> copyTo = GetToGirders();
+
+   BOOL bEnable;
+   if (-1 != IsAllSelectedInList())
+   {
+      bEnable = TRUE; // can always copy if all is selected
+   }
+   else
+   {
+      std::vector<ICopyGirderPropertiesCallback*> callbacks = GetSelectedCopyGirderPropertiesCallbacks();
+
+      bEnable = callbacks.empty() ? FALSE : TRUE;
+      for (auto callback : callbacks)
+      {
+         bEnable &= callback->CanCopy(copyFrom, copyTo) ? TRUE : FALSE;
+      }
+   }
+
    GetDlgItem(IDOK)->EnableWindow(bEnable);
+}
+
+void CCopyGirderDlg::CleanUp()
+{
+   if ( m_pBrowser )
+   {
+      m_pBrowser = std::shared_ptr<CReportBrowser>();
+   }
+
+   // save the size of the window
+   WINDOWPLACEMENT wp;
+   wp.length = sizeof wp;
+   {
+      CEAFApp* pApp = EAFGetApp();
+      if (GetWindowPlacement(&wp))
+      {
+         wp.flags = 0;
+         wp.showCmd = SW_SHOWNORMAL;
+         pApp->WriteWindowPlacement(CString("Window Positions"),CString("CopyGirderDialog"),&wp);
+      }
+   }
+}
+
+LRESULT CCopyGirderDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
+{
+   // prevent the dialog from getting smaller than the original size
+   if (message == WM_SIZING)
+   {
+      LPRECT rect = (LPRECT)lParam;
+      int cx = rect->right - rect->left;
+      int cy = rect->bottom - rect->top;
+
+      if (cx < m_cxMin || cy < m_cyMin)
+      {
+         // prevent the dialog from moving right or down
+         if (wParam == WMSZ_BOTTOMLEFT ||
+            wParam == WMSZ_LEFT ||
+            wParam == WMSZ_TOP ||
+            wParam == WMSZ_TOPLEFT ||
+            wParam == WMSZ_TOPRIGHT)
+         {
+            CRect r;
+            GetWindowRect(&r);
+            rect->left = r.left;
+            rect->top = r.top;
+         }
+
+         if (cx < m_cxMin)
+         {
+            rect->right = rect->left + m_cxMin;
+         }
+
+         if (cy < m_cyMin)
+         {
+            rect->bottom = rect->top + m_cyMin;
+         }
+
+         return TRUE;
+      }
+   }
+
+   return CDialog::WindowProc(message, wParam, lParam);
+}
+
+void CCopyGirderDlg::OnDestroy()
+{
+   CDialog::OnDestroy();
+
+   CleanUp();
+}
+
+BOOL CCopyGirderDlg::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
+{
+   TOOLTIPTEXT* pTTT = (TOOLTIPTEXT*)pNMHDR;
+   HWND hwndTool = (HWND)pNMHDR->idFrom;
+   if ( pTTT->uFlags & TTF_IDISHWND )
+   {
+      // idFrom is actually HWND of tool
+      UINT nID = ::GetDlgCtrlID(hwndTool);
+      switch(nID)
+      {
+      case IDC_FROM_SPAN:
+      case IDC_FROM_GIRDER:
+         m_strTip = _T("The selected \"From\" girder is highlighted in Yellow in Comparison report");
+         break;
+      case IDC_EDIT:
+         m_strTip = _T("Edit the selected \"From\" girder");
+         break;
+
+      default:
+         return FALSE;
+      }
+
+      ::SendMessage(pNMHDR->hwndFrom,TTM_SETDELAYTIME,TTDT_AUTOPOP,TOOLTIP_DURATION); // sets the display time to 10 seconds
+      pTTT->lpszText = m_strTip.GetBuffer();
+      pTTT->hinst = nullptr;
+      return TRUE;
+   }
+   return FALSE;
+}
+
+void CCopyGirderDlg::OnCmenuSelected(UINT id)
+{
+  UINT cmd = id-CCS_CMENU_BASE ;
+
+  switch(cmd)
+  {
+  case CCS_RB_EDIT:
+     OnEdit();
+     break;
+
+  case CCS_RB_FIND:
+     m_pBrowser->Find();
+     break;
+
+  case CCS_RB_SELECT_ALL:
+     m_pBrowser->SelectAll();
+     break;
+
+  case CCS_RB_PRINT:
+     m_pBrowser->Print(true);
+     break;
+
+  case CCS_RB_REFRESH:
+     m_pBrowser->Refresh();
+     break;
+
+  case CCS_RB_VIEW_SOURCE:
+     m_pBrowser->ViewSource();
+     break;
+
+  case CCS_RB_VIEW_BACK:
+     m_pBrowser->Back();
+     break;
+
+  case CCS_RB_VIEW_FORWARD:
+     m_pBrowser->Forward();
+     break;
+
+  default:
+     // must be a toc anchor
+     ATLASSERT(cmd>=CCS_RB_TOC);
+     m_pBrowser->NavigateAnchor(cmd-CCS_RB_TOC);
+  }
+}
+
+void CCopyGirderDlg::InitSelectedPropertyList()
+{
+   // Clear out the list box
+   m_SelectedPropertyTypesCL.ResetContent();
+
+   for (const auto& CBpair : m_CopyGirderPropertiesCallbacks)
+   {
+      ICopyGirderPropertiesCallback* pCB = CBpair.second;
+      int idx = m_SelectedPropertyTypesCL.AddString( pCB->GetName() );
+      if ( idx != LB_ERR )
+      {
+         IDType id = CBpair.first;
+         m_SelectedPropertyTypesCL.SetItemData(idx, id);
+
+         if (m_SelectedIDs.find(id) != m_SelectedIDs.end())
+         {
+            m_SelectedPropertyTypesCL.SetCheck(idx, 1);
+         }
+         else
+         {
+            m_SelectedPropertyTypesCL.SetCheck(idx, 0);
+         }
+      }
+   }
+
+   UpdateSelectedPropertyList();
+
+   m_SelectedPropertyTypesCL.SetCurSel(-1);
+}
+
+void CCopyGirderDlg::UpdateSelectedPropertyList()
+{
+   // see if "All Properties" is selected
+   int all_pos = IsAllSelectedInList();
+   bool is_all_selected = all_pos != -1;
+
+   int nProps = m_SelectedPropertyTypesCL.GetCount();
+
+   if (is_all_selected)
+   {
+      // "All" is selected. Set check and enable all in list
+      for (int ch = 0; ch < nProps; ch++)
+      {
+         if (ch != all_pos)
+         {
+            m_SelectedPropertyTypesCL.SetCheck(ch, 1);
+            m_SelectedPropertyTypesCL.Enable(ch, FALSE);
+         }
+      }
+   }
+   else
+   {
+      for (int ch = 0; ch < nProps; ch++)
+      {
+         m_SelectedPropertyTypesCL.Enable(ch, TRUE);
+      }
+   }
+
+   EnableCopyNow();
+}
+
+void CCopyGirderDlg::OnLbnChkchangePropertyList()
+{
+   UpdateSelectedPropertyList();
+   UpdateReport();
+}
+
+int CCopyGirderDlg::IsAllSelectedInList()
+{
+   int nProps = m_SelectedPropertyTypesCL.GetCount();
+   for (int ch = 0; ch < nProps; ch++)
+   {
+      int chkval = m_SelectedPropertyTypesCL.GetCheck(ch);
+      if (chkval == 1)
+      {
+         IDType id = (IDType)m_SelectedPropertyTypesCL.GetItemData(ch);
+         std::map<IDType, ICopyGirderPropertiesCallback*>::const_iterator it = m_CopyGirderPropertiesCallbacks.find(id);
+
+         if (nullptr != dynamic_cast<CCopyGirderAllProperties*>(it->second))
+         {
+            return ch;
+         }
+      }
+   }
+
+   return -1;
 }

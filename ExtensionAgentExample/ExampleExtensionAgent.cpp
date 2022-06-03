@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // ExtensionAgentExample - Extension Agent Example Project for PGSuper
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -188,12 +188,12 @@ void CExampleExtensionAgent::RegisterUIExtensions()
 {
    GET_IFACE(IExtendPGSuperUI,pExtendPGSuperUI);
    m_EditBridgeCallbackID = pExtendPGSuperUI->RegisterEditBridgeCallback(this);
-   m_EditPierCallbackID = pExtendPGSuperUI->RegisterEditPierCallback(this);
+   m_EditPierCallbackID = pExtendPGSuperUI->RegisterEditPierCallback(this,nullptr);
    m_EditSpanCallbackID = pExtendPGSuperUI->RegisterEditSpanCallback(this);
    m_EditGirderCallbackID = pExtendPGSuperUI->RegisterEditGirderCallback(this);
 
    GET_IFACE(IExtendPGSpliceUI,pExtendPGSpliceUI);
-   m_EditTemporarySupportCallbackID = pExtendPGSpliceUI->RegisterEditTemporarySupportCallback(this);
+   m_EditTemporarySupportCallbackID = pExtendPGSpliceUI->RegisterEditTemporarySupportCallback(this, nullptr);
    m_EditSplicedGirderCallbackID = pExtendPGSpliceUI->RegisterEditSplicedGirderCallback(this);
    m_EditSegmentCallbackID = pExtendPGSpliceUI->RegisterEditSegmentCallback(this);
    m_EditClosureJointCallbackID = pExtendPGSpliceUI->RegisterEditClosureJointCallback(this);

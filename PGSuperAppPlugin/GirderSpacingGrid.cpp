@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -256,20 +256,26 @@ void CGirderSpacingGrid::UpdateGrid()
          );
 
       // get valid girder spacing for this group
+      // need average spacing of each pair of adjacent girders in the group
       Float64 minGirderSpacing = -MAX_GIRDER_SPACING;
       Float64 maxGirderSpacing =  MAX_GIRDER_SPACING;
-      for ( GirderIndexType gdrIdx = firstGdrIdx; gdrIdx <= lastGdrIdx; gdrIdx++ )
+      for ( GirderIndexType gdrIdx = firstGdrIdx; gdrIdx < lastGdrIdx; gdrIdx++ )
       {
-         const GirderLibraryEntry* pGdrEntry = m_pGirderGroup->GetGirderLibraryEntry(gdrIdx);
-         const IBeamFactory::Dimensions& dimensions = pGdrEntry->GetDimensions();
-         CComPtr<IBeamFactory> factory;
-         pGdrEntry->GetBeamFactory(&factory);
+         std::array<Float64, 2> minSpacing, maxSpacing;
+         for (int i = 0; i < 2; i++)
+         {
+            const GirderLibraryEntry* pGdrEntry = m_pGirderGroup->GetGirderLibraryEntry(gdrIdx+i);
+            const IBeamFactory::Dimensions& dimensions = pGdrEntry->GetDimensions();
+            CComPtr<IBeamFactory> factory;
+            pGdrEntry->GetBeamFactory(&factory);
 
-         // save spacing range to local class data
-         Float64 minGS, maxGS;
-         factory->GetAllowableSpacingRange(dimensions,m_DeckType,spacingType,&minGS, &maxGS);
-         minGS *= skewCorrection;
-         maxGS *= skewCorrection;
+            factory->GetAllowableSpacingRange(dimensions, m_DeckType, spacingType, &minSpacing[i], &maxSpacing[i]);
+            minSpacing[i] *= skewCorrection;
+            maxSpacing[i] *= skewCorrection;
+         }
+
+         Float64 minGS = 0.5 * (minSpacing[0] + minSpacing[1]);
+         Float64 maxGS = 0.5 * (maxSpacing[0] + maxSpacing[1]);
 
          minGirderSpacing = Max(minGirderSpacing,minGS);
          maxGirderSpacing = Min(maxGirderSpacing,maxGS);
@@ -514,18 +520,7 @@ BOOL CGirderSpacingGrid::ValidateGirderSpacing()
 
 BOOL CGirderSpacingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 {
-   CGXControl* pControl = GetControl(nRow,nCol);
-   CWnd* pWnd = (CWnd*)pControl;
-
-   CString strText;
-   if ( pControl->IsInit() )
-   {
-      pControl->GetCurrentText(strText);
-   }
-   else
-   {
-      strText = GetValueRowCol(nRow,nCol);
-   }
+   CString strText = GetValueRowCol(nRow, nCol);
 
    pgsTypes::SupportedBeamSpacing spacingType = m_pGirderGroup->GetBridgeDescription()->GetGirderSpacingType();
 

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -64,8 +64,8 @@ std::shared_ptr<CReportSpecification> CSpanReportSpecificationBuilder::CreateRep
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
    GroupIndexType grpIdx = pGroup->GetIndex();
 
-   CSpanGirderReportDlg dlg(m_pBroker,rptDesc,SpanAndChapters,pOldRptSpec); // span only mode
-   dlg.m_Group = grpIdx;
+   CSpanGirderReportDlg dlg(m_pBroker,rptDesc, CSpanGirderReportDlg::Mode::GroupAndChapters,pOldRptSpec); // span only mode
+   dlg.m_SegmentKey.groupIndex = grpIdx;
 
    if ( dlg.DoModal() == IDOK )
    {
@@ -77,13 +77,13 @@ std::shared_ptr<CReportSpecification> CSpanReportSpecificationBuilder::CreateRep
       {
          std::shared_ptr<CSpanReportSpecification> pNewGRptSpec(std::make_shared<CSpanReportSpecification>(*pOldGRptSpec) );
 
-         pNewGRptSpec->SetSpan(dlg.m_Group);
+         pNewGRptSpec->SetSpan(dlg.m_SegmentKey.groupIndex);
 
          pNewRptSpec = std::static_pointer_cast<CReportSpecification>(pNewGRptSpec);
       }
       else
       {
-         pNewRptSpec = std::make_shared<CSpanReportSpecification>(rptDesc.GetReportName(),m_pBroker,dlg.m_Group);
+         pNewRptSpec = std::make_shared<CSpanReportSpecification>(rptDesc.GetReportName(),m_pBroker,dlg.m_SegmentKey.groupIndex);
       }
 
       std::vector<std::_tstring> chList = dlg.m_ChapterList;
@@ -132,9 +132,8 @@ std::shared_ptr<CReportSpecification> CGirderLineReportSpecificationBuilder::Cre
    girderKey.groupIndex  = (girderKey.groupIndex  == INVALID_INDEX ? 0 : girderKey.groupIndex);
    girderKey.girderIndex = (girderKey.girderIndex == INVALID_INDEX ? 0 : girderKey.girderIndex);
 
-   CSpanGirderReportDlg dlg(m_pBroker,rptDesc,GirderAndChapters,pOldRptSpec);
-   dlg.m_Group  = girderKey.groupIndex;
-   dlg.m_Girder = girderKey.girderIndex;
+   CSpanGirderReportDlg dlg(m_pBroker,rptDesc, CSpanGirderReportDlg::Mode::GirderAndChapters,pOldRptSpec);
+   dlg.m_SegmentKey = CSegmentKey(girderKey, INVALID_INDEX);
 
    if ( dlg.DoModal() == IDOK )
    {
@@ -146,13 +145,13 @@ std::shared_ptr<CReportSpecification> CGirderLineReportSpecificationBuilder::Cre
       {
          std::shared_ptr<CGirderLineReportSpecification> pNewGRptSpec(std::make_shared<CGirderLineReportSpecification>(*pOldGRptSpec) );
 
-         pNewGRptSpec->SetGirderIndex(dlg.m_Girder);
+         pNewGRptSpec->SetGirderIndex(dlg.m_SegmentKey.girderIndex);
 
          pNewRptSpec = std::static_pointer_cast<CReportSpecification>(pNewGRptSpec);
       }
       else
       {
-         pNewRptSpec = std::make_shared<CGirderLineReportSpecification>(rptDesc.GetReportName(),m_pBroker,dlg.m_Girder);
+         pNewRptSpec = std::make_shared<CGirderLineReportSpecification>(rptDesc.GetReportName(),m_pBroker,dlg.m_SegmentKey.girderIndex);
       }
 
       std::vector<std::_tstring> chList = dlg.m_ChapterList;
@@ -207,14 +206,12 @@ std::shared_ptr<CReportSpecification> CGirderReportSpecificationBuilder::CreateR
       girderKey.girderIndex  = selection.GirderIdx;
    }
 
-   CSpanGirderReportDlg dlg(m_pBroker,rptDesc,SpanGirderAndChapters,pOldRptSpec);
-   dlg.m_Group  = girderKey.groupIndex;
-   dlg.m_Girder = girderKey.girderIndex;
+   CSpanGirderReportDlg dlg(m_pBroker,rptDesc, CSpanGirderReportDlg::Mode::GroupGirderAndChapters,pOldRptSpec);
+   dlg.m_SegmentKey = CSegmentKey(girderKey, ALL_SEGMENTS);
 
    if ( dlg.DoModal() == IDOK )
    {
-      girderKey.groupIndex  = dlg.m_Group;
-      girderKey.girderIndex = dlg.m_Girder;
+      girderKey = dlg.m_SegmentKey;
 
       // If possible, copy information from old spec. Otherwise header/footer and other info will be lost
       std::shared_ptr<CGirderReportSpecification> pOldGRptSpec = std::dynamic_pointer_cast<CGirderReportSpecification>(pOldRptSpec);
@@ -286,6 +283,95 @@ std::shared_ptr<CReportSpecification> CGirderReportSpecificationBuilder::CreateD
       }
    }
    std::shared_ptr<CReportSpecification> pRptSpec(std::make_shared<CGirderReportSpecification>(rptDesc.GetReportName(),m_pBroker,girderKey) );
+
+   rptDesc.ConfigureReportSpecification(pRptSpec);
+
+
+   return pRptSpec;
+}
+
+////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+
+CSegmentReportSpecificationBuilder::CSegmentReportSpecificationBuilder(IBroker* pBroker, const CSegmentKey& segmentKey) :
+   CBrokerReportSpecificationBuilder(pBroker)
+{
+   m_SegmentKey = segmentKey;
+}
+
+CSegmentReportSpecificationBuilder::~CSegmentReportSpecificationBuilder(void)
+{
+}
+
+std::shared_ptr<CReportSpecification> CSegmentReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc, std::shared_ptr<CReportSpecification>& pOldRptSpec)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   // Prompt for group, girder, and chapter list
+   GET_IFACE(ISelection, pSelection);
+   CSelection selection = pSelection->GetSelection();
+   CSegmentKey segmentKey(m_SegmentKey);
+   if (selection.Type == CSelection::Segment || selection.Type == CSelection::Girder)
+   {
+      segmentKey.groupIndex = selection.GroupIdx;
+      segmentKey.girderIndex = selection.GirderIdx;
+      segmentKey.segmentIndex = selection.SegmentIdx;
+   }
+
+   CSpanGirderReportDlg dlg(m_pBroker, rptDesc, CSpanGirderReportDlg::Mode::GroupGirderSegmentAndChapters, pOldRptSpec);
+   dlg.m_SegmentKey = segmentKey;
+
+   if (dlg.DoModal() == IDOK)
+   {
+      segmentKey = dlg.m_SegmentKey;
+
+      // If possible, copy information from old spec. Otherwise header/footer and other info will be lost
+      std::shared_ptr<CSegmentReportSpecification> pOldGRptSpec = std::dynamic_pointer_cast<CSegmentReportSpecification>(pOldRptSpec);
+
+      std::shared_ptr<CReportSpecification> pNewRptSpec;
+      if (pOldGRptSpec)
+      {
+         std::shared_ptr<CSegmentReportSpecification> pNewGRptSpec(std::make_shared<CSegmentReportSpecification>(*pOldGRptSpec));
+         pNewGRptSpec->SetSegmentKey(segmentKey);
+
+         pNewRptSpec = std::static_pointer_cast<CReportSpecification>(pNewGRptSpec);
+      }
+      else
+      {
+         pNewRptSpec = std::make_shared<CSegmentReportSpecification>(rptDesc.GetReportName(), m_pBroker, segmentKey);
+      }
+
+      std::vector<std::_tstring> chList = dlg.m_ChapterList;
+      rptDesc.ConfigureReportSpecification(chList, pNewRptSpec);
+
+      return pNewRptSpec;
+   }
+
+   return nullptr;
+}
+
+std::shared_ptr<CReportSpecification> CSegmentReportSpecificationBuilder::CreateDefaultReportSpec(const CReportDescription& rptDesc)
+{
+   // Get the selected group and girder
+   GET_IFACE(ISelection, pSelection);
+   CSelection selection = pSelection->GetSelection();
+
+   CSegmentKey segmentKey(m_SegmentKey);
+   segmentKey.groupIndex = selection.GroupIdx;
+   segmentKey.girderIndex = selection.GirderIdx;
+   segmentKey.segmentIndex = selection.SegmentIdx;
+   if (selection.Type != CSelection::Segment)
+   {
+      segmentKey.groupIndex = selection.GroupIdx;
+      segmentKey.girderIndex = selection.GirderIdx;
+      segmentKey.segmentIndex = selection.SegmentIdx;
+
+      std::shared_ptr<CReportSpecification> pRptSpec = CreateReportSpec(rptDesc, std::shared_ptr<CReportSpecification>());
+      return pRptSpec;
+   }
+
+   std::shared_ptr<CReportSpecification> pRptSpec(std::make_shared<CSegmentReportSpecification>(rptDesc.GetReportName(), m_pBroker, segmentKey));
 
    rptDesc.ConfigureReportSpecification(pRptSpec);
 
@@ -430,14 +516,13 @@ std::shared_ptr<CReportSpecification> CMultiGirderReportSpecificationBuilder::Cr
       AFX_MANAGE_STATE(AfxGetStaticModuleState());
       // we don't have a proper girder key.... prompt the user
       std::shared_ptr<CReportSpecification> nullSpec;
-      CSpanGirderReportDlg dlg(m_pBroker,rptDesc,SpanGirderAndChapters,nullSpec);
-      dlg.m_Group  = girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex;
-      dlg.m_Girder = girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex;
+      CSpanGirderReportDlg dlg(m_pBroker,rptDesc, CSpanGirderReportDlg::Mode::GroupGirderAndChapters,nullSpec);
+      dlg.m_SegmentKey.groupIndex = girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex;
+      dlg.m_SegmentKey.girderIndex = girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex;
 
       if ( dlg.DoModal() == IDOK )
       {
-         girderKey.groupIndex  = dlg.m_Group;
-         girderKey.girderIndex = dlg.m_Girder;
+         girderKey = dlg.m_SegmentKey;
       }
       else
       {
@@ -569,14 +654,13 @@ std::shared_ptr<CReportSpecification> CMultiViewSpanGirderReportSpecificationBui
    {
       AFX_MANAGE_STATE(AfxGetStaticModuleState());
       // we don't have a proper girder key.... prompt the user
-      CSpanGirderReportDlg dlg(m_pBroker,rptDesc,SpanGirderAndChapters, std::shared_ptr<CReportSpecification>());
-      dlg.m_Group  = girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex;
-      dlg.m_Girder = girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex;
+      CSpanGirderReportDlg dlg(m_pBroker,rptDesc, CSpanGirderReportDlg::Mode::GroupGirderAndChapters, std::shared_ptr<CReportSpecification>());
+      dlg.m_SegmentKey.groupIndex = girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex;
+      dlg.m_SegmentKey.girderIndex = girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex;
 
       if ( dlg.DoModal() == IDOK )
       {
-         girderKey.groupIndex  = dlg.m_Group;
-         girderKey.girderIndex = dlg.m_Girder;
+         girderKey = dlg.m_SegmentKey;
       }
       else
       {

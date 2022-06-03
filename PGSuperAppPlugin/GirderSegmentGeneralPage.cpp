@@ -1,3 +1,25 @@
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright © 1999-2022  Washington State Department of Transportation
+//                        Bridge and Structures Office
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
 // GirderSegmentGeneralPage.cpp : implementation file
 //
 
@@ -105,10 +127,10 @@ void CGirderSegmentGeneralPage::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_RIGHT_TAPERED_LENGTH,   IDC_RIGHT_TAPERED_LENGTH_UNIT,   VariationLength[pgsTypes::sztRightTapered],   pDisplayUnits->GetSpanLengthUnit() );
    DDX_UnitValueAndTag(pDX, IDC_RIGHT_PRISMATIC_LENGTH, IDC_RIGHT_PRISMATIC_LENGTH_UNIT, VariationLength[pgsTypes::sztRightPrismatic], pDisplayUnits->GetSpanLengthUnit() );
 
-   DDX_UnitValueAndTag(pDX, IDC_LEFT_PRISMATIC_HEIGHT,  IDC_LEFT_PRISMATIC_HEIGHT_UNIT,  VariationHeight[pgsTypes::sztLeftPrismatic],  pDisplayUnits->GetSpanLengthUnit() );
-   DDX_UnitValueAndTag(pDX, IDC_LEFT_TAPERED_HEIGHT,    IDC_LEFT_TAPERED_HEIGHT_UNIT,    VariationHeight[pgsTypes::sztLeftTapered],    pDisplayUnits->GetSpanLengthUnit() );
-   DDX_UnitValueAndTag(pDX, IDC_RIGHT_TAPERED_HEIGHT,   IDC_RIGHT_TAPERED_HEIGHT_UNIT,   VariationHeight[pgsTypes::sztRightTapered],   pDisplayUnits->GetSpanLengthUnit() );
-   DDX_UnitValueAndTag(pDX, IDC_RIGHT_PRISMATIC_HEIGHT, IDC_RIGHT_PRISMATIC_HEIGHT_UNIT, VariationHeight[pgsTypes::sztRightPrismatic], pDisplayUnits->GetSpanLengthUnit() );
+   DDX_UnitValueAndTag(pDX, IDC_LEFT_PRISMATIC_HEIGHT,  IDC_LEFT_PRISMATIC_HEIGHT_UNIT,  VariationHeight[pgsTypes::sztLeftPrismatic],  pDisplayUnits->GetComponentDimUnit() );
+   DDX_UnitValueAndTag(pDX, IDC_LEFT_TAPERED_HEIGHT,    IDC_LEFT_TAPERED_HEIGHT_UNIT,    VariationHeight[pgsTypes::sztLeftTapered],    pDisplayUnits->GetComponentDimUnit() );
+   DDX_UnitValueAndTag(pDX, IDC_RIGHT_TAPERED_HEIGHT,   IDC_RIGHT_TAPERED_HEIGHT_UNIT,   VariationHeight[pgsTypes::sztRightTapered],   pDisplayUnits->GetComponentDimUnit() );
+   DDX_UnitValueAndTag(pDX, IDC_RIGHT_PRISMATIC_HEIGHT, IDC_RIGHT_PRISMATIC_HEIGHT_UNIT, VariationHeight[pgsTypes::sztRightPrismatic], pDisplayUnits->GetComponentDimUnit() );
 
    DDX_UnitValueAndTag(pDX, IDC_LEFT_PRISMATIC_FLANGE_DEPTH,  IDC_LEFT_PRISMATIC_FLANGE_DEPTH_UNIT,  VariationBottomFlangeDepth[pgsTypes::sztLeftPrismatic],  pDisplayUnits->GetComponentDimUnit() );
    DDX_UnitValueAndTag(pDX, IDC_LEFT_TAPERED_FLANGE_DEPTH,    IDC_LEFT_TAPERED_FLANGE_DEPTH_UNIT,    VariationBottomFlangeDepth[pgsTypes::sztLeftTapered],    pDisplayUnits->GetComponentDimUnit() );
@@ -310,8 +332,6 @@ BOOL CGirderSegmentGeneralPage::OnInitDialog()
    UpdateSlabOffsetControls();
 
    UpdateConcreteControls(true);
-
-   OnVariationTypeChanged();
 
    EnableToolTips(TRUE);
 
@@ -805,6 +825,12 @@ void CGirderSegmentGeneralPage::OnMoreConcreteProperties()
    dlg.m_CEBFIP.m_BetaSc          = pSegment->Material.Concrete.BetaSc;
    dlg.m_CEBFIP.m_CementType      = pSegment->Material.Concrete.CEBFIPCementType;
 
+   dlg.m_PCIUHPC.m_ffc = pSegment->Material.Concrete.Ffc;
+   dlg.m_PCIUHPC.m_frr = pSegment->Material.Concrete.Frr;
+   dlg.m_PCIUHPC.m_FiberLength = pSegment->Material.Concrete.FiberLength;
+   dlg.m_PCIUHPC.m_AutogenousShrinkage = pSegment->Material.Concrete.AutogenousShrinkage;
+   dlg.m_PCIUHPC.m_bPCTT = pSegment->Material.Concrete.bPCTT;
+
    dlg.m_General.m_strUserEc  = m_strUserEc;
 
    if ( dlg.DoModal() == IDOK )
@@ -840,6 +866,13 @@ void CGirderSegmentGeneralPage::OnMoreConcreteProperties()
       pSegment->Material.Concrete.S                     = dlg.m_CEBFIP.m_S;
       pSegment->Material.Concrete.BetaSc                = dlg.m_CEBFIP.m_BetaSc;
       pSegment->Material.Concrete.CEBFIPCementType      = dlg.m_CEBFIP.m_CementType;
+
+      pSegment->Material.Concrete.Ffc = dlg.m_PCIUHPC.m_ffc;
+      pSegment->Material.Concrete.Frr = dlg.m_PCIUHPC.m_frr;
+      pSegment->Material.Concrete.FiberLength = dlg.m_PCIUHPC.m_FiberLength;
+      pSegment->Material.Concrete.AutogenousShrinkage = dlg.m_PCIUHPC.m_AutogenousShrinkage;
+      pSegment->Material.Concrete.bPCTT = dlg.m_PCIUHPC.m_bPCTT;
+
 
       m_strUserEc  = dlg.m_General.m_strUserEc;
       m_ctrlEc.SetWindowText(m_strUserEc);
@@ -987,10 +1020,10 @@ void CGirderSegmentGeneralPage::OnVariationTypeChanged()
       EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
       Float64 value = pSegment->GetBasicSegmentHeight();
-      Float64 height = ::ConvertFromSysUnits(value,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-      CString strHeight = ::FormatDimension(value,pDisplayUnits->GetSpanLengthUnit(),false);
+      Float64 height = ::ConvertFromSysUnits(value,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+      CString strHeight = ::FormatDimension(value,pDisplayUnits->GetComponentDimUnit(),false);
       m_ctrlSectionHeight[pgsTypes::sztLeftPrismatic].SetDefaultValue(height,strHeight);
-      m_ctrlSectionHeight[pgsTypes::sztRightPrismatic].SetDefaultValue(height,strHeight);
+      m_ctrlSectionHeight[pgsTypes::sztRightPrismatic].SetDefaultValue(height, strHeight);
    }
 
    UpdateSegmentVariationParameters(variationType);
@@ -1178,19 +1211,19 @@ Float64 CGirderSegmentGeneralPage::GetHeight(pgsTypes::SegmentZoneType segZone)
    switch( segZone )
    {
    case pgsTypes::sztLeftPrismatic:
-      height = GetValue(IDC_LEFT_PRISMATIC_HEIGHT,  pDisplayUnits->GetSpanLengthUnit() );
+      height = GetValue(IDC_LEFT_PRISMATIC_HEIGHT,  pDisplayUnits->GetComponentDimUnit() );
       break;
 
    case pgsTypes::sztLeftTapered:
-      height = GetValue(IDC_LEFT_TAPERED_HEIGHT, pDisplayUnits->GetSpanLengthUnit() );
+      height = GetValue(IDC_LEFT_TAPERED_HEIGHT, pDisplayUnits->GetComponentDimUnit() );
       break;
 
    case pgsTypes::sztRightTapered:
-      height = GetValue(IDC_RIGHT_TAPERED_HEIGHT,  pDisplayUnits->GetSpanLengthUnit() );
+      height = GetValue(IDC_RIGHT_TAPERED_HEIGHT,  pDisplayUnits->GetComponentDimUnit() );
       break;
 
    case pgsTypes::sztRightPrismatic:
-      height = GetValue(IDC_RIGHT_PRISMATIC_HEIGHT,  pDisplayUnits->GetSpanLengthUnit() );
+      height = GetValue(IDC_RIGHT_PRISMATIC_HEIGHT,  pDisplayUnits->GetComponentDimUnit() );
       break;
 
    default:
@@ -1694,4 +1727,14 @@ void CGirderSegmentGeneralPage::FillSlabOffsetComboBox()
    pcbSlabOffsetType->SetItemData(idx, (DWORD_PTR)pgsTypes::sotSegment);
 
    pcbSlabOffsetType->SetCurSel(m_SlabOffsetType == pgsTypes::sotSegment ? 1 : 0);
+}
+
+
+BOOL CGirderSegmentGeneralPage::OnSetActive()
+{
+   BOOL bResult = __super::OnSetActive();
+
+   OnVariationTypeChanged();
+
+   return bResult;
 }

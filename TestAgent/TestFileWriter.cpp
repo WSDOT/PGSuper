@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -34,6 +34,10 @@
 #include <IFace\DistFactorEngineer.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\Intervals.h>
+
+#include <IFace\RatingSpecification.h>
+#include <PgsExt\RatingArtifact.h>
+#include <PgsExt\ISummaryRatingArtifact.h>
 
 #if defined _DEBUG
 #include <IFace\DocumentType.h>
@@ -328,9 +332,8 @@ int Test_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& girde
    bool are_harped_bent(false);
    if (0 < harpedCount)
    {
-      Float64 nEff;
-      Float64 hs_ecc_end = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pois,pgsTypes::Harped,&nEff);
-      Float64 hs_ecc_mid = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pmid,pgsTypes::Harped,&nEff);
+      Float64 hs_ecc_end = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pois,pgsTypes::Harped).Y();
+      Float64 hs_ecc_mid = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pmid,pgsTypes::Harped).Y();
       are_harped_bent = !IsEqual(hs_ecc_end, hs_ecc_mid);
    }
 
@@ -431,7 +434,7 @@ int Test_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& girde
 
 	/* 6. STRAND SIZE */
 	TCHAR    strandSize[4+1];
-   const matPsStrand* strandMatP = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
+   const matPsStrand* strandMatP = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Straight);
    value = strandMatP->GetNominalDiameter();
    value = ::ConvertFromSysUnits( value, unitMeasure::Inch );
 
@@ -443,13 +446,12 @@ int Test_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& girde
 	int strandStrength = (strandMatP->GetGrade() == matPsStrand::Gr1725 ?  250 :  270);
 
 	/* 8. STRAND ECCENTRICITY AT CENTER LINE */
-   Float64 nEff;
-   value = pStrandGeometry->GetEccentricity( releaseIntervalIdx, pmid, pgsTypes::Permanent, &nEff );
+   value = pStrandGeometry->GetEccentricity( releaseIntervalIdx, pmid, pgsTypes::Permanent).Y();
 
 	Float64 strandEccCL = ::ConvertFromSysUnits( value, unitMeasure::Inch );
 
 	/* 9. STRAND ECCENTRICITY AT END */
-   value = pStrandGeometry->GetEccentricity( releaseIntervalIdx, pois, pgsTypes::Permanent, &nEff );
+   value = pStrandGeometry->GetEccentricity( releaseIntervalIdx, pois, pgsTypes::Permanent).Y();
 
 	Float64 strandEccEnd = ::ConvertFromSysUnits( value, unitMeasure::Inch );
 
@@ -676,7 +678,7 @@ int Test_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& girde
    workerB.WriteFloat64(designLoadTensileStress,_T(" ftens "),10,6,_T("%6.3f"));
 
 	//----- COL 16 ---- 
-   workerB.WriteInt16(reqMinUltimateMomentCapacity,_T("ultMo"),9,5,_T("%5d"));
+   workerB.WriteInt32(reqMinUltimateMomentCapacity,_T("ultMo"),9,5,_T("%5d"));
 	//----- COL 17 ---- 
    workerB.WriteFloat64(momentDistFactor,_T("LLDFm"),7,5,_T("%5.3f"));
 	//----- COL 17aa ---- 
@@ -737,7 +739,7 @@ int Test_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& girde
       Float64 totalDeflection = slabDiaphDeflection + overlayDeflection + otherDeflection;
 
    	/* 23. LOSSES (INITIAL)  */
-      Float64 aps = pStrandGeometry->GetAreaPrestressStrands(segmentKey,releaseIntervalIdx,false);
+      Float64 aps = pStrandGeometry->GetStrandArea(pmid,releaseIntervalIdx,pgsTypes::Permanent);
       value = pLosses->GetEffectivePrestressLoss(pmid,pgsTypes::Permanent,releaseIntervalIdx,pgsTypes::End) * aps;
 
       Float64 initialLoss = ::ConvertFromSysUnits( value, unitMeasure::Kip );
@@ -780,6 +782,39 @@ int Test_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& girde
       workerB.WriteFloat64(fwdLoc,_T("fwHaul"),8,6,_T("%6.2f"));
 	   //----- COL 27 ---- 
       workerB.WriteFloat64(trlLoc,_T("trHaul"),8,6,_T("%6.2f"));
+
+      // rating factors, if enabled
+      GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+      if (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) && pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating))
+      {
+         std::vector<CGirderKey> girderKeys{ girderKey };
+         std::shared_ptr<const pgsISummaryRatingArtifact> pInventoryRatingArtifact = pIArtifact->GetSummaryRatingArtifact(girderKeys, pgsTypes::lrDesign_Inventory, INVALID_INDEX);
+         std::shared_ptr<const pgsISummaryRatingArtifact> pOperatingRatingArtifact = pIArtifact->GetSummaryRatingArtifact(girderKeys, pgsTypes::lrDesign_Operating, INVALID_INDEX);
+
+         // Strength I
+         Float64 invMomRF = pInventoryRatingArtifact->GetMomentRatingFactor(true);
+         Float64 invShearRF(0.0);
+         if (pRatingSpec->RateForShear(pgsTypes::lrDesign_Inventory))
+         {
+            invShearRF = pInventoryRatingArtifact->GetShearRatingFactor();
+         }
+
+         Float64 oprMomRF = pOperatingRatingArtifact->GetMomentRatingFactor(true);
+         Float64 oprShearRF(0.0);
+         if (pRatingSpec->RateForShear(pgsTypes::lrDesign_Operating))
+         {
+            oprShearRF = pOperatingRatingArtifact->GetShearRatingFactor();
+         }
+
+         // Service III
+         Float64 invStressRF = pInventoryRatingArtifact->GetStressRatingFactor();
+
+         workerB.WriteFloat64(invMomRF, _T("RfInMom"), 8, 6, _T("%6.2f"));
+         workerB.WriteFloat64(invShearRF, _T("RfInShr"), 8, 6, _T("%6.2f"));
+         workerB.WriteFloat64(oprMomRF, _T("RfOpMom"), 8, 6, _T("%6.2f"));
+         workerB.WriteFloat64(oprShearRF, _T("RfOpShr"), 8, 6, _T("%6.2f"));
+         workerB.WriteFloat64(invStressRF, _T("RfInSts"), 8, 6, _T("%6.2f"));
+      }
    }
 
 	// ------ END OF RECORD ----- 
@@ -828,6 +863,17 @@ void CadWriterWorkerBee::WriteInt16(Int16 val, LPCTSTR title, Int16 colWidth, In
    ATLASSERT(nr==nchars);
 
    this->WriteString(buf, title, colWidth, nchars,_T("%s"));
+}
+
+void CadWriterWorkerBee::WriteInt32(Int32 val, LPCTSTR title, Int16 colWidth, Int16 nchars, LPCTSTR format)
+{
+   // write string to local buffer
+   TCHAR buf[32];
+   int nr = _stprintf_s(buf, 32, format, val);
+
+   ATLASSERT(nr == nchars);
+
+   this->WriteString(buf, title, colWidth, nchars, _T("%s"));
 }
 
 

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -103,16 +103,7 @@ void CStrandStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
 
       const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
-      std::vector<pgsTypes::StrandType> strandTypes;
-      if ( pStrands->GetStrandDefinitionType() == pgsTypes::sdtTotal )
-      {
-         strandTypes.push_back(pgsTypes::Permanent);
-      }
-      else
-      {
-         strandTypes.push_back(pgsTypes::Straight);
-         strandTypes.push_back(pgsTypes::Harped);
-      }
+      std::vector<pgsTypes::StrandType> strandTypes{ pgsTypes::Straight, pgsTypes::Harped };
 
       StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
       if ( 0 < Nt )
@@ -161,13 +152,12 @@ void CStrandStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
             (*p_table)(0,col) << LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(segmentKey));
             break;
 
-         case pgsTypes::Permanent:
-            (*p_table)(0,col) << _T("Permanent");
-            break;
-
          case pgsTypes::Temporary:
             (*p_table)(0,col) << _T("Temporary");
             break;
+
+         default:
+            ATLASSERT(false); // shouldn't get here
          }
 
          (*p_table)(1,col++) << COLHDR(_T("Strand") << rptNewLine << _T("Stress"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );

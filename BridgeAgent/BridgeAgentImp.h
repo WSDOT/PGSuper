@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -186,15 +186,16 @@ public:
    virtual void GetPoint(Float64 station,Float64 offset,IDirection* pBearing,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppPoint) const override;
    virtual void GetStationAndOffset(pgsTypes::PlanCoordinateType pcType,IPoint2d* point,Float64* pStation,Float64* pOffset) const override;
    virtual CollectionIndexType GetCurveCount() const override;
-   virtual void GetCurve(CollectionIndexType idx,IHorzCurve** ppCurve) const override;
-   virtual void GetCurvePoint(IndexType hcIdx,CurvePointTypes cpType,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppPoint) const override;
+   virtual void GetCurve(CollectionIndexType idx, pgsTypes::PlanCoordinateType pcType,ICompoundCurve** ppCurve) const override;
    virtual HCURVESTATIONS GetCurveStations(IndexType hcIdx) const override;
    virtual CollectionIndexType GetVertCurveCount() const override;
    virtual void GetVertCurve(CollectionIndexType idx,IVertCurve** ppCurve) const override;
    virtual void GetRoadwaySurface(Float64 station,IDirection* pDirection,IPoint2dCollection** ppPoints) const override;
    virtual IndexType GetCrownPointIndexCount(Float64 station) const override;
-   virtual IndexType GetControllingCrownPointIndex(Float64 station) const override;
-   virtual Float64 GetCrownPointOffset(IndexType crownPointIdx, Float64 station) const override;
+   virtual IndexType GetAlignmentPointIndex(Float64 station) const override;
+   virtual Float64 GetAlignmentOffset(IndexType crownPointIdx, Float64 station) const override;
+   virtual IndexType GetProfileGradeLineIndex(Float64 station) const override;
+   virtual Float64 GetProfileGradeLineOffset(IndexType crownPointIdx, Float64 station) const override;
 
 // IGeometry
 public:
@@ -218,11 +219,11 @@ public:
    virtual HRESULT LineSegmentCircle(ILineSegment2d* pSeg,Float64 offset,IPoint2d* center,Float64 radius,IPoint2d* nearest, IPoint2d** point) const override;
    virtual HRESULT PointOnLineByPoints(IPoint2d* pnt,IPoint2d* start,IPoint2d* end,Float64 offset,IPoint2d** point) const override;
    virtual HRESULT PointOnLineSegment(IPoint2d* from,ILineSegment2d* seg,Float64 offset,IPoint2d** point) const override;
-   virtual HRESULT PointOnCurve(IPoint2d* pnt,IHorzCurve* curve,IPoint2d** point) const override;
+   virtual HRESULT PointOnCurve(IPoint2d* pnt,ICompoundCurve* curve,IPoint2d** point) const override;
    virtual HRESULT Arc(IPoint2d* from, IPoint2d* vertex, IPoint2d* to,CollectionIndexType nParts,IPoint2dCollection** points) const override;
    virtual HRESULT BetweenPoints(IPoint2d* from, IPoint2d* to,CollectionIndexType nParts,IPoint2dCollection** points) const override;
    virtual HRESULT LineSegment(ILineSegment2d* seg,CollectionIndexType nParts,IPoint2dCollection** points) const override;
-	virtual HRESULT HorzCurve(IHorzCurve* curve, CollectionIndexType nParts, IPoint2dCollection** points) const override;
+	virtual HRESULT CompoundCurve(ICompoundCurve* curve, CollectionIndexType nParts, IPoint2dCollection** points) const override;
    virtual HRESULT Path(IPath* pPath,CollectionIndexType nParts,Float64 start,Float64 end,IPoint2dCollection** points) const override;
    virtual HRESULT External(IPoint2d* center1, Float64 radius1,IPoint2d* center2,Float64 radius2,TangentSignType sign, IPoint2d** t1,IPoint2d** t2) const override;
    virtual HRESULT Cross(IPoint2d* center1, Float64 radius1,IPoint2d* center2, Float64 radius2, TangentSignType sign, IPoint2d** t1,IPoint2d** t2) const override;
@@ -305,7 +306,8 @@ public:
    virtual void GetSpansForSegment(const CSegmentKey& segmentKey,SpanIndexType* pStartSpanIdx,SpanIndexType* pEndSpanIdx) const override;
    virtual void ResolveSegmentVariation(const CPrecastSegmentData* pSegment, std::array<Float64, 4>& Xhp) const override;
    virtual GDRCONFIG GetSegmentConfiguration(const CSegmentKey& segmentKey) const override;
-   virtual void ModelCantilevers(const CSegmentKey& segmentKey,bool* pbStartCantilever,bool* pbEndCantilever) const override;
+   virtual void ModelCantilevers(const CSegmentKey& segmentKey,bool* pbLeftCantilever,bool* pbRightCantilever) const override;
+   virtual void ModelCantilevers(const CSegmentKey& segmentKey, Float64 leftSupportDistance, Float64 rightSupportDistance, bool* pbLeftCantilever, bool* pbRightCantilever) const override;
    virtual bool GetSpan(Float64 station,SpanIndexType* pSpanIdx) const override;
    virtual void GetPoint(const CSegmentKey& segmentKey,Float64 Xpoi,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppPoint) const override;
    virtual void GetPoint(const pgsPointOfInterest& poi,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppPoint) const override;
@@ -517,6 +519,10 @@ public:
    virtual INCREMENTALSHRINKAGEDETAILS GetIncrementalRailingSystemFreeShrinakgeStrainDetails(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx) const override;
    virtual INCREMENTALSHRINKAGEDETAILS GetIncrementalLongitudinalJointFreeShrinkageStrainDetails(IntervalIndexType intervalIdx) const override;
 
+   virtual Float64 GetSegmentAutogenousShrinkage(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetClosureJointAutogenousShrinkage(const CClosureKey& closureKey) const override;
+   virtual Float64 GetDeckAutogenousShrinkage() const override;
+
    virtual Float64 GetSegmentCreepCoefficient(const CSegmentKey& segmentKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const override;
    virtual Float64 GetClosureJointCreepCoefficient(const CClosureKey& closureKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const override;
    virtual Float64 GetDeckCreepCoefficient(IndexType castingRegionIdx, IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const override;
@@ -534,6 +540,7 @@ public:
    virtual Float64 GetSegmentConcreteAggSplittingStrength(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetSegmentStrengthDensity(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetSegmentMaxAggrSize(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentConcreteFiberLength(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetSegmentEccK1(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetSegmentEccK2(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetSegmentCreepK1(const CSegmentKey& segmentKey) const override;
@@ -541,11 +548,14 @@ public:
    virtual Float64 GetSegmentShrinkageK1(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetSegmentShrinkageK2(const CSegmentKey& segmentKey) const override;
    virtual const matConcreteBase* GetSegmentConcrete(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentConcreteFirstCrackingStrength(const CSegmentKey& segmentKey) const override;
+
    virtual pgsTypes::ConcreteType GetClosureJointConcreteType(const CClosureKey& closureKey) const override;
    virtual bool DoesClosureJointConcreteHaveAggSplittingStrength(const CClosureKey& closureKey) const override;
    virtual Float64 GetClosureJointConcreteAggSplittingStrength(const CClosureKey& closureKey) const override;
    virtual Float64 GetClosureJointStrengthDensity(const CClosureKey& closureKey) const override;
    virtual Float64 GetClosureJointMaxAggrSize(const CClosureKey& closureKey) const override;
+   virtual Float64 GetClosureJointConcreteFiberLength(const CClosureKey& closureKey) const override;
    virtual Float64 GetClosureJointEccK1(const CClosureKey& closureKey) const override;
    virtual Float64 GetClosureJointEccK2(const CClosureKey& closureKey) const override;
    virtual Float64 GetClosureJointCreepK1(const CClosureKey& closureKey) const override;
@@ -553,10 +563,13 @@ public:
    virtual Float64 GetClosureJointShrinkageK1(const CClosureKey& closureKey) const override;
    virtual Float64 GetClosureJointShrinkageK2(const CClosureKey& closureKey) const override;
    virtual const matConcreteBase* GetClosureJointConcrete(const CClosureKey& closureKey) const override;
+   virtual Float64 GetClosureJointConcreteFirstCrackingStrength(const CClosureKey& closureKey) const override;
+
    virtual pgsTypes::ConcreteType GetDeckConcreteType() const override;
    virtual bool DoesDeckConcreteHaveAggSplittingStrength() const override;
    virtual Float64 GetDeckConcreteAggSplittingStrength() const override;
    virtual Float64 GetDeckMaxAggrSize() const override;
+   virtual Float64 GetDeckConcreteFiberLength() const override;
    virtual Float64 GetDeckStrengthDensity() const override;
    virtual Float64 GetDeckEccK1() const override;
    virtual Float64 GetDeckEccK2() const override;
@@ -676,32 +689,13 @@ public:
 
 // IStrandGeometry
 public:
-   virtual void GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, Float64* nEffectiveStrands, Float64* pX, Float64* pY) const override;
-   virtual void GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, Float64* nEffectiveStrands, Float64* pX, Float64* pY) const override;
-   virtual void GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig, Float64* nEffectiveStrands, Float64* pX, Float64* pY) const override;
-   virtual void GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig, Float64* nEffectiveStrands, Float64* pX, Float64* pY) const override;
-   virtual void GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, Float64* nEffectiveStrands, Float64* pEccX, Float64* pEccY) const override;
-   virtual void GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, Float64* nEffectiveStrands, Float64* pEccX, Float64* pEccY) const override;
-   virtual void GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, Float64* nEffectiveStrands, Float64* pEccX, Float64* pEccY) const override;
-   virtual void GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, Float64* nEffectiveStrands, Float64* pEccX, Float64* pEccY) const override;
-   virtual void GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig, Float64* nEffectiveStrands, Float64* pEccX, Float64* pEccY) const override;
-   virtual void GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig, Float64* nEffectiveStrands, Float64* pEccX, Float64* pEccY) const override;
-   virtual void GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig, Float64* nEffectiveStrands, Float64* pEccX, Float64* pEccY) const override;
-   virtual void GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig, Float64* nEffectiveStrands, Float64* pEccX, Float64* pEccY) const override;
+   virtual gpPoint2d GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig = nullptr) const override;
+   virtual gpPoint2d GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const override;
 
-   virtual Float64 GetEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bIncTemp, Float64* nEffectiveStrands) const override;
-   virtual Float64 GetEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StrandType strandType, Float64* nEffectiveStrands) const override;
-
-   virtual Float64 GetEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bIncTemp, Float64* nEffectiveStrands) const override;
-   virtual Float64 GetEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StrandType strandType, Float64* nEffectiveStrands) const override;
-
-   virtual Float64 GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig, Float64* nEffectiveStrands) const override;
-   virtual Float64 GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig, Float64* nEffectiveStrands) const override;
-
-   virtual Float64 GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig, Float64* nEffectiveStrands) const override;
-   virtual Float64 GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig, Float64* nEffectiveStrands) const override;
-
-   virtual Float64 GetStrandLocation(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType, IntervalIndexType intervalIdx) const override;
+   virtual gpPoint2d GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig = nullptr) const override;
+   virtual gpPoint2d GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const override;
+   virtual gpPoint2d GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig = nullptr) const override;
+   virtual gpPoint2d GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const override;
 
    virtual void GetStrandProfile(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, StrandIndexType strandIdx, IPoint2dCollection** ppProfilePoints) const override;
    virtual void GetStrandProfile(const CPrecastSegmentData* pSegment, const CStrandData* pStrands,pgsTypes::StrandType strandType, StrandIndexType strandIdx, IPoint2dCollection** ppProfilePoints) const override;
@@ -718,14 +712,15 @@ public:
    virtual StrandIndexType GetNumStrandsBottomHalf(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const override;
 
    virtual StrandIndexType GetStrandCount(const CSegmentKey& segmentKey,pgsTypes::StrandType type,const GDRCONFIG* pConfig=nullptr) const override;
+   virtual std::pair<StrandIndexType, StrandIndexType> GetStrandCount(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig) const override;
    virtual StrandIndexType GetMaxStrands(const CSegmentKey& segmentKey,pgsTypes::StrandType type) const override;
    virtual StrandIndexType GetMaxStrands(LPCTSTR strGirderName,pgsTypes::StrandType type) const override;
-   virtual Float64 GetStrandArea(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::StrandType strandType) const override;
-   virtual Float64 GetStrandArea(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::StrandType strandType) const override;
-   virtual Float64 GetAreaPrestressStrands(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,bool bIncTemp) const override;
+
+   virtual Float64 GetStrandArea(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const override;
 
    virtual Float64 GetPjack(const CSegmentKey& segmentKey,pgsTypes::StrandType type, const GDRCONFIG* pConfig = nullptr) const override;
    virtual Float64 GetPjack(const CSegmentKey& segmentKey,bool bIncTemp) const override;
+   virtual Float64 GetJackingStress(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const override;
    virtual void GetStrandPosition(const pgsPointOfInterest& poi, StrandIndexType strandIdx,pgsTypes::StrandType type, IPoint2d** ppPoint) const override;
    virtual void GetStrandPositions(const pgsPointOfInterest& poi, pgsTypes::StrandType type, IPoint2dCollection** ppPoints) const override;
    virtual void GetStrandPositionEx(const pgsPointOfInterest& poi, StrandIndexType strandIdx,pgsTypes::StrandType type, const PRESTRESSCONFIG& rconfig,IPoint2d** ppPoint) const override;
@@ -789,8 +784,8 @@ public:
    virtual void GridPositionToStrandPosition(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, GridIndexType gridIdx, StrandIndexType* pStrandNo1, StrandIndexType* pStrandNo2) const override;
 
    virtual bool IsStrandDebonded(const CSegmentKey& segmentKey,StrandIndexType strandIdx,pgsTypes::StrandType strandType,const GDRCONFIG* pConfig,Float64* pStart,Float64* pEnd) const override;
-   virtual bool IsStrandDebonded(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType) const override;
-   virtual StrandIndexType GetNumDebondedStrands(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType, pgsTypes::DebondMemberEndType end) const override;
+   virtual bool IsStrandDebonded(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType, const GDRCONFIG* pConfig=nullptr) const override;
+   virtual StrandIndexType GetNumDebondedStrands(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType, pgsTypes::DebondMemberEndType end, const GDRCONFIG* pConfig=nullptr) const override;
    virtual RowIndexType GetNumRowsWithStrand(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType ) const override;
    virtual StrandIndexType GetNumStrandInRow(const pgsPointOfInterest& poi,RowIndexType rowIdx,pgsTypes::StrandType strandType ) const override;
    virtual std::vector<StrandIndexType> GetStrandsInRow(const pgsPointOfInterest& poi, RowIndexType rowIdx, pgsTypes::StrandType strandType ) const override;
@@ -798,8 +793,8 @@ public:
    virtual bool IsExteriorStrandDebondedInRow(const pgsPointOfInterest& poi,RowIndexType rowIdx,pgsTypes::StrandType strandType) const override;
    virtual bool IsExteriorWebStrandDebondedInRow(const pgsPointOfInterest& poi, WebIndexType webIdx, RowIndexType rowIdx, pgsTypes::StrandType strandType) const override;
    virtual Float64 GetUnadjustedStrandRowElevation(const pgsPointOfInterest& poi,RowIndexType rowIdx,pgsTypes::StrandType strandType ) const override;
-   virtual bool HasDebonding(const CSegmentKey& segmentKey) const override;
-   virtual bool IsDebondingSymmetric(const CSegmentKey& segmentKey) const override;
+   virtual bool HasDebonding(const CSegmentKey& segmentKey,const GDRCONFIG* pConfig=nullptr) const override;
+   virtual bool IsDebondingSymmetric(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig=nullptr) const override;
 
    virtual RowIndexType GetNumRowsWithStrand(const pgsPointOfInterest& poi,StrandIndexType nStrands,pgsTypes::StrandType strandType ) const override;
    virtual StrandIndexType GetNumStrandInRow(const pgsPointOfInterest& poi,StrandIndexType nStrands,RowIndexType rowIdx,pgsTypes::StrandType strandType ) const override;
@@ -997,6 +992,7 @@ public:
    virtual Float64 GetSegmentHeightAtPier(const CSegmentKey& segmentKey,PierIndexType pierIdx) const override;
    virtual Float64 GetSegmentHeightAtTemporarySupport(const CSegmentKey& segmentKey,SupportIndexType tsIdx) const override;
    virtual Float64 GetSegmentHeight(const CPrecastSegmentData* pSegment, Float64 Xs) const override;
+   virtual bool IsStructuralSection(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx) const override;
 
 // IShapes
 public:
@@ -1161,12 +1157,12 @@ public:
    virtual void GetSegmentBearingOffset(const CSegmentKey& segmentKey,Float64* pStartBearingOffset,Float64* pEndBearingOffset) const override;
    virtual void GetSegmentStorageSupportLocations(const CSegmentKey& segmentKey,Float64* pDistFromLeftEnd,Float64* pDistFromRightEnd) const override;
    virtual void GetSegmentReleaseSupportLocations(const CSegmentKey& segmentKey,Float64* pDistFromLeftEnd,Float64* pDistFromRightEnd) const override;
-   virtual const stbGirder* GetSegmentLiftingStabilityModel(const CSegmentKey& segmentKey) const override;
-   virtual const stbLiftingStabilityProblem* GetSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey) const override;
-   virtual const stbLiftingStabilityProblem* GetSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey,const HANDLINGCONFIG& handlingConfig,ISegmentLiftingDesignPointsOfInterest* pPoiD) const override;
-   virtual const stbGirder* GetSegmentHaulingStabilityModel(const CSegmentKey& segmentKey) const override;
-   virtual const stbHaulingStabilityProblem* GetSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey) const override;
-   virtual const stbHaulingStabilityProblem* GetSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey,const HANDLINGCONFIG& handlingConfig,ISegmentHaulingDesignPointsOfInterest* pPOId) const override;
+   virtual const WBFL::Stability::Girder* GetSegmentLiftingStabilityModel(const CSegmentKey& segmentKey) const override;
+   virtual const WBFL::Stability::LiftingStabilityProblem* GetSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey) const override;
+   virtual const WBFL::Stability::LiftingStabilityProblem* GetSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey,const HANDLINGCONFIG& handlingConfig,ISegmentLiftingDesignPointsOfInterest* pPoiD) const override;
+   virtual const WBFL::Stability::Girder* GetSegmentHaulingStabilityModel(const CSegmentKey& segmentKey) const override;
+   virtual const WBFL::Stability::HaulingStabilityProblem* GetSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey) const override;
+   virtual const WBFL::Stability::HaulingStabilityProblem* GetSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey,const HANDLINGCONFIG& handlingConfig,ISegmentHaulingDesignPointsOfInterest* pPOId) const override;
    virtual std::vector<std::tuple<Float64, Float64, std::_tstring>> GetWebSections(const pgsPointOfInterest& poi) const override;
 
 // IGirderTendonGeometry
@@ -1303,6 +1299,7 @@ public:
    virtual std::vector<IntervalIndexType> GetTemporarySupportRemovalIntervals(GroupIndexType groupIdx) const override;
    virtual std::vector<IntervalIndexType> GetUserDefinedLoadIntervals(const CSpanKey& spanKey) const override;
    virtual std::vector<IntervalIndexType> GetUserDefinedLoadIntervals(const CSpanKey& spanKey,pgsTypes::ProductForceType pfType) const override;
+   virtual bool IsUserDefinedLoadingInterval(IntervalIndexType intervalIdx) const override;
    virtual IntervalIndexType GetNoncompositeUserLoadInterval() const override;
    virtual IntervalIndexType GetCompositeUserLoadInterval() const override;
    virtual IntervalIndexType GetLastNoncompositeInterval() const override;
@@ -1329,8 +1326,11 @@ private:
 
    CComPtr<IBridgeGeometryTool> m_BridgeGeometryTool;
 
-   std::map<IndexType,std::pair<IndexType,CogoObjectID>> m_HorzCurveKeys; // key is hc index in cogo model. value is (input hc index,cogomodel curve id)... if an input curve has zero radius it is not created in the curve collection in the cogo model
+   std::map<IndexType,std::pair<IndexType,CogoObjectID>> m_CompoundCurveKeys; // key is hc index in cogo model. value is (input hc index,cogomodel curve id)... if an input curve has zero radius it is not created in the curve collection in the cogo model
    std::map<IndexType,std::pair<IndexType,CogoObjectID>> m_VertCurveKeys;
+
+   // gets a horizontal curve in local coordinates without making a copy
+   void GetCurve(CollectionIndexType idx, ICompoundCurve** ppCurve) const;
 
    // Cache state of asymmetric prestressing information
    enum AsymmetricPrestressing  { Unknown, Yes,  No  };
@@ -1408,7 +1408,7 @@ private:
 
       mutable std::map<Float64, Float64> Q; // key is Yclip and value is Q
 
-      SectProp() { GirderShapeIndex = INVALID_INDEX; SlabShapeIndex = INVALID_INDEX; dx = -999999;dy = -999999;YtopGirder = 0; Perimeter = 0; bComposite = false; Qslab = 0; AcBottomHalf = 0; AcTopHalf = 0; }
+      SectProp() { GirderShapeIndex = INVALID_INDEX; SlabShapeIndex = INVALID_INDEX; dx = -99999;dy = -99999;YtopGirder = 0; Perimeter = 0; bComposite = false; Qslab = 0; AcBottomHalf = 0; AcTopHalf = 0; }
    } SectProp;
    typedef std::map<PoiIntervalKey,SectProp> SectPropContainer; // Key = PoiIntervalKey object
    std::array<std::unique_ptr<SectPropContainer>, pgsTypes::sptSectionPropertyTypeCount> m_pSectProps; // index = one of the pgsTypes::SectionPropertyType constants
@@ -1484,15 +1484,15 @@ private:
    Float64 GetCurbOffset(DirectionType side, Float64 Xb) const;
 
    // Stability Modeling
-   mutable std::map<CSegmentKey, stbGirder> m_LiftingStabilityModels;
-   mutable std::map<CSegmentKey, stbGirder> m_HaulingStabilityModels;
-   mutable std::map<CSegmentKey,stbLiftingStabilityProblem> m_LiftingStabilityProblems;
-   mutable std::map<CSegmentKey,stbHaulingStabilityProblem> m_HaulingStabilityProblems;
-   mutable stbLiftingStabilityProblem m_LiftingDesignStabilityProblem;
-   mutable stbHaulingStabilityProblem m_HaulingDesignStabilityProblem;
-   void ConfigureSegmentStabilityModel(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,stbGirder* pGirder) const;
-   void ConfigureSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& handlingConfig,ISegmentLiftingDesignPointsOfInterest* pPoiD,stbLiftingStabilityProblem* problem) const;
-   void ConfigureSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& handlingConfig,ISegmentHaulingDesignPointsOfInterest* pPoiD,stbHaulingStabilityProblem* problem) const;
+   mutable std::map<CSegmentKey, WBFL::Stability::Girder> m_LiftingStabilityModels;
+   mutable std::map<CSegmentKey, WBFL::Stability::Girder> m_HaulingStabilityModels;
+   mutable std::map<CSegmentKey,WBFL::Stability::LiftingStabilityProblem> m_LiftingStabilityProblems;
+   mutable std::map<CSegmentKey,WBFL::Stability::HaulingStabilityProblem> m_HaulingStabilityProblems;
+   mutable WBFL::Stability::LiftingStabilityProblem m_LiftingDesignStabilityProblem;
+   mutable WBFL::Stability::HaulingStabilityProblem m_HaulingDesignStabilityProblem;
+   void ConfigureSegmentStabilityModel(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,WBFL::Stability::Girder* pGirder) const;
+   void ConfigureSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& handlingConfig,ISegmentLiftingDesignPointsOfInterest* pPoiD,WBFL::Stability::LiftingStabilityProblem* problem) const;
+   void ConfigureSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& handlingConfig,ISegmentHaulingDesignPointsOfInterest* pPoiD,WBFL::Stability::HaulingStabilityProblem* problem) const;
 
    void Invalidate( Uint16 level );
    Uint16 Validate( Uint16 level );
@@ -1635,7 +1635,7 @@ private:
 
 
    Float64 GetAsTensionSideOfGirder(const pgsPointOfInterest& poi,bool bDevAdjust,bool bTensionTop) const;
-   Float64 GetApsTensionSide(const pgsPointOfInterest& poi,DevelopmentAdjustmentType devAdjust,bool bTensionTop, const GDRCONFIG* pConfig=nullptr) const;
+   Float64 GetApsInHalfDepth(const pgsPointOfInterest& poi,DevelopmentAdjustmentType devAdjust,bool bBottomHalf, const GDRCONFIG* pConfig=nullptr) const;
 
    Float64 GetGirderAptTensionSide(const pgsPointOfInterest& poi,bool bTensionTop) const;
    Float64 GetSegmentAptTensionSide(const pgsPointOfInterest& poi, bool bTensionTop) const;
@@ -1701,18 +1701,10 @@ private:
 
    INCREMENTALRELAXATIONDETAILS GetIncrementalRelaxationDetails(Float64 fpi,const matPsStrand* pStrand,Float64 tStart,Float64 tEnd,Float64 tStress) const;
 
-   // Returns the geometric CG location of the strands measured in Girder Coordinates
-   Float64 GetHsLocation(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) const;
-   Float64 GetSsLocation(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) const;
-   Float64 GetTempLocation(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) const;
-
-   Float64 GetHsEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG*pConfig, Float64* nEffectiveStrands) const;
-   Float64 GetSsEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, Float64* nEffectiveStrands) const;
-   Float64 GetTempEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, Float64* nEffectiveStrands) const;
-
-   void GetHarpedStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, Float64* nEffectiveStrands, Float64* pX, Float64* pY) const;
-   void GetStraightStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, Float64* nEffectiveStrands, Float64* pX, Float64* pY) const;
-   void GetTemporaryStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, Float64* nEffectiveStrands, Float64* pX, Float64* pY) const;
+   /// Returns true if strands are engaged with the precast segment in the specified interval and location
+   ///
+   /// Strands are not considered to be engaged if the are off the segment, not yet installed, or have been removed as in the case of temporary strands
+   bool AreStrandsEngaged(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType,const GDRCONFIG* pConfig) const;
 
    Float64 GetSuperstructureDepth(PierIndexType pierIdx) const;
 

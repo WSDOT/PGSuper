@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -30,6 +30,7 @@
 
 // Graph Builders
 #include <Graphing\AnalysisResultsGraphBuilder.h>
+#include <Graphing\SegmentAnalysisResultsGraphBuilder.h>
 #include <Graphing\EffectivePrestressGraphBuilder.h>
 #include <Graphing\StabilityGraphBuilder.h>
 #include <Graphing\StressHistoryGraphBuilder.h>
@@ -47,13 +48,17 @@ void CGrapherBase::InitCommonGraphBuilders()
 {
    GET_IFACE(IGraphManager,pGraphMgr);
 
-   pGraphMgr->AddGraphBuilder(new CAnalysisResultsGraphBuilder);
-   pGraphMgr->AddGraphBuilder(new CEffectivePrestressGraphBuilder);
-   pGraphMgr->AddGraphBuilder(new CStabilityGraphBuilder);
-   pGraphMgr->AddGraphBuilder(new CStressHistoryGraphBuilder);
-   pGraphMgr->AddGraphBuilder(new CGirderPropertiesGraphBuilder);
+   pGraphMgr->SortByName(false); // don't sort alphabetically
+
+   // add the graphs to the graph manager in near alphabetical order
+   pGraphMgr->AddGraphBuilder(new CSegmentAnalysisResultsGraphBuilder); // Analysis Results - Before Erection
+   pGraphMgr->AddGraphBuilder(new CAnalysisResultsGraphBuilder); // Analysis Results - After Erection
    pGraphMgr->AddGraphBuilder(new CConcretePropertyGraphBuilder);
    pGraphMgr->AddGraphBuilder(new CDeflectionHistoryGraphBuilder);
+   pGraphMgr->AddGraphBuilder(new CEffectivePrestressGraphBuilder);
+   pGraphMgr->AddGraphBuilder(new CGirderPropertiesGraphBuilder);
+   pGraphMgr->AddGraphBuilder(new CStabilityGraphBuilder);
+   pGraphMgr->AddGraphBuilder(new CStressHistoryGraphBuilder);
 }
 
 STDMETHODIMP CGrapherBase::SetBroker(IBroker* pBroker)

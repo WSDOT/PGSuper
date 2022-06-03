@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -37,6 +37,11 @@
 #include <PgsExt\SplicedGirderData.h>
 #include <PgsExt\GirderGroupData.h>
 #include <IFace\AgeAdjustedMaterial.h>
+
+// String for interior girder override and macro to report it
+#define LLDF_INTOVERRIDE_STR _T("Note: Using distribution factor for interior girder. Project Criteria set so exterior girder factor cannot be less than interior.")
+#define REPORT_LLDF_INTOVERRIDE(p) if (p.ControllingMethod & INTERIOR_OVERRIDE) { (*pPara) << rptNewLine << LLDF_INTOVERRIDE_STR << rptNewLine; }
+
 
 class rptParagraph;
 class pgsPoiMgr;

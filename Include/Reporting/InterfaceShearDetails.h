@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -79,7 +79,7 @@ private:
    DECLARE_UV_PROTOTYPE(rptLength4UnitValue, l4);
 
    bool m_bIsSpec2007orOlder;
-   ShearFlowMethod m_ShearFlowMethod;
+   pgsTypes::ShearFlowMethod m_ShearFlowMethod;
 
    rptRcTable* CreateVuiTable(IBroker* pBroker, rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
    void FillVuiTable(rptRcTable* pTable, RowIndexType row, const pgsPointOfInterest& poi, const pgsHorizontalShearArtifact* pArtifact);

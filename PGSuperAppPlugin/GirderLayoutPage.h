@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -63,6 +63,8 @@ public:
    CComboBox         m_cbGirderSpacingType;
 	//}}AFX_DATA
 
+   void GirderTypeChanged();
+
 // Overrides
 	// ClassWizard generate virtual function overrides
 	//{{AFX_VIRTUAL(CSpanGirderLayoutPage)
@@ -75,15 +77,15 @@ public:
 private:
    // array index is pgsTypes::MemberEndType constant
    CGirderNameGrid    m_GirderNameGrid;
-   CGirderSpacingGrid m_SpacingGrid[2];
+   std::array<CGirderSpacingGrid, 2> m_SpacingGrid;
    CGirderTopWidthGrid m_TopWidthGrid;
 
    GirderIndexType m_nGirders;
-   DWORD m_GirderSpacingMeasure[2];
+   std::array<DWORD, 2> m_GirderSpacingMeasure;
 
-   GirderIndexType m_RefGirderIdx[2];
-   Float64 m_RefGirderOffset[2];
-   pgsTypes::OffsetMeasurementType m_RefGirderOffsetType[2];
+   std::array<GirderIndexType, 2> m_RefGirderIdx;
+   std::array<Float64, 2> m_RefGirderOffset;
+   std::array<pgsTypes::OffsetMeasurementType, 2> m_RefGirderOffsetType;
 
 // Implementation
 protected:
@@ -120,12 +122,12 @@ protected:
    void UpdateGirderTypeState();
    void UpdateGirderTopWidthState();
 
-   DWORD m_CacheGirderSpacingMeasure[2];
-   CGirderSpacing2 m_GirderSpacingCache[2];
+   std::array<DWORD, 2> m_CacheGirderSpacingMeasure;
+   std::array<CGirderSpacing2, 2> m_GirderSpacingCache;
 
-   GirderIndexType m_CacheRefGirderIdx[2];
-   Float64 m_CacheRefGirderOffset[2];
-   pgsTypes::OffsetMeasurementType m_CacheRefGirderOffsetType[2];
+   std::array<GirderIndexType, 2> m_CacheRefGirderIdx;
+   std::array<Float64, 2> m_CacheRefGirderOffset;
+   std::array<pgsTypes::OffsetMeasurementType, 2> m_CacheRefGirderOffsetType;
 
    std::vector<CGirderTypeGroup> m_GirderTypeCache;
    std::vector<CGirderTopWidthGroup> m_TopWidthCache;

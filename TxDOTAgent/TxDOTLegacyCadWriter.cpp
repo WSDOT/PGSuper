@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -143,8 +143,6 @@ Float64		value 			   /*  => Value to convert                   */
 ////////////////// Main function for writing legacy cad file ///////////////////////////
 int TxDOT_WriteLegacyCADDataToFile(CString& filePath, IBroker* pBroker, const std::vector<CGirderKey>& girderKeys)
 {
-#pragma Reminder("Legacy TxDOT CAD Export is a hack. Consider removing this option at Version 6.0")
-
    bool did_throw=false;
 
    // Create progress window in own scope
@@ -276,13 +274,12 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
    bool are_harped_bent(false);
    if (0 < harpedCount)
    {
-      Float64 nEff;
-      Float64 hs_ecc_end = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pois,pgsTypes::Harped,&nEff);
-      Float64 hs_ecc_mid = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pmid,pgsTypes::Harped,&nEff);
+      Float64 hs_ecc_end = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pois,pgsTypes::Harped).Y();
+      Float64 hs_ecc_mid = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pmid,pgsTypes::Harped).Y();
       are_harped_bent = !IsEqual(hs_ecc_end, hs_ecc_mid);
    }
 
-   bool isExtendedVersion = false;
+   bool isExtendedVersion = true; // All we do now
 
    // Determine if a straight-raised design
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
@@ -318,7 +315,7 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
 	   //----- COL 0a ---- 
 	   workerB.WriteFloat64(roadwayWidth,_T("RoadW"),7,5,_T("%5.2f"));
 	   //----- COL 0b ----- 
-	   workerB.WriteInt16((Int16)nGirders,_T("Ng "),5,3,_T("%3d"));
+	   workerB.WriteInt32((Int32)nGirders,_T("Ng "),5,3,_T("%3d"));
 	   //----- COL 0c ----- 
 	   workerB.WriteFloat64(girderSpacing,_T("Spcng"),7,5,_T("%5.2f"));
    }
@@ -380,7 +377,7 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
 
 	/* 6. STRAND SIZE */
 	TCHAR    strandSize[4+1];
-   const matPsStrand* strandMatP = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
+   const matPsStrand* strandMatP = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Straight);
    value = strandMatP->GetNominalDiameter();
    value = ::ConvertFromSysUnits( value, unitMeasure::Inch );
 
@@ -392,13 +389,12 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
 	int strandStrength = (strandMatP->GetGrade() == matPsStrand::Gr1725 ?  250 :  270);
 
 	/* 8. STRAND ECCENTRICITY AT CENTER LINE */
-   Float64 nEff;
-   value = pStrandGeometry->GetEccentricity( releaseIntervalIdx, pmid, pgsTypes::Permanent, &nEff );
+   value = pStrandGeometry->GetEccentricity( releaseIntervalIdx, pmid, pgsTypes::Permanent).Y();
 
 	Float64 strandEccCL = ::ConvertFromSysUnits( value, unitMeasure::Inch );
 
 	/* 9. STRAND ECCENTRICITY AT END */
-   value = pStrandGeometry->GetEccentricity( releaseIntervalIdx, pois, pgsTypes::Permanent, &nEff );
+   value = pStrandGeometry->GetEccentricity( releaseIntervalIdx, pois, pgsTypes::Permanent).Y();
 
 	Float64 strandEccEnd = ::ConvertFromSysUnits( value, unitMeasure::Inch );
 
@@ -479,11 +475,11 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
 	//----- COL 4 ----- 
    workerB.WriteString(strandPat,_T("N"),6,1,_T("%1s"));
 	//----- COL 5 ----- 
-   workerB.WriteInt16((Int16)strandNum,_T("Ns"),6,3,_T("%3d"));
+   workerB.WriteInt32((Int32)strandNum,_T("Ns"),6,3,_T("%3d"));
 	//----- COL 6 ----- 
    workerB.WriteStringEx(strandSize,_T("Size"),0,4,1,_T("%4s"));
 	//----- COL 7 ----- 
-   workerB.WriteInt16(strandStrength,_T("Strn"),5,3,_T("%3d"));
+   workerB.WriteInt32(strandStrength,_T("Strn"),5,3,_T("%3d"));
 	//----- COL 8 ----- 
    workerB.WriteFloat64(strandEccCL,_T("EccCL"),7,5,_T("%5.2f"));
 	//----- COL 9 ----- 
@@ -564,7 +560,7 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
 
       // output
       //----- COL 10 ---- 
-      workerB.WriteInt16((Int16)dstrandNum,_T("Nh"),(isExtendedVersion? 4:5),2,_T("%2d"));
+      workerB.WriteInt32((Int32)dstrandNum,_T("Nh"),(isExtendedVersion? 4:5),2,_T("%2d"));
 	   //----- COL 11 ---- 
       workerB.WriteFloat64(dstrandToEnd,_T("ToEnd"),5,4,_T("%4.1f"));
       workerB.WriteFloat64(dstrandToCL,_T("ToCL"),5,4,_T("%4.1f"));
@@ -597,7 +593,7 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
          dstrandToCL = ::ConvertFromSysUnits( value+Hg, unitMeasure::Inch );
 
          // output
-         workerB.WriteInt16((Int16)numRaisedStraightStrands,_T("Nh"),(isExtendedVersion? 4:5),2,_T("%2d"));
+         workerB.WriteInt32((Int32)numRaisedStraightStrands,_T("Nh"),(isExtendedVersion? 4:5),2,_T("%2d"));
          workerB.WriteFloat64(dstrandToEnd,_T("ToEnd"),5,4,_T("%4.1f"));
          workerB.WriteFloat64(dstrandToCL,_T("ToCL"),5,4,_T("%4.1f"));
       }
@@ -620,7 +616,7 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
    workerB.WriteFloat64(designLoadTensileStress,_T(" ftens "),10,6,_T("%6.3f"));
 
 	//----- COL 16 ---- 
-   workerB.WriteInt16(reqMinUltimateMomentCapacity,_T("ultMo"),9,5,_T("%5d"));
+   workerB.WriteInt32(reqMinUltimateMomentCapacity,_T("ultMo"),9,5,_T("%5d"));
 	//----- COL 17 ---- 
    workerB.WriteFloat64(momentDistFactor,_T("LLDFm"),7,5,_T("%5.3f"));
 	//----- COL 17aa ---- 
@@ -650,7 +646,6 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
 
    	/* 19. DEFLECTION (SLAB AND DIAPHRAGMS)  */
       value = pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftSlab,      pmid, bat, rtCumulative, false )
-            + pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftSlabPad,   pmid, bat, rtCumulative, false )
             + pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftDiaphragm, pmid, bat, rtCumulative, false )
             + pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftShearKey,  pmid, bat, rtCumulative, false );
       value = IsZero(value) ? 0 : value;
@@ -681,7 +676,7 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
       Float64 totalDeflection = slabDiaphDeflection + overlayDeflection + otherDeflection;
 
    	/* 23. LOSSES (INITIAL)  */
-      Float64 aps = pStrandGeometry->GetAreaPrestressStrands(segmentKey,releaseIntervalIdx,false);
+      Float64 aps = pStrandGeometry->GetStrandArea(pmid,releaseIntervalIdx,pgsTypes::Permanent);
       value = pLosses->GetEffectivePrestressLoss(pmid,pgsTypes::Permanent,releaseIntervalIdx,pgsTypes::End) * aps;
 
       Float64 initialLoss = ::ConvertFromSysUnits( value, unitMeasure::Kip );
@@ -750,21 +745,21 @@ void TxDOTCadWriter::WriteInitialData(CadWriterWorkerBee& workerB)
    if (m_NumDebonded > 0)
    {
       // write out debonding data for bottom row
-      workerB.WriteInt16((Int16)m_NumDebonded,_T("Ndb"),4,2,_T("%2d"));
+      workerB.WriteInt32((Int32)m_NumDebonded,_T("Ndb"),4,2,_T("%2d"));
 
       if (m_Rows.empty() || m_OutCome==SectionMismatch || m_OutCome==TooManySections || m_OutCome==SectionsNotSymmetrical)
       {
          // row height, srands in row, and debonds in row are zero
 	      workerB.WriteFloat64(0.0,_T("Debnd"),7,5,_T("%5.2f"));
-         workerB.WriteInt16(0,_T("   "),6,2,_T("%2d"));
-         workerB.WriteInt16(0,_T("   "),6,2,_T("%2d"));
+         workerB.WriteInt32(0,_T("   "),6,2,_T("%2d"));
+         workerB.WriteInt32(0,_T("   "),6,2,_T("%2d"));
 
          if (m_Rows.empty())
          {
             // no use searching for nothing
             for (int i=0; i<5; i++)
             {
-               workerB.WriteInt16(0,_T("  "),4,2,_T("%2d"));
+               workerB.WriteInt32(0,_T("  "),4,2,_T("%2d"));
             }
          }
          else
@@ -891,20 +886,20 @@ void TxDOTCadWriter::WriteRowData(CadWriterWorkerBee& workerB, const RowData& ro
    }
 
    // total strands in row
-   workerB.WriteInt16((Int16)row.m_NumTotalStrands,_T("Nsr"),6,2,_T("%2d"));
+   workerB.WriteInt32((Int32)row.m_NumTotalStrands,_T("Nsr"),6,2,_T("%2d"));
 
    // num debonded strands in row
-   Int16 nsr = CountDebondsInRow(row);
-   workerB.WriteInt16(nsr,_T("Ndb"),6,2,_T("%2d"));
+   Int32 nsr = CountDebondsInRow(row);
+   workerB.WriteInt32(nsr,_T("Ndb"),6,2,_T("%2d"));
 
 	//----- COL 14-23 ---- 
    // we have 5 columns to write no matter what
    SectionListConstIter scit = row.m_Sections.begin();
 
    TCHAR buff[4];
-   for (Int16 icol=0; icol<5; icol++)
+   for (Int32 icol=0; icol<5; icol++)
    {
-      Int16 db_cnt = 0;
+      Int32 db_cnt = 0;
 
       if (scit!= row.m_Sections.end())
       {
@@ -920,7 +915,7 @@ void TxDOTCadWriter::WriteRowData(CadWriterWorkerBee& workerB, const RowData& ro
 
       _stprintf_s(buff,sizeof(buff)/sizeof(TCHAR),_T("%2d"),icol+1);
 
-      workerB.WriteInt16(db_cnt,buff,4,2,_T("%2d"));
+      workerB.WriteInt32(db_cnt,buff,4,2,_T("%2d"));
    }
 
    ATLASSERT(scit==row.m_Sections.end()); // we didn't find all of our sections - bug

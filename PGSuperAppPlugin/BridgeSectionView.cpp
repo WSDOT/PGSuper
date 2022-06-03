@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -638,7 +638,8 @@ void CBridgeSectionView::UpdateGirderTooltips()
                      FormatDimension(fc, pDisplayUnits->GetStressUnit())
                     );
 
-      const matPsStrand* pStrand     = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
+      const matPsStrand* pStraightStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Straight);
+      const matPsStrand* pHarpedStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Harped);
       const matPsStrand* pTempStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Temporary);
 
       StrandIndexType Ns = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Straight);
@@ -649,31 +650,23 @@ void CBridgeSectionView::UpdateGirderTooltips()
       std::_tstring harp_type(LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(segmentKey)));
 
       CString strMsg3;
-      if ( pStrandGeom->GetMaxStrands(segmentKey,pgsTypes::Temporary) != 0 )
+      if (Nsd == 0)
       {
-         if ( Nsd == 0 )
-         {
-            strMsg3.Format(_T("\n\nStrand: %s\n# Straight: %2d\n# %s: %2d\n\n%s\n# Temporary: %2d"),
-                            pStrand->GetName().c_str(),Ns,harp_type.c_str(),Nh,pTempStrand->GetName().c_str(),Nt);
-         }
-         else
-         {
-            strMsg3.Format(_T("\n\nStrand: %s\n# Straight: %2d (%2d Debonded)\n# %s: %2d\n\n%s\n# Temporary: %2d"),
-                            pStrand->GetName().c_str(),Ns,Nsd,harp_type.c_str(),Nh,pTempStrand->GetName().c_str(),Nt);
-         }
+         strMsg3.Format(_T("\n\nStraight Strands\n%s\n# Straight: %2d"), pStraightStrand->GetName().c_str(), Ns);
       }
       else
       {
-         if ( Nsd == 0 )
-         {
-            strMsg3.Format(_T("\n\nStrand: %s\n# Straight: %2d\n# %s: %2d"),
-                            pStrand->GetName().c_str(),Ns,harp_type.c_str(),Nh);
-         }
-         else
-         {
-            strMsg3.Format(_T("\n\nStrand: %s\n# Straight: %2d (%2d Debonded)\n# %s: %2d"),
-                            pStrand->GetName().c_str(),Ns,Nsd,harp_type.c_str(),Nh);
-         }
+         strMsg3.Format(_T("\n\nStraight Strands\n%s\n# Straight: %2d (%2d Debonded)"), pStraightStrand->GetName().c_str(), Ns, Nsd);
+      }
+      CString strHarped;
+      strHarped.Format(_T("\n\n%s Strands\n%s\n# %s: %2d"), harp_type.c_str(), pHarpedStrand->GetName().c_str(), harp_type.c_str(), Nh);
+      strMsg3 += strHarped;
+
+      if (pStrandGeom->GetMaxStrands(segmentKey, pgsTypes::Temporary) != 0)
+      {
+         CString strTemp;
+         strTemp.Format(_T("\n\nTemporary Strands\n%s\n# Temporary: %2d"), pTempStrand->GetName().c_str(), Nt);
+         strMsg3 += strTemp;
       }
 
       CString strMsg4;
@@ -2603,11 +2596,12 @@ void CBridgeSectionView::BuildAlignmentDisplayObjects()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IRoadway,pAlignment);
+   GET_IFACE2(pBroker, IRoadway, pAlignment);
+   GET_IFACE2(pBroker, IRoadwayData, pRoadwayData);
 
    Float64 cut_station = m_pFrame->GetCurrentCutLocation();
 
-   // model vertical line for the alignmtn
+   // model vertical line for the alignment
    // The alignment is at X=0 in Bridge Section Coordinates
    Float64 Xcl = 0;
    Float64 Ydeck = pAlignment->GetElevation(cut_station,0); // deck elevation at alignment
@@ -2631,6 +2625,14 @@ void CBridgeSectionView::BuildAlignmentDisplayObjects()
    drawAlignmentStrategy->SetLineStyle(lsCenterline);
 
    displayList->AddDisplayObject(doAlignment);
+
+   CComPtr<iTextBlock> doText;
+   doText.CoCreateInstance(CLSID_TextBlock);
+   doText->SetPosition(pnt1);
+   doText->SetText(pRoadwayData->GetAlignmentData2().Name.c_str());
+   doText->SetTextAlign(TA_BASELINE | TA_CENTER);
+   doText->SetBkMode(TRANSPARENT);
+   displayList->AddDisplayObject(doText);
 
    // draw bridge line if different then the alignment
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -2661,6 +2663,45 @@ void CBridgeSectionView::BuildAlignmentDisplayObjects()
 
       // Need to add a dimension line between the alignment and the BLO
    }
+
+   if (pRoadwayData->GetRoadwaySectionData().AlignmentPointIdx != pRoadwayData->GetRoadwaySectionData().ProfileGradePointIdx)
+   {
+      IndexType alignmentIdx = pAlignment->GetAlignmentPointIndex(cut_station); // get index of crown point corresponding to the alignment
+      Float64 offset = pAlignment->GetProfileGradeLineOffset(alignmentIdx, cut_station); // get the offset from the alignment point to the PGL
+
+      ATLASSERT(!IsZero(offset)); // only drawing PGL if it is offset from alignment so this better not be zero
+      Float64 pgl_offset = -offset;
+
+      Ydeck = pAlignment->GetElevation(cut_station, pgl_offset);
+      Yt = Ydeck + ::ConvertToSysUnits(1.0, unitMeasure::Feet);
+      pnt1.Release();
+      pnt2.Release();
+
+      pnt1.CoCreateInstance(CLSID_Point2d);
+      pnt1->Move(Xcl + pgl_offset, Yt);
+
+      pnt2.CoCreateInstance(CLSID_Point2d);
+      pnt2->Move(Xcl + pgl_offset, Yt - ::ConvertToSysUnits(3.0, unitMeasure::Feet));
+
+      CComPtr<iLineDisplayObject> doPGL;
+      CreateLineDisplayObject(pnt1, pnt2, &doPGL);
+      CComPtr<iDrawLineStrategy> drawStrategy;
+      doPGL->GetDrawLineStrategy(&drawStrategy);
+      CComQIPtr<iSimpleDrawLineStrategy> drawPGLStrategy(drawStrategy);
+      drawPGLStrategy->SetWidth(PROFILE_LINE_WEIGHT);
+      drawPGLStrategy->SetColor(PROFILE_COLOR);
+      drawPGLStrategy->SetLineStyle(lsCenterline);
+
+      displayList->AddDisplayObject(doPGL);
+
+      CComPtr<iTextBlock> doText;
+      doText.CoCreateInstance(CLSID_TextBlock);
+      doText->SetPosition(pnt1);
+      doText->SetText(_T("PGL"));
+      doText->SetTextAlign(TA_BASELINE | TA_CENTER);
+      doText->SetBkMode(TRANSPARENT);
+      displayList->AddDisplayObject(doText);
+   }
 }
 
 void CBridgeSectionView::BuildRoadwayCrossSectionDisplayObjects()
@@ -2685,6 +2726,7 @@ void CBridgeSectionView::BuildRoadwayCrossSectionDisplayObjects()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker, IRoadway, pRoadway);
+   GET_IFACE2(pBroker, IRoadwayData, pRoadwayData);
    GET_IFACE2(pBroker, IBridge, pBridge);
    GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
@@ -2729,11 +2771,11 @@ void CBridgeSectionView::BuildRoadwayCrossSectionDisplayObjects()
    doAlignment->AddPoint(pnt1);
 
    bool bfinished = false;
-   IndexType contrl_crown_point = pRoadway->GetControllingCrownPointIndex(cut_station);
+   IndexType contrl_crown_point = pRoadway->GetAlignmentPointIndex(cut_station);
    IndexType num_crown_points = pRoadway->GetCrownPointIndexCount(cut_station);
    for (IndexType icp = 0; icp < num_crown_points; icp++)
    {
-      Float64 cp_offset = pRoadway->GetCrownPointOffset(icp, cut_station);
+      Float64 cp_offset = pRoadway->GetAlignmentOffset(icp, cut_station);
       Float64 cp_elev = pRoadway->GetElevation(cut_station, cp_offset);
 
       if (left_offset < cp_offset && cp_offset < right_offset)
@@ -2797,7 +2839,7 @@ void CBridgeSectionView::BuildRoadwayCrossSectionDisplayObjects()
          // change the slope from our analytical model to
          // the sign convension of the input
          // slopes down and away from the controlling crown point are < 0
-         if (icp <= contrl_crown_point)
+         if (pRoadwayData->GetRoadwaySectionData().slopeMeasure == RoadwaySectionData::RelativeToAlignmentPoint && icp <= contrl_crown_point)
          {
             slope *= -1;
          }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -85,23 +85,7 @@ rptChapter* CCritSectionChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
    bool isPGSuper = pDocType->IsPGSuperDocument();
 
    bool bDesign = m_bDesign;
-   bool bRating;
-   
-   if ( m_bRating )
-   {
-      bRating = true;
-   }
-   else
-   {
-      // include load rating results if we are always load rating
-      bRating = pRatingSpec->AlwaysLoadRate();
-
-      // if none of the rating types are enabled, skip the rating
-      if (!pRatingSpec->IsRatingEnabled())
-      {
-         bRating = false;
-      }
-   }
+   bool bRating = m_bRating;
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 

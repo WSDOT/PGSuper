@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -381,6 +381,113 @@ HRESULT CGirderReportSpecification::Validate() const
    {
       return RPT_E_INVALID_GIRDER;
    }
+
+   return CBrokerReportSpecification::Validate();
+}
+
+//////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
+
+CSegmentReportSpecification::CSegmentReportSpecification(LPCTSTR strReportName, IBroker* pBroker, const CSegmentKey& segmentKey) :
+   CBrokerReportSpecification(strReportName, pBroker)
+{
+   m_SegmentKey = segmentKey;
+}
+
+CSegmentReportSpecification::CSegmentReportSpecification(const CSegmentReportSpecification& other) :
+   CBrokerReportSpecification(other)
+{
+   m_SegmentKey = other.m_SegmentKey;
+}
+
+CSegmentReportSpecification::~CSegmentReportSpecification(void)
+{
+}
+
+std::_tstring CSegmentReportSpecification::GetReportTitle() const
+{
+   return GetReportName() + _T(" - ") + GetReportContextString();
+}
+
+std::_tstring CSegmentReportSpecification::GetReportContextString() const
+{
+   GET_IFACE(IDocumentType, pDocType);
+   bool bIsPGSuper = pDocType->IsPGSuperDocument();
+   CString strGroupLabel(bIsPGSuper ? _T("Span") : _T("Group"));
+   ATLASSERT(bIsPGSuper ? m_SegmentKey.segmentIndex == 0 : true);
+
+   CString msg;
+   if (bIsPGSuper)
+   {
+      msg.Format(_T("%s %d Girder %s"), strGroupLabel, LABEL_GROUP(m_SegmentKey.groupIndex), LABEL_GIRDER(m_SegmentKey.girderIndex));
+   }
+   else
+   {
+      msg.Format(_T("%s %d Girder %s Segment %d"), strGroupLabel, LABEL_GROUP(m_SegmentKey.groupIndex), LABEL_GIRDER(m_SegmentKey.girderIndex), LABEL_SEGMENT(m_SegmentKey.segmentIndex));
+   }
+
+   return std::_tstring(msg);
+}
+
+void CSegmentReportSpecification::SetGroupIndex(GroupIndexType grpIdx)
+{
+   m_SegmentKey.groupIndex = grpIdx;
+}
+
+GroupIndexType CSegmentReportSpecification::GetGroupIndex() const
+{
+   return m_SegmentKey.groupIndex;
+}
+
+void CSegmentReportSpecification::SetGirderIndex(GirderIndexType gdrIdx)
+{
+   m_SegmentKey.girderIndex = gdrIdx;
+}
+
+GirderIndexType CSegmentReportSpecification::GetGirderIndex() const
+{
+   return m_SegmentKey.girderIndex;
+}
+
+void CSegmentReportSpecification::SetSegmentIndex(SegmentIndexType segIdx)
+{
+   m_SegmentKey.girderIndex = segIdx;
+}
+
+GirderIndexType CSegmentReportSpecification::GetSegmentIndex() const
+{
+   return m_SegmentKey.segmentIndex;
+}
+
+void CSegmentReportSpecification::SetSegmentKey(const CSegmentKey& segmentKey)
+{
+   m_SegmentKey = segmentKey;
+}
+
+const CSegmentKey& CSegmentReportSpecification::GetSegmentKey() const
+{
+   return m_SegmentKey;
+}
+
+HRESULT CSegmentReportSpecification::Validate() const
+{
+   GET_IFACE(IBridge, pBridge);
+
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   if (nGroups <= m_SegmentKey.groupIndex)
+   {
+      // the group index is out of range (group probably got deleted)
+      return RPT_E_INVALID_GIRDER;
+   }
+
+   GirderIndexType nGirders = pBridge->GetGirderCount(m_SegmentKey.groupIndex);
+   if (nGirders <= m_SegmentKey.girderIndex)
+   {
+      return RPT_E_INVALID_GIRDER;
+   }
+
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(m_SegmentKey.groupIndex, m_SegmentKey.girderIndex);
 
    return CBrokerReportSpecification::Validate();
 }

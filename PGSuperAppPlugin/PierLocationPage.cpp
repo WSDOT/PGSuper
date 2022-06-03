@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -246,6 +246,9 @@ BOOL CPierLocationPage::OnInitDialog()
       {
          m_ctrlSlabOffsetType.AddString(GetSlabOffsetTypeAsString(pgsTypes::sotBridge,bIsPGSuper));
          m_ctrlSlabOffsetType.AddString(GetSlabOffsetTypeAsString(pgsTypes::sotBearingLine,bIsPGSuper));
+
+         m_ctrlBackSlabOffset.ShowDefaultWhenDisabled(TRUE);
+         m_ctrlAheadSlabOffset.ShowDefaultWhenDisabled(TRUE);
       }
       else if ( m_InitialSlabOffsetType == pgsTypes::sotSegment )
       {
@@ -256,12 +259,12 @@ BOOL CPierLocationPage::OnInitDialog()
       {
          m_ctrlSlabOffsetType.AddString(GetSlabOffsetTypeAsString(pgsTypes::sotBearingLine,bIsPGSuper));
          m_ctrlSlabOffsetType.AddString(GetSlabOffsetTypeAsString(pgsTypes::sotBridge,bIsPGSuper));
+
+         m_ctrlBackSlabOffset.ShowDefaultWhenDisabled(TRUE);
+         m_ctrlAheadSlabOffset.ShowDefaultWhenDisabled(TRUE);
       }
 
       m_ctrlSlabOffsetType.SetCurSel(0);
-
-      m_ctrlBackSlabOffset.ShowDefaultWhenDisabled(TRUE);
-      m_ctrlAheadSlabOffset.ShowDefaultWhenDisabled(TRUE);
    }
 
    EventIndexType eventIdx = pParent->m_BridgeDesc.GetTimelineManager()->GetPierErectionEventIndex(m_PierID);

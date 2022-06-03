@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -107,6 +107,13 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    *pChapter << p;
    *p << CProductReactionTable().Build(pBroker,girderKey,pSpec->GetAnalysisType(),BearingReactionsTable, bIncludeImpact,true,false,true,pDisplayUnits) << rptNewLine;
 
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   if (1 < nSegments ? true : false)
+   {
+      *p << _T("Erected Segments reactions are the segment self-weight simple span reactions after erection. Girder reactions are for the completed girder after post-tensioning and temporary support removal.") << rptNewLine;
+   }
+
    if( doFinalLoads )
    {
       *p << (bIncludeImpact ? LIVELOAD_PER_LANE : LIVELOAD_PER_LANE_NO_IMPACT) << rptNewLine;
@@ -166,6 +173,11 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    p = new rptParagraph;
    *pChapter << p;
    *p << CProductRotationTable().Build(pBroker,girderKey,pSpec->GetAnalysisType(), bIncludeImpact,true,true,true,true,pDisplayUnits) << rptNewLine;
+   if (1 < nSegments ? true : false)
+   {
+      *p << _T("Erected Segments rotations are the segment self-weight simple span rotation after erection. Girder rotations are for the completed girder after post-tensioning and temporary support removal.") << rptNewLine;
+   }
+
    *p << (bIncludeImpact ? LIVELOAD_PER_GIRDER : LIVELOAD_PER_GIRDER_NO_IMPACT) << rptNewLine;
 
    if (bPedestrian)
@@ -213,12 +225,9 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
    PierIndexType nPiers = pBridge->GetPierCount();
    PierIndexType startPierIdx,endPierIdx;
    pBridge->GetGirderGroupPiers(girderKey.groupIndex,&startPierIdx,&endPierIdx);
-
-   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
    GET_IFACE2(pBroker,ICamber,pCamber);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);

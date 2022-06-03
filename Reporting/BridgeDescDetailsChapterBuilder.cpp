@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -51,15 +51,20 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-void write_girder_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CSegmentKey& segmentKey,Uint16 level);
-void write_intermedate_diaphragm_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CSegmentKey& segmentKey,Uint16 level);
-void write_deck_width_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CSegmentKey& segmentKey,Uint16 level);
+void write_segment_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CSegmentKey& segmentKey,Uint16 level);
+void write_intermedate_diaphragm_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CGirderKey& girderKey,Uint16 level);
+void write_deck_width_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CGirderKey& girderKey,Uint16 level);
 void write_traffic_barrier_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const TrafficBarrierEntry* pBarrierEntry);
 void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const CSegmentKey& segmentKey);
 void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CSegmentKey& segmentKey,Uint16 level);
 void write_handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& segmentKey);
 void write_debonding(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& segmentKey);
+void write_segment_pt(rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const CSegmentKey& segmentKey);
 void write_camber_factors(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& segmentKey);
+void write_girder_pt(rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const CGirderKey& girderKey);
+
+void write_linear_tendon_geometry(rptParagraph* pPara, const CDuctData* pDuct, IEAFDisplayUnits* pDisplayUnits);
+void write_parabolic_tendon_geometry(rptParagraph* pPara, const CDuctData* pDuct, IEAFDisplayUnits* pDisplayUnits);
 
 
 /****************************************************************************
@@ -112,6 +117,9 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSp
    pBridge->GetGirderline(girderKey, &vGirderKeys);
    for(const auto& thisGirderKey : vGirderKeys)
    {
+      write_deck_width_details(pBroker, pDisplayUnits, pChapter, thisGirderKey, level);
+      write_intermedate_diaphragm_details(pBroker, pDisplayUnits, pChapter, thisGirderKey, level);
+
       SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
@@ -119,18 +127,20 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSp
 
          rptParagraph* pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
          *pChapter<<pHead;
+         std::_tostringstream os;
          if ( nSegments == 1 )
          {
-            *pHead << _T("Span ") << LABEL_SPAN(thisSegmentKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(thisSegmentKey.girderIndex) << rptNewLine;
+            os << _T("Span ") << LABEL_SPAN(thisSegmentKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(thisSegmentKey.girderIndex) << std::endl;
          }
          else
          {
-            *pHead << _T("Group ") << LABEL_GROUP(thisSegmentKey.groupIndex) <<  _T(" Girder ") << LABEL_GIRDER(thisSegmentKey.girderIndex) << _T(" Segment ") << LABEL_SEGMENT(thisSegmentKey.segmentIndex) << rptNewLine;
+            os << _T("Group ") << LABEL_GROUP(thisSegmentKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(thisSegmentKey.girderIndex) << _T(" Segment ") << LABEL_SEGMENT(thisSegmentKey.segmentIndex) << std::endl;
          }
+         pHead->SetName(os.str().c_str());
+         *pHead << pHead->GetName() << rptNewLine;
 
-         write_deck_width_details(pBroker, pDisplayUnits, pChapter, thisSegmentKey, level);
-         write_intermedate_diaphragm_details(pBroker, pDisplayUnits, pChapter, thisSegmentKey, level);
-         write_girder_details( pBroker, pDisplayUnits, pChapter, thisSegmentKey, level);
+
+         write_segment_details( pBroker, pDisplayUnits, pChapter, thisSegmentKey, level);
 
          write_handling(pChapter,pBroker,pDisplayUnits, thisSegmentKey);
 
@@ -144,6 +154,8 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSp
          }
 
          write_debonding(pChapter, pBroker, pDisplayUnits, thisSegmentKey);
+
+         write_segment_pt(pChapter, pBroker, pDisplayUnits, thisSegmentKey);
 
          write_camber_factors(pChapter, pBroker, pDisplayUnits, thisSegmentKey);
 
@@ -170,9 +182,9 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSp
 
 	      write_rebar_details( pBroker, pDisplayUnits, pChapter, thisSegmentKey, level);
       } // next segment
-   } // next girder
 
-   //write_deck_concrete_details(pBroker,pDisplayUnits,pChapter,level);
+      write_girder_pt(pChapter, pBroker, pDisplayUnits, thisGirderKey);
+   } // next girder
 
 #pragma Reminder("write out tendon information : geometry and material")
 
@@ -234,7 +246,7 @@ CChapterBuilder* CBridgeDescDetailsChapterBuilder::Clone() const
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
 
-void write_girder_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CSegmentKey& segmentKey,Uint16 level)
+void write_segment_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CSegmentKey& segmentKey,Uint16 level)
 {
 #pragma Reminder("UPDATE: need to write out spliced girder taper information")
    rptParagraph* pPara = new rptParagraph;
@@ -400,6 +412,81 @@ void write_debonding(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pD
    }
 }
 
+void write_segment_pt(rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const CSegmentKey& segmentKey)
+{
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
+   const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
+   const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
+   DuctIndexType nDucts = pSegment->Tendons.GetDuctCount();
+
+   if (nDucts == 0) return;
+
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, cmpdim, pDisplayUnits->GetComponentDimUnit(), true);
+   INIT_UV_PROTOTYPE(rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), true);
+
+   GET_IFACE2(pBroker, IGirder, pIGirder);
+   WebIndexType nWebs = pIGirder->GetWebCount(segmentKey);
+
+   std::array<std::_tstring, 2> strDuctGeometryType{ _T("Straight"),_T("Parabolic") };
+   std::array<std::_tstring, 3> strJackingEnd{ _T("Left"), _T("Right"), _T("Both") };
+   std::array<std::_tstring, 3> strDuctType{ _T("Galvanized ferrous metal"),_T("Polyethylene"), _T("Formed in concrete with removable cores") };
+   std::array<std::_tstring, 2> strInstallationMethod{ _T("Push"),_T("Pull") };
+   std::array<std::_tstring, 2> strGirderFace{ _T("Top"),_T("Bottom") };
+
+   for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+   {
+      const auto* pDuct = pSegment->Tendons.GetDuct(ductIdx);;
+
+      rptParagraph* pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
+      *pChapter << pHead;
+
+      if (nWebs == 1)
+      {
+         *pHead << _T("Duct ") << LABEL_DUCT(ductIdx) << rptNewLine;
+      }
+      else
+      {
+         DuctIndexType firstDuctIdx = nWebs*ductIdx;
+         DuctIndexType lastDuctIdx = firstDuctIdx + nWebs - 1;
+         *pHead << _T("Duct ") << LABEL_DUCT(firstDuctIdx) << _T(" - ") << LABEL_DUCT(lastDuctIdx) << rptNewLine;
+      }
+
+      rptParagraph* pPara = new rptParagraph();
+      *pChapter << pPara;
+
+      switch (pSegment->Tendons.InstallationEvent)
+      {
+      case pgsTypes::sptetRelease:
+         *pPara << _T("Tendons are post-tensioned immediately after release") << rptNewLine;
+         break;
+      case pgsTypes::sptetStorage:
+         *pPara << _T("Tendons are post-tensioned immediately at the beginning of storage") << rptNewLine;
+         break;
+      case pgsTypes::sptetHauling:
+         *pPara << _T("Tendons are post-tensioned immediately before hauling") << rptNewLine;
+         break;
+      default:
+         ATLASSERT(false); // is there a new option?
+      }
+
+      *pPara << _T("Type : ") << pDuct->Name << rptNewLine;
+      *pPara << _T("Shape : ") << strDuctGeometryType[pDuct->DuctGeometryType] << rptNewLine;
+      *pPara << _T("Left End : Y = ") << cmpdim.SetValue(pDuct->DuctPoint[CSegmentDuctData::Left].first) << _T(" from ") << strGirderFace[pDuct->DuctPoint[CSegmentDuctData::Left].second] << _T(" face") << rptNewLine;
+      if (pDuct->DuctGeometryType == CSegmentDuctData::Parabolic)
+      {
+         *pPara << _T("Middle : Y = ") << cmpdim.SetValue(pDuct->DuctPoint[CSegmentDuctData::Middle].first) << _T(" from ") << strGirderFace[pDuct->DuctPoint[CSegmentDuctData::Middle].second] << _T(" face") << rptNewLine;
+      }
+      *pPara << _T("Right End : Y = ") << cmpdim.SetValue(pDuct->DuctPoint[CSegmentDuctData::Right].first) << _T(" from ") << strGirderFace[pDuct->DuctPoint[CSegmentDuctData::Right].second] << _T(" face") << rptNewLine;
+      *pPara << _T("Number of Strands : ") << pDuct->nStrands << rptNewLine;
+      *pPara << Sub2(_T("P"), _T("jack")) << _T(" : ") << force.SetValue(pDuct->Pj) << rptNewLine;
+      *pPara << _T("Jacking End : ") << strJackingEnd[pDuct->JackingEnd] << rptNewLine;
+      *pPara << _T("Duct Material : ") << strDuctType[pSegment->Tendons.DuctType] << rptNewLine;
+      *pPara << _T("Installation Method : ") << strInstallationMethod[pSegment->Tendons.InstallationType] << rptNewLine;
+   }
+}
+
 void write_camber_factors(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& segmentKey)
 {
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -459,7 +546,7 @@ void write_camber_factors(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnit
    (*pTable)(row++,1) << scalar.SetValue(cm.BarrierSwOverlayUser2Factor);
 }
 
-void write_deck_width_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CSegmentKey& segmentKey,Uint16 level)
+void write_deck_width_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CGirderKey& girderKey,Uint16 level)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IBarriers,pBarriers);
@@ -504,8 +591,17 @@ void write_deck_width_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,r
    }
 
    PoiList vPoi;
-   pPoi->GetPointsOfInterest(segmentKey, POI_SPAN, &vPoi);
-   RowIndexType row(1);
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+   {
+      CSegmentKey segmentKey(girderKey, segIdx);
+      PoiList vSegmentPoi;
+      pPoi->GetPointsOfInterest(segmentKey, POI_SPAN, &vSegmentPoi);
+      pPoi->MergePoiLists(vPoi, vSegmentPoi, &vPoi);
+   }
+   pPoi->SortPoiList(&vPoi);
+
+   RowIndexType row = pTable1->GetNumberOfHeaderRows();
    for (const pgsPointOfInterest& poi : vPoi)
    {
       col = 0;
@@ -541,7 +637,7 @@ void write_deck_width_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,r
    }
 }
 
-void write_intermedate_diaphragm_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CSegmentKey& segmentKey,Uint16 level)
+void write_intermedate_diaphragm_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CGirderKey& girderKey,Uint16 level)
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  cmpdim,  pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  locdim,  pDisplayUnits->GetSpanLengthUnit(), true );
@@ -553,8 +649,8 @@ void write_intermedate_diaphragm_details(IBroker* pBroker,IEAFDisplayUnits* pDis
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
-   const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
+   const CSplicedGirderData* pGirder = pGroup->GetGirder(girderKey.girderIndex);
    const GirderLibraryEntry* pGdrEntry = pGirder->GetGirderLibraryEntry();
 
    const auto& rules = pGdrEntry->GetDiaphragmLayoutRules();
@@ -683,71 +779,79 @@ void write_traffic_barrier_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
    }
 }
 
+rptRcTable* write_strand_material(LPCTSTR strStrandType, const matPsStrand* pStrand, IEAFDisplayUnits* pDisplayUnits)
+{
+   INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true);
+   INIT_UV_PROTOTYPE(rptStressUnitValue, modE, pDisplayUnits->GetModEUnit(), true);
+   INIT_UV_PROTOTYPE(rptAreaUnitValue, area, pDisplayUnits->GetAreaUnit(), true);
+
+   rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(2, strStrandType);
+
+   RowIndexType row = 0;
+
+   (*pTable)(row, 0) << _T("Name");
+   (*pTable)(row, 1) << pStrand->GetName().c_str();
+   row++;
+
+   (*pTable)(row, 0) << _T("Type");
+   (*pTable)(row, 1) << (pStrand->GetType() == matPsStrand::LowRelaxation ? _T("Low Relaxation") : _T("Stress Relieved"));
+   row++;
+
+   (*pTable)(row, 0) << RPT_FPU;
+   (*pTable)(row, 1) << stress.SetValue(pStrand->GetUltimateStrength());
+   row++;
+
+   (*pTable)(row, 0) << RPT_FPY;
+   (*pTable)(row, 1) << stress.SetValue(pStrand->GetYieldStrength());
+   row++;
+
+   (*pTable)(row, 0) << RPT_EPS;
+   (*pTable)(row, 1) << modE.SetValue(pStrand->GetE());
+   row++;
+
+   (*pTable)(row, 0) << RPT_APS;
+   (*pTable)(row, 1) << area.SetValue(pStrand->GetNominalArea());
+   row++;
+
+   return pTable;
+}
+
 void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const CSegmentKey& segmentKey)
 {
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,  cmpdim,  pDisplayUnits->GetComponentDimUnit(), true );
-   INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,  pDisplayUnits->GetStressUnit(),       true );
-   INIT_UV_PROTOTYPE( rptStressUnitValue,  modE,    pDisplayUnits->GetModEUnit(),         true );
-   INIT_UV_PROTOTYPE( rptAreaUnitValue,    area,    pDisplayUnits->GetAreaUnit(),         true );
-
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
    GET_IFACE2(pBroker, ISegmentData,pSegmentData);
    GET_IFACE2(pBroker,IStrandGeometry,pStrand);
+   GET_IFACE2(pBroker, ISegmentTendonGeometry, pTendon);
 
-   rptRcTable* pLayoutTable = rptStyleManager::CreateLayoutTable(2);
+   StrandIndexType Nt = pStrand->GetMaxStrands(segmentKey, pgsTypes::Temporary);
+   DuctIndexType nDucts = pTendon->GetDuctCount(segmentKey);
+
+   rptRcTable* pLayoutTable = rptStyleManager::CreateLayoutTable((Nt == 0 ? 2 : 3) + (nDucts == 0 ? 0 : 1));
    *pPara << pLayoutTable << rptNewLine;
 
-   for ( int i = 0; i < 2; i++ )
+   std::array<std::_tstring, 3> strStrandType{ _T("Straight"),_T("Harped"),_T("Temporary") };
+
+   ColumnIndexType col;
+   for ( col = 0; col < (Nt == 0 ? 2 : 3); col++ )
    {
-      pgsTypes::StrandType strandType = (i == 0 ? pgsTypes::Permanent : pgsTypes::Temporary);
-      if ( strandType == pgsTypes::Temporary && pStrand->GetMaxStrands(segmentKey,pgsTypes::Temporary) == 0)
-      {
-         continue;
-      }
+      pgsTypes::StrandType strandType = (pgsTypes::StrandType)col;
 
-      std::_tstring strTitle;
-      if ( strandType == pgsTypes::Temporary )
-      {
-         strTitle = _T("Temporary Strands");
-      }
-      else
-      {
-         strTitle = _T("Permanent Strands");
-      }
+      const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(segmentKey,strandType);
+      ATLASSERT(pStrand != nullptr);
 
-      const matPsStrand* pstrand = pSegmentData->GetStrandMaterial(segmentKey,strandType);
-      ATLASSERT(pstrand!=0);
+      rptRcTable* pTable = write_strand_material(strStrandType[strandType].c_str(), pStrand, pDisplayUnits);
+      (*pLayoutTable)(0,col) << pTable;
+   }
 
-      rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(2,strTitle.c_str());
-      (*pLayoutTable)(0,i) << pTable;
+   if (0 < nDucts)
+   {
+      const matPsStrand* pStrand = pSegmentData->GetSegmentPTData(segmentKey)->m_pStrand;
+      ATLASSERT(pStrand != nullptr);
 
-      RowIndexType row = 0;
-
-      (*pTable)(row,0) << _T("Name");
-      (*pTable)(row,1) << pstrand->GetName().c_str();
-      row++;
-
-      (*pTable)(row,0) << _T("Type");
-      (*pTable)(row,1) << (pstrand->GetType() == matPsStrand::LowRelaxation ? _T("Low Relaxation") : _T("Stress Relieved"));
-      row++;
-
-      (*pTable)(row,0) << RPT_FPU;
-      (*pTable)(row,1) << stress.SetValue( pstrand->GetUltimateStrength() );
-      row++;
-
-      (*pTable)(row,0) << RPT_FPY;
-      (*pTable)(row,1) << stress.SetValue( pstrand->GetYieldStrength() );
-      row++;
-
-      (*pTable)(row,0) << RPT_EPS;
-      (*pTable)(row,1) << modE.SetValue( pstrand->GetE() );
-      row++;
-
-      (*pTable)(row,0) << RPT_APS;
-      (*pTable)(row,1) << area.SetValue( pstrand->GetNominalArea() );
-      row++;
+      rptRcTable* pTable = write_strand_material(_T("Tendons"), pStrand, pDisplayUnits);
+      (*pLayoutTable)(0, col) << pTable;
    }
 }
 
@@ -777,25 +881,6 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
    const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
    const matRebar* pShearRebar = pPool->GetRebar(pSegment->ShearData.ShearBarType,pSegment->ShearData.ShearBarGrade,matRebar::bs3);
    const matRebar* pLongRebar  = pPool->GetRebar(pSegment->LongitudinalRebarData.BarType,pSegment->LongitudinalRebarData.BarGrade,matRebar::bs3);
-
-   if ( pDeckRebar )
-   {
-      rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(2,_T("Deck Reinforcing Material"));
-      *pPara << pTable << rptNewLine;
-
-      RowIndexType row = 0;
-
-      (*pTable)(row,0) << _T("Type");
-      (*pTable)(row,1) << lrfdRebarPool::GetMaterialName(pDeckRebar->GetType(),pDeckRebar->GetGrade()).c_str();
-      row++;
-
-      (*pTable)(row,0) << RPT_FY;
-      (*pTable)(row,1) << stress.SetValue( pDeckRebar->GetYieldStrength() );
-      row++;
-
-      (*pTable)(row,0) << RPT_FU;
-      (*pTable)(row,1) << stress.SetValue( pDeckRebar->GetUltimateStrength() );
-   }
 
    if ( pShearRebar )
    {
@@ -834,6 +919,25 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
       (*pTable)(row,0) << RPT_FU;
       (*pTable)(row,1) << stress.SetValue( pLongRebar->GetUltimateStrength() );
    }
+
+   if (pDeckRebar)
+   {
+      rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(2, _T("Deck Reinforcing Material"));
+      *pPara << pTable << rptNewLine;
+
+      RowIndexType row = 0;
+
+      (*pTable)(row, 0) << _T("Type");
+      (*pTable)(row, 1) << lrfdRebarPool::GetMaterialName(pDeckRebar->GetType(), pDeckRebar->GetGrade()).c_str();
+      row++;
+
+      (*pTable)(row, 0) << RPT_FY;
+      (*pTable)(row, 1) << stress.SetValue(pDeckRebar->GetYieldStrength());
+      row++;
+
+      (*pTable)(row, 0) << RPT_FU;
+      (*pTable)(row, 1) << stress.SetValue(pDeckRebar->GetUltimateStrength());
+   }
 }
 
 void write_handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& segmentKey)
@@ -867,6 +971,276 @@ void write_handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDis
          GET_IFACE2(pBroker,ISegmentHauling,pSegmentHauling);
          *pPara<<_T("Leading Truck Support = ")<<loc.SetValue(pSegmentHauling->GetLeadingOverhang(segmentKey))<<rptNewLine;
          *pPara<<_T("Trailing Truck Support = ")<<loc.SetValue(pSegmentHauling->GetTrailingOverhang(segmentKey))<<rptNewLine;
+      }
+   }
+}
+
+void write_girder_pt(rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const CGirderKey& girderKey)
+{
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   const CSplicedGirderData* pGirder = pIBridgeDesc->GetGirder(girderKey);
+   const CPTData* pPT = pGirder->GetPostTensioning();
+   DuctIndexType nDucts = pPT->GetDuctCount();
+   if (nDucts == 0) return;
+
+   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+
+   GET_IFACE2(pBroker, IGirder, pIGirder);
+   WebIndexType nWebs = pIGirder->GetWebCount(girderKey);
+
+   INIT_UV_PROTOTYPE(rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), true);
+
+   std::array<std::_tstring, 3> strDuctGeometryType{ _T("Linear"),_T("Parabolic"),_T("Offset") };
+   std::array<std::_tstring, 3> strJackingEnd{ _T("Left"), _T("Right"), _T("Both") };
+   std::array<std::_tstring, 3> strDuctType{ _T("Galvanized ferrous metal"),_T("Polyethylene"), _T("Formed in concrete with removable cores") };
+   std::array<std::_tstring, 2> strInstallationMethod{ _T("Push"),_T("Pull") };
+
+   rptParagraph* pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
+   *pChapter << pHead;
+   *pHead << _T("Field Installed Tendons") << rptNewLine;
+   for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+   {
+      const CDuctData* pDuct = pPT->GetDuct(ductIdx);
+
+      pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
+      *pChapter << pHead;
+      if (nWebs == 1)
+      {
+         *pHead << _T("Duct ") << LABEL_DUCT(ductIdx) << rptNewLine;
+      }
+      else
+      {
+         DuctIndexType firstDuctIdx = nWebs*ductIdx;
+         DuctIndexType lastDuctIdx = firstDuctIdx + nWebs - 1;
+         *pHead << _T("Duct ") << LABEL_DUCT(firstDuctIdx) << _T(" - ") << LABEL_DUCT(lastDuctIdx) << rptNewLine;
+      }
+
+      rptParagraph* pPara = new rptParagraph;
+      *pChapter << pPara;
+
+      *pPara << _T("Type : ") << pDuct->Name << rptNewLine;
+      *pPara << _T("Shape : ") << strDuctGeometryType[pDuct->DuctGeometryType] << rptNewLine;
+      switch (pDuct->DuctGeometryType)
+      {
+      case CDuctGeometry::Linear:
+         write_linear_tendon_geometry(pPara, pDuct, pDisplayUnits);
+         break;
+      case CDuctGeometry::Parabolic:
+         write_parabolic_tendon_geometry(pPara, pDuct, pDisplayUnits);
+         break;
+      case CDuctGeometry::Offset: // drop through because this isn't supported yet
+      default:
+         ATLASSERT(false);
+      }
+      *pPara << _T("Number of Strands : ") << pDuct->nStrands << rptNewLine;
+      *pPara << Sub2(_T("P"), _T("jack")) << _T(" : ") << force.SetValue(pDuct->Pj) << rptNewLine;
+      *pPara << _T("Jacking End : ") << strJackingEnd[pDuct->JackingEnd] << rptNewLine;
+      *pPara << _T("Duct Material : ") << strDuctType[pPT->DuctType] << rptNewLine;
+      *pPara << _T("Tendon Material : ") << pPT->pStrand->GetName() << rptNewLine;
+      *pPara << _T("Installation Method : ") << strInstallationMethod[pPT->InstallationType] << rptNewLine;
+
+      EventIndexType eventIdx = pTimelineMgr->GetStressTendonEventIndex(pGirder->GetID(), ductIdx);
+      *pPara << _T("Installation : Event ") << LABEL_EVENT(eventIdx) << _T(" - ") << pTimelineMgr->GetEventByIndex(eventIdx)->GetDescription();
+   }
+}
+
+void write_linear_tendon_geometry(rptParagraph* pPara, const CDuctData* pDuct, IEAFDisplayUnits* pDisplayUnits)
+{
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetSpanLengthUnit(), true);
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, cmpdim, pDisplayUnits->GetComponentDimUnit(), false);
+   INIT_SCALAR_PROTOTYPE(rptRcPercentage, percentage, pDisplayUnits->GetPercentageFormat());
+
+   std::array<std::_tstring, 2> strOffsetType{ _T("Bottom Girder"),_T("Top Girder") };
+
+   if (pDuct->LinearDuctGeometry.GetMeasurementType() == CLinearDuctGeometry::AlongGirder)
+   {
+      *pPara << _T("Duct locations are measured from the left end of the girder.") << rptNewLine;
+   }
+   else
+   {
+      ATLASSERT(pDuct->LinearDuctGeometry.GetMeasurementType() == CLinearDuctGeometry::FromPrevious);
+      *pPara << _T("Duct locations are measured from the left end of the previous point.") << rptNewLine;
+   }
+
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(4, _T(""));
+   *pPara << pTable;
+
+   (*pTable)(0, 0) << _T("Point");
+   (*pTable)(0, 1) << _T("Location");
+   pTable->SetColumnSpan(0, 2, 2);
+   (*pTable)(0, 2) << COLHDR(_T("Offset"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+
+   RowIndexType row = pTable->GetNumberOfHeaderRows();
+   IndexType nPoints = pDuct->LinearDuctGeometry.GetPointCount();
+   for (IndexType pointIdx = 0; pointIdx < nPoints; pointIdx++, row++)
+   {
+      Float64 location, offset;
+      CDuctGeometry::OffsetType offsetType;
+      pDuct->LinearDuctGeometry.GetPoint(pointIdx, &location, &offset, &offsetType);
+      (*pTable)(row, 0) << LABEL_INDEX(pointIdx);
+      if (location < 0)
+      {
+         (*pTable)(row, 1) << percentage.SetValue(-location);
+      }
+      else
+      {
+         (*pTable)(row, 1) << dim.SetValue(location);
+      }
+      (*pTable)(row, 2) << cmpdim.SetValue(offset);
+      (*pTable)(row, 3) << strOffsetType[offsetType];
+   }
+}
+
+void write_parabolic_tendon_geometry(rptParagraph* pPara, const CDuctData* pDuct, IEAFDisplayUnits* pDisplayUnits)
+{
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetSpanLengthUnit(), true);
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, cmpdim, pDisplayUnits->GetComponentDimUnit(), false);
+   INIT_SCALAR_PROTOTYPE(rptRcPercentage, percentage, pDisplayUnits->GetPercentageFormat());
+
+   PierIndexType startPierIdx;
+   Float64 startDist;
+   Float64 startOffset;
+   CDuctGeometry::OffsetType startOffsetType;
+   pDuct->ParabolicDuctGeometry.GetStartPoint(&startPierIdx, &startDist, &startOffset, &startOffsetType);
+
+   PierIndexType endPierIdx;
+   Float64 endDist;
+   Float64 endOffset;
+   CDuctGeometry::OffsetType endOffsetType;
+   pDuct->ParabolicDuctGeometry.GetEndPoint(&endPierIdx, &endDist, &endOffset, &endOffsetType);
+
+   *pPara << _T("Duct starts at ") << LABEL_PIER_EX(pDuct->GetGirder()->GetGirderGroup()->GetBridgeDescription()->GetPier(startPierIdx)->IsAbutment(),startPierIdx);
+   *pPara << _T(" and ends at ") << LABEL_PIER_EX(pDuct->GetGirder()->GetGirderGroup()->GetBridgeDescription()->GetPier(endPierIdx)->IsAbutment(), endPierIdx);
+
+   std::array<std::_tstring, 2> strOffsetType{ _T("Bottom Girder"),_T("Top Girder") };
+
+   rptRcTable* pLayoutTable = rptStyleManager::CreateLayoutTable(2);
+   *pPara << pLayoutTable;
+
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(5, _T(""));
+   pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CA_MIDDLE));
+   pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CA_MIDDLE));
+   pTable->SetColumnStyle(1, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(1, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetColumnSpan(0, 0, 2);
+   (*pTable)(0, 0) << _T("Point");
+
+   (*pTable)(0, 2) << _T("Location");
+
+   pTable->SetColumnSpan(0, 3, 2);
+   (*pTable)(0, 3) << COLHDR(_T("Offset") , rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+
+   (*pLayoutTable)(0, 0) << pTable << rptNewLine;
+   (*pLayoutTable)(0, 1) << _T("Start: Start of tendon location measured from the start of the first span.") << rptNewLine;
+   (*pLayoutTable)(0, 1) << _T("Low: Distance from Start point or previous High point. Measured as a distance or percentagve of the distance between High points. Distance from End in last span.") << rptNewLine;
+   (*pLayoutTable)(0, 1) << _T("IP: Location of inflection point measured from Hight point. Measured as distance or percentage of distance between High and Low points.") << rptNewLine;
+   (*pLayoutTable)(0, 1) << _T("High: High point at centerlien of pier.") << rptNewLine;
+   (*pLayoutTable)(0, 1) << _T("End: End of tendon location measured from the end of the last span.") << rptNewLine;
+
+   RowIndexType row = pTable->GetNumberOfHeaderRows();
+   for (PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++)
+   {
+      if (pierIdx == startPierIdx)
+      {
+         pTable->SetRowSpan(row, 0, 3);
+         (*pTable)(row, 0) << _T("Span ") << LABEL_SPAN(pierIdx);
+
+         (*pTable)(row, 1) << _T("Start");
+         if (startDist < 0)
+         {
+            (*pTable)(row, 2) << percentage.SetValue(-startDist);
+         }
+         else
+         {
+            (*pTable)(row, 2) << dim.SetValue(startDist);
+         }
+         (*pTable)(row, 3) << cmpdim.SetValue(startOffset);
+         (*pTable)(row, 4) << strOffsetType[startOffsetType];
+
+         row++;
+      }
+
+      if (pierIdx != startPierIdx && pierIdx != endPierIdx)
+      {
+         Float64 leftIP, highOffset, rightIP;
+         CDuctGeometry::OffsetType highOffsetType;
+         pDuct->ParabolicDuctGeometry.GetHighPoint(pierIdx, &leftIP, &highOffset, &highOffsetType, &rightIP);
+         (*pTable)(row, 1) << _T("IP");
+         if (leftIP < 0)
+         {
+            (*pTable)(row, 2) << percentage.SetValue(-leftIP);
+         }
+         else
+         {
+            (*pTable)(row, 2) << dim.SetValue(leftIP);
+         }
+         (*pTable)(row, 3) << _T("");
+         (*pTable)(row, 4) << _T("");
+         row++;
+
+         (*pTable)(row, 0) << _T("Pier ") << LABEL_PIER(pierIdx);
+         (*pTable)(row, 1) << _T("High");
+         (*pTable)(row, 2) << _T("");
+         (*pTable)(row, 3) << cmpdim.SetValue(highOffset);
+         (*pTable)(row, 4) << strOffsetType[highOffsetType];
+         row++;
+
+         if (pierIdx < endPierIdx)
+         {
+            pTable->SetRowSpan(row, 0, 3);
+            (*pTable)(row, 0) << _T("Span ") << LABEL_SPAN(pierIdx);
+         }
+
+         (*pTable)(row, 1) << _T("IP");
+         if (rightIP < 0)
+         {
+            (*pTable)(row, 2) << percentage.SetValue(-rightIP);
+         }
+         else
+         {
+            (*pTable)(row, 2) << dim.SetValue(rightIP);
+         }
+         (*pTable)(row, 3) << _T("");
+         (*pTable)(row, 4) << _T("");
+         row++;
+      }
+
+      if (pierIdx != endPierIdx)
+      {
+         Float64 lowDist, lowOffset;
+         CDuctGeometry::OffsetType lowOffsetType;
+         pDuct->ParabolicDuctGeometry.GetLowPoint((SpanIndexType)pierIdx, &lowDist, &lowOffset, &lowOffsetType);
+         (*pTable)(row, 1) << _T("Low");
+         if (lowDist < 0)
+         {
+            (*pTable)(row, 2) << percentage.SetValue(-lowDist);
+         }
+         else
+         {
+            (*pTable)(row, 2) << dim.SetValue(lowDist);
+         }
+         (*pTable)(row, 3) << cmpdim.SetValue(lowOffset);
+         (*pTable)(row, 4) << strOffsetType[lowOffsetType];
+
+         row++;
+      }
+
+      if (pierIdx == endPierIdx)
+      {
+         (*pTable)(row, 1) << _T("End");
+
+         if (endDist < 0)
+         {
+            (*pTable)(row, 2) << percentage.SetValue(-endDist);
+         }
+         else
+         {
+            (*pTable)(row, 2) << cmpdim.SetValue(endDist);
+         }
+         (*pTable)(row, 3) << cmpdim.SetValue(endOffset);
+         (*pTable)(row, 4) << strOffsetType[endOffsetType];
+
+         row++;
       }
    }
 }

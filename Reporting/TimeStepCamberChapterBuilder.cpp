@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -372,6 +372,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateTable(IBroker* pBroker, const C
       vProductForces.push_back(pgsTypes::pftUserLLIM);
    }
    //vProductForces.push_back(pgsTypes::pftShearKey);
+   //vProductForces.push_back(pgsTypes::pftLongitudinalJoint);
    //vProductForces.push_back(pgsTypes::pftSecondaryEffects);
    if (stressingIntervalIdx != INVALID_INDEX)
    {
@@ -602,7 +603,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateBeforeSlabCastingDeflectionTabl
 #if defined _DEBUG
    GET_IFACE2(pBroker,ILimitStateForces2,pLimitStateForces);
    std::vector<Float64> vDmin,vDmax;
-   pLimitStateForces->GetDeflection(castDeckIntervalIdx-1,pgsTypes::ServiceI,vPoi,bat,true,false,true,true,&vDmin,&vDmax);
+   pLimitStateForces->GetDeflection(castDeckIntervalIdx-1,pgsTypes::ServiceI,vPoi,bat,true,false,true,true,true,&vDmin,&vDmax);
 #endif
 
    i = 0;
@@ -637,7 +638,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateBeforeSlabCastingDeflectionTabl
 #if defined _DEBUG
       Float64 Dmin, Dmax;
       GET_IFACE2(pBroker, ILimitStateForces, pLSF);
-      pLSF->GetDeflection(castDeckIntervalIdx - 1, pgsTypes::ServiceI, poi, bat, true, false, true, true, &Dmin, &Dmax);
+      pLSF->GetDeflection(castDeckIntervalIdx - 1, pgsTypes::ServiceI, poi, bat, true, false, true, true, true, &Dmin, &Dmax);
       ATLASSERT(IsEqual(vDmin[i], Dmin));
       ATLASSERT(IsEqual(vDmax[i], Dmax));
       ATLASSERT(IsEqual(Dmin,D));
@@ -807,9 +808,9 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
 #if defined _DEBUG
    GET_IFACE2(pBroker,ILimitStateForces2,pLimitStateForces);
    std::vector<Float64> vDmin1,vDmax1;
-   pLimitStateForces->GetDeflection(intervalIdx,pgsTypes::ServiceI,vPoi,bat,true,false,true,true,&vDmin1,&vDmax1);
+   pLimitStateForces->GetDeflection(intervalIdx,pgsTypes::ServiceI,vPoi,bat,true,false,true,true,true,&vDmin1,&vDmax1);
    std::vector<Float64> vDmin2,vDmax2;
-   pLimitStateForces->GetDeflection(liveLoadIntervalIdx,pgsTypes::ServiceI,vPoi,bat,true,false,true,true,&vDmin2,&vDmax2);
+   pLimitStateForces->GetDeflection(liveLoadIntervalIdx,pgsTypes::ServiceI,vPoi,bat,true,false,true,true,true,&vDmin2,&vDmax2);
    std::vector<Float64> vC;
    std::transform(vDmin2.cbegin(),vDmin2.cend(),vDmin1.cbegin(),std::back_inserter(vC),[](const auto& a, const auto& b) {return a - b;});
 
@@ -901,10 +902,10 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateExcessCamberTable(IBroker* pBro
    GET_IFACE2(pBroker,ILimitStateForces2,pLimitStateForces);
    
    std::vector<Float64> vDmin,vDmax;
-   pLimitStateForces->GetDeflection(intervalIdx,pgsTypes::ServiceI,vPoi,bat,true,false,true,true,&vDmin,&vDmax);
+   pLimitStateForces->GetDeflection(intervalIdx,pgsTypes::ServiceI,vPoi,bat,true,false,true,true,true,&vDmin,&vDmax);
    
    std::vector<Float64> vExcessMin,vExcessMax;
-   pLimitStateForces->GetDeflection(liveLoadIntervalIdx,pgsTypes::ServiceI,vPoi,bat,true,false,true,true,&vExcessMin,&vExcessMax);
+   pLimitStateForces->GetDeflection(liveLoadIntervalIdx,pgsTypes::ServiceI,vPoi,bat,true,false,true,true,true,&vExcessMin,&vExcessMax);
    
    std::vector<Float64> vC;
    std::transform(vExcessMin.cbegin(),vExcessMin.cend(),vDmin.cbegin(),std::back_inserter(vC),[](const auto& a, const auto& b) {return a - b;});
@@ -1079,10 +1080,10 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateFinalDeflectionTable(IBroker* p
 
    GET_IFACE2(pBroker,ILimitStateForces2,pLimitStateForces);
    std::vector<Float64> vDmin, vDmax; // deflection at time bridge is open to traffic
-   pLimitStateForces->GetDeflection(liveLoadIntervalIdx, pgsTypes::ServiceI, vPoi, bat, true, false, true, true, &vDmin, &vDmax);
+   pLimitStateForces->GetDeflection(liveLoadIntervalIdx, pgsTypes::ServiceI, vPoi, bat, true, false, true, true, true, &vDmin, &vDmax);
 
    std::vector<Float64> vFmin, vFmax; // final deflection
-   pLimitStateForces->GetDeflection(lastIntervalIdx, pgsTypes::ServiceI, vPoi, bat, true, false, true, true, &vFmin, &vFmax);
+   pLimitStateForces->GetDeflection(lastIntervalIdx, pgsTypes::ServiceI, vPoi, bat, true, false, true, true, true, &vFmin, &vFmax);
 
    i = 0;
    for (const pgsPointOfInterest& poi : vPoi)

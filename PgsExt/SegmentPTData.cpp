@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -190,6 +190,9 @@ HRESULT CSegmentDuctData::Load(IStructuredLoad* pStrLoad, IProgress* pProgress)
    CComVariant var;
    hr = pStrLoad->BeginUnit(_T("Duct"));
 
+   Float64 version;
+   pStrLoad->get_Version(&version);
+
    var.vt = VT_BSTR;
    hr = pStrLoad->get_Property(_T("Name"), &var);
    Name = OLE2T(var.bstrVal);
@@ -205,6 +208,15 @@ HRESULT CSegmentDuctData::Load(IStructuredLoad* pStrLoad, IProgress* pProgress)
    var.vt = VT_R8;
    hr = pStrLoad->get_Property(_T("Pj"), &var);
    Pj = var.dblVal;
+   LastUserPj = Pj;
+
+   if(1 < version)
+   {
+      // added in version 2
+      var.vt = VT_R8;
+      hr = pStrLoad->get_Property(_T("LastUserPj"), &var);
+      LastUserPj = var.dblVal;
+   }
 
    var.vt = VT_BSTR;
    hr = pStrLoad->get_Property(_T("StressingEnd"), &var);
@@ -284,11 +296,12 @@ HRESULT CSegmentDuctData::Load(IStructuredLoad* pStrLoad, IProgress* pProgress)
 
 HRESULT CSegmentDuctData::Save(IStructuredSave* pStrSave, IProgress* pProgress)
 {
-   pStrSave->BeginUnit(_T("Duct"), 1.0);
+   pStrSave->BeginUnit(_T("Duct"), 2.0);
    pStrSave->put_Property(_T("Name"), CComVariant(Name.c_str()));
    pStrSave->put_Property(_T("NumStrands"), CComVariant(nStrands));
    pStrSave->put_Property(_T("CalcPj"), CComVariant(bPjCalc ? VARIANT_TRUE : VARIANT_FALSE));
    pStrSave->put_Property(_T("Pj"), CComVariant(Pj));
+   pStrSave->put_Property(_T("LastUserPj"), CComVariant(LastUserPj)); // added in version 2
    pStrSave->put_Property(_T("StressingEnd"), CComVariant(JackingEnd == pgsTypes::jeStart ? _T("Left") : (JackingEnd == pgsTypes::jeEnd ? _T("Right") : _T("Both"))));
    pStrSave->put_Property(_T("DuctShape"), (CComVariant(DuctGeometryType == Linear ? _T("Linear") : _T("Parabolic"))));
    if (DuctGeometryType == Linear)
@@ -525,7 +538,7 @@ HRESULT CSegmentPTData::Save(IStructuredSave* pStrSave, IProgress* pProgress)
    pStrSave->put_Property(_T("InstallationEvent"), CComVariant(InstallationEvent));
 
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
-   Int32 key = pPool->GetStrandKey(m_pStrand);
+   auto key = pPool->GetStrandKey(m_pStrand);
    pStrSave->put_Property(_T("TendonMaterialKey"), CComVariant(key));
 
    pStrSave->put_Property(_T("DuctCount"), CComVariant(m_Ducts.size()));

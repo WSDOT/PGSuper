@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -140,8 +140,8 @@ public:
    // Returns a vector of all the temporary supports that support this segment
    std::vector<const CTemporarySupportData*> GetTemporarySupports() const;
 
-   // Returns true if the segment is a drop-in segment
-   bool IsDropIn() const;
+   // Returns if the segment is a drop-in segment, and which end(s) is free to translate if so
+   pgsTypes::DropInType IsDropIn() const;
 
    // Returns true if the segment is propped (supported by two hard supports and a cantilever end)
    bool IsPropped() const;

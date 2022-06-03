@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -238,6 +238,9 @@ interface IIntervals : IUnknown
 
    // returns a vector of intervals when user defined loads are applied to this girder
    virtual std::vector<IntervalIndexType> GetUserDefinedLoadIntervals(const CSpanKey& spanKey,pgsTypes::ProductForceType pfType) const = 0;
+
+   // returns true if a user defined load is applied in the specified interval
+   virtual bool IsUserDefinedLoadingInterval(IntervalIndexType intervalIdx) const = 0;
 
    // Returns the interval when user defined loads are applied to the noncomposite section
    virtual IntervalIndexType GetNoncompositeUserLoadInterval() const = 0;

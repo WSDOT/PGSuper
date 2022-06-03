@@ -8,7 +8,10 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include "afxres.h"
-#include "grid/gxresrc.h"
+#include <WBFLGrid.h>
+#if !defined _NOGRID
+#include "grid\gxresrc.h"
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -34,7 +37,10 @@ END
 2 TEXTINCLUDE 
 BEGIN
     "#include ""afxres.h""\r\n"
-    "#include ""grid/gxresrc.h""\r\0"
+    "#include <WBFLGrid.h>\r\n"
+    "#if !defined _NOGRID\r\n"
+    "#include ""grid\\gxresrc.h""\r\n"
+    "#endif\r\0"
 END
 
 3 TEXTINCLUDE 
@@ -51,7 +57,9 @@ BEGIN
     "#endif\r\n"
     "#include ""afxres.rc""         // Standard components\r\n"
     "#endif\r\n"
-    "#include ""grid/gxres.rc""               // Objective Grid resources\r\0"
+    "#if !defined _NOGRID\r\n"
+    "#include ""grid\\gxres.rc""\r\n"
+    "#endif\r\0"
 END
 
 #endif    // APSTUDIO_INVOKED
@@ -63,8 +71,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 6,1,0,0
- PRODUCTVERSION 6,1,0,0
+ FILEVERSION 7,0,0,7
+ PRODUCTVERSION 7,0,0,7
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -82,12 +90,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PgsExt DLL"
-            VALUE "FileVersion", "6.1.0.0"
+            VALUE "FileVersion", "7.0.0.7"
             VALUE "InternalName", "PgsExt"
-            VALUE "LegalCopyright", "Copyright © 1999-2021, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "LegalCopyright", "Copyright © 1999-2022, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PgsExt.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "6.1.0.0"
+            VALUE "ProductVersion", "7.0.0.7"
         END
     END
     BLOCK "VarFileInfo"
@@ -132,34 +140,34 @@ BEGIN
                     "Button",BS_AUTORADIOBUTTON,12,127,149,10
 END
 
-IDD_CONCRETE_DETAILS DIALOGEX 0, 0, 230, 137
+IDD_CONCRETE_DETAILS DIALOGEX 0, 0, 231, 137
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "General"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
+    LTEXT           "Type",IDC_STATIC,22,11,17,8
     COMBOBOX        IDC_CONCRETE_TYPE,113,6,77,99,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Strength - f'c",IDC_FC_LABEL,22,28,41,8
     EDITTEXT        IDC_FC,135,22,55,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "Static",IDC_FC_UNIT,195,28,28,8
+    LTEXT           "Static",IDC_FC_UNIT,196,28,28,8
     LTEXT           "Unit Weight",IDC_DS_TITLE,22,43,107,8
     EDITTEXT        IDC_DS,135,40,55,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "Static",IDC_DS_UNIT,195,43,28,8
+    LTEXT           "Static",IDC_DS_UNIT,196,43,28,8
     LTEXT           "Unit Weight with Reinforcement",IDC_STATIC,22,62,101,8
     EDITTEXT        IDC_DW,135,59,55,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "Static",IDC_DW_UNIT,195,62,28,8
+    LTEXT           "Static",IDC_DW_UNIT,196,62,28,8
     CONTROL         "Mod. Elasticity, Ec",IDC_MOD_E,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,81,74,10
     EDITTEXT        IDC_EC,135,78,55,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_EC_UNIT,195,81,28,8
+    LTEXT           "Static",IDC_EC_UNIT,196,81,28,8
     LTEXT           "Max. Aggregate Size",IDC_STATIC,22,96,66,8
     EDITTEXT        IDC_AGG_SIZE,135,94,55,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "Static",IDC_AGG_SIZE_UNIT,195,98,28,8
+    LTEXT           "Static",IDC_AGG_SIZE_UNIT,196,98,28,8
     PUSHBUTTON      "Copy from library...",IDC_COPY_MATERIAL,42,117,141,13
-    LTEXT           "Type",IDC_STATIC,22,11,17,8
 END
 
 IDD_AASHTO_CONCRETE DIALOGEX 0, 0, 217, 146
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "AASHTO LRFD"
+CAPTION "Modifiers"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Averaging Factor, K1",IDC_EC_K1_LABEL,37,16,71,8
@@ -366,6 +374,27 @@ BEGIN
     PUSHBUTTON      "Help",IDC_HELP,208,124,50,14
 END
 
+IDD_PCIUHPC_CONCRETE DIALOGEX 0, 0, 251, 131
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "PCI-UHPC"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Tensile Strength",IDC_STATIC,7,7,53,8
+    LTEXT           "First peak (cracking) flexural strength, ffc",IDC_STATIC,28,21,134,8
+    EDITTEXT        IDC_FFC,167,18,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_FFC_UNIT,211,21,19,8
+    LTEXT           "Post-cracking design tensile strength, frr",IDC_STATIC,28,39,131,8
+    EDITTEXT        IDC_FRR,166,35,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_FRR_UNIT,210,37,19,8
+    LTEXT           "Fiber Length",IDC_FIBER_LABEL,28,54,40,8
+    EDITTEXT        IDC_FIBER,166,51,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_FIBER_UNIT,210,53,19,8
+    LTEXT           "Autogenous Shrinkage",IDC_STATIC,27,72,73,8
+    EDITTEXT        IDC_AUTOGENOUS_SHRINKAGE,166,67,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "x10^-3",IDC_STATIC,209,70,25,8
+    CONTROL         "Post-cure thermal treatment",IDC_PCTT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,27,91,107,10
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -418,7 +447,7 @@ BEGIN
     IDD_CONCRETE_DETAILS, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 223
+        RIGHTMARGIN, 224
         TOPMARGIN, 7
         BOTTOMMARGIN, 130
     END
@@ -518,6 +547,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 138
     END
+
+    IDD_PCIUHPC_CONCRETE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 244
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 124
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -548,6 +585,11 @@ BEGIN
 END
 
 IDD_CONCRETE_DETAILS AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_PCIUHPC_CONCRETE AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
@@ -591,7 +633,9 @@ LANGUAGE 9, 1
 #endif
 #include "afxres.rc"         // Standard components
 #endif
-#include "grid/gxres.rc"               // Objective Grid resources
+#if !defined _NOGRID
+#include "grid\gxres.rc"
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED

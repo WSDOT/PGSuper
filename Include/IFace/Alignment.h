@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -36,7 +36,7 @@
 
 // FORWARD DECLARATIONS
 //
-interface IHorzCurve;
+interface ICompoundCurve;
 interface IVertCurve;
 interface IDirection;
 interface IPoint2d;
@@ -54,19 +54,6 @@ typedef struct HCURVESTATIONS
    Float64 SPI2Station; // Exit Spiral PI
    Float64 STStation;
 } HCURVESTATIONS;
-
-typedef enum CurvePointTypes
-{
-   cptTS,
-   cptSPI1,
-   cptSC,
-   cptPI,
-   cptCS,
-   cptSPI2,
-   cptST,
-   cptCC,
-   cptCCC
-} CurvePointTypes;
 
 /*****************************************************************************
 INTERFACE
@@ -113,11 +100,8 @@ interface IRoadway : IUnknown
    // Returns number of horizontal curves 
    virtual IndexType GetCurveCount() const = 0;
 
-   // Returns a horizontal curve object. Points are in local coordinates
-   virtual void GetCurve(IndexType hcIdx,IHorzCurve** ppCurve) const = 0;
-
-   // Returns key points for a horizontal curve
-   virtual void GetCurvePoint(IndexType hcIdx,CurvePointTypes cpType,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppPoint) const = 0;
+   // Returns a horizontal curve object.
+   virtual void GetCurve(IndexType hcIdx, pgsTypes::PlanCoordinateType pcType,ICompoundCurve** ppCurve) const = 0;
 
    // Returns the stations of key points for a horizontal curve
    virtual HCURVESTATIONS GetCurveStations(IndexType hcIdx) const = 0;
@@ -132,22 +116,25 @@ interface IRoadway : IUnknown
    // returns number of crown points along alignment
    virtual IndexType GetCrownPointIndexCount(Float64 station) const = 0;
 
-   // returns index of crown point at alignment, PG
-   virtual IndexType GetControllingCrownPointIndex(Float64 station) const = 0;
+   // returns the ridge point index of the alignment
+   virtual IndexType GetAlignmentPointIndex(Float64 station) const = 0;
 
-   // offset for each crown point
-   virtual Float64 GetCrownPointOffset(IndexType crownPointIdx, Float64 station) const = 0;
+   // returns the offset from the alignment point to the specified ridge point
+   virtual Float64 GetAlignmentOffset(IndexType ridgePointIdx, Float64 station) const = 0;
+
+   // returns the ridge point index for the profile grade line
+   virtual IndexType GetProfileGradeLineIndex(Float64 station) const = 0;
+
+   // returns the offset from the profile grade line to the specified ridge point
+   virtual Float64 GetProfileGradeLineOffset(IndexType ridgePointIdx, Float64 station) const = 0;
 };
 
 
 /*****************************************************************************
 INTERFACE
-   IRoadway
+   IGeometry
 
-   Interface to get alignment information.
-
-DESCRIPTION
-   Interface to get alignment information.
+   Interface to compute geometric information
 *****************************************************************************/
 // {F013DA5F-708F-461b-9905-8BA164A436FA}
 DEFINE_GUID(IID_IGeometry, 
@@ -181,13 +168,13 @@ interface IGeometry : IUnknown
    // Project
    virtual HRESULT PointOnLineByPoints(IPoint2d* pnt,IPoint2d* start,IPoint2d* end,Float64 offset,IPoint2d** point) const = 0;
    virtual HRESULT PointOnLineSegment(IPoint2d* from,ILineSegment2d* seg,Float64 offset,IPoint2d** point) const = 0;
-   virtual HRESULT PointOnCurve(IPoint2d* pnt,IHorzCurve* curve,IPoint2d** point) const = 0;
+   virtual HRESULT PointOnCurve(IPoint2d* pnt,ICompoundCurve* curve,IPoint2d** point) const = 0;
 
    // Divide
    virtual HRESULT Arc(IPoint2d* from, IPoint2d* vertex, IPoint2d* to,CollectionIndexType nParts,IPoint2dCollection** points) const = 0;
    virtual HRESULT BetweenPoints(IPoint2d* from, IPoint2d* to,CollectionIndexType nParts,IPoint2dCollection** points) const = 0;
    virtual HRESULT LineSegment(ILineSegment2d* seg,CollectionIndexType nParts,IPoint2dCollection** points) const = 0;
-	virtual HRESULT HorzCurve(IHorzCurve* curve, CollectionIndexType nParts, IPoint2dCollection** points) const = 0;
+	virtual HRESULT CompoundCurve(ICompoundCurve* curve, CollectionIndexType nParts, IPoint2dCollection** points) const = 0;
    virtual HRESULT Path(IPath* pPath,CollectionIndexType nParts,Float64 start,Float64 end,IPoint2dCollection** points) const = 0;
 
    // Tangent

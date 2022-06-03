@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -85,6 +85,12 @@ void CInterfaceShearDetails::Build(IBroker* pBroker, rptChapter* pChapter,
    *pChapter << pPara;
 
    (*pPara) << _T("Details for Horizontal Interface Shear Capacity (") << GetLimitStateString(ls) << _T(") [") << LrfdCw8th(_T("5.8.4.1"), _T("5.7.4.1")) << _T("]") << rptNewLine;
+
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
+   if (pMaterials->GetSegmentConcreteType(CSegmentKey(girderKey, 0)) == pgsTypes::PCI_UHPC)
+   {
+      (*pPara) << _T("PCI UHPC SDG E.7.4.1") << rptNewLine;
+   }
 
    GET_IFACE2(pBroker, IDocumentType, pDocType);
    location.IncludeSpanAndGirder(pDocType->IsPGSpliceDocument() || girderKey.groupIndex == ALL_GROUPS);
@@ -332,7 +338,7 @@ void CInterfaceShearDetails::BuildRating(IBroker* pBroker, rptChapter* pChapter,
 
 rptRcTable* CInterfaceShearDetails::CreateVuiTable(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
-   ColumnIndexType nCol = m_ShearFlowMethod == sfmLRFD ? 6 : 7;
+   ColumnIndexType nCol = m_ShearFlowMethod == pgsTypes::sfmLRFD ? 6 : 7;
 
    rptRcTable* vui_table = rptStyleManager::CreateDefaultTable(nCol);
 
@@ -344,7 +350,7 @@ rptRcTable* CInterfaceShearDetails::CreateVuiTable(IBroker* pBroker,rptChapter* 
 
    (*vui_table)(0, col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-   if (m_ShearFlowMethod == sfmLRFD)
+   if (m_ShearFlowMethod == pgsTypes::sfmLRFD)
    {
       (*vui_table)(0, col++) << COLHDR(Sub2(_T("d"), _T("vi")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
    }
@@ -356,7 +362,7 @@ rptRcTable* CInterfaceShearDetails::CreateVuiTable(IBroker* pBroker,rptChapter* 
 
    (*vui_table)(0, col++) << COLHDR(Sub2(_T("V"), _T("u")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
 
-   if (m_ShearFlowMethod == sfmLRFD)
+   if (m_ShearFlowMethod == pgsTypes::sfmLRFD)
    {
       (*vui_table)(0, col++) << COLHDR(Sub2(_T("v"), _T("ui")) << _T(" = ") << Sub2(_T("V"), _T("u")) << _T("/") << Sub2(_T("d"), _T("vi")), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit());
    }
@@ -368,7 +374,7 @@ rptRcTable* CInterfaceShearDetails::CreateVuiTable(IBroker* pBroker,rptChapter* 
    (*vui_table)(0, col++) << COLHDR(Sub2(_T("b"), _T("vi")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
    (*vui_table)(0, col++) << COLHDR(Sub2(symbol(nu), _T("ui")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
 
-   if (m_ShearFlowMethod == sfmLRFD)
+   if (m_ShearFlowMethod == pgsTypes::sfmLRFD)
    {
       pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
       *pChapter << pPara;
@@ -387,7 +393,7 @@ void CInterfaceShearDetails::FillVuiTable(rptRcTable* pTable,RowIndexType row,co
    Float64 Vui = pArtifact->GetDemand();
    (*pTable)(row, col++) << location.SetValue(POI_SPAN, poi);
 
-   if (m_ShearFlowMethod == sfmLRFD)
+   if (m_ShearFlowMethod == pgsTypes::sfmLRFD)
    {
       (*pTable)(row, col++) << dim.SetValue(pArtifact->GetDv());
    }

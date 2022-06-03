@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -420,7 +420,7 @@ private:
    Float64 m_HgEnd;
 
    // values cached for performance
-   std::array<Float64, 3> m_Aps; // area of straight, harped, and temporary strand (use pgsTypes::StrandType enum)
+   std::array<Float64, 3> m_aps; // nominal area of single strand (use pgsTypes::StrandType enum)
    Float64 m_SegmentLength;
    Float64 m_SpanLength;
    Float64 m_StartConnectionLength;

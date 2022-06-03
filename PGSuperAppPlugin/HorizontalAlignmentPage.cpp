@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -74,9 +74,12 @@ void CHorizontalAlignmentPage::DoDataExchange(CDataExchange* pDX)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	//}}AFX_DATA_MAP
 
+   GET_IFACE2(GetBroker(), IEAFDisplayUnits, pDisplayUnits);
+
    CComPtr<IDirection> direction;
    direction.CoCreateInstance(CLSID_Direction);
 
+   DDX_String(pDX, IDC_NAME, m_AlignmentData.Name);
 
    if ( pDX->m_bSaveAndValidate )
    {
@@ -84,17 +87,26 @@ void CHorizontalAlignmentPage::DoDataExchange(CDataExchange* pDX)
       direction->get_Value(&m_AlignmentData.Direction);
 
       m_Grid.SortCurves();
-      if ( !m_Grid.GetCurveData(m_AlignmentData.HorzCurves) )
+      if ( !m_Grid.GetCurveData(m_AlignmentData.CompoundCurves) )
       {
          AfxMessageBox(_T("Invalid curve data"));
          pDX->Fail();
       }
 
-      std::vector<HorzCurveData>::iterator iter;
+      std::vector<CompoundCurveData>::iterator iter;
       int curveID = 1;
-      for ( iter = m_AlignmentData.HorzCurves.begin(); iter != m_AlignmentData.HorzCurves.end(); iter++, curveID++ )
+      for ( iter = m_AlignmentData.CompoundCurves.begin(); iter != m_AlignmentData.CompoundCurves.end(); iter++, curveID++ )
       {
-         HorzCurveData& hc = *iter;
+         // NOTE... a curve radius of exactly 0.0 means there is an angle point in the alignment (not a curve)
+         CompoundCurveData& hc = *iter;
+         if (hc.Radius < MIN_CURVE_RADIUS && !IsZero(hc.Radius))
+         {
+            CString strMsg;
+            strMsg.Format(_T("Curve Radius cannot be less than %s for curve # %d"), FormatDimension(MIN_CURVE_RADIUS, pDisplayUnits->GetSpanLengthUnit()), curveID);
+            AfxMessageBox(strMsg);
+            pDX->Fail();
+         }
+
          if ( hc.Radius < 0 )
          {
             CString strMsg;
@@ -124,10 +136,9 @@ void CHorizontalAlignmentPage::DoDataExchange(CDataExchange* pDX)
    {
       direction->put_Value(m_AlignmentData.Direction);
       DDX_Direction(pDX,IDC_DIRECTION,direction,m_DirFormatter);
-      m_Grid.SetCurveData(m_AlignmentData.HorzCurves);
+      m_Grid.SetCurveData(m_AlignmentData.CompoundCurves);
    }
 
-   GET_IFACE2(GetBroker(),IEAFDisplayUnits,pDisplayUnits);
    DDX_Station(pDX,  IDC_REFSTATION, m_AlignmentData.RefStation, pDisplayUnits->GetStationFormat() );
    DDX_UnitValue(pDX,IDC_NORTHING,m_AlignmentData.yRefPoint,pDisplayUnits->GetAlignmentLengthUnit());
    DDX_UnitValue(pDX,IDC_EASTING, m_AlignmentData.xRefPoint,pDisplayUnits->GetAlignmentLengthUnit());

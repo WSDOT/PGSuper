@@ -1,6 +1,6 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 29.75    8   0.00                     1     1    BB-4B          48  0.6  270   9.36   9.36                                              4.000  5.000   1.393    -1.071     1928   0.379  0.577   2.524  0.000 -0.038 -0.042 -0.080 224.82  583.61    1.00    1.00    1.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 29.75    8   0.00                     1     1    BB-4B          48  0.6  270   9.36   9.36                                              4.000  5.000   1.393    -1.071     1928   0.379  0.577   2.522  0.000 -0.038 -0.042 -0.080 224.82  583.61    1.00    1.00    1.00    2.47    0.42    3.20    0.54    6.47 
 
 
 The Specification Check was Not Successful
@@ -9,16 +9,16 @@ Compression stress check failed for Service I Limit State in Interval 9 Install 
 Compression stress check failed for Service I Limit State in Interval 13 Open to Traffic
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Stirrup detailing checks failed for the Strength I Limit State.
-Bursting zone check failed.
+Bursting check failed.
 Confinement zone check failed.
 Lifting checks failed
 Hauling checks failed
 Finished elevation check failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 29.75    8   0.00                     1     2    BB-4B          48  0.6  270   9.36   9.36                                              4.000  5.000   1.328    -1.027     1822   0.341  0.477   2.524  0.000 -0.038 -0.042 -0.080 224.82  583.61    1.00    1.00    1.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 29.75    8   0.00                     1     2    BB-4B          48  0.6  270   9.36   9.36                                              4.000  5.000   1.328    -1.027     1822   0.341  0.477   2.522  0.000 -0.038 -0.042 -0.080 224.82  583.61    1.00    1.00    1.00    2.74    0.50    3.56    0.65    7.18 
 
 
 The Specification Check was Not Successful
@@ -27,7 +27,7 @@ Compression stress check failed for Service I Limit State in Interval 9 Install 
 Compression stress check failed for Service I Limit State in Interval 13 Open to Traffic
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Stirrup detailing checks failed for the Strength I Limit State.
-Bursting zone check failed.
+Bursting check failed.
 Confinement zone check failed.
 Lifting checks failed
 Hauling checks failed

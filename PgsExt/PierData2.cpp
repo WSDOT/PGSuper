@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1722,10 +1722,18 @@ void CPierData2::SetSegmentConnectionType(pgsTypes::PierSegmentConnectionType ne
    }
 }
 
-void CPierData2::SetGirderEndDistance(pgsTypes::PierFaceType face,Float64 endDist,ConnectionLibraryEntry::EndDistanceMeasurementType measure)
+bool CPierData2::SetGirderEndDistance(pgsTypes::PierFaceType face,Float64 endDist,ConnectionLibraryEntry::EndDistanceMeasurementType measure)
 {
-   m_GirderEndDistance[face] = endDist;
-   m_EndDistanceMeasurementType[face] = measure;
+   if (endDist != m_GirderEndDistance[face] || measure != m_EndDistanceMeasurementType[face])
+   {
+      m_GirderEndDistance[face] = endDist;
+      m_EndDistanceMeasurementType[face] = measure;
+      return true;
+   }
+   else
+   {
+      return false;
+   }
 }
 
 void CPierData2::GetGirderEndDistance(pgsTypes::PierFaceType face,Float64* pEndDist,ConnectionLibraryEntry::EndDistanceMeasurementType* pMeasure) const
@@ -1734,10 +1742,18 @@ void CPierData2::GetGirderEndDistance(pgsTypes::PierFaceType face,Float64* pEndD
    *pMeasure = m_EndDistanceMeasurementType[face];
 }
 
-void CPierData2::SetBearingOffset(pgsTypes::PierFaceType face,Float64 offset,ConnectionLibraryEntry::BearingOffsetMeasurementType measure)
+bool CPierData2::SetBearingOffset(pgsTypes::PierFaceType face, Float64 offset, ConnectionLibraryEntry::BearingOffsetMeasurementType measure)
 {
-   m_GirderBearingOffset[face] = offset;
-   m_BearingOffsetMeasurementType[face] = measure;
+   if (m_GirderBearingOffset[face] != offset || m_BearingOffsetMeasurementType[face] != measure)
+   {
+      m_GirderBearingOffset[face] = offset;
+      m_BearingOffsetMeasurementType[face] = measure;
+      return true;
+   }
+   else
+   {
+      return false;
+   }
 }
 
 void CPierData2::GetBearingOffset(pgsTypes::PierFaceType face,Float64* pOffset,ConnectionLibraryEntry::BearingOffsetMeasurementType* pMeasure) const

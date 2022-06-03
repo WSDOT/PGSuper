@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -67,6 +67,13 @@ bool CGirderDescDlg::HasDeck() const
    return IsStructuralDeck(m_DeckType);
 }
 
+LPCTSTR CGirderDescDlg::GetIntentionalRougheningPrompt() const
+{
+   return m_pSegment->Material.Concrete.Type == pgsTypes::PCI_UHPC ?
+      _T("Top flange is intentionally roughened with fluted joints") :
+      _T("Top flange is intentionally roughened for interface shear capacity");
+}
+
 INT_PTR CGirderDescDlg::DoModal()
 {
    INT_PTR result = CPropertySheet::DoModal();
@@ -118,17 +125,17 @@ void CGirderDescDlg::Init(const CBridgeDescription2* pBridgeDesc,const CSegmentK
 
    m_TimelineMgr = *(pBridgeDesc->GetTimelineManager());
 
-   if( m_pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectRowInput || m_pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectStrandInput)
+   if( IsGridBasedStrandModel(m_pSegment->Strands.GetStrandDefinitionType()))
    {
-      AddAdditionalPropertyPages( false, false );
+      GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
+      GET_IFACE2(pBroker, ISpecification, pSpec);
+      GET_IFACE2(pBroker, ILibrary, pLib);
+      const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+      AddAdditionalPropertyPages(pSpecEntry->AllowStraightStrandExtensions(), pStrandGeom->CanDebondStrands(m_SegmentKey, pgsTypes::Straight));
    }
    else
    {
-      GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-      GET_IFACE2(pBroker,ISpecification,pSpec);
-      GET_IFACE2(pBroker,ILibrary,pLib);
-      const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-      AddAdditionalPropertyPages( pSpecEntry->AllowStraightStrandExtensions(), pStrandGeom->CanDebondStrands(m_SegmentKey,pgsTypes::Straight) );
+      AddAdditionalPropertyPages(false, false);
    }
 
    m_SpanGdrDetailsBearingsPage.m_psp.dwFlags |= PSP_HASHELP;

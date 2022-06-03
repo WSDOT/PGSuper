@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -36,6 +36,10 @@
 #include <IFace\DistFactorEngineer.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\Intervals.h>
+
+#include <IFace\RatingSpecification.h>
+#include <PgsExt\RatingArtifact.h>
+#include <PgsExt\ISummaryRatingArtifact.h>
 
 #if defined _DEBUG
 #include <IFace\DocumentType.h>
@@ -176,7 +180,7 @@ int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, IBroker*
    rDataExporter.WriteIntToCell(1, _T("NStot"), m_RowNum, strandNum);
 
 	// STRAND SIZE
-   const matPsStrand* strandMatP = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
+   const matPsStrand* strandMatP = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Straight);
    Float64 value = strandMatP->GetNominalDiameter();
    value = ::ConvertFromSysUnits( value, unitMeasure::Inch );
    std::_tstring strandSize = FractionalStrandSize (value); // Convert value to fraction representation
@@ -188,14 +192,13 @@ int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, IBroker*
    rDataExporter.WriteIntToCell(1, _T("Strength"), m_RowNum, strandStrength);
 
 	// STRAND ECCENTRICITY AT CENTER LINE
-   Float64 nEff;
-   value = pStrandGeometry->GetEccentricity( releaseIntervalIdx, pmid, pgsTypes::Permanent, &nEff );
+   value = pStrandGeometry->GetEccentricity( releaseIntervalIdx, pmid, pgsTypes::Permanent).Y();
 	Float64 strandEccCL = ::ConvertFromSysUnits( value, unitMeasure::Inch );
 
    rDataExporter.WriteFloatToCell(1, _T("eCL"), m_RowNum, strandEccCL);
 
 	// STRAND ECCENTRICITY AT ENDS
-   value = pStrandGeometry->GetEccentricity( releaseIntervalIdx, pois, pgsTypes::Permanent, &nEff );
+   value = pStrandGeometry->GetEccentricity( releaseIntervalIdx, pois, pgsTypes::Permanent).Y();
 	Float64 strandEccEnd = ::ConvertFromSysUnits( value, unitMeasure::Inch );
 
    rDataExporter.WriteFloatToCell(1, _T("eEnd"), m_RowNum, strandEccEnd);
@@ -259,6 +262,38 @@ int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, IBroker*
    Float64 shearDistFactor = pDistFact->GetShearDistFactor(spanKey,pgsTypes::StrengthI);
 
    rDataExporter.WriteFloatToCell(1, _T("gShear"), m_RowNum, shearDistFactor);
+
+   // Design Load rating
+   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   std::vector<CGirderKey> girderKeys{ girderKey };
+   std::shared_ptr<const pgsISummaryRatingArtifact> pInventoryRatingArtifact = pIArtifact->GetSummaryRatingArtifact(girderKeys,pgsTypes::lrDesign_Inventory,INVALID_INDEX);
+   std::shared_ptr<const pgsISummaryRatingArtifact> pOperatingRatingArtifact = pIArtifact->GetSummaryRatingArtifact(girderKeys,pgsTypes::lrDesign_Operating,INVALID_INDEX);
+
+   // Strength I
+   Float64 invMomRF = pInventoryRatingArtifact->GetMomentRatingFactor(true);
+   Float64 invShearRF(0.0);
+   if (pRatingSpec->RateForShear(pgsTypes::lrDesign_Inventory))
+   {
+      invShearRF = pInventoryRatingArtifact->GetShearRatingFactor();
+   }
+   
+   Float64 oprMomRF = pOperatingRatingArtifact->GetMomentRatingFactor(true);
+   Float64 oprShearRF(0.0);
+   if (pRatingSpec->RateForShear(pgsTypes::lrDesign_Operating))
+   {
+      oprShearRF = pOperatingRatingArtifact->GetShearRatingFactor();
+   }
+
+   // Inventory and operating Str I RF's are envelope of moment and shear
+   Float64 invRF = min(invMomRF, invShearRF);
+   Float64 oprRF = min(oprMomRF, oprShearRF);
+
+   // Service III
+   Float64 invStressRF = pInventoryRatingArtifact->GetStressRatingFactor();
+
+   rDataExporter.WriteFloatToCell(1, _T("RFStr1Inventory"), m_RowNum, invRF);
+   rDataExporter.WriteFloatToCell(1, _T("RFStr1Operating"), m_RowNum, oprRF);
+   rDataExporter.WriteFloatToCell(1, _T("RFSvc3Inventory"), m_RowNum, invStressRF);
 
    // Done with values that are common to both strand layouts. Now write to specific layouts
    Float64 girder_length = pBridge->GetSegmentLength(segmentKey);

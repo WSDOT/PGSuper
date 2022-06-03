@@ -17,6 +17,8 @@ PGSuper Dialogs {#ug_dialogs}
 * @subpage ug_dialogs_construct_segments
 * @subpage ug_dialogs_copy_concrete
 * @subpage ug_dialogs_copy_girder_properties
+* @subpage ug_dialogs_copy_pier_properties
+* @subpage ug_dialogs_cracked_section_details_report
 * @subpage ug_dialogs_design_complete
 * @subpage ug_dialogs_design_live_loads
 * @subpage ug_dialogs_distributed_load
@@ -41,6 +43,7 @@ PGSuper Dialogs {#ug_dialogs}
 * @subpage ug_dialogs_loadrating_summary_report_options
 * @subpage ug_dialogs_loads_view
 * @subpage ug_dialogs_moment_load
+* @subpage ug_dialogs_moment_capacity_details_report
 * @subpage ug_dialogs_pier_description
 * @subpage ug_dialogs_plugins
 * @subpage ug_dialogs_point_load

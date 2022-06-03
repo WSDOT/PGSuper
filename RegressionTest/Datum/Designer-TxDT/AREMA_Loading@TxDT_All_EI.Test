@@ -1,6 +1,6 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 13.00    2   0.00     CP Bridge       1     1    Stand          50  0.6  270   5.30   5.30                                              4.000  5.600   1.876    -1.877     2602   0.500  1.000   0.585  0.000  0.000 -0.002 -0.002 122.70  517.18    3.00    2.00    2.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 13.00    2   0.00     CP Bridge       1     1    Stand          50  0.6  270   5.30   5.30                                              4.000  5.600   1.876    -1.877     2602   0.500  1.000   0.585  0.000  0.000 -0.002 -0.002 122.70  517.18    3.00    2.00    2.00    2.60    1.41    3.38    1.82    2.89 
 
 
 Girder design was Not Successful

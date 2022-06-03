@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -46,7 +46,7 @@ rptRcTable(NumColumns,0)
 
 CChangeOfConcreteStressTable* CChangeOfConcreteStressTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
    GET_IFACE2(pBroker, IGirder, pGirder);
    bool bHasDeckLoads = pGirder->HasStructuralLongitudinalJoints() && pBridge->GetDeckType() != pgsTypes::sdtNone ? true : false; // if longitudinal joints are structural and there is a deck, the deck dead loads go on the composite section
    bool bIs2StageComposite = pGirder->HasStructuralLongitudinalJoints() && IsStructuralDeck(pBridge->GetDeckType()) ? true : false;
@@ -177,5 +177,5 @@ void CChangeOfConcreteStressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,
       (*this)(row + rowOffset, col++) << dim.SetValue(Ybc2);
       (*this)(row + rowOffset, col++) << mom_inertia.SetValue(Ic2);
    }
-   (*this)(row+rowOffset, col++) << stress.SetValue( -pDetails->pLosses->GetDeltaFcd1() );
+   (*this)(row+rowOffset, col++) << stress.SetValue( -pDetails->pLosses->GetDeltaFcd1(true/*apply elastic gains reduction*/) );
 }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -49,7 +49,7 @@ Float64 GetControllingRatingFactor(const C& artifacts, const T** ppControllingAr
    {
       const auto& artifact(item.second);
       Float64 rf = artifact.GetRatingFactor();
-      if (rf < RF)
+      if (::IsLT(rf,RF))
       {
          RF = rf;
          *ppControllingArtifact = &artifact;
@@ -455,37 +455,37 @@ Float64 pgsRatingArtifact::GetRatingFactorEx(const pgsMomentRatingArtifact** ppP
 
    Float64 RF = DBL_MAX;
    int i = -1; // initialize to an invalid value so that we know if a rating factor wasn't found
-   if (m_RF_PositiveMoment < RF )
+   if (::IsLT(m_RF_PositiveMoment,RF))
    {
       RF = m_RF_PositiveMoment;
       i = 0;
    }
 
-   if (m_RF_NegativeMoment < RF )
+   if (::IsLT(m_RF_NegativeMoment,RF) )
    {
       RF = m_RF_NegativeMoment;
       i = 1;
    }
 
-   if (m_RF_Shear < RF )
+   if (::IsLT(m_RF_Shear,RF) )
    {
       RF = m_RF_Shear;
       i = 2;
    }
 
-   if (m_RF_Stress < RF )
+   if (::IsLT(m_RF_Stress,RF) )
    {
       RF = m_RF_Stress;
       i = 3;
    }
 
-   if (m_RF_PositiveMomentYieldStress < RF )
+   if (::IsLT(m_RF_PositiveMomentYieldStress,RF) )
    {
       RF = m_RF_PositiveMomentYieldStress;
       i = 4;
    }
 
-   if (m_RF_NegativeMomentYieldStress < RF )
+   if (::IsLT(m_RF_NegativeMomentYieldStress,RF) )
    {
       RF = m_RF_NegativeMomentYieldStress;
       i = 5;

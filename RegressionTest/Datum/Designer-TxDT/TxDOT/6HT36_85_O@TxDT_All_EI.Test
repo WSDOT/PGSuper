@@ -1,23 +1,23 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 21.98    4   0.02    4-6HT36, 85      1     1    6HT36          54  1/2  270  14.47   7.21   0.00   0.00                                              5.400  6.000   3.047    -4.465     3654   0.518  0.518   1.971  0.000 -0.207 -0.310 -0.517 146.75  441.91    1.00    1.00    1.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 21.98    4   0.02    4-6HT36, 85      1     1    6HT36          54  1/2  270  14.47   7.21   0.00   0.00                                              5.400  6.000   3.047    -4.465     3654   0.518  0.518   3.912  0.000 -0.207 -0.310 -0.517 146.75  441.91    1.00    1.00    1.00    1.42    2.68    1.84    3.89    1.03 
 
 
 The Specification Check was Not Successful
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Bursting zone check failed.
+Bursting check failed.
 Confinement zone check failed.
 Live Load Deflection check failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 21.98    4   0.02    4-6HT36, 85      1     2    6HT36          54  1/2  270  14.43   7.17   0.00   0.00                                              5.400  6.000   3.064    -4.468     3650   0.518  0.518   1.973  0.000 -0.208 -0.311 -0.519 146.94  442.37    0.00    0.00    0.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 21.98    4   0.02    4-6HT36, 85      1     2    6HT36          54  1/2  270  14.43   7.17   0.00   0.00                                              5.400  6.000   3.064    -4.468     3650   0.518  0.518   3.914  0.000 -0.208 -0.311 -0.519 146.94  442.37    0.00    0.00    0.00    1.41    3.00    1.83    3.89    1.03 
 
 
 The Specification Check was Not Successful
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Bursting zone check failed.
+Bursting check failed.
 Confinement zone check failed.
 Live Load Deflection check failed
 

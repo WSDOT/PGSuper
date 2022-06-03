@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -349,6 +349,9 @@ BOOL CGirderNameGrid::OnEndEditing(ROWCOL nRow, ROWCOL nCol)
 #if defined _DEBUG
    m_pGirderGroup->AssertValid();
 #endif
+
+   CSpanGirderLayoutPage* pParent = (CSpanGirderLayoutPage*)GetParent();
+   pParent->GirderTypeChanged();
 
    return CGXGridWnd::OnEndEditing(nRow, nCol);
 }

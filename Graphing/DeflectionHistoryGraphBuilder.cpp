@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,6 +23,7 @@
 #include "stdafx.h"
 #include "resource.h"
 #include <Graphing\DeflectionHistoryGraphBuilder.h>
+#include <Graphing\ExportGraphXYTool.h>
 #include "DeflectionHistoryGraphController.h"
 #include "DeflectionHistoryGraphViewControllerImp.h"
 #include "..\Documentation\PGSuper.hh"
@@ -335,10 +336,10 @@ void CDeflectionHistoryGraphBuilder::PlotDeflection(Float64 x,const pgsPointOfIn
    bool bIncludePrestress = true;
    bool bIncludeLiveLoad  = false;
    bool bIncludeElevationAdjustment = ((CDeflectionHistoryGraphController*)m_pGraphController)->IncludeElevationAdjustment();
-   bool bIncludePrecamber = ((CDeflectionHistoryGraphController*)m_pGraphController)->IncludePrecamber();
+   bool bIncludePrecamber = ((CDeflectionHistoryGraphController*)m_pGraphController)->IncludeUnrecoverableDefl();
 
    Float64 Ymin, Ymax;
-   pLimitStateForces->GetDeflection(intervalIdx,pgsTypes::ServiceI,poi,bat,bIncludePrestress,bIncludeLiveLoad,bIncludeElevationAdjustment,bIncludePrecamber,&Ymin,&Ymax);
+   pLimitStateForces->GetDeflection(intervalIdx,pgsTypes::ServiceI,poi,bat,bIncludePrestress,bIncludeLiveLoad,bIncludeElevationAdjustment,bIncludePrecamber,bIncludePrecamber,&Ymin,&Ymax);
    AddGraphPoint(dataSeries, x, Ymin);
 }
 
@@ -351,7 +352,7 @@ void CDeflectionHistoryGraphBuilder::AddGraphPoint(IndexType series, Float64 xva
    ASSERT(pcy);
    Float64 x = pcx->Convert(xval);
    Float64 y = pcy->Convert(yval);
-   m_Graph.AddPoint(series, gpPoint2d(x,y));
+   m_Graph.AddPoint(series, GraphPoint(x,y));
 }
 
 void CDeflectionHistoryGraphBuilder::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
@@ -423,4 +424,9 @@ void CDeflectionHistoryGraphBuilder::UpdateYAxis()
    m_Graph.SetYAxisNiceRange(true);
    m_Graph.SetYAxisNumberOfMinorTics(5);
    m_Graph.SetYAxisNumberOfMajorTics(21);
+}
+
+void CDeflectionHistoryGraphBuilder::ExportGraphData(LPCTSTR rstrDefaultFileName)
+{
+   CExportGraphXYTool::ExportGraphData(m_Graph,rstrDefaultFileName);
 }

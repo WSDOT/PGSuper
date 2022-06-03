@@ -3,6 +3,11 @@
 // Used by Reporting.rc
 //
 #define IDCANCEL2                       4
+#define IDD_MOMENT_CAPACITY_SECTION_POI 207
+#define IDD_CRACKED_SECTION_POI         221
+#define IDC_MOMENT1                     223
+#define IDC_MOMENT2                     225
+#define IDC_HELPBTN                     250
 #define IDC_SELECT_ALL                  255
 #define IDC_CLEAR_ALL                   256
 #define IDD_MULTI_GIRDER_SELECT         317
@@ -16,6 +21,8 @@
 #define IDD_BRIDGEANALYSISREPORT        3003
 #define IDS_E_NOCHAPTERS                3004
 #define IDD_MULTIGIRDERREPORT           3004
+#define IDC_GIRDER2                     3004
+#define IDC_SEGMENT                     3004
 #define IDC_LABEL                       3005
 #define IDS_E_NOGIRDERS                 3005
 #define IDD_MULTIVIEWREPORT             3005
@@ -46,14 +53,16 @@
 #define IDC_CHECK1                      3019
 #define IDC_SHEAR                       3019
 #define IDC_AXIAL                       3020
+#define IDC_BUTTON2                     3021
+#define IDC_DESELECT_ALL                3021
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        3013
+#define _APS_NEXT_RESOURCE_VALUE        3014
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         3020
+#define _APS_NEXT_CONTROL_VALUE         3022
 #define _APS_NEXT_SYMED_VALUE           3000
 #endif
 #endif

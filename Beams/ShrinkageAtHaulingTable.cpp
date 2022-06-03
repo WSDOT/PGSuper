@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,6 +27,8 @@
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
 #include <PsgLib\SpecLibraryEntry.h>
+
+#include <PgsExt\GirderMaterial.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -77,6 +79,10 @@ CShrinkageAtHaulingTable* CShrinkageAtHaulingTable::PrepareTable(rptChapter* pCh
 
    GET_IFACE2(pBroker, IBridge, pBridge);
    bool bIsAsymmetric = pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing() ? true : false;
+
+   GET_IFACE2(pBroker, ISegmentData, pSegmentData);
+   bool bUHPC = pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC ? true : false;
+   bool bPCTT = (bUHPC ? pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.bPCTT : false);
 
    // Create and configure the table
    ColumnIndexType numColumns = 3; // location, location, Aps
@@ -142,78 +148,94 @@ CShrinkageAtHaulingTable* CShrinkageAtHaulingTable::PrepareTable(rptChapter* pCh
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
+   *pParagraph << rptRcImage(strImagePath + _T("Delta_fpSRH.png")) << rptNewLine;
+
    if (bIsAsymmetric)
    {
       if (spMode == pgsTypes::spmGross)
       {
-         *pParagraph << rptRcImage(strImagePath + _T("Delta_FpSRH_Gross_Asymmetric.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("Kih_Gross_Asymmetric.png")) << rptNewLine;
       }
       else
       {
-         *pParagraph << rptRcImage(strImagePath + _T("Delta_FpSRH_Transformed_Asymmetric.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("Kih_Transformed_Asymmetric.png")) << rptNewLine;
       }
    }
    else
    {
       if (spMode == pgsTypes::spmGross)
       {
-         *pParagraph << rptRcImage(strImagePath + _T("Delta_FpSRH_Gross.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("Kih_Gross.png")) << rptNewLine;
       }
       else
       {
-         *pParagraph << rptRcImage(strImagePath + _T("Delta_FpSRH_Transformed.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("Kih_Transformed.png")) << rptNewLine;
       }
    }
 
-   if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
+   if (bUHPC)
    {
-      if (IS_SI_UNITS(pDisplayUnits))
-      {
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn-SI.png")) << rptNewLine;
-      }
+      if (bPCTT)
+         *pParagraph << rptRcImage(strImagePath + _T("CreepShrinkageAtHauling_UHPC_PCTT.png")) << rptNewLine;
       else
-      {
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn-US.png")) << rptNewLine;
-      }
-   }
-   else if ( pSpecEntry->GetSpecificationType() == lrfdVersionMgr::ThirdEditionWith2006Interims )
-   {
-      if (IS_SI_UNITS(pDisplayUnits))
-      {
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2006-SI.png")) << rptNewLine;
-      }
-      else
-      {
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2006-US.png")) << rptNewLine;
-      }
-   }
-   else
-   {
-      if (IS_SI_UNITS(pDisplayUnits))
-      {
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2007-SI.png")) << rptNewLine;
-      }
-      else
-      {
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2007-US.png")) << rptNewLine;
-      }
-   }
+         *pParagraph << rptRcImage(strImagePath + _T("CreepShrinkageAtHauling_UHPC.png")) << rptNewLine;
 
-   *pParagraph << rptRcImage(strImagePath + _T("HumidityFactor.png")) << rptNewLine;
-   if ( IS_SI_UNITS(pDisplayUnits) )
-   {
-      ATLASSERT( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims );
-      *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_SI.png")) << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + _T("UHPC_Factors.png")) << rptNewLine;
    }
    else
    {
-      if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims )
+      *pParagraph << rptRcImage(strImagePath + _T("CreepShrinkageAtHauling.png")) << rptNewLine;
+
+      if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
       {
-         *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_US.png")) << rptNewLine;
+         if (IS_SI_UNITS(pDisplayUnits))
+         {
+            *pParagraph << rptRcImage(strImagePath + _T("KvsEqn-SI.png")) << rptNewLine;
+         }
+         else
+         {
+            *pParagraph << rptRcImage(strImagePath + _T("KvsEqn-US.png")) << rptNewLine;
+         }
+      }
+      else if ( pSpecEntry->GetSpecificationType() == lrfdVersionMgr::ThirdEditionWith2006Interims )
+      {
+         if (IS_SI_UNITS(pDisplayUnits))
+         {
+            *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2006-SI.png")) << rptNewLine;
+         }
+         else
+         {
+            *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2006-US.png")) << rptNewLine;
+         }
       }
       else
       {
-         *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_US2015.png")) << rptNewLine;
+         if (IS_SI_UNITS(pDisplayUnits))
+         {
+            *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2007-SI.png")) << rptNewLine;
+         }
+         else
+         {
+            *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2007-US.png")) << rptNewLine;
+         }
+      }
+
+      *pParagraph << rptRcImage(strImagePath + _T("HumidityFactor.png")) << rptNewLine;
+      if ( IS_SI_UNITS(pDisplayUnits) )
+      {
+         ATLASSERT( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims );
+         *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_SI.png")) << rptNewLine;
+      }
+      else
+      {
+         if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims )
+         {
+            *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_US.png")) << rptNewLine;
+         }
+         else
+         {
+            *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_US2015.png")) << rptNewLine;
+         }
       }
    }
 
@@ -249,7 +271,7 @@ CShrinkageAtHaulingTable* CShrinkageAtHaulingTable::PrepareTable(rptChapter* pCh
    row++;
    col = 0;
    (*paraTable)(row, col++) << ptl->GetRelHumidity();
-   (*paraTable)(row, col++) << table->ecc.SetValue(ptl->GetVolume()/ptl->GetSurfaceArea());
+   (*paraTable)(row, col++) << table->ecc.SetValue(ptl->GetGirderCreep()->GetVolume()/ptl->GetGirderCreep()->GetSurfaceArea());
    (*paraTable)(row, col++) << table->stress.SetValue(ptl->GetFci());
    (*paraTable)(row, col++) << table->time.SetValue(ptl->GetInitialAge());
    (*paraTable)(row, col++) << table->time.SetValue(ptl->GetAgeAtHauling());
@@ -278,9 +300,9 @@ CShrinkageAtHaulingTable* CShrinkageAtHaulingTable::PrepareTable(rptChapter* pCh
    (*paraTable)(2,2) << ptl->GetGdrK1Shrinkage();
    (*paraTable)(2,3) << ptl->GetGdrK2Shrinkage();
    (*paraTable)(2,4) << table->strain.SetValue(ptl->Get_ebih() * 1000);
-   (*paraTable)(2,5) << ptl->GetGdrK1Creep();
-   (*paraTable)(2,6) << ptl->GetGdrK2Creep();
-   (*paraTable)(2,7) << table->creep.SetValue(ptl->GetCreepInitialToFinal().GetCreepCoefficient());
+   (*paraTable)(2,5) << ptl->GetGirderCreep()->GetK1();
+   (*paraTable)(2,6) << ptl->GetGirderCreep()->GetK2();
+   (*paraTable)(2,7) << table->creep.SetValue(ptl->GetGirderCreep()->GetCreepCoefficient(ptl->GetMaturityAtFinal(),ptl->GetInitialAge()));
 
 
    // intermediate results
@@ -301,16 +323,16 @@ CShrinkageAtHaulingTable* CShrinkageAtHaulingTable::PrepareTable(rptChapter* pCh
    (*paraTable)(0,3) << Sub2(_T("k"),_T("f"));
 
    table->time.ShowUnitTag(true);
-   (*paraTable)(0,4) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("Initial to Hauling") << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetCreepInitialToShipping().GetMaturity());
-   (*paraTable)(0,5) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("Initial to Final") << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetCreepInitialToFinal().GetMaturity());
+   (*paraTable)(0,4) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("Initial to Hauling") << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetMaturityAtHauling());
+   (*paraTable)(0,5) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("Initial to Final") << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetMaturityAtFinal());
    table->time.ShowUnitTag(false);
 
-   (*paraTable)(1,0) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetKvs());
+   (*paraTable)(1,0) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKvs());
    (*paraTable)(1,1) << table->scalar.SetValue(ptl->Getkhs());
-   (*paraTable)(1,2) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetKhc());
-   (*paraTable)(1,3) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetKf());
-   (*paraTable)(1,4) << table->scalar.SetValue(ptl->GetCreepInitialToShipping().GetKtd());
-   (*paraTable)(1,5) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetKtd());
+   (*paraTable)(1,2) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKhc());
+   (*paraTable)(1,3) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKf());
+   (*paraTable)(1,4) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKtd(ptl->GetMaturityAtHauling()));
+   (*paraTable)(1,5) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKtd(ptl->GetMaturityAtFinal()));
 
    if (bIsPrismatic)
    {

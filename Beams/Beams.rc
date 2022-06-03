@@ -59,8 +59,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 6,1,0,0
- PRODUCTVERSION 6,1,0,0
+ FILEVERSION 7,0,0,7
+ PRODUCTVERSION 7,0,0,7
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -78,12 +78,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "Beams Module for PGSuper"
-            VALUE "FileVersion", "6.1.0.0"
+            VALUE "FileVersion", "7.0.0.7"
             VALUE "InternalName", "Beams"
-            VALUE "LegalCopyright", "Copyright © 1999-2021, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "LegalCopyright", "Copyright © 1999-2022, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "Beams.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "6.1.0.0"
+            VALUE "ProductVersion", "7.0.0.7"
         END
     END
     BLOCK "VarFileInfo"
@@ -115,6 +115,8 @@ TXDOTDOUBLET            METAFILE                "res\\txdotdou.emf"
 TAPEREDIBEAM            METAFILE                "res\\TaperedIBeam.emf"
 DECKEDSLABBEAM          METAFILE                "res\\DeckedSlabBeam.emf"
 SPLICEDNUBEAM           METAFILE                "res\\SplicedNUBeam.emf"
+NUDECKEDBULBTEE         METAFILE                "res\\NUDeckedBulbTee.emf"
+PCIDECKEDBULBTEE         METAFILE                "res\\PCIDeckedBulbTee.emf"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -164,6 +166,9 @@ IDR_SPLICEDUBEAMFACTORY REGISTRY                "SplicedUBeamFactory.rgs"
 IDR_SPLICEDNUBEAMFACTORY REGISTRY                "SplicedNUBeamFactory.rgs"
 
 IDR_AGE_ADJUSTED_MATERIAL REGISTRY              "AgeAdjustedMaterial.rgs"
+
+IDR_NUDECKEDBULBTEEFACTORY REGISTRY "NUDeckedBulbTeeFactory.rgs"
+IDR_PCIDECKEDBULBTEEFACTORY REGISTRY "PCIDeckedBulbTeeFactory.rgs"
 
 /////////////////////////////////////////////////////////////////////////////
 //

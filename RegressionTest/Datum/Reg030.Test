@@ -1,6 +1,6 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 18.25    5   0.00                     1     1     Slab          42  0.6  270   9.57   9.42   4    2.0   18     4    2   2   0   0   0   4.000  5.000   3.546    -3.171     2375   0.378  0.546   7.254  0.000  0.000 -0.439 -0.439 222.35  524.12    1.00   14.00   14.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 18.25    5   0.00                     1     1     Slab          42  0.6  270   9.57   9.42   4    2.0   18     4    2   2   0   0   0   4.000  5.000   3.546    -3.171     2375   0.378  0.546   7.259  0.000  0.000 -0.439 -0.439 222.35  524.12    1.00   14.00   14.00    0.51    1.21    0.67    1.85    1.99 
 
 
 The Specification Check was Not Successful
@@ -13,7 +13,7 @@ Compression stress check failed for Service I Limit State in Interval 14 Open to
 Compression stress check failed for Service IA Limit State in Interval 14 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Bursting zone check failed.
+Bursting check failed.
 Confinement zone check failed.
 Lifting checks failed
 Hauling checks failed
@@ -21,9 +21,9 @@ Finished elevation check failed
 Live Load Deflection check failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 18.25    5   0.00                     1     2     Slab          42  0.6  270   9.57   9.42   4    2.0   18     4    2   2   0   0   0   4.000  5.000   3.372    -3.035     2375   0.340  0.443   7.254  0.000  0.000 -0.439 -0.439 222.35  524.12    1.00   14.00   14.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 18.25    5   0.00                     1     2     Slab          42  0.6  270   9.57   9.42   4    2.0   18     4    2   2   0   0   0   4.000  5.000   3.372    -3.035     2375   0.340  0.443   7.259  0.000  0.000 -0.439 -0.439 222.35  524.12    1.00   14.00   14.00    0.57    1.76    0.74    2.79    2.22 
 
 
 The Specification Check was Not Successful
@@ -34,7 +34,7 @@ Compression stress check failed for Service I Limit State in Interval 10 Install
 Compression stress check failed for Service I Limit State in Interval 14 Open to Traffic
 Compression stress check failed for Service I Limit State in Interval 14 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
-Bursting zone check failed.
+Bursting check failed.
 Confinement zone check failed.
 Lifting checks failed
 Hauling checks failed

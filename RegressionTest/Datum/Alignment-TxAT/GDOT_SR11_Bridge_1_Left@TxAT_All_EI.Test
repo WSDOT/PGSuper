@@ -1,0 +1,142 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 49.08    6   8.75 SR 11 over Tobes    1     1    Type1    *      0  0.6  270   0.00   0.00   9.62   9.62                                               0   0.0  0.0  5.000  6.000   1.464    -1.836     1533   0.881  0.867  -0.206 -0.119 -0.014 -0.011 -0.144   0.00    0.00    1.75    5.00    5.00    0.00    0.78    0.00    1.01    0.00 
+
+
+The Specification Check was Not Successful
+Tension stress check failed for Service I Limit State in Interval 11 Cast Deck
+Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Lifting checks failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 49.08    6   8.75 SR 11 over Tobes    1     2    Type1    *      0  0.6  270   0.00   0.00   9.62   9.62                                               0   0.0  0.0  5.000  6.000   1.459    -1.808     1482   0.829  0.867  -0.206 -0.125 -0.014 -0.011 -0.149   0.00    0.00    1.75    5.00    5.00    0.00    0.77    0.00    1.00    0.00 
+
+
+The Specification Check was Not Successful
+Tension stress check failed for Service I Limit State in Interval 11 Cast Deck
+Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Lifting checks failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 49.08    6   8.75 SR 11 over Tobes    1     4    Type1    *      0  0.6  270   0.00   0.00   9.62   9.62                                               0   0.0  0.0  5.000  6.000   1.457    -1.805     1480   0.829  0.867  -0.205 -0.124 -0.013 -0.011 -0.149   0.00    0.00    1.75    5.00    5.00    0.00    0.77    0.00    1.00    0.00 
+
+
+The Specification Check was Not Successful
+Tension stress check failed for Service I Limit State in Interval 11 Cast Deck
+Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Lifting checks failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 49.08    6   8.75 SR 11 over Tobes    2     1    Type2    *      0  0.6  270   0.00   0.00  14.25  14.25                                               0   0.0  0.0  5.000  6.000   4.624    -5.164    12505   0.794  0.867  -4.405 -2.467 -0.280 -0.225 -2.972   0.00    0.00    1.75    5.00    5.00    0.00    0.00    0.00    0.00    0.00 
+
+
+The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 11 Cast Deck
+Tension stress check failed for Service I Limit State in Interval 11 Cast Deck
+Compression stress check failed for Service I Limit State in Interval 18 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 18 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic
+Compression stress check failed for Fatigue I Limit State in Interval 18 Open to Traffic
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Stirrup detailing checks failed for the Strength I Limit State.
+Lifting checks failed
+Hauling checks failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 49.08    6   8.75 SR 11 over Tobes    2     2    Type2    *      0  0.6  270   0.00   0.00  13.62  13.62                                               0   0.0  0.0  5.000  6.000   4.490    -4.953    11778   0.707  0.867  -4.405 -2.392 -0.276 -0.222 -2.891   0.00    0.00    1.75    5.00    5.00    0.00    0.00    0.00    0.00    0.00 
+
+
+The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 11 Cast Deck
+Tension stress check failed for Service I Limit State in Interval 11 Cast Deck
+Compression stress check failed for Service I Limit State in Interval 18 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 18 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Stirrup detailing checks failed for the Strength I Limit State.
+Lifting checks failed
+Hauling checks failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 49.08    6   8.75 SR 11 over Tobes    2     4    Type2    *      0  0.6  270   0.00   0.00  13.62  13.62                                               0   0.0  0.0  5.000  6.000   4.444    -4.901    11660   0.708  0.867  -4.299 -2.335 -0.270 -0.217 -2.821   0.00    0.00    1.75    5.00    5.00    0.00    0.00    0.00    0.00    0.00 
+
+
+The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 11 Cast Deck
+Tension stress check failed for Service I Limit State in Interval 11 Cast Deck
+Compression stress check failed for Service I Limit State in Interval 18 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 18 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Stirrup detailing checks failed for the Strength I Limit State.
+Lifting checks failed
+Hauling checks failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 49.08    6   8.75 SR 11 over Tobes    3     1    Type1    *      0  0.6  270   0.00   0.00   9.62   9.62                                               0   0.0  0.0  5.000  6.000   1.498    -1.887     1575   0.881  0.867  -0.221 -0.128 -0.015 -0.012 -0.155   0.00    0.00    1.75    5.00    5.00    0.00    0.76    0.00    0.99    0.00 
+
+
+The Specification Check was Not Successful
+Tension stress check failed for Service I Limit State in Interval 11 Cast Deck
+Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Lifting checks failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 49.08    6   8.75 SR 11 over Tobes    3     2    Type1    *      0  0.6  270   0.00   0.00   9.62   9.62                                               0   0.0  0.0  5.000  6.000   1.486    -1.846     1511   0.825  0.867  -0.218 -0.132 -0.014 -0.012 -0.158   0.00    0.00    1.75    5.00    5.00    0.00    0.76    0.00    0.98    0.00 
+
+
+The Specification Check was Not Successful
+Tension stress check failed for Service I Limit State in Interval 11 Cast Deck
+Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Lifting checks failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 49.08    6   8.75 SR 11 over Tobes    3     4    Type1    *      0  0.6  270   0.00   0.00   9.62   9.62                                               0   0.0  0.0  5.000  6.000   1.474    -1.829     1498   0.827  0.867  -0.213 -0.129 -0.014 -0.011 -0.154   0.00    0.00    1.75    5.00    5.00    0.00    0.76    0.00    0.99    0.00 
+
+
+The Specification Check was Not Successful
+Tension stress check failed for Service I Limit State in Interval 11 Cast Deck
+Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Lifting checks failed
+
+

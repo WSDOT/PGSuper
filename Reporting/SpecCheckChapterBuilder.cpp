@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -57,6 +57,7 @@
 #include <IFace\RatingSpecification.h>
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
+#include <IFace\SplittingChecks.h>
 
 #include <PgsExt\GirderArtifact.h>
 
@@ -67,7 +68,6 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 void write_splitting_zone_check(IBroker* pBroker,
-                               IEAFDisplayUnits* pDisplayUnits,
                                const pgsGirderArtifact* pGirderArtifact,
                                rptChapter* pChapter);
 
@@ -173,7 +173,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    }
    else
    {
-      ATLASSERT(fci_reqd == -99999);
+      ATLASSERT(fci_reqd == NO_AVAILABLE_CONCRETE_STRENGTH);
       *p << _T("Required ") << RPT_FCI << _T(" = Regardless of the release strength, the stress requirements will not be satisfied.") << rptNewLine;
    }
 
@@ -195,7 +195,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    }
    else
    {
-      ATLASSERT(fc_reqd == -99999);
+      ATLASSERT(fc_reqd == NO_AVAILABLE_CONCRETE_STRENGTH);
       *p << _T("Required ") << RPT_FC << _T(" = Regardless of the concrete strength, the stress requirements will not be satisfied.") << rptNewLine;
    }
 
@@ -390,7 +390,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    if (pSpecEntry->IsSplittingCheckEnabled())
    {
       // Splitting Zone check
-      write_splitting_zone_check(pBroker,pDisplayUnits,pGirderArtifact,pChapter);
+      write_splitting_zone_check(pBroker,pGirderArtifact,pChapter);
    }
 
    if (pSpecEntry->IsConfinementCheckEnabled())
@@ -498,125 +498,6 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    // Precamber Check
    CConstructabilityCheckTable().BuildPrecamberCheck(pChapter, pBroker, girderList, pDisplayUnits);
 
-   // Load rating
-   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
-   if ( !pRatingSpec->AlwaysLoadRate() )
-   {
-      return pChapter;
-   }
-
-   std::vector<CGirderKey> girderKeys{ girderKey }; // needed for rating summary tables
-
-   if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
-   {
-      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
-      (*pChapter) << pPara;
-      pPara->SetName(_T("Design Load Rating"));
-      (*pPara) << pPara->GetName() << rptNewLine;
-      pPara = new rptParagraph;
-      (*pChapter) << pPara;
-      (*pPara) << CRatingSummaryTable().BuildByLimitState(pBroker, girderKeys, CRatingSummaryTable::Design ) << rptNewLine;
-   }
-
-   if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) || pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) || pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
-   {
-      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
-      (*pChapter) << pPara;
-      pPara->SetName(_T("Legal Load Rating"));
-      (*pPara) << pPara->GetName() << rptNewLine;
-      pPara = new rptParagraph;
-      (*pChapter) << pPara;
-
-      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-      {
-         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker, girderKeys, pgsTypes::lrLegal_Routine);
-         if ( pTable )
-         {
-            (*pPara) << pTable << rptNewLine;
-         }
-
-         bool bMustCloseBridge;
-         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker, girderKeys, pgsTypes::lrLegal_Routine,&bMustCloseBridge);
-         if ( pTable )
-         {
-            (*pPara) << pTable << rptNewLine;
-            if (bMustCloseBridge)
-            {
-               *pPara << color(Red) << Bold(_T("Minimum gross live load weight is less than three tons - bridge must be closed MBE 6A.8.3")) << color(Black) << rptNewLine;
-            }
-         }
-      }
-
-      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
-      {
-         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker, girderKeys, pgsTypes::lrLegal_Special);
-         if ( pTable )
-         {
-            (*pPara) << pTable << rptNewLine;
-         }
-
-         bool bMustCloseBridge;
-         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker, girderKeys, pgsTypes::lrLegal_Special,&bMustCloseBridge);
-         if ( pTable )
-         {
-            (*pPara) << pTable << rptNewLine;
-            if (bMustCloseBridge)
-            {
-               *pPara << color(Red) << Bold(_T("Minimum gross live load weight is less than three tons - bridge must be closed MBE 6A.8.3")) << color(Black) << rptNewLine;
-            }
-         }
-      }
-
-      if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
-      {
-         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker, girderKeys, pgsTypes::lrLegal_Emergency);
-         if (pTable)
-         {
-            (*pPara) << pTable << rptNewLine;
-         }
-
-         bool bMustCloseBridge;
-         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker, girderKeys, pgsTypes::lrLegal_Emergency, &bMustCloseBridge);
-         if (pTable)
-         {
-            (*pPara) << pTable << rptNewLine;
-            if (bMustCloseBridge)
-            {
-               *pPara << color(Red) << Bold(_T("Minimum gross live load weight is less than three tons - bridge must be closed MBE 6A.8.3")) << color(Black) << rptNewLine;
-            }
-         }
-      }
-   }
-
-   if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) || pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-   {
-      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
-      (*pChapter) << pPara;
-      pPara->SetName(_T("Permit Load Rating"));
-      (*pPara) << pPara->GetName() << rptNewLine;
-      pPara = new rptParagraph;
-      (*pChapter) << pPara;
-      (*pPara) << Super(_T("*")) << _T("MBE 6A.4.5.2 Permit load rating should only be used if the bridge has a rating factor greater than 1.0 when evaluated for AASHTO legal loads.") << rptNewLine;
-
-      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-      {
-         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker, girderKeys, pgsTypes::lrPermit_Routine);
-         if ( pTable )
-         {
-            (*pPara) << pTable << rptNewLine;
-         }
-      }
-
-      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-      {
-         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker, girderKeys, pgsTypes::lrPermit_Special);
-         if ( pTable )
-         {
-            (*pPara) << pTable << rptNewLine;
-         }
-      }
-   }
- 
    return pChapter;
 }
 
@@ -645,75 +526,11 @@ CChapterBuilder* CSpecCheckChapterBuilder::Clone() const
 //======================== INQUERY    =======================================
 
 void write_splitting_zone_check(IBroker* pBroker,
-                               IEAFDisplayUnits* pDisplayUnits,
                                const pgsGirderArtifact* pGirderArtifact,
                                rptChapter* pChapter)
 {
-   GET_IFACE2(pBroker,IBridge,pBridge);
-
-   const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
-
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,    length, pDisplayUnits->GetSpanLengthUnit(), true );
-   INIT_UV_PROTOTYPE( rptForceUnitValue,     force,  pDisplayUnits->GetGeneralForceUnit(), true );
-
-   std::_tstring strName;
-   if ( lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() )
-   {
-      strName = _T("Splitting");
-   }
-   else
-   {
-      strName = _T("Bursting");
-   }
-
-   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
-   *pChapter << pPara;
-   (*pPara) << strName << _T(" Zone Stirrup Check [") << LrfdCw8th(_T("5.10.10.1"),_T("5.9.4.4.1")) << _T("]") << rptNewLine;
-
-   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
-   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
-   {
-      const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
-      const pgsSplittingZoneArtifact* pArtifact = pSegmentArtifact->GetStirrupCheckArtifact()->GetSplittingZoneArtifact();
-
-      if ( 1 < nSegments )
-      {
-         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-         *pChapter << pPara;
-         *pPara << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
-      }
-
-      pPara = new rptParagraph;
-      *pChapter << pPara;
-      for (int i = 0; i < 2; i++)
-      {
-         pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
-         if (endType == pgsTypes::metStart)
-         {
-            (*pPara) << Bold(_T("Left End of Girder:")) << rptNewLine;
-         }
-         else
-         {
-            (*pPara) << Bold(_T("Right End of Girder:")) << rptNewLine;
-         }
-
-         (*pPara) << strName << _T(" Zone Length = ") << length.SetValue(pArtifact->GetSplittingZoneLength(endType)) << rptNewLine;
-         (*pPara) << strName << _T(" Force = ") << force.SetValue(pArtifact->GetTotalSplittingForce(endType)) << rptNewLine;
-         (*pPara) << strName << _T(" Resistance = ") << force.SetValue(pArtifact->GetSplittingResistance(endType)) << rptNewLine;
-         
-         (*pPara) << _T("Status = ");
-         if ( pArtifact->Passed(endType) )
-         {
-            (*pPara) << RPT_PASS;
-         }
-         else
-         {
-            (*pPara) << RPT_FAIL;
-         }
-
-         (*pPara) <<rptNewLine<<rptNewLine;
-      }
-   } // next segment
+   GET_IFACE2(pBroker, ISplittingChecks, pSplittingChecks);
+   pSplittingChecks->ReportSplittingChecks(pBroker, pGirderArtifact, pChapter);
 }
 
 void write_confinement_check(IBroker* pBroker,
@@ -744,7 +561,7 @@ void write_confinement_check(IBroker* pBroker,
 
       const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
       const pgsStirrupCheckArtifact *pStirrups   = pSegmentArtifact->GetStirrupCheckArtifact();
-      const pgsConfinementArtifact& rConfine     = pStirrups->GetConfinementArtifact();
+      const pgsConfinementCheckArtifact& rConfine     = pStirrups->GetConfinementArtifact();
 
       pPara = new rptParagraph;
       *pChapter << pPara;

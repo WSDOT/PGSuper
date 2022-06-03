@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -105,14 +105,14 @@ bool CDeflectionHistoryGraphViewController::IncludeElevationAdjustment() const
    return m_pGraphController->IncludeElevationAdjustment();
 }
 
-void CDeflectionHistoryGraphViewController::IncludePrecamber(bool bInclude)
+void CDeflectionHistoryGraphViewController::IncludeUnrecoverableDefl(bool bInclude)
 {
-   m_pGraphController->IncludePrecamber(bInclude);
+   m_pGraphController->IncludeUnrecoverableDefl(bInclude);
 }
 
-bool CDeflectionHistoryGraphViewController::IncludePrecamber() const
+bool CDeflectionHistoryGraphViewController::IncludeUnrecoverableDefl() const
 {
-   return m_pGraphController->IncludePrecamber();
+   return m_pGraphController->IncludeUnrecoverableDefl();
 }
 
 void CDeflectionHistoryGraphViewController::ShowGrid(bool bShow)

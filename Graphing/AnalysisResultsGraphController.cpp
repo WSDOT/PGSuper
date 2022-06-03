@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,12 +25,14 @@
 #include "AnalysisResultsGraphController.h"
 #include <Graphing\GraphingTypes.h>
 #include <Graphing\AnalysisResultsGraphBuilder.h>
+#include <Graphing\ExportGraphXYTool.h>
 
 #include <IFace\DocumentType.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
 #include <IFace\Bridge.h>
 
+#include <EAF\EAFDocument.h>
 #include <Hints.h>
 
 #ifdef _DEBUG
@@ -58,6 +60,7 @@ void CAnalysisResultsGraphController::SetGraphMode(CAnalysisResultsGraphControll
    FillSelectListCtrl(false);
    FillActionTypeCtrl();
    UpdateListInfo();
+   OnIntervalsChanged();
    UpdateGraph();
 }
 
@@ -84,11 +87,14 @@ BEGIN_MESSAGE_MAP(CAnalysisResultsGraphController, CGirderGraphControllerBase)
    ON_BN_CLICKED(IDC_BOTTOM_DECK, OnStress)
 
    ON_BN_CLICKED(IDC_ELEV_ADJUSTMENT, OnElevAdjustment)
-   ON_BN_CLICKED(IDC_PRECAMBER, OnPrecamber)
+   ON_BN_CLICKED(IDC_PRECAMBER, OnUnrecoverableDefl)
 
    ON_BN_CLICKED(IDC_SIMPLE,OnAnalysisTypeClicked)
    ON_BN_CLICKED(IDC_SIMPLE2,OnAnalysisTypeClicked)
    ON_BN_CLICKED(IDC_SIMPLE3,OnAnalysisTypeClicked)
+
+   ON_BN_CLICKED(IDC_EXPORT_GRAPH_BTN,OnGraphExportClicked)
+   ON_UPDATE_COMMAND_UI(IDC_EXPORT_GRAPH_BTN,OnCommandUIGraphExport)
    //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -115,12 +121,13 @@ BOOL CAnalysisResultsGraphController::OnInitDialog()
    CheckRadioButton(IDC_INCREMENTAL,IDC_CUMULATIVE,IDC_CUMULATIVE);
    CheckDlgButton(IDC_TOP_GIRDER,BST_CHECKED);
    CheckDlgButton(IDC_BOTTOM_GIRDER,BST_CHECKED);
+   CheckDlgButton(IDC_PRECAMBER,BST_CHECKED);
 
    UpdateListInfo();
    UpdateStressControls();
    UpdateAnalysisType();
    UpdateElevAdjustment();
-   UpdatePrecamberAdjustment();
+   UpdateUnrecoverableDeflAdjustment();
 
    return TRUE;
 }
@@ -148,7 +155,7 @@ void CAnalysisResultsGraphController::SetActionType(ActionType actionType)
          pcbAction->SetCurSel(idx);
 
          UpdateElevAdjustment();
-         UpdatePrecamberAdjustment();
+         UpdateUnrecoverableDeflAdjustment();
          UpdateStressControls();
          UpdateResultsType();
 
@@ -256,13 +263,13 @@ bool CAnalysisResultsGraphController::IncludeElevationAdjustment() const
    return IsDlgButtonChecked(IDC_ELEV_ADJUSTMENT) == BST_CHECKED ? true : false;
 }
 
-void CAnalysisResultsGraphController::IncludePrecamber(bool bInclude)
+void CAnalysisResultsGraphController::IncludeUnrecoverableDefl(bool bInclude)
 {
    CheckDlgButton(IDC_PRECAMBER, bInclude ? BST_CHECKED : BST_UNCHECKED);
    UpdateGraph();
 }
 
-bool CAnalysisResultsGraphController::IncludePrecamber() const
+bool CAnalysisResultsGraphController::IncludeUnrecoverableDefl() const
 {
    return IsDlgButtonChecked(IDC_PRECAMBER) == BST_CHECKED ? true : false;
 }
@@ -305,6 +312,11 @@ IDType CAnalysisResultsGraphController::SelectedGraphIndexToGraphID(IndexType gr
       IDType id = (IDType)pcbLoading->GetItemData(curSel);
       return id;
    }
+}
+
+bool CAnalysisResultsGraphController::ShowBeamBelowGraph() const
+{
+   return true;
 }
 
 IndexType CAnalysisResultsGraphController::GetGraphTypeCount() const
@@ -457,6 +469,7 @@ void CAnalysisResultsGraphController::OnDropDownChanged()
    {
       FillActionTypeCtrl();
       FillSelectListCtrl(true);
+      OnIntervalsChanged();
    }
    else
    {
@@ -472,6 +485,10 @@ void CAnalysisResultsGraphController::OnSelectListChanged()
    if ( GetGraphMode() == Loading) 
    {
       UpdateResultsType();
+   }
+   else
+   {
+      OnIntervalsChanged();
    }
 
    UpdateGraph();
@@ -492,7 +509,7 @@ void CAnalysisResultsGraphController::OnElevAdjustment()
    UpdateGraph();
 }
 
-void CAnalysisResultsGraphController::OnPrecamber()
+void CAnalysisResultsGraphController::OnUnrecoverableDefl()
 {
    UpdateGraph();
 }
@@ -503,6 +520,35 @@ void CAnalysisResultsGraphController::OnAnalysisTypeClicked()
    ATLASSERT(nIDC != 0); // 0 means nothing is selected
    pgsTypes::AnalysisType analysisType = (pgsTypes::AnalysisType)(nIDC - IDC_SIMPLE);
    SetAnalysisType(analysisType);
+}
+
+void CAnalysisResultsGraphController::OnIntervalsChanged()
+{
+   UpdateUnrecoverableDeflAdjustment();
+}
+
+void CAnalysisResultsGraphController::OnGraphExportClicked()
+{
+   // Build default file name
+   CString strProjectFileNameNoPath = CExportGraphXYTool::GetTruncatedFileName();
+
+   const CGirderKey& girderKey = GetGirderKey();
+   CString girderName = GIRDER_LABEL(girderKey);
+
+   ActionType action = GetActionType();
+   CString actionName = GetActionName(action);
+
+   CString strDefaultFileName = strProjectFileNameNoPath + _T("_") + girderName + _T("_") + actionName;
+   strDefaultFileName.Replace(' ','_'); // prefer not to have spaces or ,'s in file names
+   strDefaultFileName.Replace(',','_');
+
+   ((CAnalysisResultsGraphBuilder*)GetGraphBuilder())->ExportGraphData(strDefaultFileName);
+}
+
+// this has to be implemented otherwise button will not be enabled.
+void CAnalysisResultsGraphController::OnCommandUIGraphExport(CCmdUI* pCmdUI)
+{
+   pCmdUI->Enable(TRUE);
 }
 
 void CAnalysisResultsGraphController::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
@@ -520,16 +566,26 @@ void CAnalysisResultsGraphController::OnUpdate(CView* pSender, LPARAM lHint, COb
         lHint == HINT_RATINGSPECCHANGED
       )
    {
-      const CGirderKey& girderKey = GetGirderKey();
-      ((CAnalysisResultsGraphBuilder*)GetGraphBuilder())->UpdateGraphDefinitions(girderKey);
-      FillDropListCtrl(true);
-      FillSelectListCtrl(true);
-      UpdateGraph();
+      OnGirderChanged();
    }
    else if ( lHint == HINT_ANALYSISTYPECHANGED )
    {
       UpdateAnalysisType();
    }
+}
+
+void CAnalysisResultsGraphController::OnGroupChanged()
+{
+   OnGirderChanged();
+}
+
+void CAnalysisResultsGraphController::OnGirderChanged()
+{
+   const CGirderKey& girderKey = GetGirderKey();
+   ((CAnalysisResultsGraphBuilder*)GetGraphBuilder())->UpdateGraphDefinitions(girderKey);
+   FillDropListCtrl(true);
+   FillSelectListCtrl(true);
+   UpdateGraph();
 }
 
 void CAnalysisResultsGraphController::FillModeCtrl()
@@ -694,10 +750,14 @@ void CAnalysisResultsGraphController::FillDropListCtrl_Intervals(bool bRetainSel
    IntervalIndexType lastIntervalIdx  = GetLastInterval();
    for ( IntervalIndexType intervalIdx = firstIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++ )
    {
-      CString strInterval;
-      strInterval.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
-      int idx = pcbIntervals->AddString(strInterval);
-      pcbIntervals->SetItemData(idx,intervalIdx);
+      // skip hauling intervals
+      if (!pIntervals->IsHaulSegmentInterval(intervalIdx))
+      {
+         CString strInterval;
+         strInterval.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+         int idx = pcbIntervals->AddString(strInterval);
+         pcbIntervals->SetItemData(idx,intervalIdx);
+      }
    }
 
    if ( bRetainSelection )
@@ -800,35 +860,31 @@ void CAnalysisResultsGraphController::FillSelectListCtrl_Intervals(bool bRetainS
    // clear the control
    plbIntervals->ResetContent();
 
-   CGirderKey girderKey(GetGirderKey());
-
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType firstIntervalIdx = GetFirstInterval();
    IntervalIndexType lastIntervalIdx  = GetLastInterval();
-   for ( IntervalIndexType intervalIdx = firstIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++ )
+   for (IntervalIndexType intervalIdx = firstIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++)
    {
-      CString str;
-      CGirderKey thisGirderKey(girderKey);
-      if ( thisGirderKey.groupIndex == ALL_GROUPS )
+      // skip hauling intervals
+      if (!pIntervals->IsHaulSegmentInterval(intervalIdx))
       {
-         thisGirderKey.groupIndex = 0;
-      }
+         CString str;
+         str.Format(_T("%d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+         int idx = plbIntervals->AddString(str);
+         plbIntervals->SetItemData(idx,intervalIdx);
 
-      str.Format(_T("%d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
-      int idx = plbIntervals->AddString(str);
-      plbIntervals->SetItemData(idx,intervalIdx);
-   }
-
-   // reselect anything that was previously selected
-   if ( bRetainSelection )
-   {
-      for ( int i = 0; i < selCount; i++ )
-      {
-         CString strItem = selItems[i];
-         int idx = plbIntervals->FindStringExact(-1,strItem);
-         if ( idx != LB_ERR )
+         // reselect anything that was previously selected
+         if (bRetainSelection)
          {
-            plbIntervals->SetSel(idx);
+            for (int i = 0; i < selCount; i++)
+            {
+               CString strItem = selItems[i];
+               int idx = plbIntervals->FindStringExact(-1,strItem);
+               if (idx != LB_ERR)
+               {
+                  plbIntervals->SetSel(idx);
+               }
+            }
          }
       }
    }
@@ -1001,29 +1057,50 @@ void CAnalysisResultsGraphController::UpdateElevAdjustment()
    {
       pWnd->ShowWindow(SW_HIDE);
    }
+
+   // This feature is disabled until we fix bugs in adjustments
+   pWnd->EnableWindow(FALSE);
 }
 
-void CAnalysisResultsGraphController::UpdatePrecamberAdjustment()
+void CAnalysisResultsGraphController::UpdateUnrecoverableDeflAdjustment()
 {
    CWnd* pWnd = GetDlgItem(IDC_PRECAMBER);
 
-   GET_IFACE(IDocumentType, pDocType);
-   if (pDocType->IsPGSpliceDocument())
-   {
-      // precamber doesn't apply to PGSplice
-      pWnd->ShowWindow(SW_HIDE);
-      return;
-   }
-
+   // Only show for deflection
    ActionType actionType = GetActionType();
    if (actionType == actionDeflection || actionType == actionRotation)
    {
       pWnd->ShowWindow(SW_SHOW);
+
+      // This is not an option if a pre-erection interval is selected
+      GET_IFACE(IIntervals,pIntervals);
+      IntervalIndexType erectInterval = pIntervals->GetFirstSegmentErectionInterval(GetGirderKey());
+
+      bool hasPreErection(false);
+      std::vector<IntervalIndexType> intervals(GetSelectedIntervals());
+      for (const auto& interval : intervals)
+      {
+         if (interval < erectInterval)
+         {
+            hasPreErection = true;
+         }
+      }
+
+      if (hasPreErection)
+      {
+         CheckDlgButton(IDC_PRECAMBER,BST_CHECKED);
+         pWnd->EnableWindow(FALSE);
+      }
+      else
+      {
+         pWnd->EnableWindow(TRUE);
+      }
    }
    else
    {
       pWnd->ShowWindow(SW_HIDE);
    }
+
 }
 
 void CAnalysisResultsGraphController::UpdateAnalysisType()
@@ -1085,7 +1162,8 @@ IntervalIndexType CAnalysisResultsGraphController::GetFirstInterval() const
       girderKey.groupIndex = 0;
    }
 
-   return pIntervals->GetFirstPrestressReleaseInterval(girderKey);
+   // we start at last erection
+   return pIntervals->GetFirstSegmentErectionInterval(girderKey);
 }
 
 IntervalIndexType CAnalysisResultsGraphController::GetLastInterval() const

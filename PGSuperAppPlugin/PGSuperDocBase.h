@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -47,6 +47,8 @@
 #include "PGSuperPluginMgr.h"
 
 #include "CopyGirderPropertiesCallbacks.h"
+#include "CopyPierPropertiesCallbacks.h"
+#include "CopyTempSupportPropertiesCallbacks.h"
 
 #define PGSUPER_DOCUMENT_ROOT_NODE_VERSION 3.0
 
@@ -58,7 +60,6 @@
 #define VS_BRIDGE_ALIGNMENT   2
 #define VS_BRIDGE_PROFILE     3
 
-class CCopyGirderDlg;
 class pgsSegmentDesignArtifact;
 class CPGSuperDocProxyAgent;
 
@@ -67,7 +68,7 @@ class CPGSuperDocProxyAgent;
 class CFileCompatibilityState
 {
 public:
-   CFileCompatibilityState() { ResetFlags(); }
+   CFileCompatibilityState() : m_bCreatingFromTemplate(false) { ResetFlags(); }
 
    // Set/Get version of application that was used to when saving a file (after version 2.1)
    void SetApplicationVersion(LPCTSTR lpszAppVersion) { m_strAppVersion = lpszAppVersion; }
@@ -76,8 +77,10 @@ public:
    // Set this flag if the application used to save this file was version 2.1 or earlier
    void SetPreVersion21Flag() { m_bPreVersion21File = true;  }
 
+   void CreatingFromTemplate() { m_bCreatingFromTemplate = true; }
+
    // Call when a new file is created
-   void NewFileCreated() { ResetFlags(); m_strFilePath.Empty();  m_bNewFromTemplate = true; }
+   void NewFileCreated() { ResetFlags(); m_strFilePath.Empty(); m_bCreatingFromTemplate = false; m_bNewFromTemplate = true; }
 
    // Call when a file was opened. Keeps track of orginal filename and if the file was creaetd from a template
    void FileOpened(LPCTSTR lpszFilePath) { ResetFlags(); m_strFilePath = lpszFilePath; m_bNewFromTemplate = false;  }
@@ -104,11 +107,16 @@ public:
       return strFile;
    }
 
+   CString GetFileName() const { return m_strFilePath; }
+
    // Returns true if the user should be warned that the file format is going to change
    // lpszPathName is name of file that is going to be saved
    // lpszCurrentAppVersion is the application version of the application right now
    bool PromptToMakeCopy(LPCTSTR lpszPathName,LPCTSTR lpszCurrentAppVersion)
    {
+      if (m_bCreatingFromTemplate)
+         return false;
+
       bool bDifferentVersion = m_bPreVersion21File || m_strAppVersion != CString(lpszCurrentAppVersion) ? true : false;
 
       if (m_bUnnamed && bDifferentVersion)
@@ -137,6 +145,7 @@ private:
    bool m_bPreVersion21File; // while was created with Version 2.1 or earlier
    bool m_bUnnamed;
    bool m_bNewFromTemplate;
+   bool m_bCreatingFromTemplate;
 };
 
 /*--------------------------------------------------------------------*/
@@ -179,6 +188,8 @@ public:
 
    void PopulateReportMenu();
    void PopulateGraphMenu();
+   void PopulateCopyGirderMenu();
+   void PopulateCopyPierMenu();
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -231,11 +242,13 @@ public:
    bool UnregisterGirderSectionViewCallback(IDType ID);
    const std::map<IDType, IGirderSectionViewEventCallback*>& GetGirderSectionViewCallbacks();
 
-   IDType RegisterEditPierCallback(IEditPierCallback* pCallback);
+   IDType RegisterEditPierCallback(IEditPierCallback* pCallback, ICopyPierPropertiesCallback* pCopyCallback);
    bool UnregisterEditPierCallback(IDType ID);
    const std::map<IDType, IEditPierCallback*>& GetEditPierCallbacks();
+   const std::map<IDType, ICopyPierPropertiesCallback*>& GetCopyPierPropertiesCallbacks();
 
-   IDType RegisterEditTemporarySupportCallback(IEditTemporarySupportCallback* pCallback);
+
+   IDType RegisterEditTemporarySupportCallback(IEditTemporarySupportCallback* pCallback, ICopyTemporarySupportPropertiesCallback* pCopyCallBack);
    bool UnregisterEditTemporarySupportCallback(IDType ID);
    const std::map<IDType, IEditTemporarySupportCallback*>& GetEditTemporarySupportCallbacks();
 
@@ -274,14 +287,19 @@ public:
    virtual libLibraryManager* GetLibraryManager(CollectionIndexType num) override;
    virtual libLibraryManager* GetTargetLibraryManager() override;
 
-   void EditBridgeDescription(int nPage);
-   void EditAlignmentDescription(int nPage);
+   bool EditBridgeDescription(int nPage);
+   bool EditAlignmentDescription(int nPage);
    bool EditSpanDescription(SpanIndexType spanIdx, int nPage);
    bool EditPierDescription(PierIndexType pierIdx, int nPage);
+   bool EditTemporarySupportDescription(PierIndexType pierIdx, int nPage);
    bool EditDirectSelectionPrestressing(const CSegmentKey& segmentKey);
    bool EditDirectRowInputPrestressing(const CSegmentKey& segmentKey);
    bool EditDirectStrandInputPrestressing(const CSegmentKey& segmentKey);
+   
+   bool EditGirderDescription();
+   bool EditGirderSegmentDescription();
 
+   // Return true if the edit was completed, otherwise return false (return false if the edit was cancelled)
    virtual bool EditGirderDescription(const CGirderKey& girderKey,int nPage) = 0;
    virtual bool EditGirderSegmentDescription(const CSegmentKey& segmentKey,int nPage) = 0;
    virtual bool EditClosureJointDescription(const CClosureKey& closureKey,int nPage) = 0;
@@ -370,7 +388,9 @@ protected:
 
    // UI/Dialog Extension Callbacks
    std::map<IDType,IEditPierCallback*>              m_EditPierCallbacks;
+   std::map<IDType,ICopyPierPropertiesCallback*>    m_CopyPierPropertiesCallbacks;
    std::map<IDType,IEditTemporarySupportCallback*>  m_EditTemporarySupportCallbacks;
+   std::map<IDType,ICopyTemporarySupportPropertiesCallback*> m_CopyTempSupportPropertiesCallbacks;
    std::map<IDType,IEditSpanCallback*>              m_EditSpanCallbacks;
    std::map<IDType,IEditGirderCallback*>            m_EditGirderCallbacks;
    std::map<IDType,ICopyGirderPropertiesCallback*>  m_CopyGirderPropertiesCallbacks;
@@ -381,14 +401,26 @@ protected:
    std::map<IDType,IEditBridgeCallback*>            m_EditBridgeCallbacks;
    std::map<IDType,IEditLoadRatingOptionsCallback*> m_EditLoadRatingOptionsCallbacks;
 
+   // map  from menu cmd to callback ID
+   std::map<UINT,IDType>  m_CopyGirderPropertiesCallbacksCmdMap;
+   std::map<UINT,IDType>  m_CopyPierPropertiesCallbacksCmdMap;
+   std::map<UINT,IDType>  m_CopyTempSupportPropertiesCallbacksCmdMap;
+
+   // these are the standard copy pier callbacks
+   CCopyPierAllProperties        m_CopyPierAllProperties;
+   CCopyPierConnectionProperties m_CopyPierConnectionProperties;
+   CCopyPierDiaphragmProperties  m_CopyPierDiaphragmProperties;
+   CCopyPierModelProperties      m_CopyPierModelProperties;
+
+   CCopyTempSupportConnectionProperties m_CopyTempSupportConnectionProperties;
+
    // these are the standard copy girder callbacks
-   CCopyGirderType         m_CopyGirderType;
-   CCopyGirderStirrups     m_CopyGirderStirrups;
-   CCopyGirderPrestressing m_CopyGirderPrestressing;
-   CCopyGirderHandling     m_CopyGirderHandling;
-   CCopyGirderMaterial     m_CopyGirderMaterials;
-   CCopyGirderRebar        m_CopyGirderRebar;
-   CCopyGirderSlabOffset   m_CopyGirderSlabOffset;
+   CCopyGirderAllProperties m_CopyGirderAllProperties;
+   CCopyGirderStirrups      m_CopyGirderStirrups;
+   CCopyGirderPrestressing  m_CopyGirderPrestressing;
+   CCopyGirderHandling      m_CopyGirderHandling;
+   CCopyGirderMaterial      m_CopyGirderMaterials;
+   CCopyGirderRebar         m_CopyGirderRebar;
 
 
    psgLibraryManager m_LibMgr;
@@ -434,7 +466,6 @@ protected:
    virtual Float64 GetRootNodeVersion() override;
 
    virtual HRESULT LoadTheDocument(IStructuredLoad* pStrLoad) override;
-   virtual BOOL SaveTheDocument(LPCTSTR lpszPathName) override;
    virtual HRESULT WriteTheDocument(IStructuredSave* pStrSave) override;
 
    virtual void OnErrorDeletingBadSave(LPCTSTR lpszPathName,LPCTSTR lpszBackup) override;
@@ -482,7 +513,10 @@ protected:
 	afx_msg void OnLoadsLoadModifiers();
    afx_msg void OnLoadsLoadFactors();
 	afx_msg void OnViewsettingsGirderEditor();
-	afx_msg void OnCopyGirderProps();
+	afx_msg void OnCopyGirderProps(UINT nID);
+	afx_msg void OnCopyGirderPropsAll();
+	afx_msg void OnCopyPierProps(UINT nID);
+	afx_msg void OnCopyPierPropsAll();
 	afx_msg void OnImportProjectLibrary();
 	afx_msg void OnAddPointload();
 	afx_msg void OnAddDistributedLoad();
@@ -513,6 +547,10 @@ protected:
    afx_msg void OnAutoCalc();
    afx_msg void OnUpdateAutoCalc(CCmdUI* pCmdUI);
    afx_msg void OnEditTimeline();
+   afx_msg void OnUpdateCopyGirderPropsTb(CCmdUI* pCmdUI); // Tb means toolbar
+   afx_msg BOOL OnCopyGirderPropsTb(NMHDR* pnmtb,LRESULT* plr);
+   afx_msg void OnUpdateCopyPierPropsTb(CCmdUI* pCmdUI);
+   afx_msg BOOL OnCopyPierPropsTb(NMHDR* pnmtb,LRESULT* plr);
 
    afx_msg void OnHelpFinder();
    afx_msg void OnAbout();

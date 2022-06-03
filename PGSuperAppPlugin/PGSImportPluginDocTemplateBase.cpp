@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,6 +25,7 @@
 #include "PGSImportPluginDocTemplateBase.h"
 #include "SelectItemDlg.h"
 #include <IFace\Project.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -131,6 +132,12 @@ BOOL CPGSImportPluginDocTemplateBase::DoOpenDocumentFile(LPCTSTR lpszPathName,BO
    {
    }
 
+   CPGSDocBase* pDoc = (CPGSDocBase*)pDocument;
+   CComPtr<IDocUnitSystem> docUnitSystem;
+   pDoc->GetDocUnitSystem(&docUnitSystem);
+   GET_IFACE2(broker,IEAFDisplayUnits, pDisplayUnits);
+   docUnitSystem->put_UnitMode(IS_US_UNITS(pDisplayUnits) ? umUS : umSI);
+
    // it worked, now bump untitled count (for untitled documents... from MFC for multidoc applications)
 	m_nUntitledCount++;
 
@@ -168,9 +175,11 @@ CPGSProjectImporterMgrBase* CPGSImportPluginDocTemplateBase::GetProjectImporterM
 {
    if ( m_pProjectImporterMgr == nullptr )
    {
+      // The first time the project importer manager is requested, create it and loadd all of the importers
       m_pProjectImporterMgr = CreateProjectImporterMgr();
-
       m_pProjectImporterMgr->LoadImporters();
+
+      // For each registered importer, add a template item to the template group
 
       CollectionIndexType nImporters = m_pProjectImporterMgr->GetImporterCount();
       for ( CollectionIndexType idx = 0; idx < nImporters; idx++ )
@@ -188,4 +197,25 @@ CPGSProjectImporterMgrBase* CPGSImportPluginDocTemplateBase::GetProjectImporterM
    }
 
    return m_pProjectImporterMgr;
+}
+
+CEAFTemplateItem* CPGSImportPluginDocTemplateBase::GetTemplateItem(const CLSID& clsid)
+{
+   IndexType nItems = m_TemplateGroup.GetItemCount();
+   for (IndexType idx = 0; idx < nItems; idx++)
+   {
+      CEAFTemplateItem* pItem = m_TemplateGroup.GetItem(idx);
+      if (pItem->IsKindOf(RUNTIME_CLASS(CMyTemplateItem)))
+      {
+         CMyTemplateItem* pMyItem = (CMyTemplateItem*)pItem;
+         CLSID itemCLSID;
+         pMyItem->m_Importer->GetCLSID(&itemCLSID);
+         if (clsid == itemCLSID)
+         {
+            return pItem;
+         }
+      }
+   }
+
+   return nullptr;
 }

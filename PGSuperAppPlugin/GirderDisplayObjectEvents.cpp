@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -863,4 +863,335 @@ STDMETHODIMP_(void) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnSele
 STDMETHODIMP_(void) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnUnselect(iDisplayObject* pDO)
 {
    METHOD_PROLOGUE(CBridgeSectionViewGirderDisplayObjectEvents,Events);
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CGirderElevationViewSegmentDisplayObjectEvents
+
+CGirderElevationViewSegmentDisplayObjectEvents::CGirderElevationViewSegmentDisplayObjectEvents(const CSegmentKey& segmentKey, CGirderModelChildFrame* pFrame)
+{
+   m_SegmentKey = segmentKey;
+   m_pFrame = pFrame;
+}
+
+BEGIN_INTERFACE_MAP(CGirderElevationViewSegmentDisplayObjectEvents, CCmdTarget)
+   INTERFACE_PART(CGirderElevationViewSegmentDisplayObjectEvents, IID_iDisplayObjectEvents, Events)
+END_INTERFACE_MAP()
+
+DELEGATE_CUSTOM_INTERFACE(CGirderElevationViewSegmentDisplayObjectEvents, Events);
+
+void CGirderElevationViewSegmentDisplayObjectEvents::EditSegment(iDisplayObject* pDO)
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IEditByUI, pEdit);
+   pEdit->EditSegmentDescription(m_SegmentKey, EGD_GENERAL);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CGirderElevationViewSegmentDisplayObjectEvents message handlers
+STDMETHODIMP_(bool) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnLButtonDblClk(iDisplayObject* pDO, UINT nFlags, CPoint point)
+{
+   METHOD_PROLOGUE(CGirderElevationViewSegmentDisplayObjectEvents, Events);
+   pThis->EditSegment(pDO);
+   return true;
+}
+
+STDMETHODIMP_(bool) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO, UINT nFlags, CPoint point)
+{
+   METHOD_PROLOGUE(CGirderElevationViewSegmentDisplayObjectEvents, Events);
+   return false;
+}
+
+STDMETHODIMP_(bool) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnLButtonUp(iDisplayObject* pDO, UINT nFlags, CPoint point)
+{
+   METHOD_PROLOGUE(CGirderElevationViewSegmentDisplayObjectEvents, Events);
+   return false;
+}
+
+STDMETHODIMP_(bool) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnRButtonDblClk(iDisplayObject* pDO, UINT nFlags, CPoint point)
+{
+   METHOD_PROLOGUE(CGirderElevationViewSegmentDisplayObjectEvents, Events);
+   return false;
+}
+
+STDMETHODIMP_(bool) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnRButtonDown(iDisplayObject* pDO, UINT nFlags, CPoint point)
+{
+   METHOD_PROLOGUE(CGirderElevationViewSegmentDisplayObjectEvents, Events);
+   return false;
+}
+
+STDMETHODIMP_(bool) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnRButtonUp(iDisplayObject* pDO, UINT nFlags, CPoint point)
+{
+   METHOD_PROLOGUE(CGirderElevationViewSegmentDisplayObjectEvents, Events);
+   return false;
+}
+
+STDMETHODIMP_(bool) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnMouseMove(iDisplayObject* pDO, UINT nFlags, CPoint point)
+{
+   METHOD_PROLOGUE(CGirderElevationViewSegmentDisplayObjectEvents, Events);
+   return false;
+}
+
+STDMETHODIMP_(bool) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnMouseWheel(iDisplayObject* pDO, UINT nFlags, short zDelta, CPoint point)
+{
+   METHOD_PROLOGUE(CGirderElevationViewSegmentDisplayObjectEvents, Events);
+   return false;
+}
+
+STDMETHODIMP_(bool) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnKeyDown(iDisplayObject* pDO, UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+   METHOD_PROLOGUE(CGirderElevationViewSegmentDisplayObjectEvents, Events);
+   return false;
+}
+
+STDMETHODIMP_(bool) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObject* pDO, CWnd* pWnd, CPoint point)
+{
+   METHOD_PROLOGUE_(CGirderElevationViewSegmentDisplayObjectEvents, Events);
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   if (pDO->IsSelected())
+   {
+      CComPtr<iDisplayList> pList;
+      pDO->GetDisplayList(&pList);
+
+      CComPtr<iDisplayMgr> pDispMgr;
+      pList->GetDisplayMgr(&pDispMgr);
+
+      CDisplayView* pView = pDispMgr->GetView();
+      CDocument* pDoc = pView->GetDocument();
+
+      CPGSDocBase* pPGSuperDoc = (CPGSDocBase*)pDoc;
+
+      CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pPGSuperDoc->GetPluginCommandManager());
+      if (pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)))
+      {
+         pMenu->LoadMenu(IDR_SELECTED_GIRDER_CONTEXT, nullptr);
+      }
+      else
+      {
+         pMenu->LoadMenu(IDR_SELECTED_GIRDER_SEGMENT_CONTEXT, nullptr);
+      }
+
+      pPGSuperDoc->BuildReportMenu(pMenu, true);
+
+      std::map<IDType, IGirderElevationViewEventCallback*> callbacks = pPGSuperDoc->GetGirderElevationViewCallbacks();
+      std::map<IDType, IGirderElevationViewEventCallback*>::iterator iter;
+      for (iter = callbacks.begin(); iter != callbacks.end(); iter++)
+      {
+         IGirderElevationViewEventCallback* callback = iter->second;
+         callback->OnGirderSegmentContextMenu(pThis->m_SegmentKey, pMenu);
+      }
+
+      pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, pThis->m_pFrame);
+
+      delete pMenu;
+
+      return true;
+   }
+
+   return false;
+}
+
+STDMETHODIMP_(void) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnChanged(iDisplayObject* pDO)
+{
+   METHOD_PROLOGUE(CGirderElevationViewSegmentDisplayObjectEvents, Events);
+}
+
+STDMETHODIMP_(void) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnDragMoved(iDisplayObject* pDO, ISize2d* offset)
+{
+   METHOD_PROLOGUE(CGirderElevationViewSegmentDisplayObjectEvents, Events);
+}
+
+STDMETHODIMP_(void) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnMoved(iDisplayObject* pDO)
+{
+   METHOD_PROLOGUE(CGirderElevationViewSegmentDisplayObjectEvents, Events);
+}
+
+STDMETHODIMP_(void) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnCopied(iDisplayObject* pDO)
+{
+   METHOD_PROLOGUE(CGirderElevationViewSegmentDisplayObjectEvents, Events);
+}
+
+STDMETHODIMP_(void) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnSelect(iDisplayObject* pDO)
+{
+   METHOD_PROLOGUE(CGirderElevationViewSegmentDisplayObjectEvents, Events);
+}
+
+STDMETHODIMP_(void) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnUnselect(iDisplayObject* pDO)
+{
+   METHOD_PROLOGUE(CGirderElevationViewSegmentDisplayObjectEvents, Events);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CGirderSectionViewSegmentDisplayObjectEvents
+
+CGirderSectionViewSegmentDisplayObjectEvents::CGirderSectionViewSegmentDisplayObjectEvents(const pgsPointOfInterest& poi, CGirderModelChildFrame* pFrame)
+{
+   m_POI = poi;
+   m_pFrame = pFrame;
+}
+
+BEGIN_INTERFACE_MAP(CGirderSectionViewSegmentDisplayObjectEvents, CCmdTarget)
+   INTERFACE_PART(CGirderSectionViewSegmentDisplayObjectEvents, IID_iDisplayObjectEvents, Events)
+END_INTERFACE_MAP()
+
+DELEGATE_CUSTOM_INTERFACE(CGirderSectionViewSegmentDisplayObjectEvents, Events);
+
+void CGirderSectionViewSegmentDisplayObjectEvents::EditSegment(iDisplayObject* pDO)
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IEditByUI, pEdit);
+   pEdit->EditGirderDescription(m_POI.GetSegmentKey(), EGD_GENERAL);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CGirderElevationViewSegmentDisplayObjectEvents message handlers
+STDMETHODIMP_(bool) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnLButtonDblClk(iDisplayObject* pDO, UINT nFlags, CPoint point)
+{
+   METHOD_PROLOGUE(CGirderSectionViewSegmentDisplayObjectEvents, Events);
+   pThis->EditSegment(pDO);
+   return true;
+}
+
+STDMETHODIMP_(bool) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO, UINT nFlags, CPoint point)
+{
+   METHOD_PROLOGUE(CGirderSectionViewSegmentDisplayObjectEvents, Events);
+   return false;
+}
+
+STDMETHODIMP_(bool) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnLButtonUp(iDisplayObject* pDO, UINT nFlags, CPoint point)
+{
+   METHOD_PROLOGUE(CGirderSectionViewSegmentDisplayObjectEvents, Events);
+   return false;
+}
+
+STDMETHODIMP_(bool) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnRButtonDblClk(iDisplayObject* pDO, UINT nFlags, CPoint point)
+{
+   METHOD_PROLOGUE(CGirderSectionViewSegmentDisplayObjectEvents, Events);
+   return false;
+}
+
+STDMETHODIMP_(bool) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnRButtonDown(iDisplayObject* pDO, UINT nFlags, CPoint point)
+{
+   METHOD_PROLOGUE(CGirderSectionViewSegmentDisplayObjectEvents, Events);
+   return false;
+}
+
+STDMETHODIMP_(bool) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnRButtonUp(iDisplayObject* pDO, UINT nFlags, CPoint point)
+{
+   METHOD_PROLOGUE(CGirderSectionViewSegmentDisplayObjectEvents, Events);
+   return false;
+}
+
+STDMETHODIMP_(bool) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnMouseMove(iDisplayObject* pDO, UINT nFlags, CPoint point)
+{
+   METHOD_PROLOGUE(CGirderSectionViewSegmentDisplayObjectEvents, Events);
+   return false;
+}
+
+STDMETHODIMP_(bool) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnMouseWheel(iDisplayObject* pDO, UINT nFlags, short zDelta, CPoint point)
+{
+   METHOD_PROLOGUE(CGirderSectionViewSegmentDisplayObjectEvents, Events);
+   return false;
+}
+
+STDMETHODIMP_(bool) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnKeyDown(iDisplayObject* pDO, UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+   METHOD_PROLOGUE(CGirderSectionViewSegmentDisplayObjectEvents, Events);
+   return false;
+}
+
+STDMETHODIMP_(bool) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObject* pDO, CWnd* pWnd, CPoint point)
+{
+   METHOD_PROLOGUE_(CGirderSectionViewSegmentDisplayObjectEvents, Events);
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   if (pDO->IsSelected())
+   {
+      CComPtr<iDisplayList> pList;
+      pDO->GetDisplayList(&pList);
+
+      CComPtr<iDisplayMgr> pDispMgr;
+      pList->GetDisplayMgr(&pDispMgr);
+
+      CDisplayView* pView = pDispMgr->GetView();
+      CDocument* pDoc = pView->GetDocument();
+
+      CPGSDocBase* pPGSuperDoc = (CPGSDocBase*)pDoc;
+
+      CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pPGSuperDoc->GetPluginCommandManager());
+      if (pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)))
+      {
+         pMenu->LoadMenu(IDR_SELECTED_GIRDER_CONTEXT, nullptr);
+      }
+      else
+      {
+         pMenu->LoadMenu(IDR_SELECTED_GIRDER_SEGMENT_CONTEXT, nullptr);
+      }
+
+      pPGSuperDoc->BuildReportMenu(pMenu, true);
+
+      std::map<IDType, IGirderSectionViewEventCallback*> callbacks = pPGSuperDoc->GetGirderSectionViewCallbacks();
+      std::map<IDType, IGirderSectionViewEventCallback*>::iterator iter;
+      for (iter = callbacks.begin(); iter != callbacks.end(); iter++)
+      {
+         IGirderSectionViewEventCallback* callback = iter->second;
+         callback->OnGirderSectionContextMenu(pThis->m_POI, pMenu);
+      }
+
+      pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, pThis->m_pFrame);
+
+      delete pMenu;
+
+      return true;
+   }
+
+   return false;
+}
+
+STDMETHODIMP_(void) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnChanged(iDisplayObject* pDO)
+{
+   METHOD_PROLOGUE(CGirderSectionViewSegmentDisplayObjectEvents, Events);
+}
+
+STDMETHODIMP_(void) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnDragMoved(iDisplayObject* pDO, ISize2d* offset)
+{
+   METHOD_PROLOGUE(CGirderSectionViewSegmentDisplayObjectEvents, Events);
+}
+
+STDMETHODIMP_(void) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnMoved(iDisplayObject* pDO)
+{
+   METHOD_PROLOGUE(CGirderSectionViewSegmentDisplayObjectEvents, Events);
+}
+
+STDMETHODIMP_(void) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnCopied(iDisplayObject* pDO)
+{
+   METHOD_PROLOGUE(CGirderSectionViewSegmentDisplayObjectEvents, Events);
+}
+
+STDMETHODIMP_(void) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnSelect(iDisplayObject* pDO)
+{
+   METHOD_PROLOGUE(CGirderSectionViewSegmentDisplayObjectEvents, Events);
+}
+
+STDMETHODIMP_(void) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnUnselect(iDisplayObject* pDO)
+{
+   METHOD_PROLOGUE(CGirderSectionViewSegmentDisplayObjectEvents, Events);
 }

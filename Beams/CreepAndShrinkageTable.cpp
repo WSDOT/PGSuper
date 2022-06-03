@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -108,6 +108,6 @@ void CCreepAndShrinkageTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const
 
    (*this)(row+rowOffset,col++) << stress.SetValue( ptl->ShrinkageLosses() );
    (*this)(row+rowOffset,col++) << stress.SetValue( pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp() );
-   (*this)(row+rowOffset,col++) << stress.SetValue( -pDetails->pLosses->GetDeltaFcd1() );
+   (*this)(row+rowOffset,col++) << stress.SetValue( -pDetails->pLosses->GetDeltaFcd1(true/*apply elastic gains reduction*/));
    (*this)(row+rowOffset,col++) << stress.SetValue( ptl->CreepLosses() );
 }

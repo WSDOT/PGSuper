@@ -15,6 +15,7 @@ Item | Description
 Method | Select the method for computing live load distribution factors. Options are AASHTO LRFD Specifications,  WSDOT Bridge Design Manual, or TxDOT Bridge Design Manual.
 Ignore skew reduction for moment (LRFD 4.6.2.2.2e) | When checked, the skew reduction for the moment live load distribution factor is ignored.
 Use (Number of Lanes)/(Number of Beams) as the Lower Limit for All Distribution Factors | When checked the live load distribution factor will be not be taken less than (Number of Lanes)/(Number of Beams).
+Don't allow Exterior Girder distribution factors to be Less Than those for Adjacent Interior Girder | Program will use interior factors for exterior girders if this is the case. Some agencies specify this to ensure that exterior girders have adequate strength to become interior girders in the case of a bridge widening.
 Maximum Angular Deviation Between Girders | The equations in LRFD 4.6.2.2 may be used to compute distribution factors as long as "Beams are parallel and have approximately the same stiffness". However, no guidance is given as to when girders are not parallel. Enter the maximum allowable angular deviation between girder where you consider girders to be "parallel". 
 Maximum Girder Stiffness Ratio | The equations in LRFD 4.6.2.2 may be used to compute distribution factors as long as "Beams are parallel and have approximately the same stiffness". However, no definition is given for "approximately the same stiffness". Enter the maximum percentage that Ix can vary between girders in a span.
 Location to Measure Girder Spacing For Distribution Factors | Enter the fractional distance, measured from the ends of a span, for the location(s) where girder spacing is to be measured in order to determine the value of S and de for use in the live load distribution factor equations.
@@ -26,10 +27,12 @@ Use rigid method... | When checked, the rigid method, as described in LRFD 4.6.2
 > * Most LRFD distribution factor methods use a single value (S) for girder spacing as a parameter. However, PGSuper allows spacing to vary (splay), if desired. If the spacing to the left and right side of the girder are different, PGSuper will use the average of the two adjacent spacings where a single value is needed. Note that the actual spacings are used when using the lever rule or statical method.
 > * If the fractional distance is not 0.5, the width of the bridge is evaluated at two locations. If the width of the bridge is the same at both locations, the section that is nearest the location specifed in the Project Criteria will be used.
 
-> TIP: You can forego the computation of live load distribution factors and enter your own values.
+> TIP: You can forgo the computation of live load distribution factors and enter your own values.
+
  
 Pedestrian Live Load (LRFD 3.6.1.6)
 ------------------------------------
+
 Define the pedestrian live load.
 
 Item | Description

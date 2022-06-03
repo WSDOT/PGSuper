@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -301,7 +301,7 @@ BOOL CSpanLayoutPage::OnInitDialog()
 
       if (AssumedExcessCamberType == pgsTypes::aecBridge || AssumedExcessCamberType == pgsTypes::aecSpan)
       {
-         pAssumedExcessCamberCB->AddString(_T("The same Assumed Excess Camber is used for the entire bridge"));
+         pAssumedExcessCamberCB->AddString(_T("The same Assumed Excess Camber is used in all spans"));
          pAssumedExcessCamberCB->AddString(_T("Assumed Excess Camber is defined span by span"));
          pAssumedExcessCamberCB->SetCurSel(AssumedExcessCamberType == pgsTypes::aecBridge ? 0 : 1);
       }

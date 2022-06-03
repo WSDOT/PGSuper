@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -359,7 +359,7 @@ void CGirderTopWidthGrid::UpdateGrid()
       .SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE)
       .SetFont(font)
       .SetWrapText(TRUE)
-     .SetValue("Start")
+     .SetValue(_T("Start"))
    );
 
    CString strLabel;
@@ -384,7 +384,7 @@ void CGirderTopWidthGrid::UpdateGrid()
       .SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE)
       .SetFont(font)
       .SetWrapText(TRUE)
-      .SetValue("End")
+      .SetValue(_T("End"))
    );
 
    strLabel.Format(_T("Top Width/Left (%s)"), pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str());

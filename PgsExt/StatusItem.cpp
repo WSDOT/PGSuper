@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -368,12 +368,11 @@ eafTypes::StatusSeverityType pgsGirderDescriptionStatusCallback::GetSeverity() c
 
 void pgsGirderDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
    pgsGirderDescriptionStatusItem* pItem = dynamic_cast<pgsGirderDescriptionStatusItem*>(pStatusItem);
    ATLASSERT(pItem!=nullptr);
 
    CString strMessage;
-   strMessage.Format(_T("%s\n\r%s"),pItem->GetDescription(),_T("Would you like to edit the girder?"));
+   strMessage.Format(_T("%s\n\n%s"),pItem->GetDescription(),_T("Would you like to edit the girder?"));
    int result = AfxMessageBox(strMessage,MB_YESNO);
 
    if ( result == IDYES )

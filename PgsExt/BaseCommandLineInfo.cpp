@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -187,5 +187,91 @@ CString CPGSBaseCommandLineInfo::GetErrorMessage()
 {
    CString strMsg;
    strMsg.Format(_T("%s was started with invalid command line options."),GetAppName());
+   return strMsg;
+}
+
+
+/////////////////////////////////////////////////////////////////////
+CPGSProjectImporterBaseCommandLineInfo::CPGSProjectImporterBaseCommandLineInfo() :
+   CEAFCommandLineInfo(),
+   m_bNewProject(false)
+{
+   m_Count = 0;
+}
+
+CPGSProjectImporterBaseCommandLineInfo::~CPGSProjectImporterBaseCommandLineInfo()
+{
+}
+
+//======================== OPERATORS  =======================================
+//======================== OPERATIONS =======================================
+void CPGSProjectImporterBaseCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast)
+{
+   m_Count++;
+
+   bool bMyParameter = false;
+
+   CString strParam(lpszParam);
+   if (bFlag)
+   {
+      // Parameter is a flag (-flag or /flag)
+      if (strParam.Left(3).CompareNoCase(_T("App")) == 0 && strParam.Right(strParam.GetLength() - 4).CompareNoCase(GetAppName()) == 0)
+      {
+         ATLASSERT(strParam.Right(strParam.GetLength() - 4).CompareNoCase(GetAppName()) == 0);
+
+         // the /App=<appname> option was used on the command line directing command line
+         // options to us.
+         // We don't have to do anything, just acknowledge it is our parameter
+         m_bCommandLineMode = false; // unless other options are given, we don't want to run the command line and exit
+         bMyParameter = true;
+         m_Count--; // pretend the option was never used
+      }
+      else if (strParam.Left(10).CompareNoCase(_T("ImporterID")) == 0)
+      {
+         int nch = strParam.GetLength();
+         m_strCLSID = strParam.Right(nch - 11);
+
+         if (m_strCLSID.IsEmpty())
+         {
+            m_bError = TRUE;
+         }
+
+         if (m_bError == TRUE)
+         {
+            //AfxMessageBox(_T("Error parsing Configuration command - correct format is /Configuration=ServerName:PublisherName"));
+            AfxMessageBox(_T("Need error message"));
+            return;
+         }
+
+         m_nShellCommand = CCommandLineInfo::FileNew;
+         m_bNewProject = true;
+         m_bCommandLineMode = false;
+         bMyParameter = true;
+      }
+   }
+
+   if (!bMyParameter)
+   {
+      CEAFCommandLineInfo::ParseParam(lpszParam, bFlag, bLast);
+   }
+}
+
+CString CPGSProjectImporterBaseCommandLineInfo::GetUsageMessage()
+{
+   //CString strOption1(_T("/TestR - Generates NCHRP 12-50 test results for all problem domains"));
+   //CString strOption2(_T("/Test[n] - Generates NCHRP 12-50 test results for a specified problem domain. Substitute the problem domain ID for n"));
+   //CString strOption3(_T("/Configuration=ServerName:PublisherName - Sets the application configuration"));
+   //CString strOption4(_T("Application extension may offer additional command line options. Refer to the user documentation for details."));
+
+   //CString strMsg;
+   //strMsg.Format(_T("%s\n%s\n%s\n%s"), strOption1, strOption2, strOption3, strOption4);
+   //return strMsg;
+   return CString(_T("Need usage message"));
+}
+
+CString CPGSProjectImporterBaseCommandLineInfo::GetErrorMessage()
+{
+   CString strMsg;
+   strMsg.Format(_T("%s was started with invalid command line options."), GetAppName());
    return strMsg;
 }

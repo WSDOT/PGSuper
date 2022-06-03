@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -148,11 +148,11 @@ void CSpecDescrPage::OnSpecificationChanged()
 
    if (lrfdVersionMgr::EighthEdition2017 <= version)
    {
-      ShearCapacityMethod method = pParent->m_Entry.GetShearCapacityMethod();
-      if (method==scmVciVcw)
+      pgsTypes::ShearCapacityMethod method = pParent->m_Entry.GetShearCapacityMethod();
+      if (method==pgsTypes::scmVciVcw)
       {
          ::AfxMessageBox(_T("The Vci/Vcw method is currently selected for computing shear capacity, and this method was removed from the LRFD Bridge Design Specifications in the 8th Edition, 2017. The shear capacity method will be changed to compute in accordance with the General Method per LRFD 5.7.3.5.\nVisit the Shear Capacity tab for more options."), MB_OK|MB_ICONWARNING);
-         pParent->m_Entry.SetShearCapacityMethod(scmBTEquations);
+         pParent->m_Entry.SetShearCapacityMethod(pgsTypes::scmBTEquations);
       }
    }
 }

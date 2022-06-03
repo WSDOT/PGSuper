@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -38,7 +38,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define CURRENT_VERSION 3.0
+#define CURRENT_VERSION 4.0
 
 CLiveLoadFactorModel::CLiveLoadFactorModel()
 {
@@ -2271,8 +2271,7 @@ CString RatingLibraryEntry::GetSpecialPermitType(pgsTypes::SpecialPermitType per
 
 RatingLibraryEntry::RatingLibraryEntry() :
 m_bUseCurrentSpecification(true),
-m_SpecificationVersion(lrfrVersionMgr::SecondEditionWith2016Interims),
-m_bAlwaysRate(false)
+m_SpecificationVersion(lrfrVersionMgr::SecondEditionWith2016Interims)
 {
    // default for LRFR before 2013
    m_LiveLoadFactorModels[pgsTypes::lrDesign_Inventory].SetLiveLoadFactorType(pgsTypes::gllSingleValue);
@@ -2407,7 +2406,7 @@ bool RatingLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("UseCurrentSpecification"), m_bUseCurrentSpecification); // added in version 3
    pSave->Property(_T("SpecificationVersion"), lrfrVersionMgr::GetVersionString(m_SpecificationVersion,true));
 
-   pSave->Property(_T("AlwaysRate"),m_bAlwaysRate);
+   //pSave->Property(_T("AlwaysRate"), m_bAlwaysRate); // removed in version 4
 
    pSave->BeginUnit(_T("LiveLoadFactors_Design_Inventory"),1.0);
    if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
@@ -2570,7 +2569,9 @@ bool RatingLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       THROW_LOAD(InvalidFileFormat,pLoad);
    }
 
-   if ( !pLoad->Property(_T("AlwaysRate"),&m_bAlwaysRate) )
+   // option to always rate after a design was removed in version 4
+   bool doRate;
+   if (4 > version && !pLoad->Property(_T("AlwaysRate"),&doRate) )
    {
       THROW_LOAD(InvalidFileFormat,pLoad);
    }
@@ -2840,12 +2841,6 @@ bool RatingLibraryEntry::Compare(const RatingLibraryEntry& rOther, std::vector<p
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Rating Criteria Basis"), lrfrVersionMgr::GetVersionString(m_SpecificationVersion), lrfrVersionMgr::GetVersionString(rOther.m_SpecificationVersion)));
    }
 
-   if ( m_bAlwaysRate != rOther.m_bAlwaysRate )
-   {
-      RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceBooleanItem(_T("Always load rate when performing a specification check"),m_bAlwaysRate,rOther.m_bAlwaysRate,_T("Checked"),_T("Unchecked")));
-   }
-
    if ( lrfrVersionMgr::GetVersion() < lrfrVersionMgr::SecondEditionWith2013Interims)
    {
       int n = (int)pgsTypes::lrLoadRatingTypeCount;
@@ -2915,7 +2910,6 @@ void RatingLibraryEntry::MakeCopy(const RatingLibraryEntry& rOther)
    m_Description          = rOther.m_Description;
    m_bUseCurrentSpecification = rOther.m_bUseCurrentSpecification;
    m_SpecificationVersion = rOther.m_SpecificationVersion;
-   m_bAlwaysRate          = rOther.m_bAlwaysRate;
 
    m_LiveLoadFactorModels  = rOther.m_LiveLoadFactorModels;
    m_LiveLoadFactorModels2 = rOther.m_LiveLoadFactorModels2;
@@ -2977,16 +2971,6 @@ lrfrVersionMgr::Version RatingLibraryEntry::GetSpecificationVersion() const
    {
       return m_SpecificationVersion;
    }
-}
-
-void RatingLibraryEntry::AlwaysLoadRate(bool bAlways)
-{
-   m_bAlwaysRate = bAlways;
-}
-
-bool RatingLibraryEntry::AlwaysLoadRate() const
-{
-   return m_bAlwaysRate;
 }
 
 void RatingLibraryEntry::SetLiveLoadFactorModel(pgsTypes::LoadRatingType ratingType,const CLiveLoadFactorModel& model)

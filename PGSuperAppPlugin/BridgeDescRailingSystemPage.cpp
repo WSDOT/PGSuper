@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -58,8 +58,6 @@ CBridgeDescRailingSystemPage::CBridgeDescRailingSystemPage() : CPropertyPage(CBr
 
    m_MinNWCDensity = lrfdConcreteUtil::GetNWCDensityLimit();
    m_MaxLWCDensity = lrfdConcreteUtil::GetLWCDensityLimit();
-
-   lrfdConcreteUtil::GetUHPCStrengthRange(&m_MinFcUHPC, &m_MaxFcUHPC);
 }
 
 CBridgeDescRailingSystemPage::~CBridgeDescRailingSystemPage()
@@ -464,7 +462,7 @@ void CBridgeDescRailingSystemPage::OnMoreProperties(CRailingSystem* pRailingSyst
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CConcreteDetailsDlg dlg(true/*f'c*/);
+   CConcreteDetailsDlg dlg(true/*f'c*/,false/*no UHPC*/);
 
    UpdateData(TRUE);
 
@@ -505,6 +503,7 @@ void CBridgeDescRailingSystemPage::OnMoreProperties(CRailingSystem* pRailingSyst
       pRailingSystem->Concrete.bUserEc            = dlg.m_bUserEc28;
 
       pRailingSystem->Concrete.Type               = dlg.m_General.m_Type;
+      ATLASSERT(pRailingSystem->Concrete.Type != pgsTypes::PCI_UHPC);
       pRailingSystem->Concrete.StrengthDensity    = dlg.m_General.m_Ds;
       pRailingSystem->Concrete.WeightDensity      = dlg.m_General.m_Dw;
       pRailingSystem->Concrete.MaxAggregateSize   = dlg.m_General.m_AggSize;
@@ -915,24 +914,18 @@ BOOL CBridgeDescRailingSystemPage::OnKillActive()
    // Make sure data was successfully parsed before issuing a message
    if(bRetValue!=0)
    {
+      // the UI should be preventing selection of PCI UHPC concrete
+      ATLASSERT(m_LeftRailingSystem.Concrete.Type != pgsTypes::PCI_UHPC);
+      ATLASSERT(m_RightRailingSystem.Concrete.Type != pgsTypes::PCI_UHPC);
+
       if ( !IsDensityInRange(m_LeftRailingSystem.Concrete.StrengthDensity,m_LeftRailingSystem.Concrete.Type) )
       {
-         AfxMessageBox((m_LeftRailingSystem.Concrete.Type == pgsTypes::Normal || m_LeftRailingSystem.Concrete.Type == pgsTypes::UHPC) ? IDS_NWC_MESSAGE : IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
+         AfxMessageBox((m_LeftRailingSystem.Concrete.Type == pgsTypes::Normal || m_LeftRailingSystem.Concrete.Type == pgsTypes::PCI_UHPC) ? IDS_NWC_MESSAGE : IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
       }
       
       if ( !IsDensityInRange(m_RightRailingSystem.Concrete.StrengthDensity,m_RightRailingSystem.Concrete.Type) )
       {
-         AfxMessageBox((m_RightRailingSystem.Concrete.Type == pgsTypes::Normal || m_RightRailingSystem.Concrete.Type == pgsTypes::UHPC) ? IDS_NWC_MESSAGE : IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
-      }
-
-      if (!IsStrengthInRange(m_LeftRailingSystem.Concrete.Fc, m_LeftRailingSystem.Concrete.Type))
-      {
-         AfxMessageBox(_T("Left Railing System: The concrete strength is not in the normal range for UHPC.\nThe concrete will be treated as UHPC."));
-      }
-
-      if (!IsStrengthInRange(m_RightRailingSystem.Concrete.Fc, m_RightRailingSystem.Concrete.Type))
-      {
-         AfxMessageBox(_T("Right Railing System: The concrete strength is not in the normal range for UHPC.\nThe concrete will be treated as UHPC."));
+         AfxMessageBox((m_RightRailingSystem.Concrete.Type == pgsTypes::Normal || m_RightRailingSystem.Concrete.Type == pgsTypes::PCI_UHPC) ? IDS_NWC_MESSAGE : IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
       }
    }
 
@@ -947,8 +940,9 @@ void CBridgeDescRailingSystemPage::SetConcreteTypeLabel(UINT nID,pgsTypes::Concr
 
 bool CBridgeDescRailingSystemPage::IsDensityInRange(Float64 density,pgsTypes::ConcreteType type)
 {
-   if (type == pgsTypes::UHPC)
+   if (type == pgsTypes::PCI_UHPC)
    {
+      ATLASSERT(false); // should never get here - UI should prevent railing from being UHPC
       return true;
    }
    else if (type == pgsTypes::Normal )
@@ -958,18 +952,6 @@ bool CBridgeDescRailingSystemPage::IsDensityInRange(Float64 density,pgsTypes::Co
    else
    {
       return (density <= m_MaxLWCDensity);
-   }
-}
-
-bool CBridgeDescRailingSystemPage::IsStrengthInRange(Float64 fc, pgsTypes::ConcreteType type)
-{
-   if (type == pgsTypes::UHPC)
-   {
-      return InRange(m_MinFcUHPC, fc, m_MaxFcUHPC);
-   }
-   else
-   {
-      return true; // no range limit for other concrete types
    }
 }
 

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -56,7 +56,7 @@ CConcreteGeneralPage::CConcreteGeneralPage() : CPropertyPage()
    m_MinNWCDensity = lrfdConcreteUtil::GetNWCDensityLimit();
    m_MaxLWCDensity = lrfdConcreteUtil::GetLWCDensityLimit();
 
-   lrfdConcreteUtil::GetUHPCStrengthRange(&m_MinFcUHPC, &m_MaxFcUHPC);
+   lrfdConcreteUtil::GetPCIUHPCStrengthRange(&m_MinFcUHPC, &m_MaxFcUHPC);
 }
 
 
@@ -122,7 +122,7 @@ void CConcreteGeneralPage::DoDataExchange(CDataExchange* pDX)
 
       DDX_UnitValueAndTag(pDX, IDC_AGG_SIZE, IDC_AGG_SIZE_UNIT, m_AggSize, pDisplayUnits->GetComponentDimUnit() );
       DDV_UnitValueGreaterThanZero(pDX, IDC_AGG_SIZE, m_AggSize, pDisplayUnits->GetComponentDimUnit() );
-      
+
       if ( pDX->m_bSaveAndValidate && m_ctrlEcCheck.GetCheck() == BST_CHECKED )
       {
          m_ctrlEc.GetWindowText(m_strUserEc);
@@ -189,8 +189,9 @@ BOOL CConcreteGeneralPage::OnInitDialog()
       idx = pcbConcreteType->AddString(_T("Sand lightweight"));
       pcbConcreteType->SetItemData(idx, (DWORD_PTR)pgsTypes::SandLightweight);
 
-      idx = pcbConcreteType->AddString(_T("UHPC"));
-      pcbConcreteType->SetItemData(idx, (DWORD_PTR)pgsTypes::UHPC);
+      // LRFD must be at least 9th Edition 2020
+      //idx = pcbConcreteType->AddString(_T("PCI-UHPC"));
+      //pcbConcreteType->SetItemData(idx, (DWORD_PTR)pgsTypes::PCI_UHPC);
    }
    else
    {
@@ -200,10 +201,13 @@ BOOL CConcreteGeneralPage::OnInitDialog()
       idx = pcbConcreteType->AddString(_T("Lightweight"));
       pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::SandLightweight);
 
-      idx = pcbConcreteType->AddString(_T("UHPC"));
-      pcbConcreteType->SetItemData(idx, (DWORD_PTR)pgsTypes::UHPC);
+      if (lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion() && pParent->m_bIncludeUHPC)
+      {
+         idx = pcbConcreteType->AddString(_T("PCI-UHPC"));
+         pcbConcreteType->SetItemData(idx, (DWORD_PTR)pgsTypes::PCI_UHPC);
+      }
 
-      ATLASSERT( m_Type == pgsTypes::Normal || m_Type == pgsTypes::SandLightweight || m_Type == pgsTypes::UHPC );
+      ATLASSERT( m_Type == pgsTypes::Normal || m_Type == pgsTypes::SandLightweight || m_Type == pgsTypes::PCI_UHPC );
    }
 
 	CPropertyPage::OnInitDialog();
@@ -340,6 +344,8 @@ void CConcreteGeneralPage::OnCopyMaterial()
          pParent->m_AASHTO.m_Fct         = entry->GetAggSplittingStrength();
          pParent->m_AASHTO.m_bHasFct     = entry->HasAggSplittingStrength();
 
+         entry->GetPCIUHPC(&(pParent->m_PCIUHPC.m_ffc), &(pParent->m_PCIUHPC.m_frr), &(pParent->m_PCIUHPC.m_FiberLength), &(pParent->m_PCIUHPC.m_AutogenousShrinkage), &(pParent->m_PCIUHPC.m_bPCTT));
+
          pParent->m_ACI.m_bUserParameters = entry->UserACIParameters();
          pParent->m_ACI.m_A               = entry->GetAlpha();
          pParent->m_ACI.m_B               = entry->GetBeta();
@@ -433,15 +439,14 @@ void CConcreteGeneralPage::OnOK()
    {
       if (!m_bErrorInDDX && !IsStrengthInRange(pParent->m_fc28, m_Type))
       {
-         AFX_MANAGE_STATE(AfxGetStaticModuleState());
-         AfxMessageBox(_T("The concrete strength is not in the normal range for UHPC.\nThe concrete will be treated as UHPC."));
+         AfxMessageBox(_T("The concrete strength is not in the normal range for PCI UHPC.\nThe concrete will be treated as PCI UHPC."));
       }
    }
 }
 
 bool CConcreteGeneralPage::IsDensityInRange(Float64 density, pgsTypes::ConcreteType type)
 {
-   if (type == pgsTypes::UHPC)
+   if (type == pgsTypes::PCI_UHPC)
    {
       return true; // no density range for UHPC
    }
@@ -457,7 +462,7 @@ bool CConcreteGeneralPage::IsDensityInRange(Float64 density, pgsTypes::ConcreteT
 
 bool CConcreteGeneralPage::IsStrengthInRange(Float64 fc, pgsTypes::ConcreteType type)
 {
-   if (type == pgsTypes::UHPC)
+   if (type == pgsTypes::PCI_UHPC)
    {
       return InRange(m_MinFcUHPC, fc, m_MaxFcUHPC);
    }

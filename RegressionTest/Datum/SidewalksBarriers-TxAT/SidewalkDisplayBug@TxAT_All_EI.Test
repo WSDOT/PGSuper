@@ -1,10 +1,10 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 46.13    8   6.00                     1     1     III           36  0.6  270  17.41  10.30  11.75  11.75                                               8  40.0  8.0  8.000  9.300   6.080    -7.484     8354   0.897  0.897   5.200 -1.921  0.000 -0.602 -2.523 153.10  205.95    2.25    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 46.12    8   6.00                     1     1     III           36  0.6  270  17.41  10.30  11.75  11.75                                               8  40.0  8.0  8.000  9.300   6.080    -7.484     8354   0.897  0.897   5.200 -1.921  0.000 -0.602 -2.523 153.10  205.95    2.25    5.00    5.00    1.06    1.05    1.37    1.93    0.92 
 
 
 The Specification Check was Not Successful
-Tension stress check failed for Service III Limit State in Interval 17 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 16 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
@@ -12,9 +12,9 @@ Lifting checks failed
 Hauling checks failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 46.13    8   6.00                     1     2     III           36  0.6  270  17.41  10.30  11.75  11.75                                               8  40.0  8.0  8.000  9.300   5.135    -6.099     6334   0.523  0.671   5.200 -1.571  0.000 -0.602 -2.173 153.10  221.43    2.25    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 46.12    8   6.00                     1     2     III           36  0.6  270  17.41  10.30  11.75  11.75                                               8  40.0  8.0  8.000  9.300   5.135    -6.099     6334   0.523  0.671   5.200 -1.571  0.000 -0.602 -2.173 153.10  221.43    2.25    5.00    5.00    1.91    2.16    2.47    2.89    1.78 
 
 
 The Specification Check was Not Successful
@@ -22,17 +22,17 @@ Lifting checks failed
 Hauling checks failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 46.13    8   6.00                     1     5     III           36  0.6  270  17.41  10.30  11.75  11.75                                               8  40.0  8.0  8.000  9.300  112.95    -304.0    -1529   0.523  0.671   5.200 -1.571 -199.6 -0.203 -201.4 153.10  -12769    2.25    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 46.12    8   6.00                     1     5     III           36  0.6  270  17.41  10.30  11.75  11.75                                               8  40.0  8.0  8.000  9.300  112.95    -304.0    37792   0.523  0.671   5.200 -1.571 -199.6 -0.203 -201.4 153.10  -12769    2.25    5.00    5.00    0.00    0.00    0.00    0.00    0.00 
 
 
 The Specification Check was Not Successful
 Stresses in the prestressing strands are too high.
-Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 17 Open to Traffic
-Compression stress check failed for Fatigue I Limit State in Interval 17 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 16 Open to Traffic
+Compression stress check failed for Fatigue I Limit State in Interval 16 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State

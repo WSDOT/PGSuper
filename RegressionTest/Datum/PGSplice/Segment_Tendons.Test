@@ -1,6 +1,6 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.58    6   7.17                     1     1    WF95P    *     10  0.6  270  44.57  42.89   9.00   9.00                                              5.000 10.258   2.836    -2.651    11688   0.672  0.755  -0.235 -0.387  0.000 -0.063 -0.450  -0.61   64.24    0.00    0.00    0.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 40.58    6   7.17                     1     1    WF95P    *     10  0.6  270  44.57  42.89   9.00   9.00                                              5.000 10.258   2.737    -2.792    12546   0.672  0.755  -0.237 -0.387  0.000 -0.063 -0.450  -0.61   70.13    0.00    0.00    0.00    0.83    0.00    1.07    0.00    0.00 
 
 
 The Specification Check was Not Successful
@@ -16,6 +16,7 @@ Tension stress check failed for Service III Limit State in Interval 32 Load Rati
 Tension stress check failed for Service I Limit State in Interval 25 Install Railing System for Deck
 Tension stress check failed for Service III Limit State in Interval 32 Load Rating for Deck
 Principal tension stress in webs stress check failed for Segment 2
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
 Ultimate moment capacity (negative moment) check failed for Strength II Limit State
@@ -33,9 +34,9 @@ Duct Size check failed for Duct 1.
 Duct Size check failed for Duct 2.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.58    6   7.17                     1     2    WF95P    *      0  0.6  270   0.00   0.00   9.00   9.00                                              5.000 10.258   2.381    -1.975     9335   0.652  0.755  -2.866 -0.440  0.000 -0.064 -0.504   0.00    0.00    0.00    0.00    0.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 40.58    6   7.17                     1     2    WF95P    *      0  0.6  270   0.00   0.00   9.00   9.00                                              5.000 10.258   2.374    -2.197     9915   0.652  0.755  -2.871 -0.440  0.000 -0.064 -0.504   0.00    0.00    0.00    0.00    0.00    0.28    0.00    0.37    0.00    0.00 
 
 
 The Specification Check was Not Successful
@@ -45,8 +46,6 @@ Tension stress check failed for Service I Limit State in Interval 5 Place segmen
 Tension stress check failed for Service I Limit State in Interval 17 Stress Tendons for Segment 1
 Tension stress check failed for Service I Limit State in Interval 20 Cast Deck for Segment 1
 Tension stress check failed for Service I Limit State in Interval 25 Install Railing System for Segment 1
-Compression stress check failed for Service I Limit State in Interval 32 Load Rating for Segment 1
-Compression stress check failed for Service I Limit State in Interval 32 Load Rating for Segment 1
 Tension stress check failed for Service III Limit State in Interval 32 Load Rating for Segment 1
 Tension stress check failed for Service III Limit State in Interval 32 Load Rating for Deck
 Tension stress check failed for Service I Limit State in Interval 5 Place segments into storage for Segment 2

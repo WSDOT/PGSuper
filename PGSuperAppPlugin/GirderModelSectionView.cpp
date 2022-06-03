@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -34,6 +34,7 @@
 #include "GirderModelSectionView.h"
 #include "GirderModelChildFrame.h"
 #include "GMDisplayMgrEventsImpl.h"
+#include "GirderDisplayObjectEvents.h"
 #include "DisplayObjectFactory.h"
 #include <IFace\Bridge.h>
 #include <IFace\DrawBridgeSettings.h>
@@ -410,8 +411,7 @@ void CGirderModelSectionView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, I
       else
       {
          GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
-         Float64 nEffectiveStrands, ex, ey;
-         pStrandGeom->GetEccentricity(intervalIdx, poi, true /*include temp strands*/, &nEffectiveStrands, &ex, &ey);
+         auto ecc = pStrandGeom->GetEccentricity(intervalIdx, poi, true /*include temp strands*/);
 
          GET_IFACE2(pBroker, IBridge, pBridge);
          if (pBridge->HasAsymmetricGirders())
@@ -426,8 +426,8 @@ void CGirderModelSectionView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, I
                FormatDimension(Xr, pDisplayUnits->GetComponentDimUnit()),
                FormatDimension(Yt, pDisplayUnits->GetComponentDimUnit()),
                FormatDimension(Yb, pDisplayUnits->GetComponentDimUnit()),
-               FormatDimension(ex, pDisplayUnits->GetComponentDimUnit()),
-               FormatDimension(ey, pDisplayUnits->GetComponentDimUnit())
+               FormatDimension(ecc.X(), pDisplayUnits->GetComponentDimUnit()),
+               FormatDimension(ecc.Y(), pDisplayUnits->GetComponentDimUnit())
             );
          }
          else
@@ -444,8 +444,8 @@ void CGirderModelSectionView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, I
                FormatDimension(Yb, pDisplayUnits->GetComponentDimUnit()),
                FormatDimension(St, pDisplayUnits->GetSectModulusUnit()),
                FormatDimension(Sb, pDisplayUnits->GetSectModulusUnit()),
-               FormatDimension(ex, pDisplayUnits->GetComponentDimUnit()),
-               FormatDimension(ey, pDisplayUnits->GetComponentDimUnit())
+               FormatDimension(ecc.X(), pDisplayUnits->GetComponentDimUnit()),
+               FormatDimension(ecc.Y(), pDisplayUnits->GetComponentDimUnit())
             );
          }
       }
@@ -657,6 +657,15 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
       pntBC->Offset(bottom_width, 0.0);
       connectable->AddSocket(SOCKET_BR, pntBC, &socketBR);
    }
+
+   // Register an event sink with the segment display object so that we can handle double clicks
+   // on the segment differently then a general double click
+   CGirderSectionViewSegmentDisplayObjectEvents* pEvents = new CGirderSectionViewSegmentDisplayObjectEvents(poi, GetFrame());
+   CComPtr<iDisplayObjectEvents> events;
+   events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
+   CComQIPtr<iDisplayObject, &IID_iDisplayObject> dispObj(doPnt);
+   dispObj->RegisterEventSink(events);
+
 
    pDL->AddDisplayObject(doPnt);
 
@@ -1098,12 +1107,11 @@ void CGirderModelSectionView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc,IBro
 
 
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   Float64 nEffective, cgx, cgy;
-   pStrandGeom->GetStrandCG(intervalIdx, poi, true, &nEffective, &cgx, &cgy);
+   auto cg = pStrandGeom->GetStrandCG(intervalIdx, poi, true);
 
    CComPtr<IPoint2d> point;
    point.CoCreateInstance(__uuidof(Point2d));
-   point->Move(cgx,cgy);
+   point->Move(cg.X(),cg.Y());
 
    CComPtr<iPointDisplayObject> doPnt;
    ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
@@ -1802,8 +1810,7 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
    {
       GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
-      Float64 nEff;
-      Float64 ecc = pStrandGeometry->GetEccentricity(intervalIdx, poi,true,&nEff);
+      Float64 ecc = pStrandGeometry->GetEccentricity(intervalIdx, poi, true).Y();
       Float64 yps = pSectProp->GetY(releaseIntervalIdx,poi,pgsTypes::BottomGirder) - ecc;
 
       textBlock.Release();

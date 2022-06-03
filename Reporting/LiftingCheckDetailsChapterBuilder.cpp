@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -69,10 +69,9 @@ LPCTSTR CLiftingCheckDetailsChapterBuilder::GetName() const
 
 rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
-   const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
+   CBrokerReportSpecification* pBrokerRptSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
+   pBrokerRptSpec->GetBroker(&pBroker);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    
@@ -81,35 +80,62 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    {
       GET_IFACE2(pBroker, IArtifact, pArtifacts);
       GET_IFACE2(pBroker, IGirder, pGirder);
+      GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
 
-      GET_IFACE2(pBroker, IBridge, pBridge);
       std::vector<CGirderKey> vGirderKeys;
-      pBridge->GetGirderline(girderKey, &vGirderKeys);
+
+      CGirderReportSpecification* pGirderReportSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+      CSegmentReportSpecification* pSegmentReportSpec = dynamic_cast<CSegmentReportSpecification*>(pRptSpec);
+
+      if (pGirderReportSpec)
+      {
+         CGirderKey girderKey = pGirderReportSpec->GetGirderKey();
+         pBridge->GetGirderline(girderKey, &vGirderKeys);
+      }
+      else
+      {
+         vGirderKeys.emplace_back(pSegmentReportSpec->GetSegmentKey());
+      }
+
       for (const auto& thisGirderKey : vGirderKeys)
       {
-         SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
-         for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+         SegmentIndexType firstSegIdx, lastSegIdx;
+         if (pGirderReportSpec)
          {
-            CSegmentKey thisSegmentKey(thisGirderKey, segIdx);
+            firstSegIdx = 0;
+            lastSegIdx = pBridge->GetSegmentCount(thisGirderKey) - 1;
+         }
+         else
+         {
+            firstSegIdx = pSegmentReportSpec->GetSegmentIndex();
+            lastSegIdx = firstSegIdx;
+         }
 
-            if (1 < nSegments)
+         for (SegmentIndexType segIdx = firstSegIdx; segIdx <= lastSegIdx; segIdx++)
+         {
+            CSegmentKey segmentKey(thisGirderKey, segIdx);
+
+            if (1 < (lastSegIdx-firstSegIdx))
             {
+               std::_tstringstream os;
+               os << _T("Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex) << std::endl;
                rptParagraph* pTitle = new rptParagraph(rptStyleManager::GetHeadingStyle());
                *pChapter << pTitle;
-               *pTitle << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+               pTitle->SetName(os.str().c_str());
+               *pTitle << pTitle->GetName() << rptNewLine;
 
                rptParagraph* p = new rptParagraph;
                *pChapter << p;
             }
 
-            const stbLiftingCheckArtifact* pArtifact = pArtifacts->GetLiftingCheckArtifact(thisSegmentKey);
-            const stbIGirder* pStabilityModel = pGirder->GetSegmentLiftingStabilityModel(thisSegmentKey);
-            const stbILiftingStabilityProblem* pStabilityProblem = pGirder->GetSegmentLiftingStabilityProblem(thisSegmentKey);
-            const stbLiftingResults& results = pArtifact->GetLiftingResults();
+            const WBFL::Stability::LiftingCheckArtifact* pArtifact = pArtifacts->GetLiftingCheckArtifact(segmentKey);
+            const WBFL::Stability::IGirder* pStabilityModel = pGirder->GetSegmentLiftingStabilityModel(segmentKey);
+            const WBFL::Stability::ILiftingStabilityProblem* pStabilityProblem = pGirder->GetSegmentLiftingStabilityProblem(segmentKey);
+            const WBFL::Stability::LiftingResults& results = pArtifact->GetLiftingResults();
 
             Float64 Ll, Lr;
             pStabilityProblem->GetSupportLocations(&Ll, &Lr);
-            stbLiftingStabilityReporter reporter;
+            WBFL::Stability::LiftingStabilityReporter reporter;
             reporter.BuildDetailsChapter(pStabilityModel, pStabilityProblem, &results, pChapter, _T("Location from<BR/>Left Pick Point"), Ll);
          } // next segment
       } // next group

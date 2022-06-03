@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -129,6 +129,7 @@ void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter,CReportSpecific
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    bool bSidewalk = pProductLoads->HasSidewalkLoad(segmentKey);
    bool bShearKey = pProductLoads->HasShearKeyLoad(segmentKey);
+   bool bLongitudinalJoint = pProductLoads->HasLongitudinalJointLoad();
    bool bConstruction = pProductLoads->HasConstructionLoad(segmentKey);
    bool bOverlay  = pBridge->HasOverlay() && !pBridge->IsFutureOverlay();
 
@@ -213,7 +214,7 @@ void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter,CReportSpecific
 
       CCamberTable tbl;
       rptRcTable* pTable1, *pTable2, *pTable3;
-      tbl.Build_Deck(pBroker,segmentKey,bTempStrands,bSidewalk,bShearKey,bConstruction,bOverlay,bDeckPanels,pDisplayUnits,i,cm,&pTable1,&pTable2,&pTable3);
+      tbl.Build_Deck(pBroker,segmentKey,bTempStrands,bSidewalk,bShearKey,bLongitudinalJoint,bConstruction,bOverlay,bDeckPanels,pDisplayUnits,i,cm,&pTable1,&pTable2,&pTable3);
       *pPara << pTable1 << rptNewLine;
 
       // footnotes to release and storage tables
@@ -266,6 +267,12 @@ void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter,CReportSpecific
       {
          *pPara << _T(" + ") << DEFL(_T("shear key"));
       }
+
+      if (bLongitudinalJoint)
+      {
+         *pPara << _T(" + ") << DEFL(_T("long. joint"));
+      }
+
       *pPara << _T(")") << rptNewLine;
 
       *pPara << Sub2(symbol(delta),_T("girder")) << _T(" = girder deflection associated with change in dead load moment due to support location change between storage and erection") << rptNewLine;
@@ -295,6 +302,11 @@ void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter,CReportSpecific
        if (bShearKey)
        {
           *pPara << _T(" + ") << DEFL(_T("shear key"));
+       }
+
+       if (bLongitudinalJoint)
+       {
+          *pPara << _T(" + ") << DEFL(_T("long. joint"));
        }
       *pPara << _T(")");
 
@@ -347,6 +359,7 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecif
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    bool bSidewalk = pProductLoads->HasSidewalkLoad(segmentKey);
    bool bShearKey = pProductLoads->HasShearKeyLoad(segmentKey);
+   bool bLongitudinalJoint = pProductLoads->HasLongitudinalJointLoad();
    bool bConstruction = pProductLoads->HasConstructionLoad(segmentKey);
    bool bOverlay  = pBridge->HasOverlay() && !pBridge->IsFutureOverlay();
 
@@ -394,7 +407,7 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecif
       pPara = new rptParagraph;
       *pChapter << pPara;
 
-      CREEPCOEFFICIENTDETAILS details[6];
+      std::array<CREEPCOEFFICIENTDETAILS, 6> details;
       details[0] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpReleaseToDiaphragm, i);
       details[1] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpReleaseToDeck, i);
       details[2] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpReleaseToFinal, i);
@@ -403,8 +416,8 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecif
       details[5] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpDeckToFinal, i);
 
       CCamberTable tbl;
-      rptRcTable* pTable1, *pTable2, *pTable3;
-      tbl.Build_NoDeck(pBroker, segmentKey, bTempStrands, bSidewalk, bShearKey, bConstruction, bOverlay, pDisplayUnits, i, cm, &pTable1, &pTable2, &pTable3);
+      rptRcTable* pTable1, * pTable2, * pTable3;
+      tbl.Build_NoDeck(pBroker, segmentKey, bTempStrands, bSidewalk, bShearKey, bLongitudinalJoint, bConstruction, bOverlay, pDisplayUnits, i, cm, &pTable1, &pTable2, &pTable3);
       *pPara << pTable1 << rptNewLine;
 
       // footnotes to release and storage tables
@@ -459,6 +472,11 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecif
          *pPara << _T(" + ") << DEFL(_T("shear key"));
       }
 
+      if (bLongitudinalJoint)
+      {
+         *pPara << _T(" + ") << DEFL(_T("long. joint"));
+      }
+
       *pPara << _T(")") << rptNewLine;
 
       *pPara << DEFL(_T("creep3")) << _T(" = ") << _T("[") << YCR(details[2]);
@@ -479,6 +497,12 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecif
       {
          *pPara << _T(" + ") << DEFL(_T("shear key"));
       }
+
+      if (bLongitudinalJoint)
+      {
+         *pPara << _T(" + ") << DEFL(_T("long. joint"));
+      }
+
       *pPara << _T(") + ") << YCR(details[5]) << _T("(") << DEFL(_T("barrier"));
       if (deckType == pgsTypes::sdtNonstructuralOverlay)
       {
@@ -521,6 +545,11 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecif
       if (bShearKey)
       {
          *pPara << _T(" + ") << DEFL(_T("shear key"));
+      }
+
+      if (bLongitudinalJoint)
+      {
+         *pPara << _T(" + ") << DEFL(_T("long. joint"));
       }
 
       *pPara << _T(")") << _T(" + ") << SCL(cm.SlabUser1Factor) << _T(" * ") << DEFL(_T("user1"));

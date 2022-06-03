@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,6 +27,8 @@
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
 #include <PsgLib\SpecLibraryEntry.h>
+
+#include <PgsExt\GirderMaterial.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -78,6 +80,10 @@ CShrinkageAtDeckPlacementTable* CShrinkageAtDeckPlacementTable::PrepareTable(rpt
    GET_IFACE2(pBroker, IBridge, pBridge);
    bool bIsAsymmetric = pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing() ? true : false;
 
+   GET_IFACE2(pBroker, ISegmentData, pSegmentData);
+   bool bUHPC = pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC ? true : false;
+   bool bPCTT = (bUHPC ? pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.bPCTT : false);
+
    // Create and configure the table
    ColumnIndexType numColumns = 2; // location, Aps
    if (bIsPrismatic)
@@ -128,78 +134,97 @@ CShrinkageAtDeckPlacementTable* CShrinkageAtDeckPlacementTable::PrepareTable(rpt
 
    *pParagraph << _T("[") << LrfdCw8th(_T("5.9.5.4.2a"),_T("5.9.3.4.2a")) << _T("] Shrinkage of Girder Concrete : ") << symbol(DELTA) << RPT_STRESS(_T("pSR")) << rptNewLine;
 
+   pParagraph = new rptParagraph;
+   *pChapter << pParagraph;
+
+   *pParagraph << rptRcImage(strImagePath + _T("Delta_fpSR.png")) << rptNewLine;
+
    if (bIsAsymmetric)
    {
       if (spMode == pgsTypes::spmGross)
       {
-         *pParagraph << rptRcImage(strImagePath + _T("Delta_FpSR_Gross_Asymmetric.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("Kid_Gross_Asymmetric.png")) << rptNewLine;
       }
       else
       {
-         *pParagraph << rptRcImage(strImagePath + _T("Delta_FpSR_Transformed_Asymmetric.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("Kid_Transformed_Asymmetric.png")) << rptNewLine;
       }
    }
    else
    {
       if (spMode == pgsTypes::spmGross)
       {
-         *pParagraph << rptRcImage(strImagePath + _T("Delta_FpSR_Gross.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("Kid_Gross.png")) << rptNewLine;
       }
       else
       {
-         *pParagraph << rptRcImage(strImagePath + _T("Delta_FpSR_Transformed.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("Kid_Transformed.png")) << rptNewLine;
       }
    }
 
-   if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
+   if (bUHPC)
    {
-      if ( IS_SI_UNITS(pDisplayUnits) )
-      {
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn-SI.png")) << rptNewLine;
-      }
+      if (bPCTT)
+         *pParagraph << rptRcImage(strImagePath + _T("CreepShrinkageAtDeckPlacement_UHPC_PCTT.png")) << rptNewLine;
       else
-      {
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn-US.png")) << rptNewLine;
-      }
-   }
-   else if ( pSpecEntry->GetSpecificationType() == lrfdVersionMgr::ThirdEditionWith2006Interims )
-   {
-      if ( IS_SI_UNITS(pDisplayUnits) )
-      {
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2006-SI.png")) << rptNewLine;
-      }
-      else
-      {
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2006-US.png")) << rptNewLine;
-      }
-   }
-   else
-   {
-      if ( IS_SI_UNITS(pDisplayUnits) )
-      {
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2007-SI.png")) << rptNewLine;
-      }
-      else
-      {
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2007-US.png")) << rptNewLine;
-      }
-   }
+         *pParagraph << rptRcImage(strImagePath + _T("CreepShrinkageAtDeckPlacement_UHPC.png")) << rptNewLine;
 
-   *pParagraph << rptRcImage(strImagePath + _T("HumidityFactor.png")) << rptNewLine;
-   if ( IS_SI_UNITS(pDisplayUnits) )
-   {
-      ATLASSERT( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims );
-      *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_SI.png")) << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + _T("UHPC_Factors.png")) << rptNewLine;
    }
    else
    {
-      if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims )
+      *pParagraph << rptRcImage(strImagePath + _T("CreepShrinkageAtDeckPlacement.png")) << rptNewLine;
+
+      if (pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims)
       {
-         *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_US.png")) << rptNewLine;
+         if (IS_SI_UNITS(pDisplayUnits))
+         {
+            *pParagraph << rptRcImage(strImagePath + _T("KvsEqn-SI.png")) << rptNewLine;
+         }
+         else
+         {
+            *pParagraph << rptRcImage(strImagePath + _T("KvsEqn-US.png")) << rptNewLine;
+         }
+      }
+      else if (pSpecEntry->GetSpecificationType() == lrfdVersionMgr::ThirdEditionWith2006Interims)
+      {
+         if (IS_SI_UNITS(pDisplayUnits))
+         {
+            *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2006-SI.png")) << rptNewLine;
+         }
+         else
+         {
+            *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2006-US.png")) << rptNewLine;
+         }
       }
       else
       {
-         *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_US2015.png")) << rptNewLine;
+         if (IS_SI_UNITS(pDisplayUnits))
+         {
+            *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2007-SI.png")) << rptNewLine;
+         }
+         else
+         {
+            *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2007-US.png")) << rptNewLine;
+         }
+      }
+
+      *pParagraph << rptRcImage(strImagePath + _T("HumidityFactor.png")) << rptNewLine;
+      if (IS_SI_UNITS(pDisplayUnits))
+      {
+         ATLASSERT(pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims);
+         *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_SI.png")) << rptNewLine;
+      }
+      else
+      {
+         if (pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims)
+         {
+            *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_US.png")) << rptNewLine;
+         }
+         else
+         {
+            *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_US2015.png")) << rptNewLine;
+         }
       }
    }
 
@@ -230,7 +255,7 @@ CShrinkageAtDeckPlacementTable* CShrinkageAtDeckPlacementTable::PrepareTable(rpt
    (*pParamTable)(0,5) << COLHDR(Sub2(_T("t"),_T("f")),rptTimeUnitTag,pDisplayUnits->GetWholeDaysUnit());
 
    (*pParamTable)(1,0) << ptl->GetRelHumidity();
-   (*pParamTable)(1,1) << table->ecc.SetValue(ptl->GetVolume()/ptl->GetSurfaceArea());
+   (*pParamTable)(1,1) << table->ecc.SetValue(ptl->GetGirderCreep()->GetVolume()/ptl->GetGirderCreep()->GetSurfaceArea());
    (*pParamTable)(1,2) << table->stress.SetValue(ptl->GetFci());
    (*pParamTable)(1,3) << table->time.SetValue(ptl->GetInitialAge());
    (*pParamTable)(1,4) << table->time.SetValue(ptl->GetAgeAtDeckPlacement());
@@ -254,16 +279,16 @@ CShrinkageAtDeckPlacementTable* CShrinkageAtDeckPlacementTable::PrepareTable(rpt
    (*pParamTable)(0,3) << Sub2(_T("k"),_T("f"));
 
    table->time.ShowUnitTag(true);
-   (*pParamTable)(0,4) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("Initial to Deck Placement") << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetCreepInitialToDeck().GetMaturity());
-   (*pParamTable)(0,5) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("Initial to Final") << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetCreepInitialToFinal().GetMaturity());
+   (*pParamTable)(0,4) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("Initial to Deck Placement") << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetMaturityAtDeckPlacement());
+   (*pParamTable)(0,5) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("Initial to Final") << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetMaturityAtFinal());
    table->time.ShowUnitTag(false);
 
-   (*pParamTable)(1,0) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetKvs());
+   (*pParamTable)(1,0) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKvs());
    (*pParamTable)(1,1) << table->scalar.SetValue(ptl->Getkhs());
-   (*pParamTable)(1,2) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetKhc());
-   (*pParamTable)(1,3) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetKf());
-   (*pParamTable)(1,4) << table->scalar.SetValue(ptl->GetCreepInitialToDeck().GetKtd());
-   (*pParamTable)(1,5) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetKtd());
+   (*pParamTable)(1,2) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKhc());
+   (*pParamTable)(1,3) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKf());
+   (*pParamTable)(1,4) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKtd(ptl->GetMaturityAtDeckPlacement()));
+   (*pParamTable)(1,5) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKtd(ptl->GetMaturityAtFinal()));
 
    pParamTable = rptStyleManager::CreateDefaultTable(8,_T(""));
    *pParagraph << pParamTable << rptNewLine;
@@ -289,9 +314,9 @@ CShrinkageAtDeckPlacementTable* CShrinkageAtDeckPlacementTable::PrepareTable(rpt
    (*pParamTable)(2,2) << ptl->GetGdrK1Shrinkage();
    (*pParamTable)(2,3) << ptl->GetGdrK2Shrinkage();
    (*pParamTable)(2,4) << table->strain.SetValue(ptl->Get_ebid() * 1000);
-   (*pParamTable)(2,5) << ptl->GetGdrK1Creep();
-   (*pParamTable)(2,6) << ptl->GetGdrK2Creep();
-   (*pParamTable)(2,7) << table->creep.SetValue(ptl->GetCreepInitialToFinal().GetCreepCoefficient());
+   (*pParamTable)(2,5) << ptl->GetGirderCreep()->GetK1();
+   (*pParamTable)(2,6) << ptl->GetGirderCreep()->GetK2();
+   (*pParamTable)(2, 7) << table->creep.SetValue(ptl->GetGirderCreep()->GetCreepCoefficient(ptl->GetMaturityAtFinal(),ptl->GetInitialAge()));
 
    if (bIsPrismatic)
    {

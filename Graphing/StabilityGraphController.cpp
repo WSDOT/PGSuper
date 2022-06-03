@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,8 +24,10 @@
 #include "resource.h"
 #include "StabilityGraphController.h"
 #include <Graphing\StabilityGraphBuilder.h>
+#include <Graphing\ExportGraphXYTool.h>
 
 #include <EAF\EAFUtilities.h>
+#include <EAF\EAFDocument.h>
 #include <IFace\DocumentType.h>
 #include <IFace\Selection.h>
 #include <IFace\Bridge.h>
@@ -51,6 +53,8 @@ BEGIN_MESSAGE_MAP(CStabilityGraphController, CEAFGraphControlWindow)
    ON_CBN_SELCHANGE( IDC_SEGMENT, OnSegmentChanged )
    ON_CBN_SELCHANGE( IDC_EVENT, OnGraphTypeChanged )
    ON_BN_CLICKED(IDC_GRID, OnShowGrid)
+   ON_BN_CLICKED(IDC_EXPORT_GRAPH_BTN,OnGraphExportClicked)
+   ON_UPDATE_COMMAND_UI(IDC_EXPORT_GRAPH_BTN,OnCommandUIGraphExport)
    //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -323,6 +327,28 @@ void CStabilityGraphController::ShowGrid(bool bShowGrid)
       pBtn->SetCheck(bShowGrid ? BST_CHECKED : BST_UNCHECKED);
       ((CStabilityGraphBuilder*)GetGraphBuilder())->ShowGrid(bShowGrid);
    }
+}
+
+void CStabilityGraphController::OnGraphExportClicked()
+{
+   // Build default file name
+   CString strProjectFileNameNoPath = CExportGraphXYTool::GetTruncatedFileName();
+
+   CString girderName = SEGMENT_LABEL(m_SegmentKey);
+
+   CString actionName = _T("Stability Graph");
+
+   CString strDefaultFileName = strProjectFileNameNoPath + _T("_") + girderName + _T("_") + actionName;
+   strDefaultFileName.Replace(' ','_'); // prefer not to have spaces or ,'s in file names
+   strDefaultFileName.Replace(',','_');
+
+   ((CStabilityGraphBuilder*)GetGraphBuilder())->ExportGraphData(strDefaultFileName);
+}
+
+// this has to be implemented otherwise button will not be enabled.
+void CStabilityGraphController::OnCommandUIGraphExport(CCmdUI* pCmdUI)
+{
+   pCmdUI->Enable(TRUE);
 }
 
 #ifdef _DEBUG

@@ -1,14 +1,14 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.58    6   7.17                     1     1    WF95P    *     12  0.6  270  44.03  42.70   9.00   9.00                                              5.000 10.258   2.278    -2.510    11350   0.669  0.776  -0.189 -0.427  0.000 -0.039 -0.466   7.96  100.02    0.00    0.00    0.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 40.58    6   7.17                     1     1    WF95P    *     12  0.6  270  44.03  42.70   9.00   9.00                                              5.000 10.258   2.196    -2.685    11766   0.669  0.776  -0.311 -0.427  0.000 -0.039 -0.466   7.96  116.65    0.00    0.00    0.00    2.50    0.00    3.24    0.00    0.75 
 
 
 The Specification Check was Not Successful
 Tendon 1 is overstressed
 Tendon 2 is overstressed
 Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 1
+Tension stress check failed for Service I Limit State in Interval 14 Cast closure joint and deck regions 1, 3 for Segment 1
 Tension stress check failed for Service I Limit State in Interval 18 Cast deck regions 2 for Segment 1
-Tension stress check failed for Service I Limit State in Interval 24 Install Railing System for Segment 1
 Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Segment 1
 Tension stress check failed for Service I Limit State in Interval 18 Cast deck regions 2 for Deck
 Tension stress check failed for Service I Limit State in Interval 21 Stress Tendons, Remove Temporary Support for Deck
@@ -16,6 +16,7 @@ Tension stress check failed for Service I Limit State in Interval 24 Install Rai
 Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Deck
 Principal tension stress in webs stress check failed for Segment 1
 Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 2
+Tension stress check failed for Service I Limit State in Interval 14 Cast closure joint and deck regions 1, 3 for Segment 2
 Tension stress check failed for Service I Limit State in Interval 18 Cast deck regions 2 for Segment 2
 Tension stress check failed for Service I Limit State in Interval 21 Stress Tendons, Remove Temporary Support for Segment 2
 Tension stress check failed for Service I Limit State in Interval 24 Install Railing System for Segment 2
@@ -36,9 +37,9 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.7.4].
 Stirrup detailing checks failed for the Strength I Limit State.
-Splitting zone check failed for Segment 1.
-Splitting zone check failed for Segment 2.
-Splitting zone check failed for Segment 3.
+Splitting check failed for Segment 1.
+Splitting check failed for Segment 2.
+Splitting check failed for Segment 3.
 Confinement zone check failed for Segment 1.
 Confinement zone check failed for Segment 2.
 Confinement zone check failed for Segment 3.
@@ -52,17 +53,17 @@ Duct Size check failed for Duct 1.
 Duct Size check failed for Duct 2.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.58    6   7.17                     1     2    WF95P    *     12  0.6  270  44.03  42.70   9.00   9.00                                              5.000 10.258   2.298    -2.524    11292   0.649  0.776  -0.213 -0.452  0.000 -0.039 -0.491   7.96   99.64    0.00    0.00    0.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 40.58    6   7.17                     1     2    WF95P    *     12  0.6  270  44.03  42.70   9.00   9.00                                              5.000 10.258   2.213    -2.699    11717   0.649  0.776  -0.334 -0.452  0.000 -0.039 -0.491   7.96  116.24    0.00    0.00    0.00    2.54    0.00    3.29    0.00    0.79 
 
 
 The Specification Check was Not Successful
 Tendon 1 is overstressed
 Tendon 2 is overstressed
 Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 1
+Tension stress check failed for Service I Limit State in Interval 14 Cast closure joint and deck regions 1, 3 for Segment 1
 Tension stress check failed for Service I Limit State in Interval 18 Cast deck regions 2 for Segment 1
-Tension stress check failed for Service I Limit State in Interval 24 Install Railing System for Segment 1
 Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Segment 1
 Tension stress check failed for Service I Limit State in Interval 18 Cast deck regions 2 for Deck
 Tension stress check failed for Service I Limit State in Interval 21 Stress Tendons, Remove Temporary Support for Deck
@@ -70,6 +71,7 @@ Tension stress check failed for Service I Limit State in Interval 24 Install Rai
 Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Deck
 Principal tension stress in webs stress check failed for Segment 1
 Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 2
+Tension stress check failed for Service I Limit State in Interval 14 Cast closure joint and deck regions 1, 3 for Segment 2
 Tension stress check failed for Service I Limit State in Interval 18 Cast deck regions 2 for Segment 2
 Tension stress check failed for Service I Limit State in Interval 21 Stress Tendons, Remove Temporary Support for Segment 2
 Tension stress check failed for Service I Limit State in Interval 24 Install Railing System for Segment 2
@@ -90,9 +92,9 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.7.4].
 Stirrup detailing checks failed for the Strength I Limit State.
-Splitting zone check failed for Segment 1.
-Splitting zone check failed for Segment 2.
-Splitting zone check failed for Segment 3.
+Splitting check failed for Segment 1.
+Splitting check failed for Segment 2.
+Splitting check failed for Segment 3.
 Confinement zone check failed for Segment 1.
 Confinement zone check failed for Segment 2.
 Confinement zone check failed for Segment 3.

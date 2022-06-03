@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -324,7 +324,7 @@ void CSplicedGirderGeneralPage::FillStrandList(UINT nIDC)
    matPsStrand::Size cur_size = matPsStrand::D1270;
    if ( cur_sel != CB_ERR )
    {
-      Int32 cur_key = (Int32)pList->GetItemData( cur_sel );
+      Int64 cur_key = (Int64)pList->GetItemData( cur_sel );
       const matPsStrand* pCurStrand = pPool->GetStrand( cur_key );
       cur_size = pCurStrand->GetSize();
    }
@@ -333,9 +333,10 @@ void CSplicedGirderGeneralPage::FillStrandList(UINT nIDC)
 
    int sel_count = 0;  // Keep count of the number of strings added to the combo box
    int new_cur_sel = -1; // This will be in index of the string we want to select.
-   for ( int i = 0; i < 2; i++ )
+   for (int i = 0; i < 3; i++)
    {
-      matPsStrand::Grade grade = (i == 0 ? matPsStrand::Gr1725 : matPsStrand::Gr1860);
+      matPsStrand::Grade grade = (i == 0 ? matPsStrand::Gr1725 :
+                                  i == 1 ? matPsStrand::Gr1860 : matPsStrand::Gr2070);
       for ( int j = 0; j < 2; j++ )
       {
          matPsStrand::Type type = (j == 0 ? matPsStrand::LowRelaxation : matPsStrand::StressRelieved);
@@ -350,8 +351,7 @@ void CSplicedGirderGeneralPage::FillStrandList(UINT nIDC)
             if ( idx != CB_ERR )
             { 
                // if there wasn't an error adding the size, add a data item
-               Int32 key;
-               key = pPool->GetStrandKey( pStrand );
+               auto key = pPool->GetStrandKey( pStrand );
 
                if ( pList->SetItemData( idx, key ) == CB_ERR )
                {
@@ -409,8 +409,7 @@ void CSplicedGirderGeneralPage::FillStrandList(CComboBox* pList,matPsStrand::Gra
       if ( idx != CB_ERR )
       { 
          // if there wasn't an error adding the size, add a data item
-         Int32 key;
-         key = pPool->GetStrandKey( pStrand );
+         auto key = pPool->GetStrandKey( pStrand );
 
          if ( pList->SetItemData( idx, key ) == CB_ERR )
          {
@@ -430,7 +429,7 @@ const matPsStrand* CSplicedGirderGeneralPage::GetStrand()
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
 
    int cursel = pList->GetCurSel();
-   Int32 key = (Int32)pList->GetItemData(cursel);
+   Int64 key = (Int64)pList->GetItemData(cursel);
    return pPool->GetStrand(key);
 }
 

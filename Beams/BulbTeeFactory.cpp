@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -828,6 +828,7 @@ std::_tstring CBulbTeeFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckTyp
 
    switch(deckType)
    {
+   case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeOverlay:
       strImage =  _T("BulbTee_Composite.gif");
       break;
@@ -851,6 +852,7 @@ std::_tstring CBulbTeeFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes:
 
    switch(deckType)
    {
+   case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeOverlay:
       strImage =  _T("+Mn_BulbTee_Composite.gif");
       break;
@@ -874,6 +876,7 @@ std::_tstring CBulbTeeFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes:
 
    switch(deckType)
    {
+   case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeOverlay:
       strImage =  _T("-Mn_BulbTee_Composite.gif");
       break;
@@ -897,6 +900,7 @@ std::_tstring CBulbTeeFactory::GetShearDimensionsSchematicImage(pgsTypes::Suppor
 
    switch(deckType)
    {
+   case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeOverlay:
       strImage =  _T("Vn_BulbTee_Composite.gif");
       break;
@@ -1423,7 +1427,7 @@ void CBulbTeeFactory::GetTopFlangeParameters(IBroker* pBroker, const CPrecastSeg
       // Assumption here that outer-most ridge points are off of the bridge. Done for performance
       for (IndexType iCP = 1; iCP < numCPs-1; iCP++)
       {
-         Float64 CPO = pAlignment->GetCrownPointOffset(iCP, station);
+         Float64 CPO = pAlignment->GetAlignmentOffset(iCP, station);
 
          if (IsLT(left_edge_offset, CPO) && IsLT(CPO, right_edge_offset))
          {

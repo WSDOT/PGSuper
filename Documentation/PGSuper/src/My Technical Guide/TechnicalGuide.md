@@ -4,9 +4,11 @@ Technical Guide {#technical_guide}
 The purpose of this Technical Guide is to detail the algorithms and computational methods used by this software.
 
 Topics
+* @subpage tg_07_strands
 * @subpage tg_biaxial_stresses
 * @subpage tg_bearing_seat_geometry
 * @subpage tg_camber
+* @subpage tg_deflections
 * @subpage tg_capacity_demand_ratios
 * @subpage tg_computing_pier_diaphragm_dimensions
 * @subpage tg_concrete_properties
@@ -18,6 +20,7 @@ Topics
 * @subpage tg_fatigue
 * @subpage tg_flexural_resistance_factor
 * @subpage tg_girder_spacing
+* @subpage tg_grade_300
 * @subpage tg_interface_shear
 * @subpage tg_lateral_deflections
 * @subpage tg_lightweight_concrete
@@ -31,6 +34,7 @@ Topics
 * @subpage tg_prestress_losses
 * @subpage tg_prestress_losses_txdot
 * @subpage tg_prestress_losses_time_step
+* @subpage tg_prestressing_steel
 * @subpage tg_principal_tensile_stress
 * @subpage tg_reactions
 * @subpage tg_section_properties
@@ -43,4 +47,5 @@ Topics
 * @subpage tg_structural_analysis_models
 * @subpage tg_tensile_stress_limits
 * @subpage tg_time_dependent_material_models
+* @subpage tg_transfer_length
 * @subpage tg_uhpc

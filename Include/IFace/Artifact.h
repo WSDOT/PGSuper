@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -45,8 +45,14 @@ class pgsGirderDesignArtifact;
 class pgsRatingArtifact;
 class pgsISummaryRatingArtifact;
 
-class stbLiftingCheckArtifact;
 class pgsHaulingAnalysisArtifact;
+namespace WBFL
+{
+   namespace Stability
+   {
+      class LiftingCheckArtifact;
+   }
+}
 
 // MISCELLANEOUS
 //
@@ -72,7 +78,7 @@ interface IArtifact : IUnknown
    virtual const pgsSegmentArtifact* GetSegmentArtifact(const CSegmentKey& segmentKey) const = 0;
 
    // Returns a LiftingAnalysisArtifact which captures the specification checks related to lifting for an individual segment.
-   virtual const stbLiftingCheckArtifact* GetLiftingCheckArtifact(const CSegmentKey& segmentKey) const = 0;
+   virtual const WBFL::Stability::LiftingCheckArtifact* GetLiftingCheckArtifact(const CSegmentKey& segmentKey) const = 0;
 
    // Returns a HaulingAnalysisArtifact which captures the specification checks related to hauling for an individual segment.
    virtual const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact(const CSegmentKey& segmentKey) const = 0;
@@ -85,7 +91,7 @@ interface IArtifact : IUnknown
    virtual const pgsGirderDesignArtifact* GetDesignArtifact(const CGirderKey& girderKey) const = 0;
 
    // Creates a LiftingAnalysisArtifact for the specified segment based on the specified lifting configuration
-   virtual void CreateLiftingCheckArtifact(const CSegmentKey& segmentKey,Float64 supportLoc,stbLiftingCheckArtifact* pArtifact) const = 0;
+   virtual void CreateLiftingCheckArtifact(const CSegmentKey& segmentKey,Float64 supportLoc,WBFL::Stability::LiftingCheckArtifact* pArtifact) const = 0;
 
    // Creates a HaulingAnalysisArtifact for the specified segment based on the specified hauling configuration
    virtual const pgsHaulingAnalysisArtifact* CreateHaulingAnalysisArtifact(const CSegmentKey& segmentKey,Float64 leftSupportLoc,Float64 rightSupportLoc) const = 0;

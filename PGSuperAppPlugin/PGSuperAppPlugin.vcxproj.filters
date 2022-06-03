@@ -818,6 +818,18 @@
     <ClCompile Include="TimelineReportDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CopyPierDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CopyPierPropertiesCallbacks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CopyTempSupportDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CopyTempSupportPropertiesCallbacks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PGSuperAppPlugin_i.h" />
@@ -1737,6 +1749,18 @@
     <ClInclude Include="TimelineReportDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CopyPierDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CopyPierPropertiesCallbacks.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CopyTempSupportDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CopyTempSupportPropertiesCallbacks.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\bss.ico">
@@ -1764,9 +1788,6 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\Bridge.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\Bridge2.ico">
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\colhdr.bmp">
@@ -1923,6 +1944,12 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\RW_Crosssection.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\PGSpliceProjectImporter.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\PGSuperProjectImporter.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

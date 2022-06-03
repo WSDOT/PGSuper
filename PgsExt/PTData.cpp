@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -977,8 +977,10 @@ void CParabolicDuctGeometry::AssertValid()
    ATLASSERT(LowPoints.size() == GetSpanCount());
 
    // Start/End piers must be between the start and end of the girder
-   ATLASSERT(m_pGirder->GetPierIndex(pgsTypes::metStart) <= StartPierIdx && EndPierIdx <= m_pGirder->GetPierIndex(pgsTypes::metEnd));
-
+   if (m_pGirder)
+   {
+      ATLASSERT(m_pGirder->GetPierIndex(pgsTypes::metStart) <= StartPierIdx && EndPierIdx <= m_pGirder->GetPierIndex(pgsTypes::metEnd));
+   }
 }
 #endif
 
@@ -1624,7 +1626,7 @@ HRESULT CPTData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    else
    {
       lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
-      Int32 key = var.lVal;
+      Int64 key = var.lVal;
       if ( version < 4 )
       {
          key |= matPsStrand::None; // add default encoding for stand coating type... added in version 4
@@ -1723,7 +1725,7 @@ HRESULT CPTData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->BeginUnit(_T("PTData"),4.0);
 
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
-   Int32 key = pPool->GetStrandKey(pStrand); // beginning with version 4, the strand key includes an including for strand coating type
+   Int64 key = pPool->GetStrandKey(pStrand); // beginning with version 4, the strand key includes an including for strand coating type
    pStrSave->put_Property(_T("TendonMaterialKey"),CComVariant(key));
 
    DuctIndexType ductCount = m_Ducts.size();

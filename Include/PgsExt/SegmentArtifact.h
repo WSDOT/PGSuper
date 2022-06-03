@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -115,8 +115,8 @@ public:
    const pgsSegmentStabilityArtifact* GetSegmentStabilityArtifact() const;
    pgsSegmentStabilityArtifact* GetSegmentStabilityArtifact();
 
-   void SetLiftingCheckArtifact(const stbLiftingCheckArtifact* artifact);
-   const stbLiftingCheckArtifact* GetLiftingCheckArtifact() const;
+   void SetLiftingCheckArtifact(const WBFL::Stability::LiftingCheckArtifact* artifact);
+   const WBFL::Stability::LiftingCheckArtifact* GetLiftingCheckArtifact() const;
 
    void SetHaulingAnalysisArtifact(const pgsHaulingAnalysisArtifact*  artifact);
    const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact() const;
@@ -167,11 +167,11 @@ public:
 
    Float64 GetRequiredReleaseStrength() const;
 
-   Float64 GetRequiredSegmentConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
+   Float64 GetRequiredSegmentConcreteStrength(pgsTypes::StressType stressType,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
    Float64 GetRequiredSegmentConcreteStrength() const;
-   Float64 GetRequiredClosureJointConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
+   Float64 GetRequiredClosureJointConcreteStrength(pgsTypes::StressType stressType, IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
    Float64 GetRequiredClosureJointConcreteStrength() const;
-   Float64 GetRequiredDeckConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
+   Float64 GetRequiredDeckConcreteStrength(pgsTypes::StressType stressType, IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
    Float64 GetRequiredDeckConcreteStrength() const;
 
    const CSegmentKey& GetSegmentKey() const;
@@ -213,7 +213,7 @@ private:
    std::map<DuctIndexType, pgsTendonStressArtifact> m_TendonStressArtifacts;
    std::map<DuctIndexType, pgsDuctSizeArtifact> m_DuctSizeArtifacts;
 
-   const stbLiftingCheckArtifact* m_pLiftingCheckArtifact; // point is not owned by this object
+   const WBFL::Stability::LiftingCheckArtifact* m_pLiftingCheckArtifact; // point is not owned by this object
    const pgsHaulingAnalysisArtifact* m_pHaulingAnalysisArtifact; // pointer is not owned by this object
 
    pgsDebondArtifact m_DebondArtifact;

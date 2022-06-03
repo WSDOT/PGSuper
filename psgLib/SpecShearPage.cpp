@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -142,10 +142,10 @@ void CSpecShearPage::FillShearMethodList()
 {
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_SHEAR_CAPACITY);
    int cur_sel = pCB->GetCurSel();
-   ShearCapacityMethod shear_capacity_method = scmBTEquations;
+   pgsTypes::ShearCapacityMethod shear_capacity_method = pgsTypes::scmBTEquations;
    
    if ( cur_sel != CB_ERR )
-      shear_capacity_method = (ShearCapacityMethod)pCB->GetItemData(cur_sel);
+      shear_capacity_method = (pgsTypes::ShearCapacityMethod)pCB->GetItemData(cur_sel);
 
    pCB->ResetContent();
 
@@ -158,56 +158,56 @@ void CSpecShearPage::FillShearMethodList()
 
    idxGeneral = pCB->AddString(CString(_T("Compute in accordance with LRFD ")) +  CString(pDad->LrfdCw8th(_T("5.8.3.4.2"),_T("5.7.3.4.2"))) + CString(_T(" (General method)")));
    if ( version <= lrfdVersionMgr::FourthEdition2007 )
-      pCB->SetItemData(idxGeneral,(DWORD)scmBTTables); // 4th Edition and earlier, general method is Beta-Theta tables
+      pCB->SetItemData(idxGeneral,(DWORD)pgsTypes::scmBTTables); // 4th Edition and earlier, general method is Beta-Theta tables
    else
-      pCB->SetItemData(idxGeneral,(DWORD)scmBTEquations); // After 4th Edition, general method is Beta-Theta equations
+      pCB->SetItemData(idxGeneral,(DWORD)pgsTypes::scmBTEquations); // After 4th Edition, general method is Beta-Theta equations
 
    if ( lrfdVersionMgr::FourthEdition2007 <= version  && lrfdVersionMgr::EighthEdition2017 > version)
    {
       idxVciVcw = pCB->AddString(_T("Compute in accordance with LRFD 5.8.3.4.3 (Vci and Vcw method)"));
-      pCB->SetItemData(idxVciVcw,(DWORD)scmVciVcw);
+      pCB->SetItemData(idxVciVcw,(DWORD)pgsTypes::scmVciVcw);
    }
 
    if ( lrfdVersionMgr::FourthEditionWith2008Interims <= version )
    {
       idxAppendixB = pCB->AddString(_T("Compute in accordance with LRFD B5.1 (Beta-Theta Tables)"));
-      pCB->SetItemData(idxAppendixB,(DWORD)scmBTTables);
+      pCB->SetItemData(idxAppendixB,(DWORD)pgsTypes::scmBTTables);
    }
 
    if ( lrfdVersionMgr::SecondEditionWith2000Interims <= version )
    {
       idxWSDOT2001 = pCB->AddString(_T("Compute in accordance with WSDOT Bridge Design Manual (June 2001)"));
-      pCB->SetItemData(idxWSDOT2001,(DWORD)scmWSDOT2001);
+      pCB->SetItemData(idxWSDOT2001,(DWORD)pgsTypes::scmWSDOT2001);
    }
 
    if ( lrfdVersionMgr::FourthEdition2007 <= version && version < lrfdVersionMgr::FourthEditionWith2008Interims )
    {
       idxWSDOT2007 = pCB->AddString(_T("Compute in accordance with WSDOT Bridge Design Manual (August 2007)"));
-      pCB->SetItemData(idxWSDOT2007,(DWORD)scmWSDOT2007);
+      pCB->SetItemData(idxWSDOT2007,(DWORD)pgsTypes::scmWSDOT2007);
    }
 
    // select the right item
    switch(shear_capacity_method)
    {
-   case scmBTEquations:
+   case pgsTypes::scmBTEquations:
       pCB->SetCurSel(idxGeneral); // general method
       break;
 
-   case scmVciVcw:
+   case pgsTypes::scmVciVcw:
       if ( lrfdVersionMgr::FourthEdition2007 <= pDad->GetSpecVersion() )
          pCB->SetCurSel(idxVciVcw); // 4th and later, select Vci Vcw
       else
          pCB->SetCurSel(idxGeneral); // otherwise, select general
       break;
 
-   case scmBTTables:
+   case pgsTypes::scmBTTables:
       if ( pDad->GetSpecVersion() <= lrfdVersionMgr::FourthEdition2007 )
          pCB->SetCurSel(idxGeneral); // 4th and earlier, tables is the general method
       else
          pCB->SetCurSel(idxAppendixB); // after 4th, this is Appendix B5.1
       break;
 
-   case scmWSDOT2001:
+   case pgsTypes::scmWSDOT2001:
       if ( lrfdVersionMgr::SecondEditionWith2000Interims <= pDad->GetSpecVersion() )
       {
          pCB->SetCurSel(idxWSDOT2001); // 2nd + 2000 and later, use 2001 BDM
@@ -218,7 +218,7 @@ void CSpecShearPage::FillShearMethodList()
       }
       break;
 
-   case scmWSDOT2007:
+   case pgsTypes::scmWSDOT2007:
       if ( lrfdVersionMgr::FourthEdition2007 <= pDad->GetSpecVersion() )
       {
          pCB->SetCurSel(idxWSDOT2007); // 4th and later, 2007 method ok

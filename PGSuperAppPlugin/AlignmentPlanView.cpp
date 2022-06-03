@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -255,6 +255,7 @@ void CAlignmentPlanView::BuildAlignmentDisplayObjects()
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IRoadway,pRoadway);
+   GET_IFACE2(pBroker, IRoadwayData, pRoadwayData);
 
    Float64 n = 10;
    Float64 start_station, start_elevation, start_grade;
@@ -291,6 +292,24 @@ void CAlignmentPlanView::BuildAlignmentDisplayObjects()
       CComPtr<IPoint2d> p;
       pRoadway->GetPoint(station,0.00,bearing,pgsTypes::pcGlobal,&p);
       doAlignment->AddPoint(p);
+
+      if (i == 0)
+      {
+         CComPtr<iTextBlock> doText;
+         doText.CoCreateInstance(CLSID_TextBlock);
+         doText->SetPosition(p);
+         doText->SetText(pRoadwayData->GetAlignmentData2().Name.c_str());
+         doText->SetTextAlign(TA_BOTTOM | TA_LEFT);
+         doText->SetBkMode(TRANSPARENT);
+         CComPtr<IDirection> bearing;
+         pRoadway->GetBearing(station, &bearing);
+         Float64 dir;
+         bearing->get_Value(&dir);
+         long angle = long(1800.*dir / M_PI);
+         angle = (900 < angle && angle < 2700) ? angle - 1800 : angle;
+         doText->SetAngle(angle);
+         display_list->AddDisplayObject(doText);
+      }
    }
 
    doAlignment->put_Width(ALIGNMENT_LINE_WEIGHT);
@@ -304,7 +323,59 @@ void CAlignmentPlanView::BuildAlignmentDisplayObjects()
    dispObj->SetID(ALIGNMENT_ID);
 
    ////////////////
+   if (pRoadwayData->GetRoadwaySectionData().AlignmentPointIdx != pRoadwayData->GetRoadwaySectionData().ProfileGradePointIdx)
+   {
+      // draw the profile grade line
+      CComPtr<iPolyLineDisplayObject> doPGL;
+      doPGL.CoCreateInstance(CLSID_PolyLineDisplayObject);
 
+      Float64 station = start_station;
+      for (long i = 0; i < nPoints; i++, station += station_inc)
+      {
+         IndexType alignmentIdx = pRoadway->GetAlignmentPointIndex(station); // get index of crown point corresponding to the alignment
+         Float64 offset = pRoadway->GetProfileGradeLineOffset(alignmentIdx, station); // get the offset from the alignment point to the PGL
+
+         ATLASSERT(!IsZero(offset)); // only drawing PGL if it is offset from alignment so this better not be zero
+
+         bearing.Release();
+         pRoadway->GetBearingNormal(station, &bearing);
+
+         // use -offset because offset is from PGL to alignment... we need to plot alignemnt to PGL offset
+         CComPtr<IPoint2d> p;
+         pRoadway->GetPoint(station, -offset, bearing, pgsTypes::pcGlobal, &p);
+         doPGL->AddPoint(p);
+
+         if (i == 0)
+         {
+            CComPtr<iTextBlock> doText;
+            doText.CoCreateInstance(CLSID_TextBlock);
+            doText->SetPosition(p);
+            doText->SetText(_T("PGL"));
+            doText->SetTextAlign(TA_BOTTOM | TA_LEFT);
+            doText->SetBkMode(TRANSPARENT);
+            CComPtr<IDirection> bearing;
+            pRoadway->GetBearing(station, &bearing);
+            Float64 dir;
+            bearing->get_Value(&dir);
+            long angle = long(1800.*dir / M_PI);
+            angle = (900 < angle && angle < 2700) ? angle - 1800 : angle;
+            doText->SetAngle(angle);
+            display_list->AddDisplayObject(doText);
+         }
+      }
+
+      doPGL->put_Width(PROFILE_LINE_WEIGHT);
+      doPGL->put_Color(PROFILE_COLOR);
+      doPGL->put_PointType(plpNone);
+      doPGL->Commit();
+
+      CComPtr<iDisplayObject> dispObj;
+      doPGL->QueryInterface(IID_iDisplayObject, (void**)&dispObj);
+      display_list->AddDisplayObject(dispObj);
+
+   }
+
+   ////////////////
 
    CComPtr<iCoordinateMap> map;
    dispMgr->GetCoordinateMap(&map);
@@ -527,10 +598,8 @@ void CAlignmentPlanView::BuildLabelDisplayObjects()
    CreateStationLabel(label_display_list, end_station);
 
    // Even station labels
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-   Float64 station_step = (pDisplayUnits->GetUnitMode() == eafTypes::umUS ? ::ConvertToSysUnits(100.00, unitMeasure::Feet) : ::ConvertToSysUnits(100.00, unitMeasure::Meter));
-   Float64 start = ::CeilOff(start_station, station_step);
-   Float64 end = ::FloorOff(end_station, station_step);
+   Float64 start, end, station_step;
+   GetUniformStationingData(pBroker, start_station, end_station, &start, &end, &station_step);
    Float64 station = start;
    do
    {
@@ -542,8 +611,8 @@ void CAlignmentPlanView::BuildLabelDisplayObjects()
    IndexType nHC = pRoadway->GetCurveCount();
    for ( IndexType hcIdx = 0; hcIdx < nHC; hcIdx++ )
    {
-      CComPtr<IHorzCurve> hc;
-      pRoadway->GetCurve(hcIdx,&hc);
+      CComPtr<ICompoundCurve> hc;
+      pRoadway->GetCurve(hcIdx,pgsTypes::pcGlobal,&hc);
 
       Float64 L;
       hc->get_TotalLength(&L);
@@ -553,7 +622,7 @@ void CAlignmentPlanView::BuildLabelDisplayObjects()
          CComPtr<IPoint2d> pntPI;
          hc->get_PI(&pntPI);
          Float64 station, offset;
-         pRoadway->GetStationAndOffset(pgsTypes::pcLocal,pntPI,&station,&offset);
+         pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,pntPI,&station,&offset);
          CreateStationLabel(label_display_list,station,_T("PI"));
       }
       else
@@ -563,37 +632,43 @@ void CAlignmentPlanView::BuildLabelDisplayObjects()
          hc->get_SpiralLength(spExit,&Ls2);
 
          CComPtr<IPoint2d> pntTS, pntSC, pntCS, pntST;
-         pRoadway->GetCurvePoint(hcIdx,cptTS,pgsTypes::pcGlobal,&pntTS);
-         pRoadway->GetCurvePoint(hcIdx,cptSC,pgsTypes::pcGlobal,&pntSC);
-         pRoadway->GetCurvePoint(hcIdx,cptCS,pgsTypes::pcGlobal,&pntCS);
-         pRoadway->GetCurvePoint(hcIdx,cptST,pgsTypes::pcGlobal,&pntST);
+         hc->get_TS(&pntTS);
+         hc->get_SC(&pntSC);
+         hc->get_CS(&pntCS);
+         hc->get_ST(&pntST);
 
          Float64 station, offset;
          if ( IsZero(Ls1) )
          {
             pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,pntTS,&station,&offset);
+            ATLASSERT(IsZero(offset)); // point is on the alignment
             CreateStationLabel(label_display_list,station,_T("PC"));
          }
          else
          {
             pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,pntTS,&station,&offset);
+            ATLASSERT(IsZero(offset)); // point is on the alignment
             CreateStationLabel(label_display_list,station,_T("TS"));
 
             pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,pntSC,&station,&offset);
+            ATLASSERT(IsZero(offset)); // point is on the alignment
             CreateStationLabel(label_display_list,station,_T("SC"));
          }
 
          if ( IsZero(Ls2) )
          {
             pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,pntST,&station,&offset);
+            ATLASSERT(IsZero(offset)); // point is on the alignment
             CreateStationLabel(label_display_list,station,_T("PT"));
          }
          else
          {
             pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,pntCS,&station,&offset);
+            ATLASSERT(IsZero(offset)); // point is on the alignment
             CreateStationLabel(label_display_list,station,_T("CS"));
 
             pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,pntST,&station,&offset);
+            ATLASSERT(IsZero(offset)); // point is on the alignment
             CreateStationLabel(label_display_list,station,_T("ST"));
          }
       }

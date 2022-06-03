@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,6 +23,7 @@
 #include "stdafx.h"
 #include "resource.h"
 #include <Graphing\ConcretePropertyGraphBuilder.h>
+#include <Graphing\ExportGraphXYTool.h>
 #include "ConcretePropertyGraphController.h"
 #include "ConcretePropertiesGraphViewControllerImp.h"
 #include "..\Documentation\PGSuper.hh"
@@ -680,7 +681,7 @@ void CConcretePropertyGraphBuilder::AddGraphPoint(IndexType series, Float64 xval
    ASSERT(pcy);
    Float64 x = pcx->Convert(xval);
    Float64 y = pcy->Convert(yval);
-   m_Graph.AddPoint(series, gpPoint2d(x,y));
+   m_Graph.AddPoint(series, GraphPoint(x,y));
 }
 
 void CConcretePropertyGraphBuilder::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
@@ -698,4 +699,9 @@ void CConcretePropertyGraphBuilder::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
    m_Graph.Draw(pDC->GetSafeHdc());
 
    pDC->RestoreDC(save);
+}
+
+void CConcretePropertyGraphBuilder::ExportGraphData(LPCTSTR rstrDefaultFileName)
+{
+   CExportGraphXYTool::ExportGraphData(m_Graph,rstrDefaultFileName);
 }

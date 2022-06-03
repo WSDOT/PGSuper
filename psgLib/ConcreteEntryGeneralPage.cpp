@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -54,7 +54,7 @@ CConcreteEntryGeneralPage::CConcreteEntryGeneralPage(): CPropertyPage(IDD_CONCRE
    m_MinNWCDensity = lrfdConcreteUtil::GetNWCDensityLimit();
    m_MaxLWCDensity = lrfdConcreteUtil::GetLWCDensityLimit();
 
-   lrfdConcreteUtil::GetUHPCStrengthRange(&m_MinFcUHPC, &m_MaxFcUHPC);
+   lrfdConcreteUtil::GetPCIUHPCStrengthRange(&m_MinFcUHPC, &m_MaxFcUHPC);
 }
 
 
@@ -151,8 +151,8 @@ BOOL CConcreteEntryGeneralPage::OnInitDialog()
    idx = pcbConcreteType->AddString(ConcreteLibraryEntry::GetConcreteType(pgsTypes::SandLightweight));
    pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::SandLightweight);
 
-   idx = pcbConcreteType->AddString(ConcreteLibraryEntry::GetConcreteType(pgsTypes::UHPC));
-   pcbConcreteType->SetItemData(idx, (DWORD_PTR)pgsTypes::UHPC);
+   idx = pcbConcreteType->AddString(ConcreteLibraryEntry::GetConcreteType(pgsTypes::PCI_UHPC));
+   pcbConcreteType->SetItemData(idx, (DWORD_PTR)pgsTypes::PCI_UHPC);
 
 
 	CPropertyPage::OnInitDialog();
@@ -188,7 +188,7 @@ void CConcreteEntryGeneralPage::OnModE()
    }
 }
 
-pgsTypes::ConcreteType CConcreteEntryGeneralPage::GetConreteType()
+pgsTypes::ConcreteType CConcreteEntryGeneralPage::GetConcreteType()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -239,7 +239,7 @@ HBRUSH CConcreteEntryGeneralPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColo
             Float64 value;
             DDX_UnitValue(&dx, IDC_DS, value, pDisplayUnits->Density );
 
-            if ( !IsDensityInRange(value,GetConreteType()) )
+            if ( !IsDensityInRange(value, GetConcreteType()) )
             {
                pDC->SetTextColor( RED );
             }
@@ -273,7 +273,7 @@ void CConcreteEntryGeneralPage::OnOK()
 bool CConcreteEntryGeneralPage::IsDensityInRange(Float64 density,pgsTypes::ConcreteType type)
 {
    CEAFApp* pApp = EAFGetApp();
-   if ( type == pgsTypes::UHPC )
+   if ( type == pgsTypes::PCI_UHPC )
    {
       return true; // no density range for UHPC
    }
@@ -289,7 +289,7 @@ bool CConcreteEntryGeneralPage::IsDensityInRange(Float64 density,pgsTypes::Concr
 
 bool CConcreteEntryGeneralPage::IsStrengthInRange(Float64 fc, pgsTypes::ConcreteType type)
 {
-   if (type == pgsTypes::UHPC)
+   if (type == pgsTypes::PCI_UHPC)
    {
       return InRange(m_MinFcUHPC, fc, m_MaxFcUHPC);
    }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -89,12 +89,11 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
    GET_IFACE2(pBroker,IPretensionForce, pPrestressForce ); 
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    GET_IFACE2(pBroker,IBridge,pBridge);
-
+   GET_IFACE2(pBroker,IPointOfInterest, pPoi);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    GET_IFACE2(pBroker, ISectionProperties, pSectProps);
    bool bIncludeElasticEffects = (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmGross ? true : false);
-
 
    GET_IFACE2(pBroker, IDocumentType, pDocType);
    bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
@@ -113,6 +112,11 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
          CSegmentKey thisSegmentKey(thisGirderKey,segIdx);
+
+         PoiList vPoi;
+         pPoi->GetPointsOfInterest(thisSegmentKey, POI_5L | POI_RELEASED_SEGMENT, &vPoi);
+         ATLASSERT(vPoi.size() == 1);
+         const pgsPointOfInterest& poiMiddle(vPoi.front());
 
          IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
             
@@ -142,16 +146,16 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
          StrandIndexType Nh = pStrandGeom->GetStrandCount(thisSegmentKey,pgsTypes::Harped);
          *pPara << _T("Straight strands: ") << Sub2(_T("N"),_T("s")) << _T(" = ") << Ns << _T(", ") 
             << Sub2(_T("P"),_T("jack")) << _T(" = ") << force.SetValue(pStrandGeom->GetPjack(thisSegmentKey,pgsTypes::Straight)) << _T(", ")
-            << RPT_APS << _T(" = ") << area.SetValue(pStrandGeom->GetStrandArea(thisSegmentKey,releaseIntervalIdx,pgsTypes::Straight)) << rptNewLine;
+            << RPT_APS << _T(" = ") << area.SetValue(pStrandGeom->GetStrandArea(poiMiddle,releaseIntervalIdx,pgsTypes::Straight)) << rptNewLine;
          *pPara << LABEL_HARP_TYPE(harpedAreStraight) <<_T(" strands: ") << Sub2(_T("N"),_T("h")) << _T(" = ") << Nh << _T(", ") 
             << Sub2(_T("P"),_T("jack")) << _T(" = ") << force.SetValue(pStrandGeom->GetPjack(thisSegmentKey,pgsTypes::Harped)) << _T(", ")
-            << RPT_APS << _T(" = ") << area.SetValue(pStrandGeom->GetStrandArea(thisSegmentKey,releaseIntervalIdx,pgsTypes::Harped)) << rptNewLine;
+            << RPT_APS << _T(" = ") << area.SetValue(pStrandGeom->GetStrandArea(poiMiddle,releaseIntervalIdx,pgsTypes::Harped)) << rptNewLine;
 
          if ( 0 < pStrandGeom->GetMaxStrands(thisSegmentKey,pgsTypes::Temporary ) )
          {
             *pPara << _T("Temporary strands: ") << Sub2(_T("N"),_T("t")) << _T(" = ") << pStrandGeom->GetStrandCount(thisSegmentKey,pgsTypes::Temporary) << _T(", ") 
                << Sub2(_T("P"),_T("jack")) << _T(" = ") << force.SetValue(pStrandGeom->GetPjack(thisSegmentKey,pgsTypes::Temporary)) << _T(", ")   
-               << RPT_APS << _T(" = ") << area.SetValue(pStrandGeom->GetStrandArea(thisSegmentKey,releaseIntervalIdx,pgsTypes::Temporary)) << rptNewLine;
+               << RPT_APS << _T(" = ") << area.SetValue(pStrandGeom->GetStrandArea(poiMiddle,releaseIntervalIdx,pgsTypes::Temporary)) << rptNewLine;
 
             *pPara << rptNewLine;
                   
@@ -176,18 +180,20 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
 
             *pPara << _T("Total permanent strands, N = ") << Ns+Nh << _T(", ") 
                << Sub2(_T("P"),_T("jack")) << _T(" = ") << force.SetValue(pStrandGeom->GetPjack(thisSegmentKey,pgsTypes::Straight)+pStrandGeom->GetPjack(thisSegmentKey,pgsTypes::Harped)) << _T(", ")
-               << RPT_APS << _T(" = ") << area.SetValue(pStrandGeom->GetStrandArea(thisSegmentKey,releaseIntervalIdx,pgsTypes::Permanent)) << rptNewLine;
+               << RPT_APS << _T(" = ") << area.SetValue(pStrandGeom->GetStrandArea(poiMiddle,releaseIntervalIdx,pgsTypes::Permanent)) << rptNewLine;
 
             *pPara << rptNewLine;
 
-            *pPara << _T("Prestress Transfer Length (Permanent) = ") << len.SetValue( pPrestressForce->GetXferLength(thisSegmentKey,pgsTypes::Permanent) ) << rptNewLine;
-            *pPara << _T("Prestress Transfer Length (Temporary) = ") << len.SetValue( pPrestressForce->GetXferLength(thisSegmentKey,pgsTypes::Temporary) ) << rptNewLine;
+            *pPara << _T("Prestress Transfer Length (Straight) = ") << len.SetValue(pPrestressForce->GetTransferLength(thisSegmentKey, pgsTypes::Straight)) << rptNewLine;
+            *pPara << _T("Prestress Transfer Length (Harped) = ") << len.SetValue(pPrestressForce->GetTransferLength(thisSegmentKey, pgsTypes::Harped)) << rptNewLine;
+            *pPara << _T("Prestress Transfer Length (Temporary) = ") << len.SetValue( pPrestressForce->GetTransferLength(thisSegmentKey,pgsTypes::Temporary) ) << rptNewLine;
          }
          else
          {
-            *pPara << RPT_APS << _T(" = ") << area.SetValue( pStrandGeom->GetAreaPrestressStrands(thisSegmentKey,releaseIntervalIdx,false)) << rptNewLine;
+            *pPara << RPT_APS << _T(" = ") << area.SetValue( pStrandGeom->GetStrandArea(poiMiddle,releaseIntervalIdx,pgsTypes::Permanent) )<< rptNewLine;
             *pPara << Sub2(_T("P"),_T("jack")) << _T(" = ") << force.SetValue( pStrandGeom->GetPjack(thisSegmentKey,false)) << rptNewLine;
-            *pPara << _T("Prestress Transfer Length = ") << len.SetValue( pPrestressForce->GetXferLength(thisSegmentKey,pgsTypes::Permanent) ) << rptNewLine;
+            *pPara << _T("Prestress Transfer Length (Straight) = ") << len.SetValue(pPrestressForce->GetTransferLength(thisSegmentKey, pgsTypes::Straight)) << rptNewLine;
+            *pPara << _T("Prestress Transfer Length (Harped) = ") << len.SetValue(pPrestressForce->GetTransferLength(thisSegmentKey, pgsTypes::Harped)) << rptNewLine;
          }
 
          // Write out strand forces and stresses at the various stages of prestress loss

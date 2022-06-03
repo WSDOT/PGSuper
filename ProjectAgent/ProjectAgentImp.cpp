@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -164,8 +164,10 @@ CProjectAgentImp::CProjectAgentImp()
    cd.Station = 0.0;
    cd.LeftSlope = -0.02;
    cd.RightSlope = -0.02;
+   m_RoadwaySectionData.slopeMeasure = RoadwaySectionData::RelativeToAlignmentPoint;
    m_RoadwaySectionData.NumberOfSegmentsPerSection = 2;
-   m_RoadwaySectionData.ControllingRidgePointIdx = 1;
+   m_RoadwaySectionData.AlignmentPointIdx = 1;
+   m_RoadwaySectionData.ProfileGradePointIdx = 1;
    m_RoadwaySectionData.RoadwaySectionTemplates.push_back(cd);
 
    m_DuctilityLevel   = ILoadModifiers::Normal;
@@ -1790,7 +1792,7 @@ HRESULT CProjectAgentImp::AlignmentProc(IStructuredSave* pSave,IStructuredLoad* 
    if ( pSave )
    {
       // Save the alignment data
-      hr = pSave->BeginUnit(_T("AlignmentData"),5.0);
+      hr = pSave->BeginUnit(_T("AlignmentData"),6.0);
       if ( FAILED(hr) )
       {
          return hr;
@@ -1800,7 +1802,14 @@ HRESULT CProjectAgentImp::AlignmentProc(IStructuredSave* pSave,IStructuredLoad* 
 //      hr = pSave->put_Property(_T("AlignmentOffset"),CComVariant(pObj->m_AlignmentOffset));
 //      if ( FAILED(hr) )
 //         return hr;
-      
+
+      // added in version 6
+      hr = pSave->put_Property(_T("Name"), CComVariant(pObj->m_AlignmentData2.Name.c_str()));
+      if (FAILED(hr))
+      {
+         return hr;
+      }
+
       // added in version 5
       hr = pSave->put_Property(_T("RefStation"),CComVariant(pObj->m_AlignmentData2.RefStation));
       if ( FAILED(hr) )
@@ -1829,16 +1838,16 @@ HRESULT CProjectAgentImp::AlignmentProc(IStructuredSave* pSave,IStructuredLoad* 
          return hr;
       }
 
-      hr = pSave->put_Property(_T("HorzCurveCount"),CComVariant((long)pObj->m_AlignmentData2.HorzCurves.size()));
+      hr = pSave->put_Property(_T("HorzCurveCount"),CComVariant((long)pObj->m_AlignmentData2.CompoundCurves.size()));
       if ( FAILED(hr) )
       {
          return hr;
       }
 
-      std::vector<HorzCurveData>::iterator iter;
-      for ( iter = pObj->m_AlignmentData2.HorzCurves.begin(); iter != pObj->m_AlignmentData2.HorzCurves.end(); iter++ )
+      std::vector<CompoundCurveData>::iterator iter;
+      for ( iter = pObj->m_AlignmentData2.CompoundCurves.begin(); iter != pObj->m_AlignmentData2.CompoundCurves.end(); iter++ )
       {
-         HorzCurveData& hc = *iter;
+         CompoundCurveData& hc = *iter;
 
          hr = pSave->BeginUnit(_T("HorzCurveData"),2.0);
          if ( FAILED(hr) )
@@ -1911,6 +1920,19 @@ HRESULT CProjectAgentImp::AlignmentProc(IStructuredSave* pSave,IStructuredLoad* 
 
       Float64 version;
       pLoad->get_Version(&version);
+      if (5 < version)
+      {
+         // added in version 6
+         var.vt = VT_BSTR;
+         hr = pLoad->get_Property(_T("Name"), &var);
+         if (FAILED(hr))
+         {
+            return hr;
+         }
+
+         pObj->m_AlignmentData2.Name = var.bstrVal;
+      }
+
       if ( version < 2 )
       {
          // version 1 style data... read the data and hold in local variables
@@ -2028,20 +2050,20 @@ HRESULT CProjectAgentImp::AlignmentProc(IStructuredSave* pSave,IStructuredLoad* 
          if ( method == ALIGN_STRAIGHT )
          {
             pObj->m_AlignmentData2.Direction = Direction;
-            pObj->m_AlignmentData2.HorzCurves.clear();
+            pObj->m_AlignmentData2.CompoundCurves.clear();
          }
          else
          {
             ATLASSERT( method == ALIGN_CURVE );
             pObj->m_AlignmentData2.Direction = BkTangent;
             
-            HorzCurveData hc;
+            CompoundCurveData hc;
             hc.PIStation = PIStation;
             hc.Radius = Radius;
             hc.FwdTangent = FwdTangent;
             hc.EntrySpiral = 0;
             hc.ExitSpiral = 0;
-            pObj->m_AlignmentData2.HorzCurves.push_back(hc);
+            pObj->m_AlignmentData2.CompoundCurves.push_back(hc);
          }
       }
       else
@@ -2092,7 +2114,7 @@ HRESULT CProjectAgentImp::AlignmentProc(IStructuredSave* pSave,IStructuredLoad* 
 
          for ( int c = 0; c < nCurves; c++ )
          {
-            HorzCurveData hc;
+            CompoundCurveData hc;
 
             hr = pLoad->BeginUnit(_T("HorzCurveData"));
             if ( FAILED(hr) )
@@ -2159,7 +2181,7 @@ HRESULT CProjectAgentImp::AlignmentProc(IStructuredSave* pSave,IStructuredLoad* 
             }
 
 
-            pObj->m_AlignmentData2.HorzCurves.push_back(hc);
+            pObj->m_AlignmentData2.CompoundCurves.push_back(hc);
 
             hr = pLoad->EndUnit();
             if ( FAILED(hr) )
@@ -2476,8 +2498,14 @@ HRESULT CProjectAgentImp::SuperelevationProc(IStructuredSave* pSave,IStructuredL
 
    if ( pSave )
    {
-      hr = pSave->BeginUnit(_T("SuperelevationData"),2.0);
+      hr = pSave->BeginUnit(_T("SuperelevationData"),3.0);
       if ( FAILED(hr) )
+      {
+         return hr;
+      }
+
+      hr = pSave->put_Property(_T("SlopeMeasure"), CComVariant((long)pObj->m_RoadwaySectionData.slopeMeasure)); // added in version 3
+      if (FAILED(hr))
       {
          return hr;
       }
@@ -2488,8 +2516,14 @@ HRESULT CProjectAgentImp::SuperelevationProc(IStructuredSave* pSave,IStructuredL
          return hr;
       }
 
-      hr = pSave->put_Property(_T("ControllingRidgePointIdx"),CComVariant((long)pObj->m_RoadwaySectionData.ControllingRidgePointIdx));
+      hr = pSave->put_Property(_T("ControllingRidgePointIdx"),CComVariant((long)pObj->m_RoadwaySectionData.AlignmentPointIdx));
       if ( FAILED(hr) )
+      {
+         return hr;
+      }
+
+      hr = pSave->put_Property(_T("ProfileGradePointIdx"), CComVariant((long)pObj->m_RoadwaySectionData.ProfileGradePointIdx)); // added in version 3
+      if (FAILED(hr))
       {
          return hr;
       }
@@ -2606,6 +2640,19 @@ HRESULT CProjectAgentImp::SuperelevationProc(IStructuredSave* pSave,IStructuredL
          // Load current data
          CComVariant var;
 
+         if (2 < superVersion)
+         {
+            // added in version 3
+            var.vt = VT_I4;
+            hr = pLoad->get_Property(_T("SlopeMeasure"), &var);
+            if (FAILED(hr))
+            {
+               return hr;
+            }
+
+            pObj->m_RoadwaySectionData.slopeMeasure = (RoadwaySectionData::SlopeMeasure)(var.lVal);
+         }
+
          var.vt = VT_I4;
          hr = pLoad->get_Property(_T("NumberOfSegmentsPerSection"), &var);
          if ( FAILED(hr) )
@@ -2622,7 +2669,24 @@ HRESULT CProjectAgentImp::SuperelevationProc(IStructuredSave* pSave,IStructuredL
             return hr;
          }
 
-         pObj->m_RoadwaySectionData.ControllingRidgePointIdx = var.lVal;
+         pObj->m_RoadwaySectionData.AlignmentPointIdx = var.lVal;
+
+         if (2 < superVersion)
+         {
+            // added in version 3
+            var.vt = VT_I4;
+            hr = pLoad->get_Property(_T("ProfileGradePointIdx"), &var);
+            if (FAILED(hr))
+            {
+               return hr;
+            }
+
+            pObj->m_RoadwaySectionData.ProfileGradePointIdx = var.lVal;
+         }
+         else
+         {
+            pObj->m_RoadwaySectionData.ProfileGradePointIdx = pObj->m_RoadwaySectionData.AlignmentPointIdx;
+         }
 
          var.vt = VT_I4;
          hr = pLoad->get_Property(_T("TemplateCount"),&var);
@@ -2877,7 +2941,8 @@ HRESULT CProjectAgentImp::LoadOldSuperelevationData(bool bNewerFormat, IStructur
    {
       // no crown point offsets
       pObj->m_RoadwaySectionData.NumberOfSegmentsPerSection = 2;
-      pObj->m_RoadwaySectionData.ControllingRidgePointIdx = 1;
+      pObj->m_RoadwaySectionData.AlignmentPointIdx = 1;
+      pObj->m_RoadwaySectionData.ProfileGradePointIdx = 1;
       for (auto& cd : CrownDataVec)
       {
          RoadwaySectionTemplate templ;
@@ -2892,7 +2957,8 @@ HRESULT CProjectAgentImp::LoadOldSuperelevationData(bool bNewerFormat, IStructur
    {
       // only have a left crown offset in list
       pObj->m_RoadwaySectionData.NumberOfSegmentsPerSection = 3;
-      pObj->m_RoadwaySectionData.ControllingRidgePointIdx = 2;
+      pObj->m_RoadwaySectionData.AlignmentPointIdx = 2;
+      pObj->m_RoadwaySectionData.ProfileGradePointIdx = 2;
       for (auto& cd : CrownDataVec)
       {
          RoadwaySectionTemplate templ;
@@ -2920,7 +2986,8 @@ HRESULT CProjectAgentImp::LoadOldSuperelevationData(bool bNewerFormat, IStructur
    {
       // only have a right crown offset in list
       pObj->m_RoadwaySectionData.NumberOfSegmentsPerSection = 3;
-      pObj->m_RoadwaySectionData.ControllingRidgePointIdx = 1;
+      pObj->m_RoadwaySectionData.AlignmentPointIdx = 1;
+      pObj->m_RoadwaySectionData.ProfileGradePointIdx = 1;
       for (auto& cd : CrownDataVec)
       {
          RoadwaySectionTemplate templ;
@@ -2947,7 +3014,8 @@ HRESULT CProjectAgentImp::LoadOldSuperelevationData(bool bNewerFormat, IStructur
    {
       // list has both left and right offsets. we need four segments to model this
       pObj->m_RoadwaySectionData.NumberOfSegmentsPerSection = 4;
-      pObj->m_RoadwaySectionData.ControllingRidgePointIdx = 2;
+      pObj->m_RoadwaySectionData.AlignmentPointIdx = 2;
+      pObj->m_RoadwaySectionData.ProfileGradePointIdx = 2;
       for (auto& cd : CrownDataVec)
       {
          RoadwaySectionTemplate templ;
@@ -3371,7 +3439,7 @@ HRESULT CProjectAgentImp::PrestressingDataProc2(IStructuredSave* pSave,IStructur
             return hr;
          }
 
-         Int32 key = var.lVal;
+         Int64 key = var.lVal;
          key |= matPsStrand::None;
 
          lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
@@ -5550,9 +5618,9 @@ void CProjectAgentImp::UpdateStrandMaterial()
    // Get the lookup key for the strand material based on the current units
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
 
-   std::map<CSegmentKey,Int32> strandKeys[3]; // map value is strand pool key, array index is strand type
-   std::map<CSegmentKey, Int32> segmentTendonKeys;
-   std::map<CGirderKey,Int32> tendonKeys; // map value of strand pool key for ducts
+   std::map<CSegmentKey,Int64> strandKeys[3]; // map value is strand pool key, array index is strand type
+   std::map<CSegmentKey, Int64> segmentTendonKeys;
+   std::map<CGirderKey,Int64> tendonKeys; // map value of strand pool key for ducts
 
    GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
@@ -5565,7 +5633,7 @@ void CProjectAgentImp::UpdateStrandMaterial()
          CGirderKey girderKey(pGirder->GetGirderKey());
 
          CPTData* pPTData = pGirder->GetPostTensioning();
-         Int32 strand_pool_key = pPool->GetStrandKey(pPTData->pStrand);
+         Int64 strand_pool_key = pPool->GetStrandKey(pPTData->pStrand);
          tendonKeys.insert(std::make_pair(girderKey,strand_pool_key));
 
          SegmentIndexType nSegments = pGirder->GetSegmentCount();
@@ -5602,7 +5670,7 @@ void CProjectAgentImp::UpdateStrandMaterial()
          CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
          CGirderKey girderKey(pGirder->GetGirderKey());
 
-         Int32 strand_pool_key = tendonKeys[girderKey];
+         Int64 strand_pool_key = tendonKeys[girderKey];
          CPTData* pPTData = pGirder->GetPostTensioning();
          pPTData->pStrand = pPool->GetStrand(strand_pool_key);
 
@@ -5750,6 +5818,7 @@ void CProjectAgentImp::ValidateBridgeModel()
       pgsBridgeDescriptionStatusItem* pStatusItem = new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionError,pgsBridgeDescriptionStatusItem::General,_T("Bridge model is unstable. Modify the boundary conditions."));
       m_BridgeStabilityStatusItemID = pStatusCenter->Add(pStatusItem);
    }
+
 }
 
 STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
@@ -5789,6 +5858,23 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    if ( FAILED(hr) )
    {
       return hr;
+   }
+
+   IndexType curveIdx = 0;
+   for (auto& curve : m_AlignmentData2.CompoundCurves)
+   {
+      if (curve.Radius < MIN_CURVE_RADIUS && curve.Radius != 0.0)
+      {
+         curve.Radius = 0;
+
+         GET_IFACE(IEAFStatusCenter, pStatusCenter);
+         CString strMsg;
+         strMsg.Format(_T("Horizonal curve %d: The curve radius is less than the minimum so it has been set to 0 to model an angle point in the alignment."), LABEL_INDEX(curveIdx));
+
+         pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID, m_scidBridgeDescriptionInfo, strMsg);
+         pStatusCenter->Add(pStatusItem);
+      }
+      curveIdx++;
    }
 
    // there were a couple of settings moved from the spec library entry into the main program
@@ -5924,7 +6010,6 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
          }
       }
    }
-
 
    // There was a bug in Version 4.0, in CBridgeDescGeneralPage::DoDataExchange(), that could cause
    // the top width type to be set to an invalid value. The invalid value was saved to file
@@ -6329,6 +6414,30 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       }
    }
 
+   // There are multiple bugs in the elevation adjustment feature for temporary supports. This will be redone in version 8, so just zero out any adjustment values
+   // and let user know that this happened.
+   bool wereAdjustmentsZeroed(false);
+   SupportIndexType nTs = m_BridgeDescription.GetTemporarySupportCount();
+   for (SupportIndexType iTs = 0; iTs < nTs; iTs++)
+   {
+      CTemporarySupportData* tsData = m_BridgeDescription.GetTemporarySupport(iTs);
+      if (!IsZero(tsData->GetElevationAdjustment()))
+      {
+         tsData->SetElevationAdjustment(0.0);
+         wereAdjustmentsZeroed = true;
+      }
+   }
+
+   if (wereAdjustmentsZeroed)
+   {
+      GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      CString strMsg(_T("This project file contains temporary supports with non-zero elevation adjustments. The elevation adjustment feature has been disabled for this version of the program. All temporary support adjustments have been set to zero."));
+
+      pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidBridgeDescriptionInfo,strMsg);
+      pStatusCenter->Add(pStatusItem);
+   }
+
+
    ValidateBridgeModel();
 
    ASSERTVALID;
@@ -6380,7 +6489,7 @@ STDMETHODIMP CProjectAgentImp::Save(IStructuredSave* pStrSave)
 
 void CProjectAgentImp::ValidateStrands(const CSegmentKey& segmentKey,CPrecastSegmentData* pSegment,bool fromLibrary)
 {
-   if ( pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectRowInput || pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectStrandInput )
+   if (IsDirectStrandModel(pSegment->Strands.GetStrandDefinitionType()))
    {
       // user defined strands don't use strand information from the library
       return;
@@ -6800,6 +6909,7 @@ void CProjectAgentImp::SetBridgeDescription(const CBridgeDescription2& desc)
       ReleaseBridgeLibraryEntries();
 
       m_BridgeDescription = desc; // make an assignement... copies everything including IDs and Indices
+      m_LoadManager.SetTimelineManager(m_BridgeDescription.GetTimelineManager());
 
       UseBridgeLibraryEntries();
 
@@ -6947,11 +7057,11 @@ void CProjectAgentImp::SetGirder(const CGirderKey& girderKey,const CSplicedGirde
       //
       // determine if the top width changed
       pgsTypes::TopWidthType currentTopWidthType;
-      Float64 currentLeft[2], currentRight[2];
+      std::array<Float64, 2> currentLeft, currentRight;
       pGirder->GetTopWidth(&currentTopWidthType, &currentLeft[pgsTypes::metStart], &currentRight[pgsTypes::metStart], &currentLeft[pgsTypes::metEnd], &currentRight[pgsTypes::metEnd]);
 
       pgsTypes::TopWidthType topWidthType;
-      Float64 Left[2], Right[2];
+      std::array<Float64, 2> Left, Right;
       girder.GetTopWidth(&topWidthType, &Left[pgsTypes::metStart], &Right[pgsTypes::metStart], &Left[pgsTypes::metEnd], &Right[pgsTypes::metEnd]);
 
       bool bTopWidthChanged = false;
@@ -7928,6 +8038,50 @@ const CBearingData2* CProjectAgentImp::GetBearingData(PierIDType pierIdx, pgsTyp
    }
 }
 
+void CProjectAgentImp::SetConnectionGeometry(PierIndexType pierIdx, pgsTypes::PierFaceType face,
+                                             Float64 endDist, ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasure,
+                                             Float64 bearingOffset, ConnectionLibraryEntry::BearingOffsetMeasurementType bearingOffsetMeasurementType)
+{
+   CPierData2* pPier = m_BridgeDescription.GetPier(pierIdx);
+   bool wasSet = false;
+   wasSet |= pPier->SetGirderEndDistance(face, endDist, endDistMeasure);
+   wasSet |= pPier->SetBearingOffset(face, bearingOffset, bearingOffsetMeasurementType);
+
+   if (wasSet)
+   {
+      Fire_BridgeChanged();
+   }
+}
+
+void CProjectAgentImp::GetConnectionGeometry(PierIndexType pierIdx, pgsTypes::PierFaceType face,
+                                             Float64* endDist, ConnectionLibraryEntry::EndDistanceMeasurementType* endDistMeasure,
+                                             Float64* bearingOffset, ConnectionLibraryEntry::BearingOffsetMeasurementType* bearingOffsetMeasurementType) const
+{
+   const CPierData2* pPier = m_BridgeDescription.GetPier(pierIdx);
+   pPier->GetGirderEndDistance(face, endDist, endDistMeasure);
+   pPier->GetBearingOffset(face, bearingOffset, bearingOffsetMeasurementType);
+}
+
+void CProjectAgentImp::SetPierDiaphragmData(PierIndexType pierIdx, pgsTypes::PierFaceType face,
+                                    Float64 height, Float64 width, ConnectionLibraryEntry::DiaphragmLoadType loadType, Float64 loadLocation)
+{
+   CPierData2* pPier = m_BridgeDescription.GetPier(pierIdx);
+   pPier->SetDiaphragmHeight(face, height);
+   pPier->SetDiaphragmWidth(face, width);
+   pPier->SetDiaphragmLoadType(face, loadType);
+   pPier->SetDiaphragmLoadLocation(face, loadLocation);
+}
+
+void CProjectAgentImp::GetPierDiaphragmData(PierIndexType pierIdx, pgsTypes::PierFaceType face,
+                                    Float64* pHeight, Float64* pWidth, ConnectionLibraryEntry::DiaphragmLoadType* pLoadType, Float64* pLoadLocation) const
+{
+   const CPierData2* pPier = m_BridgeDescription.GetPier(pierIdx);
+   *pHeight = pPier->GetDiaphragmHeight(face);
+   *pWidth = pPier->GetDiaphragmWidth(face);
+   *pLoadType = pPier->GetDiaphragmLoadType(face);
+   *pLoadLocation = pPier->GetDiaphragmLoadLocation(face);
+}
+
 bool CProjectAgentImp::IsCompatibleGirder(const CGirderKey& girderKey, LPCTSTR lpszGirderName) const
 {
    ASSERT_GIRDER_KEY(girderKey);
@@ -8343,18 +8497,15 @@ pgsTypes::MeasurementLocation CProjectAgentImp::GetMeasurementLocation() const
 ////////////////////////////////////////////////////////////////////////
 // ISegmentData Methods
 //
-const matPsStrand* CProjectAgentImp::GetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType type) const
+const matPsStrand* CProjectAgentImp::GetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) const
 {
-   if ( type == pgsTypes::Permanent )
-   {
-      type = pgsTypes::Straight;
-   }
+   ATLASSERT(strandType != pgsTypes::Permanent);
 
    const CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(segmentKey.groupIndex);
    const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
    const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
 
-   return pSegment->Strands.GetStrandMaterial(type);
+   return pSegment->Strands.GetStrandMaterial(strandType);
 }
 
 void CProjectAgentImp::SetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType type,const matPsStrand* pMaterial)
@@ -8405,6 +8556,22 @@ void CProjectAgentImp::SetStrandData(const CSegmentKey& segmentKey,const CStrand
    if ( pSegment->Strands != strands )
    {
       pSegment->Strands = strands;
+      Fire_GirderChanged(segmentKey,GCH_PRESTRESSING_CONFIGURATION);
+   }
+}
+
+const CSegmentPTData* CProjectAgentImp::GetSegmentPTData(const CSegmentKey& segmentKey) const
+{
+   const CPrecastSegmentData* pSegment = GetSegment(segmentKey);
+   return &pSegment->Tendons;
+}
+
+void CProjectAgentImp::SetSegmentPTData(const CSegmentKey& segmentKey,const CSegmentPTData& tendons)
+{
+   CPrecastSegmentData* pSegment = GetSegment(segmentKey);
+   if ( pSegment->Tendons != tendons )
+   {
+      pSegment->Tendons = tendons;
       Fire_GirderChanged(segmentKey,GCH_PRESTRESSING_CONFIGURATION);
    }
 }
@@ -8798,12 +8965,6 @@ void CProjectAgentImp::SetHaulTruck(const CSegmentKey& segmentKey,LPCTSTR lpszHa
 ////////////////////////////////////////////////////////////////////////
 // IRatingSpecification Methods
 //
-bool CProjectAgentImp::AlwaysLoadRate() const
-{
-   const RatingLibraryEntry* pRatingEntry = GetRatingEntry(m_RatingSpec.c_str());
-   return pRatingEntry->AlwaysLoadRate();
-}
-
 bool CProjectAgentImp::IsRatingEnabled() const
 {
    for (int i = 0; i < (int)pgsTypes::lrLoadRatingTypeCount; i++)
@@ -9578,6 +9739,11 @@ ISpecification::PrincipalWebStressCheckType CProjectAgentImp::GetPrincipalWebStr
       }
    }
 
+}
+
+lrfdVersionMgr::Version CProjectAgentImp::GetSpecificationType() const
+{
+   return m_pSpecEntry->GetSpecificationType();
 }
 
 Uint16 CProjectAgentImp::GetMomentCapacityMethod() const
@@ -10931,8 +11097,12 @@ std::_tstring CProjectAgentImp::GetLossMethodDescription() const
       break;
 
    case pgsTypes::AASHTO_LUMPSUM:
+      strLossMethod = _T("Approximate lump sum estimate per AASHTO LRFD ");
+      strLossMethod += std::_tstring(LrfdCw8th(_T("5.9.5.3"), _T("5.9.3.3")));
+      break;
+
    case pgsTypes::AASHTO_LUMPSUM_2005:
-         strLossMethod = _T("Approximate lump sum estimate per AASHTO LRFD ");
+      strLossMethod = _T("Approximate estimate per AASHTO LRFD ");
       strLossMethod += std::_tstring(LrfdCw8th(_T("5.9.5.3"), _T("5.9.3.3")));
       break;
 
@@ -10941,8 +11111,11 @@ std::_tstring CProjectAgentImp::GetLossMethodDescription() const
       break;
 
    case pgsTypes::WSDOT_LUMPSUM:
-   case pgsTypes::WSDOT_LUMPSUM_2005:
       strLossMethod = _T("Approximate lump sum estimate per WSDOT Bridge Design Manual");
+      break;
+
+   case pgsTypes::WSDOT_LUMPSUM_2005:
+      strLossMethod = _T("Approximate estimate per WSDOT Bridge Design Manual");
       break;
 
    case pgsTypes::WSDOT_REFINED:
@@ -11291,6 +11464,7 @@ bool CProjectAgentImp::ResolveLibraryConflicts(const ConflictList& rList)
    
    // if girder name conflicts, update the name
    const GirderLibrary&  girderLibrary = m_pLibMgr->GetGirderLibrary();
+   const DuctLibrary* pDuctLibrary = m_pLibMgr->GetDuctLibrary();
 
    // only update at bridge level if gider is set for entire bridge
    if (m_BridgeDescription.UseSameGirderForEntireBridge() &&
@@ -11314,11 +11488,47 @@ bool CProjectAgentImp::ResolveLibraryConflicts(const ConflictList& rList)
          {
             pGroup->RenameGirder(girderTypeGroupIdx,new_name.c_str());
          }
+
+         GirderIndexType nGirders = pGroup->GetGirderCount();
+         for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
+         {
+            CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+            CPTData* pPTData = pGirder->GetPostTensioning();
+            IndexType nDucts = pPTData->GetDuctCount();
+            for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+            {
+               CDuctData* pDuct = pGirder->GetPostTensioning()->GetDuct(ductIdx);
+               auto strDuctName = pDuct->Name;
+               std::_tstring strNewDuctName;
+               if (rList.IsConflict(*pDuctLibrary, strDuctName, &strNewDuctName))
+               {
+                  pDuct->Name = strNewDuctName;
+               }
+            }
+
+            SegmentIndexType nSegments = pGirder->GetSegmentCount();
+            for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+            {
+               CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+               DuctIndexType nDucts = pSegment->Tendons.GetDuctCount();
+               for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+               {
+                  CSegmentDuctData* pDuct = pSegment->Tendons.GetDuct(ductIdx);
+                  auto strDuctName = pDuct->Name;
+                  std::_tstring strNewDuctName;
+                  if (rList.IsConflict(*pDuctLibrary, strDuctName, &strNewDuctName))
+                  {
+                     pDuct->Name = strNewDuctName;
+                  }
+               }
+            }
+         }
       }
    }
 
-   // now use all the girder library entries that are in this model
+   // now use all the girder library entries that are in this model (this uses duct entries also)
    UseGirderLibraryEntries();
+
 
    // left traffic barrier
    const TrafficBarrierLibrary& rbarlib = m_pLibMgr->GetTrafficBarrierLibrary();
@@ -11603,7 +11813,7 @@ void CProjectAgentImp::DealWithGirderLibraryChanges(bool fromLibrary)
             ValidateStrands(segmentKey,pSegment,fromLibrary);
    
             // make sure debond data is consistent with design algorithim
-            Float64 xfer_length = pPrestress->GetXferLength(segmentKey,pgsTypes::Permanent);
+            Float64 xfer_length = pPrestress->GetTransferLength(segmentKey,pgsTypes::Straight); // this is related to debonding so we assume only straight strands are debonded
             Float64 ndb, minDist;
             bool bMinDist;
             pGdrEntry->GetMinDistanceBetweenDebondSections(&ndb, &bMinDist, &minDist);
@@ -11647,14 +11857,8 @@ void CProjectAgentImp::DealWithGirderLibraryChanges(bool fromLibrary)
    } // grooup loop
 }
 
-
-
 void CProjectAgentImp::AddSegmentStatusItem(const CSegmentKey& segmentKey,std::_tstring& message)
 {
-#pragma Reminder("UPDATE: status items per girder?")
-   // should statis items be by girder insteady of by segment?
-   // maybe segment is ok for things like segment concrete out of range
-
    // first post message
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
    pgsGirderDescriptionStatusItem* pStatusItem =  new pgsGirderDescriptionStatusItem(segmentKey,0,m_StatusGroupID,m_scidGirderDescriptionWarning,message.c_str());

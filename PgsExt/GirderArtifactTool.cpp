@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,6 +23,7 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\GirderArtifactTool.h>
 #include <PgsExt\GirderLabel.h>
+#include <PgsExt\SplittingCheckEngineer.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
 #include <IFace\Bridge.h>
@@ -421,18 +422,18 @@ void ListSplittingZoneFailures(IBroker* pBroker,FailureList& rFailures,const pgs
    {
       CSegmentKey segmentKey(girderKey,segIdx);
       const pgsSegmentArtifact* pArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
-      const pgsSplittingZoneArtifact* pBZArtifact = pArtifact->GetStirrupCheckArtifact()->GetSplittingZoneArtifact();
-      if ( !pBZArtifact->Passed() )
+      const std::shared_ptr<pgsSplittingCheckArtifact> pSplittingCheckArtifact = pArtifact->GetStirrupCheckArtifact()->GetSplittingCheckArtifact();
+      if (pSplittingCheckArtifact && !pSplittingCheckArtifact->Passed() )
       {
-         std::_tstring strZone( lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() ? _T("Splitting") : _T("Bursting") );
+         std::_tstring strZone(pgsSplittingCheckEngineer::GetCheckName());
          std::_tostringstream os;
          if ( 1 < nSegments )
          {
-            os << strZone << _T(" zone check failed for Segment ") << LABEL_SEGMENT(segIdx) << _T(".");
+            os << strZone << _T(" check failed for Segment ") << LABEL_SEGMENT(segIdx) << _T(".");
          }
          else
          {
-            os << strZone << _T(" zone check failed.");
+            os << strZone << _T(" check failed.");
          }
 
          rFailures.emplace_back(os.str());
@@ -450,7 +451,7 @@ void ListConfinementZoneFailures(IBroker* pBroker,FailureList& rFailures,const p
       CSegmentKey segmentKey(girderKey,segIdx);
       const pgsSegmentArtifact* pArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
       const pgsStirrupCheckArtifact *pStirrups = pArtifact->GetStirrupCheckArtifact();
-      const pgsConfinementArtifact& rShear = pStirrups->GetConfinementArtifact();
+      const pgsConfinementCheckArtifact& rShear = pStirrups->GetConfinementArtifact();
       if ( !rShear.Passed() )
       {
          std::_tostringstream os;
@@ -510,7 +511,7 @@ void ListVariousFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirder
       }
 
       // Lifting
-      const stbLiftingCheckArtifact* pLifting = pArtifact->GetLiftingCheckArtifact();
+      const WBFL::Stability::LiftingCheckArtifact* pLifting = pArtifact->GetLiftingCheckArtifact();
       if (pLifting!=nullptr && !pLifting->Passed() )
       {
          std::_tostringstream os;

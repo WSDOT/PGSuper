@@ -590,12 +590,11 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
          gd.Sb_c(dval);
 
          // Strand eccentricities
-         Float64 nEff;
-         dval = pStrandGeom->GetEccentricity( pgsTypes::sptGrossNoncomposite, releaseIntervalIdx, end_poi, false /*no temporary strands*/, &nEff );
+         dval = pStrandGeom->GetEccentricity( pgsTypes::sptGrossNoncomposite, releaseIntervalIdx, end_poi, false /*no temporary strands*/).Y();
          dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch);
          gd.StrandEccentricityAtEnds(dval);
 
-         dval = pStrandGeom->GetEccentricity( pgsTypes::sptGrossNoncomposite, releaseIntervalIdx, mid_poi, false /*no temporary strands*/, &nEff );
+         dval = pStrandGeom->GetEccentricity( pgsTypes::sptGrossNoncomposite, releaseIntervalIdx, mid_poi, false /*no temporary strands*/).Y();
          dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch);
          gd.StrandEccentricityAtHPs(dval);
 

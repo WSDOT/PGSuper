@@ -1,6 +1,6 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.58    4  10.50                     1     1    U66PT    *      0  0.6  270   0.00   0.00   9.00   9.00                                              5.000 10.258  10.258    10.258    11284   0.956  1.048  -0.841 -0.715  0.000 -0.049 -0.764   0.00    0.00    0.00    0.00    0.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 40.58    4  10.50                     1     1    U66PT    *      0  0.6  270   0.00   0.00   9.00   9.00                                              5.000 10.258  10.258    10.258    11273   0.956  1.048  -0.873 -0.715  0.000 -0.049 -0.764   0.00    0.00    0.00    0.00    0.00    2.42    0.51    3.13    0.66    0.00 
 
 
 The Specification Check was Not Successful
@@ -24,6 +24,7 @@ Tension stress check failed for Service III Limit State in Interval 35 Load Rati
 Tension stress check failed for Service I Limit State in Interval 4 Place segments into storage for Segment 2
 Tension stress check failed for Service I Limit State in Interval 16 Stress Tendons, Remove Temporary Support for Segment 2
 Tension stress check failed for Service I Limit State in Interval 21 Stress Tendons, Remove Temporary Support for Segment 2
+Tension stress check failed for Service I Limit State in Interval 23 Cast closure joint and Cast Deck for Segment 2
 Tension stress check failed for Service I Limit State in Interval 26 Stress Tendons for Segment 2
 Tension stress check failed for Service I Limit State in Interval 28 Install Railing System for Segment 2
 Tension stress check failed for Service III Limit State in Interval 35 Load Rating for Segment 2
@@ -41,6 +42,76 @@ Tension stress check failed for Service I Limit State in Interval 28 Install Rai
 Tension stress check failed for Service III Limit State in Interval 35 Load Rating for Deck
 Tension stress check failed for Service I Limit State in Interval 4 Place segments into storage for Segment 4
 Tension stress check failed for Service I Limit State in Interval 21 Stress Tendons, Remove Temporary Support for Segment 4
+Tension stress check failed for Service I Limit State in Interval 23 Cast closure joint and Cast Deck for Segment 4
+Tension stress check failed for Service I Limit State in Interval 26 Stress Tendons for Segment 4
+Tension stress check failed for Service I Limit State in Interval 28 Install Railing System for Segment 4
+Tension stress check failed for Service III Limit State in Interval 35 Load Rating for Segment 4
+Tension stress check failed for Service I Limit State in Interval 28 Install Railing System for Deck
+Tension stress check failed for Service III Limit State in Interval 35 Load Rating for Deck
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.7.4].
+Stirrup detailing checks failed for the Strength I Limit State.
+Confinement zone check failed for Segment 1.
+Confinement zone check failed for Segment 2.
+Confinement zone check failed for Segment 3.
+Confinement zone check failed for Segment 4.
+Lifting checks failed for Segment 1.
+Hauling checks failed for Segment 1.
+Lifting checks failed for Segment 2.
+Hauling checks failed for Segment 2.
+Lifting checks failed for Segment 3.
+Hauling checks failed for Segment 3.
+Lifting checks failed for Segment 4.
+Hauling checks failed for Segment 4.
+Slab Offset ("A" Dimension) check failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 40.58    4  10.50                     1     2    U66PT    *      0  0.6  270   0.00   0.00   9.00   9.00                                              5.000 10.258  10.258    10.258    10142   0.677  1.048  -0.890 -0.702  0.000 -0.049 -0.752   0.00    0.00    0.00    0.00    0.00    3.40    0.51    4.40    0.66    0.00 
+
+
+The Specification Check was Not Successful
+Tendon 1 is overstressed
+Tendon 2 is overstressed
+Tendon 3 is overstressed
+Tendon 4 is overstressed
+Tendon 5 is overstressed
+Tendon 6 is overstressed
+Tension stress check failed for Service I Limit State in Interval 4 Place segments into storage for Segment 1
+Tension stress check failed for Service I Limit State in Interval 16 Stress Tendons, Remove Temporary Support for Segment 1
+Tension stress check failed for Service I Limit State in Interval 21 Stress Tendons, Remove Temporary Support for Segment 1
+Compression stress check failed for Service I Limit State in Interval 23 Cast closure joint and Cast Deck for Segment 1
+Tension stress check failed for Service I Limit State in Interval 23 Cast closure joint and Cast Deck for Segment 1
+Tension stress check failed for Service I Limit State in Interval 26 Stress Tendons for Segment 1
+Compression stress check failed for Service I Limit State in Interval 28 Install Railing System for Segment 1
+Tension stress check failed for Service I Limit State in Interval 28 Install Railing System for Segment 1
+Tension stress check failed for Service III Limit State in Interval 35 Load Rating for Segment 1
+Tension stress check failed for Service I Limit State in Interval 28 Install Railing System for Deck
+Tension stress check failed for Service III Limit State in Interval 35 Load Rating for Deck
+Tension stress check failed for Service I Limit State in Interval 4 Place segments into storage for Segment 2
+Tension stress check failed for Service I Limit State in Interval 16 Stress Tendons, Remove Temporary Support for Segment 2
+Tension stress check failed for Service I Limit State in Interval 21 Stress Tendons, Remove Temporary Support for Segment 2
+Tension stress check failed for Service I Limit State in Interval 23 Cast closure joint and Cast Deck for Segment 2
+Tension stress check failed for Service I Limit State in Interval 26 Stress Tendons for Segment 2
+Tension stress check failed for Service I Limit State in Interval 28 Install Railing System for Segment 2
+Tension stress check failed for Service III Limit State in Interval 35 Load Rating for Segment 2
+Tension stress check failed for Service I Limit State in Interval 28 Install Railing System for Deck
+Tension stress check failed for Service III Limit State in Interval 35 Load Rating for Deck
+Tension stress check failed for Service I Limit State in Interval 4 Place segments into storage for Segment 3
+Tension stress check failed for Service I Limit State in Interval 21 Stress Tendons, Remove Temporary Support for Segment 3
+Compression stress check failed for Service I Limit State in Interval 23 Cast closure joint and Cast Deck for Segment 3
+Tension stress check failed for Service I Limit State in Interval 23 Cast closure joint and Cast Deck for Segment 3
+Compression stress check failed for Service I Limit State in Interval 26 Stress Tendons for Segment 3
+Tension stress check failed for Service I Limit State in Interval 26 Stress Tendons for Segment 3
+Compression stress check failed for Service I Limit State in Interval 28 Install Railing System for Segment 3
+Tension stress check failed for Service I Limit State in Interval 28 Install Railing System for Segment 3
+Tension stress check failed for Service I Limit State in Interval 28 Install Railing System for Deck
+Tension stress check failed for Service III Limit State in Interval 35 Load Rating for Deck
+Tension stress check failed for Service I Limit State in Interval 4 Place segments into storage for Segment 4
+Tension stress check failed for Service I Limit State in Interval 21 Stress Tendons, Remove Temporary Support for Segment 4
+Tension stress check failed for Service I Limit State in Interval 23 Cast closure joint and Cast Deck for Segment 4
 Tension stress check failed for Service I Limit State in Interval 26 Stress Tendons for Segment 4
 Tension stress check failed for Service I Limit State in Interval 28 Install Railing System for Segment 4
 Tension stress check failed for Service III Limit State in Interval 35 Load Rating for Segment 4

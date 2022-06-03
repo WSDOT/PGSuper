@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -243,10 +243,13 @@ public:
    virtual void EditBridgeDescription(int nPage) override;
    virtual void EditAlignmentDescription(int nPage) override;
    virtual bool EditSegmentDescription(const CSegmentKey& segmentKey, int nPage) override;
+   virtual bool EditSegmentDescription() override;
    virtual bool EditClosureJointDescription(const CClosureKey& closureKey, int nPage) override;
    virtual bool EditGirderDescription(const CGirderKey& girderKey, int nPage) override;
+   virtual bool EditGirderDescription() override;
    virtual bool EditSpanDescription(SpanIndexType spanIdx, int nPage) override;
    virtual bool EditPierDescription(PierIndexType pierIdx, int nPage) override;
+   virtual bool EditTemporarySupportDescription(PierIndexType pierIdx, int nPage) override; 
    virtual void EditLiveLoads() override;
    virtual void EditLiveLoadDistributionFactors(pgsTypes::DistributionFactorMethod method,LldfRangeOfApplicabilityAction roaAction) override;
    virtual bool EditPointLoad(CollectionIndexType loadIdx) override;
@@ -312,7 +315,7 @@ public:
 
 // IExtendUI
 public:
-   virtual IDType RegisterEditPierCallback(IEditPierCallback* pCallback) override;
+   virtual IDType RegisterEditPierCallback(IEditPierCallback* pCallback,ICopyPierPropertiesCallback* pCopyCallback) override;
    virtual IDType RegisterEditSpanCallback(IEditSpanCallback* pCallback) override;
    virtual IDType RegisterEditBridgeCallback(IEditBridgeCallback* pCallback) override;
    virtual IDType RegisterEditLoadRatingOptionsCallback(IEditLoadRatingOptionsCallback* pCallback) override;
@@ -328,7 +331,7 @@ public:
 
 // IExtendPGSpliceUI
 public:
-   virtual IDType RegisterEditTemporarySupportCallback(IEditTemporarySupportCallback* pCallback) override;
+   virtual IDType RegisterEditTemporarySupportCallback(IEditTemporarySupportCallback* pCallback, ICopyTemporarySupportPropertiesCallback* pCopyCallBack) override;
    virtual IDType RegisterEditSplicedGirderCallback(IEditSplicedGirderCallback* pCallback,ICopyGirderPropertiesCallback* pCopyCallback) override;
    virtual IDType RegisterEditSegmentCallback(IEditSegmentCallback* pCallback) override;
    virtual IDType RegisterEditClosureJointCallback(IEditClosureJointCallback* pCallback) override;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -60,6 +60,7 @@ class CTimelineEvent;
 class CStrandData;
 class CHandlingData;
 class CBearingData2;
+class CSegmentPTData;
 
 class CBridgeChangedHint;
 
@@ -210,7 +211,7 @@ DESCRIPTION
 #define PROFILE_STRAIGHT 0
 #define PROFILE_VCURVE   1
 
-struct HorzCurveData
+struct CompoundCurveData
 {
    Float64 PIStation;
    Float64 FwdTangent;
@@ -220,7 +221,7 @@ struct HorzCurveData
 
    bool bFwdTangent; // if true, FwdTangent is the bearing of the forward tangent otherwise it is a delta angle
 
-   bool operator==(const HorzCurveData& other) const
+   bool operator==(const CompoundCurveData& other) const
    {
       return (PIStation == other.PIStation) && 
              (FwdTangent == other.FwdTangent) && 
@@ -233,17 +234,27 @@ struct HorzCurveData
 
 struct AlignmentData2
 {
-   Float64 Direction;
-   std::vector<HorzCurveData> HorzCurves;
+   std::_tstring Name{ _T("") };
+   Float64 Direction{ 0.0 };
+   // alignment reference point
+   Float64 RefStation{ 0.0 };
+   Float64 xRefPoint{ 0.0 };
+   Float64 yRefPoint{ 0.0 };
+   std::vector<CompoundCurveData> CompoundCurves;
 
    bool operator==(const AlignmentData2& other) const
    {
-      if ( Direction != other.Direction )
+      if ( Name != other.Name)
       {
          return false;
       }
 
-      if ( HorzCurves != other.HorzCurves )
+      if (Direction != other.Direction)
+      {
+         return false;
+      }
+
+      if ( CompoundCurves != other.CompoundCurves )
       {
          return false;
       }
@@ -273,19 +284,14 @@ struct AlignmentData2
    {
       return !operator==(other);
    }
-
-   // alignment reference point
-   Float64 RefStation;
-   Float64 xRefPoint;
-   Float64 yRefPoint;
 };
 
 struct VertCurveData
 {
-   Float64 PVIStation;
-   Float64 ExitGrade;
-   Float64 L1;
-   Float64 L2;
+   Float64 PVIStation{ 0.0 };
+   Float64 ExitGrade{ 0.0 };
+   Float64 L1{ 0.0 };
+   Float64 L2{ 0.0 };
 
    bool operator==(const VertCurveData& other) const
    {
@@ -298,9 +304,9 @@ struct VertCurveData
 
 struct ProfileData2
 {
-   Float64 Station;
-   Float64 Elevation;
-   Float64 Grade;
+   Float64 Station{ 0.0 };
+   Float64 Elevation{ 0.0 };
+   Float64 Grade{ 0.0 };
    std::vector<VertCurveData> VertCurves;
 
    bool operator==(const ProfileData2& other) const
@@ -336,8 +342,8 @@ struct ProfileData2
 
 struct RoadwaySegmentData
 {
-   Float64 Length;
-   Float64 Slope;
+   Float64 Length{ 0.0 };
+   Float64 Slope{ 0.0 };
 
    bool operator==(const RoadwaySegmentData& other) const
    {
@@ -359,9 +365,9 @@ struct RoadwaySegmentData
 
 struct RoadwaySectionTemplate
 {
-   Float64 Station;
-   Float64 LeftSlope;
-   Float64 RightSlope;
+   Float64 Station{ 0.0 };
+   Float64 LeftSlope{ 0.0 };
+   Float64 RightSlope{ 0.0 };
    std::vector<RoadwaySegmentData> SegmentDataVec; // only used if number of slope segments > 2
 
    bool operator==(const RoadwaySectionTemplate& other) const
@@ -375,17 +381,26 @@ struct RoadwaySectionTemplate
 
 struct RoadwaySectionData
 {
-   IndexType NumberOfSegmentsPerSection; // Always have at least 2 outer infinite segments. Inner segments add to this
-   IndexType ControllingRidgePointIdx;   // Not zero based. No ridge points at ends of outer segments. For 2 segment case,
-                                         // this value is 1.
+   enum SlopeMeasure {RelativeToAlignmentPoint,FromLeftEdge};
+   SlopeMeasure slopeMeasure{ RelativeToAlignmentPoint };
+   IndexType NumberOfSegmentsPerSection{ 2 }; // Always have at least 2 outer infinite segments. Inner segments add to this
+   IndexType AlignmentPointIdx{ 0 };   // Not zero based. No ridge points at ends of outer segments. For 2 segment case, this value is 1.
+   IndexType ProfileGradePointIdx{ 0 }; // Not zero based. No ridge points at ends of outer segments. For 2 segment case, this value is 1. If PGL and Alignment are the same, this is equal to AlignmentRidgePointIdx
+
    std::vector<RoadwaySectionTemplate> RoadwaySectionTemplates;
 
    bool operator==(const RoadwaySectionData& other) const
    {
+      if (slopeMeasure != other.slopeMeasure)
+         return false;
+
       if (NumberOfSegmentsPerSection != other.NumberOfSegmentsPerSection)
          return false;
 
-      if (ControllingRidgePointIdx != other.ControllingRidgePointIdx)
+      if (AlignmentPointIdx != other.AlignmentPointIdx)
+         return false;
+
+      if (ProfileGradePointIdx != other.ProfileGradePointIdx)
          return false;
 
       return RoadwaySectionTemplates == other.RoadwaySectionTemplates;
@@ -434,6 +449,9 @@ interface ISegmentData : IUnknown
 
    virtual const CStrandData* GetStrandData(const CSegmentKey& segmentKey) const = 0;
    virtual void SetStrandData(const CSegmentKey& segmentKey,const CStrandData& strands) = 0;
+
+   virtual const CSegmentPTData* GetSegmentPTData(const CSegmentKey& segmentKey) const = 0;
+   virtual void SetSegmentPTData(const CSegmentKey& segmentKey,const CSegmentPTData& strands) = 0;
 
    virtual const CHandlingData* GetHandlingData(const CSegmentKey& segmentKey) const = 0;
    virtual void SetHandlingData(const CSegmentKey& segmentKey,const CHandlingData& handling) = 0;
@@ -547,6 +565,8 @@ interface ISpecification : IUnknown
    typedef enum PrincipalWebStressCheckType { pwcNotApplicable, pwcAASHTOMethod, pwcNCHRPMethod, pwcNCHRPTimeStepMethod } PrincipalWebStressCheckType;
 
    virtual PrincipalWebStressCheckType GetPrincipalWebStressCheckType(const CSegmentKey& segmentKey) const = 0;
+
+   virtual lrfdVersionMgr::Version GetSpecificationType() const = 0;
 };
 
 /*****************************************************************************
@@ -1061,7 +1081,7 @@ interface IBridgeDescription : IUnknown
 
    virtual void UseSameGirderForEntireBridge(bool bSame) = 0;
    virtual bool UseSameGirderForEntireBridge() const = 0;
-   virtual void SetGirderName(LPCTSTR strGirderName) = 0; // sets the name of the girder that is used for the entire bridge
+   virtual void SetGirderName(LPCTSTR strGirderName) = 0; // sets the name of the girder that is used in all spans
 
    virtual void SetGirderSpacingType(pgsTypes::SupportedBeamSpacing sbs) = 0;
    virtual pgsTypes::SupportedBeamSpacing GetGirderSpacingType() const = 0;
@@ -1190,6 +1210,18 @@ interface IBridgeDescription : IUnknown
    virtual void SetBearingData(GroupIndexType grpIdx, PierIndexType pierIdx, pgsTypes::PierFaceType face, const CBearingData2* pBearingData) = 0;
    virtual void SetBearingData(GroupIndexType grpIdx, PierIndexType pierIdx, pgsTypes::PierFaceType face, GirderIndexType gdrIdx, const CBearingData2* pBearingData) = 0;
    virtual const CBearingData2* GetBearingData(PierIDType pierID, pgsTypes::PierFaceType face, GirderIndexType gdrIdx) const = 0;
+
+   virtual void SetConnectionGeometry(PierIndexType pierIdx, pgsTypes::PierFaceType face, 
+                                      Float64 endDist, ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasure,
+                                      Float64 bearingOffset, ConnectionLibraryEntry::BearingOffsetMeasurementType bearingOffsetMeasurementType) = 0;
+   virtual void GetConnectionGeometry(PierIndexType pierIdx, pgsTypes::PierFaceType face, 
+                                      Float64* endDist, ConnectionLibraryEntry::EndDistanceMeasurementType* endDistMeasure,
+                                      Float64* bearingOffset, ConnectionLibraryEntry::BearingOffsetMeasurementType* bearingOffsetMeasurementType) const = 0;
+
+   virtual void SetPierDiaphragmData(PierIndexType pierIdx, pgsTypes::PierFaceType face,
+                                    Float64 height, Float64 width, ConnectionLibraryEntry::DiaphragmLoadType loadType, Float64 loadLocation) = 0;
+   virtual void GetPierDiaphragmData(PierIndexType pierIdx, pgsTypes::PierFaceType face,
+                                    Float64* pHeight, Float64* pWidth, ConnectionLibraryEntry::DiaphragmLoadType* pLoadType, Float64* pLoadLocation) const = 0;
 
    virtual bool IsCompatibleGirder(const CGirderKey& girderKey, LPCTSTR lpszGirderName) const = 0;
    virtual bool AreGirdersCompatible(GroupIndexType groupIdx) const = 0;

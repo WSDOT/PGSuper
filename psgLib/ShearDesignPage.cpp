@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -222,7 +222,7 @@ void CShearDesignPage::DoDataExchange(CDataExchange* pDX)
 
          // Sort spacing list and remove duplicates
          std::sort(m_BarSpacings.begin(), m_BarSpacings.end());
-         std::unique(m_BarSpacings.begin(), m_BarSpacings.end());
+         m_BarSpacings.erase(std::unique(m_BarSpacings.begin(), m_BarSpacings.end()),m_BarSpacings.end());
 
          // Make sure design algorithm can step from one spacing to the next
          std::vector<Float64>::iterator ittwo=m_BarSpacings.begin();

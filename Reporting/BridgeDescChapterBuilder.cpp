@@ -1,6 +1,6 @@
 ﻿///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation 
+// Copyright © 1999-2022  Washington State Department of Transportation 
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -58,6 +58,8 @@ static void write_alignment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
 static void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 static void write_crown_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 static void write_bridge_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
+static void write_connection_abbrevation_footnotes(rptChapter* pChapter);
+static void write_tempsupport_connection_abbrevation_footnotes(rptChapter* pChapter);
 static void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 static void write_ts_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 static void write_framing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
@@ -65,6 +67,7 @@ static void write_span_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rpt
 static void write_girder_spacing(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTable,const CGirderSpacing2* pGirderSpacing,RowIndexType row,ColumnIndexType col);
 static void write_bearing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const std::vector<CGirderKey>& girderKeys);
 static void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const std::vector<CGirderKey>& girderKeys);
+static void write_pt_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rptChapter* pChapter, Uint16 level, const std::vector<CGirderKey>& girderKeys);
 static void write_segment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,GroupIndexType grpIdx,GirderIndexType gdrIdx,Uint16 level);
 static void write_slab_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 static void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const std::vector<CGirderKey>& girderKeys,Uint16 level);
@@ -131,9 +134,9 @@ rptChapter* CBridgeDescChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
    SupportIndexType nTS = pBridge->GetTemporarySupportCount();
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   //write_alignment_data( pBroker, pDisplayUnits, pChapter, level);
-   //write_profile_data( pBroker, pDisplayUnits, pChapter, level);
-   //write_crown_data( pBroker, pDisplayUnits, pChapter, level);
+   //write_alignment_data( pBroker, pDisplayUnits, pChapter, level); // now written as its own chapter
+   //write_profile_data( pBroker, pDisplayUnits, pChapter, level); // now written as its own chapter
+   //write_crown_data( pBroker, pDisplayUnits, pChapter, level); // now written as its own chapter
    write_bridge_data( pBroker, pDisplayUnits, pChapter, level);
    write_concrete_details(pBroker,pDisplayUnits,pChapter,girderKeys,level);
    write_friction_loss_data( pBroker, pDisplayUnits, pChapter, level);
@@ -149,6 +152,7 @@ rptChapter* CBridgeDescChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
    }
    write_bearing_data( pBroker, pDisplayUnits, pChapter, level, girderKeys );
    write_ps_data( pBroker, pDisplayUnits, pChapter, level, girderKeys );
+   write_pt_data(pBroker, pDisplayUnits, pChapter, level, girderKeys);
    write_slab_data( pBroker, pDisplayUnits, pChapter, level );
    write_deck_reinforcing_data( pBroker, pDisplayUnits, pChapter, level );
 
@@ -203,6 +207,8 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
 
    const AlignmentData2& alignment = pAlignment->GetAlignmentData2();
 
+   *pPara << _T("Name: ") << alignment.Name << rptNewLine;
+
    CComBSTR bstrBearing;
    direction_formatter->Format(alignment.Direction, CComBSTR("°,\',\""), &bstrBearing);
    *pPara << _T("Direction: ") << RPT_BEARING(OLE2T(bstrBearing)) << rptNewLine;
@@ -213,7 +219,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
    *pPara << _T(", ")
       << _T("N (Y) ") << length.SetValue(alignment.yRefPoint) << _T(")") << rptNewLine;
 
-   if (alignment.HorzCurves.size() == 0)
+   if (alignment.CompoundCurves.size() == 0)
    {
       return;
    }
@@ -221,7 +227,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
    bool bHasEntrySpirals = false;
    bool bHasExitSpirals = false;
    bool bHasCircularCurves = false;
-   for (const auto& hc : alignment.HorzCurves)
+   for (const auto& hc : alignment.CompoundCurves)
    {
       if (!IsZero(hc.EntrySpiral))
       {
@@ -244,7 +250,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   ColumnIndexType nColumns = alignment.HorzCurves.size() + 1;
+   ColumnIndexType nColumns = alignment.CompoundCurves.size() + 1;
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nColumns, _T("Horizontal Curve Data"));
    *pPara << pTable << rptNewLine;
 
@@ -395,8 +401,8 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
 
    ColumnIndexType col = 1;
    IndexType hcIdx = 0; // keeps tracks of the actual curves in the model (curves with zero radius input are not curves in the alignment model)
-   auto iter = std::cbegin(alignment.HorzCurves);
-   auto end = std::cend(alignment.HorzCurves);
+   auto iter = std::cbegin(alignment.CompoundCurves);
+   auto end = std::cend(alignment.CompoundCurves);
    for ( ; iter != end; iter++, col++)
    {
       const auto& hc_data = *iter;
@@ -404,7 +410,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
 
       (*pTable)(row++, col) << _T("Curve ") << col;
 
-      CComPtr<IHorzCurve> hc;
+      CComPtr<ICompoundCurve> hc;
 
       CComPtr<IDirection> bkTangent;
       CComPtr<IDirection> fwdTangent;
@@ -415,7 +421,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
       }
       else
       {
-         pRoadway->GetCurve(hcIdx, &hc);
+         pRoadway->GetCurve(hcIdx, pgsTypes::pcGlobal, &hc);
          hc->get_BkTangentBrg(&bkTangent);
          hc->get_FwdTangentBrg(&fwdTangent);
       }
@@ -816,7 +822,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
 
             if (bHasCircularCurves)
             {
-               pRoadway->GetCurvePoint(hcIdx, cptTS, pgsTypes::pcGlobal, &pnt);
+               hc->get_TS(&pnt);
                pnt->Location(&x, &y);
                (*pTable)(row, col) << length.SetValue(x) << _T(", "); (*pTable)(row++, col) << length.SetValue(y);
             }
@@ -826,17 +832,17 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
             if (bHasEntrySpirals)
             {
                pnt.Release();
-               pRoadway->GetCurvePoint(hcIdx, cptTS, pgsTypes::pcGlobal, &pnt);
+               hc->get_TS(&pnt);
                pnt->Location(&x, &y);
                (*pTable)(row, col) << length.SetValue(x) << _T(", "); (*pTable)(row++, col) << length.SetValue(y);
 
                pnt.Release();
-               pRoadway->GetCurvePoint(hcIdx, cptSPI1, pgsTypes::pcGlobal, &pnt);
+               hc->get_SPI(spEntry, &pnt);
                pnt->Location(&x, &y);
                (*pTable)(row, col) << length.SetValue(x) << _T(", "); (*pTable)(row++, col) << length.SetValue(y);
 
                pnt.Release();
-               pRoadway->GetCurvePoint(hcIdx, cptSC, pgsTypes::pcGlobal, &pnt);
+               hc->get_SC(&pnt);
                pnt->Location(&x, &y);
                (*pTable)(row, col) << length.SetValue(x) << _T(", "); (*pTable)(row++, col) << length.SetValue(y);
             }
@@ -851,7 +857,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
       if (!IsZero(hc_data.Radius))
       {
          pnt.Release();
-         pRoadway->GetCurvePoint(hcIdx, cptPI, pgsTypes::pcGlobal, &pnt);
+         hc->get_PI(&pnt);
          pnt->Location(&x, &y);
          (*pTable)(row, col) << length.SetValue(x) << _T(", "); (*pTable)(row++, col) << length.SetValue(y);
       }
@@ -878,7 +884,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
             if (bHasCircularCurves)
             {
                pnt.Release();
-               pRoadway->GetCurvePoint(hcIdx, cptST, pgsTypes::pcGlobal, &pnt);
+               hc->get_ST(&pnt);
                pnt->Location(&x, &y);
                (*pTable)(row, col) << length.SetValue(x) << _T(", "); (*pTable)(row++, col) << length.SetValue(y);
             }
@@ -900,17 +906,17 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
             if (bHasExitSpirals)
             {
                pnt.Release();
-               pRoadway->GetCurvePoint(hcIdx, cptCS, pgsTypes::pcGlobal, &pnt);
+               hc->get_CS(&pnt);
                pnt->Location(&x, &y);
                (*pTable)(row, col) << length.SetValue(x) << _T(", "); (*pTable)(row++, col) << length.SetValue(y);
 
                pnt.Release();
-               pRoadway->GetCurvePoint(hcIdx, cptSPI2, pgsTypes::pcGlobal, &pnt);
+               hc->get_SPI(spExit, &pnt);
                pnt->Location(&x, &y);
                (*pTable)(row, col) << length.SetValue(x) << _T(", "); (*pTable)(row++, col) << length.SetValue(y);
 
                pnt.Release();
-               pRoadway->GetCurvePoint(hcIdx, cptST, pgsTypes::pcGlobal, &pnt);
+               hc->get_ST(&pnt);
                pnt->Location(&x, &y);
                (*pTable)(row, col) << length.SetValue(x) << _T(", "); (*pTable)(row++, col) << length.SetValue(y);
             }
@@ -926,7 +932,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
          else
          {
             pnt.Release();
-            pRoadway->GetCurvePoint(hcIdx, cptCCC, pgsTypes::pcGlobal, &pnt);
+            hc->get_CCC(&pnt);
             pnt->Location(&x, &y);
             (*pTable)(row, col) << length.SetValue(x) << _T(", "); (*pTable)(row++, col) << length.SetValue(y);
          }
@@ -941,7 +947,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
          else
          {
             pnt.Release();
-            pRoadway->GetCurvePoint(hcIdx, cptCC, pgsTypes::pcGlobal, &pnt);
+            hc->get_CC(&pnt);
             pnt->Location(&x, &y);
             (*pTable)(row, col) << length.SetValue(x) << _T(", "); (*pTable)(row++, col) << length.SetValue(y);
          }
@@ -957,7 +963,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
 
 void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
 {
-   GET_IFACE2(pBroker, IRoadwayData, pAlignment ); 
+   GET_IFACE2(pBroker, IRoadwayData, pRoadwayData ); 
    rptParagraph* pPara;
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetAlignmentLengthUnit(), true );
@@ -966,7 +972,7 @@ void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
    *pChapter << pPara;
    *pPara << _T("Profile Details") << rptNewLine;
 
-   const ProfileData2& profile = pAlignment->GetProfileData2();
+   const ProfileData2& profile = pRoadwayData->GetProfileData2();
 
    pPara = new rptParagraph;
    *pChapter << pPara;
@@ -1022,7 +1028,14 @@ void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
       (*pTable)(row++,col) << _T("Curve ") << col;
       if ( IsZero(vcd.L1) && IsZero(vcd.L2) )
       {
-         Float64 pvi_elevation = pRoadway->GetElevation(vcd.PVIStation,0.0);
+         Float64 pgl_offset = 0;
+         if (pRoadwayData->GetRoadwaySectionData().AlignmentPointIdx != pRoadwayData->GetRoadwaySectionData().ProfileGradePointIdx)
+         {
+            IndexType pglIdx = pRoadway->GetProfileGradeLineIndex(vcd.PVIStation);
+            pgl_offset = pRoadway->GetAlignmentOffset(pglIdx, vcd.PVIStation);
+         }
+
+         Float64 pvi_elevation = pRoadway->GetElevation(vcd.PVIStation,pgl_offset);
          Float64 g1;
          if ( iter == begin )
          {
@@ -1167,9 +1180,11 @@ void write_crown_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapte
    else
    {
       *pPara << _T("Each Roadway Cross Section Template contains ") << section.NumberOfSegmentsPerSection << _T(" segments per section.") << rptNewLine;
-      *pPara << _T("Ridge Point #") << section.ControllingRidgePointIdx << _T(" is the controlling ridge point. It defines the slope sign convention and coincides with the horizontal alignment, profile grade, and superelevation pivot location.") << rptNewLine;
+      *pPara << _T("The horizontal alignment is coincident with Ridge Point #") << section.AlignmentPointIdx << _T(" between Segments ") << section.AlignmentPointIdx << _T(" and ") << (section.AlignmentPointIdx+1) << _T(".") << rptNewLine;
+      *pPara << _T("The profile grade line (PGL) is coincident with Ridge Point #") << section.ProfileGradePointIdx << _T(" between Segments ") << section.ProfileGradePointIdx << _T(" and ") << (section.ProfileGradePointIdx+1) << _T(".") << rptNewLine;
+      *pPara << _T("Slopes are measured ") << (section.slopeMeasure == RoadwaySectionData::RelativeToAlignmentPoint ? _T("relative to the alignment point.") : _T("left to right.")) << rptNewLine;
 
-      IndexType numcols = 2 + section.NumberOfSegmentsPerSection * 2 - 2;
+      ColumnIndexType numcols = 2 + section.NumberOfSegmentsPerSection * 2 - 2;
 
       // Setup the table
       rptRcTable* pTable = rptStyleManager::CreateDefaultTable(numcols, _T(""));
@@ -1385,7 +1400,7 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
    GET_IFACE2(pBroker, IMaterials, pMaterials);
    if (pMaterials->HasUHPC())
    {
-      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Ec_UHPC.png")) << _T(" for UHPC") << rptNewLine;
+      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Ec_PCI_UHPC.png")) << _T(" for PCI-UHPC") << rptNewLine;
    }
 
 
@@ -1746,7 +1761,7 @@ void write_aci209_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTabl
    }
    else
    {
-      std::_tstring strCement(concrete.ACI209CementType == pgsTypes::TypeI ? _T("Type I") : _T("Type II"));
+      std::_tstring strCement(concrete.ACI209CementType == pgsTypes::TypeI ? _T("Type I") : _T("Type III"));
       (*pTable)(row,col++) << strCement;
    }
    (*pTable)(row,col++) << time.SetValue(concrete.A);
@@ -1919,8 +1934,6 @@ void write_friction_loss_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,r
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(4,_T("Post-Tensioning Anchor Set and Friction Loss Parameters"));
    pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
    pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
-   pTable->SetColumnStyle(1, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-   pTable->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
    *pPara << pTable << rptNewLine;
 
    (*pTable)(0,1) << COLHDR(symbol(DELTA) << Sub(_T("set")) << rptNewLine << _T("Anchor Set"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
@@ -1954,6 +1967,41 @@ void write_friction_loss_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,r
    *pPara << _T("Relaxation Effects are ") << (pLossParams->IgnoreRelaxationEffects()         ? _T("ignored") : _T("Considered")) << rptNewLine;
 }
 
+void write_connection_abbrevation_footnotes(rptChapter* pChapter)
+{
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
+   *pChapter << pPara;
+   *pPara << _T("Bearing Offset Measure") << rptNewLine;
+   *pPara << GetBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder, true, true) << _T(" = ") << GetBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder, true, false) << rptNewLine;
+   *pPara << GetBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder, false, true) << _T(" = ") << GetBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder, false, false) << rptNewLine;
+   *pPara << GetBearingOffsetMeasureString(ConnectionLibraryEntry::NormalToPier, true, true) << _T(" = ") << GetBearingOffsetMeasureString(ConnectionLibraryEntry::NormalToPier, true, false) << rptNewLine;
+   *pPara << GetBearingOffsetMeasureString(ConnectionLibraryEntry::NormalToPier, false, true) << _T(" = ") << GetBearingOffsetMeasureString(ConnectionLibraryEntry::NormalToPier, false, false) << rptNewLine;
+   *pPara << rptNewLine;
+   *pPara << _T("End Distance Measure") << rptNewLine;
+   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingAlongGirder, true, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingAlongGirder, true, false) << rptNewLine;
+   //*pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingAlongGirder,  false, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingAlongGirder,  false, false) << rptNewLine; // produces the same result at the line above
+   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingNormalToPier, true, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingNormalToPier, true, false) << rptNewLine;
+   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingNormalToPier, false, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingNormalToPier, false, false) << rptNewLine;
+   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierAlongGirder, true, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierAlongGirder, true, false) << rptNewLine;
+   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierAlongGirder, false, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierAlongGirder, false, false) << rptNewLine;
+   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier, true, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier, true, false) << rptNewLine;
+   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier, false, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier, false, false) << rptNewLine;
+}
+
+void write_tempsupport_connection_abbrevation_footnotes(rptChapter* pChapter)
+{
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
+   *pChapter << pPara;
+   *pPara << _T("Bearing Offset Measure") << rptNewLine;
+   *pPara << GetTempSupportBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder, true) << _T(" = ") << GetTempSupportBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder, false) << rptNewLine;
+   *pPara << GetTempSupportBearingOffsetMeasureString(ConnectionLibraryEntry::NormalToPier, true) << _T(" = ") << GetTempSupportBearingOffsetMeasureString(ConnectionLibraryEntry::NormalToPier, false) << rptNewLine;
+   *pPara << rptNewLine;
+   *pPara << _T("End Distance Measure") << rptNewLine;
+   *pPara << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingNormalToPier, true) << _T(" = ") << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingNormalToPier, false) << rptNewLine;
+   *pPara << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::FromPierAlongGirder, true) << _T(" = ") << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::FromPierAlongGirder, false) << rptNewLine;
+   *pPara << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier, true) << _T(" = ") << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier, false) << rptNewLine;
+}
+
 void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
 {
    USES_CONVERSION;
@@ -1983,7 +2031,9 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    pLayoutTable->SetNumberOfHeaderRows(2);
 
    pLayoutTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pLayoutTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pLayoutTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pLayoutTable->SetColumnStyle(4, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pLayoutTable->SetStripeRowColumnStyle(4, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    pLayoutTable->SetRowSpan(0,0,2);
    (*pLayoutTable)(0,0) << _T("");
@@ -1998,7 +2048,7 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    (*pLayoutTable)(0,3) << _T("Skew Angle");
 
    pLayoutTable->SetRowSpan(0,4,2);
-   (*pLayoutTable)(0,4) << _T("Boundary") << rptNewLine << _T("Condition");
+   (*pLayoutTable)(0,4) << _T("Boundary Condition");
 
    // Table for pier diaphragms
    rptRcTable* pDiaphragmTable = rptStyleManager::CreateDefaultTable(9,_T("Pier Diaphragms"));
@@ -2059,23 +2109,7 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    (*pConnectionTable)(1,7) << COLHDR(_T("End") << rptNewLine << _T("Distance"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
    (*pConnectionTable)(1,8) << _T("End") << rptNewLine << _T("Distance") << rptNewLine << _T("Measure");
 
-   pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
-   *pChapter << pPara;
-   *pPara << _T("Bearing Offset Measure") << rptNewLine;
-   *pPara << GetBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder,  true,  true) << _T(" = ") << GetBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder,  true,  false) << rptNewLine;
-   *pPara << GetBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder,  false, true) << _T(" = ") << GetBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder,  false, false) << rptNewLine;
-   *pPara << GetBearingOffsetMeasureString(ConnectionLibraryEntry::NormalToPier, true,  true) << _T(" = ") << GetBearingOffsetMeasureString(ConnectionLibraryEntry::NormalToPier, true,  false) << rptNewLine;
-   *pPara << GetBearingOffsetMeasureString(ConnectionLibraryEntry::NormalToPier, false, true) << _T(" = ") << GetBearingOffsetMeasureString(ConnectionLibraryEntry::NormalToPier, false, false) << rptNewLine;
-   *pPara << rptNewLine;
-   *pPara << _T("End Distance Measure") << rptNewLine;
-   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingAlongGirder,  true,  true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingAlongGirder,  true,  false) << rptNewLine;
-   //*pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingAlongGirder,  false, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingAlongGirder,  false, false) << rptNewLine; // produces the same result at the line above
-   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingNormalToPier, true,  true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingNormalToPier, true,  false) << rptNewLine;
-   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingNormalToPier, false, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingNormalToPier, false, false) << rptNewLine;
-   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierAlongGirder,     true,  true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierAlongGirder,     true,  false) << rptNewLine;
-   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierAlongGirder,     false, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierAlongGirder,     false, false) << rptNewLine;
-   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier,    true,  true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier,    true,  false) << rptNewLine;
-   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier,    false, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier,    false, false) << rptNewLine;
+   write_connection_abbrevation_footnotes(pChapter);
 
    bool bNoDeck = IsNonstructuralDeck(pBridgeDesc->GetDeckDescription()->GetDeckType());
 
@@ -2416,9 +2450,7 @@ void write_ts_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
 {
    USES_CONVERSION;
 
-   GET_IFACE2(pBroker, ILibrary,     pLib );
    GET_IFACE2(pBroker, ITempSupport,  pTemporarySupport ); 
-   GET_IFACE2(pBroker, IRoadwayData, pAlignment);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -2439,45 +2471,61 @@ void write_ts_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* pLayoutTable = rptStyleManager::CreateDefaultTable(6,_T("Temporary Supports"));
+   rptRcTable* pLayoutTable = rptStyleManager::CreateDefaultTable(7,_T("Temporary Supports"));
    *pPara << pLayoutTable << rptNewLine;
 
    pLayoutTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pLayoutTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pLayoutTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pLayoutTable->SetColumnStyle(4, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pLayoutTable->SetStripeRowColumnStyle(4, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pLayoutTable->SetColumnStyle(5, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pLayoutTable->SetStripeRowColumnStyle(5, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pLayoutTable->SetColumnStyle(6, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pLayoutTable->SetStripeRowColumnStyle(6, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
-   (*pLayoutTable)(0,0) << _T("");
-   (*pLayoutTable)(0,1) << _T("Station");
-   (*pLayoutTable)(0,2) << _T("Bearing");
-   (*pLayoutTable)(0,3) << _T("Skew Angle");
-   (*pLayoutTable)(0,4) << _T("Type");
-   (*pLayoutTable)(0,5) << _T("Erection") << rptNewLine << _T("Stage");
-   (*pLayoutTable)(0,6) << _T("Removal") << rptNewLine << _T("Stage");
+   ColumnIndexType layout_col = 0;
+   (*pLayoutTable)(0, layout_col++) << _T("");
+   (*pLayoutTable)(0, layout_col++) << _T("Station");
+   (*pLayoutTable)(0, layout_col++) << _T("Bearing");
+   (*pLayoutTable)(0, layout_col++) << _T("Skew Angle");
+   (*pLayoutTable)(0, layout_col++) << _T("Type");
+   (*pLayoutTable)(0, layout_col++) << _T("Erection  Event");
+   (*pLayoutTable)(0, layout_col++) << _T("Removal Event");
 
    // connections
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* pConnectionsTable = rptStyleManager::CreateDefaultTable(8,_T("Temporary Support Connections"));
+   rptRcTable* pConnectionsTable = rptStyleManager::CreateDefaultTable(7,_T("Temporary Support Connections"));
    *pPara << pConnectionsTable << rptNewLine;
+   write_tempsupport_connection_abbrevation_footnotes(pChapter);
 
    pConnectionsTable->SetNumberOfHeaderRows(1);
 
    pConnectionsTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pConnectionsTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pConnectionsTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pConnectionsTable->SetColumnStyle(1, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pConnectionsTable->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pConnectionsTable->SetColumnStyle(6, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pConnectionsTable->SetStripeRowColumnStyle(6, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
-   (*pConnectionsTable)(0,0) << _T("");
-   (*pConnectionsTable)(0,1) << _T("Boundary") << rptNewLine << _T("Condition");
-   (*pConnectionsTable)(0,2) << COLHDR(_T("Bearing") << rptNewLine << _T("Offset"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
-   (*pConnectionsTable)(0,3) << _T("Bearing") << rptNewLine << _T("Offset") << rptNewLine << _T("Measure");
-   (*pConnectionsTable)(0,4) << COLHDR(_T("End") << rptNewLine << _T("Distance"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
-   (*pConnectionsTable)(0,5) << _T("End") << rptNewLine << _T("Distance") << rptNewLine << _T("Measure");
-   (*pConnectionsTable)(0,6) << _T("Closure") << rptNewLine << _T("Stage");
+   ColumnIndexType connections_col = 0;
+   (*pConnectionsTable)(0, connections_col++) << _T("");
+   (*pConnectionsTable)(0, connections_col++) << _T("Boundary") << rptNewLine << _T("Condition");
+   (*pConnectionsTable)(0, connections_col++) << COLHDR(_T("Bearing") << rptNewLine << _T("Offset"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+   (*pConnectionsTable)(0, connections_col++) << _T("Bearing") << rptNewLine << _T("Offset") << rptNewLine << _T("Measure");
+   (*pConnectionsTable)(0, connections_col++) << COLHDR(_T("End") << rptNewLine << _T("Distance"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+   (*pConnectionsTable)(0, connections_col++) << _T("End") << rptNewLine << _T("Distance") << rptNewLine << _T("Measure");
+   (*pConnectionsTable)(0, connections_col++) << _T("Cast Closure Event");
 
-   RowIndexType row1 = pLayoutTable->GetNumberOfHeaderRows();
-   RowIndexType row2 = pConnectionsTable->GetNumberOfHeaderRows();
+   RowIndexType layout_row = pLayoutTable->GetNumberOfHeaderRows();
+   RowIndexType connections_row = pConnectionsTable->GetNumberOfHeaderRows();
    SupportIndexType nTS = pBridgeDesc->GetTemporarySupportCount();
    for ( SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++ )
    {
+      layout_col = 0;
+      connections_col = 0;
+
       const CTemporarySupportData* pTS = pBridgeDesc->GetTemporarySupport(tsIdx);
       SupportIDType tsID = pTS->GetID();
 
@@ -2499,12 +2547,12 @@ void write_ts_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
       CComBSTR bstrBearing;
       direction_formatter->Format(bearing_value,CComBSTR("°,\',\""),&bstrBearing);
 
-      (*pLayoutTable)(row1,0) << _T("TS ") << LABEL_TEMPORARY_SUPPORT(tsIdx);
+      (*pLayoutTable)(layout_row, layout_col++) << _T("TS ") << LABEL_TEMPORARY_SUPPORT(tsIdx);
 
-      (*pLayoutTable)(row1,1) << rptRcStation(pTS->GetStation(), &pDisplayUnits->GetStationFormat() );
-      (*pLayoutTable)(row1,2) << RPT_BEARING(OLE2T(bstrBearing));
-      (*pLayoutTable)(row1,3) << RPT_ANGLE(OLE2T(bstrAngle));
-      (*pLayoutTable)(row1,4) << CTemporarySupportData::AsString(pTS->GetSupportType());
+      (*pLayoutTable)(layout_row, layout_col++) << rptRcStation(pTS->GetStation(), &pDisplayUnits->GetStationFormat() );
+      (*pLayoutTable)(layout_row, layout_col++) << RPT_BEARING(OLE2T(bstrBearing));
+      (*pLayoutTable)(layout_row, layout_col++) << RPT_ANGLE(OLE2T(bstrAngle));
+      (*pLayoutTable)(layout_row, layout_col++) << CTemporarySupportData::AsString(pTS->GetSupportType());
 
       EventIndexType erectionEventIdx, removalEventIdx;
       pTimelineMgr->GetTempSupportEvents(tsID,&erectionEventIdx,&removalEventIdx);
@@ -2512,44 +2560,44 @@ void write_ts_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
       const CTimelineEvent* pErectionEvent = pTimelineMgr->GetEventByIndex(erectionEventIdx);
       const CTimelineEvent* pRemovalEvent  = pTimelineMgr->GetEventByIndex(removalEventIdx);
 
-      (*pLayoutTable)(row1,5) << _T("Event ") << LABEL_EVENT(erectionEventIdx) << _T(": ") << pErectionEvent->GetDescription();
-      (*pLayoutTable)(row1,6) << _T("Event ") << LABEL_EVENT(removalEventIdx)  << _T(": ") << pRemovalEvent->GetDescription();
+      (*pLayoutTable)(layout_row, layout_col++) << _T("Event ") << LABEL_EVENT(erectionEventIdx) << _T(": ") << pErectionEvent->GetDescription();
+      (*pLayoutTable)(layout_row, layout_col++) << _T("Event ") << LABEL_EVENT(removalEventIdx)  << _T(": ") << pRemovalEvent->GetDescription();
 
-      row1++;
+      layout_row++;
 
-      (*pConnectionsTable)(row2,0) << _T("TS ") << LABEL_TEMPORARY_SUPPORT(tsIdx);
-      (*pConnectionsTable)(row2,1) << CTemporarySupportData::AsString(pTS->GetConnectionType());
+      (*pConnectionsTable)(connections_row, connections_col++) << _T("TS ") << LABEL_TEMPORARY_SUPPORT(tsIdx);
+      (*pConnectionsTable)(connections_row, connections_col++) << CTemporarySupportData::AsString(pTS->GetConnectionType());
 
       if ( pTS->GetConnectionType() == pgsTypes::tsctClosureJoint )
       {
          Float64 brgOffset;
          ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure;
          pTS->GetBearingOffset(&brgOffset,&brgOffsetMeasure);
-         (*pConnectionsTable)(row2,2) << cmpdim.SetValue(brgOffset);
-         (*pConnectionsTable)(row2,3) << GetBearingOffsetMeasureString(brgOffsetMeasure,false,false);
+         (*pConnectionsTable)(connections_row, connections_col++) << cmpdim.SetValue(brgOffset);
+         (*pConnectionsTable)(connections_row, connections_col++) << GetTempSupportBearingOffsetMeasureString(brgOffsetMeasure,true);
 
          Float64 endDist;
          ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasure;
          pTS->GetGirderEndDistance(&endDist,&endDistMeasure);
-         (*pConnectionsTable)(row2,4) << cmpdim.SetValue(endDist);
-         (*pConnectionsTable)(row2,5) << GetEndDistanceMeasureString(endDistMeasure,false,false);
+         (*pConnectionsTable)(connections_row, connections_col++) << cmpdim.SetValue(endDist);
+         (*pConnectionsTable)(connections_row, connections_col++) << GetTempSupportEndDistanceMeasureString(endDistMeasure,true);
 
          const CClosureJointData* pClosureJoint = pTS->GetClosureJoint(0);
          IDType cpID = pClosureJoint->GetID();
          EventIndexType castClosureEventIdx = pTimelineMgr->GetCastClosureJointEventIndex(cpID);
          const CTimelineEvent* pCastClosureEvent = pTimelineMgr->GetEventByIndex(castClosureEventIdx);
-         (*pConnectionsTable)(row2,6) << _T("Event ") << LABEL_EVENT(castClosureEventIdx) << _T(": ") << pCastClosureEvent->GetDescription();
+         (*pConnectionsTable)(connections_row, connections_col++) << _T("Event ") << LABEL_EVENT(castClosureEventIdx) << _T(": ") << pCastClosureEvent->GetDescription();
       }
       else
       {
-         (*pConnectionsTable)(row2,2) << RPT_NA;
-         (*pConnectionsTable)(row2,3) << RPT_NA;
-         (*pConnectionsTable)(row2,4) << RPT_NA;
-         (*pConnectionsTable)(row2,5) << RPT_NA;
-         (*pConnectionsTable)(row2,6) << RPT_NA;
+         (*pConnectionsTable)(connections_row, connections_col++) << _T("");
+         (*pConnectionsTable)(connections_row, connections_col++) << _T("");
+         (*pConnectionsTable)(connections_row, connections_col++) << _T("");
+         (*pConnectionsTable)(connections_row, connections_col++) << _T("");
+         (*pConnectionsTable)(connections_row, connections_col++) << _T("");
       }
 
-      row2++;
+      connections_row++;
    }
 }
 
@@ -2858,6 +2906,7 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
    INIT_UV_PROTOTYPE( rptForceUnitValue,   force,   pDisplayUnits->GetGeneralForceUnit(), true );
    INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,  pDisplayUnits->GetStressUnit(),       true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  dia,     pDisplayUnits->GetComponentDimUnit(), true );
+   INIT_UV_PROTOTYPE( rptLength2UnitValue, area,    pDisplayUnits->GetAreaUnit(),         true );
 
    rptParagraph* pPara;
    pPara = new rptParagraph;
@@ -2873,10 +2922,18 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
+   std::array<std::_tstring, 2> strDuctGeometryType{ _T("Straight"),_T("Parabolic") };
+   std::array<std::_tstring, 3> strJackingEnd{ _T("Left"), _T("Right"), _T("Both") };
+   std::array<std::_tstring, 3> strDuctType{ _T("Galvanized ferrous metal"),_T("Polyethylene"), _T("Formed in concrete with removable cores") };
+   std::array<std::_tstring, 2> strInstallationMethod{ _T("Push"),_T("Pull") };
+
+
    for(const auto& thisGirderKey : girderKeys)
    {
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(thisGirderKey.groupIndex);
       const CSplicedGirderData* pGirder = pGroup->GetGirder(thisGirderKey.girderIndex);
+
+      WebIndexType nWebs = pIGirder->GetWebCount(thisGirderKey);
 
       SegmentIndexType nSegments = pGirder->GetSegmentCount();
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -2895,6 +2952,8 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
 
          const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
          bool harpedAreStraight = pStrandGeom->GetAreHarpedStrandsForcedStraight(thisSegmentKey);
+
+         DuctIndexType nDucts = pSegment->Tendons.GetDuctCount();
 
          (*pTable)(row,0) << _T("Girder Type");
          (*pTable)(row,1) << pGirder->GetGirderName();
@@ -2951,7 +3010,15 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             }
             row++;
          }
-            
+
+         (*pTable)(row, 0) << _T("Specified Release Strength ") << RPT_FCI;
+         (*pTable)(row, 1) << stress.SetValue(pSegmentData->GetSegmentMaterial(thisSegmentKey)->Concrete.Fci);
+         row++;
+
+         (*pTable)(row, 0) << _T("Specified 28 day Strength ") << RPT_FC;
+         (*pTable)(row, 1) << stress.SetValue(pSegmentData->GetSegmentMaterial(thisSegmentKey)->Concrete.Fc);
+         row++;       
+
          if (pSpec->IsAssumedExcessCamberInputEnabled())
          {
             (*pTable)(row, 0) << _T("Assumed Excess Camber");
@@ -2993,8 +3060,10 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          (*pTable)(row,1) << LABEL_HARP_TYPE(harpedAreStraight);
          row++;
 
+         StrandIndexType Ns = pSegment->Strands.GetStrandCount(pgsTypes::Straight);
+         Float64 Aps_s = pSegment->Strands.GetStrandMaterial(pgsTypes::Straight)->GetNominalArea()*Ns;
          (*pTable)(row,0) << _T("Number of Straight Strands");
-         (*pTable)(row,1) << pSegment->Strands.GetStrandCount(pgsTypes::Straight);
+         (*pTable)(row,1) << Ns;
          StrandIndexType nDebonded = pStrandGeom->GetNumDebondedStrands(thisSegmentKey,pgsTypes::Straight,pgsTypes::dbetEither);
          if ( 0 < nDebonded )
          {
@@ -3010,12 +3079,18 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          }
          row++;
 
-         (*pTable)(row,0) << _T("Straight Strand P") << Sub(_T("jack"));
+         (*pTable)(row, 0) << _T("Straight Strand ") << RPT_APS;
+         (*pTable)(row, 1) << area.SetValue(Aps_s);
+         row++;
+
+         (*pTable)(row,0) << _T("Straight Strand ") << Sub2(_T("P"),_T("jack"));
          (*pTable)(row,1) << force.SetValue(pSegment->Strands.GetPjack(pgsTypes::Straight));
          row++;
 
+         StrandIndexType Nh = pSegment->Strands.GetStrandCount(pgsTypes::Harped);
+         Float64 Aps_h = pSegment->Strands.GetStrandMaterial(pgsTypes::Harped)->GetNominalArea()*Nh;
          (*pTable)(row,0) << _T("Number of ")<< LABEL_HARP_TYPE(harpedAreStraight) <<_T(" Strands");
-         (*pTable)(row,1) << pSegment->Strands.GetStrandCount(pgsTypes::Harped);
+         (*pTable)(row,1) << Nh;
          nDebonded = pStrandGeom->GetNumDebondedStrands(thisSegmentKey,pgsTypes::Harped,pgsTypes::dbetEither);
          if ( 0 < nDebonded )
          {
@@ -3023,12 +3098,20 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          }
          row++;
 
-         (*pTable)(row,0) << LABEL_HARP_TYPE(harpedAreStraight) << _T(" Strand P") << Sub(_T("jack"));
+         (*pTable)(row, 0) << _T("Harped Strand ") << RPT_APS;
+         (*pTable)(row, 1) << area.SetValue(Aps_h);
+         row++;
+
+         (*pTable)(row,0) << LABEL_HARP_TYPE(harpedAreStraight) << _T(" Strand ") << Sub2(_T("P"),_T("jack"));
          (*pTable)(row,1) << force.SetValue(pSegment->Strands.GetPjack(pgsTypes::Harped));
          row++;
 
          (*pTable)(row,0) << _T("Total Number of Permanent Strands");
          (*pTable)(row,1) << pSegment->Strands.GetStrandCount(pgsTypes::Permanent);
+         row++;
+
+         (*pTable)(row, 0) << _T("Area of Permanent Strands");
+         (*pTable)(row, 1) << area.SetValue(Aps_s + Aps_h);
          row++;
 
          if ( 0 < pStrandGeom->GetMaxStrands(thisSegmentKey,pgsTypes::Temporary) )
@@ -3042,7 +3125,11 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             }
             row++;
 
-            (*pTable)(row,0) << _T("Temporary Strand P") << Sub(_T("jack"));
+            (*pTable)(row, 0) << _T("Temporary Strand ") << RPT_APS;
+            (*pTable)(row, 1) << area.SetValue((pSegment->Strands.GetStrandMaterial(pgsTypes::Temporary)->GetNominalArea())*(pSegment->Strands.GetStrandCount(pgsTypes::Temporary)));
+            row++;
+
+            (*pTable)(row,0) << _T("Temporary Strand ") << Sub2(_T("P"),_T("jack"));
             (*pTable)(row,1) << force.SetValue(pSegment->Strands.GetPjack(pgsTypes::Temporary));
             row++;
          }
@@ -3091,294 +3178,288 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             }
          }
 
-         for ( int i = 0; i < nHarpedAdjustments; i++ )
+         if (pSegment->Strands.GetStrandDefinitionType() != pgsTypes::sdtDirectRowInput && pSegment->Strands.GetStrandDefinitionType() != pgsTypes::sdtDirectStrandInput)
          {
-            std::_tstring endoff;
-            if ( harpedAreStraight )
+            for (int i = 0; i < nHarpedAdjustments; i++)
             {
-               std::_tstring side;
-               if ( bSymmetric )
+               std::_tstring endoff;
+               if (harpedAreStraight)
                {
-                  side = _T("");
-               }
-               else
-               {
-                  side = (i == 0 ? _T("left ") : _T("right "));
-               }
-
-               if( pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd()==hsoLEGACY)
-               {    // Method used pre-version 6.0
-                  endoff = _T("Distance from top-most location in harped strand grid to top-most harped strand at ") + side + _T("end of girder");
-               }
-               else if(pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd()==hsoCGFROMTOP)
-               {
-                  endoff = _T("Distance from top of girder to CG of harped strands at ") + side + _T("end of girder");
-               }
-               else if(pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd()==hsoCGFROMBOTTOM)
-               {
-                  endoff = _T("Distance from bottom of girder to CG of harped strands at ") + side + _T("end of girder");
-               }
-               else if(pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd()==hsoTOP2TOP)
-               {
-                  endoff = _T("Distance from top of girder to top-most harped strand at ") + side + _T("end of girder");
-               }
-               else if(pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd()==hsoTOP2BOTTOM)
-               {
-                  endoff = _T("Distance from bottom of girder to top-most harped strand at ") + side + _T("end of girder");
-               }
-               else if(pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd()==hsoBOTTOM2BOTTOM)
-               {
-                  endoff = _T("Distance from bottom of girder to lowest harped strand at ") + side + _T("end of girder");
-               }
-               else if(pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd()==hsoECCENTRICITY)
-               {
-                  endoff = _T("Eccentricity of harped strand group at ") + side + _T("end of girder");
-               }
-               else
-               {
-                  ATLASSERT(false);
-               }
-
-               (*pTable)(row,0) << endoff;
-               if ( bSymmetric )
-               {
-                  (*pTable)(row,1) << cmpdim.SetValue(pSegment->Strands.GetHarpStrandOffsetAtEnd(pgsTypes::metStart));
-               }
-               else
-               {
-                  if ( i == 0 )
+                  std::_tstring side;
+                  if (bSymmetric)
                   {
-                     (*pTable)(row,1) << cmpdim.SetValue(pSegment->Strands.GetHarpStrandOffsetAtEnd(pgsTypes::metStart));
+                     side = _T("");
                   }
                   else
                   {
-                     (*pTable)(row,1) << cmpdim.SetValue(pSegment->Strands.GetHarpStrandOffsetAtEnd(pgsTypes::metEnd));
+                     side = (i == 0 ? _T("left ") : _T("right "));
                   }
-               }
-               row++;
-            }
-            else
-            {
-               std::_tstring location;
-               if ( bSymmetric )
-               {
-                  location = (i == 0 ? _T("ends of girder") : _T("harp point"));
-               }
-               else
-               {
-                  if ( i == 0 )
-                  {
-                     location = _T("left end of girder");
-                  }
-                  else if ( i == 1 )
-                  {
-                     location = _T("left harp point");
-                  }
-                  else if ( i == 2 )
-                  {
-                     location = _T("right harp point");
-                  }
-                  else
-                  {
-                     location = _T("right end of girder");
-                  }
-               }
 
-               if (i == 1 || i == 2)
-               {
-                  if (pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint() == hsoLEGACY)
-                  {    // Method used pre-version 6.0
-                     endoff = _T("Distance from top-most location in harped strand grid to top-most harped strand at ") + location;
-                  }
-                  else if (pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint() == hsoCGFROMTOP)
-                  {
-                     endoff = _T("Distance from top of girder to CG of harped strands at ") + location;
-                  }
-                  else if (pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint() == hsoCGFROMBOTTOM)
-                  {
-                     endoff = _T("Distance from bottom of girder to CG of harped strands at ") + location;
-                  }
-                  else if (pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint() == hsoTOP2TOP)
-                  {
-                     endoff = _T("Distance from top of girder to top-most harped strand at ") + location;
-                  }
-                  else if (pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint() == hsoTOP2BOTTOM)
-                  {
-                     endoff = _T("Distance from bottom of girder to top-most harped strand at ") + location;
-                  }
-                  else if (pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint() == hsoBOTTOM2BOTTOM)
-                  {
-                     endoff = _T("Distance from bottom of girder to lowest harped strand at ") + location;
-                  }
-                  else if (pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint() == hsoECCENTRICITY)
-                  {
-                     endoff = _T("Eccentricity of harped strand group at ") + location;
-                  }
-                  else
-                  {
-                     ATLASSERT(false);
-                  }
-               }
-               else
-               {
                   if (pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd() == hsoLEGACY)
                   {    // Method used pre-version 6.0
-                     endoff = _T("Distance from top-most location in harped strand grid to top-most harped strand at ") + location;
+                     endoff = _T("Distance from top-most location in harped strand grid to top-most harped strand at ") + side + _T("end of girder");
                   }
                   else if (pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd() == hsoCGFROMTOP)
                   {
-                     endoff = _T("Distance from top of girder to CG of harped strands at ") + location;
+                     endoff = _T("Distance from top of girder to CG of harped strands at ") + side + _T("end of girder");
                   }
                   else if (pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd() == hsoCGFROMBOTTOM)
                   {
-                     endoff = _T("Distance from bottom of girder to CG of harped strands at ") + location;
+                     endoff = _T("Distance from bottom of girder to CG of harped strands at ") + side + _T("end of girder");
                   }
                   else if (pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd() == hsoTOP2TOP)
                   {
-                     endoff = _T("Distance from top of girder to top-most harped strand at ") + location;
+                     endoff = _T("Distance from top of girder to top-most harped strand at ") + side + _T("end of girder");
                   }
                   else if (pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd() == hsoTOP2BOTTOM)
                   {
-                     endoff = _T("Distance from bottom of girder to top-most harped strand at ") + location;
+                     endoff = _T("Distance from bottom of girder to top-most harped strand at ") + side + _T("end of girder");
                   }
                   else if (pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd() == hsoBOTTOM2BOTTOM)
                   {
-                     endoff = _T("Distance from bottom of girder to lowest harped strand at ") + location;
+                     endoff = _T("Distance from bottom of girder to lowest harped strand at ") + side + _T("end of girder");
                   }
                   else if (pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd() == hsoECCENTRICITY)
                   {
-                     endoff = _T("Eccentricity of harped strand group at ") + location;
+                     endoff = _T("Eccentricity of harped strand group at ") + side + _T("end of girder");
                   }
                   else
                   {
                      ATLASSERT(false);
                   }
-               }
 
-               (*pTable)(row,0) << endoff;
-               if ( bSymmetric )
-               {
-                  if ( i == 0 )
+                  (*pTable)(row, 0) << endoff;
+                  if (bSymmetric)
                   {
-                     (*pTable)(row,1) << cmpdim.SetValue(pSegment->Strands.GetHarpStrandOffsetAtEnd(pgsTypes::metStart));
+                     (*pTable)(row, 1) << cmpdim.SetValue(pSegment->Strands.GetHarpStrandOffsetAtEnd(pgsTypes::metStart));
                   }
                   else
                   {
-                     (*pTable)(row,1) << cmpdim.SetValue(pSegment->Strands.GetHarpStrandOffsetAtHarpPoint(pgsTypes::metStart));
+                     if (i == 0)
+                     {
+                        (*pTable)(row, 1) << cmpdim.SetValue(pSegment->Strands.GetHarpStrandOffsetAtEnd(pgsTypes::metStart));
+                     }
+                     else
+                     {
+                        (*pTable)(row, 1) << cmpdim.SetValue(pSegment->Strands.GetHarpStrandOffsetAtEnd(pgsTypes::metEnd));
+                     }
                   }
+                  row++;
                }
                else
                {
-                  if ( i == 0 )
+                  std::_tstring location;
+                  if (bSymmetric)
                   {
-                     (*pTable)(row,1) << cmpdim.SetValue(pSegment->Strands.GetHarpStrandOffsetAtEnd(pgsTypes::metStart));
-                  }
-                  else if ( i == 1 )
-                  {
-                     (*pTable)(row,1) << cmpdim.SetValue(pSegment->Strands.GetHarpStrandOffsetAtHarpPoint(pgsTypes::metStart));
-                  }
-                  else if ( i == 2 )
-                  {
-                     (*pTable)(row,1) << cmpdim.SetValue(pSegment->Strands.GetHarpStrandOffsetAtHarpPoint(pgsTypes::metEnd));
+                     location = (i == 0 ? _T("ends of girder") : _T("harp point"));
                   }
                   else
                   {
-                     (*pTable)(row,1) << cmpdim.SetValue(pSegment->Strands.GetHarpStrandOffsetAtEnd(pgsTypes::metEnd));
+                     if (i == 0)
+                     {
+                        location = _T("left end of girder");
+                     }
+                     else if (i == 1)
+                     {
+                        location = _T("left harp point");
+                     }
+                     else if (i == 2)
+                     {
+                        location = _T("right harp point");
+                     }
+                     else
+                     {
+                        location = _T("right end of girder");
+                     }
                   }
+
+                  if (i == 1 || i == 2)
+                  {
+                     if (pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint() == hsoLEGACY)
+                     {    // Method used pre-version 6.0
+                        endoff = _T("Distance from top-most location in harped strand grid to top-most harped strand at ") + location;
+                     }
+                     else if (pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint() == hsoCGFROMTOP)
+                     {
+                        endoff = _T("Distance from top of girder to CG of harped strands at ") + location;
+                     }
+                     else if (pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint() == hsoCGFROMBOTTOM)
+                     {
+                        endoff = _T("Distance from bottom of girder to CG of harped strands at ") + location;
+                     }
+                     else if (pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint() == hsoTOP2TOP)
+                     {
+                        endoff = _T("Distance from top of girder to top-most harped strand at ") + location;
+                     }
+                     else if (pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint() == hsoTOP2BOTTOM)
+                     {
+                        endoff = _T("Distance from bottom of girder to top-most harped strand at ") + location;
+                     }
+                     else if (pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint() == hsoBOTTOM2BOTTOM)
+                     {
+                        endoff = _T("Distance from bottom of girder to lowest harped strand at ") + location;
+                     }
+                     else if (pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint() == hsoECCENTRICITY)
+                     {
+                        endoff = _T("Eccentricity of harped strand group at ") + location;
+                     }
+                     else
+                     {
+                        ATLASSERT(false);
+                     }
+                  }
+                  else
+                  {
+                     if (pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd() == hsoLEGACY)
+                     {    // Method used pre-version 6.0
+                        endoff = _T("Distance from top-most location in harped strand grid to top-most harped strand at ") + location;
+                     }
+                     else if (pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd() == hsoCGFROMTOP)
+                     {
+                        endoff = _T("Distance from top of girder to CG of harped strands at ") + location;
+                     }
+                     else if (pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd() == hsoCGFROMBOTTOM)
+                     {
+                        endoff = _T("Distance from bottom of girder to CG of harped strands at ") + location;
+                     }
+                     else if (pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd() == hsoTOP2TOP)
+                     {
+                        endoff = _T("Distance from top of girder to top-most harped strand at ") + location;
+                     }
+                     else if (pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd() == hsoTOP2BOTTOM)
+                     {
+                        endoff = _T("Distance from bottom of girder to top-most harped strand at ") + location;
+                     }
+                     else if (pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd() == hsoBOTTOM2BOTTOM)
+                     {
+                        endoff = _T("Distance from bottom of girder to lowest harped strand at ") + location;
+                     }
+                     else if (pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd() == hsoECCENTRICITY)
+                     {
+                        endoff = _T("Eccentricity of harped strand group at ") + location;
+                     }
+                     else
+                     {
+                        ATLASSERT(false);
+                     }
+                  }
+
+                  (*pTable)(row, 0) << endoff;
+                  if (bSymmetric)
+                  {
+                     if (i == 0)
+                     {
+                        (*pTable)(row, 1) << cmpdim.SetValue(pSegment->Strands.GetHarpStrandOffsetAtEnd(pgsTypes::metStart));
+                     }
+                     else
+                     {
+                        (*pTable)(row, 1) << cmpdim.SetValue(pSegment->Strands.GetHarpStrandOffsetAtHarpPoint(pgsTypes::metStart));
+                     }
+                  }
+                  else
+                  {
+                     if (i == 0)
+                     {
+                        (*pTable)(row, 1) << cmpdim.SetValue(pSegment->Strands.GetHarpStrandOffsetAtEnd(pgsTypes::metStart));
+                     }
+                     else if (i == 1)
+                     {
+                        (*pTable)(row, 1) << cmpdim.SetValue(pSegment->Strands.GetHarpStrandOffsetAtHarpPoint(pgsTypes::metStart));
+                     }
+                     else if (i == 2)
+                     {
+                        (*pTable)(row, 1) << cmpdim.SetValue(pSegment->Strands.GetHarpStrandOffsetAtHarpPoint(pgsTypes::metEnd));
+                     }
+                     else
+                     {
+                        (*pTable)(row, 1) << cmpdim.SetValue(pSegment->Strands.GetHarpStrandOffsetAtEnd(pgsTypes::metEnd));
+                     }
+                  }
+                  row++;
+               }
+            }
+         }
+
+         if (0 < nDucts)
+         {
+            // plant installed tendon geometry
+            pTable->SetColumnSpan(row, 0, 2);
+            (*pTable)(row, 0) << Bold(_T("Plant installed tendons"));
+            row++;
+            for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+            {
+               const auto* pDuct = pSegment->Tendons.GetDuct(ductIdx);;
+
+               pTable->SetColumnSpan(row, 0, 2);
+               if (nWebs == 1)
+               {
+                  (*pTable)(row, 0) << bold(ON) << _T("Duct ") << LABEL_DUCT(ductIdx) << bold(OFF);
+               }
+               else
+               {
+                  DuctIndexType firstDuctIdx = nWebs*ductIdx;
+                  DuctIndexType lastDuctIdx = firstDuctIdx + nWebs - 1;
+                  (*pTable)(row, 0) << bold(ON) << _T("Duct ") << LABEL_DUCT(firstDuctIdx) << _T(" - ") << LABEL_DUCT(lastDuctIdx) << bold(OFF);
                }
                row++;
+
+               (*pTable)(row, 0) << _T("Type");
+               (*pTable)(row, 1) << pDuct->Name;
+               row++;
+
+               //(*pTable)(row, 0) << _T("Shape");
+               //(*pTable)(row, 1) << strDuctGeometryType[pDuct->DuctGeometryType];
+               //row++;
+
+               (*pTable)(row, 0) << _T("Number of strands");
+               (*pTable)(row, 1) << pDuct->nStrands;
+               row++;
+
+               (*pTable)(row, 0) << Sub2(_T("P"), _T("jack"));
+               (*pTable)(row, 1) << force.SetValue(pDuct->Pj);
+               row++;
+
+               //(*pTable)(row, 0) << _T("Jacking End");
+               //(*pTable)(row, 1) << strJackingEnd[pDuct->JackingEnd];
+               //row++;
+
+               //(*pTable)(row, 0) << _T("Duct Material");
+               //(*pTable)(row, 1) << strDuctType[pSegment->Tendons.DuctType];
+               //row++;
+
+               //(*pTable)(row, 0) << _T("Installation Method");
+               //(*pTable)(row, 1) << strInstallationMethod[pSegment->Tendons.InstallationType];
+               //row++;
             }
          }
-         (*pTable)(row,0) << _T("Specified Release Strength ") << RPT_FCI;
-         (*pTable)(row,1) << stress.SetValue( pSegmentData->GetSegmentMaterial(thisSegmentKey)->Concrete.Fci );
-         row++;
 
-         (*pTable)(row,0) << _T("Specified 28 day Strength ") << RPT_FC;
-         (*pTable)(row,1) << stress.SetValue( pSegmentData->GetSegmentMaterial(thisSegmentKey)->Concrete.Fc );
-         row++;
-
-         const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(thisSegmentKey,pgsTypes::Straight);
-         ATLASSERT(pStrand != nullptr);
-
-         (*pTable)(row,0) << _T("Prestressing Strand (Permanent)");
-         if ( IS_SI_UNITS(pDisplayUnits) )
+         std::vector<std::pair<std::_tstring, const matPsStrand*>> vStrandData;
+         vStrandData.emplace_back(_T("Prestressing Strand (Straight)"), pSegmentData->GetStrandMaterial(thisSegmentKey, pgsTypes::Straight));
+         vStrandData.emplace_back(_T("Prestressing Strand (Harped)"), pSegmentData->GetStrandMaterial(thisSegmentKey, pgsTypes::Harped));
+         if (0 < pStrandGeom->GetMaxStrands(thisSegmentKey, pgsTypes::Temporary))
          {
-            (*pTable)(row,1) << dia.SetValue(pStrand->GetNominalDiameter()) << _T(" Dia.");
-            std::_tstring strData;
-
-            strData += _T(" ");
-            strData += (pStrand->GetGrade() == matPsStrand::Gr1725 ? _T("Grade 1725") : _T("Grade 1860"));
-            strData += _T(" ");
-            strData += (pStrand->GetType() == matPsStrand::LowRelaxation ? _T("Low Relaxation") : _T("Stress Relieved"));
-
-            (*pTable)(row,1) << strData;
+            vStrandData.emplace_back(_T("Prestressing Strand (Temporary)"), pSegmentData->GetStrandMaterial(thisSegmentKey, pgsTypes::Temporary));
          }
-         else
+         if (0 < nDucts)
          {
-            Float64 diam = pStrand->GetNominalDiameter();
-
-            // special designator for 1/2" special (as per High concrete)
-            if (IsEqual(diam,0.013208))
-            {
-               (*pTable)(row,1) << _T(" 1/2\" Special, ");
-            }
-
-            (*pTable)(row,1) << dia.SetValue(diam) << _T(" Dia.");
-            std::_tstring strData;
-
-            strData += _T(" ");
-            strData += (pStrand->GetGrade() == matPsStrand::Gr1725 ? _T("Grade 250") : _T("Grade 270"));
-            strData += _T(" ");
-            strData += (pStrand->GetType() == matPsStrand::LowRelaxation ? _T("Low Relaxation") : _T("Stress Relieved"));
-
-            (*pTable)(row,1) << strData;
+            vStrandData.emplace_back(_T("Plant installed tendons"), pSegment->Tendons.m_pStrand);
          }
-         row++;
 
-
-         if ( 0 < pStrandGeom->GetMaxStrands(thisSegmentKey,pgsTypes::Temporary) )
+         for (auto strandData : vStrandData)
          {
-            const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(thisSegmentKey,pgsTypes::Temporary);
-            ATLASSERT(pStrand != nullptr);
+            ATLASSERT(strandData.second != nullptr);
 
-            (*pTable)(row,0) << _T("Prestressing Strand (Temporary)");
-            if ( IS_SI_UNITS(pDisplayUnits) )
-            {
-               (*pTable)(row,1) << dia.SetValue(pStrand->GetNominalDiameter()) << _T(" Dia.");
-               std::_tstring strData;
-
-               strData += _T(" ");
-               strData += (pStrand->GetGrade() == matPsStrand::Gr1725 ? _T("Grade 1725") : _T("Grade 1860"));
-               strData += _T(" ");
-               strData += (pStrand->GetType() == matPsStrand::LowRelaxation ? _T("Low Relaxation") : _T("Stress Relieved"));
-
-               (*pTable)(row,1) << strData;
-            }
-            else
-            {
-               Float64 diam = pStrand->GetNominalDiameter();
-
-               // special designator for 1/2" special (as per High concrete)
-               if (IsEqual(diam,0.013208))
-               {
-                  (*pTable)(row,1) << _T(" 1/2\" Special, ");
-               }
-
-               (*pTable)(row,1) << dia.SetValue(diam) << _T(" Dia.");
-               std::_tstring strData;
-
-               strData += _T(" ");
-               strData += (pStrand->GetGrade() == matPsStrand::Gr1725 ? _T("Grade 250") : _T("Grade 270"));
-               strData += _T(" ");
-               strData += (pStrand->GetType() == matPsStrand::LowRelaxation ? _T("Low Relaxation") : _T("Stress Relieved"));
-
-               (*pTable)(row,1) << strData;
-            }
+            (*pTable)(row, 0) << strandData.first;
+            (*pTable)(row, 1) << strandData.second->GetName();
             row++;
          }
 
          switch (pSegment->Strands.GetTemporaryStrandUsage() )
          {
+         case pgsTypes::ttsPretensioned:
+            // do nothing
+            break;
+
          case pgsTypes::ttsPTBeforeLifting:
             *pPara << _T("NOTE: Temporary strands post-tensioned immediately before lifting") << rptNewLine;
             break;
@@ -3390,6 +3471,27 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          case pgsTypes::ttsPTBeforeShipping:
             *pPara << _T("NOTE: Temporary strands post-tensioned immediately before shipping") << rptNewLine;
             break;
+
+         default:
+            ATLASSERT(false); // is there a new option?
+         }
+
+         if (0 < nDucts)
+         {
+            switch (pSegmentData->GetSegmentPTData(thisSegmentKey)->InstallationEvent)
+            {
+            case pgsTypes::sptetRelease:
+               *pPara << _T("NOTE: Plant installed tendons are post-tensioned immediately after release") << rptNewLine;
+               break;
+            case pgsTypes::sptetStorage:
+               *pPara << _T("NOTE: Plant installed tendons are post-tensioned immediately at the beginning of storage") << rptNewLine;
+               break;
+            case pgsTypes::sptetHauling:
+               *pPara << _T("NOTE: Plant installed tendons are post-tensioned immediately before hauling") << rptNewLine;
+               break;
+            default:
+               ATLASSERT(false); // is there a new option?
+            }
          }
       } // segIdx
    } // gdrIdx
@@ -3818,6 +3920,116 @@ void write_slab_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
 
    // Picture
    (*table)(1,0) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + strPicture );
+}
+
+void write_pt_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rptChapter* pChapter, Uint16 level, const std::vector<CGirderKey>& girderKeys)
+{
+   GET_IFACE2(pBroker, IGirderTendonGeometry, pTendonGeom);
+
+   bool bHasDucts = false;
+   for (const auto& thisGirderKey : girderKeys)
+   {
+      DuctIndexType nDucts = pTendonGeom->GetDuctCount(thisGirderKey);
+      if (0 < nDucts)
+      {
+         bHasDucts = true;
+         break;
+      }
+   }
+
+   if (!bHasDucts)
+      return;
+
+   GET_IFACE2(pBroker, IGirder, pIGirder);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
+
+   INIT_UV_PROTOTYPE(rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), true);
+
+   rptParagraph* pPara;
+   pPara = new rptParagraph;
+   pPara->SetStyleName(rptStyleManager::GetHeadingStyle());
+   *pPara << _T("Field installed tendons") << rptNewLine;
+   *pChapter << pPara;
+
+   std::array<std::_tstring, 3> strDuctGeometryType{ _T("Linear"),_T("Parabolic"),_T("Offset") };
+   std::array<std::_tstring, 3> strJackingEnd{ _T("Left"), _T("Right"), _T("Both") };
+   std::array<std::_tstring, 3> strDuctType{ _T("Galvanized ferrous metal"),_T("Polyethylene"), _T("Formed in concrete with removable cores") };
+   std::array<std::_tstring, 2> strInstallationMethod{ _T("Push"),_T("Pull") };
+
+   for (const auto& thisGirderKey : girderKeys)
+   {
+      rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(2, GIRDER_LABEL(thisGirderKey));
+      pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      pTable->SetColumnStyle(1, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_RIGHT));
+      pTable->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
+      *pPara << pTable << rptNewLine;
+
+      WebIndexType nWebs = pIGirder->GetWebCount(thisGirderKey);
+
+      const auto* pGirder = pBridgeDesc->GetGirderGroup(thisGirderKey.groupIndex)->GetGirder(thisGirderKey.girderIndex);
+      const CPTData* pPT = pGirder->GetPostTensioning();
+
+      RowIndexType row = 0;
+      DuctIndexType nDucts = pGirder->GetPostTensioning()->GetDuctCount();
+      for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+      {
+         const CDuctData* pDuct = pPT->GetDuct(ductIdx);
+
+         pTable->SetColumnSpan(row, 0, 2);
+         if (nWebs == 1)
+         {
+            (*pTable)(row, 0) << bold(ON) << _T("Duct ") << LABEL_DUCT(ductIdx) << bold(OFF);
+         }
+         else
+         {
+            DuctIndexType firstDuctIdx = nWebs*ductIdx;
+            DuctIndexType lastDuctIdx = firstDuctIdx + nWebs - 1;
+            (*pTable)(row, 0) << bold(ON) << _T("Duct ") << LABEL_DUCT(firstDuctIdx) << _T(" - ") << LABEL_DUCT(lastDuctIdx) << bold(OFF);
+         }
+         row++;
+
+         (*pTable)(row, 0) << _T("Type");
+         (*pTable)(row, 1) << pDuct->Name;
+         row++;
+
+         (*pTable)(row, 0) << _T("Shape");
+         (*pTable)(row, 1) << strDuctGeometryType[pDuct->DuctGeometryType];
+         row++;
+
+         (*pTable)(row, 0) << _T("Number of Strands");
+         (*pTable)(row, 1) << pDuct->nStrands;
+         row++;
+
+         (*pTable)(row, 0) << Sub2(_T("P"),_T("jack"));
+         (*pTable)(row, 1) << force.SetValue(pDuct->Pj);
+         row++;
+
+         //(*pTable)(row, 0) << _T("Jacking End");
+         //(*pTable)(row, 1) << strJackingEnd[pDuct->JackingEnd];
+         //row++;
+
+         //EventIndexType eventIdx = pTimelineMgr->GetStressTendonEventIndex(pGirder->GetID(), ductIdx);
+         //(*pTable)(row, 0) << _T("Installation");
+         //(*pTable)(row, 1) << _T("Event ") << LABEL_EVENT(eventIdx) << _T(": ") << pTimelineMgr->GetEventByIndex(eventIdx)->GetDescription();
+         //row++;
+
+         //(*pTable)(row, 0) << _T("Duct Material");
+         //(*pTable)(row, 1) << strDuctType[pPT->DuctType];
+         //row++;
+
+         //(*pTable)(row, 0) << _T("Tendon Material");
+         //(*pTable)(row, 1) << pPT->pStrand->GetName();
+         //row++;
+
+         //(*pTable)(row, 0) << _T("Installation Method");
+         //(*pTable)(row, 1) << strInstallationMethod[pPT->InstallationType];
+         //row++;
+      }
+   }
 }
 
 void write_deck_reinforcing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)

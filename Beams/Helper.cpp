@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -44,6 +44,7 @@ void ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, l
       std::_tstring strImageName(lrd.bWasExterior ? _T("LeverRuleExterior.gif") : _T("LeverRuleInterior.gif"));
       (*pPara) << rptRcImage(std::_tstring(std::_tstring(rptStyleManager::GetImagePath())) + strImageName) << rptNewLine;
       (*pPara) << _T("Multiple Presence Factor: m = ") << lrd.m << rptNewLine;
+      (*pPara) << _T("    Number of Lanes used to compute Multiple Presence Factor = ") << lrd.nLanesUsed << rptNewLine;
       if (isMoment)
       {
          (*pPara) << _T("mg") << Super((lrd.bWasExterior ? _T("ME") : _T("MI"))) << Sub((lrd.nLanesUsed > 1 ? _T("2+") : _T("1"))) << _T(" = (");

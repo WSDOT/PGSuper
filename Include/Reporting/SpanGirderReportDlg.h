@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,36 +27,38 @@
 
 // CSpanGirderReportDlg dialog
 
-enum RptDialogMode
-{
-   ChaptersOnly = 0,
-   SpanAndChapters = 1,
-   GirderAndChapters = 2,
-   SpanGirderAndChapters = 3
-};
 
 class CSpanGirderReportDlg : public CDialog
 {
 	DECLARE_DYNAMIC(CSpanGirderReportDlg)
 
 public:
-	CSpanGirderReportDlg(IBroker* pBroker,const CReportDescription& rptDesc,RptDialogMode mode,std::shared_ptr<CReportSpecification>& pRptSpec,UINT nIDTemplate = IDD_SPANGIRDERREPORT,CWnd* pParent = nullptr);   // standard constructor
+   enum class Mode
+   {
+      ChaptersOnly = 0,
+      GroupAndChapters = 1,
+      GirderAndChapters = 2,
+      GroupGirderAndChapters = 3,
+      GroupGirderSegmentAndChapters = 4
+   };
+   
+   CSpanGirderReportDlg(IBroker* pBroker,const CReportDescription& rptDesc,Mode mode,std::shared_ptr<CReportSpecification>& pRptSpec,UINT nIDTemplate = IDD_SPANGIRDERREPORT,CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CSpanGirderReportDlg();
 
 // Dialog Data
 	enum { IDD = IDD_SPANGIRDERREPORT };
 
-   GroupIndexType m_Group;
-   GirderIndexType m_Girder;
+   CSegmentKey m_SegmentKey;
    std::vector<std::_tstring> m_ChapterList;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
    virtual void UpdateChapterList();
-   virtual void UpdateGirderComboBox(GroupIndexType grpIdx);
+   virtual void UpdateGirderComboBox();
+   virtual void UpdateSegmentComboBox();
 
-   virtual void ClearChapterCheckMarks();
+   virtual void ClearChapterCheckMarks(BOOL bClear=TRUE);
    virtual void InitChapterListFromSpec();
    virtual void InitFromRptSpec();
 
@@ -64,7 +66,7 @@ protected:
 
    const CReportDescription& m_RptDesc;
    IBroker* m_pBroker;
-   RptDialogMode m_Mode;
+   Mode m_Mode;
 
    std::shared_ptr<CReportSpecification> m_pInitRptSpec; // report spec for initializing the dialog
 
@@ -74,6 +76,9 @@ public:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnHelp();
 	afx_msg void OnGroupChanged();
+   afx_msg void OnGirderChanged();
+   afx_msg void OnSelectAll();
+   afx_msg void OnDeselectAll();
 	//}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()

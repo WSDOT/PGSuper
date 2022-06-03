@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -71,8 +71,7 @@ void CStrandEccentricities::Build(rptChapter* pChapter,IBroker* pBroker,const CS
    rptParagraph* p = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << p;
 
-   p->SetName(_T("Strand Eccentricity"));
-   *p << p->GetName() << rptNewLine;
+   *p << _T("Strand Eccentricity") << rptNewLine;
 
    //GET_IFACE2( pBroker, ILossParameters, pLossParams);
    //pgsTypes::LossMethod lossMethod = pLossParams->GetLossMethod();

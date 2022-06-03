@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,7 +24,9 @@
 #include "resource.h"
 #include "DeflectionHistoryGraphController.h"
 #include <Graphing\DeflectionHistoryGraphBuilder.h>
+#include <Graphing\ExportGraphXYTool.h>
 #include <IFace\DocumentType.h>
+#include <EAF\EAFDocument.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -42,8 +44,10 @@ CDeflectionHistoryGraphController::CDeflectionHistoryGraphController()
 BEGIN_MESSAGE_MAP(CDeflectionHistoryGraphController, CLocationGraphController)
 	//{{AFX_MSG_MAP(CStressHistoryGraphController)
    ON_BN_CLICKED(IDC_ELEV_ADJUSTMENT,OnElevAdjustment)
-   ON_BN_CLICKED(IDC_PRECAMBER,OnPrecamber)
+   ON_BN_CLICKED(IDC_PRECAMBER, OnUnrecoverableDefl)
    ON_BN_CLICKED(IDC_GRID, OnShowGrid)
+   ON_BN_CLICKED(IDC_EXPORT_GRAPH_BTN,OnGraphExportClicked)
+   ON_UPDATE_COMMAND_UI(IDC_EXPORT_GRAPH_BTN,OnCommandUIGraphExport)
    //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -58,6 +62,8 @@ BOOL CDeflectionHistoryGraphController::OnInitDialog()
       GetDlgItem(IDC_ELEV_ADJUSTMENT)->ShowWindow(SW_HIDE);
    }
 
+   CheckDlgButton(IDC_PRECAMBER,BST_CHECKED);
+
    return TRUE;
 }
 
@@ -66,7 +72,7 @@ void CDeflectionHistoryGraphController::OnElevAdjustment()
    UpdateGraph();
 }
 
-void CDeflectionHistoryGraphController::OnPrecamber()
+void CDeflectionHistoryGraphController::OnUnrecoverableDefl()
 {
    UpdateGraph();
 }
@@ -97,16 +103,16 @@ bool CDeflectionHistoryGraphController::IncludeElevationAdjustment() const
    return IsDlgButtonChecked(IDC_ELEV_ADJUSTMENT) == BST_CHECKED ? true : false;
 }
 
-void CDeflectionHistoryGraphController::IncludePrecamber(bool bInclude)
+void CDeflectionHistoryGraphController::IncludeUnrecoverableDefl(bool bInclude)
 {
-   if (IncludePrecamber() != bInclude)
+   if (IncludeUnrecoverableDefl() != bInclude)
    {
       CheckDlgButton(IDC_PRECAMBER, bInclude ? BST_CHECKED : BST_UNCHECKED);
       UpdateGraph();
    }
 }
 
-bool CDeflectionHistoryGraphController::IncludePrecamber() const
+bool CDeflectionHistoryGraphController::IncludeUnrecoverableDefl() const
 {
    return IsDlgButtonChecked(IDC_PRECAMBER) == BST_CHECKED ? true : false;
 }
@@ -125,6 +131,37 @@ void CDeflectionHistoryGraphController::ShowGrid(bool bShowGrid)
       pBtn->SetCheck(bShowGrid ? BST_CHECKED : BST_UNCHECKED);
       ((CDeflectionHistoryGraphBuilder*)GetGraphBuilder())->ShowGrid(bShowGrid);
    }
+}
+
+void CDeflectionHistoryGraphController::OnGraphExportClicked()
+{
+   CComboBox* pcbLocation = (CComboBox*)GetDlgItem(IDC_POI);
+   int curSel = pcbLocation->GetCurSel();
+   if (curSel == CB_ERR)
+   {
+      ::AfxMessageBox(_T("No Location is Selected. Please selection a location"),MB_ICONERROR);
+      return;
+   }
+
+   // Build default file name
+   CString strProjectFileNameNoPath = CExportGraphXYTool::GetTruncatedFileName();
+
+   CString girderName;
+   pcbLocation->GetLBText(curSel,girderName);
+
+   CString actionName = _T("Deflection History");
+
+   CString strDefaultFileName = strProjectFileNameNoPath + _T("_") + girderName + _T("_") + actionName;
+   strDefaultFileName.Replace(' ','_');
+   strDefaultFileName.Replace(',','_');
+
+   ((CDeflectionHistoryGraphBuilder*)GetGraphBuilder())->ExportGraphData(strDefaultFileName);
+}
+
+// this has to be implemented otherwise button will not be enabled.
+void CDeflectionHistoryGraphController::OnCommandUIGraphExport(CCmdUI* pCmdUI)
+{
+   pCmdUI->Enable(TRUE);
 }
 
 #ifdef _DEBUG

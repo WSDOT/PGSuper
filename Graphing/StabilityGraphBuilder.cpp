@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,6 +25,7 @@
 #include <Graphing\StabilityGraphBuilder.h>
 #include "StabilityGraphController.h"
 #include "StabilityGraphViewControllerImp.h"
+#include <Graphing\ExportGraphXYTool.h>
 #include "..\Documentation\PGSuper.hh"
 
 #include "GraphColor.h"
@@ -276,7 +277,7 @@ bool CStabilityGraphBuilder::UpdateNow()
          {
             pProgress->UpdateMessage(_T("Working..."));
 
-            stbLiftingCheckArtifact artifact;
+            WBFL::Stability::LiftingCheckArtifact artifact;
             pArtifact->CreateLiftingCheckArtifact(segmentKey,loc,&artifact);
 
             const auto& results = artifact.GetLiftingResults();
@@ -349,7 +350,7 @@ void CStabilityGraphBuilder::AddGraphPoint(IndexType series, Float64 xval, Float
    ASSERT(pcx);
    arvPhysicalConverter* pcy = dynamic_cast<arvPhysicalConverter*>(m_pYFormat);
    ASSERT(pcy);
-   m_Graph.AddPoint(series, gpPoint2d(pcx->Convert(xval),pcy->Convert(yval)));
+   m_Graph.AddPoint(series, GraphPoint(pcx->Convert(xval),pcy->Convert(yval)));
 }
 
 void CStabilityGraphBuilder::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
@@ -462,8 +463,8 @@ void CStabilityGraphBuilder::DrawLegend(CDC* pDC)
    COLORREF oldBkColor = pDC->SetBkColor(GRAPH_BACKGROUND);
 
    const grlibPointMapper& mapper = m_Graph.GetClientAreaPointMapper(pDC->GetSafeHdc());
-   gpPoint2d org = mapper.GetWorldOrg();
-   gpSize2d  ext = mapper.GetWorldExt();
+   GraphPoint org = mapper.GetWorldOrg();
+   GraphSize  ext = mapper.GetWorldExt();
 
    CPoint topLeft;
    mapper.WPtoDP(org.X()-ext.Dx()/2.,org.Y()+ext.Dy()/2.,&topLeft.x,&topLeft.y);
@@ -530,4 +531,9 @@ void CStabilityGraphBuilder::DrawLegend(CDC* pDC)
    pDC->SelectObject(oldBrush);
    pDC->SetTextAlign(oldAlign);
    pDC->SetBkColor(oldBkColor);
+}
+
+void CStabilityGraphBuilder::ExportGraphData(LPCTSTR rstrDefaultFileName)
+{
+   CExportGraphXYTool::ExportGraphData(m_Graph,rstrDefaultFileName);
 }

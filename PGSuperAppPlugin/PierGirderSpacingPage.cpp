@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -430,13 +430,13 @@ BOOL CPierGirderSpacingPage::OnInitDialog()
 
    if ( spacingType == pgsTypes::sbsUniform )
    {
-      m_cbGirderSpacingType.AddString(_T("The same girder spacing is used for the entire bridge"));
+      m_cbGirderSpacingType.AddString(_T("The same girder spacing is used in all spans"));
       m_cbGirderSpacingType.AddString(_T("Girder spacing is defined span by span"));
       m_cbGirderSpacingType.SetCurSel(0);
    }
    else if ( spacingType == pgsTypes::sbsUniformAdjacent )
    {
-      m_cbGirderSpacingType.AddString(_T("The same joint spacing is used for the entire bridge"));
+      m_cbGirderSpacingType.AddString(_T("The same joint spacing is used in all spans"));
       m_cbGirderSpacingType.AddString(_T("Joint spacing is defined span by span"));
       m_cbGirderSpacingType.SetCurSel(0);
    }
@@ -450,19 +450,19 @@ BOOL CPierGirderSpacingPage::OnInitDialog()
    }
    else if ( spacingType == pgsTypes::sbsGeneral )
    {
-      m_cbGirderSpacingType.AddString(_T("The same girder spacing is used for the entire bridge"));
+      m_cbGirderSpacingType.AddString(_T("The same girder spacing is used in all spans"));
       m_cbGirderSpacingType.AddString(_T("Girder spacing is defined span by span"));
       m_cbGirderSpacingType.SetCurSel(1);
    }
    else if ( spacingType == pgsTypes::sbsGeneralAdjacent )
    {
-      m_cbGirderSpacingType.AddString(_T("The same joint spacing is used for the entire bridge"));
+      m_cbGirderSpacingType.AddString(_T("The same joint spacing is used in all spans"));
       m_cbGirderSpacingType.AddString(_T("Joint spacing is defined span by span"));
       m_cbGirderSpacingType.SetCurSel(1);
    }
    else if (spacingType == pgsTypes::sbsUniformAdjacentWithTopWidth || spacingType == pgsTypes::sbsGeneralAdjacentWithTopWidth)
    {
-      m_cbGirderSpacingType.AddString(_T("The same top flange width and joint spacing is used for the entire bridge"));
+      m_cbGirderSpacingType.AddString(_T("The same top flange width and joint spacing is used in all spans"));
       m_cbGirderSpacingType.AddString(_T("Top flange width and joint spacing is defined span by span"));
       m_cbGirderSpacingType.SetCurSel(spacingType == pgsTypes::sbsUniformAdjacentWithTopWidth ? 0 : 1);
    }

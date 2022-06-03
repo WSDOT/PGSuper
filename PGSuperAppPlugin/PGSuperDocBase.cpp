@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,6 +27,8 @@
 #include "PGSuperApp.h"
 
 #include <BridgeLink.h>
+
+#include <EAF\EAFDataRecoveryHandler.h>
 
 #include <WBFLDManip.h>
 #include <WBFLDManipTools.h>
@@ -122,6 +124,7 @@
 #include "GirderEditorSettingsSheet.h"
 #include "CastDeckDlg.h"
 #include "CopyGirderDlg.h"
+#include "CopyPierDlg.h"
 #include "LiveLoadDistFactorsDlg.h"
 #include "LiveLoadSelectDlg.h"
 #include "EditPointLoadDlg.h"
@@ -210,20 +213,20 @@ static bool DoesFileExist(const CString& filname);
 
 #pragma Reminder("UPDATE: UpdatePrestressForce should be part of the strand editing dialogs")
 // Function to update prestress force after editing strands
-static void UpdatePrestressForce(pgsTypes::StrandType type, const CSegmentKey& segmentKey,
+static void UpdatePrestressForce(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType, 
                                  CPrecastSegmentData& newSegmentData,const CPrecastSegmentData& oldSegmentData, 
                                  IPretensionForce* pPrestress)
 {
 
       // If going from no strands - always compute pjack automatically
-      if(newSegmentData.Strands.IsPjackCalculated(type) ||
-         (0 == oldSegmentData.Strands.GetStrandCount(type) &&
-          0 < newSegmentData.Strands.GetStrandCount(type)))
+      if(newSegmentData.Strands.IsPjackCalculated(strandType) ||
+         (0 == oldSegmentData.Strands.GetStrandCount(strandType) &&
+          0 < newSegmentData.Strands.GetStrandCount(strandType)))
       {
-         newSegmentData.Strands.IsPjackCalculated(type,true);
-         newSegmentData.Strands.SetPjack(type, pPrestress->GetPjackMax(segmentKey, 
-                                                                 *(newSegmentData.Strands.GetStrandMaterial(type)),
-                                                                 newSegmentData.Strands.GetStrandCount(type)));
+         newSegmentData.Strands.IsPjackCalculated(strandType,true);
+         newSegmentData.Strands.SetPjack(strandType, pPrestress->GetPjackMax(segmentKey, 
+                                                                 *(newSegmentData.Strands.GetStrandMaterial(strandType)),
+                                                                 newSegmentData.Strands.GetStrandCount(strandType)));
       }
 }
 
@@ -243,7 +246,13 @@ BEGIN_MESSAGE_MAP(CPGSDocBase, CEAFBrokerDocument)
 	ON_COMMAND(ID_LOADS_LOADMODIFIERS, OnLoadsLoadModifiers)
    ON_COMMAND(ID_LOADS_LOADFACTORS, OnLoadsLoadFactors)
 	ON_COMMAND(ID_VIEWSETTINGS_GIRDEREDITOR, OnViewsettingsGirderEditor)
-	ON_COMMAND(IDM_COPY_GIRDER_PROPS, OnCopyGirderProps)
+   ON_COMMAND_RANGE(FIRST_COPY_GIRDER_PLUGIN,LAST_COPY_GIRDER_PLUGIN, OnCopyGirderProps)
+   ON_COMMAND(ID_EDIT_COPYGIRDERPROPERTIES, OnCopyGirderPropsAll)
+   ON_COMMAND(ID_EDIT_COPYPIERPROPERTIES, OnCopyPierPropsAll)
+   ON_COMMAND_RANGE(FIRST_COPY_PIER_PLUGIN,LAST_COPY_PIER_PLUGIN, OnCopyPierProps)
+	ON_UPDATE_COMMAND_UI(ID_COPY_GIRDER_PROPS, OnUpdateCopyGirderPropsTb)
+	ON_UPDATE_COMMAND_UI(ID_COPY_PIER_PROPS, OnUpdateCopyPierPropsTb)
+
 	ON_COMMAND(IDM_IMPORT_PROJECT_LIBRARY, OnImportProjectLibrary)
 	ON_COMMAND(ID_ADD_POINT_LOAD, OnAddPointload)
 	ON_COMMAND(ID_ADD_DISTRIBUTED_LOAD, OnAddDistributedLoad)
@@ -427,7 +436,7 @@ void CPGSDocBase::GetDocUnitSystem(IDocUnitSystem** ppDocUnitSystem)
    (*ppDocUnitSystem)->AddRef();
 }
 
-void CPGSDocBase::EditAlignmentDescription(int nPage)
+bool CPGSDocBase::EditAlignmentDescription(int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -448,10 +457,16 @@ void CPGSDocBase::EditAlignmentDescription(int nPage)
 
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
+
+      return true;
+   }
+   else
+   {
+      return false;
    }
 }
 
-void CPGSDocBase::EditBridgeDescription(int nPage)
+bool CPGSDocBase::EditBridgeDescription(int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -489,6 +504,12 @@ void CPGSDocBase::EditBridgeDescription(int nPage)
 
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
+
+      return true;
+   }
+   else
+   {
+      return false;
    }
 }
 
@@ -523,6 +544,11 @@ bool CPGSDocBase::EditPierDescription(PierIndexType pierIdx, int nPage)
    }
 
    return true;
+}
+
+bool CPGSDocBase::EditTemporarySupportDescription(PierIndexType pierIdx, int nPage)
+{
+   return false;
 }
 
 bool CPGSDocBase::EditSpanDescription(SpanIndexType spanIdx, int nPage)
@@ -754,9 +780,9 @@ bool CPGSDocBase::EditDirectSelectionPrestressing(const CSegmentKey& segmentKey)
 #pragma Reminder("UPDATE: dialog should deal with Pjack")
       GET_IFACE(IPretensionForce, pPrestress );
 
-      UpdatePrestressForce(pgsTypes::Straight,  segmentKey, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
-      UpdatePrestressForce(pgsTypes::Harped,    segmentKey, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
-      UpdatePrestressForce(pgsTypes::Temporary, segmentKey, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
+      UpdatePrestressForce(segmentKey, pgsTypes::Straight,  newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
+      UpdatePrestressForce(segmentKey, pgsTypes::Harped,    newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
+      UpdatePrestressForce(segmentKey, pgsTypes::Temporary, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
 
       // Fire our transaction
       txnEditPrecastSegment* pTxn = new txnEditPrecastSegment(segmentKey,newSegmentData);
@@ -830,9 +856,9 @@ bool CPGSDocBase::EditDirectRowInputPrestressing(const CSegmentKey& segmentKey)
 #pragma Reminder("UPDATE: dialog should deal with Pjack")
       GET_IFACE(IPretensionForce, pPrestress );
 
-      UpdatePrestressForce(pgsTypes::Straight,  segmentKey, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
-      UpdatePrestressForce(pgsTypes::Harped,    segmentKey, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
-      UpdatePrestressForce(pgsTypes::Temporary, segmentKey, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
+      UpdatePrestressForce(segmentKey, pgsTypes::Straight,  newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
+      UpdatePrestressForce(segmentKey, pgsTypes::Harped,    newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
+      UpdatePrestressForce(segmentKey, pgsTypes::Temporary, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
 
       // Fire our transaction
       txnEditPrecastSegment* pTxn = new txnEditPrecastSegment(segmentKey,newSegmentData);
@@ -846,6 +872,18 @@ bool CPGSDocBase::EditDirectRowInputPrestressing(const CSegmentKey& segmentKey)
    {
      return true;
    }
+}
+
+bool CPGSDocBase::EditGirderDescription()
+{
+   EAFGetMainFrame()->PostMessage(WM_COMMAND, ID_EDIT_GIRDER, 0);
+   return true;
+}
+
+bool CPGSDocBase::EditGirderSegmentDescription()
+{
+   EAFGetMainFrame()->PostMessage(WM_COMMAND, ID_EDIT_SEGMENT, 0);
+   return true;
 }
 
 bool CPGSDocBase::EditDirectStrandInputPrestressing(const CSegmentKey& segmentKey)
@@ -906,9 +944,9 @@ bool CPGSDocBase::EditDirectStrandInputPrestressing(const CSegmentKey& segmentKe
 #pragma Reminder("UPDATE: dialog should deal with Pjack")
       GET_IFACE(IPretensionForce, pPrestress);
 
-      UpdatePrestressForce(pgsTypes::Straight, segmentKey, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
-      UpdatePrestressForce(pgsTypes::Harped, segmentKey, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
-      UpdatePrestressForce(pgsTypes::Temporary, segmentKey, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
+      UpdatePrestressForce(segmentKey, pgsTypes::Straight, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
+      UpdatePrestressForce(segmentKey, pgsTypes::Harped, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
+      UpdatePrestressForce(segmentKey, pgsTypes::Temporary, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
 
       // Fire our transaction
       txnEditPrecastSegment* pTxn = new txnEditPrecastSegment(segmentKey, newSegmentData);
@@ -1684,10 +1722,16 @@ const std::map<IDType,IGirderSectionViewEventCallback*>& CPGSDocBase::GetGirderS
    return m_GirderSectionViewCallbacks;
 }
 
-IDType CPGSDocBase::RegisterEditPierCallback(IEditPierCallback* pCallback)
+IDType CPGSDocBase::RegisterEditPierCallback(IEditPierCallback* pCallback, ICopyPierPropertiesCallback* pCopyCallback)
 {
    IDType key = m_CallbackID++;
    m_EditPierCallbacks.insert(std::make_pair(key,pCallback));
+
+   if ( pCopyCallback )
+   {
+      m_CopyPierPropertiesCallbacks.insert(std::make_pair(key,pCopyCallback));
+   }
+
    return key;
 }
 
@@ -1709,10 +1753,21 @@ const std::map<IDType,IEditPierCallback*>& CPGSDocBase::GetEditPierCallbacks()
    return m_EditPierCallbacks;
 }
 
-IDType CPGSDocBase::RegisterEditTemporarySupportCallback(IEditTemporarySupportCallback* pCallback)
+const std::map<IDType, ICopyPierPropertiesCallback*>& CPGSDocBase::GetCopyPierPropertiesCallbacks()
+{
+   return m_CopyPierPropertiesCallbacks;
+}
+
+IDType CPGSDocBase::RegisterEditTemporarySupportCallback(IEditTemporarySupportCallback* pCallback, ICopyTemporarySupportPropertiesCallback* pCopyCallBack)
 {
    IDType key = m_CallbackID++;
    m_EditTemporarySupportCallbacks.insert(std::make_pair(key,pCallback));
+
+   if (pCopyCallBack)
+   {
+      m_CopyTempSupportPropertiesCallbacks.insert(std::make_pair(key, pCopyCallBack));
+   }
+
    return key;
 }
 
@@ -1945,6 +2000,8 @@ const std::map<IDType,IEditLoadRatingOptionsCallback*>& CPGSDocBase::GetEditLoad
 
 BOOL CPGSDocBase::OnNewDocumentFromTemplate(LPCTSTR lpszPathName)
 {
+   m_FileCompatibilityState.CreatingFromTemplate();
+
    if ( !CEAFDocument::OnNewDocumentFromTemplate(lpszPathName) )
    {
       return FALSE;
@@ -1953,6 +2010,7 @@ BOOL CPGSDocBase::OnNewDocumentFromTemplate(LPCTSTR lpszPathName)
    InitProjectProperties();
 
    m_FileCompatibilityState.NewFileCreated();
+
    return TRUE;
 }
 
@@ -1965,7 +2023,7 @@ void CPGSDocBase::OnCloseDocument()
 
 BOOL CPGSDocBase::DoSave(LPCTSTR lpszPathName, BOOL bReplace)
 {
-   // this is the start of the saving process....
+   // this is the start of the saving process, set the saving state
    m_FileCompatibilityState.Saving(lpszPathName == nullptr ? true : false);
 
    return __super::DoSave(lpszPathName, bReplace);
@@ -2031,8 +2089,10 @@ void CPGSDocBase::OnCreateFinalize()
 
    PopulateReportMenu();
    PopulateGraphMenu();
+   PopulateCopyGirderMenu();
+   PopulateCopyPierMenu();
 
-#pragma Reminder("REVIEW")
+#pragma Reminder("REVIEW - send email option stopped working, the code has been commented out")
 /* This option works if Outlook and PGSuper are running at the same UAC level
 
    // if user is on Windows Vista or Windows 7, the Send Email feature doesn't work
@@ -2075,6 +2135,8 @@ void CPGSDocBase::OnCreateFinalize()
    // Set the AutoCalc state on the status bar
    CPGSuperStatusBar* pStatusBar = ((CPGSuperStatusBar*)EAFGetMainFrame()->GetStatusBar());
    pStatusBar->AutoCalcEnabled( IsAutoCalcEnabled() );
+
+   pStatusBar->AutoSaveEnabled(EAFGetApp()->IsAutoSaveEnabled());
 
    // views have been initilized so fire any pending events
    GET_IFACE(IEvents,pEvents);
@@ -2139,17 +2201,15 @@ BOOL CPGSDocBase::OpenTheDocument(LPCTSTR lpszPathName)
    m_pPGSuperDocProxyAgent->HoldEvents();
    // Events are released in OnCreateFinalize()
 
-   if ( !CEAFBrokerDocument::OpenTheDocument(lpszPathName) )
+
+   // The file was opened
+   m_FileCompatibilityState.FileOpened(lpszPathName);
+
+   if (!CEAFBrokerDocument::OpenTheDocument(lpszPathName))
    {
       return FALSE;
    }
 
-   // A new file was opened
-   m_FileCompatibilityState.FileOpened(lpszPathName);
-
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   m_DocUnitSystem->put_UnitMode( IS_US_UNITS(pDisplayUnits) ? umUS : umSI );
-  
    return TRUE;
 }
 
@@ -2236,86 +2296,6 @@ Float64 CPGSDocBase::GetRootNodeVersion()
    return FILE_VERSION;
 }
 
-BOOL CPGSDocBase::SaveTheDocument(LPCTSTR lpszPathName)
-{
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
-   CString strAppVersion = pApp->GetVersion(true);
-
-   bool bMakeCopy = false;
-   CString strCopyFileName = m_FileCompatibilityState.GetCopyFileName();
-   Uint32 hintSettings = GetUIHintSettings();
-   
-   if (sysFlags<Uint32>::IsClear(hintSettings, UIHINT_FILESAVEWARNING))
-   {
-      // if the hint flag is clear, that means we want to warn if appropreate
-      if ( m_FileCompatibilityState.PromptToMakeCopy(lpszPathName,strAppVersion) )
-      {
-         CFileSaveWarningDlg dlg(GetRootNodeName(),lpszPathName, strCopyFileName, m_FileCompatibilityState.GetApplicationVersion(),strAppVersion,EAFGetMainFrame());
-         auto result = dlg.DoModal();
-         if (result == IDCANCEL)
-         {
-            // user cancelled the save
-            return FALSE;
-         }
-
-         if (dlg.m_bDontWarn)
-         {
-            // the don't warn me again flag was set...
-
-            // update the hint settings
-            sysFlags<Uint32>::Set(&hintSettings, UIHINT_FILESAVEWARNING);
-            SetUIHintSettings(hintSettings);
-
-            // Save the default option to the registry
-            CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
-            CComPtr<IEAFAppPlugin> pAppPlugin;
-            pTemplate->GetPlugin(&pAppPlugin);
-            CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
-            CAutoRegistry autoReg(pPGSBase->GetAppName(),pApp);
-            pApp->WriteProfileInt(_T("Options"), _T("DefaultCompatibilitySave"), dlg.m_DefaultCopyOption);
-
-            // make or don't make copy based on default option
-            bMakeCopy = (dlg.m_DefaultCopyOption == FSW_COPY ? true : false);
-         }
-         else if(dlg.m_CopyOption == FSW_COPY)
-         {
-            bMakeCopy = true;
-         }
-      }
-   }
-   else
-   {
-      // we aren't prompting because the "don't show me again" is enabled.... 
-      // get the default action from the registry
-      CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
-      CComPtr<IEAFAppPlugin> pAppPlugin;
-      pTemplate->GetPlugin(&pAppPlugin);
-      CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
-      CAutoRegistry autoReg(pPGSBase->GetAppName());
-      CWinApp* pApp = AfxGetApp();
-      int value = pApp->GetProfileInt(_T("Options"), _T("DefaultCompatibilitySave"), FSW_COPY);
-      bMakeCopy = (value == FSW_COPY ? true : false);
-   }
-
-   if (bMakeCopy)
-   {
-      BOOL bSuccess = ::CopyFile(lpszPathName, strCopyFileName, FALSE);
-      if (!bSuccess && AfxMessageBox(_T("Unable to make a copy of the original file. Would you like to proceed with saving the file?"),MB_YESNO) == IDNO)
-      {
-         return FALSE;
-      }
-   }
-
-   BOOL bResult = __super::SaveTheDocument(lpszPathName);
-   if (bResult)
-   {
-      // there was a successful save, update the file compatibility state
-      m_FileCompatibilityState.FileSaved(lpszPathName, strAppVersion);
-   }
-   return bResult;
-}
-
 HRESULT CPGSDocBase::WriteTheDocument(IStructuredSave* pStrSave)
 {
    // before the standard broker document persistence, write out the version
@@ -2361,15 +2341,99 @@ HRESULT CPGSDocBase::LoadTheDocument(IStructuredLoad* pStrLoad)
       }
       m_FileCompatibilityState.SetApplicationVersion(OLE2T(var.bstrVal));
 
-   #if defined _DEBUG
+#if defined _DEBUG
       TRACE(_T("Loading data saved with PGSuper Version %s\n"), m_FileCompatibilityState.GetApplicationVersion());
+#endif
    }
    else
    {
+#if defined _DEBUG
       TRACE(_T("Loading data saved with PGSuper Version 2.1 or earlier\n"));
-   #endif
+#endif
       m_FileCompatibilityState.SetPreVersion21Flag();
    } // colses the bracket for if ( 1.0 < version )
+
+     // setup the document unit systems (must be done after the file is opened)
+   GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
+   m_DocUnitSystem->put_UnitMode(IS_US_UNITS(pDisplayUnits) ? umUS : umSI);
+
+   // Deal with making a backup copy of an old format file.
+   // We used to do this during saving, but adding the AutoSave feature made it more logical to
+   // save a backup in the old format at the time the file is opened. That way, after the file is
+   // opened we are always dealing with the more current format.
+   //
+   // We don't want to mess with file formats in command line mode (eg, batch processing or running regression tests)
+   CEAFApp* pApp = EAFGetApp();
+   if (!pApp->IsCommandLineMode())
+   {
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+      CPGSuperAppPluginApp* pPluginApp = (CPGSuperAppPluginApp*)AfxGetApp();
+      CString strAppVersion = pPluginApp->GetVersion(true);
+
+      bool bMakeCopy = false;
+      CString strCopyFileName = m_FileCompatibilityState.GetCopyFileName();
+      Uint32 hintSettings = GetUIHintSettings();
+
+      CString strFileName = m_FileCompatibilityState.GetFileName();
+
+      if (sysFlags<Uint32>::IsClear(hintSettings, UIHINT_FILESAVEWARNING))
+      {
+         // if the hint flag is clear, that means we want to warn if appropreate
+         if (m_FileCompatibilityState.PromptToMakeCopy(strFileName, strAppVersion))
+         {
+            CFileSaveWarningDlg dlg(GetRootNodeName(), strFileName, strCopyFileName, m_FileCompatibilityState.GetApplicationVersion(), strAppVersion, EAFGetMainFrame());
+            auto result = dlg.DoModal();
+            if (result == IDOK)
+            {
+               if (dlg.m_bDontWarn)
+               {
+                  // the don't warn me again flag was set...
+
+                  // update the hint settings
+                  sysFlags<Uint32>::Set(&hintSettings, UIHINT_FILESAVEWARNING);
+                  SetUIHintSettings(hintSettings);
+
+                  // Save the default option to the registry
+                  CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
+                  CComPtr<IEAFAppPlugin> pAppPlugin;
+                  pTemplate->GetPlugin(&pAppPlugin);
+                  CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+                  CAutoRegistry autoReg(pPGSBase->GetAppName(), pPluginApp);
+                  pPluginApp->WriteProfileInt(_T("Options"), _T("DefaultCompatibilitySave"), dlg.m_DefaultCopyOption);
+
+                  // make or don't make copy based on default option
+                  bMakeCopy = (dlg.m_DefaultCopyOption == FSW_COPY ? true : false);
+               }
+               else if (dlg.m_CopyOption == FSW_COPY)
+               {
+                  bMakeCopy = true;
+               }
+            }
+         }
+      }
+      else
+      {
+         // we aren't prompting because the "don't show me again" is enabled.... 
+         // get the default action from the registry
+         CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
+         CComPtr<IEAFAppPlugin> pAppPlugin;
+         pTemplate->GetPlugin(&pAppPlugin);
+         CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+         CAutoRegistry autoReg(pPGSBase->GetAppName());
+         CWinApp* pApp = AfxGetApp();
+         int value = pApp->GetProfileInt(_T("Options"), _T("DefaultCompatibilitySave"), FSW_COPY);
+         bMakeCopy = (value == FSW_COPY ? true : false);
+      }
+
+      if (bMakeCopy)
+      {
+         BOOL bSuccess = ::CopyFile(strFileName, strCopyFileName, FALSE);
+         if (!bSuccess)
+         {
+            AfxMessageBox(_T("Unable to make a copy of the original file. Close this file without save and make a backup copy before re-opening it"));
+         }
+      }
+   }
 
    return CEAFBrokerDocument::LoadTheDocument(pStrLoad);
 }
@@ -2477,26 +2541,27 @@ BOOL CPGSDocBase::Init()
    pPGSuper->GetAppUnitSystem(&appUnitSystem);
    CreateDocUnitSystem(appUnitSystem,&m_DocUnitSystem);
 
+   m_CopyPierPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyPierAllProperties));
+   m_CopyPierPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyPierConnectionProperties));
+   m_CopyPierPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyPierDiaphragmProperties));
+   m_CopyPierPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyPierModelProperties));
 
-   // register the standard copy girder callback objects
-   m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderType));
+   m_CopyTempSupportPropertiesCallbacks.insert(std::make_pair(m_CallbackID++, &m_CopyTempSupportConnectionProperties));
+
+   // register the standard copy girder callback objects. Note that the ordering here will be the same as in the properties menus and liWBFL::Stability::ox
+   m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderAllProperties));
    m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderMaterials));
-   m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderPrestressing));
    m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderRebar));
+   m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderPrestressing));
    m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderStirrups));
    m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderHandling));
-   m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderSlabOffset));
 
-#pragma Reminder("REVIEW: is this correct for spliced girders?")
-   // the copy girder properties features really hasn't been tested or made to work for spliced
-   // girders yet.
-   m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderType));
+   m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderAllProperties));
    m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderMaterials));
-   m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderPrestressing));
    m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderRebar));
+   m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderPrestressing));
    m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderStirrups));
    m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderHandling));
-   m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderSlabOffset));
 
    return TRUE;
 }
@@ -2830,6 +2895,8 @@ void CPGSDocBase::OnRatingSpec()
    oldData.m_Legal.IM_Lane_Routine  = pLiveLoads->GetLaneImpact( pgsTypes::lltLegalRating_Routine);
    oldData.m_Legal.IM_Truck_Special = pLiveLoads->GetTruckImpact(pgsTypes::lltLegalRating_Special);
    oldData.m_Legal.IM_Lane_Special  = pLiveLoads->GetLaneImpact( pgsTypes::lltLegalRating_Special);
+   oldData.m_Legal.IM_Truck_Emergency = pLiveLoads->GetTruckImpact(pgsTypes::lltLegalRating_Emergency);
+   oldData.m_Legal.IM_Lane_Emergency = pLiveLoads->GetLaneImpact(pgsTypes::lltLegalRating_Emergency);
    oldData.m_Legal.RoutineNames     = pLiveLoads->GetLiveLoadNames(pgsTypes::lltLegalRating_Routine);
    oldData.m_Legal.SpecialNames = pLiveLoads->GetLiveLoadNames(pgsTypes::lltLegalRating_Special);
    oldData.m_Legal.EmergencyNames = pLiveLoads->GetLiveLoadNames(pgsTypes::lltLegalRating_Emergency);
@@ -2852,6 +2919,7 @@ void CPGSDocBase::OnRatingSpec()
    oldData.m_Legal.ServiceIII_SH         = pSpec->GetShrinkageFactor(     pgsTypes::ServiceIII_LegalSpecial);
    oldData.m_Legal.ServiceIII_PS         = pSpec->GetSecondaryEffectsFactor(     pgsTypes::ServiceIII_LegalSpecial);
 
+   oldData.m_Legal.bRateForStress = pSpec->RateForStress(pgsTypes::lrLegal_Routine);
    oldData.m_Legal.AllowableTensionCoefficient = pSpec->GetAllowableTensionCoefficient(pgsTypes::lrLegal_Routine, &oldData.m_Legal.bLimitTensileStress, &oldData.m_Legal.MaxTensileStress);
    oldData.m_Legal.bRateForShear    = pSpec->RateForShear(pgsTypes::lrLegal_Routine);
    oldData.m_Legal.bExcludeLaneLoad = pSpec->ExcludeLegalLoadLaneLoading();
@@ -3544,11 +3612,68 @@ void CPGSDocBase::ClearSelection(BOOL bNotify)
    }
 }
 
-void CPGSDocBase::OnCopyGirderProps() 
+void CPGSDocBase::OnCopyGirderProps(UINT nID)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CCopyGirderDlg dlg(m_pBroker,m_CopyGirderPropertiesCallbacks);
-   dlg.DoModal();
+
+   try
+   {
+      IDType cb_id = m_CopyGirderPropertiesCallbacksCmdMap.at(nID);
+
+      CCopyGirderDlg dlg(m_pBroker, m_CopyGirderPropertiesCallbacks, cb_id);
+      dlg.DoModal();
+   }
+   catch (...)
+   {
+      ATLASSERT(0); // map access out of range is the likely problem
+   }
+}
+
+void CPGSDocBase::OnCopyGirderPropsAll()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   try
+   {
+      CCopyGirderDlg dlg(m_pBroker, m_CopyGirderPropertiesCallbacks, INVALID_ID);
+      dlg.DoModal();
+   }
+   catch (...)
+   {
+      ATLASSERT(0); // map access out of range is the likely problem
+   }
+}
+
+void CPGSDocBase::OnCopyPierProps(UINT nID)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   try
+   {
+      IDType cb_id = m_CopyPierPropertiesCallbacksCmdMap.at(nID);
+
+      CCopyPierDlg dlg(m_pBroker, m_CopyPierPropertiesCallbacks, cb_id);
+      dlg.DoModal();
+   }
+   catch (...)
+   {
+      ATLASSERT(0); // map access out of range is the likely problem
+   }
+}
+
+void CPGSDocBase::OnCopyPierPropsAll()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   try
+   {
+      CCopyPierDlg dlg(m_pBroker, m_CopyPierPropertiesCallbacks, INVALID_ID);
+      dlg.DoModal();
+   }
+   catch (...)
+   {
+      ATLASSERT(0); // map access out of range is the likely problem
+   }
 }
 
 void CPGSDocBase::OnImportProjectLibrary() 
@@ -4408,6 +4533,97 @@ void CPGSDocBase::OnEditTimeline()
    EditTimeline();
 }
 
+void CPGSDocBase::OnUpdateCopyGirderPropsTb(CCmdUI* pCmdUI)
+{
+   pCmdUI->Enable( TRUE );
+}
+
+BOOL CPGSDocBase::OnCopyGirderPropsTb(NMHDR* pnmhdr,LRESULT* plr) 
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   // This method gets called when the down arrow toolbar button is used
+   // It creates the drop down menu with the report names on it
+   NMTOOLBAR* pnmtb = (NMTOOLBAR*)(pnmhdr);
+   if ( pnmtb->iItem != ID_COPY_GIRDER_PROPS )
+   {
+      return FALSE; // not our button
+   }
+
+   CMenu menu;
+   VERIFY( menu.LoadMenu(IDR_GRAPHS) );
+   CMenu* pMenu = menu.GetSubMenu(0);
+   pMenu->RemoveMenu(0,MF_BYPOSITION); // remove the placeholder
+
+   CEAFMenu contextMenu(pMenu->Detach(),GetPluginCommandManager());
+
+   int i = 0;
+   for (const auto& iCallBack : m_CopyGirderPropertiesCallbacks)
+   {
+      UINT nCmd = i++ + FIRST_COPY_GIRDER_PLUGIN;
+      CString copyName = _T("Copy ") + CString(iCallBack.second->GetName());
+      contextMenu.AppendMenu(nCmd, copyName, nullptr);
+   }
+
+   GET_IFACE(IEAFToolbars,pToolBars);
+   CEAFToolBar* pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
+   int idx = pToolBar->CommandToIndex(ID_COPY_GIRDER_PROPS,nullptr);
+   CRect rect;
+   pToolBar->GetItemRect(idx,&rect);
+
+   CPoint point(rect.left,rect.bottom);
+   pToolBar->ClientToScreen(&point);
+   contextMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, point.x,point.y, EAFGetMainFrame() );
+
+   return TRUE;
+}
+
+void CPGSDocBase::OnUpdateCopyPierPropsTb(CCmdUI* pCmdUI)
+{
+   pCmdUI->Enable( TRUE );
+}
+
+BOOL CPGSDocBase::OnCopyPierPropsTb(NMHDR* pnmhdr,LRESULT* plr) 
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   // This method gets called when the down arrow toolbar button is used
+   // It creates the drop down menu with the report names on it
+   NMTOOLBAR* pnmtb = (NMTOOLBAR*)(pnmhdr);
+   if ( pnmtb->iItem != ID_COPY_PIER_PROPS )
+   {
+      return FALSE; // not our button
+   }
+
+   CMenu menu;
+   VERIFY( menu.LoadMenu(IDR_GRAPHS) );
+   CMenu* pMenu = menu.GetSubMenu(0);
+   pMenu->RemoveMenu(0,MF_BYPOSITION); // remove the placeholder
+
+   CEAFMenu contextMenu(pMenu->Detach(),GetPluginCommandManager());
+
+   int i = 0;
+   for (const auto& ICallBack : m_CopyPierPropertiesCallbacks)
+   {
+      UINT nCmd = i++ + FIRST_COPY_PIER_PLUGIN;
+      CString copyName = _T("Copy ") + CString(ICallBack.second->GetName());
+      contextMenu.AppendMenu(nCmd, copyName, nullptr);
+   }
+
+
+   GET_IFACE(IEAFToolbars,pToolBars);
+   CEAFToolBar* pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
+   int idx = pToolBar->CommandToIndex(ID_COPY_PIER_PROPS,nullptr);
+   CRect rect;
+   pToolBar->GetItemRect(idx,&rect);
+
+   CPoint point(rect.left,rect.bottom);
+   pToolBar->ClientToScreen(&point);
+   contextMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, point.x,point.y, EAFGetMainFrame() );
+
+   return TRUE;
+}
+
 BOOL CPGSDocBase::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo) 
 {
     // document classes can't process ON_NOTIFY
@@ -4428,6 +4644,16 @@ BOOL CPGSDocBase::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO
            if ( notify->pNMHDR->idFrom == m_pPGSuperDocProxyAgent->GetStdToolBarID() && ((NMTOOLBAR*)(notify->pNMHDR))->iItem == ID_VIEW_GRAPHS )
            {
               return OnViewGraphs(notify->pNMHDR,notify->pResult); 
+           }
+
+           if ( notify->pNMHDR->idFrom == m_pPGSuperDocProxyAgent->GetStdToolBarID() && ((NMTOOLBAR*)(notify->pNMHDR))->iItem == ID_COPY_GIRDER_PROPS )
+           {
+              return OnCopyGirderPropsTb(notify->pNMHDR, notify->pResult);
+           }
+
+           if ( notify->pNMHDR->idFrom == m_pPGSuperDocProxyAgent->GetStdToolBarID() && ((NMTOOLBAR*)(notify->pNMHDR))->iItem == ID_COPY_PIER_PROPS )
+           {
+              return OnCopyPierPropsTb(notify->pNMHDR, notify->pResult);
            }
         }
     }
@@ -4473,6 +4699,43 @@ void CPGSDocBase::PopulateGraphMenu()
    ASSERT(pGraphMenu != nullptr);
 
    CEAFBrokerDocument::PopulateGraphMenu(pGraphMenu);
+}
+
+void CPGSDocBase::PopulateCopyGirderMenu()
+{
+   m_CopyGirderPropertiesCallbacksCmdMap.clear();
+
+   const int MENU_COUNT = LAST_COPY_GIRDER_PLUGIN - FIRST_COPY_GIRDER_PLUGIN;
+   ATLASSERT(m_CopyGirderPropertiesCallbacks.size() < MENU_COUNT);
+
+   UINT i = 0;
+   for (const auto& ICallBack : m_CopyGirderPropertiesCallbacks )
+   {
+      UINT nCmd = i + FIRST_COPY_GIRDER_PLUGIN;
+      // save command ID so we can map UI
+      m_CopyGirderPropertiesCallbacksCmdMap.insert(std::make_pair(nCmd, ICallBack.first));
+
+      i++;
+   }
+}
+
+void CPGSDocBase::PopulateCopyPierMenu()
+{
+   m_CopyPierPropertiesCallbacksCmdMap.clear();
+
+   const int MENU_COUNT = LAST_COPY_PIER_PLUGIN - FIRST_COPY_PIER_PLUGIN;
+   ATLASSERT(m_CopyPierPropertiesCallbacks.size() < MENU_COUNT);
+
+   UINT i = 0;
+   for (const auto& ICallBack : m_CopyPierPropertiesCallbacks )
+   {
+      UINT nCmd = i + FIRST_COPY_PIER_PLUGIN;
+      CString copyName = ICallBack.second->GetName();
+      // save command ID so we can map UI
+      m_CopyPierPropertiesCallbacksCmdMap.insert(std::make_pair(nCmd, ICallBack.first));
+
+      i++;
+   }
 }
 
 void CPGSDocBase::LoadDocumentSettings()
@@ -4574,15 +4837,20 @@ void CPGSDocBase::LoadDocumentSettings()
 void CPGSDocBase::SaveDocumentSettings()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CEAFBrokerDocument::SaveDocumentSettings();
 
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
    CComPtr<IEAFAppPlugin> pAppPlugin;
    pTemplate->GetPlugin(&pAppPlugin);
    CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
-   CAutoRegistry autoReg(pPGSBase->GetAppName());
 
-   CWinApp* pApp = AfxGetApp();
+   {
+      CWinApp* pApp = AfxGetApp();
+      CAutoRegistry autoReg(pPGSBase->GetAppName(), pApp);
+      CEAFBrokerDocument::SaveDocumentSettings();
+   }
+
+   CEAFApp* pApp = EAFGetApp();
+   CAutoRegistry autoReg(pPGSBase->GetAppName(), pApp);
 
    VERIFY(pApp->WriteProfileString( _T("Settings"),_T("AutoCalc"),m_bAutoCalcEnabled ? _T("On") : _T("Off") ));
 

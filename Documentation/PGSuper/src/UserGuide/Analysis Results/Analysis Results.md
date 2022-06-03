@@ -50,6 +50,7 @@ Interval | Name | Description
 > NOTE: The intervals are always numbered sequentially and some intervals may not be applicable to your bridge model. The intervals in your project may not exactly match the list above.
 
 > NOTE: The interval names contain the old stage names in parentheses.
+
  
 Graphical Results
 -----------------
@@ -57,13 +58,15 @@ Many graphical results options are available. Select *View > Graphs > graph* to 
 
 Graph | Description
 -----------|------------
-@subpage ug_analysis_results_graph | Traditional engineering graphs for moment, shear, deflection, rotation, stress, and reactions
+@subpage ug_analysis_results_graph | Traditional engineering graphs for moment, shear, deflection, rotation, stress, and reactions.  Note that these are separated into two views: 1) Individual girder results prior to erection and 2) In the full bridge after girder erections have taken place.
 @subpage ug_concrete_properties_graph | Graphical representation of various concrete properties
 @subpage ug_deflection_history_graph | Change in deflection at a point over time
 @subpage ug_effective_prestress_graph | Changes in effective prestress by position and time
 @subpage ug_girder_properties_graph | Graphical representation of various girder properties such as area, moment of inertia, and section modulus
 @subpage ug_girder_stability_graph | Graphs stability factors of safety as a function of support location for lifting and hauling
 @subpage ug_stress_history_graph | Change in stress at a point over time
+
+**Exporting Results Data**: Data from graphs can be exported to a file by clicking on the *Export Graph Data* button. See @subpage ug_exporting_graph_data for more information.
 
 > NOTE: Extensions can add more graph types. Refer to extension documentation for more specific information.
 

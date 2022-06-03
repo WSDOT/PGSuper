@@ -1,24 +1,26 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 55.25    6   9.00                     1     1    U54G5          64  0.6  270  16.84   8.81   9.00   9.00                                              7.500  8.500   7.781    -5.392    13810   1.014  1.014   2.169 -3.627  0.000 -0.189 -3.816 227.15  518.80    5.00    7.00    7.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 55.25    6   9.00                     1     1    U54G5          64  0.6  270  16.84   8.81   9.00   9.00                                              7.500  8.500   7.781    -5.392    13810   1.014  1.014   3.688 -3.627  0.000 -0.189 -3.816 227.15  518.80    5.00    7.00    7.00    1.29    2.18    1.67    3.31    0.78 
 
 
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 11 Cast Deck
-Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic
-Compression stress check failed for Service IA Limit State in Interval 17 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 17 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
+Compression stress check failed for Service IA Limit State in Interval 16 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 16 Open to Traffic
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Slab Offset ("A" Dimension) check failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 55.25    6   9.00                     1     2    U54G5          64  0.6  270  16.84   8.81   9.00   9.00                                              7.500  8.500   6.831    -4.486    10955   0.583  0.835   2.169 -3.066  0.000 -0.196 -3.262 227.15  518.80    5.00    7.00    7.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 55.25    6   9.00                     1     2    U54G5          64  0.6  270  16.84   8.81   9.00   9.00                                              7.500  8.500   6.831    -4.486    10955   0.583  0.835   3.688 -3.066  0.000 -0.196 -3.262 227.15  518.80    5.00    7.00    7.00    2.25    3.13    2.91    4.05    1.64 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Slab Offset ("A" Dimension) check failed
 
 

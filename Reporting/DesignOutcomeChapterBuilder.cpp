@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -584,9 +584,8 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
 
       GET_IFACE2(pBroker,IIntervals,pIntervals);
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-      Float64 neff;
-      Float64 ecc_design  = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiMS, false, &config, &neff);
-      Float64 ecc_current = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiMS, false, nullptr, &neff);
+      Float64 ecc_design  = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiMS, false, &config).Y();
+      Float64 ecc_current = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiMS, false, nullptr).Y();
 
       (*pTable)(row,0) << _T("Eccentricity of Permanent Strands at Midspan");
       (*pTable)(row,1) << length.SetValue(ecc_design);
@@ -1311,8 +1310,7 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
 
          GET_IFACE2(pBroker,IIntervals,pIntervals);
          IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-         Float64 neff;
-         Float64 ecc_design  = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiMS, false, &config, &neff);
+         Float64 ecc_design  = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiMS, false, &config).Y();
          (*pTable)(row++,col) << length.SetValue(ecc_design);
 
          if (is_harped)
@@ -1506,7 +1504,7 @@ void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDispl
          RowIndexType row = i+1;
          const CShearZoneData2& rszdata = pShearData->ShearZones[i];
          zone_end += rszdata.ZoneLength;
-         (*pTables)(row,col++) << rszdata.ZoneNum;
+         (*pTables)(row,col++) << LABEL_INDEX(rszdata.ZoneNum);
 
          if ( nz <= i+1 || max_zoneloc <= zone_end)
          {

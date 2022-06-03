@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -273,6 +273,8 @@ void CGirderModelChildFrame::DoSyncWithBridgeModelView(bool bSync)
    }
 
    pDoc->SetGirderEditorSettings(settings);
+   UpdateBar(); // need to update the group settings, they depend on the sync setting
+   UpdateViews();
 }
 
 void CGirderModelChildFrame::SyncWithBridgeModelView(bool bSync)
@@ -285,7 +287,7 @@ void CGirderModelChildFrame::SyncWithBridgeModelView(bool bSync)
 bool CGirderModelChildFrame::SyncWithBridgeModelView() const
 {
    CButton* pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_SYNC);
-   return (pBtn->GetCheck() == 0 ? false : true);
+   return (pBtn->GetCheck() == BST_CHECKED ? true : false);
 }
 
 void CGirderModelChildFrame::ShowStrands(bool bShow)
@@ -676,23 +678,31 @@ void CGirderModelChildFrame::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHi
       if (lHint == HINT_BRIDGECHANGED)
       {
          // If the bridge changed, make sure the girder key is still valid
-         GET_IFACE2(pBroker, IBridge, pBridge);
-         GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-         if (nGroups <= m_GirderKey.groupIndex)
+         if (m_GirderKey.groupIndex != ALL_GROUPS)
          {
-            m_GirderKey.groupIndex = nGroups - 1;
-         }
+            GET_IFACE2(pBroker, IBridge, pBridge);
+            GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+            if (nGroups <= m_GirderKey.groupIndex)
+            {
+               m_GirderKey.groupIndex = nGroups - 1;
+            }
 
-         GirderIndexType nGirders = pBridge->GetGirderCount(m_GirderKey.groupIndex);
-         if (nGirders <= m_GirderKey.girderIndex)
-         {
-            m_GirderKey.girderIndex = nGirders - 1;
+            GirderIndexType nGirders = pBridge->GetGirderCount(m_GirderKey.groupIndex);
+            if (nGirders <= m_GirderKey.girderIndex)
+            {
+               m_GirderKey.girderIndex = nGirders - 1;
+            }
          }
       }
 
       UpdateCutRange();
       GET_IFACE2(pBroker,IPointOfInterest, pPoi);
-      Float64 Xgp = pPoi->ConvertPoiToGirderPathCoordinate(m_cutPoi);
+      Float64 Xgp;
+      if (m_GirderKey.groupIndex == ALL_GROUPS)
+         Xgp = pPoi->ConvertPoiToGirderlineCoordinate(m_cutPoi);
+      else
+         Xgp = pPoi->ConvertPoiToGirderPathCoordinate(m_cutPoi);
+
       m_cutPoi = GetCutPointOfInterest(Xgp);
       FillEventComboBox();
       UpdateBar();
@@ -782,8 +792,14 @@ void CGirderModelChildFrame::UpdateCutRange()
 
    if (m_bFirstCut)
    {
-      IndexType pos = vPoi.size() / 2; // default is mid-span
-      m_cutPoi = vPoi.at(pos);
+      // default cut is at the middle of the first segment
+      GET_IFACE2(pBroker, IBridge, pBridge);
+      std::vector<CGirderKey> vGirderKeys;
+      pBridge->GetGirderline(CGirderKey(m_GirderKey.groupIndex == ALL_GROUPS ? 0 : m_GirderKey.groupIndex, m_GirderKey.girderIndex), &vGirderKeys);
+      PoiList vPoi2;
+      pPoi->GetPointsOfInterest(CSegmentKey(vGirderKeys.front(),0), POI_ERECTED_SEGMENT | POI_5L, &vPoi2);
+      ATLASSERT(vPoi2.size() == 1);
+      m_cutPoi = vPoi2.front();
       m_bFirstCut = false;
    }
    else
@@ -847,9 +863,15 @@ void CGirderModelChildFrame::UpdateBar()
    // refill group control
    GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
    CString strLabel;
+   int idx;
+
+   // can have All Groups/Spans when not syncing with bridge view
+   if (!SyncWithBridgeModelView())
+   {
    strLabel.Format(_T("All %ss"), strGroupLabel);
-   int idx = pcbGroup->AddString(strLabel);
-   pcbGroup->SetItemData(idx,(DWORD_PTR)ALL_GROUPS);
+      idx = pcbGroup->AddString(strLabel);
+      pcbGroup->SetItemData(idx, (DWORD_PTR)ALL_GROUPS);
+   }
 
 
    for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
@@ -936,6 +958,8 @@ void CGirderModelChildFrame::OnGirderChanged()
    CComboBox* pcbGirder   = (CComboBox*)m_SettingsBar.GetDlgItem(IDC_GIRDER);
    m_GirderKey.girderIndex = pcbGirder->GetCurSel();
 
+   m_bFirstCut = true;
+
    UpdateCutRange();
    UpdateBar();
    UpdateViews();
@@ -965,6 +989,8 @@ void CGirderModelChildFrame::OnGroupChanged()
       GirderIndexType nGirders = pGroup->GetGirderCount();
       m_GirderKey.girderIndex = Min(m_GirderKey.girderIndex,nGirders-1);
    }
+
+   m_bFirstCut = true;
 
    UpdateCutRange();
    UpdateBar();
@@ -1068,6 +1094,10 @@ pgsPointOfInterest CGirderModelChildFrame::GetCutPointOfInterest(Float64 X)
       // make sure we are at an actual poi
       poi = pPoi->GetNearestPointOfInterest(poi.GetSegmentKey(), poi.GetDistFromStart());
    }
+
+   // make sure the poi is within the valid range of pois
+   if (poi < m_minPoi) poi = m_minPoi;
+   if (m_maxPoi < poi) poi = m_maxPoi;
 
    return poi;
 }

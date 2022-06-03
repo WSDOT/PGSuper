@@ -1,24 +1,24 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00                     1     1     IV            58  1/2  270  18.68  10.41   8.00   8.00                                              12  52.0 12.0  6.100  6.200   3.867    -4.305     7377   0.626  0.814   2.627 -2.176 -0.206 -0.131 -2.512 188.13  519.76    0.00    0.00    0.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 44.00    6   8.00                     1     1     IV            58  1/2  270  18.68  10.41   8.00   8.00                                              12  52.0 12.0  6.100  6.200   3.867    -4.305     7377   0.626  0.814   4.836 -2.176 -0.206 -0.131 -2.512 188.13  519.76    0.00    0.00    0.00    1.86    2.81    2.42    3.65    1.21 
 
 
 The Specification Check was Not Successful
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Bursting zone check failed.
+Bursting check failed.
 Slab Offset ("A" Dimension) check failed
 Minimum fillet value exceeded for bridge check failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00                     1     2     IV            58  1/2  270  18.68  10.41   8.00   8.00                                              12  52.0 12.0  6.100  6.200   4.042    -4.490     7605   0.626  0.814   2.627 -2.536 -0.197 -0.125 -2.858 188.13  510.72    0.00    0.00    0.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 44.00    6   8.00                     1     2     IV            58  1/2  270  18.68  10.41   8.00   8.00                                              12  52.0 12.0  6.100  6.200   4.042    -4.490     7605   0.626  0.814   4.836 -2.536 -0.197 -0.125 -2.858 188.13  510.72    0.00    0.00    0.00    1.85    2.77    2.40    3.59    1.08 
 
 
 The Specification Check was Not Successful
-Tension stress check failed for Service III Limit State in Interval 19 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Bursting zone check failed.
+Bursting check failed.
 Slab Offset ("A" Dimension) check failed
 Minimum fillet value exceeded for bridge check failed
 

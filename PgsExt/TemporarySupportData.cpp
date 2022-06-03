@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -40,7 +40,8 @@ Float64 gs_DefaultGirderBearingOffset2 = ::ConvertToSysUnits(1.0,unitMeasure::Fe
 CLASS
    CTemporarySupportData
 ****************************************************************************/
-CTemporarySupportData::CTemporarySupportData()
+CTemporarySupportData::CTemporarySupportData() :
+   m_SlabOffset{0.0,0.0}
 {
    m_ID    = INVALID_ID;
    m_Index = INVALID_INDEX;

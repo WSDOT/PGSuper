@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -114,9 +114,9 @@ void CTrafficBarrierViewDialog::OnPaint()
 
    bbox->BoundPoint(0.0, 0.0); // make sure origin is inside
 
-   gpRect2d box(left,bottom,right,top);
-   gpSize2d size = box.Size();
-   gpPoint2d org = box.BottomCenter();
+   GraphRect box(left,bottom,right,top);
+   GraphSize size = box.Size();
+   GraphPoint org = box.BottomCenter();
 
    grlibPointMapper mapper;
    mapper.SetMappingMode(grlibPointMapper::Isotropic);
@@ -203,7 +203,9 @@ void CTrafficBarrierViewDialog::DrawShape(CDC* pDC,grlibPointMapper& Mapper,ISha
    for ( CollectionIndexType i = 0; i < nPoints; i++ )
    {
       long dx,dy;
-      Mapper.WPtoDP(points[i],&dx,&dy);
+      GraphPoint point;
+      points[i]->Location(&point.X(), &point.Y());
+      Mapper.WPtoDP(point,&dx,&dy);
       dev_points[i] = CPoint(dx,dy);
 
       points[i]->Release();

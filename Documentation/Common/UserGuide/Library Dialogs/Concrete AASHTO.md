@@ -1,6 +1,6 @@
-AASHTO LRFD {#ug_library_dialogs_concrete_aashto}
+Modifiers {#ug_library_dialogs_concrete_aashto}
 ==============================================
-Define parameters for concrete based on the AASHTO model.
+Define parameters for modifying concrete models.
 
 Parameter | Description
 ----------|------------

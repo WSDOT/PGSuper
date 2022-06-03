@@ -101,7 +101,7 @@ Deck Reinforcement
 ------------------
 The longitudinal bridge deck reinforcement is defined on the Deck Reinforcement tab. This reinforcement is defined for evaluation of negative moment capacity and shear capacity in continuous structures (the deck reinforcement provides the longitudinal reinforcement for shear).
 
-Reinforcement is described by the combination of bar size and spacing and a lump sum area of reinforcement described an area of reinforcement per length of bridge width. The total reinforcement is the sum of both these quantities. For example, in the image below you will see that for the Top Mat there are #6 bars at 18 inches and 0.18 in<sup>2</sup>/ft. The total reinforcement in the top mat is 0.68 in<sup>2</sup>/ft.
+Reinforcement is described by the combination of bar size and spacing and a lump sum area of reinforcement described an area of reinforcement per length of bridge width. The total reinforcement is the sum of both these quantities. For example, in the image below you will see that for the Top Mat there are #6 bars at 18 inches and 0.18 in<sup>2</sup>/ft. The total reinforcement in the top mat is 0.473 in<sup>2</sup>/ft.
 
 > NOTE: Transverse deck reinforcement is not modeled.
 

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -81,31 +81,61 @@ void CLiftingCheck::Build(rptChapter* pChapter,
    GET_IFACE2(pBroker, ISegmentLiftingSpecCriteria, pSegmentLiftingSpecCriteria);
    if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled())
    {
-      GET_IFACE2(pBroker, IArtifact, pArtifacts);
       GET_IFACE2(pBroker, IBridge, pBridge);
-      GET_IFACE2(pBroker, IGirder, pGirder);
       SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
       for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
       {
-         CSegmentKey thisSegmentKey(girderKey, segIdx);
-         if (1 < nSegments)
-         {
-            rptParagraph* pTitle = new rptParagraph(rptStyleManager::GetHeadingStyle());
-            *pChapter << pTitle;
-            *pTitle << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
-
-            rptParagraph* p = new rptParagraph;
-            *pChapter << p;
-
-         }
-         const stbLiftingCheckArtifact* pArtifact = pArtifacts->GetLiftingCheckArtifact(thisSegmentKey);
-         const stbIGirder* pStabilityModel = pGirder->GetSegmentLiftingStabilityModel(thisSegmentKey);
-         const stbILiftingStabilityProblem* pStabilityProblem = pGirder->GetSegmentLiftingStabilityProblem(thisSegmentKey);
-         Float64 Ll, Lr;
-         pStabilityProblem->GetSupportLocations(&Ll, &Lr);
-         stbLiftingStabilityReporter reporter;
-         reporter.BuildSpecCheckChapter(pStabilityModel, pStabilityProblem, pArtifact, pChapter, _T("Location from<BR/>Left Pick Point"), Ll);
+         CSegmentKey segmentKey(girderKey, segIdx);
+         Build(pChapter, pBroker, segmentKey, pDisplayUnits);
       } // next segment
+   }
+   else
+   {
+      rptParagraph* pTitle = new rptParagraph(rptStyleManager::GetHeadingStyle());
+      *pChapter << pTitle;
+      *pTitle << _T("Check for Lifting in Casting Yard") << rptNewLine;
+
+      rptParagraph* p = new rptParagraph;
+      *pChapter << p;
+
+      *p << color(Red) << _T("Lifting analysis disabled in Project Criteria. No analysis performed.") << color(Black) << rptNewLine;
+      if (lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion())
+      {
+         *p << color(Red) << _T("Per LRFD 5.5.4.3, \"Buckling and stability of precast members during handling, transportation, and erection shall be investigated.\" Also see C5.5.4.3 and C5.12.3.2.1.") << color(Black) << rptNewLine;
+      }
+   }
+}
+
+void CLiftingCheck::Build(rptChapter* pChapter,
+   IBroker* pBroker, const CSegmentKey& segmentKey,
+   IEAFDisplayUnits* pDisplayUnits) const
+{
+   GET_IFACE2(pBroker, ISegmentLiftingSpecCriteria, pSegmentLiftingSpecCriteria);
+   if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled())
+   {
+      GET_IFACE2(pBroker, IArtifact, pArtifacts);
+      GET_IFACE2(pBroker, IBridge, pBridge);
+      GET_IFACE2(pBroker, IGirder, pGirder);
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(segmentKey);
+      if (1 < nSegments)
+      {
+         std::_tstringstream os;
+         os << _T("Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex) << std::endl;
+         rptParagraph* pTitle = new rptParagraph(rptStyleManager::GetHeadingStyle());
+         *pChapter << pTitle;
+         pTitle->SetName(os.str().c_str());
+         *pTitle << pTitle->GetName() << rptNewLine;
+
+         rptParagraph* p = new rptParagraph;
+         *pChapter << p;
+      }
+      const WBFL::Stability::LiftingCheckArtifact* pArtifact = pArtifacts->GetLiftingCheckArtifact(segmentKey);
+      const WBFL::Stability::IGirder* pStabilityModel = pGirder->GetSegmentLiftingStabilityModel(segmentKey);
+      const WBFL::Stability::ILiftingStabilityProblem* pStabilityProblem = pGirder->GetSegmentLiftingStabilityProblem(segmentKey);
+      Float64 Ll, Lr;
+      pStabilityProblem->GetSupportLocations(&Ll, &Lr);
+      WBFL::Stability::LiftingStabilityReporter reporter;
+      reporter.BuildSpecCheckChapter(pStabilityModel, pStabilityProblem, pArtifact, pChapter, _T("Location from<BR/>Left Pick Point"), Ll);
    }
    else
    {

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -515,7 +515,7 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
    OnConditionFactorTypeChanged();
 
    CComboBox* pcbSameGirderType = (CComboBox*)GetDlgItem(IDC_GIRDER_NAMEUSE);
-   pcbSameGirderType->AddString(_T("This girder type is used for the entire bridge"));
+   pcbSameGirderType->AddString(_T("This girder type is used in all spans"));
    pcbSameGirderType->AddString(_T("This girder type is assigned to this girder"));
    pcbSameGirderType->SetCurSel(m_bUseSameGirderType ? 0:1);
    UpdateGirderTypeControls();
@@ -1023,6 +1023,12 @@ void CGirderDescGeneralPage::OnMoreConcreteProperties()
    dlg.m_General.m_Ds          = pParent->m_pSegment->Material.Concrete.StrengthDensity;
    dlg.m_General.m_Dw          = pParent->m_pSegment->Material.Concrete.WeightDensity;
 
+   dlg.m_PCIUHPC.m_ffc = pParent->m_pSegment->Material.Concrete.Ffc;
+   dlg.m_PCIUHPC.m_frr = pParent->m_pSegment->Material.Concrete.Frr;
+   dlg.m_PCIUHPC.m_FiberLength = pParent->m_pSegment->Material.Concrete.FiberLength;
+   dlg.m_PCIUHPC.m_AutogenousShrinkage = pParent->m_pSegment->Material.Concrete.AutogenousShrinkage;
+   dlg.m_PCIUHPC.m_bPCTT = pParent->m_pSegment->Material.Concrete.bPCTT;
+
    dlg.m_AASHTO.m_EccK1       = pParent->m_pSegment->Material.Concrete.EcK1;
    dlg.m_AASHTO.m_EccK2       = pParent->m_pSegment->Material.Concrete.EcK2;
    dlg.m_AASHTO.m_CreepK1     = pParent->m_pSegment->Material.Concrete.CreepK1;
@@ -1055,6 +1061,12 @@ void CGirderDescGeneralPage::OnMoreConcreteProperties()
       pParent->m_pSegment->Material.Concrete.MaxAggregateSize = dlg.m_General.m_AggSize;
       pParent->m_pSegment->Material.Concrete.StrengthDensity  = dlg.m_General.m_Ds;
       pParent->m_pSegment->Material.Concrete.WeightDensity    = dlg.m_General.m_Dw;
+
+      pParent->m_pSegment->Material.Concrete.Ffc = dlg.m_PCIUHPC.m_ffc;
+      pParent->m_pSegment->Material.Concrete.Frr = dlg.m_PCIUHPC.m_frr;
+      pParent->m_pSegment->Material.Concrete.FiberLength = dlg.m_PCIUHPC.m_FiberLength;
+      pParent->m_pSegment->Material.Concrete.AutogenousShrinkage = dlg.m_PCIUHPC.m_AutogenousShrinkage;
+      pParent->m_pSegment->Material.Concrete.bPCTT = dlg.m_PCIUHPC.m_bPCTT;
 
       pParent->m_pSegment->Material.Concrete.EcK1             = dlg.m_AASHTO.m_EccK1;
       pParent->m_pSegment->Material.Concrete.EcK2             = dlg.m_AASHTO.m_EccK2;
@@ -1755,7 +1767,7 @@ void CGirderDescGeneralPage::FillAssumedExcessCamberComboBox()
 
    if (m_AssumedExcessCamberType == pgsTypes::aecBridge || m_AssumedExcessCamberType == pgsTypes::aecGirder)
    {
-      int idx = pcbAssumedExcessCamberType->AddString(_T("A single Assumed Excess Camber is used for the entire bridge"));
+      int idx = pcbAssumedExcessCamberType->AddString(_T("A single Assumed Excess Camber is used in all spans"));
       pcbAssumedExcessCamberType->SetItemData(idx, (DWORD_PTR)pgsTypes::aecBridge);
    }
    else

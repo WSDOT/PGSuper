@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -143,39 +143,39 @@ void CCamberTable::GetPointsOfInterest(IBroker* pBroker,const CSegmentKey& segme
 
 //======================== DEBUG      =======================================
 void CCamberTable::Build_Deck(IBroker* pBroker, const CSegmentKey& segmentKey,
-   bool bTempStrands, bool bSidewalk, bool bShearKey, bool bConstruction, bool bOverlay, bool bDeckPanels,
+   bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay, bool bDeckPanels,
    IEAFDisplayUnits* pDisplayUnits, Int16 constructionRate, const CamberMultipliers& cm,
    rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const
 {
    GET_IFACE2(pBroker, IBridge, pBridge);
    if (pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing() || pBridge->HasTiltedGirders())
    {
-      Build_Deck_XY(pBroker, segmentKey, bTempStrands, bSidewalk, bShearKey, bConstruction, bOverlay, bDeckPanels, pDisplayUnits, constructionRate, cm, pTable1, pTable2, pTable3);
+      Build_Deck_XY(pBroker, segmentKey, bTempStrands, bSidewalk, bShearKey, bLongitudinalJoint, bConstruction, bOverlay, bDeckPanels, pDisplayUnits, constructionRate, cm, pTable1, pTable2, pTable3);
    }
    else
    {
-      Build_Deck_Y(pBroker, segmentKey, bTempStrands, bSidewalk, bShearKey, bConstruction, bOverlay, bDeckPanels, pDisplayUnits, constructionRate, cm, pTable1, pTable2, pTable3);
+      Build_Deck_Y(pBroker, segmentKey, bTempStrands, bSidewalk, bShearKey, bLongitudinalJoint, bConstruction, bOverlay, bDeckPanels, pDisplayUnits, constructionRate, cm, pTable1, pTable2, pTable3);
    }
 }
 
 void CCamberTable::Build_NoDeck(IBroker* pBroker, const CSegmentKey& segmentKey,
-   bool bTempStrands, bool bSidewalk, bool bShearKey, bool bConstruction, bool bOverlay,
+   bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay,
    IEAFDisplayUnits* pDisplayUnits, Int16 constructionRate, const CamberMultipliers& cm,
    rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const
 {
    GET_IFACE2(pBroker, IBridge, pBridge);
    if (pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing() || pBridge->HasTiltedGirders())
    {
-      Build_NoDeck_XY(pBroker, segmentKey, bTempStrands, bSidewalk, bShearKey, bConstruction, bOverlay, pDisplayUnits, constructionRate, cm, pTable1, pTable2, pTable3);
+      Build_NoDeck_XY(pBroker, segmentKey, bTempStrands, bSidewalk, bShearKey, bLongitudinalJoint, bConstruction, bOverlay, pDisplayUnits, constructionRate, cm, pTable1, pTable2, pTable3);
    }
    else
    {
-      Build_NoDeck_Y(pBroker, segmentKey, bTempStrands, bSidewalk, bShearKey, bConstruction, bOverlay, pDisplayUnits, constructionRate, cm, pTable1, pTable2, pTable3);
+      Build_NoDeck_Y(pBroker, segmentKey, bTempStrands, bSidewalk, bShearKey, bLongitudinalJoint, bConstruction, bOverlay, pDisplayUnits, constructionRate, cm, pTable1, pTable2, pTable3);
    }
 }
 
 void CCamberTable::Build_Deck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
-   bool bTempStrands, bool bSidewalk, bool bShearKey, bool bConstruction, bool bOverlay, bool bDeckPanels,
+   bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint,bool bConstruction, bool bOverlay, bool bDeckPanels,
    IEAFDisplayUnits* pDisplayUnits, Int16 constructionRate, const CamberMultipliers& cm,
    rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const
 {
@@ -203,6 +203,7 @@ void CCamberTable::Build_Deck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
    IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
    IntervalIndexType tempStrandRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
    IntervalIndexType castShearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
+   IntervalIndexType castLongitudinalJointIntervalIdx = pIntervals->GetCastLongitudinalJointInterval();
    IntervalIndexType constructionLoadIntervalIdx = pIntervals->GetConstructionLoadInterval();
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
@@ -229,7 +230,7 @@ void CCamberTable::Build_Deck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
    (*pLayoutTable)(0, 0) << table1a;
    (*pLayoutTable)(0, 1) << table1b;
 
-   ColumnIndexType ncols = 12 + (bTempStrands ? 1 : 0) + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0) + (bShearKey ? 1 : 0) + (bConstruction ? 1 : 0) + (bDeckPanels ? 1 : 0);
+   ColumnIndexType ncols = 12 + (bTempStrands ? 1 : 0) + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0) + (bShearKey ? 1 : 0) + (bLongitudinalJoint ? 1 : 0) + (bConstruction ? 1 : 0) + (bDeckPanels ? 1 : 0);
    if (bHasPrecamber)
    {
       ncols++;
@@ -295,6 +296,11 @@ void CCamberTable::Build_Deck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
    if (bShearKey)
    {
       (*table2)(0, col++) << COLHDR(Sub2(symbol(DELTA), _T("shear key")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+   }
+
+   if (bLongitudinalJoint)
+   {
+      (*table2)(0, col++) << COLHDR(Sub2(symbol(DELTA), _T("long. joint")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
    }
 
    if (bConstruction)
@@ -385,6 +391,7 @@ void CCamberTable::Build_Deck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
       Float64 Dcreep1b = pCamber->GetCreepDeflection(erectedPoi, ICamber::cpReleaseToDiaphragm, constructionRate, pgsTypes::pddErected);
       Float64 Ddiaphragm = pCamber->GetDiaphragmDeflection(erectedPoi);
       Float64 DshearKey = bShearKey ? pProduct->GetDeflection(castShearKeyIntervalIdx, pgsTypes::pftShearKey, erectedPoi, bat, rtCumulative, false) : 0.0;
+      Float64 DlongJoint = bLongitudinalJoint ? pProduct->GetDeflection(castLongitudinalJointIntervalIdx, pgsTypes::pftLongitudinalJoint, erectedPoi, bat, rtCumulative, false) : 0.0;
       Float64 Dconstruction = bConstruction ? pProduct->GetDeflection(constructionLoadIntervalIdx, pgsTypes::pftConstruction, erectedPoi, bat, rtCumulative, false) : 0.0;
       Float64 Dpanel = bDeckPanels ? pProduct->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlabPanel, erectedPoi, bat, rtCumulative, false) : 0.0;
       Float64 Ddeck = pProduct->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, erectedPoi, bat, rtCumulative, false);
@@ -462,6 +469,11 @@ void CCamberTable::Build_Deck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
          (*table2)(row2, col++) << deflection.SetValue(DshearKey);
       }
 
+      if (bLongitudinalJoint)
+      {
+         (*table2)(row2, col++) << deflection.SetValue(DlongJoint);
+      }
+
       if (bConstruction)
       {
          (*table2)(row2, col++) << deflection.SetValue(Dconstruction);
@@ -499,7 +511,7 @@ void CCamberTable::Build_Deck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
 
       Float64 D1 = cm.ErectionFactor * (DgdrErected + DpsErected) + DprecamberErected;
       Float64 D2 = D1 + cm.CreepFactor * Dcreep1b;
-      Float64 D3 = D2 + cm.DiaphragmFactor * (Ddiaphragm + DshearKey + Dconstruction) + cm.ErectionFactor * Dtpsr;
+      Float64 D3 = D2 + cm.DiaphragmFactor * (Ddiaphragm + DshearKey + DlongJoint + Dconstruction) + cm.ErectionFactor * Dtpsr;
       Float64 D4 = D3 + cm.CreepFactor * Dcreep2;
       Float64 D5 = D4 + cm.SlabUser1Factor * (Ddeck + Duser1) + cm.SlabPadLoadFactor*DslabPad + cm.DeckPanelFactor * Dpanel;;
       Float64 D6 = D5 + cm.BarrierSwOverlayUser2Factor * (Dbarrier + Duser2);
@@ -558,7 +570,7 @@ void CCamberTable::Build_Deck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
 }
 
 void CCamberTable::Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey,
-   bool bTempStrands, bool bSidewalk, bool bShearKey, bool bConstruction, bool bOverlay, bool bDeckPanels,
+   bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay, bool bDeckPanels,
    IEAFDisplayUnits* pDisplayUnits, Int16 constructionRate, const CamberMultipliers& cm,
    rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const
 {
@@ -586,6 +598,7 @@ void CCamberTable::Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey
    IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
    IntervalIndexType tempStrandRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
    IntervalIndexType castShearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
+   IntervalIndexType castLongitudinalJointIntervalIdx = pIntervals->GetCastLongitudinalJointInterval();
    IntervalIndexType constructionLoadIntervalIdx = pIntervals->GetConstructionLoadInterval();
    IntervalIndexType noncompositeUserLoadIntervalIdx = pIntervals->GetNoncompositeUserLoadInterval();
    IntervalIndexType compositeUserLoadIntervalIdx = pIntervals->GetCompositeUserLoadInterval();
@@ -621,7 +634,7 @@ void CCamberTable::Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey
    (*pLayoutTable)(0,0) << table1a;
    (*pLayoutTable)(0,1) << table1b;
 
-   nColumns = 16 + (bHasPrecamber ? 1 : 0) + (bTempStrands ? 2 : 0) + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0) + (bShearKey ? 1 : 0) + (bConstruction ? 1 : 0) + (bDeckPanels ? 1 : 0);
+   nColumns = 16 + (bHasPrecamber ? 1 : 0) + (bTempStrands ? 2 : 0) + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0) + (bShearKey ? 1 : 0) + (bLongitudinalJoint ? 1 : 0) + (bConstruction ? 1 : 0) + (bDeckPanels ? 1 : 0);
 
    table2 = rptStyleManager::CreateDefaultTable(nColumns,_T("Deflections after Erection"));
    table3 = rptStyleManager::CreateDefaultTable(10,_T("Deflection Summary"));
@@ -730,9 +743,14 @@ void CCamberTable::Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey
 
    (*table2)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("diaphragm")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
 
-   if ( bShearKey )
+   if (bShearKey)
    {
-      (*table2)(1,col++) << COLHDR(Sub2(symbol(DELTA),_T("shear key")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+      (*table2)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("shear key")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+   }
+
+   if (bLongitudinalJoint)
+   {
+      (*table2)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("long. joint")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
    }
 
    if ( bConstruction )
@@ -850,7 +868,8 @@ void CCamberTable::Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey
       Float64 Dcreep1b   = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpReleaseToDiaphragm, constructionRate, pgsTypes::pddErected );
       Float64 DXcreep1b = pCamber->GetXCreepDeflection(erectedPoi, ICamber::cpReleaseToDiaphragm, constructionRate, pgsTypes::pddErected);
       Float64 Ddiaphragm = pCamber->GetDiaphragmDeflection( erectedPoi );
-      Float64 DshearKey  = bShearKey ? pProduct->GetDeflection(castShearKeyIntervalIdx,pgsTypes::pftShearKey,erectedPoi,bat, rtCumulative, false) : 0.0;
+      Float64 DshearKey = bShearKey ? pProduct->GetDeflection(castShearKeyIntervalIdx, pgsTypes::pftShearKey, erectedPoi, bat, rtCumulative, false) : 0.0;
+      Float64 DlongJoint = bLongitudinalJoint ? pProduct->GetDeflection(castLongitudinalJointIntervalIdx, pgsTypes::pftLongitudinalJoint, erectedPoi, bat, rtCumulative, false) : 0.0;
       Float64 Dconstruction= bConstruction ? pProduct->GetDeflection(constructionLoadIntervalIdx,pgsTypes::pftConstruction,erectedPoi,bat, rtCumulative, false) : 0.0;
       Float64 Dpanel     =  bDeckPanels ? pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftSlabPanel,erectedPoi,bat, rtCumulative, false) : 0.0;
       Float64 Ddeck      = pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftSlab,erectedPoi,bat, rtCumulative, false);
@@ -954,9 +973,14 @@ void CCamberTable::Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey
 
       (*table2)(row2,col++) << deflection.SetValue( Ddiaphragm );
       
-      if ( bShearKey )
+      if (bShearKey)
       {
-         (*table2)(row2,col++) << deflection.SetValue( DshearKey );
+         (*table2)(row2, col++) << deflection.SetValue(DshearKey);
+      }
+
+      if (bLongitudinalJoint)
+      {
+         (*table2)(row2, col++) << deflection.SetValue(DlongJoint);
       }
 
       if ( bConstruction )
@@ -999,7 +1023,7 @@ void CCamberTable::Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey
       
       Float64 D1 = cm.ErectionFactor * (DgdrErected + DpsErected) + DprecamberErected;
       Float64 D2 = D1 + cm.CreepFactor * Dcreep1b;
-      Float64 D3 = D2 + cm.DiaphragmFactor * (Ddiaphragm + DshearKey + Dconstruction) + cm.ErectionFactor * Dtpsr;
+      Float64 D3 = D2 + cm.DiaphragmFactor * (Ddiaphragm + DshearKey + DlongJoint + Dconstruction) + cm.ErectionFactor * Dtpsr;
       Float64 D4 = D3 + cm.CreepFactor * Dcreep2;
       Float64 D5 = D4 + cm.SlabUser1Factor * (Ddeck + Duser1) + cm.SlabPadLoadFactor*DslabPad  + cm.DeckPanelFactor * Dpanel;;
       Float64 D6 = D5 + cm.BarrierSwOverlayUser2Factor * (Dbarrier + Duser2);
@@ -1065,7 +1089,7 @@ void CCamberTable::Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey
 }
 
 void CCamberTable::Build_NoDeck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
-   bool bTempStrands, bool bSidewalk, bool bShearKey, bool bConstruction, bool bOverlay,
+   bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay,
    IEAFDisplayUnits* pDisplayUnits, Int16 constructionRate, const CamberMultipliers& cm,
    rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const
 {
@@ -1092,6 +1116,7 @@ void CCamberTable::Build_NoDeck_Y(IBroker* pBroker, const CSegmentKey& segmentKe
    IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
    IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
    IntervalIndexType castShearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
+   IntervalIndexType castLongitudinalJointIntervalIdx = pIntervals->GetCastLongitudinalJointInterval();
    IntervalIndexType constructionLoadIntervalIdx = pIntervals->GetConstructionLoadInterval();
    IntervalIndexType tempStrandRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
    IntervalIndexType noncompositeUserLoadIntervalIdx = pIntervals->GetNoncompositeUserLoadInterval();
@@ -1123,7 +1148,7 @@ void CCamberTable::Build_NoDeck_Y(IBroker* pBroker, const CSegmentKey& segmentKe
    (*pLayoutTable)(0, 0) << table1a;
    (*pLayoutTable)(0, 1) << table1b;
 
-   int ncols = 11 + (bTempStrands ? 1 : 0) + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0) + (bShearKey ? 1 : 0) + (bConstruction ? 1 : 0);
+   int ncols = 11 + (bTempStrands ? 1 : 0) + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0) + (bShearKey ? 1 : 0) + (bLongitudinalJoint ? 1 : 0) + (bConstruction ? 1 : 0);
    if (bHasPrecamber)
    {
       ncols++;
@@ -1195,6 +1220,11 @@ void CCamberTable::Build_NoDeck_Y(IBroker* pBroker, const CSegmentKey& segmentKe
    if (bShearKey)
    {
       (*table2)(0, col++) << COLHDR(Sub2(symbol(DELTA), _T("shear key")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+   }
+
+   if (bLongitudinalJoint)
+   {
+      (*table2)(0, col++) << COLHDR(Sub2(symbol(DELTA), _T("long. joint")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
    }
 
    if (bConstruction)
@@ -1283,6 +1313,7 @@ void CCamberTable::Build_NoDeck_Y(IBroker* pBroker, const CSegmentKey& segmentKe
       Float64 Dcreep1b = pCamber->GetCreepDeflection(erectedPoi, ICamber::cpReleaseToDiaphragm, constructionRate, pgsTypes::pddErected);
       Float64 Ddiaphragm = pCamber->GetDiaphragmDeflection(erectedPoi);
       Float64 DshearKey = bShearKey ? pProduct->GetDeflection(castShearKeyIntervalIdx, pgsTypes::pftShearKey, erectedPoi, bat, rtCumulative, false) : 0.0;
+      Float64 DlongJoint = bLongitudinalJoint ? pProduct->GetDeflection(castLongitudinalJointIntervalIdx, pgsTypes::pftLongitudinalJoint, erectedPoi, bat, rtCumulative, false) : 0.0;
       Float64 Dconstruction = bConstruction ? pProduct->GetDeflection(constructionLoadIntervalIdx, pgsTypes::pftConstruction, erectedPoi, bat, rtCumulative, false) : 0.0;
       Float64 Dcreep2 = pCamber->GetCreepDeflection(erectedPoi, ICamber::cpDiaphragmToDeck, constructionRate, pgsTypes::pddErected);
       Float64 Duser1 = pProduct->GetDeflection(noncompositeUserLoadIntervalIdx, pgsTypes::pftUserDC, erectedPoi, bat, rtCumulative, false)
@@ -1365,6 +1396,11 @@ void CCamberTable::Build_NoDeck_Y(IBroker* pBroker, const CSegmentKey& segmentKe
          (*table2)(row2, col++) << deflection.SetValue(DshearKey);
       }
 
+      if (bLongitudinalJoint)
+      {
+         (*table2)(row2, col++) << deflection.SetValue(DlongJoint);
+      }
+
       if (bConstruction)
       {
          (*table2)(row2, col++) << deflection.SetValue(Dconstruction);
@@ -1403,7 +1439,7 @@ void CCamberTable::Build_NoDeck_Y(IBroker* pBroker, const CSegmentKey& segmentKe
 
       Float64 D1 = cm.ErectionFactor * (DgdrErected + DpsErected) + DprecamberErected;
       Float64 D2 = D1 + cm.CreepFactor * Dcreep1b;
-      Float64 D3 = D2 + cm.DiaphragmFactor * (Ddiaphragm + DshearKey + Dconstruction) + cm.ErectionFactor * Dtpsr + cm.SlabUser1Factor * Duser1;
+      Float64 D3 = D2 + cm.DiaphragmFactor * (Ddiaphragm + DshearKey + DlongJoint + Dconstruction) + cm.ErectionFactor * Dtpsr + cm.SlabUser1Factor * Duser1;
       Float64 D4 = D3 + cm.CreepFactor * Dcreep2;
       Float64 D5 = D4 + cm.BarrierSwOverlayUser2Factor * (Dbarrier + Duser2) + cm.SlabUser1Factor*Dslab + cm.SlabPadLoadFactor*Dhaunch;
       if (bSidewalk)
@@ -1464,7 +1500,7 @@ void CCamberTable::Build_NoDeck_Y(IBroker* pBroker, const CSegmentKey& segmentKe
 }
 
 void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKey,
-                                            bool bTempStrands, bool bSidewalk, bool bShearKey,bool bConstruction, bool bOverlay,
+                                            bool bTempStrands, bool bSidewalk, bool bShearKey,bool bLongitudinalJoint,bool bConstruction, bool bOverlay,
                                             IEAFDisplayUnits* pDisplayUnits,Int16 constructionRate, const CamberMultipliers& cm,
                                             rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const
 {
@@ -1492,6 +1528,7 @@ void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKe
    IntervalIndexType erectionIntervalIdx          = pIntervals->GetErectSegmentInterval(segmentKey);
    IntervalIndexType tempStrandRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
    IntervalIndexType castShearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
+   IntervalIndexType castLongitudinalJointIntervalIdx = pIntervals->GetCastLongitudinalJointInterval();
    IntervalIndexType constructionLoadIntervalIdx = pIntervals->GetConstructionLoadInterval();
    IntervalIndexType noncompositeUserLoadIntervalIdx = pIntervals->GetNoncompositeUserLoadInterval();
    IntervalIndexType compositeUserLoadIntervalIdx = pIntervals->GetCompositeUserLoadInterval();
@@ -1530,7 +1567,7 @@ void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKe
    (*pLayoutTable)(0, 0) << table1a;
    (*pLayoutTable)(0, 1) << table1b;
 
-   nColumns = 15 + (bHasPrecamber ? 1 : 0) + (bTempStrands ? 2 : 0) + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0) + (bShearKey ? 1 : 0) + (bConstruction ? 1 : 0);
+   nColumns = 15 + (bHasPrecamber ? 1 : 0) + (bTempStrands ? 2 : 0) + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0) + (bShearKey ? 1 : 0) + (bLongitudinalJoint ? 1 : 0) + (bConstruction ? 1 : 0);
 
    if (deckType == pgsTypes::sdtNonstructuralOverlay)
    {
@@ -1647,9 +1684,14 @@ void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKe
 
    (*table2)(1,col++) << COLHDR(Sub2(symbol(DELTA),_T("diaphragm")),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
-   if ( bShearKey )
+   if (bShearKey)
    {
-      (*table2)(1,col++) << COLHDR(Sub2(symbol(DELTA),_T("shear key")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+      (*table2)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("shear key")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+   }
+
+   if (bLongitudinalJoint)
+   {
+      (*table2)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("long. joint")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
    }
 
    if ( bConstruction )
@@ -1768,7 +1810,8 @@ void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKe
       Float64 Dcreep1b   = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpReleaseToDiaphragm, constructionRate, pgsTypes::pddErected );
       Float64 DXcreep1b = pCamber->GetXCreepDeflection( erectedPoi, ICamber::cpReleaseToDiaphragm, constructionRate, pgsTypes::pddErected);
       Float64 Ddiaphragm = pCamber->GetDiaphragmDeflection( erectedPoi );
-      Float64 DshearKey  = bShearKey ? pProduct->GetDeflection(castShearKeyIntervalIdx,pgsTypes::pftShearKey,erectedPoi,bat, rtCumulative, false) : 0.0;
+      Float64 DshearKey = bShearKey ? pProduct->GetDeflection(castShearKeyIntervalIdx, pgsTypes::pftShearKey, erectedPoi, bat, rtCumulative, false) : 0.0;
+      Float64 DlongJoint = bLongitudinalJoint ? pProduct->GetDeflection(castLongitudinalJointIntervalIdx, pgsTypes::pftLongitudinalJoint, erectedPoi, bat, rtCumulative, false) : 0.0;
       Float64 Dconstruction= bConstruction ? pProduct->GetDeflection(constructionLoadIntervalIdx,pgsTypes::pftConstruction,erectedPoi,bat, rtCumulative, false) : 0.0;
       Float64 Dcreep2    = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpDiaphragmToDeck, constructionRate, pgsTypes::pddErected );
       Float64 Duser1     = pProduct->GetDeflection(noncompositeUserLoadIntervalIdx,pgsTypes::pftUserDC,erectedPoi,bat, rtCumulative, false) 
@@ -1873,9 +1916,14 @@ void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKe
       }
 
       (*table2)(row2,col++) << deflection.SetValue( Ddiaphragm );
-      if ( bShearKey )
+      if (bShearKey)
       {
-         (*table2)(row2,col++) << deflection.SetValue( DshearKey );
+         (*table2)(row2, col++) << deflection.SetValue(DshearKey);
+      }
+
+      if (bLongitudinalJoint)
+      {
+         (*table2)(row2, col++) << deflection.SetValue(DlongJoint);
       }
 
       if ( bConstruction )
@@ -1918,7 +1966,7 @@ void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKe
 
       Float64 D1 = cm.ErectionFactor * (DgdrErected + DpsErected) + DprecamberErected;
       Float64 D2 = D1 + cm.CreepFactor * Dcreep1b;
-      Float64 D3 = D2 + cm.DiaphragmFactor * (Ddiaphragm + DshearKey + Dconstruction) + cm.ErectionFactor * Dtpsr + cm.SlabUser1Factor * Duser1;
+      Float64 D3 = D2 + cm.DiaphragmFactor * (Ddiaphragm + DshearKey + DlongJoint + Dconstruction) + cm.ErectionFactor * Dtpsr + cm.SlabUser1Factor * Duser1;
       Float64 D4 = D3 + cm.CreepFactor * Dcreep2;
       Float64 D5 = D4 + cm.BarrierSwOverlayUser2Factor * (Dbarrier + Duser2) + cm.SlabUser1Factor*Dslab + cm.SlabPadLoadFactor*Dhaunch;
       if ( bSidewalk )

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,12 +26,10 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
+#include <IFace\InterfaceShearRequirements.h>
 #include <PsgLib\SpecLibraryEntry.h>
-
-#if defined _DEBUG
 #include <IFace\Intervals.h>
 #include <IFace\PrestressForce.h>
-#endif
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -97,6 +95,7 @@ CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pCh
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
+   *pParagraph << _T("Prestress losses listed are not adjusted to account for the gradual buildup of the strand force over the transfer length (5.9.4.3.1)") << rptNewLine;
 
    *pParagraph << _T("% Loss Initial = (");
    if ( !bIgnoreInitialRelaxation )
@@ -170,10 +169,7 @@ void CTotalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
 
    Float64 fpj = pDetails->pLosses->GetFpjPermanent();
 
-   GET_IFACE2(pBroker,IPretensionForce,pPrestressForce);
-   Float64 adj = pPrestressForce->GetXferLengthAdjustment(poi,pgsTypes::Permanent);
-
-   (*this)(row+rowOffset,col++) << scalar.SetValue( 100*(fpj - adj*(fpj - (dfpR0+dfpES)))/fpj );
+   (*this)(row+rowOffset,col++) << scalar.SetValue( 100*(fpj - (fpj - (dfpR0+dfpES)))/fpj );
    
    Float64 dfpp = 0;
    if ( 0 < m_NtMax && m_pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned ) 
@@ -192,25 +188,24 @@ void CTotalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
 
    Float64 dfpLT = pDetails->pLosses->TimeDependentLosses();
    (*this)(row+rowOffset,col++) << stress.SetValue(dfpLT);
-   (*this)(row+rowOffset,col++) << scalar.SetValue( 100*(fpj - adj*(fpj - (dfpR0+dfpLT)))/fpj );
+   (*this)(row+rowOffset,col++) << scalar.SetValue( 100*(fpj - (fpj - (dfpR0+dfpLT)))/fpj );
 
    Float64 dfpT = pDetails->pLosses->PermanentStrand_Final(); 
 
-   Float64 dfpED   = pDetails->pLosses->ElasticGainDueToDeckPlacement();
-   Float64 dfpSIDL = pDetails->pLosses->ElasticGainDueToSIDL();
+   Float64 dfpED   = pDetails->pLosses->ElasticGainDueToDeckPlacement(true/*apply elastic gains reduction*/);
+   Float64 dfpSIDL = pDetails->pLosses->ElasticGainDueToSIDL(true/*apply elastic gains reduction*/);
 
    dfpT += dfpES + dfpp + dfptr - dfpED - dfpSIDL;
    (*this)(row+rowOffset,col++) << stress.SetValue(dfpT);
 
-   Float64 fpe = fpj - dfpT;
-   fpe *= adj;
-
-#if defined _DEBUG
+   // NOTE: we could report fpe = fpj - dfpT but it wouldn't account for the prestress transfer adjustment
+   // for that reason we report the actual effective prestress based on fpe = P/Aps 
+   // where P accounts for the prestress transfer adjustment
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
-   Float64 _fpe_ = pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
-   ATLASSERT(IsEqual(fpe,_fpe_));
-#endif
+
+   GET_IFACE2(pBroker, IPretensionForce, pPrestressForce);
+   Float64 fpe = pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
 
    (*this)(row+rowOffset,col++) << stress.SetValue(fpe);
 

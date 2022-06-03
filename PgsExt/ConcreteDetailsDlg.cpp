@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -52,13 +52,14 @@ static char THIS_FILE[] = __FILE__;
 // CConcreteDetailsDlg dialog
 
 
-CConcreteDetailsDlg::CConcreteDetailsDlg(bool bFinalProperties,bool bEnableComputeTimeParameters,bool bEnableCopyFromLibrary,CWnd* pParent /*=nullptr*/,UINT iSelectPage/*=0*/)
+CConcreteDetailsDlg::CConcreteDetailsDlg(bool bFinalProperties, bool bIncludeUHPC, bool bEnableComputeTimeParameters,bool bEnableCopyFromLibrary,CWnd* pParent /*=nullptr*/,UINT iSelectPage/*=0*/)
 	: CPropertySheet(_T("Concrete Details"),pParent, iSelectPage)
 {
 	//{{AFX_DATA_INIT(CConcreteDetailsDlg)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
    m_bFinalProperties = bFinalProperties;
+   m_bIncludeUHPC = bIncludeUHPC;
    m_bEnableComputeTimeParamters = bEnableComputeTimeParameters;
    m_bEnableCopyFromLibrary = bEnableCopyFromLibrary;
    Init();
@@ -90,6 +91,7 @@ void CConcreteDetailsDlg::Init()
    m_AASHTO.m_psp.dwFlags   |= PSP_HASHELP;
    m_ACI.m_psp.dwFlags      |= PSP_HASHELP;
    m_CEBFIP.m_psp.dwFlags   |= PSP_HASHELP;
+   m_PCIUHPC.m_psp.dwFlags |= PSP_HASHELP;
 
    AddPage( &m_General );
 
@@ -107,6 +109,8 @@ void CConcreteDetailsDlg::Init()
    if ( loss_method != pgsTypes::TIME_STEP )
    {
       AddPage( &m_AASHTO );
+
+      if(m_bIncludeUHPC) AddPage(&m_PCIUHPC);
    }
    else
    {

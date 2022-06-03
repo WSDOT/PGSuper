@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -93,6 +93,12 @@ class dbgDumpContext;
 #define MAX_SKEW_ANGLE ::ToRadians(88.0)
 
 #define NO_LIVE_LOAD_DEFINED _T("No Live Load Defined")
+
+// When required concrete strength is set to this value it indicates that 
+// no concrete strength will satisfy the stress limits
+#define NO_AVAILABLE_CONCRETE_STRENGTH -99999
+
+#define MIN_CURVE_RADIUS ::ConvertToSysUnits(0.01,unitMeasure::Feet)
 
 typedef struct pgsTypes
 {
@@ -495,7 +501,7 @@ typedef struct pgsTypes
 
    typedef enum SlabOffsetType
    {
-      sotBridge,  // a single slab offset is used for the entire bridge
+      sotBridge,  // a single slab offset is used in all spans
       sotBearingLine, // the slab offset is defined at each bearing line at the ends of segments (single value for entire bearing line)
       sotSegment,  // the slab offset is defined at the end of each segment individually
    } SlabOffsetType;
@@ -503,7 +509,7 @@ typedef struct pgsTypes
 
    typedef enum BearingType
    {
-      brtBridge,  // same bearing data is used for the entire bridge
+      brtBridge,  // same bearing data is used in all spans
       brtPier,    // unique bearing is defined at each abutment, pier, and temporary support and applies to all segments supported by that element
       brtGirder,  // unique bearing at each pier for each girder
    } BearingType;
@@ -511,7 +517,7 @@ typedef struct pgsTypes
    // Assummed excess camber input
    typedef enum AssumedExcessCamberType 
    {
-      aecBridge,  // a single camber is used for the entire bridge
+      aecBridge,  // a single camber is used in all spans
       aecSpan,    // the camber is defined at each span
       aecGirder,  // the camber is defined at each girder
    } AssumedExcessCamberType;
@@ -624,10 +630,10 @@ typedef struct pgsTypes
    typedef enum ConcreteType
    {
       Normal,
-      AllLightweight,
-      SandLightweight,
-      UHPC,
-      ConcreteTypeCount // this should always be the last value in the num
+      AllLightweight, // Starting with AASHTO LRFD 7th Edition, 2016 Interims, the destinction between All Lightweight and Sand Lightweight is removed. AllLightweight is considered an invalid parameter and it automatically gets converted to SandLightweight
+      SandLightweight, // Starting with AASHTO LRFD 7th Edition, 2016 Interims SandLightweight means "Lightweight" for all types of lightweight concrete
+      PCI_UHPC, // Concrete is defined by on PCI definition of UHPC
+      ConcreteTypeCount // this should always be the last value in the enum
    } ConcreteType;
 
    // Rebar layout defines where longitudinal rebar is placed along girder. 
@@ -838,6 +844,34 @@ typedef struct pgsTypes
       ptsmLRFD,
       ptsmNCHRP
    } PrincipalTensileStressMethod;
+
+   typedef enum ShearFlowMethod
+   {
+      // compute horizontal interface shear flow between slab and girder using
+      sfmLRFD,     // LRFD simplified equation
+      sfmClassical // Classical equation (VQ/I)
+   } ShearFlowMethod;
+
+   typedef enum ShearCapacityMethod
+   {
+      // NOTE: enum values are in a weird order... the constants are set so that they
+      //       are consistent with previous versions of PGSuper. DO NOT CHANGE CONSTANTS
+      scmBTEquations = 0, // LRFD 5.7.3.5 (pre2017: 5.8.3.5)
+      scmVciVcw = 2, // LRFD 5.8.3.6 (Vci, Vcw - added in 2007, removed in 2017)
+      scmWSDOT2001 = 1, // WSDOT BDM Method (June 2001 Design Memo)
+      scmBTTables = 3, // LRFD B5.1
+      scmWSDOT2007 = 4  // WSDOT BDM Method (August 2007 Design Memo - Use new BT equations from to be published 2008 interims)
+   } ShearCapacityMethod;
+
+   // Segments at erection can be Drop ins. In this case, one or both ends are free to translate  
+   // in order to meet elevation with the supporting segment
+   typedef enum DropInType
+   { 
+      ditNotDropIn, 
+      ditYesFreeBothEnds, 
+      ditYesFreeStartEnd, 
+      ditYesFreeEndEnd 
+   } DropInType;
 
 } pgsTypes;
 
@@ -1506,24 +1540,6 @@ typedef enum HarpedStrandOffsetType
    hsoBOTTOM2BOTTOM = 4,    // Bottom-most strand to bottom of girder
    hsoECCENTRICITY  = 5     // Eccentricity of total strand group
 } HarpedStrandOffsetType;
-
-enum ShearFlowMethod
-{
-   // compute horizontal interface shear flow between slab and girder using
-   sfmLRFD,     // LRFD simplified equation
-   sfmClassical // Classical equation (VQ/I)
-};
-
-enum ShearCapacityMethod
-{
-   // NOTE: enum values are in a weird order... the constants are set so that they
-   //       are consistent with previous versions of PGSuper. DO NOT CHANGE CONSTANTS
-   scmBTEquations = 0, // LRFD 5.7.3.5 (pre2017: 5.8.3.5)
-   scmVciVcw      = 2, // LRFD 5.8.3.6 (Vci, Vcw - added in 2007, removed in 2017)
-   scmWSDOT2001   = 1, // WSDOT BDM Method (June 2001 Design Memo)
-   scmBTTables    = 3, // LRFD B5.1
-   scmWSDOT2007   = 4  // WSDOT BDM Method (August 2007 Design Memo - Use new BT equations from to be published 2008 interims)
-};
 
 // functions to hash and un-hash span/girder for file loading and saving
 inline DWORD HashGirderSpacing(pgsTypes::MeasurementLocation ml,pgsTypes::MeasurementType mt)
@@ -2201,6 +2217,16 @@ inline bool IsParabolicVariation(pgsTypes::SegmentVariationType variationType)
 inline bool IsSegmentContinuousOverPier(pgsTypes::PierSegmentConnectionType connectionType)
 {
    return (connectionType == pgsTypes::psctContinuousSegment || connectionType == pgsTypes::psctIntegralSegment) ? true : false;
+}
+
+inline bool IsGridBasedStrandModel(pgsTypes::StrandDefinitionType strandModelType)
+{
+   return (strandModelType == pgsTypes::sdtTotal || strandModelType == pgsTypes::sdtStraightHarped || strandModelType == pgsTypes::sdtDirectSelection) ? true : false;
+}
+
+inline bool IsDirectStrandModel(pgsTypes::StrandDefinitionType strandModelType)
+{
+   return (strandModelType == pgsTypes::sdtDirectRowInput || strandModelType == pgsTypes::sdtDirectStrandInput) ? true : false;
 }
 
 #endif // INCLUDED_PGSUPERTYPES_H_

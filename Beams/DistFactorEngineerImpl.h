@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -33,6 +33,7 @@
 #include <Beams\Interfaces.h>
 #include <map>
 #include <numeric>
+
 
 // Side where overhang value was used if in equation
 enum DfSide {dfLeft, dfRight};
@@ -119,9 +120,11 @@ protected:
 
    std::map<PierGirderHashType,PIERDETAILS> m_PierLLDF[2][2]; // first index is pier face type, second index is limit state type
    void GetPierDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace,Float64 fcgdr,PIERDETAILS* plldf);
+   void GetPierDFRaw(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace,Float64 fcgdr,PIERDETAILS* plldf);
 
    std::map<SpanGirderHashType,SPANDETAILS> m_SpanLLDF[2]; // index is limit state type
    void GetSpanDF(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr,SPANDETAILS* plldf);
+   void GetSpanDFRaw(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr,SPANDETAILS* plldf);
 
    Float64 GetEffectiveSpanLength(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType);
    void GetGirderSpacingAndOverhang(const CSpanKey& spanKey,DFParam dfType,BASE_LLDFDETAILS* pDetails,pgsPointOfInterest* pControllingPoi);
@@ -196,15 +199,56 @@ Float64 CDistFactorEngineerImpl<T>::GetShearDF(const CSpanKey& spanKey,pgsTypes:
 
 
 template <class T>
-void CDistFactorEngineerImpl<T>::GetPierDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace,Float64 fcgdr,PIERDETAILS* plldf)
+void CDistFactorEngineerImpl<T>::GetPierDF(PierIndexType pierIdx, GirderIndexType gdrIdx, pgsTypes::LimitState ls, pgsTypes::PierFaceType pierFace, Float64 fcgdr, PIERDETAILS* plldf)
 {
-   std::map<PierGirderHashType,PIERDETAILS>::iterator found;
-   found = m_PierLLDF[pierFace][LimitStateType(ls)].find(HashPierGirder(pierIdx,gdrIdx));
-   if ( found != m_PierLLDF[pierFace][LimitStateType(ls)].end() && fcgdr == USE_CURRENT_FC )
+   std::map<PierGirderHashType, PIERDETAILS>::iterator found;
+   found = m_PierLLDF[pierFace][LimitStateType(ls)].find(HashPierGirder(pierIdx, gdrIdx));
+   if (found != m_PierLLDF[pierFace][LimitStateType(ls)].end() && fcgdr == USE_CURRENT_FC)
    {
       *plldf = (*found).second;
       return; // We already have the distribution factors for this girder
    }
+
+   // Need to compute. First determine if we need to deal with rule that forces exterior LLDF's never to be less than the adjacent interior beam
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CPierData2* pPier = pBridgeDesc->GetPier(pierIdx);
+   const CGirderGroupData* pGroup = pPier->GetGirderGroup(pierFace);
+   GirderIndexType nGirders = pGroup->GetGirderCount();
+   bool bExteriorGirder = pGroup->IsExteriorGirder(gdrIdx);
+
+   GET_IFACE(ISpecification, pSpec);
+   GET_IFACE(ILibrary, pLib);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+
+   // Go ahead and get raw calculated details for this girder. We will modify if needed in next section
+   GetPierDFRaw(pierIdx, gdrIdx, ls, pierFace, fcgdr, plldf);
+
+   if (bExteriorGirder && nGirders>2  && pSpecEntry->GetExteriorLiveLoadDistributionGTAdjacentInteriorRule())
+   {
+      // Exterior-interior rule applies. Compute factors for adjacent interior beam
+      GirderIndexType adjGdrIndex = gdrIdx == 0 ? 1 : nGirders - 2;
+
+      PIERDETAILS adjdet;
+      GetPierDFRaw(pierIdx, adjGdrIndex, ls, pierFace, fcgdr, &adjdet);
+
+      if (adjdet.gM > plldf->gM+TOLERANCE)
+      {
+         plldf->gM = adjdet.gM;
+         plldf->gM1 = adjdet.gM1;
+         plldf->gM1.ControllingMethod |= INTERIOR_OVERRIDE;
+         plldf->gM2 = adjdet.gM2;
+         plldf->gM2.ControllingMethod |= INTERIOR_OVERRIDE;
+      }
+   }
+
+   // Store in cache
+   m_PierLLDF[pierFace][LimitStateType(ls)].insert( std::make_pair(HashPierGirder(pierIdx,gdrIdx),*plldf) );
+}
+
+template <class T>
+void CDistFactorEngineerImpl<T>::GetPierDFRaw(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace,Float64 fcgdr,PIERDETAILS* plldf)
+{
 
    DFParam dfParam = (pierFace == pgsTypes::Back ? dfPierLeft : dfPierRight);
    std::unique_ptr<lrfdLiveLoadDistributionFactorBase> pLLDF( GetLLDFParameters(pierIdx,gdrIdx,dfParam,fcgdr,plldf) );
@@ -236,11 +280,11 @@ void CDistFactorEngineerImpl<T>::GetPierDF(PierIndexType pierIdx,GirderIndexType
       }
       else if (df_method == pgsTypes::LeverRule)
       {
-         plldf->gM1 = pLLDF->DistributeMomentByLeverRule(loc, lrfdILiveLoadDistributionFactor::OneLoadedLane);
+         plldf->gM1 = pLLDF->DistributeMomentByLeverRule(loc, lrfdILiveLoadDistributionFactor::OneLoadedLane, ls!=pgsTypes::FatigueI);
 
          if ( 2 <= plldf->Nl  && ls != pgsTypes::FatigueI )
          {
-            plldf->gM2 = pLLDF->DistributeMomentByLeverRule(loc, lrfdILiveLoadDistributionFactor::TwoOrMoreLoadedLanes);
+            plldf->gM2 = pLLDF->DistributeMomentByLeverRule(loc, lrfdILiveLoadDistributionFactor::TwoOrMoreLoadedLanes, true);
          }
          else
          {
@@ -260,8 +304,8 @@ void CDistFactorEngineerImpl<T>::GetPierDF(PierIndexType pierIdx,GirderIndexType
       if (pSpecEntry->LimitDistributionFactorsToLanesBeams())
       {
          // Compare results with lanes/beams and override if needed
-         lrfdILiveLoadDistributionFactor::DFResult glb1 = pLLDF->GetLanesBeamsMethod(1,GirderIndexType(plldf->Nb));
-         lrfdILiveLoadDistributionFactor::DFResult glb2 = pLLDF->GetLanesBeamsMethod(plldf->Nl,GirderIndexType(plldf->Nb));
+         lrfdILiveLoadDistributionFactor::DFResult glb1 = pLLDF->GetLanesBeamsMethod(1,GirderIndexType(plldf->Nb), ls != pgsTypes::FatigueI);
+         lrfdILiveLoadDistributionFactor::DFResult glb2 = pLLDF->GetLanesBeamsMethod(plldf->Nl,GirderIndexType(plldf->Nb),ls != pgsTypes::FatigueI);
 
          // Moment
          if (plldf->gM1.mg < glb1.mg)
@@ -304,13 +348,10 @@ void CDistFactorEngineerImpl<T>::GetPierDF(PierIndexType pierIdx,GirderIndexType
    {
       HandleRangeOfApplicabilityError(e);
    }
-
-   m_PierLLDF[pierFace][LimitStateType(ls)].insert( std::make_pair(HashPierGirder(pierIdx,gdrIdx),*plldf) );
 }
 
-
 template <class T>
-void CDistFactorEngineerImpl<T>::GetSpanDF(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr,SPANDETAILS* plldf)
+void CDistFactorEngineerImpl<T>::GetSpanDF(const CSpanKey& spanKey, pgsTypes::LimitState ls, Float64 fcgdr, SPANDETAILS* plldf)
 {
    std::map<SpanGirderHashType,SPANDETAILS>::iterator found;
    found = m_SpanLLDF[LimitStateType(ls)].find(::HashSpanGirder(spanKey.spanIndex,spanKey.girderIndex));
@@ -320,6 +361,59 @@ void CDistFactorEngineerImpl<T>::GetSpanDF(const CSpanKey& spanKey,pgsTypes::Lim
       return; // We already have the distribution factors for this girder
    }
 
+   // Need to compute. First determine if we need to deal with rule that forces exterior LLDF's never to be less than the adjacent interior beam
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanKey.spanIndex);
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
+   GirderIndexType nGirders = pGroup->GetGirderCount();
+   bool bExteriorGirder = pGroup->IsExteriorGirder(spanKey.girderIndex);
+
+   GET_IFACE(ISpecification, pSpec);
+   GET_IFACE(ILibrary, pLib);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+
+   // Go ahead and get raw calculated details for this girder. We will modify if needed in next section
+   GetSpanDFRaw(spanKey, ls, fcgdr,  plldf);
+
+   if (bExteriorGirder && nGirders>2  && pSpecEntry->GetExteriorLiveLoadDistributionGTAdjacentInteriorRule())
+   {
+      // Exterior-interior rule applies. Compute factors for adjacent interior beam
+      GirderIndexType adjIndex = spanKey.girderIndex == 0 ? 1 : nGirders - 2;
+      CSpanKey adjSpanKey(spanKey.spanIndex, adjIndex);
+
+      SPANDETAILS adjdet;
+      GetSpanDFRaw(adjSpanKey, ls, fcgdr,  &adjdet);
+
+      // moment and shear are treated separately
+      if (adjdet.gM > plldf->gM+TOLERANCE)
+      {
+         plldf->gM = adjdet.gM;
+         plldf->gM1 = adjdet.gM1;
+         plldf->gM1.ControllingMethod |= INTERIOR_OVERRIDE;
+         plldf->gM2 = adjdet.gM2;
+         plldf->gM2.ControllingMethod |= INTERIOR_OVERRIDE;
+         plldf->gMSkewCorrection = adjdet.gMSkewCorrection;
+      }
+
+      if (adjdet.gV > plldf->gV+TOLERANCE)
+      {
+         plldf->gV = adjdet.gV;
+         plldf->gV1 = adjdet.gV1;
+         plldf->gV1.ControllingMethod |= INTERIOR_OVERRIDE;
+         plldf->gV2 = adjdet.gV2;
+         plldf->gV2.ControllingMethod |= INTERIOR_OVERRIDE;
+         plldf->gVSkewCorrection = adjdet.gVSkewCorrection;
+      }
+   }
+
+   // Save factors in cache
+   m_SpanLLDF[LimitStateType(ls)].insert( std::make_pair(::HashSpanGirder(spanKey.spanIndex,spanKey.girderIndex),*plldf) );
+}
+
+template <class T>
+void CDistFactorEngineerImpl<T>::GetSpanDFRaw(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr,SPANDETAILS* plldf)
+{
    // get method used to compute factors, may be lever override
    GET_IFACE(IBridgeDescription,pBridgeDesc);
    pgsTypes::DistributionFactorMethod df_method = pBridgeDesc->GetBridgeDescription()->GetDistributionFactorMethod();
@@ -360,10 +454,10 @@ void CDistFactorEngineerImpl<T>::GetSpanDF(const CSpanKey& spanKey,pgsTypes::Lim
       }
       else if (df_method == pgsTypes::LeverRule)
       {
-         plldf->gM1 = pLLDF->DistributeMomentByLeverRule(loc, lrfdILiveLoadDistributionFactor::OneLoadedLane);
+         plldf->gM1 = pLLDF->DistributeMomentByLeverRule(loc, lrfdILiveLoadDistributionFactor::OneLoadedLane, ls != pgsTypes::FatigueI);
          if ( 2 <= plldf->Nl  && ls != pgsTypes::FatigueI )
          {
-            plldf->gM2 = pLLDF->DistributeMomentByLeverRule(loc, lrfdILiveLoadDistributionFactor::TwoOrMoreLoadedLanes);
+            plldf->gM2 = pLLDF->DistributeMomentByLeverRule(loc, lrfdILiveLoadDistributionFactor::TwoOrMoreLoadedLanes, true);
          }
          else
          {
@@ -371,11 +465,11 @@ void CDistFactorEngineerImpl<T>::GetSpanDF(const CSpanKey& spanKey,pgsTypes::Lim
          }
 
 
-         plldf->gV1 = pLLDF->DistributeShearByLeverRule(loc, lrfdILiveLoadDistributionFactor::OneLoadedLane);
+         plldf->gV1 = pLLDF->DistributeShearByLeverRule(loc, lrfdILiveLoadDistributionFactor::OneLoadedLane, ls != pgsTypes::FatigueI);
 
          if ( 2 <= plldf->Nl  && ls != pgsTypes::FatigueI )
          {
-            plldf->gV2 = pLLDF->DistributeShearByLeverRule(loc, lrfdILiveLoadDistributionFactor::TwoOrMoreLoadedLanes);
+            plldf->gV2 = pLLDF->DistributeShearByLeverRule(loc, lrfdILiveLoadDistributionFactor::TwoOrMoreLoadedLanes, true);
          }
          else
          {
@@ -395,8 +489,8 @@ void CDistFactorEngineerImpl<T>::GetSpanDF(const CSpanKey& spanKey,pgsTypes::Lim
       if (pSpecEntry->LimitDistributionFactorsToLanesBeams())
       {
          // Compare results with lanes/beams and override if needed
-         lrfdILiveLoadDistributionFactor::DFResult glb1 = pLLDF->GetLanesBeamsMethod(1,GirderIndexType(plldf->Nb));
-         lrfdILiveLoadDistributionFactor::DFResult glb2 = pLLDF->GetLanesBeamsMethod(plldf->Nl,GirderIndexType(plldf->Nb));
+         lrfdILiveLoadDistributionFactor::DFResult glb1 = pLLDF->GetLanesBeamsMethod(1,GirderIndexType(plldf->Nb), ls != pgsTypes::FatigueI);
+         lrfdILiveLoadDistributionFactor::DFResult glb2 = pLLDF->GetLanesBeamsMethod(plldf->Nl,GirderIndexType(plldf->Nb), ls != pgsTypes::FatigueI);
 
          // Moment
          if ( plldf->gM1.mg < glb1.mg)
@@ -467,7 +561,6 @@ void CDistFactorEngineerImpl<T>::GetSpanDF(const CSpanKey& spanKey,pgsTypes::Lim
       HandleRangeOfApplicabilityError(e);
    }
 
-   m_SpanLLDF[LimitStateType(ls)].insert( std::make_pair(::HashSpanGirder(spanKey.spanIndex,spanKey.girderIndex),*plldf) );
 }
 
 template <class T>

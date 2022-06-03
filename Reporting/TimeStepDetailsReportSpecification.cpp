@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,6 +23,7 @@
 #include "StdAfx.h"
 #include <Reporting\TimeStepDetailsReportSpecification.h>
 #include <IFace\PointOfInterest.h>
+#include <PgsExt\GirderLabel.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -59,7 +60,12 @@ HRESULT CTimeStepDetailsReportSpecification::Validate() const
 std::_tstring CTimeStepDetailsReportSpecification::GetReportContextString() const
 {
    CGirderKey girderKey = m_Poi.GetSegmentKey();
-   if ( girderKey.groupIndex != ALL_SPANS && girderKey.girderIndex != ALL_GIRDERS )
+   std::_tstring strLocation;
+   if (m_bReportAtAllLocations)
+   {
+      strLocation = _T("All Analysis Sections");
+   }
+   else if ( girderKey.groupIndex != ALL_GROUPS && girderKey.girderIndex != ALL_GIRDERS )
    {
       CComPtr<IBroker> pBroker;
       GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
@@ -73,10 +79,23 @@ std::_tstring CTimeStepDetailsReportSpecification::GetReportContextString() cons
       strLabel.Replace(_T("<sub>"), _T(""));
       strLabel.Replace(_T("</sub>"), _T(""));
 
-      return std::_tstring(strLabel);
+      strLocation = std::_tstring(strLabel);
    }
 
-   return std::_tstring();
+   std::_tstring strIntervals;
+   if (m_IntervalIdx == INVALID_INDEX)
+   {
+      strIntervals = _T("All Intervals");
+   }
+   else
+   {
+      std::_tostringstream os;
+      os << _T("Interval ") << LABEL_INTERVAL(m_IntervalIdx);
+      strIntervals = os.str();
+   }
+
+   strLocation += _T(", ") + strIntervals;
+   return strLocation;
 }
 
 bool CTimeStepDetailsReportSpecification::ReportAtAllLocations() const

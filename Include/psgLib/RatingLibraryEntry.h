@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -253,9 +253,6 @@ public:
    void SetSpecificationVersion(lrfrVersionMgr::Version version);
    lrfrVersionMgr::Version GetSpecificationVersion() const;
 
-   void AlwaysLoadRate(bool bAlways);
-   bool AlwaysLoadRate() const;
-
    // For use with LRFR before LRFR2013
    void SetLiveLoadFactorModel(pgsTypes::LoadRatingType ratingType,const CLiveLoadFactorModel& model);
    const CLiveLoadFactorModel& GetLiveLoadFactorModel(pgsTypes::LoadRatingType ratingType) const;
@@ -285,8 +282,6 @@ private:
    bool m_bUseCurrentSpecification;
    lrfrVersionMgr::Version m_SpecificationVersion;
    std::_tstring m_Description;
-
-   bool m_bAlwaysRate;
 
    // for use with LRFR before 2013
    std::array<CLiveLoadFactorModel, pgsTypes::lrLoadRatingTypeCount> m_LiveLoadFactorModels; // index is pgsTypes::LoadRatingType excluding lrPermit_Special

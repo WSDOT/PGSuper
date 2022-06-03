@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -492,8 +492,7 @@ void CTogaGirderModelSectionView::BuildCGDisplayObjects(CTxDOTOptionalDesignDoc*
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   Float64 nEff;
-   Float64 ecc = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi,true, &nEff);
+   Float64 ecc = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi,true).Y();
 
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    Float64 Yb = pSectProp->GetY(releaseIntervalIdx,poi,pgsTypes::BottomGirder);
@@ -641,8 +640,7 @@ void CTogaGirderModelSectionView::BuildDimensionDisplayObjects(CTxDOTOptionalDes
    Float64 top_width = pGirder->GetTopWidth(poi);
    Float64 bottom_width = pGirder->GetBottomWidth(poi);
    Float64 height = pGirder->GetHeight(poi);
-   Float64 nEff;
-   Float64 ecc = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poi,true, &nEff);
+   Float64 ecc = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poi,true).Y();
    Float64 yps = pSectProp->GetY(releaseIntervalIdx,poi,pgsTypes::BottomGirder) - ecc;
 
    CString strDim;

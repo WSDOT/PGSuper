@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -65,21 +65,14 @@ DELEGATE_CUSTOM_INTERFACE(CGMDisplayMgrEventsImpl,Events);
 
 STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnLButtonDblClk(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point)
 {
-   METHOD_PROLOGUE(CGMDisplayMgrEventsImpl,Events);
+   METHOD_PROLOGUE(CGMDisplayMgrEventsImpl, Events);
 
-   CGirderKey girderKey = pThis->m_pFrame->GetSelection();
+   // only handle left button double click in the field of the section view
 
-   if ( girderKey.groupIndex == ALL_GROUPS )
-   {
-      girderKey.groupIndex = 0;
-   }
+   if (pThis->m_bGirderElevation) return false;
    
-   if ( girderKey.girderIndex == ALL_GIRDERS )
-   {
-      girderKey.girderIndex = 0;
-   }
-
-   pThis->m_pDoc->EditGirderDescription(girderKey,EGD_GENERAL);
+   auto poi = pThis->m_pFrame->GetCutLocation();
+   pThis->m_pDoc->EditGirderDescription(poi.GetSegmentKey(), EGD_GENERAL);
 
    return true;
 }

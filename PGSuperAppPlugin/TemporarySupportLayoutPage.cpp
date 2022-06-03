@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -78,6 +78,8 @@ void CTemporarySupportLayoutPage::DoDataExchange(CDataExchange* pDX)
 {
    DDX_Control(pDX, IDC_ERECTION_EVENT, m_cbErection);
    DDX_Control(pDX, IDC_REMOVAL_EVENT, m_cbRemoval);
+   DDX_Control(pDX, IDC_BACK_SLAB_OFFSET, m_wndSlabOffset[pgsTypes::Back]);
+   DDX_Control(pDX, IDC_AHEAD_SLAB_OFFSET, m_wndSlabOffset[pgsTypes::Ahead]);
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -147,7 +149,7 @@ void CTemporarySupportLayoutPage::DoDataExchange(CDataExchange* pDX)
 
       pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
       CClosureJointData* pCJ = pParent->m_pTS->GetClosureJoint(0);
-      if (deckType != pgsTypes::sdtNone && pCJ != nullptr)
+      if (deckType != pgsTypes::sdtNone && pCJ != nullptr && m_SlabOffsetType != pgsTypes::sotSegment)
       {
          Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
          CString strMinValError;
@@ -259,14 +261,43 @@ BOOL CTemporarySupportLayoutPage::OnInitDialog()
    m_SlabOffsetType = pParent->m_BridgeDesc.GetSlabOffsetType();
    m_InitialSlabOffsetType = m_SlabOffsetType;
 
-   if (pParent->m_pTS->HasSlabOffset())
+   if (m_SlabOffsetType == pgsTypes::sotSegment)
+   {
+      // Do nothing... there is a unique slab offset per segment forming into this temporary support
+      // We can't display one single meaningful value
+      // The caching edit control will show/hide values based on it's enabled/disabled state
+
+      // Initialize with GirderLine 0 values so the control shows something meaningful
+      const CClosureJointData* pCJ = pParent->m_pTS->GetClosureJoint(0);
+      if (pCJ)
+      {
+         const CPrecastSegmentData* pBackSegment = pCJ->GetLeftSegment();
+         const CPrecastSegmentData* pAheadSegment = pCJ->GetRightSegment();
+
+         m_SlabOffset[pgsTypes::Back] = pBackSegment->GetSlabOffset(pgsTypes::metEnd);
+         m_SlabOffset[pgsTypes::Ahead] = pAheadSegment->GetSlabOffset(pgsTypes::metStart);
+      }
+      else
+      {
+         m_SlabOffset[pgsTypes::Back] = pParent->m_BridgeDesc.GetSlabOffset();
+         m_SlabOffset[pgsTypes::Ahead] = m_SlabOffset[pgsTypes::Back];
+      }
+   }
+   else if (pParent->m_pTS->HasSlabOffset())
    {
       pParent->m_pTS->GetSlabOffset(&m_SlabOffset[pgsTypes::Back], &m_SlabOffset[pgsTypes::Ahead]);
+
+      m_wndSlabOffset[pgsTypes::Back].ShowDefaultWhenDisabled(TRUE);
+      m_wndSlabOffset[pgsTypes::Ahead].ShowDefaultWhenDisabled(TRUE);
    }
    else
    {
+      ATLASSERT(m_SlabOffsetType == pgsTypes::sotBridge);
       m_SlabOffset[pgsTypes::Back] = pParent->m_BridgeDesc.GetSlabOffset();
       m_SlabOffset[pgsTypes::Ahead] = m_SlabOffset[pgsTypes::Back];
+
+      m_wndSlabOffset[pgsTypes::Back].ShowDefaultWhenDisabled(TRUE);
+      m_wndSlabOffset[pgsTypes::Ahead].ShowDefaultWhenDisabled(TRUE);
    }
 
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_TS_TYPE);
@@ -618,12 +649,18 @@ void CTemporarySupportLayoutPage::UpdateSlabOffsetControls()
    pgsTypes::SlabOffsetType slabOffsetType = (pgsTypes::SlabOffsetType)pCB->GetItemData(curSel);
 
    BOOL bEnable = (slabOffsetType == pgsTypes::sotBearingLine ? TRUE : FALSE);
-   GetDlgItem(IDC_BACK_SLAB_OFFSET)->EnableWindow(bEnable);
-   GetDlgItem(IDC_AHEAD_SLAB_OFFSET)->EnableWindow(bEnable);
+   m_wndSlabOffset[pgsTypes::Back].EnableWindow(bEnable);
+   m_wndSlabOffset[pgsTypes::Ahead].EnableWindow(bEnable);
 
    // Elevation adjustment controls follow the same rule as slab offset controls
    GetDlgItem(IDC_ADJUSTMENT_GROUP)->ShowWindow(nShowCmd);
    GetDlgItem(IDC_ADJUSTMENT_LABEL)->ShowWindow(nShowCmd);
    GetDlgItem(IDC_ADJUSTMENT)->ShowWindow(nShowCmd);
    GetDlgItem(IDC_ADJUSTMENT_UNIT)->ShowWindow(nShowCmd);
+
+   // Temporary disable the elevation adjustment feature
+   GetDlgItem(IDC_ADJUSTMENT_GROUP)->EnableWindow(FALSE);
+   GetDlgItem(IDC_ADJUSTMENT_LABEL)->EnableWindow(FALSE);
+   GetDlgItem(IDC_ADJUSTMENT)->EnableWindow(FALSE);
+   GetDlgItem(IDC_ADJUSTMENT_UNIT)->EnableWindow(FALSE);
 }

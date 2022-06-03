@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // IEPluginExample
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -63,7 +63,7 @@ STDMETHODIMP CPGSuperDataImporter::Import(IBroker* pBroker)
 
    if (st==IDYES)
    {
-      HorzCurveData hcData;
+      CompoundCurveData hcData;
       hcData.PIStation = 15.;
       hcData.FwdTangent = 2.25;
       hcData.Radius = 600;
@@ -73,7 +73,7 @@ STDMETHODIMP CPGSuperDataImporter::Import(IBroker* pBroker)
 
       AlignmentData2 alignmentData;
 
-      alignmentData.HorzCurves.push_back(hcData);
+      alignmentData.CompoundCurves.push_back(hcData);
       alignmentData.Direction = 2;
       alignmentData.RefStation = 150.0;
       alignmentData.xRefPoint = 50;

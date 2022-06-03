@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -277,8 +277,8 @@ void CBridgeModelViewChildFrame::InitGroupRange()
    GroupIndexType startDisplayIndx = startGroupIdx + displayStartingGroupNum;
    GroupIndexType endDisplayIndx   = endGroupIdx + displayStartingGroupNum;
 
-   pStartSpinner->SetRange32(startDisplayIndx,(int)nGroups - 1 + displayStartingGroupNum);
-   pEndSpinner->SetRange32(startDisplayIndx,(int)nGroups - 1 + displayStartingGroupNum);
+   pStartSpinner->SetRange32((int)startDisplayIndx,(int)(nGroups - 1 + displayStartingGroupNum));
+   pEndSpinner->SetRange32((int)startDisplayIndx,(int)(nGroups - 1 + displayStartingGroupNum));
 
    pStartSpinner->SetPos32((int)startDisplayIndx);
    pEndSpinner->SetPos32((int)endDisplayIndx);
@@ -1305,7 +1305,7 @@ void CBridgeModelViewChildFrame::OnStartGroupChanged(NMHDR *pNMHDR, LRESULT *pRe
       // force position to be the same
       endGroupIdx = newStartGroupIdx;
 
-      pEndSpinner->SetPos32((int)endGroupIdx + displayStartingPierNum);
+      pEndSpinner->SetPos32((int)(endGroupIdx + displayStartingPierNum));
    }
 
    pPlanView->SetGroupRange(newStartGroupIdx,endGroupIdx);

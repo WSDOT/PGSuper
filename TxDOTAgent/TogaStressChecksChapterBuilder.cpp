@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -137,10 +137,7 @@ void CTogaStressChecksChapterBuilder::BuildTableAndNotes(rptChapter* pChapter, I
       *p<<_T("Ratio applied to Bottom Stresses = ")<< stress_fac << rptNewLine;
    }
 
-
-   GET_IFACE2(pBroker,IArtifact,pIArtifact);
-   const auto* pUnfactoredGdrArtifact = pIArtifact->GetGirderArtifact(fabrSegmentKey);
-   CFlexuralStressCheckTable().BuildTable(pChapter, pBroker, pUnfactoredGdrArtifact, fabrSegmentKey.segmentIndex, pDisplayUnits, task, true/*girder stresses*/);
+   CFlexuralStressCheckTable().BuildTable(pChapter, pBroker, pFactoredGdrArtifact, fabrSegmentKey.segmentIndex, pDisplayUnits, task, true/*girder stresses*/);
 }
 
 CChapterBuilder* CTogaStressChecksChapterBuilder::Clone() const

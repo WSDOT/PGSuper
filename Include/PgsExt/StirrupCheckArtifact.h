@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,9 +23,11 @@
 #pragma once
 
 #include <PgsExt\PgsExtExp.h>
+#include <PgsExt\StirrupCheckAtPoisArtifact.h>
+#include <PgsExt\StirrupCheckAtZonesArtifact.h>
+#include <PgsExt\SplittingCheckArtifact.h>
+#include <PgsExt\ConfinementCheckArtifact.h>
 #include <map>
-#include <PGSExt\StirrupCheckAtPoisArtifact.h>
-#include <PGSExt\StirrupCheckAtZonesArtifact.h>
 
 /*****************************************************************************
 CLASS 
@@ -67,12 +69,12 @@ public:
    const pgsStirrupCheckAtPoisArtifact* GetStirrupCheckAtPoisArtifactAtPOI(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,PoiIDType poiID) const;
 
    // confinement check
-   void SetConfinementArtifact(const pgsConfinementArtifact& artifact);
-   const pgsConfinementArtifact& GetConfinementArtifact() const;
+   void SetConfinementArtifact(const pgsConfinementCheckArtifact& artifact);
+   const pgsConfinementCheckArtifact& GetConfinementArtifact() const;
 
    // splitting check
-   pgsSplittingZoneArtifact* GetSplittingZoneArtifact();
-   const pgsSplittingZoneArtifact* GetSplittingZoneArtifact() const;
+   void SetSplittingCheckArtifact(std::shared_ptr<pgsSplittingCheckArtifact> pArtifact);
+   const std::shared_ptr<pgsSplittingCheckArtifact> GetSplittingCheckArtifact() const;
 
    // Clear out all data
    void Clear();
@@ -112,7 +114,7 @@ private:
    mutable std::map<Key,std::vector<pgsStirrupCheckAtPoisArtifact>> m_StirrupCheckAtPoisArtifacts;
    std::vector<pgsStirrupCheckAtPoisArtifact>& GetStirrupCheckArtifacts(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
 
-   pgsConfinementArtifact m_ConfinementArtifact;
+   pgsConfinementCheckArtifact m_ConfinementArtifact;
 
-   pgsSplittingZoneArtifact m_SplittingZoneArtifact;
+   std::shared_ptr<pgsSplittingCheckArtifact> m_SplittingCheckArtifact;
 };

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -65,7 +65,8 @@ pgsFlexuralStressArtifact::pgsFlexuralStressArtifact()
       m_AltTensileStressRequirements[i].bIsAdequateRebar = true;
       m_bBiaxialStresses[i] = false;
 
-      m_FcReqd[i] = -99999;
+      m_FcReqd[pgsTypes::Compression][i] = NO_AVAILABLE_CONCRETE_STRENGTH;
+      m_FcReqd[pgsTypes::Tension][i] = NO_AVAILABLE_CONCRETE_STRENGTH;
    }
 }
 
@@ -95,7 +96,8 @@ m_Poi(poi),m_Task(task)
       m_AltTensileStressRequirements[i].bIsAdequateRebar = true;
       m_bBiaxialStresses[i] = false;
 
-      m_FcReqd[i] = -99999;
+      m_FcReqd[pgsTypes::Compression][i] = NO_AVAILABLE_CONCRETE_STRENGTH;
+      m_FcReqd[pgsTypes::Tension][i] = NO_AVAILABLE_CONCRETE_STRENGTH;
    }
 }
 
@@ -215,24 +217,24 @@ Float64 pgsFlexuralStressArtifact::GetCapacity(pgsTypes::StressLocation stressLo
 }
 
 
-void pgsFlexuralStressArtifact::SetRequiredConcreteStrength(pgsTypes::StressLocation stressLocation,Float64 fcReqd)
+void pgsFlexuralStressArtifact::SetRequiredConcreteStrength(pgsTypes::StressType stressType, pgsTypes::StressLocation stressLocation,Float64 fcReqd)
 {
-   m_FcReqd[stressLocation] = fcReqd;
+   m_FcReqd[stressType][stressLocation] = fcReqd;
 }
 
-Float64 pgsFlexuralStressArtifact::GetRequiredConcreteStrength(pgsTypes::StressLocation stressLocation) const
+Float64 pgsFlexuralStressArtifact::GetRequiredConcreteStrength(pgsTypes::StressType stressType, pgsTypes::StressLocation stressLocation) const
 {
-   return m_FcReqd[stressLocation];
+   return m_FcReqd[stressType][stressLocation];
 }
 
 Float64 pgsFlexuralStressArtifact::GetRequiredBeamConcreteStrength() const
 {
-   return Max(m_FcReqd[pgsTypes::TopGirder],m_FcReqd[pgsTypes::BottomGirder]);
+   return Max(m_FcReqd[pgsTypes::Compression][pgsTypes::TopGirder],m_FcReqd[pgsTypes::Compression][pgsTypes::BottomGirder],m_FcReqd[pgsTypes::Tension][pgsTypes::TopGirder], m_FcReqd[pgsTypes::Tension][pgsTypes::BottomGirder]);
 }
 
 Float64 pgsFlexuralStressArtifact::GetRequiredDeckConcreteStrength() const
 {
-   return Max(m_FcReqd[pgsTypes::TopDeck],m_FcReqd[pgsTypes::BottomDeck]);
+   return Max(m_FcReqd[pgsTypes::Compression][pgsTypes::TopDeck],m_FcReqd[pgsTypes::Compression][pgsTypes::BottomDeck], m_FcReqd[pgsTypes::Tension][pgsTypes::TopDeck], m_FcReqd[pgsTypes::Tension][pgsTypes::BottomDeck]);
 }
 
 void pgsFlexuralStressArtifact::SetAlternativeTensileStressRequirements(pgsTypes::StressLocation stressLocation, const gbtAlternativeTensileStressRequirements& requirements,Float64 fHigherAllowable,bool bBiaxialStresses)
@@ -525,7 +527,8 @@ void pgsFlexuralStressArtifact::MakeCopy(const pgsFlexuralStressArtifact& rOther
 
       m_bBiaxialStresses[stressLocation] = rOther.m_bBiaxialStresses[stressLocation];
 
-      m_FcReqd[stressLocation]              = rOther.m_FcReqd[stressLocation];
+      m_FcReqd[pgsTypes::Compression][stressLocation] = rOther.m_FcReqd[pgsTypes::Compression][stressLocation];
+      m_FcReqd[pgsTypes::Tension][stressLocation] = rOther.m_FcReqd[pgsTypes::Tension][stressLocation];
    }
 }
 

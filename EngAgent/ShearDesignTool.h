@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -68,8 +68,8 @@ public:
       Float64 Xpoi = poi.GetDistFromStart();
       if ( 
            (Xpoi < m_StartBrg || m_EndBrg < Xpoi) ||
-           (IsEqual(Xpoi,m_StartBrg) && poi.HasAttribute(POI_CANTILEVER)) || // POI is at the left bearing but it is on the cantilever side
-           (IsEqual(Xpoi,m_EndBrg)   && poi.HasAttribute(POI_CANTILEVER))    // POI is at the right bearing but it is on the cantilever side
+           (IsEqual(Xpoi,m_StartBrg) && poi.HasAttribute(POI_SPAN | POI_CANTILEVER)) || // POI is at the left bearing but it is on the cantilever side
+           (IsEqual(Xpoi,m_EndBrg)   && poi.HasAttribute(POI_SPAN | POI_CANTILEVER))    // POI is at the right bearing but it is on the cantilever side
          )
       {
          return true; // don't want to keep
@@ -259,6 +259,8 @@ private:
    bool m_bDoDesignForConfinement;
    bool m_bDoDesignForSplitting;
    bool m_bDoDesignFromScratch;
+
+   pgsTypes::ConcreteType m_ConcreteType;
 
    // Confinement zone lengths at both ends of girder
    Float64 m_StartConfinementZl;

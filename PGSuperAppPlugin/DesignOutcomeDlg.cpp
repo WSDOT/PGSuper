@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -34,6 +34,7 @@
 
 #include <EAF\EAFApp.h>
 #include <EAF\EAFDocument.h>
+#include <EAF\EAFCustSiteVars.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -126,6 +127,7 @@ BEGIN_MESSAGE_MAP(CDesignOutcomeDlg, CDialog)
 	//}}AFX_MSG_MAP
    ON_BN_CLICKED(IDC_CHECK_ADESIGN, &CDesignOutcomeDlg::OnBnClickedCheckAdesign)
    ON_CBN_SELCHANGE(IDC_DESIGNA_FROM, &CDesignOutcomeDlg::OnCbnSelchangeDesignaFrom)
+   ON_COMMAND_RANGE(CCS_CMENU_BASE, CCS_CMENU_MAX, OnCmenuSelected)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -309,14 +311,10 @@ BOOL CDesignOutcomeDlg::OnInitDialog()
       WINDOWPLACEMENT wp;
       if (pApp->ReadWindowPlacement(CString("Window Positions"),CString("DesignOutcome"),&wp))
       {
-         CWnd* pDesktop = GetDesktopWindow();
-         //CRect rDesktop;
-         //pDesktop->GetWindowRect(&rDesktop); // this is the size of one monitor.... use GetSystemMetrics to get the entire desktop
-         CRect rDesktop(0, 0, GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN));
-         CRect rDlg(wp.rcNormalPosition);
-         if (rDesktop.PtInRect(rDlg.TopLeft()) && rDesktop.PtInRect(rDlg.BottomRight()))
+         HMONITOR hMonitor = MonitorFromRect(&wp.rcNormalPosition, MONITOR_DEFAULTTONULL); // get the monitor that has maximum overlap with the dialog rectangle (returns null if none)
+         if (hMonitor != NULL)
          {
-            // if dialog is within the desktop area, set its position... otherwise the default position will be sued
+            // if dialog is within a monitor, set its position... otherwise the default position will be sued
             SetWindowPos(NULL, wp.rcNormalPosition.left, wp.rcNormalPosition.top, wp.rcNormalPosition.right - wp.rcNormalPosition.left, wp.rcNormalPosition.bottom - wp.rcNormalPosition.top, 0);
          }
       }
@@ -424,4 +422,49 @@ bool CDesignOutcomeDlg::GetSlabOffsetDesign(SlabOffsetDesignSelectionType* pSoSe
    *pFromGirder = m_FromGirderIdx;
 
    return (m_SoSelectionType != sodtDoNotDesign);
+}
+
+void CDesignOutcomeDlg::OnCmenuSelected(UINT id)
+{
+  UINT cmd = id-CCS_CMENU_BASE ;
+
+  switch(cmd)
+  {
+  case CCS_RB_EDIT:
+//     OnEdit();
+     break;
+
+  case CCS_RB_FIND:
+     m_pBrowser->Find();
+     break;
+
+  case CCS_RB_SELECT_ALL:
+     m_pBrowser->SelectAll();
+     break;
+
+  case CCS_RB_PRINT:
+     m_pBrowser->Print(true);
+     break;
+
+  case CCS_RB_REFRESH:
+     m_pBrowser->Refresh();
+     break;
+
+  case CCS_RB_VIEW_SOURCE:
+     m_pBrowser->ViewSource();
+     break;
+
+  case CCS_RB_VIEW_BACK:
+     m_pBrowser->Back();
+     break;
+
+  case CCS_RB_VIEW_FORWARD:
+     m_pBrowser->Forward();
+     break;
+
+  default:
+     // must be a toc anchor
+     ATLASSERT(cmd>=CCS_RB_TOC);
+     m_pBrowser->NavigateAnchor(cmd-CCS_RB_TOC);
+  }
 }

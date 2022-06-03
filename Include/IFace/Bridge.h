@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -76,11 +76,18 @@ interface IRebarSection;
 interface IRebarSectionItem;
 interface IRebarLayout;
 
-class stbGirder;
-class stbLiftingStabilityProblem;
-class stbHaulingStabilityProblem;
 interface ISegmentLiftingDesignPointsOfInterest;
 interface ISegmentHaulingDesignPointsOfInterest;
+
+namespace WBFL
+{
+   namespace Stability
+   {
+      class Girder;
+      class LiftingStabilityProblem;
+      class HaulingStabilityProblem;
+   }
+}
 
 // MISCELLANEOUS
 //
@@ -312,7 +319,8 @@ interface IBridge : IUnknown
    // Segment cantilevers are to be modeled if the cantilever length is
    // at least the depth of the non-composite member. This method
    // provides a uniform means of determining if cantilevers are to be modeled
-   virtual void ModelCantilevers(const CSegmentKey& segmentKey,bool* pbStartCantilever,bool* pbEndCantilever) const = 0;
+   virtual void ModelCantilevers(const CSegmentKey& segmentKey,bool* pbLeftCantilever,bool* pbRightCantilever) const = 0;
+   virtual void ModelCantilevers(const CSegmentKey& segmentKey, Float64 leftSupportDistance, Float64 rightSupportDistance,bool* pbLeftCantilever, bool* pbRightCantilever) const = 0;
 
    // Grade of segment
    virtual Float64 GetSegmentSlope(const CSegmentKey& segmentKey) const = 0;
@@ -809,6 +817,11 @@ interface IMaterials : IUnknown
    virtual INCREMENTALSHRINKAGEDETAILS GetIncrementalRailingSystemFreeShrinakgeStrainDetails(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx) const = 0;
    virtual INCREMENTALSHRINKAGEDETAILS GetIncrementalLongitudinalJointFreeShrinkageStrainDetails(IntervalIndexType intervalIdx) const = 0;
 
+   // Autogenous shrinkage strain
+   virtual Float64 GetSegmentAutogenousShrinkage(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetClosureJointAutogenousShrinkage(const CClosureKey& closureKey) const = 0;
+   virtual Float64 GetDeckAutogenousShrinkage() const = 0;
+
    // Returns the creep coefficient at the specified time (timeType) in interval (intervalIdx) for a loading
    // occuring at time (loadingTimeType) in interval (loadingIntervalIdx). 
    virtual Float64 GetSegmentCreepCoefficient(const CSegmentKey& segmentKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const = 0;
@@ -829,6 +842,7 @@ interface IMaterials : IUnknown
    virtual Float64 GetSegmentConcreteAggSplittingStrength(const CSegmentKey& segmentKey) const = 0;
    virtual Float64 GetSegmentStrengthDensity(const CSegmentKey& segmentKey) const = 0;
    virtual Float64 GetSegmentMaxAggrSize(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetSegmentConcreteFiberLength(const CSegmentKey& segmentKey) const = 0;
    virtual Float64 GetSegmentEccK1(const CSegmentKey& segmentKey) const = 0;
    virtual Float64 GetSegmentEccK2(const CSegmentKey& segmentKey) const = 0;
    virtual Float64 GetSegmentCreepK1(const CSegmentKey& segmentKey) const = 0;
@@ -836,6 +850,7 @@ interface IMaterials : IUnknown
    virtual Float64 GetSegmentShrinkageK1(const CSegmentKey& segmentKey) const = 0;
    virtual Float64 GetSegmentShrinkageK2(const CSegmentKey& segmentKey) const = 0;
    virtual const matConcreteBase* GetSegmentConcrete(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetSegmentConcreteFirstCrackingStrength(const CSegmentKey& segmentKey) const = 0;
 
    // Closure Joint Concrete
    virtual pgsTypes::ConcreteType GetClosureJointConcreteType(const CClosureKey& closureKey) const = 0;
@@ -843,6 +858,7 @@ interface IMaterials : IUnknown
    virtual Float64 GetClosureJointConcreteAggSplittingStrength(const CClosureKey& closureKey) const = 0;
    virtual Float64 GetClosureJointStrengthDensity(const CClosureKey& closureKey) const = 0;
    virtual Float64 GetClosureJointMaxAggrSize(const CClosureKey& closureKey) const = 0;
+   virtual Float64 GetClosureJointConcreteFiberLength(const CClosureKey& closureKey) const = 0;
    virtual Float64 GetClosureJointEccK1(const CClosureKey& closureKey) const = 0;
    virtual Float64 GetClosureJointEccK2(const CClosureKey& closureKey) const = 0;
    virtual Float64 GetClosureJointCreepK1(const CClosureKey& closureKey) const = 0;
@@ -850,12 +866,14 @@ interface IMaterials : IUnknown
    virtual Float64 GetClosureJointShrinkageK1(const CClosureKey& closureKey) const = 0;
    virtual Float64 GetClosureJointShrinkageK2(const CClosureKey& closureKey) const = 0;
    virtual const matConcreteBase* GetClosureJointConcrete(const CClosureKey& closureKey) const = 0;
+   virtual Float64 GetClosureJointConcreteFirstCrackingStrength(const CClosureKey& closureKey) const = 0;
 
    // Deck Concrete
    virtual pgsTypes::ConcreteType GetDeckConcreteType() const = 0;
    virtual bool DoesDeckConcreteHaveAggSplittingStrength() const = 0;
    virtual Float64 GetDeckConcreteAggSplittingStrength() const = 0;
    virtual Float64 GetDeckMaxAggrSize() const = 0;
+   virtual Float64 GetDeckConcreteFiberLength() const = 0;
    virtual Float64 GetDeckStrengthDensity() const = 0;
    virtual Float64 GetDeckEccK1() const = 0;
    virtual Float64 GetDeckEccK2() const = 0;
@@ -1078,45 +1096,21 @@ DEFINE_GUID(IID_IStrandGeometry,
 0x99b7a322, 0x67a8, 0x11d2, 0x88, 0x3a, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
 interface IStrandGeometry : IUnknown
 {
+   // Returns the centroid of the prestressing steel in Girder Section Coordinates (0,0 at top CL of girder)
+   virtual gpPoint2d GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig=nullptr) const = 0;
+   virtual gpPoint2d GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig=nullptr) const = 0;
+
    // Eccentricity values greater than zero indicate the strands are below the cg of the section. 
    // (+ eccentricity, strands in bottom, - eccentricity, strands in top)
-
-   virtual void GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, Float64* nEffectiveStrands, Float64* pX, Float64* pY) const = 0;
-   virtual void GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, Float64* nEffectiveStrands, Float64* pX, Float64* pY) const = 0;
-   virtual void GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig, Float64* nEffectiveStrands, Float64* pX, Float64* pY) const = 0;
-   virtual void GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig, Float64* nEffectiveStrands, Float64* pX, Float64* pY) const = 0;
-
-   virtual void GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, Float64* nEffectiveStrands, Float64* pEccX, Float64* pEccY) const = 0;
-   virtual void GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, Float64* nEffectiveStrands, Float64* pEccX, Float64* pEccY) const = 0;
-   virtual void GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, Float64* nEffectiveStrands, Float64* pEccX, Float64* pEccY) const = 0;
-   virtual void GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, Float64* nEffectiveStrands, Float64* pEccX, Float64* pEccY) const = 0;
-   virtual void GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig, Float64* nEffectiveStrands, Float64* pEccX, Float64* pEccY) const = 0;
-   virtual void GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig, Float64* nEffectiveStrands, Float64* pEccX, Float64* pEccY) const = 0;
-   virtual void GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig, Float64* nEffectiveStrands, Float64* pEccX, Float64* pEccY) const = 0;
-   virtual void GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig, Float64* nEffectiveStrands, Float64* pEccX, Float64* pEccY) const = 0;
-
-   // Returns the geometric eccentricity of prestressing strands for the various strand types.
-   // Eccentricity is measured with respect to the centroid of the section at the specified interval
-   virtual Float64 GetEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bIncTemp,Float64* nEffectiveStrands) const = 0;
-   virtual Float64 GetEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,Float64* nEffectiveStrands) const = 0;
-
-   // Returns the geometric eccentricity of prestressing strands for the various strand types.
-   // Eccentricity is measured with respect to the centroid of the specified section type at the specified interval
-   virtual Float64 GetEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bIncTemp, Float64* nEffectiveStrands) const = 0;
-   virtual Float64 GetEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StrandType strandType, Float64* nEffectiveStrands) const = 0;
-
    // Returns the geometric eccentricity of prestressing strands for the various strand types for the specified configuration.
    // Eccentricity is measured with respect to the centroid of the section at the specified interval
-   virtual Float64 GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig, Float64* nEffectiveStrands) const = 0;
-   virtual Float64 GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig, Float64* nEffectiveStrands) const = 0;
+   virtual gpPoint2d GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig=nullptr) const = 0;
+   virtual gpPoint2d GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig=nullptr) const = 0;
 
    // Returns the geometric eccentricity of prestressing strands for the various strand types.
    // Eccentricity is measured with respect to the centroid of the specified section type at the specified interval
-   virtual Float64 GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig, Float64* nEffectiveStrands) const = 0;
-   virtual Float64 GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig, Float64* nEffectiveStrands) const = 0;
-
-   // Returns the distance from the top of the girder to the geometric CG of the strand in Girder Section Coordinates
-   virtual Float64 GetStrandLocation(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx) const = 0;
+   virtual gpPoint2d GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig=nullptr) const = 0;
+   virtual gpPoint2d GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig=nullptr) const = 0;
 
    // gets a profile view of a strand
    virtual void GetStrandProfile(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, StrandIndexType strandIdx, IPoint2dCollection** ppProfilePoints) const = 0;
@@ -1178,20 +1172,19 @@ interface IStrandGeometry : IUnknown
    virtual void GridPositionToStrandPosition(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, GridIndexType gridIdx, StrandIndexType* pStrandNo1, StrandIndexType* pStrandNo2) const = 0;
 
    virtual StrandIndexType GetStrandCount(const CSegmentKey& segmentKey,pgsTypes::StrandType type,const GDRCONFIG* pConfig = nullptr) const = 0;
+
+   /// Returns the number of strands at a POI. The first value in the returned pair is the total number of strands at the poi and the second value is the number of strands that have debonding
+   virtual std::pair<StrandIndexType, StrandIndexType> GetStrandCount(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig=nullptr) const = 0;
    virtual StrandIndexType GetMaxStrands(const CSegmentKey& segmentKey,pgsTypes::StrandType type) const = 0;
    virtual StrandIndexType GetMaxStrands(LPCTSTR strGirderName,pgsTypes::StrandType type) const = 0;
 
-   // Gets the nominal strand area
-   virtual Float64 GetStrandArea(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::StrandType strandType) const = 0;
-
-   // Gets the nominal strand area at a poi (reduces the strand area by the area of debonded strands)
-   virtual Float64 GetStrandArea(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::StrandType strandType) const = 0;
-
-   // Gets the total nominal strand area
-   virtual Float64 GetAreaPrestressStrands(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,bool bIncTemp) const = 0;
+   /// Gets the strand area at a poi (deducts the area of debonded strands if bonding has not yet began at the poi)
+   virtual Float64 GetStrandArea(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const = 0;
 
    virtual Float64 GetPjack(const CSegmentKey& segmentKey,pgsTypes::StrandType type,const GDRCONFIG* pConfig=nullptr) const = 0;
    virtual Float64 GetPjack(const CSegmentKey& segmentKey,bool bIncTemp) const = 0;
+
+   virtual Float64 GetJackingStress(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const = 0;
 
    virtual void GetStrandPosition(const pgsPointOfInterest& poi, StrandIndexType strandIdx,pgsTypes::StrandType type, IPoint2d** ppPoint) const = 0;
    virtual void GetStrandPositions(const pgsPointOfInterest& poi, pgsTypes::StrandType type, IPoint2dCollection** ppPoints) const = 0;
@@ -1232,8 +1225,8 @@ interface IStrandGeometry : IUnknown
    virtual bool IsExtendedStrand(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType,const GDRCONFIG* pConfig=nullptr) const = 0;
 
    virtual bool IsStrandDebonded(const CSegmentKey& segmentKey,StrandIndexType strandIdx,pgsTypes::StrandType strandType,const GDRCONFIG* pConfig,Float64* pStart,Float64* pEnd) const = 0;
-   virtual bool IsStrandDebonded(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType) const = 0;
-   virtual StrandIndexType GetNumDebondedStrands(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType, pgsTypes::DebondMemberEndType dbendType) const = 0;
+   virtual bool IsStrandDebonded(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType, const GDRCONFIG* pConfig=nullptr) const = 0;
+   virtual StrandIndexType GetNumDebondedStrands(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType, pgsTypes::DebondMemberEndType dbendType, const GDRCONFIG* pConfig=nullptr) const = 0;
    virtual RowIndexType GetNumRowsWithStrand(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType ) const = 0;
    virtual StrandIndexType GetNumStrandInRow(const pgsPointOfInterest& poi,RowIndexType rowIdx,pgsTypes::StrandType strandType ) const = 0;
    virtual std::vector<StrandIndexType> GetStrandsInRow(const pgsPointOfInterest& poi, RowIndexType rowIdx, pgsTypes::StrandType strandType ) const = 0;
@@ -1247,8 +1240,8 @@ interface IStrandGeometry : IUnknown
    virtual bool IsExteriorWebStrandDebondedInRow(const pgsPointOfInterest& poi, WebIndexType webIdx,RowIndexType rowIdx, pgsTypes::StrandType strandType) const = 0;
    virtual Float64 GetUnadjustedStrandRowElevation(const pgsPointOfInterest& poi,RowIndexType rowIdx,pgsTypes::StrandType strandType ) const = 0;
 
-   virtual bool HasDebonding(const CSegmentKey& segmentKey) const = 0;
-   virtual bool IsDebondingSymmetric(const CSegmentKey& segmentKey) const = 0;
+   virtual bool HasDebonding(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual bool IsDebondingSymmetric(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig = nullptr) const = 0;
 
    // these functions return the data for the number of strands given (used during design)
    virtual RowIndexType GetNumRowsWithStrand(const pgsPointOfInterest& poi,StrandIndexType nStrands,pgsTypes::StrandType strandType ) const = 0;
@@ -1453,6 +1446,9 @@ interface ISectionProperties : IUnknown
 
    // Returns the height of the segment at Xs based on the specified parameters
    virtual Float64 GetSegmentHeight(const CPrecastSegmentData* pSegment, Float64 Xs) const = 0;
+
+   /// Returns true if the specified section provides structural resistance during the specified analysis interval
+   virtual bool IsStructuralSection(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx) const = 0;
 };
 
 /*****************************************************************************
@@ -1873,13 +1869,13 @@ interface IGirder : public IUnknown
    virtual void GetSegmentStorageSupportLocations(const CSegmentKey& segmentKey,Float64* pDistFromLeftEnd,Float64* pDistFromRightEnd) const = 0;
    virtual void GetSegmentReleaseSupportLocations(const CSegmentKey& segmentKey,Float64* pDistFromLeftEnd,Float64* pDistFromRightEnd) const = 0;
 
-   virtual const stbGirder* GetSegmentLiftingStabilityModel(const CSegmentKey& segmentKey) const = 0;
-   virtual const stbLiftingStabilityProblem* GetSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey) const = 0;
-   virtual const stbLiftingStabilityProblem* GetSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey,const HANDLINGCONFIG& handlingConfig,ISegmentLiftingDesignPointsOfInterest* pPoiD) const = 0;
+   virtual const WBFL::Stability::Girder* GetSegmentLiftingStabilityModel(const CSegmentKey& segmentKey) const = 0;
+   virtual const WBFL::Stability::LiftingStabilityProblem* GetSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey) const = 0;
+   virtual const WBFL::Stability::LiftingStabilityProblem* GetSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey,const HANDLINGCONFIG& handlingConfig,ISegmentLiftingDesignPointsOfInterest* pPoiD) const = 0;
 
-   virtual const stbGirder* GetSegmentHaulingStabilityModel(const CSegmentKey& segmentKey) const = 0;
-   virtual const stbHaulingStabilityProblem* GetSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey) const = 0;
-   virtual const stbHaulingStabilityProblem* GetSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey,const HANDLINGCONFIG& handlingConfig,ISegmentHaulingDesignPointsOfInterest* pPOId) const = 0;
+   virtual const WBFL::Stability::Girder* GetSegmentHaulingStabilityModel(const CSegmentKey& segmentKey) const = 0;
+   virtual const WBFL::Stability::HaulingStabilityProblem* GetSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey) const = 0;
+   virtual const WBFL::Stability::HaulingStabilityProblem* GetSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey,const HANDLINGCONFIG& handlingConfig,ISegmentHaulingDesignPointsOfInterest* pPOId) const = 0;
 
    // Returns the elevation of web-flange intersections that are included in principal web shear checks
    // The key is the elevation in girder section coordinates and the value is descriptive text

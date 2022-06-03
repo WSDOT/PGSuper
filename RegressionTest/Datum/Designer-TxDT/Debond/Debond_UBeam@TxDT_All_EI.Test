@@ -1,26 +1,27 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 59.25    6  10.25                     1     1     U54           49  0.6  270  19.40  19.34  10.25  10.25   1.00  20   2.17   27    12    0   2   4   2   2   4.500  6.500   4.294    -3.759     9823   0.656  0.936   3.017 -2.393  0.000 -0.219 -2.612 170.35  472.70    1.00    1.00    1.00 
-                                                                                                                       4.14   22     8    4   4   0   0   0 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 59.25    6  10.25                     1     1     U54           49  0.6  270  19.40  19.34  10.00  10.00   1.00  20   2.17   27    12    0   0   0   0   0   5.100  6.400   4.280    -3.749     9806   0.656  0.936   2.691 -2.375  0.000 -0.219 -2.594 164.24  445.91    1.00    1.00    1.00    1.88    1.75    2.43    2.35    1.12 
+                                                                                                                       4.14   22     8    0   0   0   2   6 
+
+
+Girder design was Not Successful
+The Specification Check was Not Successful
+Debond arrangement checks failed.
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 59.25    6  10.25                     1     2     U54           47  0.6  270  19.45  19.41  10.00  10.00   1.00  20   2.17   27    12    0   2   4   2   0   4.300  6.500   4.260    -3.660     9535   0.656  0.936   2.828 -2.404  0.000 -0.109 -2.513 156.61  449.73    1.00    1.00    1.00    1.83    1.80    2.37    2.42    1.02 
+                                                                                                                       4.14   20     8    4   4   0   0   0 
 
 
 The Specification Check was Not Successful
 Debond arrangement checks failed.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 59.25    6  10.25                     1     2     U54           47  0.6  270  19.45  19.41  10.00  10.00   1.00  20   2.17   27    12    0   4   2   2   2   4.300  6.500   4.260    -3.660     9535   0.656  0.936   2.843 -2.404  0.000 -0.109 -2.513 156.61  449.73    1.00    1.00    1.00 
-                                                                                                                       4.14   20     8    6   2   0   0   0 
-
-
-The Specification Check was Not Successful
-Debond arrangement checks failed.
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 59.25    6  10.25                     1     4     U54           47  0.6  270  19.45  19.41  10.00  10.00   1.00  20   2.17   27    12    0   0   0   0   0   4.300  6.500   4.222    -3.556     9235   0.656  0.936   2.674 -2.404  0.000  0.000 -2.404 156.61  458.51    1.00    1.00    1.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 59.25    6  10.25                     1     4     U54           47  0.6  270  19.45  19.41  10.00  10.00   1.00  20   2.17   27    12    0   0   0   0   0   4.300  6.500   4.222    -3.556     9235   0.656  0.936   2.673 -2.404  0.000  0.000 -2.404 156.61  458.51    1.00    1.00    1.00    1.90    1.84    2.46    2.48    1.12 
                                                                                                                        4.14   20     8    0   0   0   2   6 
 
 
@@ -29,29 +30,30 @@ The Specification Check was Not Successful
 Debond arrangement checks failed.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 59.25    6  10.25                     2     1     U54           49  0.6  270  19.40  19.34  10.25  10.25   1.00  20   2.17   27    12    0   2   4   2   2   4.500  6.500   4.294    -3.759     9823   0.656  0.936   3.017 -2.393  0.000 -0.219 -2.612 170.35  472.70    1.00    1.00    1.00 
-                                                                                                                       4.14   22     8    4   4   0   0   0 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 59.25    6  10.25                     2     1     U54           49  0.6  270  19.40  19.34  10.00  10.00   1.00  20   2.17   27    12    0   0   0   0   0   5.100  6.400   4.280    -3.749     9806   0.656  0.936   2.691 -2.375  0.000 -0.219 -2.594 164.24  445.91    1.00    1.00    1.00    1.88    1.75    2.43    2.35    1.12 
+                                                                                                                       4.14   22     8    0   0   0   2   6 
+
+
+Girder design was Not Successful
+The Specification Check was Not Successful
+Debond arrangement checks failed.
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 59.25    6  10.25                     2     2     U54           47  0.6  270  19.45  19.41  10.00  10.00   1.00  20   2.17   27    12    0   2   4   2   0   4.300  6.500   4.260    -3.660     9535   0.656  0.936   2.828 -2.404  0.000 -0.109 -2.513 156.61  449.73    1.00    1.00    1.00    1.83    1.80    2.37    2.42    1.02 
+                                                                                                                       4.14   20     8    4   4   0   0   0 
 
 
 The Specification Check was Not Successful
 Debond arrangement checks failed.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 59.25    6  10.25                     2     2     U54           47  0.6  270  19.45  19.41  10.00  10.00   1.00  20   2.17   27    12    0   4   2   2   2   4.300  6.500   4.260    -3.660     9535   0.656  0.936   2.843 -2.404  0.000 -0.109 -2.513 156.61  449.73    1.00    1.00    1.00 
-                                                                                                                       4.14   20     8    6   2   0   0   0 
-
-
-The Specification Check was Not Successful
-Debond arrangement checks failed.
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 59.25    6  10.25                     2     4     U54           47  0.6  270  19.45  19.41  10.00  10.00   1.00  20   2.17   27    12    0   0   0   0   0   4.300  6.500   4.222    -3.556     9235   0.656  0.936   2.674 -2.404  0.000  0.000 -2.404 156.61  458.51    1.00    1.00    1.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 59.25    6  10.25                     2     4     U54           47  0.6  270  19.45  19.41  10.00  10.00   1.00  20   2.17   27    12    0   0   0   0   0   4.300  6.500   4.222    -3.556     9235   0.656  0.936   2.673 -2.404  0.000  0.000 -2.404 156.61  458.51    1.00    1.00    1.00    1.90    1.84    2.46    2.48    1.12 
                                                                                                                        4.14   20     8    0   0   0   2   6 
 
 

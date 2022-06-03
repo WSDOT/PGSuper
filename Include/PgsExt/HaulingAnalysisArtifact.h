@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -58,7 +58,7 @@ public:
    virtual bool Passed(bool bIgnoreConfigurationLimits=false) const = 0;
    virtual bool Passed(pgsTypes::HaulingSlope slope) const = 0;
    virtual bool PassedStressCheck(pgsTypes::HaulingSlope slope) const = 0;
-   virtual void GetRequiredConcreteStrength(pgsTypes::HaulingSlope slope,Float64 *pfcCompression,Float64 *pfcTensionNoRebar,Float64 *pfcTensionWithRebar) const = 0;
+   virtual void GetRequiredConcreteStrength(pgsTypes::HaulingSlope slope,Float64 *pfcCompression,Float64 *pfcTension,Float64* pfcTensionWithRebar) const = 0;
 
    virtual void BuildHaulingCheckReport(const CSegmentKey& segmentKey, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const = 0;
    virtual void BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const = 0;
@@ -114,7 +114,7 @@ public:
    virtual bool Passed(bool bIgnoreConfigurationLimits = false) const override;
    virtual bool Passed(pgsTypes::HaulingSlope slope) const override;
    virtual bool PassedStressCheck(pgsTypes::HaulingSlope slope) const override;
-   virtual void GetRequiredConcreteStrength(pgsTypes::HaulingSlope slope,Float64 *pfcCompression,Float64 *pfcTensionNoRebar,Float64 *pfcTensionWithRebar) const override;
+   virtual void GetRequiredConcreteStrength(pgsTypes::HaulingSlope slope,Float64 *pfcCompression,Float64 *pfcTension, Float64* pfcTensionWithRebar) const override;
 
    virtual void BuildHaulingCheckReport(const CSegmentKey& segmentKey,rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const override;
    virtual void BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const override;
@@ -127,8 +127,8 @@ public:
    Float64 GetFsRollover(pgsTypes::HaulingSlope slope) const;
    Float64 GetFsFailure(pgsTypes::HaulingSlope slope) const;
 
-   void SetHaulingCheckArtifact(const stbHaulingCheckArtifact& haulingArtifact);
-   const stbHaulingCheckArtifact& GetHaulingCheckArtifact() const;
+   void SetHaulingCheckArtifact(const WBFL::Stability::HaulingCheckArtifact& haulingArtifact);
+   const WBFL::Stability::HaulingCheckArtifact& GetHaulingCheckArtifact() const;
 
 protected:
    // GROUP: DATA MEMBERS
@@ -148,7 +148,7 @@ private:
    // GROUP: DATA MEMBERS
 
 
-   stbHaulingCheckArtifact m_HaulingArtifact;
+   WBFL::Stability::HaulingCheckArtifact m_HaulingArtifact;
 
 public:
    // GROUP: DEBUG
@@ -159,7 +159,7 @@ public:
 
    //------------------------------------------------------------------------
    // Dumps the contents of the object to the given dump context.
-   const stbHaulingStabilityProblem* m_pStabilityProblem; // need this for dump
+   const WBFL::Stability::HaulingStabilityProblem* m_pStabilityProblem; // need this for dump
    virtual void Dump(dbgDumpContext& os) const override;
    #endif // _DEBUG
 

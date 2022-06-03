@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -423,7 +423,7 @@ void pgsAlternativeTensileStressCalculator::ComputeReqdFcTens(const CSegmentKey&
       if ( rcsBfmax && (rcsFmax < ft) )
       {
          // allowable stress is limited and we hit the limit
-         *pFcNo = -99999;
+         *pFcNo = NO_AVAILABLE_CONCRETE_STRENGTH;
       }
       else
       {

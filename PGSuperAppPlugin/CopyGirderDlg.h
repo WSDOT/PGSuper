@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -32,6 +32,8 @@
 #include "resource.h"
 #include <vector>
 #include "MultiGirderSelectDlg.h"
+#include <Reporting\CopyGirderPropertiesReportSpecification.h>
+#include <MfcTools\CheckListBoxEx.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CCopyGirderDlg dialog
@@ -40,7 +42,7 @@ class CCopyGirderDlg : public CDialog
 {
 // Construction
 public:
-	CCopyGirderDlg(IBroker* pBroker, std::map<IDType,ICopyGirderPropertiesCallback*>& rCopyGirderPropertiesCallbacks, CWnd* pParent = nullptr);   // standard constructor
+	CCopyGirderDlg(IBroker* pBroker, const std::map<IDType,ICopyGirderPropertiesCallback*>&  rcopyGirderPropertiesCallbacks, IDType selectedID, CWnd* pParent = nullptr);
 
 // Dialog Data
 	//{{AFX_DATA(CCopyGirderDlg)
@@ -50,10 +52,7 @@ public:
    CComboBox m_FromGirder;
    CComboBox m_ToGroup;
    CComboBox m_ToGirder;
-
-   CCheckListBox m_PropertiesList;
-   std::vector<IDType> GetCallbackIDs();
-
+	CCheckListBoxEx	m_SelectedPropertyTypesCL;
 	//}}AFX_DATA
 
 // Overrides
@@ -76,13 +75,12 @@ public:
 
 // Implementation
 protected:
-   std::vector<IDType> m_CallbackIDs;
-
    CSelection m_FromSelection;
 
 	// Generated message map functions
 	//{{AFX_MSG(CCopyGirderDlg)
-	virtual BOOL OnInitDialog();
+	afx_msg void OnSize(UINT nType, int cx, int cy);
+   virtual BOOL OnInitDialog();
    afx_msg void OnFromGroupChanged();
    afx_msg void OnToGroupChanged();
    afx_msg void OnToGirderChanged();
@@ -90,25 +88,59 @@ protected:
    afx_msg void OnHelp();
    afx_msg void OnBnClickedRadio();
    afx_msg void OnBnClickedSelectGirders();
-   afx_msg void OnCopyItemStateChanged();
+   afx_msg void OnEdit();
+	afx_msg void OnPrint();
+   afx_msg void OnCmenuSelected(UINT id);
+   afx_msg void OnDestroy();
+//   afx_msg void OnLbnSelchangePropertyList();
+   afx_msg void OnLbnChkchangePropertyList();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
-   void CopyToSelectionChanged();
-   IBroker* m_pBroker;
-   std::map<IDType,ICopyGirderPropertiesCallback*>& m_rCopyGirderPropertiesCallbacks;
+   BOOL OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult);
+
+   void OnFromGroupChangedNoUpdate();
+   void OnToGroupChangedNoUpdate();
 
    void FillComboBoxes(CComboBox& cbGroup,CComboBox& cbGirder, bool bIncludeAllGroups, bool bIncludeAllGirders);
    void FillGirderComboBox(CComboBox& cbGirder,GroupIndexType grpIdx,bool bIncludeAllGirders);
 
+   void UpdateReportData();
+   void UpdateReport();
+
+   void UpdateSelectedPropertyList();
+   void InitSelectedPropertyList();
+
+   std::vector<ICopyGirderPropertiesCallback*> GetSelectedCopyGirderPropertiesCallbacks();
+
    std::map<int,CGirderKey> m_FromListIndicies;
 
 private:
+   IBroker* m_pBroker;
+   const std::map<IDType, ICopyGirderPropertiesCallback*> m_CopyGirderPropertiesCallbacks;
+   std::set<IDType> m_SelectedIDs; 
+
+   std::shared_ptr<CCopyGirderPropertiesReportSpecification> m_pRptSpec;
+   std::shared_ptr<CReportBrowser> m_pBrowser; // this is the actual browser window that displays the report
+
    // map from multi-select dialog
    std::vector<CGirderKey> m_MultiDialogSelections;
+
+   int m_cxMin;
+   int m_cyMin;
+
+   bool m_bIsPGSplice;
+   CString m_strTip;
+
 protected:
    virtual void OnOK();
-   void EnableCopyNow(BOOL bEnable);
+   void EnableCopyNow();
+   void CleanUp();
+   int IsAllSelectedInList(); // return checklist index where All Properties is found
+
+   virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
+
+public:
 };
 
 //{{AFX_INSERT_LOCATION}}

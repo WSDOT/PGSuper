@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,6 +23,7 @@
 #include "stdafx.h"
 #include "resource.h"
 #include <Graphing\StressHistoryGraphBuilder.h>
+#include <Graphing\ExportGraphXYTool.h>
 #include "StressHistoryGraphController.h"
 #include "StressHistoryGraphViewControllerImp.h"
 #include "..\Documentation\PGSuper.hh"
@@ -428,7 +429,7 @@ void CStressHistoryGraphBuilder::AddGraphPoint(IndexType series, Float64 xval, F
    ASSERT(pcy);
    Float64 x = pcx->Convert(xval);
    Float64 y = pcy->Convert(yval);
-   m_Graph.AddPoint(series, gpPoint2d(x,y));
+   m_Graph.AddPoint(series, GraphPoint(x,y));
 }
 
 void CStressHistoryGraphBuilder::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
@@ -493,4 +494,9 @@ void CStressHistoryGraphBuilder::UpdateYAxis()
    m_pYFormat = new StressTool(stressUnit);
    m_Graph.SetYAxisValueFormat(*m_pYFormat);
    m_Graph.SetYAxisTitle(std::_tstring(_T("Stress (")+m_pYFormat->UnitTag()+_T(")")).c_str());
+}
+
+void CStressHistoryGraphBuilder::ExportGraphData(LPCTSTR rstrDefaultFileName)
+{
+   CExportGraphXYTool::ExportGraphData(m_Graph,rstrDefaultFileName);
 }

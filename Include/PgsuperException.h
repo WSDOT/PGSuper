@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -61,5 +61,8 @@
 
 // Bearing information is not available
 #define XREASON_BAD_BEARING_DATA            0x0800
+
+// Prestress loss method requirement not satisfied
+#define XREASON_PRESTRESS_LOSS_METHOD       0x1000
 
 #endif // INCLUDED_PGSUPEREXCEPTION_H_

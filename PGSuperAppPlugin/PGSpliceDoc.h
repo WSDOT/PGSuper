@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -49,6 +49,7 @@ protected: // create from serialization only
 
    bool EditTemporarySupportDescription(SupportIDType tsID,int nPage);
    
+   // Return true if the edit was completed, otherwise return false (return false if the edit was cancelled)
    virtual bool EditGirderSegmentDescription(const CSegmentKey& segmentKey,int nPage) override;
    virtual bool EditClosureJointDescription(const CClosureKey& closureKey,int nPage) override;
    virtual bool EditGirderDescription(const CGirderKey& girderKey,int nPage) override;
@@ -87,6 +88,11 @@ protected:
    afx_msg void OnUpdateEditTemporarySupport(CCmdUI* pCmdUI);
    afx_msg void OnInsertTemporarySupport();
    afx_msg void OnDeleteTemporarySupport();
+   afx_msg void OnCopyTempSupportProps(UINT nID);
+   afx_msg void OnCopyTempSupportProps();
+   afx_msg void OnUpdateCopyTempSupportProps(CCmdUI* pCmdUI);
+   afx_msg BOOL OnCopyTempSupportPropsTb(NMHDR* pnmtb,LRESULT* plr);
+
    //}}AFX_MSG
    afx_msg BOOL OnEditGirderDropDown(NMHDR* pnmhdr,LRESULT* plr);
    virtual BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo) override;
@@ -105,6 +111,8 @@ protected:
    virtual BOOL InitMainMenu() override;
 
    virtual void ModifyTemplate(LPCTSTR strTemplate) override;
+
+   void PopulateCopyTempSupportMenu();
 
    DECLARE_MESSAGE_MAP()
 };

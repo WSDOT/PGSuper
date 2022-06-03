@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -134,7 +134,6 @@ private:
 
    bool ComputeVc(const pgsPointOfInterest& poi, SHEARCAPACITYDETAILS* pscd) const;
    bool ComputeVs(const pgsPointOfInterest& poi, SHEARCAPACITYDETAILS* pscd) const;
-   bool ComputeVf(const pgsPointOfInterest& poi, SHEARCAPACITYDETAILS* pscd) const;
 
    void EvaluateStirrupRequirements(SHEARCAPACITYDETAILS* pscd) const;
 

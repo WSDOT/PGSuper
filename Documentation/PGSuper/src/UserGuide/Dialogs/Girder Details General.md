@@ -22,7 +22,7 @@ These parameters modify the girder. Some of the items listed below may not be su
 
 Item | Description
 -----|-----------
-Precamber | Enter the amount of precamber to build into the girder during fabrication. 
+Precamber | Enter the amount of precamber to build into the girder during fabrication. Precamber is the amount of camber that is build into the form work, not the total camber. This is sometimes referred to as formed camber. See below regarding precamber and deflections.
 Top Width | Select a top width type and enter the top width dimensions. This option is only available when the Spacing Type specifed in the Bridge Description window, General tab, is set to *Adjacent girders with unique joint spacing and top flange width for each span*. Top width types are Symmetric (the top flange is symmetric about the centerline of the girder), Centered CG (the length of the top flange on the left and right side of the girder centerline are automatically computed such that the center of gravity of the girder is coincident with the girder centerline), and Asymmetric (the top flange is asymmetric and defined by unique left and right overhangs measured from the girder centerline).
 Top Flange Thickening | Select the method of top flange thickening and enter the amount of thickening.
 
@@ -58,3 +58,7 @@ Refer to  the Slab Haunch loading section of @ref tg_structural_analysis_models 
 Condition and Rating
 ---------------------
 Select the condition of the girder from the drop down list. If "Other" is selected, enter the condition factor.
+
+Precamber and Deflections
+--------------------------
+Precamber is not a deflection in the sense of linear elastic structural response to loads. However, precamber is important in the overall shape of the deflected beam. Precamber is treated as an unrecoverable deflections in graphs and reports. See @ref ug_analysis_results_graph and @ref tg_deflections for more information about unrecoverable deflection.

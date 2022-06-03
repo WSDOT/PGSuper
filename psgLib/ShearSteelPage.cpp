@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -265,14 +265,14 @@ void CShearSteelPage::OnEnableDelete(bool canDelete)
    pdel->EnableWindow(canDelete);
 }
 
-BOOL CShearSteelPage::OnInitDialog() 
+BOOL CShearSteelPage::OnInitDialog()
 {
-	m_pGrid->SubclassDlgItem(IDC_SHEAR_GRID, this);
+   m_pGrid->SubclassDlgItem(IDC_SHEAR_GRID, this);
    m_pGrid->CustomInit();
 
    CEAFDocument* pEAFDoc = EAFGetDocument();
    bool bFilterBySpec = true;
-   if ( pEAFDoc->IsKindOf(RUNTIME_CLASS(CLibraryEditorDoc)) )
+   if (pEAFDoc->IsKindOf(RUNTIME_CLASS(CLibraryEditorDoc)))
    {
       bFilterBySpec = false;
    }
@@ -290,7 +290,7 @@ BOOL CShearSteelPage::OnInitDialog()
    GetDlgItem(IDC_SYMMETRICAL)->SetWindowText(strLabel);
 
 
-	CPropertyPage::OnInitDialog();
+   CPropertyPage::OnInitDialog();
 
    CWnd* pWnd = GetParent();
    CShearSteelPageParent* pParent = dynamic_cast<CShearSteelPageParent*>(pWnd);
@@ -299,6 +299,12 @@ BOOL CShearSteelPage::OnInitDialog()
       m_pGrid->HideCols(5, 5);
       GetDlgItem(IDC_ADDITIONAL_INTERFACE_SHEAR_BARS)->ShowWindow(SW_HIDE);
    }
+
+   if (pParent)
+   {
+      GetDlgItem(IDC_ROUGHENED)->SetWindowText(pParent->GetIntentionalRougheningPrompt());
+   }
+
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE

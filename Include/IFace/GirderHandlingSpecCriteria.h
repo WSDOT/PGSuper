@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -113,8 +113,8 @@ interface ISegmentLiftingSpecCriteria : IUnknown
    virtual pgsTypes::WindType GetLiftingWindType() const = 0;
    virtual Float64 GetLiftingWindLoad() const = 0;
 
-   virtual stbLiftingCriteria GetLiftingStabilityCriteria(const CSegmentKey& segmentKey) const = 0;
-   virtual stbLiftingCriteria GetLiftingStabilityCriteria(const CSegmentKey& segmentKey,const HANDLINGCONFIG& liftConfig) const = 0;
+   virtual WBFL::Stability::LiftingCriteria GetLiftingStabilityCriteria(const CSegmentKey& segmentKey) const = 0;
+   virtual WBFL::Stability::LiftingCriteria GetLiftingStabilityCriteria(const CSegmentKey& segmentKey,const HANDLINGCONFIG& liftConfig) const = 0;
 };
 
 /*****************************************************************************
@@ -144,22 +144,16 @@ interface ISegmentHaulingSpecCriteria : IUnknown
    virtual Float64 GetHaulingRolloverFs() const = 0;
 
    // Allowable concrete stresses
-   virtual Float64 GetHaulingAllowableTensileConcreteStressNormalCrown(const CSegmentKey& segmentKey) const = 0;
-   virtual Float64 GetHaulingAllowableTensileConcreteStressMaxSuper(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetHaulingAllowableTensileConcreteStress(const CSegmentKey& segmentKey, pgsTypes::HaulingSlope slope) const = 0;
    virtual Float64 GetHaulingAllowableGlobalCompressiveConcreteStress(const CSegmentKey& segmentKey) const = 0;
    virtual Float64 GetHaulingAllowablePeakCompressiveConcreteStress(const CSegmentKey& segmentKey) const = 0;
-   virtual Float64 GetHaulingAllowableTensionFactorNormalCrown() const = 0;
-   virtual Float64 GetHaulingAllowableTensionFactorMaxSuper() const = 0;
+   virtual Float64 GetHaulingAllowableTensionFactor(pgsTypes::HaulingSlope slope) const = 0;
    virtual Float64 GetHaulingAllowableGlobalCompressionFactor() const = 0;
    virtual Float64 GetHaulingAllowablePeakCompressionFactor() const = 0;
-   virtual Float64 GetHaulingWithMildRebarAllowableStressNormalCrown(const CSegmentKey& segmentKey) const = 0;
-   virtual Float64 GetHaulingWithMildRebarAllowableStressFactorNormalCrown() const = 0;
-   virtual void GetHaulingAllowableTensileConcreteStressParametersNormalCrown(Float64* factor,bool* pbMax,Float64* fmax) const = 0;
-   virtual Float64 GetHaulingAllowableTensileConcreteStressExNormalCrown(const CSegmentKey& segmentKey,Float64 fc, bool includeRebar) const = 0;
-   virtual Float64 GetHaulingWithMildRebarAllowableStressMaxSuper(const CSegmentKey& segmentKey) const = 0;
-   virtual Float64 GetHaulingWithMildRebarAllowableStressFactorMaxSuper(const CSegmentKey& segmentKey) const = 0;
-   virtual void GetHaulingAllowableTensileConcreteStressParametersMaxSuper(Float64* factor,bool* pbMax,Float64* fmax) const = 0;
-   virtual Float64 GetHaulingAllowableTensileConcreteStressExMaxSuper(const CSegmentKey& segmentKey,Float64 fc, bool includeRebar) const = 0;
+   virtual Float64 GetHaulingWithMildRebarAllowableStress(const CSegmentKey& segmentKey, pgsTypes::HaulingSlope slope) const = 0;
+   virtual Float64 GetHaulingWithMildRebarAllowableStressFactor(pgsTypes::HaulingSlope slope) const = 0;
+   virtual void GetHaulingAllowableTensileConcreteStressParameters(pgsTypes::HaulingSlope slope,Float64* factor,bool* pbMax,Float64* fmax) const = 0;
+   virtual Float64 GetHaulingAllowableTensileConcreteStressEx(const CSegmentKey& segmentKey,pgsTypes::HaulingSlope slope,Float64 fc, bool includeRebar) const = 0;
    virtual Float64 GetHaulingAllowableGlobalCompressiveConcreteStressEx(const CSegmentKey& segmentKey, Float64 fc) const = 0;
    virtual Float64 GetHaulingAllowablePeakCompressiveConcreteStressEx(const CSegmentKey& segmentKey, Float64 fc) const = 0;
 
@@ -201,8 +195,8 @@ interface ISegmentHaulingSpecCriteria : IUnknown
    virtual Float64 GetHaulingSpeed() const = 0;
    virtual Float64 GetTurningRadius() const = 0;
 
-   virtual stbHaulingCriteria GetHaulingStabilityCriteria(const CSegmentKey& segmentKey) const = 0;
-   virtual stbHaulingCriteria GetHaulingStabilityCriteria(const CSegmentKey& segmentKey,const HANDLINGCONFIG& haulConfig) const = 0;
+   virtual WBFL::Stability::HaulingCriteria GetHaulingStabilityCriteria(const CSegmentKey& segmentKey) const = 0;
+   virtual WBFL::Stability::HaulingCriteria GetHaulingStabilityCriteria(const CSegmentKey& segmentKey,const HANDLINGCONFIG& haulConfig) const = 0;
 };
 
 // {CA374433-127A-4850-AEC1-AB250D323724}

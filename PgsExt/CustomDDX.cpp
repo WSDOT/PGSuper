@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -39,16 +39,16 @@ void DDX_Strand(CDataExchange* pDX, UINT nIDC, const matPsStrand** ppStrand)
    {
       // strand material
       int curSel = pList->GetCurSel();
-      Int32 key = (Int32)pList->GetItemData(curSel);
+      auto key = (Int64)pList->GetItemData(curSel);
       *ppStrand = pPool->GetStrand(key);
    }
    else
    {
-      Int32 target_key = pPool->GetStrandKey(*ppStrand);
+      auto target_key = pPool->GetStrandKey(*ppStrand);
       int cStrands = pList->GetCount();
       for (int i = 0; i < cStrands; i++)
       {
-         Int32 key = (Int32)pList->GetItemData(i);
+         auto key = (Int64)pList->GetItemData(i);
          if (key == target_key)
          {
             pList->SetCurSel(i);

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -117,7 +117,7 @@ void CDeckRegionGrid::CustomInit()
       .SetHorizontalAlignment(DT_CENTER)
       .SetVerticalAlignment(DT_VCENTER)
       .SetEnabled(FALSE)          // disables usage as current cell
-      .SetValue("Region")
+      .SetValue(_T("Region"))
    );
 
    SetStyleRange(CGXRange(0, colType), CGXStyle()
@@ -125,7 +125,7 @@ void CDeckRegionGrid::CustomInit()
       .SetHorizontalAlignment(DT_CENTER)
       .SetVerticalAlignment(DT_VCENTER)
       .SetEnabled(FALSE)          // disables usage as current cell
-      .SetValue("Type")
+      .SetValue(_T("Type"))
    );
 
    SetStyleRange(CGXRange(0, colSpan), CGXStyle()
@@ -133,7 +133,7 @@ void CDeckRegionGrid::CustomInit()
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
          .SetEnabled(FALSE)          // disables usage as current cell
-         .SetValue("Span")
+         .SetValue(_T("Span"))
 	);
 
    SetStyleRange(CGXRange(0, colPier), CGXStyle()
@@ -141,7 +141,7 @@ void CDeckRegionGrid::CustomInit()
       .SetHorizontalAlignment(DT_CENTER)
       .SetVerticalAlignment(DT_VCENTER)
       .SetEnabled(FALSE)          // disables usage as current cell
-      .SetValue("Pier")
+      .SetValue(_T("Pier"))
    );
    
    SetStyleRange(CGXRange(0,colXback,0,colXbackUnit), CGXStyle()
@@ -167,7 +167,7 @@ void CDeckRegionGrid::CustomInit()
       .SetHorizontalAlignment(DT_CENTER)
       .SetVerticalAlignment(DT_VCENTER)
       .SetEnabled(FALSE)          // disables usage as current cell
-      .SetValue("Sequence")
+      .SetValue(_T("Sequence"))
    );
 
    // don't allow users to resize grids

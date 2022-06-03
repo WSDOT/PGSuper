@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -95,7 +95,7 @@ void CBridgeDescFramingPage::DoDataExchange(CDataExchange* pDX)
                bool bIsAbument = pierIdx == 0 || pierIdx == nPiers - 1;
                CString strMsg;
                strMsg.Format(_T("The boundary conditions for %s are invalid.\r\nPress the Edit button in the grid to update the boundary conditions."), 
-                            pgsPierLabel::CreatePierLabel(bIsAbument, pierIdx, m_DisplayStartSupportType, m_DisplayEndSupportType, m_StartingPierNumber));
+                            pgsPierLabel::CreatePierLabel(bIsAbument, pierIdx, m_DisplayStartSupportType, m_DisplayEndSupportType, m_StartingPierNumber).c_str());
                AfxMessageBox(strMsg, MB_ICONERROR | MB_OK);
                pDX->PrepareCtrl(IDC_PIER_GRID);
                pDX->Fail();
@@ -300,7 +300,7 @@ void CBridgeDescFramingPage::OnLayoutBySpanLengths()
 
    CSpanLengthDlg dlg;
    dlg.m_SpanLengths = spanLengths;
-   dlg.m_PierIdx = m_StartingPierNumber-1;
+   dlg.m_PierIdx = (int)(m_StartingPierNumber-1);
    if ( dlg.DoModal() == IDOK )
    {
       m_Grid.SetSpanLengths(dlg.m_SpanLengths,dlg.m_PierIdx - m_StartingPierNumber + 1);

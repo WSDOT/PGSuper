@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,14 +31,14 @@ static char THIS_FILE[] = __FILE__;
 
 Float64 CompareConcreteStrength(Float64 maxConc, Float64 newConc)
 {
-   // -99999 is magic number meaning no possible value
-   if (maxConc == -99999)
+   // NO_AVAILABLE_CONCRETE_STRENGTH is magic number meaning no possible value
+   if (maxConc == NO_AVAILABLE_CONCRETE_STRENGTH)
    {
-      return -99999;
+      return NO_AVAILABLE_CONCRETE_STRENGTH;
    }
    else if (newConc < 0)
    {
-      return -99999;
+      return NO_AVAILABLE_CONCRETE_STRENGTH;
    }
    else
    {

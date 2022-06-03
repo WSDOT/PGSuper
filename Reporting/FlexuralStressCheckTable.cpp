@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -886,7 +886,7 @@ void CFlexuralStressCheckTable::BuildAllowDeckStressInformation(rptChapter* pCha
    //
    // Required Strength
    //
-   Float64 fc_reqd = pGirderArtifact->GetRequiredDeckConcreteStrength(task.intervalIdx, task.limitState);
+   Float64 fc_reqd = pGirderArtifact->GetRequiredDeckConcreteStrength(task.stressType, task.intervalIdx, task.limitState);
 
    if ( 0 < fc_reqd )
    {
@@ -898,7 +898,7 @@ void CFlexuralStressCheckTable::BuildAllowDeckStressInformation(rptChapter* pCha
    }
    else
    {
-      ATLASSERT(fc_reqd == -99999); // -99999 means there is not a concrete strength that will work
+      ATLASSERT(fc_reqd == NO_AVAILABLE_CONCRETE_STRENGTH); // NO_AVAILABLE_CONCRETE_STRENGTH means there is not a concrete strength that will work
       *pPara << _T("Regardless of the concrete strength, the stress requirements will not be satisfied.") << rptNewLine;
    }
 }
@@ -931,25 +931,7 @@ void CFlexuralStressCheckTable::BuildAllowSegmentStressInformation(rptParagraph*
       const pgsPointOfInterest& poi(pArtifact->GetPointOfInterest());
       ATLASSERT(!poi.HasAttribute(POI_CLOSURE));
 
-      // use f'ci if this is at release, otherwise use f'c
-      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-      bool bFci = (task.intervalIdx == releaseIntervalIdx ? true : false);
-
-      Float64 c = pAllowable->GetSegmentAllowableCompressionStressCoefficient(poi, task);
-      Float64 fAllowable = pAllowable->GetSegmentAllowableCompressionStress(poi, task);
-
-      *pPara << _T("Compression stress limit = -") << c;
-
-      if ( bFci )
-      {
-         (*pPara) << RPT_FCI;
-      }
-      else
-      {
-         (*pPara) << RPT_FC;
-      }
-      
-      *pPara << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
+      pAllowable->ReportSegmentAllowableCompressionStress(poi, task, pPara, pDisplayUnits);
    }
 
    //
@@ -963,101 +945,13 @@ void CFlexuralStressCheckTable::BuildAllowSegmentStressInformation(rptParagraph*
       ATLASSERT( !poi.HasAttribute(POI_CLOSURE) );
       ATLASSERT( poi.GetSegmentKey() == segmentKey);
       
-      // use f'ci if this is at release, otherwise use f'c
-      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-      bool bFci = (task.intervalIdx == releaseIntervalIdx ? true : false);
-
-      bool bIsStressingInterval = pIntervals->IsStressingInterval(segmentKey,task.intervalIdx);
-
-      Float64 t;            // tension coefficient
-      Float64 t_max;        // maximum allowable tension
-      bool b_t_max;         // true if max allowable tension is applicable
-      pAllowable->GetSegmentAllowableTensionStressCoefficient(poi, task,false/*without rebar*/,&t,&b_t_max,&t_max);
-
-      if ( bIsStressingInterval )
-      {
-         (*pPara) << _T("Tension stress limit in areas other than the precompressed tensile zone = ") << tension_coeff.SetValue(t);
-         if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
-         {
-            (*pPara) << symbol(lambda);
-         }
-         (*pPara) << symbol(ROOT);
-         
-         if ( bFci )
-         {
-            (*pPara) << RPT_FCI;
-         }
-         else
-         {
-            (*pPara) << RPT_FC;
-         }
-
-         if ( b_t_max )
-         {
-            *pPara << _T(" but not more than ") << stress_u.SetValue(t_max);
-         }
-
-         Float64 fAllowable = pAllowable->GetSegmentAllowableTensionStress(poi, task,false/*without rebar*/);
-         *pPara  << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
-
-         if ( pSegmentArtifact->IsSegmentWithRebarAllowableStressApplicable(task) )
-         {
-            Float64 t_with_rebar; // allowable tension when sufficient rebar is used
-            pAllowable->GetSegmentAllowableTensionStressCoefficient(poi, task,true/*with rebar*/,&t_with_rebar,&b_t_max,&t_max);
-            fAllowable = pAllowable->GetSegmentAllowableTensionStress(poi, task,true/*with rebar*/);
-
-            (*pPara) << _T("Tension stress limit in areas with sufficient bonded reinforcement = ") << tension_coeff.SetValue(t_with_rebar);
-            if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
-            {
-               (*pPara) << symbol(lambda);
-            }
-            (*pPara) << symbol(ROOT);
-
-            if ( bFci )
-            {
-               (*pPara) << RPT_FCI;
-            }
-            else
-            {
-               (*pPara) << RPT_FC;
-            }
-
-            (*pPara) << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
-
-         }
-      }
-      else
-      {
-         (*pPara) << _T("Tension stress limit in the precompressed tensile zone = ") << tension_coeff.SetValue(t);
-         if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
-         {
-            (*pPara) << symbol(lambda);
-         }
-         (*pPara) << symbol(ROOT);
-
-         if ( bFci )
-         {
-            (*pPara) << RPT_FCI;
-         }
-         else
-         {
-            (*pPara) << RPT_FC;
-         }
-
-         if ( b_t_max )
-         {
-            *pPara << _T(" but not more than ") << stress_u.SetValue(t_max);
-         }
-
-         Float64 fAllowable = pAllowable->GetSegmentAllowableTensionStress(poi, task,false/*without rebar*/);
-         *pPara  << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
-      }
+      pAllowable->ReportSegmentAllowableTensionStress(poi, task, pSegmentArtifact, pPara, pDisplayUnits);
    }
 
    //
    // Required Strength
    //
-   Float64 fc_reqd = pSegmentArtifact->GetRequiredSegmentConcreteStrength(task.intervalIdx, task.limitState);
+   Float64 fc_reqd = pSegmentArtifact->GetRequiredSegmentConcreteStrength(task.stressType, task.intervalIdx, task.limitState);
    if ( 0 < fc_reqd )
    {
       *pPara << _T("Concrete strength required to satisfy this requirement = ") << stress_u.SetValue( fc_reqd ) << rptNewLine;
@@ -1097,26 +991,7 @@ void CFlexuralStressCheckTable::BuildAllowClosureJointStressInformation(rptParag
       const pgsPointOfInterest& poi(pArtifact->GetPointOfInterest());
       ATLASSERT(poi.HasAttribute(POI_CLOSURE));
 
-      // use f'ci for all intervals up to and including
-      // when the closure joint becomes composite (initial loading of closure joint)
-      // otherwise use f'c
-      IntervalIndexType compositeClosureIntervalIdx = pIntervals->GetCompositeClosureJointInterval(segmentKey);
-      bool bFci = (task.intervalIdx < compositeClosureIntervalIdx ? true : false);
-
-      Float64 c = pAllowable->GetClosureJointAllowableCompressionStressCoefficient(poi, task);
-      Float64 fAllowable = pAllowable->GetClosureJointAllowableCompressionStress(poi, task);
-      *pPara << _T("Compression stress limit = -") << c;
-
-      if (bFci)
-      {
-         *pPara << RPT_FCI;
-      }
-      else
-      {
-         *pPara << RPT_FC;
-      }
-
-      *pPara << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
+      pAllowable->ReportClosureJointAllowableCompressionStress(poi, task, pPara, pDisplayUnits);
    }
 
    //
@@ -1129,104 +1004,13 @@ void CFlexuralStressCheckTable::BuildAllowClosureJointStressInformation(rptParag
       const pgsPointOfInterest& poi(pArtifact->GetPointOfInterest());
       ATLASSERT(poi.HasAttribute(POI_CLOSURE));
 
-      // use f'ci for all intervals up to and including
-      // when the closure joint becomes composite (initial loading of closure joint)
-      // otherwise use f'c
-      IntervalIndexType compositeClosureIntervalIdx = pIntervals->GetCompositeClosureJointInterval(poi.GetSegmentKey());
-      bool bFci = (task.intervalIdx <= compositeClosureIntervalIdx ? true : false);
-
-      Float64 t;            // tension coefficient
-      Float64 t_max;        // maximum allowable tension
-      bool b_t_max;         // true if max allowable tension is applicable
-
-      // Precompressed tensile zone
-      pAllowable->GetClosureJointAllowableTensionStressCoefficient(poi, task,false/*without rebar*/,true/*in PTZ*/,&t,&b_t_max,&t_max);
-
-      (*pPara) << _T("Tension stress limit in the precompressed tensile zone = ") << tension_coeff.SetValue(t);
-      if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
-      {
-         (*pPara) << symbol(lambda);
-      }
-      (*pPara) << symbol(ROOT);
-         
-      if ( bFci )
-      {
-         *pPara << RPT_FCI;
-      }
-      else
-      {
-         *pPara << RPT_FC;
-      }
-
-      if ( b_t_max )
-      {
-         *pPara << _T(" but not more than ") << stress_u.SetValue(t_max);
-      }
-
-      Float64 fAllowable = pAllowable->GetClosureJointAllowableTensionStress(poi, task,false/*without rebar*/,true/*in PTZ*/);
-      *pPara  << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
-
-      if ( pSegmentArtifact->WasClosureJointWithRebarAllowableStressUsed(task,true/*in PTZ*/) )
-      {
-         Float64 t_with_rebar; // allowable tension when sufficient rebar is used
-         pAllowable->GetClosureJointAllowableTensionStressCoefficient(poi, task,true/*with rebar*/,true/*in PTZ*/,&t_with_rebar,&b_t_max,&t_max);
-         fAllowable = pAllowable->GetClosureJointAllowableTensionStress(poi, task,true/*with rebar*/,true/*in PTZ*/);
-
-         (*pPara) << _T("Tension stress limit in joints with minimum bonded auxiliary reinforcement in the precompressed tensile zone = ") << tension_coeff.SetValue(t_with_rebar);
-         if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
-         {
-            (*pPara) << symbol(lambda);
-         }
-         (*pPara) << symbol(ROOT) << RPT_FC << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
-      }
-
-
-      // Other than Precompressed tensile zone
-      pAllowable->GetClosureJointAllowableTensionStressCoefficient(poi, task,false/*without rebar*/,false/*not in PTZ*/,&t,&b_t_max,&t_max);
-
-      (*pPara) << _T("Tension stress limit in areas other than the precompressed tensile zone = ") << tension_coeff.SetValue(t);
-      if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
-      {
-         (*pPara) << symbol(lambda);
-      }
-      (*pPara) << symbol(ROOT);
-         
-      if ( bFci )
-      {
-         *pPara << RPT_FCI;
-      }
-      else
-      {
-         *pPara << RPT_FC;
-      }
-
-      if ( b_t_max )
-      {
-         *pPara << _T(" but not more than ") << stress_u.SetValue(t_max);
-      }
-
-      fAllowable = pAllowable->GetClosureJointAllowableTensionStress(poi, task,false/*without rebar*/,false/*not in PTZ*/);
-      *pPara  << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
-
-      if ( pSegmentArtifact->WasClosureJointWithRebarAllowableStressUsed(task,false/*not in PTZ*/) )
-      {
-         Float64 t_with_rebar; // allowable tension when sufficient rebar is used
-         pAllowable->GetClosureJointAllowableTensionStressCoefficient(poi, task,true/*with rebar*/,false/*not in PTZ*/,&t_with_rebar,&b_t_max,&t_max);
-         fAllowable = pAllowable->GetClosureJointAllowableTensionStress(poi, task,true/*with rebar*/,false/*not in PTZ*/);
-
-         (*pPara) << _T("Tension stress limit in joints with minimum bonded auxiliary reinforcement in areas other than the precompressed tensile zone = ") << tension_coeff.SetValue(t_with_rebar);
-         if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
-         {
-            (*pPara) << symbol(lambda);
-         }
-         (*pPara) << symbol(ROOT) << RPT_FC << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
-      }
+      pAllowable->ReportClosureJointAllowableTensionStress(poi, task, pSegmentArtifact, pPara, pDisplayUnits);
    }
 
    //
    // Required Strength
    //
-   Float64 fc_reqd = pSegmentArtifact->GetRequiredClosureJointConcreteStrength(task.intervalIdx, task.limitState);
+   Float64 fc_reqd = pSegmentArtifact->GetRequiredClosureJointConcreteStrength(task.stressType, task.intervalIdx, task.limitState);
    if ( 0 < fc_reqd )
    {
       *pPara << _T("Concrete strength required to satisfy this requirement = ") << stress_u.SetValue( fc_reqd ) << rptNewLine;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -139,7 +139,20 @@ ReactionLocationContainer GetPierReactionLocations(const CGirderKey& girderKey, 
       ATLASSERT(vGirderKeys.size() == 1);
       const auto& thisGirderKey = vGirderKeys.front();
 
-      PierReactionFaceType face = rftMid; // pier reactions are always for the whole pier, not just a face
+      PierReactionFaceType face;
+      if (pierIdx == startPierIdx)
+      {
+         face = rftAhead;
+      }
+      else if (pierIdx == endPierIdx)
+      {
+         face = rftBack;
+      }
+      else
+      {
+         face = rftMid;
+      }
+
       ReactionLocation location = MakeReactionLocation(pierIdx, nPiers, face, thisGirderKey);
       container.push_back( location );
    }

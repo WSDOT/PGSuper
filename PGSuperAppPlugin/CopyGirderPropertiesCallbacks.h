@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,20 +24,26 @@
 
 #include <IFace\ExtendUI.h>
 #include <System\Transaction.h>
+#include <PgsExt\MacroTxn.h>
 #include <PsgLib\ShearData.h>
 #include <PgsExt\LongitudinalRebarData.h>
 #include <PgsExt\StrandData.h>
 #include <PgsExt\HandlingData.h>
 #include <PgsExt\GirderMaterial.h>
 #include <PgsExt\PTData.h>
+#include <PgsExt\SegmentPTData.h>
 
-class txnCopyGirderType :  public txnTransaction
+class rptParagraph;
+
+// Class to copy "all" properties. Note that it doesn't exactly do this. It is meant to copy the girder type
+// and clear out data for subsequent copy girder properties transactions
+class txnCopyGirderAllProperties :  public txnTransaction
 {
 public:
-   txnCopyGirderType(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys);
-   virtual ~txnCopyGirderType();
-   virtual bool Execute();
-   virtual void Undo();
+   txnCopyGirderAllProperties(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys);
+   virtual ~txnCopyGirderAllProperties();
+   virtual bool Execute() override;
+   virtual void Undo() override;
    virtual txnTransaction* CreateClone() const;
    virtual std::_tstring Name() const;
    virtual bool IsUndoable() { return true; }
@@ -46,10 +52,8 @@ public:
 private:
    CGirderKey m_FromGirderKey;
    std::vector<CGirderKey> m_ToGirderKeys;
+
    std::vector<std::_tstring> m_strOldNames;
-   std::vector<CStrandData> m_OldPrestressData;
-   std::vector<CShearData2> m_OldShearData;
-   std::vector<CLongitudinalRebarData> m_OldRebarData;
 };
 
 class txnCopyGirderStirrups :  public txnTransaction
@@ -68,7 +72,6 @@ private:
    CGirderKey m_FromGirderKey;
    std::vector<CGirderKey> m_ToGirderKeys;
    std::vector<CShearData2> m_OldShearData;
-   std::vector<CLongitudinalRebarData> m_OldRebarData;
 };
 
 class txnCopyGirderPrestressing :  public txnTransaction
@@ -87,6 +90,7 @@ private:
    CGirderKey m_FromGirderKey;
    std::vector<CGirderKey> m_ToGirderKeys;
    std::vector<CStrandData> m_OldPrestressData;
+   std::vector<CSegmentPTData> m_OldSegmentPTData;
    std::vector<CPTData> m_OldPTData;
 };
 
@@ -144,85 +148,71 @@ private:
    std::vector<CLongitudinalRebarData> m_OldRebarData;
 };
 
-class txnCopyGirderSlabOffset :  public txnTransaction
+//////////// Girder Copy Callback classes ////////////////////////////////////////////////////////////////
+
+
+class CCopyGirderAllProperties : public ICopyGirderPropertiesCallback
 {
 public:
-   txnCopyGirderSlabOffset(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys);
-   virtual ~txnCopyGirderSlabOffset();
-   virtual bool Execute();
-   virtual void Undo();
-   virtual txnTransaction* CreateClone() const;
-   virtual std::_tstring Name() const;
-   virtual bool IsUndoable() { return true; }
-   virtual bool IsRepeatable() { return false; }
-
-private:
-   CGirderKey m_FromGirderKey;
-   std::vector<CGirderKey> m_ToGirderKeys;
-   std::vector<std::vector<std::pair<Float64,Float64>>> m_OldSegmentSlabOffsetData;
-};
-
-////////////////////////////////////////////////////////////////////////////
-
-class CCopyGirderType : public ICopyGirderPropertiesCallback
-{
-public:
-   CCopyGirderType();
-   virtual LPCTSTR GetName();
-   virtual BOOL CanCopy(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys);
-   virtual txnTransaction* CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys);
+   CCopyGirderAllProperties();
+   virtual LPCTSTR GetName() override;
+   virtual BOOL CanCopy(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
+   virtual txnTransaction* CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
+   virtual UINT GetGirderEditorTabIndex() override;
+   virtual rptParagraph* BuildComparisonReportParagraph(const CGirderKey& fromGirderKey) override;
 };
 
 class CCopyGirderStirrups : public ICopyGirderPropertiesCallback
 {
 public:
    CCopyGirderStirrups();
-   virtual LPCTSTR GetName();
-   virtual BOOL CanCopy(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys);
-   virtual txnTransaction* CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys);
+   virtual LPCTSTR GetName() override;
+   virtual BOOL CanCopy(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
+   virtual txnTransaction* CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
+   virtual UINT GetGirderEditorTabIndex() override;
+   virtual rptParagraph* BuildComparisonReportParagraph(const CGirderKey& fromGirderKey) override;
 };
 
 class CCopyGirderPrestressing : public ICopyGirderPropertiesCallback
 {
 public:
    CCopyGirderPrestressing();
-   virtual LPCTSTR GetName();
-   virtual BOOL CanCopy(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys);
-   virtual txnTransaction* CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys);
+   virtual LPCTSTR GetName() override;
+   virtual BOOL CanCopy(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
+   virtual txnTransaction* CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
+   virtual UINT GetGirderEditorTabIndex() override;
+   virtual rptParagraph* BuildComparisonReportParagraph(const CGirderKey& fromGirderKey) override;
 };
 
 class CCopyGirderHandling : public ICopyGirderPropertiesCallback
 {
 public:
    CCopyGirderHandling();
-   virtual LPCTSTR GetName();
-   virtual BOOL CanCopy(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys);
-   virtual txnTransaction* CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys);
+   virtual LPCTSTR GetName() override;
+   virtual BOOL CanCopy(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
+   virtual txnTransaction* CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
+   virtual UINT GetGirderEditorTabIndex() override;
+   virtual rptParagraph* BuildComparisonReportParagraph(const CGirderKey& fromGirderKey) override;
 };
 
 class CCopyGirderMaterial : public ICopyGirderPropertiesCallback
 {
 public:
    CCopyGirderMaterial();
-   virtual LPCTSTR GetName();
-   virtual BOOL CanCopy(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys);
-   virtual txnTransaction* CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys);
+   virtual LPCTSTR GetName() override;
+   virtual BOOL CanCopy(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
+   virtual txnTransaction* CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
+   virtual UINT GetGirderEditorTabIndex() override;
+   virtual rptParagraph* BuildComparisonReportParagraph(const CGirderKey& fromGirderKey) override;
 };
 
 class CCopyGirderRebar : public ICopyGirderPropertiesCallback
 {
 public:
    CCopyGirderRebar();
-   virtual LPCTSTR GetName();
-   virtual BOOL CanCopy(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys);
-   virtual txnTransaction* CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys);
-};
-
-class CCopyGirderSlabOffset : public ICopyGirderPropertiesCallback
-{
-public:
-   CCopyGirderSlabOffset();
-   virtual LPCTSTR GetName();
-   virtual BOOL CanCopy(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys);
-   virtual txnTransaction* CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys);
+   virtual LPCTSTR GetName() override;
+   virtual BOOL CanCopy(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
+   virtual txnTransaction* CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
+   virtual UINT GetGirderEditorTabIndex() override;
+   virtual rptParagraph* BuildComparisonReportParagraph(const CGirderKey& fromGirderKey) override;
 };

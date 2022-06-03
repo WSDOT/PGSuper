@@ -1,24 +1,25 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 68.75   10   7.04         S           1     1    W83MG    *     30  0.6  270  36.99  25.76  11.81  11.81                                               6  61.0  3.0  5.000  6.962   2.398    -2.587     9776   0.701  0.756   1.229 -0.748  0.000 -0.061 -0.809  98.77  310.37    6.56   12.30   12.30 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 68.75   10   7.04         S           1     1    W83MG    *     30  0.6  270  36.99  25.76  11.81  11.81                                               6  61.0  3.0  5.000  6.962   2.398    -2.587     9776   0.701  0.756   2.378 -0.748  0.000 -0.061 -0.809  98.77  310.37    6.56   12.30   12.30    1.86    2.26    2.41    3.92    1.69 
 
 
 The Specification Check was Not Successful
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 68.75   10   7.04         S           1     2    W83MG    *     53  0.6  270  36.05  18.99  11.81  11.81                                              15  70.9  8.9  7.000  6.962   2.419    -2.586    11547   0.659  0.756   1.994 -0.781  0.000 -0.061 -0.843 264.11  642.33    6.56   12.30   12.30 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 68.75   10   7.04         S           1     2    W83MG    *     53  0.6  270  36.05  18.99  11.81  11.81                                              15  70.9  8.9  7.000  6.962   2.419    -2.586    11547   0.659  0.756   3.487 -0.781  0.000 -0.061 -0.843 264.11  642.33    6.56   12.30   12.30    4.08    4.00    5.29    5.11    4.12 
 
 
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Compression stress check failed for Service I Limit State in Interval 12 Cast Deck
-Compression stress check failed for Service I Limit State in Interval 18 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Bursting zone check failed.
+Bursting check failed.
 Lifting checks failed
+Slab Offset ("A" Dimension) check failed
 
 

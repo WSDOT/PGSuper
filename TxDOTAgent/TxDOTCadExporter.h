@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,6 +27,7 @@
 #include <Plugins\PGSuperIEPlugin.h>
 #include "CLSID.h"
 #include "resource.h"       // main symbols
+#include "ExportCadData.h" 
 
 
 #if defined(_WIN32_WCE) && !defined(_CE_DCOM) && !defined(_CE_ALLOW_SINGLE_THREADED_OBJECTS_IN_MTA)
@@ -77,6 +78,9 @@ public:
    STDMETHOD(GetDocumentLocation)(UINT nHID,BSTR* pbstrURL) const override;
 
 private:
+   HRESULT ExportGirderDesignData(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys, exportCADData::cdtExportDataType fileDataType, exportCADData::ctxFileFormatType fileFormat);
+   HRESULT ExportHaunchDeflectionData(IBroker * pBroker, const std::vector<CGirderKey>& girderKeys, exportCADData::cdtExportDataType fileDataType, exportCADData::ctxFileFormatType fileFormat);
+
    std::map<UINT,CString> m_HelpTopics;
    CString GetDocumentationURL() const;
 

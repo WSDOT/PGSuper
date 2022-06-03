@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -319,11 +319,29 @@ void CAlignmentProfileView::BuildProfileDisplayObjects()
 
    for(Float64 station : vStations)
    {
-      Float64 y = pRoadway->GetElevation(station,0.0);
+      IndexType pglIdx = pRoadway->GetProfileGradeLineIndex(station);
+      Float64 offset = pRoadway->GetAlignmentOffset(pglIdx, station);
+
+      Float64 y = pRoadway->GetElevation(station,offset);
       CComPtr<IPoint2d> pnt;
       pnt.CoCreateInstance(CLSID_Point2d);
       pnt->Move(station,y);
       doProfile->AddPoint(pnt);
+
+      if (IsEqual(station, vStations.front()))
+      {
+         Float64 grade = pRoadway->GetProfileGrade(station);
+         CComPtr<iTextBlock> doText;
+         doText.CoCreateInstance(CLSID_TextBlock);
+         doText->SetPosition(pnt);
+         doText->SetText(_T("PGL"));
+         doText->SetTextAlign(TA_BOTTOM | TA_LEFT);
+         doText->SetBkMode(TRANSPARENT);
+         long angle = long(1800.*grade / M_PI);
+         angle = (900 < angle && angle < 2700) ? angle - 1800 : angle;
+         doText->SetAngle(angle);
+         display_list->AddDisplayObject(doText);
+      }
 
       y = pRoadway->GetElevation(station,leftOffset);
       pnt.Release();
@@ -489,10 +507,8 @@ void CAlignmentProfileView::BuildLabelDisplayObjects()
    CreateStationLabel(label_display_list, end_station);
 
    // Even station labels
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-   Float64 station_step = (pDisplayUnits->GetUnitMode() == eafTypes::umUS ? ::ConvertToSysUnits(100.00, unitMeasure::Feet) : ::ConvertToSysUnits(100.00, unitMeasure::Meter));
-   Float64 start = ::CeilOff(start_station, station_step);
-   Float64 end = ::FloorOff(end_station, station_step);
+   Float64 start, end, station_step;
+   GetUniformStationingData(pBroker, start_station, end_station, &start, &end, &station_step);
    Float64 station = start;
    do
    {
@@ -615,7 +631,10 @@ void CAlignmentProfileView::CreateStationLabel(iDisplayList* pDisplayList,Float6
 
    GET_IFACE2(pBroker,IRoadway,pRoadway);
 
-   Float64 y = pRoadway->GetElevation(station,0.0);
+   IndexType pglIdx = pRoadway->GetProfileGradeLineIndex(station);
+   Float64 offset = pRoadway->GetAlignmentOffset(pglIdx, station);
+
+   Float64 y = pRoadway->GetElevation(station,offset);
    CreateStationLabel(pDisplayList,station,y,strBaseLabel,textAlign);
 }
 

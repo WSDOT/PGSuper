@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -187,7 +187,7 @@ BOOL CPGSAppPluginBase::DoProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo
    // doesn't know about this plug-in at the time the command line parameters are parsed
    //
    // Re-parse the parameters with our own command line information object
-   std::unique_ptr<CPGSBaseCommandLineInfo> pgsCmdInfo(CreateCommandLineInfo());
+   std::unique_ptr<CPGSBaseCommandLineInfo> pgsCmdInfo((CPGSBaseCommandLineInfo*)CreateCommandLineInfo());
    if ( pgsCmdInfo.get() != nullptr )
    {
       EAFGetApp()->ParseCommandLine(*pgsCmdInfo);

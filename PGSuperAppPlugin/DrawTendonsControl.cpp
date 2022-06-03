@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -235,9 +235,9 @@ void CDrawTendonsControl::OnPaint()
    bounding_box->get_Top(&top);
    bounding_box->get_Bottom(&bottom);
 
-   gpRect2d box(left,bottom,right,top);
-   gpSize2d size = box.Size();
-   gpPoint2d org = box.Center();
+   GraphRect box(left,bottom,right,top);
+   GraphSize size = box.Size();
+   GraphPoint org = box.Center();
 
    CSize sClient = rClient.Size();
 
@@ -271,8 +271,11 @@ void CDrawTendonsControl::OnPaint()
       CComPtr<IPoint2d> cg;
       props->get_Centroid(&cg);
 
+      GraphPoint pnt;
+      cg->Location(&pnt.X(), &pnt.Y());
+
       long dx,dy;
-      mapper.WPtoDP(cg,&dx,&dy);
+      mapper.WPtoDP(pnt,&dx,&dy);
       CString str;
       str.Format(_T("%d"),LABEL_SEGMENT(segIdx++));
       dc.TextOut(dx,dy,str);
@@ -322,7 +325,9 @@ void CDrawTendonsControl::Draw(CDC* pDC,grlibPointMapper& mapper,IPoint2dCollect
    for ( CollectionIndexType i = 0; i < nPoints; i++ )
    {
       LONG dx,dy;
-      mapper.WPtoDP(points[i],&dx,&dy);
+      GraphPoint point;
+      points[i]->Location(&point.X(), &point.Y());
+      mapper.WPtoDP(point,&dx,&dy);
       dev_points[i] = CPoint(dx,dy);
 
       points[i]->Release();

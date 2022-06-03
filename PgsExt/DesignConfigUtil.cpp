@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -389,7 +389,6 @@ Float64 GetAdditionalHorizInterfaceAvs(const STIRRUPCONFIG& config, Float64 loca
    }
    else
    {
-      ATLASSERT(false); // this should never happen
       *pSize = matRebar::bsNone;
       *pNBars = 0.0;
       *pSpacing = 0.0;

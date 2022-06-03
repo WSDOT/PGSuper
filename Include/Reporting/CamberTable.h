@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -69,12 +69,12 @@ public:
    //------------------------------------------------------------------------
    // Build the strand eccentricity tables
    void Build_Deck(IBroker* pBroker,const CSegmentKey& segmentKey, 
-                  bool bTempStrands, bool bSidewalk, bool bShearKey,bool bConstruction, bool bOverlay, bool bDeckPanels,
+                  bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay, bool bDeckPanels,
                   IEAFDisplayUnits* pDisplayUnits,Int16 time, const CamberMultipliers& cm,
                   rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const;
 
    void Build_NoDeck(IBroker* pBroker,const CSegmentKey& segmentKey,
-                     bool bTempStrands, bool bSidewalk, bool bShearKey,bool bConstruction, bool bOverlay,
+                     bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay,
                      IEAFDisplayUnits* pDisplayUnits,Int16 time, const CamberMultipliers& cm,
                      rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const;
 
@@ -96,22 +96,22 @@ protected:
    // GROUP: ACCESS
    // GROUP: INQUIRY
    void Build_Deck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
-      bool bTempStrands, bool bSidewalk, bool bShearKey, bool bConstruction, bool bOverlay, bool bDeckPanels,
+      bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay, bool bDeckPanels,
       IEAFDisplayUnits* pDisplayUnits, Int16 time, const CamberMultipliers& cm,
       rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const;
 
    void Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey,
-      bool bTempStrands, bool bSidewalk, bool bShearKey, bool bConstruction, bool bOverlay, bool bDeckPanels,
+      bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay, bool bDeckPanels,
       IEAFDisplayUnits* pDisplayUnits, Int16 time, const CamberMultipliers& cm,
       rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const;
 
    void Build_NoDeck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
-      bool bTempStrands, bool bSidewalk, bool bShearKey, bool bConstruction, bool bOverlay,
+      bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay,
       IEAFDisplayUnits* pDisplayUnits, Int16 time, const CamberMultipliers& cm,
       rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const;
 
    void Build_NoDeck_XY(IBroker* pBroker, const CSegmentKey& segmentKey,
-      bool bTempStrands, bool bSidewalk, bool bShearKey, bool bConstruction, bool bOverlay,
+      bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay,
       IEAFDisplayUnits* pDisplayUnits, Int16 time, const CamberMultipliers& cm,
       rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const;
 

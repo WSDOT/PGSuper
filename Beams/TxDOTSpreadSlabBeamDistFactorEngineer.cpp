@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -410,7 +410,7 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierId
    {
       if ( gM1.ControllingMethod & INTERIOR_OVERRIDE )
       {
-         (*pPara) << Bold(_T("1 Loaded Lane: Exterior factor may not be less than that for interior.")) << rptNewLine;
+         (*pPara) << Bold(_T("1 Loaded Lane: Exterior factor may not be less than that for adjacent interior. See interior details report for computation details.")) << rptNewLine;
          (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << _T("mg") << Super(_T("MI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg) << rptNewLine;
       }
       else
@@ -455,7 +455,7 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierId
       {
          if ( gM2.ControllingMethod & INTERIOR_OVERRIDE )
          {
-            (*pPara) << Bold(_T("2+ Loaded Lanes: Exterior factor may not be less than that for interior")) << rptNewLine;
+            (*pPara) << Bold(_T("2+ Loaded Lanes: Exterior factor may not be less than that for adjacent interior. See interior details report for computation details.")) << rptNewLine;
             (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("2")) << _T(" = ") << _T("mg") << Super(_T("MI")) << Sub(_T("2")) << _T(" = ") << scalar.SetValue(gM2.mg) << rptNewLine;
          }
          else
@@ -587,7 +587,7 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::ReportShear(IndexType spanOrPierIdx
    {
       if ( gV1.ControllingMethod & INTERIOR_OVERRIDE )
       {
-         (*pPara) << Bold(_T("1 Loaded Lane: Exterior factor may not be less than that for interior")) << rptNewLine;
+         (*pPara) << Bold(_T("1 Loaded Lane: Exterior factor may not be less than that for adjacent interior. See interior details report for computation details.")) << rptNewLine;
          (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << _T("mg") << Super(_T("VI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg) << rptNewLine;
       }
       else
@@ -632,7 +632,7 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::ReportShear(IndexType spanOrPierIdx
       {
          if ( gV2.ControllingMethod & INTERIOR_OVERRIDE )
          {
-            (*pPara) << Bold(_T("2+ Loaded Lanes: Exterior factor may not be less than that for interior")) << rptNewLine;
+            (*pPara) << Bold(_T("2+ Loaded Lanes: Exterior factor may not be less than that for adjacent interior. See interior details report for computation details.")) << rptNewLine;
             (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("2")) << _T(" = ") << _T("mg") << Super(_T("VI")) << Sub(_T("2")) << _T(" = ") << scalar.SetValue(gV2.mg) << rptNewLine;
          }
          else

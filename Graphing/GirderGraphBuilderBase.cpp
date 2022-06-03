@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -40,6 +40,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
+#include <IFace\EditByUI.h>
 
 #include <EAF\EAFGraphView.h>
 #include <EAF\EAFGraphControlWindow.h>
@@ -111,6 +112,26 @@ CEAFGraphControlWindow* CGirderGraphBuilderBase::GetGraphControlWindow()
    ATLASSERT(m_pGraphController != nullptr);
    return m_pGraphController;
 }
+
+bool CGirderGraphBuilderBase::HandleDoubleClick(UINT nFlags,CPoint point)
+{
+   GET_IFACE(IEditByUI, pEditByUI);
+   CGirderKey girderKey(m_pGraphController->GetGirderKey());
+   if (girderKey.groupIndex == ALL_GROUPS)
+   {
+      // we don't know which group to edit since there are multiple groups displayed in the graph
+      // This method of EditGirderDescription prompts if a girder is not defined by the selection context
+      // of the Bridge View window.
+      pEditByUI->EditGirderDescription();
+   }
+   else
+   {
+      pEditByUI->EditGirderDescription(girderKey, EGD_GENERAL);
+   }
+
+   return true;
+}
+
 
 int CGirderGraphBuilderBase::InitializeGraphController(CWnd* pParent,UINT nID)
 {
@@ -280,7 +301,7 @@ void CGirderGraphBuilderBase::AddGraphPoint(IndexType series, Float64 xval, Floa
    x = IsZero(x,m_ZeroToleranceX) ? 0 : x;
    Float64 y = pcy->Convert(yval);
    y = IsZero(y,m_ZeroToleranceY) ? 0 : y;
-   m_Graph.AddPoint(series, gpPoint2d(x,y));
+   m_Graph.AddPoint(series, GraphPoint(x,y));
 }
 
 void CGirderGraphBuilderBase::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
@@ -293,6 +314,14 @@ void CGirderGraphBuilderBase::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
    // updating data.... draw the graph
    CRect rect = GetView()->GetDrawingRect();
 
+   // Draw beam at bottom 10% of view
+   Float64 beamViewOffsetFac = 1.0;
+   if (m_pGraphController->ShowBeam() && m_pGraphController->ShowBeamBelowGraph())
+   {
+      beamViewOffsetFac = 0.90;
+   }
+
+   rect.bottom = (LONG)(rect.bottom * beamViewOffsetFac);
    m_Graph.SetOutputRect(rect);
 
    // before drawing the graph background, which also draws the axes
@@ -348,9 +377,46 @@ void CGirderGraphBuilderBase::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
 
       IntervalIndexType firstIntervalIdx, lastIntervalIdx;
       GetBeamDrawIntervals(&firstIntervalIdx,&lastIntervalIdx);
-      grlibPointMapper mapper( m_Graph.GetClientAreaPointMapper(pDC->GetSafeHdc()) );
+
       CDrawBeamTool drawBeam;
+      drawBeam.SetMinAspectRatio(25.0); // shrink beam height to reasonable aspect if needed so it will fit nicely on graph.
       drawBeam.SetStyle(GetDrawBeamStyle());
+
+      grlibPointMapper mapper;
+      if (!m_pGraphController->ShowBeamBelowGraph())
+      {
+         // typical case where beam is embedded in graph
+         mapper = drawBeam.CreatePointMapperAtGraphZero( m_Graph.GetClientAreaPointMapper( pDC->GetSafeHdc() ) );
+      }
+      else
+      {
+         // create mapper to draw beam at bottom of window below graph
+         mapper = m_Graph.GetClientAreaPointMapper(pDC->GetSafeHdc());
+
+         LONG dox, doy;
+         mapper.GetDeviceOrg(&dox, &doy);
+         LONG dx, dy;
+         mapper.GetDeviceExt(&dx, &dy);
+
+         GraphSize wExt = mapper.GetWorldExt();
+         GraphPoint wOrg = mapper.GetWorldOrg();
+
+         // get device point at World (0,0)
+         LONG x, y;
+         mapper.WPtoDP(0, 0, &x, &y);
+
+         CSize supsize = drawBeam.GetSupportSize(pDC);
+
+         // set to isotropic scaling
+         mapper.SetDeviceExt(dx, dx);
+
+         // Move beam to just above bottom of window
+         mapper.SetDeviceOrg(dox - dx / 2, doy + dy / 2 + (LONG)(rect.bottom * (1.0 - beamViewOffsetFac) - supsize.cy));
+
+         mapper.SetWorldOrg(0, 0);
+         mapper.SetWorldExt(wExt.Dx(), wExt.Dx());
+      }
+
       drawBeam.DrawBeam(m_pBroker,pDC,mapper,m_pXFormat,firstIntervalIdx,lastIntervalIdx,girderKey,shift);
    }
 

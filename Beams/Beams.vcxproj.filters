@@ -211,6 +211,18 @@
     <ClCompile Include="TxDOTSpreadSlabBeamDistFactorEngineer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="EffectivePrestressForceTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AutogenousShrinkageTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NUDeckedBulbTeeFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PCIDeckedBulbTeeFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\IFace\AgeAdjustedMaterial.h">
@@ -471,6 +483,18 @@
     <ClInclude Include="TxDOTSpreadSlabBeamDistFactorEngineer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="EffectivePrestressForceTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AutogenousShrinkageTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NUDeckedBulbTeeFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PCIDeckedBulbTeeFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Res\boxbeam.ico">
@@ -690,6 +714,12 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="TxDOTSpreadSlabBeamDistFactorEngineer.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="NUDeckedBulbTeeFactory.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="PCIDeckedBulbTeeFactory.rgs">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

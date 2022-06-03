@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -43,6 +43,8 @@ public:
    virtual int InitializeGraphController(CWnd* pParent,UINT nID) override;
    virtual CEAFGraphControlWindow* GetGraphControlWindow() override;
    
+   virtual bool HandleDoubleClick(UINT nFlags,CPoint point) override;
+
    virtual bool UpdateNow() = 0;
 
    virtual void UpdateXAxis();

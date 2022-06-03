@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -148,6 +148,10 @@ void CPGSuperDocProxyAgent::CreateToolBars()
    pToolBar->CreateDropDownButton(ID_FILE_OPEN,   nullptr,BTNS_DROPDOWN);
    pToolBar->CreateDropDownButton(ID_VIEW_GRAPHS, nullptr,BTNS_WHOLEDROPDOWN);
    pToolBar->CreateDropDownButton(ID_VIEW_REPORTS,nullptr,BTNS_WHOLEDROPDOWN);
+
+   pToolBar->CreateDropDownButton(ID_COPY_GIRDER_PROPS,nullptr,BTNS_WHOLEDROPDOWN);
+   pToolBar->CreateDropDownButton(ID_COPY_PIER_PROPS,nullptr,BTNS_WHOLEDROPDOWN);
+   pToolBar->CreateDropDownButton(ID_COPY_TEMPSUPPORT_PROPS,nullptr,BTNS_WHOLEDROPDOWN);
 
    m_LibToolBarID = pToolBars->CreateToolBar(_T("Library"));
    pToolBar = pToolBars->GetToolBar(m_LibToolBarID);
@@ -457,8 +461,8 @@ void CPGSuperDocProxyAgent::CreateGraphView(LPCTSTR lpszGraph, IEAFViewControlle
    IndexType nGraphs = pGraphMgr->GetGraphBuilderCount();
    for (IndexType graphIdx = 0; graphIdx < nGraphs; graphIdx++)
    {
-      auto pGraphBuilder = pGraphMgr->GetGraphBuilder(graphIdx);
-      if (CString(lpszGraph).Compare(pGraphBuilder->GetName()) == 0)
+      auto& pGraphBuilder = pGraphMgr->GetGraphBuilder(graphIdx);
+      if (CString(lpszGraph).Compare(pGraphBuilder->GetName().c_str()) == 0)
       {
          CreateGraphView(graphIdx, ppViewController);
          return;
@@ -1017,7 +1021,7 @@ Float64 CPGSuperDocProxyAgent::GetSectionCutStation()
    };
 
    ASSERT(false); // should never get here
-   return -999999;
+   return -99999;
 }
 
 
@@ -1167,6 +1171,11 @@ bool CPGSuperDocProxyAgent::EditSegmentDescription(const CSegmentKey& segmentKey
    return m_pMyDocument->EditGirderSegmentDescription(segmentKey,nPage);
 }
 
+bool CPGSuperDocProxyAgent::EditSegmentDescription()
+{
+   return m_pMyDocument->EditGirderSegmentDescription();
+}
+
 bool CPGSuperDocProxyAgent::EditClosureJointDescription(const CClosureKey& closureKey, int nPage)
 {
    return m_pMyDocument->EditClosureJointDescription(closureKey,nPage);
@@ -1177,6 +1186,11 @@ bool CPGSuperDocProxyAgent::EditGirderDescription(const CGirderKey& girderKey, i
    return m_pMyDocument->EditGirderDescription(girderKey,nPage);
 }
 
+bool CPGSuperDocProxyAgent::EditGirderDescription()
+{
+   return m_pMyDocument->EditGirderDescription();
+}
+
 bool CPGSuperDocProxyAgent::EditSpanDescription(SpanIndexType spanIdx, int nPage)
 {
    return m_pMyDocument->EditSpanDescription(spanIdx,nPage);
@@ -1185,6 +1199,27 @@ bool CPGSuperDocProxyAgent::EditSpanDescription(SpanIndexType spanIdx, int nPage
 bool CPGSuperDocProxyAgent::EditPierDescription(PierIndexType pierIdx, int nPage)
 {
    return m_pMyDocument->EditPierDescription(pierIdx,nPage);
+}
+
+bool CPGSuperDocProxyAgent::EditTemporarySupportDescription(PierIndexType pierIdx, int nPage)
+{
+   if (IsPGSpliceDocument())
+   {
+      CPGSpliceDoc* pPGSplice = dynamic_cast<CPGSpliceDoc*>(m_pMyDocument);
+      ATLASSERT(pPGSplice != nullptr);
+
+      GET_IFACE(IBridgeDescription,pIBridgeDesc);
+      const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+      const CTemporarySupportData* pTsData = pBridgeDesc->GetTemporarySupport(pierIdx);
+
+      PierIndexType tsid = pTsData->GetID();
+
+      return pPGSplice->EditTemporarySupportDescription(tsid, nPage);
+   }
+   else
+   {
+      return false;
+   }
 }
 
 void CPGSuperDocProxyAgent::EditLiveLoads()
@@ -1418,14 +1453,14 @@ bool CPGSuperDocProxyAgent::UnregisterGirderSectionViewCallback(IDType ID)
    return m_pMyDocument->UnregisterGirderSectionViewCallback(ID);
 }
 
-IDType CPGSuperDocProxyAgent::RegisterEditPierCallback(IEditPierCallback* pCallback)
+IDType CPGSuperDocProxyAgent::RegisterEditPierCallback(IEditPierCallback* pCallback,ICopyPierPropertiesCallback* pCopyCallback)
 {
-   return m_pMyDocument->RegisterEditPierCallback(pCallback);
+   return m_pMyDocument->RegisterEditPierCallback(pCallback, pCopyCallback);
 }
 
-IDType CPGSuperDocProxyAgent::RegisterEditTemporarySupportCallback(IEditTemporarySupportCallback* pCallback)
+IDType CPGSuperDocProxyAgent::RegisterEditTemporarySupportCallback(IEditTemporarySupportCallback* pCallback, ICopyTemporarySupportPropertiesCallback* pCopyCallBack)
 {
-   return m_pMyDocument->RegisterEditTemporarySupportCallback(pCallback);
+   return m_pMyDocument->RegisterEditTemporarySupportCallback(pCallback, pCopyCallBack);
 }
 
 IDType CPGSuperDocProxyAgent::RegisterEditSpanCallback(IEditSpanCallback* pCallback)

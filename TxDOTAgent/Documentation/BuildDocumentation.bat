@@ -1,21 +1,21 @@
-cd \ARP\PGSuper\TxDOTAgent\Documentation\TOGA
+cd %ARPDIR%\PGSuper\TxDOTAgent\Documentation\TOGA
 
 doxygen Doxygen.dox
 
-\ARP\BridgeLink\RegFreeCOM\x64\Release\MakeDocMap Toga
-rmdir /S /Q \ARP\BridgeLink\Docs\TOGA\%1\
-mkdir \ARP\BridgeLink\Docs\TOGA\%1\
-copy \ARP\PGSuper\TxDOTAgent\Documentation\TOGA\doc\html\* \ARP\BridgeLink\Docs\TOGA\%1\
-copy \ARP\PGSuper\TxDOTAgent\Documentation\TOGA\Toga.dm \ARP\BridgeLink\Docs\TOGA\%1\
+%ARPDIR%\BridgeLink\RegFreeCOM\x64\Release\MakeDocMap Toga
+rmdir /S /Q %ARPDIR%\BridgeLink\Docs\TOGA\%1\
+mkdir %ARPDIR%\BridgeLink\Docs\TOGA\%1\
+copy %ARPDIR%\PGSuper\TxDOTAgent\Documentation\TOGA\doc\html\* %ARPDIR%\BridgeLink\Docs\TOGA\%1\
+copy %ARPDIR%\PGSuper\TxDOTAgent\Documentation\TOGA\Toga.dm %ARPDIR%\BridgeLink\Docs\TOGA\%1\
 
-cd \ARP\PGSuper\TxDOTAgent\Documentation\TxCADExport
+cd %ARPDIR%\PGSuper\TxDOTAgent\Documentation\TxCADExport
 
 doxygen Doxygen.dox
 
-\ARP\BridgeLink\RegFreeCOM\x64\Release\MakeDocMap TxCADExport
-rmdir /S /Q \ARP\BridgeLink\Docs\TxCADExport\%1\
-mkdir \ARP\BridgeLink\Docs\TxCADExport\%1\
-copy \ARP\PGSuper\TxDOTAgent\Documentation\TxCADExport\doc\html\* \ARP\BridgeLink\Docs\TxCADExport\%1\
-copy \ARP\PGSuper\TxDOTAgent\Documentation\TxCADExport\TxCADExport.dm \ARP\BridgeLink\Docs\TxCADExport\%1\
+%ARPDIR%\BridgeLink\RegFreeCOM\x64\Release\MakeDocMap TxCADExport
+rmdir /S /Q %ARPDIR%\BridgeLink\Docs\TxCADExport\%1\
+mkdir %ARPDIR%\BridgeLink\Docs\TxCADExport\%1\
+copy %ARPDIR%\PGSuper\TxDOTAgent\Documentation\TxCADExport\doc\html\* %ARPDIR%\BridgeLink\Docs\TxCADExport\%1\
+copy %ARPDIR%\PGSuper\TxDOTAgent\Documentation\TxCADExport\TxCADExport.dm %ARPDIR%\BridgeLink\Docs\TxCADExport\%1\
 
-cd \ARP\PGSuper\TxDOTAgent\Documentation
+cd %ARPDIR%\PGSuper\TxDOTAgent\Documentation

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,6 +25,7 @@
 #include <GraphicsLib\GraphicsLib.h>
 #include "DrawStrandControl.h"
 #include "StrandGrid.h"
+#include <MfcTools\WideDropDownComboBox.h>
 
 struct IStrandGeometry;
 class CPrecastSegmentData;
@@ -45,12 +46,15 @@ public:
 // Dialog Data
 	enum { IDD = IDD_SEGMENT_STRANDS };
 
-   Float64 GetMaxPjack(StrandIndexType nStrands); // allowable by spec
-   Float64 GetUltPjack(StrandIndexType nStrands); // breaking strength
+   Float64 GetMaxPjack(StrandIndexType nStrands, pgsTypes::StrandType strandType); // allowable by spec
+   Float64 GetUltPjack(StrandIndexType nStrands, pgsTypes::StrandType strandType); // breaking strength
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
+   CWideDropDownComboBox m_cbStraight;
+   CWideDropDownComboBox m_cbHarped;
+   CWideDropDownComboBox m_cbTemporary;
    CDrawStrandControl m_DrawStrands;
    CMetaFileStatic m_StrandSpacingImage;
    CMetaFileStatic m_HarpPointLocationImage;
@@ -63,11 +67,14 @@ protected:
 	afx_msg void OnUpdateHarpedStrandPjEdit();
 	afx_msg void OnUpdateStraightStrandPjEdit();
 	afx_msg void OnHelp();
-   afx_msg void OnStrandTypeChanged();
+   afx_msg void OnStraightStrandTypeChanged();
+   afx_msg void OnHarpedStrandTypeChanged();
    afx_msg void OnTempStrandTypeChanged();
    afx_msg void OnEpoxyChanged();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+
+   void OnStrandTypeChanged(int nIDC, pgsTypes::StrandType strandType);
 
    void OnUpdateStrandPjEdit(UINT nCheck,UINT nForceEdit,UINT nUnit,pgsTypes::StrandType strandType);
 
@@ -86,8 +93,7 @@ protected:
    pgsTypes::TTSUsage GetTemporaryStrandUsage();
 
    std::unique_ptr<CStrandGrid> m_pGrid;
-	Int32 m_StrandKey;
-   Int32 m_TempStrandKey;
+	std::array<Int64, 3> m_StrandKey;
 
    CPrecastSegmentData* m_pSegment; // holds the strand data for the calling dialog
    CStrandData m_Strands; // holds strand data while editing is occuring (this is used to update the display)

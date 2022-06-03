@@ -10,3 +10,5 @@ Span, Girder | Select the Span and Girder
 Location | Select a location along the girder
 Horizontal Axis | Select the horizontal axis type. Time plots values with respect to the overall analysis timeline. Interval plots values at discrete time intervals. For the Time, a linear or logarithmic scale can be used.
 Show Grid | Toggles the grid 
+
+**Exporting Graph Data**: Data from this graph can be exported to a file by clicking on the *Export Graph Data* button. See @ref ug_exporting_graph_data for more information.

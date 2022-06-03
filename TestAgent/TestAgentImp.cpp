@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -47,6 +47,7 @@
 #include <psgLib\SpecLibraryEntry.h>
 #include <PsgLib\GirderLibraryEntry.h>
 
+#include <PgsExt\DeckDescription2.h>
 #include <PgsExt\GirderGroupData.h>
 #include <PgsExt\SplicedGirderData.h>
 #include <PgsExt\PrecastSegmentData.h>
@@ -1033,6 +1034,10 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
       // write to poi file
       poiFile<<locn<<_T(", ")<< bridgeId<< _T(", 7, 1, ")<<loc<<_T(", 2, -1, -1, -1,  0,  0,  0, -1,  0,  0,  0,  0,  0,  0,  0")<<std::endl;
 
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 29998, ") << loc << _T(", ") << DEFLECTION(::ConvertFromSysUnits(pForce->GetDeflection(releaseIntervalIdx, pgsTypes::pftGirder, poi, bat, rtCumulative, false), unitMeasure::Millimeter)) << _T(", 1, ") << SEGMENT(segmentKey) << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 29999, ") << loc << _T(", ") << DEFLECTION(::ConvertFromSysUnits(pForce->GetDeflection(releaseIntervalIdx, pgsTypes::pftPretension, poi, bat, rtCumulative, false), unitMeasure::Millimeter)) << _T(", 1, ") << SEGMENT(segmentKey) << std::endl;
+
+
       // girder 
       IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
 
@@ -1133,7 +1138,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30037, ")<<loc<<_T(", ")<< QUIET(::ConvertFromSysUnits(pForces->GetShear(noncompositeIntervalIdx, lcDC, poi, bat, rtCumulative ).Left(), unitMeasure::Newton)) <<    _T(", 1, ")<< SEGMENT(segmentKey) <<std::endl;
       }
 
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30038, ")<<loc<<_T(", ")<< DEFLECTION(::ConvertFromSysUnits(pForces->GetDeflection(noncompositeIntervalIdx, lcDC, poi, bat, rtCumulative, false ), unitMeasure::Millimeter)) <<_T(", 1, ")<< SEGMENT(segmentKey) <<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30038, ")<<loc<<_T(", ")<< DEFLECTION(::ConvertFromSysUnits(pForces->GetDeflection(noncompositeIntervalIdx, lcDC, poi, bat, rtCumulative, false), unitMeasure::Millimeter)) <<_T(", 1, ")<< SEGMENT(segmentKey) <<std::endl;
       if (i == 0)
       {
          resultsFile << bridgeId << _T(", ") << pid << _T(", 30236, ") << loc << _T(", ") << QUIET(::ConvertFromSysUnits(pReactions->GetReaction(segmentKey, pierIdx, pgsTypes::stPier, noncompositeIntervalIdx, lcDC, bat, rtCumulative).Fy, unitMeasure::Newton)) << _T(", 1, ") << SEGMENT(segmentKey) << std::endl;
@@ -1458,8 +1463,8 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
             resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34003, ")<<loc<<_T(", ")<< QUIET(::ConvertFromSysUnits(smin.Left(), unitMeasure::Newton)) <<_T(", 8, ")<<SEGMENT(segmentKey)<<std::endl;
          }
 
-         pLsForces->GetDeflection( liveLoadIntervalIdx, pgsTypes::StrengthI, poi, pgsTypes::MaxSimpleContinuousEnvelope, false/*no prestress*/, true, false, false, &dummy, &max );
-         pLsForces->GetDeflection( liveLoadIntervalIdx, pgsTypes::StrengthI, poi, pgsTypes::MinSimpleContinuousEnvelope, false/*no prestress*/, true, false, false, &min, &dummy );
+         pLsForces->GetDeflection( liveLoadIntervalIdx, pgsTypes::StrengthI, poi, pgsTypes::MaxSimpleContinuousEnvelope, false/*no prestress*/, true, false, false, true, &dummy, &max );
+         pLsForces->GetDeflection( liveLoadIntervalIdx, pgsTypes::StrengthI, poi, pgsTypes::MinSimpleContinuousEnvelope, false/*no prestress*/, true, false, false, true, &min, &dummy );
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34004, ")<<loc<<_T(", ")<< DEFLECTION(::ConvertFromSysUnits(max, unitMeasure::Millimeter)) <<_T(", 8, ")<<SEGMENT(segmentKey)<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34005, ")<<loc<<_T(", ")<< DEFLECTION(::ConvertFromSysUnits(min, unitMeasure::Millimeter)) <<_T(", 8, ")<<SEGMENT(segmentKey)<<std::endl;
 
@@ -1482,8 +1487,8 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
             resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34023, ")<<loc<<_T(", ")<< QUIET(::ConvertFromSysUnits(smin.Left(), unitMeasure::Newton)) <<_T(", 8, ")<<SEGMENT(segmentKey)<<std::endl;
          }
 
-         pLsForces->GetDeflection( liveLoadIntervalIdx, pgsTypes::ServiceI, poi, pgsTypes::MaxSimpleContinuousEnvelope, false/*no prestress*/, true, false, false, &dummy, &max );
-         pLsForces->GetDeflection( liveLoadIntervalIdx, pgsTypes::ServiceI, poi, pgsTypes::MinSimpleContinuousEnvelope, false/*no prestress*/, true, false, false, &min, &dummy );
+         pLsForces->GetDeflection( liveLoadIntervalIdx, pgsTypes::ServiceI, poi, pgsTypes::MaxSimpleContinuousEnvelope, false/*no prestress*/, true, false, false, true, &dummy, &max );
+         pLsForces->GetDeflection( liveLoadIntervalIdx, pgsTypes::ServiceI, poi, pgsTypes::MinSimpleContinuousEnvelope, false/*no prestress*/, true, false, false, true, &min, &dummy );
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34024, ")<<loc<<_T(", ")<< DEFLECTION(::ConvertFromSysUnits(max, unitMeasure::Millimeter)) <<_T(", 8, ")<<SEGMENT(segmentKey)<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34025, ")<<loc<<_T(", ")<< DEFLECTION(::ConvertFromSysUnits(min, unitMeasure::Millimeter)) <<_T(", 8, ")<<SEGMENT(segmentKey)<<std::endl;
 
@@ -1506,8 +1511,8 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
             resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34035, ")<<loc<<_T(", ")<< QUIET(::ConvertFromSysUnits(smin.Left(), unitMeasure::Newton)) <<_T(", 8, ")<<SEGMENT(segmentKey)<<std::endl;
          }
 
-         pLsForces->GetDeflection( liveLoadIntervalIdx, pgsTypes::ServiceIII, poi, pgsTypes::MaxSimpleContinuousEnvelope, false/*no prestress*/, true, false, false, &dummy, &max );
-         pLsForces->GetDeflection( liveLoadIntervalIdx, pgsTypes::ServiceIII, poi, pgsTypes::MinSimpleContinuousEnvelope, false/*no prestress*/, true, false, false, &min, &dummy );
+         pLsForces->GetDeflection( liveLoadIntervalIdx, pgsTypes::ServiceIII, poi, pgsTypes::MaxSimpleContinuousEnvelope, false/*no prestress*/, true, false, false, true, &dummy, &max );
+         pLsForces->GetDeflection( liveLoadIntervalIdx, pgsTypes::ServiceIII, poi, pgsTypes::MinSimpleContinuousEnvelope, false/*no prestress*/, true, false, false, true, &min, &dummy );
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34036, ")<<loc<<_T(", ")<< DEFLECTION(::ConvertFromSysUnits(max, unitMeasure::Millimeter)) <<_T(", 8, ")<<SEGMENT(segmentKey)<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34037, ")<<loc<<_T(", ")<< DEFLECTION(::ConvertFromSysUnits(min, unitMeasure::Millimeter)) <<_T(", 8, ")<<SEGMENT(segmentKey)<<std::endl;
       }
@@ -1531,7 +1536,7 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
             resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34003, ")<<loc<<_T(", ")<< QUIET(::ConvertFromSysUnits(smin.Left(), unitMeasure::Newton)) <<_T(", 8, ")<<SEGMENT(segmentKey)<<std::endl;
          }
 
-         pLsForces->GetDeflection( liveLoadIntervalIdx, pgsTypes::StrengthI, poi, bat, false/*no prestress*/, true, false, false, &min, &max );
+         pLsForces->GetDeflection( liveLoadIntervalIdx, pgsTypes::StrengthI, poi, bat, false/*no prestress*/, true, false, false, true, &min, &max );
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34004, ")<<loc<<_T(", ")<< DEFLECTION(::ConvertFromSysUnits(max, unitMeasure::Millimeter)) <<_T(", 8, ")<<SEGMENT(segmentKey)<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34005, ")<<loc<<_T(", ")<< DEFLECTION(::ConvertFromSysUnits(min, unitMeasure::Millimeter)) <<_T(", 8, ")<<SEGMENT(segmentKey)<<std::endl;
 
@@ -1552,7 +1557,7 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
             resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34023, ")<<loc<<_T(", ")<< QUIET(::ConvertFromSysUnits(smin.Left(), unitMeasure::Newton)) <<_T(", 8, ")<<SEGMENT(segmentKey)<<std::endl;
          }
 
-         pLsForces->GetDeflection( liveLoadIntervalIdx, pgsTypes::ServiceI, poi, bat, false/*no prestress*/, true, false, false, &min, &max );
+         pLsForces->GetDeflection( liveLoadIntervalIdx, pgsTypes::ServiceI, poi, bat, false/*no prestress*/, true, false, false, true, &min, &max );
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34024, ")<<loc<<_T(", ")<< DEFLECTION(::ConvertFromSysUnits(max, unitMeasure::Millimeter)) <<_T(", 8, ")<<SEGMENT(segmentKey)<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34025, ")<<loc<<_T(", ")<< DEFLECTION(::ConvertFromSysUnits(min, unitMeasure::Millimeter)) <<_T(", 8, ")<<SEGMENT(segmentKey)<<std::endl;
 
@@ -1573,7 +1578,7 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
             resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34035, ")<<loc<<_T(", ")<< QUIET(::ConvertFromSysUnits(smin.Left(), unitMeasure::Newton)) <<_T(", 8, ")<<SEGMENT(segmentKey)<<std::endl;
          }
 
-         pLsForces->GetDeflection( liveLoadIntervalIdx, pgsTypes::ServiceIII, poi, bat, false/*no prestress*/, true, false, false, &min, &max );
+         pLsForces->GetDeflection( liveLoadIntervalIdx, pgsTypes::ServiceIII, poi, bat, false/*no prestress*/, true, false, false, true, &min, &max );
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34036, ")<<loc<<_T(", ")<< DEFLECTION(::ConvertFromSysUnits(max, unitMeasure::Millimeter)) <<_T(", 8, ")<<SEGMENT(segmentKey)<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34037, ")<<loc<<_T(", ")<< DEFLECTION(::ConvertFromSysUnits(min, unitMeasure::Millimeter)) <<_T(", 8, ")<<SEGMENT(segmentKey)<<std::endl;
       }
@@ -1804,11 +1809,11 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122007, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pDefl->GetCapacity(), unitMeasure::Millimeter)) <<_T(", 2, ")<<SEGMENT(segmentKey)<<std::endl;
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122008, ")<<-1<<_T(", ")<<(int)(pDefl->Passed()?1:0)<<_T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
 
-   const pgsSplittingZoneArtifact* pBurst = pSegmentArtifact->GetStirrupCheckArtifact()->GetSplittingZoneArtifact();
-   if (pBurst->GetIsApplicable())
+   const auto pBurst = pSegmentArtifact->GetStirrupCheckArtifact()->GetSplittingCheckArtifact();
+   if (pBurst)
    {
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122010, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pBurst->GetSplittingZoneLength(pgsTypes::metStart), unitMeasure::Millimeter)) <<_T(", 2, ")<<SEGMENT(segmentKey)<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122011, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pBurst->GetTotalSplittingForce(pgsTypes::metStart), unitMeasure::Newton)) <<_T(", 2, ")<<SEGMENT(segmentKey)<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122011, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pBurst->GetSplittingForce(pgsTypes::metStart), unitMeasure::Newton)) <<_T(", 2, ")<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122012, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pBurst->GetSplittingResistance(pgsTypes::metStart), unitMeasure::Newton)) <<_T(", 2, ")<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122013, ")<<-1<<_T(", ")<<(int)(pBurst->Passed()?1:0)<<_T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
    }
@@ -1830,10 +1835,6 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
    resultsFile<<bridgeId<<", "<<pid<<", 122036, "<<-1<<", "<<(int)(sStrand->Passed()?1:0)<<", 15, "<<SEGMENT(segmentKey)<<std::endl;
 
    // next poi-related values
-   const pgsStirrupCheckAtPoisArtifact* psArtifact = 0;
-   const pgsLongReinfShearArtifact* pArtifact      = 0;
-   const pgsStirrupDetailArtifact* pSDArtifact     = 0;
-   const pgsHorizontalShearArtifact* pAHsrtifact   = 0;
 
    // This complex method of getting POIs is to match the POIs used in the regression test
    // from previous version of PGSuper (Versions 2.x). By making the vector of POI match
@@ -1851,9 +1852,19 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
    vPoi.insert(vPoi.end(),vPoi3.begin(),vPoi3.end());
    pIPoi->SortPoiList(&vPoi);
 
+   const pgsStirrupCheckAtPoisArtifact* psArtifact = nullptr;
+   const pgsLongReinfShearArtifact* pArtifact = nullptr;
+   const pgsStirrupDetailArtifact* pSDArtifact = nullptr;
+   const pgsHorizontalShearArtifact* pAHsrtifact = nullptr;
+
    for(const pgsPointOfInterest& poi : vPoi)
    {
-      Float64 loc = ::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter);
+       psArtifact = nullptr;
+       pArtifact = nullptr;
+       pSDArtifact = nullptr;
+       pAHsrtifact = nullptr;
+
+       Float64 loc = ::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter);
 
       // write to poi file
       poiFile<<" 1, "<< bridgeId<< ", 3, 1, "<<loc<<", 2, -1, -1, -1,  0,  0,  0, -1,  0,  0,  0,  0,  0,  0,  0"<<std::endl;
@@ -2161,7 +2172,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
    } // next POI
 
    // confinement
-   const pgsConfinementArtifact& rconf = pstirrup_artifact->GetConfinementArtifact();
+   const pgsConfinementCheckArtifact& rconf = pstirrup_artifact->GetConfinementArtifact();
    if (rconf.IsApplicable())
    {
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100220, ")<<-1<<_T(", ")<<(int)(rconf.Passed()?1:0)<<_T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
@@ -2175,8 +2186,8 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
    }
 
    // splitting / bursting
-   const pgsSplittingZoneArtifact* pSplit = pstirrup_artifact->GetSplittingZoneArtifact();
-   if(pSplit->GetIsApplicable())
+   const auto pSplit = pstirrup_artifact->GetSplittingCheckArtifact();
+   if(pSplit)
    {
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100230, ")<<-1<<_T(", ")<<(int)(pSplit->Passed()?1:0)<<_T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
 
@@ -2186,7 +2197,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100234, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pSplit->GetFs(pgsTypes::metStart), unitMeasure::MPa)) <<   _T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100235, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pSplit->GetH(pgsTypes::metStart), unitMeasure::Millimeter)) <<   _T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100236, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pSplit->GetLossesAfterTransfer(pgsTypes::metStart,pgsTypes::Permanent), unitMeasure::MPa)) <<   _T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100237, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pSplit->GetTotalSplittingForce(pgsTypes::metStart), unitMeasure::Newton)) <<   _T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100237, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pSplit->GetSplittingForce(pgsTypes::metStart), unitMeasure::Newton)) <<   _T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100238, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pSplit->GetSplittingResistance(pgsTypes::metStart), unitMeasure::Newton)) <<   _T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100239, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pSplit->GetSplittingZoneLength(pgsTypes::metStart), unitMeasure::Millimeter)) <<   _T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
 
@@ -2196,7 +2207,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100244, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pSplit->GetFs(pgsTypes::metEnd), unitMeasure::MPa)) <<   _T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100245, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pSplit->GetH(pgsTypes::metEnd), unitMeasure::Millimeter)) <<   _T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100246, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pSplit->GetLossesAfterTransfer(pgsTypes::metEnd,pgsTypes::Permanent), unitMeasure::MPa)) <<   _T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100247, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pSplit->GetTotalSplittingForce(pgsTypes::metEnd), unitMeasure::Newton)) <<   _T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100247, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pSplit->GetSplittingForce(pgsTypes::metEnd), unitMeasure::Newton)) <<   _T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100248, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pSplit->GetSplittingResistance(pgsTypes::metEnd), unitMeasure::Newton)) <<   _T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100249, ")<<-1<<_T(", ")<< QUIET(::ConvertFromSysUnits(pSplit->GetSplittingZoneLength(pgsTypes::metEnd), unitMeasure::Millimeter)) <<   _T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
    }
@@ -2248,12 +2259,12 @@ bool CTestAgentImp::RunHandlingTest(std::_tofstream& resultsFile, std::_tofstrea
    const pgsSegmentArtifact* pArtifact = pArtifacts->GetSegmentArtifact(segmentKey);
 
    // lifting
-   const stbLiftingCheckArtifact* pLiftArtifact = pArtifact->GetLiftingCheckArtifact();
+   const WBFL::Stability::LiftingCheckArtifact* pLiftArtifact = pArtifact->GetLiftingCheckArtifact();
    if ( pLiftArtifact != nullptr )
    {
-      const stbLiftingResults& liftingResults = pLiftArtifact->GetLiftingResults();
-      if ( !liftingResults.bIsStable[stbTypes::NoImpact][stbTypes::Left] || !liftingResults.bIsStable[stbTypes::ImpactUp][stbTypes::Left] || !liftingResults.bIsStable[stbTypes::ImpactDown][stbTypes::Left] ||
-           !liftingResults.bIsStable[stbTypes::NoImpact][stbTypes::Right] || !liftingResults.bIsStable[stbTypes::ImpactUp][stbTypes::Right] || !liftingResults.bIsStable[stbTypes::ImpactDown][stbTypes::Right])
+      const WBFL::Stability::LiftingResults& liftingResults = pLiftArtifact->GetLiftingResults();
+      if ( !liftingResults.bIsStable[WBFL::Stability::NoImpact][WBFL::Stability::Left] || !liftingResults.bIsStable[WBFL::Stability::ImpactUp][WBFL::Stability::Left] || !liftingResults.bIsStable[WBFL::Stability::ImpactDown][WBFL::Stability::Left] ||
+           !liftingResults.bIsStable[WBFL::Stability::NoImpact][WBFL::Stability::Right] || !liftingResults.bIsStable[WBFL::Stability::ImpactUp][WBFL::Stability::Right] || !liftingResults.bIsStable[WBFL::Stability::ImpactDown][WBFL::Stability::Right])
       {
          resultsFile<<"Girder is unstable for lifting"<<std::endl;
          return true;
@@ -2395,14 +2406,13 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std
 
    GET_IFACE(ISectionProperties, pSectProp );
    Float64 ybg = pSectProp->GetY(releaseIntervalIdx,pois,pgsTypes::BottomGirder);
-   Float64 nEff;
-   Float64 sse = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pois, pgsTypes::Straight, &nEff);
+   Float64 sse = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pois, pgsTypes::Straight).Y();
    if (0 < ns)
    {
       resultsFile<<bridgeId<<", "<<pid<<", 123016, "<<loc<<", "<< QUIET(::ConvertFromSysUnits(ybg-sse, unitMeasure::Millimeter)) <<   ", 101, "<<SEGMENT(segmentKey)<<std::endl;
    }
 
-   Float64 hse = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pmid,pgsTypes::Harped,&nEff);
+   Float64 hse = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pmid,pgsTypes::Harped).Y();
    if (0 < nh)
    {
       resultsFile<<bridgeId<<", "<<pid<<", 123017, "<<loc<<", "<< QUIET(::ConvertFromSysUnits(ybg-hse, unitMeasure::Millimeter)) <<   ", 101, "<<SEGMENT(segmentKey)<<std::endl;
@@ -2411,24 +2421,23 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std
    // get location of first harped strand
    if (0 < nh)
    {
-      GET_IFACE(IBridgeDescription, pIBridgeDesc);
       const auto* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
       auto strandDefType = pSegment->Strands.GetStrandDefinitionType();
-      if (strandDefType != pgsTypes::sdtDirectRowInput && strandDefType != pgsTypes::sdtDirectStrandInput) // GetNextNumStrands and ComputeStrandFill don't work with these strand def types
+      if (IsGridBasedStrandModel(strandDefType)) // GetNextNumStrands and ComputeStrandFill don't work with these strand def types
       {
          StrandIndexType nns = pStrandGeometry->GetNextNumStrands(segmentKey, pgsTypes::Harped, 0);
          ConfigStrandFillVector fillvec = pStrandGeometry->ComputeStrandFill(segmentKey, pgsTypes::Harped, nns);
          GDRCONFIG config = pBridge->GetSegmentConfiguration(segmentKey);
          config.PrestressConfig.SetStrandFill(pgsTypes::Harped, fillvec);
 
-         Float64 eh2 = pStrandGeometry->GetEccentricity(releaseIntervalIdx, pmid, pgsTypes::Harped, &config, &nEff);
+         Float64 eh2 = pStrandGeometry->GetEccentricity(releaseIntervalIdx, pmid, pgsTypes::Harped, &config).Y();
          Float64 Fb = pSectProp->GetY(releaseIntervalIdx, pois, pgsTypes::BottomGirder) - eh2;
          resultsFile << bridgeId << ", " << pid << ", 123018, " << loc << ", " << QUIET(::ConvertFromSysUnits(Fb, unitMeasure::Millimeter)) << ", 101, " << SEGMENT(segmentKey) << std::endl;
       }
    }
 
    Float64 ytg = pSectProp->GetY(releaseIntervalIdx,pois,pgsTypes::TopGirder);
-   Float64 hss = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pois,pgsTypes::Harped,&nEff);
+   Float64 hss = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pois,pgsTypes::Harped).Y();
    if (0 < nh)
    {
       resultsFile<<bridgeId<<", "<<pid<<", 123019, "<<loc<<", "<< QUIET(::ConvertFromSysUnits(ytg+hss, unitMeasure::Millimeter)) <<   ", 101, "<<SEGMENT(segmentKey)<<std::endl;
@@ -2444,6 +2453,24 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std
 
    Float64 days =  ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration1Min(), unitMeasure::Day);
    resultsFile<<bridgeId<<", "<<pid<<", 123021, "<<loc<<", "<< QUIET(::ConvertFromSysUnits(pSpecEntry->GetCreepDuration1Min(), unitMeasure::Day)) <<   ", 101, "<<SEGMENT(segmentKey)<<std::endl;
+
+   CREEPCOEFFICIENTDETAILS details = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpReleaseToFinal, CREEP_MAXTIME);
+   resultsFile << bridgeId << ", " << pid << ", 123060," << QUIET(details.Ct) << SEGMENT(segmentKey) << std::endl;
+
+   details = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpReleaseToDeck, CREEP_MAXTIME);
+   resultsFile << bridgeId << ", " << pid << ", 123061," << QUIET(details.Ct) << SEGMENT(segmentKey) << std::endl;
+
+   details = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpReleaseToDiaphragm, CREEP_MAXTIME);
+   resultsFile << bridgeId << ", " << pid << ", 123062," << QUIET(details.Ct) << SEGMENT(segmentKey) << std::endl;
+
+   if (IsStructuralDeck(pIBridgeDesc->GetDeckDescription()->GetDeckType()))
+   {
+       details = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpDiaphragmToDeck, CREEP_MAXTIME);
+       resultsFile << bridgeId << ", " << pid << ", 123063," << QUIET(details.Ct) << SEGMENT(segmentKey) << std::endl;
+
+       details = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpDeckToFinal, CREEP_MAXTIME);
+       resultsFile << bridgeId << ", " << pid << ", 123064," << QUIET(details.Ct) << SEGMENT(segmentKey) << std::endl;
+   }
 
    // Stirrup data
    GET_IFACE(IStirrupGeometry,pStirrupGeometry);
@@ -2765,16 +2792,16 @@ bool CTestAgentImp::RunAlignmentTest(std::_tofstream& resultsFile)
    const AlignmentData2& alignment = pAlignment->GetAlignmentData2();
    resultsFile << _T("Direction : ") << alignment.Direction << std::endl;
    resultsFile << _T("Ref Point, X : ") << alignment.xRefPoint << _T(", Y : ") << alignment.yRefPoint << std::endl;
-   resultsFile << _T("HCurveCount : ") << alignment.HorzCurves.size() << std::endl;
+   resultsFile << _T("HCurveCount : ") << alignment.CompoundCurves.size() << std::endl;
 
    IndexType hcIdx = 0; // keeps track of actual curves in the model (curves with zero radious are not curves in the alignment model)
-   for (const auto& hcData : alignment.HorzCurves)
+   for (const auto& hcData : alignment.CompoundCurves)
    {
       if (!IsZero(hcData.Radius))
       {
          resultsFile << _T("Curve ") << hcIdx << std::endl;
-         CComPtr<IHorzCurve> hc;
-         pRoadway->GetCurve(hcIdx, &hc);
+         CComPtr<ICompoundCurve> hc;
+         pRoadway->GetCurve(hcIdx, pgsTypes::pcGlobal, &hc);
          HCURVESTATIONS stations = pRoadway->GetCurveStations(hcIdx);
          resultsFile << _T("TS : ") << stations.TSStation << std::endl;
          resultsFile << _T("SPI1 : ") << stations.SPI1Station << std::endl;

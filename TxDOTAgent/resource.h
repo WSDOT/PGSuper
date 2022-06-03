@@ -131,6 +131,7 @@
 #define IDC_OPT_FILLTYPE_COMBO          270
 #define IDC_DIRECT_STATIC               270
 #define IDC_FILE_FORMAT                 271
+#define IDC_EXPORT_TYPE                 272
 #define IDD_GIRDER_SELECT_STRANDS       324
 #define IDC_VALUE                       1018
 #define IDC_VALUE_UNITS                 1026
@@ -194,6 +195,7 @@
 #define ID_VIEW_SECTIONCUTLOCATION      36879
 #define ID_VIEW_GIRDERVIEWSETTINGS      36880
 #define ID_STATUSCENTER_VIEW            36881
+#define EAFID_OPTIONS_AUTOSAVE          36884
 #define ID_UPDATE_TOGA_TEMPLATE         37201
 
 // Next default values for new objects
@@ -201,7 +203,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        223
-#define _APS_NEXT_COMMAND_VALUE         36883
+#define _APS_NEXT_COMMAND_VALUE         36885
 #define _APS_NEXT_CONTROL_VALUE         272
 #define _APS_NEXT_SYMED_VALUE           110
 #endif

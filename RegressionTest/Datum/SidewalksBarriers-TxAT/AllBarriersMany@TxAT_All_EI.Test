@@ -1,26 +1,26 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 26.29    7   4.00                     1     1     IV            28  0.6  270  21.32  11.89  12.00  12.00                                               6  50.0  6.0  4.300  5.300   4.277    -3.791     6042   1.017  1.017   3.335 -0.682 -0.020 -0.213 -0.915 119.22  234.94    3.00    3.17    3.17 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 26.29    7   4.00                     1     1     IV            28  0.6  270  21.32  11.89  12.00  12.00                                               6  50.0  6.0  4.300  5.300   4.277    -3.791     6042   1.017  1.017   3.332 -0.682 -0.020 -0.213 -0.915 119.22  234.94    3.00    3.17    3.17    1.26    1.05    1.64    1.57    1.25 
 
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
-Compression stress check failed for Service I Limit State in Interval 19 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 19 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 18 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 26.29    7   4.00                     1     2     IV            28  0.6  270  21.32  11.89  12.00  12.00                                               6  50.0  6.0  4.300  5.300   2.802    -2.484     4780   0.451  0.520   3.335 -0.374 -0.020 -0.213 -0.607 119.22  262.04    1.75    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 26.29    7   4.00                     1     2     IV            28  0.6  270  21.32  11.89  12.00  12.00                                               6  50.0  6.0  4.300  5.300   2.802    -2.484     4780   0.451  0.520   3.332 -0.374 -0.020 -0.213 -0.607 119.22  262.04    1.75    5.00    5.00    3.09    2.77    4.01    3.67    3.27 
 
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 26.29    7   4.00                     1     4     IV            28  0.6  270  21.32  11.89  12.00  12.00                                               6  50.0  6.0  4.300  5.300   2.591    -2.144     4099   0.451  0.520   3.335 -0.374 -0.020  0.000 -0.394 119.22  282.10    1.75    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 26.29    7   4.00                     1     4     IV            28  0.6  270  21.32  11.89  12.00  12.00                                               6  50.0  6.0  4.300  5.300   2.591    -2.144     4099   0.451  0.520   3.332 -0.374 -0.020  0.000 -0.394 119.22  282.10    1.75    5.00    5.00    3.41    3.05    4.42    4.04    3.71 
 
 
 The Specification Check was Not Successful

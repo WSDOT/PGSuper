@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -58,8 +58,8 @@ public:
    HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
    HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
 
-   Float64 LeftReleasePoint, RightReleasePoint; // dist from left/right end of segment to support point at release
-   Float64 LeftStoragePoint, RightStoragePoint; // distance from left/right end of segment to storage support point
+   Float64 LeftReleasePoint, RightReleasePoint; // dist from left/right end of segment to support point at release (-1==END, -2==BRG)
+   Float64 LeftStoragePoint, RightStoragePoint; // distance from left/right end of segment to storage support point (-1==BRG)
    Float64 LeftLiftPoint, RightLiftPoint; // distance from left/right end of segment to lift point
    Float64 LeadingSupportPoint, TrailingSupportPoint;
    std::_tstring HaulTruckName;

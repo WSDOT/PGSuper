@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -324,7 +324,7 @@ void girder_design(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDes
    (*p_table)(row,0) << RPT_FC;
    (*p_table)(row++,1) << stress.SetValue( pGirderData->GetFc() );
 
-   const matPsStrand* pstrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
+   const matPsStrand* pstrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Straight);
 
    (*p_table)(row,0) << _T("Prestressing Strands");
    (*p_table)(row++,1) << get_strand_size(pstrand->GetSize()) <<_T(", ")
@@ -372,12 +372,11 @@ void girder_design(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDes
       pgsPointOfInterest midpoi(segmentKey,span2);
 
       (*p_table)(row,0) << _T("e")<<Sub(_T("CL"));
-      Float64 neff;
-      (*p_table)(row++,1) << component.SetValue( pStrandGeometry->GetEccentricity(releaseIntervalIdx, midpoi,pgsTypes::Permanent, &neff) );
+      (*p_table)(row++,1) << component.SetValue( pStrandGeometry->GetEccentricity(releaseIntervalIdx, midpoi,pgsTypes::Permanent).Y());
 
       pgsPointOfInterest zeropoi(segmentKey,0.0);
       (*p_table)(row,0) << _T("e")<<Sub(_T("girder ends"));
-      (*p_table)(row++,1) << component.SetValue( pStrandGeometry->GetEccentricity(releaseIntervalIdx, zeropoi,pgsTypes::Permanent,&neff) );
+      (*p_table)(row++,1) << component.SetValue( pStrandGeometry->GetEccentricity(releaseIntervalIdx, zeropoi,pgsTypes::Permanent).Y());
 
       // non standard fill row tables
       if (fill_type == CTxDOTOptionalDesignGirderData::sfHarpedRows)
@@ -433,6 +432,10 @@ static void original_results_summary(rptChapter* pChapter,IBroker* pBroker,const
    INIT_UV_PROTOTYPE( rptPressureUnitValue, stress,      pDisplayUnits->GetStressUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentUnitValue,   moment,      pDisplayUnits->GetMomentUnit(), false );
 
+   rptRcScalar Stress_Scalar;
+   Stress_Scalar.SetFormat(sysNumericFormatTool::Fixed);
+   Stress_Scalar.SetPrecision(2);
+
    GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);
 
    rptParagraph* p = new rptParagraph;
@@ -455,7 +458,7 @@ static void original_results_summary(rptChapter* pChapter,IBroker* pBroker,const
    (*p_table)(row,0) << _T("Design Load Compressive Stress, Top CL (")<<stress.GetUnitTag()<<_T(")");
    (*p_table)(row,1) << stress.SetValue( pProjectData->GetFt() );
    (*p_table)(row,2) << stress.SetValue( -1.0 * stress_val );
-   (*p_table)(row,3) << stress_fac;
+   (*p_table)(row,3) << Stress_Scalar.SetValue(stress_fac);
 
    if(stress_fac >= 1.0)
       (*p_table)(row,4) << color(Green) << _T("Ok") << color(Black);
@@ -468,7 +471,7 @@ static void original_results_summary(rptChapter* pChapter,IBroker* pBroker,const
    (*p_table)(row,0) << _T("Design Load Tensile Stress, Bottom CL (")<<stress.GetUnitTag()<<_T(")");
    (*p_table)(row,1) << stress.SetValue( pProjectData->GetFb() );
    (*p_table)(row,2) << stress.SetValue( -1.0 * stress_val );
-   (*p_table)(row,3) << stress_fac;
+   (*p_table)(row,3) << Stress_Scalar.SetValue(stress_fac);
 
    if(stress_fac >= 1.0)
       (*p_table)(row,4) << color(Green) << _T("Ok") << color(Black);
@@ -479,7 +482,7 @@ static void original_results_summary(rptChapter* pChapter,IBroker* pBroker,const
    (*p_table)(row,0) << _T("Required Ultimate Moment  (")<<moment.GetUnitTag()<<_T(")");
    (*p_table)(row,1) << moment.SetValue( pProjectData->GetMu() );
    (*p_table)(row,2) << moment.SetValue( pGetTogaResults->GetRequiredUltimateMoment() );
-   (*p_table)(row,3) << pProjectData->GetMu() / pGetTogaResults->GetRequiredUltimateMoment();
+   (*p_table)(row,3) << Stress_Scalar.SetValue(pProjectData->GetMu() / pGetTogaResults->GetRequiredUltimateMoment());
 
    if(pProjectData->GetMu() >= pGetTogaResults->GetRequiredUltimateMoment())
       (*p_table)(row,4) << color(Green) << _T("Ok") << color(Black);
@@ -495,6 +498,10 @@ static void optional_results_summary(rptChapter* pChapter,IBroker* pBroker,const
    INIT_UV_PROTOTYPE( rptPressureUnitValue, stress,      pDisplayUnits->GetStressUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentUnitValue,   moment,      pDisplayUnits->GetMomentUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,   length, pDisplayUnits->GetSpanLengthUnit(), false );
+
+   rptRcScalar Stress_Scalar;
+   Stress_Scalar.SetFormat(sysNumericFormatTool::Fixed);
+   Stress_Scalar.SetPrecision(2);
 
    GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);
 
@@ -519,7 +526,7 @@ static void optional_results_summary(rptChapter* pChapter,IBroker* pBroker,const
    (*p_table)(row,0) << _T("Required ")<<RPT_FCI<<_T(" (")<<stress.GetUnitTag()<<_T(")");
    (*p_table)(row,1) << stress.SetValue( input_fci );
    (*p_table)(row,2) << stress.SetValue(  reqd_fci );
-   (*p_table)(row,3) << input_fci / reqd_fci;
+   (*p_table)(row,3) << Stress_Scalar.SetValue(input_fci / reqd_fci);
 
    if(input_fci >= reqd_fci)
       (*p_table)(row,4) << color(Green) << _T("Ok") << color(Black);
@@ -533,7 +540,7 @@ static void optional_results_summary(rptChapter* pChapter,IBroker* pBroker,const
    (*p_table)(row,0) << _T("Required ")<<RPT_FC<<_T(" (")<<stress.GetUnitTag()<<_T(")");
    (*p_table)(row,1) << stress.SetValue( input_fc );
    (*p_table)(row,2) << stress.SetValue(  reqd_fc );
-   (*p_table)(row,3) << input_fc / reqd_fc;
+   (*p_table)(row,3) << Stress_Scalar.SetValue(input_fc / reqd_fc);
 
    if(input_fc >= reqd_fc)
       (*p_table)(row,4) << color(Green) << _T("Ok") << color(Black);
@@ -544,7 +551,7 @@ static void optional_results_summary(rptChapter* pChapter,IBroker* pBroker,const
    (*p_table)(row,0) << _T("Ultimate Moment Capacity  (")<<moment.GetUnitTag()<<_T(")");
    (*p_table)(row,1) << moment.SetValue( pProjectData->GetMu() );
    (*p_table)(row,2) << moment.SetValue( pGetTogaResults->GetUltimateMomentCapacity() );
-   (*p_table)(row,3) << pProjectData->GetMu() / pGetTogaResults->GetUltimateMomentCapacity();
+   (*p_table)(row,3) << Stress_Scalar.SetValue(pProjectData->GetMu() / pGetTogaResults->GetUltimateMomentCapacity());
 
    if(pProjectData->GetMu() <= pGetTogaResults->GetUltimateMomentCapacity())
       (*p_table)(row,4) << color(Green) << _T("Ok") << color(Black);

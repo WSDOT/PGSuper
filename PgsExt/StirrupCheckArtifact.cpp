@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -93,24 +93,24 @@ const pgsStirrupCheckAtPoisArtifact* pgsStirrupCheckArtifact::GetStirrupCheckAtP
    return nullptr;
 }
 
-void pgsStirrupCheckArtifact::SetConfinementArtifact(const pgsConfinementArtifact& artifact)
+void pgsStirrupCheckArtifact::SetConfinementArtifact(const pgsConfinementCheckArtifact& artifact)
 {
    m_ConfinementArtifact = artifact;
 }
 
-const pgsConfinementArtifact& pgsStirrupCheckArtifact::GetConfinementArtifact() const
+const pgsConfinementCheckArtifact& pgsStirrupCheckArtifact::GetConfinementArtifact() const
 {
    return m_ConfinementArtifact;
 }
 
-pgsSplittingZoneArtifact* pgsStirrupCheckArtifact::GetSplittingZoneArtifact()
+void pgsStirrupCheckArtifact::SetSplittingCheckArtifact(std::shared_ptr<pgsSplittingCheckArtifact> pArtifact)
 {
-   return &m_SplittingZoneArtifact;
+   m_SplittingCheckArtifact = pArtifact;
 }
 
-const pgsSplittingZoneArtifact* pgsStirrupCheckArtifact::GetSplittingZoneArtifact() const
+const std::shared_ptr<pgsSplittingCheckArtifact> pgsStirrupCheckArtifact::GetSplittingCheckArtifact() const
 {
-   return &m_SplittingZoneArtifact;
+   return m_SplittingCheckArtifact;
 }
 
 void pgsStirrupCheckArtifact::Clear()
@@ -139,7 +139,11 @@ bool pgsStirrupCheckArtifact::Passed() const
 
    bool bPassed = true;
 
-   bPassed &= m_SplittingZoneArtifact.Passed();
+   if (m_SplittingCheckArtifact)
+   {
+      bPassed &= m_SplittingCheckArtifact->Passed();
+   }
+
    bPassed &= m_ConfinementArtifact.Passed();
 
    return bPassed;
@@ -149,7 +153,7 @@ void pgsStirrupCheckArtifact::MakeCopy(const pgsStirrupCheckArtifact& rOther)
 {
    m_StirrupCheckAtPoisArtifacts   = rOther.m_StirrupCheckAtPoisArtifacts;
    m_ConfinementArtifact           = rOther.m_ConfinementArtifact;
-   m_SplittingZoneArtifact         = rOther.m_SplittingZoneArtifact;
+   m_SplittingCheckArtifact         = rOther.m_SplittingCheckArtifact;
 }
 
 void pgsStirrupCheckArtifact::MakeAssignment(const pgsStirrupCheckArtifact& rOther)

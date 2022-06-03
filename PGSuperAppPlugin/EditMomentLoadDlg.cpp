@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -384,8 +384,7 @@ void CEditMomentLoadDlg::UpdateSpanLength()
    {
       GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
       GET_IFACE(IBridge, pBridge);
-      CSegmentKey segmentKey(spn,gdr,0);
-      Float64 span_length = pBridge->GetSegmentSpanLength(segmentKey);
+      Float64 span_length = pBridge->GetFullSpanLength(CSpanKey(spn,gdr));
       CString strLabel;
       strLabel.Format(_T("Span Length = %s"),FormatDimension(span_length,pDisplayUnits->GetSpanLengthUnit(),false));
       m_SpanLengthCtrl.SetWindowText(strLabel);

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -91,6 +91,11 @@ rptChapter* CGirderTendonGeometryChapterBuilder::Build(CReportSpecification* pRp
 
    PoiList vPoi;
    pPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), &vPoi);
+
+   // critical sections haven't been computed when time-step analysis happens
+   // so don't attempt to report them here.
+   pPoi->RemovePointsOfInterest(vPoi, POI_CRITSECTSHEAR1);
+   pPoi->RemovePointsOfInterest(vPoi, POI_CRITSECTSHEAR2);
 
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )

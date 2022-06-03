@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -225,33 +225,46 @@ void CSpecLossPage::EnableElasticGains(BOOL bEnable, BOOL bEnableDeckShrinkage)
    ENABLE_WINDOW(IDC_EG_LIVELOAD_LABEL);
 }
 
-BOOL CSpecLossPage::OnInitDialog() 
+void CSpecLossPage::InitComboBoxes()
 {
-   // Fill up combo box for loss methods
+   CString strApproxMethod(m_SpecVersion <= lrfdVersionMgr::ThirdEdition2004 ? _T("Approximate Lump Sum Estimate") : _T("Approximate Estimate"));
    CComboBox* pBox = (CComboBox*)GetDlgItem(IDC_LOSS_METHOD);
-   pBox->AddString(CString(_T("Refined Estimate per LRFD ")) + CString(LrfdCw8th(_T("5.9.5.4"),_T("5.9.3.4"))));
+   int curSel = pBox->GetCurSel();
+   pBox->ResetContent();
+   pBox->AddString(CString(_T("Refined Estimate per LRFD ")) + CString(LrfdCw8th(_T("5.9.5.4"), _T("5.9.3.4"),m_SpecVersion)));
    pBox->AddString(_T("Refined Estimate per WSDOT Bridge Design Manual"));
    pBox->AddString(_T("Refined Estimate per TxDOT Bridge Design Manual"));
    pBox->AddString(_T("Refined Estimate per TxDOT Research Report 0-6374-2"));
-   pBox->AddString(CString(_T("Approximate Lump Sum per LRFD ")) + CString(LrfdCw8th(_T("5.9.5.3"),_T("5.9.3.3"))));
-   pBox->AddString(_T("Approximate Lump Sum per WSDOT Bridge Design Manual"));
+   pBox->AddString(strApproxMethod + CString(_T(" per LRFD ")) + CString(LrfdCw8th(_T("5.9.5.3"), _T("5.9.3.3"), m_SpecVersion)));
+   pBox->AddString(strApproxMethod + CString(_T(" per WSDOT Bridge Design Manual")));
    pBox->AddString(_T("Time-Step Method"));
-   pBox->SetCurSel(0);
+   pBox->SetCurSel(curSel == CB_ERR ? 0 : curSel);
 
-   pBox = (CComboBox*)GetDlgItem(IDC_SHIPPING_LOSS_METHOD);
+   pBox = (CComboBox*)GetDlgItem(IDC_RELAXATION_LOSS_METHOD);
+   curSel = pBox->GetCurSel();
+   pBox->ResetContent();
+   pBox->AddString(CString(_T("LRFD Equation ")) + CString(LrfdCw8th(_T("5.9.5.4.2c-1"), _T("5.9.3.4.2c-1"), m_SpecVersion)));  // simplified
+   pBox->AddString(CString(_T("LRFD Equation ")) + CString(LrfdCw8th(_T("C5.9.5.4.2c-1"), _T("C5.9.3.4.2c-1"), m_SpecVersion))); // refined
+   pBox->AddString(CString(_T("1.2 KSI (LRFD ")) + CString(LrfdCw8th(_T("C5.9.5.4.2c"), _T("C5.9.3.4.2c"), m_SpecVersion)));   // lump sum
+   pBox->SetCurSel(curSel == CB_ERR ? 0 : curSel);
+
+   pBox = (CComboBox*)GetDlgItem(IDC_FCPG_COMBO);
+   curSel = pBox->GetCurSel();
+   pBox->AddString(_T("Assumption that strand stress at release is 0.7 fpu"));
+   pBox->AddString(_T("Iterative method described in LRFD ") + CString(LrfdCw8th(_T("C5.9.5.2.3a"), _T("C5.9.3.2.3a"))));
+   pBox->AddString(_T("Assumption of 0.7 fpu unless special conditions"));
+   pBox->SetCurSel(curSel == CB_ERR ? 0 : curSel);
+}
+
+BOOL CSpecLossPage::OnInitDialog() 
+{
+   // Fill up combo box for loss methods
+   InitComboBoxes(); // these combo boxes depend on the currently selected spec version
+
+   CComboBox* pBox = (CComboBox*)GetDlgItem(IDC_SHIPPING_LOSS_METHOD);
    pBox->AddString(_T("Use a lump sum loss for shipping"));
    pBox->AddString(_T("Use a percentage of the final losses for shipping"));
    pBox->SetCurSel(0);
-
-   pBox = (CComboBox*)GetDlgItem(IDC_RELAXATION_LOSS_METHOD);
-   pBox->AddString(CString(_T("LRFD Equation ")) + CString(LrfdCw8th(_T("5.9.5.4.2c-1"), _T("5.9.3.4.2c-1"))));  // simplified
-   pBox->AddString(CString(_T("LRFD Equation ")) + CString(LrfdCw8th(_T("C5.9.5.4.2c-1"),_T("C5.9.3.4.2c-1")))); // refined
-   pBox->AddString(CString(_T("1.2 KSI (LRFD ")) + CString(LrfdCw8th(_T("C5.9.5.4.2c"),  _T("C5.9.3.4.2c"))));   // lump sum
-
-   pBox = (CComboBox*)GetDlgItem(IDC_FCPG_COMBO);
-   pBox->AddString(_T("Assumption that strand stress at release is 0.7 fpu"));
-   pBox->AddString(_T("Iterative method described in LRFD ") + CString(LrfdCw8th(_T("C5.9.5.2.3a"),_T("C5.9.3.2.3a"))));
-   pBox->AddString(_T("Assumption of 0.7 fpu unless special conditions"));
 
    pBox = (CComboBox*)GetDlgItem(IDC_TIME_DEPENDENT_MODEL);
    pBox->SetItemData(pBox->AddString(_T("AASHTO LRFD")), TDM_AASHTO);
@@ -301,6 +314,8 @@ BOOL CSpecLossPage::OnSetActive()
    m_SpecVersion = pDad->m_Entry.GetSpecificationType();
 
    m_IsShippingEnabled = pDad->m_Entry.IsHaulingAnalysisEnabled();
+
+   InitComboBoxes();
 
    OnLossMethodChanged();
 

@@ -1,0 +1,25 @@
+HKCR
+{
+	UHPCBeams.PCIDeckedBulbTeeFactory.1 = s 'PCI Decked Bulb Tee Girder'
+	{
+		CLSID = s '{28549B5C-856A-443A-B0BE-470348D16BE7}'
+	}
+	UHPCBeams.PCIDeckedBulbTeeFactory = s 'PCI Decked Bulb Tee Girder'
+	{
+		CLSID = s '{28549B5C-856A-443A-B0BE-470348D16BE7}'
+		CurVer = s 'UHPCBeams.PCIDeckedBulbTeeFactory.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {28549B5C-856A-443A-B0BE-470348D16BE7} = s 'PCI Decked Bulb Tee Girder'
+		{
+			ProgID = s 'UHPCBeams.PCIDeckedBulbTeeFactory.1'
+			VersionIndependentProgID = s 'UHPCBeams.PCIDeckedBulbTeeFactory'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '{174BA564-2755-47E6-9464-68E6F4388436}'
+		}
+	}
+}

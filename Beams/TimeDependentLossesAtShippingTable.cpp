@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,6 +26,8 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <PsgLib\SpecLibraryEntry.h>
+
+#include <PgsExt\GirderMaterial.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -59,6 +61,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
 
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
+   bool bUHPC = pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC ? true : false;
 
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
@@ -78,6 +81,9 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
    if ( bIgnoreInitialRelaxation ) // for perm strands
       numColumns--;
 
+   if (bUHPC)
+      numColumns++;
+
    if ( pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned ) 
       numColumns++;
 
@@ -92,6 +98,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
    CTimeDependentLossesAtShippingTable* table = new CTimeDependentLossesAtShippingTable( numColumns, pDisplayUnits );
    rptStyleManager::ConfigureTable(table);
 
+   table->m_bUHPC = bUHPC;
    table->m_bTemporaryStrands = bTemporaryStrands;
    table->m_pStrands = pStrands;
 
@@ -133,6 +140,11 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
 
    *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pES")) << _T(" + ");
 
+   if (bUHPC)
+   {
+      *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pAS")) << _T(" + ");
+   }
+
    if (pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned)
    {
       *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pp")) << _T(" + ");
@@ -167,6 +179,12 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
       }
 
       (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+
+      if (bUHPC)
+      {
+         (*table)(1, col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pAS")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      }
+
       (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLTH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       if ( pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned ) 
@@ -185,6 +203,12 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
       }
 
       (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+
+      if (bUHPC)
+      {
+         (*table)(1, col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pAS")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      }
+
       (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLTH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
@@ -196,6 +220,12 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
       }
 
       (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+
+      if (bUHPC)
+      {
+         (*table)(0, col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pAS")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      }
+
       (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLTH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       if ( pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned ) 
@@ -221,6 +251,15 @@ void CTimeDependentLossesAtShippingTable::AddRow(rptChapter* pChapter,IBroker* p
    }
 
    Float64 fpES = pDetails->pLosses->PermanentStrand_ElasticShorteningLosses();
+
+   Float64 fpAS = 0;
+   if (m_bUHPC)
+   {
+      const std::shared_ptr<const lrfdPCIUHPCLosses> pLosses = std::dynamic_pointer_cast<const lrfdPCIUHPCLosses>(pDetails->pLosses);
+      ATLASSERT(pLosses.use_count() == pDetails->pLosses.use_count());
+      fpAS = pLosses->PermanentStrand_AutogenousShrinkage();
+   }
+
    Float64 fpLTH = pDetails->pLosses->PermanentStrand_TimeDependentLossesAtShipping();
    Float64 fpp = 0;
    if ( m_pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned ) 
@@ -231,7 +270,11 @@ void CTimeDependentLossesAtShippingTable::AddRow(rptChapter* pChapter,IBroker* p
    fpH += fpES + fpp; // need to add elastic effects to get total change in effective prestress at hauling
 
    (*this)(row+rowOffset,col++) << stress.SetValue(fpES);
-   (*this)(row+rowOffset,col++) << stress.SetValue(fpLTH);
+   if (m_bUHPC)
+   {
+      (*this)(row + rowOffset, col++) << stress.SetValue(fpAS);
+   }
+   (*this)(row + rowOffset, col++) << stress.SetValue(fpLTH);
    if ( m_pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned ) 
    {
       (*this)(row+rowOffset,col++) << stress.SetValue(fpp);
@@ -247,10 +290,22 @@ void CTimeDependentLossesAtShippingTable::AddRow(rptChapter* pChapter,IBroker* p
       }
 
       fpES = pDetails->pLosses->TemporaryStrand_ElasticShorteningLosses();
+      fpAS = 0;
+      if (m_bUHPC)
+      {
+         const std::shared_ptr<const lrfdPCIUHPCLosses> pLosses = std::dynamic_pointer_cast<const lrfdPCIUHPCLosses>(pDetails->pLosses);
+         ATLASSERT(pLosses.use_count() == pDetails->pLosses.use_count());
+         fpAS = pLosses->TemporaryStrand_AutogenousShrinkage();
+      }
+
       fpLTH = pDetails->pLosses->TemporaryStrand_TimeDependentLossesAtShipping();
       fpH = pDetails->pLosses->TemporaryStrand_AtShipping();
-      fpH += fpES; // need to add elastic effects to get total change in effective prestress at hauling
+      fpH += fpES + fpAS; // need to add elastic effects to get total change in effective prestress at hauling
       (*this)(row+rowOffset,col++) << stress.SetValue(fpES);
+      if (m_bUHPC)
+      {
+         (*this)(row + rowOffset, col++) << stress.SetValue(fpAS);
+      }
       (*this)(row+rowOffset,col++) << stress.SetValue(fpLTH);
       (*this)(row+rowOffset,col++) << stress.SetValue(fpH);
    }

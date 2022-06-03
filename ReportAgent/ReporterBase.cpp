@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,6 +29,9 @@
 #include <Reporting\LoadRatingReportSpecificationBuilder.h>
 #include <Reporting\BridgeAnalysisReportSpecificationBuilder.h>
 #include <Reporting\TimelineManagerReportSpecificationBuilder.h>
+#include <Reporting\CopyGirderPropertiesReportSpecificationBuilder.h>
+#include <Reporting\CopyPierPropertiesReportSpecificationBuilder.h>
+#include <Reporting\CopyTempSupportPropertiesReportSpecificationBuilder.h>
 
 #include <Reporting\AlignmentChapterBuilder.h>
 #include <Reporting\DeckElevationChapterBuilder.h>
@@ -53,7 +56,7 @@
 #include <Reporting\CritSectionChapterBuilder.h>
 #include <Reporting\StirrupDetailingCheckChapterBuilder.h>
 #include <Reporting\ADimChapterBuilder.h>
-#include <Reporting\BurstingZoneDetailsChapterBuilder.h>
+#include <Reporting\SplittingCheckDetailsChapterBuilder.h>
 #include <Reporting\CreepCoefficientChapterBuilder.h>
 #include <Reporting\CamberChapterBuilder.h>
 #include <Reporting\LongReinfShearCheckChapterBuilder.h>
@@ -64,6 +67,9 @@
 #include <Reporting\UserDefinedLoadsChapterBuilder.h>
 #include <Reporting\CastingYardRebarRequirementChapterBuilder.h>
 #include <Reporting\BearingSeatElevationsDetailsChapterBuilder2.h>
+#include <Reporting\CopyGirderPropertiesChapterBuilder.h>
+#include <Reporting\CopyPierPropertiesChapterBuilder.h>
+#include <Reporting\CopyTempSupportPropertiesChapterBuilder.h>
 
 #include <Reporting\LoadRatingChapterBuilder.h>
 #include <Reporting\LoadRatingDetailsChapterBuilder.h>
@@ -105,6 +111,12 @@
 
 #include <Reporting\PrincipalTensionStressDetailsChapterBuilder.h>
 
+#include <Reporting\MomentCapacityReportSpecificationBuilder.h>
+#include <Reporting\MomentCapacityChapterBuilder.h>
+
+#include <Reporting\CrackedSectionReportSpecificationBuilder.h>
+#include <Reporting\CrackedSectionChapterBuilder.h>
+
 #include <IReportManager.h>
 #include <IFace\Project.h>
 
@@ -135,6 +147,9 @@ HRESULT CReporterBase::InitCommonReportBuilders()
    CreatePrincipalWebStressDetailsReport();
    CreatePierReactionsReport();
    CreateTimelineReport();
+   CreateCopyGirderPropertiesReport();
+   CreateCopyPierPropertiesReport();
+   CreateCopyTempSupportPropertiesReport();
 
 #if defined _DEBUG || defined _BETA_VERSION
    // these are just some testing/debugging reports
@@ -142,6 +157,9 @@ HRESULT CReporterBase::InitCommonReportBuilders()
    CreateStageByStageDetailsReport();
    CreatePointOfInterestReport();
 #endif
+
+   CreateMomentCapacityDetailsReport();
+   CreateCrackedSectionDetailsReport();
 
    return S_OK;
 }
@@ -208,7 +226,7 @@ void CReporterBase::CreateDetailsReport()
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CCritSectionChapterBuilder(true,false)) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLongReinfShearCheckChapterBuilder(true,false)) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CPrincipalTensionStressDetailsChapterBuilder));
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CSplittingZoneDetailsChapterBuilder) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CSplittingCheckDetailsChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CEffFlangeWidthDetailsChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CDistributionFactorDetailsChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CCreepCoefficientChapterBuilder) );
@@ -339,14 +357,14 @@ void CReporterBase::CreateLiftingReport()
 {
    GET_IFACE(IReportManager,pRptMgr);
 
-   std::shared_ptr<CReportSpecificationBuilder> pMultiViewRptSpecBuilder(std::make_shared<CMultiViewSpanGirderReportSpecificationBuilder>(m_pBroker) );
+   std::shared_ptr<CReportSpecificationBuilder> pSegmentRptSpecBuilder(std::make_shared<CSegmentReportSpecificationBuilder>(m_pBroker, CSegmentKey(0, 0, 0)));
 
    std::unique_ptr<CReportBuilder> pRptBuilder(std::make_unique<CReportBuilder>(_T("Lifting Report")));
 #if defined _DEBUG || defined _BETA_VERSION
    pRptBuilder->IncludeTimingChapter();
 #endif
    pRptBuilder->AddTitlePageBuilder( std::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
-   pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
+   pRptBuilder->SetReportSpecificationBuilder(pSegmentRptSpecBuilder);
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLiftingCheckChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLiftingCheckDetailsChapterBuilder) );
    pRptMgr->AddReportBuilder(pRptBuilder.release() );
@@ -356,14 +374,14 @@ void CReporterBase::CreateHaulingReport()
 {
    GET_IFACE(IReportManager,pRptMgr);
 
-   std::shared_ptr<CReportSpecificationBuilder> pMultiViewRptSpecBuilder(std::make_shared<CMultiViewSpanGirderReportSpecificationBuilder>(m_pBroker) );
+   std::shared_ptr<CReportSpecificationBuilder> pSegmentRptSpecBuilder(std::make_shared<CSegmentReportSpecificationBuilder>(m_pBroker, CSegmentKey(0, 0, 0)));
 
    std::unique_ptr<CReportBuilder> pRptBuilder(std::make_unique<CReportBuilder>(_T("Hauling Report")));
 #if defined _DEBUG || defined _BETA_VERSION
    pRptBuilder->IncludeTimingChapter();
 #endif
    pRptBuilder->AddTitlePageBuilder( std::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
-   pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
+   pRptBuilder->SetReportSpecificationBuilder(pSegmentRptSpecBuilder);
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CHaulingCheckChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CHaulingCheckDetailsChapterBuilder) );
    pRptMgr->AddReportBuilder( pRptBuilder.release() );
@@ -528,6 +546,69 @@ void CReporterBase::CreateTimelineReport()
    //pRptBuilder->AddTitlePageBuilder(nullptr); // no title page for this report
    pRptBuilder->SetReportSpecificationBuilder(pRptSpecBuilder);
    pRptBuilder->AddChapterBuilder(std::shared_ptr<CChapterBuilder>(new CTimelineChapterBuilder));
+   pRptMgr->AddReportBuilder(pRptBuilder.release());
+}
+
+void CReporterBase::CreateCopyGirderPropertiesReport()
+{
+   GET_IFACE(IReportManager, pRptMgr);
+
+   std::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder(std::make_shared<CCopyGirderPropertiesReportSpecificationBuilder>(m_pBroker));
+
+   std::unique_ptr<CReportBuilder> pRptBuilder(std::make_unique<CReportBuilder>(_T("Copy Girder Properties Report"), true)); // hidden report
+   //pRptBuilder->AddTitlePageBuilder(nullptr); // no title page for this report
+   pRptBuilder->SetReportSpecificationBuilder(pRptSpecBuilder);
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<CChapterBuilder>(new CCopyGirderPropertiesChapterBuilder));
+   pRptMgr->AddReportBuilder(pRptBuilder.release());
+}
+
+void CReporterBase::CreateCopyPierPropertiesReport()
+{
+   GET_IFACE(IReportManager, pRptMgr);
+
+   std::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder(std::make_shared<CCopyPierPropertiesReportSpecificationBuilder>(m_pBroker));
+
+   std::unique_ptr<CReportBuilder> pRptBuilder(std::make_unique<CReportBuilder>(_T("Copy Pier Properties Report"), true)); // hidden report
+   //pRptBuilder->AddTitlePageBuilder(nullptr); // no title page for this report
+   pRptBuilder->SetReportSpecificationBuilder(pRptSpecBuilder);
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<CChapterBuilder>(new CCopyPierPropertiesChapterBuilder));
+   pRptMgr->AddReportBuilder(pRptBuilder.release());
+}
+
+void CReporterBase::CreateCopyTempSupportPropertiesReport()
+{
+   GET_IFACE(IReportManager, pRptMgr);
+
+   std::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder(std::make_shared<CCopyTempSupportPropertiesReportSpecificationBuilder>(m_pBroker));
+
+   std::unique_ptr<CReportBuilder> pRptBuilder(std::make_unique<CReportBuilder>(_T("Copy Temporary Support Properties Report"), true)); // hidden report
+   //pRptBuilder->AddTitlePageBuilder(nullptr); // no title page for this report
+   pRptBuilder->SetReportSpecificationBuilder(pRptSpecBuilder);
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<CChapterBuilder>(new CCopyTempSupportPropertiesChapterBuilder));
+   pRptMgr->AddReportBuilder(pRptBuilder.release());
+}
+
+void CReporterBase::CreateMomentCapacityDetailsReport()
+{
+   GET_IFACE(IReportManager, pRptMgr);
+
+   std::unique_ptr<CReportBuilder> pRptBuilder = std::make_unique<CReportBuilder>(_T("Moment Capacity Details Report"));
+   std::shared_ptr<CReportSpecificationBuilder> pMomentCapacityRptSpecBuilder(std::make_shared<CMomentCapacityReportSpecificationBuilder>(m_pBroker));
+   pRptBuilder->AddTitlePageBuilder(std::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())));
+   pRptBuilder->SetReportSpecificationBuilder(pMomentCapacityRptSpecBuilder);
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<CChapterBuilder>(new CMomentCapacityChapterBuilder));
+   pRptMgr->AddReportBuilder(pRptBuilder.release());
+}
+
+void CReporterBase::CreateCrackedSectionDetailsReport()
+{
+   GET_IFACE(IReportManager, pRptMgr);
+
+   std::unique_ptr<CReportBuilder> pRptBuilder = std::make_unique<CReportBuilder>(_T("Cracked Section Analysis Details Report"));
+   std::shared_ptr<CReportSpecificationBuilder> pCrackedSectionRptSpecBuilder(std::make_shared<CCrackedSectionReportSpecificationBuilder>(m_pBroker));
+   pRptBuilder->AddTitlePageBuilder(std::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())));
+   pRptBuilder->SetReportSpecificationBuilder(pCrackedSectionRptSpecBuilder);
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<CChapterBuilder>(new CCrackedSectionChapterBuilder));
    pRptMgr->AddReportBuilder(pRptBuilder.release());
 }
 

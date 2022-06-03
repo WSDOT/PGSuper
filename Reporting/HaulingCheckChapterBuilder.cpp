@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -55,15 +55,27 @@ LPCTSTR CHaulingCheckChapterBuilder::GetName() const
 
 rptChapter* CHaulingCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGirderRptSpec   = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
-   const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
+   rptChapter* pChapter;
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
-   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
-   CHaulingCheck().Build(pChapter, pBroker, girderKey, pDisplayUnits);
+   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   CSegmentReportSpecification* pSegmentRptSpec = dynamic_cast<CSegmentReportSpecification*>(pRptSpec);
+   if (pGirderRptSpec)
+   {
+      pGirderRptSpec->GetBroker(&pBroker);
+      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+      const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
+      pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
+      CHaulingCheck().Build(pChapter, pBroker, girderKey, pDisplayUnits);
+   }
+   else
+   {
+      pSegmentRptSpec->GetBroker(&pBroker);
+      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+      const CSegmentKey& segmentKey(pSegmentRptSpec->GetSegmentKey());
+      pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
+      CHaulingCheck().Build(pChapter, pBroker, segmentKey, pDisplayUnits);
+   }
 
    return pChapter;
 }

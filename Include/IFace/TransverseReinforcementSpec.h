@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,28 +23,7 @@
 #ifndef INCLUDED_IFACE_TRANSVERSEREINFORCEMENTSPEC_H_
 #define INCLUDED_IFACE_TRANSVERSEREINFORCEMENTSPEC_H_
 
-// SYSTEM INCLUDES
-//
-
-#if !defined INCLUDED_WBFLTYPES_H_
-#include <WbflTypes.h>
-#endif
-
 #include <PGSuperTypes.h>
-
-// PROJECT INCLUDES
-//
-#if !defined INCLUDED_MATERIAL_REBAR_H_
-#include <Material\Rebar.h>
-#endif
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-
-// MISCELLANEOUS
-//
 
 /*****************************************************************************
 INTERFACE
@@ -60,25 +39,6 @@ DEFINE_GUID(IID_ITransverseReinforcementSpec,
 0x1ae10c6e, 0xac04, 0x11d2, 0xac, 0xb7, 0x0, 0x10, 0x5a, 0x9a, 0xf9, 0x85);
 interface ITransverseReinforcementSpec : IUnknown
 {
-   //------------------------------------------------------------------------
-   // Calculates the maximum stress in the Splitting zone per 5.9.4.4 (pre2017: 5.10.10.1)
-   virtual Float64 GetMaxSplittingStress(Float64 fyRebar) const = 0;
-
-   //------------------------------------------------------------------------
-   // Returns the distance from the ends of the girder within which the Splitting
-   // stress requirements must be checked. 5.9.4.4 (pre2017: 5.10.10.1)
-   virtual Float64 GetSplittingZoneLength( Float64 girderHeight ) const = 0;
-
-   //--------------------------------------------------------------
-   // Returns N in h/N where the Splitting zone length is computed as h/N
-   // See LRFD 5.9.4.4 (pre2017: 5.10.10.1)
-   virtual Float64 GetSplittingZoneLengthFactor() const = 0;
-
-   //----------------------------------------------------
-   // Returns assumed Strength at First Crack for UHPC concrete for use
-   // in evaluation of splitting resistance requirements
-   virtual Float64 GetUHPCStrengthAtFirstCrack() const = 0;
-
    //------------------------------------------------------------------------
    // Returns the minimum bar size in the confinment zone per 5.9.4.4.2 (pre2017: 5.10.10.2)
    virtual matRebar::Size GetMinConfinmentBarSize() const = 0;

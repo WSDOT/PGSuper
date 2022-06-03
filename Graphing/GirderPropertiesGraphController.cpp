@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,6 +24,7 @@
 #include "resource.h"
 #include "GirderPropertiesGraphController.h"
 #include <Graphing\GirderPropertiesGraphBuilder.h>
+#include <Graphing\ExportGraphXYTool.h>
 
 #include <EAF\EAFUtilities.h>
 #include <IFace\DocumentType.h>
@@ -34,6 +35,7 @@
 
 #include <EAF\EAFGraphBuilderBase.h>
 #include <EAF\EAFGraphView.h>
+#include <EAF\EAFDocument.h>
 
 #include <PgsExt\BridgeDescription2.h>
 
@@ -59,6 +61,8 @@ BEGIN_MESSAGE_MAP(CGirderPropertiesGraphController, CIntervalGirderGraphControll
    ON_BN_CLICKED(IDC_GROSS, OnSectionPropertiesChanged)
    ON_BN_CLICKED(IDC_NET_GIRDER, OnSectionPropertiesChanged)
    ON_BN_CLICKED(IDC_NET_DECK, OnSectionPropertiesChanged)
+   ON_BN_CLICKED(IDC_EXPORT_GRAPH_BTN,OnGraphExportClicked)
+   ON_UPDATE_COMMAND_UI(IDC_EXPORT_GRAPH_BTN,OnCommandUIGraphExport)
    //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -228,6 +232,32 @@ void CGirderPropertiesGraphController::OnSectionPropertiesChanged()
    }
 }
 
+void CGirderPropertiesGraphController::OnGraphExportClicked()
+{
+   // Build default file name
+   CString strProjectFileNameNoPath = CExportGraphXYTool::GetTruncatedFileName();
+
+   const CGirderKey& girderKey = GetGirderKey();
+   CString girderName = GIRDER_LABEL(girderKey);
+
+   CGirderPropertiesGraphBuilder* pGraphBuilder = (CGirderPropertiesGraphBuilder*)GetGraphBuilder();
+   CString strPropType = pGraphBuilder->GetPropertyLabel(GetPropertyType());
+
+   CString strDefaultFileName = strProjectFileNameNoPath + _T("_") + girderName + _T("_") + strPropType;
+   strDefaultFileName.Replace(' ','_'); // prefer not to have spaces or ,'s in file names
+   strDefaultFileName.Replace(',','_');
+
+   ((CGirderPropertiesGraphBuilder*)GetGraphBuilder())->ExportGraphData(strDefaultFileName);
+}
+
+// this has to be implemented otherwise button will not be enabled.
+void CGirderPropertiesGraphController::OnCommandUIGraphExport(CCmdUI* pCmdUI)
+{
+   pCmdUI->Enable(TRUE);
+}
+
+
+
 void CGirderPropertiesGraphController::FillPropertyCtrl()
 {
    CComboBox* pcbProperties = (CComboBox*)GetDlgItem(IDC_PROPERTY);
@@ -259,6 +289,7 @@ bool CGirderPropertiesGraphController::IsInvariantProperty(CGirderPropertiesGrap
 {
    // this properties don't depend on section properties type (gross, transformed, etc)
    if (propertyType == CGirderPropertiesGraphBuilder::Height ||
+      propertyType == CGirderPropertiesGraphBuilder::AreaPrestress ||
       propertyType == CGirderPropertiesGraphBuilder::TendonProfile ||
       propertyType == CGirderPropertiesGraphBuilder::EffectiveFlangeWidth ||
       propertyType == CGirderPropertiesGraphBuilder::Fc ||

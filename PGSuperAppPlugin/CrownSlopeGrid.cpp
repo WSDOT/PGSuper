@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -126,7 +126,8 @@ void CCrownSlopeGrid::RemoveRows()
    else
    {
       m_pRoadwaySectionData->NumberOfSegmentsPerSection = 2;
-      m_pRoadwaySectionData->ControllingRidgePointIdx = 1;
+      m_pRoadwaySectionData->AlignmentPointIdx = 1;
+      m_pRoadwaySectionData->ProfileGradePointIdx = 1;
       m_pRoadwaySectionData->RoadwaySectionTemplates.clear();
       UpdateGridSizeAndHeaders(*m_pRoadwaySectionData);
    }
@@ -184,17 +185,17 @@ void CCrownSlopeGrid::InitRowData(ROWCOL row)
    {
       // No row to copy. just make some reasonable assumptions
       SetValueRange(CGXRange(row, 0), row - 1); // row num
-      SetValueRange(CGXRange(row, 1), "0+00");
-      SetValueRange(CGXRange(row, 2), "-0.02");
+      SetValueRange(CGXRange(row, 1), _T("0+00"));
+      SetValueRange(CGXRange(row, 2), _T("-0.02"));
 
       ROWCOL col = 3;
       for (IndexType ir = 0; ir < m_pRoadwaySectionData->NumberOfSegmentsPerSection - 2; ir++)
       {
-         SetValueRange(CGXRange(row, col++), "10.00");
-         SetValueRange(CGXRange(row, col++), "-0.02");
+         SetValueRange(CGXRange(row, col++), _T("10.00"));
+         SetValueRange(CGXRange(row, col++), _T("-0.02"));
       }
 
-      SetValueRange(CGXRange(row, col), "-0.02");
+      SetValueRange(CGXRange(row, col), _T("-0.02"));
    }
 
    GetParam()->EnableUndo(TRUE);
@@ -683,6 +684,8 @@ void CCrownSlopeGrid::OnModifyCell(ROWCOL nRow, ROWCOL nCol)
    // tell parent to draw template if we have valid data
    CCrownSlopePage* pParent = (CCrownSlopePage*)GetParent();
    pParent->OnChange(); 
+
+   __super::OnModifyCell(nRow, nCol);
 }
 
 void CCrownSlopeGrid::OnMovedCurrentCell(ROWCOL nRow, ROWCOL nCol)

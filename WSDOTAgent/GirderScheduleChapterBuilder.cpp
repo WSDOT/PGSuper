@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -375,8 +375,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    }
 
    Float64 ybg = pSectProp->GetY(releaseIntervalIdx,poiMidSpan,pgsTypes::BottomGirder);
-   Float64 nEff;
-   Float64 sse = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poiMidSpan,pgsTypes::Straight, &nEff);
+   Float64 sse = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poiMidSpan,pgsTypes::Straight).Y();
    (*pTable)(++row,0) << _T("E");
    if (0 < Ns)
    {
@@ -389,7 +388,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    if ( CLSID_SlabBeamFamily != familyCLSID )
    {
-      Float64 hse = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poiMidSpan,pgsTypes::Harped, &nEff);
+      Float64 hse = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poiMidSpan,pgsTypes::Harped).Y();
       (*pTable)(++row,0) << Sub2(_T("F"),_T("C.L."));
       if (0 < Nh)
       {
@@ -402,7 +401,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
 
 
       Float64 ytg = pSectProp->GetY(releaseIntervalIdx,poiStart,pgsTypes::TopGirder);
-      Float64 hss = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poiStart,pgsTypes::Harped,&nEff);
+      Float64 hss = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poiStart,pgsTypes::Harped).Y();
       (*pTable)(++row,0) << Sub2(_T("F"),_T("o"));
       if (0 < Nh)
       {
@@ -627,13 +626,18 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    const pgsHaulingAnalysisArtifact* pHaulingArtifact = pSegmentArtifact->GetHaulingAnalysisArtifact();
    if ( pHaulingArtifact != nullptr )
    {
-      const stbHaulingStabilityProblem* pHaulProblem = pIGirder->GetSegmentHaulingStabilityProblem(segmentKey);
+      const WBFL::Stability::HaulingStabilityProblem* pHaulProblem = pIGirder->GetSegmentHaulingStabilityProblem(segmentKey);
       Float64 camber = pHaulProblem->GetCamber();
+      Float64 precamber = pIGirder->GetPrecamber(segmentKey);
       (*pTable)(++row,0) << _T("Maximum midspan vertical deflection, shipping");
-      (*pTable)(row,  1) << gdim.SetValue(camber);
+      if (!IsZero(precamber))
+      {
+         (*pTable)(row, 0) << rptNewLine << _T("(including ") << gdim.SetValue(precamber) << _T(" of precamber)");
+      }
+      (*pTable)(row,  1) << gdim.SetValue(camber + precamber);
    }
 
-   const stbLiftingCheckArtifact* pLiftArtifact = pSegmentArtifact->GetLiftingCheckArtifact();
+   const WBFL::Stability::LiftingCheckArtifact* pLiftArtifact = pSegmentArtifact->GetLiftingCheckArtifact();
    if (pLiftArtifact!=nullptr)
    {
       GET_IFACE2(pBroker,ISegmentLifting,pSegmentLifting);

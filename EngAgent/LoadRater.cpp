@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -899,7 +899,7 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const PoiList& vPoi,p
 
 void pgsLoadRater::LongitudinalReinforcementForShearRating(const CGirderKey& girderKey, const PoiList& vPoi, pgsTypes::LoadRatingType ratingType, VehicleIndexType vehicleIdx, IntervalIndexType loadRatingIntervalIdx, bool bTimeStep, pgsRatingArtifact& ratingArtifact) const
 {
-   GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE_NOCHECK(IEAFDisplayUnits, pDisplayUnits);
    GET_IFACE(IProgress, pProgress);
    CEAFAutoProgress ap(pProgress);
    pProgress->UpdateMessage(_T("Load rating for longitudinal reinforcement for shear"));
@@ -1101,8 +1101,9 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
       ratingParams.pMaterials->GetDeckRebarProperties(&Eb, &fyb, &fu);
    }
 
-   Eps = ratingParams.pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Permanent)->GetE();
-   fyps = ratingParams.pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Permanent)->GetYieldStrength();
+   // just getting material properties so assuming straight strands is fine
+   Eps = ratingParams.pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Straight)->GetE();
+   fyps = ratingParams.pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Straight)->GetYieldStrength();
 
    // NOTE: it is ok to use segmentKey here because it promotes to a girder key
    EptSegment = ratingParams.pMaterials->GetSegmentTendonMaterial(segmentKey)->GetE();
@@ -1439,8 +1440,7 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
          }
          else
          {
-            Float64 neff;
-            Float64 ep = ratingParams.pStrandGeometry->GetEccentricity(ratingParams.loadRatingIntervalIdx, poi, pgsTypes::Permanent, &neff);
+            Float64 ep = ratingParams.pStrandGeometry->GetEccentricity(ratingParams.loadRatingIntervalIdx, poi, pgsTypes::Permanent).Y();
             Float64 Ixx = ratingParams.pSectProp->GetIxx(ratingParams.loadRatingIntervalIdx, poi);
             llGain = LLIM*ep / Ixx;
          }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -527,11 +527,16 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLLDFParame
 
       // s and t for top and bottom
       Float64 s_top = Width - t_ext;
-      Float64 t_top = (Height - VoidDiameter)/2;
+      Float64 s_bot = Width - t_ext;
+      Float64 t_top = (Height - VoidDiameter) / 2;
+      Float64 t_bot = (Height - VoidDiameter) / 2;
+
+      Float64 slab_depth = pBridge->GetStructuralSlabDepth(poi);
+      t_top += slab_depth;
 
       Jvoid.Elements.push_back(VOIDEDSLAB_J_VOID::Element(s_top,t_top)); // top
-      Jvoid.Elements.push_back(VOIDEDSLAB_J_VOID::Element(s_top,t_top)); // bottom
-      Sum_s_over_t += 2*(s_top/t_top);
+      Jvoid.Elements.push_back(VOIDEDSLAB_J_VOID::Element(s_bot,t_bot)); // bottom
+      Sum_s_over_t += (s_top / t_top) + (s_bot / t_bot);
 
       Jvoid.Elements.push_back(VOIDEDSLAB_J_VOID::Element(s_int,t_ext)); // left edge
       Sum_s_over_t += (s_int/t_ext);
@@ -693,50 +698,58 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
    {
       if (gM1.LeverRuleData.bWasUsed )
       {
-         (*pPara) << Bold(_T("1 Loaded Lane")) << rptNewLine;
-         (*pPara) << Bold(_T("Lever Rule")) << rptNewLine;
+         (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
+         REPORT_LLDF_INTOVERRIDE(gM1);
          ReportLeverRule(pPara,true,1.0,gM1.LeverRuleData,m_pBroker,pDisplayUnits);
       }
 
       if (gM1.EqnData.bWasUsed)
       {
-         (*pPara) << Bold(_T("1 Loaded Lane: Equation")) << rptNewLine;
-
-         if (lldf.Method == LLDF_TXDOT && !(gM1.ControllingMethod & LEVER_RULE))
+         if (gM1.ControllingMethod & INTERIOR_OVERRIDE)
          {
-            (*pPara) << _T("For TxDOT Method, Use ")<<_T("mg") << Super(_T("MI")) << Sub(_T("1"))<<_T(". And,do not apply skew correction factor.")<< rptNewLine;
-
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_G_SI.png") : _T("mg_1_MI_Type_G_US.png"))) << rptNewLine;
-            ATLASSERT(gM1.ControllingMethod & S_OVER_D_METHOD);
-            (*pPara)<< _T("K = ")<< gM1.EqnData.K << rptNewLine;
-            (*pPara)<< _T("C = ")<< gM1.EqnData.C << rptNewLine;
-            (*pPara)<< _T("D = ")<< xdim.SetValue(gM1.EqnData.D) << rptNewLine;
-            (*pPara) << rptNewLine;
-
-            (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg) << rptNewLine;
-
+            (*pPara) << Bold(_T("1 Loaded Lane: Exterior factor may not be less than that for interior")) << rptNewLine;
+            (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << _T("mg") << Super(_T("MI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg) << rptNewLine;
          }
          else
          {
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_ME_Type_G_SI.png") : _T("mg_1_ME_Type_G_US.png"))) << rptNewLine;
- 
-            if ( lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit || lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+            (*pPara) << Bold(_T("1 Loaded Lane: Equation")) << rptNewLine;
+
+            if (lldf.Method == LLDF_TXDOT && !(gM1.ControllingMethod & LEVER_RULE))
             {
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_F_SI.png") : _T("mg_1_MI_Type_F_US.png"))) << rptNewLine;
+               (*pPara) << _T("For TxDOT Method, Use ") << _T("mg") << Super(_T("MI")) << Sub(_T("1")) << _T(". And,do not apply skew correction factor.") << rptNewLine;
+
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_G_SI.png") : _T("mg_1_MI_Type_G_US.png"))) << rptNewLine;
+               ATLASSERT(gM1.ControllingMethod & S_OVER_D_METHOD);
+               (*pPara) << _T("K = ") << gM1.EqnData.K << rptNewLine;
+               (*pPara) << _T("C = ") << gM1.EqnData.C << rptNewLine;
+               (*pPara) << _T("D = ") << xdim.SetValue(gM1.EqnData.D) << rptNewLine;
+               (*pPara) << rptNewLine;
+
+               (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg) << rptNewLine;
+
             }
             else
             {
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_G_SI.png") : _T("mg_1_MI_Type_G_US.png"))) << rptNewLine;
-               ATLASSERT(gM1.ControllingMethod & S_OVER_D_METHOD);
-               (*pPara)<< _T("K = ")<< gM1.EqnData.K << rptNewLine;
-               (*pPara)<< _T("C = ")<< gM1.EqnData.C << rptNewLine;
-               (*pPara)<< _T("D = ")<< xdim.SetValue(gM1.EqnData.D) << rptNewLine;
-               (*pPara) << rptNewLine;
-            }
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_ME_Type_G_SI.png") : _T("mg_1_ME_Type_G_US.png"))) << rptNewLine;
 
-            (*pPara) << _T("mg") << Super(_T("MI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.EqnData.mg) << rptNewLine;
-            (*pPara) << _T("e = ") << gM1.EqnData.e << rptNewLine;
-            (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.EqnData.mg*gM1.EqnData.e) << rptNewLine;
+               if (lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit || lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion())
+               {
+                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_F_SI.png") : _T("mg_1_MI_Type_F_US.png"))) << rptNewLine;
+               }
+               else
+               {
+                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_G_SI.png") : _T("mg_1_MI_Type_G_US.png"))) << rptNewLine;
+                  ATLASSERT(gM1.ControllingMethod & S_OVER_D_METHOD);
+                  (*pPara) << _T("K = ") << gM1.EqnData.K << rptNewLine;
+                  (*pPara) << _T("C = ") << gM1.EqnData.C << rptNewLine;
+                  (*pPara) << _T("D = ") << xdim.SetValue(gM1.EqnData.D) << rptNewLine;
+                  (*pPara) << rptNewLine;
+               }
+
+               (*pPara) << _T("mg") << Super(_T("MI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.EqnData.mg) << rptNewLine;
+               (*pPara) << _T("e = ") << gM1.EqnData.e << rptNewLine;
+               (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.EqnData.mg * gM1.EqnData.e) << rptNewLine;
+            }
          }
       }
 
@@ -761,34 +774,41 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
 
          if (gM2.EqnData.bWasUsed)
          {
-            if (lldf.Method == LLDF_TXDOT && !(gM2.ControllingMethod & LEVER_RULE))
+            if (gM2.ControllingMethod & INTERIOR_OVERRIDE)
             {
-               (*pPara) << Bold(_T("2+ Loaded Lanes: Equation Method")) << rptNewLine;
-               (*pPara) << _T("Same as for 1 Loaded Lane") << rptNewLine;
-               (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("2")) << _T(" = ") << scalar.SetValue(gM2.EqnData.mg) << rptNewLine;
+               (*pPara) << Bold(_T("2+ Loaded Lanes: Exterior factor may not be less than that for interior")) << rptNewLine;
+               (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("2")) << _T(" = ") << _T("mg") << Super(_T("MI")) << Sub(_T("2")) << _T(" = ") << scalar.SetValue(gM2.mg) << rptNewLine;
             }
             else
             {
-               (*pPara) << Bold(_T("2+ Loaded Lane")) << rptNewLine;
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_ME_Type_G_SI.png") : _T("mg_2_ME_Type_G_US.png"))) << rptNewLine;
-
-               if ( lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit || lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+               (*pPara) << Bold(_T("2+ Loaded Lanes: Equation Method")) << rptNewLine;
+               if (lldf.Method == LLDF_TXDOT && !(gM2.ControllingMethod & LEVER_RULE))
                {
-                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_MI_Type_F_SI.png") : _T("mg_2_MI_Type_F_US.png"))) << rptNewLine;
+                  (*pPara) << _T("Same as for 1 Loaded Lane") << rptNewLine;
+                  (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("2")) << _T(" = ") << scalar.SetValue(gM2.EqnData.mg) << rptNewLine;
                }
                else
                {
-                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_MI_Type_G_SI.png") : _T("mg_2_MI_Type_G_US.png"))) << rptNewLine;
-                  ATLASSERT(gM2.ControllingMethod & S_OVER_D_METHOD);
-                  (*pPara)<< _T("K = ")<< gM2.EqnData.K << rptNewLine;
-                  (*pPara)<< _T("C = ")<< gM2.EqnData.C << rptNewLine;
-                  (*pPara)<< _T("D = ")<< xdim.SetValue(gM2.EqnData.D) << rptNewLine;
-                  (*pPara) << rptNewLine;
-               }
+                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_ME_Type_G_SI.png") : _T("mg_2_ME_Type_G_US.png"))) << rptNewLine;
 
-               (*pPara) << _T("mg") << Super(_T("MI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.EqnData.mg) << rptNewLine;
-               (*pPara) << _T("e = ") << gM2.EqnData.e << rptNewLine;
-               (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.EqnData.mg*gM2.EqnData.e) << rptNewLine;
+                  if (lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit || lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion())
+                  {
+                     (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_MI_Type_F_SI.png") : _T("mg_2_MI_Type_F_US.png"))) << rptNewLine;
+                  }
+                  else
+                  {
+                     (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_MI_Type_G_SI.png") : _T("mg_2_MI_Type_G_US.png"))) << rptNewLine;
+                     ATLASSERT(gM2.ControllingMethod & S_OVER_D_METHOD);
+                     (*pPara) << _T("K = ") << gM2.EqnData.K << rptNewLine;
+                     (*pPara) << _T("C = ") << gM2.EqnData.C << rptNewLine;
+                     (*pPara) << _T("D = ") << xdim.SetValue(gM2.EqnData.D) << rptNewLine;
+                     (*pPara) << rptNewLine;
+                  }
+
+                  (*pPara) << _T("mg") << Super(_T("MI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.EqnData.mg) << rptNewLine;
+                  (*pPara) << _T("e = ") << gM2.EqnData.e << rptNewLine;
+                  (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.EqnData.mg * gM2.EqnData.e) << rptNewLine;
+               }
             }
          }
 
@@ -885,20 +905,16 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
 
          if (gM2.EqnData.bWasUsed)
          {
+            (*pPara) << Bold(_T("2+ Loaded Lanes: Equation Method")) << rptNewLine;
             if (lldf.Method == LLDF_TXDOT && !(gM2.ControllingMethod & LEVER_RULE))
             {
                (*pPara) << rptNewLine;
 
-               (*pPara) << Bold(_T("2+ Loaded Lanes: Equation Method")) << rptNewLine;
                (*pPara) << _T("Same as for 1 Loaded Lane") << rptNewLine;
                (*pPara) << _T("mg") << Super(_T("MI")) << Sub(_T("2")) << _T(" = ") << scalar.SetValue(gM2.EqnData.mg) << rptNewLine;
             }
             else
             {
-               (*pPara) << rptNewLine;
-
-               (*pPara) << Bold(_T("2+ Loaded Lanes")) << rptNewLine;
-
                if ( lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit || lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
                {
                   (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_MI_Type_F_SI.png") : _T("mg_2_MI_Type_F_US.png"))) << rptNewLine;
@@ -954,7 +970,6 @@ void CVoidedSlabDistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_L
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim,     pDisplayUnits->GetSpanLengthUnit(),      true );
-
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
    GET_IFACE(ILibrary, pLib);
@@ -966,6 +981,7 @@ void CVoidedSlabDistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_L
       if ( gV1.EqnData.bWasUsed )
       {
          (*pPara) << Bold(_T("1 Loaded Lane: Equation")) << rptNewLine;
+         REPORT_LLDF_INTOVERRIDE(gV1);
          if( lldf.Method==LLDF_TXDOT )
          {
             (*pPara) << _T("For TxDOT Method, Use ")<<_T("mg") << Super(_T("MI")) << Sub(_T("1"))<<_T(". And,do not apply skew correction factor.")<< rptNewLine;
@@ -1003,6 +1019,7 @@ void CVoidedSlabDistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_L
       if ( gV1.LeverRuleData.bWasUsed )
       {
          (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
+         REPORT_LLDF_INTOVERRIDE(gV1);
          ReportLeverRule(pPara,false,1.0,gV1.LeverRuleData,m_pBroker,pDisplayUnits);
       }
 
@@ -1019,6 +1036,7 @@ void CVoidedSlabDistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_L
          if ( gV2.ControllingMethod & LEVER_RULE )
          {
             (*pPara) << Bold(_T("2+ Loaded Lane: Lever Rule")) << rptNewLine;
+            REPORT_LLDF_INTOVERRIDE(gV2);
             ReportLeverRule(pPara,false,1.0,gV2.LeverRuleData,m_pBroker,pDisplayUnits);
          }
 
@@ -1027,13 +1045,14 @@ void CVoidedSlabDistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_L
             if( lldf.Method==LLDF_TXDOT )
             {
                (*pPara) << Bold(_T("2+ Loaded Lane")) << rptNewLine;
+               REPORT_LLDF_INTOVERRIDE(gV2);
                (*pPara) << _T("Same as for 1 Loaded Lane") << rptNewLine;
                (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("2")) << _T(" = ") << scalar.SetValue(gV2.mg) << rptNewLine;
             }
             else 
             {
                (*pPara) << Bold(_T("2+ Loaded Lane: Equation")) << rptNewLine;
-
+               REPORT_LLDF_INTOVERRIDE(gV2);
                if (gV2.ControllingMethod & MOMENT_OVERRIDE)
                {
                   (*pPara) << _T("Overriden by moment factor because J or I was out of range for shear equation")<<rptNewLine;

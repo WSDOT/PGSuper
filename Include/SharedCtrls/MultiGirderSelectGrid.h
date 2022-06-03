@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,8 +25,13 @@
 // MultiGirderSelectGrid.h : header file
 //
 #include <PGSuperAll.h>
-#include <grid\gxall.h>
 #include <PgsExt\Keys.h>
+
+#if defined _NOGRID
+#include <NoGrid.h>
+#else
+#include <grid\gxall.h>
+#endif
 
 // Container for spans and girders on/off settings
 typedef std::vector<bool> GirderOnVector;
@@ -54,7 +59,7 @@ public:
 	//{{AFX_VIRTUAL(CMultiGirderSelectGrid)
 	//}}AFX_VIRTUAL
 
-	GRID_API virtual void OnDrawItem(CDC *pDC, ROWCOL nRow, ROWCOL nCol, const CRect& rectDraw, const CGXStyle& style) override;
+	virtual void OnDrawItem(CDC *pDC, ROWCOL nRow, ROWCOL nCol, const CRect& rectDraw, const CGXStyle& style) override;
 
 // Implementation
 public:

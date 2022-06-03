@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -88,7 +88,7 @@ rptRcTable* CStrandEccTable::Build_Y(IBroker* pBroker, const CSegmentKey& segmen
 {
    GET_IFACE2(pBroker, ISectionProperties, pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
-   pgsTypes::SectionPropertyType spType = (spMode ? pgsTypes::sptGrossNoncomposite : pgsTypes::sptNetGirder);
+   pgsTypes::SectionPropertyType spType = (spMode == pgsTypes::spmGross ? pgsTypes::sptGrossNoncomposite : pgsTypes::sptNetGirder);
 
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP)
@@ -187,10 +187,9 @@ rptRcTable* CStrandEccTable::Build_Y(IBroker* pBroker, const CSegmentKey& segmen
       (*p_table)(row, col++) << rptReleasePoi.SetValue(POI_RELEASED_SEGMENT, poi);
       (*p_table)(row, col++) << rptErectedPoi.SetValue(POI_ERECTED_SEGMENT, poi);
 
-      Float64 nEff;
       if (0 < Ns)
       {
-         (*p_table)(row, col++) << ecc.SetValue(pStrandGeom->GetEccentricity(spType, intervalIdx, poi, pgsTypes::Straight, &nEff));
+         (*p_table)(row, col++) << ecc.SetValue(pStrandGeom->GetEccentricity(spType, intervalIdx, poi, pgsTypes::Straight).Y());
       }
       else
       {
@@ -199,7 +198,7 @@ rptRcTable* CStrandEccTable::Build_Y(IBroker* pBroker, const CSegmentKey& segmen
 
       if (0 < Nh)
       {
-         (*p_table)(row, col++) << ecc.SetValue(pStrandGeom->GetEccentricity(spType, intervalIdx, poi, pgsTypes::Harped, &nEff));
+         (*p_table)(row, col++) << ecc.SetValue(pStrandGeom->GetEccentricity(spType, intervalIdx, poi, pgsTypes::Harped).Y());
       }
       else
       {
@@ -210,17 +209,17 @@ rptRcTable* CStrandEccTable::Build_Y(IBroker* pBroker, const CSegmentKey& segmen
       {
          if (0 < Nt)
          {
-            (*p_table)(row, col++) << ecc.SetValue(pStrandGeom->GetEccentricity(spType, intervalIdx, poi, pgsTypes::Temporary, &nEff));
+            (*p_table)(row, col++) << ecc.SetValue(pStrandGeom->GetEccentricity(spType, intervalIdx, poi, pgsTypes::Temporary).Y());
          }
          else
          {
             (*p_table)(row, col++) << _T("-");
          }
 
-         (*p_table)(row, col++) << ecc.SetValue(pStrandGeom->GetEccentricity(spType, intervalIdx, poi, true /*include temporary strands*/, &nEff));
+         (*p_table)(row, col++) << ecc.SetValue(pStrandGeom->GetEccentricity(spType, intervalIdx, poi, true /*include temporary strands*/).Y());
       }
 
-      (*p_table)(row, col++) << ecc.SetValue(pStrandGeom->GetEccentricity(spType, intervalIdx, poi, false/*exclude temporary strands*/, &nEff));
+      (*p_table)(row, col++) << ecc.SetValue(pStrandGeom->GetEccentricity(spType, intervalIdx, poi, false/*exclude temporary strands*/).Y());
 
       if (0 < Nh)
       {
@@ -264,7 +263,7 @@ rptRcTable* CStrandEccTable::Build_XY(IBroker* pBroker, const CSegmentKey& segme
 {
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
-   pgsTypes::SectionPropertyType spType = (spMode == pgsTypes::spmGross ? pgsTypes::sptGrossNoncomposite : pgsTypes::sptNetGirder );
+   pgsTypes::SectionPropertyType spType = (spMode == pgsTypes::spmGross ? pgsTypes::sptGrossNoncomposite : pgsTypes::sptNetGirder);
 
    GET_IFACE2(pBroker,ILossParameters,pLossParams);
    if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
@@ -394,7 +393,7 @@ rptRcTable* CStrandEccTable::Build_XY(IBroker* pBroker, const CSegmentKey& segme
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, rptReleasePoi, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptPointOfInterest, rptErectedPoi, pDisplayUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptLengthSectionValue, ecc,    pDisplayUnits->GetComponentDimUnit(),  false );
+   INIT_UV_PROTOTYPE( rptLengthSectionValue, eccentricity,    pDisplayUnits->GetComponentDimUnit(),  false );
 
    GET_IFACE2( pBroker, IPointOfInterest, pPoi );
 
@@ -418,13 +417,11 @@ rptRcTable* CStrandEccTable::Build_XY(IBroker* pBroker, const CSegmentKey& segme
       (*p_table)(row,col++) << rptReleasePoi.SetValue(POI_RELEASED_SEGMENT,poi);
       (*p_table)(row,col++) << rptErectedPoi.SetValue(POI_ERECTED_SEGMENT, poi);
 
-      Float64 nEff;
       if ( 0 < Ns )
       {
-         Float64 eccx, eccy;
-         pStrandGeom->GetEccentricity(spType, intervalIdx, poi, pgsTypes::Straight, &nEff, &eccx, &eccy);
-         (*p_table)(row, col++) << ecc.SetValue(eccx);
-         (*p_table)(row, col++) << ecc.SetValue(eccy);
+         gpPoint2d ecc = pStrandGeom->GetEccentricity(spType, intervalIdx, poi, pgsTypes::Straight);
+         (*p_table)(row, col++) << eccentricity.SetValue(ecc.X());
+         (*p_table)(row, col++) << eccentricity.SetValue(ecc.Y());
       }
       else
       {
@@ -434,10 +431,9 @@ rptRcTable* CStrandEccTable::Build_XY(IBroker* pBroker, const CSegmentKey& segme
 
       if ( 0 < Nh )
       {
-         Float64 eccx, eccy;
-         pStrandGeom->GetEccentricity(spType, intervalIdx, poi, pgsTypes::Harped, &nEff, &eccx, &eccy);
-         (*p_table)(row, col++) << ecc.SetValue(eccx);
-         (*p_table)(row, col++) << ecc.SetValue(eccy);
+         gpPoint2d ecc = pStrandGeom->GetEccentricity(spType, intervalIdx, poi, pgsTypes::Harped);
+         (*p_table)(row, col++) << eccentricity.SetValue(ecc.X());
+         (*p_table)(row, col++) << eccentricity.SetValue(ecc.Y());
       }
       else
       {
@@ -449,10 +445,9 @@ rptRcTable* CStrandEccTable::Build_XY(IBroker* pBroker, const CSegmentKey& segme
       {
          if ( 0 < Nt )
          {
-            Float64 eccx, eccy;
-            pStrandGeom->GetEccentricity(spType, intervalIdx, poi, pgsTypes::Temporary, &nEff, &eccx, &eccy);
-            (*p_table)(row, col++) << ecc.SetValue(eccx);
-            (*p_table)(row, col++) << ecc.SetValue(eccy);
+            gpPoint2d ecc = pStrandGeom->GetEccentricity(spType, intervalIdx, poi, pgsTypes::Temporary);
+            (*p_table)(row, col++) << eccentricity.SetValue(ecc.X());
+            (*p_table)(row, col++) << eccentricity.SetValue(ecc.Y());
          }
          else
          {
@@ -460,16 +455,14 @@ rptRcTable* CStrandEccTable::Build_XY(IBroker* pBroker, const CSegmentKey& segme
             (*p_table)(row, col++) << _T("-");
          }
 
-         Float64 eccx, eccy;
-         pStrandGeom->GetEccentricity(spType, intervalIdx, poi, true /*include temporary strands*/, &nEff, &eccx, &eccy);
-         (*p_table)(row, col++) << ecc.SetValue(eccx);
-         (*p_table)(row, col++) << ecc.SetValue(eccy);
+         gpPoint2d ecc = pStrandGeom->GetEccentricity(spType, intervalIdx, poi, true /*include temporary strands*/);
+         (*p_table)(row, col++) << eccentricity.SetValue(ecc.X());
+         (*p_table)(row, col++) << eccentricity.SetValue(ecc.Y());
       }
 
-      Float64 eccx, eccy;
-      pStrandGeom->GetEccentricity(spType, intervalIdx, poi, false/*exclude temporary strands*/, &nEff, &eccx, &eccy);
-      (*p_table)(row, col++) << ecc.SetValue(eccx);
-      (*p_table)(row, col++) << ecc.SetValue(eccy);
+      gpPoint2d ecc = pStrandGeom->GetEccentricity(spType, intervalIdx, poi, false/*exclude temporary strands*/);
+      (*p_table)(row, col++) << eccentricity.SetValue(ecc.X());
+      (*p_table)(row, col++) << eccentricity.SetValue(ecc.Y());
 
       if ( 0 < Nh )
       {

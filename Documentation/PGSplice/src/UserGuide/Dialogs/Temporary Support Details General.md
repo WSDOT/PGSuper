@@ -22,8 +22,6 @@ Item | Description
 ------|-----------------
 Slab Offset Type | Use the drop down list to select a slab offset type
 Slab Offset | Distance from top of cast slab to top of precast segment at centerline bearing
-Elevaton Adjustment | Enter the elevation adjustment
+Elevation Adjustment | This feature has been disabled for this version of the program
 
-The slab offset and elevation adjustment define the segment elevation at erection. The elevation is taken to be the profile grade elevation reducted by the slab offset and increased by the elevation adjustment.
-
-The elevation adjustment is typically used to raise or lower the ends of a segment to accomodate deflections that will occur after erection. Such deflections may occur from post-tensioning, temporary support removal, and installation of external loads.
+**Note that the temporary support elevation adjustment feature has been disabled for this version of the program due to bugs that will be addressed in the next version. Any existing adjustments from previous versions of the program have been set to zero. If adjustments are needed, you will need to compute them by hand.**

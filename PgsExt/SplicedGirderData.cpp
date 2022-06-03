@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1327,6 +1327,10 @@ void CSplicedGirderData::SplitSegmentsAtTemporarySupport(SupportIndexType tsIdx)
          
          // use the same handling data for the new segment
          pNewSegment->HandlingData = pSegment->HandlingData;
+
+         // use the same slab offsets for the new segment
+         pNewSegment->m_SlabOffset[pgsTypes::metStart] = pSegment->m_SlabOffset[pgsTypes::metEnd];
+         pNewSegment->m_SlabOffset[pgsTypes::metEnd] = pNewSegment->m_SlabOffset[pgsTypes::metStart];
 
          // don't copy strands, shear data, or longitudinal rebar data to
          // the new segment. It may not be compatable with its geometry.

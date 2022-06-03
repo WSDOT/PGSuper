@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -37,6 +37,9 @@
 #include <IFace\GirderHandling.h>
 #include <IFace\Allowables.h>
 #include <IFace\DocumentType.h>
+#include <IFace\TransverseReinforcementSpec.h>
+#include <IFace\PrestressForce.h>
+#include <IFace\SplittingChecks.h>
 
 #include <EAF\EAFDisplayUnits.h>
 
@@ -48,6 +51,13 @@
 
 #include <WBFLTools.h>
 #include <WBFLTools_i.c>
+
+// must include these files. these files defined abstract class
+// and they must be included so the compiler generated default
+// methods (constructors, etc.) get generated
+#include <PgsExt\TransferLength.h>
+#include <PgsExt\DevelopmentLength.h>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,7 +25,7 @@
 #include <Stability\AnalysisPoint.h>
 #include <PgsExt\PointOfInterest.h>
 
-class PGSEXTCLASS pgsStabilityAnalysisPoint : public stbIAnalysisPoint
+class PGSEXTCLASS pgsStabilityAnalysisPoint : public WBFL::Stability::IAnalysisPoint
 {
 public:
    pgsStabilityAnalysisPoint();
@@ -43,7 +43,7 @@ public:
 
    virtual std::_tstring  AsString(const unitmgtLengthData& lengthUnit,Float64 offset,bool bShowUnit) const override;
 
-   virtual stbIAnalysisPoint* Clone() const override;
+   virtual std::unique_ptr<WBFL::Stability::IAnalysisPoint> Clone() const override;
 
 protected:
    pgsPointOfInterest m_Poi;

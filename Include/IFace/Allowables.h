@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,6 +25,9 @@
 #include <PGSuperTypes.h>
 #include <PgsExt\Keys.h>
 #include <PgsExt\PointOfInterest.h>
+
+interface IEAFDisplayUnits;
+class pgsSegmentArtifact;
 
 /*****************************************************************************
 INTERFACE
@@ -150,7 +153,11 @@ interface IAllowableConcreteStress : IUnknown
    // Allowable stress for design
    virtual Float64 GetAllowableCompressionStress(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation, const StressCheckTask& task) const = 0;
    virtual Float64 GetAllowableTensionStress(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation, const StressCheckTask& task,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone) const = 0;
-   
+   virtual void ReportSegmentAllowableCompressionStress(const pgsPointOfInterest& poi, const StressCheckTask& task, rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits) const = 0;
+   virtual void ReportSegmentAllowableTensionStress(const pgsPointOfInterest& poi,const StressCheckTask& task, const pgsSegmentArtifact* pSegmentArtifact, rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits) const = 0;
+   virtual void ReportClosureJointAllowableCompressionStress(const pgsPointOfInterest& poi, const StressCheckTask& task, rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits) const = 0;
+   virtual void ReportClosureJointAllowableTensionStress(const pgsPointOfInterest& poi, const StressCheckTask& task, const pgsSegmentArtifact* pSegmentArtifact, rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits) const = 0;
+
    // Allowable stress for load rating
    virtual Float64 GetAllowableTensionStress(pgsTypes::LoadRatingType ratingType,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation) const = 0;
 
@@ -222,10 +229,15 @@ interface IAllowableConcreteStress : IUnknown
    virtual bool CheckFinalDeadLoadTensionStress() const = 0;
 
    virtual Float64 GetAllowableSegmentPrincipalWebTensionStress(const CSegmentKey& segmentKey) const = 0;
+   virtual void ReportAllowableSegmentPrincipalWebTensionStress(const CSegmentKey& segmentKey, rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits) const = 0;
    virtual Float64 GetAllowableClosureJointPrincipalWebTensionStress(const CClosureKey& closureKey) const = 0;
+   virtual void ReportAllowableClosureJointPrincipalWebTensionStress(const CClosureKey& closureKey, rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits) const = 0;
    virtual Float64 GetAllowablePrincipalWebTensionStress(const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetAllowablePrincipalWebTensionStressCoefficient() const = 0;
-   virtual Float64 GetprincipalTensileStressFcThreshold() const = 0;
+   virtual Float64 GetPrincipalTensileStressFcThreshold() const = 0;
+   virtual Float64 GetPrincipalTensileStressRequiredConcreteStrength(const pgsPointOfInterest& poi, Float64 stress) const = 0;
+
+   virtual Float64 GetAllowableUHPCTensionStressLimitCoefficient() const = 0;
 };
 
 

@@ -11,3 +11,5 @@ Property | Select the property to be graphed.
 Property Type | Select the property type for geometric properties of the girder.
 Show Grid | Toggles the grid.
 Show Girder | Toggles the girder.
+
+**Exporting Graph Data**: Data from this graph can be exported to a file by clicking on the *Export Graph Data* button. See @ref ug_exporting_graph_data for more information.

@@ -1,6 +1,6 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 45.29    8   6.00                     1     1     III           22  0.6  270  18.81  10.62  11.50  11.50                                               6  36.0  6.0  5.000 14.600   3.894    -4.173     4281   0.674  0.674   3.198 -0.403  0.000 -0.164 -0.567  77.50  173.32    1.00    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 45.29    8   6.00                     1     1     III           22  0.6  270  18.81  10.62  11.25  11.25                                               6  36.0  6.0  5.000  6.300   3.280    -3.925     4273   0.674  0.674   3.200 -0.606  0.000 -0.217 -0.823  77.50  151.67    1.00    5.00    5.00    1.66    2.24    2.16    2.96    1.73 
 
 
 Girder design was Not Successful
@@ -10,21 +10,20 @@ Lifting checks failed
 Hauling checks failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 45.29    8   6.00                     1     2     III           20  0.6  270  19.08  11.28  11.50  11.50                                               4  43.0  4.0  4.600 14.600   3.508    -3.797     4028   0.579  0.671   3.119 -0.338  0.000 -0.164 -0.502  66.20  159.31    1.00    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 45.29    8   6.00                     1     2     III           18  0.6  270  19.19  10.52  11.00  11.00                                               4  43.0  4.0  4.400  5.200   2.834    -3.489     3799   0.553  0.671   2.819 -0.557  0.000 -0.232 -0.788  53.54  112.88    1.00    5.00    5.00    1.58    1.87    2.05    2.87    1.62 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
 Confinement zone check failed.
-Lifting checks failed
 Hauling checks failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 45.29    8   6.00                     1     5     III           16  0.6  270  19.33   9.58  11.25  11.25                                               4  43.0  4.0  4.000 14.600   3.230    -3.220     3452   0.579  0.671   2.590 -0.335 -0.031 -0.048 -0.414  42.83  121.15    1.00    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 45.29    8   6.00                     1     5     III           16  0.6  270  19.33   9.58  11.00  11.00                                               4  43.0  4.0  4.000  5.000   2.644    -2.949     3108   0.552  0.671   2.593 -0.568 -0.045 -0.068 -0.681  42.83  103.70    1.00    5.00    5.00    1.47    1.76    1.91    2.94    1.53 
 
 
 Girder design was Not Successful

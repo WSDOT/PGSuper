@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -481,7 +481,7 @@ bool CBridgeGeometryModelBuilder::LayoutUniformGirderLines(const CBridgeDescript
    GET_IFACE2(pBroker,IRoadwayData, pIAlignment);
    bool bAnglePointInAlignment = false;
    const AlignmentData2& alignment_data = pIAlignment->GetAlignmentData2();
-   for (const auto& hc : alignment_data.HorzCurves)
+   for (const auto& hc : alignment_data.CompoundCurves)
    {
       if (IsZero(hc.Radius))
       {

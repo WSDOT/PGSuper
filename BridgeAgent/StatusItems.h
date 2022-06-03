@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -54,7 +54,7 @@ class pgsConcreteStrengthStatusItem : public pgsSegmentRelatedStatusItem
 {
 public:
    enum ConcreteType { Slab, RailingSystem, GirderSegment, ClosureJoint, LongitudinalJoint  };
-   enum ElementType { ReleaseStrength, FinalStrength, Density, DensityForWeight, AggSize, Modulus };
+   enum ElementType { ReleaseStrength, FinalStrength, Density, DensityForWeight, AggSize, Modulus, FirstPeakFlexuralStrength, Specification };
    pgsConcreteStrengthStatusItem(ConcreteType concType,ElementType elemType,const CSegmentKey& segmentKey,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
    bool IsEqual(CEAFStatusItem* pOther);
 

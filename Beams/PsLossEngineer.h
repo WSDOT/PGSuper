@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -119,8 +119,6 @@ private:
                            Float64* pAcn,
                            Float64* pIcn,
                            Float64* pYbcn,
-                           Float64* pVolume,
-                           Float64* pSurfaceArea,
                            Float64* pAd,
                            Float64* ped,
                            Float64* pKsh,
@@ -131,9 +129,9 @@ private:
                            Float64* pApsPerm,
                            Float64* pApsTTS,
                            Float64* pMdlg,
-                           Float64* pMadlg,
-                           Float64* pMsidl1,
-                           Float64* pMsidl2,
+                           std::vector<std::pair<Float64, Float64>>* pMadlg,
+                           std::vector<std::pair<Float64, Float64>>* pMsidl1,
+                           std::vector<std::pair<Float64, Float64>>* pMsidl2,
                            Float64* prh,
                            Float64* pti,
                            Float64* pth,
@@ -142,15 +140,8 @@ private:
                            Float64* pPjS,
                            Float64* pPjH,
                            Float64* pPjT,
-                           StrandIndexType* pNs,
-                           StrandIndexType* pNh,
-                           StrandIndexType* pNt,
-                           Float64* pGdrCreepK1,
-                           Float64* pGdrCreepK2,
                            Float64* pGdrShrinkageK1,
                            Float64* pGdrShrinkageK2,
-                           Float64* pDeckCreepK1,
-                           Float64* pDeckCreepK2,
                            Float64* pDeckShrinkageK1,
                            Float64* pDeckShrinkageK2,
                            Float64* pFci,
@@ -161,8 +152,6 @@ private:
                            Float64* pEcSlab,
                            Float64* pGirderLength,
                            Float64* pSpanLength,
-                           Float64* pAslab,
-                           Float64* pPslab,
                            lrfdLosses::TempStrandUsage* pUsage,
                            Float64* pAnchorSet,
                            Float64* pWobble,

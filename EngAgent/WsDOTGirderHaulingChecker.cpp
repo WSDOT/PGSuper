@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2021  Washington State Department of Transportation
+// Copyright © 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -182,7 +182,7 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::AnalyzeHauling(const C
 
 void pgsWsdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& haulConfig,ISegmentHaulingDesignPointsOfInterest* pPOId,pgsWsdotHaulingAnalysisArtifact* pArtifact)
 {
-   stbHaulingCheckArtifact artifact;
+   WBFL::Stability::HaulingCheckArtifact artifact;
 #if defined _DEBUG
    AnalyzeHauling(segmentKey,bUseConfig,haulConfig,pPOId,&artifact,&pArtifact->m_pStabilityProblem);
 #else
@@ -246,11 +246,8 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
    Float64 Lg = pBridge->GetSegmentLength(segmentKey);
 
    GET_IFACE(ISegmentHaulingSpecCriteria,pCriteria);
-   Float64 FScrMin = pCriteria->GetHaulingCrackingFs();
    Float64 FSrMin = pCriteria->GetHaulingRolloverFs();
-   LOG(_T("Allowable FS cracking FScrMin = ")<<FScrMin);
    LOG(_T("Allowable FS rollover FSrMin = ")<<FSrMin);
-
 
    Float64 location_accuracy = pCriteria->GetHaulingSupportLocationAccuracy();
    const Float64 bigInc = Max(10*location_accuracy,ConvertToSysUnits(5.0,unitMeasure::Feet));
@@ -262,6 +259,9 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
 
    Float64 min_overhang_start = pCriteria->GetMinimumHaulingSupportLocation(segmentKey,pgsTypes::metStart);
    Float64 min_overhang_end   = pCriteria->GetMinimumHaulingSupportLocation(segmentKey,pgsTypes::metEnd);
+
+   bool bRollover = false;
+   bool bCracking = false;
 
    for (const auto& pHaulTruck : vHaulTrucks)
    {
@@ -304,13 +304,9 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
 
       Float64 loc = minOverhang;
 
-      Float64 lastFScr = 2*FScrMin;
-
       while ( loc < maxOverhang )
       {
          LOG(_T(""));
-
-         pgsWsdotHaulingAnalysisArtifact curr_artifact;
 
          if ( maxLeadingOverhang < loc && !bIgnoreConfigurationLimits)
          {
@@ -333,24 +329,13 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
 
          LOG(_T("Trying Trailing Overhang = ") << ::ConvertFromSysUnits(shipping_config.LeftOverhang,unitMeasure::Feet) << _T(" ft") << _T("      Leading Overhang = ") << ::ConvertFromSysUnits(shipping_config.RightOverhang,unitMeasure::Feet) << _T(" ft"));
 
-         LOG_EXECUTION_TIME(AnalyzeHauling(segmentKey,true,shipping_config,pPOId,&curr_artifact));
+         LOG_EXECUTION_TIME(AnalyzeHauling(segmentKey,true,shipping_config,pPOId,artifact.get()));
 
-         Float64 FScr = Min(curr_artifact.GetMinFsForCracking(pgsTypes::CrownSlope),curr_artifact.GetMinFsForCracking(pgsTypes::Superelevation));
-
-         LOG(_T("FScr = ") << FScr);
-         if ( FScr < FScrMin && ((FScr < lastFScr && lastFScr < FScrMin) || maxOverhang/4 < loc) )
-         {
-            // Moving the supports closer isn't going to help
-            LOG(_T("Could not satisfy FScr... Try next haul truck"));
-            break; // next haul truck
-         }
-         lastFScr = FScr;
-
-         Float64 FSr = Min(curr_artifact.GetFsRollover(pgsTypes::CrownSlope),curr_artifact.GetFsRollover(pgsTypes::Superelevation));
+         Float64 FSr = Min(artifact->GetFsRollover(pgsTypes::CrownSlope),artifact->GetFsRollover(pgsTypes::Superelevation));
          LOG(_T("FSr = ") << FSr);
 
          Float64 fra = (stepSize == bigStep ? 0.990 : 0.995);
-         if ((stepSize == bigStep || stepSize == mediumStep) && fra*FScrMin < FScr && fra*FSrMin < FSr)
+         if ((stepSize == bigStep || stepSize == mediumStep) && fra*FSrMin < FSr)
          {
             // we are getting close... Use a smaller step size
             Float64 oldInc = inc;
@@ -381,33 +366,14 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
                }
 
                FSr = 0; // don't want to pass the test below
-               lastFScr = 2*FScrMin; // reset because we've changed loc
             }
-
          }
 
-         if ( FScrMin <= FScr && FSrMin <= FSr )
+         if ( FSrMin <= FSr )
          {
-            LOG(_T("Found a stable hauling configuration, now check stresses"));
-            std::unique_ptr<pgsHaulingAnalysisArtifact> pAnalysisArtifact(AnalyzeHauling(segmentKey, shipping_config, pPOId));
-
-            *bSuccess = pAnalysisArtifact->Passed(bIgnoreConfigurationLimits);
-            *artifact = curr_artifact;
-            LOG(_T("Stress check was ") << (*bSuccess ? _T("success") : _T("unsuccessful")));
-
-            if (*bSuccess || IsEqual(loc,minOverhang))
-            {
-               // obviously, we are done if the stress check passed
-               // if the stress check failed, but we have a stable configuration and the bunks are
-               // at the minimum location, going to a stiffer truck won't help so just exit
-               // and let the designer take corrective actions.
-               LOG(_T("Exiting pgsWsdotGirderHaulingChecker::DesignHauling - ") << (*bSuccess ? _T("with successful design") : _T("stability satisfied with minimum overhangs - stiffer haul truck wont help stresses")));
-               return artifact.release();
-            }
-            else
-            {
-               break; // go to next truck
-            }
+            LOG(_T("Found a stable hauling configuration"));
+            bRollover = true;
+            break;
          }
 
          loc += inc;
@@ -416,8 +382,21 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
       LOG(_T("")); // blank line before starting next truc
    } // next haul truck
 
-   LOG(_T("A successful design could not be found with any of the haul trucks. Add temporary strands and try again"));
-   *bSuccess = false;
+   LOG(_T("Check FS cracking"));
+   Float64 FScrMin = pCriteria->GetHaulingCrackingFs();
+   LOG(_T("Allowable FS cracking FScrMin = ") << FScrMin);
+   Float64 FScr = Min(artifact->GetMinFsForCracking(pgsTypes::CrownSlope), artifact->GetMinFsForCracking(pgsTypes::Superelevation));
+   LOG(_T("FScr = ") << FScr);
+   if (FScrMin <= FScr)
+   {
+      bCracking = true;
+   }
+
+   *bSuccess = bRollover && bCracking;
+   if (!*bSuccess)
+   {
+      LOG(_T("A successful design could not be found with any of the haul trucks. Add temporary strands and try again"));
+   }
    return artifact.release();
 }
 
@@ -469,22 +448,22 @@ bool pgsWsdotGirderHaulingChecker::TestMe(dbgLog& rlog)
 // hauling
 ////////////////////////////////////////////////////////
 #if defined _DEBUG
-void pgsWsdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& config,ISegmentHaulingDesignPointsOfInterest* pPOId,stbHaulingCheckArtifact* pArtifact,const stbHaulingStabilityProblem** ppStabilityProblem)
+void pgsWsdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& config,ISegmentHaulingDesignPointsOfInterest* pPOId,WBFL::Stability::HaulingCheckArtifact* pArtifact,const WBFL::Stability::HaulingStabilityProblem** ppStabilityProblem)
 #else
-void pgsWsdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& config,ISegmentHaulingDesignPointsOfInterest* pPOId,stbHaulingCheckArtifact* pArtifact)
+void pgsWsdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& config,ISegmentHaulingDesignPointsOfInterest* pPOId,WBFL::Stability::HaulingCheckArtifact* pArtifact)
 #endif
 {
    GET_IFACE(IGirder,pGirder);
-   const stbGirder* pStabilityModel = pGirder->GetSegmentHaulingStabilityModel(segmentKey);
-   const stbHaulingStabilityProblem* pStabilityProblem = (bUseConfig ? pGirder->GetSegmentHaulingStabilityProblem(segmentKey,config,pPOId) : pGirder->GetSegmentHaulingStabilityProblem(segmentKey));
+   const WBFL::Stability::Girder* pStabilityModel = pGirder->GetSegmentHaulingStabilityModel(segmentKey);
+   const WBFL::Stability::HaulingStabilityProblem* pStabilityProblem = (bUseConfig ? pGirder->GetSegmentHaulingStabilityProblem(segmentKey,config,pPOId) : pGirder->GetSegmentHaulingStabilityProblem(segmentKey));
 
 #if defined _DEBUG
    *ppStabilityProblem = pStabilityProblem;
 #endif
 
    GET_IFACE(ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
-   stbHaulingCriteria criteria = (bUseConfig ? pSegmentHaulingSpecCriteria->GetHaulingStabilityCriteria(segmentKey,config) : pSegmentHaulingSpecCriteria->GetHaulingStabilityCriteria(segmentKey));
+   WBFL::Stability::HaulingCriteria criteria = (bUseConfig ? pSegmentHaulingSpecCriteria->GetHaulingStabilityCriteria(segmentKey,config) : pSegmentHaulingSpecCriteria->GetHaulingStabilityCriteria(segmentKey));
 
-   stbStabilityEngineer engineer;
+   WBFL::Stability::StabilityEngineer engineer;
    *pArtifact = engineer.CheckHauling(pStabilityModel,pStabilityProblem,criteria);
 }
