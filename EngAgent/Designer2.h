@@ -32,10 +32,6 @@
 #include <Details.h>
 #endif
 
-#if !defined INCLUDED_ROARK_ROARK_H_
-#include <Roark\Roark.h>
-#endif
-
 #include <IFace\Artifact.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\PrestressForce.h>
