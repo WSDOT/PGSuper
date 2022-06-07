@@ -433,7 +433,7 @@ static void original_results_summary(rptChapter* pChapter,IBroker* pBroker,const
    INIT_UV_PROTOTYPE( rptMomentUnitValue,   moment,      pDisplayUnits->GetMomentUnit(), false );
 
    rptRcScalar Stress_Scalar;
-   Stress_Scalar.SetFormat(sysNumericFormatTool::Fixed);
+   Stress_Scalar.SetFormat(WBFL::System::NumericFormatTool::Format::Fixed);
    Stress_Scalar.SetPrecision(2);
 
    GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);
@@ -500,7 +500,7 @@ static void optional_results_summary(rptChapter* pChapter,IBroker* pBroker,const
    INIT_UV_PROTOTYPE( rptLengthUnitValue,   length, pDisplayUnits->GetSpanLengthUnit(), false );
 
    rptRcScalar Stress_Scalar;
-   Stress_Scalar.SetFormat(sysNumericFormatTool::Fixed);
+   Stress_Scalar.SetFormat(WBFL::System::NumericFormatTool::Format::Fixed);
    Stress_Scalar.SetPrecision(2);
 
    GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);

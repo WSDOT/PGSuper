@@ -612,7 +612,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
       Float64 fciReqd = m_GirderArtifact.GetRequiredReleaseStrength();
       if (NO_AVAILABLE_CONCRETE_STRENGTH != fciReqd)
       {
-         m_RequiredFci = Max(fciReqd,::ConvertToSysUnits(4.0,unitMeasure::KSI));
+         m_RequiredFci = Max(fciReqd,WBFL::Units::ConvertToSysUnits(4.0,WBFL::Units::Measure::KSI));
       }
       else
       {
@@ -622,7 +622,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
       Float64 fcReqd = m_GirderArtifact.GetRequiredGirderConcreteStrength();
       if (NO_AVAILABLE_CONCRETE_STRENGTH != fcReqd)
       {
-         m_RequiredFc = Max(fcReqd,::ConvertToSysUnits(5.0,unitMeasure::KSI));
+         m_RequiredFc = Max(fcReqd,WBFL::Units::ConvertToSysUnits(5.0,WBFL::Units::Measure::KSI));
       }
       else
       {
