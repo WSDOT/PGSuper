@@ -1983,27 +1983,57 @@ void CSpecAgentImp::GetSegmentAllowableTensionStressCoefficient(const pgsPointOf
          // if this is a non-stressing interval, use allowables from Table 5.9.2.3.2b-1 (pre2017: 5.9.4.2.2-1)
          if ( task.intervalIdx < railingSystemIntervalIdx && pDocType->IsPGSuperDocument())
          {
-            // this is a PGSuper only stress limit
+            // this is a PGSuper only stress limit (immediately after deck placement)
             ATLASSERT( task.limitState == pgsTypes::ServiceI );
             x = pSpec->GetErectionTensionStressFactor();
             pSpec->GetErectionMaximumTensionStress(&bCheckMax,&fmax);
          }
          else 
          {
-            if ( task.limitState == pgsTypes::ServiceI && CheckFinalDeadLoadTensionStress() )
+            // There is an issue with design policy for spliced girder bridges. WSDOT uses zero tension for final by modifying
+            // LRFD 5.9.2.3.2 with a zero tension stress coefficient. However, when this is used for intermediate analysis interval
+            // stress checks such as at segment erection or application of dead load, zero tension doesn't make sense.
+            //
+            // This problem was discovered just after the 7.0.0 release. The ideal solution is to add a new project criteria for
+            // tensile stresses at erection and other loading conditions. However this would require new data items and an new file format
+            // which would require the release to jump to 7.1.0. This is not desirable.
+            //
+            // An alternative solution is provided here and should be removed for the version 7.1 release later.
+            // The solution is to compare the task.interval to the live load interval and, if the task.interval is at or after live load
+            // then get the tension stress limit as normal, otherwise, get the tension stress limit based on the following rules:
+            // 
+            // Use the final tension stress as permitted by AASHTO 5.9.2.3.2, unless it is zero AND the CheckFinalDeadLoadTensionStress option is enabled, 
+            // in which case, use the final tension for permanent load tension stress limit.
+            if (liveLoadIntervalIdx <= task.intervalIdx)
             {
-               x = pSpec->GetFinalTensionPermanentLoadsStressFactor();
-               pSpec->GetFinalTensionPermanentLoadStressFactor(&bCheckMax, &fmax);
+               if (task.limitState == pgsTypes::ServiceI && CheckFinalDeadLoadTensionStress())
+               {
+                  x = pSpec->GetFinalTensionPermanentLoadsStressFactor();
+                  pSpec->GetFinalTensionPermanentLoadStressFactor(&bCheckMax, &fmax);
+               }
+               else
+               {
+#if defined _DEBUG
+                  ATLASSERT((pDocType->IsPGSpliceDocument() && task.limitState == pgsTypes::ServiceI) || task.limitState == pgsTypes::ServiceIII);
+#endif
+                  GET_IFACE(IEnvironment, pEnv);
+                  int exposureCondition = pEnv->GetExposureCondition() == expNormal ? EXPOSURE_NORMAL : EXPOSURE_SEVERE;
+                  x = pSpec->GetFinalTensionStressFactor(exposureCondition);
+                  pSpec->GetFinalTensionStressFactor(exposureCondition, &bCheckMax, &fmax);
+               }
             }
             else
             {
-#if defined _DEBUG
-               ATLASSERT((pDocType->IsPGSpliceDocument() && task.limitState == pgsTypes::ServiceI) || task.limitState == pgsTypes::ServiceIII);
-#endif
-               GET_IFACE(IEnvironment,pEnv);
+               ATLASSERT(task.limitState == pgsTypes::ServiceI);
+               GET_IFACE(IEnvironment, pEnv);
                int exposureCondition = pEnv->GetExposureCondition() == expNormal ? EXPOSURE_NORMAL : EXPOSURE_SEVERE;
                x = pSpec->GetFinalTensionStressFactor(exposureCondition);
-               pSpec->GetFinalTensionStressFactor(exposureCondition,&bCheckMax,&fmax);
+               pSpec->GetFinalTensionStressFactor(exposureCondition, &bCheckMax, &fmax);
+               if (IsZero(x) && CheckFinalDeadLoadTensionStress() && pDocType->IsPGSpliceDocument())
+               {
+                  x = pSpec->GetFinalTensionPermanentLoadsStressFactor();
+                  pSpec->GetFinalTensionPermanentLoadStressFactor(&bCheckMax, &fmax);
+               }
             }
          }
       } // end if bIsStressingInterval
