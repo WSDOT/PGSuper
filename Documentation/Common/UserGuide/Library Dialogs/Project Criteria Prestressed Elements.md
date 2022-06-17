@@ -24,10 +24,12 @@ Item | Description
 -----|--------------
 Compressive Stress (Effective Prestress + Permanent Loads) | Enter the coefficient for the compressive stress limit.
 Compressive Stress (Effective Prestress + Permanent Loads + Transient Loads) | Enter the coefficient for the compressive stress limit.
-Tensile Stress (Service I)(Effective Prestress + Permanent Loads = Final Stress without Live Load) | When checked, the girder stress for the final condition, without live load, will be check for the Service I limit state combination. Enter the coefficient for the tensile stress limit. Check the "But not greater than" box to establish an upper limit on the tensile stress limit.
+Tensile Stress (Service I)(Effective Prestress + Permanent Loads, Final Stress without Live Load) | Enabling this option provides unique tension stress limits for intermeidate load stages of spliced girders and checks the final girder stress condition without live load. The Service I limit state combination is used for these checks. See notes below. Enter the coefficient for the tensile stress limit. Check the "But not greater than" box to establish an upper limit on the tensile stress limit.
 Tensile Stress (Service III)(Effective Prestress + Permanent Loads + Transient Loads) | Enter the coefficient for the tensile stress limit for "Not worse than moderate corrosion conditions" and "Severe corrosive conditions". Check the "But not greater than" box to establish an upper limit on the tensile stress limit.
 
-> NOTE: Some bridge owners limit the girder tensile stress for final tension without live load, however, this is not an AASHTO requirement.
+> NOTE: Service I Tensile stress, Effecitve Prestress + Permanent Loads - AASHTO LRFD 5.12.3.4.3 requires stress limits be evaluated at intermediate loading stages with the stress limits from AASHTO LRFD 5.9.2.3.2. Table 5.9.2.3.2b-1 provides the stress limits for normal and severe corrosive conditions. Some bridge owners limit these final tensile stresses with live load in the Service III limit state to 0 ksi do not reduce the stress limit for intermediate loading stages. Enabling this option permits the tensile stress limits to be uniquely defined for these intermeidate stages.
+
+> NOTE: Service I Tensile Stress, Final Stress without Live Load - Some bridge owners limit the girder tensile stress for final tension without live load, however, this is not an AASHTO requirement.
 
 > NOTE: The corrosion condition is defined in the Environmental parameters of a project.
 

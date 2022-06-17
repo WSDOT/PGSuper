@@ -1939,6 +1939,8 @@ void CSpecAgentImp::GetSegmentAllowableTensionStressCoefficient(const pgsPointOf
 
    bool bIsStressingInterval = pIntervals->IsStressingInterval(segmentKey,task.intervalIdx);
 
+   GET_IFACE_NOCHECK(IDocumentType, pDocType);
+
    // first deal with the special cases
    if ( task.intervalIdx == liftingIntervalIdx )
    {
@@ -1982,10 +1984,9 @@ void CSpecAgentImp::GetSegmentAllowableTensionStressCoefficient(const pgsPointOf
       //   pSpec->GetHaulingMaximumTensionStressNormalCrown(&bCheckMax,&fmax);
       //}
    } 
-   else if ( task.intervalIdx == tempStrandRemovalIdx )
+   else if ( task.intervalIdx == tempStrandRemovalIdx && CheckTemporaryStresses() && pDocType->IsPGSuperDocument())
    {
       ATLASSERT( task.limitState == pgsTypes::ServiceI );
-      ATLASSERT( CheckTemporaryStresses() ); // if this fires, why are you asking for this if they aren't being used?
       if ( bWithBondedReinforcement )
       {
          x = pSpec->GetTempStrandRemovalTensionStressFactorWithRebar();
@@ -2016,7 +2017,6 @@ void CSpecAgentImp::GetSegmentAllowableTensionStressCoefficient(const pgsPointOf
       else
       {
          // if this is a non-stressing interval, use allowables from Table 5.9.2.3.2b-1 (pre2017: 5.9.4.2.2-1)
-         GET_IFACE_NOCHECK(IDocumentType, pDocType);
          if ( task.intervalIdx < railingSystemIntervalIdx && pDocType->IsPGSuperDocument())
          {
             // this is a PGSuper only stress limit
