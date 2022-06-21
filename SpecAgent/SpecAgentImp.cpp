@@ -315,46 +315,10 @@ std::vector<StressCheckTask> CSpecAgentImp::GetStressCheckTasks(const CSegmentKe
          vStressCheckTasks.emplace_back(erectionIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension);
       }
 
-      // Segment erection intervals only need to be checked if there are piers or temporary supports
-      // that cause negative moments in the segment. This occurs when the segment is continuous over
-      // these support types. Erecting the segment causes a change in loading condition compared to the
-      // simple span loading condition before erection.
-      bool bIsContinuousOverSupport = false;
-      GET_IFACE(IBridgeDescription, pIBridgeDesc);
-      const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
-      std::vector<const CPierData2*> vPiers = pSegment->GetPiers();
-      for (const auto* pPier : vPiers)
-      {
-         if (pPier->IsInteriorPier())
-         {
-            pgsTypes::PierSegmentConnectionType cType = pPier->GetSegmentConnectionType();
-            if (cType == pgsTypes::psctContinuousSegment || cType == pgsTypes::psctIntegralSegment)
-            {
-               bIsContinuousOverSupport = true;
-               break;
-            }
-         }
-      }
-
-      if (!bIsContinuousOverSupport)
-      {
-         std::vector<const CTemporarySupportData*> vTempSupports = pSegment->GetTemporarySupports();
-         for (const auto* pTS : vTempSupports)
-         {
-            if (pTS->GetConnectionType() == pgsTypes::tsctContinuousSegment)
-            {
-               bIsContinuousOverSupport = true;
-               break;
-            }
-         }
-      }
-
-      if (bIsContinuousOverSupport)
-      {
-         IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
-         vStressCheckTasks.emplace_back(erectionIntervalIdx, pgsTypes::ServiceI, pgsTypes::Compression);
-         vStressCheckTasks.emplace_back(erectionIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension);
-      }
+      // Segment erection intervals are considered a change in loading condition due to potentially moved support locations.
+      IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
+      vStressCheckTasks.emplace_back(erectionIntervalIdx, pgsTypes::ServiceI, pgsTypes::Compression);
+      vStressCheckTasks.emplace_back(erectionIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension);
 
       // Spec check whenever a segment tendon is stressed
       GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
