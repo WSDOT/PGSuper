@@ -10,6 +10,7 @@ Tension stress check failed for Service I Limit State in Interval 17 Stress Tend
 Tension stress check failed for Service III Limit State in Interval 32 Load Rating for Segment 1
 Tension stress check failed for Service III Limit State in Interval 32 Load Rating for Deck
 Tension stress check failed for Service I Limit State in Interval 5 Place segments into storage for Segment 2
+Tension stress check failed for Service I Limit State in Interval 11 Erect Segments for Segment 2
 Tension stress check failed for Service I Limit State in Interval 20 Cast Deck for Segment 2
 Tension stress check failed for Service I Limit State in Interval 25 Install Railing System for Segment 2
 Tension stress check failed for Service III Limit State in Interval 32 Load Rating for Segment 2
@@ -43,12 +44,14 @@ The Specification Check was Not Successful
 Tendon 1 is overstressed
 Tendon 2 is overstressed
 Tension stress check failed for Service I Limit State in Interval 5 Place segments into storage for Segment 1
+Tension stress check failed for Service I Limit State in Interval 11 Erect Segments for Segment 1
 Tension stress check failed for Service I Limit State in Interval 17 Stress Tendons for Segment 1
 Tension stress check failed for Service I Limit State in Interval 20 Cast Deck for Segment 1
 Tension stress check failed for Service I Limit State in Interval 25 Install Railing System for Segment 1
 Tension stress check failed for Service III Limit State in Interval 32 Load Rating for Segment 1
 Tension stress check failed for Service III Limit State in Interval 32 Load Rating for Deck
 Tension stress check failed for Service I Limit State in Interval 5 Place segments into storage for Segment 2
+Tension stress check failed for Service I Limit State in Interval 11 Erect Segments for Segment 2
 Tension stress check failed for Service I Limit State in Interval 17 Stress Tendons for Segment 2
 Tension stress check failed for Service I Limit State in Interval 20 Cast Deck for Segment 2
 Tension stress check failed for Service I Limit State in Interval 25 Install Railing System for Segment 2
