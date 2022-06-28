@@ -22086,13 +22086,12 @@ Float64 CBridgeAgentImp::GetS(pgsTypes::SectionPropertyType spType,IntervalIndex
       S *= -1;
    }
 
-   if ( IsDeckStressLocation(location) )
+   if (IsStructuralDeck(GetDeckType()) && IsDeckStressLocation(location) )
    {
       // make S in terms of the deck material
       IndexType deckCastingRegionIdx = GetDeckCastingRegion(poi);
       IntervalIndexType compositeDeckInterval = m_IntervalManager.GetCompositeDeckInterval(deckCastingRegionIdx);
-      if (  IsStructuralDeck(GetDeckType()) && compositeDeckInterval <= intervalIdx && IsCompositeDeck() // and the deck is composite with the section
-         )
+      if ( compositeDeckInterval <= intervalIdx && IsCompositeDeck() ) // and the deck is composite with the section
       {
          GET_IFACE(ILossParameters, pLossParams);
          bool bIsTimeStepAnalysis = (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false);
@@ -22123,7 +22122,7 @@ Float64 CBridgeAgentImp::GetS(pgsTypes::SectionPropertyType spType,IntervalIndex
       }
       else
       {
-         // no deck, deck isn't composite yet, 
+         // deck isn't composite yet, 
          S = 0;
       }
    }

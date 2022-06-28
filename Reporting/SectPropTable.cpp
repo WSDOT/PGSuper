@@ -159,18 +159,20 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
       Float64 Ixy = pSectProp->GetIxy(constructionIntervalIdx, poi);
       (*xs_table)(row, 0) << _T("I") << Sub(_T("xy")) << _T(" (") << rptLength4UnitTag(&pDisplayUnits->GetMomentOfInertiaUnit().UnitOfMeasure) << _T(")");
       (*xs_table)(row++, 1) << l4.SetValue(Ixy);
-   }
 
-   (*xs_table)(row, 0) << _T("d (girder depth)  (") << rptLengthUnitTag(&pDisplayUnits->GetComponentDimUnit().UnitOfMeasure) << _T(")");
-   (*xs_table)(row++,1) << l1.SetValue( depth );
+      (*xs_table)(row, 0) << _T("d (girder depth at CL Web)  (") << rptLengthUnitTag(&pDisplayUnits->GetComponentDimUnit().UnitOfMeasure) << _T(")");
+      (*xs_table)(row++,1) << l1.SetValue( depth );
 
-   if (bAsymmetricGirders)
-   {
       (*xs_table)(row, 0) << RPT_XLEFT_GIRDER << _T(" (") << rptLengthUnitTag(&pDisplayUnits->GetComponentDimUnit().UnitOfMeasure) << _T(")");
       (*xs_table)(row++, 1) << l1.SetValue(pSectProp->GetXleft(constructionIntervalIdx, poi));
 
       (*xs_table)(row, 0) << RPT_XRIGHT_GIRDER << _T(" (") << rptLengthUnitTag(&pDisplayUnits->GetComponentDimUnit().UnitOfMeasure) << _T(")");
       (*xs_table)(row++, 1) << l1.SetValue(pSectProp->GetXright(constructionIntervalIdx, poi));
+   }
+   else
+   {
+      (*xs_table)(row, 0) << _T("d (girder depth)  (") << rptLengthUnitTag(&pDisplayUnits->GetComponentDimUnit().UnitOfMeasure) << _T(")");
+      (*xs_table)(row++, 1) << l1.SetValue(depth);
    }
 
    (*xs_table)(row, 0) << RPT_YTOP_GIRDER << _T(" (") << rptLengthUnitTag(&pDisplayUnits->GetComponentDimUnit().UnitOfMeasure) << _T(")");
