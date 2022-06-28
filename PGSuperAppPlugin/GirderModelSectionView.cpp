@@ -554,6 +554,14 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
       txLeft  = xNCL - twLeft;
       txRight = xNCL + twRight;
       tyCL = 0.0;
+
+      CComQIPtr<IFlangePoints> flange_points(girderShape);
+      if (flange_points)
+      {
+         CComPtr<IPoint2d> tl, bl, tcl, tc, tr, br;
+         flange_points->GetTopFlangePoints(&tl, &bl, &tcl, &tc, &tr, &br);
+         tcl->get_Y(&tyCL);
+      }
    }
    else
    {

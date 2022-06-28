@@ -573,8 +573,8 @@ lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParamete
          CComQIPtr<IFlangePoints> flangePoints(segment_shape);
          if (flangePoints)
          {
-            CComPtr<IPoint2d> leftTop, leftBottom, topCentral, rightTop, rightBottom;
-            flangePoints->GetTopFlangePoints(&leftTop, &leftBottom, &topCentral, &rightTop, &rightBottom);
+            CComPtr<IPoint2d> leftTop, leftBottom, topCL, topCentral, rightTop, rightBottom;
+            flangePoints->GetTopFlangePoints(&leftTop, &leftBottom, &topCL, &topCentral, &rightTop, &rightBottom);
 
             CComPtr<IPolyShape> flangeShape;
             flangeShape.CoCreateInstance(CLSID_PolyShape);
