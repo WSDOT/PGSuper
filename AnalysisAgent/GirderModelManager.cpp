@@ -1448,6 +1448,7 @@ std::vector<Float64> CGirderModelManager::GetAxial(IntervalIndexType intervalIdx
 {
    ATLASSERT(pfType != pgsTypes::pftPretension); // pretension results are obtained from the segment models
    ATLASSERT(pfType != pgsTypes::pftPostTensioning);
+   ATLASSERT(VerifyPoi(vPoi));
 
    std::vector<Float64> results;
    results.reserve(vPoi.size());
@@ -1513,6 +1514,7 @@ std::vector<sysSectionValue> CGirderModelManager::GetShear(IntervalIndexType int
 {
    ATLASSERT(pfType != pgsTypes::pftPostTensioning);
    ATLASSERT(pfType != pgsTypes::pftPretension); // pretension results are obtained from the segment models
+   ATLASSERT(VerifyPoi(vPoi));
 
    std::vector<sysSectionValue> results;
    results.reserve(vPoi.size());
@@ -1567,6 +1569,7 @@ std::vector<Float64> CGirderModelManager::GetMoment(IntervalIndexType intervalId
 {
    ATLASSERT(pfType != pgsTypes::pftPostTensioning);
    ATLASSERT(pfType != pgsTypes::pftPretension); // pretension results are obtained from the segment models
+   ATLASSERT(VerifyPoi(vPoi));
 
    std::vector<Float64> results;
    results.reserve(vPoi.size());
@@ -1632,6 +1635,7 @@ std::vector<Float64> CGirderModelManager::GetMoment(IntervalIndexType intervalId
 std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
 {
    ATLASSERT(pfType != pgsTypes::pftPretension); // pretension results are obtained from the segment models
+   ATLASSERT(VerifyPoi(vPoi));
 
 #if defined _DEBUG
 /*
@@ -1703,6 +1707,7 @@ std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType interv
 std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
 {
    ATLASSERT(pfType != pgsTypes::pftPretension); // pretension results are obtained from the segment models
+   ATLASSERT(VerifyPoi(vPoi));
 
 #if defined _DEBUG
    if (pfType == pgsTypes::pftGirder)
@@ -1773,6 +1778,7 @@ std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType interval
 void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot) const
 {
    VERIFY_ANALYSIS_TYPE;
+   ATLASSERT(VerifyPoi(vPoi));
 
    ATLASSERT(pfType != pgsTypes::pftPretension && pfType != pgsTypes::pftPostTensioning && pfType != pgsTypes::pftSecondaryEffects);
 
@@ -1881,7 +1887,7 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,pgsTypes::Prod
 
 void CGirderModelManager::GetLiveLoadAxial(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pPmin,std::vector<Float64>* pPmax,std::vector<VehicleIndexType>* pPminTruck,std::vector<VehicleIndexType>* pPmaxTruck) const
 {
-   USES_CONVERSION;
+   ATLASSERT(VerifyPoi(vPoi));
 
    // bIncludeLLDF should be true when llType is pgsTypes::lltPedestrian since we use LLDF's to set pedestrian load
    if (llType == pgsTypes::lltPedestrian)
@@ -1990,7 +1996,7 @@ void CGirderModelManager::GetLiveLoadAxial(IntervalIndexType intervalIdx,pgsType
 
 void CGirderModelManager::GetLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<sysSectionValue>* pVmin,std::vector<sysSectionValue>* pVmax,std::vector<VehicleIndexType>* pMminTruck,std::vector<VehicleIndexType>* pMmaxTruck) const
 {
-   USES_CONVERSION;
+   ATLASSERT(VerifyPoi(vPoi));
 
    // bIncludeLLDF should be true when llType is pgsTypes::lltPedestrian since we use LLDF's to set pedestrian load
    if (llType == pgsTypes::lltPedestrian)
@@ -2103,7 +2109,7 @@ void CGirderModelManager::GetLiveLoadShear(IntervalIndexType intervalIdx,pgsType
 
 void CGirderModelManager::GetLiveLoadMoment(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pMmin,std::vector<Float64>* pMmax,std::vector<VehicleIndexType>* pMminTruck,std::vector<VehicleIndexType>* pMmaxTruck) const
 {
-   USES_CONVERSION;
+   ATLASSERT(VerifyPoi(vPoi));
 
    // bIncludeLLDF should be true when llType is pgsTypes::lltPedestrian since we use LLDF's to set pedestrian load
    if (llType == pgsTypes::lltPedestrian)
@@ -2214,7 +2220,7 @@ void CGirderModelManager::GetLiveLoadMoment(IntervalIndexType intervalIdx,pgsTyp
 
 void CGirderModelManager::GetLiveLoadDeflection(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pDmin,std::vector<Float64>* pDmax,std::vector<VehicleIndexType>* pMinConfig,std::vector<VehicleIndexType>* pMaxConfig) const
 {
-   USES_CONVERSION;
+   ATLASSERT(VerifyPoi(vPoi));
 
    // bIncludeLLDF should be true when llType is pgsTypes::lltPedestrian since we use LLDF's to set pedestrian load
    if (llType == pgsTypes::lltPedestrian)
@@ -2291,7 +2297,7 @@ void CGirderModelManager::GetLiveLoadDeflection(IntervalIndexType intervalIdx,pg
 
 void CGirderModelManager::GetLiveLoadRotation(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pRmin,std::vector<Float64>* pRmax,std::vector<VehicleIndexType>* pMinConfig,std::vector<VehicleIndexType>* pMaxConfig) const
 {
-   USES_CONVERSION;
+   ATLASSERT(VerifyPoi(vPoi));
 
    // bIncludeLLDF should be true when llType is pgsTypes::lltPedestrian since we use LLDF's to set pedestrian load
    if (llType == pgsTypes::lltPedestrian)
@@ -2368,7 +2374,7 @@ void CGirderModelManager::GetLiveLoadRotation(IntervalIndexType intervalIdx,pgsT
 
 void CGirderModelManager::GetLiveLoadStress(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTopMin,std::vector<Float64>* pfTopMax,std::vector<Float64>* pfBotMin,std::vector<Float64>* pfBotMax,std::vector<VehicleIndexType>* pTopMinIndex,std::vector<VehicleIndexType>* pTopMaxIndex,std::vector<VehicleIndexType>* pBotMinIndex,std::vector<VehicleIndexType>* pBotMaxIndex) const
 {
-   USES_CONVERSION;
+   ATLASSERT(VerifyPoi(vPoi));
 
    // bIncludeLLDF should be true when llType is pgsTypes::lltPedestrian since we use LLDF's to set pedestrian load
    if (llType == pgsTypes::lltPedestrian)
@@ -2569,7 +2575,7 @@ void CGirderModelManager::GetLiveLoadStress(IntervalIndexType intervalIdx,pgsTyp
 
 void CGirderModelManager::GetVehicularLiveLoadAxial(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pPmin,std::vector<Float64>* pPmax,std::vector<AxleConfiguration>* pMinAxleConfig,std::vector<AxleConfiguration>* pMaxAxleConfig) const
 {
-   USES_CONVERSION;
+   ATLASSERT(VerifyPoi(vPoi));
 
    pPmin->clear();
    pPmax->clear();
@@ -2675,7 +2681,7 @@ void CGirderModelManager::GetVehicularLiveLoadShear(IntervalIndexType intervalId
                                std::vector<AxleConfiguration>* pMaxLeftAxleConfig,
                                std::vector<AxleConfiguration>* pMaxRightAxleConfig) const
 {
-   USES_CONVERSION;
+   ATLASSERT(VerifyPoi(vPoi));
 
    pVmin->clear();
    pVmax->clear();
@@ -2778,7 +2784,7 @@ void CGirderModelManager::GetVehicularLiveLoadShear(IntervalIndexType intervalId
 
 void CGirderModelManager::GetVehicularLiveLoadMoment(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pMmin,std::vector<Float64>* pMmax,std::vector<AxleConfiguration>* pMinAxleConfig,std::vector<AxleConfiguration>* pMaxAxleConfig) const
 {
-   USES_CONVERSION;
+   ATLASSERT(VerifyPoi(vPoi));
 
    pMmin->clear();
    pMmax->clear();
@@ -2879,7 +2885,7 @@ void CGirderModelManager::GetVehicularLiveLoadMoment(IntervalIndexType intervalI
 
 void CGirderModelManager::GetVehicularLiveLoadDeflection(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pDmin,std::vector<Float64>* pDmax,std::vector<AxleConfiguration>* pMinAxleConfig,std::vector<AxleConfiguration>* pMaxAxleConfig) const
 {
-   USES_CONVERSION;
+   ATLASSERT(VerifyPoi(vPoi));
 
    pDmin->clear();
    pDmax->clear();
@@ -2954,7 +2960,7 @@ void CGirderModelManager::GetVehicularLiveLoadDeflection(IntervalIndexType inter
 
 void CGirderModelManager::GetVehicularLiveLoadRotation(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pRmin,std::vector<Float64>* pRmax,std::vector<AxleConfiguration>* pMinAxleConfig,std::vector<AxleConfiguration>* pMaxAxleConfig) const
 {
-   USES_CONVERSION;
+   ATLASSERT(VerifyPoi(vPoi));
 
    pRmin->clear();
    pRmax->clear();
@@ -3026,7 +3032,7 @@ void CGirderModelManager::GetVehicularLiveLoadRotation(IntervalIndexType interva
 
 void CGirderModelManager::GetVehicularLiveLoadStress(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTopMin,std::vector<Float64>* pfTopMax,std::vector<Float64>* pfBotMin,std::vector<Float64>* pfBotMax,std::vector<AxleConfiguration>* pMinAxleConfigurationTop,std::vector<AxleConfiguration>* pMaxAxleConfigurationTop,std::vector<AxleConfiguration>* pMinAxleConfigurationBot,std::vector<AxleConfiguration>* pMaxAxleConfigurationBot) const
 {
-   USES_CONVERSION;
+   ATLASSERT(VerifyPoi(vPoi));
 
    pfTopMin->clear();
    pfTopMax->clear();
@@ -3302,6 +3308,7 @@ void CGirderModelManager::GetCombinedLiveLoadStress(IntervalIndexType intervalId
 std::vector<Float64> CGirderModelManager::GetAxial(IntervalIndexType intervalIdx,LoadingCombinationType combo,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
 {
    ATLASSERT(combo != lcPS);
+   ATLASSERT(VerifyPoi(vPoi));
 
    std::vector<Float64> results;
    results.reserve(vPoi.size());
@@ -3351,6 +3358,7 @@ std::vector<Float64> CGirderModelManager::GetAxial(IntervalIndexType intervalIdx
 std::vector<sysSectionValue> CGirderModelManager::GetShear(IntervalIndexType intervalIdx,LoadingCombinationType combo,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
 {
    ATLASSERT(combo != lcPS);
+   ATLASSERT(VerifyPoi(vPoi));
 
    std::vector<sysSectionValue> results;
    results.reserve(vPoi.size());
@@ -3400,6 +3408,7 @@ std::vector<sysSectionValue> CGirderModelManager::GetShear(IntervalIndexType int
 std::vector<Float64> CGirderModelManager::GetMoment(IntervalIndexType intervalIdx,LoadingCombinationType combo,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
 {
    ATLASSERT(combo != lcPS);
+   ATLASSERT(VerifyPoi(vPoi));
 
    std::vector<Float64> results;
    results.reserve(vPoi.size());
@@ -3449,8 +3458,7 @@ std::vector<Float64> CGirderModelManager::GetMoment(IntervalIndexType intervalId
 std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType intervalIdx,LoadingCombinationType combo,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludePreErectionUnrecov) const
 {
    ATLASSERT(combo != lcCR && combo != lcSH && combo != lcRE && combo != lcPS); // this are time-step analysis load combinations
-
-   USES_CONVERSION;
+   ATLASSERT(VerifyPoi(vPoi));
 
    std::vector<Float64> deflection;
    deflection.reserve(vPoi.size());
@@ -3542,6 +3550,7 @@ std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType interv
 std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType intervalIdx,LoadingCombinationType combo,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludePreErectionUnrecov) const
 {
    ATLASSERT(combo != lcCR && combo != lcSH && combo != lcRE && combo != lcPS); // this are time-step analysis load combinations
+   ATLASSERT(VerifyPoi(vPoi));
 
    std::vector<Float64> rotation;
    rotation.reserve(vPoi.size());
@@ -3632,6 +3641,7 @@ std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType interval
 void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,LoadingCombinationType combo,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot) const
 {
    VERIFY_ANALYSIS_TYPE;
+   ATLASSERT(VerifyPoi(vPoi));
 
    pfTop->clear();
    pfBot->clear();
@@ -3739,6 +3749,8 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,LoadingCombina
 
 void CGirderModelManager::GetCombinedLiveLoadAxial(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<Float64>* pPmin,std::vector<Float64>* pPmax) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    pPmax->clear();
    pPmin->clear();
 
@@ -3797,6 +3809,8 @@ void CGirderModelManager::GetCombinedLiveLoadAxial(IntervalIndexType intervalIdx
 
 void CGirderModelManager::GetCombinedLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact, std::vector<sysSectionValue>* pVmin,std::vector<sysSectionValue>* pVmax) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    pVmax->clear();
    pVmin->clear();
 
@@ -3847,6 +3861,8 @@ void CGirderModelManager::GetCombinedLiveLoadShear(IntervalIndexType intervalIdx
 
 void CGirderModelManager::GetCombinedLiveLoadMoment(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<Float64>* pMmin,std::vector<Float64>* pMmax) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    pMmax->clear();
    pMmin->clear();
 
@@ -3903,6 +3919,8 @@ void CGirderModelManager::GetCombinedLiveLoadMoment(IntervalIndexType intervalId
 
 void CGirderModelManager::GetCombinedLiveLoadDeflection(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<Float64>* pDmin,std::vector<Float64>* pDmax) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    pDmax->clear();
    pDmin->clear();
 
@@ -3937,6 +3955,8 @@ void CGirderModelManager::GetCombinedLiveLoadDeflection(IntervalIndexType interv
 
 void CGirderModelManager::GetCombinedLiveLoadRotation(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<Float64>* pRmin,std::vector<Float64>* pRmax) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    pRmax->clear();
    pRmin->clear();
 
@@ -3971,6 +3991,8 @@ void CGirderModelManager::GetCombinedLiveLoadRotation(IntervalIndexType interval
 
 void CGirderModelManager::GetCombinedLiveLoadStress(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTopMin,std::vector<Float64>* pfTopMax,std::vector<Float64>* pfBotMin,std::vector<Float64>* pfBotMax) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    pfTopMin->clear();
    pfTopMax->clear();
    pfBotMin->clear();
@@ -4319,6 +4341,8 @@ void CGirderModelManager::GetViMmax(IntervalIndexType intervalIdx,pgsTypes::Limi
 // ILimitStateForces2
 void CGirderModelManager::GetAxial(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<Float64>* pMin,std::vector<Float64>* pMax) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    pMin->clear();
    pMax->clear();
 
@@ -4356,6 +4380,8 @@ void CGirderModelManager::GetAxial(IntervalIndexType intervalIdx,pgsTypes::Limit
 
 void CGirderModelManager::GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<sysSectionValue>* pMin,std::vector<sysSectionValue>* pMax) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    pMin->clear();
    pMax->clear();
 
@@ -4406,6 +4432,8 @@ void CGirderModelManager::GetShear(IntervalIndexType intervalIdx,pgsTypes::Limit
 
 void CGirderModelManager::GetMoment(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<Float64>* pMin,std::vector<Float64>* pMax) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    pMin->clear();
    pMax->clear();
 
@@ -4443,6 +4471,8 @@ void CGirderModelManager::GetMoment(IntervalIndexType intervalIdx,pgsTypes::Limi
 
 void CGirderModelManager::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,bool bIncludeLiveLoad,bool bIncludePreErectionUnrecov,std::vector<Float64>* pMin,std::vector<Float64>* pMax) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    pMin->clear();
    pMax->clear();
 
@@ -4539,6 +4569,8 @@ void CGirderModelManager::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::
 
 void CGirderModelManager::GetRotation(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,bool bIncludeLiveLoad,bool bIncludePreErectionUnrecov,std::vector<Float64>* pMin,std::vector<Float64>* pMax) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    pMin->clear();
    pMax->clear();
 
@@ -4631,6 +4663,7 @@ void CGirderModelManager::GetRotation(IntervalIndexType intervalIdx,pgsTypes::Li
 void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,pgsTypes::StressLocation stressLocation,bool bIncludePrestress,std::vector<Float64>* pMin,std::vector<Float64>* pMax) const
 {
    VERIFY_ANALYSIS_TYPE; // no secondary effects to deal with
+   ATLASSERT(VerifyPoi(vPoi));
 
    pMin->clear();
    pMax->clear();
@@ -4742,7 +4775,7 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,pgsTypes::Limi
 
 std::vector<Float64> CGirderModelManager::GetSlabDesignMoment(pgsTypes::LimitState limitState,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat) const
 {
-   USES_CONVERSION;
+   ATLASSERT(VerifyPoi(vPoi));
 
    const CSegmentKey& segmentKey(vPoi.front().get().GetSegmentKey());
 
@@ -5132,6 +5165,8 @@ bool CGirderModelManager::CreateInitialStrainLoad(IntervalIndexType intervalIdx,
 
 std::vector<Float64> CGirderModelManager::GetAxial(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    std::vector<Float64> results;
    results.reserve(vPoi.size());
 
@@ -5189,6 +5224,8 @@ std::vector<Float64> CGirderModelManager::GetAxial(IntervalIndexType intervalIdx
 
 std::vector<sysSectionValue> CGirderModelManager::GetShear(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    std::vector<sysSectionValue> results;
    results.reserve(vPoi.size());
 
@@ -5237,6 +5274,8 @@ std::vector<sysSectionValue> CGirderModelManager::GetShear(IntervalIndexType int
 
 std::vector<Float64> CGirderModelManager::GetMoment(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    std::vector<Float64> results;
    results.reserve(vPoi.size());
 
@@ -5294,6 +5333,8 @@ std::vector<Float64> CGirderModelManager::GetMoment(IntervalIndexType intervalId
 
 std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    std::vector<Float64> results;
    results.reserve(vPoi.size());
 
@@ -5342,6 +5383,8 @@ std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType interv
 
 std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    std::vector<Float64> results;
    results.reserve(vPoi.size());
 
@@ -5391,6 +5434,8 @@ std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType interval
 
 void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    pfTop->reserve(vPoi.size());
    pfBot->reserve(vPoi.size());
 
@@ -6379,8 +6424,6 @@ void CGirderModelManager::GM_GetCombinedLiveLoadReaction(IntervalIndexType inter
 
 void CGirderModelManager::GM_GetCombinedLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax) const
 {
-   USES_CONVERSION;
-
 #if defined _DEBUG
    GET_IFACE(IIntervals,pIntervals);
    ATLASSERT(pIntervals->GetLiveLoadInterval() <= intervalIdx);
@@ -6953,7 +6996,6 @@ CGirderModelData* CGirderModelManager::GetGirderModel(GirderIndexType gdrLineIdx
 
 void CGirderModelManager::BuildModel(GirderIndexType gdrLineIdx,pgsTypes::BridgeAnalysisType bat) const
 {
-   USES_CONVERSION;
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    if ( !pBridgeDesc->IsStable() )
@@ -10293,8 +10335,6 @@ void CGirderModelManager::GetLiveLoadModel(pgsTypes::LiveLoadType llType,const C
 
 std::vector<std::_tstring> CGirderModelManager::GetVehicleNames(pgsTypes::LiveLoadType llType,const CGirderKey& girderKey) const
 {
-   USES_CONVERSION;
-
    CComPtr<ILiveLoadModel> liveload_model;
    GetLiveLoadModel(llType,girderKey,&liveload_model);
 
@@ -17018,8 +17058,6 @@ void CGirderModelManager::DumpAnalysisModels(GirderIndexType gdrLineIdx) const
 
 void CGirderModelManager::RenameLiveLoad(ILBAMModel* pModel,pgsTypes::LiveLoadType llType,LPCTSTR strOldName,LPCTSTR strNewName)
 {
-   USES_CONVERSION;
-
    CComPtr<ILiveLoad> live_load;
    pModel->get_LiveLoad(&live_load);
 
@@ -17058,6 +17096,8 @@ void CGirderModelManager::RenameLiveLoad(ILBAMModel* pModel,pgsTypes::LiveLoadTy
 
 CGirderModelData* CGirderModelManager::UpdateLBAMPois(const PoiList& vPoi) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    m_LBAMPoi->Clear();
 
    // Start by checking if the model exists
@@ -18213,3 +18253,11 @@ void CGirderModelManager::VerifyAnalysisType() const
    ATLASSERT( pLossParams->GetLossMethod() != pgsTypes::TIME_STEP );
 }
 #endif
+
+bool CGirderModelManager::VerifyPoi(const PoiList& vPoi) const
+{
+   GET_IFACE(IPointOfInterest, pPoi);
+   std::vector<CGirderKey> girderKeys;
+   pPoi->GetGirderKeys(vPoi, &girderKeys);
+   return (girderKeys.size() == 1) ? true : false;
+}

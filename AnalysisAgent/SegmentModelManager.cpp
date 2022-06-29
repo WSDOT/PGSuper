@@ -263,6 +263,8 @@ Float64 CSegmentModelManager::GetReaction(IntervalIndexType intervalIdx,pgsTypes
 
 std::vector<Float64> CSegmentModelManager::GetAxial(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const PoiList& vPoi,ResultsType resultsType) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    std::vector<sysSectionValue> vFx,vFy,vMz;
    std::vector<Float64> vDx,vDy,vRz;
 
@@ -284,6 +286,8 @@ std::vector<Float64> CSegmentModelManager::GetAxial(IntervalIndexType intervalId
 
 std::vector<Float64> CSegmentModelManager::GetMoment(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const PoiList& vPoi,ResultsType resultsType) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    std::vector<sysSectionValue> vFx,vFy,vMz;
    std::vector<Float64> vDx,vDy,vRz;
 
@@ -306,6 +310,8 @@ std::vector<Float64> CSegmentModelManager::GetMoment(IntervalIndexType intervalI
 
 std::vector<sysSectionValue> CSegmentModelManager::GetShear(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const PoiList& vPoi,ResultsType resultsType) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    // NOTE: shear due to prestressing is a little funny. It is sufficient to use the shear from the
    // equivalent loading.
    std::vector<sysSectionValue> vFx,vFy,vMz;
@@ -326,6 +332,8 @@ std::vector<sysSectionValue> CSegmentModelManager::GetShear(IntervalIndexType in
 
 std::vector<Float64> CSegmentModelManager::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const PoiList& vPoi,ResultsType resultsType) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    // NOTE: Deflections for prestress are based on the equivalent loading. This is sufficient.
    // If we need to be more precise, we can use the method of virtual work and integrate the
    // M/EI diagram for the prestress moment based on P*e.
@@ -607,6 +615,8 @@ std::vector<Float64> CSegmentModelManager::GetDeflection(IntervalIndexType inter
 
 std::vector<Float64> CSegmentModelManager::GetPretensionXDeflection(IntervalIndexType intervalIdx, const PoiList& vPoi, ResultsType resultsType) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    // NOTE: Deflections for prestress are based on the equivalent loading. This is sufficient.
    // If we need to be more precise, we can use the method of virtual work and integrate the
    // M/EI diagram for the prestress moment based on P*e.
@@ -775,6 +785,8 @@ std::vector<Float64> CSegmentModelManager::GetPretensionXDeflection(IntervalInde
 
 std::vector<Float64> CSegmentModelManager::GetRotation(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const PoiList& vPoi,ResultsType resultsType) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    std::vector<sysSectionValue> vFx,vFy,vMz;
    std::vector<Float64> vDx,vDy,vRz;
 
@@ -949,6 +961,8 @@ void CSegmentModelManager::GetStress(IntervalIndexType intervalIdx,LoadingCombin
 
 std::vector<Float64> CSegmentModelManager::GetAxial(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const PoiList& vPoi,ResultsType resultsType) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    std::vector<Float64> vF;
 
    // before release, there aren't any results
@@ -959,8 +973,6 @@ std::vector<Float64> CSegmentModelManager::GetAxial(IntervalIndexType intervalId
       vF.resize(vPoi.size(),0.0);
       return vF;
    }
-
-   CSegmentModelData* pModelData = GetSegmentModel(vPoi.front().get().GetSegmentKey(),intervalIdx);
 
    const auto& loadCombinationMap(GetLoadCombinationMap(vPoi.front().get().GetSegmentKey()));
    auto range = loadCombinationMap.equal_range(comboType);
@@ -1005,6 +1017,8 @@ std::vector<Float64> CSegmentModelManager::GetAxial(IntervalIndexType intervalId
 
 std::vector<sysSectionValue> CSegmentModelManager::GetShear(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const PoiList& vPoi,ResultsType resultsType) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    std::vector<sysSectionValue> vShear;
 
    // before release, there aren't any results
@@ -1015,8 +1029,6 @@ std::vector<sysSectionValue> CSegmentModelManager::GetShear(IntervalIndexType in
       vShear.resize(vPoi.size(),sysSectionValue(0,0));
       return vShear;
    }
-
-   CSegmentModelData* pModelData = GetSegmentModel(vPoi.front().get().GetSegmentKey(),intervalIdx);
 
    const auto& loadCombinationMap(GetLoadCombinationMap(vPoi.front().get().GetSegmentKey()));
    auto range = loadCombinationMap.equal_range(comboType);
@@ -1061,6 +1073,8 @@ std::vector<sysSectionValue> CSegmentModelManager::GetShear(IntervalIndexType in
 
 std::vector<Float64> CSegmentModelManager::GetMoment(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const PoiList& vPoi,ResultsType resultsType) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    std::vector<Float64> vM;
 
    // before release, there aren't any results
@@ -1071,8 +1085,6 @@ std::vector<Float64> CSegmentModelManager::GetMoment(IntervalIndexType intervalI
       vM.resize(vPoi.size(),0.0);
       return vM;
    }
-
-   CSegmentModelData* pModelData = GetSegmentModel(vPoi.front().get().GetSegmentKey(),intervalIdx);
 
    const auto& loadCombinationMap(GetLoadCombinationMap(vPoi.front().get().GetSegmentKey()));
    auto range = loadCombinationMap.equal_range(comboType);
@@ -1117,6 +1129,8 @@ std::vector<Float64> CSegmentModelManager::GetMoment(IntervalIndexType intervalI
 
 std::vector<Float64> CSegmentModelManager::GetDeflection(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const PoiList& vPoi,ResultsType resultsType) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    std::vector<Float64> vD;
 
    // before release, there aren't any results
@@ -1127,8 +1141,6 @@ std::vector<Float64> CSegmentModelManager::GetDeflection(IntervalIndexType inter
       vD.resize(vPoi.size(),0.0);
       return vD;
    }
-
-   CSegmentModelData* pModelData = GetSegmentModel(vPoi.front().get().GetSegmentKey(),intervalIdx);
 
    const auto& loadCombinationMap(GetLoadCombinationMap(vPoi.front().get().GetSegmentKey()));
    auto range = loadCombinationMap.equal_range(comboType);
@@ -1173,6 +1185,8 @@ std::vector<Float64> CSegmentModelManager::GetDeflection(IntervalIndexType inter
 
 std::vector<Float64> CSegmentModelManager::GetRotation(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const PoiList& vPoi,ResultsType resultsType) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    std::vector<Float64> vR;
 
    // before release, there aren't any results
@@ -1183,8 +1197,6 @@ std::vector<Float64> CSegmentModelManager::GetRotation(IntervalIndexType interva
       vR.resize(vPoi.size(),0.0);
       return vR;
    }
-
-   CSegmentModelData* pModelData = GetSegmentModel(vPoi.front().get().GetSegmentKey(),intervalIdx);
 
    const auto& loadCombinationMap(GetLoadCombinationMap(vPoi.front().get().GetSegmentKey()));
    auto range = loadCombinationMap.equal_range(comboType);
@@ -1229,6 +1241,8 @@ std::vector<Float64> CSegmentModelManager::GetRotation(IntervalIndexType interva
 
 void CSegmentModelManager::GetStress(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const PoiList& vPoi,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    pfTop->resize(vPoi.size(),0.0);
    pfBot->resize(vPoi.size(),0.0);
 
@@ -1239,8 +1253,6 @@ void CSegmentModelManager::GetStress(IntervalIndexType intervalIdx,LoadingCombin
    {
       return;
    }
-
-   CSegmentModelData* pModelData = GetSegmentModel(vPoi.front().get().GetSegmentKey(),intervalIdx);
 
    const auto& loadCombinationMap(GetLoadCombinationMap(vPoi.front().get().GetSegmentKey()));
    auto range = loadCombinationMap.equal_range(comboType);
@@ -1347,6 +1359,8 @@ void CSegmentModelManager::GetStress(IntervalIndexType intervalIdx,pgsTypes::Lim
 
 void CSegmentModelManager::GetAxial(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const PoiList& vPoi,std::vector<Float64>* pMin,std::vector<Float64>* pMax) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    std::vector<Float64> forces = GetAxial(intervalIdx,lcDC,vPoi,rtCumulative);
 
    GET_IFACE(ILoadFactors,pILoadFactors);
@@ -1360,6 +1374,8 @@ void CSegmentModelManager::GetAxial(IntervalIndexType intervalIdx,pgsTypes::Limi
 
 void CSegmentModelManager::GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const PoiList& vPoi,std::vector<sysSectionValue>* pMin,std::vector<sysSectionValue>* pMax) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    std::vector<sysSectionValue> shears = GetShear(intervalIdx,lcDC,vPoi,rtCumulative);
 
    GET_IFACE(ILoadFactors,pILoadFactors);
@@ -1373,6 +1389,8 @@ void CSegmentModelManager::GetShear(IntervalIndexType intervalIdx,pgsTypes::Limi
 
 void CSegmentModelManager::GetMoment(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const PoiList& vPoi,std::vector<Float64>* pMin,std::vector<Float64>* pMax) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    std::vector<Float64> moments = GetMoment(intervalIdx,lcDC,vPoi,rtCumulative);
 
    GET_IFACE(ILoadFactors,pILoadFactors);
@@ -1386,6 +1404,8 @@ void CSegmentModelManager::GetMoment(IntervalIndexType intervalIdx,pgsTypes::Lim
 
 void CSegmentModelManager::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const PoiList& vPoi,bool bIncludePrestress,std::vector<Float64>* pMin,std::vector<Float64>* pMax) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    std::vector<Float64> deflection = GetDeflection(intervalIdx,lcDC,vPoi,rtCumulative);
 
    GET_IFACE(ILoadFactors,pILoadFactors);
@@ -1406,6 +1426,8 @@ void CSegmentModelManager::GetDeflection(IntervalIndexType intervalIdx,pgsTypes:
 
 void CSegmentModelManager::GetRotation(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const PoiList& vPoi,bool bIncludePrestress,std::vector<Float64>* pMin,std::vector<Float64>* pMax) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    std::vector<Float64> rotation = GetRotation(intervalIdx,lcDC,vPoi,rtCumulative);
 
    GET_IFACE(ILoadFactors,pILoadFactors);
@@ -1426,6 +1448,8 @@ void CSegmentModelManager::GetRotation(IntervalIndexType intervalIdx,pgsTypes::L
 
 void CSegmentModelManager::GetStress(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const PoiList& vPoi,pgsTypes::StressLocation stressLocation,bool bIncludePrestress,std::vector<Float64>* pMin,std::vector<Float64>* pMax) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    pgsTypes::StressLocation topLocation = IsGirderStressLocation(stressLocation) ? pgsTypes::TopGirder    : pgsTypes::TopDeck;
    pgsTypes::StressLocation botLocation = IsGirderStressLocation(stressLocation) ? pgsTypes::BottomGirder : pgsTypes::BottomDeck;
 
@@ -1575,103 +1599,168 @@ bool CSegmentModelManager::CreateInitialStrainLoad(IntervalIndexType intervalIdx
 
 std::vector<Float64> CSegmentModelManager::GetAxial(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const PoiList& vPoi,ResultsType resultsType) const
 {
-   // Assuming that the loading ID sequence for all models is the same
-   CSegmentModelData* pModelData = GetSegmentModel(vPoi.front().get().GetSegmentKey(),intervalIdx);
-   LoadCaseIDType lcid = GetLoadCaseID(pModelData,strLoadingName);
-
-   std::vector<sysSectionValue> vFx, vFy, vMz;
-   std::vector<Float64> vDx, vDy, vRz;
-   GetSectionResults(intervalIdx,lcid,vPoi,&vFx,&vFy,&vMz,&vDx,&vDy,&vRz);
+   ATLASSERT(VerifyPoi(vPoi));
 
    std::vector<Float64> results;
    results.reserve(vPoi.size());
-   std::transform(std::cbegin(vPoi), std::cend(vPoi), std::cbegin(vFx), std::back_inserter(results), [](const pgsPointOfInterest& poi,const sysSectionValue& Fx) {return IsZero(poi.GetDistFromStart()) ? -Fx.Right() : Fx.Left();});
+
+   CSegmentModelData* pModelData = GetSegmentModel(vPoi.front().get().GetSegmentKey(),intervalIdx);
+   if (pModelData)
+   {
+      LoadCaseIDType lcid = GetLoadCaseID(pModelData, strLoadingName);
+
+      std::vector<sysSectionValue> vFx, vFy, vMz;
+      std::vector<Float64> vDx, vDy, vRz;
+      GetSectionResults(intervalIdx, lcid, vPoi, &vFx, &vFy, &vMz, &vDx, &vDy, &vRz);
+
+      std::transform(std::cbegin(vPoi), std::cend(vPoi), std::cbegin(vFx), std::back_inserter(results), [](const pgsPointOfInterest& poi, const sysSectionValue& Fx) {return IsZero(poi.GetDistFromStart()) ? -Fx.Right() : Fx.Left(); });
+   }
+   else
+   {
+      results.resize(vPoi.size(), 0.0);
+   }
    return results;
 }
 
 std::vector<sysSectionValue> CSegmentModelManager::GetShear(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const PoiList& vPoi,ResultsType resultsType) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    // Assuming that the loading ID sequence for all models is the same
    CSegmentModelData* pModelData = GetSegmentModel(vPoi.front().get().GetSegmentKey(),intervalIdx);
-   LoadCaseIDType lcid = GetLoadCaseID(pModelData,strLoadingName);
+   if (pModelData)
+   {
+      LoadCaseIDType lcid = GetLoadCaseID(pModelData, strLoadingName);
 
-   std::vector<sysSectionValue> vFx, vFy, vMz;
-   std::vector<Float64> vDx, vDy, vRz;
-   GetSectionResults(intervalIdx,lcid,vPoi,&vFx,&vFy,&vMz,&vDx,&vDy,&vRz);
+      std::vector<sysSectionValue> vFx, vFy, vMz;
+      std::vector<Float64> vDx, vDy, vRz;
+      GetSectionResults(intervalIdx, lcid, vPoi, &vFx, &vFy, &vMz, &vDx, &vDy, &vRz);
 
-   return vFy;
+      return vFy;
+   }
+   else
+   {
+      std::vector<sysSectionValue> results;
+      results.resize(vPoi.size(), sysSectionValue(0.0, 0.0));
+      return results;
+   }
 }
 
 std::vector<Float64> CSegmentModelManager::GetMoment(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const PoiList& vPoi,ResultsType resultsType) const
 {
-   // Assuming that the loading ID sequence for all models is the same
-   CSegmentModelData* pModelData = GetSegmentModel(vPoi.front().get().GetSegmentKey(),intervalIdx);
-   LoadCaseIDType lcid = GetLoadCaseID(pModelData,strLoadingName);
-
-   std::vector<sysSectionValue> vFx, vFy, vMz;
-   std::vector<Float64> vDx, vDy, vRz;
-   GetSectionResults(intervalIdx,lcid,vPoi,&vFx,&vFy,&vMz,&vDx,&vDy,&vRz);
+   ATLASSERT(VerifyPoi(vPoi));
 
    std::vector<Float64> results;
    results.reserve(vPoi.size());
-   std::transform(std::cbegin(vPoi), std::cend(vPoi), std::cbegin(vMz), std::back_inserter(results), [](const pgsPointOfInterest& poi, const sysSectionValue& Mz) {return IsZero(poi.GetDistFromStart()) ? -Mz.Right() : Mz.Left();});
+
+   CSegmentModelData* pModelData = GetSegmentModel(vPoi.front().get().GetSegmentKey(),intervalIdx);
+   if (pModelData)
+   {
+      LoadCaseIDType lcid = GetLoadCaseID(pModelData, strLoadingName);
+
+      std::vector<sysSectionValue> vFx, vFy, vMz;
+      std::vector<Float64> vDx, vDy, vRz;
+      GetSectionResults(intervalIdx, lcid, vPoi, &vFx, &vFy, &vMz, &vDx, &vDy, &vRz);
+
+      std::transform(std::cbegin(vPoi), std::cend(vPoi), std::cbegin(vMz), std::back_inserter(results), [](const pgsPointOfInterest& poi, const sysSectionValue& Mz) {return IsZero(poi.GetDistFromStart()) ? -Mz.Right() : Mz.Left(); });
+   }
+   else
+   {
+      results.resize(vPoi.size(), 0.0);
+   }
    return results;
 }
 
 std::vector<Float64> CSegmentModelManager::GetDeflection(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const PoiList& vPoi,ResultsType resultsType) const
 {
-   // Assuming that the loading ID sequence for all models is the same
+   ATLASSERT(VerifyPoi(vPoi));
+
    CSegmentModelData* pModelData = GetSegmentModel(vPoi.front().get().GetSegmentKey(),intervalIdx);
-   LoadCaseIDType lcid = GetLoadCaseID(pModelData,strLoadingName);
+   if (pModelData)
+   {
+      LoadCaseIDType lcid = GetLoadCaseID(pModelData, strLoadingName);
 
-   std::vector<sysSectionValue> vFx, vFy, vMz;
-   std::vector<Float64> vDx, vDy, vRz;
-   GetSectionResults(intervalIdx,lcid,vPoi,&vFx,&vFy,&vMz,&vDx,&vDy,&vRz);
+      std::vector<sysSectionValue> vFx, vFy, vMz;
+      std::vector<Float64> vDx, vDy, vRz;
+      GetSectionResults(intervalIdx, lcid, vPoi, &vFx, &vFy, &vMz, &vDx, &vDy, &vRz);
 
-   return vDy;
+      return vDy;
+   }
+   else
+   {
+      std::vector<Float64> results;
+      results.resize(vPoi.size(), 0.0);
+      return results;
+   }
 }
 
 std::vector<Float64> CSegmentModelManager::GetRotation(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const PoiList& vPoi,ResultsType resultsType) const
 {
-   // Assuming that the loading ID sequence for all models is the same
+   ATLASSERT(VerifyPoi(vPoi));
+
    CSegmentModelData* pModelData = GetSegmentModel(vPoi.front().get().GetSegmentKey(),intervalIdx);
-   LoadCaseIDType lcid = GetLoadCaseID(pModelData,strLoadingName);
+   if (pModelData)
+   {
+      LoadCaseIDType lcid = GetLoadCaseID(pModelData, strLoadingName);
 
-   std::vector<sysSectionValue> vFx, vFy, vMz;
-   std::vector<Float64> vDx, vDy, vRz;
-   GetSectionResults(intervalIdx,lcid,vPoi,&vFx,&vFy,&vMz,&vDx,&vDy,&vRz);
+      std::vector<sysSectionValue> vFx, vFy, vMz;
+      std::vector<Float64> vDx, vDy, vRz;
+      GetSectionResults(intervalIdx, lcid, vPoi, &vFx, &vFy, &vMz, &vDx, &vDy, &vRz);
 
-   return vRz;
+      return vRz;
+   }
+   else
+   {
+      std::vector<Float64> results;
+      results.resize(vPoi.size(), 0.0);
+      return results;
+   }
 }
 
 void CSegmentModelManager::GetReaction(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,LPCTSTR strLoadingName,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,Float64* pRleft,Float64* pRright) const
 {
    CSegmentModelData* pModelData = GetSegmentModel(segmentKey,intervalIdx);
+   if (pModelData)
+   {
+      CComQIPtr<IFem2dModelResults> results(pModelData->Model);
+      JointIDType leftJntID, rightJntID;
+      leftJntID = 0;
 
-   CComQIPtr<IFem2dModelResults> results(pModelData->Model);
-   JointIDType leftJntID, rightJntID;
-   leftJntID = 0;
+      CComPtr<IFem2dJointCollection> joints;
+      pModelData->Model->get_Joints(&joints);
+      CollectionIndexType nJoints;
+      joints->get_Count(&nJoints);
+      rightJntID = nJoints - 1;
 
-   CComPtr<IFem2dJointCollection> joints;
-   pModelData->Model->get_Joints(&joints);
-   CollectionIndexType nJoints;
-   joints->get_Count(&nJoints);
-   rightJntID = nJoints-1;
+      LoadCaseIDType lcid = GetLoadCaseID(pModelData, strLoadingName);
 
-   LoadCaseIDType lcid = GetLoadCaseID(pModelData,strLoadingName);
-
-   Float64 fx,mz;
-   CAnalysisResult ar(_T(__FILE__),__LINE__);
-   ar = results->ComputeReactions(lcid,leftJntID,&fx,pRleft,&mz);
-   ar = results->ComputeReactions(lcid,leftJntID,&fx,pRright,&mz);
+      Float64 fx, mz;
+      CAnalysisResult ar(_T(__FILE__), __LINE__);
+      ar = results->ComputeReactions(lcid, leftJntID, &fx, pRleft, &mz);
+      ar = results->ComputeReactions(lcid, leftJntID, &fx, pRright, &mz);
+   }
+   else
+   {
+      *pRleft = 0.0;
+      *pRright = 0.0;
+   }
 }
 
 void CSegmentModelManager::GetStress(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const PoiList& vPoi,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot) const
 {
-   CSegmentModelData* pModelData = GetSegmentModel(vPoi.front().get().GetSegmentKey(),intervalIdx);
-   LoadCaseIDType lcid = GetLoadCaseID(pModelData,strLoadingName);
+   ATLASSERT(VerifyPoi(vPoi));
 
-   GetSectionStresses(intervalIdx,lcid,resultsType,vPoi,topLocation,botLocation,pfTop,pfBot);
+   CSegmentModelData* pModelData = GetSegmentModel(vPoi.front().get().GetSegmentKey(),intervalIdx);
+   if (pModelData)
+   {
+      LoadCaseIDType lcid = GetLoadCaseID(pModelData, strLoadingName);
+      GetSectionStresses(intervalIdx, lcid, resultsType, vPoi, topLocation, botLocation, pfTop, pfBot);
+   }
+   else
+   {
+      pfTop->resize(vPoi.size(), 0.0);
+      pfBot->resize(vPoi.size(), 0.0);
+   }
 }
 
 bool RemoveStrongbacksSupports(const CTemporarySupportData* pTS)
@@ -1718,7 +1807,7 @@ std::vector<pgsPointOfInterest> CSegmentModelManager::GetDeflectionDatumLocation
       IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
 
       PoiAttributeType poiReference;
-      if (releaseIntervalIdx <= intervalIdx && intervalIdx < liftingIntervalIdx)
+      if (/*releaseIntervalIdx <= intervalIdx &&*/ intervalIdx < liftingIntervalIdx)
       {
          poiReference = POI_RELEASED_SEGMENT;
       }
@@ -2145,6 +2234,8 @@ CSegmentModelManager::LoadCombinationMap& CSegmentModelManager::GetLoadCombinati
 
 void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadCaseIDType lcid,const PoiList& vPoi,ResultsType resultsType,std::vector<sysSectionValue>* pvFx,std::vector<sysSectionValue>* pvFy,std::vector<sysSectionValue>* pvMz,std::vector<Float64>* pvDx,std::vector<Float64>* pvDy,std::vector<Float64>* pvRz) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
 #if defined _DEBUG
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(vPoi.front().get().GetSegmentKey());
@@ -2187,6 +2278,8 @@ void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadC
 
 void CSegmentModelManager::GetPrestressSectionResults(IntervalIndexType intervalIdx,const PoiList& vPoi,ResultsType resultsType,std::vector<sysSectionValue>* pvFx,std::vector<sysSectionValue>* pvFy,std::vector<sysSectionValue>* pvMz,std::vector<Float64>* pvDx,std::vector<Float64>* pvDy,std::vector<Float64>* pvRz) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    // all requests for pretension results come to the segment model manager
    // however, the segment model manager needs the intervalIdx to be less then the erection interval
    GET_IFACE(IIntervals, pIntervals);
@@ -2229,6 +2322,8 @@ void CSegmentModelManager::GetPrestressSectionResults(IntervalIndexType interval
 
 void CSegmentModelManager::GetPrestressSectionResults(IntervalIndexType intervalIdx,const PoiList& vPoi,std::vector<sysSectionValue>* pvFx,std::vector<sysSectionValue>* pvFy,std::vector<sysSectionValue>* pvMz,std::vector<Float64>* pvDx,std::vector<Float64>* pvDy,std::vector<Float64>* pvRz) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    pvFx->resize(vPoi.size(),sysSectionValue(0,0));
    pvFy->resize(vPoi.size(),sysSectionValue(0,0));
    pvMz->resize(vPoi.size(),sysSectionValue(0,0));
@@ -2258,6 +2353,8 @@ void CSegmentModelManager::GetPrestressSectionResults(IntervalIndexType interval
 
 void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadCaseIDType lcid,const PoiList& vPoi,std::vector<sysSectionValue>* pvFx,std::vector<sysSectionValue>* pvFy,std::vector<sysSectionValue>* pvMz,std::vector<Float64>* pvDx,std::vector<Float64>* pvDy,std::vector<Float64>* pvRz) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
    GET_IFACE(IIntervals, pIntervals);
 
    LoadCaseIDType lcidPT = GetLoadCaseID(pgsTypes::pftPostTensioning);
@@ -2359,6 +2456,8 @@ void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadC
 
 void CSegmentModelManager::GetSectionStresses(IntervalIndexType intervalIdx,LoadCaseIDType lcid,ResultsType resultsType,const PoiList& vPoi,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot) const
 {
+   ATLASSERT(VerifyPoi(vPoi));
+
 #if defined _DEBUG
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(vPoi.front().get().GetSegmentKey());
@@ -2718,7 +2817,9 @@ CSegmentModelData* CSegmentModelManager::GetSegmentModel(const CSegmentKey& segm
    IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
    IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
    IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
-   ATLASSERT(releaseIntervalIdx <= intervalIdx && intervalIdx <= erectionIntervalIdx);
+
+   if (intervalIdx < releaseIntervalIdx)
+      return nullptr;
 
    if ( intervalIdx < liftingIntervalIdx )
    {
@@ -3543,4 +3644,12 @@ bool CSegmentModelManager::CreateInitialStrainLoad(IntervalIndexType intervalIdx
    } // next segment
 
    return true;
+}
+
+bool CSegmentModelManager::VerifyPoi(const PoiList& vPoi) const
+{
+   GET_IFACE(IPointOfInterest, pPoi);
+   std::vector<CSegmentKey> segmentKeys;
+   pPoi->GetSegmentKeys(vPoi, &segmentKeys);
+   return (segmentKeys.size() == 1) ? true : false;
 }

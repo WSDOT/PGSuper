@@ -514,4 +514,6 @@ private:
 #if defined _DEBUG
    void VerifyAnalysisType() const;
 #endif
+
+   bool VerifyPoi(const PoiList& vPoi) const; // all POI must be for the same girder
 };
