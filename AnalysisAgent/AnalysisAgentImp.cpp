@@ -2549,7 +2549,14 @@ std::vector<Float64> CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,p
       if ( intervalIdx < erectionIntervalIdx )
       {
          // before erection - results are in the segment models
-         results = m_pSegmentModelManager->GetAxial(intervalIdx,pfType,vPoi,resultsType);
+         GET_IFACE(IPointOfInterest, pPoi);
+         std::list<PoiList> poiLists;
+         pPoi->GroupBySegment(vPoi, &poiLists);
+         for (PoiList& poiList : poiLists)
+         {
+            auto result = m_pSegmentModelManager->GetAxial(intervalIdx, pfType, poiList, resultsType);
+            results.insert(results.end(), result.begin(), result.end());
+         }
       }
       else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
       {
@@ -2646,7 +2653,14 @@ std::vector<WBFL::System::SectionValue> CAnalysisAgentImp::GetShear(IntervalInde
       if ( intervalIdx < erectionIntervalIdx )
       {
          // before erection - results are in the segment models
-         results = m_pSegmentModelManager->GetShear(intervalIdx,pfType,vPoi,resultsType);
+         GET_IFACE(IPointOfInterest, pPoi);
+         std::list<PoiList> poiLists;
+         pPoi->GroupBySegment(vPoi, &poiLists);
+         for (PoiList& poiList : poiLists)
+         {
+            auto result = m_pSegmentModelManager->GetShear(intervalIdx, pfType, poiList, resultsType);
+            results.insert(results.end(), result.begin(), result.end());
+         }
       }
       else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
       {
@@ -2799,7 +2813,14 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,
       if ( intervalIdx < erectionIntervalIdx )
       {
          // before erection - results are in the segment models
-         results = m_pSegmentModelManager->GetMoment(intervalIdx,pfType,vPoi,resultsType);
+         GET_IFACE(IPointOfInterest, pPoi);
+         std::list<PoiList> poiLists;
+         pPoi->GroupBySegment(vPoi, &poiLists);
+         for (PoiList& poiList : poiLists)
+         {
+            auto result = m_pSegmentModelManager->GetMoment(intervalIdx, pfType, poiList, resultsType);
+            results.insert(results.end(), result.begin(), result.end());
+         }
       }
       else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
       {
@@ -3035,7 +3056,14 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
             else
             {
                // before erection - results are in the segment models
-               deflections = m_pSegmentModelManager->GetDeflection(intervalIdx,pfType,vPoi,resultsType);
+               GET_IFACE(IPointOfInterest, pPoi);
+               std::list<PoiList> poiLists;
+               pPoi->GroupBySegment(vPoi, &poiLists);
+               for (PoiList& poiList : poiLists)
+               {
+                  auto d = m_pSegmentModelManager->GetDeflection(intervalIdx, pfType, poiList, resultsType);
+                  deflections.insert(deflections.end(), d.begin(), d.end());
+               }
             }
          }
          else if (pfType == pgsTypes::pftPretension)
@@ -3047,7 +3075,14 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
             else
             {
                // also... pretension deflections and segment PT deflections are always computed from the segment models
-               deflections = m_pSegmentModelManager->GetDeflection(intervalIdx,pfType,vPoi,resultsType);
+               GET_IFACE(IPointOfInterest, pPoi);
+               std::list<PoiList> poiLists;
+               pPoi->GroupBySegment(vPoi, &poiLists);
+               for (PoiList& poiList : poiLists)
+               {
+                  auto d = m_pSegmentModelManager->GetDeflection(intervalIdx, pfType, poiList, resultsType);
+                  deflections.insert(deflections.end(), d.begin(), d.end());
+               }
             }
          }
          else if (pfType == pgsTypes::pftPostTensioning)
@@ -3059,7 +3094,14 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
             }
             else
             {
-               deflections = m_pSegmentModelManager->GetDeflection(intervalIdx,pfType,vPoi,resultsType);
+               GET_IFACE(IPointOfInterest, pPoi);
+               std::list<PoiList> poiLists;
+               pPoi->GroupBySegment(vPoi, &poiLists);
+               for (PoiList& poiList : poiLists)
+               {
+                  auto d = m_pSegmentModelManager->GetDeflection(intervalIdx, pfType, poiList, resultsType);
+                  deflections.insert(deflections.end(), d.begin(), d.end());
+               }
             }
 
             if (erectionIntervalIdx <= intervalIdx)
@@ -3923,7 +3965,14 @@ std::vector<Float64> CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,L
 
       if (intervalIdx < erectionIntervalIdx )
       {
-         results = m_pSegmentModelManager->GetAxial(intervalIdx,comboType,vPoi,resultsType);
+         GET_IFACE(IPointOfInterest, pPoi);
+         std::list<PoiList> poiLists;
+         pPoi->GroupBySegment(vPoi, &poiLists);
+         for (PoiList& poiList : poiLists)
+         {
+            auto result = m_pSegmentModelManager->GetAxial(intervalIdx, comboType, poiList, resultsType);
+            results.insert(results.end(), result.begin(), result.end());
+         }
       }
       else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
       {
@@ -4029,7 +4078,14 @@ std::vector<WBFL::System::SectionValue> CAnalysisAgentImp::GetShear(IntervalInde
 
       if ( intervalIdx < erectionIntervalIdx )
       {
-         results =  m_pSegmentModelManager->GetShear(intervalIdx,comboType,vPoi,resultsType);
+         GET_IFACE(IPointOfInterest, pPoi);
+         std::list<PoiList> poiLists;
+         pPoi->GroupBySegment(vPoi, &poiLists);
+         for (PoiList& poiList : poiLists)
+         {
+            auto result = m_pSegmentModelManager->GetShear(intervalIdx, comboType, poiList, resultsType);
+            results.insert(results.end(), result.begin(), result.end());
+         }
       }
       else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
       {
@@ -4133,7 +4189,14 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,
 
       if (intervalIdx < erectionIntervalIdx )
       {
-         results = m_pSegmentModelManager->GetMoment(intervalIdx,comboType,vPoi,resultsType);
+         GET_IFACE(IPointOfInterest, pPoi);
+         std::list<PoiList> poiLists;
+         pPoi->GroupBySegment(vPoi, &poiLists);
+         for (PoiList& poiList : poiLists)
+         {
+            auto result = m_pSegmentModelManager->GetMoment(intervalIdx, comboType, poiList, resultsType);
+            results.insert(results.end(), result.begin(), result.end());
+         }
       }
       else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
       {
@@ -4221,7 +4284,14 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
             }
             else
             {
-               deflection = m_pSegmentModelManager->GetDeflection(intervalIdx,comboType,vPoi,resultsType);
+               GET_IFACE(IPointOfInterest, pPoi);
+               std::list<PoiList> poiLists;
+               pPoi->GroupBySegment(vPoi, &poiLists);
+               for (PoiList& poiList : poiLists)
+               {
+                  auto d = m_pSegmentModelManager->GetDeflection(intervalIdx, comboType, poiList, resultsType);
+                  deflection.insert(deflection.end(), d.begin(), d.end());
+               }
             }
          }
          else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
@@ -4463,7 +4533,14 @@ std::vector<Float64> CAnalysisAgentImp::GetRotation(IntervalIndexType intervalId
 
          if ( intervalIdx < erectionIntervalIdx )
          {
-            rotation = m_pSegmentModelManager->GetRotation(intervalIdx,comboType,vPoi,resultsType);
+            GET_IFACE(IPointOfInterest, pPoi);
+            std::list<PoiList> poiLists;
+            pPoi->GroupBySegment(vPoi, &poiLists);
+            for (PoiList& poiList : poiLists)
+            {
+               auto r = m_pSegmentModelManager->GetRotation(intervalIdx, comboType, poiList, resultsType);
+               rotation.insert(rotation.end(), r.begin(), r.end());
+            }
          }
          else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
          {
@@ -4707,7 +4784,16 @@ void CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,pgsTypes::LimitSt
 
       if (intervalIdx < erectionIntervalIdx )
       {
-         m_pSegmentModelManager->GetAxial(intervalIdx,limitState,vPoi,pMin,pMax);
+         GET_IFACE(IPointOfInterest, pPoi);
+         std::list<PoiList> poiLists;
+         pPoi->GroupBySegment(vPoi, &poiLists);
+         for (PoiList& poiList : poiLists)
+         {
+            std::vector<Float64> min, max;
+            m_pSegmentModelManager->GetAxial(intervalIdx, limitState, poiList, &min, &max);
+            pMin->insert(pMin->end(), min.begin(), min.end());
+            pMax->insert(pMax->end(), max.begin(), max.end());
+         }
       }
       else
       {
@@ -4849,7 +4935,16 @@ void CAnalysisAgentImp::GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitSt
 
       if ( intervalIdx < erectionIntervalIdx )
       {
-         m_pSegmentModelManager->GetShear(intervalIdx,limitState,vPoi,pMin,pMax);
+         GET_IFACE(IPointOfInterest, pPoi);
+         std::list<PoiList> poiLists;
+         pPoi->GroupBySegment(vPoi, &poiLists);
+         for (PoiList& poiList : poiLists)
+         {
+            std::vector<WBFL::System::SectionValue> min, max;
+            m_pSegmentModelManager->GetShear(intervalIdx, limitState, poiList, &min, &max);
+            pMin->insert(pMin->end(), min.begin(), min.end());
+            pMax->insert(pMax->end(), max.begin(), max.end());
+         }
       }
       else
       {
@@ -4991,7 +5086,16 @@ void CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,pgsTypes::LimitS
 
       if (intervalIdx < erectionIntervalIdx )
       {
-         m_pSegmentModelManager->GetMoment(intervalIdx,limitState,vPoi,pMin,pMax);
+         GET_IFACE(IPointOfInterest, pPoi);
+         std::list<PoiList> poiLists;
+         pPoi->GroupBySegment(vPoi, &poiLists);
+         for (PoiList& poiList : poiLists)
+         {
+            std::vector<Float64> min, max;
+            m_pSegmentModelManager->GetMoment(intervalIdx, limitState, poiList, &min, &max);
+            pMin->insert(pMin->end(), min.begin(), min.end());
+            pMax->insert(pMax->end(), max.begin(), max.end());
+         }
       }
       else
       {
@@ -5902,7 +6006,14 @@ std::vector<Float64> CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,L
       if ( intervalIdx < erectionIntervalIdx )
       {
          // before erection - results are in the segment models
-         results = m_pSegmentModelManager->GetAxial(intervalIdx,strLoadingName,vPoi,resultsType);
+         GET_IFACE(IPointOfInterest, pPoi);
+         std::list<PoiList> poiLists;
+         pPoi->GroupBySegment(vPoi, &poiLists);
+         for (PoiList& poiList : poiLists)
+         {
+            auto result = m_pSegmentModelManager->GetAxial(intervalIdx, strLoadingName, poiList, resultsType);
+            results.insert(results.end(), result.begin(), result.end());
+         }
       }
       else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
       {
@@ -5943,7 +6054,14 @@ std::vector<WBFL::System::SectionValue> CAnalysisAgentImp::GetShear(IntervalInde
       if ( intervalIdx < erectionIntervalIdx )
       {
          // before erection - results are in the segment models
-         results = m_pSegmentModelManager->GetShear(intervalIdx,strLoadingName,vPoi,resultsType);
+         GET_IFACE(IPointOfInterest, pPoi);
+         std::list<PoiList> poiLists;
+         pPoi->GroupBySegment(vPoi, &poiLists);
+         for (PoiList& poiList : poiLists)
+         {
+            auto result = m_pSegmentModelManager->GetShear(intervalIdx, strLoadingName, poiList, resultsType);
+            results.insert(results.end(), result.begin(), result.end());
+         }
       }
       else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
       {
@@ -5977,14 +6095,54 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,
    std::vector<Float64> results;
    results.reserve(vPoi.size());
 
+//#pragma Reminder("WORKING HERE - Dougs file problems - need to do this for all methods... find a way to do it without repeating code")
+//   GET_IFACE(IPointOfInterest, pPoi);
+//   std::vector<CGirderKey> vGirderKeys;
+//   pPoi->GetGirderKeys(vPoi, &vGirderKeys);
+//   ATLASSERT(vGirderKeys.size() == 1); // vPoi should be POIs for one girder only
+//   const CGirderKey& girderKey(vGirderKeys.front());
+//
+//   std::vector<CSegmentKey> vSegmentKeys;
+//   pPoi->GetSegmentKeys(vPoi, &vSegmentKeys);
+//
+//   if (1 < vSegmentKeys.size())
+//   {
+//      // The pois cover more than one segment... may need to take them one segment at a time
+//      GET_IFACE(IIntervals, pIntervals);
+//      IntervalIndexType firstErectedSegmentIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(girderKey);
+//      IntervalIndexType lastErectedSegmentIntervalIdx = pIntervals->GetLastSegmentErectionInterval(girderKey);
+//      if (firstErectedSegmentIntervalIdx <= intervalIdx && intervalIdx <= lastErectedSegmentIntervalIdx && firstErectedSegmentIntervalIdx != lastErectedSegmentIntervalIdx)
+//      {
+//         // not all segments are erected in this interval so for some segments we need to use the segment model and others the girder model
+//         // to accomplish this, we have to process the poi list per segment
+//         std::list<PoiList> poiList;
+//         pPoi->GroupBySegment(vPoi, &poiList);
+//         for (auto& thisPoiList : poiList)
+//         {
+//            std::vector<Float64> r = GetMoment(intervalIdx, strLoadingName, thisPoiList, bat, resultsType);
+//            results.insert(results.end(), r.begin(), r.end());
+//         }
+//         return results;
+//      }
+//   }
+//
    try
    {
+      //InitializeAnalysis(vPoi);
+
       IntervalIndexType erectionIntervalIdx = GetErectionInterval(vPoi);
 
       if ( intervalIdx < erectionIntervalIdx )
       {
          // before erection - results are in the segment models
-         results = m_pSegmentModelManager->GetMoment(intervalIdx,strLoadingName,vPoi,resultsType);
+         GET_IFACE(IPointOfInterest, pPoi);
+         std::list<PoiList> poiLists;
+         pPoi->GroupBySegment(vPoi, &poiLists);
+         for (PoiList& poiList : poiLists)
+         {
+            auto result = m_pSegmentModelManager->GetMoment(intervalIdx, strLoadingName, poiList, resultsType);
+            results.insert(results.end(), result.begin(), result.end());
+         }
       }
       else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
       {
@@ -6025,7 +6183,14 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
       if ( intervalIdx < erectionIntervalIdx )
       {
          // before erection - results are in the segment models
-         results = m_pSegmentModelManager->GetDeflection(intervalIdx,strLoadingName,vPoi,resultsType);
+         GET_IFACE(IPointOfInterest, pPoi);
+         std::list<PoiList> poiLists;
+         pPoi->GroupBySegment(vPoi, &poiLists);
+         for (PoiList& poiList : poiLists)
+         {
+            auto result = m_pSegmentModelManager->GetDeflection(intervalIdx, strLoadingName, poiList, resultsType);
+            results.insert(results.end(), result.begin(), result.end());
+         }
       }
       else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
       {
@@ -6125,7 +6290,14 @@ std::vector<Float64> CAnalysisAgentImp::GetRotation(IntervalIndexType intervalId
       if ( intervalIdx < erectionIntervalIdx )
       {
          // before erection - results are in the segment models
-         results = m_pSegmentModelManager->GetRotation(intervalIdx,strLoadingName,vPoi,resultsType);
+         GET_IFACE(IPointOfInterest, pPoi);
+         std::list<PoiList> poiLists;
+         pPoi->GroupBySegment(vPoi, &poiLists);
+         for (PoiList& poiList : poiLists)
+         {
+            auto result = m_pSegmentModelManager->GetRotation(intervalIdx, strLoadingName, poiList, resultsType);
+            results.insert(results.end(), result.begin(), result.end());
+         }
       }
       else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
       {
@@ -6168,7 +6340,16 @@ void CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,LPCTSTR strLoadi
       if ( intervalIdx < erectionIntervalIdx )
       {
          // before erection - results are in the segment models
-         m_pSegmentModelManager->GetStress(intervalIdx,strLoadingName,vPoi,resultsType,topLocation,botLocation,pfTop,pfBot);
+         GET_IFACE(IPointOfInterest, pPoi);
+         std::list<PoiList> poiLists;
+         pPoi->GroupBySegment(vPoi, &poiLists);
+         for (PoiList& poiList : poiLists)
+         {
+            std::vector<Float64> fTop, fBot;
+            m_pSegmentModelManager->GetStress(intervalIdx, strLoadingName, poiList, resultsType, topLocation, botLocation, &fTop, &fBot);
+            pfTop->insert(pfTop->end(), fTop.begin(), fTop.end());
+            pfBot->insert(pfBot->end(), fBot.begin(), fBot.end());
+         }
       }
       else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
       {
@@ -11225,6 +11406,14 @@ IntervalIndexType CAnalysisAgentImp::GetErectionInterval(const PoiList& vPoi) co
    }
    else
    {
+      // Once a segment has been erected, the GirderModel is valid
+      // get the erection interval for the first segment erected in the girder
+#if defined _DEBUG
+      // all POI must be for the same girder
+      std::vector<CGirderKey> vGirders;
+      pPoi->GetGirderKeys(vPoi, &vGirders);
+      ATLASSERT(vGirders.size() == 1);
+#endif
       CGirderKey girderKey(vPoi.front().get().GetSegmentKey());
       erectionIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(girderKey);
    }
@@ -11245,6 +11434,7 @@ IntervalIndexType CAnalysisAgentImp::GetStorageInterval(const PoiList& vPoi) con
    }
    else
    {
+      ATLASSERT(false); // vPoi should contain only POIs from one segment
       CGirderKey girderKey(vPoi.front().get().GetSegmentKey());
       storageIntervalIdx = pIntervals->GetFirstStorageInterval(girderKey);
    }
@@ -11254,6 +11444,13 @@ IntervalIndexType CAnalysisAgentImp::GetStorageInterval(const PoiList& vPoi) con
 
 IntervalIndexType CAnalysisAgentImp::GetHaulingInterval(const PoiList& vPoi) const
 {
+#if defined _DEBUG
+   GET_IFACE(IPointOfInterest, pPoi);
+   std::vector<CSegmentKey> segmentKeys;
+   pPoi->GetSegmentKeys(vPoi, &segmentKeys);
+   ATLASSERT(segmentKeys.size() == 1);
+#endif
+
    GET_IFACE(IIntervals,pIntervals);
    CSegmentKey segmentKey(vPoi.front().get().GetSegmentKey());
    IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);

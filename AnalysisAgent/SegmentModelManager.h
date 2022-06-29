@@ -189,4 +189,6 @@ private:
    bool CreateConcentratedLoad(IntervalIndexType intervalIdx, LoadCaseIDType lcid,const pgsPointOfInterest& poi,Float64 Fx,Float64 Fy,Float64 Mz);
    bool CreateUniformLoad(IntervalIndexType intervalIdx,LoadCaseIDType lcid,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 wx,Float64 wy);
    bool CreateInitialStrainLoad(IntervalIndexType intervalIdx, LoadCaseIDType lcid,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 e,Float64 r);
+
+   bool VerifyPoi(const PoiList& vPoi) const; // all POI must be for the same segment
 };
