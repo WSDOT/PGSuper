@@ -320,6 +320,23 @@ std::vector<StressCheckTask> CSpecAgentImp::GetStressCheckTasks(const CSegmentKe
       vStressCheckTasks.emplace_back(erectionIntervalIdx, pgsTypes::ServiceI, pgsTypes::Compression);
       vStressCheckTasks.emplace_back(erectionIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension);
 
+      // Erection of other segments, after this segment is erected, is also a change in loading condition.
+      // This isn't always true, but it is easier to assume it is true. A case when the assumption is false
+      // would be a 5 span bridge and the first and last segments are erected... the dead load of the second
+      // segment isn't carried by the first segment. However, in the case of a drop-in segment being erected
+      // onto a hammerhead segment, the hammerhead carries the weight of the drop-in so the hammerhead must
+      // be spec checked for stresses when the drop-in is erected.
+      IntervalIndexType firstSegmentErectionIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(segmentKey);
+      IntervalIndexType lastSegmentErectionIntervalIdx = pIntervals->GetLastSegmentErectionInterval(segmentKey);
+      for (IntervalIndexType otherSegmentErectionIntervalIdx = Max(firstSegmentErectionIntervalIdx, erectionIntervalIdx+1); otherSegmentErectionIntervalIdx <= lastSegmentErectionIntervalIdx; otherSegmentErectionIntervalIdx++)
+      {
+         if (pIntervals->IsSegmentErectionInterval(otherSegmentErectionIntervalIdx) && erectionIntervalIdx < otherSegmentErectionIntervalIdx)
+         {
+            vStressCheckTasks.emplace_back(otherSegmentErectionIntervalIdx, pgsTypes::ServiceI, pgsTypes::Compression);
+            vStressCheckTasks.emplace_back(otherSegmentErectionIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension);
+         }
+      }
+
       // Spec check whenever a segment tendon is stressed
       GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
       DuctIndexType nSegmentDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
