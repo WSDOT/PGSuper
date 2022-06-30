@@ -8,6 +8,7 @@ Tendon 1 is overstressed
 Tendon 2 is overstressed
 Tension stress check failed for Service I Limit State in Interval 5 Place segments into storage for Segment 1
 Tension stress check failed for Service I Limit State in Interval 9 Erect Segments for Segment 1
+Tension stress check failed for Service I Limit State in Interval 12 Erect Segments for Segment 1
 Compression stress check failed for Service I Limit State in Interval 20 Stress Tendons for Segment 1
 Compression stress check failed for Service I Limit State in Interval 22 Cast Deck for Segment 1
 Compression stress check failed for Service I Limit State in Interval 26 Stress Tendons for Segment 1
@@ -54,6 +55,7 @@ Tendon 1 is overstressed
 Tendon 2 is overstressed
 Tension stress check failed for Service I Limit State in Interval 5 Place segments into storage for Segment 1
 Tension stress check failed for Service I Limit State in Interval 9 Erect Segments for Segment 1
+Tension stress check failed for Service I Limit State in Interval 12 Erect Segments for Segment 1
 Compression stress check failed for Service I Limit State in Interval 20 Stress Tendons for Segment 1
 Compression stress check failed for Service I Limit State in Interval 22 Cast Deck for Segment 1
 Compression stress check failed for Service I Limit State in Interval 26 Stress Tendons for Segment 1
