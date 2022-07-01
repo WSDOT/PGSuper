@@ -2999,7 +2999,7 @@ BEGIN
     PUSHBUTTON      "Insert Row",IDC_INSERTROW,129,186,63,14
     PUSHBUTTON      "Delete Row",IDC_REMOVEROWS,196,186,63,14
     PUSHBUTTON      "Append Row",IDC_APPEND_ROW,263,186,63,14
-    LTEXT           "Extended reinforcement is assumed to be well anchored with the adjacent precast segments and can be fully developed.",IDC_STATIC,18,207,397,19
+    LTEXT           "Anchored reinforcement is assumed to be well connected with the adjacent precast segments and can be fully developed.",IDC_STATIC,18,207,397,19
 END
 
 IDD_SELECT_GIRDERSEGMENT DIALOGEX 0, 0, 227, 114
@@ -4084,6 +4084,10 @@ BEGIN
     END
 
     IDD_TS_GENERAL, DIALOG
+    BEGIN
+    END
+
+    IDD_CLOSURE_LONGITUDINAL, DIALOG
     BEGIN
     END
 

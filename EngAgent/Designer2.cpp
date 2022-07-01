@@ -2051,6 +2051,13 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
    bool bIsSegmentTendonStressingInterval = pIntervals->IsSegmentTendonStressingInterval(segmentKey, task.intervalIdx); // not used yet... need to look at this method more closely
    bool bIsGirderTendonStressingInterval = pIntervals->IsGirderTendonStressingInterval(segmentKey, task.intervalIdx);
 
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(segmentKey);
+   PoiList poiList;
+   pPoi->GetPointsOfInterest(segmentKey, POI_RELEASED_SEGMENT | POI_5L, &poiList);
+   ATLASSERT(poiList.size() == 1);
+   const pgsPointOfInterest& midsegment_poi(poiList.front());
+   ATLASSERT(midsegment_poi.IsMidSpan(POI_RELEASED_SEGMENT));
+
    // for time-step analysis, pretension stresses are taken from the release interval, otherwise the are taken from the task interval
    // we do this because in time-step analysis girder stresses include the effect of creep, shrinkage, and relaxation. we don't
    // want to include CR, SH, and RE again by computing the stress in the girder due to prestressing with an effective prestress
@@ -2424,7 +2431,57 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
                   CComPtr<IRebarSection> rebarSection;
 	               pRebarGeom->GetRebars(poi, &rebarSection);
 	               altTensionRequirements.rebarSection = rebarSection;
-                  altTensionRequirements.bAdjustForDevelopmentLength = (pRebarGeom->IsAnchored(poi) ? false : true);
+                  altTensionRequirements.bAdjustForDevelopmentLength = true;
+                  if (pRebarGeom->IsAnchored(poi))
+                  {
+                     IntervalIndexType anchoringIntervalIdx = INVALID_INDEX;
+                     if (bIsInClosure)
+                     {
+                        // poi is in a closure joint.... it can only anchor when it is composite
+                        anchoringIntervalIdx = pIntervals->GetCompositeClosureJointInterval(closureKey);
+                     }
+                     else
+                     {
+                        if (poi <= midsegment_poi)
+                        {
+                           // poi is closer to the left end of the segment than the right end
+                           if (segmentKey.segmentIndex == 0 || nSegments == 1)
+                           {
+                              // this is the first segment (or the only segment) so bars can only anchor into
+                              // diaphragms. get the interval when the diaphragm has enough strength to anchor
+                              anchoringIntervalIdx = pIntervals->GetCompositeIntermediateDiaphragmsInterval();
+                           }
+                           else
+                           {
+                              // the closure joint at the left end of the segment anchors the bars
+                              CClosureKey prevClosureKey(segmentKey.groupIndex, segmentKey.girderIndex, segmentKey.segmentIndex - 1);
+                              anchoringIntervalIdx = pIntervals->GetCompositeClosureJointInterval(prevClosureKey);
+                           }
+                        }
+                        else
+                        {
+                           // poi is closer to the right end of the segment than the left end
+                           if (segmentKey.segmentIndex == nSegments - 1 || nSegments == 1)
+                           {
+                              // this is the last segment (or the only segment) so bars can only anchor into
+                              // diaphragms. get the interval when the diaphragm has enough strength to anchor
+                              anchoringIntervalIdx = pIntervals->GetCompositeIntermediateDiaphragmsInterval();
+                           }
+                           else
+                           {
+                              // the closure joint at the right end of the segment anchors the bars
+                              CClosureKey nextClosureKey(segmentKey);
+                              anchoringIntervalIdx = pIntervals->GetCompositeClosureJointInterval(nextClosureKey);
+                           }
+                        }
+                     }
+
+                     if (anchoringIntervalIdx <= task.intervalIdx)
+                     {
+                        // the bars are anchored so they can be considered developed at all locations
+                        altTensionRequirements.bAdjustForDevelopmentLength = false;
+                     }
+                  }
 
                   Float64 Ytg = pSectProps->GetY(task.intervalIdx, poi, pgsTypes::TopGirder);
                   altTensionRequirements.Ytg = Ytg;
@@ -2990,7 +3047,7 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
          pRebarGeom->GetRebars(poi, &rebarSection);
          altTensionRequirements.rebarSection = rebarSection;
 
-         altTensionRequirements.bAdjustForDevelopmentLength = (pRebarGeom->IsAnchored(poi) ? false : true);
+         altTensionRequirements.bAdjustForDevelopmentLength = true; // anchorage of rebar never helps development at release
 
          Float64 Ca, Cbx, Cby;
          IndexType controllingTopStressPointIdx;
