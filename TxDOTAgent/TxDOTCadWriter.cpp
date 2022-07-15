@@ -180,7 +180,7 @@ int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, IBroker*
    rDataExporter.WriteIntToCell(1, _T("NStot"), m_RowNum, strandNum);
 
 	// STRAND SIZE
-   const matPsStrand* strandMatP = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Straight);
+   const auto* strandMatP = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Straight);
    Float64 value = strandMatP->GetNominalDiameter();
    value = WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::Inch );
    std::_tstring strandSize = FractionalStrandSize (value); // Convert value to fraction representation
@@ -188,7 +188,7 @@ int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, IBroker*
    rDataExporter.WriteStringToCell(1, _T("Size"), m_RowNum, strandSize.c_str());
 
    // STRAND STRENGTH
-	int strandStrength = (strandMatP->GetGrade() == matPsStrand::Gr1725 ?  250 :  270);
+	int strandStrength = (strandMatP->GetGrade() == WBFL::Materials::PsStrand::Grade::Gr1725 ?  250 :  270);
    rDataExporter.WriteIntToCell(1, _T("Strength"), m_RowNum, strandStrength);
 
 	// STRAND ECCENTRICITY AT CENTER LINE

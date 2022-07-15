@@ -81,7 +81,7 @@ protected:
 public:
    void RestoreToLibraryDefaults(CLongitudinalRebarData* pLongData);
 
-   void GetRebarMaterial(matRebar::Type* pType,matRebar::Grade* pGrade);
+   void GetRebarMaterial(WBFL::Materials::Rebar::Type* pType,WBFL::Materials::Rebar::Grade* pGrade);
 
 public:
    CGirderDescLongRebarGrid m_Grid;

@@ -141,7 +141,7 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
    if ( bAfter1999 )
    {
       // ok to use Straight since we just want material properties
-      const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Straight);
+      const auto* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Straight);
 
       //GET_IFACE(IPretensionForce,pPSForce);
       //Float64 xfer = pPSForce->GetTransferLengthAdjustment(poi);
@@ -170,8 +170,8 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
    // Tendons
    if ( bAfter1999 )
    {
-      const matPsStrand* pSegmentTendon = pMaterial->GetSegmentTendonMaterial(segmentKey);
-      const matPsStrand* pGirderTendon = pMaterial->GetGirderTendonMaterial(girderKey);
+      const auto* pSegmentTendon = pMaterial->GetSegmentTendonMaterial(segmentKey);
+      const auto* pGirderTendon = pMaterial->GetGirderTendonMaterial(girderKey);
 
       if (0 < pscd->AptSegment)
       {
@@ -613,15 +613,15 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
       }
    }
 
-   const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Straight); // we just want E so straight strands is fine
+   const auto* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Straight); // we just want E so straight strands is fine
    ATLASSERT(pStrand != nullptr);
    pscd->Eps = pStrand->GetE();
 
-   const matPsStrand* pSegmentTendon = pMaterial->GetSegmentTendonMaterial(segmentKey);
+   const auto* pSegmentTendon = pMaterial->GetSegmentTendonMaterial(segmentKey);
    ATLASSERT(pSegmentTendon != nullptr);
    pscd->EptSegment = pSegmentTendon->GetE();
 
-   const matPsStrand* pGirderTendon = pMaterial->GetGirderTendonMaterial(segmentKey);
+   const auto* pGirderTendon = pMaterial->GetGirderTendonMaterial(segmentKey);
    ATLASSERT(pGirderTendon != nullptr);
    pscd->EptGirder = pGirderTendon->GetE();
 
@@ -646,7 +646,7 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
    }
 
    Float64 s;
-   matRebar::Size size;
+   WBFL::Materials::Rebar::Size size;
    Float64 nl;
    Float64 abar;
    Float64 avs;
@@ -1038,7 +1038,7 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
    data.Vd           = pscd->Vd;
    data.Mcre         = pscd->McrDetails.Mcr;
    data.fpc          = pscd->fpc;
-   data.ConcreteType = (matConcrete::Type)pscd->ConcreteType;
+   data.ConcreteType = (WBFL::Materials::ConcreteType)pscd->ConcreteType;
    data.bHasfct      = pscd->bHasFct;
    data.fct          = pscd->fct;
    data.sx           = pscd->sx; // cracking

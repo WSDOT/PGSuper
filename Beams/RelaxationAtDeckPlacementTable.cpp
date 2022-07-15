@@ -111,7 +111,7 @@ CRelaxationAtDeckPlacementTable* CRelaxationAtDeckPlacementTable::PrepareTable(r
    }
 
 
-   if ( ptl->GetPermanentStrandCoating() != matPsStrand::None )
+   if ( ptl->GetPermanentStrandCoating() != WBFL::Materials::PsStrand::Coating::None )
    {
       *pParagraph << EPOXY_RELAXATION_NOTE << rptNewLine;
    }

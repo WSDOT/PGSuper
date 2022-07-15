@@ -88,7 +88,7 @@ std::shared_ptr<pgsTransferLength> pgsTransferLengthEngineer::GetTransferLengthD
       ATLASSERT(prestressTransferComputationType == pgsTypes::ptUsingSpecification);
 
       GET_IFACE(ISegmentData, pSegmentData);
-      const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(segmentKey, strandType);
+      const auto* pStrand = pSegmentData->GetStrandMaterial(segmentKey, strandType);
       ATLASSERT(pStrand != nullptr);
 
       const CGirderMaterial* pMaterial = pSegmentData->GetSegmentMaterial(segmentKey);
@@ -499,11 +499,11 @@ void pgsMinuteTransferLength::ReportDetails(rptChapter* pChapter,IEAFDisplayUnit
 
 ////////////////////////
 pgsLRFDTransferLength::pgsLRFDTransferLength() :
-   m_Coating(matPsStrand::None),
+   m_Coating(WBFL::Materials::PsStrand::Coating::None),
    m_db(0.0)
 {
 }
-pgsLRFDTransferLength::pgsLRFDTransferLength(Float64 db, matPsStrand::Coating coating) :
+pgsLRFDTransferLength::pgsLRFDTransferLength(Float64 db,WBFL::Materials::PsStrand::Coating coating) :
    m_db(db), m_Coating(coating)
 {
 }
@@ -518,19 +518,19 @@ Float64 pgsLRFDTransferLength::GetStrandDiameter() const
    return m_db;
 }
 
-void pgsLRFDTransferLength::SetCoating(matPsStrand::Coating coating)
+void pgsLRFDTransferLength::SetCoating(WBFL::Materials::PsStrand::Coating coating)
 {
    m_Coating = coating;
 }
 
-matPsStrand::Coating pgsLRFDTransferLength::GetCoating() const
+WBFL::Materials::PsStrand::Coating pgsLRFDTransferLength::GetCoating() const
 {
    return m_Coating;
 }
 
 Float64 pgsLRFDTransferLength::GetTransferLength() const
 {
-   return (m_Coating == matPsStrand::None ? 60 : 50) * m_db;
+   return (m_Coating == WBFL::Materials::PsStrand::Coating::None ? 60 : 50) * m_db;
 }
 
 void pgsLRFDTransferLength::ReportDetails(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
@@ -540,7 +540,7 @@ void pgsLRFDTransferLength::ReportDetails(rptChapter* pChapter, IEAFDisplayUnits
 
    INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), true);
 
-   (*pPara) << Sub2(_T("l"), _T("t")) << _T(" = ") << (m_Coating == matPsStrand::None ? _T("60") : _T("50")) << Sub2(_T("d"), _T("b")) << _T(" = ") << (m_Coating == matPsStrand::None ? _T("60") : _T("50"));
+   (*pPara) << Sub2(_T("l"), _T("t")) << _T(" = ") << (m_Coating == WBFL::Materials::PsStrand::Coating::None ? _T("60") : _T("50")) << Sub2(_T("d"), _T("b")) << _T(" = ") << (m_Coating == WBFL::Materials::PsStrand::Coating::None ? _T("60") : _T("50"));
    (*pPara) << _T("(") << length.SetValue(m_db) << _T(") = ");
    (*pPara) << length.SetValue(GetTransferLength()) << rptNewLine;
 }

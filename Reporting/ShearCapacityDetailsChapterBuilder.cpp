@@ -1041,7 +1041,7 @@ void write_fpo_table(IBroker* pBroker,
             {
                *pParagraph << _T("Strands") << rptNewLine;
             }
-            const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Straight);
+            const auto* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Straight);
             Float64 fpu = pStrand->GetUltimateStrength();
             Kps = 0.70;
 
@@ -1059,7 +1059,7 @@ void write_fpo_table(IBroker* pBroker,
             if (0 < nMaxSegmentDucts)
             {
                *pParagraph << _T("Segment Tendons") << rptNewLine;
-               const matPsStrand* pTendon = pMaterial->GetSegmentTendonMaterial(segmentKey);
+               const auto* pTendon = pMaterial->GetSegmentTendonMaterial(segmentKey);
                Kpt = 0.70;
                *pParagraph << RPT_STRESS(_T("po pts")) << _T(" = 0.70") << RPT_FPU;
                *pParagraph << _T(" = ") << stress.SetValue(Kpt*pTendon->GetUltimateStrength()) << rptNewLine;
@@ -1071,7 +1071,7 @@ void write_fpo_table(IBroker* pBroker,
          if ( 0 < nGirderDucts )
          {
             *pParagraph << _T("Girder Tendons") << rptNewLine;
-            const matPsStrand* pTendon = pMaterial->GetGirderTendonMaterial(girderKey);
+            const auto* pTendon = pMaterial->GetGirderTendonMaterial(girderKey);
             Kpt = 0.70;
             *pParagraph << italic(ON) << Sub2(_T("f"),_T("po ptg")) << _T(" = 0.70") << Sub2(_T("f"),_T("pu")) << italic(OFF);
             *pParagraph << _T(" = ") << stress.SetValue(Kpt*pTendon->GetUltimateStrength()) << rptNewLine;
@@ -3398,9 +3398,9 @@ void write_bar_spacing_table(IBroker* pBroker,
 
    lrfdRebarPool* pRebarPool = lrfdRebarPool::GetInstance();
 
-   Float64 Ab3 = pRebarPool->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,matRebar::bs3)->GetNominalArea();
-   Float64 Ab4 = pRebarPool->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,matRebar::bs4)->GetNominalArea();
-   Float64 Ab5 = pRebarPool->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,matRebar::bs5)->GetNominalArea();
+   Float64 Ab3 = pRebarPool->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,WBFL::Materials::Rebar::Size::bs3)->GetNominalArea();
+   Float64 Ab4 = pRebarPool->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,WBFL::Materials::Rebar::Size::bs4)->GetNominalArea();
+   Float64 Ab5 = pRebarPool->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,WBFL::Materials::Rebar::Size::bs5)->GetNominalArea();
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());

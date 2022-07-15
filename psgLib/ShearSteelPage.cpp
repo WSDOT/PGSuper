@@ -99,7 +99,7 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
 
    if (pDX->m_bSaveAndValidate)
    {
-      if (matRebar::bsNone != m_ShearData.SplittingBarSize)
+      if (WBFL::Materials::Rebar::Size::bsNone != m_ShearData.SplittingBarSize)
       {
          if (m_ShearData.SplittingZoneLength<=0.00001)
          {
@@ -128,7 +128,7 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
 
    if (pDX->m_bSaveAndValidate)
    {
-      if (matRebar::bsNone != m_ShearData.ConfinementBarSize)
+      if (WBFL::Materials::Rebar::Size::bsNone != m_ShearData.ConfinementBarSize)
       {
          if (m_ShearData.ConfinementZoneLength<=0.00001)
          {
@@ -191,7 +191,7 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
                }
             }
 
-            if ((matRebar::bsNone != lsi.VertBarSize || matRebar::bsNone != lsi.ConfinementBarSize) && zn < nrows)
+            if ((WBFL::Materials::Rebar::Size::bsNone != lsi.VertBarSize || WBFL::Materials::Rebar::Size::bsNone != lsi.ConfinementBarSize) && zn < nrows)
             {
                if (::IsLT(lsi.ZoneLength,lsi.BarSpacing))
                {
@@ -203,7 +203,7 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
             }
 
             // make sure stirrup spacing is >0 if stirrups or confinement bars exist
-            if ( (matRebar::bsNone != lsi.VertBarSize || matRebar::bsNone != lsi.ConfinementBarSize) && lsi.BarSpacing<=0.0)
+            if ( (WBFL::Materials::Rebar::Size::bsNone != lsi.VertBarSize || WBFL::Materials::Rebar::Size::bsNone != lsi.ConfinementBarSize) && lsi.BarSpacing<=0.0)
             {
                CString msg;
                msg.Format(_T("Bar spacing must be greater than zero if stirrups exist in Shear Zone %d"),zn+1);
@@ -341,7 +341,7 @@ void CShearSteelPage::OnClickedSymmetrical()
    m_pGrid->SetSymmetry(IsDlgButtonChecked(IDC_SYMMETRICAL) == BST_CHECKED ? true : false);
 }
 
-void CShearSteelPage::GetRebarMaterial(matRebar::Type* pType,matRebar::Grade* pGrade)
+void CShearSteelPage::GetRebarMaterial(WBFL::Materials::Rebar::Type* pType,WBFL::Materials::Rebar::Grade* pGrade)
 {
    m_cbRebar.GetMaterial(pType,pGrade);
 }
@@ -368,11 +368,11 @@ void CShearSteelPage::OnHelp()
 void CShearSteelPage::FillBarComboBox(CComboBox* pcbRebar)
 {
    int idx = pcbRebar->AddString(_T("None"));
-   pcbRebar->SetItemData(idx,(DWORD_PTR)matRebar::bsNone);
+   pcbRebar->SetItemData(idx,(DWORD_PTR)WBFL::Materials::Rebar::Size::bsNone);
    lrfdRebarIter rebarIter(m_ShearData.ShearBarType,m_ShearData.ShearBarGrade,true);
    for ( rebarIter.Begin(); rebarIter; rebarIter.Next() )
    {
-      const matRebar* pRebar = rebarIter.GetCurrentRebar();
+      const auto* pRebar = rebarIter.GetCurrentRebar();
       idx = pcbRebar->AddString(pRebar->GetName().c_str());
       pcbRebar->SetItemData(idx,(DWORD_PTR)pRebar->GetSize());
    }

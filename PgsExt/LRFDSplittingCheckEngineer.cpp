@@ -197,8 +197,8 @@ std::shared_ptr<pgsSplittingCheckArtifact> pgsLRFDSplittingCheckEngineer::Check(
    }
    else
    {
-      matRebar::Type barType;
-      matRebar::Grade barGrade;
+      WBFL::Materials::Rebar::Type barType;
+      WBFL::Materials::Rebar::Grade barGrade;
       pMaterials->GetSegmentTransverseRebarMaterial(segmentKey, &barType, &barGrade);
       GetSplittingAvFromStirrupConfig(pConfig->StirrupConfig, barType, barGrade, segment_length,start_zl, &Avs[pgsTypes::metStart], end_zl, &Avs[pgsTypes::metEnd]);
    }
@@ -505,9 +505,8 @@ std::shared_ptr<pgsSplittingCheckArtifact> pgsPCIUHPCSplittingCheckEngineer::Che
    GET_IFACE(IMaterials, pMaterials);
    ATLASSERT(pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC);
 
-   const auto* pConcrete1 = dynamic_cast<const lrfdLRFDConcrete*>(pMaterials->GetSegmentConcrete(segmentKey));
-   const auto* pConcrete2 = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pMaterials->GetSegmentConcrete(segmentKey));
-   Float64 f_rr = pConcrete1 ? pConcrete1->GetPostCrackingTensileStrength() : pConcrete2->GetPostCrackingTensileStrength();
+   const auto* pConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(pMaterials->GetSegmentConcrete(segmentKey).get());
+   Float64 f_rr = pConcrete->GetPostCrackingTensileStrength();
    pArtifact->SetUHPCDesignTensileStrength(f_rr);
 
    GET_IFACE(IGirder, pGdr);

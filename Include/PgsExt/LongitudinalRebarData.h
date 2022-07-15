@@ -38,7 +38,7 @@
 #endif
 
 #include <StrData.h>
-#include <Material\Rebar.h>
+#include <Materials/Rebar.h>
 
 // LOCAL INCLUDES
 //
@@ -79,13 +79,13 @@ public:
       // only applicable for BarLayout = blFullLength and blFromLeft and blFromRight when DistFromEnd is 0.
 
       pgsTypes::FaceType  Face;
-      matRebar::Size BarSize;
+      WBFL::Materials::Rebar::Size BarSize;
       CollectionIndexType NumberOfBars;
       Float64     Cover;
       Float64     BarSpacing;
 
       RebarRow():
-         Face(pgsTypes::TopFace), BarSize(matRebar::bsNone), NumberOfBars(0), Cover(0), BarSpacing(0),
+         Face(pgsTypes::TopFace), BarSize(WBFL::Materials::Rebar::Size::bsNone), NumberOfBars(0), Cover(0), BarSpacing(0),
          BarLayout(pgsTypes::blFullLength), DistFromEnd(0), BarLength(0), bExtendedLeft(false), bExtendedRight(false)
       {;}
 
@@ -99,8 +99,8 @@ public:
       bool IsRightEndExtended() const;
    };
 
-   matRebar::Type BarType;
-   matRebar::Grade BarGrade;
+   WBFL::Materials::Rebar::Type BarType;
+   WBFL::Materials::Rebar::Grade BarGrade;
    std::vector<RebarRow> RebarRows;
 
 

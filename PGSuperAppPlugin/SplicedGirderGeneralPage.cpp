@@ -321,11 +321,11 @@ void CSplicedGirderGeneralPage::FillStrandList(UINT nIDC)
 
    // capture the current selection, if any
    int cur_sel = pList->GetCurSel();
-   matPsStrand::Size cur_size = matPsStrand::D1270;
+   WBFL::Materials::PsStrand::Size cur_size = WBFL::Materials::PsStrand::Size::D1270;
    if ( cur_sel != CB_ERR )
    {
       Int64 cur_key = (Int64)pList->GetItemData( cur_sel );
-      const matPsStrand* pCurStrand = pPool->GetStrand( cur_key );
+      const auto* pCurStrand = pPool->GetStrand( cur_key );
       cur_size = pCurStrand->GetSize();
    }
 
@@ -335,17 +335,17 @@ void CSplicedGirderGeneralPage::FillStrandList(UINT nIDC)
    int new_cur_sel = -1; // This will be in index of the string we want to select.
    for (int i = 0; i < 3; i++)
    {
-      matPsStrand::Grade grade = (i == 0 ? matPsStrand::Gr1725 :
-                                  i == 1 ? matPsStrand::Gr1860 : matPsStrand::Gr2070);
+      WBFL::Materials::PsStrand::Grade grade = (i == 0 ? WBFL::Materials::PsStrand::Grade::Gr1725 :
+                                  i == 1 ? WBFL::Materials::PsStrand::Grade::Gr1860 : WBFL::Materials::PsStrand::Grade::Gr2070);
       for ( int j = 0; j < 2; j++ )
       {
-         matPsStrand::Type type = (j == 0 ? matPsStrand::LowRelaxation : matPsStrand::StressRelieved);
+         WBFL::Materials::PsStrand::Type type = (j == 0 ? WBFL::Materials::PsStrand::Type::LowRelaxation : WBFL::Materials::PsStrand::Type::StressRelieved);
 
          lrfdStrandIter iter(grade,type);
 
          for ( iter.Begin(); iter; iter.Next() )
          {
-            const matPsStrand* pStrand = iter.GetCurrentStrand();
+            const auto* pStrand = iter.GetCurrentStrand();
             int idx = pList->AddString( pStrand->GetName().c_str() );
 
             if ( idx != CB_ERR )
@@ -386,7 +386,7 @@ void CSplicedGirderGeneralPage::FillStrandList(UINT nIDC)
    }
 }
 
-void CSplicedGirderGeneralPage::FillStrandList(CComboBox* pList,matPsStrand::Grade grade,matPsStrand::Type  type)
+void CSplicedGirderGeneralPage::FillStrandList(CComboBox* pList,WBFL::Materials::PsStrand::Grade grade,WBFL::Materials::PsStrand::Type  type)
 {
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
 
@@ -402,8 +402,8 @@ void CSplicedGirderGeneralPage::FillStrandList(CComboBox* pList,matPsStrand::Gra
    int sel_count = 0;  // Keep count of the number of strings added to the combo box
    for ( iter.Begin(); iter; iter.Next() )
    {
-      const matPsStrand* pStrand = iter.GetCurrentStrand();
-      std::_tstring size = matPsStrand::GetSize( pStrand->GetSize(), bUnitsUS );
+      const auto* pStrand = iter.GetCurrentStrand();
+      std::_tstring size = WBFL::Materials::PsStrand::GetSize( pStrand->GetSize(), bUnitsUS );
       int idx = pList->AddString( size.c_str() );
 
       if ( idx != CB_ERR )
@@ -423,7 +423,7 @@ void CSplicedGirderGeneralPage::FillStrandList(CComboBox* pList,matPsStrand::Gra
    }
 }
 
-const matPsStrand* CSplicedGirderGeneralPage::GetStrand()
+const WBFL::Materials::PsStrand* CSplicedGirderGeneralPage::GetStrand()
 {
    CComboBox* pList = (CComboBox*)GetDlgItem( IDC_STRAND );
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();

@@ -36,7 +36,7 @@
 // LOCAL INCLUDES
 //
 #if !defined INCLUDED_MATERIAL_REBAR_H_
-#include <Material\Rebar.h>
+#include <Materials/Rebar.h>
 #endif
 
 #include <GeomModel/Primitives.h>
@@ -73,7 +73,7 @@ public:
 
    //------------------------------------------------------------------------
    // full constructor
-   pgsLongRebarInstance(const WBFL::Geometry::Point2d& rloc, const matRebar* pRebar, Float64 minCutoffLength);
+   pgsLongRebarInstance(const WBFL::Geometry::Point2d& rloc, const WBFL::Materials::Rebar* pRebar, Float64 minCutoffLength);
 
    //------------------------------------------------------------------------
    // Copy constructor
@@ -98,8 +98,8 @@ public:
 
    //------------------------------------------------------------------------
    // a pointer to this rebar's material
-   const matRebar* GetRebar() const;
-   void SetRebar(const matRebar* prebar);
+   const WBFL::Materials::Rebar* GetRebar() const;
+   void SetRebar(const WBFL::Materials::Rebar* pRebar);
 
    //------------------------------------------------------------------------
     // Nearest Distance from cut location to either end of the bar
@@ -125,7 +125,7 @@ protected:
 private:
    // GROUP: DATA MEMBERS
       WBFL::Geometry::Point2d       m_Location;
-      const matRebar* m_pRebar;
+      const WBFL::Materials::Rebar* m_pRebar;
       Float64         m_MinCutoffLength; // Distance from cut location
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

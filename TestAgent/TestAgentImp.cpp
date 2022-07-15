@@ -85,21 +85,21 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 // CTestAgentImp
-int GetBarSize(matRebar::Size size)
+int GetBarSize(WBFL::Materials::Rebar::Size size)
 {
    switch(size)
    {
-   case matRebar::bs3: return 3;
-   case matRebar::bs4: return 4;
-   case matRebar::bs5: return 5;
-   case matRebar::bs6: return 6;
-   case matRebar::bs7: return 7;
-   case matRebar::bs8: return 8;
-   case matRebar::bs9: return 9;
-   case matRebar::bs10:return 10;
-   case matRebar::bs11:return 11;
-   case matRebar::bs14:return 14;
-   case matRebar::bs18:return 18;
+   case WBFL::Materials::Rebar::Size::bs3: return 3;
+   case WBFL::Materials::Rebar::Size::bs4: return 4;
+   case WBFL::Materials::Rebar::Size::bs5: return 5;
+   case WBFL::Materials::Rebar::Size::bs6: return 6;
+   case WBFL::Materials::Rebar::Size::bs7: return 7;
+   case WBFL::Materials::Rebar::Size::bs8: return 8;
+   case WBFL::Materials::Rebar::Size::bs9: return 9;
+   case WBFL::Materials::Rebar::Size::bs10:return 10;
+   case WBFL::Materials::Rebar::Size::bs11:return 11;
+   case WBFL::Materials::Rebar::Size::bs14:return 14;
+   case WBFL::Materials::Rebar::Size::bs18:return 18;
    }
 
    return -1;
@@ -2483,7 +2483,7 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std
       Float64 zoneStart, zoneEnd;
       pStirrupGeometry->GetPrimaryZoneBounds(segmentKey, iz, &zoneStart, &zoneEnd);
 
-      matRebar::Size barSize;
+      WBFL::Materials::Rebar::Size barSize;
       Float64 spacing;
       Float64 nStirrups;
       pStirrupGeometry->GetPrimaryVertStirrupBarInfo(segmentKey,iz,&barSize,&nStirrups,&spacing);
@@ -2504,7 +2504,7 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std
       Float64 zoneStart, zoneEnd;
       pStirrupGeometry->GetHorizInterfaceZoneBounds(segmentKey, iz, &zoneStart, &zoneEnd);
 
-      matRebar::Size barSize;
+      WBFL::Materials::Rebar::Size barSize;
       Float64 spacing;
       Float64 nStirrups;
       pStirrupGeometry->GetHorizInterfaceBarInfo(segmentKey,iz,&barSize,&nStirrups,&spacing);
@@ -2587,10 +2587,10 @@ bool CTestAgentImp::RunDesignTest(std::_tofstream& resultsFile, std::_tofstream&
    const CShearData2* pShearData = pArtifact->GetShearData();
 
    int ncz = -1;
-   matRebar::Size czsize(matRebar::bsNone);
+   WBFL::Materials::Rebar::Size czsize(WBFL::Materials::Rebar::Size::bsNone);
    for (CShearData2::ShearZoneConstIterator czit = pShearData->ShearZones.begin(); czit != pShearData->ShearZones.end(); czit++)
    {
-      if (czit->ConfinementBarSize != matRebar::bsNone)
+      if (czit->ConfinementBarSize != WBFL::Materials::Rebar::Size::bsNone)
       {
          czsize = czit->ConfinementBarSize;
          ncz++;

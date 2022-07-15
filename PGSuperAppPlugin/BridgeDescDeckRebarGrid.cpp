@@ -131,7 +131,7 @@ void CBridgeDescDeckRebarGrid::AddRow()
    rebarData.LumpSum     = 0;
    rebarData.RebarGrade  = pParent->m_RebarData.TopRebarGrade;
    rebarData.RebarType   = pParent->m_RebarData.TopRebarType;
-   rebarData.RebarSize   = matRebar::bs4;
+   rebarData.RebarSize   = WBFL::Materials::Rebar::Size::bs4;
    rebarData.Spacing     = WBFL::Units::ConvertToSysUnits(18,WBFL::Units::Measure::Inch);
    rebarData.LeftCutoff  = WBFL::Units::ConvertToSysUnits(10,WBFL::Units::Measure::Feet);
    rebarData.RightCutoff = WBFL::Units::ConvertToSysUnits(10,WBFL::Units::Measure::Feet);
@@ -330,14 +330,14 @@ void CBridgeDescDeckRebarGrid::SetRowStyle(ROWCOL nRow)
          );
 
    CBridgeDescDeckReinforcementPage* pParent = (CBridgeDescDeckReinforcementPage*)GetParent();
-   matRebar::Type type;
-   matRebar::Grade grade;
+   WBFL::Materials::Rebar::Type type;
+   WBFL::Materials::Rebar::Grade grade;
    pParent->GetRebarMaterial(&type,&grade);
    CString strBarSizeChoiceList(_T("None\n"));
    lrfdRebarIter rebarIter(type,grade);
    for ( rebarIter.Begin(); rebarIter; rebarIter.Next() )
    {
-      const matRebar* pRebar = rebarIter.GetCurrentRebar();
+      const auto* pRebar = rebarIter.GetCurrentRebar();
       strBarSizeChoiceList += pRebar->GetName().c_str();
       strBarSizeChoiceList += _T("\n");
    }
@@ -445,7 +445,7 @@ bool CBridgeDescDeckRebarGrid::GetRowData(ROWCOL nRow, CDeckRebarData::NegMoment
    return true;
 }
 
-matRebar::Size CBridgeDescDeckRebarGrid::GetBarSize(ROWCOL row)
+WBFL::Materials::Rebar::Size CBridgeDescDeckRebarGrid::GetBarSize(ROWCOL row)
 {
    CString s = GetCellValue(row, 3);
    s.TrimLeft();
@@ -454,26 +454,26 @@ matRebar::Size CBridgeDescDeckRebarGrid::GetBarSize(ROWCOL row)
    int i = _tstoi(s2);
    if (s.IsEmpty() || (i==0))
    {
-      return matRebar::bsNone;
+      return WBFL::Materials::Rebar::Size::bsNone;
    }
 
    switch(i)
    {
-   case 3:  return matRebar::bs3;
-   case 4:  return matRebar::bs4;
-   case 5:  return matRebar::bs5;
-   case 6:  return matRebar::bs6;
-   case 7:  return matRebar::bs7;
-   case 8:  return matRebar::bs8;
-   case 9:  return matRebar::bs9;
-   case 10: return matRebar::bs10;
-   case 11: return matRebar::bs11;
-   case 14: return matRebar::bs14;
-   case 18: return matRebar::bs18;
+   case 3:  return WBFL::Materials::Rebar::Size::bs3;
+   case 4:  return WBFL::Materials::Rebar::Size::bs4;
+   case 5:  return WBFL::Materials::Rebar::Size::bs5;
+   case 6:  return WBFL::Materials::Rebar::Size::bs6;
+   case 7:  return WBFL::Materials::Rebar::Size::bs7;
+   case 8:  return WBFL::Materials::Rebar::Size::bs8;
+   case 9:  return WBFL::Materials::Rebar::Size::bs9;
+   case 10: return WBFL::Materials::Rebar::Size::bs10;
+   case 11: return WBFL::Materials::Rebar::Size::bs11;
+   case 14: return WBFL::Materials::Rebar::Size::bs14;
+   case 18: return WBFL::Materials::Rebar::Size::bs18;
    default: ATLASSERT(false);
    }
 
-   return matRebar::bsNone;
+   return WBFL::Materials::Rebar::Size::bsNone;
 }
 
 void CBridgeDescDeckRebarGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)

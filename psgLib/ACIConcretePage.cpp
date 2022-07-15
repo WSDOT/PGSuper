@@ -28,7 +28,7 @@
 #include "ACIConcretePage.h"
 
 #include <MFCTools\CustomDDX.h>
-#include <Material\ACI209Concrete.h>
+#include <Materials/ACI209Concrete.h>
 #include <EAF\EAFApp.h>
 #include <EAF\EAFDocument.h>
 
@@ -142,8 +142,8 @@ void CACIConcretePage::UpdateParameters()
 {
    UpdateData(TRUE);
 
-   matACI209Concrete::GetModelParameters((matACI209Concrete::CureMethod)m_CureMethod,
-                                         (matACI209Concrete::CementType)m_CementType,
+   WBFL::Materials::ACI209Concrete::GetModelParameters((WBFL::Materials::ConcreteBase::CureMethod)m_CureMethod,
+                                         (WBFL::Materials::ACI209Concrete::CementType)m_CementType,
                                          &m_A,&m_B);
 
    UpdateData(FALSE);

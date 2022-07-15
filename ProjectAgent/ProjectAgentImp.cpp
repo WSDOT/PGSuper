@@ -3430,7 +3430,7 @@ HRESULT CProjectAgentImp::PrestressingDataProc2(IStructuredSave* pSave,IStructur
       pLoad->get_Version(&version);
 
       // removed at version 3 of data block
-      const matPsStrand* pStrandMaterial = 0;
+      const WBFL::Materials::PsStrand* pStrandMaterial = nullptr;
       if ( version < 3 )
       {
          hr = pLoad->get_Property(_T("PrestressStrandKey"), &var );
@@ -3440,7 +3440,7 @@ HRESULT CProjectAgentImp::PrestressingDataProc2(IStructuredSave* pSave,IStructur
          }
 
          Int64 key = var.lVal;
-         key |= matPsStrand::None;
+         key |= std::underlying_type< WBFL::Materials::PsStrand::Coating>::type(WBFL::Materials::PsStrand::Coating::None);
 
          lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
          pStrandMaterial = pPool->GetStrand( key );
@@ -5257,17 +5257,29 @@ void CProjectAgentImp::UseGirderLibraryEntries()
                   CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
                   if ( pSegment->Strands.GetStrandMaterial(pgsTypes::Straight) == nullptr )
                   {
-                     pSegment->Strands.SetStrandMaterial(pgsTypes::Straight,lrfdStrandPool::GetInstance()->GetStrand(matPsStrand::Gr1725,matPsStrand::StressRelieved,matPsStrand::None,matPsStrand::D635));
+                     pSegment->Strands.SetStrandMaterial(pgsTypes::Straight,lrfdStrandPool::GetInstance()->GetStrand(
+                        WBFL::Materials::PsStrand::Grade::Gr1725,
+                        WBFL::Materials::PsStrand::Type::StressRelieved,
+                        WBFL::Materials::PsStrand::Coating::None,
+                        WBFL::Materials::PsStrand::Size::D635));
                   }
 
                   if ( pSegment->Strands.GetStrandMaterial(pgsTypes::Harped) == nullptr )
                   {
-                     pSegment->Strands.SetStrandMaterial(pgsTypes::Harped,lrfdStrandPool::GetInstance()->GetStrand(matPsStrand::Gr1725,matPsStrand::StressRelieved,matPsStrand::None,matPsStrand::D635));
+                     pSegment->Strands.SetStrandMaterial(pgsTypes::Harped,lrfdStrandPool::GetInstance()->GetStrand(
+                        WBFL::Materials::PsStrand::Grade::Gr1725,
+                        WBFL::Materials::PsStrand::Type::StressRelieved,
+                        WBFL::Materials::PsStrand::Coating::None,
+                        WBFL::Materials::PsStrand::Size::D635));
                   }
 
                   if ( pSegment->Strands.GetStrandMaterial(pgsTypes::Temporary)== nullptr )
                   {
-                     pSegment->Strands.SetStrandMaterial(pgsTypes::Temporary,lrfdStrandPool::GetInstance()->GetStrand(matPsStrand::Gr1725,matPsStrand::StressRelieved,matPsStrand::None,matPsStrand::D635));
+                     pSegment->Strands.SetStrandMaterial(pgsTypes::Temporary,lrfdStrandPool::GetInstance()->GetStrand(
+                        WBFL::Materials::PsStrand::Grade::Gr1725,
+                        WBFL::Materials::PsStrand::Type::StressRelieved,
+                        WBFL::Materials::PsStrand::Coating::None,
+                        WBFL::Materials::PsStrand::Size::D635));
                   }
 
                   use_library_entry(&m_LibObserver,pSegment->HandlingData.HaulTruckName,&pHaulTruckEntry,*pHaulTruckLibrary);
@@ -5501,12 +5513,12 @@ void CProjectAgentImp::UpdateConcreteMaterial()
             CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
             if ( !pSegment->Material.Concrete.bUserEci )
             {
-               pSegment->Material.Concrete.Eci = lrfdConcreteUtil::ModE((matConcrete::Type)(pSegment->Material.Concrete.Type),pSegment->Material.Concrete.Fci,pSegment->Material.Concrete.StrengthDensity,false);
+               pSegment->Material.Concrete.Eci = lrfdConcreteUtil::ModE((WBFL::Materials::ConcreteType)(pSegment->Material.Concrete.Type),pSegment->Material.Concrete.Fci,pSegment->Material.Concrete.StrengthDensity,false);
             }
 
             if ( !pSegment->Material.Concrete.bUserEc )
             {
-               pSegment->Material.Concrete.Ec = lrfdConcreteUtil::ModE((matConcrete::Type)(pSegment->Material.Concrete.Type),pSegment->Material.Concrete.Fc,pSegment->Material.Concrete.StrengthDensity,false);
+               pSegment->Material.Concrete.Ec = lrfdConcreteUtil::ModE((WBFL::Materials::ConcreteType)(pSegment->Material.Concrete.Type),pSegment->Material.Concrete.Fc,pSegment->Material.Concrete.StrengthDensity,false);
             }
 
             if ( bAfter2015 && pSegment->Material.Concrete.Type == pgsTypes::AllLightweight )
@@ -5519,12 +5531,12 @@ void CProjectAgentImp::UpdateConcreteMaterial()
             {
                if ( !pClosureJoint->GetConcrete().bUserEci )
                {
-                  pClosureJoint->GetConcrete().Eci = lrfdConcreteUtil::ModE((matConcrete::Type)(pClosureJoint->GetConcrete().Type),pClosureJoint->GetConcrete().Fci,pClosureJoint->GetConcrete().StrengthDensity,false);
+                  pClosureJoint->GetConcrete().Eci = lrfdConcreteUtil::ModE((WBFL::Materials::ConcreteType)(pClosureJoint->GetConcrete().Type),pClosureJoint->GetConcrete().Fci,pClosureJoint->GetConcrete().StrengthDensity,false);
                }
 
                if ( !pClosureJoint->GetConcrete().bUserEc )
                {
-                  pClosureJoint->GetConcrete().Ec = lrfdConcreteUtil::ModE((matConcrete::Type)(pClosureJoint->GetConcrete().Type), pClosureJoint->GetConcrete().Fc,pClosureJoint->GetConcrete().StrengthDensity,false);
+                  pClosureJoint->GetConcrete().Ec = lrfdConcreteUtil::ModE((WBFL::Materials::ConcreteType)(pClosureJoint->GetConcrete().Type), pClosureJoint->GetConcrete().Fc,pClosureJoint->GetConcrete().StrengthDensity,false);
                }
 
                if ( bAfter2015 && pClosureJoint->GetConcrete().Type == pgsTypes::AllLightweight )
@@ -5541,12 +5553,12 @@ void CProjectAgentImp::UpdateConcreteMaterial()
    {
       if ( !pDeck->Concrete.bUserEci )
       {
-         pDeck->Concrete.Eci = lrfdConcreteUtil::ModE((matConcrete::Type)(pDeck->Concrete.Type),pDeck->Concrete.Fci,pDeck->Concrete.StrengthDensity,false);
+         pDeck->Concrete.Eci = lrfdConcreteUtil::ModE((WBFL::Materials::ConcreteType)(pDeck->Concrete.Type),pDeck->Concrete.Fci,pDeck->Concrete.StrengthDensity,false);
       }
 
       if ( !pDeck->Concrete.bUserEc )
       {
-         pDeck->Concrete.Ec = lrfdConcreteUtil::ModE((matConcrete::Type)(pDeck->Concrete.Type), pDeck->Concrete.Fc,pDeck->Concrete.StrengthDensity,false);
+         pDeck->Concrete.Ec = lrfdConcreteUtil::ModE((WBFL::Materials::ConcreteType)(pDeck->Concrete.Type), pDeck->Concrete.Fc,pDeck->Concrete.StrengthDensity,false);
       }
 
       if ( bAfter2015 && pDeck->Concrete.Type == pgsTypes::AllLightweight )
@@ -5581,11 +5593,11 @@ void CProjectAgentImp::UpdateTimeDependentMaterials()
             pSegment->Material.Concrete.bBasePropertiesOnInitialValues = false;
 
             pSegment->Material.Concrete.bACIUserParameters = true;
-            matACI209Concrete::ComputeParameters(pSegment->Material.Concrete.Fci,ti,pSegment->Material.Concrete.Fc,28.0,&pSegment->Material.Concrete.A,&pSegment->Material.Concrete.B);
+            WBFL::Materials::ACI209Concrete::ComputeParameters(pSegment->Material.Concrete.Fci,ti,pSegment->Material.Concrete.Fc,28.0,&pSegment->Material.Concrete.A,&pSegment->Material.Concrete.B);
             pSegment->Material.Concrete.A = WBFL::Units::ConvertToSysUnits(pSegment->Material.Concrete.A,WBFL::Units::Measure::Day);
 
             pSegment->Material.Concrete.bCEBFIPUserParameters = true;
-            matCEBFIPConcrete::ComputeParameters(pSegment->Material.Concrete.Fci,ti,pSegment->Material.Concrete.Fc,28.0,&pSegment->Material.Concrete.S);
+            WBFL::Materials::CEBFIPConcrete::ComputeParameters(pSegment->Material.Concrete.Fci,ti,pSegment->Material.Concrete.Fc,28.0,&pSegment->Material.Concrete.S);
 
             CClosureJointData* pClosureJoint = pSegment->GetClosureJoint(pgsTypes::metEnd);
             ATLASSERT(pClosureJoint == nullptr); // we can't go from a non-time step method to a time-step method unless we have a regular precast girder bridge. For a regular precast girder bridge, there aren't any closure joints
@@ -5605,11 +5617,11 @@ void CProjectAgentImp::UpdateTimeDependentMaterials()
    //   pDeck->Concrete.bBasePropertiesOnInitialValues = false;
 
    //   pDeck->Concrete.bACIUserParameters = true;
-   //   matACI209Concrete::ComputeParameters(pDeck->Concrete.Fci,ti,pDeck->Concrete.Fc,28.0,&pDeck->Concrete.A,&pDeck->Concrete.B);
+   //   WBFL::Materials::ACI209Concrete::ComputeParameters(pDeck->Concrete.Fci,ti,pDeck->Concrete.Fc,28.0,&pDeck->Concrete.A,&pDeck->Concrete.B);
    //   pDeck->Concrete.A = WBFL::Units::ConvertToSysUnits(pDeck->Concrete.A,WBFL::Units::Measure::Day);
 
    //   pDeck->Concrete.bCEBFIPUserParameters = true;
-   //   matCEBFIPConcrete::ComputeParameters(pDeck->Concrete.Fci,ti,pDeck->Concrete.Fc,28.0,&pDeck->Concrete.S);
+   //   WBFL::Materials::CEBFIPConcrete::ComputeParameters(pDeck->Concrete.Fci,ti,pDeck->Concrete.Fc,28.0,&pDeck->Concrete.S);
    //}
 }
 
@@ -5645,7 +5657,7 @@ void CProjectAgentImp::UpdateStrandMaterial()
             for ( int i = 0; i < 3; i++ )
             {
                pgsTypes::StrandType type = (pgsTypes::StrandType)i;
-               const matPsStrand* pStrandMaterial = pSegment->Strands.GetStrandMaterial(type);
+               const auto* pStrandMaterial = pSegment->Strands.GetStrandMaterial(type);
                strand_pool_key = pPool->GetStrandKey(pStrandMaterial);
                strandKeys[type].insert(std::make_pair(segmentKey,strand_pool_key));
             }
@@ -5712,70 +5724,70 @@ void CProjectAgentImp::VerifyRebarGrade()
          {
             CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
 
-            if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SixthEditionWith2013Interims && pSegment->LongitudinalRebarData.BarGrade == matRebar::Grade100 )
+            if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SixthEditionWith2013Interims && pSegment->LongitudinalRebarData.BarGrade == WBFL::Materials::Rebar::Grade100 )
             {
                CString strMsg;
                strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nLongitudinal reinforcement for Group %d Girder %s Segment %d has been changed to %s"),
                               lrfdVersionMgr::GetCodeString(),
                               lrfdVersionMgr::GetVersionString(lrfdVersionMgr::SixthEditionWith2013Interims),
                               LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx),
-                              lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade60).c_str());
+                              lrfdRebarPool::GetMaterialName(WBFL::Materials::Rebar::Type::A615,WBFL::Materials::Rebar::Grade::Grade60).c_str());
                pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pSegment->GetSegmentKey(),pgsRebarStrengthStatusItem::Longitudinal,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
 
                pStatusCenter->Add(pStatusItem);
 
-               pSegment->LongitudinalRebarData.BarType = matRebar::A615;
-               pSegment->LongitudinalRebarData.BarGrade = matRebar::Grade60;
+               pSegment->LongitudinalRebarData.BarType = WBFL::Materials::Rebar::Type::A615;
+               pSegment->LongitudinalRebarData.BarGrade = WBFL::Materials::Rebar::Grade::Grade60;
             }
 
-            if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SixthEditionWith2013Interims && pSegment->ShearData.ShearBarGrade == matRebar::Grade100 )
+            if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SixthEditionWith2013Interims && pSegment->ShearData.ShearBarGrade == WBFL::Materials::Rebar::Grade100 )
             {
                CString strMsg;
                strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nTransverse reinforcement for Group %d Girder %s Segment %d has been changed to %s"),
                               lrfdVersionMgr::GetCodeString(),
                               lrfdVersionMgr::GetVersionString(lrfdVersionMgr::SixthEditionWith2013Interims),
                               LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx),
-                              lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade60).c_str());
+                              lrfdRebarPool::GetMaterialName(WBFL::Materials::Rebar::Type::A615,WBFL::Materials::Rebar::Grade::Grade60).c_str());
                pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pSegment->GetSegmentKey(),pgsRebarStrengthStatusItem::Transverse,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
 
                pStatusCenter->Add(pStatusItem);
 
-               pSegment->ShearData.ShearBarType  = matRebar::A615;
-               pSegment->ShearData.ShearBarGrade = matRebar::Grade60;
+               pSegment->ShearData.ShearBarType  = WBFL::Materials::Rebar::Type::A615;
+               pSegment->ShearData.ShearBarGrade = WBFL::Materials::Rebar::Grade::Grade60;
             }
 
             CClosureJointData* pClosure = pSegment->GetClosureJoint(pgsTypes::metEnd);
             if ( pClosure )
             {
-               if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SixthEditionWith2013Interims && pClosure->GetRebar().BarGrade == matRebar::Grade100 )
+               if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SixthEditionWith2013Interims && pClosure->GetRebar().BarGrade == WBFL::Materials::Rebar::Grade100 )
                {
                   CString strMsg;
                   strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nLongitudinal reinforcement for Group %d Girder %s Closure Joint %d has been changed to %s"),
                                  lrfdVersionMgr::GetCodeString(),
                                  lrfdVersionMgr::GetVersionString(lrfdVersionMgr::SixthEditionWith2013Interims),
                                  LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx),
-                                 lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade60).c_str());
+                                 lrfdRebarPool::GetMaterialName(WBFL::Materials::Rebar::Type::A615,WBFL::Materials::Rebar::Grade::Grade60).c_str());
                   pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pClosure->GetClosureKey(),pgsRebarStrengthStatusItem::Longitudinal,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
 
                   pStatusCenter->Add(pStatusItem);
 
-                  pClosure->GetRebar().BarType = matRebar::A615;
-                  pClosure->GetRebar().BarGrade = matRebar::Grade60;
+                  pClosure->GetRebar().BarType = WBFL::Materials::Rebar::Type::A615;
+                  pClosure->GetRebar().BarGrade = WBFL::Materials::Rebar::Grade::Grade60;
                }
 
-               if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SixthEditionWith2013Interims && pClosure->GetStirrups().ShearBarGrade == matRebar::Grade100 )
+               if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SixthEditionWith2013Interims && pClosure->GetStirrups().ShearBarGrade == WBFL::Materials::Rebar::Grade100 )
                {
                   CString strMsg;
                   strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nTransverse reinforcement for Group %d Girder %s Closure Joint %d has been changed to %s"),
                                  lrfdVersionMgr::GetCodeString(),
                                  lrfdVersionMgr::GetVersionString(lrfdVersionMgr::SixthEditionWith2013Interims),
                                  LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx),
-                                 lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade60).c_str());
+                                 lrfdRebarPool::GetMaterialName(WBFL::Materials::Rebar::Type::A615,WBFL::Materials::Rebar::Grade::Grade60).c_str());
                   pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pClosure->GetClosureKey(),pgsRebarStrengthStatusItem::Transverse,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
                   pStatusCenter->Add(pStatusItem);
 
-                  pClosure->GetStirrups().ShearBarType  = matRebar::A615;
-                  pClosure->GetStirrups().ShearBarGrade = matRebar::Grade60;
+                  pClosure->GetStirrups().ShearBarType  = WBFL::Materials::Rebar::Type::A615;
+                  pClosure->GetStirrups().ShearBarGrade = WBFL::Materials::Rebar::Grade::Grade60;
                }
             }
          } // next segment
@@ -5783,21 +5795,21 @@ void CProjectAgentImp::VerifyRebarGrade()
    } // next group
 
    CDeckDescription2* pDeck = m_BridgeDescription.GetDeckDescription();
-   if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SixthEditionWith2013Interims && pDeck->DeckRebarData.TopRebarGrade == matRebar::Grade100 )
+   if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SixthEditionWith2013Interims && pDeck->DeckRebarData.TopRebarGrade == WBFL::Materials::Rebar::Grade100 )
    {
       CString strMsg;
       strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nDeck reinforcement has been changed to %s"),
                      lrfdVersionMgr::GetCodeString(),
                      lrfdVersionMgr::GetVersionString(lrfdVersionMgr::SixthEditionWith2013Interims,false),
-                     lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade60).c_str());
+                     lrfdRebarPool::GetMaterialName(WBFL::Materials::Rebar::Type::A615,WBFL::Materials::Rebar::Grade::Grade60).c_str());
       pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(CSegmentKey(),pgsRebarStrengthStatusItem::Deck,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
 
       pStatusCenter->Add(pStatusItem);
 
-      pDeck->DeckRebarData.TopRebarType     = matRebar::A615;
-      pDeck->DeckRebarData.TopRebarGrade    = matRebar::Grade60;
-      pDeck->DeckRebarData.BottomRebarType  = matRebar::A615;
-      pDeck->DeckRebarData.BottomRebarGrade = matRebar::Grade60;
+      pDeck->DeckRebarData.TopRebarType     = WBFL::Materials::Rebar::Type::A615;
+      pDeck->DeckRebarData.TopRebarGrade    = WBFL::Materials::Rebar::Grade::Grade60;
+      pDeck->DeckRebarData.BottomRebarType  = WBFL::Materials::Rebar::Type::A615;
+      pDeck->DeckRebarData.BottomRebarGrade = WBFL::Materials::Rebar::Grade::Grade60;
    }
 }
 
@@ -8497,7 +8509,7 @@ pgsTypes::MeasurementLocation CProjectAgentImp::GetMeasurementLocation() const
 ////////////////////////////////////////////////////////////////////////
 // ISegmentData Methods
 //
-const matPsStrand* CProjectAgentImp::GetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) const
+const WBFL::Materials::PsStrand* CProjectAgentImp::GetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) const
 {
    ATLASSERT(strandType != pgsTypes::Permanent);
 
@@ -8508,7 +8520,7 @@ const matPsStrand* CProjectAgentImp::GetStrandMaterial(const CSegmentKey& segmen
    return pSegment->Strands.GetStrandMaterial(strandType);
 }
 
-void CProjectAgentImp::SetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType type,const matPsStrand* pMaterial)
+void CProjectAgentImp::SetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType type,const WBFL::Materials::PsStrand* pMaterial)
 {
    ATLASSERT(pMaterial != nullptr);
 
@@ -8716,14 +8728,14 @@ std::_tstring CProjectAgentImp::GetSegmentStirrupMaterial(const CSegmentKey& seg
    return lrfdRebarPool::GetMaterialName(pShearData->ShearBarType,pShearData->ShearBarGrade);
 }
 
-void CProjectAgentImp::GetSegmentStirrupMaterial(const CSegmentKey& segmentKey,matRebar::Type& type,matRebar::Grade& grade) const
+void CProjectAgentImp::GetSegmentStirrupMaterial(const CSegmentKey& segmentKey,WBFL::Materials::Rebar::Type& type,WBFL::Materials::Rebar::Grade& grade) const
 {
    const CShearData2* pShearData = GetSegmentShearData(segmentKey);
    type = pShearData->ShearBarType;
    grade = pShearData->ShearBarGrade;
 }
 
-void CProjectAgentImp::SetSegmentStirrupMaterial(const CSegmentKey& segmentKey,matRebar::Type type,matRebar::Grade grade)
+void CProjectAgentImp::SetSegmentStirrupMaterial(const CSegmentKey& segmentKey,WBFL::Materials::Rebar::Type type,WBFL::Materials::Rebar::Grade grade)
 {
    CPrecastSegmentData* pSegment = GetSegment(segmentKey);
    if ( pSegment->ShearData.ShearBarType != type || pSegment->ShearData.ShearBarGrade != grade)
@@ -8756,14 +8768,14 @@ std::_tstring CProjectAgentImp::GetClosureJointStirrupMaterial(const CClosureKey
    return lrfdRebarPool::GetMaterialName(pShearData->ShearBarType,pShearData->ShearBarGrade);
 }
 
-void CProjectAgentImp::GetClosureJointStirrupMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade) const
+void CProjectAgentImp::GetClosureJointStirrupMaterial(const CClosureKey& closureKey,WBFL::Materials::Rebar::Type& type,WBFL::Materials::Rebar::Grade& grade) const
 {
    const CShearData2* pShearData = GetClosureJointShearData(closureKey);
    type = pShearData->ShearBarType;
    grade = pShearData->ShearBarGrade;
 }
 
-void CProjectAgentImp::SetClosureJointStirrupMaterial(const CClosureKey& closureKey,matRebar::Type type,matRebar::Grade grade)
+void CProjectAgentImp::SetClosureJointStirrupMaterial(const CClosureKey& closureKey,WBFL::Materials::Rebar::Type type,WBFL::Materials::Rebar::Grade grade)
 {
    CPrecastSegmentData* pSegment = GetSegment(closureKey);
    CClosureJointData* pClosureJoint = pSegment->GetClosureJoint(pgsTypes::metEnd);
@@ -8806,14 +8818,14 @@ std::_tstring CProjectAgentImp::GetSegmentLongitudinalRebarMaterial(const CSegme
    return lrfdRebarPool::GetMaterialName(pLRD->BarType,pLRD->BarGrade);
 }
 
-void CProjectAgentImp::GetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey,matRebar::Type& type,matRebar::Grade& grade) const
+void CProjectAgentImp::GetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey,WBFL::Materials::Rebar::Type& type,WBFL::Materials::Rebar::Grade& grade) const
 {
    const CLongitudinalRebarData* pLRD = GetSegmentLongitudinalRebarData(segmentKey);
    grade = pLRD->BarGrade;
    type = pLRD->BarType;
 }
 
-void CProjectAgentImp::SetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey,matRebar::Type type,matRebar::Grade grade)
+void CProjectAgentImp::SetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey,WBFL::Materials::Rebar::Type type,WBFL::Materials::Rebar::Grade grade)
 {
    CPrecastSegmentData* pSegment = GetSegment(segmentKey);
    if ( pSegment->LongitudinalRebarData.BarGrade != grade || pSegment->LongitudinalRebarData.BarType != type )
@@ -8846,14 +8858,14 @@ std::_tstring CProjectAgentImp::GetClosureJointLongitudinalRebarMaterial(const C
    return lrfdRebarPool::GetMaterialName(pLRD->BarType,pLRD->BarGrade);
 }
 
-void CProjectAgentImp::GetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade) const
+void CProjectAgentImp::GetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,WBFL::Materials::Rebar::Type& type,WBFL::Materials::Rebar::Grade& grade) const
 {
    const CLongitudinalRebarData* pLRD = GetClosureJointLongitudinalRebarData(closureKey);
    grade = pLRD->BarGrade;
    type = pLRD->BarType;
 }
 
-void CProjectAgentImp::SetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type type,matRebar::Grade grade)
+void CProjectAgentImp::SetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,WBFL::Materials::Rebar::Type type,WBFL::Materials::Rebar::Grade grade)
 {
    CPrecastSegmentData* pSegment = GetSegment(closureKey);
    CClosureJointData* pClosureJoint = pSegment->GetClosureJoint(pgsTypes::metEnd);
@@ -12100,7 +12112,7 @@ Float64 CProjectAgentImp::GetMaxPjack(const CSegmentKey& segmentKey,pgsTypes::St
    return pPrestress->GetPjackMax(segmentKey,*GetStrandMaterial(segmentKey,type),nStrands);
 }
 
-Float64 CProjectAgentImp::GetMaxPjack(const CSegmentKey& segmentKey,StrandIndexType nStrands,const matPsStrand* pStrand) const
+Float64 CProjectAgentImp::GetMaxPjack(const CSegmentKey& segmentKey,StrandIndexType nStrands,const WBFL::Materials::PsStrand* pStrand) const
 {
    GET_IFACE(IPretensionForce,pPrestress);
    return pPrestress->GetPjackMax(segmentKey,*pStrand,nStrands);

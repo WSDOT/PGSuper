@@ -39,7 +39,7 @@
 #include <PgsExt\ConcreteDetailsDlg.h>
 
 #include <System\Tokenizer.h>
-#include <Material\Material.h>
+#include <Materials/Materials.h>
 
 #include "TimelineEventDlg.h"
 
@@ -556,7 +556,7 @@ void CGirderSegmentGeneralPage::UpdateEci()
       Float64 Eci;
       if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
       {
-         matACI209Concrete concrete;
+         WBFL::Materials::ACI209Concrete concrete;
          concrete.UserEc28(true);
          concrete.SetEc28(Ec);
          concrete.SetA(pSegment->Material.Concrete.A);
@@ -569,7 +569,7 @@ void CGirderSegmentGeneralPage::UpdateEci()
       else
       {
          ATLASSERT(m_TimeDependentModel == TDM_CEBFIP);
-         matCEBFIPConcrete concrete;
+         WBFL::Materials::CEBFIPConcrete concrete;
          concrete.UserEc28(true);
          concrete.SetEc28(Ec);
          concrete.SetTimeAtCasting(0);
@@ -657,12 +657,12 @@ void CGirderSegmentGeneralPage::UpdateEc()
       Float64 Ec;
       if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
       {
-         Ec = matACI209Concrete::ComputeEc28(Eci,m_AgeAtRelease,pSegment->Material.Concrete.A,pSegment->Material.Concrete.B);
+         Ec = WBFL::Materials::ACI209Concrete::ComputeEc28(Eci,m_AgeAtRelease,pSegment->Material.Concrete.A,pSegment->Material.Concrete.B);
       }
       else
       {
          ATLASSERT( m_TimeDependentModel == TDM_CEBFIP );
-         Ec = matCEBFIPConcrete::ComputeEc28(Eci,m_AgeAtRelease,pSegment->Material.Concrete.S);
+         Ec = WBFL::Materials::CEBFIPConcrete::ComputeEc28(Eci,m_AgeAtRelease,pSegment->Material.Concrete.S);
       }
 
       CString strEc;
@@ -715,12 +715,12 @@ void CGirderSegmentGeneralPage::UpdateFc()
 
       if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
       {
-         fc = matACI209Concrete::ComputeFc28(fci,m_AgeAtRelease,pSegment->Material.Concrete.A,pSegment->Material.Concrete.B);
+         fc = WBFL::Materials::ACI209Concrete::ComputeFc28(fci,m_AgeAtRelease,pSegment->Material.Concrete.A,pSegment->Material.Concrete.B);
       }
       else
       {
          ATLASSERT(m_TimeDependentModel == TDM_CEBFIP);
-         fc = matCEBFIPConcrete::ComputeFc28(fci,m_AgeAtRelease,pSegment->Material.Concrete.S);
+         fc = WBFL::Materials::CEBFIPConcrete::ComputeFc28(fci,m_AgeAtRelease,pSegment->Material.Concrete.S);
       }
 
       CString strFc;
@@ -753,7 +753,7 @@ void CGirderSegmentGeneralPage::UpdateFci()
       Float64 fci;
       if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
       {
-         matACI209Concrete concrete;
+         WBFL::Materials::ACI209Concrete concrete;
          concrete.SetTimeAtCasting(0);
          concrete.SetFc28(fc);
          concrete.SetA(pSegment->Material.Concrete.A);
@@ -763,7 +763,7 @@ void CGirderSegmentGeneralPage::UpdateFci()
       else
       {
          ATLASSERT(m_TimeDependentModel == TDM_CEBFIP);
-         matCEBFIPConcrete concrete;
+         WBFL::Materials::CEBFIPConcrete concrete;
          concrete.SetTimeAtCasting(0);
          concrete.SetFc28(fc);
          concrete.SetS(pSegment->Material.Concrete.S);
@@ -981,7 +981,7 @@ void CGirderSegmentGeneralPage::UpdateConcreteParametersToolTip()
 
    CString strTip;
    strTip.Format(_T("%-20s %s\r\n%-20s %s\r\n%-20s %s\r\n%-20s %s"),
-      _T("Type"), lrfdConcreteUtil::GetTypeName((matConcrete::Type)pSegment->Material.Concrete.Type,true).c_str(),
+      _T("Type"), lrfdConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pSegment->Material.Concrete.Type,true).c_str(),
       _T("Unit Weight"),FormatDimension(pSegment->Material.Concrete.StrengthDensity,density),
       _T("Unit Weight (w/ reinforcement)"),  FormatDimension(pSegment->Material.Concrete.WeightDensity,density),
       _T("Max Aggregate Size"),  FormatDimension(pSegment->Material.Concrete.MaxAggregateSize,aggsize)

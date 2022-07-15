@@ -26,9 +26,9 @@
 
 #include <StdIo.h>
 
-#include <Material\Concrete.h>
-#include <Material\ACI209Concrete.h>
-#include <Material\CEBFIPConcrete.h>
+#include <Materials/Concrete.h>
+#include <Materials/ACI209Concrete.h>
+#include <Materials/CEBFIPConcrete.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -88,11 +88,11 @@ CConcreteMaterial::CConcreteMaterial()
    bACIUserParameters = false;
    CureMethod = pgsTypes::Moist;
    ACI209CementType = pgsTypes::TypeI;
-   matACI209Concrete::GetModelParameters((matACI209Concrete::CureMethod)CureMethod,(matACI209Concrete::CementType)ACI209CementType,&A,&B);
+   WBFL::Materials::ACI209Concrete::GetModelParameters((WBFL::Materials::ConcreteBase::CureMethod)CureMethod,(WBFL::Materials::ACI209Concrete::CementType)ACI209CementType,&A,&B);
 
    bCEBFIPUserParameters = false;
    CEBFIPCementType = pgsTypes::N;
-   matCEBFIPConcrete::GetModelParameters((matCEBFIPConcrete::CementType)CEBFIPCementType,&S,&BetaSc);
+   WBFL::Materials::CEBFIPConcrete::GetModelParameters((WBFL::Materials::CEBFIPConcrete::CementType)CEBFIPCementType,&S,&BetaSc);
 }  
 
 CConcreteMaterial::~CConcreteMaterial()
@@ -289,7 +289,7 @@ bool CConcreteMaterial::operator!=(const CConcreteMaterial& rOther) const
 HRESULT CConcreteMaterial::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    pStrSave->BeginUnit(_T("Concrete"),4.0);
-   pStrSave->put_Property(_T("Type"),             CComVariant( lrfdConcreteUtil::GetTypeName((matConcrete::Type)Type,false).c_str() ));
+   pStrSave->put_Property(_T("Type"),             CComVariant( lrfdConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)Type,false).c_str() ));
    pStrSave->put_Property(_T("Fc"),               CComVariant(Fc));
 
    pStrSave->put_Property(_T("UserEc"),           CComVariant(bUserEc));
@@ -562,7 +562,7 @@ HRESULT CConcreteMaterial::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       if ( cebFipVersion < 2 )
       {
-         matCEBFIPConcrete::GetModelParameters((matCEBFIPConcrete::CementType)CEBFIPCementType,&S,&BetaSc);
+         WBFL::Materials::CEBFIPConcrete::GetModelParameters((WBFL::Materials::CEBFIPConcrete::CementType)CEBFIPCementType,&S,&BetaSc);
       }
 
       pStrLoad->EndUnit(); // CEBFIP

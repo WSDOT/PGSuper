@@ -46,16 +46,16 @@ CLASS
 
 //======================== LIFECYCLE  =======================================
 CShearData2::CShearData2():
-ShearBarType(matRebar::A615),
-ShearBarGrade(matRebar::Grade60),
+ShearBarType(WBFL::Materials::Rebar::Type::A615),
+ShearBarGrade(WBFL::Materials::Rebar::Grade::Grade60),
 bIsRoughenedSurface(true),
 bAreZonesSymmetrical(true),
 bUsePrimaryForSplitting(true),
-SplittingBarSize(matRebar::bsNone),
+SplittingBarSize(WBFL::Materials::Rebar::Size::bsNone),
 SplittingBarSpacing(0),
 SplittingZoneLength(0),
 nSplittingBars(0),
-ConfinementBarSize(matRebar::bsNone),
+ConfinementBarSize(WBFL::Materials::Rebar::Size::bsNone),
 ConfinementBarSpacing(0),
 ConfinementZoneLength(0)
 {
@@ -188,10 +188,10 @@ HRESULT CShearData2::Load(WBFL::System::IStructuredLoad* pStrLoad)
    }
 
    // These were data members prior to version 8. Now they are needed for conversion
-   matRebar::Size legacy_ConfinementBarSize(matRebar::bsNone);
+   WBFL::Materials::Rebar::Size legacy_ConfinementBarSize(WBFL::Materials::Rebar::Size::bsNone);
    Uint32         NumConfinementZones(0);
    bool           bDoStirrupsEngageDeck(true);
-   matRebar::Size TopFlangeBarSize(matRebar::bsNone);
+   WBFL::Materials::Rebar::Size TopFlangeBarSize(WBFL::Materials::Rebar::Size::bsNone);
    Float64        TopFlangeBarSpacing(0.0);
 
    if ( version < 8 )
@@ -200,15 +200,15 @@ HRESULT CShearData2::Load(WBFL::System::IStructuredLoad* pStrLoad)
       {
          Uint32 key;
          pStrLoad->Property(_T("ConfinementBarSize"), &key );
-         matRebar::Grade grade;
-         matRebar::Type type;
+         WBFL::Materials::Rebar::Grade grade;
+         WBFL::Materials::Rebar::Type type;
          lrfdRebarPool::MapOldRebarKey(key,grade,type,legacy_ConfinementBarSize);
       }
       else
       {
          Uint32 key;
          pStrLoad->Property(_T("ConfinementBarSize"), &key );
-         legacy_ConfinementBarSize = matRebar::Size(key);
+         legacy_ConfinementBarSize = WBFL::Materials::Rebar::Size(key);
       }
 
       pStrLoad->Property(_T("ConfinementZone"), &NumConfinementZones );
@@ -231,15 +231,15 @@ HRESULT CShearData2::Load(WBFL::System::IStructuredLoad* pStrLoad)
          Uint32 bkey;
          pStrLoad->Property(_T("TopFlangeBarSize"), &bkey );
          BarSizeType key = bkey;
-         matRebar::Grade grade;
-         matRebar::Type type;
+         WBFL::Materials::Rebar::Grade grade;
+         WBFL::Materials::Rebar::Type type;
          lrfdRebarPool::MapOldRebarKey(key,grade,type,TopFlangeBarSize);
       }
       else
       {
          Int32 key;
          pStrLoad->Property(_T("TopFlangeBarSize"), &key );
-         TopFlangeBarSize = matRebar::Size(key);
+         TopFlangeBarSize = WBFL::Materials::Rebar::Size(key);
       }
 
       pStrLoad->Property(_T("TopFlangeBarSpacing"), &TopFlangeBarSpacing );
@@ -249,10 +249,10 @@ HRESULT CShearData2::Load(WBFL::System::IStructuredLoad* pStrLoad)
    {
       Int32 key;
       pStrLoad->Property(_T("ShearBarType"), &key );
-      ShearBarType = matRebar::Type(key);
+      ShearBarType = WBFL::Materials::Rebar::Type(key);
 
       pStrLoad->Property(_T("ShearBarGrade"), &key );
-      ShearBarGrade = matRebar::Grade(key);
+      ShearBarGrade = WBFL::Materials::Rebar::Grade(key);
    }
 
    if ( 8 < version ) // added in version 9
@@ -310,7 +310,7 @@ HRESULT CShearData2::Load(WBFL::System::IStructuredLoad* pStrLoad)
    if (bConvertToVersion9)
    {
       // Last thing is old "top flange" bars
-      if (TopFlangeBarSize != matRebar::bsNone && TopFlangeBarSpacing > 0.0)
+      if (TopFlangeBarSize != WBFL::Materials::Rebar::Size::bsNone && TopFlangeBarSpacing > 0.0)
       {
          // should be an existing zone extended to mid-girder
          CHorizontalInterfaceZoneData& rzhdat = HorizontalInterfaceZones.front();
@@ -366,14 +366,14 @@ HRESULT CShearData2::Load(WBFL::System::IStructuredLoad* pStrLoad)
 
       Int32 key;
       pStrLoad->Property(_T("SplittingBarSize"), &key );
-      SplittingBarSize = matRebar::Size(key);
+      SplittingBarSize = WBFL::Materials::Rebar::Size(key);
 
       pStrLoad->Property(_T("SplittingBarSpacing"), &SplittingBarSpacing );
       pStrLoad->Property(_T("SplittingZoneLength"), &SplittingZoneLength );
       pStrLoad->Property(_T("nSplittingBars"), &nSplittingBars );
 
       pStrLoad->Property(_T("ConfinementBarSize"), &key );
-      ConfinementBarSize = matRebar::Size(key);
+      ConfinementBarSize = WBFL::Materials::Rebar::Size(key);
 
       pStrLoad->Property(_T("ConfinementBarSpacing"), &ConfinementBarSpacing );
       pStrLoad->Property(_T("ConfinementZoneLength"), &ConfinementZoneLength );

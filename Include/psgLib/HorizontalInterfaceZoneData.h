@@ -33,7 +33,7 @@
 #include "psgLibLib.h"
 
 #include <StrData.h>
-#include <Material\Rebar.h>
+#include <Materials/Rebar.h>
 
 // LOCAL INCLUDES
 //
@@ -66,7 +66,7 @@ public:
    ZoneIndexType ZoneNum;
    Float64 ZoneLength;
    Float64 BarSpacing;
-   matRebar::Size BarSize;
+   WBFL::Materials::Rebar::Size BarSize;
    Float64 nBars;
 
    // GROUP: LIFECYCLE

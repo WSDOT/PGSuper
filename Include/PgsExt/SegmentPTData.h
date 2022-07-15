@@ -102,7 +102,7 @@ public:
    pgsTypes::StrandInstallationType InstallationType;
    pgsTypes::SegmentPTEventType InstallationEvent;
 
-   const matPsStrand* m_pStrand; // tendon strand type
+   const WBFL::Materials::PsStrand* m_pStrand; // tendon strand type
 
 #if defined _DEBUG
    void AssertValid();

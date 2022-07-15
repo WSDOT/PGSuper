@@ -43,7 +43,7 @@
 //
 #include <PgsExt\ShearZoneData.h>
 
-#include <Material\Rebar.h>
+#include <Materials/Rebar.h>
 
 // FORWARD DECLARATIONS
 //
@@ -71,8 +71,8 @@ LOG
 class PGSEXTCLASS CShearData
 {
 public:
-   matRebar::Type  ShearBarType;
-   matRebar::Grade ShearBarGrade;
+   WBFL::Materials::Rebar::Type  ShearBarType;
+   WBFL::Materials::Rebar::Grade ShearBarGrade;
 
    bool  bIsRoughenedSurface;
    bool  bAreZonesSymmetrical;
@@ -93,12 +93,12 @@ public:
    typedef HorizontalInterfaceZoneVec::const_reverse_iterator HorizontalInterfaceZoneConstReverseIterator;
    HorizontalInterfaceZoneVec HorizontalInterfaceZones;
    
-   matRebar::Size SplittingBarSize;
+   WBFL::Materials::Rebar::Size SplittingBarSize;
    Float64 SplittingBarSpacing;
    Float64 SplittingZoneLength;
    Float64 nSplittingBars;
 
-   matRebar::Size ConfinementBarSize;
+   WBFL::Materials::Rebar::Size ConfinementBarSize;
    Float64 ConfinementBarSpacing;
    Float64 ConfinementZoneLength;
 

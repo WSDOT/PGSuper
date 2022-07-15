@@ -89,7 +89,7 @@ void CAdditionalInterfaceShearBarDlg::DoDataExchange(CDataExchange* pDX)
                }
             }
 
-            if (matRebar::bsNone != lsi.BarSize && zn < nrows)
+            if (WBFL::Materials::Rebar::Size::bsNone != lsi.BarSize && zn < nrows)
             {
                if (lsi.ZoneLength<lsi.BarSpacing)
                {
@@ -101,7 +101,7 @@ void CAdditionalInterfaceShearBarDlg::DoDataExchange(CDataExchange* pDX)
             }
 
             // make sure stirrup spacing is >0 if stirrups or confinement bars exist
-            if ((matRebar::bsNone != lsi.BarSize) && lsi.BarSpacing <= 0.0)
+            if ((WBFL::Materials::Rebar::Size::bsNone != lsi.BarSize) && lsi.BarSpacing <= 0.0)
             {
                CString msg;
                msg.Format(_T("Bar spacing must be greater than zero if stirrups exist in Horiz Interface Shear Zone %d"), zn + 1);

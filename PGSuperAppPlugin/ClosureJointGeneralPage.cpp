@@ -22,7 +22,7 @@
 #include <EAF\EAFDocument.h>
 
 #include <System\Tokenizer.h>
-#include <Material\Material.h>
+#include <Materials/Materials.h>
 
 #include <PgsExt\ConcreteDetailsDlg.h>
 
@@ -466,7 +466,7 @@ void CClosureJointGeneralPage::UpdateEci()
       Float64 Eci;
       if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
       {
-         matACI209Concrete concrete;
+         WBFL::Materials::ACI209Concrete concrete;
          concrete.UserEc28(true);
          concrete.SetEc28(Ec);
          concrete.SetA(pParent->m_ClosureJoint.GetConcrete().A);
@@ -479,7 +479,7 @@ void CClosureJointGeneralPage::UpdateEci()
       else
       {
          ATLASSERT(m_TimeDependentModel == TDM_CEBFIP);
-         matCEBFIPConcrete concrete;
+         WBFL::Materials::CEBFIPConcrete concrete;
          concrete.UserEc28(true);
          concrete.SetEc28(Ec);
          concrete.SetTimeAtCasting(0);
@@ -565,12 +565,12 @@ void CClosureJointGeneralPage::UpdateEc()
       Float64 Ec;
       if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
       {
-         Ec = matACI209Concrete::ComputeEc28(Eci,m_AgeAtContinuity,pParent->m_ClosureJoint.GetConcrete().A,pParent->m_ClosureJoint.GetConcrete().B);
+         Ec = WBFL::Materials::ACI209Concrete::ComputeEc28(Eci,m_AgeAtContinuity,pParent->m_ClosureJoint.GetConcrete().A,pParent->m_ClosureJoint.GetConcrete().B);
       }
       else
       {
          ATLASSERT( m_TimeDependentModel == TDM_CEBFIP );
-         Ec = matCEBFIPConcrete::ComputeEc28(Eci,m_AgeAtContinuity,pParent->m_ClosureJoint.GetConcrete().S);
+         Ec = WBFL::Materials::CEBFIPConcrete::ComputeEc28(Eci,m_AgeAtContinuity,pParent->m_ClosureJoint.GetConcrete().S);
       }
 
       CString strEc;
@@ -621,12 +621,12 @@ void CClosureJointGeneralPage::UpdateFc()
 
       if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
       {
-         fc = matACI209Concrete::ComputeFc28(fci,m_AgeAtContinuity,pParent->m_ClosureJoint.GetConcrete().A,pParent->m_ClosureJoint.GetConcrete().B);
+         fc = WBFL::Materials::ACI209Concrete::ComputeFc28(fci,m_AgeAtContinuity,pParent->m_ClosureJoint.GetConcrete().A,pParent->m_ClosureJoint.GetConcrete().B);
       }
       else
       {
          ATLASSERT(m_TimeDependentModel == TDM_CEBFIP);
-         fc = matCEBFIPConcrete::ComputeFc28(fci,m_AgeAtContinuity,pParent->m_ClosureJoint.GetConcrete().S);
+         fc = WBFL::Materials::CEBFIPConcrete::ComputeFc28(fci,m_AgeAtContinuity,pParent->m_ClosureJoint.GetConcrete().S);
       }
 
       CString strFc;
@@ -658,7 +658,7 @@ void CClosureJointGeneralPage::UpdateFci()
       Float64 fci;
       if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
       {
-         matACI209Concrete concrete;
+         WBFL::Materials::ACI209Concrete concrete;
          concrete.SetTimeAtCasting(0);
          concrete.SetFc28(fc);
          concrete.SetA(pParent->m_ClosureJoint.GetConcrete().A);
@@ -668,7 +668,7 @@ void CClosureJointGeneralPage::UpdateFci()
       else
       {
          ATLASSERT(m_TimeDependentModel == TDM_CEBFIP);
-         matCEBFIPConcrete concrete;
+         WBFL::Materials::CEBFIPConcrete concrete;
          concrete.SetTimeAtCasting(0);
          concrete.SetFc28(fc);
          concrete.SetS(pParent->m_ClosureJoint.GetConcrete().S);
@@ -768,7 +768,7 @@ void CClosureJointGeneralPage::UpdateConcreteParametersToolTip()
 
    CString strTip;
    strTip.Format(_T("%-20s %s\r\n%-20s %s\r\n%-20s %s\r\n%-20s %s"),
-      _T("Type"), lrfdConcreteUtil::GetTypeName((matConcrete::Type)pParent->m_ClosureJoint.GetConcrete().Type,true).c_str(),
+      _T("Type"), lrfdConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pParent->m_ClosureJoint.GetConcrete().Type,true).c_str(),
       _T("Unit Weight"),FormatDimension(pParent->m_ClosureJoint.GetConcrete().StrengthDensity,density),
       _T("Unit Weight (w/ reinforcement)"),  FormatDimension(pParent->m_ClosureJoint.GetConcrete().WeightDensity,density),
       _T("Max Aggregate Size"),  FormatDimension(pParent->m_ClosureJoint.GetConcrete().MaxAggregateSize,aggsize)

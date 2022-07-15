@@ -83,14 +83,14 @@ void CBridgeDescDeckReinforcementPage::DoDataExchange(CDataExchange* pDX)
 
    if ( pDX->m_bSaveAndValidate )
    {
-      if ( m_RebarData.TopRebarSize != matRebar::bsNone && IsLE(m_RebarData.TopSpacing,0.0) )
+      if ( m_RebarData.TopRebarSize != WBFL::Materials::Rebar::Size::bsNone && IsLE(m_RebarData.TopSpacing,0.0) )
       {
          AfxMessageBox(_T("Spacing of top rebar must be greater than zero"));
          pDX->PrepareEditCtrl(IDC_TOP_MAT_BAR_SPACING);
          pDX->Fail();
       }
 
-      if ( m_RebarData.BottomRebarSize != matRebar::bsNone && IsLE(m_RebarData.BottomSpacing,0.0) )
+      if ( m_RebarData.BottomRebarSize != WBFL::Materials::Rebar::Size::bsNone && IsLE(m_RebarData.BottomSpacing,0.0) )
       {
          AfxMessageBox(_T("Spacing of bottom rebar must be greater than zero"));
          pDX->PrepareEditCtrl(IDC_BOTTOM_MAT_BAR_SPACING);
@@ -167,7 +167,7 @@ BOOL CBridgeDescDeckReinforcementPage::OnInitDialog()
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CBridgeDescDeckReinforcementPage::GetRebarMaterial(matRebar::Type* pType,matRebar::Grade* pGrade)
+void CBridgeDescDeckReinforcementPage::GetRebarMaterial(WBFL::Materials::Rebar::Type* pType,WBFL::Materials::Rebar::Grade* pGrade)
 {
    return m_cbRebar.GetMaterial(pType,pGrade);
 }
@@ -175,11 +175,11 @@ void CBridgeDescDeckReinforcementPage::GetRebarMaterial(matRebar::Type* pType,ma
 void CBridgeDescDeckReinforcementPage::FillRebarComboBox(CComboBox* pcbRebar)
 {
    int idx = pcbRebar->AddString(_T("None"));
-   pcbRebar->SetItemData(idx,(DWORD_PTR)matRebar::bsNone);
+   pcbRebar->SetItemData(idx,(DWORD_PTR)WBFL::Materials::Rebar::Size::bsNone);
    lrfdRebarIter rebarIter(m_RebarData.TopRebarType,m_RebarData.TopRebarGrade);
    for ( rebarIter.Begin(); rebarIter; rebarIter.Next() )
    {
-      const matRebar* pRebar = rebarIter.GetCurrentRebar();
+      const auto* pRebar = rebarIter.GetCurrentRebar();
       idx = pcbRebar->AddString(pRebar->GetName().c_str());
       pcbRebar->SetItemData(idx,(DWORD_PTR)pRebar->GetSize());
    }

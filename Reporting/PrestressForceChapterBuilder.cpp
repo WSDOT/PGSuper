@@ -31,7 +31,7 @@
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
 
-#include <Material\PsStrand.h>
+#include <Materials/PsStrand.h>
 
 #include <PgsExt\StrandData.h>
 

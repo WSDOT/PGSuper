@@ -53,7 +53,7 @@ extern CComModule _Module;
 
 #include <WBFLBridgeGeometry.h>
 
-#include <Material\Material.h>
+#include <Materials/Materials.h>
 
 #include <Stability\Stability.h>
 

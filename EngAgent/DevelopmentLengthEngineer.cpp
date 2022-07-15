@@ -107,7 +107,7 @@ const std::shared_ptr<pgsDevelopmentLength> pgsDevelopmentLengthEngineer::GetDev
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    GET_IFACE(IMaterials, pMaterials);
-   const matPsStrand* pStrand = pMaterials->GetStrandMaterial(segmentKey, strandType);
+   const auto* pStrand = pMaterials->GetStrandMaterial(segmentKey, strandType);
 
    std::shared_ptr<pgsDevelopmentLength> details;
    Float64 db = pStrand->GetNominalDiameter();

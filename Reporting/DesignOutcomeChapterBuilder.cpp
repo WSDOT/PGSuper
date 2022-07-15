@@ -1472,7 +1472,7 @@ void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDispl
    }
    else if (1 == nz)
    {
-      if (pShearData->ShearZones[0].VertBarSize != matRebar::bsNone)
+      if (pShearData->ShearZones[0].VertBarSize != WBFL::Materials::Rebar::Size::bsNone)
       {
          is_stirrups = true;
       }
@@ -1530,7 +1530,7 @@ void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDispl
             (*pTables)(row,col++) << _T("");
          }
 
-         if (rszdata.VertBarSize!=matRebar::bsNone)
+         if (rszdata.VertBarSize!=WBFL::Materials::Rebar::Size::bsNone)
          {
             (*pTables)(row,col++) << lrfdRebarPool::GetBarSize(rszdata.VertBarSize).c_str();
             (*pTables)(row,col++) << length.SetValue(rszdata.BarSpacing);
@@ -1578,7 +1578,7 @@ void write_horiz_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplay
    }
    else if (1 == nhz)
    {
-      if (pShearData->HorizontalInterfaceZones[0].BarSize != matRebar::bsNone)
+      if (pShearData->HorizontalInterfaceZones[0].BarSize != WBFL::Materials::Rebar::Size::bsNone)
       {
          is_hstirrups = true;
       }
@@ -1634,7 +1634,7 @@ void write_horiz_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplay
             (*pTables)(row,col++) << _T("");
          }
 
-         if (rhzdata.BarSize!=matRebar::bsNone)
+         if (rhzdata.BarSize!=WBFL::Materials::Rebar::Size::bsNone)
          {
             (*pTables)(row,col++) << lrfdRebarPool::GetBarSize(rhzdata.BarSize).c_str();
             (*pTables)(row,col++) << length.SetValue(rhzdata.BarSpacing);
@@ -1667,7 +1667,7 @@ void write_additional_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDi
    scalar.SetPrecision(2);
    scalar.SetTolerance(1.0e-6);
 
-   if (pShearData->SplittingBarSize != matRebar::bsNone)
+   if (pShearData->SplittingBarSize != WBFL::Materials::Rebar::Size::bsNone)
    {
       *pParagraph <<_T("- Splitting Reinforcement: Zone Length =")<< location.SetValue(pShearData->SplittingZoneLength)
                   <<_T(";  ")<<scalar.SetValue(pShearData->nSplittingBars)<<_T(" legs of ")
@@ -1679,7 +1679,7 @@ void write_additional_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDi
       *pParagraph <<_T("- Splitting Reinforcement: None")<<rptNewLine;
    }
 
-   if (pShearData->ConfinementBarSize != matRebar::bsNone)
+   if (pShearData->ConfinementBarSize != WBFL::Materials::Rebar::Size::bsNone)
    {
       *pParagraph <<_T("- Confinement Reinforcement: Zone Length =")<< location.SetValue(pShearData->ConfinementZoneLength)<<_T("; ")
                   <<lrfdRebarPool::GetBarSize(pShearData->ConfinementBarSize).c_str()<<_T(" bars at ")

@@ -24,7 +24,7 @@
 #include <PgsExt\RailingSystem.h>
 #include <WbflAtlExt.h>
 #include <PGSuperException.h>
-#include <Material\Concrete.h>
+#include <Materials/Concrete.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -380,7 +380,7 @@ HRESULT CRailingSystem::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
    // added in version 3, updated version 4, removed version 5, replaced with concrete object
    //pStrSave->BeginUnit(_T("Concrete"),1.0);
-   //   pStrSave->put_Property(_T("Type"),CComVariant( lrfdConcreteUtil::GetTypeName((matConcrete::Type)ConcreteType,false).c_str() ));
+   //   pStrSave->put_Property(_T("Type"),CComVariant( lrfdConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)ConcreteType,false).c_str() ));
    //   pStrSave->put_Property(_T("fc"),CComVariant(fc));
    //   pStrSave->put_Property(_T("UserEc"),CComVariant(bUserEc));
    //   if ( bUserEc )

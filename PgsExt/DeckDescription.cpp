@@ -625,7 +625,7 @@ HRESULT CDeckDescription::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    // new parameters are Unit, SlabConcreteType, SlabHasFct, and SlabFct
    pStrSave->BeginUnit(_T("SlabConcrete"),1.0);
 
-      pStrSave->put_Property(_T("Type"),CComVariant( lrfdConcreteUtil::GetTypeName((matConcrete::Type)SlabConcreteType,false).c_str() ));
+      pStrSave->put_Property(_T("Type"),CComVariant( lrfdConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)SlabConcreteType,false).c_str() ));
       pStrSave->put_Property(_T("Fc"),               CComVariant(SlabFc));
       pStrSave->put_Property(_T("WeightDensity"),    CComVariant(SlabWeightDensity));
       pStrSave->put_Property(_T("StrengthDensity"),  CComVariant(SlabStrengthDensity));

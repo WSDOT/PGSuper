@@ -52,7 +52,7 @@
 #include <DManip\DManip.h>
 #include <DManipTools\DManipTools.h>
 
-#include <Material\Material.h>
+#include <Materials/Materials.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -631,14 +631,14 @@ void CBridgeSectionView::UpdateGirderTooltips()
       CString strMsg2;
       strMsg2.Format(_T("\n\nGirder: %s\n%s\nf'ci: %s\nf'c: %s"),
                      pBridgeDesc->GetGirderGroup(segmentKey.groupIndex)->GetGirder(segmentKey.girderIndex)->GetGirderName(),
-                     lrfdConcreteUtil::GetTypeName((matConcrete::Type)pMaterial->GetSegmentConcreteType(segmentKey),true).c_str(),
+                     lrfdConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pMaterial->GetSegmentConcreteType(segmentKey),true).c_str(),
                      FormatDimension(fci,pDisplayUnits->GetStressUnit()),
                      FormatDimension(fc, pDisplayUnits->GetStressUnit())
                     );
 
-      const matPsStrand* pStraightStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Straight);
-      const matPsStrand* pHarpedStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Harped);
-      const matPsStrand* pTempStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Temporary);
+      const auto* pStraightStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Straight);
+      const auto* pHarpedStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Harped);
+      const auto* pTempStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Temporary);
 
       StrandIndexType Ns = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Straight);
       StrandIndexType Nh = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Harped);
@@ -1322,7 +1322,7 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
                         GetDeckTypeName(deckType),
                         FormatDimension(pDeck->GrossDepth,pDisplayUnits->GetComponentDimUnit()),
                         FormatDimension(pBridgeDesc->GetSlabOffset(),pDisplayUnits->GetComponentDimUnit()),
-                        lrfdConcreteUtil::GetTypeName((matConcrete::Type)pDeck->Concrete.Type,true).c_str(),
+                        lrfdConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pDeck->Concrete.Type,true).c_str(),
                         FormatDimension(pDeck->Concrete.Fc,pDisplayUnits->GetStressUnit())
                         );
       }
@@ -1331,7 +1331,7 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
          strMsg2.Format(_T("\r\n\nDeck: %s\r\nSlab Thickness: %s\r\nSlab Offset: per girder\r\n%s\r\nf'c: %s"),
                         GetDeckTypeName(deckType),
                         FormatDimension(pDeck->GrossDepth,pDisplayUnits->GetComponentDimUnit()),
-                        lrfdConcreteUtil::GetTypeName((matConcrete::Type)pDeck->Concrete.Type,true).c_str(),
+                        lrfdConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pDeck->Concrete.Type,true).c_str(),
                         FormatDimension(pDeck->Concrete.Fc,pDisplayUnits->GetStressUnit())
                         );
       }

@@ -71,7 +71,7 @@ CTxDOT2013RelaxationAfterTransferTable* CTxDOT2013RelaxationAfterTransferTable::
       // fpt is the same along girder - we don't need a table
       *pParagraph << Sub2(_T("f"),_T("pt"))<<_T(" = 0.7 ")<<Sub2(_T("f"),_T("pu"))<<_T(" = ")<< stress.SetValue(pLosses->Getfpt()) << rptNewLine << rptNewLine;
 
-      if ( pLosses->GetPermanentStrandCoating() != matPsStrand::None )
+      if ( pLosses->GetPermanentStrandCoating() != WBFL::Materials::PsStrand::Coating::None )
       {
          *pParagraph << EPOXY_RELAXATION_NOTE << rptNewLine;
       }
@@ -89,7 +89,7 @@ CTxDOT2013RelaxationAfterTransferTable* CTxDOT2013RelaxationAfterTransferTable::
       rptStyleManager::ConfigureTable(table);
 
 
-      if ( pLosses->GetPermanentStrandCoating() != matPsStrand::None )
+      if ( pLosses->GetPermanentStrandCoating() != WBFL::Materials::PsStrand::Coating::None )
       {
          *pParagraph << EPOXY_RELAXATION_NOTE << rptNewLine;
       }

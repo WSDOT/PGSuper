@@ -357,12 +357,12 @@ void CGirderDetailingCheck::BuildStirrupLayoutCheck(rptChapter* pChapter,
             pStirrupGeometry->GetPrimaryZoneBounds(segmentKey, zoneIdx, &zoneStart, &zoneEnd);
             Float64 zoneLength = zoneEnd - zoneStart;
 
-            matRebar::Size barSize;
+            WBFL::Materials::Rebar::Size barSize;
             Float64 spacing;
             Float64 nStirrups;
             pStirrupGeometry->GetPrimaryVertStirrupBarInfo(segmentKey, zoneIdx, &barSize, &nStirrups, &spacing);
 
-            if (barSize != matRebar::bsNone && TOLERANCE < spacing)
+            if (barSize != WBFL::Materials::Rebar::Size::bsNone && TOLERANCE < spacing)
             {
                // If spacings fit within 1%, then pass. Otherwise fail
                Float64 nFSpaces = zoneLength / spacing;

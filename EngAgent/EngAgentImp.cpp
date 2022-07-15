@@ -1395,7 +1395,7 @@ Float64 CEngAgentImp::GetPjackMax(const CSegmentKey& segmentKey,pgsTypes::Strand
 }
 
 //-----------------------------------------------------------------------------
-Float64 CEngAgentImp::GetPjackMax(const CSegmentKey& segmentKey,const matPsStrand& strand,StrandIndexType nStrands) const
+Float64 CEngAgentImp::GetPjackMax(const CSegmentKey& segmentKey,const WBFL::Materials::PsStrand& strand,StrandIndexType nStrands) const
 {
    return m_PsForceEngineer.GetPjackMax(segmentKey,strand,nStrands);
 }
@@ -1686,7 +1686,7 @@ Float64 CEngAgentImp::GetGirderTendonPjackMax(const CGirderKey& girderKey,Strand
    return GetGirderTendonPjackMax(girderKey,*pPTData->pStrand,nStrands);
 }
 
-Float64 CEngAgentImp::GetGirderTendonPjackMax(const CGirderKey& girderKey,const matPsStrand& strand,StrandIndexType nStrands) const
+Float64 CEngAgentImp::GetGirderTendonPjackMax(const CGirderKey& girderKey,const WBFL::Materials::PsStrand& strand,StrandIndexType nStrands) const
 {
    GET_IFACE( IAllowableTendonStress, pAllowable);
    Float64 fpj = (pAllowable->CheckTendonStressAtJacking() ? pAllowable->GetGirderTendonAllowableAtJacking(girderKey) : pAllowable->GetGirderTendonAllowablePriorToSeating(girderKey));
@@ -1705,7 +1705,7 @@ Float64 CEngAgentImp::GetSegmentTendonPjackMax(const CSegmentKey& segmentKey, St
    return GetSegmentTendonPjackMax(segmentKey, *pPTData->m_pStrand, nStrands);
 }
 
-Float64 CEngAgentImp::GetSegmentTendonPjackMax(const CSegmentKey& segmentKey, const matPsStrand& strand, StrandIndexType nStrands) const
+Float64 CEngAgentImp::GetSegmentTendonPjackMax(const CSegmentKey& segmentKey, const WBFL::Materials::PsStrand& strand, StrandIndexType nStrands) const
 {
    GET_IFACE(IAllowableTendonStress, pAllowable);
    Float64 fpj = (pAllowable->CheckTendonStressAtJacking() ? pAllowable->GetSegmentTendonAllowableAtJacking(segmentKey) : pAllowable->GetSegmentTendonAllowablePriorToSeating(segmentKey));

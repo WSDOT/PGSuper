@@ -59,7 +59,7 @@
 #include <DManipTools\DManipTools.h>
 #include <Units\Convert.h>
 
-#include <Material\Material.h>
+#include <Materials/Materials.h>
 
 #include <EAF\EAFMenu.h>
 
@@ -866,14 +866,14 @@ void CBridgePlanView::UpdateSegmentTooltips()
 
             CString strMsg3;
             strMsg3.Format(_T("\n\n%s\nf'ci: %s\nf'c: %s"),
-               lrfdConcreteUtil::GetTypeName((matConcrete::Type)pMaterial->GetSegmentConcreteType(segmentKey), true).c_str(),
+               lrfdConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pMaterial->GetSegmentConcreteType(segmentKey), true).c_str(),
                FormatDimension(fci, pDisplayUnits->GetStressUnit()),
                FormatDimension(fc, pDisplayUnits->GetStressUnit())
             );
 
-            const matPsStrand* pStraightStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Straight);
-            const matPsStrand* pHarpedStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Harped);
-            const matPsStrand* pTempStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Temporary);
+            const auto* pStraightStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Straight);
+            const auto* pHarpedStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Harped);
+            const auto* pTempStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Temporary);
 
             StrandIndexType Ns = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Straight);
             StrandIndexType Nh = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Harped);
@@ -1058,7 +1058,7 @@ void CBridgePlanView::UpdateClosureJointTooltips()
 
             CString strMsg2;
             strMsg2.Format(_T("\n\n%s\nf'ci: %s\nf'c: %s\n\nInstallation: Event %d, %s"),
-                           lrfdConcreteUtil::GetTypeName((matConcrete::Type)pClosureJoint->GetConcrete().Type,true).c_str(),
+                           lrfdConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pClosureJoint->GetConcrete().Type,true).c_str(),
                            FormatDimension(fci,pDisplayUnits->GetStressUnit()),
                            FormatDimension(fc, pDisplayUnits->GetStressUnit()),
                            LABEL_EVENT(eventIdx),

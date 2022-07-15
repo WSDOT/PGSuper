@@ -128,7 +128,7 @@ CRelaxationAtHaulingTable* CRelaxationAtHaulingTable::PrepareTable(rptChapter* p
       break;
    }
 
-   if ( ptl->GetPermanentStrandCoating() != matPsStrand::None )
+   if ( ptl->GetPermanentStrandCoating() != WBFL::Materials::PsStrand::Coating::None )
    {
       *pParagraph << EPOXY_RELAXATION_NOTE << rptNewLine;
    }
@@ -164,7 +164,7 @@ CRelaxationAtHaulingTable* CRelaxationAtHaulingTable::PrepareTable(rptChapter* p
          break;
       }
 
-      if ( ptl->GetTemporaryStrandCoating() != matPsStrand::None )
+      if ( ptl->GetTemporaryStrandCoating() != WBFL::Materials::PsStrand::Coating::None )
       {
          *pParagraph << EPOXY_RELAXATION_NOTE << rptNewLine;
       }

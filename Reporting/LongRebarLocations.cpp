@@ -128,7 +128,7 @@ void CLongRebarLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSeg
       Float64 startLoc, endLoc;
       bool onGirder = rowData.GetRebarStartEnd(segment_length, &startLoc, &endLoc);
 
-      const matRebar* pRebar = lrfdRebarPool::GetInstance()->GetRebar(pRebarData->BarType, pRebarData->BarGrade, rowData.BarSize);
+      const auto* pRebar = lrfdRebarPool::GetInstance()->GetRebar(pRebarData->BarType, pRebarData->BarGrade, rowData.BarSize);
       if (pRebar)
       {
          (*p_table)(row,0) << row;

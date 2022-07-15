@@ -109,7 +109,7 @@ public:
    //------------------------------------------------------------------------
    // Returns the maximum jacking force
    Float64 GetPjackMax(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType,StrandIndexType nStrands) const;
-   Float64 GetPjackMax(const CSegmentKey& segmentKey,const matPsStrand& strand,StrandIndexType nStrands) const;
+   Float64 GetPjackMax(const CSegmentKey& segmentKey,const WBFL::Materials::PsStrand& strand,StrandIndexType nStrands) const;
 
    //------------------------------------------------------------------------
    // Returns the prestress hold down force

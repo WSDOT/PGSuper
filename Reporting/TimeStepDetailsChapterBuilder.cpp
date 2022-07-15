@@ -2233,8 +2233,6 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
 
-   std::_tstring strCuring[] = {_T("Moist"),_T("Steam") };
-
    ColumnIndexType nColumns = 7; // This Interval (i), Previous Intervals (j), tj, tb, te, ..., Y(ib,jm), Y(ie,jm)
 
    pgsTypes::TimeDependentModel model = pLossParams->GetTimeDependentModel();
@@ -2333,16 +2331,16 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
          {
             if ( bIsInClosure )
             {
-               *pPara << _T("Curing: ") << strCuring[pMaterials->GetClosureJointConcrete(closureKey)->GetCureMethod()] << rptNewLine;
+               *pPara << _T("Curing: ") << WBFL::Materials::ConcreteBase::GetCureMethod(pMaterials->GetClosureJointConcrete(closureKey)->GetCureMethod()) << rptNewLine;
             }
             else
             {
-               *pPara << _T("Curing: ") << strCuring[pMaterials->GetSegmentConcrete(segmentKey)->GetCureMethod()] << rptNewLine;
+               *pPara << _T("Curing: ") << WBFL::Materials::ConcreteBase::GetCureMethod(pMaterials->GetSegmentConcrete(segmentKey)->GetCureMethod()) << rptNewLine;
             }
          }
          else
          {
-            *pPara << _T("Curing: ") << strCuring[pMaterials->GetDeckConcrete(deckCastingRegionIdx)->GetCureMethod()] << rptNewLine;
+            *pPara << _T("Curing: ") << WBFL::Materials::ConcreteBase::GetCureMethod(pMaterials->GetDeckConcrete(deckCastingRegionIdx)->GetCureMethod()) << rptNewLine;
          }
       }
 
@@ -2465,7 +2463,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
                continue;
             }
 
-            std::shared_ptr<matConcreteBaseCreepDetails> pCreep;
+            std::shared_ptr<WBFL::Materials::ConcreteBaseCreepDetails> pCreep;
             if (i == 0)
             {
                if (bIsInClosure)
@@ -2511,7 +2509,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
 
             if (model == pgsTypes::tdmAASHTO)
             {
-               lrfdLRFDTimeDependentConcreteCreepDetails* pDetails = (lrfdLRFDTimeDependentConcreteCreepDetails*)(pCreep.get());
+               const lrfdLRFDTimeDependentConcreteCreepDetails* pDetails = dynamic_cast<const lrfdLRFDTimeDependentConcreteCreepDetails*>(pCreep.get());
                if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims)
                {
                   (*pTable)(rowIdx, colIdx++) << stress.SetValue(pDetails->fci);
@@ -2537,7 +2535,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
             }
             else if (model == pgsTypes::tdmACI209)
             {
-               matACI209ConcreteCreepDetails* pDetails = (matACI209ConcreteCreepDetails*)(pCreep.get());
+               const WBFL::Materials::ACI209ConcreteCreepDetails* pDetails = dynamic_cast<const WBFL::Materials::ACI209ConcreteCreepDetails*>(pCreep.get());
                (*pTable)(rowIdx, colIdx++) << pDetails->time_factor;
                (*pTable)(rowIdx, colIdx++) << pDetails->loading_age_factor;
                (*pTable)(rowIdx, colIdx++) << pDetails->humidity_factor;
@@ -2545,7 +2543,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
             }
             else if (model == pgsTypes::tdmCEBFIP)
             {
-               matCEBFIPConcreteCreepDetails* pDetails = (matCEBFIPConcreteCreepDetails*)(pCreep.get());
+               const WBFL::Materials::CEBFIPConcreteCreepDetails* pDetails = dynamic_cast<const WBFL::Materials::CEBFIPConcreteCreepDetails*>(pCreep.get());
                (*pTable)(rowIdx, colIdx++) << ecc.SetValue(pDetails->h);
                (*pTable)(rowIdx, colIdx++) << pDetails->Bh;
                (*pTable)(rowIdx, colIdx++) << pDetails->Bc;
@@ -2746,8 +2744,8 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
 
                if (model == pgsTypes::tdmAASHTO)
                {
-                  lrfdLRFDTimeDependentConcreteCreepDetails* pStartDetails = (lrfdLRFDTimeDependentConcreteCreepDetails*)(pConcrete->Creep[prevIntervalIdx].pStartDetails.get());
-                  lrfdLRFDTimeDependentConcreteCreepDetails* pEndDetails = (lrfdLRFDTimeDependentConcreteCreepDetails*)(pConcrete->Creep[prevIntervalIdx].pEndDetails.get());
+                  const std::shared_ptr<lrfdLRFDTimeDependentConcreteCreepDetails> pStartDetails = std::dynamic_pointer_cast<lrfdLRFDTimeDependentConcreteCreepDetails>(pConcrete->Creep[prevIntervalIdx].pStartDetails);
+                  const std::shared_ptr<lrfdLRFDTimeDependentConcreteCreepDetails> pEndDetails   = std::dynamic_pointer_cast<lrfdLRFDTimeDependentConcreteCreepDetails>(pConcrete->Creep[prevIntervalIdx].pEndDetails);
                   if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims)
                   {
                      (*pTable)(rowIdx, colIdx++) << stress.SetValue(pStartDetails->fci);
@@ -2776,8 +2774,8 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
                }
                else if (model == pgsTypes::tdmACI209)
                {
-                  matACI209ConcreteCreepDetails* pStartDetails = (matACI209ConcreteCreepDetails*)(pConcrete->Creep[prevIntervalIdx].pStartDetails.get());
-                  matACI209ConcreteCreepDetails* pEndDetails = (matACI209ConcreteCreepDetails*)(pConcrete->Creep[prevIntervalIdx].pEndDetails.get());
+                  const std::shared_ptr<WBFL::Materials::ACI209ConcreteCreepDetails> pStartDetails = std::dynamic_pointer_cast<WBFL::Materials::ACI209ConcreteCreepDetails>(pConcrete->Creep[prevIntervalIdx].pStartDetails);
+                  const std::shared_ptr<WBFL::Materials::ACI209ConcreteCreepDetails> pEndDetails   = std::dynamic_pointer_cast<WBFL::Materials::ACI209ConcreteCreepDetails>(pConcrete->Creep[prevIntervalIdx].pEndDetails);
                   (*pTable)(rowIdx, colIdx++) << pStartDetails->time_factor;
                   (*pTable)(rowIdx, colIdx++) << pEndDetails->time_factor;
                   (*pTable)(rowIdx, colIdx++) << pStartDetails->loading_age_factor;
@@ -2787,8 +2785,8 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
                }
                else if (model == pgsTypes::tdmCEBFIP)
                {
-                  matCEBFIPConcreteCreepDetails* pStartDetails = (matCEBFIPConcreteCreepDetails*)(pConcrete->Creep[prevIntervalIdx].pStartDetails.get());
-                  matCEBFIPConcreteCreepDetails* pEndDetails = (matCEBFIPConcreteCreepDetails*)(pConcrete->Creep[prevIntervalIdx].pEndDetails.get());
+                  const std::shared_ptr<WBFL::Materials::CEBFIPConcreteCreepDetails> pStartDetails = std::dynamic_pointer_cast<WBFL::Materials::CEBFIPConcreteCreepDetails>(pConcrete->Creep[prevIntervalIdx].pStartDetails);
+                  const std::shared_ptr<WBFL::Materials::CEBFIPConcreteCreepDetails> pEndDetails   = std::dynamic_pointer_cast<WBFL::Materials::CEBFIPConcreteCreepDetails>(pConcrete->Creep[prevIntervalIdx].pEndDetails);
                   (*pTable)(rowIdx, colIdx++) << ecc.SetValue(pStartDetails->h);
                   (*pTable)(rowIdx, colIdx++) << pStartDetails->Bh;
                   (*pTable)(rowIdx, colIdx++) << pStartDetails->Bc;
@@ -2889,8 +2887,6 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
       ATLASSERT(false);
    }
 
-   std::_tstring strCuring[] = {_T("Moist"),_T("Steam") };
-
    (*pPara) << Sub2(_T("t"),_T("b")) << _T(" = Duration of shrinkage to the beginning of the interval") << rptNewLine;
    (*pPara) << Sub2(_T("t"),_T("e")) << _T(" = Duration of shrinkage to the end of the interval") << rptNewLine;
    if ( model == pgsTypes::tdmAASHTO )
@@ -2950,16 +2946,16 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
          {
             if ( bIsInClosure )
             {
-               *pPara << _T("Curing: ") << strCuring[pMaterials->GetClosureJointConcrete(closureKey)->GetCureMethod()] << rptNewLine;
+               *pPara << _T("Curing: ") << WBFL::Materials::ConcreteBase::GetCureMethod(pMaterials->GetClosureJointConcrete(closureKey)->GetCureMethod()) << rptNewLine;
             }
             else
             {
-               *pPara << _T("Curing: ") << strCuring[pMaterials->GetSegmentConcrete(segmentKey)->GetCureMethod()] << rptNewLine;
+               *pPara << _T("Curing: ") << WBFL::Materials::ConcreteBase::GetCureMethod(pMaterials->GetSegmentConcrete(segmentKey)->GetCureMethod()) << rptNewLine;
             }
          }
          else
          {
-            *pPara << _T("Curing: ") << strCuring[pMaterials->GetDeckConcrete(deckCastingRegionIdx)->GetCureMethod()] << rptNewLine;
+            *pPara << _T("Curing: ") << WBFL::Materials::ConcreteBase::GetCureMethod(pMaterials->GetDeckConcrete(deckCastingRegionIdx)->GetCureMethod()) << rptNewLine;
          }
       }
 
@@ -3107,8 +3103,8 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
 
          if ( model == pgsTypes::tdmAASHTO )
          {
-            lrfdLRFDTimeDependentConcreteShrinkageDetails* pStartDetails = (lrfdLRFDTimeDependentConcreteShrinkageDetails*)(pConcrete->Shrinkage.pStartDetails.get());
-            lrfdLRFDTimeDependentConcreteShrinkageDetails* pEndDetails   = (lrfdLRFDTimeDependentConcreteShrinkageDetails*)(pConcrete->Shrinkage.pEndDetails.get());
+            const std::shared_ptr<lrfdLRFDTimeDependentConcreteShrinkageDetails> pStartDetails = std::dynamic_pointer_cast<lrfdLRFDTimeDependentConcreteShrinkageDetails>(pConcrete->Shrinkage.pStartDetails);
+            const std::shared_ptr<lrfdLRFDTimeDependentConcreteShrinkageDetails> pEndDetails   = std::dynamic_pointer_cast<lrfdLRFDTimeDependentConcreteShrinkageDetails>(pConcrete->Shrinkage.pEndDetails);
             if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims )
             {
                (*pTable)(rowIdx,colIdx++) << pStartDetails->kvs;
@@ -3134,8 +3130,8 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
          }
          else if ( model == pgsTypes::tdmACI209 )
          {
-            matACI209ConcreteShrinkageDetails* pStartDetails = (matACI209ConcreteShrinkageDetails*)(pConcrete->Shrinkage.pStartDetails.get());
-            matACI209ConcreteShrinkageDetails* pEndDetails   = (matACI209ConcreteShrinkageDetails*)(pConcrete->Shrinkage.pEndDetails.get());
+            const std::shared_ptr<WBFL::Materials::ACI209ConcreteShrinkageDetails> pStartDetails = std::dynamic_pointer_cast<WBFL::Materials::ACI209ConcreteShrinkageDetails>(pConcrete->Shrinkage.pStartDetails);
+            const std::shared_ptr<WBFL::Materials::ACI209ConcreteShrinkageDetails> pEndDetails   = std::dynamic_pointer_cast<WBFL::Materials::ACI209ConcreteShrinkageDetails>(pConcrete->Shrinkage.pEndDetails);
             (*pTable)(rowIdx,colIdx++) << pStartDetails->f;
             (*pTable)(rowIdx,colIdx++) << pStartDetails->time_factor;
             (*pTable)(rowIdx,colIdx++) << pEndDetails->time_factor;
@@ -3145,8 +3141,8 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
          }
          else if ( model == pgsTypes::tdmCEBFIP )
          {
-            matCEBFIPConcreteShrinkageDetails* pStartDetails = (matCEBFIPConcreteShrinkageDetails*)(pConcrete->Shrinkage.pStartDetails.get());
-            matCEBFIPConcreteShrinkageDetails* pEndDetails   = (matCEBFIPConcreteShrinkageDetails*)(pConcrete->Shrinkage.pEndDetails.get());
+            const std::shared_ptr<WBFL::Materials::CEBFIPConcreteShrinkageDetails> pStartDetails = std::dynamic_pointer_cast<WBFL::Materials::CEBFIPConcreteShrinkageDetails>(pConcrete->Shrinkage.pStartDetails);
+            const std::shared_ptr<WBFL::Materials::CEBFIPConcreteShrinkageDetails> pEndDetails   = std::dynamic_pointer_cast<WBFL::Materials::CEBFIPConcreteShrinkageDetails>(pConcrete->Shrinkage.pEndDetails);
             (*pTable)(rowIdx,colIdx++) << ecc.SetValue(pStartDetails->h);
             (*pTable)(rowIdx,colIdx++) << pStartDetails->BetaSC;
             if ( pStartDetails->BetaSRH < 0 )
@@ -3205,13 +3201,13 @@ void CTimeStepDetailsChapterBuilder::ReportStrandRelaxationDetails(rptChapter* p
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    pgsTypes::TimeDependentModel model = pLossParams->GetTimeDependentModel();
-   const matPsStrand* pPermanentStrand = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Straight); // ok to use straight since we are just getting material properties, not strand size
-   const matPsStrand* pTemporaryStrand = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Temporary);
+   const auto* pPermanentStrand = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Straight); // ok to use straight since we are just getting material properties, not strand size
+   const auto* pTemporaryStrand = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Temporary);
    if ( pPermanentStrand == pTemporaryStrand )
    {
       if ( model == pgsTypes::tdmAASHTO || model == pgsTypes::tdmACI209 )
       {
-         if (pPermanentStrand->GetType() == matPsStrand::StressRelieved )
+         if (pPermanentStrand->GetType() == WBFL::Materials::PsStrand::Type::StressRelieved )
          {
             (*pPara) << rptRcImage(strImagePath + _T("ACI209RelaxationSR.png")) << rptNewLine;
          }
@@ -3222,7 +3218,7 @@ void CTimeStepDetailsChapterBuilder::ReportStrandRelaxationDetails(rptChapter* p
       }
       else
       {
-         if (pPermanentStrand->GetType() == matPsStrand::StressRelieved )
+         if (pPermanentStrand->GetType() == WBFL::Materials::PsStrand::Type::StressRelieved )
          {
             (*pPara) << rptRcImage(strImagePath + _T("CEBFIPRelaxationSR.png")) << rptNewLine;
          }
@@ -3237,7 +3233,7 @@ void CTimeStepDetailsChapterBuilder::ReportStrandRelaxationDetails(rptChapter* p
       *pPara << _T("Straight and Harped Strands") << rptNewLine;
       if ( model == pgsTypes::tdmAASHTO || model == pgsTypes::tdmACI209 )
       {
-         if (pPermanentStrand->GetType() == matPsStrand::StressRelieved )
+         if (pPermanentStrand->GetType() == WBFL::Materials::PsStrand::Type::StressRelieved )
          {
             (*pPara) << rptRcImage(strImagePath + _T("ACI209RelaxationSR.png")) << rptNewLine;
          }
@@ -3248,7 +3244,7 @@ void CTimeStepDetailsChapterBuilder::ReportStrandRelaxationDetails(rptChapter* p
       }
       else
       {
-         if (pPermanentStrand->GetType() == matPsStrand::StressRelieved )
+         if (pPermanentStrand->GetType() == WBFL::Materials::PsStrand::Type::StressRelieved )
          {
             (*pPara) << rptRcImage(strImagePath + _T("CEBFIPRelaxationSR.png")) << rptNewLine;
          }
@@ -3262,7 +3258,7 @@ void CTimeStepDetailsChapterBuilder::ReportStrandRelaxationDetails(rptChapter* p
       *pPara << _T("Temporary Strands") << rptNewLine;
       if ( model == pgsTypes::tdmAASHTO || model == pgsTypes::tdmACI209 )
       {
-         if (pTemporaryStrand->GetType() == matPsStrand::StressRelieved )
+         if (pTemporaryStrand->GetType() == WBFL::Materials::PsStrand::Type::StressRelieved )
          {
             (*pPara) << rptRcImage(strImagePath + _T("ACI209RelaxationSR.png")) << rptNewLine;
          }
@@ -3273,7 +3269,7 @@ void CTimeStepDetailsChapterBuilder::ReportStrandRelaxationDetails(rptChapter* p
       }
       else
       {
-         if (pTemporaryStrand->GetType() == matPsStrand::StressRelieved )
+         if (pTemporaryStrand->GetType() == WBFL::Materials::PsStrand::Type::StressRelieved )
          {
             (*pPara) << rptRcImage(strImagePath + _T("CEBFIPRelaxationSR.png")) << rptNewLine;
          }
@@ -3400,10 +3396,10 @@ void CTimeStepDetailsChapterBuilder::ReportSegmentTendonRelaxationDetails(rptCha
    (*pChapter) << pPara;
 
    pgsTypes::TimeDependentModel model = pLossParams->GetTimeDependentModel();
-   const matPsStrand* pTendon = pMaterials->GetSegmentTendonMaterial(segmentKey);
+   const auto* pTendon = pMaterials->GetSegmentTendonMaterial(segmentKey);
    if (model == pgsTypes::tdmAASHTO || model == pgsTypes::tdmACI209)
    {
-      if (pTendon->GetType() == matPsStrand::StressRelieved)
+      if (pTendon->GetType() == WBFL::Materials::PsStrand::Type::StressRelieved)
       {
          (*pPara) << rptRcImage(strImagePath + _T("ACI209RelaxationSR.png")) << rptNewLine;
       }
@@ -3414,7 +3410,7 @@ void CTimeStepDetailsChapterBuilder::ReportSegmentTendonRelaxationDetails(rptCha
    }
    else
    {
-      if (pTendon->GetType() == matPsStrand::StressRelieved)
+      if (pTendon->GetType() == WBFL::Materials::PsStrand::Type::StressRelieved)
       {
          (*pPara) << rptRcImage(strImagePath + _T("CEBFIPRelaxationSR.png")) << rptNewLine;
       }
@@ -3538,10 +3534,10 @@ void CTimeStepDetailsChapterBuilder::ReportGirderTendonRelaxationDetails(rptChap
    (*pChapter) << pPara;
 
    pgsTypes::TimeDependentModel model = pLossParams->GetTimeDependentModel();
-   const matPsStrand* pTendon = pMaterials->GetGirderTendonMaterial(segmentKey);
+   const auto* pTendon = pMaterials->GetGirderTendonMaterial(segmentKey);
    if ( model == pgsTypes::tdmAASHTO || model == pgsTypes::tdmACI209 )
    {
-      if (pTendon->GetType() == matPsStrand::StressRelieved )
+      if (pTendon->GetType() == WBFL::Materials::PsStrand::Type::StressRelieved )
       {
          (*pPara) << rptRcImage(strImagePath + _T("ACI209RelaxationSR.png")) << rptNewLine;
       }
@@ -3552,7 +3548,7 @@ void CTimeStepDetailsChapterBuilder::ReportGirderTendonRelaxationDetails(rptChap
    }
    else
    {
-      if (pTendon->GetType() == matPsStrand::StressRelieved )
+      if (pTendon->GetType() == WBFL::Materials::PsStrand::Type::StressRelieved )
       {
          (*pPara) << rptRcImage(strImagePath + _T("CEBFIPRelaxationSR.png")) << rptNewLine;
       }

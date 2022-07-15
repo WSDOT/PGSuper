@@ -352,7 +352,10 @@ void CSegmentDuctData::MakeAssignment(const CSegmentDuctData& rOther)
 CSegmentPTData::CSegmentPTData()
 {
    m_pSegment = nullptr;
-   m_pStrand = lrfdStrandPool::GetInstance()->GetStrand(matPsStrand::Gr1860, matPsStrand::LowRelaxation, matPsStrand::None, matPsStrand::D1524);
+   m_pStrand = lrfdStrandPool::GetInstance()->GetStrand(WBFL::Materials::PsStrand::Grade::Gr1860, 
+                                                        WBFL::Materials::PsStrand::Type::LowRelaxation, 
+                                                        WBFL::Materials::PsStrand::Coating::None, 
+                                                        WBFL::Materials::PsStrand::Size::D1524);
 
    DuctType = pgsTypes::dtMetal;
    InstallationType = pgsTypes::sitPush;

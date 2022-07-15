@@ -34,7 +34,7 @@
 #include <PgsExt\Keys.h> // goes with GDRCONFIG
 static long g_Ncopies = 0; // keeps track of the number of times GDRCONFIG is copied
 
-#include <Material\Rebar.h>
+#include <Materials/Rebar.h>
 
 // Constants for consistent behavior of tooltips
 #define TOOLTIP_WIDTH 400 // 400 characters
@@ -884,18 +884,18 @@ struct STIRRUPCONFIG
    {
       Float64 ZoneLength;
       Float64 BarSpacing;
-      matRebar::Size VertBarSize;
+      WBFL::Materials::Rebar::Size VertBarSize;
       Float64 nVertBars;
       Float64 nHorzInterfaceBars;
-      matRebar::Size ConfinementBarSize;
+      WBFL::Materials::Rebar::Size ConfinementBarSize;
 
       // pre-computed values
       Float64 VertABar; // Area of single bar
 
       // This struct is complex enough to need a good constructor
       SHEARZONEDATA():
-      ZoneLength(0.0), VertBarSize(matRebar::bsNone), BarSpacing(0.0), nVertBars(0.0), 
-      nHorzInterfaceBars(0.0), ConfinementBarSize(matRebar::bsNone), VertABar(0.0)
+      ZoneLength(0.0), VertBarSize(WBFL::Materials::Rebar::Size::bsNone), BarSpacing(0.0), nVertBars(0.0), 
+      nHorzInterfaceBars(0.0), ConfinementBarSize(WBFL::Materials::Rebar::Size::bsNone), VertABar(0.0)
       {;}
 
       bool operator==(const SHEARZONEDATA& other) const
@@ -925,7 +925,7 @@ struct STIRRUPCONFIG
    {
       Float64 ZoneLength;
       Float64 BarSpacing;
-      matRebar::Size BarSize;
+      WBFL::Materials::Rebar::Size BarSize;
       Float64 nBars;
 
       // pre-computed values
@@ -933,7 +933,7 @@ struct STIRRUPCONFIG
 
       // default constructor
       HORIZONTALINTERFACEZONEDATA():
-      ZoneLength(0.0), BarSize(matRebar::bsNone),BarSpacing(0.0),nBars(0.0), ABar(0.0)
+      ZoneLength(0.0), BarSize(WBFL::Materials::Rebar::Size::bsNone),BarSpacing(0.0),nBars(0.0), ABar(0.0)
       {;}
 
       bool operator==(const HORIZONTALINTERFACEZONEDATA& other) const
@@ -965,19 +965,19 @@ struct STIRRUPCONFIG
    bool bUsePrimaryForSplitting;
    bool bAreZonesSymmetrical;
 
-   matRebar::Size SplittingBarSize; // additional splitting bars
+   WBFL::Materials::Rebar::Size SplittingBarSize; // additional splitting bars
    Float64 SplittingBarSpacing;
    Float64 SplittingZoneLength;
    Float64 nSplittingBars;
 
-   matRebar::Size ConfinementBarSize; // additional confinement bars - only used if primary not used for confinement
+   WBFL::Materials::Rebar::Size ConfinementBarSize; // additional confinement bars - only used if primary not used for confinement
    Float64 ConfinementBarSpacing;
    Float64 ConfinementZoneLength;
 
    STIRRUPCONFIG():
    bIsRoughenedSurface(true), bUsePrimaryForSplitting(false), bAreZonesSymmetrical(true),
-   SplittingBarSize(matRebar::bsNone), SplittingBarSpacing(0.0), SplittingZoneLength(0.0), nSplittingBars(0.0),
-   ConfinementBarSize(matRebar::bsNone), ConfinementBarSpacing(0.0), ConfinementZoneLength(0.0)
+   SplittingBarSize(WBFL::Materials::Rebar::Size::bsNone), SplittingBarSpacing(0.0), SplittingZoneLength(0.0), nSplittingBars(0.0),
+   ConfinementBarSize(WBFL::Materials::Rebar::Size::bsNone), ConfinementBarSpacing(0.0), ConfinementZoneLength(0.0)
    {;}
 
    bool operator==(const STIRRUPCONFIG& other) const
@@ -1022,7 +1022,7 @@ public:
    struct RebarRow 
    {
       pgsTypes::FaceType  Face;
-      matRebar::Size BarSize;
+      WBFL::Materials::Rebar::Size BarSize;
       Int32       NumberOfBars;
       Float64     Cover;
       Float64     BarSpacing;
@@ -1039,8 +1039,8 @@ public:
       };
    };
 
-   matRebar::Type BarType;
-   matRebar::Grade BarGrade;
+   WBFL::Materials::Rebar::Type BarType;
+   WBFL::Materials::Rebar::Grade BarGrade;
    std::vector<RebarRow> RebarRows;
 
    bool operator==(const LONGITUDINALREBARCONFIG& other) const

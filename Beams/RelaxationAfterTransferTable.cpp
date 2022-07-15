@@ -62,13 +62,13 @@ CRelaxationAfterTransferTable* CRelaxationAfterTransferTable::PrepareTable(rptCh
 
    GET_IFACE2(pBroker, ISegmentData, pSegmentData );
    // strand is used for general type and coating, not size, so it's ok to use either Straight or Harped since they are the same
-   const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Straight);
+   const auto* pStrand = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Straight);
    ATLASSERT(pStrand);
    
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Losses due to Relaxation After Transfer") << rptNewLine;
-   if ( pStrand->GetType() == matPsStrand::LowRelaxation )
+   if ( pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation )
    {
       if ( IS_SI_UNITS(pDisplayUnits) )
       {
@@ -91,7 +91,7 @@ CRelaxationAfterTransferTable* CRelaxationAfterTransferTable::PrepareTable(rptCh
       }
    }
 
-   if ( pStrand->GetCoating() != matPsStrand::None )
+   if ( pStrand->GetCoating() != WBFL::Materials::PsStrand::Coating::None )
    {
       *pParagraph << EPOXY_RELAXATION_NOTE << rptNewLine;
    }

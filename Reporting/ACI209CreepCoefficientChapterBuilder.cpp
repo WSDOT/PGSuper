@@ -26,8 +26,8 @@
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
 #include <IFace\Project.h>
-#include <Material\ConcreteBase.h>
-#include <Material\ACI209Concrete.h>
+#include <Materials/ConcreteBase.h>
+#include <Materials/ACI209Concrete.h>
 #include <PgsExt\TimelineEvent.h>
 #include <PgsExt\CastDeckActivity.h>
 
@@ -98,8 +98,6 @@ rptChapter* CACI209CreepCoefficientChapterBuilder::Build(CReportSpecification* p
    (*pTable)(rowIdx,colIdx++) << Sub2(symbol(gamma),_T("hc"));
 
 
-   std::_tstring strCuring[] = { _T("Moist"), _T("Steam") };
-
    rowIdx = pTable->GetNumberOfHeaderRows();
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -107,11 +105,11 @@ rptChapter* CACI209CreepCoefficientChapterBuilder::Build(CReportSpecification* p
       ColumnIndexType colIdx = 0;
 
       CSegmentKey segmentKey(girderKey,segIdx);
-      const matConcreteBase* pConcrete = pMaterials->GetSegmentConcrete(segmentKey);
-      const matACI209Concrete* pACIConcrete = dynamic_cast<const matACI209Concrete*>(pConcrete);
+      const auto& pConcrete = pMaterials->GetSegmentConcrete(segmentKey);
+      const WBFL::Materials::ACI209Concrete* pACIConcrete = dynamic_cast<const WBFL::Materials::ACI209Concrete*>(pConcrete.get());
 
       (*pTable)(rowIdx,colIdx++) << _T("Segment ") << LABEL_SEGMENT(segIdx);
-      (*pTable)(rowIdx,colIdx++) << strCuring[pConcrete->GetCureMethod()];
+      (*pTable)(rowIdx,colIdx++) << WBFL::Materials::ConcreteBase::GetCureMethod(pConcrete->GetCureMethod());
       (*pTable)(rowIdx,colIdx++) << vsRatio.SetValue(pConcrete->GetVSRatio());
       (*pTable)(rowIdx,colIdx++) << pACIConcrete->GetSizeFactorCreep();
       (*pTable)(rowIdx,colIdx++) << pConcrete->GetRelativeHumidity();
@@ -122,13 +120,13 @@ rptChapter* CACI209CreepCoefficientChapterBuilder::Build(CReportSpecification* p
       if ( segIdx != nSegments-1 )
       {
          CClosureKey closureKey(segmentKey);
-         const matConcreteBase* pConcrete = pMaterials->GetClosureJointConcrete(closureKey);
-         const matACI209Concrete* pACIConcrete = dynamic_cast<const matACI209Concrete*>(pConcrete);
+         const auto& pConcrete = pMaterials->GetClosureJointConcrete(closureKey);
+         const WBFL::Materials::ACI209Concrete* pACIConcrete = dynamic_cast<const WBFL::Materials::ACI209Concrete*>(pConcrete.get());
    
          colIdx = 0;
 
          (*pTable)(rowIdx,colIdx++) << _T("Closure Joint");
-         (*pTable)(rowIdx,colIdx++) << strCuring[pConcrete->GetCureMethod()];
+         (*pTable)(rowIdx,colIdx++) << WBFL::Materials::ConcreteBase::GetCureMethod(pConcrete->GetCureMethod());
          (*pTable)(rowIdx,colIdx++) << vsRatio.SetValue(pConcrete->GetVSRatio());
          (*pTable)(rowIdx,colIdx++) << pACIConcrete->GetSizeFactorCreep();
          (*pTable)(rowIdx,colIdx++) << pConcrete->GetRelativeHumidity();
@@ -148,8 +146,8 @@ rptChapter* CACI209CreepCoefficientChapterBuilder::Build(CReportSpecification* p
       {
          std::vector<IndexType> vRegions = castDeckActivity.GetRegions(castingIdx);
          IndexType deckCastingRegionIdx = vRegions.front();
-         const matConcreteBase* pConcrete = pMaterials->GetDeckConcrete(deckCastingRegionIdx);
-         const matACI209Concrete* pACIConcrete = dynamic_cast<const matACI209Concrete*>(pConcrete);
+         const auto& pConcrete = pMaterials->GetDeckConcrete(deckCastingRegionIdx);
+         const WBFL::Materials::ACI209Concrete* pACIConcrete = dynamic_cast<const WBFL::Materials::ACI209Concrete*>(pConcrete.get());
 
          ColumnIndexType colIdx = 0;
 
@@ -174,7 +172,7 @@ rptChapter* CACI209CreepCoefficientChapterBuilder::Build(CReportSpecification* p
 
 
          (*pTable)(rowIdx, colIdx++) << strTitle;
-         (*pTable)(rowIdx, colIdx++) << strCuring[pConcrete->GetCureMethod()];
+         (*pTable)(rowIdx, colIdx++) << WBFL::Materials::ConcreteBase::GetCureMethod(pConcrete->GetCureMethod());
          (*pTable)(rowIdx, colIdx++) << vsRatio.SetValue(pConcrete->GetVSRatio());
          (*pTable)(rowIdx, colIdx++) << pACIConcrete->GetSizeFactorCreep();
          (*pTable)(rowIdx, colIdx++) << pConcrete->GetRelativeHumidity();

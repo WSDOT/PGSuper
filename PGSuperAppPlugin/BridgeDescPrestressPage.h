@@ -33,7 +33,7 @@
 #include <PgsExt\GirderData.h>
 
 #if !defined INCLUDED_MATERIAL_PSSTRAND_H_
-#include <Material\PsStrand.h>
+#include <Materials/PsStrand.h>
 #endif
 
 #if !defined INCLUDED_PSGLIB_GIRDERLIBRARYENTRY_H_

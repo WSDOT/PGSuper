@@ -405,7 +405,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    GET_IFACE(IMaterials,pMaterial);
-   const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Straight); // we just want E so it's ok to use Straight
+   const auto* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Straight); // we just want E so it's ok to use Straight
 
    GET_IFACE(IPointOfInterest, pPoi);
    bool bIsOnSegment = pPoi->IsOnSegment(poi);
@@ -471,7 +471,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
 
    std::vector<Float64> fpe_pt_segment;
    std::vector<Float64> ept_initial_segment;
-   const matPsStrand* pTendon = pMaterial->GetSegmentTendonMaterial(segmentKey);
+   const auto* pTendon = pMaterial->GetSegmentTendonMaterial(segmentKey);
    Float64 EptSegment = pTendon->GetE();
    for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
    {
@@ -771,8 +771,8 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
 
    GET_IFACE(IMaterials,pMaterial);
    pgsTypes::ConcreteType concType = pMaterial->GetSegmentConcreteType(segmentKey);
-   matRebar::Type rebarType;
-   matRebar::Grade deckRebarGrade;
+   WBFL::Materials::Rebar::Type rebarType;
+   WBFL::Materials::Rebar::Grade deckRebarGrade;
    pMaterial->GetDeckRebarMaterial(&rebarType,&deckRebarGrade);
 
    GET_IFACE(IResistanceFactors,pResistanceFactors);
@@ -824,8 +824,8 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
    Float64 fpt_avg_segment = 0;
    Float64 fpt_avg_girder = 0;
 
-   const matPsStrand* pSegmentTendon = pMaterial->GetSegmentTendonMaterial(segmentKey);
-   const matPsStrand* pGirderTendon = pMaterial->GetGirderTendonMaterial(segmentKey);
+   const auto* pSegmentTendon = pMaterial->GetSegmentTendonMaterial(segmentKey);
+   const auto* pGirderTendon = pMaterial->GetGirderTendonMaterial(segmentKey);
 
    if ( IsZero(Mn) || solution == nullptr)
    {
@@ -1090,7 +1090,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
          if ( bPositiveMoment )
          {
             // we just want grade and type so using Straight is fine
-            const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Straight);
+            const auto* pStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Straight);
             pResistanceFactors->GetFlexuralStrainLimits(pStrand->GetGrade(),pStrand->GetType(),&ecl,&etl);
          }
          else
@@ -1804,14 +1804,14 @@ void pgsMomentCapacityEngineer::AnalyzeCrackedSection(const pgsPointOfInterest& 
 //======================== LIFECYCLE  =======================================
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
-StrandGradeType GetStrandGradeType(matPsStrand::Grade grade)
+StrandGradeType GetStrandGradeType(WBFL::Materials::PsStrand::Grade grade)
 {
    StrandGradeType grade_type;
    switch (grade)
    {
-   case matPsStrand::Gr1725: grade_type = sgtGrade250; break;
-   case matPsStrand::Gr1860: grade_type = sgtGrade270; break;
-   case matPsStrand::Gr2070: grade_type = sgtGrade300; break;
+   case WBFL::Materials::PsStrand::Grade::Gr1725: grade_type = sgtGrade250; break;
+   case WBFL::Materials::PsStrand::Grade::Gr1860: grade_type = sgtGrade270; break;
+   case WBFL::Materials::PsStrand::Grade::Gr2070: grade_type = sgtGrade300; break;
    default: ATLASSERT(false); // is there a new strand grade?
    }
 
@@ -1831,10 +1831,10 @@ void pgsMomentCapacityEngineer::CreateStrandMaterial(const CSegmentKey& segmentK
    if (found == m_StrandMaterial.end())
    {
       GET_IFACE(IMaterials, pMaterial);
-      const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey, strandType);
+      const auto* pStrand = pMaterial->GetStrandMaterial(segmentKey, strandType);
 
       StrandGradeType grade = GetStrandGradeType(pStrand->GetGrade());
-      ProductionMethodType type = pStrand->GetType() == matPsStrand::LowRelaxation ? pmtLowRelaxation : pmtStressRelieved;
+      ProductionMethodType type = pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? pmtLowRelaxation : pmtStressRelieved;
 
       CComPtr<IPowerFormula> powerFormula;
       powerFormula.CoCreateInstance(CLSID_PSPowerFormula);
@@ -1866,7 +1866,7 @@ void pgsMomentCapacityEngineer::CreateStrandMaterial(const CSegmentKey& segmentK
 void pgsMomentCapacityEngineer::CreateSegmentTendonMaterial(const CSegmentKey& segmentKey,IStressStrain** ppSS) const
 {
    GET_IFACE(IMaterials,pMaterial);
-   const matPsStrand* pTendon = pMaterial->GetSegmentTendonMaterial(segmentKey);
+   const auto* pTendon = pMaterial->GetSegmentTendonMaterial(segmentKey);
 
    CreateTendonMaterial(pTendon, ppSS);
 }
@@ -1874,15 +1874,15 @@ void pgsMomentCapacityEngineer::CreateSegmentTendonMaterial(const CSegmentKey& s
 void pgsMomentCapacityEngineer::CreateGirderTendonMaterial(const CGirderKey& girderKey, IStressStrain** ppSS) const
 {
    GET_IFACE(IMaterials, pMaterial);
-   const matPsStrand* pTendon = pMaterial->GetGirderTendonMaterial(girderKey);
+   const auto* pTendon = pMaterial->GetGirderTendonMaterial(girderKey);
 
    CreateTendonMaterial(pTendon, ppSS);
 }
 
-void pgsMomentCapacityEngineer::CreateTendonMaterial(const matPsStrand* pTendon, IStressStrain** ppSS) const
+void pgsMomentCapacityEngineer::CreateTendonMaterial(const WBFL::Materials::PsStrand* pTendon, IStressStrain** ppSS) const
 {
    StrandGradeType grade = GetStrandGradeType(pTendon->GetGrade());
-   ProductionMethodType type = pTendon->GetType() == matPsStrand::LowRelaxation ? pmtLowRelaxation : pmtStressRelieved;
+   ProductionMethodType type = pTendon->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? pmtLowRelaxation : pmtStressRelieved;
 
    CComPtr<IPowerFormula> powerFormula;
    powerFormula.CoCreateInstance(CLSID_PSPowerFormula);
@@ -2112,10 +2112,10 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
       pMaterial->GetDeckRebarProperties(&E,&Fy,&Fu);
    }
 
-   matRebar::Type barType;
-   matRebar::Grade barGrade;
+   WBFL::Materials::Rebar::Type barType;
+   WBFL::Materials::Rebar::Grade barGrade;
    pMaterial->GetSegmentLongitudinalRebarMaterial(segmentKey, &barType, &barGrade);
-   matGirderRebar->Init(Fy, E, matRebar::GetElongation(barType, barGrade, matRebar::bs3) );
+   matGirderRebar->Init(Fy, E, WBFL::Materials::Rebar::GetElongation(barType, barGrade, WBFL::Materials::Rebar::Size::bs3) );
    CComQIPtr<IStressStrain> ssGirderRebar(matGirderRebar);
 
    // slab rebar
@@ -2123,7 +2123,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    matSlabRebar.CoCreateInstance(CLSID_RebarModel);
    pMaterial->GetDeckRebarProperties(&E,&Fy,&Fu);
    pMaterial->GetDeckRebarMaterial(&barType, &barGrade);
-   matSlabRebar->Init( Fy, E, matRebar::GetElongation(barType, barGrade, matRebar::bs3) );
+   matSlabRebar->Init( Fy, E, WBFL::Materials::Rebar::GetElongation(barType, barGrade, WBFL::Materials::Rebar::Size::bs3) );
    CComQIPtr<IStressStrain> ssSlabRebar(matSlabRebar);
 
    //
@@ -2182,7 +2182,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
             StrandIndexType nStrands = (i == 0 ? Ns : Nh);
             pgsTypes::StrandType strandType = (pgsTypes::StrandType)(i);
           
-            const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey, strandType);
+            const auto* pStrand = pMaterial->GetStrandMaterial(segmentKey, strandType);
             Float64 aps = pStrand->GetNominalArea();
             Float64 dps = pStrand->GetNominalDiameter();
          

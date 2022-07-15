@@ -46,11 +46,11 @@ CShearZoneData::CShearZoneData():
 ZoneNum(0),
 BarSpacing(0),
 ZoneLength(0),
-VertBarSize(matRebar::bsNone),
+VertBarSize(WBFL::Materials::Rebar::Size::bsNone),
 nVertBars(2.0),
 nHorzInterfaceBars(2.0),
-ConfinementBarSize(matRebar::bsNone),
-legacy_HorzBarSize(matRebar::bsNone),
+ConfinementBarSize(WBFL::Materials::Rebar::Size::bsNone),
+legacy_HorzBarSize(WBFL::Materials::Rebar::Size::bsNone),
 legacy_nHorzBars(2)
 {
 
@@ -133,7 +133,7 @@ bool CShearZoneData::operator != (const CShearZoneData& rOther) const
 
 //======================== OPERATIONS =======================================
 HRESULT CShearZoneData::Load(WBFL::System::IStructuredLoad* pStrLoad, bool bConvertToShearDataVersion9, 
-                matRebar::Size confinementBarSize,Uint32 NumConfinementZones, 
+                WBFL::Materials::Rebar::Size confinementBarSize,Uint32 NumConfinementZones, 
                 bool bDoStirrupsEngageDeck)
 {
    HRESULT hr = S_OK;
@@ -159,8 +159,8 @@ HRESULT CShearZoneData::Load(WBFL::System::IStructuredLoad* pStrLoad, bool bConv
             return STRLOAD_E_INVALIDFORMAT;
          }
 
-         matRebar::Grade grade;
-         matRebar::Type type;
+         WBFL::Materials::Rebar::Grade grade;
+         WBFL::Materials::Rebar::Type type;
          lrfdRebarPool::MapOldRebarKey(key,grade,type,VertBarSize);
 
          if ( FAILED(pStrLoad->Property(_T("BarSpacing"),&BarSpacing)) )
@@ -188,7 +188,7 @@ HRESULT CShearZoneData::Load(WBFL::System::IStructuredLoad* pStrLoad, bool bConv
             nVertBars = 2.0;
          }
 
-         legacy_HorzBarSize = matRebar::bsNone;
+         legacy_HorzBarSize = WBFL::Materials::Rebar::Size::bsNone;
          nHorzInterfaceBars   = 2.0;
       }
       else if (version < 5)
@@ -216,8 +216,8 @@ HRESULT CShearZoneData::Load(WBFL::System::IStructuredLoad* pStrLoad, bool bConv
                return STRLOAD_E_INVALIDFORMAT;
             }
          
-            matRebar::Grade grade;
-            matRebar::Type type;
+            WBFL::Materials::Rebar::Grade grade;
+            WBFL::Materials::Rebar::Type type;
             lrfdRebarPool::MapOldRebarKey(key,grade,type,VertBarSize);
          }
          else
@@ -229,7 +229,7 @@ HRESULT CShearZoneData::Load(WBFL::System::IStructuredLoad* pStrLoad, bool bConv
             }
             else
             {
-               VertBarSize = matRebar::Size(key);
+               VertBarSize = WBFL::Materials::Rebar::Size(key);
             }
          }
 
@@ -249,8 +249,8 @@ HRESULT CShearZoneData::Load(WBFL::System::IStructuredLoad* pStrLoad, bool bConv
                return STRLOAD_E_INVALIDFORMAT;
             }
          
-            matRebar::Grade grade;
-            matRebar::Type type;
+            WBFL::Materials::Rebar::Grade grade;
+            WBFL::Materials::Rebar::Type type;
             lrfdRebarPool::MapOldRebarKey(key,grade,type,legacy_HorzBarSize);
          }
          else if (version < 4)
@@ -262,7 +262,7 @@ HRESULT CShearZoneData::Load(WBFL::System::IStructuredLoad* pStrLoad, bool bConv
             }
             else
             {
-               legacy_HorzBarSize = matRebar::Size(key);
+               legacy_HorzBarSize = WBFL::Materials::Rebar::Size(key);
             }
 
             Uint32 val;
@@ -302,7 +302,7 @@ HRESULT CShearZoneData::Load(WBFL::System::IStructuredLoad* pStrLoad, bool bConv
             }
             else
             {
-               ConfinementBarSize = matRebar::Size(key);
+               ConfinementBarSize = WBFL::Materials::Rebar::Size(key);
             }
          }
       }
@@ -324,7 +324,7 @@ HRESULT CShearZoneData::Load(WBFL::System::IStructuredLoad* pStrLoad, bool bConv
          }
          else
          {
-            ConfinementBarSize = matRebar::bsNone;
+            ConfinementBarSize = WBFL::Materials::Rebar::Size::bsNone;
          }
 
          nHorzInterfaceBars = bDoStirrupsEngageDeck ? nVertBars : 0.0;

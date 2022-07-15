@@ -326,8 +326,8 @@ void pgsShearDesignTool::Initialize(IBroker* pBroker, const LongReinfShearChecke
 
    m_ConcreteType = pMaterials->GetSegmentConcreteType(m_SegmentKey);
 
-   matRebar::Grade barGrade;
-   matRebar::Type barType;
+   WBFL::Materials::Rebar::Grade barGrade;
+   WBFL::Materials::Rebar::Type barType;
    pMaterials->GetSegmentTransverseRebarMaterial(m_SegmentKey,&barType,&barGrade);
 
    lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
@@ -354,7 +354,7 @@ void pgsShearDesignTool::Initialize(IBroker* pBroker, const LongReinfShearChecke
       BarLegCombo cbo;
       pGirderEntry->GetStirrupSizeBarCombo(ib, &(cbo.m_Size), &(cbo.m_Legs));
 
-      const matRebar* pRebar = pool->GetRebar(barType,barGrade,cbo.m_Size);
+      const auto* pRebar = pool->GetRebar(barType,barGrade,cbo.m_Size);
 
       cbo.m_Av = pRebar->GetNominalArea() * cbo.m_Legs;
 
@@ -512,7 +512,7 @@ IndexType pgsShearDesignTool::GetNumStirrupSizeBarCombos() const
    return m_BarLegCollection.size();
 }
 
-void pgsShearDesignTool::GetStirrupSizeBarCombo(IndexType index, matRebar::Size* pSize, Float64* pNLegs, Float64* pAv) const
+void pgsShearDesignTool::GetStirrupSizeBarCombo(IndexType index, WBFL::Materials::Rebar::Size* pSize, Float64* pNLegs, Float64* pAv) const
 {
    ATLASSERT(index<GetNumStirrupSizeBarCombos());
    const BarLegCombo& rcombo = m_BarLegCollection[index];
@@ -1287,7 +1287,7 @@ bool pgsShearDesignTool::LayoutPrimaryStirrupZones() const
    Float64 fc = m_pArtifact->GetConcreteStrength();
 
    // bar size, nlegs are established at first poi, and the same for entire design
-   matRebar::Size bar_size;
+   WBFL::Materials::Rebar::Size bar_size;
    Float64 nlegs;
    Float64 Av; // for bar/legs combo
 
@@ -1495,7 +1495,7 @@ bool pgsShearDesignTool::LayoutPrimaryStirrupZones() const
          }
          else
          {
-            zone_data.ConfinementBarSize = matRebar::bsNone;
+            zone_data.ConfinementBarSize = WBFL::Materials::Rebar::Size::bsNone;
          }
 
          create_zone = false;
@@ -1520,8 +1520,8 @@ bool pgsShearDesignTool::ModifyPreExistingStirrupDesign() const
    GET_IFACE(IMaterials,pMaterial);
 
    // Some needed values
-   matRebar::Grade barGrade;
-   matRebar::Type barType;
+   WBFL::Materials::Rebar::Grade barGrade;
+   WBFL::Materials::Rebar::Type barType;
    pMaterial->GetSegmentTransverseRebarMaterial(m_SegmentKey,&barType,&barGrade);
    lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
    ATLASSERT(pool != nullptr);
@@ -1555,7 +1555,7 @@ bool pgsShearDesignTool::ModifyPreExistingStirrupDesign() const
    return true;
 }
 
-bool pgsShearDesignTool::DesignPreExistingStirrups(StirrupZoneIter& rIter, Float64 locCSS,  matRebar::Grade barGrade, matRebar::Type barType, lrfdRebarPool* pool) const
+bool pgsShearDesignTool::DesignPreExistingStirrups(StirrupZoneIter& rIter, Float64 locCSS,  WBFL::Materials::Rebar::Grade barGrade, WBFL::Materials::Rebar::Type barType, lrfdRebarPool* pool) const
 {
    // Loop over shear zones using iterator and increase Av/S if need be
    Float64 S_max_next(Float64_Max); // spacing in first zone not limited by pre-zones
@@ -1582,9 +1582,9 @@ bool pgsShearDesignTool::DesignPreExistingStirrups(StirrupZoneIter& rIter, Float
       // Av/s capacity in this zone
       Float64 av;
       Float64 avs_cap;
-      if (rzdata.VertBarSize != matRebar::bsNone && 0.0 < rzdata.BarSpacing)
+      if (rzdata.VertBarSize != WBFL::Materials::Rebar::Size::bsNone && 0.0 < rzdata.BarSpacing)
       {
-         const matRebar* pRebar = pool->GetRebar(barType, barGrade, rzdata.VertBarSize);
+         const auto* pRebar = pool->GetRebar(barType, barGrade, rzdata.VertBarSize);
          av = pRebar->GetNominalArea() * rzdata.nVertBars;
          avs_cap = av / rzdata.BarSpacing;
       }
@@ -1614,7 +1614,7 @@ bool pgsShearDesignTool::DesignPreExistingStirrups(StirrupZoneIter& rIter, Float
       {
          // We need to increase capacity. First try bars of the same size/nlegs
          Float64 new_spacing;
-         if (rzdata.VertBarSize != matRebar::bsNone &&
+         if (rzdata.VertBarSize != WBFL::Materials::Rebar::Size::bsNone &&
             GetBarSpacingForAvs(avs_demand, S_max_next, rzdata.VertBarSize, av, &new_spacing))
          {
             rzdata.BarSpacing = Min(new_spacing, max_spacing); // kept bar size, changed spacing
@@ -1622,7 +1622,7 @@ bool pgsShearDesignTool::DesignPreExistingStirrups(StirrupZoneIter& rIter, Float
          else
          {
             // Existing bar size won't work. Try others
-            matRebar::Size new_size;
+            WBFL::Materials::Rebar::Size new_size;
             Float64 new_nlegs;
             Float64 new_av;
             if (GetBarSizeSpacingForAvs(avs_demand, S_max_next, &new_size, &new_nlegs, &new_av, &new_spacing))
@@ -1671,9 +1671,9 @@ bool pgsShearDesignTool::DesignPreExistingStirrups(StirrupZoneIter& rIter, Float
    {
       // We have captured shear zone data at css, and it is not the first zone.
       // Make sure previous zones have at least the same av/s
-      if (szdAtCSS.VertBarSize != matRebar::bsNone && 0.0 < szdAtCSS.BarSpacing)
+      if (szdAtCSS.VertBarSize != WBFL::Materials::Rebar::Size::bsNone && 0.0 < szdAtCSS.BarSpacing)
       {
-         const matRebar* pRebar = pool->GetRebar(barType, barGrade, szdAtCSS.VertBarSize);
+         const auto* pRebar = pool->GetRebar(barType, barGrade, szdAtCSS.VertBarSize);
          Float64 av = pRebar->GetNominalArea() * szdAtCSS.nVertBars;
          Float64 avsAtCSS = av / szdAtCSS.BarSpacing;
 
@@ -1693,9 +1693,9 @@ bool pgsShearDesignTool::DesignPreExistingStirrups(StirrupZoneIter& rIter, Float
 
             // Av/s capacity in this zone
             Float64 avs_cap(0);
-            if (rzdata.VertBarSize != matRebar::bsNone && 0.0 < rzdata.BarSpacing)
+            if (rzdata.VertBarSize != WBFL::Materials::Rebar::Size::bsNone && 0.0 < rzdata.BarSpacing)
             {
-               const matRebar* pRebar = pool->GetRebar(barType, barGrade, rzdata.VertBarSize);
+               const auto* pRebar = pool->GetRebar(barType, barGrade, rzdata.VertBarSize);
                av = pRebar->GetNominalArea() * rzdata.nVertBars;
                avs_cap = av / rzdata.BarSpacing;
             }
@@ -1791,8 +1791,8 @@ bool pgsShearDesignTool::DetailHorizontalInterfaceShear() const
    }
 
    GET_IFACE(IMaterials,pMaterial);
-   matRebar::Grade barGrade;
-   matRebar::Type barType;
+   WBFL::Materials::Rebar::Grade barGrade;
+   WBFL::Materials::Rebar::Type barType;
    pMaterial->GetSegmentTransverseRebarMaterial(m_SegmentKey,&barType,&barGrade);
 
    lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
@@ -1827,9 +1827,9 @@ bool pgsShearDesignTool::DetailHorizontalInterfaceShear() const
       Float64 avs_demand = this->GetHorizontalAvsMaxInRange(zone_start, zone_end);
 
       Float64 avs_provided(0.0), av_onebar(0.0);
-      if (ith->BarSize != matRebar::bsNone)
+      if (ith->BarSize != WBFL::Materials::Rebar::Size::bsNone)
       {
-         const matRebar* pRebar = pool->GetRebar(barType,barGrade,ith->BarSize);
+         const auto* pRebar = pool->GetRebar(barType,barGrade,ith->BarSize);
          av_onebar = pRebar->GetNominalArea();
          avs_provided = av_onebar * ith->nBars / ith->BarSpacing;
       }
@@ -1841,7 +1841,7 @@ bool pgsShearDesignTool::DetailHorizontalInterfaceShear() const
 
          // We need to increase capacity. First try bars of the same size/nlegs
          Float64 new_spacing;
-         if ( ith->BarSize != matRebar::bsNone && 
+         if ( ith->BarSize != WBFL::Materials::Rebar::Size::bsNone && 
               GetBarSpacingForAvs(avs_demand, max_spacing, ith->BarSize, av_onebar, &new_spacing) )
          {
             ith->BarSpacing = new_spacing; // kept bar size, changed spacing
@@ -1849,7 +1849,7 @@ bool pgsShearDesignTool::DetailHorizontalInterfaceShear() const
          else
          {
             // Existing bar size won't work. Try others
-            matRebar::Size new_size;
+            WBFL::Materials::Rebar::Size new_size;
             Float64 new_nlegs;
             Float64 new_av;
             if (GetBarSizeSpacingForAvs(avs_demand, max_spacing, &new_size, &new_nlegs, &new_av, &new_spacing) )
@@ -1871,7 +1871,7 @@ bool pgsShearDesignTool::DetailHorizontalInterfaceShear() const
          // No demand, but we must provide minimum bars/spacing
          avs_demand = 1.0e-4; // tiny demand should give min bar size from our list of choices
 
-         matRebar::Size new_size;
+         WBFL::Materials::Rebar::Size new_size;
          Float64 new_nlegs;
          Float64 new_av;
          Float64 new_spacing;
@@ -1948,8 +1948,8 @@ bool pgsShearDesignTool::DetailAdditionalSplitting() const
       {
          // Only design splitting if it is applicable
          GET_IFACE(IMaterials,pMaterial);
-         matRebar::Grade barGrade;
-         matRebar::Type barType;
+         WBFL::Materials::Rebar::Grade barGrade;
+         WBFL::Materials::Rebar::Type barType;
          pMaterial->GetSegmentTransverseRebarMaterial(m_SegmentKey,&barType,&barGrade);
 
          lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
@@ -1970,9 +1970,9 @@ bool pgsShearDesignTool::DetailAdditionalSplitting() const
             {
                StirrupZoneItem sz_item  = lr_zone_iter.CurrentItem();
 
-               if(sz_item.pShearZoneData->VertBarSize != matRebar::bsNone)
+               if(sz_item.pShearZoneData->VertBarSize != WBFL::Materials::Rebar::Size::bsNone)
                {
-                  const matRebar* pRebar = pool->GetRebar(barType,barGrade, sz_item.pShearZoneData->VertBarSize );
+                  const auto* pRebar = pool->GetRebar(barType,barGrade, sz_item.pShearZoneData->VertBarSize );
                   Float64 avs = pRebar->GetNominalArea() * sz_item.pShearZoneData->nVertBars / sz_item.pShearZoneData->BarSpacing;
 
                   avs_primary = Min(avs_primary, avs);
@@ -1994,9 +1994,9 @@ bool pgsShearDesignTool::DetailAdditionalSplitting() const
                {
                   StirrupZoneItem sz_item  = rl_zone_iter.CurrentItem();
 
-                  if(sz_item.pShearZoneData->VertBarSize != matRebar::bsNone)
+                  if(sz_item.pShearZoneData->VertBarSize != WBFL::Materials::Rebar::Size::bsNone)
                   {
-                     const matRebar* pRebar = pool->GetRebar(barType,barGrade, sz_item.pShearZoneData->VertBarSize );
+                     const auto* pRebar = pool->GetRebar(barType,barGrade, sz_item.pShearZoneData->VertBarSize );
                      Float64 avs = pRebar->GetNominalArea() * sz_item.pShearZoneData->nVertBars / sz_item.pShearZoneData->BarSpacing;
 
                      avs_primary = Min(avs_primary, avs);
@@ -2024,11 +2024,11 @@ bool pgsShearDesignTool::DetailAdditionalSplitting() const
             bool use_current(false);
             if(!DoDesignFromScratch())
             {
-               if (m_ShearData.SplittingBarSize!=matRebar::bsNone)
+               if (m_ShearData.SplittingBarSize!=WBFL::Materials::Rebar::Size::bsNone)
                {
                   Float64 szone_length = Min(m_ShearData.SplittingZoneLength, splitting_zone_len);
 
-                  const matRebar* pRebar = pool->GetRebar(barType, barGrade, m_ShearData.SplittingBarSize);
+                  const auto* pRebar = pool->GetRebar(barType, barGrade, m_ShearData.SplittingBarSize);
                   Float64 sarea = pRebar->GetNominalArea() * m_ShearData.nSplittingBars;
 
                   if (0.0 < m_ShearData.SplittingBarSpacing)
@@ -2045,7 +2045,7 @@ bool pgsShearDesignTool::DetailAdditionalSplitting() const
                // Design new additional splitting bars
                Float64 max_spacing = splitting_zone_len; // don't allow spacing to exceed zone length
 
-               matRebar::Size new_size;
+               WBFL::Materials::Rebar::Size new_size;
                Float64 new_nlegs;
                Float64 new_av;
                Float64 new_spacing;
@@ -2069,7 +2069,7 @@ bool pgsShearDesignTool::DetailAdditionalSplitting() const
          {
             // No additional splitting needed. Zero out any existing values
             m_ShearData.SplittingZoneLength = 0.0;
-            m_ShearData.SplittingBarSize = matRebar::bsNone;
+            m_ShearData.SplittingBarSize = WBFL::Materials::Rebar::Size::bsNone;
             m_ShearData.SplittingBarSpacing = 0.0;
          }
       }
@@ -2094,14 +2094,14 @@ bool pgsShearDesignTool::DetailAdditionalConfinement() const
             // Confinement design may be provided by primary bars in from-scratch designs, and always
             // for designs based on existing layout
             GET_IFACE(IMaterials,pMaterial);
-            matRebar::Grade barGrade;
-            matRebar::Type barType;
+            WBFL::Materials::Rebar::Grade barGrade;
+            WBFL::Materials::Rebar::Type barType;
             pMaterial->GetSegmentTransverseRebarMaterial(m_SegmentKey,&barType,&barGrade);
             lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
             ATLASSERT(pool != nullptr);
 
             Float64 max_spac = rConfinementArtifact.GetSMax();
-            const matRebar* pBar = rConfinementArtifact.GetMinBar();
+            const auto* pBar = rConfinementArtifact.GetMinBar();
             Float64 abar_reqd = pBar->GetNominalArea();
             Float64 min_start_zl = rConfinementArtifact.GetStartRequiredZoneLength();
 
@@ -2114,7 +2114,7 @@ bool pgsShearDesignTool::DetailAdditionalConfinement() const
             {
                StirrupZoneItem sz_item  = lr_zone_iter.CurrentItem();
 
-               if(sz_item.pShearZoneData->ConfinementBarSize == matRebar::bsNone)
+               if(sz_item.pShearZoneData->ConfinementBarSize == WBFL::Materials::Rebar::Size::bsNone)
                {
                   need_additional = true;
                }
@@ -2124,7 +2124,7 @@ bool pgsShearDesignTool::DetailAdditionalConfinement() const
                }
                else
                {
-                  const matRebar* pRebar = pool->GetRebar(barType,barGrade, sz_item.pShearZoneData->VertBarSize );
+                  const auto* pRebar = pool->GetRebar(barType,barGrade, sz_item.pShearZoneData->VertBarSize );
                   Float64 av = pRebar->GetNominalArea();
                   if (av < abar_reqd)
                   {
@@ -2148,7 +2148,7 @@ bool pgsShearDesignTool::DetailAdditionalConfinement() const
                {
                   StirrupZoneItem sz_item  = rl_zone_iter.CurrentItem();
 
-                  if(sz_item.pShearZoneData->ConfinementBarSize == matRebar::bsNone)
+                  if(sz_item.pShearZoneData->ConfinementBarSize == WBFL::Materials::Rebar::Size::bsNone)
                   {
                      need_additional = true;
                   }
@@ -2158,7 +2158,7 @@ bool pgsShearDesignTool::DetailAdditionalConfinement() const
                   }
                   else
                   {
-                     const matRebar* pRebar = pool->GetRebar(barType,barGrade, sz_item.pShearZoneData->VertBarSize );
+                     const auto* pRebar = pool->GetRebar(barType,barGrade, sz_item.pShearZoneData->VertBarSize );
                      Float64 av = pRebar->GetNominalArea();
                      if (av < abar_reqd)
                      {
@@ -2180,9 +2180,9 @@ bool pgsShearDesignTool::DetailAdditionalConfinement() const
 
                // See if there is existing, and if it does the job
                bool use_current(false);
-               if (m_ShearData.ConfinementBarSize != matRebar::bsNone)
+               if (m_ShearData.ConfinementBarSize != WBFL::Materials::Rebar::Size::bsNone)
                {
-                  const matRebar* pRebar = pool->GetRebar(barType,barGrade, m_ShearData.ConfinementBarSize );
+                  const auto* pRebar = pool->GetRebar(barType,barGrade, m_ShearData.ConfinementBarSize );
                   Float64 av = pRebar->GetNominalArea();
                   if ( abar_reqd <= av && 
                        zone_len <= m_ShearData.ConfinementZoneLength && 
@@ -2195,7 +2195,7 @@ bool pgsShearDesignTool::DetailAdditionalConfinement() const
                if (!use_current)
                {
                   // Try to get smallest bar from available that will do the job. Otherwize use spec size
-                  matRebar::Size minSize; 
+                  WBFL::Materials::Rebar::Size minSize; 
                   if ( GetMinAvailableBarSize(pBar->GetSize(), barGrade, barType, pool, &minSize) )
                   {
                      m_ShearData.ConfinementBarSize = minSize;
@@ -2243,7 +2243,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
    // Compute min development length for this bar size
    GET_IFACE(ILongitudinalRebar, pLongRebar);
    const CLongitudinalRebarData* pLRD = pLongRebar->GetSegmentLongitudinalRebarData(m_SegmentKey);
-   const matRebar* pRebar = lrfdRebarPool::GetInstance()->GetRebar(pLRD->BarType, pLRD->BarGrade, matRebar::bs5); // #5
+   const auto* pRebar = lrfdRebarPool::GetInstance()->GetRebar(pLRD->BarType, pLRD->BarGrade, WBFL::Materials::Rebar::Size::bs5); // #5
    Float64 rbfy = pRebar->GetYieldStrength();
    Float64 tensile_development_length = 0.0;
    if(m_LongShearCapacityIncreaseMethod == GirderLibraryEntry::isAddingRebar)
@@ -2251,7 +2251,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
       GET_IFACE(IMaterials,pMaterials);
       Float64 density = pMaterials->GetSegmentStrengthDensity(m_SegmentKey);
 
-      REBARDEVLENGTHDETAILS details = lrfdRebar::GetRebarDevelopmentLengthDetails(pRebar->GetSize(),pRebar->GetNominalArea(),pRebar->GetNominalDimension(),pRebar->GetYieldStrength(),(matConcrete::Type)config.ConcType,m_pArtifact->GetConcreteStrength(),config.bHasFct,config.Fct,density);
+      REBARDEVLENGTHDETAILS details = lrfdRebar::GetRebarDevelopmentLengthDetails(pRebar->GetSize(),pRebar->GetNominalArea(),pRebar->GetNominalDimension(),pRebar->GetYieldStrength(),(WBFL::Materials::ConcreteType)config.ConcType,m_pArtifact->GetConcreteStrength(),config.bHasFct,config.Fct,density);
       tensile_development_length = details.ld;
       ATLASSERT(0.0 < tensile_development_length);
    }
@@ -2488,16 +2488,16 @@ IndexType pgsShearDesignTool::GetPoiIdxForLocation(Float64 location) const
    return poi_idx;
 }
 
-Float64 pgsShearDesignTool::GetMinStirrupSpacing(matRebar::Size size) const
+Float64 pgsShearDesignTool::GetMinStirrupSpacing(WBFL::Materials::Rebar::Size size) const
 {
    GET_IFACE(ITransverseReinforcementSpec,pTransverseReinforcementSpec);
    GET_IFACE(IMaterials,pMaterial);
-   matRebar::Grade barGrade;
-   matRebar::Type barType;
+   WBFL::Materials::Rebar::Grade barGrade;
+   WBFL::Materials::Rebar::Type barType;
    pMaterial->GetSegmentTransverseRebarMaterial(m_SegmentKey,&barType,&barGrade);
 
    lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
-   const matRebar* pRebar = prp->GetRebar(barType,barGrade,size);
+   const auto* pRebar = prp->GetRebar(barType,barGrade,size);
 
    Float64 db = pRebar->GetNominalDimension();
    Float64 as = pMaterial->GetSegmentMaxAggrSize(m_SegmentKey);
@@ -2506,7 +2506,7 @@ Float64 pgsShearDesignTool::GetMinStirrupSpacing(matRebar::Size size) const
    return s_min;
 }
 
-bool pgsShearDesignTool::GetBarSizeSpacingForAvs(Float64 avsDemand, Float64 maxSpacing, matRebar::Size* pSize, Float64* pNLegs, Float64* pAv, Float64* pSpacing) const
+bool pgsShearDesignTool::GetBarSizeSpacingForAvs(Float64 avsDemand, Float64 maxSpacing, WBFL::Materials::Rebar::Size* pSize, Float64* pNLegs, Float64* pAv, Float64* pSpacing) const
 {
    // Cycle through available bars/legs (already in order of user precedence)
    ATLASSERT(!m_BarLegCollection.empty());
@@ -2541,20 +2541,20 @@ bool pgsShearDesignTool::GetBarSizeSpacingForAvs(Float64 avsDemand, Float64 maxS
       }
    }
 
-   *pSize    = matRebar::bsNone;
+   *pSize    = WBFL::Materials::Rebar::Size::bsNone;
    return false;
 }
 
-bool pgsShearDesignTool::GetMinAvailableBarSize(matRebar::Size minSize, matRebar::Grade barGrade, matRebar::Type barType, lrfdRebarPool* pool, matRebar::Size* pSize) const
+bool pgsShearDesignTool::GetMinAvailableBarSize(WBFL::Materials::Rebar::Size minSize, WBFL::Materials::Rebar::Grade barGrade, WBFL::Materials::Rebar::Type barType, lrfdRebarPool* pool, WBFL::Materials::Rebar::Size* pSize) const
 {
    // This should be made more efficient if it's called frequently
-   const matRebar* pRebar = pool->GetRebar(barType,barGrade, minSize);
+   const auto* pRebar = pool->GetRebar(barType,barGrade, minSize);
    Float64 minArea = pRebar->GetNominalArea();
 
    // Need a sorted by area list of available bars
    struct SizeArea
    {
-      matRebar::Size Size;
+      WBFL::Materials::Rebar::Size Size;
       Float64 Area;
 
       const bool operator < (const SizeArea& rArea)
@@ -2588,11 +2588,11 @@ bool pgsShearDesignTool::GetMinAvailableBarSize(matRebar::Size minSize, matRebar
    }
 
    // No Luck
-   *pSize = matRebar::bsNone;
+   *pSize = WBFL::Materials::Rebar::Size::bsNone;
    return false;
 }
 
-bool pgsShearDesignTool::GetBarSpacingForAvs(Float64 avsDemand, Float64 maxSpacing, matRebar::Size Size, Float64 Av, Float64* pSpacing) const
+bool pgsShearDesignTool::GetBarSpacingForAvs(Float64 avsDemand, Float64 maxSpacing, WBFL::Materials::Rebar::Size Size, Float64 Av, Float64* pSpacing) const
 {
    Float64 spacing(0.0);
 

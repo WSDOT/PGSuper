@@ -74,10 +74,10 @@ CTxDOTOptionalDesignGirderData::~CTxDOTOptionalDesignGirderData()
 // Resets all data to default values
 void CTxDOTOptionalDesignGirderData::ResetData()
 {
-   m_Grade = matPsStrand::Gr1860;
-   m_Type  = matPsStrand::LowRelaxation;
-   m_Size  = matPsStrand::D1270;
-   m_Coating = matPsStrand::None;
+   m_Grade = WBFL::Materials::PsStrand::Grade::Gr1860;
+   m_Type  = WBFL::Materials::PsStrand::Type::LowRelaxation;
+   m_Size  = WBFL::Materials::PsStrand::Size::D1270;
+   m_Coating = WBFL::Materials::PsStrand::Coating::None;
 
    m_Fci = Float64_Inf;
    m_Fc  = Float64_Inf;
@@ -144,7 +144,7 @@ HRESULT CTxDOTOptionalDesignGirderData::Save(IStructuredSave* pStrSave,IProgress
    pStrSave->put_Property(_T("StrandFillType"),         CComVariant(m_StrandFillType));
 
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
-   const matPsStrand* pStrand = pPool->GetStrand(m_Grade, m_Type, m_Coating, m_Size);
+   const auto* pStrand = pPool->GetStrand(m_Grade, m_Type, m_Coating, m_Size);
    Int64 key=0;
    if (pStrand!=nullptr)
    {
@@ -276,11 +276,11 @@ HRESULT CTxDOTOptionalDesignGirderData::Load(IStructuredLoad* pStrLoad,IProgress
       {
          // prior to version 3, strand key did not contain a coating type bit.
          // the assumption was the strand was uncoated. Add the bit for uncoated strand here.
-         key |= matPsStrand::None;
+         key |= std::underlying_type<WBFL::Materials::PsStrand::Coating>::type(WBFL::Materials::PsStrand::Coating::None);
       }
 
       lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
-      const matPsStrand* pStrand = pPool->GetStrand(key);
+      const auto* pStrand = pPool->GetStrand(key);
       if (pStrand!=nullptr)
       {
          m_Grade = pStrand->GetGrade();
@@ -496,10 +496,10 @@ CTxDOTOptionalDesignGirderData::StrandFillType CTxDOTOptionalDesignGirderData::G
    return m_StrandFillType;
 }
 
-void CTxDOTOptionalDesignGirderData::SetStrandData(matPsStrand::Grade grade,
-                   matPsStrand::Type type,
-                   matPsStrand::Coating coating,
-                   matPsStrand::Size size)
+void CTxDOTOptionalDesignGirderData::SetStrandData(WBFL::Materials::PsStrand::Grade grade,
+                   WBFL::Materials::PsStrand::Type type,
+                  WBFL::Materials::PsStrand::Coating coating,
+                   WBFL::Materials::PsStrand::Size size)
 {
    if (m_Grade!=grade || m_Type!=type || m_Coating != coating || m_Size!=size)
    {
@@ -512,10 +512,10 @@ void CTxDOTOptionalDesignGirderData::SetStrandData(matPsStrand::Grade grade,
    }
 }
 
-void CTxDOTOptionalDesignGirderData::GetStrandData(matPsStrand::Grade* pgrade,
-                   matPsStrand::Type* ptype,
-                   matPsStrand::Coating* pcoating,
-                   matPsStrand::Size* psize)
+void CTxDOTOptionalDesignGirderData::GetStrandData(WBFL::Materials::PsStrand::Grade* pgrade,
+                   WBFL::Materials::PsStrand::Type* ptype,
+                  WBFL::Materials::PsStrand::Coating* pcoating,
+                   WBFL::Materials::PsStrand::Size* psize)
 {
    *pgrade = m_Grade;
    *ptype  = m_Type;

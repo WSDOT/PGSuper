@@ -81,7 +81,7 @@ public:
    // get a cell value whether is is selected or not
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
    // get data for a row
-   bool GetRowData(ROWCOL nRow, matRebar::Size* pSize, Float64* pnLegs);
+   bool GetRowData(ROWCOL nRow, WBFL::Materials::Rebar::Size* pSize, Float64* pnLegs);
 
    CShearDesignPage::StirrupSizeBarComboColl GetGridData();
 
@@ -92,7 +92,7 @@ private:
    // set up styles for interior rows
    void SetRowStyle(ROWCOL nRow);
    bool EnableItemDelete();
-   matRebar::Size GetBarSize(ROWCOL row,ROWCOL col);
+   WBFL::Materials::Rebar::Size GetBarSize(ROWCOL row,ROWCOL col);
 };
 
 /////////////////////////////////////////////////////////////////////////////

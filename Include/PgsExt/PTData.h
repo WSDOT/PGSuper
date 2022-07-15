@@ -22,7 +22,7 @@
 #pragma once
 
 #include <WBFLCore.h>
-#include <Material\PsStrand.h>
+#include <Materials/PsStrand.h>
 #include <PgsExt\PgsExtExp.h>
 #include <Units\Units.h>
 
@@ -539,7 +539,7 @@ public:
    Float64 PjTemp;
    bool    bPjTempCalc;   // true if Pj was calculated.
    Float64 LastUserPjTemp;   // Last Pj entered by user
-   const matPsStrand* pStrand; // tendon strand type
+   const WBFL::Materials::PsStrand* pStrand; // tendon strand type
 
    pgsTypes::DuctType DuctType;
    pgsTypes::StrandInstallationType InstallationType;

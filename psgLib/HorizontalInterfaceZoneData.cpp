@@ -46,7 +46,7 @@ CHorizontalInterfaceZoneData::CHorizontalInterfaceZoneData():
 ZoneNum(0),
 BarSpacing(0),
 ZoneLength(0),
-BarSize(matRebar::bsNone),
+BarSize(WBFL::Materials::Rebar::Size::bsNone),
 nBars()
 {
 }
@@ -120,7 +120,7 @@ HRESULT CHorizontalInterfaceZoneData::Load(WBFL::System::IStructuredLoad* pStrLo
       if ( FAILED(pStrLoad->Property(_T("BarSize"),&key)) )
          return STRLOAD_E_INVALIDFORMAT;
 
-      BarSize = matRebar::Size(key);
+      BarSize = WBFL::Materials::Rebar::Size(key);
 
       if ( FAILED(pStrLoad->Property(_T("nBars"),&nBars)) )
          return STRLOAD_E_INVALIDFORMAT;

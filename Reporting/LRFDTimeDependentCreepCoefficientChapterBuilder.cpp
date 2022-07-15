@@ -27,7 +27,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
 #include <IFace\Project.h>
-#include <Material\ConcreteBase.h>
+#include <Materials/ConcreteBase.h>
 #include <Lrfd\LRFDTimeDependentConcrete.h>
 #include <PgsExt\TimelineEvent.h>
 #include <PgsExt\CastDeckActivity.h>
@@ -175,9 +175,6 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
    (*pTable)(rowIdx,colIdx++) << COLHDR(RPT_FCI,rptStressUnitTag,pDisplayUnits->GetStressUnit());
    (*pTable)(rowIdx,colIdx++) << Sub2(_T("k"),_T("f"));
 
-
-   std::_tstring strCuring[] = { _T("Moist"), _T("Steam") };
-
    rowIdx = pTable->GetNumberOfHeaderRows();
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -185,11 +182,11 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
       ColumnIndexType colIdx = 0;
 
       CSegmentKey segmentKey(girderKey,segIdx);
-      const matConcreteBase* pConcrete = pMaterials->GetSegmentConcrete(segmentKey);
-      const lrfdLRFDTimeDependentConcrete* pLRFDConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete);
+      const auto& pConcrete = pMaterials->GetSegmentConcrete(segmentKey);
+      const lrfdLRFDTimeDependentConcrete* pLRFDConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete.get());
 
       (*pTable)(rowIdx,colIdx++) << _T("Segment ") << LABEL_SEGMENT(segIdx);
-      (*pTable)(rowIdx,colIdx++) << strCuring[pConcrete->GetCureMethod()];
+      (*pTable)(rowIdx,colIdx++) << WBFL::Materials::ConcreteBase::GetCureMethod(pConcrete->GetCureMethod());
       if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
       {
          Float64 K1, K2;
@@ -222,13 +219,13 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
       if ( segIdx != nSegments-1 )
       {
          CClosureKey closureKey(segmentKey);
-         const matConcreteBase* pConcrete = pMaterials->GetClosureJointConcrete(closureKey);
-         const lrfdLRFDTimeDependentConcrete* pLRFDConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete);
+         const auto& pConcrete = pMaterials->GetClosureJointConcrete(closureKey);
+         const lrfdLRFDTimeDependentConcrete* pLRFDConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete.get());
    
          colIdx = 0;
 
          (*pTable)(rowIdx,colIdx++) << _T("Closure Joint");
-         (*pTable)(rowIdx,colIdx++) << strCuring[pConcrete->GetCureMethod()];
+         (*pTable)(rowIdx,colIdx++) << WBFL::Materials::ConcreteBase::GetCureMethod(pConcrete->GetCureMethod());
          if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
          {
             Float64 K1, K2;
@@ -270,8 +267,8 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
       {
          std::vector<IndexType> vRegions = castDeckActivity.GetRegions(castingIdx);
          IndexType deckCastingRegionIdx = vRegions.front();
-         const matConcreteBase* pConcrete = pMaterials->GetDeckConcrete(deckCastingRegionIdx);
-         const lrfdLRFDTimeDependentConcrete* pLRFDConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete);
+         const auto& pConcrete = pMaterials->GetDeckConcrete(deckCastingRegionIdx);
+         const lrfdLRFDTimeDependentConcrete* pLRFDConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete.get());
 
          ColumnIndexType colIdx = 0;
 
@@ -296,7 +293,7 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
 
 
          (*pTable)(rowIdx, colIdx++) << strTitle;
-         (*pTable)(rowIdx, colIdx++) << strCuring[pConcrete->GetCureMethod()];
+         (*pTable)(rowIdx, colIdx++) << WBFL::Materials::ConcreteBase::GetCureMethod(pConcrete->GetCureMethod());
          if (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion())
          {
             Float64 K1, K2;
@@ -448,8 +445,8 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
          {
             Float64 ti = pMaterials->GetSegmentConcreteAge(segmentKey,releaseIntervalIdx,pgsTypes::Middle);
             Float64 t  = pMaterials->GetSegmentConcreteAge(segmentKey,intervalIdx,pgsTypes::End);
-            const matConcreteBase* pConcrete = pMaterials->GetSegmentConcrete(segmentKey);
-            const lrfdLRFDTimeDependentConcrete* pLRFDConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete);
+            const auto& pConcrete = pMaterials->GetSegmentConcrete(segmentKey);
+            const lrfdLRFDTimeDependentConcrete* pLRFDConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete.get());
             (*pTable)(rowIdx,colIdx++) << ti;
             if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims )
             {
@@ -464,8 +461,8 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
                (*pTable)(rowIdx,colIdx++) << pLRFDConcrete->GetSizeFactorCreep(t,ti);
             }
 
-            std::shared_ptr<matConcreteBaseCreepDetails> pDetails = pMaterials->GetSegmentCreepCoefficientDetails(segmentKey,releaseIntervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
-            lrfdLRFDTimeDependentConcreteCreepDetails* pLRFDDetails = static_cast<lrfdLRFDTimeDependentConcreteCreepDetails*>(pDetails.get());
+            const auto& pDetails = pMaterials->GetSegmentCreepCoefficientDetails(segmentKey,releaseIntervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
+            const lrfdLRFDTimeDependentConcreteCreepDetails* pLRFDDetails = static_cast<const lrfdLRFDTimeDependentConcreteCreepDetails*>(pDetails.get());
 
             (*pTable)(rowIdx,colIdx++) << pLRFDDetails->ktd;
             (*pTable)(rowIdx,colIdx++) << creep.SetValue(pDetails->Ct);
@@ -490,8 +487,8 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
             {
                Float64 ti = pMaterials->GetClosureJointConcreteAge(segmentKey,compositeClosureIntervalIdx,pgsTypes::Middle);
                Float64 t  = pMaterials->GetClosureJointConcreteAge(segmentKey,intervalIdx,pgsTypes::End);
-               const matConcreteBase* pConcrete = pMaterials->GetClosureJointConcrete(closureKey);
-               const lrfdLRFDTimeDependentConcrete* pLRFDConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete);
+               const auto& pConcrete = pMaterials->GetClosureJointConcrete(closureKey);
+               const lrfdLRFDTimeDependentConcrete* pLRFDConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete.get());
                (*pTable)(rowIdx,colIdx++) << ti;
                if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims )
                {
@@ -506,8 +503,8 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
                   (*pTable)(rowIdx,colIdx++) << pLRFDConcrete->GetSizeFactorCreep(t,ti);
                }
 
-               std::shared_ptr<matConcreteBaseCreepDetails> pDetails = pMaterials->GetClosureJointCreepCoefficientDetails(closureKey,compositeClosureIntervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
-               lrfdLRFDTimeDependentConcreteCreepDetails* pLRFDDetails = static_cast<lrfdLRFDTimeDependentConcreteCreepDetails*>(pDetails.get());
+               const auto& pDetails = pMaterials->GetClosureJointCreepCoefficientDetails(closureKey,compositeClosureIntervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
+               const lrfdLRFDTimeDependentConcreteCreepDetails* pLRFDDetails = static_cast<const lrfdLRFDTimeDependentConcreteCreepDetails*>(pDetails.get());
 
                (*pTable)(rowIdx,colIdx++) << pLRFDDetails->ktd;
                (*pTable)(rowIdx,colIdx++) << creep.SetValue(pDetails->Ct);
@@ -535,8 +532,8 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
          {
             Float64 ti = pMaterials->GetDeckConcreteAge(deckCastingRegionIdx, compositeDeckIntervalIdx, pgsTypes::Middle);
             Float64 t = pMaterials->GetDeckConcreteAge(deckCastingRegionIdx, intervalIdx, pgsTypes::End);
-            const matConcreteBase* pConcrete = pMaterials->GetDeckConcrete(deckCastingRegionIdx);
-            const lrfdLRFDTimeDependentConcrete* pLRFDConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete);
+            const auto& pConcrete = pMaterials->GetDeckConcrete(deckCastingRegionIdx);
+            const lrfdLRFDTimeDependentConcrete* pLRFDConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete.get());
             (*pTable)(rowIdx, colIdx++) << ti;
             if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims)
             {
@@ -551,8 +548,8 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
                (*pTable)(rowIdx, colIdx++) << pLRFDConcrete->GetSizeFactorCreep(t, ti);
             }
 
-            std::shared_ptr<matConcreteBaseCreepDetails> pDetails = pMaterials->GetDeckCreepCoefficientDetails(deckCastingRegionIdx, compositeDeckIntervalIdx, pgsTypes::Middle, intervalIdx, pgsTypes::End);
-            lrfdLRFDTimeDependentConcreteCreepDetails* pLRFDDetails = static_cast<lrfdLRFDTimeDependentConcreteCreepDetails*>(pDetails.get());
+            const auto& pDetails = pMaterials->GetDeckCreepCoefficientDetails(deckCastingRegionIdx, compositeDeckIntervalIdx, pgsTypes::Middle, intervalIdx, pgsTypes::End);
+            const lrfdLRFDTimeDependentConcreteCreepDetails* pLRFDDetails = static_cast<const lrfdLRFDTimeDependentConcreteCreepDetails*>(pDetails.get());
 
             (*pTable)(rowIdx, colIdx++) << pLRFDDetails->ktd;
             (*pTable)(rowIdx, colIdx++) << creep.SetValue(pDetails->Ct);

@@ -28,7 +28,7 @@
 #include "CEBFIPParametersDlg.h"
 
 #include <EAF\EAFDisplayUnits.h>
-#include <Material\CEBFIPConcrete.h>
+#include <Materials/CEBFIPConcrete.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -95,7 +95,7 @@ void CCEBFIPParametersDlg::UpdateParameters()
    UpdateData();
 
    Float64 t1 = WBFL::Units::ConvertFromSysUnits(m_t1,WBFL::Units::Measure::Day);
-   matCEBFIPConcrete::ComputeParameters(m_fc1,t1,m_fc2,28,&m_S);
+   WBFL::Materials::CEBFIPConcrete::ComputeParameters(m_fc1,t1,m_fc2,28,&m_S);
 
    CString strResult;
    strResult.Format(_T("S = %.6f\r\nFor use in Eq'n. 2.1-54"),m_S);

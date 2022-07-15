@@ -1345,7 +1345,10 @@ CPTData::CPTData()
    DuctType = pgsTypes::dtMetal;
    InstallationType = pgsTypes::sitPush;
 
-   pStrand = lrfdStrandPool::GetInstance()->GetStrand(matPsStrand::Gr1860,matPsStrand::LowRelaxation,matPsStrand::None,matPsStrand::D1524);
+   pStrand = lrfdStrandPool::GetInstance()->GetStrand(WBFL::Materials::PsStrand::Grade::Gr1860, 
+                                                      WBFL::Materials::PsStrand::Type::LowRelaxation,
+                                                      WBFL::Materials::PsStrand::Coating::None,
+                                                      WBFL::Materials::PsStrand::Size::D1524);
 }  
 
 CPTData::CPTData(const CPTData& rOther)
@@ -1629,7 +1632,7 @@ HRESULT CPTData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       Int64 key = var.lVal;
       if ( version < 4 )
       {
-         key |= matPsStrand::None; // add default encoding for stand coating type... added in version 4
+         key |= std::underlying_type<WBFL::Materials::PsStrand::Coating>::type(WBFL::Materials::PsStrand::Coating::None); // add default encoding for stand coating type... added in version 4
       }
       pStrand = pPool->GetStrand(key);
    }

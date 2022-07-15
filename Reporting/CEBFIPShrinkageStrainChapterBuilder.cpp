@@ -26,8 +26,8 @@
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
 #include <IFace\Project.h>
-#include <Material\ConcreteBase.h>
-#include <Material\CEBFIPConcrete.h>
+#include <Materials/ConcreteBase.h>
+#include <Materials/CEBFIPConcrete.h>
 #include <PgsExt\TimelineEvent.h>
 #include <PgsExt\CastDeckActivity.h>
 
@@ -103,8 +103,8 @@ rptChapter* CCEBFIPShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
       ColumnIndexType colIdx = 0;
 
       CSegmentKey segmentKey(girderKey,segIdx);
-      const matConcreteBase* pConcrete = pMaterials->GetSegmentConcrete(segmentKey);
-      const matCEBFIPConcrete* pCEBFIPConcrete = dynamic_cast<const matCEBFIPConcrete*>(pConcrete);
+      const auto& pConcrete = pMaterials->GetSegmentConcrete(segmentKey);
+      const WBFL::Materials::CEBFIPConcrete* pCEBFIPConcrete = dynamic_cast<const WBFL::Materials::CEBFIPConcrete*>(pConcrete.get());
 
       (*pTable)(rowIdx,colIdx++) << _T("Segment ") << LABEL_SEGMENT(segIdx);
       (*pTable)(rowIdx,colIdx++) << stress.SetValue(pCEBFIPConcrete->GetFc28());
@@ -120,8 +120,8 @@ rptChapter* CCEBFIPShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
       if ( segIdx != nSegments-1 )
       {
          CClosureKey closureKey(segmentKey);
-         const matConcreteBase* pConcrete = pMaterials->GetClosureJointConcrete(closureKey);
-         const matCEBFIPConcrete* pCEBFIPConcrete = dynamic_cast<const matCEBFIPConcrete*>(pConcrete);
+         const auto& pConcrete = pMaterials->GetClosureJointConcrete(closureKey);
+         const WBFL::Materials::CEBFIPConcrete* pCEBFIPConcrete = dynamic_cast<const WBFL::Materials::CEBFIPConcrete*>(pConcrete.get());
    
          colIdx = 0;
 
@@ -148,8 +148,8 @@ rptChapter* CCEBFIPShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
       {
          std::vector<IndexType> vRegions = castDeckActivity.GetRegions(castingIdx);
          IndexType deckCastingRegionIdx = vRegions.front();
-         const matConcreteBase* pConcrete = pMaterials->GetDeckConcrete(deckCastingRegionIdx);
-         const matCEBFIPConcrete* pCEBFIPConcrete = dynamic_cast<const matCEBFIPConcrete*>(pConcrete);
+         const auto& pConcrete = pMaterials->GetDeckConcrete(deckCastingRegionIdx);
+         const WBFL::Materials::CEBFIPConcrete* pCEBFIPConcrete = dynamic_cast<const WBFL::Materials::CEBFIPConcrete*>(pConcrete.get());
 
          ColumnIndexType colIdx = 0;
 
@@ -274,8 +274,8 @@ rptChapter* CCEBFIPShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
          if ( releaseIntervalIdx <= intervalIdx )
          {
             Float64 t  = pMaterials->GetSegmentConcreteAge(segmentKey,intervalIdx,pgsTypes::End);
-            const matConcreteBase* pConcrete = pMaterials->GetSegmentConcrete(segmentKey);
-            const matCEBFIPConcrete* pCEBFIPConcrete = dynamic_cast<const matCEBFIPConcrete*>(pConcrete);
+            const auto& pConcrete = pMaterials->GetSegmentConcrete(segmentKey);
+            const WBFL::Materials::CEBFIPConcrete* pCEBFIPConcrete = dynamic_cast<const WBFL::Materials::CEBFIPConcrete*>(pConcrete.get());
             Float64 cure = pCEBFIPConcrete->GetCureTime();
             (*pTable)(rowIdx,colIdx++) << t;
             (*pTable)(rowIdx,colIdx++) << cure;
@@ -297,8 +297,8 @@ rptChapter* CCEBFIPShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
             if ( compositeClosureIntervalIdx <= intervalIdx )
             {
                Float64 t  = pMaterials->GetClosureJointConcreteAge(closureKey,intervalIdx,pgsTypes::End);
-               const matConcreteBase* pConcrete = pMaterials->GetClosureJointConcrete(closureKey);
-               const matCEBFIPConcrete* pCEBFIPConcrete = dynamic_cast<const matCEBFIPConcrete*>(pConcrete);
+               const auto& pConcrete = pMaterials->GetClosureJointConcrete(closureKey);
+               const WBFL::Materials::CEBFIPConcrete* pCEBFIPConcrete = dynamic_cast<const WBFL::Materials::CEBFIPConcrete*>(pConcrete.get());
                Float64 cure = pCEBFIPConcrete->GetCureTime();
                (*pTable)(rowIdx,colIdx++) << t;
                (*pTable)(rowIdx,colIdx++) << cure;
@@ -323,8 +323,8 @@ rptChapter* CCEBFIPShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
          if ( compositeDeckIntervalIdx <= intervalIdx )
          {
             Float64 t  = pMaterials->GetDeckConcreteAge(deckCastingRegionIdx,intervalIdx,pgsTypes::End);
-            const matConcreteBase* pConcrete = pMaterials->GetDeckConcrete(deckCastingRegionIdx);
-            const matCEBFIPConcrete* pCEBFIPConcrete = dynamic_cast<const matCEBFIPConcrete*>(pConcrete);
+            const auto& pConcrete = pMaterials->GetDeckConcrete(deckCastingRegionIdx);
+            const WBFL::Materials::CEBFIPConcrete* pCEBFIPConcrete = dynamic_cast<const WBFL::Materials::CEBFIPConcrete*>(pConcrete.get());
             Float64 cure = pCEBFIPConcrete->GetCureTime();
             (*pTable)(rowIdx,colIdx++) << t;
             (*pTable)(rowIdx,colIdx++) << cure;

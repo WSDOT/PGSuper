@@ -22,7 +22,13 @@
 #pragma once
 #include <PgsExt\PgsExtExp.h>
 
-class matPsStrand;
+namespace WBFL
+{
+   namespace Materials
+   {
+      class PsStrand;
+   };
+};
 
-void PGSEXTFUNC DDX_Strand(CDataExchange* pDX, UINT nIDC, const matPsStrand** ppStrand);
+void PGSEXTFUNC DDX_Strand(CDataExchange* pDX, UINT nIDC, const WBFL::Materials::PsStrand** ppStrand);
 

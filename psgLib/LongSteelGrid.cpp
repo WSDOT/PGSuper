@@ -334,14 +334,14 @@ void CLongSteelGrid::SetRowStyle(ROWCOL nRow)
 
 
    CLongSteelPage* pParent = (CLongSteelPage*)GetParent();
-   matRebar::Type type;
-   matRebar::Grade grade;
+   WBFL::Materials::Rebar::Type type;
+   WBFL::Materials::Rebar::Grade grade;
    pParent->GetRebarMaterial(&type,&grade);
    CString strBarSizeChoiceList;
    lrfdRebarIter rebarIter(type,grade);
    for ( rebarIter.Begin(); rebarIter; rebarIter.Next() )
    {
-      const matRebar* pRebar = rebarIter.GetCurrentRebar();
+      const auto* pRebar = rebarIter.GetCurrentRebar();
       strBarSizeChoiceList += pRebar->GetName().c_str();
       strBarSizeChoiceList += _T("\n");
    }
@@ -352,7 +352,7 @@ void CLongSteelGrid::SetRowStyle(ROWCOL nRow)
       .SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
       .SetChoiceList(strBarSizeChoiceList)
       .SetHorizontalAlignment(DT_RIGHT)
-      .SetValue(lrfdRebarPool::GetBarSize(matRebar::bs4).c_str())
+      .SetValue(lrfdRebarPool::GetBarSize(WBFL::Materials::Rebar::Size::bs4).c_str())
       );
 
 	this->SetStyleRange(CGXRange(nRow,7), CGXStyle()
@@ -608,7 +608,7 @@ void CLongSteelGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
    }
 }
 
-matRebar::Size CLongSteelGrid::GetBarSize(ROWCOL row)
+WBFL::Materials::Rebar::Size CLongSteelGrid::GetBarSize(ROWCOL row)
 {
    CString s = GetCellValue(row, 6);
    s.TrimLeft();
@@ -616,25 +616,25 @@ matRebar::Size CLongSteelGrid::GetBarSize(ROWCOL row)
    CString s2 = s.Right(l-1);
    int i = _tstoi(s2);
    if (s.IsEmpty() || (i==0))
-      return matRebar::bsNone;
+      return WBFL::Materials::Rebar::Size::bsNone;
 
    switch(i)
    {
-   case 3:  return matRebar::bs3;
-   case 4:  return matRebar::bs4;
-   case 5:  return matRebar::bs5;
-   case 6:  return matRebar::bs6;
-   case 7:  return matRebar::bs7;
-   case 8:  return matRebar::bs8;
-   case 9:  return matRebar::bs9;
-   case 10: return matRebar::bs10;
-   case 11: return matRebar::bs11;
-   case 14: return matRebar::bs14;
-   case 18: return matRebar::bs18;
+   case 3:  return WBFL::Materials::Rebar::Size::bs3;
+   case 4:  return WBFL::Materials::Rebar::Size::bs4;
+   case 5:  return WBFL::Materials::Rebar::Size::bs5;
+   case 6:  return WBFL::Materials::Rebar::Size::bs6;
+   case 7:  return WBFL::Materials::Rebar::Size::bs7;
+   case 8:  return WBFL::Materials::Rebar::Size::bs8;
+   case 9:  return WBFL::Materials::Rebar::Size::bs9;
+   case 10: return WBFL::Materials::Rebar::Size::bs10;
+   case 11: return WBFL::Materials::Rebar::Size::bs11;
+   case 14: return WBFL::Materials::Rebar::Size::bs14;
+   case 18: return WBFL::Materials::Rebar::Size::bs18;
    default: ATLASSERT(false);
    }
 
-   return matRebar::bsNone;
+   return WBFL::Materials::Rebar::Size::bsNone;
 }
 
 pgsTypes::RebarLayoutType CLongSteelGrid::GetLayout(ROWCOL nRow)

@@ -661,7 +661,7 @@ void CDuctGrid::UpdateNumStrandsList(ROWCOL nRow)
    Float64 A = pDuctEntry->GetInsideArea();
 
    CSplicedGirderGeneralPage* pParent = (CSplicedGirderGeneralPage*)GetParent();
-   const matPsStrand* pStrand = pParent->GetStrand();
+   const auto* pStrand = pParent->GetStrand();
    Float64 aps = pStrand->GetNominalArea();
 
    // LRFD 5.4.6.2 Area of duct must be at least K times net area of prestressing steel
@@ -690,7 +690,7 @@ void CDuctGrid::UpdateMaxPjack(ROWCOL nRow)
 {
    StrandIndexType nStrands = (StrandIndexType)_tstoi(GetCellValue(nRow,nNumStrandCol));
    CSplicedGirderGeneralPage* pParent = (CSplicedGirderGeneralPage*)GetParent();
-   const matPsStrand* pStrand = pParent->GetStrand();
+   const auto* pStrand = pParent->GetStrand();
 
    Float64 Pjack = lrfdPsStrand::GetPjackPT(*pStrand,nStrands);
 

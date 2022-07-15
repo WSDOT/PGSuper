@@ -2160,7 +2160,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
             Xs = (bIsInClosure ? m_pMaterials->GetClosureJointAgingCoefficient(closureKey, intervalIdx) : m_pMaterials->GetSegmentAgingCoefficient(segmentKey, intervalIdx));
             Xe = (bIsInClosure ? m_pMaterials->GetClosureJointAgingCoefficient(closureKey, intervalIdx) : m_pMaterials->GetSegmentAgingCoefficient(segmentKey, intervalIdx));
          }
-         tsDetails.Girder.Creep.push_back(girderCreepDetails);
+         tsDetails.Girder.Creep.emplace_back(girderCreepDetails);
 
 
          Float64 dP_Girder = 0;
@@ -2205,8 +2205,8 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          girderCreepCurvature.Xe = Xe;
          girderCreepCurvature.r = r;
 
-         tsDetails.Girder.ec.push_back(girderCreepStrain);
-         tsDetails.Girder.rc.push_back(girderCreepCurvature);
+         tsDetails.Girder.ec.emplace_back(girderCreepStrain);
+         tsDetails.Girder.rc.emplace_back(girderCreepCurvature);
 
          // Deck
          INCREMENTALCREEPDETAILS deckCreepDetails;
@@ -2227,7 +2227,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
             Xs = 1.0;
             Xe = 1.0;
          }
-         tsDetails.Deck.Creep.push_back(deckCreepDetails);
+         tsDetails.Deck.Creep.emplace_back(deckCreepDetails);
 
          // Modulus in interval i (not age adjusted because we apply the creep coefficients Ce and Cs)
          Float64 EiDeck = m_pMaterials->GetDeckEc(deckCastingRegionIdx, i);
@@ -2258,8 +2258,8 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          deckCreepCurvature.Xe = Xe;
          deckCreepCurvature.r = r;
 
-         tsDetails.Deck.ec.push_back(deckCreepStrain);
-         tsDetails.Deck.rc.push_back(deckCreepCurvature);
+         tsDetails.Deck.ec.emplace_back(deckCreepStrain);
+         tsDetails.Deck.rc.emplace_back(deckCreepCurvature);
       }
 
       // Compute total unrestrained deformation due to creep and shrinkage during this interval
@@ -2267,7 +2267,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
       if ( !bIgnoreShrinkageEffects )
       {
          tsDetails.Girder.Shrinkage.pStartDetails = (bIsInClosure ? m_pMaterials->GetTotalClosureJointFreeShrinkageStrainDetails(closureKey,intervalIdx,pgsTypes::Start) : m_pMaterials->GetTotalSegmentFreeShrinkageStrainDetails(segmentKey,intervalIdx,pgsTypes::Start));
-         tsDetails.Girder.Shrinkage.pEndDetails   = (bIsInClosure ? m_pMaterials->GetTotalClosureJointFreeShrinkageStrainDetails(closureKey,intervalIdx,pgsTypes::End)   : m_pMaterials->GetTotalSegmentFreeShrinkageStrainDetails(segmentKey,intervalIdx,pgsTypes::End));
+         tsDetails.Girder.Shrinkage.pEndDetails   = (bIsInClosure ? m_pMaterials->GetTotalClosureJointFreeShrinkageStrainDetails(closureKey,intervalIdx,pgsTypes::End) : m_pMaterials->GetTotalSegmentFreeShrinkageStrainDetails(segmentKey,intervalIdx,pgsTypes::End));
          tsDetails.Girder.Shrinkage.esi = tsDetails.Girder.Shrinkage.pEndDetails->esh - tsDetails.Girder.Shrinkage.pStartDetails->esh;
       }
 
@@ -2362,7 +2362,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
       }
    }
 
-   details.TimeStepDetails.push_back(tsDetails);
+   details.TimeStepDetails.emplace_back(tsDetails);
 }
 
 void CTimeStepLossEngineer::AnalyzeInitialStrains(IntervalIndexType intervalIdx,const CGirderKey& girderKey,LOSSES* pLosses)

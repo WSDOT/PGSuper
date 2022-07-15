@@ -29,7 +29,14 @@
 
 #include <array>
 
-class matPsStrand;
+namespace WBFL
+{
+   namespace Materials
+   {
+      class PsStrand;
+   };
+};
+
 class GirderLibraryEntry;
 
 // Class to store direct-select strand fill input
@@ -233,8 +240,8 @@ public:
    void IsSymmetricDebond(bool bIsSymmetric);
    bool IsDebonded(pgsTypes::StrandType strandType,GridIndexType gridIdx,pgsTypes::MemberEndType endType,Float64* pLdebond) const;
 
-   void SetStrandMaterial(pgsTypes::StrandType strandType,const matPsStrand* pStrandMaterial);
-   const matPsStrand* GetStrandMaterial(pgsTypes::StrandType strandType) const;
+   void SetStrandMaterial(pgsTypes::StrandType strandType,const WBFL::Materials::PsStrand* pStrandMaterial);
+   const WBFL::Materials::PsStrand* GetStrandMaterial(pgsTypes::StrandType strandType) const;
 
    void IsPjackCalculated(pgsTypes::StrandType strandType,bool bIsCalculated);
    bool IsPjackCalculated(pgsTypes::StrandType strandType) const;
@@ -296,7 +303,7 @@ protected:
 
    pgsTypes::TTSUsage m_TempStrandUsage; // One of the tts constants above.
 
-   std::array<const matPsStrand*,3> m_StrandMaterial; // pgsTypes::StrandType enum, except not using pgsTypes::Permanent
+   std::array<const WBFL::Materials::PsStrand*,3> m_StrandMaterial; // pgsTypes::StrandType enum, except not using pgsTypes::Permanent
 
    // Grid index for extended strands. First array index is pgsTypes::StrandType (except don't use permanent)
    // second index is pgsTypes::MemberEndType

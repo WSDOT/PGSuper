@@ -460,12 +460,12 @@ Float64 CSpecAgentImp::GetAllowableAtJacking(const CSegmentKey& segmentKey,pgsTy
    }
 
    GET_IFACE(IMaterials,pMaterial);
-   const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,strandType);
+   const auto* pStrand = pMaterial->GetStrandMaterial(segmentKey,strandType);
 
    Float64 fpu = lrfdPsStrand::GetUltimateStrength(pStrand->GetGrade());
 
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 coeff = pSpec->GetStrandStressCoefficient(CSS_AT_JACKING,pStrand->GetType() == matPsStrand::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   Float64 coeff = pSpec->GetStrandStressCoefficient(CSS_AT_JACKING,pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? LOW_RELAX : STRESS_REL);
 
    return coeff*fpu;
 }
@@ -478,12 +478,12 @@ Float64 CSpecAgentImp::GetAllowableBeforeXfer(const CSegmentKey& segmentKey,pgsT
    }
 
    GET_IFACE(IMaterials,pMaterial);
-   const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,strandType);
+   const auto* pStrand = pMaterial->GetStrandMaterial(segmentKey,strandType);
 
    Float64 fpu = lrfdPsStrand::GetUltimateStrength(pStrand->GetGrade());
 
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 coeff = pSpec->GetStrandStressCoefficient(CSS_BEFORE_TRANSFER,pStrand->GetType() == matPsStrand::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   Float64 coeff = pSpec->GetStrandStressCoefficient(CSS_BEFORE_TRANSFER,pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? LOW_RELAX : STRESS_REL);
 
    return coeff*fpu;
 }
@@ -496,12 +496,12 @@ Float64 CSpecAgentImp::GetAllowableAfterXfer(const CSegmentKey& segmentKey,pgsTy
    }
 
    GET_IFACE(IMaterials,pMaterial);
-   const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,strandType);
+   const auto* pStrand = pMaterial->GetStrandMaterial(segmentKey,strandType);
 
    Float64 fpu = lrfdPsStrand::GetUltimateStrength(pStrand->GetGrade());
 
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 coeff = pSpec->GetStrandStressCoefficient(CSS_AFTER_TRANSFER,pStrand->GetType() == matPsStrand::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   Float64 coeff = pSpec->GetStrandStressCoefficient(CSS_AFTER_TRANSFER,pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? LOW_RELAX : STRESS_REL);
 
    return coeff*fpu;
 }
@@ -514,12 +514,12 @@ Float64 CSpecAgentImp::GetAllowableAfterLosses(const CSegmentKey& segmentKey,pgs
    }
 
    GET_IFACE(IMaterials,pMaterial);
-   const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,strandType);
+   const auto* pStrand = pMaterial->GetStrandMaterial(segmentKey,strandType);
 
    Float64 fpy = lrfdPsStrand::GetYieldStrength(pStrand->GetGrade(),pStrand->GetType());
 
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 coeff = pSpec->GetStrandStressCoefficient(CSS_AFTER_ALL_LOSSES,pStrand->GetType() == matPsStrand::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   Float64 coeff = pSpec->GetStrandStressCoefficient(CSS_AFTER_ALL_LOSSES,pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? LOW_RELAX : STRESS_REL);
 
    return coeff*fpy;
 }
@@ -547,7 +547,7 @@ Float64 CSpecAgentImp::GetSegmentTendonAllowableAtJacking(const CSegmentKey& seg
    }
 
    GET_IFACE(IMaterials, pMaterial);
-   const matPsStrand* pStrand = pMaterial->GetSegmentTendonMaterial(segmentKey);
+   const auto* pStrand = pMaterial->GetSegmentTendonMaterial(segmentKey);
 
    Float64 fpu = lrfdPsStrand::GetUltimateStrength(pStrand->GetGrade());
 
@@ -564,7 +564,7 @@ Float64 CSpecAgentImp::GetSegmentTendonAllowablePriorToSeating(const CSegmentKey
    }
 
    GET_IFACE(IMaterials, pMaterial);
-   const matPsStrand* pStrand = pMaterial->GetSegmentTendonMaterial(segmentKey);
+   const auto* pStrand = pMaterial->GetSegmentTendonMaterial(segmentKey);
 
    Float64 fpy = lrfdPsStrand::GetYieldStrength(pStrand->GetGrade(), pStrand->GetType());
 
@@ -576,7 +576,7 @@ Float64 CSpecAgentImp::GetSegmentTendonAllowablePriorToSeating(const CSegmentKey
 Float64 CSpecAgentImp::GetSegmentTendonAllowableAfterAnchorSetAtAnchorage(const CSegmentKey& segmentKey) const
 {
    GET_IFACE(IMaterials, pMaterial);
-   const matPsStrand* pStrand = pMaterial->GetSegmentTendonMaterial(segmentKey);
+   const auto* pStrand = pMaterial->GetSegmentTendonMaterial(segmentKey);
 
    Float64 fpu = lrfdPsStrand::GetUltimateStrength(pStrand->GetGrade());
 
@@ -588,7 +588,7 @@ Float64 CSpecAgentImp::GetSegmentTendonAllowableAfterAnchorSetAtAnchorage(const 
 Float64 CSpecAgentImp::GetSegmentTendonAllowableAfterAnchorSet(const CSegmentKey& segmentKey) const
 {
    GET_IFACE(IMaterials, pMaterial);
-   const matPsStrand* pStrand = pMaterial->GetSegmentTendonMaterial(segmentKey);
+   const auto* pStrand = pMaterial->GetSegmentTendonMaterial(segmentKey);
 
    Float64 fpu = lrfdPsStrand::GetUltimateStrength(pStrand->GetGrade());
 
@@ -600,7 +600,7 @@ Float64 CSpecAgentImp::GetSegmentTendonAllowableAfterAnchorSet(const CSegmentKey
 Float64 CSpecAgentImp::GetSegmentTendonAllowableAfterLosses(const CSegmentKey& segmentKey) const
 {
    GET_IFACE(IMaterials, pMaterial);
-   const matPsStrand* pStrand = pMaterial->GetSegmentTendonMaterial(segmentKey);
+   const auto* pStrand = pMaterial->GetSegmentTendonMaterial(segmentKey);
 
    Float64 fpy = lrfdPsStrand::GetYieldStrength(pStrand->GetGrade(), pStrand->GetType());
 
@@ -612,50 +612,50 @@ Float64 CSpecAgentImp::GetSegmentTendonAllowableAfterLosses(const CSegmentKey& s
 Float64 CSpecAgentImp::GetSegmentTendonAllowableCoefficientAtJacking(const CSegmentKey& segmentKey) const
 {
    GET_IFACE(IMaterials, pMaterial);
-   const matPsStrand* pStrand = pMaterial->GetSegmentTendonMaterial(segmentKey);
+   const auto* pStrand = pMaterial->GetSegmentTendonMaterial(segmentKey);
 
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_AT_JACKING, pStrand->GetType() == matPsStrand::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_AT_JACKING, pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? LOW_RELAX : STRESS_REL);
    return coeff;
 }
 
 Float64 CSpecAgentImp::GetSegmentTendonAllowableCoefficientPriorToSeating(const CSegmentKey& segmentKey) const
 {
    GET_IFACE(IMaterials, pMaterial);
-   const matPsStrand* pStrand = pMaterial->GetSegmentTendonMaterial(segmentKey);
+   const auto* pStrand = pMaterial->GetSegmentTendonMaterial(segmentKey);
 
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_PRIOR_TO_SEATING, pStrand->GetType() == matPsStrand::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_PRIOR_TO_SEATING, pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? LOW_RELAX : STRESS_REL);
    return coeff;
 }
 
 Float64 CSpecAgentImp::GetSegmentTendonAllowableCoefficientAfterAnchorSetAtAnchorage(const CSegmentKey& segmentKey) const
 {
    GET_IFACE(IMaterials, pMaterial);
-   const matPsStrand* pStrand = pMaterial->GetSegmentTendonMaterial(segmentKey);
+   const auto* pStrand = pMaterial->GetSegmentTendonMaterial(segmentKey);
 
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_ANCHORAGES_AFTER_SEATING, pStrand->GetType() == matPsStrand::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_ANCHORAGES_AFTER_SEATING, pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? LOW_RELAX : STRESS_REL);
    return coeff;
 }
 
 Float64 CSpecAgentImp::GetSegmentTendonAllowableCoefficientAfterAnchorSet(const CSegmentKey& segmentKey) const
 {
    GET_IFACE(IMaterials, pMaterial);
-   const matPsStrand* pStrand = pMaterial->GetSegmentTendonMaterial(segmentKey);
+   const auto* pStrand = pMaterial->GetSegmentTendonMaterial(segmentKey);
 
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_ELSEWHERE_AFTER_SEATING, pStrand->GetType() == matPsStrand::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_ELSEWHERE_AFTER_SEATING, pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? LOW_RELAX : STRESS_REL);
    return coeff;
 }
 
 Float64 CSpecAgentImp::GetSegmentTendonAllowableCoefficientAfterLosses(const CSegmentKey& segmentKey) const
 {
    GET_IFACE(IMaterials, pMaterial);
-   const matPsStrand* pStrand = pMaterial->GetSegmentTendonMaterial(segmentKey);
+   const auto* pStrand = pMaterial->GetSegmentTendonMaterial(segmentKey);
 
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_AFTER_ALL_LOSSES, pStrand->GetType() == matPsStrand::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_AFTER_ALL_LOSSES, pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? LOW_RELAX : STRESS_REL);
 
    return coeff;
 }
@@ -668,7 +668,7 @@ Float64 CSpecAgentImp::GetGirderTendonAllowableAtJacking(const CGirderKey& girde
    }
 
    GET_IFACE(IMaterials,pMaterial);
-   const matPsStrand* pStrand = pMaterial->GetGirderTendonMaterial(girderKey);
+   const auto* pStrand = pMaterial->GetGirderTendonMaterial(girderKey);
 
    Float64 fpu = lrfdPsStrand::GetUltimateStrength(pStrand->GetGrade());
 
@@ -685,7 +685,7 @@ Float64 CSpecAgentImp::GetGirderTendonAllowablePriorToSeating(const CGirderKey& 
    }
 
    GET_IFACE(IMaterials,pMaterial);
-   const matPsStrand* pStrand = pMaterial->GetGirderTendonMaterial(girderKey);
+   const auto* pStrand = pMaterial->GetGirderTendonMaterial(girderKey);
 
    Float64 fpy = lrfdPsStrand::GetYieldStrength(pStrand->GetGrade(),pStrand->GetType());
 
@@ -697,7 +697,7 @@ Float64 CSpecAgentImp::GetGirderTendonAllowablePriorToSeating(const CGirderKey& 
 Float64 CSpecAgentImp::GetGirderTendonAllowableAfterAnchorSetAtAnchorage(const CGirderKey& girderKey) const
 {
    GET_IFACE(IMaterials,pMaterial);
-   const matPsStrand* pStrand = pMaterial->GetGirderTendonMaterial(girderKey);
+   const auto* pStrand = pMaterial->GetGirderTendonMaterial(girderKey);
 
    Float64 fpu = lrfdPsStrand::GetUltimateStrength(pStrand->GetGrade());
 
@@ -709,7 +709,7 @@ Float64 CSpecAgentImp::GetGirderTendonAllowableAfterAnchorSetAtAnchorage(const C
 Float64 CSpecAgentImp::GetGirderTendonAllowableAfterAnchorSet(const CGirderKey& girderKey) const
 {
    GET_IFACE(IMaterials,pMaterial);
-   const matPsStrand* pStrand = pMaterial->GetGirderTendonMaterial(girderKey);
+   const auto* pStrand = pMaterial->GetGirderTendonMaterial(girderKey);
 
    Float64 fpu = lrfdPsStrand::GetUltimateStrength(pStrand->GetGrade());
 
@@ -721,7 +721,7 @@ Float64 CSpecAgentImp::GetGirderTendonAllowableAfterAnchorSet(const CGirderKey& 
 Float64 CSpecAgentImp::GetGirderTendonAllowableAfterLosses(const CGirderKey& girderKey) const
 {
    GET_IFACE(IMaterials,pMaterial);
-   const matPsStrand* pStrand = pMaterial->GetGirderTendonMaterial(girderKey);
+   const auto* pStrand = pMaterial->GetGirderTendonMaterial(girderKey);
 
    Float64 fpy = lrfdPsStrand::GetYieldStrength(pStrand->GetGrade(),pStrand->GetType());
 
@@ -733,50 +733,50 @@ Float64 CSpecAgentImp::GetGirderTendonAllowableAfterLosses(const CGirderKey& gir
 Float64 CSpecAgentImp::GetGirderTendonAllowableCoefficientAtJacking(const CGirderKey& girderKey) const
 {
    GET_IFACE(IMaterials,pMaterial);
-   const matPsStrand* pStrand = pMaterial->GetGirderTendonMaterial(girderKey);
+   const auto* pStrand = pMaterial->GetGirderTendonMaterial(girderKey);
 
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_AT_JACKING,pStrand->GetType() == matPsStrand::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_AT_JACKING,pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? LOW_RELAX : STRESS_REL);
    return coeff;
 }
 
 Float64 CSpecAgentImp::GetGirderTendonAllowableCoefficientPriorToSeating(const CGirderKey& girderKey) const
 {
    GET_IFACE(IMaterials,pMaterial);
-   const matPsStrand* pStrand = pMaterial->GetGirderTendonMaterial(girderKey);
+   const auto* pStrand = pMaterial->GetGirderTendonMaterial(girderKey);
 
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_PRIOR_TO_SEATING,pStrand->GetType() == matPsStrand::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_PRIOR_TO_SEATING,pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? LOW_RELAX : STRESS_REL);
    return coeff;
 }
 
 Float64 CSpecAgentImp::GetGirderTendonAllowableCoefficientAfterAnchorSetAtAnchorage(const CGirderKey& girderKey) const
 {
    GET_IFACE(IMaterials,pMaterial);
-   const matPsStrand* pStrand = pMaterial->GetGirderTendonMaterial(girderKey);
+   const auto* pStrand = pMaterial->GetGirderTendonMaterial(girderKey);
 
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_ANCHORAGES_AFTER_SEATING,pStrand->GetType() == matPsStrand::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_ANCHORAGES_AFTER_SEATING,pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? LOW_RELAX : STRESS_REL);
    return coeff;
 }
 
 Float64 CSpecAgentImp::GetGirderTendonAllowableCoefficientAfterAnchorSet(const CGirderKey& girderKey) const
 {
    GET_IFACE(IMaterials,pMaterial);
-   const matPsStrand* pStrand = pMaterial->GetGirderTendonMaterial(girderKey);
+   const auto* pStrand = pMaterial->GetGirderTendonMaterial(girderKey);
 
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_ELSEWHERE_AFTER_SEATING,pStrand->GetType() == matPsStrand::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_ELSEWHERE_AFTER_SEATING,pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? LOW_RELAX : STRESS_REL);
    return coeff;
 }
 
 Float64 CSpecAgentImp::GetGirderTendonAllowableCoefficientAfterLosses(const CGirderKey& girderKey) const
 {
    GET_IFACE(IMaterials,pMaterial);
-   const matPsStrand* pStrand = pMaterial->GetGirderTendonMaterial(girderKey);
+   const auto* pStrand = pMaterial->GetGirderTendonMaterial(girderKey);
 
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_AFTER_ALL_LOSSES,pStrand->GetType() == matPsStrand::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_AFTER_ALL_LOSSES,pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? LOW_RELAX : STRESS_REL);
 
    return coeff;
 }
@@ -1501,7 +1501,7 @@ Float64 CSpecAgentImp::GetSegmentAllowableTensionStress(const pgsPointOfInterest
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    Float64 f = 0;
-   if (pMaterials->GetSegmentConcreteType(segmentKey) == matConcrete::PCI_UHPC)
+   if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC)
    {
       Float64 f_fc = pMaterials->GetSegmentConcreteFirstCrackingStrength(segmentKey);
       Float64 k = GetAllowableUHPCTensionStressLimitCoefficient();
@@ -1550,7 +1550,7 @@ Float64 CSpecAgentImp::GetClosureJointAllowableTensionStress(const pgsPointOfInt
 
    Float64 f = 0;
    GET_IFACE(IMaterials, pMaterials);
-   if (pMaterials->GetClosureJointConcreteType(closureKey) == matConcrete::PCI_UHPC)
+   if (pMaterials->GetClosureJointConcreteType(closureKey) == pgsTypes::PCI_UHPC)
    {
       Float64 f_fc = pMaterials->GetClosureJointConcreteFirstCrackingStrength(closureKey);
       Float64 k = GetAllowableUHPCTensionStressLimitCoefficient();
@@ -2528,7 +2528,7 @@ Float64 CSpecAgentImp::GetAllowableUHPCTensionStressLimitCoefficient() const
 /////////////////////////////////////////////////////////////////////////////
 // ITransverseReinforcementSpec
 //
-matRebar::Size CSpecAgentImp::GetMinConfinmentBarSize() const
+WBFL::Materials::Rebar::Size CSpecAgentImp::GetMinConfinmentBarSize() const
 {
    return lrfdRebar::GetMinConfinmentBarSize();
 }
@@ -3868,13 +3868,13 @@ void CSpecAgentImp::GetFlexureResistanceFactors(pgsTypes::ConcreteType type,Floa
    pSpec->GetFlexureResistanceFactors(type,phiTensionPS,phiTensionRC,phiTensionSpliced,phiCompression);
 }
 
-void CSpecAgentImp::GetFlexuralStrainLimits(matPsStrand::Grade grade,matPsStrand::Type type,Float64* pecl,Float64* petl) const
+void CSpecAgentImp::GetFlexuralStrainLimits(WBFL::Materials::PsStrand::Grade grade,WBFL::Materials::PsStrand::Type type,Float64* pecl,Float64* petl) const
 {
    // The values for Grade 60 are the same as for all types of strand
-   GetFlexuralStrainLimits(matRebar::Grade60,pecl,petl);
+   GetFlexuralStrainLimits(WBFL::Materials::Rebar::Grade::Grade60,pecl,petl);
 }
 
-void CSpecAgentImp::GetFlexuralStrainLimits(matRebar::Grade rebarGrade,Float64* pecl,Float64* petl) const
+void CSpecAgentImp::GetFlexuralStrainLimits(WBFL::Materials::Rebar::Grade rebarGrade,Float64* pecl,Float64* petl) const
 {
    *pecl = lrfdRebar::GetCompressionControlledStrainLimit(rebarGrade);
    *petl = lrfdRebar::GetTensionControlledStrainLimit(rebarGrade);
@@ -3883,27 +3883,27 @@ void CSpecAgentImp::GetFlexuralStrainLimits(matRebar::Grade rebarGrade,Float64* 
    Float64 ecl, etl;
    switch (rebarGrade )
    {
-   case matRebar::Grade40:
+   case WBFL::Materials::Rebar::Grade40:
       ecl = 0.0014;
       etl = 0.005;
       break;
 
-   case matRebar::Grade60:
+   case WBFL::Materials::Rebar::Grade::Grade60:
       ecl = 0.002;
       etl = 0.005;
       break;
 
-   case matRebar::Grade75:
+   case WBFL::Materials::Rebar::Grade75:
       ecl = 0.0028;
       etl = 0.0050;
       break;
 
-   case matRebar::Grade80:
+   case WBFL::Materials::Rebar::Grade80:
       ecl = 0.0030;
       etl = 0.0056;
       break;
 
-   case matRebar::Grade100:
+   case WBFL::Materials::Rebar::Grade100:
       ecl = 0.0040;
       etl = 0.0080;
       break;

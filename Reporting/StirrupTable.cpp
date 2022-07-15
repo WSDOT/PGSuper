@@ -105,13 +105,13 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       (*p_table)(row,1) << loc.SetValue(zoneStart);
       (*p_table)(row,2) << loc.SetValue(zoneEnd);
 
-      matRebar::Size barSize;
+      WBFL::Materials::Rebar::Size barSize;
       Float64 spacing;
       Float64 nStirrups;
       pStirrupGeometry->GetPrimaryVertStirrupBarInfo(segmentKey,iz,&barSize,&nStirrups,&spacing);
 
 
-      if (barSize != matRebar::bsNone)
+      if (barSize != WBFL::Materials::Rebar::Size::bsNone)
       {
          (*p_table)(row,3) << lrfdRebarPool::GetBarSize(barSize).c_str();
          (*p_table)(row,4) << dim.SetValue(spacing);
@@ -130,7 +130,7 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       }
 
       barSize = pStirrupGeometry->GetPrimaryConfinementBarSize(segmentKey,iz);
-      if (barSize != matRebar::bsNone)
+      if (barSize != WBFL::Materials::Rebar::Size::bsNone)
       {
          (*p_table)(row,7) << lrfdRebarPool::GetBarSize(barSize).c_str();
       }
@@ -167,12 +167,12 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       (*p_table)(row,1) << loc.SetValue(zoneStart);
       (*p_table)(row,2) << loc.SetValue(zoneEnd);
 
-      matRebar::Size barSize;
+      WBFL::Materials::Rebar::Size barSize;
       Float64 spacing;
       Float64 nStirrups;
       pStirrupGeometry->GetHorizInterfaceBarInfo(segmentKey,iz,&barSize,&nStirrups,&spacing);
 
-      if (barSize != matRebar::bsNone)
+      if (barSize != WBFL::Materials::Rebar::Size::bsNone)
       {
          (*p_table)(row,3) << lrfdRebarPool::GetBarSize(barSize).c_str();
          (*p_table)(row,4) << dim.SetValue(spacing);
@@ -189,11 +189,11 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    }
 
    // Additional Splitting Bars
-   matRebar::Size size;
+   WBFL::Materials::Rebar::Size size;
    Float64 zoneLength, nBars, spacing;
    pStirrupGeometry->GetAddSplittingBarInfo(segmentKey, &size, &zoneLength, &nBars, &spacing);
 
-   if (size != matRebar::bsNone)
+   if (size != WBFL::Materials::Rebar::Size::bsNone)
    {
       p_table = rptStyleManager::CreateDefaultTable(4,_T("Additional Splitting Stirrups"));
       *pPara << p_table;
@@ -224,7 +224,7 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    // bottom flange confinement steel
    pStirrupGeometry->GetAddConfinementBarInfo(segmentKey, &size, &zoneLength, &spacing);
 
-   if (size != matRebar::bsNone)
+   if (size != WBFL::Materials::Rebar::Size::bsNone)
    {
       p_table = rptStyleManager::CreateDefaultTable(3,_T("Additional Bottom Flange Confinement Stirrups"));
       *pPara << p_table;

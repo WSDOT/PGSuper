@@ -3056,12 +3056,12 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSDocBase* pDoc, IB
                bDoStirrupsEngageDeck = (0.0 < nHorzInterfaceShearBars ? true : false);
             }
 
-            matRebar::Size barSize;
+            WBFL::Materials::Rebar::Size barSize;
             Float64 nStirrups;
             Float64 spacing;
             pStirrupGeom->GetPrimaryVertStirrupBarInfo(segmentKey,zoneIdx,&barSize,&nStirrups,&spacing);
 
-            if ( barSize != matRebar::bsNone && nStirrups != 0 )
+            if ( barSize != WBFL::Materials::Rebar::Size::bsNone && nStirrups != 0 )
             {
                SpacingIndexType nSpacesInZone = SpacingIndexType(floor((zone_length+1.0e-07)/spacing));
                ZoneIndexType nStirrupsInZone = nSpacesInZone+1;
@@ -3750,9 +3750,9 @@ CString CGirderModelElevationView::GetSegmentTooltip(IBroker* pBroker, const CSe
                   );
 
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   const matPsStrand* pStraightStrand = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Straight);
-   const matPsStrand* pHarpedStrand = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Harped);
-   const matPsStrand* pTempStrand = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Temporary);
+   const auto* pStraightStrand = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Straight);
+   const auto* pHarpedStrand = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Harped);
+   const auto* pTempStrand = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Temporary);
 
    StrandIndexType Ns, Nh, Nt, Nsd;
    Ns = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Straight);

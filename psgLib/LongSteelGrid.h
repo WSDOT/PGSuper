@@ -95,7 +95,7 @@ private:
    // set up styles for interior rows
    void SetRowStyle(ROWCOL nRow);
 
-   matRebar::Size GetBarSize(ROWCOL row);
+   WBFL::Materials::Rebar::Size GetBarSize(ROWCOL row);
 
    void EnableCell(ROWCOL nRow, ROWCOL nCol, BOOL bEnable);
 };

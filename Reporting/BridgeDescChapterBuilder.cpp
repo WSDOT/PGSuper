@@ -43,7 +43,7 @@
 #include <PgsExt\GirderLabel.h>
 #include <PgsExt\Helpers.h>
 
-#include <Material\Material.h>
+#include <Materials/Materials.h>
 #include <LRFD\LRFD.h>
 
 #include <WBFLCogo.h>
@@ -1553,7 +1553,7 @@ void write_lrfd_concrete_row(IEAFDisplayUnits* pDisplayUnits, rptRcTable* pTable
 
    ColumnIndexType col = 1;
 
-   (*pTable)(row,col++) << lrfdConcreteUtil::GetTypeName( (matConcrete::Type)concrete.Type, true );
+   (*pTable)(row,col++) << lrfdConcreteUtil::GetTypeName( (WBFL::Materials::ConcreteType)concrete.Type, true );
    if ( !concrete.bHasInitial )
    {
       (*pTable)(row,col++) << _T("-");
@@ -1748,7 +1748,7 @@ void write_aci209_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTabl
    INIT_UV_PROTOTYPE( rptTimeUnitValue,    time,    pDisplayUnits->GetFractionalDaysUnit(),     false );
 
    ColumnIndexType col = 1;
-   (*pTable)(row,col++) << lrfdConcreteUtil::GetTypeName( (matConcrete::Type)concrete.Type, true );
+   (*pTable)(row,col++) << lrfdConcreteUtil::GetTypeName( (WBFL::Materials::ConcreteType)concrete.Type, true );
    (*pTable)(row,col++) << stress.SetValue( fc28 );
    (*pTable)(row,col++) << modE.SetValue( Ec28 );
 
@@ -1883,7 +1883,7 @@ void write_cebfip_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTabl
    INIT_UV_PROTOTYPE( rptStressUnitValue,  modE,    pDisplayUnits->GetModEUnit(),         false );
 
    ColumnIndexType col = 1;
-   (*pTable)(row,col++) << lrfdConcreteUtil::GetTypeName( (matConcrete::Type)concrete.Type, true );
+   (*pTable)(row,col++) << lrfdConcreteUtil::GetTypeName( (WBFL::Materials::ConcreteType)concrete.Type, true );
    (*pTable)(row,col++) << stress.SetValue( fc28 );
    (*pTable)(row,col++) << modE.SetValue( Ec28 );
 
@@ -1893,7 +1893,7 @@ void write_cebfip_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTabl
    }
    else
    {
-      (*pTable)(row,col++) << matCEBFIPConcrete::GetCementType((matCEBFIPConcrete::CementType)concrete.CEBFIPCementType);
+      (*pTable)(row,col++) << WBFL::Materials::CEBFIPConcrete::GetCementType((WBFL::Materials::CEBFIPConcrete::CementType)concrete.CEBFIPCementType);
    }
 
    (*pTable)(row,col++) << concrete.S;
@@ -3433,7 +3433,7 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             }
          }
 
-         std::vector<std::pair<std::_tstring, const matPsStrand*>> vStrandData;
+         std::vector<std::pair<std::_tstring, const WBFL::Materials::PsStrand*>> vStrandData;
          vStrandData.emplace_back(_T("Prestressing Strand (Straight)"), pSegmentData->GetStrandMaterial(thisSegmentKey, pgsTypes::Straight));
          vStrandData.emplace_back(_T("Prestressing Strand (Harped)"), pSegmentData->GetStrandMaterial(thisSegmentKey, pgsTypes::Harped));
          if (0 < pStrandGeom->GetMaxStrands(thisSegmentKey, pgsTypes::Temporary))

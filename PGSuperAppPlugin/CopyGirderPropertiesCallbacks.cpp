@@ -1224,7 +1224,7 @@ void GirderSecondaryStirrupComparison(rptParagraph* pPara, IBroker* pBroker,IEAF
 
             (*p_table)(row, col++) << pgsGirderLabel::GetSegmentLabel(segmentKey);
 
-            if (pShr->SplittingBarSize == matRebar::bsNone)
+            if (pShr->SplittingBarSize == WBFL::Materials::Rebar::Size::bsNone)
             {
                (*p_table)(row, col++) << RPT_NA;
                col += 3;
@@ -1237,7 +1237,7 @@ void GirderSecondaryStirrupComparison(rptParagraph* pPara, IBroker* pBroker,IEAF
                (*p_table)(row, col++) << pShr->nSplittingBars << rptNewLine;
             }
 
-            if (pShr->ConfinementBarSize == matRebar::bsNone)
+            if (pShr->ConfinementBarSize == WBFL::Materials::Rebar::Size::bsNone)
             {
                (*p_table)(row, col++) << RPT_NA;
                col += 2;
@@ -1477,7 +1477,7 @@ void GirderMaterialsComparison(rptParagraph* pPara, CComPtr<IBroker> pBroker, co
             WriteCompareCell(p_table, row, iCol++, isFrom, bEqual);
 
             pgsTypes::ConcreteType type = pMaterial->Concrete.Type;
-            std::_tstring  name = lrfdConcreteUtil::GetTypeName((matConcrete::Type)type, false);
+            std::_tstring  name = lrfdConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)type, false);
             (*p_table)(row, iCol++) << name;
 
             if (isTimeStep && pMaterial->Concrete.bBasePropertiesOnInitialValues)

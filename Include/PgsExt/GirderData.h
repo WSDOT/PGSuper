@@ -44,7 +44,14 @@
 
 // FORWARD DECLARATIONS
 //
-class matPsStrand;
+namespace WBFL
+{
+   namespace Materials
+   {
+      class PsStrand;
+   };
+};
+
 class ConcreteLibraryEntry;
 
 // MISCELLANEOUS

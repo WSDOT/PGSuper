@@ -76,7 +76,7 @@ m_CurbOffset(0)
 
    lrfdVersionMgr::Units old_units = lrfdVersionMgr::GetUnits();
    lrfdVersionMgr::SetUnits(lrfdVersionMgr::US);
-   m_Ec = lrfdConcreteUtil::ModE(matConcrete::Normal, fc,density,false);
+   m_Ec = lrfdConcreteUtil::ModE(WBFL::Materials::ConcreteType::Normal, fc,density,false);
    lrfdVersionMgr::SetUnits(old_units);
 }
 

@@ -482,7 +482,10 @@ CStrandData::CStrandData()
 {
    for ( int i = 0; i < 3; i++ )
    {
-      m_StrandMaterial[i] = lrfdStrandPool::GetInstance()->GetStrand(matPsStrand::Gr1860,matPsStrand::LowRelaxation,matPsStrand::None,matPsStrand::D1524);
+      m_StrandMaterial[i] = lrfdStrandPool::GetInstance()->GetStrand(WBFL::Materials::PsStrand::Grade::Gr1860,
+                                                                     WBFL::Materials::PsStrand::Type::LowRelaxation,
+                                                                     WBFL::Materials::PsStrand::Coating::None, 
+                                                                     WBFL::Materials::PsStrand::Size::D1524);
    }
 
    m_HarpPoint[ZoneBreakType::Start]    =  0.0; // 0% length = left end
@@ -1189,7 +1192,7 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
          Int64 key = var.lVal;
          if ( version < 15 )
          {
-            key |= matPsStrand::None; // add default encoding for stand coating type... added in version 15
+            key |= std::underlying_type< WBFL::Materials::PsStrand::Coating>::type(WBFL::Materials::PsStrand::Coating::None); // add default encoding for stand coating type... added in version 15
          }
          m_StrandMaterial[pgsTypes::Straight] = pPool->GetStrand(key);
          ATLASSERT(m_StrandMaterial[pgsTypes::Straight] != 0);
@@ -1206,7 +1209,7 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
          Int64 key = var.lVal;
          if ( version < 15 )
          {
-            key |= matPsStrand::None; // add default encoding for stand coating type... added in version 15
+            key |= std::underlying_type< WBFL::Materials::PsStrand::Coating>::type(WBFL::Materials::PsStrand::Coating::None); // add default encoding for stand coating type... added in version 15
          }
          m_StrandMaterial[pgsTypes::Straight] = pPool->GetStrand(key);
 
@@ -1214,7 +1217,7 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
          key = var.lVal;
          if ( version < 15 )
          {
-            key |= matPsStrand::None; // add default encoding for stand coating type... added in version 15
+            key |= std::underlying_type< WBFL::Materials::PsStrand::Coating>::type(WBFL::Materials::PsStrand::Coating::None); // add default encoding for stand coating type... added in version 15
          }
          m_StrandMaterial[pgsTypes::Harped] = pPool->GetStrand(key);
 
@@ -1222,7 +1225,7 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
          key = var.lVal;
          if ( version < 15 )
          {
-            key |= matPsStrand::None; // add default encoding for stand coating type... added in version 15
+            key |= std::underlying_type< WBFL::Materials::PsStrand::Coating>::type(WBFL::Materials::PsStrand::Coating::None); // add default encoding for stand coating type... added in version 15
          }
          m_StrandMaterial[pgsTypes::Temporary] = pPool->GetStrand(key);
       }
@@ -1920,13 +1923,13 @@ bool CStrandData::IsDebonded(pgsTypes::StrandType strandType,GridIndexType gridI
    return true;
 }
 
-void CStrandData::SetStrandMaterial(pgsTypes::StrandType strandType,const matPsStrand* pStrandMaterial)
+void CStrandData::SetStrandMaterial(pgsTypes::StrandType strandType,const WBFL::Materials::PsStrand* pStrandMaterial)
 {
    ATLASSERT(strandType != pgsTypes::Permanent);
    m_StrandMaterial[strandType] = pStrandMaterial;
 }
 
-const matPsStrand* CStrandData::GetStrandMaterial(pgsTypes::StrandType strandType) const
+const WBFL::Materials::PsStrand* CStrandData::GetStrandMaterial(pgsTypes::StrandType strandType) const
 {
    ATLASSERT(strandType != pgsTypes::Permanent);
    return m_StrandMaterial[strandType];

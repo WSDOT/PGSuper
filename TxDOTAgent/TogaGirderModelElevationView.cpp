@@ -556,8 +556,8 @@ void CTogaGirderModelElevationView::BuildGirderDisplayObjects(CTxDOTOptionalDesi
                   );
 
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   const matPsStrand* pStrand     = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Straight);
-   const matPsStrand* pTempStrand = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Temporary);
+   const auto* pStrand     = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Straight);
+   const auto* pTempStrand = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Temporary);
 
    StrandIndexType Ns, Nh, Nt, Nsd;
    Ns = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Straight);
@@ -1122,12 +1122,12 @@ void CTogaGirderModelElevationView::BuildStirrupDisplayObjects(CTxDOTOptionalDes
       Float64 start, end;
       pStirrupGeom->GetPrimaryZoneBounds(segmentKey, zoneIdx, &start, &end);
 
-      matRebar::Size barSize;
+      WBFL::Materials::Rebar::Size barSize;
       Float64 spacing;
       Float64 nStirrups;
       pStirrupGeom->GetPrimaryVertStirrupBarInfo(segmentKey,zoneIdx,&barSize,&nStirrups,&spacing);
 
-      if ( barSize != matRebar::bsNone && nStirrups != 0 )
+      if ( barSize != WBFL::Materials::Rebar::Size::bsNone && nStirrups != 0 )
       {
          GET_IFACE2(pBroker,IGirder,pGirder);
 

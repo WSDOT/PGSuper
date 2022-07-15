@@ -164,7 +164,7 @@ private:
 
    // Design by Modifying existing stirrup layout 
    bool ModifyPreExistingStirrupDesign() const;
-   bool DesignPreExistingStirrups(StirrupZoneIter& rIter, Float64 locCSS,  matRebar::Grade barGrade, matRebar::Type barType, lrfdRebarPool* pool) const;
+   bool DesignPreExistingStirrups(StirrupZoneIter& rIter, Float64 locCSS,  WBFL::Materials::Rebar::Grade barGrade, WBFL::Materials::Rebar::Type barType, lrfdRebarPool* pool) const;
    void ExpandStirrupZoneLengths(CShearData2::ShearZoneVec& ShearZones) const;
 
    // Design additional horizontal shear bars if needed
@@ -194,7 +194,7 @@ private:
    bool DoDesignFromScratch() const;
 
    IndexType GetNumStirrupSizeBarCombos() const;
-   void GetStirrupSizeBarCombo(IndexType index, matRebar::Size* pSize, Float64* pNLegs, Float64* pAv) const;
+   void GetStirrupSizeBarCombo(IndexType index, WBFL::Materials::Rebar::Size* pSize, Float64* pNLegs, Float64* pAv) const;
 
    // Available bar spacings for design
    IndexType GetNumAvailableBarSpacings() const;
@@ -283,7 +283,7 @@ private:
    // Shear design parameters
    struct BarLegCombo
    {
-      matRebar::Size m_Size;
+      WBFL::Materials::Rebar::Size m_Size;
       Float64        m_Legs;
       Float64        m_Av; // area of size*legs
    };
@@ -337,16 +337,16 @@ private:
    Float64 ComputeMaxStirrupSpacing(Float64 location) const;
 
    // Get min stirrup spacing for given bar size
-   Float64 GetMinStirrupSpacing(matRebar::Size size) const;
+   Float64 GetMinStirrupSpacing(WBFL::Materials::Rebar::Size size) const;
 
    // Get bar size - nlegs - spacing for av/s demand
-   bool GetBarSizeSpacingForAvs(Float64 avsDemand, Float64 maxSpacing, matRebar::Size* pSize, Float64* pNLegs, Float64* pAv, Float64* pSpacing) const;
+   bool GetBarSizeSpacingForAvs(Float64 avsDemand, Float64 maxSpacing, WBFL::Materials::Rebar::Size* pSize, Float64* pNLegs, Float64* pAv, Float64* pSpacing) const;
 
    // Get bar size - nlegs - spacing for av/s demand - For a particular bar size
-   bool GetBarSpacingForAvs(Float64 avsDemand, Float64 maxSpacing, matRebar::Size Size, Float64 Av, Float64* pSpacing) const;
+   bool GetBarSpacingForAvs(Float64 avsDemand, Float64 maxSpacing, WBFL::Materials::Rebar::Size Size, Float64 Av, Float64* pSpacing) const;
 
    // Get next (or same) available bar size for a given min bar size
-   bool GetMinAvailableBarSize(matRebar::Size minSize, matRebar::Grade barGrade, matRebar::Type barType, lrfdRebarPool* pool, matRebar::Size* pSize) const;
+   bool GetMinAvailableBarSize(WBFL::Materials::Rebar::Size minSize, WBFL::Materials::Rebar::Grade barGrade, WBFL::Materials::Rebar::Type barType, lrfdRebarPool* pool, WBFL::Materials::Rebar::Size* pSize) const;
 
    // Av/S demand at poi
    Float64 GetVerticalAvsDemand(IndexType PoiIdx) const;

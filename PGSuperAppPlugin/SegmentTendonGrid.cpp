@@ -743,7 +743,7 @@ void CSegmentTendonGrid::UpdateMaxPjack(ROWCOL nRow)
    StrandIndexType nStrands = (StrandIndexType)_tstoi(GetCellValue(nRow, nStrandsCol));
    CGirderSegmentTendonsPage* pParent = (CGirderSegmentTendonsPage*)GetParent();
    ASSERT(pParent->IsKindOf(RUNTIME_CLASS(CGirderSegmentTendonsPage)));
-   const matPsStrand* pStrand = pParent->GetStrand();
+   const auto* pStrand = pParent->GetStrand();
 
    Float64 Pjack = lrfdPsStrand::GetPjackPT(*pStrand, nStrands);
 
@@ -910,7 +910,7 @@ void CSegmentTendonGrid::UpdateNumStrandsList(ROWCOL nRow)
 
    CGirderSegmentTendonsPage* pParent = (CGirderSegmentTendonsPage*)GetParent();
    ASSERT(pParent->IsKindOf(RUNTIME_CLASS(CGirderSegmentTendonsPage)));
-   const matPsStrand* pStrand = pParent->GetStrand();
+   const auto* pStrand = pParent->GetStrand();
    Float64 aps = pStrand->GetNominalArea();
 
    // LRFD 5.4.6.2 Area of duct must be at least K times net area of prestressing steel

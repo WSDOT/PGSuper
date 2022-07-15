@@ -46,7 +46,7 @@ m_MinCutoffLength(0.0)
 
 
 pgsLongRebarInstance::pgsLongRebarInstance(const WBFL::Geometry::Point2d& rloc,
-                                           const matRebar* pRebar, 
+                                           const WBFL::Materials::Rebar* pRebar,
                                            Float64 minCutoffLength):
 m_Location(rloc),
 m_pRebar(pRebar),
@@ -87,19 +87,19 @@ void pgsLongRebarInstance::SetLocation(const WBFL::Geometry::Point2d& loc)
    m_Location = loc;
 }
 
-const matRebar* pgsLongRebarInstance::GetRebar() const
+const WBFL::Materials::Rebar* pgsLongRebarInstance::GetRebar() const
 {
    return m_pRebar;
 }
-void pgsLongRebarInstance::SetRebar(const matRebar* prebar)
+void pgsLongRebarInstance::SetRebar(const WBFL::Materials::Rebar* pRebar)
 {
-   ATLASSERT(prebar!=0);
-   m_pRebar = prebar;
+   ATLASSERT(pRebar!=nullptr);
+   m_pRebar = pRebar;
 }
 
 Float64 pgsLongRebarInstance::GetMinCutoffLength() const
 {
-   ATLASSERT(m_MinCutoffLength >0.0);
+   ATLASSERT(0.0 < m_MinCutoffLength);
    return m_MinCutoffLength;
 }
 

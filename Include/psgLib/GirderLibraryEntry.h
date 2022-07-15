@@ -47,7 +47,7 @@
 
 #include <MathEx.h>
 
-#include <Material\Rebar.h>
+#include <Materials/Rebar.h>
 
 #include <psgLib\ShearData.h>
 #include <pgsExt\CamberMultipliers.h>
@@ -182,7 +182,7 @@ public:
       Float64 BarLength; //   Applicable to blFromLeft, blFromRight, blMidGirder
 
       pgsTypes::FaceType  Face;
-      matRebar::Size BarSize;
+      WBFL::Materials::Rebar::Size BarSize;
       CollectionIndexType NumberOfBars;
       Float64     Cover;
       Float64     BarSpacing;
@@ -571,11 +571,11 @@ public:
 
    //------------------------------------------------------------------------
    // Set material for Long steel
-   void SetLongSteelMaterial(matRebar::Type type,matRebar::Grade grade);
+   void SetLongSteelMaterial(WBFL::Materials::Rebar::Type type,WBFL::Materials::Rebar::Grade grade);
 
    //------------------------------------------------------------------------
    // Get material name for Long steel
-   void GetLongSteelMaterial(matRebar::Type& type,matRebar::Grade& grade) const;
+   void GetLongSteelMaterial(WBFL::Materials::Rebar::Type& type,WBFL::Materials::Rebar::Grade& grade) const;
 
    //------------------------------------------------------------------------
    // Set the location of the harping point as a ratio of span length
@@ -663,8 +663,8 @@ public:
    // Available bars for design
    IndexType GetNumStirrupSizeBarCombos() const;
    void ClearStirrupSizeBarCombos();
-   void GetStirrupSizeBarCombo(IndexType index, matRebar::Size* pSize, Float64* pNLegs) const;
-   void AddStirrupSizeBarCombo(matRebar::Size Size, Float64 NLegs);
+   void GetStirrupSizeBarCombo(IndexType index, WBFL::Materials::Rebar::Size* pSize, Float64* pNLegs) const;
+   void AddStirrupSizeBarCombo(WBFL::Materials::Rebar::Size Size, Float64 NLegs);
 
    // Available bar spacings for design
    IndexType GetNumAvailableBarSpacings() const;
@@ -749,8 +749,8 @@ private:
    bool m_bUseDifferentHarpedGridAtEnds;
 
    // grade and type for extra top flange bars
-   matRebar::Type m_LongitudinalBarType;
-   matRebar::Grade m_LongitudinalBarGrade;
+   WBFL::Materials::Rebar::Type m_LongitudinalBarType;
+   WBFL::Materials::Rebar::Grade m_LongitudinalBarGrade;
    Float64 m_HarpingPointLocation;
    Float64 m_MinHarpingPointLocation;
    bool m_bMinHarpingPointLocation;
@@ -923,11 +923,11 @@ private:
    {
    public:
       LegacyShearData():
-         m_StirrupBarType(matRebar::A615),
-         m_StirrupBarGrade(matRebar::Grade60),
-         m_ConfinementBarSize(matRebar::bsNone),
+         m_StirrupBarType(WBFL::Materials::Rebar::Type::A615),
+         m_StirrupBarGrade(WBFL::Materials::Rebar::Grade::Grade60),
+         m_ConfinementBarSize(WBFL::Materials::Rebar::Size::bsNone),
          m_LastConfinementZone(0),
-         m_TopFlangeShearBarSize(matRebar::bsNone),
+         m_TopFlangeShearBarSize(WBFL::Materials::Rebar::Size::bsNone),
          m_TopFlangeShearBarSpacing(0.0),
          m_bStirrupsEngageDeck(true),
          m_bIsRoughenedSurface(true)
@@ -937,10 +937,10 @@ private:
       CShearData2 ConvertToShearData() const;
 
       // grade and type for all stirrups, confinement, and extra top flange bars
-      matRebar::Type  m_StirrupBarType;
-      matRebar::Grade m_StirrupBarGrade;
-      matRebar::Size  m_ConfinementBarSize; 
-      matRebar::Size  m_TopFlangeShearBarSize;
+      WBFL::Materials::Rebar::Type  m_StirrupBarType;
+      WBFL::Materials::Rebar::Grade m_StirrupBarGrade;
+      WBFL::Materials::Rebar::Size  m_ConfinementBarSize; 
+      WBFL::Materials::Rebar::Size  m_TopFlangeShearBarSize;
       Uint16          m_LastConfinementZone;
       bool            m_bStirrupsEngageDeck;
       bool            m_bIsRoughenedSurface;
@@ -950,7 +950,7 @@ private:
       struct ShearZoneInfo
       {
          Float64     ZoneLength;
-         matRebar::Size VertBarSize, HorzBarSize;
+         WBFL::Materials::Rebar::Size VertBarSize, HorzBarSize;
          Float64     StirrupSpacing;
          Uint32      nVertBars, nHorzBars;
          bool operator==(const ShearZoneInfo& rOther) const
@@ -970,7 +970,7 @@ private:
    // Data Members for Shear Design Algorithm
    struct StirrupSizeBarCombo
    {
-      matRebar::Size Size;
+      WBFL::Materials::Rebar::Size Size;
       Float64 NLegs;
 
       bool operator==(const StirrupSizeBarCombo& rOther) const

@@ -695,7 +695,7 @@ private:
    // Private functions called from Initialize
    ///////////////////////////////////////////
    // compute hold-down and strand slope limits
-   void InitHarpedPhysicalBounds(const matPsStrand* pstrand);
+   void InitHarpedPhysicalBounds(const WBFL::Materials::PsStrand* pstrand);
    // locate mid-zone
    void ComputeMidZoneBoundaries();
    // compute and cache pois

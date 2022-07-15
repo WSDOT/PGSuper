@@ -536,7 +536,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
       StrandIndexType nh = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
 
       const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
-      const matPsStrand* pstrand = pStrands->GetStrandMaterial(pgsTypes::Straight);
+      const auto* pstrand = pStrands->GetStrandMaterial(pgsTypes::Straight);
 
       // create pois at the start of girder and mid-span
       PoiList vPoiRel, vPoiEre;
@@ -606,17 +606,17 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
       std::_tstring strGrade;
       if ( bUnitsSI )
       {
-         strGrade = (pstrand->GetGrade() == matPsStrand::Gr1725 ? _T("1725") : _T("1860"));
+         strGrade = (pstrand->GetGrade() == WBFL::Materials::PsStrand::Grade::Gr1725 ? _T("1725") : _T("1860"));
          strData = _T("Grade ") + strGrade;
          strData += _T(" ");
-         strData += (pstrand->GetType() == matPsStrand::LowRelaxation ? _T("Low Relaxation") : _T("Stress Relieved"));
+         strData += (pstrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? _T("Low Relaxation") : _T("Stress Relieved"));
       }
       else
       {
-         strGrade = (pstrand->GetGrade() == matPsStrand::Gr1725 ? _T("250") : _T("270"));
+         strGrade = (pstrand->GetGrade() == WBFL::Materials::PsStrand::Grade::Gr1725 ? _T("250") : _T("270"));
          strData = _T("Grade ") + strGrade;
          strData += _T(" ");
-         strData += (pstrand->GetType() == matPsStrand::LowRelaxation ? _T("Low Relaxation") : _T("Stress Relieved"));
+         strData += (pstrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? _T("Low Relaxation") : _T("Stress Relieved"));
       }
 
       (*p_table)(row++,col) << strData;

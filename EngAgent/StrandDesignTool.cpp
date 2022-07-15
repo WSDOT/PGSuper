@@ -206,12 +206,12 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
       ifc = Max(slab_fc, ifc);
    }
 
-   matConcreteEx conc(_T("Design Concrete"), ifc, pSegmentMaterial->Concrete.StrengthDensity, 
-                      pSegmentMaterial->Concrete.WeightDensity, lrfdConcreteUtil::ModE((matConcrete::Type)(pSegmentMaterial->Concrete.Type),ifc,  pSegmentMaterial->Concrete.StrengthDensity, false ),
+   WBFL::Materials::Concrete conc(_T("Design Concrete"), ifc, pSegmentMaterial->Concrete.StrengthDensity, 
+                      pSegmentMaterial->Concrete.WeightDensity, lrfdConcreteUtil::ModE((WBFL::Materials::ConcreteType)(pSegmentMaterial->Concrete.Type),ifc,  pSegmentMaterial->Concrete.StrengthDensity, false ),
                       0.0,0.0); // we don't need the modulus of rupture for shear or flexur. Just use 0.0
    conc.SetMaxAggregateSize(pSegmentMaterial->Concrete.MaxAggregateSize);
    conc.SetFiberLength(pSegmentMaterial->Concrete.FiberLength);
-   conc.SetType((matConcrete::Type)pSegmentMaterial->Concrete.Type);
+   conc.SetType((WBFL::Materials::ConcreteType)pSegmentMaterial->Concrete.Type);
    conc.HasAggSplittingStrength(pSegmentMaterial->Concrete.bHasFct);
    conc.SetAggSplittingStrength(pSegmentMaterial->Concrete.Fct);
 
@@ -2022,10 +2022,9 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
       {
          if (task.intervalIdx == releaseIntervalIdx)
          {
-            const auto* pConcrete = pMaterials->GetSegmentConcrete(GetSegmentKey());
-            const lrfdLRFDConcrete* pConcrete1 = dynamic_cast<const lrfdLRFDConcrete*>(pConcrete);
-            const lrfdLRFDTimeDependentConcrete* pConcrete2 = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete);
-            Float64 f_fc = (pConcrete1 ? pConcrete1->GetFirstCrackStrength() : pConcrete2->GetFirstCrackStrength());
+            const auto& pConcrete = pMaterials->GetSegmentConcrete(GetSegmentKey());
+            const lrfdLRFDConcreteBase* pLRFDConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(pConcrete.get());
+            Float64 f_fc = pLRFDConcrete->GetFirstCrackingStrength();
             Float64 fc = GetConcreteStrength();
             fc_reqd = pow(1.5 * fControl / fc, 2) * fc;
             // stress limit = (2/3)ffc*sqrt(f'ci/fc);
@@ -3659,7 +3658,7 @@ void pgsStrandDesignTool::ComputeMidZoneBoundaries()
       // 
 
       // straight strands are ok here because we are dealing with debonding, which only happens with straight strands
-      const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(m_SegmentKey, pgsTypes::Straight); 
+      const auto* pStrand = pSegmentData->GetStrandMaterial(m_SegmentKey, pgsTypes::Straight); 
       ATLASSERT(pStrand != nullptr);
 
       // use US units
@@ -3738,7 +3737,7 @@ void pgsStrandDesignTool::ComputeMidZoneBoundaries()
    LOG(_T("Exiting ComputeMidZoneBoundaries"));
 }
 
-void pgsStrandDesignTool::InitHarpedPhysicalBounds(const matPsStrand* pstrand)
+void pgsStrandDesignTool::InitHarpedPhysicalBounds(const WBFL::Materials::PsStrand* pstrand)
 {
    m_bConfigDirty = true; // cache is dirty
 
@@ -3766,11 +3765,11 @@ void pgsStrandDesignTool::InitHarpedPhysicalBounds(const matPsStrand* pstrand)
 
    if ( m_DoDesignForStrandSlope )
    {
-      if ( pstrand->GetSize() == matPsStrand::D1778  )
+      if ( pstrand->GetSize() == WBFL::Materials::PsStrand::Size::D1778  )
       {
          m_AllowableStrandSlope = s70;
       }
-      else if ( pstrand->GetSize() == matPsStrand::D1524 )
+      else if ( pstrand->GetSize() == WBFL::Materials::PsStrand::Size::D1524 )
       {
          m_AllowableStrandSlope = s60;
       }

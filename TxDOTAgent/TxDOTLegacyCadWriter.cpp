@@ -377,7 +377,7 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
 
 	/* 6. STRAND SIZE */
 	TCHAR    strandSize[4+1];
-   const matPsStrand* strandMatP = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Straight);
+   const auto* strandMatP = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Straight);
    value = strandMatP->GetNominalDiameter();
    value = WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::Inch );
 
@@ -386,7 +386,7 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
 	_tcscpy_s(strandSize, sizeof(strandSize)/sizeof(TCHAR), charBuffer);
 
    /* 7. STRAND STRENGTH */
-	int strandStrength = (strandMatP->GetGrade() == matPsStrand::Gr1725 ?  250 :  270);
+	int strandStrength = (strandMatP->GetGrade() == WBFL::Materials::PsStrand::Grade::Gr1725 ?  250 :  270);
 
 	/* 8. STRAND ECCENTRICITY AT CENTER LINE */
    value = pStrandGeometry->GetEccentricity( releaseIntervalIdx, pmid, pgsTypes::Permanent).Y();

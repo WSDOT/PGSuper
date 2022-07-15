@@ -41,7 +41,7 @@
 
 #include <PgsExt\BridgeDescription2.h>
 
-#include <Material\PsStrand.h>
+#include <Materials/PsStrand.h>
 #include <Lrfd\RebarPool.h>
 
 
@@ -779,7 +779,7 @@ void write_traffic_barrier_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
    }
 }
 
-rptRcTable* write_strand_material(LPCTSTR strStrandType, const matPsStrand* pStrand, IEAFDisplayUnits* pDisplayUnits)
+rptRcTable* write_strand_material(LPCTSTR strStrandType, const WBFL::Materials::PsStrand* pStrand, IEAFDisplayUnits* pDisplayUnits)
 {
    INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true);
    INIT_UV_PROTOTYPE(rptStressUnitValue, modE, pDisplayUnits->GetModEUnit(), true);
@@ -794,7 +794,7 @@ rptRcTable* write_strand_material(LPCTSTR strStrandType, const matPsStrand* pStr
    row++;
 
    (*pTable)(row, 0) << _T("Type");
-   (*pTable)(row, 1) << (pStrand->GetType() == matPsStrand::LowRelaxation ? _T("Low Relaxation") : _T("Stress Relieved"));
+   (*pTable)(row, 1) << WBFL::Materials::PsStrand::GetType(pStrand->GetType());
    row++;
 
    (*pTable)(row, 0) << RPT_FPU;
@@ -838,7 +838,7 @@ void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
    {
       pgsTypes::StrandType strandType = (pgsTypes::StrandType)col;
 
-      const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(segmentKey,strandType);
+      const auto* pStrand = pSegmentData->GetStrandMaterial(segmentKey,strandType);
       ATLASSERT(pStrand != nullptr);
 
       rptRcTable* pTable = write_strand_material(strStrandType[strandType].c_str(), pStrand, pDisplayUnits);
@@ -847,7 +847,7 @@ void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
 
    if (0 < nDucts)
    {
-      const matPsStrand* pStrand = pSegmentData->GetSegmentPTData(segmentKey)->m_pStrand;
+      const auto* pStrand = pSegmentData->GetSegmentPTData(segmentKey)->m_pStrand;
       ATLASSERT(pStrand != nullptr);
 
       rptRcTable* pTable = write_strand_material(_T("Tendons"), pStrand, pDisplayUnits);
@@ -870,7 +870,7 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
 
    lrfdRebarPool* pPool = lrfdRebarPool::GetInstance();
 
-   const matRebar* pDeckRebar = nullptr;
+   const WBFL::Materials::Rebar* pDeckRebar = nullptr;
    if ( pBridgeDesc->GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone )
    {
       pDeckRebar = pPool->GetRebar(pBridgeDesc->GetDeckDescription()->DeckRebarData.TopRebarType,pBridgeDesc->GetDeckDescription()->DeckRebarData.TopRebarGrade,pBridgeDesc->GetDeckDescription()->DeckRebarData.TopRebarSize);
@@ -879,8 +879,8 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
    const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
-   const matRebar* pShearRebar = pPool->GetRebar(pSegment->ShearData.ShearBarType,pSegment->ShearData.ShearBarGrade,matRebar::bs3);
-   const matRebar* pLongRebar  = pPool->GetRebar(pSegment->LongitudinalRebarData.BarType,pSegment->LongitudinalRebarData.BarGrade,matRebar::bs3);
+   const auto* pShearRebar = pPool->GetRebar(pSegment->ShearData.ShearBarType,pSegment->ShearData.ShearBarGrade,WBFL::Materials::Rebar::Size::bs3);
+   const auto* pLongRebar  = pPool->GetRebar(pSegment->LongitudinalRebarData.BarType,pSegment->LongitudinalRebarData.BarGrade,WBFL::Materials::Rebar::Size::bs3);
 
    if ( pShearRebar )
    {

@@ -26,7 +26,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
 #include <IFace\Project.h>
-#include <Material\ConcreteBase.h>
+#include <Materials/ConcreteBase.h>
 #include <Lrfd\LRFDTimeDependentConcrete.h>
 #include <PgsExt\TimelineEvent.h>
 #include <PgsExt\CastDeckActivity.h>
@@ -129,9 +129,6 @@ rptChapter* CLRFDTimeDependentShrinkageStrainChapterBuilder::Build(CReportSpecif
       (*pTable)(rowIdx,colIdx++) << Sub2(_T("k"),_T("f"));
    }
 
-
-   std::_tstring strCuring[] = { _T("Moist"), _T("Steam") };
-
    rowIdx = pTable->GetNumberOfHeaderRows();
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -139,11 +136,11 @@ rptChapter* CLRFDTimeDependentShrinkageStrainChapterBuilder::Build(CReportSpecif
       ColumnIndexType colIdx = 0;
 
       CSegmentKey segmentKey(girderKey,segIdx);
-      const matConcreteBase* pConcrete = pMaterials->GetSegmentConcrete(segmentKey);
-      const lrfdLRFDTimeDependentConcrete* pLRFDConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete);
+      const auto& pConcrete = pMaterials->GetSegmentConcrete(segmentKey);
+      const lrfdLRFDTimeDependentConcrete* pLRFDConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete.get());
 
       (*pTable)(rowIdx,colIdx++) << _T("Segment ") << LABEL_SEGMENT(segIdx);
-      (*pTable)(rowIdx,colIdx++) << strCuring[pConcrete->GetCureMethod()];
+      (*pTable)(rowIdx,colIdx++) << WBFL::Materials::ConcreteBase::GetCureMethod(pConcrete->GetCureMethod());
 
       Float64 t = pLRFDConcrete->GetTimeAtCasting() + pLRFDConcrete->GetCureTime();
 
@@ -177,13 +174,13 @@ rptChapter* CLRFDTimeDependentShrinkageStrainChapterBuilder::Build(CReportSpecif
       if ( segIdx != nSegments-1 )
       {
          CClosureKey closureKey(segmentKey);
-         const matConcreteBase* pConcrete = pMaterials->GetClosureJointConcrete(closureKey);
-         const lrfdLRFDTimeDependentConcrete* pACIConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete);
+         const auto& pConcrete = pMaterials->GetClosureJointConcrete(closureKey);
+         const lrfdLRFDTimeDependentConcrete* pACIConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete.get());
    
          colIdx = 0;
 
          (*pTable)(rowIdx,colIdx++) << _T("Closure Joint");
-         (*pTable)(rowIdx,colIdx++) << strCuring[pConcrete->GetCureMethod()];
+         (*pTable)(rowIdx,colIdx++) << WBFL::Materials::ConcreteBase::GetCureMethod(pConcrete->GetCureMethod());
 
          Float64 t = pLRFDConcrete->GetTimeAtCasting() + pLRFDConcrete->GetCureTime();
 
@@ -226,8 +223,8 @@ rptChapter* CLRFDTimeDependentShrinkageStrainChapterBuilder::Build(CReportSpecif
       {
          std::vector<IndexType> vRegions = castDeckActivity.GetRegions(castingIdx);
          IndexType deckCastingRegionIdx = vRegions.front();
-         const matConcreteBase* pConcrete = pMaterials->GetDeckConcrete(deckCastingRegionIdx);
-         const lrfdLRFDTimeDependentConcrete* pLRFDConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete);
+         const auto& pConcrete = pMaterials->GetDeckConcrete(deckCastingRegionIdx);
+         const lrfdLRFDTimeDependentConcrete* pLRFDConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete.get());
 
          ColumnIndexType colIdx = 0;
 
@@ -252,7 +249,7 @@ rptChapter* CLRFDTimeDependentShrinkageStrainChapterBuilder::Build(CReportSpecif
 
 
          (*pTable)(rowIdx, colIdx++) << strTitle;
-         (*pTable)(rowIdx, colIdx++) << strCuring[pConcrete->GetCureMethod()];
+         (*pTable)(rowIdx, colIdx++) << WBFL::Materials::ConcreteBase::GetCureMethod(pConcrete->GetCureMethod());
 
          Float64 t = pLRFDConcrete->GetTimeAtCasting() + pLRFDConcrete->GetCureTime();
 
@@ -399,8 +396,8 @@ rptChapter* CLRFDTimeDependentShrinkageStrainChapterBuilder::Build(CReportSpecif
          if ( releaseIntervalIdx <= intervalIdx )
          {
             Float64 t  = pMaterials->GetSegmentConcreteAge(segmentKey,intervalIdx,pgsTypes::End);
-            const matConcreteBase* pConcrete = pMaterials->GetSegmentConcrete(segmentKey);
-            const lrfdLRFDTimeDependentConcrete* pLRFDConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete);
+            const auto& pConcrete = pMaterials->GetSegmentConcrete(segmentKey);
+            const lrfdLRFDTimeDependentConcrete* pLRFDConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete.get());
             Float64 cure = pLRFDConcrete->GetCureTime();
             (*pTable)(rowIdx,colIdx++) << t - cure;
 
@@ -432,8 +429,8 @@ rptChapter* CLRFDTimeDependentShrinkageStrainChapterBuilder::Build(CReportSpecif
             if ( compositeClosureIntervalIdx <= intervalIdx )
             {
                Float64 t  = pMaterials->GetClosureJointConcreteAge(closureKey,intervalIdx,pgsTypes::End);
-               const matConcreteBase* pConcrete = pMaterials->GetClosureJointConcrete(closureKey);
-               const lrfdLRFDTimeDependentConcrete* pLRFDConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete);
+               const auto& pConcrete = pMaterials->GetClosureJointConcrete(closureKey);
+               const lrfdLRFDTimeDependentConcrete* pLRFDConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete.get());
                Float64 cure = pLRFDConcrete->GetCureTime();
                (*pTable)(rowIdx,colIdx++) << t - cure;
 
@@ -468,8 +465,8 @@ rptChapter* CLRFDTimeDependentShrinkageStrainChapterBuilder::Build(CReportSpecif
          if ( compositeDeckIntervalIdx <= intervalIdx )
          {
             Float64 t  = pMaterials->GetDeckConcreteAge(deckCastingRegionIdx,intervalIdx,pgsTypes::End);
-            const matConcreteBase* pConcrete = pMaterials->GetDeckConcrete(deckCastingRegionIdx);
-            const lrfdLRFDTimeDependentConcrete* pLRFDConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete);
+            const auto& pConcrete = pMaterials->GetDeckConcrete(deckCastingRegionIdx);
+            const lrfdLRFDTimeDependentConcrete* pLRFDConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete.get());
             Float64 cure = pLRFDConcrete->GetCureTime();
             (*pTable)(rowIdx,colIdx++) << t - cure;
 

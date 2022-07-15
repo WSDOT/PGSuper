@@ -912,7 +912,7 @@ void CBridgeDescDeckDetailsPage::OnMoreConcreteProperties()
    dlg.m_PCIUHPC.m_AutogenousShrinkage = pDeck->Concrete.AutogenousShrinkage;
    dlg.m_PCIUHPC.m_bPCTT = pDeck->Concrete.bPCTT;
 
-   matACI209Concrete concrete;
+   WBFL::Materials::ACI209Concrete concrete;
    concrete.SetTimeAtCasting(0);
    concrete.SetFc28(pDeck->Concrete.Fc);
    concrete.SetA(pDeck->Concrete.A);
@@ -1035,7 +1035,7 @@ void CBridgeDescDeckDetailsPage::UpdateConcreteParametersToolTip()
 
    CString strTip;
    strTip.Format(_T("%-20s %s\r\n%-20s %s\r\n%-20s %s\r\n%-20s %s"),
-      _T("Type"), lrfdConcreteUtil::GetTypeName((matConcrete::Type)pDeck->Concrete.Type,true).c_str(),
+      _T("Type"), lrfdConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pDeck->Concrete.Type,true).c_str(),
       _T("Unit Weight"),FormatDimension(pDeck->Concrete.StrengthDensity,density),
       _T("Unit Weight (w/ reinforcement)"),  FormatDimension(pDeck->Concrete.WeightDensity,density),
       _T("Max Aggregate Size"),  FormatDimension(pDeck->Concrete.MaxAggregateSize,aggsize)

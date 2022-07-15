@@ -1491,7 +1491,7 @@ Float64 CGirderSelectStrandsPage::GetMaxPjack(StrandIndexType nStrands,pgsTypes:
 
 Float64 CGirderSelectStrandsPage::GetUltPjack(StrandIndexType nStrands,pgsTypes::StrandType strandType)
 {
-   const matPsStrand* pStrand = m_pStrands->GetStrandMaterial(strandType);
+   const auto* pStrand = m_pStrands->GetStrandMaterial(strandType);
 
    // Ultimate strength of strand group
    Float64 ult  = pStrand->GetUltimateStrength();

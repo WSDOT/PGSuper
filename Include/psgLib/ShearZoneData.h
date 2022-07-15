@@ -33,7 +33,7 @@
 #include "psgLibLib.h"
 
 #include <StrData.h>
-#include <Material\Rebar.h>
+#include <Materials/Rebar.h>
 
 // LOCAL INCLUDES
 //
@@ -67,18 +67,18 @@ class PSGLIBCLASS CShearZoneData2
 
 public:
    ZoneIndexType  ZoneNum;
-   matRebar::Size VertBarSize;
+   WBFL::Materials::Rebar::Size VertBarSize;
    Float64 BarSpacing;
    Float64 ZoneLength;
    Float64 nVertBars;
    Float64 nHorzInterfaceBars;
-   matRebar::Size ConfinementBarSize;
+   WBFL::Materials::Rebar::Size ConfinementBarSize;
 
    bool bWasDesigned; // For use by design algorithm only
 
 private:
    // These values are used only for CShearData version < 9
-   matRebar::Size  legacy_HorzBarSize;
+   WBFL::Materials::Rebar::Size  legacy_HorzBarSize;
    Uint32          legacy_nHorzBars;
 
    // GROUP: LIFECYCLE
@@ -105,7 +105,7 @@ public:
    // GROUP: OPERATIONS
 
 	HRESULT Load(WBFL::System::IStructuredLoad* pStrLoad, bool bConvertToShearDataVersion9, 
-                matRebar::Size ConfinementBarSize,Uint32 NumConfinementZones, 
+                WBFL::Materials::Rebar::Size ConfinementBarSize,Uint32 NumConfinementZones, 
                 bool bDoStirrupsEngageDeck);
 
 	HRESULT Save(WBFL::System::IStructuredSave* pStrSave);

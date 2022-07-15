@@ -41,7 +41,7 @@ interface ITransverseReinforcementSpec : IUnknown
 {
    //------------------------------------------------------------------------
    // Returns the minimum bar size in the confinment zone per 5.9.4.4.2 (pre2017: 5.10.10.2)
-   virtual matRebar::Size GetMinConfinmentBarSize() const = 0;
+   virtual WBFL::Materials::Rebar::Size GetMinConfinmentBarSize() const = 0;
 
    //------------------------------------------------------------------------
    // Returns the minimum bar area in the confinment zone per 5.9.4.4.2 (pre2017: 5.10.10.2)

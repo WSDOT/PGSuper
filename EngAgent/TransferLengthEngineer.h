@@ -74,19 +74,19 @@ class pgsLRFDTransferLength : public pgsTransferLengthBase
 {
 public:
    pgsLRFDTransferLength();
-   pgsLRFDTransferLength(Float64 db, matPsStrand::Coating coating);
+   pgsLRFDTransferLength(Float64 db,WBFL::Materials::PsStrand::Coating coating);
 
    void SetStrandDiameter(Float64 db);
    Float64 GetStrandDiameter() const;
 
-   void SetCoating(matPsStrand::Coating coating);
-   matPsStrand::Coating GetCoating() const;
+   void SetCoating(WBFL::Materials::PsStrand::Coating coating);
+   WBFL::Materials::PsStrand::Coating GetCoating() const;
 
    virtual Float64 GetTransferLength() const override;
    virtual void ReportDetails(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const override;
 
 protected:
-   matPsStrand::Coating m_Coating;
+  WBFL::Materials::PsStrand::Coating m_Coating;
    Float64 m_db;
 };
 

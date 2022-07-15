@@ -2325,24 +2325,24 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
             // Skip this case for UHPC
             CClosureKey closureKey;
             bool bIsInClosure = pPoi->IsInClosureJoint(poi, &closureKey);
-            matConcrete::Type concreteType;
+            WBFL::Materials::ConcreteType concreteType;
             if (i == 0)
             {
                if (bIsInClosure)
                {
-                  concreteType = (matConcrete::Type)pMaterials->GetClosureJointConcreteType(closureKey);
+                  concreteType = (WBFL::Materials::ConcreteType)pMaterials->GetClosureJointConcreteType(closureKey);
                }
                else
                {
-                  concreteType = (matConcrete::Type)pMaterials->GetSegmentConcreteType(segmentKey);
+                  concreteType = (WBFL::Materials::ConcreteType)pMaterials->GetSegmentConcreteType(segmentKey);
                }
             }
             else
             {
-               concreteType = (matConcrete::Type)pMaterials->GetDeckConcreteType();
+               concreteType = (WBFL::Materials::ConcreteType)pMaterials->GetDeckConcreteType();
             }
 
-	         if ( task.stressType == pgsTypes::Tension && concreteType != matConcrete::PCI_UHPC)
+	         if ( task.stressType == pgsTypes::Tension && concreteType != WBFL::Materials::ConcreteType::PCI_UHPC)
 	         {
 	            bool bIsTopApplicable = artifact.IsApplicable(topStressLocation); 
 	            bool bIsBotApplicable = artifact.IsApplicable(botStressLocation);
@@ -2379,7 +2379,7 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	            {
 	               if (bIsInClosure)
 	               {
-	                  altTensionRequirements.concreteType = (matConcrete::Type)pMaterials->GetClosureJointConcreteType(closureKey);
+	                  altTensionRequirements.concreteType = (WBFL::Materials::ConcreteType)pMaterials->GetClosureJointConcreteType(closureKey);
 	                  altTensionRequirements.bHasFct = pMaterials->DoesClosureJointConcreteHaveAggSplittingStrength(closureKey);
 	                  altTensionRequirements.Fct = altTensionRequirements.bHasFct ? pMaterials->GetClosureJointConcreteAggSplittingStrength(closureKey) : 0.0;
 	                  altTensionRequirements.fc = pMaterials->GetClosureJointFc(closureKey, task.intervalIdx);
@@ -2388,7 +2388,7 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	               }
 	               else
 	               {
-	                  altTensionRequirements.concreteType = (matConcrete::Type)pMaterials->GetSegmentConcreteType(segmentKey);
+	                  altTensionRequirements.concreteType = (WBFL::Materials::ConcreteType)pMaterials->GetSegmentConcreteType(segmentKey);
 	                  altTensionRequirements.bHasFct = pMaterials->DoesSegmentConcreteHaveAggSplittingStrength(segmentKey);
 	                  altTensionRequirements.Fct = altTensionRequirements.bHasFct ? pMaterials->GetSegmentConcreteAggSplittingStrength(segmentKey) : 0.0;
 	                  altTensionRequirements.fc = pMaterials->GetSegmentFc(segmentKey, task.intervalIdx);
@@ -2398,7 +2398,7 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	            }
 	            else
 	            {
-	               altTensionRequirements.concreteType = (matConcrete::Type)pMaterials->GetDeckConcreteType();
+	               altTensionRequirements.concreteType = (WBFL::Materials::ConcreteType)pMaterials->GetDeckConcreteType();
 	               altTensionRequirements.bHasFct = pMaterials->DoesDeckConcreteHaveAggSplittingStrength();
 	               altTensionRequirements.Fct = altTensionRequirements.bHasFct ? pMaterials->GetDeckConcreteAggSplittingStrength() : 0.0;
 	               altTensionRequirements.fc = pMaterials->GetDeckFc(deckCastingRegionIdx,task.intervalIdx);
@@ -2800,10 +2800,9 @@ void pgsDesigner2::ComputeConcreteStrength(pgsFlexuralStressArtifact& artifact,p
             {
                bUHPC = pMaterials->GetClosureJointConcreteType(closureKey) == pgsTypes::PCI_UHPC;
 
-               const auto* pConcrete = pMaterials->GetClosureJointConcrete(closureKey);
-               const lrfdLRFDConcrete* pConcrete1 = dynamic_cast<const lrfdLRFDConcrete*>(pConcrete);
-               const lrfdLRFDTimeDependentConcrete* pConcrete2 = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete);
-               f_fc = (bUHPC ? (pConcrete1 ? pConcrete1->GetFirstCrackStrength()  : pConcrete2->GetFirstCrackStrength()): 0.0);
+               const auto& pConcrete = pMaterials->GetClosureJointConcrete(closureKey);
+               const lrfdLRFDConcreteBase* pLRFDConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(pConcrete.get());
+               f_fc = (bUHPC ? pLRFDConcrete->GetFirstCrackingStrength() : 0.0);
                fc_28 = pMaterials->GetClosureJointFc28(closureKey);
 
                intervalIdx = pIntervals->GetCompositeClosureJointInterval(closureKey);
@@ -2812,10 +2811,9 @@ void pgsDesigner2::ComputeConcreteStrength(pgsFlexuralStressArtifact& artifact,p
             {
                bUHPC = pMaterials->GetSegmentConcreteType(poi.GetSegmentKey()) == pgsTypes::PCI_UHPC;
 
-               const auto* pConcrete = pMaterials->GetSegmentConcrete(poi.GetSegmentKey());
-               const lrfdLRFDConcrete* pConcrete1 = dynamic_cast<const lrfdLRFDConcrete*>(pConcrete);
-               const lrfdLRFDTimeDependentConcrete* pConcrete2 = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete);
-               f_fc = (bUHPC ? (pConcrete1 ? pConcrete1->GetFirstCrackStrength() : pConcrete2->GetFirstCrackStrength()) : 0.0);
+               const auto& pConcrete = pMaterials->GetSegmentConcrete(poi.GetSegmentKey());
+               const lrfdLRFDConcreteBase* pLRFDConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(pConcrete.get());
+               f_fc = (bUHPC ? pLRFDConcrete->GetFirstCrackingStrength() : 0.0);
                fc_28 = pMaterials->GetSegmentFc28(poi.GetSegmentKey());
 
                intervalIdx = pIntervals->GetHaulSegmentInterval(poi.GetSegmentKey());
@@ -2900,7 +2898,7 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
    bool bSISpec = lrfdVersionMgr::GetVersion() == lrfdVersionMgr::SI ? true : false;
 
    gbtAlternativeTensileStressRequirements altTensionRequirements;
-   altTensionRequirements.concreteType = (matConcrete::Type)pMaterials->GetSegmentConcreteType(segmentKey);
+   altTensionRequirements.concreteType = (WBFL::Materials::ConcreteType)pMaterials->GetSegmentConcreteType(segmentKey);
    altTensionRequirements.density = pMaterials->GetSegmentStrengthDensity(segmentKey);
    altTensionRequirements.bHasFct = pMaterials->DoesSegmentConcreteHaveAggSplittingStrength(segmentKey);
    altTensionRequirements.Fct = altTensionRequirements.bHasFct ? pMaterials->GetSegmentConcreteAggSplittingStrength(segmentKey) : 0.0;
@@ -3147,10 +3145,9 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
          {
             if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC)
             {
-               const auto* pConcrete = pMaterials->GetSegmentConcrete(segmentKey);
-               const lrfdLRFDConcrete* pConcrete1 = dynamic_cast<const lrfdLRFDConcrete*>(pConcrete);
-               const lrfdLRFDTimeDependentConcrete* pConcrete2 = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete);
-               Float64 f_fc = pConcrete1 ? pConcrete1->GetFirstCrackStrength() : pConcrete2->GetFirstCrackStrength();
+               const auto& pConcrete = pMaterials->GetSegmentConcrete(segmentKey);
+               const lrfdLRFDConcreteBase* pLRFDConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(pConcrete.get());
+               Float64 f_fc = pLRFDConcrete->GetFirstCrackingStrength();
                Float64 fc_28 = (pConfig == nullptr ? pMaterials->GetSegmentFc28(segmentKey) : pConfig->fc);
 
                IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
@@ -3649,7 +3646,7 @@ void pgsDesigner2::CheckHorizontalShear(pgsTypes::LimitState limitState, const p
    pgsTypes::ConcreteType girderConcType = pMaterial->GetSegmentConcreteType(segmentKey);
    pgsTypes::ConcreteType slabConcType = pMaterial->GetDeckConcreteType();
    Float64 c, u, K1, K2;
-   lrfdConcreteUtil::InterfaceShearParameters(is_roughened, (matConcrete::Type)girderConcType, (matConcrete::Type)slabConcType, &c, &u, &K1, &K2);
+   lrfdConcreteUtil::InterfaceShearParameters(is_roughened, (WBFL::Materials::ConcreteType)girderConcType, (WBFL::Materials::ConcreteType)slabConcType, &c, &u, &K1, &K2);
 
    pArtifact->SetCohesionFactor(c);
    pArtifact->SetFrictionFactor(u);
@@ -3743,7 +3740,7 @@ void pgsDesigner2::ComputeHorizAvs(const pgsPointOfInterest& poi,bool* pIsRoughe
       *pDoAllStirrupsEngageDeck = pStirrupGeometry->DoAllPrimaryStirrupsEngageDeck(poi.GetSegmentKey());
 
       Float64 Sg;
-      matRebar::Size size;
+      WBFL::Materials::Rebar::Size size;
       Float64 abar, nl;
       Float64 Avs = pStirrupGeometry->GetPrimaryHorizInterfaceAvs(poi, &size, &abar, &nl, &Sg);
 
@@ -3778,7 +3775,7 @@ void pgsDesigner2::ComputeHorizAvs(const pgsPointOfInterest& poi,bool* pIsRoughe
       Float64 rgt_sup_loc = segment_length - pBridge->GetSegmentEndEndDistance(segmentKey);
 
       Float64 Sg;
-      matRebar::Size size;
+      WBFL::Materials::Rebar::Size size;
       Float64 abar, nPrimaryLegs;
       Float64 Avs = GetPrimaryStirrupAvs(pConfig->StirrupConfig, getHorizShearStirrup, poi.GetDistFromStart(),
                                  segment_length, lft_supp_loc,rgt_sup_loc,
@@ -3941,7 +3938,7 @@ void pgsDesigner2::CheckFullStirrupDetailing(const pgsPointOfInterest& poi,
 
    // av/s and fy rebar
    Float64 s;
-   matRebar::Size size;
+   WBFL::Materials::Rebar::Size size;
    Float64 abar, nl;
    Float64 Avfs;
    if (pConfig == nullptr)
@@ -4025,13 +4022,13 @@ void pgsDesigner2::CheckFullStirrupDetailing(const pgsPointOfInterest& poi,
 
    // min bar spacing
    Float64 s_min = 0.0;
-   if ( size != matRebar::bsNone )
+   if ( size != WBFL::Materials::Rebar::Size::bsNone )
    {
       GET_IFACE(IMaterials,pMaterial);
       GET_IFACE(IPointOfInterest,pPoi);
 
-      matRebar::Type type;
-      matRebar::Grade grade;
+      WBFL::Materials::Rebar::Type type;
+      WBFL::Materials::Rebar::Grade grade;
 
       CClosureKey closureKey;
       bool bIsInClosure = pPoi->IsInClosureJoint(poi,&closureKey);
@@ -4045,7 +4042,7 @@ void pgsDesigner2::CheckFullStirrupDetailing(const pgsPointOfInterest& poi,
       }
 
       lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
-      const matRebar* pRebar = prp->GetRebar(type,grade,size);
+      const auto* pRebar = prp->GetRebar(type,grade,size);
 
       Float64 db = pRebar->GetNominalDimension();
       Float64 as;
@@ -4416,11 +4413,11 @@ void pgsDesigner2::CheckConfinement(const CSegmentKey& segmentKey, const GDRCONF
 
    // Get spec constraints
    GET_IFACE(ITransverseReinforcementSpec,pTransverseReinforcementSpec);
-   matRebar::Size szmin = pTransverseReinforcementSpec->GetMinConfinmentBarSize();
+   WBFL::Materials::Rebar::Size szmin = pTransverseReinforcementSpec->GetMinConfinmentBarSize();
    Float64 smax = pTransverseReinforcementSpec->GetMaxConfinmentBarSpacing();
 
-   matRebar::Grade grade;
-   matRebar::Type type;
+   WBFL::Materials::Rebar::Grade grade;
+   WBFL::Materials::Rebar::Type type;
    pMaterial->GetSegmentTransverseRebarMaterial(segmentKey,&type,&grade);
 
    pArtifact->SetMinBar(lrfdRebarPool::GetInstance()->GetRebar(type,grade,szmin));
@@ -4440,7 +4437,7 @@ void pgsDesigner2::CheckConfinement(const CSegmentKey& segmentKey, const GDRCONF
    pArtifact->SetEndd(endd);
 
    // get and set provided stirrup configuration at start and ends
-   matRebar::Size start_rbsiz, end_rbsiz;
+   WBFL::Materials::Rebar::Size start_rbsiz, end_rbsiz;
    Float64 start_zl, end_zl;
    Float64 start_s, end_s;
    if (pConfig)
@@ -5036,15 +5033,15 @@ void pgsDesigner2::CheckStrandSlope(const CSegmentKey& segmentKey,pgsStrandSlope
    pArtifact->IsApplicable( bCheck );
 
    // we are looking for strand diameter for harped strand slope so use Harped here
-   const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Harped);
+   const auto* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Harped);
    Float64 capacity;
    Float64 demand;
 
-   if ( pStrand->GetSize() == matPsStrand::D1778  )
+   if ( pStrand->GetSize() == WBFL::Materials::PsStrand::Size::D1778  )
    {
       capacity = s70;
    }
-   else if ( pStrand->GetSize() == matPsStrand::D1524 )
+   else if ( pStrand->GetSize() == WBFL::Materials::PsStrand::Size::D1524 )
    {
       capacity = s60;
    }
@@ -7523,7 +7520,7 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands, IProgres
    Float64 fc_lldf = fcgdr;
    if ( pGirderMaterial->Concrete.bUserEc )
    {
-      fc_lldf = lrfdConcreteUtil::FcFromEc( (matConcrete::Type)(pGirderMaterial->Concrete.Type), pGirderMaterial->Concrete.Ec, pGirderMaterial->Concrete.StrengthDensity );
+      fc_lldf = lrfdConcreteUtil::FcFromEc( (WBFL::Materials::ConcreteType)(pGirderMaterial->Concrete.Type), pGirderMaterial->Concrete.Ec, pGirderMaterial->Concrete.StrengthDensity );
    }
 
    GET_IFACE(ILiveLoadDistributionFactors,pLLDF);
@@ -10102,7 +10099,7 @@ void pgsDesigner2::DesignShear(pgsSegmentDesignArtifact* pArtifact, bool bDoStar
          else
          {
             shear_data.ShearZones = default_data.ShearZones;
-            shear_data.ShearZones.front().VertBarSize = matRebar::bs5;
+            shear_data.ShearZones.front().VertBarSize = WBFL::Materials::Rebar::Size::bs5;
             shear_data.ShearZones.front().BarSpacing = 24.0 * one_inch;
             shear_data.ShearZones.front().nVertBars = 2;
          }
@@ -10152,8 +10149,8 @@ void pgsDesigner2::DesignShear(pgsSegmentDesignArtifact* pArtifact, bool bDoStar
             // Additional rebar is needed for long reinf for shear. Add bars, if possible
             Float64 av_add = m_ShearDesignTool.GetRequiredAsForLongReinfShear();
 
-            matRebar::Grade barGrade;
-            matRebar::Type barType;
+            WBFL::Materials::Rebar::Grade barGrade;
+            WBFL::Materials::Rebar::Type barType;
             pMaterials->GetSegmentTransverseRebarMaterial(segmentKey,&barType,&barGrade);
             lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
             ATLASSERT(pool != nullptr);
@@ -10168,14 +10165,14 @@ void pgsDesigner2::DesignShear(pgsSegmentDesignArtifact* pArtifact, bool bDoStar
 
             Float64 nbars = 0;
             Float64 spacing = 0;
-            matRebar::Size barSize;
+            WBFL::Materials::Rebar::Size barSize;
             bool bBarSpacingOK = false;
-            matRebar::Size barSizes[] = {matRebar::bs5,matRebar::bs6,matRebar::bs7};
-            int nBarSizes = sizeof(barSizes)/sizeof(matRebar::Size);
+            WBFL::Materials::Rebar::Size barSizes[] = {WBFL::Materials::Rebar::Size::bs5,WBFL::Materials::Rebar::Size::bs6,WBFL::Materials::Rebar::Size::bs7};
+            int nBarSizes = sizeof(barSizes)/sizeof(WBFL::Materials::Rebar::Size);
             for ( int i = 0; i < nBarSizes; i++ )
             {
                barSize = barSizes[i];
-               const matRebar* pRebar = pool->GetRebar(barType,barGrade,barSize);
+               const auto* pRebar = pool->GetRebar(barType,barGrade,barSize);
                Float64 av_onebar = pRebar->GetNominalArea();
                Float64 db = pRebar->GetNominalDimension();
 

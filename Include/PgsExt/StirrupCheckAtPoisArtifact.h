@@ -40,7 +40,7 @@
 #include <PgsExt\PoiArtifactKey.h>
 #endif
 
-#include <Material\Rebar.h>
+#include <Materials/Rebar.h>
 
 #include <PgsExt\PointOfInterest.h>
 
@@ -670,8 +670,8 @@ public:
    Float64 GetSMax() const {return m_SMax;}
    void SetSMin(Float64 s) {m_SMin = s;}
    Float64 GetSMin() const {return m_SMin;}
-   void SetBarSize(matRebar::Size s) {m_BarSize = s;}
-   matRebar::Size GetBarSize() const {return m_BarSize;}
+   void SetBarSize(WBFL::Materials::Rebar::Size s) {m_BarSize = s;}
+   WBFL::Materials::Rebar::Size GetBarSize() const {return m_BarSize;}
    void SetS(Float64 s) {m_S = s;}
    Float64 GetS() const {return m_S;}
    void SetBv(Float64 bv) {m_Bv = bv;}
@@ -732,7 +732,7 @@ private:
    Float64 m_Avs;
    Float64 m_SMax;
    Float64 m_SMin;
-   matRebar::Size m_BarSize;
+   WBFL::Materials::Rebar::Size m_BarSize;
    Float64 m_S;
    Float64 m_Bv;
    Float64 m_Dv;

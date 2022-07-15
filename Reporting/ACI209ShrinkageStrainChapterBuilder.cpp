@@ -26,8 +26,8 @@
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
 #include <IFace\Project.h>
-#include <Material\ConcreteBase.h>
-#include <Material\ACI209Concrete.h>
+#include <Materials/ConcreteBase.h>
+#include <Materials/ACI209Concrete.h>
 #include <PgsExt\TimelineEvent.h>
 #include <PgsExt\CastDeckActivity.h>
 
@@ -101,9 +101,6 @@ rptChapter* CACI209ShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
    (*pTable)(rowIdx,colIdx++) << _T("H (%)");
    (*pTable)(rowIdx,colIdx++) << Sub2(symbol(gamma),_T("hs"));
 
-
-   std::_tstring strCuring[] = { _T("Moist"), _T("Steam") };
-
    rowIdx = pTable->GetNumberOfHeaderRows();
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -111,12 +108,12 @@ rptChapter* CACI209ShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
       ColumnIndexType colIdx = 0;
 
       CSegmentKey segmentKey(girderKey,segIdx);
-      const matConcreteBase* pConcrete = pMaterials->GetSegmentConcrete(segmentKey);
-      const matACI209Concrete* pACIConcrete = dynamic_cast<const matACI209Concrete*>(pConcrete);
+      const auto& pConcrete = pMaterials->GetSegmentConcrete(segmentKey);
+      const WBFL::Materials::ACI209Concrete* pACIConcrete = dynamic_cast<const WBFL::Materials::ACI209Concrete*>(pConcrete.get());
 
       (*pTable)(rowIdx,colIdx++) << _T("Segment ") << LABEL_SEGMENT(segIdx);
-      (*pTable)(rowIdx,colIdx++) << strCuring[pConcrete->GetCureMethod()];
-      if ( pConcrete->GetCureMethod() == pgsTypes::Moist )
+      (*pTable)(rowIdx,colIdx++) << WBFL::Materials::ConcreteBase::GetCureMethod(pConcrete->GetCureMethod());
+      if ( pConcrete->GetCureMethod() == WBFL::Materials::ConcreteBase::CureMethod::Moist )
       {
          (*pTable)(rowIdx,colIdx++) << pACIConcrete->GetInitialMoistCureFactor();
       }
@@ -134,14 +131,14 @@ rptChapter* CACI209ShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
       if ( segIdx != nSegments-1 )
       {
          CClosureKey closureKey(segmentKey);
-         const matConcreteBase* pConcrete = pMaterials->GetClosureJointConcrete(closureKey);
-         const matACI209Concrete* pACIConcrete = dynamic_cast<const matACI209Concrete*>(pConcrete);
+         const auto& pConcrete = pMaterials->GetClosureJointConcrete(closureKey);
+         const WBFL::Materials::ACI209Concrete* pACIConcrete = dynamic_cast<const WBFL::Materials::ACI209Concrete*>(pConcrete.get());
    
          colIdx = 0;
 
          (*pTable)(rowIdx,colIdx++) << _T("Closure Joint");
-         (*pTable)(rowIdx,colIdx++) << strCuring[pConcrete->GetCureMethod()];
-         if ( pConcrete->GetCureMethod() == pgsTypes::Moist )
+         (*pTable)(rowIdx,colIdx++) << WBFL::Materials::ConcreteBase::GetCureMethod(pConcrete->GetCureMethod());
+         if ( pConcrete->GetCureMethod() == WBFL::Materials::ConcreteBase::CureMethod::Moist )
          {
             (*pTable)(rowIdx,colIdx++) << pACIConcrete->GetInitialMoistCureFactor();
          }
@@ -168,8 +165,8 @@ rptChapter* CACI209ShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
       {
          std::vector<IndexType> vRegions = castDeckActivity.GetRegions(castingIdx);
          IndexType deckCastingRegionIdx = vRegions.front();
-         const matConcreteBase* pConcrete = pMaterials->GetDeckConcrete(deckCastingRegionIdx);
-         const matACI209Concrete* pACIConcrete = dynamic_cast<const matACI209Concrete*>(pConcrete);
+         const auto& pConcrete = pMaterials->GetDeckConcrete(deckCastingRegionIdx);
+         const WBFL::Materials::ACI209Concrete* pACIConcrete = dynamic_cast<const WBFL::Materials::ACI209Concrete*>(pConcrete.get());
 
          ColumnIndexType colIdx = 0;
 
@@ -194,8 +191,8 @@ rptChapter* CACI209ShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
 
 
          (*pTable)(rowIdx, colIdx++) << strTitle;
-         (*pTable)(rowIdx, colIdx++) << strCuring[pConcrete->GetCureMethod()];
-         if (pConcrete->GetCureMethod() == pgsTypes::Moist)
+         (*pTable)(rowIdx, colIdx++) << WBFL::Materials::ConcreteBase::GetCureMethod(pConcrete->GetCureMethod());
+         if (pConcrete->GetCureMethod() == WBFL::Materials::ConcreteBase::CureMethod::Moist)
          {
             (*pTable)(rowIdx, colIdx++) << pACIConcrete->GetInitialMoistCureFactor();
          }
@@ -296,8 +293,8 @@ rptChapter* CACI209ShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
          if ( releaseIntervalIdx <= intervalIdx )
          {
             Float64 t  = pMaterials->GetSegmentConcreteAge(segmentKey,intervalIdx,pgsTypes::End);
-            const matConcreteBase* pConcrete = pMaterials->GetSegmentConcrete(segmentKey);
-            const matACI209Concrete* pACIConcrete = dynamic_cast<const matACI209Concrete*>(pConcrete);
+            const auto& pConcrete = pMaterials->GetSegmentConcrete(segmentKey);
+            const WBFL::Materials::ACI209Concrete* pACIConcrete = dynamic_cast<const WBFL::Materials::ACI209Concrete*>(pConcrete.get());
             Float64 cure = pACIConcrete->GetCureTime();
             (*pTable)(rowIdx,colIdx++) << t - cure;
             (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetIncrementalSegmentFreeShrinkageStrain(segmentKey,intervalIdx);
@@ -317,8 +314,8 @@ rptChapter* CACI209ShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
             if ( compositeClosureIntervalIdx <= intervalIdx )
             {
                Float64 t  = pMaterials->GetClosureJointConcreteAge(closureKey,intervalIdx,pgsTypes::End);
-               const matConcreteBase* pConcrete = pMaterials->GetClosureJointConcrete(closureKey);
-               const matACI209Concrete* pACIConcrete = dynamic_cast<const matACI209Concrete*>(pConcrete);
+               const auto& pConcrete = pMaterials->GetClosureJointConcrete(closureKey);
+               const WBFL::Materials::ACI209Concrete* pACIConcrete = dynamic_cast<const WBFL::Materials::ACI209Concrete*>(pConcrete.get());
                Float64 cure = pACIConcrete->GetCureTime();
                (*pTable)(rowIdx,colIdx++) << t - cure;
                (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetIncrementalClosureJointFreeShrinkageStrain(closureKey,intervalIdx);
@@ -341,8 +338,8 @@ rptChapter* CACI209ShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
          if ( compositeDeckIntervalIdx <= intervalIdx )
          {
             Float64 t  = pMaterials->GetDeckConcreteAge(deckCastingRegionIdx,intervalIdx,pgsTypes::End);
-            const matConcreteBase* pConcrete = pMaterials->GetDeckConcrete(deckCastingRegionIdx);
-            const matACI209Concrete* pACIConcrete = dynamic_cast<const matACI209Concrete*>(pConcrete);
+            const auto& pConcrete = pMaterials->GetDeckConcrete(deckCastingRegionIdx);
+            const WBFL::Materials::ACI209Concrete* pACIConcrete = dynamic_cast<const WBFL::Materials::ACI209Concrete*>(pConcrete.get());
             Float64 cure = pACIConcrete->GetCureTime();
             (*pTable)(rowIdx,colIdx++) << t - cure;
             (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetIncrementalDeckFreeShrinkageStrain(deckCastingRegionIdx,intervalIdx);

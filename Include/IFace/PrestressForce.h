@@ -40,11 +40,18 @@
 // FORWARD DECLARATIONS
 //
 class pgsPointOfInterest;
-class matPsStrand;
 class pgsTransferLength;
 class pgsDevelopmentLength;
 class rptChapter;
 interface IEAFDisplayUnits;
+
+namespace WBFL
+{
+   namespace Materials
+   {
+      class PsStrand;
+   };
+};
 
 // MISCELLANEOUS
 //
@@ -65,7 +72,7 @@ DEFINE_GUID(IID_IPretensionForce,
 interface IPretensionForce : IUnknown
 {
    virtual Float64 GetPjackMax(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType,StrandIndexType nStrands) const = 0;
-   virtual Float64 GetPjackMax(const CSegmentKey& segmentKey,const matPsStrand& strand,StrandIndexType nStrands) const = 0;
+   virtual Float64 GetPjackMax(const CSegmentKey& segmentKey,const WBFL::Materials::PsStrand& strand,StrandIndexType nStrands) const = 0;
 
    virtual Float64 GetTransferLength(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const = 0;
    virtual const std::shared_ptr<pgsTransferLength> GetTransferLengthDetails(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const = 0;
@@ -121,9 +128,9 @@ interface IPosttensionForce : IUnknown
 {
    // Returns the maximum jacking force for a given number of strands
    virtual Float64 GetGirderTendonPjackMax(const CGirderKey& girderKey,StrandIndexType nStrands) const = 0;
-   virtual Float64 GetGirderTendonPjackMax(const CGirderKey& girderKey,const matPsStrand& strand,StrandIndexType nStrands) const = 0;
+   virtual Float64 GetGirderTendonPjackMax(const CGirderKey& girderKey,const WBFL::Materials::PsStrand& strand,StrandIndexType nStrands) const = 0;
    virtual Float64 GetSegmentTendonPjackMax(const CSegmentKey& segmentKey, StrandIndexType nStrands) const = 0;
-   virtual Float64 GetSegmentTendonPjackMax(const CSegmentKey& segmentKey, const matPsStrand& strand, StrandIndexType nStrands) const = 0;
+   virtual Float64 GetSegmentTendonPjackMax(const CSegmentKey& segmentKey, const WBFL::Materials::PsStrand& strand, StrandIndexType nStrands) const = 0;
 
    // Returns the force in the tendon at jacking including the effect of friction. 
    // If bIncludeAnchorSet, anchor set losses are taken into account as well. This force

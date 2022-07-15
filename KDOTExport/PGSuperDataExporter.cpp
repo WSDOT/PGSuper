@@ -29,17 +29,17 @@ enum Type { A615  = 0x1000,  // ASTM A615
             A1035 = 0x4000   // ASTM A1035
 };
 
-static std::_tstring GenerateReinfTypeName(matRebar::Type rtype)
+static std::_tstring GenerateReinfTypeName(WBFL::Materials::Rebar::Type rtype)
 {
    switch(rtype)
    {
-   case matRebar::A615:
+   case WBFL::Materials::Rebar::Type::A615:
       return _T("A615");
       break;
-   case matRebar::A706:
+   case WBFL::Materials::Rebar::Type::A706:
       return _T("A706");
       break;
-   case matRebar::A1035:
+   case WBFL::Materials::Rebar::Type::A1035:
       return _T("A1035");
       break;
    default:
@@ -48,20 +48,20 @@ static std::_tstring GenerateReinfTypeName(matRebar::Type rtype)
    }
 }
 
-static std::_tstring GenerateReinfGradeName(matRebar::Grade grade)
+static std::_tstring GenerateReinfGradeName(WBFL::Materials::Rebar::Grade grade)
 {
    switch(grade)
    {
-   case matRebar::Grade40:
+   case WBFL::Materials::Rebar::Grade40:
       return _T("40");
       break;
-   case matRebar::Grade60:
+   case WBFL::Materials::Rebar::Grade::Grade60:
       return _T("60");
       break;
-   case matRebar::Grade75:
+   case WBFL::Materials::Rebar::Grade75:
       return _T("75");
       break;
-   case matRebar::Grade80:
+   case WBFL::Materials::Rebar::Grade80:
       return _T("80");
       break;
    default:
@@ -600,7 +600,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
 
          // prestressing strand material type
          KDOT::PrestressingStrandType pstype;
-         const matPsStrand* pmatps = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Straight);
+         const auto* pmatps = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Straight);
 
          std::_tstring name = pmatps->GetName();
          pstype.Name(name);
@@ -763,8 +763,8 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
          // Long. rebar materials
          KDOT::RebarMaterialType lrbrmat;
 
-         matRebar::Type rebarType;
-         matRebar::Grade rebarGrade;
+         WBFL::Materials::Rebar::Type rebarType;
+         WBFL::Materials::Rebar::Grade rebarGrade;
          pMaterials->GetSegmentLongitudinalRebarMaterial(segmentKey, &rebarType, &rebarGrade);
 
          std::_tstring grd = GenerateReinfGradeName(rebarGrade);
@@ -794,7 +794,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
             Float64 startLoc, endLoc;
             bool onGirder = rowData.GetRebarStartEnd(segment_length, &startLoc, &endLoc);
 
-            const matRebar* pRebar = lrfdRebarPool::GetInstance()->GetRebar(pRebarData->BarType, pRebarData->BarGrade, rowData.BarSize);
+            const auto* pRebar = lrfdRebarPool::GetInstance()->GetRebar(pRebarData->BarType, pRebarData->BarGrade, rowData.BarSize);
             if (pRebar)
             {
                KDOT::RebarRowInstanceType rebarRow;
@@ -855,7 +855,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
             dval = WBFL::Units::ConvertFromSysUnits(zoneEnd, WBFL::Units::Measure::Inch);
             szone.EndLocation(dval);
 
-            matRebar::Size barSize;
+            WBFL::Materials::Rebar::Size barSize;
             Float64 spacing;
             Float64 nStirrups;
             pStirrupGeometry->GetPrimaryVertStirrupBarInfo(segmentKey,iz,&barSize,&nStirrups,&spacing);

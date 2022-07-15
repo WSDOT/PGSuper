@@ -1511,10 +1511,10 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
    material.Concrete.WeightDensity = weightDensity;
 
    // Prestress material
-   matPsStrand::Grade grade;
-   matPsStrand::Type  type;
-   matPsStrand::Coating coating;
-   matPsStrand::Size  size;
+   WBFL::Materials::PsStrand::Grade grade;
+   WBFL::Materials::PsStrand::Type  type;
+  WBFL::Materials::PsStrand::Coating coating;
+   WBFL::Materials::PsStrand::Size  size;
    pOdGirderData->GetStrandData(&grade,&type,&coating,&size);
 
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();

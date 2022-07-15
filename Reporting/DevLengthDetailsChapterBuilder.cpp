@@ -342,10 +342,10 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
       {
          const CDeckRebarData::NegMomentRebarData& rdata = *iter;
 
-         matRebar::Size size = rdata.RebarSize;
-         if (size != matRebar::bsNone)
+         WBFL::Materials::Rebar::Size size = rdata.RebarSize;
+         if (size != WBFL::Materials::Rebar::Size::bsNone)
          {
-            const matRebar* pRebar = lrfdRebarPool::GetInstance()->GetRebar(rdata.RebarType, rdata.RebarGrade, size);
+            const auto* pRebar = lrfdRebarPool::GetInstance()->GetRebar(rdata.RebarType, rdata.RebarGrade, size);
 
             Float64 db = pRebar->GetNominalDimension();
 

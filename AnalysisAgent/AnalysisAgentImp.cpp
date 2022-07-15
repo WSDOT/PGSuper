@@ -6654,7 +6654,7 @@ void CAnalysisAgentImp::GetDesignStress(const StressCheckTask& task,const pgsPoi
       Float64 fc_lldf = pConfig->fc ;
       if ( pGirderMaterial->Concrete.bUserEc )
       {
-         fc_lldf = lrfdConcreteUtil::FcFromEc( (matConcrete::Type)pGirderMaterial->Concrete.Type, pGirderMaterial->Concrete.Ec, pGirderMaterial->Concrete.StrengthDensity );
+         fc_lldf = lrfdConcreteUtil::FcFromEc( (WBFL::Materials::ConcreteType)pGirderMaterial->Concrete.Type, pGirderMaterial->Concrete.Ec, pGirderMaterial->Concrete.StrengthDensity );
       }
 
       GET_IFACE(ILiveLoadDistributionFactors,pLLDF);

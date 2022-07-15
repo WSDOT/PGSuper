@@ -28,7 +28,7 @@
 #include "ACIParametersDlg.h"
 
 #include <EAF\EAFDisplayUnits.h>
-#include <Material\ACI209Concrete.h>
+#include <Materials/ACI209Concrete.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -95,7 +95,7 @@ void CACIParametersDlg::UpdateParameters()
    UpdateData();
 
    Float64 t1 = WBFL::Units::ConvertFromSysUnits(m_t1,WBFL::Units::Measure::Day);
-   matACI209Concrete::ComputeParameters(m_fc1,t1,m_fc2,28,&m_A,&m_B);
+   WBFL::Materials::ACI209Concrete::ComputeParameters(m_fc1,t1,m_fc2,28,&m_A,&m_B);
 
    m_A = WBFL::Units::ConvertToSysUnits(m_A,WBFL::Units::Measure::Day);
 

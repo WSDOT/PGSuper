@@ -32,9 +32,9 @@
 #include <Units\Convert.h>
 
 #include <MathEx.h>
-#include <Material\Concrete.h>
-#include <Material\ACI209Concrete.h>
-#include <Material\CEBFIPConcrete.h>
+#include <Materials/Concrete.h>
+#include <Materials/ACI209Concrete.h>
+#include <Materials/CEBFIPConcrete.h>
 
 #include <EAF\EAFApp.h>
 #include <psgLib\LibraryEntryDifferenceItem.h>
@@ -178,8 +178,8 @@ m_ACI209CementType(pgsTypes::TypeI),
 m_bUserCEBFIPParameters(false),
 m_CEBFIPCementType(pgsTypes::N)
 {
-   matACI209Concrete::GetModelParameters((matACI209Concrete::CureMethod)m_CureMethod,(matACI209Concrete::CementType)m_ACI209CementType,&m_A,&m_B);
-   matCEBFIPConcrete::GetModelParameters((matCEBFIPConcrete::CementType)m_CEBFIPCementType,&m_S,&m_BetaSc);
+   WBFL::Materials::ACI209Concrete::GetModelParameters((WBFL::Materials::ConcreteBase::CureMethod)m_CureMethod,(WBFL::Materials::ACI209Concrete::CementType)m_ACI209CementType,&m_A,&m_B);
+   WBFL::Materials::CEBFIPConcrete::GetModelParameters((WBFL::Materials::CEBFIPConcrete::CementType)m_CEBFIPCementType,&m_S,&m_BetaSc);
 }
 
 ConcreteLibraryEntry::ConcreteLibraryEntry(const ConcreteLibraryEntry& rOther) :
@@ -215,7 +215,7 @@ bool ConcreteLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
    pSave->Property(_T("Name"),this->GetName().c_str());
    
    // added version 4
-   pSave->Property(_T("Type"),lrfdConcreteUtil::GetTypeName((matConcrete::Type)m_Type,false).c_str());
+   pSave->Property(_T("Type"),lrfdConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)m_Type,false).c_str());
    pSave->Property(_T("Dw"), m_Dw);
    pSave->Property(_T("Fc"), m_Fc);
    pSave->Property(_T("Ds"), m_Ds);

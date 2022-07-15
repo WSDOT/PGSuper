@@ -197,7 +197,7 @@ private:
    void CreateStrandMaterial(const CSegmentKey& segmentKey, pgsBondTool& bondTool, pgsTypes::StrandType strandType,StrandIndexType strandIdx,Float64 initialStrain,bool* pbDevelopmentReducedStrainCapacity,IStressStrain** ppSS) const;
    void CreateSegmentTendonMaterial(const CSegmentKey& segmentKey, IStressStrain** ppSS) const;
    void CreateGirderTendonMaterial(const CGirderKey& girderKey, IStressStrain** ppSS) const;
-   void CreateTendonMaterial(const matPsStrand* pTendon, IStressStrain** ppSS) const;
+   void CreateTendonMaterial(const WBFL::Materials::PsStrand* pTendon, IStressStrain** ppSS) const;
 
    MOMENTCAPACITYDETAILS ComputeMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig, Float64 fpe_ps_all_strands, Float64 eps_initial_all_strands, const std::array<std::vector<Float64>, 2>& fpe_ps, const std::array<std::vector<Float64>, 2>& eps_initial_strand, const std::vector<Float64>& fpe_pt_segment, const std::vector<Float64>& ept_initial_segment, const std::vector<Float64>& fpe_pt_girder,const std::vector<Float64>& ept_initial_girder,bool bPositiveMoment) const;
    void ComputeMinMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment,const MOMENTCAPACITYDETAILS* pmcd,const CRACKINGMOMENTDETAILS* pcmd,MINMOMENTCAPDETAILS* pmmcd) const;

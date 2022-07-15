@@ -428,47 +428,48 @@ struct CREEPCOEFFICIENTDETAILS
 
 struct INCREMENTALCREEPDETAILS
 {
-   std::shared_ptr<matConcreteBaseCreepDetails> pStartDetails;
-   std::shared_ptr<matConcreteBaseCreepDetails> pEndDetails;
+   // idealy this should be unique pointers, but I haven't been able to figure
+   // out all of the details to make this work in a complex data structure
+   //std::unique_ptr<WBFL::Materials::ConcreteBaseCreepDetails> pStartDetails;
+   //std::unique_ptr<WBFL::Materials::ConcreteBaseCreepDetails> pEndDetails;
+   std::shared_ptr<WBFL::Materials::ConcreteBaseCreepDetails> pStartDetails;
+   std::shared_ptr<WBFL::Materials::ConcreteBaseCreepDetails> pEndDetails;
 };
 
 struct INCREMENTALSHRINKAGEDETAILS
 {
-   INCREMENTALSHRINKAGEDETAILS() : esi(0) {}
-   std::shared_ptr<matConcreteBaseShrinkageDetails> pStartDetails;
-   std::shared_ptr<matConcreteBaseShrinkageDetails> pEndDetails;
-   Float64 esi;
+   // idealy this should be unique pointers, but I haven't been able to figure
+   // out all of the details to make this work in a complex data structure
+   //std::unique_ptr<WBFL::Materials::ConcreteBaseShrinkageDetails> pStartDetails;
+   //std::unique_ptr<WBFL::Materials::ConcreteBaseShrinkageDetails> pEndDetails;
+   std::shared_ptr<WBFL::Materials::ConcreteBaseShrinkageDetails> pStartDetails;
+   std::shared_ptr<WBFL::Materials::ConcreteBaseShrinkageDetails> pEndDetails;
+   Float64 esi{ 0.0 };
 };
 
 // Details of incremental relaxation computation used for time-step analysis
 struct INCREMENTALRELAXATIONDETAILS
 {
-   INCREMENTALRELAXATIONDETAILS()
-   {
-      memset((void*)this,0,sizeof(INCREMENTALRELAXATIONDETAILS));
-      epoxyFactor = 1.0;
-   }
-
    // common parameters
-   Float64 fpi; // effective prestress at the start of the interval
-   Float64 fpy;
-   Float64 fpu;
-   Float64 tStart;
-   Float64 tEnd;
-   Float64 epoxyFactor; // this factor is multiplied to the relaxation.
+   Float64 fpi{ 0 }; // effective prestress at the start of the interval
+   Float64 fpy{ 0 };
+   Float64 fpu{ 0 };
+   Float64 tStart{ 0 };
+   Float64 tEnd{ 0 };
+   Float64 epoxyFactor{ 1.0 }; // this factor is multiplied to the relaxation.
                         // see PCI "Guidelines for the use of Epoxy-Coated Strand", PCI Journal, July-August 1993
                         // relaxation is doubled, so this factor is 2.0, for expoxy coated strands
 
 
    // These parameters are for AASHTO and ACI209 models
-   Float64 K;
+   Float64 K{ 0 };
 
    // These parameters are for CEB-FEP model
-   Float64 p;
-   Float64 k;
+   Float64 p{ 0 };
+   Float64 k{ 0 };
 
    // Incremental relaxation
-   Float64 fr;
+   Float64 fr{ 0 };
 };
 
 #define TIMESTEP_CR  0
@@ -499,49 +500,28 @@ struct TIME_STEP_CONCRETE
    // Creep Strains during this interval due to loads applied in previous intervals
    struct CREEP_STRAIN
    {
-      Float64 P;
-      Float64 E; // modulus of elasticity used to compute creep strain (Not age adjusted)
-      Float64 A;
-      Float64 Cs; // C(i+1/2,j)
-      Float64 Ce; // C(i-1/2,j)
-      Float64 Xs; // concrete Aging coefficient X(i+1/2,j)
-      Float64 Xe; // concrete Aging coefficient X(i-1/2,j)
-      Float64 e;
-      CREEP_STRAIN()
-      {
-         P = 0;
-         E = 0;
-         A = 0;
-         Cs = 0;
-         Ce = 0;
-         Xs = 1;
-         Xe = 1;
-         e = 0;
-      }
+      Float64 P{ 0 };
+      Float64 E{ 0 }; // modulus of elasticity used to compute creep strain (Not age adjusted)
+      Float64 A{ 0 };
+      Float64 Cs{ 0 }; // C(i+1/2,j)
+      Float64 Ce{ 0 }; // C(i-1/2,j)
+      Float64 Xs{ 1 }; // concrete Aging coefficient X(i+1/2,j)
+      Float64 Xe{ 1 }; // concrete Aging coefficient X(i-1/2,j)
+      Float64 e{ 0 };
    };
 
    struct CREEP_CURVATURE
    {
-      Float64 M;
-      Float64 E; // modulus of elasticity used to compute creep curvature (Not age adjusted)
-      Float64 I;
-      Float64 Cs; // C(i+1/2,j)
-      Float64 Ce; // C(i-1/2,j)
-      Float64 Xs; // concrete Aging coefficient X(i+1/2,j)
-      Float64 Xe; // concrete Aging coefficient X(i-1/2,j)
-      Float64 r;
-      CREEP_CURVATURE()
-      {
-         M = 0;
-         E = 0;
-         I = 0;
-         Cs = 0;
-         Ce = 0;
-         Xs = 1;
-         Xe = 1;
-         r = 0;
-      }
+      Float64 M{ 0 };
+      Float64 E{ 0 }; // modulus of elasticity used to compute creep curvature (Not age adjusted)
+      Float64 I{ 0 };
+      Float64 Cs{ 0 }; // C(i+1/2,j)
+      Float64 Ce{ 0 }; // C(i-1/2,j)
+      Float64 Xs{ 1 }; // concrete Aging coefficient X(i+1/2,j)
+      Float64 Xe{ 1 }; // concrete Aging coefficient X(i-1/2,j)
+      Float64 r{ 0 };
    };
+
    std::vector<CREEP_STRAIN> ec;    // = (dN(j)/(AE(j))*[X(i+1/2,j)*C(i+1/2,j) - X(i-1/2,j*)C(i-1/2,j)]
    std::vector<CREEP_CURVATURE> rc; // = (dM(j)/(IE(j))*[X(i+1/2,j)*C(i+1/2,j) - X(i-1/2,j)*C(i-1/2,j)]
    std::vector<INCREMENTALCREEPDETAILS> Creep; // creep coefficient details
@@ -1002,14 +982,10 @@ struct ANCHORSETDETAILS
 // losses at a POI
 struct FRICTIONLOSSDETAILS
 {
-   FRICTIONLOSSDETAILS()
-   { 
-      memset((void*)this, 0, sizeof(FRICTIONLOSSDETAILS));
-   };
-   Float64 alpha; // total angular change from jacking end to this POI
-   Float64 X;     // distance from start of tendon to this POI
-   Float64 dfpF;  // friction loss at this POI
-   Float64 dfpA;  // anchor set loss at this POI
+   Float64 alpha{ 0 }; // total angular change from jacking end to this POI
+   Float64 X{ 0 };     // distance from start of tendon to this POI
+   Float64 dfpF{ 0 };  // friction loss at this POI
+   Float64 dfpA{ 0 };  // anchor set loss at this POI
 };
 
 // This struct holds the computation details for prestress losses
@@ -1017,29 +993,6 @@ struct FRICTIONLOSSDETAILS
 struct LOSSDETAILS
 {
    LOSSDETAILS() {;}
-
-   LOSSDETAILS(const LOSSDETAILS& other)
-   { MakeCopy(other); }
-
-   LOSSDETAILS& operator=(const LOSSDETAILS& other)
-   { return MakeCopy(other); }
-
-   LOSSDETAILS& MakeCopy(const LOSSDETAILS& other)
-   {
-      LossMethod = other.LossMethod;
-      pLosses = other.pLosses;
-
-      GirderFrictionLossDetails = other.GirderFrictionLossDetails;
-      SegmentFrictionLossDetails = other.SegmentFrictionLossDetails;
-
-      TimeStepDetails = other.TimeStepDetails;
-
-#if defined _DEBUG
-      POI = other.POI;
-#endif
-
-      return *this;
-   }
 
    // Method for computing prestress losses... the value of this parameter
    // defines which of the loss details given below are applicable

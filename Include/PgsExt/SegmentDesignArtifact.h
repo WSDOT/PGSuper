@@ -28,7 +28,7 @@
 #include <PgsExt\Keys.h>
 #include <PgsExt\PrecastSegmentData.h>
 
-#include <Material\ConcreteEx.h>
+#include <Materials/Concrete.h>
 #include <PGSuperTypes.h>
 
 interface IBroker;
@@ -250,8 +250,8 @@ public:
    void SetReleaseStrength(Float64 fci);
    Float64 GetReleaseStrength() const;
 
-   void SetConcrete(matConcreteEx concrete);
-   const matConcreteEx& GetConcrete() const;
+   void SetConcrete(const WBFL::Materials::Concrete& concrete);
+   const WBFL::Materials::Concrete& GetConcrete() const;
    void SetConcreteStrength(Float64 fc);
    Float64 GetConcreteStrength() const;
 
@@ -354,7 +354,7 @@ private:
    bool  m_IsUserEci;
    Float64 m_UserEci;
 
-   matConcreteEx m_Concrete;
+   WBFL::Materials::Concrete m_Concrete;
 
    ConcreteStrengthDesignState m_ConcreteReleaseDesignState;
    ConcreteStrengthDesignState m_ConcreteFinalDesignState;

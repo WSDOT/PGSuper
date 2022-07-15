@@ -157,8 +157,8 @@ m_HarpPointMeasure(mtFractionOfGirderLength),
 m_bMinHarpingPointLocation(false),
 m_MinHarpingPointLocation(WBFL::Units::ConvertToSysUnits(5.0,WBFL::Units::Measure::Feet)),
 m_HarpPointReference(mlBearing),
-m_LongitudinalBarType(matRebar::A615),
-m_LongitudinalBarGrade(matRebar::Grade60),
+m_LongitudinalBarType(WBFL::Materials::Rebar::Type::A615),
+m_LongitudinalBarGrade(WBFL::Materials::Rebar::Grade::Grade60),
 m_bOddNumberOfHarpedStrands(true),
 m_AdjustableStrandType(pgsTypes::asHarped), // Adjustable strand type - harp was only option before 21
 // debonding criteria
@@ -250,12 +250,12 @@ m_pCompatibilityData(nullptr)
    // Set some defaults for shear design container values
    // Bar combo 2-#4's, 2-#5's and 2-#6's
    StirrupSizeBarCombo cbo;
-   cbo.Size = matRebar::bs4;
+   cbo.Size = WBFL::Materials::Rebar::Size::bs4;
    cbo.NLegs = 2.0;
    m_StirrupSizeBarComboColl.push_back(cbo);
-   cbo.Size = matRebar::bs5;
+   cbo.Size = WBFL::Materials::Rebar::Size::bs5;
    m_StirrupSizeBarComboColl.push_back(cbo);
-   cbo.Size = matRebar::bs6;
+   cbo.Size = WBFL::Materials::Rebar::Size::bs6;
    m_StirrupSizeBarComboColl.push_back(cbo);
 
    // Spacings
@@ -1182,7 +1182,7 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
-         legacy.m_ConfinementBarSize = matRebar::Size(value);
+         legacy.m_ConfinementBarSize = WBFL::Materials::Rebar::Size(value);
       }
 
       if ( version < 19 )
@@ -1396,13 +1396,13 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 
             if ( version < 18 )
             {
-               matRebar::Grade grade;
-               matRebar::Type type;
+               WBFL::Materials::Rebar::Grade grade;
+               WBFL::Materials::Rebar::Type type;
                lrfdRebarPool::MapOldRebarKey(size,grade,type,legacy.m_TopFlangeShearBarSize);
             }
             else
             {
-               legacy.m_TopFlangeShearBarSize = matRebar::Size(size);
+               legacy.m_TopFlangeShearBarSize = WBFL::Materials::Rebar::Size(size);
             }
 
             if(!pLoad->Property(_T("TopFlangeShearBarSpacing"),  &legacy.m_TopFlangeShearBarSpacing))
@@ -1412,7 +1412,7 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
          }
          else
          {
-            legacy.m_TopFlangeShearBarSize = matRebar::bsNone;
+            legacy.m_TopFlangeShearBarSize = WBFL::Materials::Rebar::Size::bsNone;
             legacy.m_TopFlangeShearBarSpacing = 0.0;
          }
       }
@@ -2186,14 +2186,14 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
                THROW_LOAD(InvalidFileFormat,pLoad);
             }
 
-            legacy.m_StirrupBarType = matRebar::Type(value);
+            legacy.m_StirrupBarType = WBFL::Materials::Rebar::Type(value);
 
             if ( !pLoad->Property(_T("ShearSteelBarGrade"), &value) )
             {
                THROW_LOAD(InvalidFileFormat,pLoad);
             }
 
-            legacy.m_StirrupBarGrade = matRebar::Grade(value);
+            legacy.m_StirrupBarGrade = WBFL::Materials::Rebar::Grade(value);
          }
 
          LegacyShearData::ShearZoneInfo zi;
@@ -2220,8 +2220,8 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
                   THROW_LOAD(InvalidFileFormat,pLoad);
                }
 
-               matRebar::Grade grade;
-               matRebar::Type type;
+               WBFL::Materials::Rebar::Grade grade;
+               WBFL::Materials::Rebar::Type type;
                lrfdRebarPool::MapOldRebarKey(size,grade,type,zi.VertBarSize);
 
 
@@ -2254,7 +2254,7 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
                   zi.nVertBars = 2;
                }
 
-               zi.HorzBarSize = matRebar::bsNone;
+               zi.HorzBarSize = WBFL::Materials::Rebar::Size::bsNone;
                zi.nHorzBars   = 2;
             }
             else
@@ -2277,8 +2277,8 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
                      THROW_LOAD(InvalidFileFormat,pLoad);
                   }
 
-                  matRebar::Grade grade;
-                  matRebar::Type type;
+                  WBFL::Materials::Rebar::Grade grade;
+                  WBFL::Materials::Rebar::Type type;
                   lrfdRebarPool::MapOldRebarKey(size,grade,type,zi.VertBarSize);
                }
                else
@@ -2289,7 +2289,7 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
                      THROW_LOAD(InvalidFileFormat,pLoad);
                   }
 
-                  zi.VertBarSize = matRebar::Size(value);
+                  zi.VertBarSize = WBFL::Materials::Rebar::Size(value);
                }
 
                if(!pLoad->Property(_T("VertBars"), &zi.nVertBars))
@@ -2305,8 +2305,8 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
                      THROW_LOAD(InvalidFileFormat,pLoad);
                   }
 
-                  matRebar::Grade grade;
-                  matRebar::Type type;
+                  WBFL::Materials::Rebar::Grade grade;
+                  WBFL::Materials::Rebar::Type type;
                   lrfdRebarPool::MapOldRebarKey(size,grade,type,zi.HorzBarSize);
                }
                else
@@ -2317,7 +2317,7 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
                      THROW_LOAD(InvalidFileFormat,pLoad);
                   }
 
-                  zi.HorzBarSize = matRebar::Size(value);
+                  zi.HorzBarSize = WBFL::Materials::Rebar::Size(value);
                }
 
                if(!pLoad->Property(_T("HorzBars"), &zi.nHorzBars))
@@ -2349,14 +2349,14 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
-         m_LongitudinalBarType = matRebar::Type(value);
+         m_LongitudinalBarType = WBFL::Materials::Rebar::Type(value);
 
          if(!pLoad->Property(_T("LongitudinalBarGrade"), &value))
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
-         m_LongitudinalBarGrade = matRebar::Grade(value);
+         m_LongitudinalBarGrade = WBFL::Materials::Rebar::Grade(value);
       }
 
       LongSteelInfo li;
@@ -2423,8 +2423,8 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
                THROW_LOAD(InvalidFileFormat,pLoad);
             }
 
-            matRebar::Grade grade;
-            matRebar::Type type;
+            WBFL::Materials::Rebar::Grade grade;
+            WBFL::Materials::Rebar::Type type;
             lrfdRebarPool::MapOldRebarKey(barSize,grade,type,li.BarSize);
          }
          else
@@ -2435,7 +2435,7 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
                THROW_LOAD(InvalidFileFormat,pLoad);
             }
 
-            li.BarSize = matRebar::Size(value);
+            li.BarSize = WBFL::Materials::Rebar::Size(value);
          }
 
          if(!pLoad->Property(_T("BarCover"), &li.Cover))
@@ -2602,7 +2602,7 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
                THROW_LOAD(InvalidFileFormat,pLoad);
             }
 
-            cbo.Size = matRebar::Size(value);
+            cbo.Size = WBFL::Materials::Rebar::Size(value);
 
              if ( !pLoad->Property(_T("NLegs"),&(cbo.NLegs)) )
              {
@@ -3766,7 +3766,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
          }
       }
 
-      if(IsZero((*its).BarSpacing) && ((*its).VertBarSize != matRebar::bsNone || (*its).ConfinementBarSize != matRebar::bsNone))
+      if(IsZero((*its).BarSpacing) && ((*its).VertBarSize != WBFL::Materials::Rebar::Size::bsNone || (*its).ConfinementBarSize != WBFL::Materials::Rebar::Size::bsNone))
       {
          std::_tostringstream os;
          os << _T("The stirrup spacing in shear zone #")<<num<<_T(" must be greater than zero because stirrups exist.");
@@ -4650,13 +4650,13 @@ GirderLibraryEntry::LongSteelInfoVec GirderLibraryEntry::GetLongSteelInfo() cons
    return m_LongSteelInfo;
 }
 
-void GirderLibraryEntry::SetLongSteelMaterial(matRebar::Type type,matRebar::Grade grade)
+void GirderLibraryEntry::SetLongSteelMaterial(WBFL::Materials::Rebar::Type type,WBFL::Materials::Rebar::Grade grade)
 {
    m_LongitudinalBarType = type;
    m_LongitudinalBarGrade = grade;
 }
 
-void GirderLibraryEntry::GetLongSteelMaterial(matRebar::Type& type,matRebar::Grade& grade) const
+void GirderLibraryEntry::GetLongSteelMaterial(WBFL::Materials::Rebar::Type& type,WBFL::Materials::Rebar::Grade& grade) const
 {
    type = m_LongitudinalBarType;
    grade = m_LongitudinalBarGrade;
@@ -5237,7 +5237,7 @@ CShearData2 GirderLibraryEntry::LegacyShearData::ConvertToShearData() const
    }
 
    // Additional top flange horiz interface shear
-   if (m_TopFlangeShearBarSize!=matRebar::bsNone && m_TopFlangeShearBarSpacing>0.0)
+   if (m_TopFlangeShearBarSize!=WBFL::Materials::Rebar::Size::bsNone && m_TopFlangeShearBarSpacing>0.0)
    {
       sdata.HorizontalInterfaceZones.clear();
       CHorizontalInterfaceZoneData zdata;
@@ -5264,7 +5264,7 @@ void GirderLibraryEntry::ClearStirrupSizeBarCombos()
    m_StirrupSizeBarComboColl.clear();
 }
 
-void GirderLibraryEntry::GetStirrupSizeBarCombo(IndexType index, matRebar::Size* pSize, Float64* pNLegs) const
+void GirderLibraryEntry::GetStirrupSizeBarCombo(IndexType index, WBFL::Materials::Rebar::Size* pSize, Float64* pNLegs) const
 {
    ATLASSERT(index>=0 && index<m_StirrupSizeBarComboColl.size());
    const StirrupSizeBarCombo& cbo = m_StirrupSizeBarComboColl[index];
@@ -5272,7 +5272,7 @@ void GirderLibraryEntry::GetStirrupSizeBarCombo(IndexType index, matRebar::Size*
    *pNLegs = cbo.NLegs;
 }
 
-void GirderLibraryEntry::AddStirrupSizeBarCombo(matRebar::Size Size, Float64 NLegs)
+void GirderLibraryEntry::AddStirrupSizeBarCombo(WBFL::Materials::Rebar::Size Size, Float64 NLegs)
 {
    StirrupSizeBarCombo cbo;
    cbo.Size = Size;

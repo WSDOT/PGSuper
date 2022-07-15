@@ -179,13 +179,13 @@ const LOSSDETAILS* pgsPsForceEng::GetLosses(const pgsPointOfInterest& poi,const 
 Float64 pgsPsForceEng::GetPjackMax(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType,StrandIndexType nStrands) const
 {
    GET_IFACE(ISegmentData,pSegmentData);
-   const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(segmentKey,strandType);
+   const auto* pStrand = pSegmentData->GetStrandMaterial(segmentKey,strandType);
    ATLASSERT(pStrand != 0);
 
    return GetPjackMax(segmentKey,*pStrand,nStrands);
 }
 
-Float64 pgsPsForceEng::GetPjackMax(const CSegmentKey& segmentKey,const matPsStrand& strand,StrandIndexType nStrands) const
+Float64 pgsPsForceEng::GetPjackMax(const CSegmentKey& segmentKey,const WBFL::Materials::PsStrand& strand,StrandIndexType nStrands) const
 {
    GET_IFACE( ISpecification, pSpec );
    std::_tstring spec_name = pSpec->GetSpecification();
@@ -197,7 +197,7 @@ Float64 pgsPsForceEng::GetPjackMax(const CSegmentKey& segmentKey,const matPsStra
    if ( pSpecEntry->CheckStrandStress(CSS_AT_JACKING) )
    {
       Float64 coeff;
-      if ( strand.GetType() == matPsStrand::LowRelaxation )
+      if ( strand.GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation )
       {
          coeff = pSpecEntry->GetStrandStressCoefficient(CSS_AT_JACKING,LOW_RELAX);
       }
@@ -219,7 +219,7 @@ Float64 pgsPsForceEng::GetPjackMax(const CSegmentKey& segmentKey,const matPsStra
    else
    {
       Float64 coeff;
-      if ( strand.GetType() == matPsStrand::LowRelaxation )
+      if ( strand.GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation )
       {
          coeff = pSpecEntry->GetStrandStressCoefficient(CSS_BEFORE_TRANSFER,LOW_RELAX);
       }
@@ -387,7 +387,7 @@ Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes:
    else
    {
       GET_IFACE(ISegmentData, pSegmentData);
-      const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(segmentKey, strandType);
+      const auto* pStrand = pSegmentData->GetStrandMaterial(segmentKey, strandType);
 
       Float64 fpe = GetEffectivePrestress(poi, strandType, intervalIdx, intervalTime, bIncludeElasticEffects, true/*apply elastic gain reduction*/, pConfig); // this fpj - loss + gain, without adjustment
 
@@ -452,7 +452,7 @@ Float64 pgsPsForceEng::GetPrestressForceWithLiveLoad(const pgsPointOfInterest& p
    }
 
    GET_IFACE(ISegmentData,pSegmentData );
-   const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(segmentKey,strandType);
+   const auto* pStrand = pSegmentData->GetStrandMaterial(segmentKey,strandType);
 
    GET_IFACE(IPretensionForce, pPSForce);
    Float64 fpe = GetEffectivePrestressWithLiveLoad(poi,strandType,limitState,vehicleIndex,bIncludeElasticEffects,true/*apply elastic gain reduction*/, pConfig); // this fpj - loss + gain, without adjustment

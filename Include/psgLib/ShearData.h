@@ -42,7 +42,7 @@
 #include <psgLib\ShearZoneData.h>
 #include <PsgLib\HorizontalInterfaceZoneData.h>
 
-#include <Material\Rebar.h>
+#include <Materials/Rebar.h>
 
 // FORWARD DECLARATIONS
 //
@@ -69,8 +69,8 @@ LOG
 class PSGLIBCLASS CShearData2
 {
 public:
-   matRebar::Type  ShearBarType;
-   matRebar::Grade ShearBarGrade;
+   WBFL::Materials::Rebar::Type  ShearBarType;
+   WBFL::Materials::Rebar::Grade ShearBarGrade;
 
    bool  bIsRoughenedSurface;
    bool  bAreZonesSymmetrical;
@@ -94,13 +94,13 @@ public:
    // Additional reinforcement at girder ends
 
    // Splitting
-   matRebar::Size SplittingBarSize;
+   WBFL::Materials::Rebar::Size SplittingBarSize;
    Float64 SplittingBarSpacing;
    Float64 SplittingZoneLength;
    Float64 nSplittingBars;
 
    // Confinement
-   matRebar::Size ConfinementBarSize;
+   WBFL::Materials::Rebar::Size ConfinementBarSize;
    Float64 ConfinementBarSpacing;
    Float64 ConfinementZoneLength;
 

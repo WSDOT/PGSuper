@@ -45,7 +45,7 @@ public:
 
 // Dialog Data
 	enum { IDD = IDD_SEGMENT_TENDONS };
-   const matPsStrand* GetStrand();
+   const WBFL::Materials::PsStrand* GetStrand();
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support

@@ -39,7 +39,7 @@
 
 #include <IFace\Intervals.h>
 
-#include <Material\PsStrand.h>
+#include <Materials/PsStrand.h>
 #include <LRFD\StrandPool.h>
 
 #include <PgsExt\CustomDDX.h>
@@ -181,7 +181,7 @@ void CGirderSegmentTendonsPage::UpdateSectionDepth()
    }
 }
 
-const matPsStrand* CGirderSegmentTendonsPage::GetStrand()
+const WBFL::Materials::PsStrand* CGirderSegmentTendonsPage::GetStrand()
 {
    CComboBox* pList = (CComboBox*)GetDlgItem(IDC_STRAND);
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
@@ -232,11 +232,11 @@ void CGirderSegmentTendonsPage::UpdateStrandList(UINT nIDC)
    int cur_sel = pList->GetCurSel();
    Int64 cur_key = (Int64)pList->GetItemData( cur_sel );
    // remove the coating flag from the current key
-   WBFL::System::Flags<Int64>::Clear(&cur_key,matPsStrand::None);
-   WBFL::System::Flags<Int64>::Clear(&cur_key,matPsStrand::GritEpoxy);
+   WBFL::System::Flags<Int64>::Clear(&cur_key,std::underlying_type<WBFL::Materials::PsStrand::Coating>::type(WBFL::Materials::PsStrand::Coating::None));
+   WBFL::System::Flags<Int64>::Clear(&cur_key,std::underlying_type<WBFL::Materials::PsStrand::Coating>::type(WBFL::Materials::PsStrand::Coating::GritEpoxy));
 
-   matPsStrand::Coating coating = (matPsStrand::None);
-   WBFL::System::Flags<Int64>::Set(&cur_key,coating); // add the coating flag for the strand type we are changing to
+   WBFL::Materials::PsStrand::Coating coating = WBFL::Materials::PsStrand::Coating::None;
+   WBFL::System::Flags<Int64>::Set(&cur_key,std::underlying_type<WBFL::Materials::PsStrand::Coating>::type(coating)); // add the coating flag for the strand type we are changing to
 
    pList->ResetContent();
 
@@ -244,17 +244,17 @@ void CGirderSegmentTendonsPage::UpdateStrandList(UINT nIDC)
    int new_cur_sel = -1; // This will be in index of the string we want to select.
    for (int i = 0; i < 3; i++)
    {
-      matPsStrand::Grade grade = (i == 0 ? matPsStrand::Gr1725 :
-                                  i == 1 ? matPsStrand::Gr1860 : matPsStrand::Gr2070);
+      WBFL::Materials::PsStrand::Grade grade = (i == 0 ? WBFL::Materials::PsStrand::Grade::Gr1725 :
+                                                i == 1 ? WBFL::Materials::PsStrand::Grade::Gr1860 : WBFL::Materials::PsStrand::Grade::Gr2070);
       for ( int j = 0; j < 2; j++ )
       {
-         matPsStrand::Type type = (j == 0 ? matPsStrand::LowRelaxation : matPsStrand::StressRelieved);
+         WBFL::Materials::PsStrand::Type type = (j == 0 ? WBFL::Materials::PsStrand::Type::LowRelaxation : WBFL::Materials::PsStrand::Type::StressRelieved);
 
          lrfdStrandIter iter(grade,type,coating);
 
          for ( iter.Begin(); iter; iter.Next() )
          {
-            const matPsStrand* pStrand = iter.GetCurrentStrand();
+            const auto* pStrand = iter.GetCurrentStrand();
             int idx = pList->AddString( pStrand->GetName().c_str() );
                
             auto key = pPool->GetStrandKey( pStrand );

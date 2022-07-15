@@ -162,7 +162,7 @@ void CGirderDescLongitudinalRebar::RestoreToLibraryDefaults(CLongitudinalRebarDa
    pLongData->CopyGirderEntryData(pGirderEntry);
 }
 
-void CGirderDescLongitudinalRebar::GetRebarMaterial(matRebar::Type* pType,matRebar::Grade* pGrade)
+void CGirderDescLongitudinalRebar::GetRebarMaterial(WBFL::Materials::Rebar::Type* pType,WBFL::Materials::Rebar::Grade* pGrade)
 {
    m_cbRebar.GetMaterial(pType,pGrade);
 }

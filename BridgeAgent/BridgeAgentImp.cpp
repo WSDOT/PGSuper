@@ -62,7 +62,7 @@
 #include <Math\LinFunc2d.h>
 #include <Math\MathUtils.h>
 #include <System\Flags.h>
-#include <Material\Material.h>
+#include <Materials/Materials.h>
 
 #include <IFace\DrawBridgeSettings.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -228,18 +228,18 @@ inline IUserDefinedLoads::UserDefinedLoadCase Project2BridgeLoads(UserLoads::Loa
 
 // Function to choose confinement bars from primary and additional
 static void ChooseConfinementBars(Float64 requiredZoneLength, 
-                                  Float64 primSpc, Float64 primZonL, matRebar::Size primSize,
-                                  Float64 addlSpc, Float64 addlZonL, matRebar::Size addlSize,
-                                  matRebar::Size* pSize, Float64* pProvidedZoneLength, Float64* pSpacing)
+                                  Float64 primSpc, Float64 primZonL, WBFL::Materials::Rebar::Size primSize,
+                                  Float64 addlSpc, Float64 addlZonL, WBFL::Materials::Rebar::Size addlSize,
+                                  WBFL::Materials::Rebar::Size* pSize, Float64* pProvidedZoneLength, Float64* pSpacing)
 {
    // Start assuming the worst
-   *pSize = matRebar::bsNone;
+   *pSize = WBFL::Materials::Rebar::Size::bsNone;
    *pProvidedZoneLength = 0.0;
    *pSpacing = 0.0;
 
    // methods must have bars and non-zero spacing just to be in the running
-   bool is_prim = primSize != matRebar::bsNone && 0.0 < primSpc;
-   bool is_addl = addlSize != matRebar::bsNone && 0.0 < addlSpc;
+   bool is_prim = primSize != WBFL::Materials::Rebar::Size::bsNone && 0.0 < primSpc;
+   bool is_addl = addlSize != WBFL::Materials::Rebar::Size::bsNone && 0.0 < addlSpc;
 
    // Both must meet required zone length to qualify for a run-off
    if (is_prim && is_addl && IsLT(requiredZoneLength,primZonL) && IsLT(requiredZoneLength,addlZonL))
@@ -3170,7 +3170,7 @@ void CBridgeAgentImp::CreateStrandModel(IPrecastGirder* girder,ISuperstructureMe
 
    IntervalIndexType stressStrandIntervalIdx = m_IntervalManager.GetStressStrandInterval(segmentKey);
 
-   const matPsStrand* pStrand = pSegment->Strands.GetStrandMaterial(pgsTypes::Straight);
+   const auto* pStrand = pSegment->Strands.GetStrandMaterial(pgsTypes::Straight);
    CComPtr<IPrestressingStrand> straightStrandMaterial;
    straightStrandMaterial.CoCreateInstance(CLSID_PrestressingStrand);
    straightStrandMaterial->put_Name(CComBSTR(pStrand->GetName().c_str()));
@@ -13137,7 +13137,7 @@ Float64 CBridgeAgentImp::GetSegmentEc(const CSegmentKey& segmentKey,IntervalInde
    }
    else
    {
-      E = lrfdConcreteUtil::ModE( (matConcrete::Type)pMaterial->Concrete.Type, trialFc, pMaterial->Concrete.StrengthDensity, false /*ignore LRFD range checks*/ );
+      E = lrfdConcreteUtil::ModE( (WBFL::Materials::ConcreteType)pMaterial->Concrete.Type, trialFc, pMaterial->Concrete.StrengthDensity, false /*ignore LRFD range checks*/ );
 
       if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
       {
@@ -13184,7 +13184,7 @@ Float64 CBridgeAgentImp::GetClosureJointEc(const CClosureKey& closureKey,Interva
    }
    else
    {
-      E = lrfdConcreteUtil::ModE( (matConcrete::Type)concrete.Type, trialFc, concrete.StrengthDensity, false /*ignore LRFD range checks*/ );
+      E = lrfdConcreteUtil::ModE( (WBFL::Materials::ConcreteType)concrete.Type, trialFc, concrete.StrengthDensity, false /*ignore LRFD range checks*/ );
 
       if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
       {
@@ -13419,59 +13419,54 @@ Float64 CBridgeAgentImp::GetLongitudinalJointAgeAdjustedEc(IntervalIndexType int
 
 Float64 CBridgeAgentImp::GetTotalSegmentFreeShrinkageStrain(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
 {
-   std::shared_ptr<matConcreteBaseShrinkageDetails> pDetails = GetTotalSegmentFreeShrinkageStrainDetails(segmentKey,intervalIdx,timeType);
-   return pDetails->esh;
+   return GetTotalSegmentFreeShrinkageStrainDetails(segmentKey,intervalIdx,timeType)->esh;
 }
 
 Float64 CBridgeAgentImp::GetTotalClosureJointFreeShrinkageStrain(const CClosureKey& closureKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
 {
-   std::shared_ptr<matConcreteBaseShrinkageDetails> pDetails = GetTotalClosureJointFreeShrinkageStrainDetails(closureKey,intervalIdx,timeType);
-   return pDetails->esh;
+   return GetTotalClosureJointFreeShrinkageStrainDetails(closureKey,intervalIdx,timeType)->esh;
 }
 
 Float64 CBridgeAgentImp::GetTotalDeckFreeShrinkageStrain(IndexType castingRegionIdx, IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
 {
-   std::shared_ptr<matConcreteBaseShrinkageDetails> pDetails = GetTotalDeckFreeShrinkageStrainDetails(castingRegionIdx,intervalIdx,timeType);
-   return pDetails->esh;
+   return GetTotalDeckFreeShrinkageStrainDetails(castingRegionIdx,intervalIdx,timeType)->esh;
 }
 
 Float64 CBridgeAgentImp::GetTotalRailingSystemFreeShrinakgeStrain(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
 {
-   std::shared_ptr<matConcreteBaseShrinkageDetails> pDetails = GetTotalRailingSystemFreeShrinakgeStrainDetails(orientation,intervalIdx,timeType);
-   return pDetails->esh;
+   return GetTotalRailingSystemFreeShrinakgeStrainDetails(orientation,intervalIdx,timeType)->esh;
 }
 
 Float64 CBridgeAgentImp::GetTotalLongitudinalJointFreeShrinkageStrain(IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType time) const
 {
-   std::shared_ptr<matConcreteBaseShrinkageDetails> pDetails = GetTotalLongitudinalJointFreeShrinkageStrainDetails(intervalIdx, time);
-   return pDetails->esh;
+   return GetTotalLongitudinalJointFreeShrinkageStrainDetails(intervalIdx, time)->esh;
 }
 
-std::shared_ptr<matConcreteBaseShrinkageDetails> CBridgeAgentImp::GetTotalSegmentFreeShrinkageStrainDetails(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
+std::unique_ptr<WBFL::Materials::ConcreteBaseShrinkageDetails> CBridgeAgentImp::GetTotalSegmentFreeShrinkageStrainDetails(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
 {
    Float64 time = m_IntervalManager.GetTime(intervalIdx,timeType);
    return m_ConcreteManager.GetSegmentFreeShrinkageStrainDetails(segmentKey,time);
 }
 
-std::shared_ptr<matConcreteBaseShrinkageDetails> CBridgeAgentImp::GetTotalClosureJointFreeShrinkageStrainDetails(const CClosureKey& closureKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
+std::unique_ptr<WBFL::Materials::ConcreteBaseShrinkageDetails> CBridgeAgentImp::GetTotalClosureJointFreeShrinkageStrainDetails(const CClosureKey& closureKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
 {
    Float64 time = m_IntervalManager.GetTime(intervalIdx,timeType);
    return m_ConcreteManager.GetClosureJointFreeShrinkageStrainDetails(closureKey,time);
 }
 
-std::shared_ptr<matConcreteBaseShrinkageDetails> CBridgeAgentImp::GetTotalDeckFreeShrinkageStrainDetails(IndexType castingRegionIdx, IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
+std::unique_ptr<WBFL::Materials::ConcreteBaseShrinkageDetails> CBridgeAgentImp::GetTotalDeckFreeShrinkageStrainDetails(IndexType castingRegionIdx, IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
 {
    Float64 time = m_IntervalManager.GetTime(intervalIdx,timeType);
    return m_ConcreteManager.GetDeckFreeShrinkageStrainDetails(castingRegionIdx,time);
 }
 
-std::shared_ptr<matConcreteBaseShrinkageDetails> CBridgeAgentImp::GetTotalRailingSystemFreeShrinakgeStrainDetails(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
+std::unique_ptr<WBFL::Materials::ConcreteBaseShrinkageDetails> CBridgeAgentImp::GetTotalRailingSystemFreeShrinakgeStrainDetails(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
 {
    Float64 time = m_IntervalManager.GetTime(intervalIdx,timeType);
    return m_ConcreteManager.GetRailingSystemFreeShrinkageStrainDetails(orientation,time);
 }
 
-std::shared_ptr<matConcreteBaseShrinkageDetails> CBridgeAgentImp::GetTotalLongitudinalJointFreeShrinkageStrainDetails(IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType timeType) const
+std::unique_ptr<WBFL::Materials::ConcreteBaseShrinkageDetails> CBridgeAgentImp::GetTotalLongitudinalJointFreeShrinkageStrainDetails(IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType timeType) const
 {
    Float64 time = m_IntervalManager.GetTime(intervalIdx, timeType);
    return m_ConcreteManager.GetLongitudinalJointFreeShrinkageStrainDetails(time);
@@ -13505,40 +13500,44 @@ Float64 CBridgeAgentImp::GetIncrementalLongitudinalJointFreeShrinkageStrain(Inte
 INCREMENTALSHRINKAGEDETAILS CBridgeAgentImp::GetIncrementalSegmentFreeShrinkageStrainDetails(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) const
 {
    INCREMENTALSHRINKAGEDETAILS details;
-   details.pStartDetails = GetTotalSegmentFreeShrinkageStrainDetails(segmentKey,intervalIdx,pgsTypes::Start);
-   details.pEndDetails   = GetTotalSegmentFreeShrinkageStrainDetails(segmentKey,intervalIdx,pgsTypes::End);
+   // these calls return a unique_ptr.... when this method goes out of scope, the pointer will delete
+   // we need to transfer the raw pointer into the shared_ptr so it doesn't get deleted
+   details.pStartDetails = std::move(GetTotalSegmentFreeShrinkageStrainDetails(segmentKey,intervalIdx,pgsTypes::Start));
+   details.pEndDetails   = std::move(GetTotalSegmentFreeShrinkageStrainDetails(segmentKey,intervalIdx,pgsTypes::End));
    return details;
 }
 
 INCREMENTALSHRINKAGEDETAILS CBridgeAgentImp::GetIncrementalClosureJointFreeShrinkageStrainDetails(const CClosureKey& closureKey,IntervalIndexType intervalIdx) const
 {
    INCREMENTALSHRINKAGEDETAILS details;
-   details.pStartDetails = GetTotalClosureJointFreeShrinkageStrainDetails(closureKey,intervalIdx,pgsTypes::Start);
-   details.pEndDetails   = GetTotalClosureJointFreeShrinkageStrainDetails(closureKey,intervalIdx,pgsTypes::End);
+   // these calls return a unique_ptr.... when this method goes out of scope, the pointer will delete
+   // we need to transfer the raw pointer into the shared_ptr so it doesn't get deleted
+   details.pStartDetails = std::move(GetTotalClosureJointFreeShrinkageStrainDetails(closureKey,intervalIdx,pgsTypes::Start));
+   details.pEndDetails   = std::move(GetTotalClosureJointFreeShrinkageStrainDetails(closureKey,intervalIdx,pgsTypes::End));
    return details;
 }
 
 INCREMENTALSHRINKAGEDETAILS CBridgeAgentImp::GetIncrementalDeckFreeShrinkageStrainDetails(IndexType castingRegionIdx, IntervalIndexType intervalIdx) const
 {
    INCREMENTALSHRINKAGEDETAILS details;
-   details.pStartDetails = GetTotalDeckFreeShrinkageStrainDetails(castingRegionIdx,intervalIdx,pgsTypes::Start);
-   details.pEndDetails   = GetTotalDeckFreeShrinkageStrainDetails(castingRegionIdx,intervalIdx,pgsTypes::End);
+   details.pStartDetails = std::move(GetTotalDeckFreeShrinkageStrainDetails(castingRegionIdx,intervalIdx,pgsTypes::Start));
+   details.pEndDetails   = std::move(GetTotalDeckFreeShrinkageStrainDetails(castingRegionIdx,intervalIdx,pgsTypes::End));
    return details;
 }
 
 INCREMENTALSHRINKAGEDETAILS CBridgeAgentImp::GetIncrementalRailingSystemFreeShrinakgeStrainDetails(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx) const
 {
    INCREMENTALSHRINKAGEDETAILS details;
-   details.pStartDetails = GetTotalRailingSystemFreeShrinakgeStrainDetails(orientation,intervalIdx,pgsTypes::Start);
-   details.pEndDetails   = GetTotalRailingSystemFreeShrinakgeStrainDetails(orientation,intervalIdx,pgsTypes::End);
+   details.pStartDetails = std::move(GetTotalRailingSystemFreeShrinakgeStrainDetails(orientation,intervalIdx,pgsTypes::Start));
+   details.pEndDetails   = std::move(GetTotalRailingSystemFreeShrinakgeStrainDetails(orientation,intervalIdx,pgsTypes::End));
    return details;
 }
 
 INCREMENTALSHRINKAGEDETAILS CBridgeAgentImp::GetIncrementalLongitudinalJointFreeShrinkageStrainDetails(IntervalIndexType intervalIdx) const
 {
    INCREMENTALSHRINKAGEDETAILS details;
-   details.pStartDetails = GetTotalLongitudinalJointFreeShrinkageStrainDetails(intervalIdx, pgsTypes::Start);
-   details.pEndDetails   = GetTotalLongitudinalJointFreeShrinkageStrainDetails(intervalIdx, pgsTypes::End);
+   details.pStartDetails = std::move(GetTotalLongitudinalJointFreeShrinkageStrainDetails(intervalIdx, pgsTypes::Start));
+   details.pEndDetails   = std::move(GetTotalLongitudinalJointFreeShrinkageStrainDetails(intervalIdx, pgsTypes::End));
    return details;
 }
 
@@ -13582,35 +13581,35 @@ Float64 CBridgeAgentImp::GetLongitudinalJointCreepCoefficient(IntervalIndexType 
    return GetLongitudinalJointCreepCoefficientDetails(loadingIntervalIdx, loadingTimeType, intervalIdx, timeType)->Ct;
 }
 
-std::shared_ptr<matConcreteBaseCreepDetails> CBridgeAgentImp::GetSegmentCreepCoefficientDetails(const CSegmentKey& segmentKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
+std::unique_ptr<WBFL::Materials::ConcreteBaseCreepDetails> CBridgeAgentImp::GetSegmentCreepCoefficientDetails(const CSegmentKey& segmentKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
 {
    Float64 loading_time = m_IntervalManager.GetTime(loadingIntervalIdx,loadingTimeType);
    Float64 time         = m_IntervalManager.GetTime(intervalIdx,timeType);
    return m_ConcreteManager.GetSegmentCreepCoefficientDetails(segmentKey,time,loading_time);
 }
 
-std::shared_ptr<matConcreteBaseCreepDetails> CBridgeAgentImp::GetClosureJointCreepCoefficientDetails(const CClosureKey& closureKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
+std::unique_ptr<WBFL::Materials::ConcreteBaseCreepDetails> CBridgeAgentImp::GetClosureJointCreepCoefficientDetails(const CClosureKey& closureKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
 {
    Float64 loading_time = m_IntervalManager.GetTime(loadingIntervalIdx,loadingTimeType);
    Float64 time = m_IntervalManager.GetTime(intervalIdx,timeType);
    return m_ConcreteManager.GetClosureJointCreepCoefficientDetails(closureKey,time,loading_time);
 }
 
-std::shared_ptr<matConcreteBaseCreepDetails> CBridgeAgentImp::GetDeckCreepCoefficientDetails(IndexType castingRegionIdx, IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
+std::unique_ptr<WBFL::Materials::ConcreteBaseCreepDetails> CBridgeAgentImp::GetDeckCreepCoefficientDetails(IndexType castingRegionIdx, IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
 {
    Float64 loading_time = m_IntervalManager.GetTime(loadingIntervalIdx,loadingTimeType);
    Float64 time = m_IntervalManager.GetTime(intervalIdx,timeType);
    return m_ConcreteManager.GetDeckCreepCoefficientDetails(castingRegionIdx,time,loading_time);
 }
 
-std::shared_ptr<matConcreteBaseCreepDetails> CBridgeAgentImp::GetRailingSystemCreepCoefficientDetails(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
+std::unique_ptr<WBFL::Materials::ConcreteBaseCreepDetails> CBridgeAgentImp::GetRailingSystemCreepCoefficientDetails(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
 {
    Float64 loading_time = m_IntervalManager.GetTime(loadingIntervalIdx,loadingTimeType);
    Float64 time = m_IntervalManager.GetTime(intervalIdx,timeType);
    return m_ConcreteManager.GetRailingSystemCreepCoefficientDetails(orientation,time,loading_time);
 }
 
-std::shared_ptr<matConcreteBaseCreepDetails> CBridgeAgentImp::GetLongitudinalJointCreepCoefficientDetails(IntervalIndexType loadingIntervalIdx, pgsTypes::IntervalTimeType loadingTimeType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType timeType) const
+std::unique_ptr<WBFL::Materials::ConcreteBaseCreepDetails> CBridgeAgentImp::GetLongitudinalJointCreepCoefficientDetails(IntervalIndexType loadingIntervalIdx, pgsTypes::IntervalTimeType loadingTimeType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType timeType) const
 {
    Float64 loading_time = m_IntervalManager.GetTime(loadingIntervalIdx, loadingTimeType);
    Float64 time = m_IntervalManager.GetTime(intervalIdx, timeType);
@@ -13677,7 +13676,7 @@ Float64 CBridgeAgentImp::GetSegmentShrinkageK2(const CSegmentKey& segmentKey) co
    return m_ConcreteManager.GetSegmentShrinkageK2(segmentKey);
 }
 
-const matConcreteBase* CBridgeAgentImp::GetSegmentConcrete(const CSegmentKey& segmentKey) const
+const std::unique_ptr<WBFL::Materials::ConcreteBase>& CBridgeAgentImp::GetSegmentConcrete(const CSegmentKey& segmentKey) const
 {
    return m_ConcreteManager.GetSegmentConcrete(segmentKey);
 }
@@ -13747,7 +13746,7 @@ Float64 CBridgeAgentImp::GetClosureJointShrinkageK2(const CClosureKey& closureKe
    return m_ConcreteManager.GetClosureJointShrinkageK2(closureKey);
 }
 
-const matConcreteBase* CBridgeAgentImp::GetClosureJointConcrete(const CClosureKey& closureKey) const
+const std::unique_ptr<WBFL::Materials::ConcreteBase>& CBridgeAgentImp::GetClosureJointConcrete(const CClosureKey& closureKey) const
 {
    return m_ConcreteManager.GetClosureJointConcrete(closureKey);
 }
@@ -13817,7 +13816,7 @@ Float64 CBridgeAgentImp::GetDeckShrinkageK2() const
    return m_ConcreteManager.GetDeckShrinkageK2();
 }
 
-const matConcreteBase* CBridgeAgentImp::GetDeckConcrete(IndexType castingRegionIdx) const
+const std::unique_ptr<WBFL::Materials::ConcreteBase>& CBridgeAgentImp::GetDeckConcrete(IndexType castingRegionIdx) const
 {
    return m_ConcreteManager.GetDeckConcrete(castingRegionIdx);
 }
@@ -13877,12 +13876,12 @@ Float64 CBridgeAgentImp::GetLongitudinalJointShrinkageK2() const
    return m_ConcreteManager.GetLongitudinalJointShrinkageK2();
 }
 
-const matConcreteBase* CBridgeAgentImp::GetLongitudinalJointConcrete() const
+const std::unique_ptr<WBFL::Materials::ConcreteBase>& CBridgeAgentImp::GetLongitudinalJointConcrete() const
 {
    return m_ConcreteManager.GetLongitudinalJointConcrete();
 }
 
-const matPsStrand* CBridgeAgentImp::GetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) const
+const WBFL::Materials::PsStrand* CBridgeAgentImp::GetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) const
 {
    GET_IFACE(ISegmentData,pSegmentData);
    return pSegmentData->GetStrandMaterial(segmentKey,strandType);
@@ -13900,7 +13899,7 @@ INCREMENTALRELAXATIONDETAILS CBridgeAgentImp::GetIncrementalStrandRelaxationDeta
    Float64 tStart = m_IntervalManager.GetTime(intervalIdx,pgsTypes::Start);
    Float64 tEnd   = m_IntervalManager.GetTime(intervalIdx,pgsTypes::End);
 
-   const matPsStrand* pStrand = GetStrandMaterial(segmentKey,strandType);
+   const auto* pStrand = GetStrandMaterial(segmentKey,strandType);
 
    if ( intervalIdx < stressStrandIntervalIdx || GetStrandCount(segmentKey,strandType) == 0 )
    {
@@ -13917,7 +13916,7 @@ INCREMENTALRELAXATIONDETAILS CBridgeAgentImp::GetIncrementalStrandRelaxationDeta
    return GetIncrementalRelaxationDetails(fpi,pStrand,tStart,tEnd,tStress);
 }
 
-const matPsStrand* CBridgeAgentImp::GetGirderTendonMaterial(const CGirderKey& girderKey) const
+const WBFL::Materials::PsStrand* CBridgeAgentImp::GetGirderTendonMaterial(const CGirderKey& girderKey) const
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CPTData* pPTData = pIBridgeDesc->GetPostTensioning(girderKey);
@@ -13936,7 +13935,7 @@ INCREMENTALRELAXATIONDETAILS CBridgeAgentImp::GetGirderTendonIncrementalRelaxati
    Float64 tStart  = m_IntervalManager.GetTime(intervalIdx,pgsTypes::Start);
    Float64 tEnd    = m_IntervalManager.GetTime(intervalIdx,pgsTypes::End);
 
-   const matPsStrand* pStrand = GetGirderTendonMaterial(girderKey);
+   const auto* pStrand = GetGirderTendonMaterial(girderKey);
 
    if ( intervalIdx < stressTendonIntervalIdx || GetTendonStrandCount(girderKey,ductIdx) == 0 )
    {
@@ -13952,7 +13951,7 @@ INCREMENTALRELAXATIONDETAILS CBridgeAgentImp::GetGirderTendonIncrementalRelaxati
    return GetIncrementalRelaxationDetails(fpi,pStrand,tStart,tEnd,tStress);
 }
 
-const matPsStrand* CBridgeAgentImp::GetSegmentTendonMaterial(const CSegmentKey& segmentKey) const
+const WBFL::Materials::PsStrand* CBridgeAgentImp::GetSegmentTendonMaterial(const CSegmentKey& segmentKey) const
 {
    GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
@@ -13971,7 +13970,7 @@ INCREMENTALRELAXATIONDETAILS CBridgeAgentImp::GetSegmentTendonIncrementalRelaxat
    Float64 tStart = m_IntervalManager.GetTime(intervalIdx, pgsTypes::Start);
    Float64 tEnd = m_IntervalManager.GetTime(intervalIdx, pgsTypes::End);
 
-   const matPsStrand* pStrand = GetSegmentTendonMaterial(segmentKey);
+   const auto* pStrand = GetSegmentTendonMaterial(segmentKey);
 
    if (intervalIdx < stressTendonIntervalIdx || GetTendonStrandCount(segmentKey, ductIdx) == 0)
    {
@@ -13993,13 +13992,13 @@ void CBridgeAgentImp::GetSegmentLongitudinalRebarProperties(const CSegmentKey& s
    GET_IFACE(ILongitudinalRebar,pLongRebar);
    const CLongitudinalRebarData* pLRD = pLongRebar->GetSegmentLongitudinalRebarData(segmentKey);
 
-   const matRebar* pRebar = lrfdRebarPool::GetInstance()->GetRebar(pLRD->BarType,pLRD->BarGrade,matRebar::bs3);
+   const auto* pRebar = lrfdRebarPool::GetInstance()->GetRebar(pLRD->BarType,pLRD->BarGrade,WBFL::Materials::Rebar::Size::bs3);
    *pE  = pRebar->GetE();
    *pFy = pRebar->GetYieldStrength();
    *pFu = pRebar->GetUltimateStrength();
 }
 
-void CBridgeAgentImp::GetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey,matRebar::Type* pType,matRebar::Grade* pGrade) const
+void CBridgeAgentImp::GetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey,WBFL::Materials::Rebar::Type* pType,WBFL::Materials::Rebar::Grade* pGrade) const
 {
    GET_IFACE(ILongitudinalRebar,pLongRebar);
    const CLongitudinalRebarData* pLRD = pLongRebar->GetSegmentLongitudinalRebarData(segmentKey);
@@ -14018,13 +14017,13 @@ void CBridgeAgentImp::GetClosureJointLongitudinalRebarProperties(const CClosureK
    GET_IFACE(ILongitudinalRebar,pLongRebar);
    const CLongitudinalRebarData* pLRD = pLongRebar->GetClosureJointLongitudinalRebarData(closureKey);
 
-   const matRebar* pRebar = lrfdRebarPool::GetInstance()->GetRebar(pLRD->BarType,pLRD->BarGrade,matRebar::bs3);
+   const auto* pRebar = lrfdRebarPool::GetInstance()->GetRebar(pLRD->BarType,pLRD->BarGrade,WBFL::Materials::Rebar::Size::bs3);
    *pE  = pRebar->GetE();
    *pFy = pRebar->GetYieldStrength();
    *pFu = pRebar->GetUltimateStrength();
 }
 
-void CBridgeAgentImp::GetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type* pType,matRebar::Grade* pGrade) const
+void CBridgeAgentImp::GetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,WBFL::Materials::Rebar::Type* pType,WBFL::Materials::Rebar::Grade* pGrade) const
 {
    GET_IFACE(ILongitudinalRebar,pLongRebar);
    const CLongitudinalRebarData* pLRD = pLongRebar->GetClosureJointLongitudinalRebarData(closureKey);
@@ -14042,14 +14041,14 @@ void CBridgeAgentImp::GetSegmentTransverseRebarProperties(const CSegmentKey& seg
 {
 	GET_IFACE(IShear,pShear);
 	const CShearData2* pShearData = pShear->GetSegmentShearData(segmentKey);
-   const matRebar* pRebar = lrfdRebarPool::GetInstance()->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,matRebar::bs3);
+   const auto* pRebar = lrfdRebarPool::GetInstance()->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,WBFL::Materials::Rebar::Size::bs3);
    *pE  = pRebar->GetE();
    *pFy = pRebar->GetYieldStrength();
    *pFu = pRebar->GetUltimateStrength();
 
 }
 
-void CBridgeAgentImp::GetSegmentTransverseRebarMaterial(const CSegmentKey& segmentKey,matRebar::Type* pType,matRebar::Grade* pGrade) const
+void CBridgeAgentImp::GetSegmentTransverseRebarMaterial(const CSegmentKey& segmentKey,WBFL::Materials::Rebar::Type* pType,WBFL::Materials::Rebar::Grade* pGrade) const
 {
 	GET_IFACE(IShear,pShear);
 	const CShearData2* pShearData = pShear->GetSegmentShearData(segmentKey);
@@ -14067,14 +14066,14 @@ void CBridgeAgentImp::GetClosureJointTransverseRebarProperties(const CClosureKey
 {
 	GET_IFACE(IShear,pShear);
 	const CShearData2* pShearData = pShear->GetClosureJointShearData(closureKey);
-   const matRebar* pRebar = lrfdRebarPool::GetInstance()->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,matRebar::bs3);
+   const auto* pRebar = lrfdRebarPool::GetInstance()->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,WBFL::Materials::Rebar::Size::bs3);
    *pE  = pRebar->GetE();
    *pFy = pRebar->GetYieldStrength();
    *pFu = pRebar->GetUltimateStrength();
 
 }
 
-void CBridgeAgentImp::GetClosureJointTransverseRebarMaterial(const CClosureKey& closureKey,matRebar::Type* pType,matRebar::Grade* pGrade) const
+void CBridgeAgentImp::GetClosureJointTransverseRebarMaterial(const CClosureKey& closureKey,WBFL::Materials::Rebar::Type* pType,WBFL::Materials::Rebar::Grade* pGrade) const
 {
 	GET_IFACE(IShear,pShear);
 	const CShearData2* pShearData = pShear->GetClosureJointShearData(closureKey);
@@ -14092,7 +14091,7 @@ void CBridgeAgentImp::GetDeckRebarProperties(Float64* pE,Float64 *pFy,Float64* p
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CDeckDescription2* pDeck = pIBridgeDesc->GetDeckDescription();
-   const matRebar* pRebar = lrfdRebarPool::GetInstance()->GetRebar(pDeck->DeckRebarData.TopRebarType,pDeck->DeckRebarData.TopRebarGrade,matRebar::bs3);
+   const auto* pRebar = lrfdRebarPool::GetInstance()->GetRebar(pDeck->DeckRebarData.TopRebarType,pDeck->DeckRebarData.TopRebarGrade,WBFL::Materials::Rebar::Size::bs3);
    *pE  = pRebar->GetE();
    *pFy = pRebar->GetYieldStrength();
    *pFu = pRebar->GetUltimateStrength();
@@ -14105,7 +14104,7 @@ std::_tstring CBridgeAgentImp::GetDeckRebarName() const
    return lrfdRebarPool::GetMaterialName(pDeck->DeckRebarData.TopRebarType,pDeck->DeckRebarData.TopRebarGrade);
 }
 
-void CBridgeAgentImp::GetDeckRebarMaterial(matRebar::Type* pType,matRebar::Grade* pGrade) const
+void CBridgeAgentImp::GetDeckRebarMaterial(WBFL::Materials::Rebar::Type* pType,WBFL::Materials::Rebar::Grade* pGrade) const
 {
    // top and bottom mat use the same material
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
@@ -14293,7 +14292,7 @@ Float64 CBridgeAgentImp::GetPPRTopHalf(const pgsPointOfInterest& poi,const GDRCO
 
    Float64 Aps = GetApsTopHalf(poi,dlaNone,pConfig);
 
-   const matPsStrand* pstrand = GetStrandMaterial(segmentKey,pgsTypes::Permanent);
+   const auto* pstrand = GetStrandMaterial(segmentKey,pgsTypes::Permanent);
    ATLASSERT(pstrand!=0);
    Float64 fps = pstrand->GetYieldStrength();
    ATLASSERT(fps>0.0);
@@ -14327,7 +14326,7 @@ Float64 CBridgeAgentImp::GetPPRBottomHalf(const pgsPointOfInterest& poi,const GD
 
    Float64 Aps = GetApsBottomHalf(poi,dlaNone,pConfig);
 
-   const matPsStrand* pStrand = GetStrandMaterial(segmentKey,pgsTypes::Straight);
+   const auto* pStrand = GetStrandMaterial(segmentKey,pgsTypes::Straight);
    ATLASSERT(pStrand);
    Float64 fpy = pStrand->GetYieldStrength();
    ATLASSERT(0.0 < fpy);
@@ -14393,7 +14392,7 @@ REBARDEVLENGTHDETAILS CBridgeAgentImp::GetRebarDevelopmentLengthDetails(const CS
    CComBSTR name;
    rebar->get_Name(&name);
 
-   matRebar::Size size = lrfdRebarPool::GetBarSize(OLE2CT(name));
+   WBFL::Materials::Rebar::Size size = lrfdRebarPool::GetBarSize(OLE2CT(name));
 
    Float64 Ab, db, fy;
    rebar->get_NominalArea(&Ab);
@@ -14411,7 +14410,7 @@ REBARDEVLENGTHDETAILS CBridgeAgentImp::GetRebarDevelopmentLengthDetails(const CS
    }
 
    // density is used to compute lambda factor
-   return lrfdRebar::GetRebarDevelopmentLengthDetails(size, Ab, db, fy, (matConcrete::Type)type, fc, isFct, Fct, density);
+   return lrfdRebar::GetRebarDevelopmentLengthDetails(size, Ab, db, fy, (WBFL::Materials::ConcreteType)type, fc, isFct, Fct, density);
 }
 
 Float64 CBridgeAgentImp::GetCoverTopMat() const
@@ -14678,7 +14677,7 @@ void CBridgeAgentImp::GetPrimaryZoneBounds(const CSegmentKey& segmentKey, ZoneIn
    }
 }
 
-void CBridgeAgentImp::GetPrimaryVertStirrupBarInfo(const CSegmentKey& segmentKey,ZoneIndexType zone, matRebar::Size* pSize, Float64* pCount, Float64* pSpacing) const
+void CBridgeAgentImp::GetPrimaryVertStirrupBarInfo(const CSegmentKey& segmentKey,ZoneIndexType zone, WBFL::Materials::Rebar::Size* pSize, Float64* pCount, Float64* pSpacing) const
 {
    const CShearData2* pShearData = GetShearData(segmentKey);
    ZoneIndexType idx = GetPrimaryZoneIndex(segmentKey,pShearData, zone);
@@ -14698,7 +14697,7 @@ Float64 CBridgeAgentImp::GetPrimaryHorizInterfaceBarCount(const CSegmentKey& seg
    return rzone.nHorzInterfaceBars;
 }
 
-matRebar::Size CBridgeAgentImp::GetPrimaryConfinementBarSize(const CSegmentKey& segmentKey,ZoneIndexType zone) const
+WBFL::Materials::Rebar::Size CBridgeAgentImp::GetPrimaryConfinementBarSize(const CSegmentKey& segmentKey,ZoneIndexType zone) const
 {
    const CShearData2* pShearData = GetShearData(segmentKey);
    ZoneIndexType idx = GetPrimaryZoneIndex(segmentKey,pShearData, zone);
@@ -14857,7 +14856,7 @@ void CBridgeAgentImp::GetHorizInterfaceZoneBounds(const CSegmentKey& segmentKey,
    }
 }
 
-void CBridgeAgentImp::GetHorizInterfaceBarInfo(const CSegmentKey& segmentKey,ZoneIndexType zone, matRebar::Size* pSize, Float64* pCount, Float64* pSpacing) const
+void CBridgeAgentImp::GetHorizInterfaceBarInfo(const CSegmentKey& segmentKey,ZoneIndexType zone, WBFL::Materials::Rebar::Size* pSize, Float64* pCount, Float64* pSpacing) const
 {
    const CShearData2* pShearData = GetShearData(segmentKey);
    ZoneIndexType idx = GetHorizInterfaceZoneIndex(segmentKey,pShearData,zone);
@@ -14868,11 +14867,11 @@ void CBridgeAgentImp::GetHorizInterfaceBarInfo(const CSegmentKey& segmentKey,Zon
    *pSpacing = rdata.BarSpacing;
 }
 
-void CBridgeAgentImp::GetAddSplittingBarInfo(const CSegmentKey& segmentKey, matRebar::Size* pSize, Float64* pZoneLength, Float64* pnBars, Float64* pSpacing) const
+void CBridgeAgentImp::GetAddSplittingBarInfo(const CSegmentKey& segmentKey, WBFL::Materials::Rebar::Size* pSize, Float64* pZoneLength, Float64* pnBars, Float64* pSpacing) const
 {
    const CShearData2* pShearData = GetShearData(segmentKey);
    *pSize = pShearData->SplittingBarSize;
-   if (*pSize!=matRebar::bsNone)
+   if (*pSize!=WBFL::Materials::Rebar::Size::bsNone)
    {
       *pZoneLength = pShearData->SplittingZoneLength;
       *pnBars = pShearData->nSplittingBars;
@@ -14886,11 +14885,11 @@ void CBridgeAgentImp::GetAddSplittingBarInfo(const CSegmentKey& segmentKey, matR
    }
 }
 
-void CBridgeAgentImp::GetAddConfinementBarInfo(const CSegmentKey& segmentKey, matRebar::Size* pSize, Float64* pZoneLength, Float64* pSpacing) const
+void CBridgeAgentImp::GetAddConfinementBarInfo(const CSegmentKey& segmentKey, WBFL::Materials::Rebar::Size* pSize, Float64* pZoneLength, Float64* pSpacing) const
 {
    const CShearData2* pShearData = GetShearData(segmentKey);
    *pSize = pShearData->ConfinementBarSize;
-   if (*pSize != matRebar::bsNone)
+   if (*pSize != WBFL::Materials::Rebar::Size::bsNone)
    {
       *pZoneLength = pShearData->ConfinementZoneLength;
       *pSpacing = pShearData->ConfinementBarSpacing;
@@ -14913,11 +14912,11 @@ Float64 CBridgeAgentImp::GetVertStirrupBarNominalDiameter(const pgsPointOfIntere
       return 0.0;
    }
    
-   matRebar::Size barSize = pShearZoneData->VertBarSize;
-   if ( barSize!=matRebar::bsNone && !IsZero(pShearZoneData->BarSpacing) )
+   WBFL::Materials::Rebar::Size barSize = pShearZoneData->VertBarSize;
+   if ( barSize!=WBFL::Materials::Rebar::Size::bsNone && !IsZero(pShearZoneData->BarSpacing) )
    {
       lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
-      const matRebar* pRebar = prp->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,barSize);
+      const auto* pRebar = prp->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,barSize);
 
       return (pRebar ? pRebar->GetNominalDimension() : 0.0);
    }
@@ -14932,7 +14931,7 @@ Float64 CBridgeAgentImp::GetAlpha(const pgsPointOfInterest& poi) const
    return WBFL::Units::ConvertToSysUnits(90.,WBFL::Units::Measure::Degree);
 }
 
-Float64 CBridgeAgentImp::GetVertStirrupAvs(const pgsPointOfInterest& poi, matRebar::Size* pSize, Float64* pSingleBarArea, Float64* pCount, Float64* pSpacing) const
+Float64 CBridgeAgentImp::GetVertStirrupAvs(const pgsPointOfInterest& poi, WBFL::Materials::Rebar::Size* pSize, Float64* pSingleBarArea, Float64* pCount, Float64* pSpacing) const
 {
    Float64 avs(0.0);
    Float64 Abar(0.0);
@@ -14954,18 +14953,18 @@ Float64 CBridgeAgentImp::GetVertStirrupAvs(const pgsPointOfInterest& poi, matReb
    const CShearZoneData2* pShearZoneData = GetPrimaryShearZoneDataAtPoi(poi, pShearData);
    if (pShearZoneData == nullptr)
    {
-      *pSize = matRebar::bsNone;
+      *pSize = WBFL::Materials::Rebar::Size::bsNone;
       *pSingleBarArea = 0.0;
       *pCount = 0;
       *pSpacing = Float64_Max;
       return 0.0;
    }
 
-   matRebar::Size barSize = pShearZoneData->VertBarSize;
-   if ( barSize != matRebar::bsNone && !IsZero(pShearZoneData->BarSpacing) )
+   WBFL::Materials::Rebar::Size barSize = pShearZoneData->VertBarSize;
+   if ( barSize != WBFL::Materials::Rebar::Size::bsNone && !IsZero(pShearZoneData->BarSpacing) )
    {
       lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
-      const matRebar* pBar = prp->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,barSize);
+      const auto* pBar = prp->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,barSize);
 
       Abar    = pBar->GetNominalArea();
       nBars   = pShearZoneData->nVertBars;
@@ -14996,7 +14995,7 @@ bool CBridgeAgentImp::DoStirrupsEngageDeck(const CSegmentKey& segmentKey) const
    CShearData2::ShearZoneConstIterator szIterEnd(pShearData->ShearZones.end());
    for ( ; szIter != szIterEnd; szIter++ )
    {
-      if (szIter->VertBarSize != matRebar::bsNone && 0 < szIter->nHorzInterfaceBars)
+      if (szIter->VertBarSize != WBFL::Materials::Rebar::Size::bsNone && 0 < szIter->nHorzInterfaceBars)
       {
          return true;
       }
@@ -15006,7 +15005,7 @@ bool CBridgeAgentImp::DoStirrupsEngageDeck(const CSegmentKey& segmentKey) const
    CShearData2::HorizontalInterfaceZoneConstIterator hiIterEnd(pShearData->HorizontalInterfaceZones.end());
    for ( ; hiIter != hiIterEnd; hiIter++ )
    {
-      if (hiIter->BarSize != matRebar::bsNone)
+      if (hiIter->BarSize != WBFL::Materials::Rebar::Size::bsNone)
       {
          return true;
       }
@@ -15029,7 +15028,7 @@ bool CBridgeAgentImp::DoAllPrimaryStirrupsEngageDeck(const CSegmentKey& segmentK
       for (CShearData2::ShearZoneConstIterator its = pShearData->ShearZones.begin(); its != pShearData->ShearZones.end(); its++)
       {
          // Make sure there are vertical bars, and at least as many horiz int bars
-         if (its->VertBarSize==matRebar::bsNone ||
+         if (its->VertBarSize==WBFL::Materials::Rebar::Size::bsNone ||
              its->nVertBars <= 0                ||
              its->nHorzInterfaceBars < its->nVertBars)
          {
@@ -15048,7 +15047,7 @@ Float64 CBridgeAgentImp::GetPrimaryHorizInterfaceBarSpacing(const pgsPointOfInte
 
    // Horizontal legs in primary zones
    const CShearZoneData2* pShearZoneData = GetPrimaryShearZoneDataAtPoi(poi, pShearData);
-   if (pShearZoneData != nullptr && pShearZoneData->VertBarSize != matRebar::bsNone && 0.0 < pShearZoneData->nHorzInterfaceBars)
+   if (pShearZoneData != nullptr && pShearZoneData->VertBarSize != WBFL::Materials::Rebar::Size::bsNone && 0.0 < pShearZoneData->nHorzInterfaceBars)
    {
       spacing = pShearZoneData->BarSpacing;
    }
@@ -15064,7 +15063,7 @@ Float64 CBridgeAgentImp::GetPrimaryHorizInterfaceBarCount(const pgsPointOfIntere
 
    // Horizontal legs in primary zones
    const CShearZoneData2* pShearZoneData = GetPrimaryShearZoneDataAtPoi(poi, pShearData);
-   if (pShearZoneData != nullptr && pShearZoneData->VertBarSize != matRebar::bsNone)
+   if (pShearZoneData != nullptr && pShearZoneData->VertBarSize != WBFL::Materials::Rebar::Size::bsNone)
    {
       cnt = pShearZoneData->nHorzInterfaceBars;
    }
@@ -15080,7 +15079,7 @@ Float64 CBridgeAgentImp::GetAdditionalHorizInterfaceBarSpacing(const pgsPointOfI
 
    // Additional horizontal bars
    const CHorizontalInterfaceZoneData* pHIZoneData = GetHorizInterfaceShearZoneDataAtPoi( poi, pShearData );
-   if ( pHIZoneData->BarSize != matRebar::bsNone )
+   if ( pHIZoneData->BarSize != WBFL::Materials::Rebar::Size::bsNone )
    {
       spacing = pHIZoneData->BarSpacing;
    }
@@ -15096,7 +15095,7 @@ Float64 CBridgeAgentImp::GetAdditionalHorizInterfaceBarCount(const pgsPointOfInt
 
    // Additional horizontal bars
    const CHorizontalInterfaceZoneData* pHIZoneData = GetHorizInterfaceShearZoneDataAtPoi( poi,pShearData );
-   if ( pHIZoneData->BarSize != matRebar::bsNone )
+   if ( pHIZoneData->BarSize != WBFL::Materials::Rebar::Size::bsNone )
    {
       cnt = pHIZoneData->nBars;
    }
@@ -15104,7 +15103,7 @@ Float64 CBridgeAgentImp::GetAdditionalHorizInterfaceBarCount(const pgsPointOfInt
    return cnt;
 }
 
-Float64 CBridgeAgentImp::GetPrimaryHorizInterfaceAvs(const pgsPointOfInterest& poi, matRebar::Size* pSize, Float64* pSingleBarArea, Float64* pCount, Float64* pSpacing) const
+Float64 CBridgeAgentImp::GetPrimaryHorizInterfaceAvs(const pgsPointOfInterest& poi, WBFL::Materials::Rebar::Size* pSize, Float64* pSingleBarArea, Float64* pCount, Float64* pSpacing) const
 {
    Float64 avs(0.0);
    Float64 Abar(0.0);
@@ -15117,19 +15116,19 @@ Float64 CBridgeAgentImp::GetPrimaryHorizInterfaceAvs(const pgsPointOfInterest& p
    const CShearZoneData2* pShearZoneData = GetPrimaryShearZoneDataAtPoi(poi,pShearData);
    if (pShearZoneData == nullptr)
    {
-      *pSize = matRebar::bsNone;
+      *pSize = WBFL::Materials::Rebar::Size::bsNone;
       *pSingleBarArea = 0.0;
       *pCount = 0;
       *pSpacing = Float64_Max;
       return 0.0;
    }
 
-   matRebar::Size barSize = pShearZoneData->VertBarSize;
+   WBFL::Materials::Rebar::Size barSize = pShearZoneData->VertBarSize;
 
-   if ( barSize != matRebar::bsNone && !IsZero(pShearZoneData->BarSpacing) && 0.0 < pShearZoneData->nHorzInterfaceBars )
+   if ( barSize != WBFL::Materials::Rebar::Size::bsNone && !IsZero(pShearZoneData->BarSpacing) && 0.0 < pShearZoneData->nHorzInterfaceBars )
    {
       lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
-      const matRebar* pbar = prp->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,barSize);
+      const auto* pbar = prp->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,barSize);
 
       Abar    = pbar->GetNominalArea();
       nBars   = pShearZoneData->nHorzInterfaceBars;
@@ -15149,7 +15148,7 @@ Float64 CBridgeAgentImp::GetPrimaryHorizInterfaceAvs(const pgsPointOfInterest& p
    return avs;
 }
 
-Float64 CBridgeAgentImp::GetAdditionalHorizInterfaceAvs(const pgsPointOfInterest& poi, matRebar::Size* pSize, Float64* pSingleBarArea, Float64* pCount, Float64* pSpacing) const
+Float64 CBridgeAgentImp::GetAdditionalHorizInterfaceAvs(const pgsPointOfInterest& poi, WBFL::Materials::Rebar::Size* pSize, Float64* pSingleBarArea, Float64* pCount, Float64* pSpacing) const
 {
    Float64 avs(0.0);
    Float64 Abar(0.0);
@@ -15160,12 +15159,12 @@ Float64 CBridgeAgentImp::GetAdditionalHorizInterfaceAvs(const pgsPointOfInterest
    
    const CHorizontalInterfaceZoneData* pHIZoneData = GetHorizInterfaceShearZoneDataAtPoi( poi, pShearData );
 
-   matRebar::Size barSize = pHIZoneData->BarSize;
+   WBFL::Materials::Rebar::Size barSize = pHIZoneData->BarSize;
 
-   if ( barSize != matRebar::bsNone && !IsZero(pHIZoneData->BarSpacing) && 0.0 < pHIZoneData->nBars )
+   if ( barSize != WBFL::Materials::Rebar::Size::bsNone && !IsZero(pHIZoneData->BarSpacing) && 0.0 < pHIZoneData->nBars )
    {
       lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
-      const matRebar* pbar = prp->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,barSize);
+      const auto* pbar = prp->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,barSize);
 
       Abar    = pbar->GetNominalArea();
       nBars   = pHIZoneData->nBars;
@@ -15200,7 +15199,7 @@ Float64 CBridgeAgentImp::GetSplittingAv(const CSegmentKey& segmentKey,Float64 st
    }
 
    // Component from additional splitting bars
-   if (pShearData->SplittingBarSize != matRebar::bsNone && pShearData->nSplittingBars)
+   if (pShearData->SplittingBarSize != WBFL::Materials::Rebar::Size::bsNone && pShearData->nSplittingBars)
    {
       Float64 spacing = pShearData->SplittingBarSpacing;
       Float64 length = 0.0;
@@ -15233,7 +15232,7 @@ Float64 CBridgeAgentImp::GetSplittingAv(const CSegmentKey& segmentKey,Float64 st
          {
             // We have bars in region. multiply av/s * length
             lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
-            const matRebar* pbar = prp->GetRebar(pShearData->ShearBarType, pShearData->ShearBarGrade, pShearData->SplittingBarSize);
+            const auto* pbar = prp->GetRebar(pShearData->ShearBarType, pShearData->ShearBarGrade, pShearData->SplittingBarSize);
 
             Float64 Abar = pbar->GetNominalArea();
             Float64 avs  = pShearData->nSplittingBars * Abar / spacing;
@@ -15308,11 +15307,11 @@ Float64 CBridgeAgentImp::GetPrimarySplittingAv(const CSegmentKey& segmentKey,Flo
 
       const CShearZoneData2& shearZoneData = pShearData->ShearZones[idx];
 
-      matRebar::Size barSize = shearZoneData.VertBarSize; // splitting is same as vert bars
-      if ( barSize != matRebar::bsNone && !IsZero(shearZoneData.BarSpacing) )
+      WBFL::Materials::Rebar::Size barSize = shearZoneData.VertBarSize; // splitting is same as vert bars
+      if ( barSize != WBFL::Materials::Rebar::Size::bsNone && !IsZero(shearZoneData.BarSpacing) )
       {
          lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
-         const matRebar* pbar = prp->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,barSize);
+         const auto* pbar = prp->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,barSize);
 
          Float64 Abar   = pbar->GetNominalArea();
 
@@ -15327,12 +15326,12 @@ Float64 CBridgeAgentImp::GetPrimarySplittingAv(const CSegmentKey& segmentKey,Flo
    return Av;
 }
 
-void CBridgeAgentImp::GetStartConfinementBarInfo(const CSegmentKey& segmentKey, Float64 requiredZoneLength, matRebar::Size* pSize, Float64* pProvidedZoneLength, Float64* pSpacing) const
+void CBridgeAgentImp::GetStartConfinementBarInfo(const CSegmentKey& segmentKey, Float64 requiredZoneLength, WBFL::Materials::Rebar::Size* pSize, Float64* pProvidedZoneLength, Float64* pSpacing) const
 {
    ZoneIndexType nbrZones = GetPrimaryZoneCount(segmentKey);
    if (nbrZones == 0)
    {
-      *pSize = matRebar::bsNone;
+      *pSize = WBFL::Materials::Rebar::Size::bsNone;
       *pProvidedZoneLength = 0.0;
       *pSpacing = Float64_Max;
       return;
@@ -15342,7 +15341,7 @@ void CBridgeAgentImp::GetStartConfinementBarInfo(const CSegmentKey& segmentKey, 
 
    // First get data from primary zones - use min bar size and max spacing from zones in required region
    Float64 primSpc(-1), primZonL(-1);
-   matRebar::Size primSize(matRebar::bsNone);
+   WBFL::Materials::Rebar::Size primSize(WBFL::Materials::Rebar::Size::bsNone);
 
    Float64 ezloc;
 
@@ -15356,7 +15355,7 @@ void CBridgeAgentImp::GetStartConfinementBarInfo(const CSegmentKey& segmentKey, 
 
       const CShearZoneData2& shearZoneData = pShearData->ShearZones[idx];
 
-      if (shearZoneData.ConfinementBarSize != matRebar::bsNone)
+      if (shearZoneData.ConfinementBarSize != WBFL::Materials::Rebar::Size::bsNone)
       {
          primSize = Min(primSize, shearZoneData.ConfinementBarSize);
          primSpc  = Max(primSpc,  shearZoneData.BarSpacing);
@@ -15372,7 +15371,7 @@ void CBridgeAgentImp::GetStartConfinementBarInfo(const CSegmentKey& segmentKey, 
 
    // Next get additional confinement bar info
    Float64 addlSpc, addlZonL;
-   matRebar::Size addlSize;
+   WBFL::Materials::Rebar::Size addlSize;
    GetAddConfinementBarInfo(segmentKey, &addlSize, &addlZonL, &addlSpc);
 
    // Use either primary bars or additional bars. Choose by which has addequate zone length, smallest spacing, largest bars
@@ -15381,12 +15380,12 @@ void CBridgeAgentImp::GetStartConfinementBarInfo(const CSegmentKey& segmentKey, 
 }
 
 
-void CBridgeAgentImp::GetEndConfinementBarInfo( const CSegmentKey& segmentKey, Float64 requiredZoneLength, matRebar::Size* pSize, Float64* pProvidedZoneLength, Float64* pSpacing) const
+void CBridgeAgentImp::GetEndConfinementBarInfo( const CSegmentKey& segmentKey, Float64 requiredZoneLength, WBFL::Materials::Rebar::Size* pSize, Float64* pProvidedZoneLength, Float64* pSpacing) const
 {
    ZoneIndexType nbrZones = GetPrimaryZoneCount(segmentKey);
    if (nbrZones == 0)
    {
-      *pSize = matRebar::bsNone;
+      *pSize = WBFL::Materials::Rebar::Size::bsNone;
       *pProvidedZoneLength = 0.0;
       *pSpacing = Float64_Max;
       return;
@@ -15398,7 +15397,7 @@ void CBridgeAgentImp::GetEndConfinementBarInfo( const CSegmentKey& segmentKey, F
 
    // First get data from primary zones - use min bar size and max spacing from zones in required region
    Float64 primSpc(-1), primZonL(-1);
-   matRebar::Size primSize(matRebar::bsNone);
+   WBFL::Materials::Rebar::Size primSize(WBFL::Materials::Rebar::Size::bsNone);
 
    Float64 ezloc;
    // walk from right to left on girder
@@ -15413,7 +15412,7 @@ void CBridgeAgentImp::GetEndConfinementBarInfo( const CSegmentKey& segmentKey, F
 
       const CShearZoneData2* pShearZoneData = &pShearData->ShearZones[idx];
 
-      if (pShearZoneData->ConfinementBarSize != matRebar::bsNone)
+      if (pShearZoneData->ConfinementBarSize != WBFL::Materials::Rebar::Size::bsNone)
       {
          primSize = Min(primSize, pShearZoneData->ConfinementBarSize);
          primSpc  = Max(primSpc, pShearZoneData->BarSpacing);
@@ -15429,7 +15428,7 @@ void CBridgeAgentImp::GetEndConfinementBarInfo( const CSegmentKey& segmentKey, F
 
    // Next get additional confinement bar info
    Float64 addlSpc, addlZonL;
-   matRebar::Size addlSize;
+   WBFL::Materials::Rebar::Size addlSize;
    GetAddConfinementBarInfo(segmentKey, &addlSize, &addlZonL, &addlSpc);
 
    // Use either primary bars or additional bars. Choose by which has addequate zone length, smallest spacing, largest bars
@@ -15460,12 +15459,12 @@ bool CBridgeAgentImp::AreStirrupZoneLengthsCombatible(const CGirderKey& girderKe
          GetPrimaryZoneBounds(segmentKey, zoneIdx, &zoneStart, &zoneEnd);
          Float64 zoneLength = zoneEnd-zoneStart;
 
-         matRebar::Size barSize;
+         WBFL::Materials::Rebar::Size barSize;
          Float64 spacing;
          Float64 nStirrups;
          GetPrimaryVertStirrupBarInfo(segmentKey,zoneIdx,&barSize,&nStirrups,&spacing);
 
-         if (barSize != matRebar::bsNone && IsGT(0.0,spacing))
+         if (barSize != WBFL::Materials::Rebar::Size::bsNone && IsGT(0.0,spacing))
          {
             // If spacings fit within 1%, then pass. Otherwise fail
             Float64 nFSpaces = zoneLength / spacing;
@@ -16878,7 +16877,7 @@ Float64 CBridgeAgentImp::GetStrandArea(const pgsPointOfInterest& poi,IntervalInd
    {
       auto strand_count = GetStrandCount(poi, intervalIdx, type, pConfig);
 
-      const matPsStrand* pStrand = GetStrandMaterial(segmentKey, type);
+      const auto* pStrand = GetStrandMaterial(segmentKey, type);
       Float64 aps = pStrand->GetNominalArea();
       Aps += aps*strand_count.first;
    }
@@ -16949,8 +16948,8 @@ Float64 CBridgeAgentImp::GetJackingStress(const CSegmentKey& segmentKey, pgsType
       StrandIndexType Nh = GetStrandCount(segmentKey, pgsTypes::Harped, pConfig);
 
       GET_IFACE(ISegmentData, pSegmentData);
-      const matPsStrand* pStraightStrand = pSegmentData->GetStrandMaterial(segmentKey, pgsTypes::Straight);
-      const matPsStrand* pHarpedStrand = pSegmentData->GetStrandMaterial(segmentKey, pgsTypes::Harped);
+      const auto* pStraightStrand = pSegmentData->GetStrandMaterial(segmentKey, pgsTypes::Straight);
+      const auto* pHarpedStrand = pSegmentData->GetStrandMaterial(segmentKey, pgsTypes::Harped);
       Float64 aps_s = pStraightStrand->GetNominalArea();
       Float64 aps_h = pHarpedStrand->GetNominalArea();
 
@@ -16964,7 +16963,7 @@ Float64 CBridgeAgentImp::GetJackingStress(const CSegmentKey& segmentKey, pgsType
       Float64 Pj = GetPjack(segmentKey, strandType, pConfig);
       StrandIndexType N = GetStrandCount(segmentKey, strandType, pConfig);
       GET_IFACE(ISegmentData, pSegmentData);
-      const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(segmentKey, strandType);
+      const auto* pStrand = pSegmentData->GetStrandMaterial(segmentKey, strandType);
       Float64 aps = pStrand->GetNominalArea();
       Float64 Aps = aps*N;
       fpj = IsZero(Aps) ? 0.0 : Pj / Aps;
@@ -27309,10 +27308,10 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
    IntervalIndexType liftingIntervalIdx = m_IntervalManager.GetLiftingInterval(segmentKey);
    IntervalIndexType tendonStressingIntervalIdx = m_IntervalManager.GetStressSegmentTendonInterval(segmentKey);
 
-   matConcreteEx concrete;
+   WBFL::Materials::Concrete concrete;
    if ( bUseConfig && !handlingConfig.bIgnoreGirderConfig )
    {
-      concrete.SetType((matConcrete::Type)handlingConfig.GdrConfig.ConcType);
+      concrete.SetType((WBFL::Materials::ConcreteType)handlingConfig.GdrConfig.ConcType);
       concrete.SetFc(handlingConfig.GdrConfig.fci);
       if (handlingConfig.GdrConfig.bUserEci )
       {
@@ -27328,7 +27327,7 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
    }
    else
    {
-      concrete.SetType((matConcrete::Type)GetSegmentConcreteType(segmentKey));
+      concrete.SetType((WBFL::Materials::ConcreteType)GetSegmentConcreteType(segmentKey));
       concrete.SetFc(GetSegmentFc(segmentKey,intervalIdx));
       concrete.SetE(GetSegmentEc(segmentKey,intervalIdx));
    }
@@ -27604,10 +27603,10 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
    IntervalIndexType haulingIntervalIdx = m_IntervalManager.GetHaulingInterval(segmentKey);
    IntervalIndexType tendonStressingIntervalIdx = m_IntervalManager.GetStressSegmentTendonInterval(segmentKey);
 
-   matConcreteEx concrete;
+   WBFL::Materials::Concrete concrete;
    if ( bUseConfig && !handlingConfig.bIgnoreGirderConfig )
    {
-      concrete.SetType((matConcrete::Type)handlingConfig.GdrConfig.ConcType);
+      concrete.SetType((WBFL::Materials::ConcreteType)handlingConfig.GdrConfig.ConcType);
       concrete.SetFc(handlingConfig.GdrConfig.fc);
       if (handlingConfig.GdrConfig.bUserEci )
       {
@@ -27623,7 +27622,7 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
    }
    else
    {
-      concrete.SetType((matConcrete::Type)GetSegmentConcreteType(segmentKey));
+      concrete.SetType((WBFL::Materials::ConcreteType)GetSegmentConcreteType(segmentKey));
       concrete.SetFc(GetSegmentFc(segmentKey,intervalIdx));
       concrete.SetE(GetSegmentEc(segmentKey,intervalIdx));
    }
@@ -32003,7 +32002,7 @@ void CBridgeAgentImp::LayoutDeckRebar(const CDeckDescription2* pDeck,IBridgeDeck
    rebar_layout->Add(deck_rebar_layout_item);
 
    // Top Mat - Bars
-   if ( rebar_data.TopRebarSize != matRebar::bsNone )
+   if ( rebar_data.TopRebarSize != WBFL::Materials::Rebar::Size::bsNone )
    {
       // create the rebar object
       BarSize       matSize  = GetBarSize(rebar_data.TopRebarSize);
@@ -32067,7 +32066,7 @@ void CBridgeAgentImp::LayoutDeckRebar(const CDeckDescription2* pDeck,IBridgeDeck
    // Bottom Mat - Rebar
    if ( pDeck->GetDeckType() != pgsTypes::sdtCompositeSIP )
    {
-      if ( rebar_data.BottomRebarSize != matRebar::bsNone )
+      if ( rebar_data.BottomRebarSize != WBFL::Materials::Rebar::Size::bsNone )
       {
          // create the rebar object
          BarSize       matSize  = GetBarSize(rebar_data.BottomRebarSize);
@@ -32146,7 +32145,7 @@ void CBridgeAgentImp::LayoutDeckRebar(const CDeckDescription2* pDeck,IBridgeDeck
       nm_deck_rebar_layout_item->put_LeftCutoff(  nm_rebar_data.LeftCutoff );
       nm_deck_rebar_layout_item->put_RightCutoff( nm_rebar_data.RightCutoff );
 
-      if ( nm_rebar_data.RebarSize != matRebar::bsNone )
+      if ( nm_rebar_data.RebarSize != WBFL::Materials::Rebar::Size::bsNone )
       {
          // Rebar
          BarSize       matSize  = GetBarSize(nm_rebar_data.RebarSize);
@@ -32262,8 +32261,8 @@ void CBridgeAgentImp::LayoutSegmentRebar(const CSegmentKey& segmentKey)
       GET_IFACE(ILongitudinalRebar,pLongRebar);
       std::_tstring strRebarName = pLongRebar->GetSegmentLongitudinalRebarMaterial(segmentKey);
       
-      matRebar::Grade grade;
-      matRebar::Type type;
+      WBFL::Materials::Rebar::Grade grade;
+      WBFL::Materials::Rebar::Type type;
       pLongRebar->GetSegmentLongitudinalRebarMaterial(segmentKey,type,grade);
 
       MaterialSpec matSpec = GetRebarSpecification(type);
@@ -32596,7 +32595,7 @@ void CBridgeAgentImp::LayoutClosureJointRebar(const CClosureKey& closureKey)
       // if there are bars in this row, and the bars have size, define
       // the rebar pattern for this row. Rebar pattern is the definition of the
       // rebar within the cross section
-      if ( 0 < info.BarSize && 0 < info.NumberOfBars )
+      if ( info.BarSize != WBFL::Materials::Rebar::Size::bsNone && 0 < info.NumberOfBars )
       {
          CComPtr<IFixedLengthRebarLayoutItem> fixed_layout_item;
          fixed_layout_item.CoCreateInstance(CLSID_FixedLengthRebarLayoutItem);
@@ -33471,21 +33470,21 @@ void CBridgeAgentImp::GetSegmentShapeDirect(const pgsPointOfInterest& poi,IShape
    segment->get_GirderShape(Xs,sectionBias,cstGirder,ppShape);
 }
 
-BarSize CBridgeAgentImp::GetBarSize(matRebar::Size size) const
+BarSize CBridgeAgentImp::GetBarSize(WBFL::Materials::Rebar::Size size) const
 {
    switch(size)
    {
-   case matRebar::bs3:  return bs3;
-   case matRebar::bs4:  return bs4;
-   case matRebar::bs5:  return bs5;
-   case matRebar::bs6:  return bs6;
-   case matRebar::bs7:  return bs7;
-   case matRebar::bs8:  return bs8;
-   case matRebar::bs9:  return bs9;
-   case matRebar::bs10: return bs10;
-   case matRebar::bs11: return bs11;
-   case matRebar::bs14: return bs14;
-   case matRebar::bs18: return bs18;
+   case WBFL::Materials::Rebar::Size::bs3:  return bs3;
+   case WBFL::Materials::Rebar::Size::bs4:  return bs4;
+   case WBFL::Materials::Rebar::Size::bs5:  return bs5;
+   case WBFL::Materials::Rebar::Size::bs6:  return bs6;
+   case WBFL::Materials::Rebar::Size::bs7:  return bs7;
+   case WBFL::Materials::Rebar::Size::bs8:  return bs8;
+   case WBFL::Materials::Rebar::Size::bs9:  return bs9;
+   case WBFL::Materials::Rebar::Size::bs10: return bs10;
+   case WBFL::Materials::Rebar::Size::bs11: return bs11;
+   case WBFL::Materials::Rebar::Size::bs14: return bs14;
+   case WBFL::Materials::Rebar::Size::bs18: return bs18;
    default:
       ATLASSERT(false); // should not get here
    }
@@ -33494,16 +33493,16 @@ BarSize CBridgeAgentImp::GetBarSize(matRebar::Size size) const
    return bs3;
 }
 
-RebarGrade CBridgeAgentImp::GetRebarGrade(matRebar::Grade grade) const
+RebarGrade CBridgeAgentImp::GetRebarGrade(WBFL::Materials::Rebar::Grade grade) const
 {
    RebarGrade matGrade;
    switch(grade)
    {
-   case matRebar::Grade40: matGrade = Grade40; break;
-   case matRebar::Grade60: matGrade = Grade60; break;
-   case matRebar::Grade75: matGrade = Grade75; break;
-   case matRebar::Grade80: matGrade = Grade80; break;
-   case matRebar::Grade100: matGrade = Grade100; break;
+   case WBFL::Materials::Rebar::Grade40: matGrade = Grade40; break;
+   case WBFL::Materials::Rebar::Grade::Grade60: matGrade = Grade60; break;
+   case WBFL::Materials::Rebar::Grade75: matGrade = Grade75; break;
+   case WBFL::Materials::Rebar::Grade80: matGrade = Grade80; break;
+   case WBFL::Materials::Rebar::Grade100: matGrade = Grade100; break;
    default:
       ATLASSERT(false);
    }
@@ -33518,9 +33517,9 @@ RebarGrade CBridgeAgentImp::GetRebarGrade(matRebar::Grade grade) const
    return matGrade;
 }
 
-MaterialSpec CBridgeAgentImp::GetRebarSpecification(matRebar::Type type) const
+MaterialSpec CBridgeAgentImp::GetRebarSpecification(WBFL::Materials::Rebar::Type type) const
 {
-   return (type == matRebar::A615 ? msA615 : (type == matRebar::A706 ? msA706 : msA1035));
+   return (type == WBFL::Materials::Rebar::Type::A615 ? msA615 : (type == WBFL::Materials::Rebar::Type::A706 ? msA706 : msA1035));
 }
 
 Float64 CBridgeAgentImp::GetAsTensionSideOfGirder(const pgsPointOfInterest& poi,bool bDevAdjust,bool bTensionTop) const
@@ -33607,7 +33606,7 @@ Float64 CBridgeAgentImp::GetApsInHalfDepth(const pgsPointOfInterest& poi,Develop
    ////////////////////////////////
    // Straight strands
    ////////////////////////////////
-   const matPsStrand* pStrand = GetStrandMaterial(segmentKey,pgsTypes::Straight);
+   const auto* pStrand = GetStrandMaterial(segmentKey,pgsTypes::Straight);
    Float64 aps = pStrand->GetNominalArea();
 
    // Get straight strand locations
@@ -33762,7 +33761,7 @@ Float64 CBridgeAgentImp::GetGirderAptTensionSide(const pgsPointOfInterest& poi,b
 
    CGirderKey girderKey(poi.GetSegmentKey());
 
-   const matPsStrand* pTendon = GetGirderTendonMaterial(girderKey);
+   const auto* pTendon = GetGirderTendonMaterial(girderKey);
    Float64 apt = pTendon->GetNominalArea();
 
    DuctIndexType nDucts = GetDuctCount(girderKey);
@@ -33802,7 +33801,7 @@ Float64 CBridgeAgentImp::GetSegmentAptTensionSide(const pgsPointOfInterest& poi,
 
    const CSegmentKey segmentKey(poi.GetSegmentKey());
 
-   const matPsStrand* pTendon = GetSegmentTendonMaterial(segmentKey);
+   const auto* pTendon = GetSegmentTendonMaterial(segmentKey);
    Float64 apt = pTendon->GetNominalArea();
 
    DuctIndexType nDucts = GetDuctCount(segmentKey);
@@ -33887,7 +33886,7 @@ void CBridgeAgentImp::GetDeckMatData(const pgsPointOfInterest& poi,pgsTypes::Dec
    //
    // full length reinforcement
    //
-   const matRebar* pBar;
+   const WBFL::Materials::Rebar* pBar = nullptr;
    Float64 As_Top    = 0;
    Float64 As_Bottom = 0;
    Float64 YbAs_Top    = 0;
@@ -33905,7 +33904,7 @@ void CBridgeAgentImp::GetDeckMatData(const pgsPointOfInterest& poi,pgsTypes::Dec
       // top mat
       if ( bTopMat )
       {
-         if ( (barType == pgsTypes::drbIndividual || barType == pgsTypes::drbAll) && rebarData.TopRebarSize != matRebar::bsNone )
+         if ( (barType == pgsTypes::drbIndividual || barType == pgsTypes::drbAll) && rebarData.TopRebarSize != WBFL::Materials::Rebar::Size::bsNone )
          {
             pBar = lrfdRebarPool::GetInstance()->GetRebar( rebarData.TopRebarType, rebarData.TopRebarGrade, rebarData.TopRebarSize );
             Float64 db = pBar->GetNominalDimension();
@@ -33933,7 +33932,7 @@ void CBridgeAgentImp::GetDeckMatData(const pgsPointOfInterest& poi,pgsTypes::Dec
       // bottom mat
       if ( bBottomMat && pDeck->GetDeckType() != pgsTypes::sdtCompositeSIP)
       {
-         if ( (barType == pgsTypes::drbIndividual || barType == pgsTypes::drbAll) && rebarData.BottomRebarSize != matRebar::bsNone )
+         if ( (barType == pgsTypes::drbIndividual || barType == pgsTypes::drbAll) && rebarData.BottomRebarSize != WBFL::Materials::Rebar::Size::bsNone )
          {
             pBar = lrfdRebarPool::GetInstance()->GetRebar( rebarData.BottomRebarType, rebarData.BottomRebarGrade, rebarData.BottomRebarSize );
             Float64 db = pBar->GetNominalDimension();
@@ -33990,7 +33989,7 @@ void CBridgeAgentImp::GetDeckMatData(const pgsPointOfInterest& poi,pgsTypes::Dec
             if ( (bTopMat    && (nmRebarData.Mat == CDeckRebarData::TopMat)) ||
                  (bBottomMat && (nmRebarData.Mat == CDeckRebarData::BottomMat) && pDeck->GetDeckType() != pgsTypes::sdtCompositeSIP) )
             {
-               if ( (barType == pgsTypes::drbIndividual || barType == pgsTypes::drbAll) && nmRebarData.RebarSize != matRebar::bsNone )
+               if ( (barType == pgsTypes::drbIndividual || barType == pgsTypes::drbAll) && nmRebarData.RebarSize != WBFL::Materials::Rebar::Size::bsNone )
                {
                   // Explicit rebar. Reduce area for development if needed.
                   pBar = lrfdRebarPool::GetInstance()->GetRebar( nmRebarData.RebarType, nmRebarData.RebarGrade, nmRebarData.RebarSize);
@@ -34017,10 +34016,10 @@ void CBridgeAgentImp::GetDeckMatData(const pgsPointOfInterest& poi,pgsTypes::Dec
                         barst.erase(sit, barst.size()-1);
                      }
 
-                     matRebar::Size size = lrfdRebarPool::GetBarSize(barst.c_str());
+                     WBFL::Materials::Rebar::Size size = lrfdRebarPool::GetBarSize(barst.c_str());
                      REBARDEVLENGTHDETAILS devdet = lrfdRebar::GetRebarDevelopmentLengthDetails(size, pBar->GetNominalArea(), 
                                                                                        pBar->GetNominalDimension(), pBar->GetYieldStrength(), 
-                                                                                       (matConcrete::Type)pDeck->Concrete.Type, pDeck->Concrete.Fc, 
+                                                                                       (WBFL::Materials::ConcreteType)pDeck->Concrete.Type, pDeck->Concrete.Fc, 
                                                                                        pDeck->Concrete.bHasFct, pDeck->Concrete.Fct,pDeck->Concrete.StrengthDensity);
                      Float64 ld = devdet.ld;
 
@@ -34700,7 +34699,7 @@ bool CBridgeAgentImp::CreateTendons(const CBridgeDescription2* pBridgeDesc,const
       return false; // nothing created
    }
 
-   const matPsStrand* pStrand = pPTData->pStrand;
+   const auto* pStrand = pPTData->pStrand;
 
    GirderIDType gdrID = pGirder->GetID();
 
@@ -35629,7 +35628,7 @@ void CBridgeAgentImp::CreateStrandMover(LPCTSTR strGirderName,Float64 Hg,pgsType
    ATLASSERT(*ppStrandMover != nullptr);
 }
 
-INCREMENTALRELAXATIONDETAILS CBridgeAgentImp::GetIncrementalRelaxationDetails(Float64 fpi,const matPsStrand* pStrand,Float64 tStart,Float64 tEnd,Float64 tStress) const
+INCREMENTALRELAXATIONDETAILS CBridgeAgentImp::GetIncrementalRelaxationDetails(Float64 fpi,const WBFL::Materials::PsStrand* pStrand,Float64 tStart,Float64 tEnd,Float64 tStress) const
 {
    GET_IFACE(ILossParameters,pLossParameters);
 #if defined _DEBUG
@@ -35638,7 +35637,7 @@ INCREMENTALRELAXATIONDETAILS CBridgeAgentImp::GetIncrementalRelaxationDetails(Fl
 
    INCREMENTALRELAXATIONDETAILS details;
 
-   matPsStrand::Type strandType = pStrand->GetType();
+   WBFL::Materials::PsStrand::Type strandType = pStrand->GetType();
    Float64 fpy = pStrand->GetYieldStrength();
    Float64 fpu = pStrand->GetUltimateStrength();
 
@@ -35676,7 +35675,7 @@ INCREMENTALRELAXATIONDETAILS CBridgeAgentImp::GetIncrementalRelaxationDetails(Fl
       }
       else
       {
-         Float64 K = (strandType == matPsStrand::LowRelaxation ? 0.0222 : 0.1);
+         Float64 K = (strandType == WBFL::Materials::PsStrand::Type::LowRelaxation ? 0.0222 : 0.1);
          details.K = K;
          details.fr = K*fpi*(initial_stress_ratio - 0.55)*(log10(24*(tEnd-tStress)) - log10(24*(tStart-tStress))); // t is in days
       }
@@ -35686,7 +35685,7 @@ INCREMENTALRELAXATIONDETAILS CBridgeAgentImp::GetIncrementalRelaxationDetails(Fl
       Float64 initial_stress_ratio = fpi/fpu; // See CEB-FIP Figure 2.3.3
       Float64 p; // relaxation ratio
       Float64 k;
-      if ( strandType == matPsStrand::StressRelieved )
+      if ( strandType == WBFL::Materials::PsStrand::Type::StressRelieved )
       {
          // curve fit for Class 1 curve from CEB-FIP Figure 2.3.3
          p = 0.4*initial_stress_ratio + 0.2;
@@ -35716,7 +35715,7 @@ INCREMENTALRELAXATIONDETAILS CBridgeAgentImp::GetIncrementalRelaxationDetails(Fl
    }
 
    details.epoxyFactor = 1.0;
-   if ( pStrand->GetCoating() != matPsStrand::None )
+   if ( pStrand->GetCoating() != WBFL::Materials::PsStrand::Coating::None )
    {
       // strand is epoxy coated... double the relaxation
       // see PCI "Guidelines for the use of Epoxy-Coated Strand", PCI Journal, July-August 1993

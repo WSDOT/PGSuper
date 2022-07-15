@@ -2279,7 +2279,7 @@ void CBridgeDescGeneralPage::InitGirderName()
 void CBridgeDescGeneralPage::UpdateConcreteTypeLabel()
 {
    CString strLabel;
-   strLabel.Format(_T("%s"), lrfdConcreteUtil::GetTypeName((matConcrete::Type)m_JointConcrete.Type, true).c_str());
+   strLabel.Format(_T("%s"), lrfdConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)m_JointConcrete.Type, true).c_str());
    GetDlgItem(IDC_CONCRETE_TYPE_LABEL)->SetWindowText(strLabel);
 }
 

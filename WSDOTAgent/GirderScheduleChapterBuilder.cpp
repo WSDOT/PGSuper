@@ -850,7 +850,7 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,cons
    }
 
    // Check first zone... it must be 1-1/2" long with 1-1/2" spacing... one space
-   matRebar::Size barSize;
+   WBFL::Materials::Rebar::Size barSize;
    Float64 count, spacing;
    pStirrupGeometry->GetPrimaryVertStirrupBarInfo(segmentKey,0, &barSize, &count, &spacing);
 
@@ -860,7 +860,7 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,cons
    Float64 zoneLength = zoneEnd - zoneStart;
    Float64 v = zoneLength/spacing;
 
-   if ( barSize != matRebar::bs5 )
+   if ( barSize != WBFL::Materials::Rebar::Size::bs5 )
    {
       return STIRRUP_ERROR_BARSIZE;
    }
@@ -882,7 +882,7 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,cons
       return STIRRUP_ERROR_ZONES;
    }
 
-   if ( barSize != matRebar::bs5 )
+   if ( barSize != WBFL::Materials::Rebar::Size::bs5 )
    {
       return STIRRUP_ERROR_BARSIZE;
    }
@@ -900,7 +900,7 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,cons
       return STIRRUP_ERROR_ZONES;
    }
 
-   if ( barSize != matRebar::bs5 )
+   if ( barSize != WBFL::Materials::Rebar::Size::bs5 )
    {
       return STIRRUP_ERROR_BARSIZE;
    }
@@ -924,14 +924,14 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,cons
 
       if ( familyCLSID == CLSID_UBeamFamily )
       {
-         if ( barSize != matRebar::bs4 )
+         if ( barSize != WBFL::Materials::Rebar::Size::bs4 )
          {
             return STIRRUP_ERROR_BARSIZE;
          }
       }
       else
       {
-         if ( barSize != matRebar::bs5 )
+         if ( barSize != WBFL::Materials::Rebar::Size::bs5 )
          {
             return STIRRUP_ERROR_BARSIZE;
          }
@@ -957,14 +957,14 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,cons
 
    if ( familyCLSID == CLSID_UBeamFamily )
    {
-      if ( barSize != matRebar::bs4 )
+      if ( barSize != WBFL::Materials::Rebar::Size::bs4 )
       {
          return STIRRUP_ERROR_BARSIZE;
       }
    }
    else
    {
-      if ( barSize != matRebar::bs5 )
+      if ( barSize != WBFL::Materials::Rebar::Size::bs5 )
       {
          return STIRRUP_ERROR_BARSIZE;
       }
@@ -1013,14 +1013,14 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,cons
 
    if ( familyCLSID == CLSID_UBeamFamily || familyCLSID == CLSID_SlabBeamFamily )
    {
-      if ( barSize != matRebar::bs4 )
+      if ( barSize != WBFL::Materials::Rebar::Size::bs4 )
       {
          return STIRRUP_ERROR_BARSIZE;
       }
    }
    else
    {
-      if ( barSize != matRebar::bs5 )
+      if ( barSize != WBFL::Materials::Rebar::Size::bs5 )
       {
          return STIRRUP_ERROR_BARSIZE;
       }

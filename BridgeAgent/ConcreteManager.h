@@ -25,7 +25,7 @@
 #include <PgsExt\ConcreteMaterial.h>
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\Keys.h>
-#include <Material\Material.h>
+#include <Materials/Materials.h>
 #include <LRFD\LRFD.h>
 #include "StatusItems.h"
 #include <map>
@@ -126,13 +126,13 @@ public:
    Float64 GetDeckFlexureFr(IndexType castingRegionIdx, Float64 t) const;
    Float64 GetDeckShearFr(IndexType castingRegionIdx, Float64 t) const;
    Float64 GetDeckFreeShrinkageStrain(IndexType castingRegionIdx, Float64 t) const;
-   std::shared_ptr<matConcreteBaseShrinkageDetails> GetDeckFreeShrinkageStrainDetails(IndexType castingRegionIdx, Float64 t) const;
+   std::unique_ptr<WBFL::Materials::ConcreteBaseShrinkageDetails> GetDeckFreeShrinkageStrainDetails(IndexType castingRegionIdx, Float64 t) const;
    Float64 GetDeckCreepCoefficient(IndexType castingRegionIdx, Float64 t,Float64 tla) const;
-   std::shared_ptr<matConcreteBaseCreepDetails> GetDeckCreepCoefficientDetails(IndexType castingRegionIdx, Float64 t,Float64 tla) const;
+   std::unique_ptr<WBFL::Materials::ConcreteBaseCreepDetails> GetDeckCreepCoefficientDetails(IndexType castingRegionIdx, Float64 t,Float64 tla) const;
    Float64 GetDeckAgingCoefficient(IndexType castingRegionIdx, Float64 timeOfLoading) const;
    Float64 GetDeckConcreteFirstCrackingStrength() const;
    Float64 GetDeckAutogenousShrinkage() const;
-   const matConcreteBase* GetDeckConcrete(IndexType castingRegionIdx) const;
+   const std::unique_ptr<WBFL::Materials::ConcreteBase>& GetDeckConcrete(IndexType castingRegionIdx) const;
 
    Float64 GetSegmentCastingTime(const CSegmentKey& segmentKey) const;
    Float64 GetSegmentFc(const CSegmentKey& segmentKey,Float64 t) const;
@@ -140,13 +140,13 @@ public:
    Float64 GetSegmentFlexureFr(const CSegmentKey& segmentKey,Float64 t) const;
    Float64 GetSegmentShearFr(const CSegmentKey& segmentKey,Float64 t) const;
    Float64 GetSegmentFreeShrinkageStrain(const CSegmentKey& segmentKey,Float64 t) const;
-   std::shared_ptr<matConcreteBaseShrinkageDetails> GetSegmentFreeShrinkageStrainDetails(const CSegmentKey& segmentKey,Float64 t) const;
+   std::unique_ptr<WBFL::Materials::ConcreteBaseShrinkageDetails> GetSegmentFreeShrinkageStrainDetails(const CSegmentKey& segmentKey,Float64 t) const;
    Float64 GetSegmentCreepCoefficient(const CSegmentKey& segmentKey,Float64 t,Float64 tla) const;
-   std::shared_ptr<matConcreteBaseCreepDetails> GetSegmentCreepCoefficientDetails(const CSegmentKey& segmentKey,Float64 t,Float64 tla) const;
+   std::unique_ptr<WBFL::Materials::ConcreteBaseCreepDetails> GetSegmentCreepCoefficientDetails(const CSegmentKey& segmentKey,Float64 t,Float64 tla) const;
    Float64 GetSegmentAgingCoefficient(const CSegmentKey& segmentKey,Float64 timeOfLoading) const;
    Float64 GetSegmentConcreteFirstCrackingStrength(const CSegmentKey& segmentKey) const;
    Float64 GetSegmentAutogenousShrinkage(const CSegmentKey& segmentKey) const;
-   const matConcreteBase* GetSegmentConcrete(const CSegmentKey& segmentKey) const;
+   const std::unique_ptr<WBFL::Materials::ConcreteBase>& GetSegmentConcrete(const CSegmentKey& segmentKey) const;
 
    Float64 GetClosureJointCastingTime(const CClosureKey& closureKey) const;
    Float64 GetClosureJointFc(const CClosureKey& closureKey,Float64 t) const;
@@ -154,11 +154,11 @@ public:
    Float64 GetClosureJointFlexureFr(const CClosureKey& closureKey,Float64 t) const;
    Float64 GetClosureJointShearFr(const CClosureKey& closureKey,Float64 t) const;
    Float64 GetClosureJointFreeShrinkageStrain(const CClosureKey& closureKey,Float64 t) const;
-   std::shared_ptr<matConcreteBaseShrinkageDetails> GetClosureJointFreeShrinkageStrainDetails(const CClosureKey& closureKey,Float64 t) const;
+   std::unique_ptr<WBFL::Materials::ConcreteBaseShrinkageDetails> GetClosureJointFreeShrinkageStrainDetails(const CClosureKey& closureKey,Float64 t) const;
    Float64 GetClosureJointCreepCoefficient(const CClosureKey& closureKey,Float64 t,Float64 tla) const;
-   std::shared_ptr<matConcreteBaseCreepDetails> GetClosureJointCreepCoefficientDetails(const CClosureKey& closureKey,Float64 t,Float64 tla) const;
+   std::unique_ptr<WBFL::Materials::ConcreteBaseCreepDetails> GetClosureJointCreepCoefficientDetails(const CClosureKey& closureKey,Float64 t,Float64 tla) const;
    Float64 GetClosureJointAgingCoefficient(const CClosureKey& closureKey,Float64 timeOfLoading) const;
-   const matConcreteBase* GetClosureJointConcrete(const CClosureKey& closureKey) const;
+   const std::unique_ptr<WBFL::Materials::ConcreteBase>& GetClosureJointConcrete(const CClosureKey& closureKey) const;
    Float64 GetClosureJointConcreteFirstCrackingStrength(const CClosureKey& closureKey) const;
    Float64 GetClosureJointAutogenousShrinkage(const CClosureKey& closureKey) const;
 
@@ -166,11 +166,11 @@ public:
    Float64 GetRailingSystemFc(pgsTypes::TrafficBarrierOrientation orientation,Float64 t) const;
    Float64 GetRailingSystemEc(pgsTypes::TrafficBarrierOrientation orientation,Float64 t) const;
    Float64 GetRailingSystemFreeShrinkageStrain(pgsTypes::TrafficBarrierOrientation orientation,Float64 t) const;
-   std::shared_ptr<matConcreteBaseShrinkageDetails> GetRailingSystemFreeShrinkageStrainDetails(pgsTypes::TrafficBarrierOrientation orientation,Float64 t) const;
+   std::unique_ptr<WBFL::Materials::ConcreteBaseShrinkageDetails> GetRailingSystemFreeShrinkageStrainDetails(pgsTypes::TrafficBarrierOrientation orientation,Float64 t) const;
    Float64 GetRailingSystemCreepCoefficient(pgsTypes::TrafficBarrierOrientation orientation,Float64 t,Float64 tla) const;
-   std::shared_ptr<matConcreteBaseCreepDetails> GetRailingSystemCreepCoefficientDetails(pgsTypes::TrafficBarrierOrientation orientation,Float64 t,Float64 tla) const;
+   std::unique_ptr<WBFL::Materials::ConcreteBaseCreepDetails> GetRailingSystemCreepCoefficientDetails(pgsTypes::TrafficBarrierOrientation orientation,Float64 t,Float64 tla) const;
    Float64 GetRailingSystemAgingCoefficient(pgsTypes::TrafficBarrierOrientation orientation,Float64 timeOfLoading) const;
-   const matConcreteBase* GetRailingSystemConcrete(pgsTypes::TrafficBarrierOrientation orientation) const;
+   const std::unique_ptr<WBFL::Materials::ConcreteBase>& GetRailingSystemConcrete(pgsTypes::TrafficBarrierOrientation orientation) const;
 
    Float64 GetLongitudinalJointCastingTime() const;
    Float64 GetLongitudinalJointFc(Float64 t) const;
@@ -178,13 +178,13 @@ public:
    Float64 GetLongitudinalJointFlexureFr(Float64 t) const;
    Float64 GetLongitudinalJointShearFr(Float64 t) const;
    Float64 GetLongitudinalJointFreeShrinkageStrain(Float64 t) const;
-   std::shared_ptr<matConcreteBaseShrinkageDetails> GetLongitudinalJointFreeShrinkageStrainDetails(Float64 t) const;
+   std::unique_ptr<WBFL::Materials::ConcreteBaseShrinkageDetails> GetLongitudinalJointFreeShrinkageStrainDetails(Float64 t) const;
    Float64 GetLongitudinalJointCreepCoefficient(Float64 t, Float64 tla) const;
-   std::shared_ptr<matConcreteBaseCreepDetails> GetLongitudinalJointCreepCoefficientDetails(Float64 t, Float64 tla) const;
+   std::unique_ptr<WBFL::Materials::ConcreteBaseCreepDetails> GetLongitudinalJointCreepCoefficientDetails(Float64 t, Float64 tla) const;
    Float64 GetLongitudinalJointAgingCoefficient(Float64 timeOfLoading) const;
-   const matConcreteBase* GetLongitudinalJointConcrete() const;
+   const std::unique_ptr<WBFL::Materials::ConcreteBase>& GetLongitudinalJointConcrete() const;
 
-   const matConcrete* GetPierConcrete(PierIndexType pierIdx) const;
+   const std::unique_ptr<WBFL::Materials::Concrete>& GetPierConcrete(PierIndexType pierIdx) const;
 
    Float64 GetSegmentLambda(const CSegmentKey& segmentKey) const;
    Float64 GetClosureJointLambda(const CClosureKey& closureKey) const;
@@ -207,38 +207,38 @@ private:
    void ValidateRailingSystemConcrete() const;
    void ValidateDeckConcrete() const;
    void ValidateLongitudinalJointConcrete() const;
-   void ValidateConcreteParameters(std::shared_ptr<matConcreteBase> pConcrete,pgsConcreteStrengthStatusItem::ConcreteType elementType,LPCTSTR strLabel,const CSegmentKey& segmentKey) const;
+   void ValidateConcreteParameters(std::unique_ptr<WBFL::Materials::ConcreteBase>& pConcrete,pgsConcreteStrengthStatusItem::ConcreteType elementType,LPCTSTR strLabel,const CSegmentKey& segmentKey) const;
    bool IsConcreteDensityInRange(Float64 density,pgsTypes::ConcreteType type) const;
 
    // create new concrete material objects given the basic concrete input information
-   void CreateConcrete(const CConcreteMaterial& concrete,LPCTSTR strName,matConcreteEx* pReleaseConc,matConcreteEx* pConcrete) const;
+   void CreateConcrete(const CConcreteMaterial& concrete,LPCTSTR strName,WBFL::Materials::Concrete* pReleaseConc,WBFL::Materials::Concrete* pConcrete) const;
 
    // Factory method for creating time-dependent material models
-   matConcreteBase* CreateConcreteModel(LPCTSTR strName,const CConcreteMaterial& concrete,Float64 timeAtCasting,Float64 cureTime,Float64 ageAtInitialLoading,Float64 stepTime) const;
+   std::unique_ptr<WBFL::Materials::ConcreteBase> CreateConcreteModel(LPCTSTR strName,const CConcreteMaterial& concrete,Float64 timeAtCasting,Float64 cureTime,Float64 ageAtInitialLoading,Float64 stepTime) const;
 
    // factory method for LRFD concrete (non time-dependent version)
-   lrfdLRFDConcrete* CreateLRFDConcreteModel(const CConcreteMaterial& concrete,Float64 startTime,Float64 stepTime) const;
+   std::unique_ptr<lrfdLRFDConcrete> CreateLRFDConcreteModel(const CConcreteMaterial& concrete,Float64 startTime,Float64 stepTime) const;
 
    // factory method for LRFD concrete (time-dependent version)
-   lrfdLRFDTimeDependentConcrete* CreateTimeDependentLRFDConcreteModel(const CConcreteMaterial& concrete,Float64 ageAtInitialLoading) const;
+   std::unique_ptr<lrfdLRFDTimeDependentConcrete> CreateTimeDependentLRFDConcreteModel(const CConcreteMaterial& concrete,Float64 ageAtInitialLoading) const;
 
    // factory method for ACI209 concrete model
-   matACI209Concrete* CreateACI209Model(const CConcreteMaterial& concrete,Float64 ageAtInitialLoading) const;
+   std::unique_ptr<WBFL::Materials::ACI209Concrete> CreateACI209Model(const CConcreteMaterial& concrete,Float64 ageAtInitialLoading) const;
 
    // factory method for CEB-FIP concrete model
-   matCEBFIPConcrete* CreateCEBFIPModel(const CConcreteMaterial& concrete,Float64 ageAtInitialLoading) const;
+   std::unique_ptr<WBFL::Materials::CEBFIPConcrete> CreateCEBFIPModel(const CConcreteMaterial& concrete,Float64 ageAtInitialLoading) const;
 
    // Returns the concrete Aging coefficient, X
-   Float64 GetConcreteAgingCoefficient(const matConcreteBase* pConcrete,Float64 timeOfLoading) const;
+   Float64 GetConcreteAgingCoefficient(const std::unique_ptr<WBFL::Materials::ConcreteBase>& pConcrete,Float64 timeOfLoading) const;
 
    // Material model for precast girder segments
-   mutable std::map< CSegmentKey, std::shared_ptr<matConcreteBase> > m_pSegmentConcrete;
+   mutable std::map< CSegmentKey, std::unique_ptr<WBFL::Materials::ConcreteBase> > m_pSegmentConcrete;
 
    // Material model for cast-in-place closure joint
-   mutable std::map< CSegmentKey, std::shared_ptr<matConcreteBase> > m_pClosureConcrete;
+   mutable std::map< CSegmentKey, std::unique_ptr<WBFL::Materials::ConcreteBase> > m_pClosureConcrete;
 
    // Material model for pier concrete
-   mutable std::map<PierIndexType,std::shared_ptr<matConcrete>> m_pPierConcrete;
+   mutable std::map<PierIndexType,std::unique_ptr<WBFL::Materials::Concrete>> m_pPierConcrete;
 
    // Material model for deck concrete
    mutable Float64 m_DeckEcK1;
@@ -247,7 +247,7 @@ private:
    mutable Float64 m_DeckCreepK2;
    mutable Float64 m_DeckShrinkageK1;
    mutable Float64 m_DeckShrinkageK2;
-   mutable std::vector<std::unique_ptr<matConcreteBase>> m_pvDeckConcrete; // time dependent Deck concrete model. vector index is the deck casting region index
+   mutable std::vector<std::unique_ptr<WBFL::Materials::ConcreteBase>> m_pvDeckConcrete; // time dependent Deck concrete model. vector index is the deck casting region index
 
    // Material model for longitudinal joint concrete
    mutable Float64 m_LongitudinalJointEcK1;
@@ -256,13 +256,18 @@ private:
    mutable Float64 m_LongitudinalJointCreepK2;
    mutable Float64 m_LongitudinalJointShrinkageK1;
    mutable Float64 m_LongitudinalJointShrinkageK2;
-   mutable std::unique_ptr<matConcreteBase> m_pLongitudinalJointConcrete; // time dependent Longitudinal Joint concrete model
+   mutable std::unique_ptr<WBFL::Materials::ConcreteBase> m_pLongitudinalJointConcrete; // time dependent Longitudinal Joint concrete model
 
    // Material model for railing system concrete
-   mutable std::array<std::unique_ptr<matConcreteBase>, 2> m_pRailingConcrete; // index is pgsTypes::TrafficBarrierOrientation
+   mutable std::array<std::unique_ptr<WBFL::Materials::ConcreteBase>, 2> m_pRailingConcrete; // index is pgsTypes::TrafficBarrierOrientation
 
    // callback IDs for the status callbacks we register
    StatusCallbackIDType m_scidConcreteStrengthWarning;
    StatusCallbackIDType m_scidConcreteStrengthError;
 
+   // Many methods return a reference to a unique_ptr. If the pointer is null
+   // we can't return nullptr, we need to return a reference to a unique_ptr object.
+   // These are unique_ptr objects that have a nullptr. Return these in place of nullptr
+   std::unique_ptr<WBFL::Materials::Concrete> m_NullConcrete;
+   std::unique_ptr<WBFL::Materials::ConcreteBase> m_NullConcreteBase;
 };
