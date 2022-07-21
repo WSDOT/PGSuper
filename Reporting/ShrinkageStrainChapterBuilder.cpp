@@ -22,15 +22,7 @@
 
 #include "StdAfx.h"
 #include <Reporting\ShrinkageStrainChapterBuilder.h>
-//#include <Reporting\LRFDTimeDependentShrinkageStrainChapterBuilder.h>
-//#include <Reporting\ACI209ShrinkageStrainChapterBuilder.h>
-//#include <Reporting\CEBFIPShrinkageStrainChapterBuilder.h>
-//
-//#include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
-//#include <IFace\Bridge.h>
-//
-//#include <PgsExt\StrandData.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -74,23 +66,6 @@ rptChapter* CShrinkageStrainChapterBuilder::Build(CReportSpecification* pRptSpec
    rptParagraph* pPara = new rptParagraph;
    (*pChapter) << pPara;
    *pPara << _T("Shrinkage strain details are listed in the Time Step Details Report.") << rptNewLine;
-
-   //if ( pLossParams->GetTimeDependentModel() == pgsTypes::tdmAASHTO )
-   //{
-   //   pChapter = CLRFDTimeDependentShrinkageStrainChapterBuilder().Build(pRptSpec,level);
-   //}
-   //else if ( pLossParams->GetTimeDependentModel() == pgsTypes::tdmACI209 )
-   //{
-   //   pChapter = CACI209ShrinkageStrainChapterBuilder().Build(pRptSpec,level);
-   //}
-   //else if ( pLossParams->GetTimeDependentModel() == pgsTypes::tdmCEBFIP )
-   //{
-   //   pChapter = CCEBFIPShrinkageStrainChapterBuilder().Build(pRptSpec,level);
-   //}
-   //else
-   //{
-   //   ATLASSERT(false);
-   //}
 
    return pChapter;
 }

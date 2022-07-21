@@ -154,8 +154,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="ACI209CreepCoefficientChapterBuilder.cpp" />
-    <ClCompile Include="ACI209ShrinkageStrainChapterBuilder.cpp" />
     <ClCompile Include="ADimChapterBuilder.cpp" />
     <ClCompile Include="AlignmentChapterBuilder.cpp" />
     <ClCompile Include="BasicCamberChapterBuilder.cpp" />
@@ -176,8 +174,6 @@
     <ClCompile Include="CastingYardMomentsTable.cpp" />
     <ClCompile Include="CastingYardRebarRequirementChapterBuilder.cpp" />
     <ClCompile Include="CastingYardStressTable.cpp" />
-    <ClCompile Include="CEBFIPCreepCoefficientChapterBuilder.cpp" />
-    <ClCompile Include="CEBFIPShrinkageStrainChapterBuilder.cpp" />
     <ClCompile Include="ColumnPropertiesTable.cpp" />
     <ClCompile Include="CombinedAxialTable.cpp" />
     <ClCompile Include="CombinedMomentsTable.cpp" />
@@ -256,8 +252,6 @@
     <ClCompile Include="LongReinfShearCheckChapterBuilder.cpp" />
     <ClCompile Include="LossesChapterBuilder.cpp" />
     <ClCompile Include="LRFDCreepCoefficientChapterBuilder.cpp" />
-    <ClCompile Include="LRFDTimeDependentCreepCoefficientChapterBuilder.cpp" />
-    <ClCompile Include="LRFDTimeDependentShrinkageStrainChapterBuilder.cpp" />
     <ClCompile Include="MomentCapacityChapterBuilder.cpp" />
     <ClCompile Include="MomentCapacityDetailsChapterBuilder.cpp" />
     <ClCompile Include="MomentCapacityParagraphBuilder.cpp" />
@@ -361,8 +355,6 @@
     <None Include="res\Reporting.rc2" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Include\Reporting\ACI209CreepCoefficientChapterBuilder.h" />
-    <ClInclude Include="..\Include\Reporting\ACI209ShrinkageStrainChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\ADimChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\AlignmentChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\AutoLib.h" />
@@ -384,8 +376,6 @@
     <ClInclude Include="..\Include\Reporting\CastingYardMomentsTable.h" />
     <ClInclude Include="..\Include\Reporting\CastingYardRebarRequirementChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\CastingYardStressTable.h" />
-    <ClInclude Include="..\Include\Reporting\CEBFIPCreepCoefficientChapterBuilder.h" />
-    <ClInclude Include="..\Include\Reporting\CEBFIPShrinkageStrainChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\ColumnPropertiesTable.h" />
     <ClInclude Include="..\Include\Reporting\CombinedAxialTable.h" />
     <ClInclude Include="..\Include\Reporting\CombinedMomentsTable.h" />
@@ -460,8 +450,6 @@
     <ClInclude Include="..\Include\Reporting\LongReinfShearCheckChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\LossesChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\LRFDCreepCoefficientChapterBuilder.h" />
-    <ClInclude Include="..\Include\Reporting\LRFDTimeDependentCreepCoefficientChapterBuilder.h" />
-    <ClInclude Include="..\Include\Reporting\LRFDTimeDependentShrinkageStrainChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\MomentCapacityChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\MomentCapacityDetailsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\MomentCapacityParagraphBuilder.h" />
