@@ -2331,16 +2331,16 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
          {
             if ( bIsInClosure )
             {
-               *pPara << _T("Curing: ") << WBFL::Materials::ConcreteBase::GetCureMethod(pMaterials->GetClosureJointConcrete(closureKey)->GetCureMethod()) << rptNewLine;
+               *pPara << _T("Curing: ") << WBFL::Materials::ConcreteBase::GetCuringType(pMaterials->GetClosureJointConcrete(closureKey)->GetCuringType()) << rptNewLine;
             }
             else
             {
-               *pPara << _T("Curing: ") << WBFL::Materials::ConcreteBase::GetCureMethod(pMaterials->GetSegmentConcrete(segmentKey)->GetCureMethod()) << rptNewLine;
+               *pPara << _T("Curing: ") << WBFL::Materials::ConcreteBase::GetCuringType(pMaterials->GetSegmentConcrete(segmentKey)->GetCuringType()) << rptNewLine;
             }
          }
          else
          {
-            *pPara << _T("Curing: ") << WBFL::Materials::ConcreteBase::GetCureMethod(pMaterials->GetDeckConcrete(deckCastingRegionIdx)->GetCureMethod()) << rptNewLine;
+            *pPara << _T("Curing: ") << WBFL::Materials::ConcreteBase::GetCuringType(pMaterials->GetDeckConcrete(deckCastingRegionIdx)->GetCuringType()) << rptNewLine;
          }
       }
 
@@ -2946,16 +2946,16 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
          {
             if ( bIsInClosure )
             {
-               *pPara << _T("Curing: ") << WBFL::Materials::ConcreteBase::GetCureMethod(pMaterials->GetClosureJointConcrete(closureKey)->GetCureMethod()) << rptNewLine;
+               *pPara << _T("Curing: ") << WBFL::Materials::ConcreteBase::GetCuringType(pMaterials->GetClosureJointConcrete(closureKey)->GetCuringType()) << rptNewLine;
             }
             else
             {
-               *pPara << _T("Curing: ") << WBFL::Materials::ConcreteBase::GetCureMethod(pMaterials->GetSegmentConcrete(segmentKey)->GetCureMethod()) << rptNewLine;
+               *pPara << _T("Curing: ") << WBFL::Materials::ConcreteBase::GetCuringType(pMaterials->GetSegmentConcrete(segmentKey)->GetCuringType()) << rptNewLine;
             }
          }
          else
          {
-            *pPara << _T("Curing: ") << WBFL::Materials::ConcreteBase::GetCureMethod(pMaterials->GetDeckConcrete(deckCastingRegionIdx)->GetCureMethod()) << rptNewLine;
+            *pPara << _T("Curing: ") << WBFL::Materials::ConcreteBase::GetCuringType(pMaterials->GetDeckConcrete(deckCastingRegionIdx)->GetCuringType()) << rptNewLine;
          }
       }
 

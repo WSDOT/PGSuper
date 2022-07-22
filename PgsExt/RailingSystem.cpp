@@ -24,7 +24,7 @@
 #include <PgsExt\RailingSystem.h>
 #include <WbflAtlExt.h>
 #include <PGSuperException.h>
-#include <Materials/Concrete.h>
+#include <Materials/SimpleConcrete.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

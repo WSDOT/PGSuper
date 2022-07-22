@@ -26,7 +26,7 @@
 
 #include <StdIo.h>
 
-#include <Materials/Concrete.h>
+#include <Materials/SimpleConcrete.h>
 #include <Materials/ACI209Concrete.h>
 #include <Materials/CEBFIPConcrete.h>
 
@@ -88,7 +88,7 @@ CConcreteMaterial::CConcreteMaterial()
    bACIUserParameters = false;
    CureMethod = pgsTypes::Moist;
    ACI209CementType = pgsTypes::TypeI;
-   WBFL::Materials::ACI209Concrete::GetModelParameters((WBFL::Materials::ConcreteBase::CureMethod)CureMethod,(WBFL::Materials::ACI209Concrete::CementType)ACI209CementType,&A,&B);
+   WBFL::Materials::ACI209Concrete::GetModelParameters((WBFL::Materials::CuringType)CureMethod,(WBFL::Materials::CementType)ACI209CementType,&A,&B);
 
    bCEBFIPUserParameters = false;
    CEBFIPCementType = pgsTypes::N;

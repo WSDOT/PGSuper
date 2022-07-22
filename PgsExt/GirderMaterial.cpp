@@ -26,7 +26,7 @@
 #include <StdIo.h>
 
 #include <Lrfd\StrandPool.h>
-#include <Materials/Concrete.h>
+#include <Materials/SimpleConcrete.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

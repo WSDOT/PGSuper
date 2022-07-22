@@ -27308,7 +27308,7 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
    IntervalIndexType liftingIntervalIdx = m_IntervalManager.GetLiftingInterval(segmentKey);
    IntervalIndexType tendonStressingIntervalIdx = m_IntervalManager.GetStressSegmentTendonInterval(segmentKey);
 
-   WBFL::Materials::Concrete concrete;
+   WBFL::Materials::SimpleConcrete concrete;
    if ( bUseConfig && !handlingConfig.bIgnoreGirderConfig )
    {
       concrete.SetType((WBFL::Materials::ConcreteType)handlingConfig.GdrConfig.ConcType);
@@ -27603,7 +27603,7 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
    IntervalIndexType haulingIntervalIdx = m_IntervalManager.GetHaulingInterval(segmentKey);
    IntervalIndexType tendonStressingIntervalIdx = m_IntervalManager.GetStressSegmentTendonInterval(segmentKey);
 
-   WBFL::Materials::Concrete concrete;
+   WBFL::Materials::SimpleConcrete concrete;
    if ( bUseConfig && !handlingConfig.bIgnoreGirderConfig )
    {
       concrete.SetType((WBFL::Materials::ConcreteType)handlingConfig.GdrConfig.ConcType);

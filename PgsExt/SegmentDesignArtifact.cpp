@@ -338,12 +338,12 @@ Float64 pgsSegmentDesignArtifact::GetReleaseStrength() const
    return m_Fci;
 }
 
-void pgsSegmentDesignArtifact::SetConcrete(const WBFL::Materials::Concrete& concrete)
+void pgsSegmentDesignArtifact::SetConcrete(const WBFL::Materials::SimpleConcrete& concrete)
 {
    m_Concrete = concrete;
 }
 
-const WBFL::Materials::Concrete& pgsSegmentDesignArtifact::GetConcrete() const
+const WBFL::Materials::SimpleConcrete& pgsSegmentDesignArtifact::GetConcrete() const
 {
    return m_Concrete;
 }

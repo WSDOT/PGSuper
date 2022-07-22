@@ -348,7 +348,7 @@ void CConcreteManager::ValidateConcrete() const
             }
          }
 
-         std::unique_ptr<WBFL::Materials::Concrete> pPierConcrete = std::make_unique<WBFL::Materials::Concrete>(_T("Pier Concrete"),concrete.Fc,concrete.StrengthDensity, concrete.WeightDensity,modE,0.0/*dummy frShear*/, 0.0/*dummy frMoment*/);
+         std::unique_ptr<WBFL::Materials::SimpleConcrete> pPierConcrete = std::make_unique<WBFL::Materials::SimpleConcrete>(_T("Pier Concrete"),concrete.Fc,concrete.StrengthDensity, concrete.WeightDensity,modE,0.0/*dummy frShear*/, 0.0/*dummy frMoment*/);
          pPierConcrete->SetType((WBFL::Materials::ConcreteType)concrete.Type);
          m_pPierConcrete.insert( std::make_pair(pierIdx,std::move(pPierConcrete)) );
       }
@@ -1073,7 +1073,7 @@ std::unique_ptr<WBFL::Materials::ConcreteBase> CConcreteManager::CreateConcreteM
    pConcrete->SetTimeAtCasting(timeAtCasting);
    pConcrete->SetAgeAtInitialLoading(ageAtInitialLoading);
    pConcrete->SetCureTime(cureTime);
-   pConcrete->SetCureMethod((WBFL::Materials::ConcreteBase::CureMethod)concrete.CureMethod);
+   pConcrete->SetCuringType((WBFL::Materials::CuringType)concrete.CureMethod);
    //pConcrete->SetVSRatio(vs); NOTE: volume to surface ratio is set during the level 2 validation 
    // of the concrete model. To get V/S we need to get section properties and section properties
    // need valid concrete models. This creates a circular dependency. However, the only part
@@ -1084,7 +1084,7 @@ std::unique_ptr<WBFL::Materials::ConcreteBase> CConcreteManager::CreateConcreteM
    return pConcrete;
 }
 
-void CConcreteManager::CreateConcrete(const CConcreteMaterial& concrete,LPCTSTR strName,WBFL::Materials::Concrete* pReleaseConc,WBFL::Materials::Concrete* pConcrete) const
+void CConcreteManager::CreateConcrete(const CConcreteMaterial& concrete,LPCTSTR strName,WBFL::Materials::SimpleConcrete* pReleaseConc,WBFL::Materials::SimpleConcrete* pConcrete) const
 {
    Float64 modE;
    if ( concrete.bUserEci )
@@ -1767,10 +1767,10 @@ Float64 CConcreteManager::GetLongitudinalJointShrinkageK2() const
    return K2;
 };
 
-const std::unique_ptr<WBFL::Materials::Concrete>& CConcreteManager::GetPierConcrete(PierIndexType pierIdx) const
+const std::unique_ptr<WBFL::Materials::SimpleConcrete>& CConcreteManager::GetPierConcrete(PierIndexType pierIdx) const
 {
    ValidateConcrete();
-   std::map<PierIndexType,std::unique_ptr<WBFL::Materials::Concrete>>::iterator found(m_pPierConcrete.find(pierIdx));
+   std::map<PierIndexType,std::unique_ptr<WBFL::Materials::SimpleConcrete>>::iterator found(m_pPierConcrete.find(pierIdx));
    if ( found == m_pPierConcrete.end() )
    {
       // pier concrete models only exist for "physical" piers
@@ -2512,7 +2512,7 @@ std::unique_ptr<lrfdLRFDConcrete> CConcreteManager::CreateLRFDConcreteModel(cons
 
    std::unique_ptr<lrfdLRFDConcrete> pLRFDConcrete(std::make_unique<lrfdLRFDConcrete>());
 
-   WBFL::Materials::Concrete initialConcrete, finalConcrete;
+   WBFL::Materials::SimpleConcrete initialConcrete, finalConcrete;
    CreateConcrete(concrete,_T(""),&initialConcrete,&finalConcrete);
    pLRFDConcrete->SetConcreteModels(initialConcrete,finalConcrete);
    pLRFDConcrete->SetStartTime(startTime);
@@ -2537,7 +2537,7 @@ std::unique_ptr<lrfdLRFDConcrete> CConcreteManager::CreateLRFDConcreteModel(cons
       {
          CConcreteMaterial concrete90(concrete);
          concrete90.Fc *= factor;
-         WBFL::Materials::Concrete initialConcrete, finalConcrete90;
+         WBFL::Materials::SimpleConcrete initialConcrete, finalConcrete90;
          CreateConcrete(concrete90, _T(""), &initialConcrete, &finalConcrete90);
          pLRFDConcrete->Use90DayStrength(finalConcrete90);
       }
@@ -2563,8 +2563,8 @@ std::unique_ptr<lrfdLRFDTimeDependentConcrete> CConcreteManager::CreateTimeDepen
    }
    else
    {
-      lrfdLRFDTimeDependentConcrete::GetModelParameters((WBFL::Materials::ConcreteBase::CureMethod)concrete.CureMethod,
-                                                        (lrfdLRFDTimeDependentConcrete::CementType)concrete.ACI209CementType,
+      lrfdLRFDTimeDependentConcrete::GetModelParameters((WBFL::Materials::CuringType)concrete.CureMethod,
+                                                        (WBFL::Materials::CementType)concrete.ACI209CementType,
                                                        &A,&B);
    }
 
@@ -2614,8 +2614,8 @@ std::unique_ptr<WBFL::Materials::ACI209Concrete> CConcreteManager::CreateACI209M
    }
    else
    {
-      WBFL::Materials::ACI209Concrete::GetModelParameters((WBFL::Materials::ConcreteBase::CureMethod)concrete.CureMethod,
-                                            (WBFL::Materials::ACI209Concrete::CementType)concrete.ACI209CementType,
+      WBFL::Materials::ACI209Concrete::GetModelParameters((WBFL::Materials::CuringType)concrete.CureMethod,
+                                            (WBFL::Materials::CementType)concrete.ACI209CementType,
                                             &A,&B);
    }
 

@@ -189,8 +189,8 @@ void CACIConcretePage::UpdateParameters()
 {
    UpdateData(TRUE);
 
-   WBFL::Materials::ACI209Concrete::GetModelParameters((WBFL::Materials::ConcreteBase::CureMethod)m_CureMethod,
-                                         (WBFL::Materials::ACI209Concrete::CementType)m_CementType,
+   WBFL::Materials::ACI209Concrete::GetModelParameters((WBFL::Materials::CuringType)m_CureMethod,
+                                         (WBFL::Materials::CementType)m_CementType,
                                          &m_A,&m_B);
 
    UpdateData(FALSE);

@@ -32,7 +32,7 @@
 #include <Units\Convert.h>
 
 #include <MathEx.h>
-#include <Materials/Concrete.h>
+#include <Materials/SimpleConcrete.h>
 #include <Materials/ACI209Concrete.h>
 #include <Materials/CEBFIPConcrete.h>
 
@@ -178,7 +178,7 @@ m_ACI209CementType(pgsTypes::TypeI),
 m_bUserCEBFIPParameters(false),
 m_CEBFIPCementType(pgsTypes::N)
 {
-   WBFL::Materials::ACI209Concrete::GetModelParameters((WBFL::Materials::ConcreteBase::CureMethod)m_CureMethod,(WBFL::Materials::ACI209Concrete::CementType)m_ACI209CementType,&m_A,&m_B);
+   WBFL::Materials::ACI209Concrete::GetModelParameters((WBFL::Materials::CuringType)m_CureMethod,(WBFL::Materials::CementType)m_ACI209CementType,&m_A,&m_B);
    WBFL::Materials::CEBFIPConcrete::GetModelParameters((WBFL::Materials::CEBFIPConcrete::CementType)m_CEBFIPCementType,&m_S,&m_BetaSc);
 }
 

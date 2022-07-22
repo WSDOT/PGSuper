@@ -184,7 +184,7 @@ public:
    Float64 GetLongitudinalJointAgingCoefficient(Float64 timeOfLoading) const;
    const std::unique_ptr<WBFL::Materials::ConcreteBase>& GetLongitudinalJointConcrete() const;
 
-   const std::unique_ptr<WBFL::Materials::Concrete>& GetPierConcrete(PierIndexType pierIdx) const;
+   const std::unique_ptr<WBFL::Materials::SimpleConcrete>& GetPierConcrete(PierIndexType pierIdx) const;
 
    Float64 GetSegmentLambda(const CSegmentKey& segmentKey) const;
    Float64 GetClosureJointLambda(const CClosureKey& closureKey) const;
@@ -211,7 +211,7 @@ private:
    bool IsConcreteDensityInRange(Float64 density,pgsTypes::ConcreteType type) const;
 
    // create new concrete material objects given the basic concrete input information
-   void CreateConcrete(const CConcreteMaterial& concrete,LPCTSTR strName,WBFL::Materials::Concrete* pReleaseConc,WBFL::Materials::Concrete* pConcrete) const;
+   void CreateConcrete(const CConcreteMaterial& concrete,LPCTSTR strName,WBFL::Materials::SimpleConcrete* pReleaseConc,WBFL::Materials::SimpleConcrete* pConcrete) const;
 
    // Factory method for creating time-dependent material models
    std::unique_ptr<WBFL::Materials::ConcreteBase> CreateConcreteModel(LPCTSTR strName,const CConcreteMaterial& concrete,Float64 timeAtCasting,Float64 cureTime,Float64 ageAtInitialLoading,Float64 stepTime) const;
@@ -238,7 +238,7 @@ private:
    mutable std::map< CSegmentKey, std::unique_ptr<WBFL::Materials::ConcreteBase> > m_pClosureConcrete;
 
    // Material model for pier concrete
-   mutable std::map<PierIndexType,std::unique_ptr<WBFL::Materials::Concrete>> m_pPierConcrete;
+   mutable std::map<PierIndexType,std::unique_ptr<WBFL::Materials::SimpleConcrete>> m_pPierConcrete;
 
    // Material model for deck concrete
    mutable Float64 m_DeckEcK1;
@@ -268,6 +268,6 @@ private:
    // Many methods return a reference to a unique_ptr. If the pointer is null
    // we can't return nullptr, we need to return a reference to a unique_ptr object.
    // These are unique_ptr objects that have a nullptr. Return these in place of nullptr
-   std::unique_ptr<WBFL::Materials::Concrete> m_NullConcrete;
+   std::unique_ptr<WBFL::Materials::SimpleConcrete> m_NullConcrete;
    std::unique_ptr<WBFL::Materials::ConcreteBase> m_NullConcreteBase;
 };
