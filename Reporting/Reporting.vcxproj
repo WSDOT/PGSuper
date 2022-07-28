@@ -79,7 +79,7 @@
     <ClCompile>
       <AdditionalOptions>-Zm120 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Include;;$(ARPDIR)\BridgeLink\Include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>BUILDREPORTINGLIB;xIGNORE_2007_CHANGES;WIN32;_WINDOWS;_DEBUG;_USRDLL;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -116,7 +116,7 @@
     </Midl>
     <ClCompile>
       <AdditionalOptions>-Zm120 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>..\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Include;;$(ARPDIR)\BridgeLink\Include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>BUILDREPORTINGLIB;WIN32;_WINDOWS;NDEBUG;_USRDLL;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>

@@ -85,7 +85,7 @@
     <ClCompile>
       <AdditionalOptions>/Zm600  %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Include;;$(ARPDIR)\BridgeLink\Include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_USRDLL;_ATL_NO_UUIDOF;xIGNORE_2007_CHANGES;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING;BUILDBEAMSLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -133,7 +133,7 @@
     </Midl>
     <ClCompile>
       <AdditionalOptions>/Zm600  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>..\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Include;;$(ARPDIR)\BridgeLink\Include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;_USRDLL;_ATL_NO_UUIDOF;BUILDBEAMSLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
