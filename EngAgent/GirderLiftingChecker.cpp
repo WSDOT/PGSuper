@@ -154,15 +154,15 @@ pgsDesignCodes::OutcomeType pgsGirderLiftingChecker::DesignLifting(const CSegmen
 
    Float64 maxLoc = 0.4*girder_length;
 
-   if (0 < config.GdrConfig.PrestressConfig.GetStrandCount(pgsTypes::Harped)) // only look at harping point if we have harped strands
+   GET_IFACE(IStrandGeometry, pStrandGeom);
+   StrandIndexType Nh = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Harped, config.bIgnoreGirderConfig ? nullptr : &config.GdrConfig);
+
+   if (0 < Nh) // only look at harping point if we have harped strands
    {
       Float64 lhp,rhp;
-      GET_IFACE(IStrandGeometry,pStrandGeom);
       pStrandGeom->GetHarpingPointLocations(segmentKey,&lhp,&rhp);
-
       maxLoc = Min(lhp, maxLoc);
    }
-
 
    // Find a lifting location that makes the factor of safety against failure
    // equal to 1.5 or better

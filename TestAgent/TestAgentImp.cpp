@@ -2647,13 +2647,6 @@ bool CTestAgentImp::RunFabOptimizationTest(std::_tofstream& resultsFile, std::_t
    std::_tstring pid      = GetProcessID();
    std::_tstring bridgeId = GetBridgeID();
 
-   GET_IFACE(ILossParameters,pLossParams);
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
-   {
-      // not doing this for time-step analysis
-      return true;
-   }
-
    GET_IFACE(ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
    GET_IFACE_NOCHECK(ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
    if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled() && pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled() && pSegmentHaulingSpecCriteria->GetHaulingAnalysisMethod() == pgsTypes::hmWSDOT)
@@ -2661,7 +2654,8 @@ bool CTestAgentImp::RunFabOptimizationTest(std::_tofstream& resultsFile, std::_t
 	   GET_IFACE(IFabricationOptimization,pFabOp);
 
 	   FABRICATIONOPTIMIZATIONDETAILS details;
-	   pFabOp->GetFabricationOptimizationDetails(segmentKey,&details);
+      if (pFabOp->GetFabricationOptimizationDetails(segmentKey, &details) == false)
+         return true; // analysis could not be done so just return with true so the testing keeps going
 
 	   resultsFile << bridgeId << _T(", ") << pid << _T(", 155000, ") << WBFL::Units::ConvertFromSysUnits(details.Fci[NO_TTS],WBFL::Units::Measure::MPa) << _T(", ") << SEGMENT(segmentKey) << std::endl;
 	   resultsFile << bridgeId << _T(", ") << pid << _T(", 155001, ") << WBFL::Units::ConvertFromSysUnits(details.L[NO_TTS],WBFL::Units::Measure::Millimeter) << _T(", ") << SEGMENT(segmentKey) << std::endl;

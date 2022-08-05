@@ -83,7 +83,9 @@ DEFINE_GUID(IID_IFabricationOptimization,
 0x459f156f, 0xa371, 0x4cfa, 0xb3, 0x25, 0x9e, 0xea, 0x2f, 0xa9, 0xf, 0x61);
 interface IFabricationOptimization : IUnknown
 {
-   virtual void GetFabricationOptimizationDetails(const CSegmentKey& segmentKey,FABRICATIONOPTIMIZATIONDETAILS* pDetails) const = 0;
+   /// Returns true if successful. There are a number of different input types and settings that prevent fabrication optimization analysis
+   /// to occur. When these conditions are true, the analysis cannot be performed and this function returns false
+   virtual bool GetFabricationOptimizationDetails(const CSegmentKey& segmentKey,FABRICATIONOPTIMIZATIONDETAILS* pDetails) const = 0;
 };
 
 #endif // INCLUDED_IFACE_CONSTRUCTABILITY_H_

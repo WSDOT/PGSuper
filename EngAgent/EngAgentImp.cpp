@@ -3773,15 +3773,29 @@ Float64 CEngAgentImp::GetSectionGirderOrientationEffect(const pgsPointOfInterest
 
 /////////////////////////////////////////////////////////////////////////////
 // IFabricationOptimization
-void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentKey,FABRICATIONOPTIMIZATIONDETAILS* pDetails) const
+bool CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentKey,FABRICATIONOPTIMIZATIONDETAILS* pDetails) const
 {
+   GET_IFACE(ILossParameters, pLossParams);
+   if (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP)
+   {
+      // not doing this for time-step analysis
+      return false;
+   }
+
+   GET_IFACE(IBridgeDescription, pBridgeDesc);
+   if (pBridgeDesc->GetPrecastSegmentData(segmentKey)->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectStrandInput)
+   {
+      // Can't do a fab optimization analysis with direct strand input
+      return false;
+   }
+
    GET_IFACE(IBridge,pBridge);
    GDRCONFIG config = pBridge->GetSegmentConfiguration(segmentKey);
 
    // there is nothing to do if there aren't any strands
    if ( config.PrestressConfig.GetStrandCount(pgsTypes::Straight) == 0 && config.PrestressConfig.GetStrandCount(pgsTypes::Harped) == 0 )
    {
-      return;
+      return true;
    }
 
    pDetails->Nt = config.PrestressConfig.GetStrandCount(pgsTypes::Temporary);
@@ -3999,13 +4013,13 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
    if (hauling_artifact == nullptr)
    {
       ATLASSERT(false); // Should check that hauling analysis is WSDOT before we get here
-      return;
+      return false;
    }
 
    if ( !bResult )
    {
       pDetails->bTempStrandsRequiredForShipping = true;
-      return;
+      return true;
    }
 
    GET_IFACE(IMaterials,pMaterial);
@@ -4104,7 +4118,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       if (hauling_artifact2==nullptr)
       {
          ATLASSERT(false); // Should check that hauling analysis is WSDOT before we get here
-         return;
+         return false;
       }
 
       Float64 fc;
@@ -4171,6 +4185,8 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
    pDetails->LUsum = overhang_sum;
 
    pDetails->Fc = fcReqd;
+
+   return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////

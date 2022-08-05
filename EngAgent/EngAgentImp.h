@@ -377,7 +377,7 @@ public:
 
 // IFabricationOptimization
 public:
-   virtual void GetFabricationOptimizationDetails(const CSegmentKey& segmentKey,FABRICATIONOPTIMIZATIONDETAILS* pDetails) const override;
+   virtual bool GetFabricationOptimizationDetails(const CSegmentKey& segmentKey,FABRICATIONOPTIMIZATIONDETAILS* pDetails) const override;
 
 // IArtifact
 public:
