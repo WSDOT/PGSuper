@@ -1825,7 +1825,7 @@ void pgsMomentCapacityEngineer::CreateStrandMaterial(const CSegmentKey& segmentK
    Float64 development_length_factor = 1.0;
    if(pPoi->IsOnSegment(bondTool.GetPOI())) development_length_factor = bondTool.GetDevelopmentLengthFactor(strandIdx, strandType);
 
-   ATLASSERT(!IsZero(development_length_factor));
+   ATLASSERT(IsGE(0.0,development_length_factor)); // development length factor can be zero if the POI is at a location where the strand id debonded
 
    auto found = m_StrandMaterial.find(StrandMaterial(strandType, development_length_factor, false, nullptr));
    if (found == m_StrandMaterial.end())
