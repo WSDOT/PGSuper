@@ -2497,17 +2497,8 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
            // Until 4/2018, the haunch depth for negative moment capacity was always computed using the computed excess camber
            // Retain this behavior and extend it to pgsTypes::hspFillet
            Float64 top_girder_to_top_slab = pBridge->GetTopSlabToTopGirderChordDistance(poi); // does not account for camber
-           Float64 excess_camber;
            GET_IFACE(ICamber, pCamber);
-           if (pConfig)
-           {
-              excess_camber = pCamber->GetExcessCamber(poi, CREEP_MAXTIME, pConfig);
-           }
-           else
-           {
-              excess_camber = pCamber->GetExcessCamber(poi, CREEP_MAXTIME);
-           }
-
+           Float64 excess_camber = pCamber->GetExcessCamber(poi, CREEP_MAXTIME, pConfig);
            haunch_depth = top_girder_to_top_slab - Dslab - excess_camber;
         }
         else
