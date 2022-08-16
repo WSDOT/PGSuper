@@ -70,7 +70,7 @@ HRESULT PSGLIBFUNC ConfigureUnitServer(IUnitServer* server)
       return E_FAIL;
    }
 
-   HRESULT hr = server->SetBaseUnits(CComBSTR("kg"), CComBSTR("m"), CComBSTR("sec"), CComBSTR("C"), CComBSTR("rad"));
+   HRESULT hr = server->SetSystemUnits(CComBSTR("kg"), CComBSTR("m"), CComBSTR("sec"), CComBSTR("C"), CComBSTR("rad"));
    ATLASSERT(SUCCEEDED(hr));
 
    return hr;
