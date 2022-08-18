@@ -667,22 +667,6 @@ pgsTypes::DropInType CPrecastSegmentData::IsDropIn() const
          }
       }
    }
-   else if (nPiers == 0 && nTowers == 2 )
-   {
-      // segment supported by towers at both ends. Could be a drop in if closures at both towers
-      const CPierData2* pPier1;
-      const CTemporarySupportData* pTS1;
-      GetSupport(pgsTypes::metStart, &pPier1, &pTS1);
-
-      const CPierData2* pPier2;
-      const CTemporarySupportData* pTS2;
-      GetSupport(pgsTypes::metEnd, &pPier2, &pTS2);
-
-      if (pTS1 != nullptr && pTS1->GetClosureJoint(0) != nullptr && pTS2 != nullptr && pTS2->GetClosureJoint(0) != nullptr)
-      {
-         return pgsTypes::ditYesFreeBothEnds;
-      }
-   }
 
    return pgsTypes::ditNotDropIn;
 }
