@@ -162,7 +162,10 @@ void CSelectCrackedSectionDlg::UpdateGirderComboBox()
 {
    GET_IFACE(IBridge, pBridge);
 
-   Uint16 curSel = m_cbGirder.GetCurSel();
+   int curSel = m_cbGirder.GetCurSel();
+   if (curSel == CB_ERR)
+      curSel = (int)m_GirderKey.girderIndex;
+
    m_cbGirder.ResetContent();
 
    GirderIndexType cGirder = pBridge->GetGirderCount(m_GirderKey.groupIndex);
@@ -176,7 +179,7 @@ void CSelectCrackedSectionDlg::UpdateGirderComboBox()
    if (m_cbGirder.SetCurSel(curSel == CB_ERR ? 0 : curSel) == CB_ERR)
       m_cbGirder.SetCurSel(0);
 
-   m_GirderKey.girderIndex = m_cbGirder.GetCurSel();
+   m_GirderKey.girderIndex = (IndexType)m_cbGirder.GetCurSel();
 }
 
 void CSelectCrackedSectionDlg::UpdateSliderLabel()
