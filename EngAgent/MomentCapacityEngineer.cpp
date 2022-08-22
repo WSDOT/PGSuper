@@ -2472,14 +2472,6 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
          0 < Weff*Dslab) // the geometry of the bridge is good and the deck actually has area over this girder
       )
    {
-      // so far, dt is measured from top of girder (if positive moment)
-      // since we have a deck, add Dslab so that dt is measured from top of slab
-      // If dt is zero, there wasn't any reinforcement so don't add Dslab
-      if ( bPositiveMoment && !IsZero(dt) )
-      {
-         dt += Dslab;
-      }
-
       pgsTypes::HaunchAnalysisSectionPropertiesType hatype = pSectProp->GetHaunchAnalysisSectionPropertiesType();
       // Determine whether haunch is required and its depth
       if ( bPositiveMoment && hatype==pgsTypes::hspZeroHaunch )
@@ -2628,6 +2620,13 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
       *pHaunch = 0.0;
    }
 
+   // so far, dt is measured from top of girder (if positive moment)
+   // since we have a deck, add Dslab+Haunch so that dt is measured from top of slab
+   // If dt is zero, there wasn't any reinforcement so don't add Dslab
+   if (bPositiveMoment && !IsZero(dt))
+   {
+      dt += Dslab +(*pHaunch);
+   }
 
    // measure from bottom of beam to top of deck to get height
    pntTension->DistanceEx(*pntCompression,pH);
