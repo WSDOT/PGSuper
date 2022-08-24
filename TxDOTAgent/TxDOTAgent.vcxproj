@@ -268,7 +268,6 @@ xcopy /y /d .\TogaTemplates\*.* $(ARPDIR)\BridgeLink\TogaTemplates\*.*</Command>
     <None Include="TxDOTComponentInfo.rgs" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Include\IFace\TxDOTCadExport.h" />
     <ClInclude Include="..\Include\SharedCtrls\MultiGirderSelectGrid.h" />
     <ClInclude Include="CLSID.h" />
     <ClInclude Include="dllmain.h" />
@@ -348,9 +347,6 @@ xcopy /y /d .\TogaTemplates\*.* $(ARPDIR)\BridgeLink\TogaTemplates\*.*</Command>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="TxDOTAgent.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Reporting\Reporting.vcxproj">

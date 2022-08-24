@@ -714,9 +714,6 @@
     <ClInclude Include="..\Include\Reporting\FlexuralStressCheckTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Include\Reporting\GirderComparisonChapterBuilder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\Include\Reporting\GirderDetailingCheck.h">
       <Filter>Header Files</Filter>
     </ClInclude>

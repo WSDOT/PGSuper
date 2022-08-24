@@ -330,9 +330,6 @@
     <ClInclude Include="TxDOTAppPlugin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Include\IFace\TxDOTCadExport.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TxDOTCadExporter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -472,11 +469,6 @@
       <UniqueIdentifier>{f022b687-cc05-4994-9d4f-fb8b97153b3e}</UniqueIdentifier>
       <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="ReadMe.txt">
-      <Filter>Header Files</Filter>
-    </Text>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="TxDOTAgent.rc">

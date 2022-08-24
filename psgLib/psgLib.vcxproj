@@ -333,7 +333,6 @@
     <ClInclude Include="..\Include\PsgLib\psgLib.h" />
     <ClInclude Include="..\Include\PsgLib\psgLibLib.h" />
     <ClInclude Include="..\Include\psgLib\RatingLibraryEntry.h" />
-    <ClInclude Include="..\Include\psgLib\RebarUIUtils.h" />
     <ClInclude Include="..\Include\psgLib\ShearData.h" />
     <ClInclude Include="..\Include\psgLib\ShearSteelGrid.h" />
     <ClInclude Include="..\Include\psgLib\ShearSteelPage.h" />
@@ -367,7 +366,6 @@
     <ClInclude Include="GirderMainSheet.h" />
     <ClInclude Include="GirderStraightStrandPage.h" />
     <ClInclude Include="GirderStrandGrid.h" />
-    <ClInclude Include="GirderStrandGridClient.h" />
     <ClInclude Include="HaulTruckDlg.h" />
     <ClInclude Include="KdotHaulingDlg.h" />
     <ClInclude Include="LibraryAppPlugin.h" />
@@ -389,7 +387,6 @@
     <ClInclude Include="SpecClosurePage.h" />
     <ClInclude Include="SpecCreepPage.h" />
     <ClInclude Include="SpecDeadLoadsPage.h" />
-    <ClInclude Include="SpecDebondingPage.h" />
     <ClInclude Include="SpecDescrPage.h" />
     <ClInclude Include="SpecDesignPage.h" />
     <ClInclude Include="SpecGirderStressPage.h" />

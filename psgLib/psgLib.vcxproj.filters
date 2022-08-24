@@ -369,9 +369,6 @@
     <ClInclude Include="GirderStrandGrid.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GirderStrandGridClient.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="HaulTruckDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -459,9 +456,6 @@
     <ClInclude Include="..\Include\psgLib\RatingLibraryEntry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Include\psgLib\RebarUIUtils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="RenameLibraryEntry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -493,9 +487,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SpecCreepPage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SpecDebondingPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SpecDescrPage.h">
