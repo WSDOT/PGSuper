@@ -650,7 +650,7 @@ void CMomentCapacityChapterBuilder::DrawSection(CImage& image,IMomentCapacitySol
    //pDC->LineTo(p);
 
    CComPtr<IPlane3d> strain_plane;
-   pSolution->get_StrainPlane(&strain_plane);
+   pSolution->get_IncrementalStrainPlane(&strain_plane);
 
    Float64 eTop, eBottom; // strain top and bottom
    strain_plane->GetZ(0,mirror_factor*top,&eTop);

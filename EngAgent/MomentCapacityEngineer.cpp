@@ -859,7 +859,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
       mcd.de = mcd.dc + mcd.MomentArm;
 
       CComPtr<IPlane3d> strainPlane;
-      solution->get_StrainPlane(&strainPlane);
+      solution->get_IncrementalStrainPlane(&strainPlane);
       Float64 x,y,z;
       x = 0;
       z = 0;
