@@ -709,6 +709,7 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
    {
       *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("ReinforcementYieldingEquation.png")) << rptNewLine;
    }
+   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("ReinforcementYieldingParameters.png")) << rptNewLine;
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
