@@ -113,8 +113,8 @@ void CPierGirderSpacingPage::DoDataExchange(CDataExchange* pDX)
    {
       Float64 offset;
       ConnectionLibraryEntry::BearingOffsetMeasurementType back_measure, ahead_measure;
-      pParent->m_pPier->GetBearingOffset(pgsTypes::Back, &offset,&back_measure);
-      pParent->m_pPier->GetBearingOffset(pgsTypes::Ahead,&offset,&ahead_measure);
+      pParent->m_pPier->GetBearingOffset(pgsTypes::Back, &offset,&back_measure,true);
+      pParent->m_pPier->GetBearingOffset(pgsTypes::Ahead,&offset,&ahead_measure,true);
       FillGirderSpacingMeasurementComboBox(IDC_PREV_SPAN_SPACING_MEASUREMENT,back_measure);
       FillGirderSpacingMeasurementComboBox(IDC_NEXT_SPAN_SPACING_MEASUREMENT,ahead_measure);
    }

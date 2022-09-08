@@ -80,8 +80,8 @@ bool txnInsertSpan::Execute()
    for ( int i = 0; i < 2; i++ )
    {
       pgsTypes::PierFaceType face = (pgsTypes::PierFaceType)i;
-      pPier->GetBearingOffset(face,&m_BrgOffset[face],&m_BrgOffsetMeasure[face]);
-      pPier->GetGirderEndDistance(face,&m_EndDist[face],&m_EndDistMeasure[face]);
+      pPier->GetBearingOffset(face,&m_BrgOffset[face],&m_BrgOffsetMeasure[face],true);
+      pPier->GetGirderEndDistance(face,&m_EndDist[face],&m_EndDistMeasure[face],true);
    }
 
    pIBridgeDesc->InsertSpan(m_RefPierIdx,m_PierFace,m_SpanLength,nullptr,nullptr,m_bCreateNewGroup,m_PierErectionEventIndex);
