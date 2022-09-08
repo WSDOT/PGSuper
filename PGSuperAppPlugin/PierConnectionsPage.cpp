@@ -310,8 +310,8 @@ BOOL CPierConnectionsPage::OnInitDialog()
 
    for ( int i = 0; i < 2; i++ )
    {
-      m_pPier->GetBearingOffset(pgsTypes::PierFaceType(i),&m_BearingOffset[i],&m_BearingOffsetMeasurementType);
-      m_pPier->GetGirderEndDistance(pgsTypes::PierFaceType(i),&m_EndDistance[i],&m_EndDistanceMeasurementType);
+      m_pPier->GetBearingOffset(pgsTypes::PierFaceType(i),&m_BearingOffset[i],&m_BearingOffsetMeasurementType,true);
+      m_pPier->GetGirderEndDistance(pgsTypes::PierFaceType(i),&m_EndDistance[i],&m_EndDistanceMeasurementType,true);
 
       m_DiaphragmHeight[i]       = m_pPier->GetDiaphragmHeight(pgsTypes::PierFaceType(i));
       m_DiaphragmWidth[i]        = m_pPier->GetDiaphragmWidth(pgsTypes::PierFaceType(i));
@@ -812,7 +812,7 @@ BOOL CPierConnectionsPage::OnSetActive()
 
    // the the beariong offset measurement type and reset the control so OnBearingOffsetMeasureChanged will work property
    Float64 brgOffset;
-   m_pPier->GetBearingOffset(m_pPier->GetNextSpan() == nullptr ? pgsTypes::Back : pgsTypes::Ahead, &brgOffset, &m_BearingOffsetMeasurementType);
+   m_pPier->GetBearingOffset(m_pPier->GetNextSpan() == nullptr ? pgsTypes::Back : pgsTypes::Ahead, &brgOffset, &m_BearingOffsetMeasurementType,true);
    CDataExchange dx(this, FALSE);
    DDX_CBItemData(&dx, IDC_BEARING_OFFSET_MEASURE, m_BearingOffsetMeasurementType);
 

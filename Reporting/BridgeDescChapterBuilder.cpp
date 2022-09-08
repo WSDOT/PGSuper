@@ -2256,9 +2256,10 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
       //
       // Connection table
       //
+      CPierData2::PierConnectionFlags conFlag = pPier->IsConnectionDataAvailable();
 
       // back side
-      if ( pPier->GetPrevSpan() )
+      if (CPierData2::pcfBothFaces == conFlag || CPierData2::pcfBackOnly == conFlag)
       {
          Float64 brgOffset;
          ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure;
@@ -2275,14 +2276,14 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
       }
       else
       {
-         (*pConnectionTable)(row3,1) << _T("");
-         (*pConnectionTable)(row3,2) << _T("");
-         (*pConnectionTable)(row3,3) << _T("");
-         (*pConnectionTable)(row3,4) << _T("");
+         (*pConnectionTable)(row3,1) << RPT_NA;
+         (*pConnectionTable)(row3,2) << RPT_NA;
+         (*pConnectionTable)(row3,3) << RPT_NA;
+         (*pConnectionTable)(row3,4) << RPT_NA;
       }
 
       // Ahead side
-      if ( pPier->GetNextSpan() )
+      if (CPierData2::pcfBothFaces == conFlag || CPierData2::pcfAheadOnly == conFlag)
       {
          Float64 brgOffset;
          ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure;
@@ -2298,10 +2299,10 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
       }
       else
       {
-         (*pConnectionTable)(row3,5) << _T("");
-         (*pConnectionTable)(row3,6) << _T("");
-         (*pConnectionTable)(row3,7) << _T("");
-         (*pConnectionTable)(row3,8) << _T("");
+         (*pConnectionTable)(row3,5) << RPT_NA;
+         (*pConnectionTable)(row3,6) << RPT_NA;
+         (*pConnectionTable)(row3,7) << RPT_NA;
+         (*pConnectionTable)(row3,8) << RPT_NA;
       }
 
       if ( pPier->GetNextSpan() )

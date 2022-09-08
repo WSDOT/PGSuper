@@ -90,6 +90,15 @@ public:
    // Miscellaneous
    // =================================================================================
 
+   // enum represents where, and if, connection data can exist for the pier.
+   enum PierConnectionFlags
+   {
+      pcfNoConnections = 0,
+      pcfBackOnly = 1,
+      pcfAheadOnly = 2,
+      pcfBothFaces=3
+   };
+
    // Returns a consistent string name for a pier connection type.
    static LPCTSTR AsString(pgsTypes::BoundaryConditionType type,bool bNoDeck=false);
 
@@ -107,6 +116,9 @@ public:
    bool IsBoundaryPier() const; // returns true if the pier is at a boundary of a girder group
 
    bool HasSpacing() const; // returns true if there is spacing data at this pier
+
+   // Rules for when piers have connection data are a bit complex, so put the logic into one place:
+   PierConnectionFlags IsConnectionDataAvailable() const;
 
    // =================================================================================
    // Configuration information
@@ -166,13 +178,14 @@ public:
    // These parameters are meaningless if the connection type is pgsTypes::ContinuousSegment
    // returns true if data changed
    bool SetGirderEndDistance(pgsTypes::PierFaceType face,Float64 endDist,ConnectionLibraryEntry::EndDistanceMeasurementType measure);
-   void GetGirderEndDistance(pgsTypes::PierFaceType face,Float64* pEndDist,ConnectionLibraryEntry::EndDistanceMeasurementType* pMeasure) const;
+   // Set bRaw=true to avoid an Assert if trying to get invalid data
+   void GetGirderEndDistance(pgsTypes::PierFaceType face,Float64* pEndDist,ConnectionLibraryEntry::EndDistanceMeasurementType* pMeasure, bool bRaw=false) const;
 
    // Set/Get the distance from the CL pier (defined by its station) to the CL bearing
    // These parameters are meaningless if the connection type is pgsTypes::ContinuousSegment
    // returns true if data changed
    bool SetBearingOffset(pgsTypes::PierFaceType face,Float64 offset,ConnectionLibraryEntry::BearingOffsetMeasurementType measure);
-   void GetBearingOffset(pgsTypes::PierFaceType face,Float64* pOffset,ConnectionLibraryEntry::BearingOffsetMeasurementType* pMeasure) const;
+   void GetBearingOffset(pgsTypes::PierFaceType face,Float64* pOffset,ConnectionLibraryEntry::BearingOffsetMeasurementType* pMeasure, bool bRaw = false) const;
 
    // Set/Get the bearing data - uniform at this girder line (pier face), or per girder
    void SetBearingData(pgsTypes::PierFaceType face, const CBearingData2& bd);

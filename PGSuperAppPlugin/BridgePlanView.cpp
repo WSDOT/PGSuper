@@ -2203,9 +2203,11 @@ void CBridgePlanView::BuildPierDisplayObjects()
          Float64 left_offset = 0;
          Float64 right_offset = 0;
 
+         CPierData2::PierConnectionFlags conFlag = pPier->IsConnectionDataAvailable();
+
          if (pPier->GetPierModelType() == pgsTypes::pmtIdealized)
          {
-            if (pPier->GetPrevSpan())
+            if (CPierData2::pcfBothFaces==conFlag || CPierData2::pcfBackOnly == conFlag)
             {
                ConnectionLibraryEntry::BearingOffsetMeasurementType left_brg_offset_measure_type;
                pPier->GetBearingOffset(pgsTypes::Back, &left_offset, &left_brg_offset_measure_type);
@@ -2215,7 +2217,7 @@ void CBridgePlanView::BuildPierDisplayObjects()
                }
             }
 
-            if (pPier->GetNextSpan())
+            if (CPierData2::pcfBothFaces == conFlag || CPierData2::pcfAheadOnly == conFlag)
             {
                ConnectionLibraryEntry::BearingOffsetMeasurementType right_brg_offset_measure_type;
                pPier->GetBearingOffset(pgsTypes::Ahead, &right_offset, &right_brg_offset_measure_type);
@@ -2227,8 +2229,15 @@ void CBridgePlanView::BuildPierDisplayObjects()
          }
          else
          {
-            left_offset = pPier->GetXBeamWidth() / 2;
-            right_offset = left_offset;
+            if (CPierData2::pcfBothFaces == conFlag || CPierData2::pcfBackOnly == conFlag)
+            {
+               left_offset = pPier->GetXBeamWidth() / 2;
+            }
+
+            if (CPierData2::pcfBothFaces == conFlag || CPierData2::pcfAheadOnly == conFlag)
+            {
+               right_offset = pPier->GetXBeamWidth() / 2;
+            }
          }
 
          left_offset = (IsZero(left_offset) ? right_offset / 2 : left_offset);

@@ -224,8 +224,8 @@ void CClosureJointGeometryPage::Init(const CPierData2* pPierData)
    m_strSupportLabel = _T("Pier");
 
    // we are forcing both sides of the pier to be the same so just use Ahead face
-   pPierData->GetGirderEndDistance(pgsTypes::Ahead,&m_EndDistance,&m_EndDistanceMeasurementType);
-   pPierData->GetBearingOffset(pgsTypes::Ahead,&m_BearingOffset,&m_BearingOffsetMeasurementType);
+   pPierData->GetGirderEndDistance(pgsTypes::Ahead,&m_EndDistance,&m_EndDistanceMeasurementType,true);
+   pPierData->GetBearingOffset(pgsTypes::Ahead,&m_BearingOffset,&m_BearingOffsetMeasurementType,true);
 
    m_DiaphragmWidth = pPierData->GetDiaphragmWidth(pgsTypes::Back) + pPierData->GetDiaphragmWidth(pgsTypes::Ahead);
    m_DiaphragmWidth = Max(m_DiaphragmWidth, -1.0);

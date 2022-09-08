@@ -255,8 +255,8 @@ BOOL CAbutmentConnectionsPage::OnInitDialog()
    m_BoundaryConditionType = m_pPier->GetBoundaryConditionType();
 
    pgsTypes::PierFaceType face = (m_pPier->GetPrevSpan() == nullptr ? pgsTypes::Ahead : pgsTypes::Back);
-   m_pPier->GetBearingOffset(face,&m_BearingOffset,&m_BearingOffsetMeasurementType);
-   m_pPier->GetGirderEndDistance(face,&m_EndDistance,&m_EndDistanceMeasurementType);
+   m_pPier->GetBearingOffset(face,&m_BearingOffset,&m_BearingOffsetMeasurementType,true);
+   m_pPier->GetGirderEndDistance(face,&m_EndDistance,&m_EndDistanceMeasurementType,true);
 
    m_DiaphragmHeight       = m_pPier->GetDiaphragmHeight(face);
    m_DiaphragmWidth        = m_pPier->GetDiaphragmWidth(face);

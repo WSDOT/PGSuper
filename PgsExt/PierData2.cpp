@@ -1722,6 +1722,29 @@ void CPierData2::SetSegmentConnectionType(pgsTypes::PierSegmentConnectionType ne
    }
 }
 
+CPierData2::PierConnectionFlags CPierData2::IsConnectionDataAvailable() const
+{
+   // First check if we possibly have connection data. Exterior piers always do
+   bool hasConnectionData(true);
+   if (IsInteriorPier())
+   {
+      hasConnectionData = !(m_SegmentConnectionType == pgsTypes::psctContinuousSegment || m_SegmentConnectionType == pgsTypes::psctIntegralSegment);
+   }
+
+   if (hasConnectionData)
+   {
+      int startface = (GetPrevSpan() != nullptr) ? 1 : 0;
+      int endface   = (GetNextSpan() != nullptr) ? 2 : 0;
+
+      CPierData2::PierConnectionFlags flag = (CPierData2::PierConnectionFlags)(startface | endface);
+      return flag;
+   }
+   else
+   {
+      return  pcfNoConnections;
+   }
+}
+
 bool CPierData2::SetGirderEndDistance(pgsTypes::PierFaceType face,Float64 endDist,ConnectionLibraryEntry::EndDistanceMeasurementType measure)
 {
    if (endDist != m_GirderEndDistance[face] || measure != m_EndDistanceMeasurementType[face])
@@ -1736,8 +1759,24 @@ bool CPierData2::SetGirderEndDistance(pgsTypes::PierFaceType face,Float64 endDis
    }
 }
 
-void CPierData2::GetGirderEndDistance(pgsTypes::PierFaceType face,Float64* pEndDist,ConnectionLibraryEntry::EndDistanceMeasurementType* pMeasure) const
+void CPierData2::GetGirderEndDistance(pgsTypes::PierFaceType face,Float64* pEndDist,ConnectionLibraryEntry::EndDistanceMeasurementType* pMeasure,bool bRaw) const
 {
+#ifdef DEBUG
+   // Check if caller has any business asking for connection data
+   if (!bRaw)
+   {
+      CPierData2::PierConnectionFlags flag = IsConnectionDataAvailable();
+      if (pgsTypes::Ahead == face)
+      {
+         ATLASSERT(pcfBothFaces == flag || pcfAheadOnly == flag);
+      }
+      else
+      {
+         ATLASSERT(pcfBothFaces == flag || pcfBackOnly == flag);
+      }
+   }
+#endif // DEBUG
+
    *pEndDist = m_GirderEndDistance[face];
    *pMeasure = m_EndDistanceMeasurementType[face];
 }
@@ -1756,8 +1795,24 @@ bool CPierData2::SetBearingOffset(pgsTypes::PierFaceType face, Float64 offset, C
    }
 }
 
-void CPierData2::GetBearingOffset(pgsTypes::PierFaceType face,Float64* pOffset,ConnectionLibraryEntry::BearingOffsetMeasurementType* pMeasure) const
+void CPierData2::GetBearingOffset(pgsTypes::PierFaceType face,Float64* pOffset,ConnectionLibraryEntry::BearingOffsetMeasurementType* pMeasure,bool bRaw) const
 {
+#ifdef DEBUG
+   // Check if caller has any business asking for connection data
+   if (!bRaw)
+   {
+      CPierData2::PierConnectionFlags flag = IsConnectionDataAvailable();
+      if (pgsTypes::Ahead == face)
+      {
+         ATLASSERT(pcfBothFaces == flag || pcfAheadOnly == flag);
+      }
+      else
+      {
+         ATLASSERT(pcfBothFaces == flag || pcfBackOnly == flag);
+      }
+   }
+#endif // DEBUG
+
    *pOffset = m_GirderBearingOffset[face];
    *pMeasure = m_BearingOffsetMeasurementType[face];
 }

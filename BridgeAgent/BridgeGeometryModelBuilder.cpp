@@ -189,9 +189,11 @@ bool CBridgeGeometryModelBuilder::LayoutPiers(const CBridgeDescription2* pBridge
       std::_tstring strOrientation = pPier->GetOrientation();
       CComPtr<IPierLine> pierline;
       pBridgeGeometry->CreatePierLine(pierID,m_AlignmentID,CComVariant(station),CComBSTR(strOrientation.c_str()),pier_length,left_end_offset,&pierline);
+     
+      CPierData2::PierConnectionFlags conFlag = pPier->IsConnectionDataAvailable();
 
       // Layout connection geometry on back side of pier
-      if ( pPier->GetPrevSpan() )
+      if ( CPierData2::pcfBackOnly==conFlag || CPierData2::pcfBothFaces == conFlag)
       {
          Float64 offset;
          ConnectionLibraryEntry::BearingOffsetMeasurementType offsetMeasureType;
@@ -225,9 +227,8 @@ bool CBridgeGeometryModelBuilder::LayoutPiers(const CBridgeDescription2* pBridge
          }
       }
 
-
       // Layout connection geometry on ahead side of pier
-      if ( pPier->GetNextSpan() )
+      if (CPierData2::pcfAheadOnly == conFlag || CPierData2::pcfBothFaces == conFlag)
       {
          Float64 offset;
          ConnectionLibraryEntry::BearingOffsetMeasurementType offsetMeasureType;

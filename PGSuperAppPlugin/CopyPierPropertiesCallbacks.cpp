@@ -78,13 +78,13 @@ static PierConnectionData MakePierConnectionData(PierCBLocType locType, const CP
    pgsTypes::BoundaryConditionType bcType = pPier->GetBoundaryConditionType();
    Float64 backBrgOffset, aheadBrgOffset;
    ConnectionLibraryEntry::BearingOffsetMeasurementType backBrgOffsetMeasure, aheadBrgOffsetMeasure;
-   pPier->GetBearingOffset(pgsTypes::Back, &backBrgOffset,&backBrgOffsetMeasure);
-   pPier->GetBearingOffset(pgsTypes::Ahead,&aheadBrgOffset,&aheadBrgOffsetMeasure);
+   pPier->GetBearingOffset(pgsTypes::Back, &backBrgOffset,&backBrgOffsetMeasure,true);
+   pPier->GetBearingOffset(pgsTypes::Ahead,&aheadBrgOffset,&aheadBrgOffsetMeasure,true);
 
    Float64 backEndDist, aheadEndDist;
    ConnectionLibraryEntry::EndDistanceMeasurementType backEndDistMeasure, aheadEndDistMeasure;
-   pPier->GetGirderEndDistance(pgsTypes::Back, &backEndDist, &backEndDistMeasure);
-   pPier->GetGirderEndDistance(pgsTypes::Ahead, &aheadEndDist, &aheadEndDistMeasure);
+   pPier->GetGirderEndDistance(pgsTypes::Back, &backEndDist, &backEndDistMeasure,true);
+   pPier->GetGirderEndDistance(pgsTypes::Ahead, &aheadEndDist, &aheadEndDistMeasure,true);
 
    return PierConnectionData(locType, bcType,
                                       backEndDist,  backEndDistMeasure,  backBrgOffset,  backBrgOffsetMeasure,
