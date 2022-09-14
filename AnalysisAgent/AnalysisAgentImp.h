@@ -33,12 +33,11 @@
 #include "GirderModelManager.h"
 
 #include <EAF\EAFInterfaceCache.h>
+#include <Math/LinearFunction.h>
 
 #if defined _USE_MULTITHREADING
 #include <PgsExt\ThreadManager.h>
 #endif
-
-class mathLinFunc2d;
 
 /////////////////////////////////////////////////////////////////////////////
 // CAnalysisAgent
@@ -613,7 +612,7 @@ private:
    void ApplyElevationAdjustment(IntervalIndexType intervalIdx,const PoiList& vPoi,std::vector<Float64>* pDeflection1,std::vector<Float64>* pDeflection2) const;
    void ApplyRotationAdjustment(IntervalIndexType intervalIdx,const PoiList& vPoi,std::vector<Float64>* pRotation1,std::vector<Float64>* pRotation2) const;
 
-   std::shared_ptr<mathLinFunc2d> GetUnrecoverableDeflectionVariables(sagInterval sagint,pgsTypes::BridgeAnalysisType bat,IntervalIndexType storageIntervalIdx,const CSegmentKey& segmentKey,Float64* pDeflectionFactor) const;
+   std::shared_ptr<WBFL::Math::LinearFunction> GetUnrecoverableDeflectionVariables(sagInterval sagint,pgsTypes::BridgeAnalysisType bat,IntervalIndexType storageIntervalIdx,const CSegmentKey& segmentKey,Float64* pDeflectionFactor) const;
 
    void ComputeTimeDependentEffects(const CGirderKey& girderKey,IntervalIndexType intervalIdx) const;
 

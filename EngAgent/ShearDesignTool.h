@@ -321,11 +321,11 @@ private:
 
    // Two ways to store same vert av/s demand data here, by POI, and by X location
    mutable std::vector<std::pair<Float64,bool>> m_VertShearAvsDemandAtPois;    // Avs demand by POI, bool indicates if stirrups are required regardless of Avs = 0
-   mutable mathPwLinearFunction2dUsingPoints m_VertShearAvsDemandAtX; // Avs demand at locations along girder
+   mutable WBFL::Math::PiecewiseFunction m_VertShearAvsDemandAtX; // Avs demand at locations along girder
 
    // Two ways to store same Horiz av/s demand data here, by POI, and by X location
    mutable std::vector<std::pair<Float64,bool>> m_HorizShearAvsDemandAtPois;    // Avs demand by POI
-   mutable mathPwLinearFunction2dUsingPoints m_HorizShearAvsDemandAtX; // Avs demand at locations along girder
+   mutable WBFL::Math::PiecewiseFunction m_HorizShearAvsDemandAtX; // Avs demand at locations along girder
 
    // Store entire stirrup check artifact
    pgsStirrupCheckArtifact m_StirrupCheckArtifact;
@@ -393,7 +393,7 @@ private:
    ShearDesignOutcome ValidateVerticalAvsDemand() const;
    void ValidateHorizontalAvsDemand() const;
 
-   void ProcessAvsDemand(std::vector<std::pair<Float64,bool>>& rDemandAtPois, mathPwLinearFunction2dUsingPoints& rDemandAtLocations) const;
+   void ProcessAvsDemand(std::vector<std::pair<Float64,bool>>& rDemandAtPois, WBFL::Math::PiecewiseFunction& rDemandAtLocations) const;
 
 private:
 	DECLARE_SHARED_LOGFILE;

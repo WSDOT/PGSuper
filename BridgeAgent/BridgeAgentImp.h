@@ -47,9 +47,9 @@
 
 #include <memory>
 
-#include <Math\Polynomial2d.h>
-#include <Math\CompositeFunction2d.h>
-#include <Math\LinFunc2d.h>
+#include <Math\PolynomialFunction.h>
+#include <Math\CompositeFunction.h>
+#include <Math\LinearFunction.h>
 
 #include "StatusItems.h"
 #include "ConcreteManager.h"
@@ -1663,9 +1663,9 @@ private:
    void GetCurbLinePoint(Float64 station, IDirection* direction,DirectionType side,pgsTypes::PlanCoordinateType pcType,IPoint3d** point) const;
    void CreateOverlayDeckEdgePaths(const CBridgeDescription2* pBridgeDesc,IPath** ppLeftPath,IPath** ppRightPath);
 
-   std::shared_ptr<mathFunction2d> CreateGirderProfile(const CSplicedGirderData* pGirder) const;
-   std::shared_ptr<mathFunction2d> CreateGirderBottomFlangeProfile(const CSplicedGirderData* pGirder) const;
-   std::shared_ptr<mathFunction2d> CreateGirderProfile(const CSplicedGirderData* pGirder,bool bGirderProfile) const;
+   std::shared_ptr<WBFL::Math::Function> CreateGirderProfile(const CSplicedGirderData* pGirder) const;
+   std::shared_ptr<WBFL::Math::Function> CreateGirderBottomFlangeProfile(const CSplicedGirderData* pGirder) const;
+   std::shared_ptr<WBFL::Math::Function> CreateGirderProfile(const CSplicedGirderData* pGirder,bool bGirderProfile) const;
    void GetSegmentRange(const CSegmentKey& segmentKey,Float64* pXStart,Float64* pXEnd) const;
 
    Float64 ConvertSegmentDuctOffsetToDuctElevation(const CSegmentKey& segmentKey, const CPrecastSegmentData* pSegment, Float64 Xs, Float64 offset, pgsTypes::FaceType offsetType) const;
@@ -1675,8 +1675,8 @@ private:
    void CreateDuctCenterline(const CGirderKey& girderKey, const CSplicedGirderData* pGirder, const CParabolicDuctGeometry& geometry,IPoint2dCollection** ppPoints) const;
    void CreateDuctCenterline(const CGirderKey& girderKey, const CSplicedGirderData* pGirder, const COffsetDuctGeometry& geometry,IPoint2dCollection** ppPoints) const;
 
-   mathCompositeFunction2d CreateDuctCenterline(const CGirderKey& girderKey, const CSplicedGirderData* pGirder, const CLinearDuctGeometry& geometry) const;
-   mathCompositeFunction2d CreateDuctCenterline(const CGirderKey& girderKey, const CSplicedGirderData* pGirder, const CParabolicDuctGeometry& geometry) const;
+   std::unique_ptr<WBFL::Math::CompositeFunction> CreateDuctCenterline(const CGirderKey& girderKey, const CSplicedGirderData* pGirder, const CLinearDuctGeometry& geometry) const;
+   std::unique_ptr<WBFL::Math::CompositeFunction> CreateDuctCenterline(const CGirderKey& girderKey, const CSplicedGirderData* pGirder, const CParabolicDuctGeometry& geometry) const;
 
    SegmentIndexType GetSegmentIndex(const CSplicedGirderData* pGirder,Float64 Xb) const;
    SegmentIndexType GetSegmentIndex(const CGirderKey& girderKey,ILine2d* pLine,IPoint2d** ppIntersection) const;
@@ -1732,10 +1732,10 @@ private:
 
    Float64 GetOverallHeight(const pgsPointOfInterest& poi) const;
 
-   const mathLinFunc2d& GetGirderTopChordElevationFunction(const CSegmentKey& segmentKey) const;
+   const WBFL::Math::LinearFunction& GetGirderTopChordElevationFunction(const CSegmentKey& segmentKey) const;
    void ValidateGirderTopChordElevation(const CGirderKey& girderKey) const;
-   void ValidateGirderTopChordElevation(const CGirderKey& girderKey,std::map<CSegmentKey, mathLinFunc2d>* pFunctions) const;
-   mutable std::map<CSegmentKey, mathLinFunc2d> m_GirderTopChordElevationFunctions; // linear functions that represent the top girder chord elevations
+   void ValidateGirderTopChordElevation(const CGirderKey& girderKey,std::map<CSegmentKey, WBFL::Math::LinearFunction>* pFunctions) const;
+   mutable std::map<CSegmentKey, WBFL::Math::LinearFunction> m_GirderTopChordElevationFunctions; // linear functions that represent the top girder chord elevations
 
    // Common function to return bearing elevation details at bearings or at girder edges
    enum BearingElevLocType { batBearings, batGirderEdges };

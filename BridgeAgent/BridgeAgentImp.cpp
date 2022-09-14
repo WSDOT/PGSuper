@@ -57,9 +57,6 @@
 #include <PgsExt\GirderLabel.h>
 
 #include <MathEx.h>
-#include <Math\Polynomial2d.h>
-#include <Math\CompositeFunction2d.h>
-#include <Math\LinFunc2d.h>
 #include <Math\MathUtils.h>
 #include <System\Flags.h>
 #include <Materials/Materials.h>
@@ -3299,7 +3296,7 @@ void CBridgeAgentImp::GetHaunchDepth(const CPrecastSegmentData* pSegment,Float64
    }
    else
    {
-      mathPolynomial2d parabola(GenerateParabola(0.0,span_length,bulge));
+      auto parabola(GenerateParabola(0.0,span_length,bulge));
       Float64 par_start_haunch = parabola.Evaluate(-segment_start_end_dist);
       Float64 par_end_haunch =   parabola.Evaluate(span_length + segment_end_end_dist);
 
@@ -26532,7 +26529,7 @@ void CBridgeAgentImp::GetSegmentProfile(const CSegmentKey& segmentKey,const CSpl
    }
 
    // Create a function object that models the bottom of the girder
-   std::shared_ptr<mathFunction2d> f = CreateGirderProfile(pGirder);
+   auto f = CreateGirderProfile(pGirder);
    CComPtr<IPolyShape> polyShape;
    polyShape.CoCreateInstance(CLSID_PolyShape);
 
@@ -26731,7 +26728,7 @@ void CBridgeAgentImp::GetClosureJointProfile(const CClosureKey& closureKey, ISha
    xStart -= (leftSegEndBrgOffset - leftSegEndOffset);
    xEnd += (rightSegStartBrgOffset - rightSegStartOffset);
 
-   std::shared_ptr<mathFunction2d> f = CreateGirderProfile(pGirder);
+   auto f = CreateGirderProfile(pGirder);
    CComPtr<IPolyShape> polyShape;
    polyShape.CoCreateInstance(CLSID_PolyShape);
 
@@ -26765,7 +26762,7 @@ void CBridgeAgentImp::GetClosureJointProfile(const CClosureKey& closureKey, ISha
 Float64 CBridgeAgentImp::GetSegmentHeight(const CSegmentKey& segmentKey,const CSplicedGirderData* pSplicedGirder,Float64 Xsp) const
 {
    Float64 Xgp = ConvertSegmentPathCoordinateToGirderPathCoordinate(segmentKey,Xsp);
-   std::shared_ptr<mathFunction2d> f = CreateGirderProfile(pSplicedGirder); // profile includes precamber effect
+   auto f = CreateGirderProfile(pSplicedGirder); // profile includes precamber effect
    Float64 Y = f->Evaluate(Xgp);
 
    Float64 Xs = ConvertSegmentPathCoordinateToSegmentCoordinate(segmentKey, Xsp);
@@ -28058,8 +28055,8 @@ void CBridgeAgentImp::GetSegmentBottomFlangeProfile(const CSegmentKey& segmentKe
 
    Float64 segmentLength = GetSegmentLayoutLength(segmentKey);
 
-   std::shared_ptr<mathFunction2d> girder_depth         = CreateGirderProfile(pGirder);
-   std::shared_ptr<mathFunction2d> bottom_flange_height = CreateGirderBottomFlangeProfile(pGirder);
+   auto girder_depth         = CreateGirderProfile(pGirder);
+   auto bottom_flange_height = CreateGirderBottomFlangeProfile(pGirder);
 
    CComPtr<IPoint2dCollection> points;
    points.CoCreateInstance(CLSID_Point2dCollection);
@@ -28156,19 +28153,19 @@ void CBridgeAgentImp::GetSegmentBottomFlangeProfile(const CSegmentKey& segmentKe
    points.CopyTo(ppPoints);
 }
 
-std::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSplicedGirderData* pGirder) const
+std::shared_ptr<WBFL::Math::Function> CBridgeAgentImp::CreateGirderProfile(const CSplicedGirderData* pGirder) const
 {
    return CreateGirderProfile(pGirder,true);
 }
 
-std::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderBottomFlangeProfile(const CSplicedGirderData* pGirder) const
+std::shared_ptr<WBFL::Math::Function> CBridgeAgentImp::CreateGirderBottomFlangeProfile(const CSplicedGirderData* pGirder) const
 {
    return CreateGirderProfile(pGirder,false);
 }
 
-std::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSplicedGirderData* pGirder,bool bGirderProfile) const
+std::shared_ptr<WBFL::Math::Function> CBridgeAgentImp::CreateGirderProfile(const CSplicedGirderData* pGirder,bool bGirderProfile) const
 {
-   std::shared_ptr<mathCompositeFunction2d> pCompositeFunction( std::make_shared<mathCompositeFunction2d>() );
+   auto pCompositeFunction( std::make_shared<WBFL::Math::CompositeFunction>() );
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -28239,7 +28236,7 @@ std::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSpli
          if (!bGirderProfile || IsZero(pSegment->Precamber))
          {
             Float64 slope = (h2 - h1) / segment_length;
-            mathLinFunc2d func(slope, h1);
+            WBFL::Math::LinearFunction func(slope, h1);
             pCompositeFunction->AddFunction(xStart, xEnd, func);
          }
          else
@@ -28249,7 +28246,7 @@ std::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSpli
             // from the function to get the profile based on the top of the girder
             // being at zero. That negative cancels out the negative used here and we
             // get the profile we want
-            mathPolynomial2d func(GenerateParabola(xStart, xEnd, -pSegment->Precamber, h1));
+            auto func(GenerateParabola(xStart, xEnd, -pSegment->Precamber, h1));
             pCompositeFunction->AddFunction(xStart, xEnd, func);
          }
          slopeParabola = 0;
@@ -28287,7 +28284,7 @@ std::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSpli
          if (0 < variation_length[pgsTypes::sztLeftPrismatic])
          {
             // create a prismatic segment
-            mathLinFunc2d func(0.0, h1);
+            WBFL::Math::LinearFunction func(0.0, h1);
             xEnd = xStart + (variation_type == pgsTypes::svtNone ? segment_length / 2 : variation_length[pgsTypes::sztLeftPrismatic]);
             pCompositeFunction->AddFunction(xStart, xEnd, func);
             slopeParabola = 0;
@@ -28301,7 +28298,7 @@ std::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSpli
             Float64 slope = (h2 - h1) / taper_length;
             Float64 b = h1 - slope*xStart;
 
-            mathLinFunc2d func(slope, b);
+            WBFL::Math::LinearFunction func(slope, b);
             xEnd = xStart + taper_length;
             pCompositeFunction->AddFunction(xStart, xEnd, func);
             xStart = xEnd;
@@ -28313,7 +28310,7 @@ std::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSpli
             Float64 slope = (h3 - h1) / variation_length[pgsTypes::sztLeftTapered];
             Float64 b = h1 - slope*xStart;
 
-            mathLinFunc2d left_func(slope, b);
+            WBFL::Math::LinearFunction left_func(slope, b);
             xEnd = xStart + variation_length[pgsTypes::sztLeftTapered];
             pCompositeFunction->AddFunction(xStart, xEnd, left_func);
             xStart = xEnd;
@@ -28323,7 +28320,7 @@ std::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSpli
             slope = (h4 - h3) / taper_length;
             b = h3 - slope*xStart;
 
-            mathLinFunc2d middle_func(slope, b);
+            WBFL::Math::LinearFunction middle_func(slope, b);
             xEnd = xStart + taper_length;
             pCompositeFunction->AddFunction(xStart, xEnd, middle_func);
             xStart = xEnd;
@@ -28332,7 +28329,7 @@ std::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSpli
             slope = (h2 - h4) / variation_length[pgsTypes::sztRightTapered];
             b = h4 - slope*xStart;
 
-            mathLinFunc2d right_func(slope, b);
+            WBFL::Math::LinearFunction right_func(slope, b);
             xEnd = xStart + variation_length[pgsTypes::sztRightTapered];
             pCompositeFunction->AddFunction(xStart, xEnd, right_func);
             xStart = xEnd;
@@ -28377,13 +28374,13 @@ std::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSpli
                if (yParabolaEnd < yParabolaStart)
                {
                   // slope at end is zero
-                  mathPolynomial2d func = GenerateParabola2(xParabolaStart, yParabolaStart, xParabolaEnd, yParabolaEnd, 0.0);
+                  auto func = GenerateParabola2(xParabolaStart, yParabolaStart, xParabolaEnd, yParabolaEnd, 0.0);
                   pCompositeFunction->AddFunction(xParabolaStart, xParabolaEnd, func);
                }
                else
                {
                   // slope at start is zero
-                  mathPolynomial2d func = GenerateParabola1(xParabolaStart, yParabolaStart, xParabolaEnd, yParabolaEnd, slopeParabola);
+                  auto func = GenerateParabola1(xParabolaStart, yParabolaStart, xParabolaEnd, yParabolaEnd, slopeParabola);
                   pCompositeFunction->AddFunction(xParabolaStart, xParabolaEnd, func);
                }
 
@@ -28409,7 +28406,7 @@ std::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSpli
 #pragma Reminder("BUG: Assuming slope at start is zero, but it may not be if tangent to a linear segment")
             xParabolaEnd = xSegmentStart + variation_length[pgsTypes::sztLeftPrismatic] + variation_length[pgsTypes::sztLeftTapered];
             yParabolaEnd = h3;
-            mathPolynomial2d func_left_parabola;
+            WBFL::Math::PolynomialFunction func_left_parabola;
             if (yParabolaEnd < yParabolaStart)
             {
                func_left_parabola = GenerateParabola2(xParabolaStart, yParabolaStart, xParabolaEnd, yParabolaEnd, 0.0);
@@ -28433,7 +28430,7 @@ std::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSpli
                Float64 slope = -(h4 - h3) / taper_length;
                Float64 b = h3 - slope*xParabolaEnd;
 
-               mathLinFunc2d middle_func(slope, b);
+               WBFL::Math::LinearFunction middle_func(slope, b);
                pCompositeFunction->AddFunction(xParabolaEnd, xParabolaStart, middle_func);
                slopeParabola = slope;
             }
@@ -28453,7 +28450,7 @@ std::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSpli
                yParabolaEnd = h2;
 
 
-               mathPolynomial2d func_right_parabola;
+               WBFL::Math::PolynomialFunction func_right_parabola;
                if (yParabolaEnd < yParabolaStart)
                {
                   // compute slope at end of parabola
@@ -28527,7 +28524,7 @@ std::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSpli
          if (0 < variation_length[pgsTypes::sztRightPrismatic])
          {
             // create a prismatic segment
-            mathLinFunc2d func(0.0, h2);
+            WBFL::Math::LinearFunction func(0.0, h2);
             xEnd = xStart + (variation_type == pgsTypes::svtNone ? segment_length / 2 : variation_length[pgsTypes::sztRightPrismatic]);
             pCompositeFunction->AddFunction(xStart, xEnd, func);
             slopeParabola = 0;
@@ -28757,9 +28754,9 @@ void CBridgeAgentImp::GetDuctCenterline(const CGirderKey& girderKey, const CSpli
    }
 }
 
-mathCompositeFunction2d CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& girderKey,const CSplicedGirderData* pGirder,const CLinearDuctGeometry& geometry) const
+std::unique_ptr<WBFL::Math::CompositeFunction> CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& girderKey,const CSplicedGirderData* pGirder,const CLinearDuctGeometry& geometry) const
 {
-   mathCompositeFunction2d fnCenterline;
+   auto fnCenterline(std::make_unique<WBFL::Math::CompositeFunction>());
 
    Float64 x1 = 0;
    Float64 y1 = 0;
@@ -28783,9 +28780,9 @@ mathCompositeFunction2d CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& 
       Float64 m = (y2-y1)/(x2-x1);
       Float64 b = y2 - m*x2;
 
-      mathLinFunc2d fn(m,b);
+      WBFL::Math::LinearFunction fn(m, b);
 
-      fnCenterline.AddFunction(x1,x2,fn);
+      fnCenterline->AddFunction(x1,x2,fn);
 
       x1 = x2;
       y1 = y2;
@@ -29656,7 +29653,7 @@ void CBridgeAgentImp::GetSegmentDuctPoint(const pgsPointOfInterest& poi, const C
          }
 
          std::vector<Float64> coefficients{ A,B,C };
-         mathPolynomial2d parabola(coefficients);
+         WBFL::Math::PolynomialFunction parabola(coefficients);
          y = parabola.Evaluate(z);
       }
    }
@@ -30861,9 +30858,9 @@ Float64 CBridgeAgentImp::ConvertDuctOffsetToDuctElevation(const CGirderKey& gird
    }
 }
 
-mathCompositeFunction2d CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& girderKey, const CSplicedGirderData* pGirder, const CParabolicDuctGeometry& ductGeometry) const
+std::unique_ptr<WBFL::Math::CompositeFunction> CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& girderKey, const CSplicedGirderData* pGirder, const CParabolicDuctGeometry& ductGeometry) const
 {
-   mathCompositeFunction2d fnCenterline;
+   auto fnCenterline(std::make_unique<WBFL::Math::CompositeFunction>());
 
    PierIndexType startPierIdx, endPierIdx;
    ductGeometry.GetRange(&startPierIdx, &endPierIdx);
@@ -30909,8 +30906,8 @@ mathCompositeFunction2d CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& 
    Float64 x2 = x1 + dist;
    Float64 y2 = ConvertDuctOffsetToDuctElevation(girderKey,pGirder,x2,offset,offsetType);
 
-   mathPolynomial2d leftParabola = GenerateParabola2(x1,y1,x2,y2,0.0);
-   fnCenterline.AddFunction(x1,x2,leftParabola);
+   WBFL::Math::PolynomialFunction leftParabola = GenerateParabola2(x1,y1,x2,y2,0.0);
+   fnCenterline->AddFunction(x1,x2,leftParabola);
 
    x1 = x2; // start next group of parabolas at the low point
    y1 = y2;
@@ -30919,7 +30916,7 @@ mathCompositeFunction2d CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& 
    // Low Point to High Point to Low Point
    //
    Float64 x3,y3;
-   mathPolynomial2d rightParabola;
+   WBFL::Math::PolynomialFunction rightParabola;
    Float64 startStation = GetPierStation(startPierIdx);
    Float64 Ls = Ls_offset;
    for ( PierIndexType pierIdx = startPierIdx+1; pierIdx < endPierIdx; pierIdx++ )
@@ -30944,8 +30941,8 @@ mathCompositeFunction2d CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& 
       x2 = x3 - distLeftIP; // inflection point measured from high point
 
       GenerateReverseParabolas(x1,y1,x2,x3,y3,&leftParabola,&rightParabola);
-      fnCenterline.AddFunction(x1,x2,leftParabola);
-      fnCenterline.AddFunction(x2,x3,rightParabola);
+      fnCenterline->AddFunction(x1,x2,leftParabola);
+      fnCenterline->AddFunction(x2,x3,rightParabola);
 
       // high to low point
       ductGeometry.GetLowPoint(pierIdx,&dist,&offset,&offsetType);
@@ -30975,8 +30972,8 @@ mathCompositeFunction2d CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& 
       x2 = x1 + distRightIP; // inflection point measured from high point
 
       GenerateReverseParabolas(x1,y1,x2,x3,y3,&leftParabola,&rightParabola);
-      fnCenterline.AddFunction(x1,x2,leftParabola);
-      fnCenterline.AddFunction(x2,x3,rightParabola);
+      fnCenterline->AddFunction(x1,x2,leftParabola);
+      fnCenterline->AddFunction(x2,x3,rightParabola);
 
       x1 = x3;
       y1 = y3;
@@ -31001,15 +30998,15 @@ mathCompositeFunction2d CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& 
    x2 = Lg - dist;
    y2 = ConvertDuctOffsetToDuctElevation(girderKey,pGirder,x2,offset,offsetType);
    rightParabola = GenerateParabola1(x1,y1,x2,y2,0.0);
-   fnCenterline.AddFunction(x1,x2,rightParabola);
+   fnCenterline->AddFunction(x1,x2,rightParabola);
 
    return fnCenterline;
 }
 
 void CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& girderKey, const CSplicedGirderData* pGirder, const CParabolicDuctGeometry& geometry,IPoint2dCollection** ppPoints) const
 {
-   mathCompositeFunction2d fnCenterline = CreateDuctCenterline(girderKey,pGirder,geometry);
-   IndexType nFunctions = fnCenterline.GetFunctionCount();
+   auto fnCenterline = CreateDuctCenterline(girderKey,pGirder,geometry);
+   IndexType nFunctions = fnCenterline->GetFunctionCount();
 
    CComPtr<IPoint2dCollection> points;
    points.CoCreateInstance(CLSID_Point2dCollection);
@@ -31017,13 +31014,12 @@ void CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& girderKey, const CS
 
    for ( IndexType fnIdx = 0; fnIdx < nFunctions; fnIdx++ )
    {
-      const mathFunction2d* pFN;
       Float64 xMin,xMax;
-      fnCenterline.GetFunction(fnIdx,&pFN,&xMin,&xMax);
+      auto& pFN = fnCenterline->GetFunction(fnIdx,&xMin,&xMax);
       for ( int i = 0; i < 11; i++ )
       {
          Float64 x = xMin + i*(xMax-xMin)/10;
-         Float64 y = fnCenterline.Evaluate(x);
+         Float64 y = fnCenterline->Evaluate(x);
 
          CComPtr<IPoint2d> p;
          p.CoCreateInstance(CLSID_Point2d);
@@ -36197,7 +36193,7 @@ Float64 CBridgeAgentImp::GetOverallHeight(const pgsPointOfInterest& poi) const
    return height;
 }
 
-const mathLinFunc2d& CBridgeAgentImp::GetGirderTopChordElevationFunction(const CSegmentKey& segmentKey) const
+const WBFL::Math::LinearFunction& CBridgeAgentImp::GetGirderTopChordElevationFunction(const CSegmentKey& segmentKey) const
 {
    auto found = m_GirderTopChordElevationFunctions.find(segmentKey);
    if (found == m_GirderTopChordElevationFunctions.end())
@@ -36222,7 +36218,7 @@ void CBridgeAgentImp::ValidateGirderTopChordElevation(const CGirderKey& girderKe
    ValidateGirderTopChordElevation(girderKey, &m_GirderTopChordElevationFunctions); // don't ignore elevation adjustments
 }
 
-void CBridgeAgentImp::ValidateGirderTopChordElevation(const CGirderKey& girderKey,std::map<CSegmentKey, mathLinFunc2d>* pFunctions) const
+void CBridgeAgentImp::ValidateGirderTopChordElevation(const CGirderKey& girderKey,std::map<CSegmentKey, WBFL::Math::LinearFunction>* pFunctions) const
 {
    VALIDATE(BRIDGE);
 
@@ -36275,7 +36271,7 @@ void CBridgeAgentImp::ValidateGirderTopChordElevation(const CGirderKey& girderKe
       Float64 m = (elevEnd - elevStart) / L;
       // y = mx+b
       // x = 0 is at start pier CL Brg. so b = elevStart
-      mathLinFunc2d fnBasic(m, elevStart);
+      WBFL::Math::LinearFunction fnBasic(m, elevStart);
 
       pFunctions->insert(std::make_pair(segmentKey, fnBasic));
    }

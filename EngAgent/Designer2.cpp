@@ -421,7 +421,7 @@ void pgsDesigner2::GetSlabOffsetDetails(const CSegmentKey& segmentKey,const GDRC
 
    Float64 max_tslab_and_fillet = 0;
 
-   std::unique_ptr<mathFunction2d> topFlangeShape; // function that models the longitudinal top flange shape
+   std::unique_ptr<WBFL::Math::Function> topFlangeShape; // function that models the longitudinal top flange shape
    pgsTypes::TopFlangeThickeningType tftType = pGdr->GetTopFlangeThickeningType(segmentKey);
    Float64 tft = pGdr->GetTopFlangeThickening(segmentKey);
    if (tftType != pgsTypes::tftNone && !IsZero(tft))
@@ -432,12 +432,12 @@ void pgsDesigner2::GetSlabOffsetDetails(const CSegmentKey& segmentKey,const GDRC
 
       // there is an imposed camber and/or top flange thickening. use its shape, excluding natural camber, for the top of the girder
       // create the parabola
-      topFlangeShape = std::make_unique<mathPolynomial2d>(GenerateParabola(poi_left.GetDistFromStart(), poi_right.GetDistFromStart(), sign*tft));
+      topFlangeShape = std::make_unique<WBFL::Math::PolynomialFunction>(GenerateParabola(poi_left.GetDistFromStart(), poi_right.GetDistFromStart(), sign*tft));
    }
    else
    {
       // top flange is straight
-      topFlangeShape = std::make_unique<ZeroFunction>();
+      topFlangeShape = std::make_unique<WBFL::Math::ZeroFunction>();
    }
 
    // the amount of top flange thickening at the start CL Bearing

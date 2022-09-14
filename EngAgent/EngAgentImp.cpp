@@ -698,10 +698,10 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
       PoiList vPoi;
       pIPoi->GetPointsOfInterestInRange(left, poiFaceOfSupport, right, &vPoi);
 
-      mathPwLinearFunction2dUsingPoints theta;
-      mathPwLinearFunction2dUsingPoints dv;
-      mathPwLinearFunction2dUsingPoints dv_cos_theta;
-      mathPwLinearFunction2dUsingPoints unity;  // 45deg line from face of support
+      WBFL::Math::PiecewiseFunction theta;
+      WBFL::Math::PiecewiseFunction dv;
+      WBFL::Math::PiecewiseFunction dv_cos_theta;
+      WBFL::Math::PiecewiseFunction unity;  // 45deg line from face of support
 
       // create a graph for dv and 0.5d*dv*cot(theta)
       // create intercept lines as well since we are looping on poi.
@@ -772,7 +772,7 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
       // determine intersections
       WBFL::Geometry::Point2d p;
       Float64 x1;
-      math1dRange range = dv.GetRange();  // range is same for all
+      WBFL::Math::Range range = dv.GetRange();  // range is same for all
 
       try
       {
@@ -924,7 +924,7 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
 
          vcsDetails.push_back(csDetails);
       }
-      catch (const mathXEvalError&)
+      catch (const WBFL::Math::XFunction&)
       {
          GET_IFACE(IEAFStatusCenter,pStatusCenter);
 

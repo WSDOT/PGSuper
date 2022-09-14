@@ -51,7 +51,7 @@ void GetSlope(IUBeam* beam,Float64* slope)
 
 Float64 ComputeSlope(Float64 t,Float64 d1,Float64 d6,Float64 w1,Float64 w2,Float64 w4)
 {
-   mathBrentsRootFinder2d rootfinder;
+   WBFL::Math::BrentsRootFinder rootfinder;
    Float64 slope;
    try
    {

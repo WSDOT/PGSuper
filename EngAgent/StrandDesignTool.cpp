@@ -2694,7 +2694,7 @@ Float64 pgsStrandDesignTool::ComputeEndOffsetForEccentricity(const pgsPointOfInt
    Float64 ecc_p1 = (As*ecc_ss + At*ecc_ts + Ah*ecc_hs_p1)/Aps;
    Float64 ecc_m1 = (As*ecc_ss + At*ecc_ts + Ah*ecc_hs_m1)/Aps;
 
-   mathCoordMapper1d mapper(-1.0, ecc_m1, 1.0, ecc_p1);
+   WBFL::Math::CoordMapper1d mapper(-1.0, ecc_m1, 1.0, ecc_p1);
 
    Float64 off = mapper.GetA(ecc);
 
@@ -2762,7 +2762,7 @@ Float64 pgsStrandDesignTool::ComputeHpOffsetForEccentricity(const pgsPointOfInte
       Float64 ecc_p1 = (As*ecc_ss + At*ecc_ts + Ah*ecc_hs_p1) / Aps;
       Float64 ecc_m1 = (As*ecc_ss + At*ecc_ts + Ah*ecc_hs_m1) / Aps;
 
-      mathCoordMapper1d mapper(-1.0, ecc_m1, 1.0, ecc_p1);
+      WBFL::Math::CoordMapper1d mapper(-1.0, ecc_m1, 1.0, ecc_p1);
 
       Float64 off = mapper.GetA(ecc);
 

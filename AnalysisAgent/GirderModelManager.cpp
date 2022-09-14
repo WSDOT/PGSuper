@@ -15352,7 +15352,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
    bool bIsInteriorGirder = pBridge->IsInteriorGirder( segmentKey );
    pgsTypes::SideType side = (segmentKey.girderIndex == 0 ? pgsTypes::stLeft : pgsTypes::stRight);
 
-   std::unique_ptr<mathFunction2d> camberShape;
+   std::unique_ptr<WBFL::Math::Function> camberShape;
 
    // estimated girder excess camber (user input excess camber) is measured using the bearings as the datum
    PoiList vSupPoi;
@@ -15362,7 +15362,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
    const pgsPointOfInterest& poi_mid(vSupPoi[1]);
    const pgsPointOfInterest& poi_right_brg(vSupPoi.back());
 
-   std::unique_ptr<mathFunction2d> imposedShape;
+   std::unique_ptr<WBFL::Math::Function> imposedShape;
    // precamber and top flange thickening is measured using the ends of the girder as the datum
    vPoi2.clear();
    pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE, &vPoi2);
@@ -15400,11 +15400,11 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
       if (!IsZero(assumed_excess_camber))
       {
          // Create function with parabolic shape
-         camberShape = std::make_unique<mathPolynomial2d>(GenerateParabola(poi_left_brg.GetDistFromStart(), poi_right_brg.GetDistFromStart(), assumed_excess_camber));
+         camberShape = std::make_unique<WBFL::Math::PolynomialFunction>(GenerateParabola(poi_left_brg.GetDistFromStart(), poi_right_brg.GetDistFromStart(), assumed_excess_camber));
       }
       else
       {
-         camberShape = std::make_unique<ZeroFunction>();
+         camberShape = std::make_unique<WBFL::Math::ZeroFunction>();
       }
 
       Float64 top_flange_thickening = 0;
@@ -15419,17 +15419,17 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
       if (!IsZero(top_flange_thickening))
       {
          // Create function with parabolic shape
-         imposedShape = std::make_unique<mathPolynomial2d>(GenerateParabola(poi_left.GetDistFromStart(), poi_right.GetDistFromStart(), top_flange_thickening));
+         imposedShape = std::make_unique<WBFL::Math::PolynomialFunction>(GenerateParabola(poi_left.GetDistFromStart(), poi_right.GetDistFromStart(), top_flange_thickening));
       }
       else
       {
-         imposedShape = std::make_unique<ZeroFunction>();
+         imposedShape = std::make_unique<WBFL::Math::ZeroFunction>();
       }
    }
    else
    {
       // Slab pad load assumes no natural camber
-      camberShape = std::make_unique<ZeroFunction>();
+      camberShape = std::make_unique<WBFL::Math::ZeroFunction>();
 
       Float64 departure = 0; // departure from flat due to imposed curvature of the top of the girder
       const CPrecastSegmentData* pSegment = pBridgeDesc->GetSegment(segmentKey);
@@ -15449,11 +15449,11 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
       if ( !IsZero(departure))
       {
          // there is an imposed camber and/or top flange thickening. use its shape, excluding natural camber, for the top of the girder
-         imposedShape = std::make_unique<mathPolynomial2d>(GenerateParabola(poi_left.GetDistFromStart(), poi_right.GetDistFromStart(), departure));
+         imposedShape = std::make_unique<WBFL::Math::PolynomialFunction>(GenerateParabola(poi_left.GetDistFromStart(), poi_right.GetDistFromStart(), departure));
       }
       else
       {
-         imposedShape = std::make_unique<ZeroFunction>();
+         imposedShape = std::make_unique<WBFL::Math::ZeroFunction>();
       }
    }
 

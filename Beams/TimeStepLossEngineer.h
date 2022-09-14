@@ -33,7 +33,7 @@
 #include <PgsExt\PoiKey.h>
 #include <PgsExt\PTData.h>
 
-#include <Math\LinFunc2d.h>
+#include <Math\LinearFunction.h>
 
 #include <Plugins\CLSID.h>
 

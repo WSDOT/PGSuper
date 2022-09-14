@@ -3182,7 +3182,7 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
    return deflections;
 }
 
-std::shared_ptr<mathLinFunc2d> CAnalysisAgentImp::GetUnrecoverableDeflectionVariables(sagInterval sagint,pgsTypes::BridgeAnalysisType bat,IntervalIndexType storageIntervalIdx,const CSegmentKey& segmentKey,Float64* pDeflectionFactor) const
+std::shared_ptr<WBFL::Math::LinearFunction> CAnalysisAgentImp::GetUnrecoverableDeflectionVariables(sagInterval sagint,pgsTypes::BridgeAnalysisType bat,IntervalIndexType storageIntervalIdx,const CSegmentKey& segmentKey,Float64* pDeflectionFactor) const
 {
    // Common function to get girder dead load deflection adjustments needed to compute unrecoverable deflections from storage
    GET_IFACE(IMaterials,pMaterials);
@@ -3225,7 +3225,7 @@ std::shared_ptr<mathLinFunc2d> CAnalysisAgentImp::GetUnrecoverableDeflectionVari
    XgEnd = pPoi->ConvertPoiToGirderPathCoordinate(vSupportPoi.back());
 
    // we can now create our math function class
-   std::shared_ptr<mathLinFunc2d> pMathFunction;
+   std::shared_ptr<WBFL::Math::LinearFunction> pMathFunction;
 
    if (vSupportPoi.size() == 1)
    {
@@ -3233,7 +3233,7 @@ std::shared_ptr<mathLinFunc2d> CAnalysisAgentImp::GetUnrecoverableDeflectionVari
       DyStart = deflFactor * GetDeflection(storageIntervalIdx,pgsTypes::pftGirder,vSupportPoi.front(),bat,rtCumulative);
       DyEnd = DyStart;
 
-      pMathFunction = std::make_shared<mathLinFunc2d>(0,DyStart);  // slope==0, Y is constant
+      pMathFunction = std::make_shared<WBFL::Math::LinearFunction>(0,DyStart);  // slope==0, Y is constant
    }
    else
    {
@@ -3277,7 +3277,7 @@ std::shared_ptr<mathLinFunc2d> CAnalysisAgentImp::GetUnrecoverableDeflectionVari
       }
 
       // Y deflection along segment is linearly interpolated using values at support locations
-      pMathFunction = std::make_shared<mathLinFunc2d>(GenerateLineFunc2dFromPoints(XgStart,DyStart,XgEnd,DyEnd));
+      pMathFunction = std::make_shared<WBFL::Math::LinearFunction>(GenerateLineFunc2dFromPoints(XgStart,DyStart,XgEnd,DyEnd));
    }
 
    return pMathFunction;
@@ -3296,7 +3296,7 @@ std::vector<Float64> CAnalysisAgentImp::GetUnrecoverableGirderDeflectionFromStor
    // Deflections are Factored  to determine permanent deflection due to modulus change from curing. 
    Float64 deflFactor;
    // Deflections are also rigidly translated such that they are zero at the new support locations. Linear function class performs the translation
-   std::shared_ptr<mathFunction2d> pDeflectionFunct = GetUnrecoverableDeflectionVariables(sagint,bat,storageIntervalIdx,segmentKey,&deflFactor);
+   auto pDeflectionFunct = GetUnrecoverableDeflectionVariables(sagint,bat,storageIntervalIdx,segmentKey,&deflFactor);
 
    // First factor deflections. This must be done before rigid body translation, otherwise our operation is not linear
    if (deflFactor != 1.0)
@@ -3332,7 +3332,7 @@ std::vector<Float64> CAnalysisAgentImp::GetUnrecoverableGirderRotationFromStorag
    // Rotations are Factored  to determine permanent effect due to modulus change from curing. 
    Float64 deflFactor;
    // Deflections also must rigidly translated such that they are zero at the new support locations. Linear function class performs the translation
-   std::shared_ptr<mathLinFunc2d> pDeflectionFunct = GetUnrecoverableDeflectionVariables(sagint,bat,storageIntervalIdx,segmentKey,&deflFactor);
+   auto pDeflectionFunct = GetUnrecoverableDeflectionVariables(sagint,bat,storageIntervalIdx,segmentKey,&deflFactor);
 
    // First factor raw rotations. This must be done before rigid body translation, otherwise our operation is not linear
    if (deflFactor != 1.0)

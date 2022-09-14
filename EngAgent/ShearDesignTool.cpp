@@ -42,7 +42,7 @@
 #include <EAF\EAFDisplayUnits.h>
 
 #include <PgsExt\BridgeDescription2.h>
-#include <Math\PwLinearFunction2dUsingPoints.h>
+#include <Math\PiecewiseFunction.h>
 #include <psgLib\SpecLibraryEntry.h>
 #include <MathEx.h>
 #include <Lrfd\Rebar.h>
@@ -858,7 +858,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::ValidateVerticalAvsDe
    return sd;
 }
 
-void pgsShearDesignTool::ProcessAvsDemand(std::vector<std::pair<Float64,bool>>& rDemandAtPois, mathPwLinearFunction2dUsingPoints& rDemandAtLocations) const
+void pgsShearDesignTool::ProcessAvsDemand(std::vector<std::pair<Float64,bool>>& rDemandAtPois, WBFL::Math::PiecewiseFunction& rDemandAtLocations) const
 {
    IndexType numpois = m_DesignPois.size();
 
@@ -866,7 +866,7 @@ void pgsShearDesignTool::ProcessAvsDemand(std::vector<std::pair<Float64,bool>>& 
    if (m_bDoDesignFromScratch || m_bIsCurrentStirrupLayoutSymmetrical)
    {
       // Use math function to perform mirroring
-      mathPwLinearFunction2dUsingPoints mirror_avs;
+      WBFL::Math::PiecewiseFunction mirror_avs;
       IndexType idx=0;
       Float64 last_x = -99999;
       for ( const pgsPointOfInterest& poi : m_DesignPois)
@@ -894,7 +894,7 @@ void pgsShearDesignTool::ProcessAvsDemand(std::vector<std::pair<Float64,bool>>& 
          // Force this by extending range out to support locations
          Float64 range_start = m_StartConnectionLength;
          Float64 range_end   = m_SegmentLength - m_EndConnectionLength;
-         mirror_avs.ResetOuterRange(math1dRange(range_start,math1dRange::Bound,range_end,math1dRange::Bound));
+         mirror_avs.ResetOuterRange(WBFL::Math::Range(range_start,WBFL::Math::Range::BoundType::Bound,range_end, WBFL::Math::Range::BoundType::Bound));
    
          // Since we have mirrored, we aren't gauranteed to have x values in same locations as POI's.
          // Use function2d class to get x,y locations for mirror
@@ -1036,7 +1036,7 @@ Float64 pgsShearDesignTool::GetVerticalAvsDemand(Float64 distFromStart) const
    {
       return m_VertShearAvsDemandAtX.Evaluate(distFromStart);
    }
-   catch (mathXEvalError& e)
+   catch (WBFL::Math::XFunction& e)
    {
       std::_tstring msg;
       e.GetErrorMessage(&msg);
@@ -1118,7 +1118,7 @@ Float64 pgsShearDesignTool::GetHorizontalAvsDemand(Float64 distFromStart) const
    {
       return m_HorizShearAvsDemandAtX.Evaluate(distFromStart);
    }
-   catch (mathXEvalError& e)
+   catch (WBFL::Math::XFunction& e)
    {
       std::_tstring msg;
       e.GetErrorMessage(&msg);
@@ -1132,10 +1132,10 @@ Float64 pgsShearDesignTool::GetVerticalAvsMaxInRange(Float64 leftBound, Float64 
    try
    {
       Float64 fmin, fmax;
-      m_VertShearAvsDemandAtX.GetMaximumsInRange(math1dRange(leftBound,math1dRange::Bound,rightBound,math1dRange::Bound), &fmin, &fmax);
+      m_VertShearAvsDemandAtX.GetMaximumsInRange(WBFL::Math::Range(leftBound, WBFL::Math::Range::BoundType::Bound,rightBound, WBFL::Math::Range::BoundType::Bound), &fmin, &fmax);
       return fmax;
    }
-   catch (mathXEvalError& e)
+   catch (WBFL::Math::XFunction& e)
    {
       std::_tstring msg;
       e.GetErrorMessage(&msg);
@@ -1153,10 +1153,10 @@ Float64 pgsShearDesignTool::GetHorizontalAvsMaxInRange(Float64 leftBound, Float6
    try
    {
       Float64 fmin, fmax;
-      m_HorizShearAvsDemandAtX.GetMaximumsInRange(math1dRange(leftBound,math1dRange::Bound,rightBound,math1dRange::Bound), &fmin, &fmax);
+      m_HorizShearAvsDemandAtX.GetMaximumsInRange(WBFL::Math::Range(leftBound, WBFL::Math::Range::BoundType::Bound,rightBound, WBFL::Math::Range::BoundType::Bound), &fmin, &fmax);
       return fmax;
    }
-   catch (mathXEvalError& e)
+   catch (WBFL::Math::XFunction& e)
    {
       std::_tstring msg;
       e.GetErrorMessage(&msg);
