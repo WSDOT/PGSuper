@@ -301,8 +301,8 @@ BOOL CDesignOutcomeDlg::OnInitDialog()
    m_pRptSpec->GetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IReportManager,pRptMgr);
-   std::shared_ptr<CReportSpecification> pRptSpec = std::dynamic_pointer_cast<CReportSpecification,CMultiGirderReportSpecification>(m_pRptSpec);
-   std::shared_ptr<CReportSpecificationBuilder> nullSpecBuilder;
+   std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = std::dynamic_pointer_cast<WBFL::Reporting::ReportSpecification,CMultiGirderReportSpecification>(m_pRptSpec);
+   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> nullSpecBuilder;
    m_pBrowser = pRptMgr->CreateReportBrowser(GetSafeHwnd(),pRptSpec,nullSpecBuilder);
 
    // restore the size of the window
@@ -344,7 +344,7 @@ void CDesignOutcomeDlg::CleanUp()
 {
    if ( m_pBrowser )
    {
-      m_pBrowser = std::shared_ptr<CReportBrowser>();
+      m_pBrowser = std::shared_ptr<WBFL::Reporting::ReportBrowser>();
    }
 
    // save the size of the window

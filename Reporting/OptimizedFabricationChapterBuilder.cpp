@@ -57,9 +57,9 @@ LPCTSTR COptimizedFabricationChapterBuilder::GetName() const
    return TEXT("Fabrication Options");
 }
 
-rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* COptimizedFabricationChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
    const CGirderKey& girderKey( pGirderRptSpec->GetGirderKey());
@@ -352,9 +352,9 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
    return pChapter;
 }
 
-CChapterBuilder* COptimizedFabricationChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> COptimizedFabricationChapterBuilder::Clone() const
 {
-   return new COptimizedFabricationChapterBuilder;
+   return std::make_unique<COptimizedFabricationChapterBuilder>();
 }
 
 //======================== ACCESS     =======================================

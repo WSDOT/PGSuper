@@ -183,9 +183,9 @@ LPCTSTR CDesignOutcomeChapterBuilder::GetName() const
    return TEXT("Design Outcome");
 }
 
-rptChapter* CDesignOutcomeChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CDesignOutcomeChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CMultiGirderReportSpecification* pReportSpec = dynamic_cast<CMultiGirderReportSpecification*>(pRptSpec);
+   auto pReportSpec = std::dynamic_pointer_cast<const CMultiGirderReportSpecification>(pRptSpec);
    ATLASSERT( pReportSpec != nullptr );
 
    std::vector<CGirderKey> girderKeys = pReportSpec->GetGirderKeys();
@@ -269,9 +269,9 @@ rptChapter* CDesignOutcomeChapterBuilder::Build(CReportSpecification* pRptSpec,U
    return pChapter;
 }
 
-CChapterBuilder* CDesignOutcomeChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CDesignOutcomeChapterBuilder::Clone() const
 {
-   return new CDesignOutcomeChapterBuilder;
+   return std::make_unique<CDesignOutcomeChapterBuilder>();
 }
 
 void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact)

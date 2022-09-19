@@ -59,11 +59,11 @@ public:
    
 
    //------------------------------------------------------------------------
-   virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const override;
+   virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
 
    //------------------------------------------------------------------------
-   virtual CChapterBuilder* Clone() const override;
+   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

@@ -62,9 +62,9 @@ LPCTSTR CPierGeometryChapterBuilder::GetName() const
    return TEXT("Pier Geometry");
 }
 
-rptChapter* CPierGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CPierGeometryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CBrokerReportSpecification* pSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
+   auto pSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pSpec->GetBroker(&pBroker);
 
@@ -77,9 +77,9 @@ rptChapter* CPierGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,Ui
 }
 
 
-CChapterBuilder* CPierGeometryChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CPierGeometryChapterBuilder::Clone() const
 {
-   return new CPierGeometryChapterBuilder;
+   return std::make_unique<CPierGeometryChapterBuilder>();
 }
 
 //======================== ACCESS     =======================================

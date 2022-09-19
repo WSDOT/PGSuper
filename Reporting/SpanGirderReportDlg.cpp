@@ -45,7 +45,7 @@ static char THIS_FILE[] = __FILE__;
 
 IMPLEMENT_DYNAMIC(CSpanGirderReportDlg, CDialog)
 
-CSpanGirderReportDlg::CSpanGirderReportDlg(IBroker* pBroker,const CReportDescription& rptDesc,Mode mode,std::shared_ptr<CReportSpecification>& pRptSpec,UINT nIDTemplate,CWnd* pParent)
+CSpanGirderReportDlg::CSpanGirderReportDlg(IBroker* pBroker,const WBFL::Reporting::ReportDescription& rptDesc,Mode mode,std::shared_ptr<WBFL::Reporting::ReportSpecification>& pRptSpec,UINT nIDTemplate,CWnd* pParent)
 	: CDialog(nIDTemplate, pParent), m_RptDesc(rptDesc), m_pInitRptSpec(pRptSpec), m_Mode(mode)
 {
    m_pBroker = pBroker;
@@ -203,13 +203,13 @@ void CSpanGirderReportDlg::UpdateChapterList()
    m_ChList.ResetContent();
 
    // Get the chapters in the report
-   std::vector<CChapterInfo> chInfos = m_RptDesc.GetChapterInfo();
+   std::vector<WBFL::Reporting::ChapterInfo> chInfos = m_RptDesc.GetChapterInfo();
 
    // Populate the list box with the names of the chapters
-   std::vector<CChapterInfo>::iterator iter;
+   std::vector<WBFL::Reporting::ChapterInfo>::iterator iter;
    for ( iter = chInfos.begin(); iter != chInfos.end(); iter++ )
    {
-      CChapterInfo chInfo = *iter;
+      WBFL::Reporting::ChapterInfo chInfo = *iter;
 
       int idx = m_ChList.AddString( chInfo.Name.c_str() );
       if ( idx != LB_ERR ) // no error
@@ -226,7 +226,7 @@ void CSpanGirderReportDlg::UpdateChapterList()
 BOOL CSpanGirderReportDlg::OnInitDialog()
 {
    CWnd* pwndTitle = GetDlgItem(IDC_REPORT_TITLE);
-   pwndTitle->SetWindowText(m_RptDesc.GetReportName());
+   pwndTitle->SetWindowText(m_RptDesc.GetReportName().c_str());
 
    GET_IFACE(IDocumentType,pDocType);
    bool bIsPGSuper = pDocType->IsPGSuperDocument();
@@ -453,11 +453,11 @@ void CSpanGirderReportDlg::ClearChapterCheckMarks(BOOL bClear)
 void CSpanGirderReportDlg::InitChapterListFromSpec()
 {
    ClearChapterCheckMarks();
-   std::vector<CChapterInfo> chInfo = m_pInitRptSpec->GetChapterInfo();
-   std::vector<CChapterInfo>::iterator iter;
+   std::vector<WBFL::Reporting::ChapterInfo> chInfo = m_pInitRptSpec->GetChapterInfo();
+   std::vector<WBFL::Reporting::ChapterInfo>::iterator iter;
    for ( iter = chInfo.begin(); iter != chInfo.end(); iter++ )
    {
-      CChapterInfo& ch = *iter;
+      WBFL::Reporting::ChapterInfo& ch = *iter;
       int cChapters = m_ChList.GetCount();
       for ( int idx = 0; idx < cChapters; idx++ )
       {

@@ -8,7 +8,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CPoiReportSpecification::CPoiReportSpecification(LPCTSTR strReportName, IBroker* pBroker, const pgsPointOfInterest& poi) :
+CPoiReportSpecification::CPoiReportSpecification(const std::_tstring& strReportName, IBroker* pBroker, const pgsPointOfInterest& poi) :
    CBrokerReportSpecification(strReportName, pBroker)
 {
    m_Poi = poi;
@@ -18,7 +18,7 @@ CPoiReportSpecification::~CPoiReportSpecification(void)
 {
 }
 
-HRESULT CPoiReportSpecification::Validate() const
+bool CPoiReportSpecification::IsValid() const
 {
    GET_IFACE(IBridge, pBridge);
 
@@ -28,22 +28,22 @@ HRESULT CPoiReportSpecification::Validate() const
    if (nGroups <= segmentKey.groupIndex)
    {
       // the group index is out of range (group probably got deleted)
-      return RPT_E_INVALID_SEGMENT;
+      return false;
    }
 
    GirderIndexType nGirders = pBridge->GetGirderCount(segmentKey.groupIndex);
    if (nGirders <= segmentKey.girderIndex)
    {
-      return RPT_E_INVALID_SEGMENT;
+      return false;
    }
 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(segmentKey);
    if (nSegments <= segmentKey.segmentIndex)
    {
-      return RPT_E_INVALID_SEGMENT;
+      return false;
    }
 
-   return CBrokerReportSpecification::Validate();
+   return CBrokerReportSpecification::IsValid();
 }
 
 void CPoiReportSpecification::SetPOI(const pgsPointOfInterest& poi)

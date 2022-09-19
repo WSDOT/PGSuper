@@ -38,9 +38,9 @@ public:
    CCrackedSectionChapterBuilder(bool bSelect = true);
    ~CCrackedSectionChapterBuilder(void);
 
-   virtual LPCTSTR GetName() const;
-   virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const;
-   virtual CChapterBuilder* Clone() const;
+   virtual LPCTSTR GetName() const override;
+   virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
+   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 
 private:
    rptRcImage* CreateImage(ICrackedSectionSolution* pSolution,bool bPositiveMoment) const;

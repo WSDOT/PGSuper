@@ -56,10 +56,10 @@ LPCTSTR CLongitudinalReinforcementForShearLoadRatingChapterBuilder::GetName() co
    return TEXT("Longitudinal Reinforcement for Shear Load Rating Checks");
 }
 
-rptChapter* CLongitudinalReinforcementForShearLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CLongitudinalReinforcementForShearLoadRatingChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-   CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
+   auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
+   auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
    CComPtr<IBroker> pBroker;
    CGirderKey girderKey;
@@ -199,7 +199,7 @@ rptChapter* CLongitudinalReinforcementForShearLoadRatingChapterBuilder::Build(CR
    return pChapter;
 }
 
-CChapterBuilder* CLongitudinalReinforcementForShearLoadRatingChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLongitudinalReinforcementForShearLoadRatingChapterBuilder::Clone() const
 {
-   return new CLongitudinalReinforcementForShearLoadRatingChapterBuilder;
+   return std::make_unique<CLongitudinalReinforcementForShearLoadRatingChapterBuilder>();
 }

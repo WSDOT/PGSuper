@@ -40,14 +40,14 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 CPGSpliceTitlePageBuilder::CPGSpliceTitlePageBuilder(IBroker* pBroker,LPCTSTR strTitle,bool bFullVersion) :
-CTitlePageBuilder(strTitle),
+WBFL::Reporting::TitlePageBuilder(strTitle),
 m_pBroker(pBroker),
 m_bFullVersion(bFullVersion)
 {
 }
 
 CPGSpliceTitlePageBuilder::CPGSpliceTitlePageBuilder(const CPGSpliceTitlePageBuilder& other) :
-CTitlePageBuilder(other),
+WBFL::Reporting::TitlePageBuilder(other),
 m_pBroker(other.m_pBroker),
 m_bFullVersion(other.m_bFullVersion)
 {
@@ -58,13 +58,13 @@ CPGSpliceTitlePageBuilder::~CPGSpliceTitlePageBuilder(void)
 {
 }
 
-bool CPGSpliceTitlePageBuilder::NeedsUpdate(CReportHint* pHint,std::shared_ptr<CReportSpecification>& pRptSpec)
+bool CPGSpliceTitlePageBuilder::NeedsUpdate(const std::shared_ptr<const WBFL::Reporting::ReportHint>& pHint,const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec) const
 {
    // don't let the title page control whether or not a report needs updating
    return false;
 }
 
-rptChapter* CPGSpliceTitlePageBuilder::Build(std::shared_ptr<CReportSpecification>& pRptSpec)
+rptChapter* CPGSpliceTitlePageBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec) const
 {
    // Create a title page for the report
    rptChapter* pTitlePage = new rptChapter;
@@ -399,7 +399,7 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(std::shared_ptr<CReportSpecificatio
    return pTitlePage;
 }
 
-CTitlePageBuilder* CPGSpliceTitlePageBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::TitlePageBuilder> CPGSpliceTitlePageBuilder::Clone() const
 {
-   return new CPGSpliceTitlePageBuilder(*this);
+   return std::make_unique<CPGSpliceTitlePageBuilder>(*this);
 }

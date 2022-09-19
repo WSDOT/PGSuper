@@ -81,11 +81,11 @@ LPCTSTR CDistributionFactorSummaryChapterBuilder::GetName() const
    return TEXT("Live Load Distribution Factor Summary");
 }
 
-rptChapter* CDistributionFactorSummaryChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CDistributionFactorSummaryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    USES_CONVERSION;
 
-   CBrokerReportSpecification* pBrokerSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
+   auto pBrokerSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
 
    // This report does not use the passd span and girder parameters
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
@@ -112,9 +112,9 @@ rptChapter* CDistributionFactorSummaryChapterBuilder::Build(CReportSpecification
    return pChapter;
 }
 
-CChapterBuilder* CDistributionFactorSummaryChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CDistributionFactorSummaryChapterBuilder::Clone() const
 {
-   return new CDistributionFactorSummaryChapterBuilder;
+   return std::make_unique<CDistributionFactorSummaryChapterBuilder>();
 }
 
 void WriteSpanTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,IEAFDisplayUnits* pDisplayUnits)

@@ -64,10 +64,10 @@ LPCTSTR CSpecCheckSummaryChapterBuilder::GetName() const
    return TEXT("Specification Check Summary");
 }
 
-rptChapter* CSpecCheckSummaryChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CSpecCheckSummaryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    // Report for a single girder
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    if (pGirderRptSpec != nullptr)
    {
       rptChapter* pChapter = CPGSuperChapterBuilder::Build(pGirderRptSpec,level);
@@ -85,7 +85,7 @@ rptChapter* CSpecCheckSummaryChapterBuilder::Build(CReportSpecification* pRptSpe
    }
 
    // Report multiple girders
-   CMultiGirderReportSpecification* pMultiGirderRptSpec = dynamic_cast<CMultiGirderReportSpecification*>(pRptSpec);
+   auto pMultiGirderRptSpec = std::dynamic_pointer_cast<const CMultiGirderReportSpecification>(pRptSpec);
    if (pMultiGirderRptSpec != nullptr)
    {
       const std::vector<CGirderKey>& girderKeys( pMultiGirderRptSpec->GetGirderKeys() );
@@ -137,9 +137,9 @@ rptChapter* CSpecCheckSummaryChapterBuilder::Build(CReportSpecification* pRptSpe
    return nullptr;
 }
 
-rptChapter* CSpecCheckSummaryChapterBuilder::BuildEx(CReportSpecification* pRptSpec,Uint16 level, const pgsGirderArtifact* pGirderArtifact) const
+rptChapter* CSpecCheckSummaryChapterBuilder::BuildEx(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level, const pgsGirderArtifact* pGirderArtifact) const
 {
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
@@ -311,7 +311,7 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroke
    }
 }
 
-CChapterBuilder* CSpecCheckSummaryChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CSpecCheckSummaryChapterBuilder::Clone() const
 {
-   return new CSpecCheckSummaryChapterBuilder(m_ReferToDetailsReport);
+   return std::make_unique<CSpecCheckSummaryChapterBuilder>(m_ReferToDetailsReport);
 }

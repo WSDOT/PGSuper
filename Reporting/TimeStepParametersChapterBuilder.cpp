@@ -69,13 +69,13 @@ LPCTSTR CTimeStepParametersChapterBuilder::GetName() const
    return TEXT("Time Step Parameters");
 }
 
-rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
 
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
@@ -1358,7 +1358,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
    return pChapter;
 }
 
-CChapterBuilder* CTimeStepParametersChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTimeStepParametersChapterBuilder::Clone() const
 {
-   return new CTimeStepParametersChapterBuilder;
+   return std::make_unique<CTimeStepParametersChapterBuilder>();
 }

@@ -79,13 +79,13 @@ LPCTSTR CTexasHaunchChapterBuilder::GetName() const
    return TEXT("TxDOT Haunch Summary");
 }
 
-rptChapter* CTexasHaunchChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CTexasHaunchChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    // This can be called for multi or single girders
    CComPtr<IBroker> pBroker;
    std::vector<CGirderKey> girder_list;
 
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    if (pGirderRptSpec!=nullptr)
    {
       pGirderRptSpec->GetBroker(&pBroker);
@@ -93,7 +93,7 @@ rptChapter* CTexasHaunchChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
    }
    else
    {
-      CMultiGirderReportSpecification* pReportSpec = dynamic_cast<CMultiGirderReportSpecification*>(pRptSpec);
+      auto pReportSpec = std::dynamic_pointer_cast<const CMultiGirderReportSpecification>(pRptSpec);
       pReportSpec->GetBroker(&pBroker);
 
       girder_list = pReportSpec->GetGirderKeys();
@@ -166,9 +166,9 @@ rptChapter* CTexasHaunchChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
    return pChapter;
 }
 
-CChapterBuilder* CTexasHaunchChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTexasHaunchChapterBuilder::Clone() const
 {
-   return new CTexasHaunchChapterBuilder;
+   return std::make_unique<CTexasHaunchChapterBuilder>();
 }
 
 //======================== ACCESS     =======================================

@@ -29,7 +29,7 @@
 #include <PgsExt\Keys.h>
 #include <PgsExt\PointOfInterest.h>
 
-class REPORTINGCLASS CSpanReportHint : public CReportHint
+class REPORTINGCLASS CSpanReportHint : public WBFL::Reporting::ReportHint
 {
 public:
    CSpanReportHint();
@@ -38,13 +38,13 @@ public:
    void SetSpan(SpanIndexType spanIdx);
    SpanIndexType GetSpan();
 
-   static int IsMySpan(CReportHint* pHint,CReportSpecification* pRptSpec);
+   static int IsMySpan(const std::shared_ptr<const WBFL::Reporting::ReportHint>& pHint, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec);
 
 protected:
    SpanIndexType m_SpanIdx;
 };
 
-class REPORTINGCLASS CGirderLineReportHint : public CReportHint
+class REPORTINGCLASS CGirderLineReportHint : public WBFL::Reporting::ReportHint
 {
 public:
    CGirderLineReportHint();
@@ -56,14 +56,14 @@ public:
    void SetGirderIndex(GirderIndexType gdrIdx);
    GirderIndexType GetGirderIndex() const;
 
-   static int IsMyGirder(CReportHint* pHint,CReportSpecification* pRptSpec);
+   static int IsMyGirder(const std::shared_ptr<const WBFL::Reporting::ReportHint>& pHint, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>&  pRptSpec);
 
 protected:
    GroupIndexType m_GroupIdx;
    GirderIndexType m_GirderIdx;
 };
 
-class REPORTINGCLASS CGirderReportHint : public CReportHint
+class REPORTINGCLASS CGirderReportHint : public WBFL::Reporting::ReportHint
 {
 public:
    CGirderReportHint();
@@ -75,7 +75,7 @@ public:
    void SetGirderKey(const CGirderKey& girderKey);
    const CGirderKey& GetGirderKey() const;
 
-   static int IsMyGirder(CReportHint* pHint,CReportSpecification* pRptSpec);
+   static int IsMyGirder(const std::shared_ptr<const WBFL::Reporting::ReportHint>& pHint, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec);
 
 protected:
    CGirderKey m_GirderKey;
@@ -86,7 +86,7 @@ class REPORTINGCLASS CSpanReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-   CSpanReportSpecification(LPCTSTR strReportName,IBroker* pBroker,SpanIndexType spanIdx);
+   CSpanReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,SpanIndexType spanIdx);
    CSpanReportSpecification(const CBrokerReportSpecification& other,SpanIndexType spanIdx);
    CSpanReportSpecification(const CSpanReportSpecification& other);
    ~CSpanReportSpecification(void);
@@ -97,7 +97,7 @@ public:
    void SetSpan(SpanIndexType spanIdx);
    SpanIndexType GetSpan() const;
 
-   virtual HRESULT Validate() const override;
+   virtual bool IsValid() const override;
 
 protected:
    SpanIndexType m_Span;
@@ -108,7 +108,7 @@ class REPORTINGCLASS CGirderReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-   CGirderReportSpecification(LPCTSTR strReportName,IBroker* pBroker,const CGirderKey& girderKey);
+   CGirderReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,const CGirderKey& girderKey);
    CGirderReportSpecification(const CGirderReportSpecification& other);
    ~CGirderReportSpecification(void);
 
@@ -124,7 +124,7 @@ public:
    void SetGirderKey(const CGirderKey& girderKey);
    const CGirderKey& GetGirderKey() const;
 
-   virtual HRESULT Validate() const;
+   virtual bool IsValid() const override;
 
 protected:
    CGirderKey m_GirderKey;
@@ -134,7 +134,7 @@ class REPORTINGCLASS CSegmentReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-   CSegmentReportSpecification(LPCTSTR strReportName, IBroker* pBroker, const CSegmentKey& segmentKey);
+   CSegmentReportSpecification(const std::_tstring& strReportName, IBroker* pBroker, const CSegmentKey& segmentKey);
    CSegmentReportSpecification(const CSegmentReportSpecification& other);
    ~CSegmentReportSpecification(void);
 
@@ -153,7 +153,7 @@ public:
    void SetSegmentKey(const CSegmentKey& segmentKey);
    const CSegmentKey& GetSegmentKey() const;
 
-   virtual HRESULT Validate() const;
+   virtual bool IsValid() const override;
 
 protected:
    CSegmentKey m_SegmentKey;
@@ -163,7 +163,7 @@ class REPORTINGCLASS CGirderLineReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-   CGirderLineReportSpecification(LPCTSTR strReportName,IBroker* pBroker,GirderIndexType gdrIdx);
+   CGirderLineReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,GirderIndexType gdrIdx);
    CGirderLineReportSpecification(const CGirderLineReportSpecification& other);
    ~CGirderLineReportSpecification(void);
 
@@ -175,7 +175,7 @@ public:
 
    CGirderKey GetGirderKey() const;
 
-   virtual HRESULT Validate() const;
+   virtual bool IsValid() const override;
 
 protected:
    GirderIndexType m_GirderIdx;
@@ -185,7 +185,7 @@ class REPORTINGCLASS CMultiGirderReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-   CMultiGirderReportSpecification(LPCTSTR strReportName,IBroker* pBroker,const std::vector<CGirderKey>& girderKeys);
+   CMultiGirderReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,const std::vector<CGirderKey>& girderKeys);
    CMultiGirderReportSpecification(const CMultiGirderReportSpecification& other);
    ~CMultiGirderReportSpecification(void);
 
@@ -197,7 +197,7 @@ public:
 
    bool IsMyGirder(const CGirderKey& girderKey) const;
 
-   virtual HRESULT Validate() const;
+   virtual bool IsValid() const override;
 
 protected:
    std::vector<CGirderKey> m_GirderKeys;
@@ -211,7 +211,7 @@ class REPORTINGCLASS CMultiViewSpanGirderReportSpecification :
 {
 public:
 
-   CMultiViewSpanGirderReportSpecification(LPCTSTR strReportName,IBroker* pBroker,const std::vector<CGirderKey>& girderKeys);
+   CMultiViewSpanGirderReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,const std::vector<CGirderKey>& girderKeys);
    CMultiViewSpanGirderReportSpecification(const CMultiViewSpanGirderReportSpecification& other);
    ~CMultiViewSpanGirderReportSpecification(void);
 
@@ -223,7 +223,7 @@ public:
 
    int IsMyGirder(const CGirderKey& girderKey) const;
 
-   virtual HRESULT Validate() const;
+   virtual bool IsValid() const override;
 
 protected:
    std::vector<CGirderKey> m_GirderKeys;
@@ -234,7 +234,7 @@ class REPORTINGCLASS CPointOfInterestReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-   CPointOfInterestReportSpecification(LPCTSTR strReportName,IBroker* pBroker,const pgsPointOfInterest& poi);
+   CPointOfInterestReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,const pgsPointOfInterest& poi);
    CPointOfInterestReportSpecification(const CPointOfInterestReportSpecification& other);
    ~CPointOfInterestReportSpecification(void);
 
@@ -244,7 +244,7 @@ public:
    void SetPointOfInterest(const pgsPointOfInterest& poi);
    const pgsPointOfInterest& GetPointOfInterest() const;
 
-   virtual HRESULT Validate() const;
+   virtual bool IsValid() const override;
 
 protected:
    pgsPointOfInterest m_POI;

@@ -98,7 +98,7 @@ inline bool IsDifferentNumberOfGirdersPerSpan(IBridge* pBridge)
 
 
 CPGSuperTitlePageBuilder::CPGSuperTitlePageBuilder(IBroker* pBroker,LPCTSTR strTitle,bool bFullVersion, bool bPageBreakAfter) :
-CTitlePageBuilder(strTitle),
+WBFL::Reporting::TitlePageBuilder(strTitle),
 m_pBroker(pBroker),
 m_bFullVersion(bFullVersion),
 m_bPageBreakAfter(bPageBreakAfter)
@@ -106,7 +106,7 @@ m_bPageBreakAfter(bPageBreakAfter)
 }
 
 CPGSuperTitlePageBuilder::CPGSuperTitlePageBuilder(const CPGSuperTitlePageBuilder& other) :
-CTitlePageBuilder(other),
+WBFL::Reporting::TitlePageBuilder(other),
 m_pBroker(other.m_pBroker),
 m_bFullVersion(other.m_bFullVersion),
 m_bPageBreakAfter(other.m_bPageBreakAfter)
@@ -117,18 +117,18 @@ CPGSuperTitlePageBuilder::~CPGSuperTitlePageBuilder(void)
 {
 }
 
-CTitlePageBuilder* CPGSuperTitlePageBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::TitlePageBuilder> CPGSuperTitlePageBuilder::Clone() const
 {
-   return new CPGSuperTitlePageBuilder(*this);
+   return std::make_unique<CPGSuperTitlePageBuilder>(*this);
 }
 
-bool CPGSuperTitlePageBuilder::NeedsUpdate(CReportHint* pHint,std::shared_ptr<CReportSpecification>& pRptSpec)
+bool CPGSuperTitlePageBuilder::NeedsUpdate(const std::shared_ptr<const WBFL::Reporting::ReportHint>& pHint,const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec) const
 {
    // don't let the title page control whether or not a report needs updating
    return false;
 }
 
-rptChapter* CPGSuperTitlePageBuilder::Build(std::shared_ptr<CReportSpecification>& pRptSpec)
+rptChapter* CPGSuperTitlePageBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec) const
 {
    // Create a title page for the report
    rptChapter* pTitlePage = new rptChapter;
@@ -157,9 +157,9 @@ rptChapter* CPGSuperTitlePageBuilder::Build(std::shared_ptr<CReportSpecification
    }
 
    // Determine if the report spec has span/girder information
-   std::shared_ptr<CSpanReportSpecification>       pSpanRptSpec       = std::dynamic_pointer_cast<CSpanReportSpecification,CReportSpecification>(pRptSpec);
-   std::shared_ptr<CGirderReportSpecification>     pGirderRptSpec     = std::dynamic_pointer_cast<CGirderReportSpecification,CReportSpecification>(pRptSpec);
-   std::shared_ptr<CGirderLineReportSpecification> pGirderLineRptSpec = std::dynamic_pointer_cast<CGirderLineReportSpecification,CReportSpecification>(pRptSpec);
+   auto pSpanRptSpec       = std::dynamic_pointer_cast<const CSpanReportSpecification>(pRptSpec);
+   auto pGirderRptSpec     = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
+   auto pGirderLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
    CGirderKey girderKey;
 

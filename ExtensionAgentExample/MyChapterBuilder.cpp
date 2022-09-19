@@ -41,11 +41,11 @@ LPCTSTR CMyChapterBuilder::GetName() const
    return TEXT("Example Chapter");
 }
 
-rptChapter* CMyChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CMyChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   CMyReportSpecification* pSpec = dynamic_cast<CMyReportSpecification*>(pRptSpec);
+   auto pSpec = std::dynamic_pointer_cast<const CMyReportSpecification>(pRptSpec);
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -55,7 +55,7 @@ rptChapter* CMyChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level
    return pChapter;
 }
 
-CChapterBuilder* CMyChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CMyChapterBuilder::Clone() const
 {
-   return new CMyChapterBuilder;
+   return std::make_unique<CMyChapterBuilder>();
 }

@@ -82,13 +82,13 @@ LPCTSTR CTimeStepDetailsChapterBuilder::GetName() const
    return TEXT("Time Step Details");
 }
 
-rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   CTimeStepDetailsReportSpecification* pTSDRptSpec = dynamic_cast<CTimeStepDetailsReportSpecification*>(pRptSpec);
+   auto pTSDRptSpec = std::dynamic_pointer_cast<const CTimeStepDetailsReportSpecification>(pRptSpec);
 
    CComPtr<IBroker> pBroker;
    pTSDRptSpec->GetBroker(&pBroker);
@@ -526,9 +526,9 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
    return pChapter;
 }
 
-CChapterBuilder* CTimeStepDetailsChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTimeStepDetailsChapterBuilder::Clone() const
 {
-   return new CTimeStepDetailsChapterBuilder;
+   return std::make_unique<CTimeStepDetailsChapterBuilder>();
 }
 
 rptRcTable* CTimeStepDetailsChapterBuilder::BuildIntervalTable(const TIME_STEP_DETAILS& tsDetails,IIntervals* pIntervals,IEAFDisplayUnits* pDisplayUnits) const
@@ -2509,7 +2509,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
 
             if (model == pgsTypes::tdmAASHTO)
             {
-               const lrfdLRFDTimeDependentConcreteCreepDetails* pDetails = dynamic_cast<const lrfdLRFDTimeDependentConcreteCreepDetails*>(pCreep.get());
+               auto pDetails = std::dynamic_pointer_cast<const lrfdLRFDTimeDependentConcreteCreepDetails>(pCreep);
                if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims)
                {
                   (*pTable)(rowIdx, colIdx++) << stress.SetValue(pDetails->fci);
@@ -2535,7 +2535,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
             }
             else if (model == pgsTypes::tdmACI209)
             {
-               const WBFL::Materials::ACI209ConcreteCreepDetails* pDetails = dynamic_cast<const WBFL::Materials::ACI209ConcreteCreepDetails*>(pCreep.get());
+               auto pDetails = std::dynamic_pointer_cast<const WBFL::Materials::ACI209ConcreteCreepDetails>(pCreep);
                (*pTable)(rowIdx, colIdx++) << pDetails->time_factor;
                (*pTable)(rowIdx, colIdx++) << pDetails->loading_age_factor;
                (*pTable)(rowIdx, colIdx++) << pDetails->humidity_factor;
@@ -2543,7 +2543,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
             }
             else if (model == pgsTypes::tdmCEBFIP)
             {
-               const WBFL::Materials::CEBFIPConcreteCreepDetails* pDetails = dynamic_cast<const WBFL::Materials::CEBFIPConcreteCreepDetails*>(pCreep.get());
+               auto pDetails = std::dynamic_pointer_cast<const WBFL::Materials::CEBFIPConcreteCreepDetails>(pCreep);
                (*pTable)(rowIdx, colIdx++) << ecc.SetValue(pDetails->h);
                (*pTable)(rowIdx, colIdx++) << pDetails->Bh;
                (*pTable)(rowIdx, colIdx++) << pDetails->Bc;

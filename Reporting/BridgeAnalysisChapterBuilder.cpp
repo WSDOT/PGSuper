@@ -89,9 +89,9 @@ LPCTSTR CBridgeAnalysisChapterBuilder::GetName() const
    return m_strTitle.c_str();
 }
 
-rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CBridgeAnalysisChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CBridgeAnalysisReportSpecification* pBridgeAnalysisRptSpec = dynamic_cast<CBridgeAnalysisReportSpecification*>(pRptSpec);
+   auto pBridgeAnalysisRptSpec = std::dynamic_pointer_cast<const CBridgeAnalysisReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pBridgeAnalysisRptSpec->GetBroker(&pBroker);
 
@@ -478,7 +478,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
    return pChapter;
 }
 
-CChapterBuilder* CBridgeAnalysisChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CBridgeAnalysisChapterBuilder::Clone() const
 {
-   return new CBridgeAnalysisChapterBuilder(m_strTitle.c_str(),m_AnalysisType);
+   return std::make_unique<CBridgeAnalysisChapterBuilder>(m_strTitle.c_str(),m_AnalysisType);
 }

@@ -52,7 +52,7 @@ public:
 
 
    //------------------------------------------------------------------------
-   rptParagraph* Build(CReportSpecification* pRptSpec,Uint16 level) const;
+   rptParagraph* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const;
 
    //------------------------------------------------------------------------
 

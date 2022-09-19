@@ -263,7 +263,7 @@ LPCTSTR CBearingSeatElevationsDetailsChapterBuilder2::GetName() const
    return TEXT("Bearing Seat Elevation Details");
 }
 
-rptChapter* CBearingSeatElevationsDetailsChapterBuilder2::Build(CReportSpecification* pRptSpec, Uint16 level) const
+rptChapter* CBearingSeatElevationsDetailsChapterBuilder2::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, Uint16 level) const
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -661,7 +661,7 @@ void CBearingSeatElevationsDetailsChapterBuilder2::BuildGirderEdgesTables(CComPt
    }
 }
 
-CChapterBuilder* CBearingSeatElevationsDetailsChapterBuilder2::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CBearingSeatElevationsDetailsChapterBuilder2::Clone() const
 {
-   return new CBearingSeatElevationsDetailsChapterBuilder2;
+   return std::make_unique<CBearingSeatElevationsDetailsChapterBuilder2>();
 }

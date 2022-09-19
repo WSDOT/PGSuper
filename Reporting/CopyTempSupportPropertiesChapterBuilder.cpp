@@ -48,10 +48,10 @@ LPCTSTR CCopyTempSupportPropertiesChapterBuilder::GetName() const
    return TEXT("Temporary Support Properties Comparison");
 }
 
-rptChapter* CCopyTempSupportPropertiesChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CCopyTempSupportPropertiesChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CBrokerReportSpecification* pBrokerRptSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
-   CCopyTempSupportPropertiesReportSpecification* pCopyTempSupportPropertiesMgrRptSpec = dynamic_cast<CCopyTempSupportPropertiesReportSpecification*>(pRptSpec);
+   auto pBrokerRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
+   auto pCopyTempSupportPropertiesMgrRptSpec = std::dynamic_pointer_cast<const CCopyTempSupportPropertiesReportSpecification>(pRptSpec);
 
    CComPtr<IBroker> pBroker;
    pBrokerRptSpec->GetBroker(&pBroker);
@@ -79,9 +79,9 @@ rptChapter* CCopyTempSupportPropertiesChapterBuilder::Build(CReportSpecification
    return pChapter;
 }
 
-CChapterBuilder* CCopyTempSupportPropertiesChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CCopyTempSupportPropertiesChapterBuilder::Clone() const
 {
-   return new CCopyTempSupportPropertiesChapterBuilder;
+   return std::make_unique<CCopyTempSupportPropertiesChapterBuilder>();
 }
 
 void CCopyTempSupportPropertiesChapterBuilder::SetCopyTempSupportProperties(std::vector<ICopyTemporarySupportPropertiesCallback*>& rCallBacks, PierIndexType fromTempSupportIdx, const std::vector<PierIndexType>& toTempSupports)

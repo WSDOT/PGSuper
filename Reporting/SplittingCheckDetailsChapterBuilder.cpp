@@ -70,9 +70,9 @@ LPCTSTR CSplittingCheckDetailsChapterBuilder::GetName() const
    }
 }
 
-rptChapter* CSplittingCheckDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CSplittingCheckDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
@@ -89,7 +89,7 @@ rptChapter* CSplittingCheckDetailsChapterBuilder::Build(CReportSpecification* pR
    return pChapter;
 }
 
-CChapterBuilder* CSplittingCheckDetailsChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CSplittingCheckDetailsChapterBuilder::Clone() const
 {
-   return new CSplittingCheckDetailsChapterBuilder;
+   return std::make_unique<CSplittingCheckDetailsChapterBuilder>();
 }

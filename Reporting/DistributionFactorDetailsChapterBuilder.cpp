@@ -62,10 +62,10 @@ LPCTSTR CDistributionFactorDetailsChapterBuilder::GetName() const
    return TEXT("Live Load Distribution Factor Details");
 }
 
-rptChapter* CDistributionFactorDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CDistributionFactorDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-   CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
+   auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
+   auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
    CComPtr<IBroker> pBroker;
    CGirderKey girderKey;
@@ -126,7 +126,7 @@ rptChapter* CDistributionFactorDetailsChapterBuilder::Build(CReportSpecification
    return pChapter;
 }
 
-CChapterBuilder* CDistributionFactorDetailsChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CDistributionFactorDetailsChapterBuilder::Clone() const
 {
-   return new CDistributionFactorDetailsChapterBuilder;
+   return std::make_unique<CDistributionFactorDetailsChapterBuilder>();
 }

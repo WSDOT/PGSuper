@@ -88,10 +88,10 @@ LPCTSTR CProjectCriteriaChapterBuilder::GetName() const
    return TEXT("Project Criteria");
 }
 
-rptChapter* CProjectCriteriaChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CProjectCriteriaChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-   CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
+   auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
+   auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
    CComPtr<IBroker> pBroker;
    CGirderKey girderKey;
@@ -259,9 +259,9 @@ rptChapter* CProjectCriteriaChapterBuilder::Build(CReportSpecification* pRptSpec
 }
 
 
-CChapterBuilder* CProjectCriteriaChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CProjectCriteriaChapterBuilder::Clone() const
 {
-   return new CProjectCriteriaChapterBuilder(m_bRating);
+   return std::make_unique<CProjectCriteriaChapterBuilder>(m_bRating);
 }
 
 void write_load_modifiers(rptParagraph* pPara,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits)

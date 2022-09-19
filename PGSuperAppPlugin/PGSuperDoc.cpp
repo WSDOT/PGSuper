@@ -469,11 +469,11 @@ void CPGSuperDoc::DoDesignGirder(const std::vector<CGirderKey>& girderKeys, bool
    if (0 < myGirderKeys.size())
    {
       GET_IFACE(IReportManager, pReportMgr);
-      CReportDescription rptDesc = pReportMgr->GetReportDescription(_T("Design Outcome Report"));
-      std::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
-      std::shared_ptr<CReportSpecification> pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
+      auto rptDesc = pReportMgr->GetReportDescription(_T("Design Outcome Report"));
+      auto pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
+      auto pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
 
-      std::shared_ptr<CMultiGirderReportSpecification> pMGRptSpec = std::dynamic_pointer_cast<CMultiGirderReportSpecification, CReportSpecification>(pRptSpec);
+      auto pMGRptSpec = std::dynamic_pointer_cast<CMultiGirderReportSpecification>(pRptSpec);
 
       pMGRptSpec->SetGirderKeys(myGirderKeys);
 

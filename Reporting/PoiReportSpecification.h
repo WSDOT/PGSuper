@@ -6,10 +6,10 @@ class CPoiReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-   CPoiReportSpecification(LPCTSTR strReportName, IBroker* pBroker, const pgsPointOfInterest& poi);
+   CPoiReportSpecification(const std::_tstring& strReportName, IBroker* pBroker, const pgsPointOfInterest& poi);
    ~CPoiReportSpecification(void);
 
-   virtual HRESULT Validate() const override;
+   virtual bool IsValid() const override;
 
    void SetPOI(const pgsPointOfInterest& poi);
    const pgsPointOfInterest& GetPOI() const;

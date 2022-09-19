@@ -64,9 +64,9 @@ LPCTSTR CStirrupDetailingCheckChapterBuilder::GetName() const
    return TEXT("Stirrup Detailing Check Details");
 }
 
-rptChapter* CStirrupDetailingCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CStirrupDetailingCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
    const CGirderKey& girderKey = pGirderRptSpec->GetGirderKey();
@@ -473,7 +473,7 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
    *pParagraph << petable << rptNewLine;
 }
 
-CChapterBuilder* CStirrupDetailingCheckChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CStirrupDetailingCheckChapterBuilder::Clone() const
 {
-   return new CStirrupDetailingCheckChapterBuilder;
+   return std::make_unique<CStirrupDetailingCheckChapterBuilder>();
 }

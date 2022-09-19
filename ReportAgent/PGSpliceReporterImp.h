@@ -85,7 +85,7 @@ public:
 
 protected:
    // CReporterBase implementation
-   virtual CTitlePageBuilder* CreateTitlePageBuilder(LPCTSTR strName,bool bFullVersion=true) override;
+   virtual WBFL::Reporting::TitlePageBuilder* CreateTitlePageBuilder(LPCTSTR strName,bool bFullVersion=true) override;
 
 private:
    DECLARE_EAF_AGENT_DATA;

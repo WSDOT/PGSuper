@@ -30,13 +30,13 @@ class REPORTINGCLASS CEquilibriumCheckReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-	CEquilibriumCheckReportSpecification(LPCTSTR strReportName,IBroker* pBroker,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx);
+	CEquilibriumCheckReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx);
 	CEquilibriumCheckReportSpecification(const CEquilibriumCheckReportSpecification& rOther);
    ~CEquilibriumCheckReportSpecification(void);
 
    void SetOptions(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx);
 
-   virtual HRESULT Validate() const override;
+   virtual bool IsValid() const override;
    virtual std::_tstring GetReportContextString() const override;
 
    pgsPointOfInterest GetPOI() const;

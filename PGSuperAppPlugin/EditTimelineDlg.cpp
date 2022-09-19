@@ -163,11 +163,11 @@ void CEditTimelineDlg::OnBnClickedViewTimelineSummary()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker, IReportManager, pReportMgr);
-   CReportDescription rptDesc = pReportMgr->GetReportDescription(_T("Timeline Manager Report"));
-   std::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
-   std::shared_ptr<CReportSpecification> pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
+   WBFL::Reporting::ReportDescription rptDesc = pReportMgr->GetReportDescription(_T("Timeline Manager Report"));
+   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
+   std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
 
-   std::shared_ptr<CTimelineManagerReportSpecification> pTimelineMgrRptSpec = std::dynamic_pointer_cast<CTimelineManagerReportSpecification, CReportSpecification>(pRptSpec);
+   std::shared_ptr<CTimelineManagerReportSpecification> pTimelineMgrRptSpec = std::dynamic_pointer_cast<CTimelineManagerReportSpecification, WBFL::Reporting::ReportSpecification>(pRptSpec);
    pTimelineMgrRptSpec->SetTimelineManager(&m_TimelineManager);
    CTimelineReportDlg dlg(pTimelineMgrRptSpec);
    dlg.DoModal();

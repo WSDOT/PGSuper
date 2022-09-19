@@ -55,9 +55,9 @@ LPCTSTR CSegmentTendonGeometryChapterBuilder::GetName() const
    return TEXT("Segment Tendon Geometry");
 }
 
-rptChapter* CSegmentTendonGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CSegmentTendonGeometryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
 
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
@@ -206,7 +206,7 @@ rptChapter* CSegmentTendonGeometryChapterBuilder::Build(CReportSpecification* pR
    return pChapter;
 }
 
-CChapterBuilder* CSegmentTendonGeometryChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CSegmentTendonGeometryChapterBuilder::Clone() const
 {
-   return new CSegmentTendonGeometryChapterBuilder;
+   return std::make_unique<CSegmentTendonGeometryChapterBuilder>();
 }

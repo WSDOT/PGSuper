@@ -94,10 +94,10 @@ BOOL CTimelineReportDlg::OnInitDialog()
    CComPtr<IBroker> pBroker;
    m_pRptSpec->GetBroker(&pBroker);
 
-   std::shared_ptr<CReportSpecification> pRptSpec = std::dynamic_pointer_cast<CBrokerReportSpecification, CTimelineManagerReportSpecification>(m_pRptSpec);
+   std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = std::dynamic_pointer_cast<CBrokerReportSpecification, CTimelineManagerReportSpecification>(m_pRptSpec);
 
    GET_IFACE2(pBroker,IReportManager,pRptMgr);
-   std::shared_ptr<CReportSpecificationBuilder> nullSpecBuilder;
+   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> nullSpecBuilder;
    m_pBrowser = pRptMgr->CreateReportBrowser(GetSafeHwnd(),pRptSpec,nullSpecBuilder);
 
    // restore the size of the window
@@ -124,7 +124,7 @@ void CTimelineReportDlg::CleanUp()
 {
    if ( m_pBrowser )
    {
-      m_pBrowser = std::shared_ptr<CReportBrowser>();
+      m_pBrowser = std::shared_ptr<WBFL::Reporting::ReportBrowser>();
    }
 
    // save the size of the window

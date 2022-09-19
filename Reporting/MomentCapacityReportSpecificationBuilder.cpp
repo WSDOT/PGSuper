@@ -46,7 +46,7 @@ CMomentCapacityReportSpecificationBuilder::~CMomentCapacityReportSpecificationBu
 {
 }
 
-std::shared_ptr<CReportSpecification> CMomentCapacityReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,std::shared_ptr<CReportSpecification>& pOldRptSpec)
+std::shared_ptr<WBFL::Reporting::ReportSpecification> CMomentCapacityReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification>& pOldRptSpec) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -108,7 +108,7 @@ std::shared_ptr<CReportSpecification> CMomentCapacityReportSpecificationBuilder:
 
    if ( dlg.DoModal() == IDOK )
    {
-      std::shared_ptr<CReportSpecification> pRptSpec;
+      std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec;
       if (pInitRptSpec)
       {
          std::shared_ptr<CMomentCapacityReportSpecification>pGRptSpec(std::make_shared<CMomentCapacityReportSpecification>(*pInitRptSpec) );
@@ -129,11 +129,11 @@ std::shared_ptr<CReportSpecification> CMomentCapacityReportSpecificationBuilder:
    return nullptr;
 }
 
-std::shared_ptr<CReportSpecification> CMomentCapacityReportSpecificationBuilder::CreateDefaultReportSpec(const CReportDescription& rptDesc)
+std::shared_ptr<WBFL::Reporting::ReportSpecification> CMomentCapacityReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
 {
    // there is no default configuration for this report. The user must be prompted every time for
    // the station information.
 
    // a future improvement might be to cache the last station range used and use it again ???
-   return CreateReportSpec(rptDesc,std::shared_ptr<CReportSpecification>());
+   return CreateReportSpec(rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification>());
 }

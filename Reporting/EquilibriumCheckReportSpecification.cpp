@@ -29,7 +29,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CEquilibriumCheckReportSpecification::CEquilibriumCheckReportSpecification(LPCTSTR strReportName,IBroker* pBroker,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) :
+CEquilibriumCheckReportSpecification::CEquilibriumCheckReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) :
 CBrokerReportSpecification(strReportName,pBroker)
 {
    m_Poi = poi;
@@ -53,13 +53,13 @@ CEquilibriumCheckReportSpecification::~CEquilibriumCheckReportSpecification(void
 {
 }
 
-HRESULT CEquilibriumCheckReportSpecification::Validate() const
+bool CEquilibriumCheckReportSpecification::IsValid() const
 {
    // TODO: Validate report parameters and license
    // This function is used to validate the reporting parameters
    // I think it can also be used to validate the license. If the license isn't
    // valid, don't create the report???
-   return S_OK;
+   return true;
 }
 
 std::_tstring CEquilibriumCheckReportSpecification::GetReportContextString() const

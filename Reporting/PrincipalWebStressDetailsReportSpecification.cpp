@@ -30,7 +30,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CPrincipalWebStressDetailsReportSpecification::CPrincipalWebStressDetailsReportSpecification(LPCTSTR strReportName,IBroker* pBroker,bool bReportAtAllLocations,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx, bool bReportAxial, bool bReportShear) :
+CPrincipalWebStressDetailsReportSpecification::CPrincipalWebStressDetailsReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,bool bReportAtAllLocations,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx, bool bReportAxial, bool bReportShear) :
 CBrokerReportSpecification(strReportName,pBroker)
 {
    SetOptions(bReportAtAllLocations,poi,intervalIdx, bReportAxial, bReportShear);

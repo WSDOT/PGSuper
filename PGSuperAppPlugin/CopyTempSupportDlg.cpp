@@ -108,11 +108,11 @@ BOOL CCopyTempSupportDlg::OnInitDialog()
 
    // set up report window
    GET_IFACE(IReportManager, pReportMgr);
-   CReportDescription rptDesc = pReportMgr->GetReportDescription(_T("Copy Temporary Support Properties Report"));
-   std::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
-   std::shared_ptr<CReportSpecification> pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
+   WBFL::Reporting::ReportDescription rptDesc = pReportMgr->GetReportDescription(_T("Copy Temporary Support Properties Report"));
+   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
+   std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
 
-   m_pRptSpec = std::dynamic_pointer_cast<CCopyTempSupportPropertiesReportSpecification, CReportSpecification>(pRptSpec);
+   m_pRptSpec = std::dynamic_pointer_cast<CCopyTempSupportPropertiesReportSpecification, WBFL::Reporting::ReportSpecification>(pRptSpec);
 
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    HICON hIcon = (HICON)LoadImage(AfxGetResourceHandle(),MAKEINTRESOURCE(IDI_COPY_PROPERTIES),IMAGE_ICON,0,0,LR_DEFAULTSIZE);
@@ -131,7 +131,7 @@ BOOL CCopyTempSupportDlg::OnInitDialog()
    UpdateReportData();
 
    GET_IFACE(IReportManager,pRptMgr);
-   std::shared_ptr<CReportSpecificationBuilder> nullSpecBuilder;
+   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> nullSpecBuilder;
    m_pBrowser = pRptMgr->CreateReportBrowser(GetSafeHwnd(),pRptSpec,nullSpecBuilder);
    m_pBrowser->GetBrowserWnd()->ModifyStyle(0,WS_BORDER);
 
@@ -357,7 +357,7 @@ void CCopyTempSupportDlg::FillComboBoxes(CComboBox& cbTempSupport, bool bInclude
 void CCopyTempSupportDlg::UpdateReportData()
 {
    GET_IFACE(IReportManager,pReportMgr);
-   std::shared_ptr<CReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
+   std::shared_ptr<WBFL::Reporting::ReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
 
    PierIndexType TempSupportIdx = GetFromTempSupport();
    std::vector<PierIndexType> toTempSupports = GetToTempSupports();
@@ -368,8 +368,8 @@ void CCopyTempSupportDlg::UpdateReportData()
    CollectionIndexType numchs = pBuilder->GetChapterBuilderCount();
    for (CollectionIndexType ich = 0; ich < numchs; ich++)
    {
-      std::shared_ptr<CChapterBuilder> pChb = pBuilder->GetChapterBuilder(ich);
-      std::shared_ptr<CCopyTempSupportPropertiesChapterBuilder> pRptCpBuilder = std::dynamic_pointer_cast<CCopyTempSupportPropertiesChapterBuilder,CChapterBuilder>(pChb);
+      std::shared_ptr<WBFL::Reporting::ChapterBuilder> pChb = pBuilder->GetChapterBuilder(ich);
+      std::shared_ptr<CCopyTempSupportPropertiesChapterBuilder> pRptCpBuilder = std::dynamic_pointer_cast<CCopyTempSupportPropertiesChapterBuilder,WBFL::Reporting::ChapterBuilder>(pChb);
 
       if (pRptCpBuilder)
       {
@@ -384,9 +384,9 @@ void CCopyTempSupportDlg::UpdateReport()
       UpdateReportData();
 
       GET_IFACE(IReportManager,pReportMgr);
-      std::shared_ptr<CReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
+      std::shared_ptr<WBFL::Reporting::ReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
 
-      std::shared_ptr<CReportSpecification> pRptSpec = std::dynamic_pointer_cast<CReportSpecification,CCopyTempSupportPropertiesReportSpecification>(m_pRptSpec);
+      std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = std::dynamic_pointer_cast<WBFL::Reporting::ReportSpecification,CCopyTempSupportPropertiesReportSpecification>(m_pRptSpec);
 
       std::shared_ptr<rptReport> pReport = pBuilder->CreateReport( pRptSpec );
       m_pBrowser->UpdateReport( pReport, true );
@@ -513,7 +513,7 @@ void CCopyTempSupportDlg::CleanUp()
 {
    if ( m_pBrowser )
    {
-      m_pBrowser = std::shared_ptr<CReportBrowser>();
+      m_pBrowser = std::shared_ptr<WBFL::Reporting::ReportBrowser>();
    }
 
    // save the size of the window

@@ -46,7 +46,7 @@ CCrackedSectionReportSpecificationBuilder::~CCrackedSectionReportSpecificationBu
 {
 }
 
-std::shared_ptr<CReportSpecification> CCrackedSectionReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,std::shared_ptr<CReportSpecification>& pOldRptSpec)
+std::shared_ptr<WBFL::Reporting::ReportSpecification> CCrackedSectionReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification>& pOldRptSpec) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -102,7 +102,7 @@ std::shared_ptr<CReportSpecification> CCrackedSectionReportSpecificationBuilder:
 
    if ( dlg.DoModal() == IDOK )
    {
-      std::shared_ptr<CReportSpecification> pNewRptSpec;
+      std::shared_ptr<WBFL::Reporting::ReportSpecification> pNewRptSpec;
       if (pInitRptSpec)
       {
          // copy settings from existing spec
@@ -124,11 +124,11 @@ std::shared_ptr<CReportSpecification> CCrackedSectionReportSpecificationBuilder:
    return nullptr;
 }
 
-std::shared_ptr<CReportSpecification> CCrackedSectionReportSpecificationBuilder::CreateDefaultReportSpec(const CReportDescription& rptDesc)
+std::shared_ptr<WBFL::Reporting::ReportSpecification> CCrackedSectionReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
 {
    // there is no default configuration for this report. The user must be prompted every time for
    // the station information.
 
    // a future improvement might be to cache the last station range used and use it again ???
-   return CreateReportSpec(rptDesc,std::shared_ptr<CReportSpecification>());
+   return CreateReportSpec(rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification>());
 }

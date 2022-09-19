@@ -42,14 +42,14 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 CTOGATitlePageBuilder::CTOGATitlePageBuilder(IBroker* pBroker,LPCTSTR strTitle,bool bFullVersion) :
-CTitlePageBuilder(strTitle),
+WBFL::Reporting::TitlePageBuilder(strTitle),
 m_pBroker(pBroker),
 m_bFullVersion(bFullVersion)
 {
 }
 
 CTOGATitlePageBuilder::CTOGATitlePageBuilder(const CTOGATitlePageBuilder& other) :
-CTitlePageBuilder(other),
+WBFL::Reporting::TitlePageBuilder(other),
 m_pBroker(other.m_pBroker),
 m_bFullVersion(other.m_bFullVersion)
 {
@@ -59,19 +59,19 @@ CTOGATitlePageBuilder::~CTOGATitlePageBuilder(void)
 {
 }
 
-CTitlePageBuilder* CTOGATitlePageBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::TitlePageBuilder> CTOGATitlePageBuilder::Clone() const
 {
-   return new CTOGATitlePageBuilder(*this);
+   return std::make_unique<CTOGATitlePageBuilder>(*this);
 }
 
 
-bool CTOGATitlePageBuilder::NeedsUpdate(CReportHint* pHint,std::shared_ptr<CReportSpecification>& pRptSpec)
+bool CTOGATitlePageBuilder::NeedsUpdate(const std::shared_ptr<const WBFL::Reporting::ReportHint>& pHint, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec) const
 {
    // don't let the title page control whether or not a report needs updating
    return false;
 }
 
-rptChapter* CTOGATitlePageBuilder::Build(std::shared_ptr<CReportSpecification>& pRptSpec)
+rptChapter* CTOGATitlePageBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec) const
 {
    // Create a title page for the report
    rptChapter* pTitlePage = new rptChapter;

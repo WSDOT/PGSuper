@@ -29,7 +29,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CCopyTempSupportPropertiesReportSpecification::CCopyTempSupportPropertiesReportSpecification(LPCTSTR strReportName, IBroker* pBroker) :
+CCopyTempSupportPropertiesReportSpecification::CCopyTempSupportPropertiesReportSpecification(const std::_tstring& strReportName, IBroker* pBroker) :
    CBrokerReportSpecification(strReportName, pBroker)
 {
 }
@@ -38,8 +38,7 @@ CCopyTempSupportPropertiesReportSpecification::~CCopyTempSupportPropertiesReport
 {
 }
 
-HRESULT CCopyTempSupportPropertiesReportSpecification::Validate() const
+bool CCopyTempSupportPropertiesReportSpecification::IsValid() const
 {
-
-   return CBrokerReportSpecification::Validate();
+   return CBrokerReportSpecification::IsValid();
 }

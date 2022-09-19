@@ -52,9 +52,9 @@ LPCTSTR CLossesChapterBuilder::GetName() const
    return TEXT("Prestress Loss Details");
 }
 
-rptChapter* CLossesChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CLossesChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGdrRptSpec  = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGdrRptSpec  = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGdrRptSpec->GetBroker(&pBroker);
    const CGirderKey& girderKey(pGdrRptSpec->GetGirderKey());
@@ -75,7 +75,7 @@ rptChapter* CLossesChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
    return pChapter;
 }
 
-CChapterBuilder* CLossesChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLossesChapterBuilder::Clone() const
 {
-   return new CLossesChapterBuilder;
+   return std::make_unique<CLossesChapterBuilder>();
 }

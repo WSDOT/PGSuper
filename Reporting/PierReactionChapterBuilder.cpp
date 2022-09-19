@@ -72,9 +72,9 @@ LPCTSTR CPierReactionChapterBuilder::GetName() const
    return TEXT("Pier Reactions");
 }
 
-rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, Uint16 level) const
+rptChapter* CPierReactionChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, Uint16 level) const
 {
-   CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
+   auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
    CComPtr<IBroker> pBroker;
    CGirderKey girderKey;
@@ -1638,7 +1638,7 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, U
    return pChapter;
 }
 
-CChapterBuilder* CPierReactionChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CPierReactionChapterBuilder::Clone() const
 {
-   return new CPierReactionChapterBuilder;
+   return std::make_unique<CPierReactionChapterBuilder>();
 }

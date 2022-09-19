@@ -416,6 +416,7 @@
     <ClInclude Include="..\Include\Reporting\FlexuralCapacityCheckTable.h" />
     <ClInclude Include="..\Include\Reporting\FlexuralStressCheckTable.h" />
     <ClInclude Include="..\Include\Reporting\GirderDetailingCheck.h" />
+    <ClInclude Include="..\Include\Reporting\GirderGeometryChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\GirderSeedDataComparisonParagraph.h" />
     <ClInclude Include="..\Include\Reporting\HaulingCheck.h" />
     <ClInclude Include="..\Include\Reporting\HaulingCheckChapterBuilder.h" />

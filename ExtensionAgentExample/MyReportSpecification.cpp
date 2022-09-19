@@ -29,7 +29,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CMyReportSpecification::CMyReportSpecification(LPCTSTR strReportName,IBroker* pBroker) :
+CMyReportSpecification::CMyReportSpecification(const std::_tstring& strReportName,IBroker* pBroker) :
 CBrokerReportSpecification(strReportName,pBroker)
 {
    m_Message = "Message not set";
@@ -39,9 +39,9 @@ CMyReportSpecification::~CMyReportSpecification(void)
 {
 }
 
-HRESULT CMyReportSpecification::Validate() const
+bool CMyReportSpecification::IsValid() const
 {
-   return S_OK;
+   return true;
 }
 
 void CMyReportSpecification::SetMessage(const CString& msg)
@@ -49,7 +49,7 @@ void CMyReportSpecification::SetMessage(const CString& msg)
    m_Message = msg;
 }
 
-CString CMyReportSpecification::GetMessage()
+const CString& CMyReportSpecification::GetMessage() const
 {
    return m_Message;
 }

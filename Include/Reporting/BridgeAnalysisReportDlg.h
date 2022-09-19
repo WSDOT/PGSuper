@@ -32,7 +32,7 @@ class CBridgeAnalysisReportDlg : public CSpanGirderReportDlg
 	DECLARE_DYNAMIC(CBridgeAnalysisReportDlg)
 
 public:
-	CBridgeAnalysisReportDlg(IBroker* pBroker,const CReportDescription& rptDesc,std::shared_ptr<CReportSpecification>& pRptSpec,UINT nIDTemplate = IDD_BRIDGEANALYSISREPORT,
+	CBridgeAnalysisReportDlg(IBroker* pBroker,const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification>& pRptSpec,UINT nIDTemplate = IDD_BRIDGEANALYSISREPORT,
       CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CBridgeAnalysisReportDlg();
 

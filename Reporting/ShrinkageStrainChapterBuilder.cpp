@@ -51,9 +51,9 @@ LPCTSTR CShrinkageStrainChapterBuilder::GetName() const
    return TEXT("Shrinkage Strain Details");
 }
 
-rptChapter* CShrinkageStrainChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CShrinkageStrainChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
 
@@ -70,7 +70,7 @@ rptChapter* CShrinkageStrainChapterBuilder::Build(CReportSpecification* pRptSpec
    return pChapter;
 }
 
-CChapterBuilder* CShrinkageStrainChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CShrinkageStrainChapterBuilder::Clone() const
 {
-   return new CShrinkageStrainChapterBuilder;
+   return std::make_unique<CShrinkageStrainChapterBuilder>();
 }

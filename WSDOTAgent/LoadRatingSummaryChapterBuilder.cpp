@@ -56,9 +56,9 @@ LPCTSTR CLoadRatingSummaryChapterBuilder::GetName() const
    return TEXT("WSDOT Load Rating Summary");
 }
 
-rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CLoadRatingSummaryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderLineReportSpecification* pGdrRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
+   auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGdrRptSpec->GetBroker(&pBroker);
    GirderIndexType gdrIdx = pGdrRptSpec->GetGirderIndex();
@@ -468,9 +468,9 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
    return pChapter;
 }
 
-CChapterBuilder* CLoadRatingSummaryChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLoadRatingSummaryChapterBuilder::Clone() const
 {
-   return new CLoadRatingSummaryChapterBuilder;
+   return std::make_unique<CLoadRatingSummaryChapterBuilder>();
 }
 
 void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRcTable* pTable,RowIndexType row,const pgsRatingArtifact* pRatingArtifact,IEAFDisplayUnits* pDisplayUnits,rptParagraph* pRemarks) const

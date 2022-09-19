@@ -69,9 +69,9 @@ LPCTSTR CTogaSpecCheckSummaryChapterBuilder::GetName() const
    return TEXT("Specification Check Summary");
 }
 
-rptChapter* CTogaSpecCheckSummaryChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CTogaSpecCheckSummaryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CBrokerReportSpecification* pBrokerRptSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
+   auto pBrokerRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pBrokerRptSpec->GetBroker(&pBroker);
 
@@ -92,9 +92,9 @@ rptChapter* CTogaSpecCheckSummaryChapterBuilder::Build(CReportSpecification* pRp
    return pChap;
 }
 
-CChapterBuilder* CTogaSpecCheckSummaryChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTogaSpecCheckSummaryChapterBuilder::Clone() const
 {
-   return new CTogaSpecCheckSummaryChapterBuilder(m_ReferToDetailsReport);
+   return std::make_unique<CTogaSpecCheckSummaryChapterBuilder>(m_ReferToDetailsReport);
 }
 
 //======================== ACCESS     =======================================

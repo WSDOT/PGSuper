@@ -70,11 +70,11 @@ LPCTSTR CCrackedSectionChapterBuilder::GetName() const
    return TEXT("Cracked Section Computation Details");
 }
 
-rptChapter* CCrackedSectionChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CCrackedSectionChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    USES_CONVERSION;
 
-   CCrackedSectionReportSpecification* pSpec = dynamic_cast<CCrackedSectionReportSpecification*>(pRptSpec);
+   auto pSpec = std::dynamic_pointer_cast<const CCrackedSectionReportSpecification>(pRptSpec);
    pgsPointOfInterest poi = pSpec->GetPOI();
    bool bPositiveMoment = pSpec->IsPositiveMoment();
 
@@ -194,9 +194,9 @@ rptChapter* CCrackedSectionChapterBuilder::Build(CReportSpecification* pRptSpec,
    return pChapter;
 }
 
-CChapterBuilder* CCrackedSectionChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CCrackedSectionChapterBuilder::Clone() const
 {
-   return new CCrackedSectionChapterBuilder;
+   return std::make_unique<CCrackedSectionChapterBuilder>();
 }
 
 rptRcImage* CCrackedSectionChapterBuilder::CreateImage(ICrackedSectionSolution* pSolution,bool bPositiveMoment) const

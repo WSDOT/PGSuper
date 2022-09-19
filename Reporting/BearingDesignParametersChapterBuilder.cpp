@@ -68,9 +68,9 @@ LPCTSTR CBearingDesignParametersChapterBuilder::GetName() const
    return TEXT("Bearing Design Parameters");
 }
 
-rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CBearingDesignParametersChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
    const CGirderKey& girderKey( pGirderRptSpec->GetGirderKey() );
@@ -499,7 +499,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    return pChapter;
 }
 
-CChapterBuilder* CBearingDesignParametersChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder>CBearingDesignParametersChapterBuilder::Clone() const
 {
-   return new CBearingDesignParametersChapterBuilder;
+   return std::make_unique<CBearingDesignParametersChapterBuilder>();
 }

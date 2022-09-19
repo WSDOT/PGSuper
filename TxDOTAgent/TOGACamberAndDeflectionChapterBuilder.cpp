@@ -72,9 +72,9 @@ LPCTSTR CTogaCamberAndDeflectionChapterBuilder::GetName() const
    return TEXT("Camber and Deflections");
 }
 
-rptChapter* CTogaCamberAndDeflectionChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CTogaCamberAndDeflectionChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CBrokerReportSpecification* pSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
+   auto pSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pSpec->GetBroker(&pBroker);
 
@@ -87,9 +87,9 @@ rptChapter* CTogaCamberAndDeflectionChapterBuilder::Build(CReportSpecification* 
    return pChapter;
 }
 
-CChapterBuilder* CTogaCamberAndDeflectionChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTogaCamberAndDeflectionChapterBuilder::Clone() const
 {
-   return new CTogaCamberAndDeflectionChapterBuilder;
+   return std::make_unique<CTogaCamberAndDeflectionChapterBuilder>();
 }
 
 //======================== ACCESS     =======================================

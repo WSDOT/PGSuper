@@ -52,7 +52,7 @@ LPCTSTR CMultiGirderHaunchGeometryChapterBuilder::GetName() const
    return TEXT("Haunch Geometry");
 }
 
-rptChapter* CMultiGirderHaunchGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CMultiGirderHaunchGeometryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -61,7 +61,7 @@ rptChapter* CMultiGirderHaunchGeometryChapterBuilder::Build(CReportSpecification
 
    CComPtr<IBroker> pBroker;
 
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    if (pGirderRptSpec!=nullptr)
    {
       pGirderRptSpec->GetBroker(&pBroker);
@@ -69,7 +69,7 @@ rptChapter* CMultiGirderHaunchGeometryChapterBuilder::Build(CReportSpecification
    }
    else
    {
-      CMultiGirderReportSpecification* pReportSpec = dynamic_cast<CMultiGirderReportSpecification*>(pRptSpec);
+      auto pReportSpec = std::dynamic_pointer_cast<const CMultiGirderReportSpecification>(pRptSpec);
       pReportSpec->GetBroker(&pBroker);
 
       girder_list = pReportSpec->GetGirderKeys();
@@ -93,9 +93,9 @@ rptChapter* CMultiGirderHaunchGeometryChapterBuilder::Build(CReportSpecification
    return pChapter;
 }
 
-CChapterBuilder* CMultiGirderHaunchGeometryChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CMultiGirderHaunchGeometryChapterBuilder::Clone() const
 {
-   return new CMultiGirderHaunchGeometryChapterBuilder;
+   return std::make_unique<CMultiGirderHaunchGeometryChapterBuilder>();
 }
 
 //======================== ACCESS     =======================================

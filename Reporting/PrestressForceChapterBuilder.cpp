@@ -62,10 +62,10 @@ LPCTSTR CPrestressForceChapterBuilder::GetName() const
    return TEXT("Prestressing Force and Strand Stresses");
 }
 
-rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CPrestressForceChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-   CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
+   auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
+   auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
    CComPtr<IBroker> pBroker;
    CGirderKey girderKey;
@@ -219,9 +219,9 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
    return pChapter;
 }
 
-CChapterBuilder* CPrestressForceChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CPrestressForceChapterBuilder::Clone() const
 {
-   return new CPrestressForceChapterBuilder(m_bRating,m_bSelect);
+   return std::make_unique<CPrestressForceChapterBuilder>(m_bRating,m_bSelect);
 }
 
 //======================== ACCESS     =======================================

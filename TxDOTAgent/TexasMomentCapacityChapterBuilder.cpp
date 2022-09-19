@@ -61,9 +61,9 @@ LPCTSTR CTexasMomentCapacityChapterBuilder::GetName() const
    return TEXT("Moment Capacity");
 }
 
-rptChapter* CTexasMomentCapacityChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CTexasMomentCapacityChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
@@ -107,9 +107,9 @@ rptChapter* CTexasMomentCapacityChapterBuilder::Build(CReportSpecification* pRpt
    return pChapter;
 }
 
-CChapterBuilder* CTexasMomentCapacityChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTexasMomentCapacityChapterBuilder::Clone() const
 {
-   return new CTexasMomentCapacityChapterBuilder;
+   return std::make_unique<CTexasMomentCapacityChapterBuilder>();
 }
 
 //======================== ACCESS     =======================================

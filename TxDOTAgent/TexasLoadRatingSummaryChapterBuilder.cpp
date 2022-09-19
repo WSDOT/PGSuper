@@ -57,9 +57,9 @@ LPCTSTR CTexasLoadRatingSummaryChapterBuilder::GetName() const
    return TEXT("Load Rating Summary");
 }
 
-rptChapter* CTexasLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CTexasLoadRatingSummaryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    if (pGirderRptSpec == nullptr)
    {
       ATLASSERT(0);
@@ -98,7 +98,7 @@ rptChapter* CTexasLoadRatingSummaryChapterBuilder::Build(CReportSpecification* p
 
 }
 
-CChapterBuilder* CTexasLoadRatingSummaryChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTexasLoadRatingSummaryChapterBuilder::Clone() const
 {
-   return new CTexasLoadRatingSummaryChapterBuilder;
+   return std::make_unique<CTexasLoadRatingSummaryChapterBuilder>();
 }

@@ -76,7 +76,7 @@ protected:
    void CleanUp();
 
    std::shared_ptr<CMultiGirderReportSpecification> m_pRptSpec;
-   std::shared_ptr<CReportBrowser> m_pBrowser; // this is the actual browser window that displays the report
+   std::shared_ptr<WBFL::Reporting::ReportBrowser> m_pBrowser; // this is the actual browser window that displays the report
    const std::vector<CGirderKey> m_GirderKeys;
    arSlabOffsetDesignType m_DesignADimType;
 

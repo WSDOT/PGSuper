@@ -39,18 +39,18 @@ CTimelineManagerReportSpecificationBuilder::~CTimelineManagerReportSpecification
 {
 }
 
-std::shared_ptr<CReportSpecification> CTimelineManagerReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc, std::shared_ptr<CReportSpecification>& pOldRptSpec)
+std::shared_ptr<WBFL::Reporting::ReportSpecification> CTimelineManagerReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc, std::shared_ptr<WBFL::Reporting::ReportSpecification>& pOldRptSpec) const
 {
    // If possible, copy information from old spec. Otherwise header/footer and other info will be lost
    std::shared_ptr<CTimelineManagerReportSpecification> pOldTLMRptSpec(std::dynamic_pointer_cast<CTimelineManagerReportSpecification>(pOldRptSpec));
 
-   std::shared_ptr<CReportSpecification> pNewRptSpec;
+   std::shared_ptr<WBFL::Reporting::ReportSpecification> pNewRptSpec;
    if (pOldTLMRptSpec)
    {
       std::shared_ptr<CTimelineManagerReportSpecification> pNewTLMRptSpec(std::make_shared<CTimelineManagerReportSpecification>(*pOldTLMRptSpec));
       pNewTLMRptSpec->SetTimelineManager(pOldTLMRptSpec->GetTimelineManager());
 
-     pNewRptSpec = std::static_pointer_cast<CReportSpecification>(pNewTLMRptSpec);
+     pNewRptSpec = std::static_pointer_cast<WBFL::Reporting::ReportSpecification>(pNewTLMRptSpec);
    }
    else
    {
@@ -60,10 +60,10 @@ std::shared_ptr<CReportSpecification> CTimelineManagerReportSpecificationBuilder
    return pNewRptSpec;
 }
 
-std::shared_ptr<CReportSpecification> CTimelineManagerReportSpecificationBuilder::CreateDefaultReportSpec(const CReportDescription& rptDesc)
+std::shared_ptr<WBFL::Reporting::ReportSpecification> CTimelineManagerReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
 {
    // Use all chapters at the maximum level
-   std::shared_ptr<CReportSpecification> pRptSpec(std::make_shared<CTimelineManagerReportSpecification>(rptDesc.GetReportName(), m_pBroker));
+   std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec(std::make_shared<CTimelineManagerReportSpecification>(rptDesc.GetReportName(), m_pBroker));
 
    rptDesc.ConfigureReportSpecification(pRptSpec);
 

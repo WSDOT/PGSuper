@@ -60,9 +60,9 @@ LPCTSTR CDeckElevationChapterBuilder::GetName() const
    return TEXT("Roadway Elevations");
 }
 
-rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CDeckElevationChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CBrokerReportSpecification* pSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
+   auto pSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pSpec->GetBroker(&pBroker);
 
@@ -80,14 +80,14 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
 }
 
 
-CChapterBuilder* CDeckElevationChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CDeckElevationChapterBuilder::Clone() const
 {
-   return new CDeckElevationChapterBuilder;
+   return std::make_unique<CDeckElevationChapterBuilder>();
 }
 
-rptChapter* CDeckElevationChapterBuilder::BuildDeckOnGirder(CReportSpecification* pRptSpec, Uint16 level) const
+rptChapter* CDeckElevationChapterBuilder::BuildDeckOnGirder(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, Uint16 level) const
 {
-   CBrokerReportSpecification* pSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
+   auto pSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pSpec->GetBroker(&pBroker);
 
@@ -95,7 +95,7 @@ rptChapter* CDeckElevationChapterBuilder::BuildDeckOnGirder(CReportSpecification
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
 
-   CGirderReportSpecification* pSGRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pSGRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
 
    CGirderKey girderKey;
    if (pSGRptSpec)
@@ -232,9 +232,9 @@ rptChapter* CDeckElevationChapterBuilder::BuildDeckOnGirder(CReportSpecification
    return pChapter;
 }
 
-rptChapter* CDeckElevationChapterBuilder::BuildNoDeck(CReportSpecification* pRptSpec, Uint16 level) const
+rptChapter* CDeckElevationChapterBuilder::BuildNoDeck(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, Uint16 level) const
 {
-   CBrokerReportSpecification* pSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
+   auto pSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pSpec->GetBroker(&pBroker);
 
@@ -242,7 +242,7 @@ rptChapter* CDeckElevationChapterBuilder::BuildNoDeck(CReportSpecification* pRpt
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
 
-   CGirderReportSpecification* pSGRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pSGRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
 
    CGirderKey girderKey;
    if (pSGRptSpec)

@@ -48,7 +48,7 @@ CBearingSeatElevationsChapterBuilderBase::~CBearingSeatElevationsChapterBuilderB
 {
 }
 
-rptChapter* CBearingSeatElevationsChapterBuilderBase::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CBearingSeatElevationsChapterBuilderBase::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -380,9 +380,9 @@ LPCTSTR CBearingSeatElevationsChapterBuilder2::GetName() const
    return TEXT("Bearing Seat Elevations");
 }
 
-CChapterBuilder* CBearingSeatElevationsChapterBuilder2::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CBearingSeatElevationsChapterBuilder2::Clone() const
 {
-   return new CBearingSeatElevationsChapterBuilder2(*this);
+   return std::make_unique<CBearingSeatElevationsChapterBuilder2>(*this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -400,7 +400,7 @@ LPCTSTR CBearingDeductChapterBuilder::GetName() const
    return TEXT("Bearing Seat Elevations");
 }
 
-CChapterBuilder* CBearingDeductChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CBearingDeductChapterBuilder::Clone() const
 {
-   return new CBearingDeductChapterBuilder(*this);
+   return std::make_unique<CBearingDeductChapterBuilder>(*this);
 }

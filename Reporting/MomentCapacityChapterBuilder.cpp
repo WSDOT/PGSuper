@@ -74,11 +74,11 @@ LPCTSTR CMomentCapacityChapterBuilder::GetName() const
    return TEXT("Moment Capacity Details");
 }
 
-rptChapter* CMomentCapacityChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CMomentCapacityChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    USES_CONVERSION;
 
-   CMomentCapacityReportSpecification* pSpec = dynamic_cast<CMomentCapacityReportSpecification*>(pRptSpec);
+   auto pSpec = std::dynamic_pointer_cast<const CMomentCapacityReportSpecification>(pRptSpec);
    pgsPointOfInterest poi( pSpec->GetPOI() );
    bool bPositiveMoment = pSpec->IsPositiveMoment();
 
@@ -371,9 +371,9 @@ rptChapter* CMomentCapacityChapterBuilder::Build(CReportSpecification* pRptSpec,
    return pChapter;
 }
 
-CChapterBuilder* CMomentCapacityChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CMomentCapacityChapterBuilder::Clone() const
 {
-   return new CMomentCapacityChapterBuilder;
+   return std::make_unique<CMomentCapacityChapterBuilder>();
 }
 
 rptRcImage* CMomentCapacityChapterBuilder::CreateImage(IMomentCapacitySolution* pSolution,bool bPositiveMoment) const

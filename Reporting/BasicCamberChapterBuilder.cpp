@@ -68,9 +68,9 @@ LPCTSTR CBasicCamberChapterBuilder::GetName() const
    return TEXT("Camber Details");
 }
 
-rptChapter* CBasicCamberChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CBasicCamberChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
@@ -113,12 +113,12 @@ rptChapter* CBasicCamberChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
    return pChapter;
 }
 
-CChapterBuilder* CBasicCamberChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CBasicCamberChapterBuilder::Clone() const
 {
-   return new CBasicCamberChapterBuilder;
+   return std::make_unique<CBasicCamberChapterBuilder>();
 }
 
-void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter,CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey, bool bTempStrands, IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
+void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey, bool bTempStrands, IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
 {
    GET_IFACE2(pBroker,ICamber,pCamber);
 
@@ -349,7 +349,7 @@ void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter,CReportSpecific
    }
 }
 
-void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,bool bTempStrands,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
+void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,bool bTempStrands,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
 {
    GET_IFACE2(pBroker,ICamber,pCamber);
 

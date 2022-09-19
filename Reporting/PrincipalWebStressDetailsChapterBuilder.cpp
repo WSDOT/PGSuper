@@ -63,13 +63,13 @@ LPCTSTR CPrincipalWebStressDetailsChapterBuilder::GetName() const
    return TEXT("Principal Web Stress Details");
 }
 
-rptChapter* CPrincipalWebStressDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CPrincipalWebStressDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   CPrincipalWebStressDetailsReportSpecification* pTSDRptSpec = dynamic_cast<CPrincipalWebStressDetailsReportSpecification*>(pRptSpec);
+   auto pTSDRptSpec = std::dynamic_pointer_cast<const CPrincipalWebStressDetailsReportSpecification>(pRptSpec);
 
    m_bReportShear = pTSDRptSpec->ReportShear();
    m_bReportAxial = pTSDRptSpec->ReportAxial();
@@ -211,9 +211,9 @@ rptChapter* CPrincipalWebStressDetailsChapterBuilder::Build(CReportSpecification
    return pChapter;
 }
 
-CChapterBuilder* CPrincipalWebStressDetailsChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CPrincipalWebStressDetailsChapterBuilder::Clone() const
 {
-   return new CPrincipalWebStressDetailsChapterBuilder;
+   return std::make_unique<CPrincipalWebStressDetailsChapterBuilder>();
 }
 
 void CPrincipalWebStressDetailsChapterBuilder::BuildIncrementalStressTables(rptChapter* pChapter, IBroker* pBroker, IntervalIndexType intervalIdx, PoiList vPoi, const std::vector<pgsTypes::ProductForceType>& vLoads, IEAFDisplayUnits* pDisplayUnits) const

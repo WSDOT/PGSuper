@@ -42,14 +42,14 @@ LPCTSTR CTemporarySupportElevationDetailsChapterBuilder::GetName() const
    return _T("Temporary Support Elevation Details");
 }
 
-CChapterBuilder* CTemporarySupportElevationDetailsChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTemporarySupportElevationDetailsChapterBuilder::Clone() const
 {
-   return new CTemporarySupportElevationDetailsChapterBuilder();
+   return std::make_unique<CTemporarySupportElevationDetailsChapterBuilder>();
 }
 
-rptChapter* CTemporarySupportElevationDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CTemporarySupportElevationDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CBrokerReportSpecification* pGirderRptSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
 

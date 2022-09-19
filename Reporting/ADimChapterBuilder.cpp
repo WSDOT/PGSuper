@@ -59,9 +59,9 @@ LPCTSTR CADimChapterBuilder::GetName() const
    return TEXT("Haunch Details");
 }
 
-rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CADimChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
@@ -404,9 +404,9 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
    return pChapter;
 }
 
-CChapterBuilder* CADimChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CADimChapterBuilder::Clone() const
 {
-   return new CADimChapterBuilder;
+   return std::make_unique<CADimChapterBuilder>();
 }
 
 //======================== ACCESS     =======================================

@@ -52,7 +52,7 @@ public:
 // Implementation
 protected:
    std::shared_ptr<CTimelineManagerReportSpecification> m_pRptSpec;
-   std::shared_ptr<CReportBrowser> m_pBrowser; // this is the actual browser window that displays the report
+   std::shared_ptr<WBFL::Reporting::ReportBrowser> m_pBrowser; // this is the actual browser window that displays the report
 
 	// Generated message map functions
 	//{{AFX_MSG(CDesignOutcomeDlg)

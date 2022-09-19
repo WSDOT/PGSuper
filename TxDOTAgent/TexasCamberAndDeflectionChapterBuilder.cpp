@@ -74,7 +74,7 @@ LPCTSTR CTexasCamberAndDeflectionChapterBuilder::GetName() const
    return TEXT("Camber and Deflections");
 }
 
-rptChapter* CTexasCamberAndDeflectionChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CTexasCamberAndDeflectionChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -83,7 +83,7 @@ rptChapter* CTexasCamberAndDeflectionChapterBuilder::Build(CReportSpecification*
 
    CComPtr<IBroker> pBroker;
 
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    if (pGirderRptSpec!=nullptr)
    {
       pGirderRptSpec->GetBroker(&pBroker);
@@ -91,7 +91,7 @@ rptChapter* CTexasCamberAndDeflectionChapterBuilder::Build(CReportSpecification*
    }
    else
    {
-      CMultiGirderReportSpecification* pReportSpec = dynamic_cast<CMultiGirderReportSpecification*>(pRptSpec);
+      auto pReportSpec = std::dynamic_pointer_cast<const CMultiGirderReportSpecification>(pRptSpec);
       pReportSpec->GetBroker(&pBroker);
 
       girder_list = pReportSpec->GetGirderKeys();
@@ -130,9 +130,9 @@ rptChapter* CTexasCamberAndDeflectionChapterBuilder::Build(CReportSpecification*
    return pChapter;
 }
 
-CChapterBuilder* CTexasCamberAndDeflectionChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTexasCamberAndDeflectionChapterBuilder::Clone() const
 {
-   return new CTexasCamberAndDeflectionChapterBuilder;
+   return std::make_unique<CTexasCamberAndDeflectionChapterBuilder>();
 }
 
 //======================== ACCESS     =======================================

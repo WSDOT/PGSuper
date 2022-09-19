@@ -121,7 +121,7 @@ private:
    std::set<IDType> m_SelectedIDs; 
 
    std::shared_ptr<CCopyGirderPropertiesReportSpecification> m_pRptSpec;
-   std::shared_ptr<CReportBrowser> m_pBrowser; // this is the actual browser window that displays the report
+   std::shared_ptr<WBFL::Reporting::ReportBrowser> m_pBrowser; // this is the actual browser window that displays the report
 
    // map from multi-select dialog
    std::vector<CGirderKey> m_MultiDialogSelections;

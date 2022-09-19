@@ -61,10 +61,10 @@ LPCTSTR CCrackedSectionDetailsChapterBuilder::GetName() const
    return TEXT("Cracked Section Analysis Details");
 }
 
-rptChapter* CCrackedSectionDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CCrackedSectionDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-   CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
+   auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
+   auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
    CComPtr<IBroker> pBroker;
    CGirderKey girderKey;
@@ -138,9 +138,9 @@ rptChapter* CCrackedSectionDetailsChapterBuilder::Build(CReportSpecification* pR
    return pChapter;
 }
 
-CChapterBuilder* CCrackedSectionDetailsChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CCrackedSectionDetailsChapterBuilder::Clone() const
 {
-   return new CCrackedSectionDetailsChapterBuilder;
+   return std::make_unique<CCrackedSectionDetailsChapterBuilder>();
 }
 
 void write_cracked_section_table(IBroker* pBroker,

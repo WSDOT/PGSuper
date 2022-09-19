@@ -85,9 +85,9 @@ LPCTSTR CTxDOTOptionalDesignSummaryChapterBuilder::GetName() const
    return TEXT("Optional Design Summary");
 }
 
-rptChapter* CTxDOTOptionalDesignSummaryChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CTxDOTOptionalDesignSummaryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CBrokerReportSpecification* pBrokerRptSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
+   auto pBrokerRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pBrokerRptSpec->GetBroker(&pBroker);
    
@@ -126,9 +126,9 @@ rptChapter* CTxDOTOptionalDesignSummaryChapterBuilder::Build(CReportSpecificatio
    return pChapter;
 }
 
-CChapterBuilder* CTxDOTOptionalDesignSummaryChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTxDOTOptionalDesignSummaryChapterBuilder::Clone() const
 {
-   return new CTxDOTOptionalDesignSummaryChapterBuilder;
+   return std::make_unique<CTxDOTOptionalDesignSummaryChapterBuilder>();
 }
 
 //======================== ACCESS     =======================================

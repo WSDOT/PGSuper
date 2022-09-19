@@ -98,7 +98,7 @@ private:
 protected:
    psgLibraryManager m_LibraryManager;
 
-   virtual CString GetToolbarSectionName();
+   virtual CString GetToolbarSectionName() override;
    virtual void DoIntegrateWithUI(BOOL bIntegrate);
 
    virtual CATID GetDocumentPluginCATID();

@@ -87,9 +87,9 @@ LPCTSTR CGirderScheduleChapterBuilder::GetName() const
    return TEXT("Girder Schedule");
 }
 
-rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CGirderScheduleChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGdrRptSpec->GetBroker(&pBroker);
    const CGirderKey& girderKey( pGdrRptSpec->GetGirderKey() );
@@ -810,9 +810,9 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    return pChapter;
 }
 
-CChapterBuilder* CGirderScheduleChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CGirderScheduleChapterBuilder::Clone() const
 {
-   return new CGirderScheduleChapterBuilder;
+   return std::make_unique<CGirderScheduleChapterBuilder>();
 }
 
 //======================== ACCESS     =======================================

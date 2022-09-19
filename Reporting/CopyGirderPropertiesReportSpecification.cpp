@@ -29,7 +29,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CCopyGirderPropertiesReportSpecification::CCopyGirderPropertiesReportSpecification(LPCTSTR strReportName, IBroker* pBroker) :
+CCopyGirderPropertiesReportSpecification::CCopyGirderPropertiesReportSpecification(const std::_tstring& strReportName, IBroker* pBroker) :
    CBrokerReportSpecification(strReportName, pBroker)
 {
 }
@@ -38,8 +38,7 @@ CCopyGirderPropertiesReportSpecification::~CCopyGirderPropertiesReportSpecificat
 {
 }
 
-HRESULT CCopyGirderPropertiesReportSpecification::Validate() const
+bool CCopyGirderPropertiesReportSpecification::IsValid() const
 {
-
-   return CBrokerReportSpecification::Validate();
+   return CBrokerReportSpecification::IsValid();
 }

@@ -1158,6 +1158,9 @@
     <ClInclude Include="..\Include\Reporting\CrackedSectionDetailsChapterBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\Reporting\GirderGeometryChapterBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Reporting.def" />

@@ -76,9 +76,9 @@ LPCTSTR CLiveLoadDetailsChapterBuilder::GetName() const
    return TEXT("Live Load Details");
 }
 
-rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CLiveLoadDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CBrokerReportSpecification* pBrokerRptSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
+   auto pBrokerRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pBrokerRptSpec->GetBroker(&pBroker);
 
@@ -558,7 +558,7 @@ void CLiveLoadDetailsChapterBuilder::ReportLiveLoad(IBroker* pBroker, std::_tstr
    }
 }
 
-CChapterBuilder* CLiveLoadDetailsChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLiveLoadDetailsChapterBuilder::Clone() const
 {
-   return new CLiveLoadDetailsChapterBuilder(m_bDesign,m_bRating);
+   return std::make_unique<CLiveLoadDetailsChapterBuilder>(m_bDesign,m_bRating);
 }

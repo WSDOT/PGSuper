@@ -35,7 +35,7 @@ public:
 protected:
    IBroker* m_pBroker; // weak reference
 
-   virtual CTitlePageBuilder* CreateTitlePageBuilder(LPCTSTR strReportName,bool bFullVersion=true) = 0;
+   virtual WBFL::Reporting::TitlePageBuilder* CreateTitlePageBuilder(LPCTSTR strReportName,bool bFullVersion=true) = 0;
    void CreateBridgeGeometryReport();
    void CreateDetailsReport();
    void CreateLoadRatingReport();

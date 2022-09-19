@@ -131,13 +131,13 @@ BOOL CTxDOTOptionalDesignReportPage::OnSetActive()
             m_pRptSpec = CreateSelectedReportSpec(pReportMgr);
 
             // Already have a browser, just need to update headers and footers and re-marry report
-            std::shared_ptr<CReportSpecification> brRptSpec = m_pBrowser->GetReportSpecification();
+            std::shared_ptr<WBFL::Reporting::ReportSpecification> brRptSpec = m_pBrowser->GetReportSpecification();
             brRptSpec->SetLeftHeader(m_pRptSpec->GetLeftHeader().c_str());
             brRptSpec->SetCenterHeader(m_pRptSpec->GetCenterHeader().c_str());
             brRptSpec->SetLeftFooter(m_pRptSpec->GetLeftFooter().c_str());
             brRptSpec->SetCenterFooter(m_pRptSpec->GetCenterFooter().c_str());
 
-            std::shared_ptr<CReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
+            std::shared_ptr<WBFL::Reporting::ReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
             std::shared_ptr<rptReport> pReport = pBuilder->CreateReport( m_pRptSpec );
             m_pBrowser->UpdateReport( pReport, true );
          }
@@ -196,14 +196,14 @@ void CTxDOTOptionalDesignReportPage::CreateNewBrowser(IBroker* pBroker)
    GET_IFACE2(pBroker,IProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
 
-   m_pBrowser = pReportMgr->CreateReportBrowser(m_BrowserPlaceholder.GetSafeHwnd(),m_pRptSpec,std::shared_ptr<CReportSpecificationBuilder>());
+   m_pBrowser = pReportMgr->CreateReportBrowser(m_BrowserPlaceholder.GetSafeHwnd(),m_pRptSpec,std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder>());
    m_pBrowser->Size(rect.Size());
 
    // resize browser window
    this->SendMessage(WM_SIZE);
 }
 
-std::shared_ptr<CReportSpecification> CTxDOTOptionalDesignReportPage::CreateSelectedReportSpec(IReportManager* pReportMgr)
+std::shared_ptr<WBFL::Reporting::ReportSpecification> CTxDOTOptionalDesignReportPage::CreateSelectedReportSpec(IReportManager* pReportMgr)
 {
    int curidx = m_ReportCombo.GetCurSel();
    ASSERT(curidx==0 || curidx==1);
@@ -212,10 +212,10 @@ std::shared_ptr<CReportSpecification> CTxDOTOptionalDesignReportPage::CreateSele
    LPCTSTR spec_name = curidx==0 ? _T("TxDOT Optional Girder Analysis (TOGA) - Short Report") : _T("TxDOT Optional Girder Analysis (TOGA) - Long Report");
 
    // Get our report description
-   CReportDescription rptDesc = pReportMgr->GetReportDescription(spec_name);
-   std::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
-   std::shared_ptr<CReportSpecification> pDefRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
-   std::shared_ptr<CGirderReportSpecification> pGirderRptSpec = std::dynamic_pointer_cast<CGirderReportSpecification,CReportSpecification>(pDefRptSpec);
+   WBFL::Reporting::ReportDescription rptDesc = pReportMgr->GetReportDescription(spec_name);
+   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
+   std::shared_ptr<WBFL::Reporting::ReportSpecification> pDefRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
+   std::shared_ptr<CGirderReportSpecification> pGirderRptSpec = std::dynamic_pointer_cast<CGirderReportSpecification,WBFL::Reporting::ReportSpecification>(pDefRptSpec);
    pGirderRptSpec->SetGirderKey(CGirderKey(TOGA_SPAN,TOGA_FABR_GDR));
 
    // Set report header and footer for printing
@@ -227,9 +227,9 @@ std::shared_ptr<CReportSpecification> CTxDOTOptionalDesignReportPage::CreateSele
    CString bridgeID   = CString(_T("BID: ")) + pProjectData->GetBridgeID();
    CString bridgeCmnt = CString(_T("Cmts: ")) +pProjectData->GetComments();
 
-   pDefRptSpec->SetLeftHeader(bridgeName);
-   pDefRptSpec->SetCenterHeader(bridgeID);
-   pDefRptSpec->SetLeftFooter(bridgeCmnt);
+   pDefRptSpec->SetLeftHeader(bridgeName.GetBuffer());
+   pDefRptSpec->SetCenterHeader(bridgeID.GetBuffer());
+   pDefRptSpec->SetLeftFooter(bridgeCmnt.GetBuffer());
 
    return pDefRptSpec;
 }
