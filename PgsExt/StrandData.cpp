@@ -1192,7 +1192,7 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
          Int64 key = var.lVal;
          if ( version < 15 )
          {
-            key |= std::underlying_type< WBFL::Materials::PsStrand::Coating>::type(WBFL::Materials::PsStrand::Coating::None); // add default encoding for stand coating type... added in version 15
+            key |= +WBFL::Materials::PsStrand::Coating::None; // add default encoding for stand coating type... added in version 15
          }
          m_StrandMaterial[pgsTypes::Straight] = pPool->GetStrand(key);
          ATLASSERT(m_StrandMaterial[pgsTypes::Straight] != 0);
@@ -1209,7 +1209,7 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
          Int64 key = var.lVal;
          if ( version < 15 )
          {
-            key |= std::underlying_type< WBFL::Materials::PsStrand::Coating>::type(WBFL::Materials::PsStrand::Coating::None); // add default encoding for stand coating type... added in version 15
+            key |= +WBFL::Materials::PsStrand::Coating::None; // add default encoding for stand coating type... added in version 15
          }
          m_StrandMaterial[pgsTypes::Straight] = pPool->GetStrand(key);
 
@@ -1217,7 +1217,7 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
          key = var.lVal;
          if ( version < 15 )
          {
-            key |= std::underlying_type< WBFL::Materials::PsStrand::Coating>::type(WBFL::Materials::PsStrand::Coating::None); // add default encoding for stand coating type... added in version 15
+            key |= +WBFL::Materials::PsStrand::Coating::None; // add default encoding for stand coating type... added in version 15
          }
          m_StrandMaterial[pgsTypes::Harped] = pPool->GetStrand(key);
 
@@ -1225,7 +1225,7 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
          key = var.lVal;
          if ( version < 15 )
          {
-            key |= std::underlying_type< WBFL::Materials::PsStrand::Coating>::type(WBFL::Materials::PsStrand::Coating::None); // add default encoding for stand coating type... added in version 15
+            key |= +WBFL::Materials::PsStrand::Coating::None; // add default encoding for stand coating type... added in version 15
          }
          m_StrandMaterial[pgsTypes::Temporary] = pPool->GetStrand(key);
       }

@@ -276,7 +276,7 @@ HRESULT CTxDOTOptionalDesignGirderData::Load(IStructuredLoad* pStrLoad,IProgress
       {
          // prior to version 3, strand key did not contain a coating type bit.
          // the assumption was the strand was uncoated. Add the bit for uncoated strand here.
-         key |= std::underlying_type<WBFL::Materials::PsStrand::Coating>::type(WBFL::Materials::PsStrand::Coating::None);
+         key |= +WBFL::Materials::PsStrand::Coating::None;
       }
 
       lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();

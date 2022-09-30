@@ -102,16 +102,16 @@ HRESULT CDeckRebarData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
    pStrSave->put_Property(_T("TopCover"),CComVariant(TopCover));
    pStrSave->put_Property(_T("TopLumpSumArea"),CComVariant(TopLumpSum));
-   pStrSave->put_Property(_T("TopRebarType"),CComVariant(std::underlying_type<WBFL::Materials::Rebar::Type>::type(TopRebarType)));
-   pStrSave->put_Property(_T("TopRebarGrade"),CComVariant(TopRebarGrade));
-   pStrSave->put_Property(_T("TopRebarSize"),CComVariant(std::underlying_type<WBFL::Materials::Rebar::Size>::type(TopRebarSize)));
+   pStrSave->put_Property(_T("TopRebarType"),CComVariant(+TopRebarType));
+   pStrSave->put_Property(_T("TopRebarGrade"),CComVariant(+TopRebarGrade));
+   pStrSave->put_Property(_T("TopRebarSize"),CComVariant(+TopRebarSize));
    pStrSave->put_Property(_T("TopSpacing"),CComVariant(TopSpacing));
 
    pStrSave->put_Property(_T("BottomCover"),CComVariant(BottomCover));
    pStrSave->put_Property(_T("BottomLumpSumArea"),CComVariant(BottomLumpSum));
-   pStrSave->put_Property(_T("BottomRebarType"),CComVariant(std::underlying_type<WBFL::Materials::Rebar::Type>::type(BottomRebarType)));
-   pStrSave->put_Property(_T("BottomRebarGrade"),CComVariant(BottomRebarGrade));
-   pStrSave->put_Property(_T("BottomRebarSize"),CComVariant(std::underlying_type<WBFL::Materials::Rebar::Size>::type(BottomRebarSize)));
+   pStrSave->put_Property(_T("BottomRebarType"),CComVariant(+BottomRebarType));
+   pStrSave->put_Property(_T("BottomRebarGrade"),CComVariant(+BottomRebarGrade));
+   pStrSave->put_Property(_T("BottomRebarSize"),CComVariant(+BottomRebarSize));
    pStrSave->put_Property(_T("BottomSpacing"),CComVariant(BottomSpacing));
 
    pStrSave->put_Property(_T("NegMomentCount"),CComVariant((long)NegMomentRebar.size()));
@@ -124,9 +124,9 @@ HRESULT CDeckRebarData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
       pStrSave->put_Property(_T("Pier"),CComVariant(rebar.PierIdx));
       pStrSave->put_Property(_T("Mat"),CComVariant(rebar.Mat));
       pStrSave->put_Property(_T("LumpSumArea"),CComVariant(rebar.LumpSum));
-      pStrSave->put_Property(_T("RebarType"),CComVariant(std::underlying_type<WBFL::Materials::Rebar::Type>::type(rebar.RebarType)));
-      pStrSave->put_Property(_T("RebarGrade"),CComVariant(rebar.RebarGrade));
-      pStrSave->put_Property(_T("RebarSize"),CComVariant(std::underlying_type<WBFL::Materials::Rebar::Size>::type(rebar.RebarSize)));
+      pStrSave->put_Property(_T("RebarType"),CComVariant(+rebar.RebarType));
+      pStrSave->put_Property(_T("RebarGrade"),CComVariant(+rebar.RebarGrade));
+      pStrSave->put_Property(_T("RebarSize"),CComVariant(+rebar.RebarSize));
       pStrSave->put_Property(_T("Spacing"),CComVariant(rebar.Spacing));
       pStrSave->put_Property(_T("LeftCutoff"),CComVariant(rebar.LeftCutoff));
       pStrSave->put_Property(_T("RightCutoff"),CComVariant(rebar.RightCutoff));

@@ -215,8 +215,8 @@ HRESULT CLongitudinalRebarData::Save(IStructuredSave* pStrSave,IProgress* pProgr
 
    pStrSave->BeginUnit(_T("LongitudinalRebar"),4.0);
 
-   pStrSave->put_Property(_T("BarGrade"),     CComVariant(std::underlying_type<WBFL::Materials::Rebar::Grade>::type(BarGrade)));
-   pStrSave->put_Property(_T("BarType"),      CComVariant(std::underlying_type<WBFL::Materials::Rebar::Type>::type(BarType)));
+   pStrSave->put_Property(_T("BarGrade"),     CComVariant(+BarGrade));
+   pStrSave->put_Property(_T("BarType"),      CComVariant(+BarType));
 
    CollectionIndexType count = RebarRows.size();
    pStrSave->put_Property(_T("RebarRowCount"),CComVariant(count));
@@ -233,7 +233,7 @@ HRESULT CLongitudinalRebarData::Save(IStructuredSave* pStrSave,IProgress* pProgr
       pStrSave->put_Property(_T("Face"),         CComVariant(rebar_row.Face));
       pStrSave->put_Property(_T("Cover"),        CComVariant(rebar_row.Cover));
       pStrSave->put_Property(_T("NumberOfBars"), CComVariant(rebar_row.NumberOfBars));
-      pStrSave->put_Property(_T("BarSize"),      CComVariant(std::underlying_type<WBFL::Materials::Rebar::Size>::type(rebar_row.BarSize)));
+      pStrSave->put_Property(_T("BarSize"),      CComVariant(+rebar_row.BarSize));
       pStrSave->put_Property(_T("BarSpacing"),   CComVariant(rebar_row.BarSpacing));
 
       // added in version 4

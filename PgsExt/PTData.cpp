@@ -1632,7 +1632,7 @@ HRESULT CPTData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       Int64 key = var.lVal;
       if ( version < 4 )
       {
-         key |= std::underlying_type<WBFL::Materials::PsStrand::Coating>::type(WBFL::Materials::PsStrand::Coating::None); // add default encoding for stand coating type... added in version 4
+         key |= +WBFL::Materials::PsStrand::Coating::None; // add default encoding for stand coating type... added in version 4
       }
       pStrand = pPool->GetStrand(key);
    }

@@ -3440,7 +3440,7 @@ HRESULT CProjectAgentImp::PrestressingDataProc2(IStructuredSave* pSave,IStructur
          }
 
          Int64 key = var.lVal;
-         key |= std::underlying_type< WBFL::Materials::PsStrand::Coating>::type(WBFL::Materials::PsStrand::Coating::None);
+         key |= +WBFL::Materials::PsStrand::Coating::None;
 
          lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
          pStrandMaterial = pPool->GetStrand( key );

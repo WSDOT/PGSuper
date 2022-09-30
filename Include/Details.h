@@ -129,6 +129,7 @@ struct MOMENTCAPACITYDETAILS
    enum class ControllingType { Concrete, ReinforcementStrain, Development };
    ControllingType Controlling{ ControllingType::Concrete };
 };
+inline constexpr auto operator+(MOMENTCAPACITYDETAILS::ControllingType t) noexcept { return std::underlying_type<MOMENTCAPACITYDETAILS::ControllingType>::type(t); }
 
 struct CRACKINGMOMENTDETAILS
 {

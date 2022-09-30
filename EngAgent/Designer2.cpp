@@ -5236,7 +5236,7 @@ void pgsDesigner2::CheckSegmentStability(const CSegmentKey& segmentKey,pgsSegmen
       WBFL::Stability::StabilityEngineer engineer;
       WBFL::Stability::LiftingResults liftingResults = engineer.AnalyzeLifting(pStabilityModel, pStabilityProblem);
 
-      Float64 zo = liftingResults.Zo[WBFL::Stability::NoImpact];
+      Float64 zo = liftingResults.Zo[+WBFL::Stability::ImpactDirection::NoImpact];
 
       GET_IFACE(IPointOfInterest, pPoi);
       PoiList vPoi;
@@ -8677,10 +8677,10 @@ void pgsDesigner2::DesignForLiftingHarping(const arDesignOptions& options, bool 
          std::vector<WBFL::Stability::LiftingSectionResult>::const_iterator found = std::find_if(liftingResults.vSectionResults.begin(),liftingResults.vSectionResults.end(),SectionFinder::Find);
          ATLASSERT(found != liftingResults.vSectionResults.end());
          const WBFL::Stability::LiftingSectionResult& sectionResult = *found;
-         fHpTopMin.push_back(sectionResult.fMinDirect[WBFL::Stability::Top]);
-         fHpTopMax.push_back(sectionResult.fMaxDirect[WBFL::Stability::Top]);
-         fHpBotMin.push_back(sectionResult.fMinDirect[WBFL::Stability::Bottom]);
-         fHpBotMax.push_back(sectionResult.fMaxDirect[WBFL::Stability::Bottom]);
+         fHpTopMin.push_back(sectionResult.fMinDirect[+WBFL::Stability::GirderFace::Top]);
+         fHpTopMax.push_back(sectionResult.fMaxDirect[+WBFL::Stability::GirderFace::Top]);
+         fHpBotMin.push_back(sectionResult.fMinDirect[+WBFL::Stability::GirderFace::Bottom]);
+         fHpBotMax.push_back(sectionResult.fMaxDirect[+WBFL::Stability::GirderFace::Bottom]);
       }
 
       Float64 fTopHpMin = *std::min_element(fHpTopMin.begin(),fHpTopMin.end());
@@ -8931,11 +8931,11 @@ void pgsDesigner2::GetEndZoneMinMaxRawStresses(const CSegmentKey& segmentKey,con
    const WBFL::Stability::LiftingSectionResult& leftSection  = *foundLeft;
    const WBFL::Stability::LiftingSectionResult& rightSection = *foundRight;
 
-   Float64 fMaxTopLeftEnd = leftSection.fMaxDirect[WBFL::Stability::Top] - leftSection.fps[WBFL::Stability::TopLeft];
-   Float64 fMaxTopRightEnd = rightSection.fMaxDirect[WBFL::Stability::Top] - rightSection.fps[WBFL::Stability::TopRight];
+   Float64 fMaxTopLeftEnd = leftSection.fMaxDirect[+WBFL::Stability::GirderFace::Top] - leftSection.fps[+WBFL::Stability::Corner::TopLeft];
+   Float64 fMaxTopRightEnd = rightSection.fMaxDirect[+WBFL::Stability::GirderFace::Top] - rightSection.fps[+WBFL::Stability::Corner::TopRight];
 
-   Float64 fMinBottomLeftEnd = leftSection.fMinDirect[WBFL::Stability::Bottom] - leftSection.fps[WBFL::Stability::BottomLeft];
-   Float64 fMinBottomRightEnd = rightSection.fMinDirect[WBFL::Stability::Bottom] - rightSection.fps[WBFL::Stability::BottomRight];
+   Float64 fMinBottomLeftEnd = leftSection.fMinDirect[+WBFL::Stability::GirderFace::Bottom] - leftSection.fps[+WBFL::Stability::Corner::BottomLeft];
+   Float64 fMinBottomRightEnd = rightSection.fMinDirect[+WBFL::Stability::GirderFace::Bottom] - rightSection.fps[+WBFL::Stability::Corner::BottomRight];
 
    *pftop = Max(fMaxTopLeftEnd,fMaxTopRightEnd);
    *ptop_loc = (MaxIndex(fMaxTopLeftEnd,fMaxTopRightEnd) == 0 ? left_loc : right_loc);
@@ -9275,8 +9275,8 @@ std::vector<DebondLevelType> pgsDesigner2::DesignDebondingForLifting(HANDLINGCON
             Float64 Fpe = FpeStraight + FpeHarped + FpeTemporary;
             force_per_strand = Fpe / (nperm+ntemp);
 
-            Float64 fTop = sectionResult.fMaxDirect[WBFL::Stability::Top];
-            Float64 fBot = sectionResult.fMinDirect[WBFL::Stability::Bottom];
+            Float64 fTop = sectionResult.fMaxDirect[+WBFL::Stability::GirderFace::Top];
+            Float64 fBot = sectionResult.fMinDirect[+WBFL::Stability::GirderFace::Bottom];
 
             LOG(_T("At ")<< WBFL::Units::ConvertFromSysUnits(poi_loc,WBFL::Units::Measure::Feet)<<_T(" ft, Ftop = ")<< WBFL::Units::ConvertFromSysUnits(fTop,WBFL::Units::Measure::KSI) << _T(" ksi Fbot = ")<< WBFL::Units::ConvertFromSysUnits(fBot,WBFL::Units::Measure::KSI) << _T(" ksi") );
             LOG(_T("Average force per strand = ") << WBFL::Units::ConvertFromSysUnits(Fpe/(nperm+ntemp),WBFL::Units::Measure::Kip) << _T(" kip"));
@@ -10399,25 +10399,25 @@ void pgsDesigner2::DumpLiftingArtifact(const WBFL::Stability::LiftingStabilityPr
       os <<_T("At ") << WBFL::Units::ConvertFromSysUnits(loc,WBFL::Units::Measure::Feet) << _T(" ft: ");
 
       // NOTE: min_stress and max_stress are backwards to match the original log file dump code from pgsLiftingAnalysisArtifact
-      Float64 min_stress = Max(sectionResult.fMaxDirect[WBFL::Stability::Top],sectionResult.fMaxDirect[WBFL::Stability::Bottom]);
-      Float64 max_stress = Min(sectionResult.fMinDirect[WBFL::Stability::Top],sectionResult.fMinDirect[WBFL::Stability::Bottom]);
+      Float64 min_stress = Max(sectionResult.fMaxDirect[+WBFL::Stability::GirderFace::Top],sectionResult.fMaxDirect[+WBFL::Stability::GirderFace::Bottom]);
+      Float64 max_stress = Min(sectionResult.fMinDirect[+WBFL::Stability::GirderFace::Top],sectionResult.fMinDirect[+WBFL::Stability::GirderFace::Bottom]);
       os<<_T("Total Stress: Min =")<<WBFL::Units::ConvertFromSysUnits(min_stress,WBFL::Units::Measure::KSI)<<_T("ksi, Max=")<<WBFL::Units::ConvertFromSysUnits(max_stress,WBFL::Units::Measure::KSI)<<_T("ksi")<< WBFL::Debug::endl;
    }
 
    os <<_T(" Cracking Artifacts")<< WBFL::Debug::endl;
    os << _T("==================") << WBFL::Debug::endl;
    // we don't do impact or wind for lifting so these values will work
-   WBFL::Stability::ImpactDirection impact = WBFL::Stability::NoImpact;
-   WBFL::Stability::WindDirection wind = WBFL::Stability::Left;
+   WBFL::Stability::ImpactDirection impact = WBFL::Stability::ImpactDirection::NoImpact;
+   WBFL::Stability::WindDirection wind = WBFL::Stability::WindDirection::Left;
    for(const auto& sectionResult : results.vSectionResults)
    {
       const auto& pAnalysisPoint = pStabilityProblem->GetAnalysisPoint(sectionResult.AnalysisPointIndex);
       Float64 loc = pAnalysisPoint->GetLocation();
       os <<_T("At ") << WBFL::Units::ConvertFromSysUnits(loc,WBFL::Units::Measure::Feet) << _T(" ft: ");
 
-      WBFL::Stability::Corner corner = sectionResult.MinFScrCorner[impact][wind];
-      if ( corner == WBFL::Stability::TopLeft ||
-           corner == WBFL::Stability::TopRight )
+      WBFL::Stability::Corner corner = sectionResult.MinFScrCorner[+impact][+wind];
+      if ( corner == WBFL::Stability::Corner::TopLeft ||
+           corner == WBFL::Stability::Corner::TopRight )
       {
          os << _T("Flange=TopFlange");
       }
@@ -10426,8 +10426,8 @@ void pgsDesigner2::DumpLiftingArtifact(const WBFL::Stability::LiftingStabilityPr
          os << _T("Flange=BottomFlange");
       }
 
-      Float64 stress = sectionResult.f[impact][wind][corner];
-      Float64 fs = sectionResult.FScr[impact][wind][corner];
+      Float64 stress = sectionResult.f[+impact][+wind][+corner];
+      Float64 fs = sectionResult.FScr[+impact][+wind][+corner];
       os<<_T(" Lateral Stress = ")<<WBFL::Units::ConvertFromSysUnits(stress,WBFL::Units::Measure::KSI)<<_T("ksi, FS =")<<fs<< WBFL::Debug::endl;
    }
 }

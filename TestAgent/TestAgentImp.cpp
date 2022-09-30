@@ -2263,8 +2263,8 @@ bool CTestAgentImp::RunHandlingTest(std::_tofstream& resultsFile, std::_tofstrea
    if ( pLiftArtifact != nullptr )
    {
       const WBFL::Stability::LiftingResults& liftingResults = pLiftArtifact->GetLiftingResults();
-      if ( !liftingResults.bIsStable[WBFL::Stability::NoImpact][WBFL::Stability::Left] || !liftingResults.bIsStable[WBFL::Stability::ImpactUp][WBFL::Stability::Left] || !liftingResults.bIsStable[WBFL::Stability::ImpactDown][WBFL::Stability::Left] ||
-           !liftingResults.bIsStable[WBFL::Stability::NoImpact][WBFL::Stability::Right] || !liftingResults.bIsStable[WBFL::Stability::ImpactUp][WBFL::Stability::Right] || !liftingResults.bIsStable[WBFL::Stability::ImpactDown][WBFL::Stability::Right])
+      if ( !liftingResults.bIsStable[+WBFL::Stability::ImpactDirection::NoImpact][+WBFL::Stability::WindDirection::Left]  || !liftingResults.bIsStable[+WBFL::Stability::ImpactDirection::ImpactUp][+WBFL::Stability::WindDirection::Left]  || !liftingResults.bIsStable[+WBFL::Stability::ImpactDirection::ImpactDown][+WBFL::Stability::WindDirection::Left] ||
+           !liftingResults.bIsStable[+WBFL::Stability::ImpactDirection::NoImpact][+WBFL::Stability::WindDirection::Right] || !liftingResults.bIsStable[+WBFL::Stability::ImpactDirection::ImpactUp][+WBFL::Stability::WindDirection::Right] || !liftingResults.bIsStable[+WBFL::Stability::ImpactDirection::ImpactDown][+WBFL::Stability::WindDirection::Right])
       {
          resultsFile<<"Girder is unstable for lifting"<<std::endl;
          return true;
@@ -2272,34 +2272,34 @@ bool CTestAgentImp::RunHandlingTest(std::_tofstream& resultsFile, std::_tofstrea
 
       resultsFile << bridgeId << _T(", ") << pid << _T(", 100001a, ") << QUIET(WBFL::Units::ConvertFromSysUnits(liftingResults.MaxDirectStress, WBFL::Units::Measure::MPa)) << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
       resultsFile << bridgeId << _T(", ") << pid << _T(", 100001b, ") << liftingResults.MaxDirectStressAnalysisPointIndex << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
-      resultsFile << bridgeId << _T(", ") << pid << _T(", 100001c, ") << liftingResults.MaxDirectStressImpactDirection << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
-      resultsFile << bridgeId << _T(", ") << pid << _T(", 100001d, ") << liftingResults.MaxDirectStressCorner << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100001c, ") << +liftingResults.MaxDirectStressImpactDirection << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100001d, ") << +liftingResults.MaxDirectStressCorner << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
 
       resultsFile << bridgeId << _T(", ") << pid << _T(", 100002a, ") << QUIET(WBFL::Units::ConvertFromSysUnits(liftingResults.MinDirectStress, WBFL::Units::Measure::MPa)) << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
       resultsFile << bridgeId << _T(", ") << pid << _T(", 100002b, ") << liftingResults.MinDirectStressAnalysisPointIndex << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
-      resultsFile << bridgeId << _T(", ") << pid << _T(", 100002c, ") << liftingResults.MinDirectStressImpactDirection << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
-      resultsFile << bridgeId << _T(", ") << pid << _T(", 100002d, ") << liftingResults.MinDirectStressCorner << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100002c, ") << +liftingResults.MinDirectStressImpactDirection << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100002d, ") << +liftingResults.MinDirectStressCorner << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
 
       resultsFile << bridgeId << _T(", ") << pid << _T(", 100003a, ") << QUIET(WBFL::Units::ConvertFromSysUnits(liftingResults.MaxStress, WBFL::Units::Measure::MPa)) << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
       resultsFile << bridgeId << _T(", ") << pid << _T(", 100003b, ") << liftingResults.MaxStressAnalysisPointIndex << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
-      resultsFile << bridgeId << _T(", ") << pid << _T(", 100003c, ") << liftingResults.MaxStressImpactDirection << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
-      resultsFile << bridgeId << _T(", ") << pid << _T(", 100003d, ") << liftingResults.MaxStressCorner << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100003c, ") << +liftingResults.MaxStressImpactDirection << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100003d, ") << +liftingResults.MaxStressCorner << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
 
       resultsFile << bridgeId << _T(", ") << pid << _T(", 100004a, ") << QUIET(WBFL::Units::ConvertFromSysUnits(liftingResults.MinStress, WBFL::Units::Measure::MPa)) << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
       resultsFile << bridgeId << _T(", ") << pid << _T(", 100004b, ") << liftingResults.MinStressAnalysisPointIndex << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
-      resultsFile << bridgeId << _T(", ") << pid << _T(", 100004c, ") << liftingResults.MinStressImpactDirection << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
-      resultsFile << bridgeId << _T(", ") << pid << _T(", 100004d, ") << liftingResults.MinStressCorner << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100004c, ") << +liftingResults.MinStressImpactDirection << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100004d, ") << +liftingResults.MinStressCorner << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
 
       resultsFile << bridgeId << _T(", ") << pid << _T(", 100005a, ") << liftingResults.FScrMin << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
       resultsFile << bridgeId << _T(", ") << pid << _T(", 100005b, ") << liftingResults.FScrMinAnalysisPointIndex << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
-      resultsFile << bridgeId << _T(", ") << pid << _T(", 100005c, ") << liftingResults.FScrMinImpactDirection << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
-      resultsFile << bridgeId << _T(", ") << pid << _T(", 100005d, ") << liftingResults.FScrMinWindDirection << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
-      resultsFile << bridgeId << _T(", ") << pid << _T(", 100005e, ") << liftingResults.FScrMinCorner << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100005c, ") << +liftingResults.FScrMinImpactDirection << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100005d, ") << +liftingResults.FScrMinWindDirection << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100005e, ") << +liftingResults.FScrMinCorner << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
 
       resultsFile << bridgeId << _T(", ") << pid << _T(", 100006a, ") << liftingResults.MinFsFailure << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
       resultsFile << bridgeId << _T(", ") << pid << _T(", 100006b, ") << liftingResults.MinAdjFsFailure << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
-      resultsFile << bridgeId << _T(", ") << pid << _T(", 100006c, ") << liftingResults.FSfImpactDirection << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
-      resultsFile << bridgeId << _T(", ") << pid << _T(", 100006d, ") << liftingResults.FSfWindDirection << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100006c, ") << +liftingResults.FSfImpactDirection << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100006d, ") << +liftingResults.FSfWindDirection << _T(", 50, ") << SEGMENT(segmentKey) << std::endl;
    }
 
    // hauling

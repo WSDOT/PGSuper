@@ -232,11 +232,11 @@ void CGirderSegmentTendonsPage::UpdateStrandList(UINT nIDC)
    int cur_sel = pList->GetCurSel();
    Int64 cur_key = (Int64)pList->GetItemData( cur_sel );
    // remove the coating flag from the current key
-   WBFL::System::Flags<Int64>::Clear(&cur_key,std::underlying_type<WBFL::Materials::PsStrand::Coating>::type(WBFL::Materials::PsStrand::Coating::None));
-   WBFL::System::Flags<Int64>::Clear(&cur_key,std::underlying_type<WBFL::Materials::PsStrand::Coating>::type(WBFL::Materials::PsStrand::Coating::GritEpoxy));
+   WBFL::System::Flags<Int64>::Clear(&cur_key,+WBFL::Materials::PsStrand::Coating::None);
+   WBFL::System::Flags<Int64>::Clear(&cur_key,+WBFL::Materials::PsStrand::Coating::GritEpoxy);
 
    WBFL::Materials::PsStrand::Coating coating = WBFL::Materials::PsStrand::Coating::None;
-   WBFL::System::Flags<Int64>::Set(&cur_key,std::underlying_type<WBFL::Materials::PsStrand::Coating>::type(coating)); // add the coating flag for the strand type we are changing to
+   WBFL::System::Flags<Int64>::Set(&cur_key,+coating); // add the coating flag for the strand type we are changing to
 
    pList->ResetContent();
 

@@ -3532,8 +3532,8 @@ WBFL::Stability::HaulingCriteria CSpecAgentImp::GetHaulingStabilityCriteria(cons
    {
       std::shared_ptr<WBFL::Stability::UHPCHaulingTensionStressLimit> pTensionStressLimit(new WBFL::Stability::UHPCHaulingTensionStressLimit);
 
-      pTensionStressLimit->AllowableTension[WBFL::Stability::CrownSlope] = GetHaulingAllowableTensileConcreteStress(segmentKey, pgsTypes::CrownSlope);
-      pTensionStressLimit->AllowableTension[WBFL::Stability::Superelevation] = GetHaulingAllowableTensileConcreteStress(segmentKey, pgsTypes::Superelevation);
+      pTensionStressLimit->AllowableTension[+WBFL::Stability::HaulingSlope::CrownSlope] = GetHaulingAllowableTensileConcreteStress(segmentKey, pgsTypes::CrownSlope);
+      pTensionStressLimit->AllowableTension[+WBFL::Stability::HaulingSlope::Superelevation] = GetHaulingAllowableTensileConcreteStress(segmentKey, pgsTypes::Superelevation);
       criteria.TensionStressLimit = pTensionStressLimit;
    }
    else
@@ -3587,8 +3587,8 @@ WBFL::Stability::HaulingCriteria CSpecAgentImp::GetHaulingStabilityCriteria(cons
    {
       std::shared_ptr<WBFL::Stability::UHPCHaulingTensionStressLimit> pTensionStressLimit(new WBFL::Stability::UHPCHaulingTensionStressLimit);
 
-      pTensionStressLimit->AllowableTension[WBFL::Stability::CrownSlope] = GetHaulingAllowableTensileConcreteStress(segmentKey, pgsTypes::CrownSlope);
-      pTensionStressLimit->AllowableTension[WBFL::Stability::Superelevation] = GetHaulingAllowableTensileConcreteStress(segmentKey, pgsTypes::Superelevation);
+      pTensionStressLimit->AllowableTension[+WBFL::Stability::HaulingSlope::CrownSlope] = GetHaulingAllowableTensileConcreteStress(segmentKey, pgsTypes::CrownSlope);
+      pTensionStressLimit->AllowableTension[+WBFL::Stability::HaulingSlope::Superelevation] = GetHaulingAllowableTensileConcreteStress(segmentKey, pgsTypes::Superelevation);
 
       criteria.TensionStressLimit = pTensionStressLimit;
    }

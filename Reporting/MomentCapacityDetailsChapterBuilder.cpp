@@ -623,11 +623,11 @@ void write_moment_data_table(IBroker* pBroker,
 
       if (bConsiderReinforcementStrainLimits)
       {
-      (*table)(row, col++) << strControlling[std::underlying_type<MOMENTCAPACITYDETAILS::ControllingType>::type(pmcd->Controlling)];
+      (*table)(row, col++) << strControlling[+pmcd->Controlling];
       }
       else
       {
-         (*table)(row, col) << strControlling[std::underlying_type<MOMENTCAPACITYDETAILS::ControllingType>::type(pmcd->Controlling)];
+         (*table)(row, col) << strControlling[+pmcd->Controlling];
          if (pmcd->Controlling != MOMENTCAPACITYDETAILS::ControllingType::Concrete)
             (*table)(row, col) << _T(", E");
          col++;

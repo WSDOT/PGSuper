@@ -140,7 +140,7 @@ rptChapter* CMomentCapacityChapterBuilder::Build(const std::shared_ptr<const WBF
    (*pPara) << _T("Moment Arm = ") << Sub2(_T("d"),_T("e")) << _T(" - ") << Sub2(_T("d"),_T("c")) << _T(" = ") << Sub2(_T("M"),_T("n")) << _T("/T = ") << dist.SetValue(pmcd->MomentArm) << rptNewLine;
 
    std::array<std::_tstring, 3> strControl{ _T("concrete crushing"), _T("tension strain limit of reinforcement"), _T("reduced strand stress due to lack of full development per LRFD 5.9.4.3.2") };
-   (*pPara) << _T("Moment capacity controlled by ") << strControl[std::underlying_type<MOMENTCAPACITYDETAILS::ControllingType>::type(pmcd->Controlling)] << rptNewLine;
+   (*pPara) << _T("Moment capacity controlled by ") << strControl[+pmcd->Controlling] << rptNewLine;
 
    // if this is a zero capacity section, just return since there is nothing else to show
    if ( IsZero(pmcd->Mn) )
