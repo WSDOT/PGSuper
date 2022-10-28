@@ -109,10 +109,10 @@ public:
    bool IsGirderWithRebarAllowableStressApplicable(const StressCheckTask& task,pgsTypes::StressLocation stressLocation) const;
    bool IsDeckWithRebarAllowableStressApplicable(const StressCheckTask& task,pgsTypes::StressLocation stressLocation) const;
 
-   Float64 GetRequiredGirderConcreteStrength(pgsTypes::StressType stressType,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState) const;
+   Float64 GetRequiredGirderConcreteStrength(const StressCheckTask& task) const;
    Float64 GetRequiredGirderConcreteStrength() const;
    Float64 GetRequiredDeckConcreteStrength() const;
-   Float64 GetRequiredDeckConcreteStrength(pgsTypes::StressType stressType, IntervalIndexType intervalIdx,pgsTypes::LimitState limitState) const;
+   Float64 GetRequiredDeckConcreteStrength(const StressCheckTask& task) const;
    Float64 GetRequiredReleaseStrength() const;
 
    bool Passed() const;

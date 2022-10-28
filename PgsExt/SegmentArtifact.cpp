@@ -667,7 +667,7 @@ bool pgsSegmentArtifact::DidPrincipalTensionStressPass() const
    return m_PrincipalTensionStressArtifact.Passed();
 }
 
-Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength(pgsTypes::StressType stressType, IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
+Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength(const StressCheckTask& task) const
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -679,7 +679,7 @@ Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength(pgsTypes::StressT
    {
       const auto& key(item.first);
 
-      if ( key.intervalIdx == intervalIdx && key.limitState == ls && key.stressType == stressType)
+      if ( key == task)
       {
          for( const auto& artifact : item.second)
          {
@@ -695,7 +695,7 @@ Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength(pgsTypes::StressT
                pgsTypes::StressLocation stressLocation = (i == 0 ? pgsTypes::TopGirder : pgsTypes::BottomGirder);
                if ( artifact.IsApplicable(stressLocation) )
                {
-                  Float64 fc = artifact.GetRequiredConcreteStrength(stressType,stressLocation);
+                  Float64 fc = artifact.GetRequiredConcreteStrength(task.stressType,stressLocation);
 
                   if ( fc < 0 ) 
                   {
@@ -715,7 +715,7 @@ Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength(pgsTypes::StressT
    return fc_reqd;
 }
 
-Float64 pgsSegmentArtifact::GetRequiredClosureJointConcreteStrength(pgsTypes::StressType stressType, IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
+Float64 pgsSegmentArtifact::GetRequiredClosureJointConcreteStrength(const StressCheckTask& task) const
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -727,7 +727,7 @@ Float64 pgsSegmentArtifact::GetRequiredClosureJointConcreteStrength(pgsTypes::St
    {
       const auto& key(item.first);
 
-      if (key.intervalIdx == intervalIdx && key.limitState == ls)
+      if (key == task)
       {
          for (const auto& artifact : item.second)
          {
@@ -743,7 +743,7 @@ Float64 pgsSegmentArtifact::GetRequiredClosureJointConcreteStrength(pgsTypes::St
                pgsTypes::StressLocation stressLocation = (i == 0 ? pgsTypes::TopGirder : pgsTypes::BottomGirder);
                if ( artifact.IsApplicable(stressLocation) )
                {
-                  Float64 fc = artifact.GetRequiredConcreteStrength(stressType,stressLocation);
+                  Float64 fc = artifact.GetRequiredConcreteStrength(task.stressType,stressLocation);
 
                   if ( fc < 0 ) 
                   {
@@ -763,7 +763,7 @@ Float64 pgsSegmentArtifact::GetRequiredClosureJointConcreteStrength(pgsTypes::St
    return fc_reqd;
 }
 
-Float64 pgsSegmentArtifact::GetRequiredDeckConcreteStrength(pgsTypes::StressType stressType, IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
+Float64 pgsSegmentArtifact::GetRequiredDeckConcreteStrength(const StressCheckTask& task) const
 {
    Float64 fc_reqd = 0;
 
@@ -771,7 +771,7 @@ Float64 pgsSegmentArtifact::GetRequiredDeckConcreteStrength(pgsTypes::StressType
    {
       const auto& key(item.first);
 
-      if (key.intervalIdx == intervalIdx && key.limitState == ls)
+      if (key == task)
       {
          for (const auto& artifact : item.second)
          {
@@ -780,7 +780,7 @@ Float64 pgsSegmentArtifact::GetRequiredDeckConcreteStrength(pgsTypes::StressType
                pgsTypes::StressLocation stressLocation = (i == 0 ? pgsTypes::TopDeck : pgsTypes::BottomDeck);
                if ( artifact.IsApplicable(stressLocation) )
                {
-                  Float64 fc = artifact.GetRequiredConcreteStrength(stressType,stressLocation);
+                  Float64 fc = artifact.GetRequiredConcreteStrength(task.stressType,stressLocation);
 
                   if ( fc < 0 ) 
                   {
