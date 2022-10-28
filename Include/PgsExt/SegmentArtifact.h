@@ -167,11 +167,11 @@ public:
 
    Float64 GetRequiredReleaseStrength() const;
 
-   Float64 GetRequiredSegmentConcreteStrength(pgsTypes::StressType stressType,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
+   Float64 GetRequiredSegmentConcreteStrength(const StressCheckTask& task) const;
    Float64 GetRequiredSegmentConcreteStrength() const;
-   Float64 GetRequiredClosureJointConcreteStrength(pgsTypes::StressType stressType, IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
+   Float64 GetRequiredClosureJointConcreteStrength(const StressCheckTask& task) const;
    Float64 GetRequiredClosureJointConcreteStrength() const;
-   Float64 GetRequiredDeckConcreteStrength(pgsTypes::StressType stressType, IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
+   Float64 GetRequiredDeckConcreteStrength(const StressCheckTask& task) const;
    Float64 GetRequiredDeckConcreteStrength() const;
 
    const CSegmentKey& GetSegmentKey() const;
