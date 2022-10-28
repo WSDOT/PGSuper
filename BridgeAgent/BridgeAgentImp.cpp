@@ -24744,12 +24744,22 @@ bool CBridgeAgentImp::IsPrismatic(IntervalIndexType intervalIdx,const CSegmentKe
       }
    }
 
+   // if the segment end is at the CL bearing, then the span points might end up in a different span than the other points
+   // to avoid this problem, tweak the start point (0.0) and the end point (segment_length) when the segment end
+   // distance is equal to the bearing offset
+   Float64 start_end_distance, end_end_distance;
+   GetSegmentEndDistance(segmentKey, &start_end_distance, &end_end_distance);
+   Float64 start_bearing_offset, end_bearing_offset;
+   GetSegmentBearingOffset(segmentKey, &start_bearing_offset, &end_bearing_offset);
+   Float64 start_tweak = IsEqual(start_end_distance,start_bearing_offset) ? 0.001 : 0.00;
+   Float64 end_tweak = IsEqual(end_end_distance,end_bearing_offset) ? 0.001 : 0.00;
+
    Float64 segmentLength = GetSegmentLength(segmentKey);
    CSpanKey startSpanKey, middleSpanKey, endSpanKey;
    Float64 XspanStart, XspanMiddle, XspanEnd;
-   ConvertSegmentCoordinateToSpanPoint(segmentKey,            0.0,&startSpanKey, &XspanStart);
+   ConvertSegmentCoordinateToSpanPoint(segmentKey,            0.0+start_tweak,&startSpanKey, &XspanStart);
    ConvertSegmentCoordinateToSpanPoint(segmentKey,segmentLength/2,&middleSpanKey,&XspanMiddle);
-   ConvertSegmentCoordinateToSpanPoint(segmentKey,segmentLength,  &endSpanKey,   &XspanEnd);
+   ConvertSegmentCoordinateToSpanPoint(segmentKey,segmentLength - end_tweak,  &endSpanKey,   &XspanEnd);
 
    // we have a prismatic section made composite and are evaluating in a composite event.
    // check to see if the composite section is non-prismatic
