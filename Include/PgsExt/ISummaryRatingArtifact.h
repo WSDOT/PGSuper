@@ -62,8 +62,8 @@ public:
    virtual Float64 GetRatingFactor() const = 0;
    virtual Float64 GetRatingFactorEx(const pgsMomentRatingArtifact** ppPositiveMoment,const pgsMomentRatingArtifact** ppNegativeMoment,
                              const pgsShearRatingArtifact** ppShear,
-                             const pgsStressRatingArtifact** ppStress,
-                             const pgsYieldStressRatioArtifact** ppYieldStressPositiveMoment,const pgsYieldStressRatioArtifact** ppYieldStressNegativeMoment) const = 0;
+                             const pgsStressRatingArtifact** ppStress) const = 0;
+   virtual Float64 GetYieldStressRatio(const pgsYieldStressRatioArtifact** ppYieldStressPositiveMoment, const pgsYieldStressRatioArtifact** ppYieldStressNegativeMoment) const = 0;
 
    virtual bool IsLoadPostingRequired() const = 0;
    virtual void GetSafePostingLoad(Float64* pPostingLoad,Float64* pWeight,Float64* pRF,std::_tstring* pVehicle) const = 0;

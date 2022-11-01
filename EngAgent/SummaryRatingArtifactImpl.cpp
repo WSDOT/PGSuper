@@ -189,8 +189,7 @@ Float64 pgsSummaryRatingArtifactImpl::GetRatingFactor() const
 
 Float64 pgsSummaryRatingArtifactImpl::GetRatingFactorEx(const pgsMomentRatingArtifact** ppPositiveMoment,const pgsMomentRatingArtifact** ppNegativeMoment,
                   const pgsShearRatingArtifact** ppShear,
-                  const pgsStressRatingArtifact** ppStress,
-                  const pgsYieldStressRatioArtifact** ppYieldStressPositiveMoment,const pgsYieldStressRatioArtifact** ppYieldStressNegativeMoment) const
+                  const pgsStressRatingArtifact** ppStress) const
 {
    // this may not look efficient, but we know that pgsRatingArtifact caches its answers, so it's not bad
    Float64 RF = DBL_MAX;
@@ -211,7 +210,31 @@ Float64 pgsSummaryRatingArtifactImpl::GetRatingFactorEx(const pgsMomentRatingArt
 
    // get controlling artifact and return its values
    const pgsRatingArtifact* pArtifact = m_pEngAgentImp->GetRatingArtifact(m_GirderKeys[icontrol], m_RatingType, m_VehicleIdx);
-   return pArtifact->GetRatingFactorEx(ppPositiveMoment, ppNegativeMoment, ppShear, ppStress, ppYieldStressPositiveMoment, ppYieldStressNegativeMoment);
+   return pArtifact->GetRatingFactorEx(ppPositiveMoment, ppNegativeMoment, ppShear, ppStress);
+}
+
+Float64 pgsSummaryRatingArtifactImpl::GetYieldStressRatio(const pgsYieldStressRatioArtifact** ppYieldStressPositiveMoment, const pgsYieldStressRatioArtifact** ppYieldStressNegativeMoment) const
+{
+   // this may not look efficient, but we know that pgsRatingArtifact caches its answers, so it's not bad
+   Float64 SR = DBL_MAX;
+
+   // First find controlling girder
+   Uint32 icontrol(0);
+   Uint32 ngdrs = (Uint32)m_GirderKeys.size();
+   for (Uint32 igdr = 0; igdr < ngdrs; igdr++)
+   {
+      const pgsRatingArtifact* pArtifact = m_pEngAgentImp->GetRatingArtifact(m_GirderKeys[igdr], m_RatingType, m_VehicleIdx);
+      Float64 sr = pArtifact->GetYieldStressRatio();
+      if (sr < SR)
+      {
+         SR = sr;
+         icontrol = igdr;
+      }
+   }
+
+   // get controlling artifact and return its values
+   const pgsRatingArtifact* pArtifact = m_pEngAgentImp->GetRatingArtifact(m_GirderKeys[icontrol], m_RatingType, m_VehicleIdx);
+   return pArtifact->GetYieldStressRatio(ppYieldStressPositiveMoment, ppYieldStressNegativeMoment);
 }
 
 bool pgsSummaryRatingArtifactImpl::IsLoadPostingRequired() const
