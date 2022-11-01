@@ -10016,15 +10016,23 @@ bool CAnalysisAgentImp::IsDeckPrecompressed(const CGirderKey& girderKey) const
       return false; // this happens when there is not a deck
    }
 
+   GET_IFACE_NOCHECK(IBridge, pBridge); // not always used
+   GroupIndexType firstGrpIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
+   GroupIndexType lastGrpIdx = (girderKey.groupIndex == ALL_GROUPS ? pBridge->GetGirderGroupCount() - 1 : girderKey.groupIndex);
    GET_IFACE(IGirderTendonGeometry,pTendonGeom);
-   DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
-   for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+
+   for (GroupIndexType grpIdx = firstGrpIdx; grpIdx <= lastGrpIdx; grpIdx++)
    {
-      IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressGirderTendonInterval(girderKey,ductIdx);
-      if ( compositeDeckIntervalIdx <= stressTendonIntervalIdx )
+      CGirderKey thisGirderKey(grpIdx, girderKey.girderIndex);
+      DuctIndexType nDucts = pTendonGeom->GetDuctCount(thisGirderKey);
+      for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
       {
-         // this tendon is stressed after the deck is composite so the deck is considered precompressed
-         return true;
+         IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressGirderTendonInterval(thisGirderKey, ductIdx);
+         if (compositeDeckIntervalIdx <= stressTendonIntervalIdx)
+         {
+            // this tendon is stressed after the deck is composite so the deck is considered precompressed
+            return true;
+         }
       }
    }
 

@@ -388,19 +388,21 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(const std::shared_ptr<const 
    (*pRemarks) << _T("Remarks:") << rptNewLine;
    (*pRemarks) << _T("This load rating does not include rating factors for substructure elements.") << rptNewLine;
 
-   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(4,_T(""));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(5,_T(""));
    (*pPara) << pTable << rptNewLine;
 
    pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
    pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
-   pTable->SetColumnStyle(3, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-   pTable->SetStripeRowColumnStyle(3, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetColumnStyle(4, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(4, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
-   (*pTable)(0,0) << _T("Truck");
-   (*pTable)(0,1) << _T("RF");
-   (*pTable)(0,2) << Sub2(symbol(gamma),_T("LL"));
-   (*pTable)(0,3)  << COLHDR(_T("Controlling Point") << rptNewLine << RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   ColumnIndexType col = 0;
+   (*pTable)(0, col++) << _T("Truck");
+   (*pTable)(0, col++) << _T("RF");
+   (*pTable)(0, col++) << _T("Yield") << rptNewLine << _T("Stress") << rptNewLine << _T("Ratio");
+   (*pTable)(0, col++) << Sub2(symbol(gamma),_T("LL"));
+   (*pTable)(0, col++)  << COLHDR(_T("Controlling Point") << rptNewLine << RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
 
@@ -412,7 +414,8 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(const std::shared_ptr<const 
    VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
    for ( VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++ )
    {
-      ReportRatingFactor(pBroker,pTable,row++,pIArtifact->GetRatingArtifact(girderKey,pgsTypes::lrLegal_Routine,vehicleIdx),pDisplayUnits,pRemarks);
+      ReportRatingFactor(pBroker,pTable,row,pIArtifact->GetRatingArtifact(girderKey,pgsTypes::lrLegal_Routine,vehicleIdx),pDisplayUnits,pRemarks);
+      row++;
    }
 
 
@@ -420,14 +423,16 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(const std::shared_ptr<const 
    nVehicles = pProductLoads->GetVehicleCount(llType);
    for (VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++)
    {
-      ReportRatingFactor(pBroker, pTable, row++, pIArtifact->GetRatingArtifact(girderKey, pgsTypes::lrLegal_Special, vehicleIdx), pDisplayUnits, pRemarks);
+      ReportRatingFactor(pBroker, pTable, row, pIArtifact->GetRatingArtifact(girderKey, pgsTypes::lrLegal_Special, vehicleIdx), pDisplayUnits, pRemarks);
+      row++;
    }
 
    llType = ::GetLiveLoadType(pgsTypes::lrLegal_Emergency);
    nVehicles = pProductLoads->GetVehicleCount(llType);
    for (VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++)
    {
-      ReportRatingFactor(pBroker, pTable, row++, pIArtifact->GetRatingArtifact(girderKey, pgsTypes::lrLegal_Emergency, vehicleIdx), pDisplayUnits, pRemarks);
+      ReportRatingFactor(pBroker, pTable, row, pIArtifact->GetRatingArtifact(girderKey, pgsTypes::lrLegal_Emergency, vehicleIdx), pDisplayUnits, pRemarks);
+      row++;
    }
 
    // Current WSDOT default is to have no trucks in the Permit Routine case so there is nothing to report
@@ -443,7 +448,8 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(const std::shared_ptr<const 
    nVehicles = pProductLoads->GetVehicleCount(llType);
    for ( VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++ )
    {
-      ReportRatingFactor(pBroker,pTable,row++,pIArtifact->GetRatingArtifact(girderKey,pgsTypes::lrPermit_Special,vehicleIdx),pDisplayUnits,pRemarks);
+      ReportRatingFactor(pBroker,pTable,row,pIArtifact->GetRatingArtifact(girderKey,pgsTypes::lrPermit_Special,vehicleIdx),pDisplayUnits,pRemarks);
+      row++;
    }
 
    pTable = rptStyleManager::CreateDefaultTable(3,_T(""));
@@ -473,7 +479,7 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLoadRatingSummaryChapterBuilde
    return std::make_unique<CLoadRatingSummaryChapterBuilder>();
 }
 
-void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRcTable* pTable,RowIndexType row,const pgsRatingArtifact* pRatingArtifact,IEAFDisplayUnits* pDisplayUnits,rptParagraph* pRemarks) const
+void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRcTable* pTable,RowIndexType& row,const pgsRatingArtifact* pRatingArtifact,IEAFDisplayUnits* pDisplayUnits,rptParagraph* pRemarks) const
 {
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    location.IncludeSpanAndGirder(true);
@@ -486,101 +492,115 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
    const pgsMomentRatingArtifact* pNegativeMoment;
    const pgsShearRatingArtifact*  pShear;
    const pgsStressRatingArtifact* pStress;
-   const pgsYieldStressRatioArtifact* pYieldStressPositiveMoment;
-   const pgsYieldStressRatioArtifact* pYieldStressNegativeMoment;
+   
+   Float64 RF = pRatingArtifact->GetRatingFactorEx(&pPositiveMoment,&pNegativeMoment,&pShear,&pStress);
 
-   Float64 RF = pRatingArtifact->GetRatingFactorEx(&pPositiveMoment,&pNegativeMoment,&pShear,&pStress,&pYieldStressPositiveMoment,&pYieldStressNegativeMoment);
+   ColumnIndexType col = 0;
    if ( pPositiveMoment )
    {
-      (*pTable)(row,0) << pPositiveMoment->GetVehicleName();
+      (*pTable)(row, col++) << pPositiveMoment->GetVehicleName();
       
       if ( RF < 1 )
       {
-         (*pTable)(row,1) << RF_FAIL(rating_factor,RF);
+         (*pTable)(row,col++) << RF_FAIL(rating_factor,RF);
       }
       else
       {
-         (*pTable)(row,1) << RF_PASS(rating_factor,RF);
+         (*pTable)(row,col++) << RF_PASS(rating_factor,RF);
       }
 
-      (*pTable)(row,2) << scalar.SetValue(pPositiveMoment->GetLiveLoadFactor());
+      (*pTable)(row, col++) << _T(""); // yield stress ratio
+
+      (*pTable)(row, col++) << scalar.SetValue(pPositiveMoment->GetLiveLoadFactor());
 
       pgsPointOfInterest poi( pPositiveMoment->GetPointOfInterest() );
-      (*pTable)(row,3) << location.SetValue(POI_SPAN,poi) << _T(" (Positive Moment)");
+      (*pTable)(row, col++) << location.SetValue(POI_SPAN,poi) << _T(" (Positive Moment)");
    }
    else if ( pNegativeMoment )
    {
-      (*pTable)(row,0) << pNegativeMoment->GetVehicleName();
+      (*pTable)(row, col++) << pNegativeMoment->GetVehicleName();
       
       if ( RF < 1 )
       {
-         (*pTable)(row,1) << RF_FAIL(rating_factor,RF);
+         (*pTable)(row, col++) << RF_FAIL(rating_factor,RF);
       }
       else
       {
-         (*pTable)(row,1) << RF_PASS(rating_factor,RF);
+         (*pTable)(row, col++) << RF_PASS(rating_factor,RF);
       }
 
-      (*pTable)(row,2) << scalar.SetValue(pNegativeMoment->GetLiveLoadFactor());
+      (*pTable)(row, col++) << _T(""); // yield stress ratio
+
+      (*pTable)(row, col++) << scalar.SetValue(pNegativeMoment->GetLiveLoadFactor());
 
       pgsPointOfInterest poi( pNegativeMoment->GetPointOfInterest() );
-      (*pTable)(row,3) << location.SetValue(POI_SPAN,poi) << _T(" (Negative Moment)");
+      (*pTable)(row, col++) << location.SetValue(POI_SPAN,poi) << _T(" (Negative Moment)");
    }
    else if ( pShear )
    {
-      (*pTable)(row,0) << pShear->GetVehicleName();
+      (*pTable)(row, col++) << pShear->GetVehicleName();
       
       if ( RF < 1 )
       {
-         (*pTable)(row,1) << RF_FAIL(rating_factor,RF);
+         (*pTable)(row, col++) << RF_FAIL(rating_factor,RF);
       }
       else
       {
-         (*pTable)(row,1) << RF_PASS(rating_factor,RF);
+         (*pTable)(row, col++) << RF_PASS(rating_factor,RF);
       }
 
-      (*pTable)(row,2) << scalar.SetValue(pShear->GetLiveLoadFactor());
+      (*pTable)(row, col++) << _T(""); // yield stress ratio
+
+      (*pTable)(row, col++) << scalar.SetValue(pShear->GetLiveLoadFactor());
 
       pgsPointOfInterest poi( pShear->GetPointOfInterest() );
-      (*pTable)(row,3) << location.SetValue(POI_SPAN,poi) << _T(" (Shear)");
+      (*pTable)(row, col++) << location.SetValue(POI_SPAN,poi) << _T(" (Shear)");
    }
    else if ( pStress )
    {
-      (*pTable)(row,0) << pStress->GetVehicleName();
+      (*pTable)(row, col++) << pStress->GetVehicleName();
       
       if ( RF < 1 )
       {
-         (*pTable)(row,1) << RF_FAIL(rating_factor,RF);
+         (*pTable)(row, col++) << RF_FAIL(rating_factor,RF);
       }
       else
       {
-         (*pTable)(row,1) << RF_PASS(rating_factor,RF);
+         (*pTable)(row, col++) << RF_PASS(rating_factor,RF);
       }
 
-      (*pTable)(row,2) << scalar.SetValue(pStress->GetLiveLoadFactor());
+      (*pTable)(row, col++) << _T(""); // yield stress ratio
+
+      (*pTable)(row, col++) << scalar.SetValue(pStress->GetLiveLoadFactor());
 
       pgsPointOfInterest poi(  pStress->GetPointOfInterest() );
-      (*pTable)(row,3) << location.SetValue(POI_SPAN,poi) << _T(" (Stress)");
+      (*pTable)(row, col++) << location.SetValue(POI_SPAN,poi) << _T(" (Stress)");
    }
-   else if ( pYieldStressPositiveMoment )
+
+   const pgsYieldStressRatioArtifact* pYieldStressPositiveMoment;
+   const pgsYieldStressRatioArtifact* pYieldStressNegativeMoment;
+   Float64 SR = pRatingArtifact->GetYieldStressRatio(&pYieldStressPositiveMoment, &pYieldStressNegativeMoment);
+   if ( pYieldStressPositiveMoment )
    {
-      (*pTable)(row,0) << pYieldStressPositiveMoment->GetVehicleName();
-      
-      if ( RF < 1 )
+      row++;
+      col = 0;
+      (*pTable)(row, col++) << pYieldStressPositiveMoment->GetVehicleName();
+
+      (*pTable)(row, col++) << _T(""); // rating factor
+
+      if ( SR < 1 )
       {
-         (*pTable)(row,1) << RF_FAIL(rating_factor,RF);
+         (*pTable)(row, col++) << RF_FAIL(rating_factor,SR);
       }
       else
       {
-         (*pTable)(row,1) << RF_PASS(rating_factor,RF);
+         (*pTable)(row, col++) << RF_PASS(rating_factor,SR);
       }
 
-      (*pTable)(row,1) << rptNewLine << _T("(Stress Ratio)");
-
-      (*pTable)(row,2) << scalar.SetValue(pYieldStressPositiveMoment->GetLiveLoadFactor());
+      (*pTable)(row, col++) << scalar.SetValue(pYieldStressPositiveMoment->GetLiveLoadFactor());
 
       pgsPointOfInterest poi(  pYieldStressPositiveMoment->GetPointOfInterest() );
-      (*pTable)(row,3) << location.SetValue(POI_SPAN,poi) << _T(" (Yield Stress - Positive Moment)");
+      (*pTable)(row, col++) << location.SetValue(POI_SPAN,poi) << _T(" (Positive Moment)");
 
       if ( 0 < pYieldStressPositiveMoment->GetRebarCrackingStressIncrement() )
       {
@@ -604,23 +624,25 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
    }
    else if ( pYieldStressNegativeMoment )
    {
-      (*pTable)(row,0) << pYieldStressNegativeMoment->GetVehicleName();
-      
-      if ( RF < 1 )
+      row++;
+      col = 0;
+      (*pTable)(row, col++) << pYieldStressNegativeMoment->GetVehicleName();
+
+      (*pTable)(row, col++) << _T(""); // rating factor
+
+      if ( SR < 1 )
       {
-         (*pTable)(row,1) << RF_FAIL(rating_factor,RF);
+         (*pTable)(row, col++) << RF_FAIL(rating_factor,SR);
       }
       else
       {
-         (*pTable)(row,1) << RF_PASS(rating_factor,RF);
+         (*pTable)(row, col++) << RF_PASS(rating_factor,SR);
       }
 
-      (*pTable)(row,1) << rptNewLine << _T("(Stress Ratio)");
-
-      (*pTable)(row,2) << scalar.SetValue(pYieldStressNegativeMoment->GetLiveLoadFactor());
+      (*pTable)(row, col++) << scalar.SetValue(pYieldStressNegativeMoment->GetLiveLoadFactor());
 
       pgsPointOfInterest poi(  pYieldStressNegativeMoment->GetPointOfInterest() );
-      (*pTable)(row,3) << location.SetValue(POI_SPAN,poi) << _T(" (Yield Stress - Negative Moment)");
+      (*pTable)(row, col++) << location.SetValue(POI_SPAN,poi) << _T(" (Negative Moment)");
 
       if ( 0 < pYieldStressNegativeMoment->GetRebarCrackingStressIncrement() )
       {
@@ -657,10 +679,8 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor2(IBroker* pBroker,rptR
    const pgsMomentRatingArtifact* pNegativeMoment;
    const pgsShearRatingArtifact*  pShear;
    const pgsStressRatingArtifact* pStress;
-   const pgsYieldStressRatioArtifact* pYieldStressPositiveMoment;
-   const pgsYieldStressRatioArtifact* pYieldStressNegativeMoment;
 
-   Float64 RF = pRatingArtifact->GetRatingFactorEx(&pPositiveMoment,&pNegativeMoment,&pShear,&pStress,&pYieldStressPositiveMoment,&pYieldStressNegativeMoment);
+   Float64 RF = pRatingArtifact->GetRatingFactorEx(&pPositiveMoment,&pNegativeMoment,&pShear,&pStress);
    if ( pPositiveMoment )
    {
       (*pTable)(row,0) << strTruck;

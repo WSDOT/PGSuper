@@ -215,7 +215,6 @@ void pgsLoadRater::FlexureRating(const CGirderKey& girderKey, const PoiList& vPo
       stressRatingParams.vehicleIdx = vehicleIdx;
       stressRatingParams.strLLNames = strLLNames;
 
-      ASSIGN_IFACE(IPrecompressedTensileZone, stressRatingParams.pPTZ);
       ASSIGN_IFACE(ICombinedForces, stressRatingParams.pCombinedForces);
       ASSIGN_IFACE(IPretensionStresses, stressRatingParams.pPrestress);
       ASSIGN_IFACE(IAllowableConcreteStress, stressRatingParams.pAllowables);
@@ -225,9 +224,11 @@ void pgsLoadRater::FlexureRating(const CGirderKey& girderKey, const PoiList& vPo
    }
 
    // get parameters for yield stress check that apply to all POI
+   ASSIGN_IFACE(IPrecompressedTensileZone, stressRatingParams.pPTZ);
+   bool bIsDeckPrecompressed = stressRatingParams.pPTZ->IsDeckPrecompressed(girderKey);
    bool bCheckYieldStressEnabled = pRatingSpec->CheckYieldStress(ratingType);
    bool bCheckPositiveMomentYieldStress = true;
-   bool bCheckNegativeMomentYieldStress = (pMinMoments == nullptr ? false : true);
+   bool bCheckNegativeMomentYieldStress = (bIsDeckPrecompressed ? true : false);
    YieldingRatingParams yieldingRatingParams;
    if (bCheckYieldStressEnabled)
    {

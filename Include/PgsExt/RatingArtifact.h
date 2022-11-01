@@ -94,8 +94,10 @@ public:
    Float64 GetRatingFactor() const;
    Float64 GetRatingFactorEx(const pgsMomentRatingArtifact** ppPositiveMoment,const pgsMomentRatingArtifact** ppNegativeMoment,
                              const pgsShearRatingArtifact** ppShear,
-                             const pgsStressRatingArtifact** ppStress,
-                             const pgsYieldStressRatioArtifact** ppYieldStressPositiveMoment,const pgsYieldStressRatioArtifact** ppYieldStressNegativeMoment) const;
+                             const pgsStressRatingArtifact** ppStress) const;
+
+   Float64 GetYieldStressRatio() const;
+   Float64 GetYieldStressRatio(const pgsYieldStressRatioArtifact** ppYieldStressPositiveMoment, const pgsYieldStressRatioArtifact** ppYieldStressNegativeMoment) const;
 
    bool IsLoadPostingRequired() const;
    void GetSafePostingLoad(Float64* pPostingLoad,Float64* pWeight,Float64* pRF,std::_tstring* pVehicle) const;
