@@ -3546,6 +3546,7 @@ WBFL::Stability::HaulingCriteria CSpecAgentImp::GetHaulingStabilityCriteria(cons
       {
          pgsTypes::HaulingSlope slope = (pgsTypes::HaulingSlope)i;
          GetHaulingAllowableTensileConcreteStressParameters(slope,&pTensionStressLimit->TensionCoefficient[slope], &pTensionStressLimit->bMaxTension[slope], &pTensionStressLimit->MaxTension[slope]);
+         pTensionStressLimit->bWithRebarLimit[slope] = true;
          pTensionStressLimit->TensionCoefficientWithRebar[slope] = GetHaulingWithMildRebarAllowableStressFactor(slope);
          pTensionStressLimit->AllowableTension[slope] = GetHaulingAllowableTensileConcreteStress(segmentKey,slope);
          pTensionStressLimit->AllowableTensionWithRebar[slope] = GetHaulingWithMildRebarAllowableStress(segmentKey,slope);
@@ -3602,6 +3603,7 @@ WBFL::Stability::HaulingCriteria CSpecAgentImp::GetHaulingStabilityCriteria(cons
       {
          pgsTypes::HaulingSlope slope = (pgsTypes::HaulingSlope)i;
          GetHaulingAllowableTensileConcreteStressParameters(slope,&pTensionStressLimit->TensionCoefficient[slope], &pTensionStressLimit->bMaxTension[slope], &pTensionStressLimit->MaxTension[slope]);
+         pTensionStressLimit->bWithRebarLimit[slope] = true;
          pTensionStressLimit->TensionCoefficientWithRebar[slope] = GetHaulingWithMildRebarAllowableStressFactor(slope);
          if (haulConfig.bIgnoreGirderConfig)
          {
