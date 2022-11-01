@@ -2259,18 +2259,77 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 
             if (liveLoadIntervalIdx <= task.intervalIdx && !task.bIncludeLiveLoad)
             {
-               // remove live load, including live load factor
-               Float64 gLLIMmin, gLLIMmax;
-               pLoadFactors->GetLLIM(task.limitState, &gLLIMmin, &gLLIMmax);
+               // the task interval is at or after the live load interval and this task does not include live load
 
-               std::array<Float64, 2> fLLIMmin, fLLIMmax;
-               pProductForces->GetLiveLoadStress(task.intervalIdx, pgsTypes::lltDesign, poi, batTop, true/*include impact*/, true/*include LLDF*/, topStressLocation, topStressLocation, &fLLIMmin[TOP], &fLLIMmax[TOP], &fLLIMmin[BOT], &fLLIMmax[BOT]);
-               fLimitStateMin[TOP] -= gLLIMmin*fLLIMmin[TOP];
-               fLimitStateMax[TOP] -= gLLIMmax*fLLIMmax[TOP];
+               GET_IFACE(ILiveLoads, pLiveLoads);
 
-               pProductForces->GetLiveLoadStress(task.intervalIdx, pgsTypes::lltDesign, poi, botStressLocation == pgsTypes::BottomGirder ? batBottom : batTop, true/*include impact*/, true/*include LLDF*/, botStressLocation, botStressLocation, &fLLIMmin[TOP], &fLLIMmax[TOP], &fLLIMmin[BOT], &fLLIMmax[BOT]);
-               fLimitStateMin[BOT] -= gLLIMmin*fLLIMmin[BOT];
-               fLimitStateMax[BOT] -= gLLIMmax*fLLIMmax[BOT];
+               std::array<Float64, 2> LLIM_Min_to_remove{ 0,0 };
+               std::array<Float64, 2> LLIM_Max_to_remove{ 0,0 };
+
+               pgsTypes::LiveLoadType llType = pgsTypes::lltDesign;
+
+               if (pLiveLoads->IsLiveLoadDefined(llType))
+               {
+                  // remove vehicular live load, including live load factor
+                  Float64 gLLIMmin, gLLIMmax;
+                  pLoadFactors->GetLLIM(task.limitState, &gLLIMmin, &gLLIMmax);
+
+                  std::array<Float64, 2> fLLIMmin, fLLIMmax;
+                  pProductForces->GetLiveLoadStress(task.intervalIdx, pgsTypes::lltDesign, poi, batTop, true/*include impact*/, true/*include LLDF*/, topStressLocation, topStressLocation, &fLLIMmin[TOP], &fLLIMmax[TOP], &fLLIMmin[BOT], &fLLIMmax[BOT]);
+                  LLIM_Min_to_remove[TOP] += gLLIMmin * fLLIMmin[TOP];
+                  LLIM_Max_to_remove[TOP] += gLLIMmax * fLLIMmax[TOP];
+
+                  pProductForces->GetLiveLoadStress(task.intervalIdx, pgsTypes::lltDesign, poi, botStressLocation == pgsTypes::BottomGirder ? batBottom : batTop, true/*include impact*/, true/*include LLDF*/, botStressLocation, botStressLocation, & fLLIMmin[TOP], & fLLIMmax[TOP], & fLLIMmin[BOT], & fLLIMmax[BOT]);
+                  LLIM_Min_to_remove[BOT] += gLLIMmin * fLLIMmin[BOT];
+                  LLIM_Max_to_remove[BOT] += gLLIMmax * fLLIMmax[BOT];
+               }
+
+               ILiveLoads::PedestrianLoadApplicationType pedLoadType = pLiveLoads->GetPedestrianLoadApplication(llType);
+
+               if (pedLoadType != ILiveLoads::PedDontApply)
+               {
+                  std::array<Float64, 2> PL_Min, PL_Max;
+
+                  pProductForces->GetLiveLoadStress(task.intervalIdx, pgsTypes::lltPedestrian, poi, batTop, true/*include impact*/, true/*include LLDF*/, topStressLocation, topStressLocation, &PL_Min[TOP], &PL_Max[TOP], &PL_Min[BOT], &PL_Max[BOT]);
+
+                  if (pLiveLoads->GetPedestrianLoadApplication(llType) == ILiveLoads::PedEnvelopeWithVehicular)
+                  {
+                     // PL is enveloped with LLIM so we want to remove the what that has the most extreme value
+                     // Vehiculare live load is stored in LLIM_Min/Max_to_remove
+                     LLIM_Min_to_remove[TOP] = Min(LLIM_Min_to_remove[TOP], PL_Min[TOP]);
+                     LLIM_Max_to_remove[TOP] = Max(LLIM_Max_to_remove[TOP], PL_Max[TOP]);
+                  }
+                  else
+                  {
+                     // PL is concurrent with vehicular LLIM so we want to add PL to LLIM for removal
+                     ATLASSERT(pLiveLoads->GetPedestrianLoadApplication(llType) == ILiveLoads::PedConcurrentWithVehicular);
+                     LLIM_Min_to_remove[TOP] += PL_Min[TOP];
+                     LLIM_Max_to_remove[TOP] += PL_Max[TOP];
+                  }
+
+                  pProductForces->GetLiveLoadStress(task.intervalIdx, pgsTypes::lltPedestrian, poi, botStressLocation == pgsTypes::BottomGirder ? batBottom : batTop, true/*include impact*/, true/*include LLDF*/, botStressLocation, botStressLocation, & PL_Min[TOP], & PL_Max[TOP], & PL_Min[BOT], & PL_Max[BOT]);
+                  if (pLiveLoads->GetPedestrianLoadApplication(llType) == ILiveLoads::PedEnvelopeWithVehicular)
+                  {
+                     // PL is enveloped with LLIM so we want to remove the what that has the most extreme value
+                     // Vehiculare live load is stored in LLIM_Min/Max_to_remove
+                     LLIM_Min_to_remove[BOT] = Min(LLIM_Min_to_remove[BOT], PL_Min[BOT]);
+                     LLIM_Max_to_remove[BOT] = Max(LLIM_Max_to_remove[BOT], PL_Max[BOT]);
+                  }
+                  else
+                  {
+                     // PL is concurrent with vehicular LLIM so we want to add PL to LLIM for removal
+                     ATLASSERT(pLiveLoads->GetPedestrianLoadApplication(llType) == ILiveLoads::PedConcurrentWithVehicular);
+                     LLIM_Min_to_remove[BOT] += PL_Min[BOT];
+                     LLIM_Max_to_remove[BOT] += PL_Max[BOT];
+                  }
+               }
+
+               // remove the live loads from the limit state results
+               fLimitStateMin[TOP] -= LLIM_Min_to_remove[TOP];
+               fLimitStateMin[BOT] -= LLIM_Min_to_remove[BOT];
+
+               fLimitStateMax[TOP] -= LLIM_Max_to_remove[TOP];
+               fLimitStateMax[BOT] -= LLIM_Max_to_remove[BOT];
             }
 	         
 	         std::array<Float64,2> fLimitState;
