@@ -919,7 +919,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
          CComBSTR bstrName;
          section->get_Name(shapeIdx, &bstrName);
          CString strName(bstrName);
-         if (strName.Left(15) == _T("Straight Strand") || strName.Left(13) == _T("Harped Strand"))
+         if(0 <= strName.Find(_T("Strand"),0))
          {
             Aps += slice_area;
             fps_avg += F;

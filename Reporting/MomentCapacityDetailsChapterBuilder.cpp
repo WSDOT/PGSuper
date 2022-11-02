@@ -496,9 +496,9 @@ void write_moment_data_table(IBroker* pBroker,
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
    rptRcScalar strain;
-   strain.SetFormat( WBFL::System::NumericFormatTool::Format::Automatic);
-   strain.SetWidth(7);
-   strain.SetPrecision(3);
+   strain.SetFormat( sysNumericFormatTool::Automatic);
+   strain.SetWidth(9);
+   strain.SetPrecision(4);
 
    Int16 count = 0;
    RowIndexType row = table->GetNumberOfHeaderRows();
