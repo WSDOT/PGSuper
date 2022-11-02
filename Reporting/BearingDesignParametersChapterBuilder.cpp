@@ -109,7 +109,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(const std::shared_ptr<
 
    GET_IFACE2(pBroker, IBridge, pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
-   if (1 < nSegments ? true : false)
+   if (1 < nSegments)
    {
       *p << _T("Erected Segments reactions are the segment self-weight simple span reactions after erection. Girder reactions are for the completed girder after post-tensioning and temporary support removal.") << rptNewLine;
    }
@@ -173,7 +173,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(const std::shared_ptr<
    p = new rptParagraph;
    *pChapter << p;
    *p << CProductRotationTable().Build(pBroker,girderKey,pSpec->GetAnalysisType(), bIncludeImpact,true,true,true,true,pDisplayUnits) << rptNewLine;
-   if (1 < nSegments ? true : false)
+   if (1 < nSegments)
    {
       *p << _T("Erected Segments rotations are the segment self-weight simple span rotation after erection. Girder rotations are for the completed girder after post-tensioning and temporary support removal.") << rptNewLine;
    }

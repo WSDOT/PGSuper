@@ -88,7 +88,7 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType diaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
-   IntervalIndexType firstCastDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
+   IntervalIndexType lastCastDeckIntervalIdx = pIntervals->GetLastCastDeckInterval(); // deck cast be cast in multiple stages, use interval after entire deck is cast
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType ljIntervalIdx = pIntervals->GetCastLongitudinalJointInterval();
    IntervalIndexType shearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
@@ -264,13 +264,13 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
       {
          if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
          {
-            if (reactionDecider.DoReport(firstCastDeckIntervalIdx))
+            if (reactionDecider.DoReport(lastCastDeckIntervalIdx))
             {
-               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(firstCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlab, maxBAT));
-               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(firstCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlab, minBAT));
+               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlab, maxBAT));
+               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlab, minBAT));
 
-               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(firstCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlabPad, maxBAT));
-               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(firstCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlabPad, minBAT));
+               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlabPad, maxBAT));
+               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlabPad, minBAT));
             }
             else
             {
@@ -282,10 +282,10 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
          }
          else
          {
-            if (reactionDecider.DoReport(firstCastDeckIntervalIdx))
+            if (reactionDecider.DoReport(lastCastDeckIntervalIdx))
             {
-               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(firstCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlab, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan));
-               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(firstCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlabPad, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan));
+               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlab, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan));
+               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlabPad, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan));
             }
             else
             {
@@ -299,10 +299,10 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
       {
          if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
          {
-            if ( reactionDecider.DoReport(firstCastDeckIntervalIdx) )
+            if ( reactionDecider.DoReport(lastCastDeckIntervalIdx) )
             {
-               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(firstCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlabPanel, maxBAT ) );
-               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(firstCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlabPanel, minBAT ) );
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlabPanel, maxBAT ) );
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlabPanel, minBAT ) );
             }
             else
             {
@@ -312,9 +312,9 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
          }
          else
          {
-            if ( reactionDecider.DoReport(firstCastDeckIntervalIdx) )
+            if ( reactionDecider.DoReport(lastCastDeckIntervalIdx) )
             {
-               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(firstCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlabPanel, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlabPanel, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
             }
             else
             {
