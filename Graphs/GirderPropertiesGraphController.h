@@ -66,7 +66,7 @@ protected:
    int GetSectionPropertyControlID(pgsTypes::SectionPropertyType type);
    pgsTypes::SectionPropertyType GetSectionPropertyType(int nIDC);
 
-   virtual bool ShowBeamBelowGraph() const override { return false; }
+   virtual bool ShowBeamBelowGraph() const override { return true; }
 
 #ifdef _DEBUG
 public:
