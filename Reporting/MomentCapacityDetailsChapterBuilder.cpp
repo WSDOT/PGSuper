@@ -497,8 +497,8 @@ void write_moment_data_table(IBroker* pBroker,
 
    rptRcScalar strain;
    strain.SetFormat( sysNumericFormatTool::Automatic);
-   strain.SetWidth(7);
-   strain.SetPrecision(3);
+   strain.SetWidth(9);
+   strain.SetPrecision(4);
 
    Int16 count = 0;
    RowIndexType row = table->GetNumberOfHeaderRows();
