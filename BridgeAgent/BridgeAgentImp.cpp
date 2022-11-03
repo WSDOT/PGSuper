@@ -1728,8 +1728,14 @@ void CBridgeAgentImp::ValidateMomentLoads()
             Float64 Xs;
             ConvertSpanPointToSegmentCoordiante(thisSpanKey,upl.m_Location,&segmentKey,&Xs);
 
+            // The moment loads don't work well when they are at the CL pier of the FEM models
+            // Move the loads so they are at the CL Brg of the segments.
+            // Concentrated moments are only for PGSuper, not PGSplice, so segments = spans
+            Float64 startEndDist, endEndDist;
+            GetSegmentEndDistance(segmentKey, &startEndDist, &endEndDist);
             Float64 segLength = GetSegmentLength(segmentKey);
-            Xs = ::ForceIntoRange(0.0,Xs,segLength);
+            Xs = ::ForceIntoRange(startEndDist,Xs,segLength-endEndDist);
+            ConvertSegmentCoordinateToSpanPoint(segmentKey, Xs, &thisSpanKey, &upl.m_Location);
 
             pgsPointOfInterest poi(segmentKey,Xs,POI_CONCLOAD);
             VERIFY(m_pPoiMgr->AddPointOfInterest(poi) != INVALID_ID);
