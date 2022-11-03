@@ -2940,9 +2940,22 @@ CSegmentModelData CSegmentModelManager::BuildSegmentModel(const CSegmentKey& seg
    LoadCaseIDType lcid = GetLoadCaseID(pgsTypes::pftGirder);
    model_data.Loads.insert(lcid);
 
+   GET_IFACE(IIntervals, pIntervals);
+   IntervalIndexType liftingIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
+   IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
+
    bool bModelLeftCantilever  = true;
    bool bModelRightCantilever = true;
-   pBridge->ModelCantilevers(segmentKey, leftSupportDistance, rightSupportDistance, &bModelLeftCantilever, &bModelRightCantilever);
+
+   // always model cantilevers for lifting and hauling
+   // these models aren't used for the lifting and hauling analysis, they just provide moments, shears, etc
+   // for the graph views. the WBFL::Stability engine creates the real analysis models for stability analysis
+
+   if (intervalIdx != liftingIntervalIdx && intervalIdx != haulingIntervalIdx)
+   {
+      pBridge->ModelCantilevers(segmentKey, leftSupportDistance, rightSupportDistance, &bModelLeftCantilever, &bModelRightCantilever);
+   }
+
    pgsGirderModelFactory().CreateGirderModel(m_pBroker,intervalIdx,segmentKey,leftSupportDistance,Ls-rightSupportDistance,Ls,Ec,lcid,bModelLeftCantilever,bModelRightCantilever,vPoi,&model_data.Model,&model_data.PoiMap);
 
    // create loadings for all product load types
