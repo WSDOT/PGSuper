@@ -113,7 +113,7 @@ rptChapter* CMomentCapacityChapterBuilder::Build(const std::shared_ptr<const WBF
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), true );
 
    rptRcScalar strain;
-   strain.SetFormat(sysNumericFormatTool::Automatic);
+   strain.SetFormat(WBFL::System::NumericFormatTool::Format::Automatic);
    strain.SetWidth(9);
    strain.SetPrecision(4);
 

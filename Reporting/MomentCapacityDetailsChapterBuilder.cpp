@@ -496,7 +496,7 @@ void write_moment_data_table(IBroker* pBroker,
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
    rptRcScalar strain;
-   strain.SetFormat( sysNumericFormatTool::Automatic);
+   strain.SetFormat(WBFL::System::NumericFormatTool::Format::Automatic);
    strain.SetWidth(9);
    strain.SetPrecision(4);
 
