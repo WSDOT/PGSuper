@@ -699,7 +699,7 @@ void CSpecMainSheet::ExchangeMomentCapacityData(CDataExchange* pDX)
    DDX_Check_Bool(pDX, IDC_CONSIDER_REINFORCEMENT_STRAIN_LIMITS, m_Entry.m_bConsiderReinforcementStrainLimit);
 
    DDX_Text(pDX, IDC_SLICE_COUNT, m_Entry.m_nMomentCapacitySlices);
-   DDV_MinMaxInt(pDX, m_Entry.m_nMomentCapacitySlices, 10, 100);
+   DDV_MinMaxULongLong(pDX, m_Entry.m_nMomentCapacitySlices, 10, 100);
 
    CString tag;
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2016Interims )

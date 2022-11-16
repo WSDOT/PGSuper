@@ -13691,7 +13691,7 @@ void CGirderModelManager::ApplyLLDF_FixPin(const CSpanKey& spanKey,IDblArray* cf
 
          AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gVEnd,gR,gFM,gFVEnd,gD,gPedes);
       }
-      else if ( bTaperEnd & !bTaperStart )
+      else if ( bTaperEnd && !bTaperStart )
       {
          if ( span_length/2 < seg_length_1 )
          {
