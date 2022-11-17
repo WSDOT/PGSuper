@@ -1299,9 +1299,16 @@ GroupIndexType CGirderGroupData::FindGroup(GirderIndexType gdrIdx, const std::ve
 
 //-----------------------------------------------
 
-void CGirderGroupData::SetGirderLibraryEntry(GirderIndexType gdrIdx,const GirderLibraryEntry* pEntry)
+void CGirderGroupData::SetGirderLibraryEntry(GroupIndexType grpIdx,const GirderLibraryEntry* pEntry)
 {
-   m_Girders[gdrIdx]->SetGirderLibraryEntry(pEntry);
+   std::_tstring strGirder;
+   GirderIndexType firstGdrIdx, lastGdrIdx;
+   GetGirderTypeGroup(grpIdx, &firstGdrIdx, &lastGdrIdx, &strGirder);
+
+   for (GirderIndexType gdrIdx = firstGdrIdx; gdrIdx <= lastGdrIdx; gdrIdx++)
+   {
+      m_Girders[gdrIdx]->SetGirderLibraryEntry(pEntry);
+   }
 }
 
 const GirderLibraryEntry* CGirderGroupData::GetGirderLibraryEntry(GirderIndexType gdrIdx) const
