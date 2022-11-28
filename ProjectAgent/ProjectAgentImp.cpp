@@ -6386,7 +6386,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    }
 
    // The UI was allowing some invalid pier connection geometry. The code that follows checks for the invalid geometry and fixes it.
-   // If the input is alterned, a warning is posted to the status center.
+   // If the input is altered, a warning is posted to the status center.
    PierIndexType nPiers = m_BridgeDescription.GetPierCount();
    for (PierIndexType pierIdx = 1; pierIdx < nPiers - 1; pierIdx++)
    {
@@ -6457,7 +6457,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    // make sure default bearing data is as up to date as possible
    UpgradeBearingData();
 
-   // Set pier labelling. This data is also in the BridgeAgent, but we use static members in the pgsPierLabel class for performance
+   // Set pier labeling. This data is also in the BridgeAgent, but we use static members in the pgsPierLabel class for performance
    pgsPierLabel::SetPierLabelSettings(m_BridgeDescription.GetDisplayStartSupportType(), m_BridgeDescription.GetDisplayEndSupportType(), m_BridgeDescription.GetDisplayStartingPierNumber());
 
    Fire_BridgeChanged();
@@ -10339,6 +10339,11 @@ void CProjectAgentImp::SpecificationChanged(bool bFireEvent)
    {
       Fire_SpecificationChanged();
    }
+}
+
+void CProjectAgentImp::SpecificationRenamed()
+{
+   Fire_SpecificationChanged();
 }
 
 void CProjectAgentImp::RatingSpecificationChanged(bool bFireEvent)

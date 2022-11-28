@@ -136,7 +136,10 @@ void pgsLibraryEntryObserver::Update(SpecLibraryEntry& subject, Int32 hint)
 {
    m_pAgent->HoldEvents();
    if (hint & LibraryHints::EntryRenamed)
+   {
       m_pAgent->m_Spec = subject.GetName();
+      m_pAgent->SpecificationRenamed();
+   }
 
    if (hint & LibraryHints::EntryEdited)
    {
