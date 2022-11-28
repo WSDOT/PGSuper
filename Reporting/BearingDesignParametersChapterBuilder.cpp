@@ -38,6 +38,7 @@
 #include <IFace\AnalysisResults.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Intervals.h>
+#include <IFace\DistributionFactors.h>
 
 #include <PgsExt\PierData2.h>
 
@@ -370,6 +371,10 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(const std::shared_ptr<
       row++;
       i++;
    }
+
+   GET_IFACE2(pBroker, ILiveLoadDistributionFactors, pLLDF);
+   pLLDF->ReportReactionDistributionFactors(girderKey, pChapter, false/*full heading style*/);
+
 
    ///////////////////////////////////////
 

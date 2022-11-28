@@ -3290,8 +3290,12 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
       } while ( pSpan );
    }
 
-   rptParagraph* pPara;
-   pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+   ReportReactionDistributionFactors(girderKey, pChapter, true/*subheading style*/);
+}
+
+void CEngAgentImp::ReportReactionDistributionFactors(const CGirderKey& girderKey, rptChapter* pChapter,bool bSubHeading) const
+{
+   rptParagraph* pPara = new rptParagraph(bSubHeading ? rptStyleManager::GetSubheadingStyle() : rptStyleManager::GetHeadingStyle());
    (*pChapter) << pPara;
    (*pPara) << _T("Live Load Distribution Factors - Reactions, Deflections, and Rotations") << rptNewLine;
 
@@ -3316,7 +3320,7 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
       }
       (*pPara) << _T("Number of Design Lanes (nLanes) = ") << nLanes << rptNewLine;
       (*pPara) << _T("Number of Girders (nGirders) = ") << nGirders << rptNewLine;
-      (*pPara) << _T("Multiple Presense Factor (mpf) = ") << mpf << rptNewLine;
+      (*pPara) << _T("Multiple Presence Factor (mpf) = ") << mpf << rptNewLine;
       (*pPara) << _T("Distribution Factor = (mpf)*(nLanes)/(nGirders) = ") << lldf << rptNewLine;
    }
 }
