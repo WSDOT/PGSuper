@@ -59,7 +59,7 @@ DEFINE_GUID(IID_ILiveLoadDistributionFactors,
 0x61dc0cfa, 0x7b2f, 0x11d2, 0x88, 0x54, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
 interface ILiveLoadDistributionFactors : IUnknown
 {
-   // verifies that certain curvature, stiffness, and parallelnes requires are statisfied
+   // verifies that certain curvature, stiffness, and parallelness requirements are satisfied
    // must be called before computing LLDF. An unwind exception is thrown if requires are not satisfied
    virtual void VerifyDistributionFactorRequirements(const pgsPointOfInterest& poi) const = 0;
 

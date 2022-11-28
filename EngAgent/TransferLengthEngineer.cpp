@@ -195,7 +195,7 @@ Float64 pgsTransferLengthEngineer::GetTransferLengthAdjustment(const pgsPointOfI
             if (strandRow.m_bIsDebonded[pgsTypes::metStart] || strandRow.m_bIsDebonded[pgsTypes::metEnd])
             {
                Float64 Xleft_bond = strandRow.m_bIsDebonded[pgsTypes::metStart] ? strandRow.m_DebondLength[pgsTypes::metStart] : 0;
-               Float64 Xright_bond = segment_length - strandRow.m_bIsDebonded[pgsTypes::metEnd] ? strandRow.m_DebondLength[pgsTypes::metEnd] : 0;
+               Float64 Xright_bond = segment_length - (strandRow.m_bIsDebonded[pgsTypes::metEnd] ? strandRow.m_DebondLength[pgsTypes::metEnd] : 0.0);
 
                if (Xleft_bond < Xpoi_from_left_end && Xpoi_from_left_end < Xright_bond)
                {
