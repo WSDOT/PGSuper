@@ -1430,7 +1430,7 @@ void CGirderModelElevationView::BuildStrandDisplayObjects(CPGSDocBase* pDoc, IBr
                } // next strandIdx
             } // next i
 
-            // draw debonded strands... this must happen after other other strands
+            // draw debonded strands... this must happen after other strands
             // so the debonded lines are drawn on top
             // Also... the strand profile is the actual profile of the bonded strands we want to draw the unbonded
             // portion

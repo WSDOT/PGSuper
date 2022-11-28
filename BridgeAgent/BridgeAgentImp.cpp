@@ -31292,7 +31292,7 @@ const CBridgeAgentImp::SectProp& CBridgeAgentImp::GetSectionProperties(IntervalI
    bool bIsTimeStepAnalysis = (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false);
 
 
-   // figure out where the poi is located and if the concrete is cured enought to make the section act as a structural member
+   // figure out where the poi is located and if the concrete is cured enough to make the section act as a structural member
    CClosureKey closureKey;
    bool bIsInClosureJoint          = IsInClosureJoint(poi,&closureKey);
    bool bIsOnSegment               = IsOnSegment(poi);
@@ -31513,7 +31513,7 @@ const CBridgeAgentImp::SectProp& CBridgeAgentImp::GetSectionProperties(IntervalI
          CComPtr<IShapeProperties> fullShapeProperties;
          props.ElasticProps->TransformProperties(Egdr,&fullShapeProperties);
          fullShapeProperties->get_Area(&area);
-         props.AcTopHalf = area - props.AcBottomHalf; // top + bottom = full  ==> top = full - botton
+         props.AcTopHalf = area - props.AcBottomHalf; // top + bottom = full  ==> top = full - bottom
       }
       else if ( sectPropType == pgsTypes::sptNetDeck )
       {
