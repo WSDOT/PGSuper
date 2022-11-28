@@ -950,6 +950,7 @@ private:
    void MoveBridgeAdjustNextSpan(PierIndexType pierIdx,Float64 newStation);
    void MoveBridgeAdjustAdjacentSpans(PierIndexType pierIdx,Float64 newStation);
 
+   void SpecificationRenamed();
    void SpecificationChanged(bool bFireEvent);
    void InitSpecification(const std::_tstring& spec);
 
