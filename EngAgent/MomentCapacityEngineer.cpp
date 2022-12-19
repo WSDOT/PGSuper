@@ -893,13 +893,14 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
          Float64 cgY;
          pntCG->get_Y(&cgY);
 
-         Float64 fgStress, bgStress, netStress;
+         // We are computing the location of the resultant stress in the reinforcement.
+         // The foreground stress times are slice_area is the force in the reinforcement.
+         // Subtracting the background stress would be the net stress at the location and 
+         // that's not what we need for this calculation.
+         Float64 fgStress;
          slice->get_ForegroundStress(&fgStress);
-         slice->get_BackgroundStress(&bgStress);
 
-         netStress = fgStress - bgStress;
-
-         Float64 F = slice_area * netStress;
+         Float64 F = slice_area * fgStress;
          Float64 d = cgY - (Haunch + tSlab); // adding dy moves cgY to the Girder Section Coordinate (0,0 at top of bare girder)
                                                 // subtracting (Haunch+tSlab) makes d measured from the top of composite girder section
          if (0 < F &&  // tension
