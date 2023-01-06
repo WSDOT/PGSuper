@@ -2188,7 +2188,7 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	            if ( task.stressType == pgsTypes::Compression )
 	            {
 	               // compression in the deck
-	               // stress checks are only appicable if the deck is composite and if it 
+	               // stress checks are only applicable if the deck is composite and if it 
 	               // has been precompressed due to PT being applied after it is composite
 	               artifact.IsApplicable(topStressLocation, compositeDeckIntervalIdx <= task.intervalIdx && bIsDeckPrecompressed ? true : false);
 	               artifact.IsApplicable(botStressLocation, compositeDeckIntervalIdx <= task.intervalIdx && bIsDeckPrecompressed ? true : false);
@@ -2208,7 +2208,7 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	                  // deck is checked for tension if the deck is composite in this interval, the deck
 	                  // has been precompressed due to PT applied after the deck is composite, and
 	                  // the stress location is not in the precompressed tensile zone during a PT-stressing interval
-	                  // or in in the precompressed tensile zone in a non-PT-stressing interval
+	                  // or in the precompressed tensile zone in a non-PT-stressing interval
 	                  artifact.IsApplicable( topStressLocation, 
 	                     compositeDeckIntervalIdx <= task.intervalIdx && // composite deck
 	                     bIsDeckPrecompressed // deck is precompressed
@@ -2284,6 +2284,19 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
                   LLIM_Max_to_remove[BOT] += gLLIMmax * fLLIMmax[BOT];
                }
 
+               GET_IFACE(IUserDefinedLoadData, pUserLoads);
+               if (pUserLoads->HasUserLLIM(segmentKey))
+               {
+                  std::array<Float64, 2> fUserLLIM;
+                  pProductForces->GetStress(task.intervalIdx, pgsTypes::pftUserLLIM, poi, batTop, rtCumulative, topStressLocation, botStressLocation, &fUserLLIM[TOP], &fUserLLIM[BOT]);
+                  LLIM_Min_to_remove[TOP] += fUserLLIM[TOP];
+                  LLIM_Max_to_remove[TOP] += fUserLLIM[TOP];
+
+                  pProductForces->GetStress(task.intervalIdx, pgsTypes::pftUserLLIM, poi, botStressLocation == pgsTypes::BottomGirder ? batBottom : batTop, rtCumulative, topStressLocation, botStressLocation, &fUserLLIM[TOP], &fUserLLIM[BOT]);
+                  LLIM_Min_to_remove[BOT] += fUserLLIM[BOT];
+                  LLIM_Max_to_remove[BOT] += fUserLLIM[BOT];
+               }
+
                ILiveLoads::PedestrianLoadApplicationType pedLoadType = pLiveLoads->GetPedestrianLoadApplication(llType);
 
                if (pedLoadType != ILiveLoads::PedDontApply)
@@ -2295,7 +2308,7 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
                   if (pLiveLoads->GetPedestrianLoadApplication(llType) == ILiveLoads::PedEnvelopeWithVehicular)
                   {
                      // PL is enveloped with LLIM so we want to remove the what that has the most extreme value
-                     // Vehiculare live load is stored in LLIM_Min/Max_to_remove
+                     // Vehicular live load is stored in LLIM_Min/Max_to_remove
                      LLIM_Min_to_remove[TOP] = Min(LLIM_Min_to_remove[TOP], PL_Min[TOP]);
                      LLIM_Max_to_remove[TOP] = Max(LLIM_Max_to_remove[TOP], PL_Max[TOP]);
                   }
@@ -2311,7 +2324,7 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
                   if (pLiveLoads->GetPedestrianLoadApplication(llType) == ILiveLoads::PedEnvelopeWithVehicular)
                   {
                      // PL is enveloped with LLIM so we want to remove the what that has the most extreme value
-                     // Vehiculare live load is stored in LLIM_Min/Max_to_remove
+                     // Vehicular live load is stored in LLIM_Min/Max_to_remove
                      LLIM_Min_to_remove[BOT] = Min(LLIM_Min_to_remove[BOT], PL_Min[BOT]);
                      LLIM_Max_to_remove[BOT] = Max(LLIM_Max_to_remove[BOT], PL_Max[BOT]);
                   }
