@@ -427,7 +427,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
    Float64 fpe_ps_all_strands = 0.0; // "average" value for all strands to keep reporting consistent with previous versions
    Float64 eps_initial_all_strands = 0.0; // "average" value for all strands to keep reporting consistent with previous versions
    std::array<std::vector<Float64>, 2> fpe_ps; // effective prestress after all losses
-   std::array<std::vector<Float64>, 2> eps_initial; // initial strain in the preressing strands (strain at effective prestress)
+   std::array<std::vector<Float64>, 2> eps_initial; // initial strain in the prestress strands (strain at effective prestress)
    if ( bPositiveMoment || bIncludeStrandsWithNegativeMoment || 0 < nSegmentDucts || 0 < nGirderDucts )
    {
       // only consider strands in positive moment analysis or if there are ducts
@@ -581,12 +581,12 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
       IndexType nSlices = pSpecEntry->GetSliceCountForMomentCapacity();
 
       m_MomentCapacitySolver->putref_Section(section);
-      m_MomentCapacitySolver->put_Slices(nSlices);
+      m_MomentCapacitySolver->put_Slices((long)nSlices);
       m_MomentCapacitySolver->put_SliceGrowthFactor(3);
       m_MomentCapacitySolver->put_MaxIterations(50);
 
       // Set the convergence tolerance to 0.1N. This is more than accurate enough for the
-      // output display. Output accurace for SI = 0.01kN = 10N, for US = 0.01kip = 45N
+      // output display. Output accuracy for SI = 0.01kN = 10N, for US = 0.01kip = 45N
       m_MomentCapacitySolver->put_AxialTolerance(0.1);
 
       // determine neutral axis angle
@@ -842,39 +842,39 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
    }
    else
    {
-      GET_IFACE(IBridge, pBridge);
+      solution->get_MomentArm(&mcd.MomentArm);
+      solution->get_DepthToNeutralAxis(&mcd.c);
+      solution->get_DepthToCompressionResultant(&mcd.dc);
+      solution->get_DepthToTensionResultant(&mcd.de);
 
-      mcd.MomentArm = fabs(Mn/T);
+#if defined _DEBUG
+      ATLASSERT(IsEqual(mcd.MomentArm, fabs(Mn / T)));
+      ATLASSERT(IsEqual(mcd.dc + mcd.MomentArm, mcd.de));
 
-      Float64 tSlab = pBridge->GetStructuralSlabDepth(poi);
+      // check depth to neutral axis
+      CComPtr<ILine2d> naLine;
+      solution->get_NeutralAxis(&naLine);
 
-      Float64 x1,y1, x2,y2;
-      pntCompression->get_X(&x1);
-      pntCompression->get_Y(&y1);
-
-      cgC->get_X(&x2);
-      cgC->get_Y(&y2);
-
-      mcd.dc = sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
-      mcd.de = mcd.dc + mcd.MomentArm;
-
-      CComPtr<IPlane3d> strainPlane;
-      solution->get_IncrementalStrainPlane(&strainPlane);
-      Float64 x,y,z;
-      x = 0;
-      z = 0;
-      strainPlane->GetY(x,z,&y);
-
-      mcd.c = sqrt((x1-x)*(x1-x) + (y1-y)*(y1-y));
+      CComPtr<IGeomUtil2d> geomUtil;
+      geomUtil.CoCreateInstance(CLSID_GeomUtil);
+      Float64 _c2;
+      geomUtil->ShortestOffsetToPoint(naLine, pntCompression, &_c2);
+      _c2 *= -1; // c is < 0 because it is on the left side of the line because compression is on the left side of the neutral axis
+      ATLASSERT(IsEqual(mcd.c, _c2));
+#endif
 
       // calculate average resultant stress in strands and tendons at ultimate
       // also determine de (see PCI BDM 8.4.1.2).
       // de = resultant of tension force due to reinforcement on the tension half of the beam
-      Float64 t = 0; // summ of the tension forces 
-      Float64 tde = 0;
+      Float64 H_over_2 = H / 2;
+      GET_IFACE(IBridge, pBridge);
+      Float64 tSlab = pBridge->GetStructuralSlabDepth(poi);
+      Float64 t = 0; // sum of the tension forces 
+      Float64 tde = 0; // sum of tension force * depth to reinforcement
       Float64 Aps = 0;
       Float64 Apt_Segment = 0;
       Float64 Apt_Girder = 0;
+      enum class ReinforcementType { Strand, SegmentTendon, GirderTendon, GirderRebar, TopMatDeckRebar, BottomMatDeckRebar };
       CComPtr<IGeneralSectionSolution> general_solution;
       solution->get_GeneralSectionSolution(&general_solution);
       IndexType nSlices;
@@ -883,6 +883,42 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
       {
          CComPtr<IGeneralSectionSlice> slice;
          general_solution->get_Slice(sliceIdx, &slice);
+
+         IndexType shapeIdx;
+         slice->get_ShapeIndex(&shapeIdx);
+
+         ReinforcementType reinforcementType;
+         CComBSTR bstrName;
+         mcd.Section->get_Name(shapeIdx, &bstrName);
+         CString strName(bstrName);
+         if (0 <= strName.Find(_T("Strand"), 0))
+         {
+            reinforcementType = ReinforcementType::Strand;
+         }
+         else if (CString(bstrName).Left(14) == _T("Segment Tendon"))
+         {
+            reinforcementType = ReinforcementType::SegmentTendon;
+         }
+         else if (CString(bstrName).Left(13) == _T("Girder Tendon"))
+         {
+            reinforcementType = ReinforcementType::GirderTendon;
+         }
+         else if (CString(bstrName).Left(5) == _T("Girder Rebar"))
+         {
+            reinforcementType = ReinforcementType::GirderRebar;
+         }
+         else if (CString(bstrName) == _T("Top Mat Deck Rebar"))
+         {
+            reinforcementType = ReinforcementType::TopMatDeckRebar;
+         }
+         else if (CString(bstrName) == _T("Bottom Mat Deck Rebar"))
+         {
+            reinforcementType = ReinforcementType::BottomMatDeckRebar;
+         }
+         else
+         {
+            continue;
+         }
 
          Float64 slice_area;
          slice->get_Area(&slice_area);
@@ -901,12 +937,13 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
          slice->get_ForegroundStress(&fgStress);
 
          Float64 F = slice_area * fgStress;
-         Float64 d = cgY - (Haunch + tSlab); // adding dy moves cgY to the Girder Section Coordinate (0,0 at top of bare girder)
-                                                // subtracting (Haunch+tSlab) makes d measured from the top of composite girder section
+         Float64 d = (Haunch + tSlab) - cgY; // cgY is in girder section coordinates (Y=0 at top of non-composite girder)
+         // subtracting from (Haunch+tSlab) makes d a distance from the top of composite girder section
+
          if (0 < F &&  // tension
             (
-               (bPositiveMoment && ::IsLT(d, -H / 2)) || // on bottom half
-               (!bPositiveMoment && ::IsLT(-H / 2, d))    // on top half
+               (bPositiveMoment && ::IsGE(H_over_2, d)) || // on bottom half
+               (!bPositiveMoment && ::IsLE(d, H_over_2))    // on top half
                )
             )
          {
@@ -914,28 +951,22 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
             tde += F * d;
          }
 
-         IndexType shapeIdx;
-         slice->get_ShapeIndex(&shapeIdx);
-
-         CComBSTR bstrName;
-         section->get_Name(shapeIdx, &bstrName);
-         CString strName(bstrName);
-         if(0 <= strName.Find(_T("Strand"),0))
+         if (reinforcementType == ReinforcementType::Strand)
          {
             Aps += slice_area;
             fps_avg += F;
          }
-         else if (CString(bstrName).Left(14) == _T("Segment Tendon"))
+         else if (reinforcementType == ReinforcementType::SegmentTendon)
          {
             Apt_Segment += slice_area;
             fpt_avg_segment += F;
          }
-         else if (CString(bstrName).Left(13) == _T("Girder Tendon"))
+         else if (reinforcementType == ReinforcementType::GirderTendon)
          {
             Apt_Girder += slice_area;
             fpt_avg_girder += F;
          }
-      }
+      } // next slice
 
       if (0 < Aps)
       {
@@ -952,12 +983,13 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
          fpt_avg_girder /= Apt_Girder;
       }
 
-      mcd.de_shear = (IsZero(t) ? 0 : -tde / t);
+
+      mcd.de_shear = (IsZero(t) ? 0 : tde / t);
 
       if (!bPositiveMoment)
       {
-         // de_shear is measured from the top of the girder
-         // for negative moment, we want it to be measured from the bottom
+         // de_shear is measured from the top of the girder.
+         // For negative moment, we want it to be measured from the bottom
          mcd.de_shear = H - mcd.de_shear;
       }
 
