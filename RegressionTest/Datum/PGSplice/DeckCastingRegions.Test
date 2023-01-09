@@ -37,7 +37,7 @@ Tension stress check failed for Service I Limit State in Interval 24 Install Rai
 Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Deck
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.7.4].
+Horizontal Interface Shear check failed for Strength I Limit State.
 Stirrup detailing checks failed for the Strength I Limit State.
 Splitting check failed for Segment 1.
 Splitting check failed for Segment 2.
@@ -94,7 +94,7 @@ Tension stress check failed for Service I Limit State in Interval 24 Install Rai
 Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Deck
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.7.4].
+Horizontal Interface Shear check failed for Strength I Limit State.
 Stirrup detailing checks failed for the Strength I Limit State.
 Splitting check failed for Segment 1.
 Splitting check failed for Segment 2.

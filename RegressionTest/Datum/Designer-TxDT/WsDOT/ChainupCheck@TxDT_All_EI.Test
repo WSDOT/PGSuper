@@ -6,7 +6,7 @@
 Girder design was Not Successful
 The Specification Check was Not Successful
 Tension stress check failed for Service III Limit State in Interval 19 Open to Traffic
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Horizontal Interface Shear check failed for Strength I Limit State.
 Splitting check failed.
 Lifting checks failed
 
@@ -19,7 +19,7 @@ Lifting checks failed
 Girder design was Not Successful
 The Specification Check was Not Successful
 Tension stress check failed for Service III Limit State in Interval 19 Open to Traffic
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Horizontal Interface Shear check failed for Strength I Limit State.
 Splitting check failed.
 Lifting checks failed
 
@@ -32,7 +32,7 @@ Lifting checks failed
 Girder design was Not Successful
 The Specification Check was Not Successful
 Tension stress check failed for Service III Limit State in Interval 19 Open to Traffic
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Horizontal Interface Shear check failed for Strength I Limit State.
 Splitting check failed.
 Lifting checks failed
 

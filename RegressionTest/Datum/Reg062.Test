@@ -5,7 +5,7 @@
 
 The Specification Check was Not Successful
 Tension stress check failed for Service III Limit State in Interval 19 Open to Traffic
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Horizontal Interface Shear check failed for Strength I Limit State.
 Confinement zone check failed.
 Lifting checks failed
 Hauling checks failed
@@ -19,7 +19,7 @@ Slab Offset ("A" Dimension) check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service III Limit State in Interval 19 Open to Traffic
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Horizontal Interface Shear check failed for Strength I Limit State.
 Confinement zone check failed.
 Lifting checks failed
 Hauling checks failed

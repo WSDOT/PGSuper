@@ -341,7 +341,7 @@ void ListHorizontalShearFailures(IBroker* pBroker,FailureList& rFailures,const p
          if ( !pShear->Passed() )
          {
             std::_tostringstream os;
-            os << _T("Horizontal Interface Shears/Length check failed for ") << strLimitState << _T(" Limit State [") << LrfdCw8th(_T("5.8.4"),_T("5.7.4")) << _T("].") << std::ends;
+            os << _T("Horizontal Interface Shear check failed for ") << strLimitState << _T(" Limit State.") << std::ends;
             rFailures.emplace_back(os.str());
 
             return;
