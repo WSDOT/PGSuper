@@ -598,6 +598,13 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
 #endif // _DEBUG
 
       HRESULT hr = m_MomentCapacitySolver->Solve(0.00, na_angle, ec, 0.0, smFixedCompressionStrain, &solution);
+      if (hr != S_OK && hr != RC_E_MATERIALFAILURE)
+      {
+         // if the solution doesn't converge, try using more slices
+         m_MomentCapacitySolver->put_Slices( 2* (long)nSlices);
+         solution.Release();
+         hr = m_MomentCapacitySolver->Solve(0.00, na_angle, ec, 0.0, smFixedCompressionStrain, &solution);
+      }
 
       if (hr == S_OK)
       {
@@ -704,7 +711,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
 
          const WBFL::Units::LengthData& unit = pDisplayUnits->GetSpanLengthUnit();
          CString msg;
-         msg.Format(_T("An unknown error occured while computing %s moment capacity for %s at %f %s from the left end of the girder.\n(hr = %s)\n(Location ID = %d).\nPlease send your file to technical support."),
+         msg.Format(_T("An unknown error occurred while computing %s moment capacity for %s at %f %s from the left end of the girder.\n(hr = %s)\n(Location ID = %d).\nPlease send your file to technical support."),
             (bPositiveMoment ? _T("positive") : _T("negative")),
             SEGMENT_LABEL(segmentKey),
             WBFL::Units::ConvertFromSysUnits(poi.GetDistFromStart(), unit.UnitOfMeasure),
