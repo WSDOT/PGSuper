@@ -156,6 +156,7 @@ rptRcTable* CPrestressRotationTable::Build(IBroker* pBroker,const CGirderKey& gi
    GET_IFACE2(pBroker,IBridgeDescription, pIBridgeDesc);
    PierIndexType nPiers = pBridge->GetPierCount();
 
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
    RowIndexType row = pTable->GetNumberOfHeaderRows();
    for(const pgsPointOfInterest& poi : vPoi)
    {
@@ -163,6 +164,8 @@ rptRcTable* CPrestressRotationTable::Build(IBroker* pBroker,const CGirderKey& gi
 
       const CSegmentKey& segmentKey(poi.GetSegmentKey());
       const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+
+      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
       const CPierData2* pPier;
       const CTemporarySupportData* pTS;
@@ -174,7 +177,7 @@ rptRcTable* CPrestressRotationTable::Build(IBroker* pBroker,const CGirderKey& gi
       std::_tstring strFace(endType == pgsTypes::metStart ? _T("Ahead") : _T("Back"));
       (*pTable)(row, col++) << strName << _T(" ") << LABEL_PIER(pPier->GetIndex()) << _T(" - ") << strFace;
 
-      (*pTable)(row, col++) << rotation.SetValue(pProdForces->GetRotation(intervalIdx, pgsTypes::pftPretension, poi, maxBAT, rtCumulative, false));
+      (*pTable)(row, col++) << rotation.SetValue(pProdForces->GetRotation(releaseIntervalIdx, pgsTypes::pftPretension, poi, maxBAT, rtCumulative, false));
       if (0 < nDucts)
       {
          (*pTable)(row, col++) << rotation.SetValue(pProdForces->GetRotation(intervalIdx, pgsTypes::pftPostTensioning, poi, maxBAT, rtCumulative, false));
