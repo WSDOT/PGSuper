@@ -16721,12 +16721,11 @@ IndexType CGirderModelManager::GetSuperstructureMemberCount(const CPierData2* pP
    {
       // we model left and right side of cast-in-place diaphragm at permanent piers
       GET_IFACE(IBridge, pBridge);
-      GroupIndexType backGroupIdx, aheadGroupIdx;
-      pBridge->GetGirderGroupIndex(pPier->GetIndex(), &backGroupIdx, &aheadGroupIdx);
 
-      SegmentIndexType nSegmentsBack = pBridge->GetSegmentCount(backGroupIdx,gdrIdx);
-      CSegmentKey backSegmentKey(backGroupIdx, gdrIdx, nSegmentsBack - 1);
-      CSegmentKey aheadSegmentKey(aheadGroupIdx, gdrIdx, 0);
+      CSegmentKey backSegmentKey, aheadSegmentKey;
+      pBridge->GetSegmentsAtPier(pPier->GetIndex(), gdrIdx, &backSegmentKey, &aheadSegmentKey);
+      ATLASSERT(backSegmentKey.segmentIndex != INVALID_INDEX);
+      ATLASSERT(aheadSegmentKey.segmentIndex != INVALID_INDEX);
 
       // if the bearing offset is zero, the point of bearing is at the CL Pier so the
       // superstructure member through the diaphragm isn't modeled
