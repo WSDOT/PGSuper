@@ -74,7 +74,7 @@ BEGIN
             VALUE "FileDescription", "WSDOTAgent Module"
             VALUE "FileVersion", "7.1.0.0"
             VALUE "InternalName", "WSDOTAgent"
-            VALUE "LegalCopyright", "Copyright © 1999-2022, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "LegalCopyright", "Copyright © 1999-2023, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperWSDOTAgent.DLL"
             VALUE "ProductName", "PGSuper"
             VALUE "ProductVersion", "7.1.0.0"

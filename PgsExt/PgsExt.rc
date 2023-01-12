@@ -11,7 +11,8 @@
 #include <WBFLGrid.h>
 #if !defined _NOGRID
 #include "grid\gxresrc.h"
-#endif
+#endif
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -91,7 +92,7 @@ BEGIN
             VALUE "FileDescription", "PgsExt DLL"
             VALUE "FileVersion", "7.1.0.0"
             VALUE "InternalName", "PgsExt"
-            VALUE "LegalCopyright", "Copyright © 1999-2022, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "LegalCopyright", "Copyright © 1999-2023, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PgsExt.DLL"
             VALUE "ProductName", "PGSuper"
             VALUE "ProductVersion", "7.1.0.0"
@@ -673,7 +674,8 @@ LANGUAGE 9, 1
 #endif
 #if !defined _NOGRID
 #include "grid\gxres.rc"
-#endif
+#endif
+
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 
