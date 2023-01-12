@@ -205,7 +205,7 @@ public:
 
    virtual void DumpAnalysisModels(GirderIndexType gdrIdx) const override;
 
-   virtual void GetDeckShrinkageStresses(const pgsPointOfInterest& poi,Float64* pftop,Float64* pfbot) const override;
+   virtual void GetDeckShrinkageStresses(const pgsPointOfInterest& poi, pgsTypes::StressLocation topStressLocation, pgsTypes::StressLocation botStressLocation,Float64* pftop,Float64* pfbot) const override;
 
 // IProductForces2
 public:
@@ -619,7 +619,7 @@ private:
    void IsDeckInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,bool* pbTopPTZ,bool* pbBotPTZ) const;
    void IsGirderInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,const GDRCONFIG* pConfig,bool* pbTopPTZ,bool* pbBotPTZ) const;
 
-   void GetDeckShrinkageStresses(const pgsPointOfInterest& poi,Float64 fcGdr,Float64* pftop,Float64* pfbot) const;
+   void GetDeckShrinkageStresses(const pgsPointOfInterest& poi,Float64 fcGdr, pgsTypes::StressLocation topStressLocation, pgsTypes::StressLocation botStressLocation,Float64* pftop,Float64* pfbot) const;
 
    void GetRawPrecamber(const pgsPointOfInterest& poi, Float64 Ls,Float64* pDprecamber,Float64* pRprecamber) const;
    IntervalIndexType GetErectionInterval(const PoiList& vPoi) const;

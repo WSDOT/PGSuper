@@ -462,7 +462,7 @@ void pgsWsdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,
 #endif
 
    GET_IFACE(ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
-   WBFL::Stability::HaulingCriteria criteria = (bUseConfig ? pSegmentHaulingSpecCriteria->GetHaulingStabilityCriteria(segmentKey,config) : pSegmentHaulingSpecCriteria->GetHaulingStabilityCriteria(segmentKey));
+   WBFL::Stability::HaulingCriteria criteria = pSegmentHaulingSpecCriteria->GetHaulingStabilityCriteria(segmentKey, bUseConfig ? &config : nullptr);
 
    WBFL::Stability::StabilityEngineer engineer;
    *pArtifact = engineer.CheckHauling(pStabilityModel,pStabilityProblem,criteria);

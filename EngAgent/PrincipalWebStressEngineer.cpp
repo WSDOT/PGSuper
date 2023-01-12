@@ -300,7 +300,7 @@ void pgsPrincipalWebStressEngineer::Check(const PoiList& vPois, pgsPrincipalTens
 
    // Assume that if the first poi needs checked a certain way, they all do
    const pgsPointOfInterest& rpoi(vPois.front());
-   ISpecification::PrincipalWebStressCheckType  checkType = pSpec->GetPrincipalWebStressCheckType(rpoi.GetSegmentKey());
+   ISpecification::PrincipalWebStressCheckType checkType = pSpec->GetPrincipalWebStressCheckType(rpoi.GetSegmentKey());
    ATLASSERT(ISpecification::pwcNotApplicable != checkType);
 
    if (ISpecification::pwcNCHRPTimeStepMethod == checkType)

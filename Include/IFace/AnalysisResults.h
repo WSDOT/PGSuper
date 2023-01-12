@@ -430,7 +430,7 @@ interface IProductForces : IUnknown
 
    virtual void DumpAnalysisModels(GirderIndexType gdrIdx) const = 0;
 
-   virtual void GetDeckShrinkageStresses(const pgsPointOfInterest& poi,Float64* pftop,Float64* pfbot) const = 0;
+   virtual void GetDeckShrinkageStresses(const pgsPointOfInterest& poi, pgsTypes::StressLocation topStressLocation,pgsTypes::StressLocation botStressLocation,Float64* pftop,Float64* pfbot) const = 0;
 };
 
 

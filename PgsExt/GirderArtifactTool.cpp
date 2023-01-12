@@ -210,6 +210,14 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures, const pgsGirde
          }
          rFailures.emplace_back(os.str());
       }
+
+      const auto* pFatigueArtifact = pArtifact->GetReinforcementFatigueArtifact();
+      if (!pArtifact->GetReinforcementFatigueArtifact()->Passed())
+      {
+         std::_tostringstream os;
+         os << _T("Reinforcement fatigue check failed.");
+         rFailures.emplace_back(os.str());
+      }
    } // next segment
 }
 
@@ -296,7 +304,7 @@ void ListVerticalShearFailures(IBroker* pBroker,FailureList& rFailures,const pgs
             bContinue1 = false;
          }
 
-         if ( bContinue2 && /*pLongReinf->IsApplicable() &&*/ !pLongReinf->Passed() )
+         if ( bContinue2 && !pLongReinf->Passed() )
          {
             std::_tostringstream os;
             os << _T("Longitudinal Reinforcement for Shear check failed for ") << strLimitState << _T(" Limit State") << std::ends;

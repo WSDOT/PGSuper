@@ -102,7 +102,7 @@ public:
 
    //------------------------------------------------------------------------
    // Copy constructor
-   ConcreteLibraryEntry(const ConcreteLibraryEntry& rOther);
+   ConcreteLibraryEntry(const ConcreteLibraryEntry& rOther) = default;
 
    //------------------------------------------------------------------------
    // Destructor
@@ -111,7 +111,7 @@ public:
    // GROUP: OPERATORS
    //------------------------------------------------------------------------
    // Assignment operator
-   ConcreteLibraryEntry& operator = (const ConcreteLibraryEntry& rOther);
+   ConcreteLibraryEntry& operator=(const ConcreteLibraryEntry& rOther) = default;
 
    // GROUP: OPERATIONS
 
@@ -215,6 +215,11 @@ public:
    void GetPCIUHPC(Float64* ffc, Float64* frr, Float64* pFiberLength,Float64* pAutogenousShrinkage,bool* bPCTT) const;
 
    //------------------------------------------------------------------------
+   // Parameters for the FHWA UHPC concrete
+   void SetFHWAUHPC(Float64 ft_cri, Float64 ft_cr, Float64 ft_loc, Float64 et_loc,Float64 alpha_u,Float64 ecu,bool bExperimentalEcu,Float64 fiberLength);
+   void GetFHWAUHPC(Float64* ft_cri, Float64* ft_cr, Float64* ft_loc, Float64* et_loc,Float64* alpha_u,Float64* ecu,bool* pbExpermentalEcu,Float64* pFiberLength) const;
+
+   //------------------------------------------------------------------------
    // Parameters for the ACI 209R-92 model
    bool UserACIParameters() const;
    void UserACIParameters(bool bUser);
@@ -245,20 +250,6 @@ public:
    
    bool IsEqual(const ConcreteLibraryEntry& rOther,bool bConsiderName=false) const;
 
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   void MakeCopy(const ConcreteLibraryEntry& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const ConcreteLibraryEntry& rOther);
-  // GROUP: ACCESS
-  // GROUP: INQUIRY
-
 private:
    // GROUP: DATA MEMBERS
    Float64 m_Fc;
@@ -285,6 +276,15 @@ private:
    Float64 m_Frr;
    bool m_bPCTT;
    Float64 m_AutogenousShrinkage;
+
+   // FHWA UHPC Parameters
+   Float64 m_ftcri;
+   Float64 m_ftcr;
+   Float64 m_ftloc;
+   Float64 m_etloc;
+   Float64 m_alpha_u;
+   Float64 m_ecu;
+   bool m_bExperimental_ecu;
 
    // ACI Model Parameters
    bool m_bUserACIParameters;

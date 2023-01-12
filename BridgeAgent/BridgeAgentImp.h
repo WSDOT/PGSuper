@@ -556,6 +556,10 @@ public:
    virtual Float64 GetSegmentShrinkageK2(const CSegmentKey& segmentKey) const override;
    virtual const std::unique_ptr<WBFL::Materials::ConcreteBase>& GetSegmentConcrete(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetSegmentConcreteFirstCrackingStrength(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentConcreteInitialEffectiveCrackingStrength(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentConcreteDesignEffectiveCrackingStrength(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentConcreteCrackLocalizationStrength(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentConcreteCrackLocalizationStrain(const CSegmentKey& segmentKey) const override;
 
    virtual pgsTypes::ConcreteType GetClosureJointConcreteType(const CClosureKey& closureKey) const override;
    virtual bool DoesClosureJointConcreteHaveAggSplittingStrength(const CClosureKey& closureKey) const override;
@@ -570,13 +574,11 @@ public:
    virtual Float64 GetClosureJointShrinkageK1(const CClosureKey& closureKey) const override;
    virtual Float64 GetClosureJointShrinkageK2(const CClosureKey& closureKey) const override;
    virtual const std::unique_ptr<WBFL::Materials::ConcreteBase>& GetClosureJointConcrete(const CClosureKey& closureKey) const override;
-   virtual Float64 GetClosureJointConcreteFirstCrackingStrength(const CClosureKey& closureKey) const override;
 
    virtual pgsTypes::ConcreteType GetDeckConcreteType() const override;
    virtual bool DoesDeckConcreteHaveAggSplittingStrength() const override;
    virtual Float64 GetDeckConcreteAggSplittingStrength() const override;
    virtual Float64 GetDeckMaxAggrSize() const override;
-   virtual Float64 GetDeckConcreteFiberLength() const override;
    virtual Float64 GetDeckStrengthDensity() const override;
    virtual Float64 GetDeckEccK1() const override;
    virtual Float64 GetDeckEccK2() const override;
@@ -653,8 +655,8 @@ public:
    virtual void GetDeckReinforcing(const pgsPointOfInterest& poi,pgsTypes::DeckRebarMatType matType,pgsTypes::DeckRebarBarType barType,pgsTypes::DeckRebarCategoryType barCategory,bool bAdjForDevLength,Float64* pAs,Float64* pYb) const override;
    virtual void GetRebarLayout(const CSegmentKey& segmentKey, IRebarLayout** rebarLayout) const override;
    virtual void GetClosureJointRebarLayout(const CClosureKey& closureKey, IRebarLayout** rebarLayout) const override;
-   virtual REBARDEVLENGTHDETAILS GetSegmentRebarDevelopmentLengthDetails(const CSegmentKey& segmetnKey,IRebar* rebar, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct) const override;
-   virtual REBARDEVLENGTHDETAILS GetDeckRebarDevelopmentLengthDetails(IRebar* rebar, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct) const override;
+   virtual REBARDEVLENGTHDETAILS GetSegmentRebarDevelopmentLengthDetails(const CSegmentKey& segmetnKey,IRebar* rebar, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, bool bIsTopBar, bool bEpoxyCoated, bool bMeetsCoverRequirements) const override;
+   virtual REBARDEVLENGTHDETAILS GetDeckRebarDevelopmentLengthDetails(IRebar* rebar, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, bool bIsTopBar, bool bEpoxyCoated, bool bMeetsCoverRequirements) const override;
    virtual bool IsAnchored(const pgsPointOfInterest& poi) const;
 
 // IStirrupGeometry
@@ -1723,7 +1725,7 @@ private:
    Float64 ComputePierDiaphragmHeight(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace) const;
    Float64 ComputePierDiaphragmWidth(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace) const;
 
-   REBARDEVLENGTHDETAILS GetRebarDevelopmentLengthDetails(const CSegmentKey& segmentKey, IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct) const;
+   REBARDEVLENGTHDETAILS GetRebarDevelopmentLengthDetails(const CSegmentKey& segmentKey, IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, bool bIsTopBar, bool bEpoxyCoated, bool bMeetsCoverRequirements) const;
 
    void ApplyDebonding(const CPrecastSegmentData* pSegment, IStrandGridModel* pStrandGridModel) const;
 

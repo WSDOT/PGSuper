@@ -101,7 +101,7 @@ pgsRatingArtifact pgsLoadRater::Rate(const CGirderKey& girderKey,pgsTypes::LoadR
    Moments positive_moments, negative_moments;
    GetMoments(girderKey, ratingType, vehicleIdx, vPoi, bTimeStep, &positive_moments, bNegativeMoments ? &negative_moments : nullptr);
 
-   // do the flexure rating.. this rates moment capcity, flexural stress, and reinforcement yielding
+   // do the flexure rating.. this rates moment capacity, flexural stress, and reinforcement yielding
    pgsRatingArtifact ratingArtifact(ratingType);
    FlexureRating(girderKey, vPoi, ratingType, vehicleIdx, loadRatingIntervalIdx, bTimeStep, &positive_moments, bNegativeMoments ? &negative_moments : nullptr, ratingArtifact);
 

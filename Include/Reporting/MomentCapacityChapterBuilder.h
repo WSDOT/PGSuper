@@ -43,9 +43,10 @@ public:
    virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 
 private:
-   rptRcImage* CreateImage(IMomentCapacitySolution* pSolution,bool bPositiveMoment) const;
-   void DrawSection(CImage& image,IMomentCapacitySolution* pSolution,bool bPositiveMoment) const;
+   rptRcImage* CreateImage(IndexType girderShapeIndex, IndexType deckShapeIndex, CComPtr<IGeneralSection> section,CComPtr<IMomentCapacitySolution> solution,bool bPositiveMoment, IEAFDisplayUnits* pDisplayUnits) const;
+   void DrawSection(CImage& image, IndexType girderShapeIndex, IndexType deckShapeIndex, CComPtr<IGeneralSection> section, CComPtr<IMomentCapacitySolution> solution,bool bPositiveMoment, IEAFDisplayUnits* pDisplayUnits) const;
    void DrawSlice(IShape* pShape,CDC* pDC, WBFL::Graphing::PointMapper& mapper) const;
+   void ReportSolution(IBroker* pBroker, const TCHAR* strTitle,rptChapter* pChapter, IndexType girderShapeIndex, IndexType deckShapeIndex, CComPtr<IGeneralSection> section,CComPtr<IMomentCapacitySolution> solution, bool bPositiveMoment, IEAFDisplayUnits* pDisplayUnits) const;
 
    // This is a list of temporary files that were created on the fly
    // Delete them in the destructor

@@ -110,8 +110,9 @@ void CConcreteEntryDlg::Init()
 
    m_psh.dwFlags |= PSH_HASHELP | PSH_NOAPPLYNOW;
 
-   m_General.m_psp.dwFlags  |= PSP_HASHELP;
+   m_General.m_psp.dwFlags |= PSP_HASHELP;
    m_PCIUHPC.m_psp.dwFlags |= PSP_HASHELP;
+   m_FHWAUHPC.m_psp.dwFlags |= PSP_HASHELP;
    m_AASHTO.m_psp.dwFlags   |= PSP_HASHELP;
    m_ACI.m_psp.dwFlags      |= PSP_HASHELP;
    m_CEBFIP.m_psp.dwFlags   |= PSP_HASHELP;
@@ -119,6 +120,7 @@ void CConcreteEntryDlg::Init()
    AddPage(&m_General);
    AddPage(&m_AASHTO);
    AddPage(&m_PCIUHPC);
+   AddPage(&m_FHWAUHPC);
    AddPage(&m_ACI);
    AddPage(&m_CEBFIP);
 }

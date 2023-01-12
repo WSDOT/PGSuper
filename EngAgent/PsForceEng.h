@@ -118,8 +118,8 @@ public:
    //------------------------------------------------------------------------
    // Returns the effective force in prestressing strand at the specified interval.. includes losses and gains
    // P = (aps)(Nstrands)(fpe)
-   Float64 GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig=nullptr) const;
-   Float64 GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,bool bIncludeElasticEffects, const GDRCONFIG* pConfig = nullptr) const;
+   Float64 GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,pgsTypes::TransferLengthType xferLengthType,const GDRCONFIG* pConfig=nullptr) const;
+   Float64 GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,bool bIncludeElasticEffects, pgsTypes::TransferLengthType xferLengthType, const GDRCONFIG* pConfig = nullptr) const;
 
    //------------------------------------------------------------------------
    // Returns the effective prestress at the specified interval... includes loss and gains

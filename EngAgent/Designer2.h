@@ -457,6 +457,7 @@ private:
    void CheckSegmentStability(const CSegmentKey& segmentKey,pgsSegmentStabilityArtifact* pArtifact) const;
    void CheckDebonding(const CSegmentKey& segmentKey,pgsDebondArtifact* pArtifact) const;
    void CheckPrincipalTensionStressInWebs(const CSegmentKey& segmentKey, pgsPrincipalTensionStressArtifact* pArtifact) const;
+   void CheckReinforcementFatigue(const CSegmentKey& segmentKey, pgsReinforcementFatigueArtifact* pArtifact) const;
 
 
    void CheckConstructability(const CGirderKey& girderKey,pgsConstructabilityArtifact* pArtifact) const;
@@ -496,7 +497,7 @@ private:
    // Shear design
    void DesignShear(pgsSegmentDesignArtifact* pArtifact, bool bDoStartFromScratch, bool bDoDesignFlexure) const;
 
-   Float64 GetAvsOverMin(const pgsPointOfInterest& poi,const SHEARCAPACITYDETAILS& scd) const;
+   Float64 GetAvsMin(const pgsPointOfInterest& poi,const SHEARCAPACITYDETAILS& scd) const;
 
    Float64 GetNormalFrictionForce(const pgsPointOfInterest& poi) const;
 
@@ -544,7 +545,7 @@ private:
    bool CollapseZoneData(CShearZoneData zoneData[MAX_ZONES], ZoneIndexType numZones) const;
 
    void GetBridgeAnalysisType(GirderIndexType gdr,const StressCheckTask& task,pgsTypes::BridgeAnalysisType& batTop,pgsTypes::BridgeAnalysisType& batBottom) const;
-   void ComputeConcreteStrength(pgsFlexuralStressArtifact& artifact,pgsTypes::StressLocation stressLocation,const pgsPointOfInterest& poi,const StressCheckTask& task) const;
+   void ComputeConcreteStrength(pgsFlexuralStressArtifact& artifact,pgsTypes::StressLocation stressLocation,const StressCheckTask& task) const;
 
    void GetEndZoneMinMaxRawStresses(const CSegmentKey& segmentKey,const WBFL::Stability::LiftingResults& liftingResults,const HANDLINGCONFIG& liftConfig,Float64* pftop, Float64* pfbot, Float64* ptop_loc,Float64* pbot_loc) const;
 

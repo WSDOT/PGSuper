@@ -744,9 +744,9 @@ bool pgsPoiMgr::AndFind(const pgsPointOfInterest& poi,const CSegmentKey& segment
    // TRICKY CODE
    // This if expression first check to make sure we have the same segment, then
    // it checks if each flag in attrib is set. If it is, the corresponding flag in poi must
-   // also be set, otherwise, the test is irrelavent (and always passes as indicated by the true)
+   // also be set, otherwise, the test is irrelevant (and always passes as indicated by the true)
    //
-   // segmentKey can match exactly or match with ALL_XXX constants (kind of like a wildcard)
+   // segmentKey can match exactly or match with ALL_XXX constants (kind of like a wild card)
 
    // If the search attribute has referenced attributes, get the reference type
    PoiAttributeType targetReference = pgsPointOfInterest::GetReference(attrib);
@@ -767,7 +767,7 @@ bool pgsPoiMgr::AndAttributeEvaluation(const pgsPointOfInterest& poi,PoiAttribut
 {
    // TRICKY CODE
    // This if expression checks if each flag in attrib is set. If it is, the corresponding flag in poi must
-   // also be set, otherwise, the test is irrelavent (and always passes as indicated by the true)
+   // also be set, otherwise, the test is irrelevant (and always passes as indicated by the true)
 
    // If the search attribute has referenced attributes, get the reference type
    PoiAttributeType targetReference = pgsPointOfInterest::GetReference(attrib);
@@ -882,9 +882,9 @@ bool pgsPoiMgr::OrFind(const pgsPointOfInterest& poi,const CSegmentKey& segmentK
    // TRICKY CODE
    // This if expression first check to make sure we have the same segment, then
    // it checks if each flag in attrib is set. If it is, the corresponding flag in the poi must
-   // be set, otherwise, the test is irrelavent (and always passes as indicated by the true)
+   // be set, otherwise, the test is irrelevant (and always passes as indicated by the true)
 
-   // segmentKey can match exactly or match with ALL_XXX constants (kind of like a wildcard)
+   // segmentKey can match exactly or match with ALL_XXX constants (kind of like a wild card)
 
    if ( segmentKey != poi.GetSegmentKey() )
    {
@@ -898,7 +898,7 @@ bool pgsPoiMgr::OrAttributeEvaluation(const pgsPointOfInterest& poi,PoiAttribute
 {
    // TRICKY CODE
    // This if expression checks if each flag in attrib is set. If it is, the corresponding flag in the poi must
-   // be set, otherwise, the test is irrelavent (and always passes as indicated by the true)
+   // be set, otherwise, the test is irrelevant (and always passes as indicated by the true)
 
    if ( attrib == 0 )
    {

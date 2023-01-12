@@ -176,7 +176,18 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(const std::shared_ptr<const W
          }
 
          CSegmentKey segmentKey(thisGirderKey, segIdx);
-         pPSForce->ReportTransferLengthDetails(segmentKey, pChapter);
+
+         if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+         {
+            // FHWA UHPC has a two level transfer length model
+            // In the future regular LRFD may have this as well
+            pPSForce->ReportTransferLengthDetails(segmentKey, pgsTypes::tltMinimum, pChapter);
+            pPSForce->ReportTransferLengthDetails(segmentKey, pgsTypes::tltMaximum, pChapter);
+         }
+         else
+         {
+            pPSForce->ReportTransferLengthDetails(segmentKey, pgsTypes::tltMaximum, pChapter);
+         }
          pPSForce->ReportDevelopmentLengthDetails(segmentKey, pChapter);
 
 
@@ -195,6 +206,10 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(const std::shared_ptr<const W
          {
             (*pParagraph) << _T(" and PCI UHPC SDG E.10.3.1");
          }
+         else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+         {
+            (*pParagraph) << _T(" and GS 1.10.8.2.1");
+         }
          (*pParagraph) << rptNewLine;
 
 #pragma Reminder("UPDATE: need to report this for closure joint rebar also")
@@ -212,6 +227,10 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(const std::shared_ptr<const W
             if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC)
             {
                (*pParagraph) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalRebarDevelopment_PCIUHPC.png")) << rptNewLine;
+            }
+            else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+            {
+               (*pParagraph) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalRebarDevelopment_FHWAUHPC.png")) << rptNewLine;
             }
             else
             {
@@ -234,6 +253,12 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(const std::shared_ptr<const W
                      (*pParagraph) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalRebarDevelopment_SI.png")) << rptNewLine;
                   }
                }
+            }
+
+            if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+            {
+               (*pParagraph) << RPT_FC << _T(" shall not be taken as a value greater than 15.0 ksi for UHPC (GS 1.10.8.2.1)") << rptNewLine;
+               (*pParagraph) << Sub2(symbol(lambda),_T("rl")) << _T(" is taken to be 1.0 for UHPC (GS 1.10.8.2.1)") << rptNewLine;
             }
 
             rptRcTable* pTable = CreateDevelopmentTable(pDisplayUnits);
@@ -272,12 +297,12 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(const std::shared_ptr<const W
                      rebar->get_Name(&barname);
 
                      // development length in fresh concrete
-                     REBARDEVLENGTHDETAILS devDetails = pLongRebarGeometry->GetSegmentRebarDevelopmentLengthDetails(segmentKey, rebar, concType, fci, hasFct, Fct);
+                     REBARDEVLENGTHDETAILS devDetails = pLongRebarGeometry->GetSegmentRebarDevelopmentLengthDetails(segmentKey, rebar, concType, fci, hasFct, Fct, false/*not top bar*/, false/*not epoxy coated*/, true/*meets cover requirements*/);
                      WriteRowToDevelopmentTable(pTable, row, barname, devDetails, area, length, stress, scalar);
                      row++;
 
                      // development length in mature concrete
-                     devDetails = pLongRebarGeometry->GetSegmentRebarDevelopmentLengthDetails(segmentKey, rebar, concType, fc, hasFct, Fct);
+                     devDetails = pLongRebarGeometry->GetSegmentRebarDevelopmentLengthDetails(segmentKey, rebar, concType, fc, hasFct, Fct, false/*not top bar*/, false/*not epoxy coated*/, true/*meets cover requirements*/);
                      WriteRowToDevelopmentTable(pTable, row, barname, devDetails, area, length, stress, scalar);
                      row++;
                   } // end if
@@ -302,10 +327,6 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(const std::shared_ptr<const W
    *pChapter << pParagraph;
 
    (*pParagraph) << _T("AASHTO LRFD BDS ") << LrfdCw8th(_T("5.11.2.1"), _T("5.10.8.2.1"));
-   if (pDeck->Concrete.Type == pgsTypes::PCI_UHPC)
-   {
-      (*pParagraph) << _T(" and PCI UHPC SDG E.10.3.1");
-   }
    (*pParagraph) << rptNewLine;
 
    pParagraph = new rptParagraph;
@@ -373,7 +394,7 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(const std::shared_ptr<const W
                // stage this rebar is introduced for purposes of computing development length. The
                // next line of code computes the development length on the lfy
 
-               REBARDEVLENGTHDETAILS devDetails = pLongRebarGeometry->GetDeckRebarDevelopmentLengthDetails(rebar, concType, fc, hasFct, Fct);
+               REBARDEVLENGTHDETAILS devDetails = pLongRebarGeometry->GetDeckRebarDevelopmentLengthDetails(rebar, concType, fc, hasFct, Fct,false,false,true);
 
                WriteRowToDevelopmentTable(pTable, row, barname, devDetails, area, length, stress, scalar);
                row++;

@@ -561,7 +561,7 @@ void pgsKdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& segm
       for (int i = 0; i < 3; i++)
       {
          pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
-         P[strandType] = pPrestressForce->GetPrestressForce(poi, strandType, haulSegmentIntervalIdx, pgsTypes::Middle, pConfig);
+         P[strandType] = pPrestressForce->GetPrestressForce(poi, strandType, haulSegmentIntervalIdx, pgsTypes::Middle,pgsTypes::tltMinimum, pConfig);
          ecc[strandType] = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poi, strandType, pConfig).Y();
          Aps[strandType] = pStrandGeometry->GetStrandArea(poi, releaseIntervalIdx, strandType, pConfig);
       }

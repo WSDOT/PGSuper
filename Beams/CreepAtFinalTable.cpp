@@ -28,6 +28,8 @@
 #include <IFace\Intervals.h>
 #include <PsgLib\SpecLibraryEntry.h>
 
+#include <PgsExt\GirderMaterial.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -229,7 +231,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    (*pParamTable)(1,3) << table->stress.SetValue(ptl->GetFc());
    (*pParamTable)(1,4) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKf());
 
-   pParamTable = rptStyleManager::CreateDefaultTable(5,_T(""));
+   pParamTable = rptStyleManager::CreateDefaultTable(pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC ?  6 : 5,_T(""));
    *pParagraph << pParamTable << rptNewLine;
    (*pParamTable)(0,0) << COLHDR(Sub2(_T("t"),_T("i")), rptTimeUnitTag, pDisplayUnits->GetWholeDaysUnit());
    (*pParamTable)(0,1) << COLHDR(Sub2(_T("t"),_T("d")), rptTimeUnitTag, pDisplayUnits->GetWholeDaysUnit());
@@ -240,11 +242,21 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    (*pParamTable)(0,4) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("Deck Placement to Final") << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetMaturityDeckPlacementToFinal());
    table->time.ShowUnitTag(false);
 
+   if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC)
+   {
+      (*pParamTable)(0, 5) << Sub2(_T("k"), _T("l"));
+   }
+
    (*pParamTable)(1,0) << table->time.SetValue( ptl->GetInitialAge() );
    (*pParamTable)(1,1) << table->time.SetValue( ptl->GetAgeAtDeckPlacement() );
    (*pParamTable)(1,2) << table->time.SetValue( ptl->GetFinalAge() );
    (*pParamTable)(1,3) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKtd(ptl->GetMaturityAtFinal()));
    (*pParamTable)(1,4) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKtd(ptl->GetMaturityDeckPlacementToFinal()));
+
+   if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC)
+   {
+      (*pParamTable)(1, 5) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKl(ptl->GetAgeAtDeckPlacement()));
+   }
 
    pParamTable = rptStyleManager::CreateDefaultTable(3,_T(""));
    *pParagraph << pParamTable << rptNewLine;

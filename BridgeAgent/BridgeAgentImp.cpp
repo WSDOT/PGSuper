@@ -5240,7 +5240,8 @@ void CBridgeAgentImp::LayoutPrestressTransferAndDebondPoi(const CSegmentKey& seg
    for (int i = 0; i < 2; i++)
    {
       pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
-      Float64 xfer_length = pPrestress->GetTransferLength(segmentKey, strandType);
+      Float64 xfer_length = pPrestress->GetTransferLength(segmentKey, strandType, pgsTypes::tltMinimum);
+      // use minimum transfer length for POI_PSXFER sinces this is the critical location for stress calculations
 
       Float64 d1 = xfer_length;
       Float64 d2 = segment_length - xfer_length;
@@ -5271,7 +5272,7 @@ void CBridgeAgentImp::LayoutPrestressTransferAndDebondPoi(const CSegmentKey& seg
    {
       pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
 
-      Float64 xfer_length = pPrestress->GetTransferLength(segmentKey, strandType);
+      Float64 xfer_length = pPrestress->GetTransferLength(segmentKey, strandType, pgsTypes::tltMinimum);
 
       const std::vector<CDebondData>& vDebond(pStrands->GetDebonding(strandType));
       std::vector<CDebondData>::const_iterator iter(vDebond.begin());
@@ -5959,7 +5960,7 @@ void CBridgeAgentImp::LayoutPoiForSegmentBarCutoffs(const CSegmentKey& segmentKe
          if (rebar)
          {
             // Get development length and add poi only if dev length is shorter than 1/2 rebar length
-            REBARDEVLENGTHDETAILS devDetails = GetSegmentRebarDevelopmentLengthDetails(segmentKey, rebar, concType, fc, hasFct, Fct);
+            REBARDEVLENGTHDETAILS devDetails = GetSegmentRebarDevelopmentLengthDetails(segmentKey, rebar, concType, fc, hasFct, Fct,false/*not top bar*/, false/*not epoxy coated*/, true/*meets cover requirements*/);
             Float64 ld = devDetails.ld;
             if (ld < barLength/2.0)
             {
@@ -13689,6 +13690,26 @@ Float64 CBridgeAgentImp::GetSegmentConcreteFirstCrackingStrength(const CSegmentK
    return m_ConcreteManager.GetSegmentConcreteFirstCrackingStrength(segmentKey);
 }
 
+Float64 CBridgeAgentImp::GetSegmentConcreteInitialEffectiveCrackingStrength(const CSegmentKey& segmentKey) const
+{
+   return m_ConcreteManager.GetSegmentConcreteInitialEffectiveCrackingStrength(segmentKey);
+}
+
+Float64 CBridgeAgentImp::GetSegmentConcreteDesignEffectiveCrackingStrength(const CSegmentKey& segmentKey) const
+{
+   return m_ConcreteManager.GetSegmentConcreteDesignEffectiveCrackingStrength(segmentKey);
+}
+
+Float64 CBridgeAgentImp::GetSegmentConcreteCrackLocalizationStrength(const CSegmentKey& segmentKey) const
+{
+   return m_ConcreteManager.GetSegmentConcreteCrackLocalizationStrength(segmentKey);
+}
+
+Float64 CBridgeAgentImp::GetSegmentConcreteCrackLocalizationStrain(const CSegmentKey& segmentKey) const
+{
+   return m_ConcreteManager.GetSegmentConcreteCrackLocalizationStrain(segmentKey);
+}
+
 pgsTypes::ConcreteType CBridgeAgentImp::GetClosureJointConcreteType(const CClosureKey& closureKey) const
 {
    return m_ConcreteManager.GetClosureJointConcreteType(closureKey);
@@ -13754,11 +13775,6 @@ const std::unique_ptr<WBFL::Materials::ConcreteBase>& CBridgeAgentImp::GetClosur
    return m_ConcreteManager.GetClosureJointConcrete(closureKey);
 }
 
-Float64 CBridgeAgentImp::GetClosureJointConcreteFirstCrackingStrength(const CClosureKey& closureKey) const
-{
-   return m_ConcreteManager.GetClosureJointConcreteFirstCrackingStrength(closureKey);
-}
-
 pgsTypes::ConcreteType CBridgeAgentImp::GetDeckConcreteType() const
 {
    return m_ConcreteManager.GetDeckConcreteType();
@@ -13777,11 +13793,6 @@ Float64 CBridgeAgentImp::GetDeckConcreteAggSplittingStrength() const
 Float64 CBridgeAgentImp::GetDeckMaxAggrSize() const
 {
    return m_ConcreteManager.GetDeckMaxAggrSize();
-}
-
-Float64 CBridgeAgentImp::GetDeckConcreteFiberLength() const
-{
-   return m_ConcreteManager.GetDeckConcreteFiberLength();
 }
 
 Float64 CBridgeAgentImp::GetDeckStrengthDensity() const
@@ -14243,7 +14254,7 @@ Float64 CBridgeAgentImp::GetDevLengthFactor(const pgsPointOfInterest& poi,IRebar
    CComPtr<IRebar> rebar;
    rebarItem->get_Rebar(&rebar);
 
-   REBARDEVLENGTHDETAILS details = GetSegmentRebarDevelopmentLengthDetails(poi.GetSegmentKey(), rebar, type, fc, isFct, fct);
+   REBARDEVLENGTHDETAILS details = GetSegmentRebarDevelopmentLengthDetails(poi.GetSegmentKey(), rebar, type, fc, isFct, fct, false/*not top bar*/, false/*not epoxy coated*/, true/*meets cover requirements*/);
 
    // Get distances from section cut to ends of bar
    Float64 start,end;
@@ -14351,14 +14362,14 @@ Float64 CBridgeAgentImp::GetPPRBottomHalf(const pgsPointOfInterest& poi,const GD
    return ppr;
 }
 
-REBARDEVLENGTHDETAILS CBridgeAgentImp::GetSegmentRebarDevelopmentLengthDetails(const CSegmentKey& segmentKey, IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct) const
+REBARDEVLENGTHDETAILS CBridgeAgentImp::GetSegmentRebarDevelopmentLengthDetails(const CSegmentKey& segmentKey, IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, bool bIsTopBar, bool bEpoxyCoated, bool bMeetsCoverRequirements) const
 {
-   return GetRebarDevelopmentLengthDetails(segmentKey, rebar,type, fc, isFct, Fct);
+   return GetRebarDevelopmentLengthDetails(segmentKey, rebar,type, fc, isFct, Fct, bIsTopBar, bEpoxyCoated, bMeetsCoverRequirements);
 }
 
-REBARDEVLENGTHDETAILS CBridgeAgentImp::GetDeckRebarDevelopmentLengthDetails(IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct) const
+REBARDEVLENGTHDETAILS CBridgeAgentImp::GetDeckRebarDevelopmentLengthDetails(IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, bool bIsTopBar, bool bEpoxyCoated, bool bMeetsCoverRequirements) const
 {
-   return GetRebarDevelopmentLengthDetails(CSegmentKey(), rebar,type, fc, isFct, Fct);
+   return GetRebarDevelopmentLengthDetails(CSegmentKey(), rebar,type, fc, isFct, Fct, bIsTopBar, bEpoxyCoated, bMeetsCoverRequirements);
 }
 
 bool CBridgeAgentImp::IsAnchored(const pgsPointOfInterest& poi) const
@@ -14389,7 +14400,7 @@ bool CBridgeAgentImp::IsAnchored(const pgsPointOfInterest& poi) const
    return bAnchored;
 }
 
-REBARDEVLENGTHDETAILS CBridgeAgentImp::GetRebarDevelopmentLengthDetails(const CSegmentKey& segmentKey, IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct) const
+REBARDEVLENGTHDETAILS CBridgeAgentImp::GetRebarDevelopmentLengthDetails(const CSegmentKey& segmentKey, IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, bool bIsTopBar, bool bEpoxyCoated, bool bMeetsCoverRequirements) const
 {
    USES_CONVERSION;
    CComBSTR name;
@@ -14413,7 +14424,7 @@ REBARDEVLENGTHDETAILS CBridgeAgentImp::GetRebarDevelopmentLengthDetails(const CS
    }
 
    // density is used to compute lambda factor
-   return lrfdRebar::GetRebarDevelopmentLengthDetails(size, Ab, db, fy, (WBFL::Materials::ConcreteType)type, fc, isFct, Fct, density);
+   return lrfdRebar::GetRebarDevelopmentLengthDetails(size, Ab, db, fy, (WBFL::Materials::ConcreteType)type, fc, isFct, Fct, density, bIsTopBar, bEpoxyCoated, bMeetsCoverRequirements);
 }
 
 Float64 CBridgeAgentImp::GetCoverTopMat() const
@@ -22117,9 +22128,9 @@ Float64 CBridgeAgentImp::GetS(pgsTypes::SectionPropertyType spType,IntervalIndex
             Eg = (bIsTimeStepAnalysis ? GetDeckAgeAdjustedEc(deckCastingRegionIdx,intervalIdx) : GetDeckEc(deckCastingRegionIdx,intervalIdx));
          }
 
-         Float64 Es = (bIsTimeStepAnalysis ? GetDeckAgeAdjustedEc(deckCastingRegionIdx,intervalIdx) : GetDeckEc(deckCastingRegionIdx,intervalIdx));
+         Float64 Ed = (bIsTimeStepAnalysis ? GetDeckAgeAdjustedEc(deckCastingRegionIdx,intervalIdx) : GetDeckEc(deckCastingRegionIdx,intervalIdx));
 
-         Float64 n = Eg / Es;
+         Float64 n = Eg / Ed;
          S *= n;
       }
       else
@@ -27549,7 +27560,7 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
             auto ecc = GetEccentricity(vPrestressIntervals[strandType], poi, strandType, &handlingConfig.GdrConfig);
             Float64 Xps = Xleft - ecc.X();
             Float64 Yps = Ytg - ecc.Y();
-            Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::Start, &handlingConfig.GdrConfig);
+            Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::Start, pgsTypes::tltMinimum, &handlingConfig.GdrConfig);
             pProblem->AddFpe(vNames[strandType].c_str(), pAnalysisPoint->GetLocation(), Fpe, Xps, Yps);
          }
       }
@@ -27562,7 +27573,7 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
             auto ecc = GetEccentricity(vPrestressIntervals[strandType], poi, strandType);
             Float64 Xps = Xleft - ecc.X();
             Float64 Yps = Ytg - ecc.Y();
-            Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::Start);
+            Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::Start, pgsTypes::tltMinimum);
             pProblem->AddFpe(vNames[strandType].c_str(), pAnalysisPoint->GetLocation(), Fpe, Xps, Yps);
          }
 
@@ -27936,7 +27947,7 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
             auto ecc = GetEccentricity(vPrestressIntervals[strandType], poi, strandType, &handlingConfig.GdrConfig);
             Float64 Xps = Xleft - ecc.X();
             Float64 Yps = Ytg - ecc.Y();
-            Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::Start, &handlingConfig.GdrConfig);
+            Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::Start, pgsTypes::tltMinimum, &handlingConfig.GdrConfig);
             pProblem->AddFpe(vNames[strandType].c_str(), pAnalysisPoint->GetLocation(), Fpe, Xps, Yps);
          }
       }
@@ -27949,7 +27960,7 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
             auto ecc = GetEccentricity(vPrestressIntervals[strandType], poi, strandType);
             Float64 Xps = Xleft - ecc.X();
             Float64 Yps = Ytg - ecc.Y();
-            Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::Start);
+            Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::Start, pgsTypes::tltMinimum);
             pProblem->AddFpe(vNames[strandType].c_str(), pAnalysisPoint->GetLocation(), Fpe, Xps, Yps);
          }
 
@@ -31510,10 +31521,23 @@ const CBridgeAgentImp::SectProp& CBridgeAgentImp::GetSectionProperties(IntervalI
          props.AcBottomHalf = area;
 
          // Area on top half of composite section for LRFD Fig. 5.7.3.4.2-3 (pre2017: 5.8.3.4.2-3)
-         CComPtr<IShapeProperties> fullShapeProperties;
-         props.ElasticProps->TransformProperties(Egdr,&fullShapeProperties);
-         fullShapeProperties->get_Area(&area);
-         props.AcTopHalf = area - props.AcBottomHalf; // top + bottom = full  ==> top = full - bottom
+         if (bIsOnSegment && GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+         {
+            // "Half" section area is only used for shear calculations. For FHWA UHPC, shear strength
+            // is limited to the UHPC part of the section only (ie. only the girder).
+            // Get the area of the girder and deduct the bottom half area.
+            CComPtr<IShapeProperties> gdrProps;
+            girderShape->get_ShapeProperties(&gdrProps);
+            gdrProps->get_Area(&area);
+            props.AcTopHalf = area - props.AcBottomHalf; // top + bottom = full  ==> top = full - bottom
+         }
+         else
+         {
+            CComPtr<IShapeProperties> fullShapeProperties;
+            props.ElasticProps->TransformProperties(Egdr, &fullShapeProperties);
+            fullShapeProperties->get_Area(&area);
+            props.AcTopHalf = area - props.AcBottomHalf; // top + bottom = full  ==> top = full - bottom
+         }
       }
       else if ( sectPropType == pgsTypes::sptNetDeck )
       {
@@ -33675,7 +33699,6 @@ Float64 CBridgeAgentImp::GetApsInHalfDepth(const pgsPointOfInterest& poi,Develop
                ATLASSERT(mid_span_poi.IsMidSpan(POI_ERECTED_SEGMENT));
 
                GET_IFACE(IPretensionForce, pPSForce);
-               const std::shared_ptr<pgsTransferLength> pXferLength = pPSForce->GetTransferLengthDetails(segmentKey, pgsTypes::Straight, pConfig);
                const std::shared_ptr<pgsDevelopmentLength> pDevLength = pPSForce->GetDevelopmentLengthDetails(mid_span_poi, pgsTypes::Straight, false, pConfig);
                Float64 fps = pDevLength->GetFps();
                Float64 fpe = pDevLength->GetFpe();
@@ -34032,7 +34055,7 @@ void CBridgeAgentImp::GetDeckMatData(const pgsPointOfInterest& poi,pgsTypes::Dec
                      REBARDEVLENGTHDETAILS devdet = lrfdRebar::GetRebarDevelopmentLengthDetails(size, pBar->GetNominalArea(), 
                                                                                        pBar->GetNominalDimension(), pBar->GetYieldStrength(), 
                                                                                        (WBFL::Materials::ConcreteType)pDeck->Concrete.Type, pDeck->Concrete.Fc, 
-                                                                                       pDeck->Concrete.bHasFct, pDeck->Concrete.Fct,pDeck->Concrete.StrengthDensity);
+                                                                                       pDeck->Concrete.bHasFct, pDeck->Concrete.Fct,pDeck->Concrete.StrengthDensity, false, false, true);
                      Float64 ld = devdet.ld;
 
                      Float64 left_bar_length = station - start; // distance from left end of bar to poi

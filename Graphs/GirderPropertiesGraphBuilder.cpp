@@ -459,8 +459,7 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
       {
          value1 = pStrandGeom->GetStrandArea(poi, intervalIdx, pgsTypes::Straight);
          value2 = pStrandGeom->GetStrandArea(poi, intervalIdx, pgsTypes::Harped);
-         value3 = pPretensionForce->GetTransferLengthAdjustment(poi, pgsTypes::Straight)*value1 + pPretensionForce->GetTransferLengthAdjustment(poi, pgsTypes::Harped)*value2;
-         value4 = pStrandGeom->GetStrandArea(poi, intervalIdx, pgsTypes::Temporary);
+         value3 = pStrandGeom->GetStrandArea(poi, intervalIdx, pgsTypes::Temporary);
          break;
       }
 
@@ -860,13 +859,10 @@ void CGirderPropertiesGraphBuilder::InitializeGraph(PropertyType propertyType,co
       std::_tstring strAdj(pgsTypes::asHarped == adj_type ? _T("Harped") : _T("Adj. Straight"));
       strPropertyLabel2 = strAdj;
 
-      strPropertyLabel3 = _T("Permanent Strands (Effective)");
-
-      strPropertyLabel4 = _T("Temporary");
+      strPropertyLabel3 = _T("Temporary");
       *pGraph1 = m_Graph.CreateDataSeries(strPropertyLabel1.c_str(), PS_SOLID, GRAPH_PEN_WEIGHT, ORANGE);
       *pGraph2 = m_Graph.CreateDataSeries(strPropertyLabel2.c_str(), PS_SOLID, GRAPH_PEN_WEIGHT, BLUE);
       *pGraph3 = m_Graph.CreateDataSeries(strPropertyLabel3.c_str(), PS_SOLID, GRAPH_PEN_WEIGHT, GREEN);
-      *pGraph4 = m_Graph.CreateDataSeries(strPropertyLabel4.c_str(), PS_SOLID, GRAPH_PEN_WEIGHT, RED);
       break;
    }
 

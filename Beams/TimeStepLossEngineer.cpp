@@ -1728,7 +1728,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
                if (intervalIdx == releaseIntervalIdx)
                {
                   // accounts for lack of development and location of debonding
-                  Float64 xfer_factor = m_pPSForce->GetTransferLengthAdjustment(poi, strandType);
+                  Float64 xfer_factor = m_pPSForce->GetTransferLengthAdjustment(poi, strandType, pgsTypes::tltMinimum);
 
                   // xfer_factor reduces the nominal strand force (force based on all strands)
                   // to the actual force by making adjustments for lack of full development

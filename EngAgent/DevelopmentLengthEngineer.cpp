@@ -74,13 +74,12 @@ const std::shared_ptr<pgsDevelopmentLength> pgsDevelopmentLengthEngineer::GetDev
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    IntervalIndexType intervalIdx = nIntervals - 1;
 
-   pgsTypes::LimitState limitState = pgsTypes::ServiceIII;
-
    // NOTE: The fpe we want must account for transfer length effects
    // The fpe returned from the IPretensionForce interface is the basic value so we compute it here as P/A
    // since P is adjusted for transfer effects
    GET_IFACE(IPretensionForce, pPrestressForce);
-   Float64 Ppe = pPrestressForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::End, pConfig);
+   Float64 Ppe = pPrestressForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::End, pgsTypes::tltMaximum, pConfig);
+   // NOTE: development length is related to strength limit states so we want to use the maximum transfer length.
 
    GET_IFACE(IStrandGeometry, pStrandGeom);
    Float64 Aps = pStrandGeom->GetStrandArea(poi, intervalIdx, strandType, pConfig);
@@ -115,6 +114,12 @@ const std::shared_ptr<pgsDevelopmentLength> pgsDevelopmentLengthEngineer::GetDev
    if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC)
    {
       details = std::make_shared<pgsPCIUHPCDevelopmentLength>(db, fpe, fps);
+   }
+   else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+   {
+      GET_IFACE(IPretensionForce, pPrestress);
+      Float64 lt = pPrestress->GetTransferLength(segmentKey, strandType, pgsTypes::tltMaximum, pConfig);
+      details = std::make_shared<pgsFHWAUHPCDevelopmentLength>(lt, db, fpe, fps);
    }
    else
    {
@@ -187,7 +192,7 @@ Float64 pgsDevelopmentLengthEngineer::GetDevelopmentLengthAdjustment(const pgsPo
    else
    {
       GET_IFACE(IPretensionForce, pPrestressForce);
-      const std::shared_ptr<pgsTransferLength> pXferLength = pPrestressForce->GetTransferLengthDetails(poi.GetSegmentKey(), strandType, pConfig);
+      const std::shared_ptr<pgsTransferLength> pXferLength = pPrestressForce->GetTransferLengthDetails(poi.GetSegmentKey(), strandType, pgsTypes::tltMaximum,pConfig);
       const std::shared_ptr<pgsDevelopmentLength> pDevLength = GetDevelopmentLengthDetails(poi, strandType, bDebonded, fps, fpe, pConfig);
       Float64 xfer_length = pXferLength->GetTransferLength();
       Float64 dev_length = pDevLength->GetDevelopmentLength();
@@ -215,195 +220,27 @@ Float64 pgsDevelopmentLengthEngineer::GetDevelopmentLengthAdjustment(const pgsPo
 
 void pgsDevelopmentLengthEngineer::ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const
 {
-   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
-   *pChapter << pPara;
-
-   (*pPara) << _T("Development Length") << rptNewLine;
-
-   GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
-
-   GET_IFACE(IBridgeDescription, pIBridgeDesc);
-   const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
-   pgsTypes::AdjustableStrandType adj_type = pSegment->Strands.GetAdjustableStrandType();
-   std::_tstring strAdj(pgsTypes::asHarped == adj_type ? _T("Harped") : _T("Adj. Straight"));
-
-   GET_IFACE(IDocumentType, pDocType);
-   bool bIsPGSplice = pDocType->IsPGSpliceDocument();
-
-   GET_IFACE(IPointOfInterest, pPoi);
-   PoiList vPoi;
-   pPoi->GetPointsOfInterest(segmentKey, &vPoi);
-
-   INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), false);
-   INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
-   INIT_UV_PROTOTYPE(rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false);
-
-   pPara = new rptParagraph;
-   (*pChapter) << pPara;
-
    GET_IFACE(IMaterials, pMaterials);
    if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC)
    {
-      (*pPara) << _T("PCI UHPC SDG E.9.3.2.2-2") << rptNewLine;
-
-      (*pPara) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("PCIUHPC_DevLength.png")) << rptNewLine;
-
-      rptRcTable* pTable = rptStyleManager::CreateDefaultTable(9);
-      (*pPara) << pTable << rptNewLine;
-
-      ColumnIndexType col = 0;
-      pTable->SetNumberOfHeaderRows(2);
-      pTable->SetRowSpan(0, col, 2);
-      (*pTable)(0, col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-
-      pTable->SetColumnSpan(0, col, 4);
-      (*pTable)(0, col) << _T("Straight Strands");
-      (*pTable)(1, col++) << COLHDR(RPT_STRESS(_T("ps")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-      (*pTable)(1, col++) << COLHDR(RPT_STRESS(_T("pe")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-      (*pTable)(1, col++) << COLHDR(Sub2(_T("d"), _T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-      (*pTable)(1, col++) << COLHDR(Sub2(_T("l"), _T("d")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-
-      pTable->SetColumnSpan(0, col, 4);
-      (*pTable)(0, col) << strAdj << _T(" Strands");
-      (*pTable)(1, col++) << COLHDR(RPT_STRESS(_T("ps")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-      (*pTable)(1, col++) << COLHDR(RPT_STRESS(_T("pe")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-      (*pTable)(1, col++) << COLHDR(Sub2(_T("d"), _T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-      (*pTable)(1, col++) << COLHDR(Sub2(_T("l"), _T("d")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-
-      RowIndexType row = pTable->GetNumberOfHeaderRows();
-      for (const pgsPointOfInterest& poi : vPoi)
-      {
-         col = 0;
-
-         const auto& segmentKey(poi.GetSegmentKey());
-
-         if (bIsPGSplice)
-         {
-            (*pTable)(row, col++) << location.SetValue(POI_ERECTED_SEGMENT, poi);
-         }
-         else
-         {
-            (*pTable)(row, col++) << location.SetValue(POI_SPAN, poi);
-         }
-
-         for (int i = 0; i < 2; i++)
-         {
-            pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
-
-            const std::shared_ptr<pgsDevelopmentLength>& pDevLength = GetDevelopmentLengthDetails(poi, strandType, false); // not debonded
-            const pgsDevelopmentLengthBase* pDevLengthBase = dynamic_cast<const pgsDevelopmentLengthBase*>(pDevLength.get());
-
-            (*pTable)(row, col++) << stress.SetValue(pDevLengthBase->GetFps());
-            (*pTable)(row, col++) << stress.SetValue(pDevLengthBase->GetFpe());
-            (*pTable)(row, col++) << length.SetValue(pDevLengthBase->GetStrandDiameter());
-            (*pTable)(row, col++) << length.SetValue(pDevLengthBase->GetDevelopmentLength());
-         } // next stand type
-
-         row++;
-      } // next poi
+      pgsPCIUHPCDevelopmentLengthReporter reporter(m_pBroker, this);
+      reporter.ReportDevelopmentLengthDetails(segmentKey, pChapter);
+   }
+   else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+   {
+      pgsFHWAUHPCDevelopmentLengthReporter reporter(m_pBroker, this);
+      reporter.ReportDevelopmentLengthDetails(segmentKey, pChapter);
    }
    else
    {
-      (*pPara) << _T("AASHTO LRFD BDS ") << LrfdCw8th(_T("5.11.4.1, 5.11.4.2"), _T("5.9.4.3.1, 5.9.4.3.2")) << rptNewLine;
-      if (IS_US_UNITS(pDisplayUnits))
-      {
-         (*pPara) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("DevLength_US.png")) << rptNewLine;
-      }
-      else
-      {
-         (*pPara) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("DevLength_SI.png")) << rptNewLine;
-      }
-
-      rptRcTable* pTable = rptStyleManager::CreateDefaultTable(16);
-      (*pPara) << pTable << rptNewLine;
-
-      ColumnIndexType col = 0;
-      pTable->SetNumberOfHeaderRows(3);
-      pTable->SetRowSpan(0, col, 2);
-      (*pTable)(0, col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-
-      pTable->SetColumnSpan(0, col, 10);
-      (*pTable)(0, col) << _T("Straight Strands");
-      pTable->SetColumnSpan(1, col, 5);
-      (*pTable)(1, col) << _T("Bonded");
-      (*pTable)(2, col++) << symbol(kappa);
-      (*pTable)(2, col++) << COLHDR(RPT_STRESS(_T("ps")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-      (*pTable)(2, col++) << COLHDR(RPT_STRESS(_T("pe")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-      (*pTable)(2, col++) << COLHDR(Sub2(_T("d"), _T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-      (*pTable)(2, col++) << COLHDR(Sub2(_T("l"), _T("d")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-
-      pTable->SetColumnSpan(1, col, 5);
-      (*pTable)(1, col) << _T("Debonded");
-      (*pTable)(2, col++) << symbol(kappa);
-      (*pTable)(2, col++) << COLHDR(RPT_STRESS(_T("ps")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-      (*pTable)(2, col++) << COLHDR(RPT_STRESS(_T("pe")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-      (*pTable)(2, col++) << COLHDR(Sub2(_T("d"), _T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-      (*pTable)(2, col++) << COLHDR(Sub2(_T("l"), _T("d")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-
-      pTable->SetColumnSpan(0, col, 5);
-      (*pTable)(0, col) << strAdj;
-      pTable->SetColumnSpan(1, col, 5);
-      (*pTable)(1, col) << _T("Bonded");
-      (*pTable)(2, col++) << symbol(kappa);
-      (*pTable)(2, col++) << COLHDR(RPT_STRESS(_T("ps")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-      (*pTable)(2, col++) << COLHDR(RPT_STRESS(_T("pe")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-      (*pTable)(2, col++) << COLHDR(Sub2(_T("d"), _T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-      (*pTable)(2, col++) << COLHDR(Sub2(_T("l"), _T("d")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-
-      RowIndexType row = pTable->GetNumberOfHeaderRows();
-      for (const pgsPointOfInterest& poi : vPoi)
-      {
-         col = 0;
-
-         const auto& segmentKey(poi.GetSegmentKey());
-
-         if (bIsPGSplice)
-         {
-            (*pTable)(row, col++) << location.SetValue(POI_ERECTED_SEGMENT, poi);
-         }
-         else
-         {
-            (*pTable)(row, col++) << location.SetValue(POI_SPAN, poi);
-         }
-
-         for (int i = 0; i < 2; i++)
-         {
-            pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
-
-            const std::shared_ptr<pgsDevelopmentLength>& pDevLength = GetDevelopmentLengthDetails(poi, strandType, false); // not debonded
-            const pgsDevelopmentLengthBase* pDevLengthBase = dynamic_cast<const pgsDevelopmentLengthBase*>(pDevLength.get());
-
-            (*pTable)(row, col++) << dynamic_cast<const pgsLRFDDevelopmentLength*>(pDevLengthBase)->GetDevelopmentLengthFactor();
-            (*pTable)(row, col++) << stress.SetValue(pDevLengthBase->GetFps());
-            (*pTable)(row, col++) << stress.SetValue(pDevLengthBase->GetFpe());
-            (*pTable)(row, col++) << length.SetValue(pDevLengthBase->GetStrandDiameter());
-            (*pTable)(row, col++) << length.SetValue(pDevLengthBase->GetDevelopmentLength());
-
-            if (strandType == pgsTypes::Straight)
-            {
-               const std::shared_ptr<pgsDevelopmentLength>& pDevLength = GetDevelopmentLengthDetails(poi, strandType, true); // debonded
-               const pgsDevelopmentLengthBase* pDevLengthBase = dynamic_cast<const pgsDevelopmentLengthBase*>(pDevLength.get());
-               (*pTable)(row, col++) << dynamic_cast<const pgsLRFDDevelopmentLength*>(pDevLengthBase)->GetDevelopmentLengthFactor();
-               (*pTable)(row, col++) << stress.SetValue(pDevLengthBase->GetFps());
-               (*pTable)(row, col++) << stress.SetValue(pDevLengthBase->GetFpe());
-               (*pTable)(row, col++) << length.SetValue(pDevLengthBase->GetStrandDiameter());
-               (*pTable)(row, col++) << length.SetValue(pDevLengthBase->GetDevelopmentLength());
-            }
-         } // next stand type
-
-         row++;
-      } // next poi
+      pgsLRFDDevelopmentLengthReporter reporter(m_pBroker, this);
+      reporter.ReportDevelopmentLengthDetails(segmentKey, pChapter);
    }
 }
 
 
 
 ////////////////////////////////
-
-pgsDevelopmentLengthBase::pgsDevelopmentLengthBase() :
-   m_db(0.0)
-{
-}
 
 pgsDevelopmentLengthBase::pgsDevelopmentLengthBase(Float64 db, Float64 fpe, Float64 fps) :
    pgsDevelopmentLength(fpe,fps), m_db(db)
@@ -420,12 +257,10 @@ Float64 pgsDevelopmentLengthBase::GetStrandDiameter() const
    return m_db;
 }
 
-
 /////////////////////////////
-pgsLRFDDevelopmentLength::pgsLRFDDevelopmentLength() :
-   m_MbrDepth(0.0), m_bDebonded(false)
-{
-}
+/////////////////////////////
+/////////////////////////////
+
 pgsLRFDDevelopmentLength::pgsLRFDDevelopmentLength(Float64 db, Float64 fpe, Float64 fps, Float64 mbrDepth, bool bDebonded) :
    pgsDevelopmentLengthBase(db, fpe, fps), m_MbrDepth(mbrDepth), m_bDebonded(bDebonded)
 {
@@ -442,9 +277,8 @@ Float64 pgsLRFDDevelopmentLength::GetDevelopmentLength() const
 }
 
 ////////////////////////
-pgsPCIUHPCDevelopmentLength::pgsPCIUHPCDevelopmentLength()
-{
-}
+////////////////////////
+////////////////////////
 
 pgsPCIUHPCDevelopmentLength::pgsPCIUHPCDevelopmentLength(Float64 db, Float64 fpe, Float64 fps) :
    pgsDevelopmentLengthBase(db, fpe, fps)
@@ -459,4 +293,334 @@ Float64 pgsPCIUHPCDevelopmentLength::GetDevelopmentLength() const
    Float64 ld_inch = 20.0 * db_inch + 0.2 * (fps_ksi - fpe_ksi) * db_inch;
    Float64 ld = WBFL::Units::ConvertToSysUnits(ld_inch, WBFL::Units::Measure::Inch);
    return ld;
+}
+
+////////////////////////
+////////////////////////
+////////////////////////
+
+pgsFHWAUHPCDevelopmentLength::pgsFHWAUHPCDevelopmentLength(Float64 lt, Float64 db, Float64 fpe, Float64 fps) :
+   pgsDevelopmentLengthBase(db, fpe, fps), m_lt(lt)
+{
+}
+
+Float64 pgsFHWAUHPCDevelopmentLength::GetDevelopmentLength() const
+{
+   Float64 fps_ksi = WBFL::Units::ConvertFromSysUnits(m_fps, WBFL::Units::Measure::KSI);
+   Float64 fpe_ksi = WBFL::Units::ConvertFromSysUnits(m_fpe, WBFL::Units::Measure::KSI);
+   Float64 db_inch = WBFL::Units::ConvertFromSysUnits(m_db, WBFL::Units::Measure::Inch);
+   Float64 lt_inch = WBFL::Units::ConvertFromSysUnits(m_lt, WBFL::Units::Measure::Inch);
+
+   Float64 ld_inch = lt_inch + 0.30 * (fps_ksi - fpe_ksi) * db_inch;
+   Float64 ld = WBFL::Units::ConvertToSysUnits(ld_inch, WBFL::Units::Measure::Inch);
+   return ld;
+}
+
+////////////////////////
+////////////////////////
+////////////////////////
+
+pgsDevelopmentLengthReporterBase::pgsDevelopmentLengthReporterBase(IBroker* pBroker,const pgsDevelopmentLengthEngineer* pEngineer) :
+   m_pBroker(pBroker),m_pEngineer(pEngineer)
+{
+}
+
+void pgsDevelopmentLengthReporterBase::ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const
+{
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+   *pChapter << pPara;
+
+   (*pPara) << _T("Development Length") << rptNewLine;
+
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+   pgsTypes::AdjustableStrandType adj_type = pSegment->Strands.GetAdjustableStrandType();
+   m_AdjustableStrandName = pgsTypes::asHarped == adj_type ? _T("Harped") : _T("Adj. Straight");
+
+   GET_IFACE(IDocumentType, pDocType);
+   bool bIsPGSplice = pDocType->IsPGSpliceDocument();
+   m_PoiType = (bIsPGSplice ? POI_ERECTED_SEGMENT : POI_SPAN);
+
+   GET_IFACE(IPointOfInterest, pPoi);
+   pPoi->GetPointsOfInterest(segmentKey, &m_vPoi);
+}
+
+const std::_tstring& pgsDevelopmentLengthReporterBase::GetAdjustableStrandName() const
+{
+   return m_AdjustableStrandName;
+}
+
+PoiAttributeType pgsDevelopmentLengthReporterBase::GetLocationPoiAttribute() const
+{
+   return m_PoiType;
+}
+
+const PoiList& pgsDevelopmentLengthReporterBase::GetPoiList() const
+{
+   return m_vPoi;
+}
+
+////////////////////////
+////////////////////////
+////////////////////////
+
+pgsLRFDDevelopmentLengthReporter::pgsLRFDDevelopmentLengthReporter(IBroker* pBroker,const pgsDevelopmentLengthEngineer* pEngineer) :
+   pgsDevelopmentLengthReporterBase(pBroker,pEngineer)
+{
+}
+
+void pgsLRFDDevelopmentLengthReporter::ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const
+{
+   __super::ReportDevelopmentLengthDetails(segmentKey, pChapter);
+
+   GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), false);
+   INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
+   INIT_UV_PROTOTYPE(rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false);
+
+
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+   *pChapter << pPara;
+
+   (*pPara) << _T("AASHTO LRFD BDS ") << LrfdCw8th(_T("5.11.4.1, 5.11.4.2"), _T("5.9.4.3.1, 5.9.4.3.2")) << rptNewLine;
+   if (IS_US_UNITS(pDisplayUnits))
+   {
+      (*pPara) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("DevLength_US.png")) << rptNewLine;
+   }
+   else
+   {
+      (*pPara) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("DevLength_SI.png")) << rptNewLine;
+   }
+
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(16);
+   (*pPara) << pTable << rptNewLine;
+
+   ColumnIndexType col = 0;
+   pTable->SetNumberOfHeaderRows(3);
+   pTable->SetRowSpan(0, col, 2);
+   (*pTable)(0, col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+
+   pTable->SetColumnSpan(0, col, 10);
+   (*pTable)(0, col) << _T("Straight Strands");
+   pTable->SetColumnSpan(1, col, 5);
+   (*pTable)(1, col) << _T("Bonded");
+   (*pTable)(2, col++) << symbol(kappa);
+   (*pTable)(2, col++) << COLHDR(RPT_STRESS(_T("ps")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(2, col++) << COLHDR(RPT_STRESS(_T("pe")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(2, col++) << COLHDR(Sub2(_T("d"), _T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*pTable)(2, col++) << COLHDR(Sub2(_T("l"), _T("d")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+
+   pTable->SetColumnSpan(1, col, 5);
+   (*pTable)(1, col) << _T("Debonded");
+   (*pTable)(2, col++) << symbol(kappa);
+   (*pTable)(2, col++) << COLHDR(RPT_STRESS(_T("ps")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(2, col++) << COLHDR(RPT_STRESS(_T("pe")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(2, col++) << COLHDR(Sub2(_T("d"), _T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*pTable)(2, col++) << COLHDR(Sub2(_T("l"), _T("d")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+
+   pTable->SetColumnSpan(0, col, 5);
+   (*pTable)(0, col) << GetAdjustableStrandName();
+   pTable->SetColumnSpan(1, col, 5);
+   (*pTable)(1, col) << _T("Bonded");
+   (*pTable)(2, col++) << symbol(kappa);
+   (*pTable)(2, col++) << COLHDR(RPT_STRESS(_T("ps")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(2, col++) << COLHDR(RPT_STRESS(_T("pe")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(2, col++) << COLHDR(Sub2(_T("d"), _T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*pTable)(2, col++) << COLHDR(Sub2(_T("l"), _T("d")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+
+   RowIndexType row = pTable->GetNumberOfHeaderRows();
+   const PoiList& vPoi = GetPoiList();
+   for (const pgsPointOfInterest& poi : vPoi)
+   {
+      col = 0;
+
+      const auto& segmentKey(poi.GetSegmentKey());
+
+      (*pTable)(row, col++) << location.SetValue(GetLocationPoiAttribute(), poi);
+
+      for (int i = 0; i < 2; i++)
+      {
+         pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+
+         const std::shared_ptr<pgsDevelopmentLength>& pDevLength = m_pEngineer->GetDevelopmentLengthDetails(poi, strandType, false); // not debonded
+         const pgsDevelopmentLengthBase* pDevLengthBase = dynamic_cast<const pgsDevelopmentLengthBase*>(pDevLength.get());
+
+         (*pTable)(row, col++) << dynamic_cast<const pgsLRFDDevelopmentLength*>(pDevLengthBase)->GetDevelopmentLengthFactor();
+         (*pTable)(row, col++) << stress.SetValue(pDevLengthBase->GetFps());
+         (*pTable)(row, col++) << stress.SetValue(pDevLengthBase->GetFpe());
+         (*pTable)(row, col++) << length.SetValue(pDevLengthBase->GetStrandDiameter());
+         (*pTable)(row, col++) << length.SetValue(pDevLengthBase->GetDevelopmentLength());
+
+         if (strandType == pgsTypes::Straight)
+         {
+            const std::shared_ptr<pgsDevelopmentLength>& pDevLength = m_pEngineer->GetDevelopmentLengthDetails(poi, strandType, true); // debonded
+            const pgsDevelopmentLengthBase* pDevLengthBase = dynamic_cast<const pgsDevelopmentLengthBase*>(pDevLength.get());
+            (*pTable)(row, col++) << dynamic_cast<const pgsLRFDDevelopmentLength*>(pDevLengthBase)->GetDevelopmentLengthFactor();
+            (*pTable)(row, col++) << stress.SetValue(pDevLengthBase->GetFps());
+            (*pTable)(row, col++) << stress.SetValue(pDevLengthBase->GetFpe());
+            (*pTable)(row, col++) << length.SetValue(pDevLengthBase->GetStrandDiameter());
+            (*pTable)(row, col++) << length.SetValue(pDevLengthBase->GetDevelopmentLength());
+         }
+      } // next stand type
+
+      row++;
+   } // next poi
+}
+
+////////////////////////
+////////////////////////
+////////////////////////
+
+pgsPCIUHPCDevelopmentLengthReporter::pgsPCIUHPCDevelopmentLengthReporter(IBroker* pBroker,const pgsDevelopmentLengthEngineer* pEngineer) :
+   pgsDevelopmentLengthReporterBase(pBroker,pEngineer)
+{
+}
+
+void pgsPCIUHPCDevelopmentLengthReporter::ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const
+{
+   __super::ReportDevelopmentLengthDetails(segmentKey, pChapter);
+
+   GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), false);
+   INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
+   INIT_UV_PROTOTYPE(rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false);
+
+
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+   *pChapter << pPara;
+
+   (*pPara) << _T("PCI UHPC SDG E.9.3.2.2-2") << rptNewLine;
+
+   (*pPara) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("PCI_UHPC_DevLength.png")) << rptNewLine;
+
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(9);
+   (*pPara) << pTable << rptNewLine;
+
+   ColumnIndexType col = 0;
+   pTable->SetNumberOfHeaderRows(2);
+   pTable->SetRowSpan(0, col, 2);
+   (*pTable)(0, col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+
+   pTable->SetColumnSpan(0, col, 4);
+   (*pTable)(0, col) << _T("Straight Strands");
+   (*pTable)(1, col++) << COLHDR(RPT_STRESS(_T("ps")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(1, col++) << COLHDR(RPT_STRESS(_T("pe")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(1, col++) << COLHDR(Sub2(_T("d"), _T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*pTable)(1, col++) << COLHDR(Sub2(_T("l"), _T("d")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+
+   pTable->SetColumnSpan(0, col, 4);
+   (*pTable)(0, col) << GetAdjustableStrandName() << _T(" Strands");
+   (*pTable)(1, col++) << COLHDR(RPT_STRESS(_T("ps")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(1, col++) << COLHDR(RPT_STRESS(_T("pe")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(1, col++) << COLHDR(Sub2(_T("d"), _T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*pTable)(1, col++) << COLHDR(Sub2(_T("l"), _T("d")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+
+   const PoiList& vPoi = GetPoiList();
+
+   RowIndexType row = pTable->GetNumberOfHeaderRows();
+   for (const pgsPointOfInterest& poi : vPoi)
+   {
+      col = 0;
+
+      const auto& segmentKey(poi.GetSegmentKey());
+
+      (*pTable)(row, col++) << location.SetValue(GetLocationPoiAttribute(), poi);
+
+      for (int i = 0; i < 2; i++)
+      {
+         pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+
+         const std::shared_ptr<pgsDevelopmentLength>& pDevLength = m_pEngineer->GetDevelopmentLengthDetails(poi, strandType, false); // not debonded
+         const pgsDevelopmentLengthBase* pDevLengthBase = dynamic_cast<const pgsDevelopmentLengthBase*>(pDevLength.get());
+
+         (*pTable)(row, col++) << stress.SetValue(pDevLengthBase->GetFps());
+         (*pTable)(row, col++) << stress.SetValue(pDevLengthBase->GetFpe());
+         (*pTable)(row, col++) << length.SetValue(pDevLengthBase->GetStrandDiameter());
+         (*pTable)(row, col++) << length.SetValue(pDevLengthBase->GetDevelopmentLength());
+      } // next stand type
+
+      row++;
+   } // next poi
+}
+
+
+////////////////////////
+////////////////////////
+////////////////////////
+
+pgsFHWAUHPCDevelopmentLengthReporter::pgsFHWAUHPCDevelopmentLengthReporter(IBroker* pBroker,const pgsDevelopmentLengthEngineer* pEngineer) :
+   pgsDevelopmentLengthReporterBase(pBroker,pEngineer)
+{
+}
+
+void pgsFHWAUHPCDevelopmentLengthReporter::ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const
+{
+   __super::ReportDevelopmentLengthDetails(segmentKey, pChapter);
+
+   GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), false);
+   INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
+   INIT_UV_PROTOTYPE(rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false);
+
+
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+   *pChapter << pPara;
+   (*pPara) << _T("GS 1.9.4.3.2") << rptNewLine;
+
+   pPara = new rptParagraph;
+   *pChapter << pPara;
+   (*pPara) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("FHWA_UHPC_DevLength.png")) << rptNewLine;
+   (*pPara) << Sub2(_T("l"), _T("t")) << _T(" is the longer transfer length.") << rptNewLine;
+
+   // NOTE: Transfer length is a part of the development length, but we don't list transfer length here
+   // because it is reported with the transfer length details
+
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(9);
+   (*pPara) << pTable << rptNewLine;
+
+   ColumnIndexType col = 0;
+   pTable->SetNumberOfHeaderRows(2);
+   pTable->SetRowSpan(0, col, 2);
+   (*pTable)(0, col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+
+   pTable->SetColumnSpan(0, col, 4);
+   (*pTable)(0, col) << _T("Straight Strands");
+   (*pTable)(1, col++) << COLHDR(RPT_STRESS(_T("ps")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(1, col++) << COLHDR(RPT_STRESS(_T("pe")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(1, col++) << COLHDR(Sub2(_T("d"), _T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*pTable)(1, col++) << COLHDR(Sub2(_T("l"), _T("d")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+
+   pTable->SetColumnSpan(0, col, 4);
+   (*pTable)(0, col) << GetAdjustableStrandName() << _T(" Strands");
+   (*pTable)(1, col++) << COLHDR(RPT_STRESS(_T("ps")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(1, col++) << COLHDR(RPT_STRESS(_T("pe")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(1, col++) << COLHDR(Sub2(_T("d"), _T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*pTable)(1, col++) << COLHDR(Sub2(_T("l"), _T("d")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+
+   const PoiList& vPoi = GetPoiList();
+
+   RowIndexType row = pTable->GetNumberOfHeaderRows();
+   for (const pgsPointOfInterest& poi : vPoi)
+   {
+      col = 0;
+
+      const auto& segmentKey(poi.GetSegmentKey());
+
+      (*pTable)(row, col++) << location.SetValue(GetLocationPoiAttribute(), poi);
+
+      for (int i = 0; i < 2; i++)
+      {
+         pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+
+         const std::shared_ptr<pgsDevelopmentLength>& pDevLength = m_pEngineer->GetDevelopmentLengthDetails(poi, strandType, false); // not debonded
+         const pgsDevelopmentLengthBase* pDevLengthBase = dynamic_cast<const pgsDevelopmentLengthBase*>(pDevLength.get());
+
+         (*pTable)(row, col++) << stress.SetValue(pDevLengthBase->GetFps());
+         (*pTable)(row, col++) << stress.SetValue(pDevLengthBase->GetFpe());
+         (*pTable)(row, col++) << length.SetValue(pDevLengthBase->GetStrandDiameter());
+         (*pTable)(row, col++) << length.SetValue(pDevLengthBase->GetDevelopmentLength());
+      } // next stand type
+
+      row++;
+   } // next poi
 }

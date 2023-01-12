@@ -61,6 +61,7 @@ private:
    rptCreepCoefficient creep;
 
    IntervalIndexType compositeIntervalIdx;
+   bool m_bIsUHPC;
 
    const CGirderData* m_pGD;
    Float64 m_Sign;

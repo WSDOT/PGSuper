@@ -1322,7 +1322,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
    IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
 
    // NOTE: These regression test results will not align with those from versions of PGSuper prior to 3.0
-   // The concept of reactions has been generized and the old method of dumping results no longer worked
+   // The concept of reactions has been generalized and the old method of dumping results no longer worked
    GET_IFACE(IBridge,pBridge);
    PierIndexType startPierIdx, endPierIdx;
    pBridge->GetGirderGroupPiers(segmentKey.groupIndex,&startPierIdx,&endPierIdx);
@@ -1629,7 +1629,7 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34051, ")<<rgtloc<<_T(", ")<< QUIET(WBFL::Units::ConvertFromSysUnits(min, WBFL::Units::Measure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
 
       // NOTE: These regression test results will not align with those from versions of PGSuper prior to 3.0
-      // The concept of reactions has been generized and the old method of dumping results no longer worked
+      // The concept of reactions has been generalized and the old method of dumping results no longer worked
       PierIndexType startPierIdx, endPierIdx;
       pBridge->GetGirderGroupPiers(segmentKey.groupIndex,&startPierIdx,&endPierIdx);
       std::vector<PierIndexType> vPiers = pBearingDesign->GetBearingReactionPiers(liveLoadIntervalIdx,segmentKey);
@@ -1687,7 +1687,7 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34043, ")<<rgtloc<<_T(", ")<< QUIET(WBFL::Units::ConvertFromSysUnits(min, WBFL::Units::Measure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
 
       // NOTE: These regression test results will not align with those from versions of PGSuper prior to 3.0
-      // The concept of reactions has been generized and the old method of dumping results no longer worked
+      // The concept of reactions has been generalized and the old method of dumping results no longer worked
       PierIndexType startPierIdx, endPierIdx;
       pBridge->GetGirderGroupPiers(segmentKey.groupIndex,&startPierIdx,&endPierIdx);
       std::vector<PierIndexType> vPiers = pBearingDesign->GetBearingReactionPiers(liveLoadIntervalIdx,segmentKey);
@@ -1915,9 +1915,9 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
 
       // force and stress in prestressing strands
       resultsFile<<bridgeId<<", "<<pid<<", 50002, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,releaseIntervalIdx,pgsTypes::Start), WBFL::Units::Measure::MPa))    << ", 15, " << SEGMENT(segmentKey) << std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 50003, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(pPrestressForce->GetPrestressForce(    poi,pgsTypes::Permanent,releaseIntervalIdx,pgsTypes::Start), WBFL::Units::Measure::Newton)) << ", 15, " << SEGMENT(segmentKey) << std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 50003, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(pPrestressForce->GetPrestressForce(    poi,pgsTypes::Permanent,releaseIntervalIdx,pgsTypes::Start, pgsTypes::tltMinimum), WBFL::Units::Measure::Newton)) << ", 15, " << SEGMENT(segmentKey) << std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50004, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,liveLoadIntervalIdx,pgsTypes::Middle), WBFL::Units::Measure::MPa))    << ", 15, " << SEGMENT(segmentKey) << std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 50005, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(pPrestressForce->GetPrestressForce(    poi,pgsTypes::Permanent,liveLoadIntervalIdx,pgsTypes::Middle), WBFL::Units::Measure::Newton)) << ", 15, " << SEGMENT(segmentKey) << std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 50005, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(pPrestressForce->GetPrestressForce(    poi,pgsTypes::Permanent,liveLoadIntervalIdx,pgsTypes::Middle, pgsTypes::tltMinimum), WBFL::Units::Measure::Newton)) << ", 15, " << SEGMENT(segmentKey) << std::endl;
 
       // stresses due to external loads
       // casting yards
@@ -2553,7 +2553,7 @@ bool CTestAgentImp::RunDesignTest(std::_tofstream& resultsFile, std::_tofstream&
 
    if ( pArtifact == nullptr )
    {
-      resultsFile << "Design was cancelled for span " << spanIdx << " girder " << gdrIdx << std::endl;
+      resultsFile << "Design was canceled for span " << spanIdx << " girder " << gdrIdx << std::endl;
       return false;
    }
 

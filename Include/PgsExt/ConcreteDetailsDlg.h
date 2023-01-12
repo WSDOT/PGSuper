@@ -29,6 +29,7 @@
 #include "ACIConcretePage.h"
 #include "CEBFIPConcretePage.h"
 #include "PCIUHPCConcretePage.h"
+#include "FHWAUHPCConcretePage.h"
 
 // ConcreteDetailsDlg.h : header file
 //
@@ -74,6 +75,7 @@ public:
    CACIConcretePage m_ACI;
    CCEBFIPConcretePage m_CEBFIP;
    CPCIUHPCConcretePage m_PCIUHPC;
+   CFHWAUHPCConcretePage m_FHWAUHPC;
 
    // Implementation
 protected:

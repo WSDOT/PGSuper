@@ -874,7 +874,7 @@ void CBridgeDescDeckDetailsPage::OnMoreConcreteProperties()
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
 
-   CConcreteDetailsDlg dlg(true/*f'c*/,true/*include uhpc*/, false/*don't enable Compute Time Parameters option*/);
+   CConcreteDetailsDlg dlg(true/*f'c*/,false/*don't include uhpc*/, false/*don't enable Compute Time Parameters option*/);
 
    CDataExchange dx(this,TRUE);
    ExchangeConcreteData(&dx);
@@ -906,11 +906,20 @@ void CBridgeDescDeckDetailsPage::OnMoreConcreteProperties()
    dlg.m_ACI.m_CureMethod      = pDeck->Concrete.CureMethod;
    dlg.m_ACI.m_CementType      = pDeck->Concrete.ACI209CementType;
 
-   dlg.m_PCIUHPC.m_ffc = pDeck->Concrete.Ffc;
-   dlg.m_PCIUHPC.m_frr = pDeck->Concrete.Frr;
-   dlg.m_PCIUHPC.m_FiberLength = pDeck->Concrete.FiberLength;
-   dlg.m_PCIUHPC.m_AutogenousShrinkage = pDeck->Concrete.AutogenousShrinkage;
-   dlg.m_PCIUHPC.m_bPCTT = pDeck->Concrete.bPCTT;
+   // place holder for UHPC decks
+   //dlg.m_PCIUHPC.m_ffc = pDeck->Concrete.Ffc;
+   //dlg.m_PCIUHPC.m_frr = pDeck->Concrete.Frr;
+   //dlg.m_PCIUHPC.m_FiberLength = pDeck->Concrete.FiberLength;
+   //dlg.m_PCIUHPC.m_AutogenousShrinkage = pDeck->Concrete.AutogenousShrinkage;
+   //dlg.m_PCIUHPC.m_bPCTT = pDeck->Concrete.bPCTT;
+
+   //dlg.m_FHWAUHPC.m_ftcri = pDeck->Concrete.ftcri;
+   //dlg.m_FHWAUHPC.m_ftcr =  pDeck->Concrete.ftcr;
+   //dlg.m_FHWAUHPC.m_ftloc = pDeck->Concrete.ftloc;
+   //dlg.m_FHWAUHPC.m_etloc = pDeck->Concrete.etloc;
+   //dlg.m_FHWAUHPC.m_alpha_u = pDeck->Concrete.alpha_u;
+   //dlg.m_FHWAUHPC.m_bExperimental_ecu = pDeck->Concrete.bExperimental_ecu;
+   //dlg.m_FHWAUHPC.m_ecu = pDeck->Concrete.ecu;
 
    WBFL::Materials::ACI209Concrete concrete;
    concrete.SetTimeAtCasting(0);
@@ -957,11 +966,21 @@ void CBridgeDescDeckDetailsPage::OnMoreConcreteProperties()
       pDeck->Concrete.BetaSc                = dlg.m_CEBFIP.m_BetaSc;
       pDeck->Concrete.CEBFIPCementType      = dlg.m_CEBFIP.m_CementType;
 
-      pDeck->Concrete.Ffc = dlg.m_PCIUHPC.m_ffc;
-      pDeck->Concrete.Frr = dlg.m_PCIUHPC.m_frr;
-      pDeck->Concrete.FiberLength = dlg.m_PCIUHPC.m_FiberLength;
-      pDeck->Concrete.AutogenousShrinkage = dlg.m_PCIUHPC.m_AutogenousShrinkage;
-      pDeck->Concrete.bPCTT = dlg.m_PCIUHPC.m_bPCTT;
+      // place holder for UHPC decks
+      //pDeck->Concrete.Ffc = dlg.m_PCIUHPC.m_ffc;
+      //pDeck->Concrete.Frr = dlg.m_PCIUHPC.m_frr;
+      //pDeck->Concrete.FiberLength = dlg.m_PCIUHPC.m_FiberLength;
+      //pDeck->Concrete.AutogenousShrinkage = dlg.m_PCIUHPC.m_AutogenousShrinkage;
+      //pDeck->Concrete.bPCTT = dlg.m_PCIUHPC.m_bPCTT;
+
+      //pDeck->Concrete.ftcri = dlg.m_FHWAUHPC.m_ftcri;
+      //pDeck->Concrete.ftcr = dlg.m_FHWAUHPC.m_ftcr;
+      //pDeck->Concrete.ftloc = dlg.m_FHWAUHPC.m_ftloc;
+      //pDeck->Concrete.etloc = dlg.m_FHWAUHPC.m_etloc;
+      //pDeck->Concrete.alpha_u = dlg.m_FHWAUHPC.m_alpha_u;
+      //pDeck->Concrete.ecu = dlg.m_FHWAUHPC.m_ecu;
+      //pDeck->Concrete.bExperimental_ecu = dlg.m_FHWAUHPC.m_bExperimental_ecu;
+
 
       m_strUserEc  = dlg.m_General.m_strUserEc;
       m_ctrlEc.SetWindowText(m_strUserEc);

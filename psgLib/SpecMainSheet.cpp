@@ -857,6 +857,14 @@ void CSpecMainSheet::ExchangeShearCapacityData(CDataExchange* pDX)
    DDX_Text(pDX, IDC_LWC_JOINT_PHI, m_Entry.m_PhiClosureJointShear[pgsTypes::SandLightweight]);
    DDX_Text(pDX, IDC_UHPC_JOINT_PHI, m_Entry.m_PhiClosureJointShear[pgsTypes::PCI_UHPC]);
 
+   if (pDX->m_bSaveAndValidate)
+   {
+      // these values share a single control
+      m_Entry.m_PhiShear[pgsTypes::FHWA_UHPC] = m_Entry.m_PhiShear[pgsTypes::PCI_UHPC];
+      m_Entry.m_PhiShearDebonded[pgsTypes::FHWA_UHPC] = m_Entry.m_PhiShearDebonded[pgsTypes::PCI_UHPC];
+      m_Entry.m_PhiClosureJointShear[pgsTypes::FHWA_UHPC] = m_Entry.m_PhiClosureJointShear[pgsTypes::PCI_UHPC];
+   }
+
    DDX_UnitValueAndTag(pDX, IDC_SMAX, IDC_SMAX_UNIT, m_Entry.m_MaxInterfaceShearConnectorSpacing, pDisplayUnits->ComponentDim );
 
    DDX_Text(pDX, IDC_SPACING_COEFFICIENT_1, m_Entry.m_StirrupSpacingCoefficient[0]);
@@ -1205,13 +1213,26 @@ void CSpecMainSheet::ExchangeLimitsData(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_LWC_UNIT_WEIGHT, IDC_LWC_UNIT_WEIGHT_UNIT, m_Entry.m_MaxConcreteUnitWeight[pgsTypes::AllLightweight], pDisplayUnits->Density);
    DDX_UnitValueAndTag(pDX, IDC_LWC_AGG_SIZE,    IDC_LWC_AGG_SIZE_UNIT,    m_Entry.m_MaxConcreteAggSize[pgsTypes::AllLightweight],    pDisplayUnits->ComponentDim);
 
-   DDX_UnitValueAndTag(pDX, IDC_UHPC_FC_SLAB, IDC_UHPC_FC_SLAB_UNIT, m_Entry.m_MaxSlabFc[pgsTypes::PCI_UHPC], pDisplayUnits->Stress);
-   DDX_UnitValueAndTag(pDX, IDC_UHPC_GIRDER_FCI, IDC_UHPC_GIRDER_FCI_UNIT, m_Entry.m_MaxSegmentFci[pgsTypes::PCI_UHPC], pDisplayUnits->Stress);
-   DDX_UnitValueAndTag(pDX, IDC_UHPC_GIRDER_FC, IDC_UHPC_GIRDER_FC_UNIT, m_Entry.m_MaxSegmentFc[pgsTypes::PCI_UHPC], pDisplayUnits->Stress);
-   DDX_UnitValueAndTag(pDX, IDC_UHPC_CLOSURE_FCI, IDC_UHPC_CLOSURE_FCI_UNIT, m_Entry.m_MaxClosureFci[pgsTypes::PCI_UHPC], pDisplayUnits->Stress);
-   DDX_UnitValueAndTag(pDX, IDC_UHPC_CLOSURE_FC, IDC_UHPC_CLOSURE_FC_UNIT, m_Entry.m_MaxClosureFc[pgsTypes::PCI_UHPC], pDisplayUnits->Stress);
-   DDX_UnitValueAndTag(pDX, IDC_UHPC_UNIT_WEIGHT, IDC_UHPC_UNIT_WEIGHT_UNIT, m_Entry.m_MaxConcreteUnitWeight[pgsTypes::PCI_UHPC], pDisplayUnits->Density);
-   DDX_UnitValueAndTag(pDX, IDC_UHPC_AGG_SIZE, IDC_UHPC_AGG_SIZE_UNIT, m_Entry.m_MaxConcreteAggSize[pgsTypes::PCI_UHPC], pDisplayUnits->ComponentDim);
+   // UHPC doesn't really have well established normal "maximum" values yet.
+   //DDX_UnitValueAndTag(pDX, IDC_UHPC_FC_SLAB, IDC_UHPC_FC_SLAB_UNIT, m_Entry.m_MaxSlabFc[pgsTypes::PCI_UHPC], pDisplayUnits->Stress);
+   //DDX_UnitValueAndTag(pDX, IDC_UHPC_GIRDER_FCI, IDC_UHPC_GIRDER_FCI_UNIT, m_Entry.m_MaxSegmentFci[pgsTypes::PCI_UHPC], pDisplayUnits->Stress);
+   //DDX_UnitValueAndTag(pDX, IDC_UHPC_GIRDER_FC, IDC_UHPC_GIRDER_FC_UNIT, m_Entry.m_MaxSegmentFc[pgsTypes::PCI_UHPC], pDisplayUnits->Stress);
+   //DDX_UnitValueAndTag(pDX, IDC_UHPC_CLOSURE_FCI, IDC_UHPC_CLOSURE_FCI_UNIT, m_Entry.m_MaxClosureFci[pgsTypes::PCI_UHPC], pDisplayUnits->Stress);
+   //DDX_UnitValueAndTag(pDX, IDC_UHPC_CLOSURE_FC, IDC_UHPC_CLOSURE_FC_UNIT, m_Entry.m_MaxClosureFc[pgsTypes::PCI_UHPC], pDisplayUnits->Stress);
+   //DDX_UnitValueAndTag(pDX, IDC_UHPC_UNIT_WEIGHT, IDC_UHPC_UNIT_WEIGHT_UNIT, m_Entry.m_MaxConcreteUnitWeight[pgsTypes::PCI_UHPC], pDisplayUnits->Density);
+   //DDX_UnitValueAndTag(pDX, IDC_UHPC_AGG_SIZE, IDC_UHPC_AGG_SIZE_UNIT, m_Entry.m_MaxConcreteAggSize[pgsTypes::PCI_UHPC], pDisplayUnits->ComponentDim);
+
+   //if (pDX->m_bSaveAndValidate)
+   //{
+   //   // these share the same UI so make them identical
+   //   m_Entry.m_MaxSlabFc[pgsTypes::FHWA_UHPC]  = m_Entry.m_MaxSlabFc[pgsTypes::PCI_UHPC];
+   //   m_Entry.m_MaxSegmentFci[pgsTypes::FHWA_UHPC] = m_Entry.m_MaxSegmentFci[pgsTypes::PCI_UHPC];
+   //   m_Entry.m_MaxSegmentFc[pgsTypes::FHWA_UHPC] = m_Entry.m_MaxSegmentFc[pgsTypes::PCI_UHPC];
+   //   m_Entry.m_MaxClosureFci[pgsTypes::FHWA_UHPC] = m_Entry.m_MaxClosureFci[pgsTypes::PCI_UHPC];
+   //   m_Entry.m_MaxClosureFc[pgsTypes::FHWA_UHPC] = m_Entry.m_MaxClosureFc[pgsTypes::PCI_UHPC];
+   //   m_Entry.m_MaxConcreteUnitWeight[pgsTypes::FHWA_UHPC] = m_Entry.m_MaxConcreteUnitWeight[pgsTypes::PCI_UHPC];
+   //   m_Entry.m_MaxConcreteAggSize[pgsTypes::FHWA_UHPC] = m_Entry.m_MaxConcreteAggSize[pgsTypes::PCI_UHPC];
+   //}
 
    DDX_Check_Bool(pDX, IDC_CHECK_STIRRUP_COMPATIBILITY, m_Entry.m_DoCheckStirrupSpacingCompatibility);
    DDX_Check_Bool(pDX, IDC_CHECK_GIRDER_SAG, m_Entry.m_bCheckSag);

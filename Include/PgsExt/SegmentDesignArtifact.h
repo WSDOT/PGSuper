@@ -93,10 +93,11 @@ public:
       NoDesignRequested,
       LldfRangeOfApplicabilityError,
       DesignNotSupported_Losses, // design could not be performed because design is not supported for the current application settings (e.g. time-step losses)
-      DesignNotSupported_Strands // design could not be performed because design is not supported for the current application settings (e.g. strand definition type)
+      DesignNotSupported_Strands, // design could not be performed because design is not supported for the current application settings (e.g. strand definition type)
+      DesignNotSupported_Material // design could not be performed because design is not support for UHPC materials
    };
 
-   // Design outcome data that isn't neccessarily a failure
+   // Design outcome data that isn't necessarily a failure
    enum DesignNote
    {
       dnExistingShearDesignPassedSpecCheck,
@@ -125,11 +126,11 @@ public:
       m_IntervalIdx(INVALID_INDEX)
       {;}
 
-      // Conc strength controlled by flexural stress
+      // Concrete strength controlled by flexural stress
       void SetStressState(bool controlledByMin, const CSegmentKey& segmentKey,IntervalIndexType intervalIdx, pgsTypes::StressType stressType, 
                     pgsTypes::LimitState limitState, pgsTypes::StressLocation stressLocation);
 
-      // Conc strength controlled by shear stress
+      // Concrete strength controlled by shear stress
       void SetShearState(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx, pgsTypes::LimitState limitState);
 
       Action GetAction() const;
@@ -333,8 +334,8 @@ private:
    bool    m_PjHUsedMax;
    Float64 m_PjT;
    bool    m_PjTUsedMax;
-   Float64 m_HarpStrandOffsetEnd[2]; // use pgsTypes::MemberEndType to access array
-   Float64 m_HarpStrandOffsetHp[2];  // use pgsTypes::MemberEndType to access array
+   std::array<Float64, 2> m_HarpStrandOffsetEnd; // use pgsTypes::MemberEndType to access array
+   std::array<Float64, 2> m_HarpStrandOffsetHp;  // use pgsTypes::MemberEndType to access array
 
    ConfigStrandFillVector m_RaisedAdjustableStrandFill;
 

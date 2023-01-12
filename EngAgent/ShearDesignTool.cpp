@@ -387,7 +387,7 @@ void pgsShearDesignTool::Initialize(IBroker* pBroker, const LongReinfShearChecke
    // Compute maximum possible bar spacing for design
    GET_IFACE(ITransverseReinforcementSpec,pTransverseReinforcementSpec);
    Float64 S_over;
-#pragma Reminder("UPDATE: need to get the real dv value")
+
    // The original code for this tool had a bug in it. It only got the basic max spacing values
    // without looking at the upper limit on the max spacing values. The limitations are
    // in LRFD Equations 5.7.2.6-1 and -2 (pre2017: 5.8.2.7). The m_SMaxMax cannot be more than 0.8dv 
@@ -401,12 +401,29 @@ void pgsShearDesignTool::Initialize(IBroker* pBroker, const LongReinfShearChecke
    //
    // Since this method never looked at the limitations before, we are going to assume
    // that it is still ok.
-   Float64 dv = 99999; // use a huge dv value so that the upper limits never control
+
+   Float64 dv = Float64_Max/2; // use a huge dv value so that the upper limits never control
    pTransverseReinforcementSpec->GetMaxStirrupSpacing(dv,&m_SMaxMax, &S_over);
-   m_SMaxMax = min( m_SMaxMax, m_AvailableBarSpacings.back() );
-   // per PCI UHPC SDG E.7.2.2.2, stirrups are not required so maximum spacing is infinite
+   m_SMaxMax = Min( m_SMaxMax, m_AvailableBarSpacings.back() );
+
    if (m_ConcreteType == pgsTypes::PCI_UHPC)
+   {
+      ATLASSERT(false); // we aren't supporting design for UHPC right now
+      // per PCI UHPC SDG E.7.2.2.2, stirrups are not required so maximum spacing is infinite
       m_SMaxMax = Float64_Max;
+   }
+
+   if (m_ConcreteType == pgsTypes::FHWA_UHPC)
+   {
+      ATLASSERT(false); 
+      // 1. We aren't supporting UHPC design right now
+      // 2. UHPC GS Eq 1.7.2.6-1 has SMax = 0.25*dv*cot_theta <= 24 inches
+      //    which means we need to know theta - theta is not know at this time
+      //    so we can't really initialize m_SMaxMax right now. It will need to
+      //    be evaluated at the point where it is used.
+      // 3. Search for GS 1.7.2.6 in the source code to see how the spacing requirement is checked and reported
+   }
+
 
    // Compute splitting zone lengths if we need them
    if (m_bDoDesignForSplitting)
@@ -424,7 +441,7 @@ void pgsShearDesignTool::Initialize(IBroker* pBroker, const LongReinfShearChecke
 
 void pgsShearDesignTool::ResetDesign(const PoiList& pois)
 {
-   ATLASSERT(m_pBroker!=nullptr); // make sure Intialize was called
+   ATLASSERT(m_pBroker!=nullptr); // make sure Initialize was called
 
    // Reset check artifacts
    m_StirrupCheckArtifact.Clear();
@@ -1334,7 +1351,7 @@ bool pgsShearDesignTool::LayoutPrimaryStirrupZones() const
 
          // get minimum stirrup spacing requirements (LRFD 5.7.2.5 (pre2017: 5.8.2.5))
          Float64 bv = pGdr->GetShearWidth( poi );
-         Float64 avs_min = (m_ConcreteType == pgsTypes::PCI_UHPC ? 0.0 /*PCI UHPC SDG E.7.2.2.2 stirrups not required*/ : lrfdRebar::GetAvOverSMin(fc, bv, fy) /* LRFD 5.7.2.5 (pre2017: 5.8.2.5) */);
+         Float64 avs_min = (IsUHPC(m_ConcreteType) ? 0.0 /*PCI UHPC SDG E.7.2.2.2 & GS 1.7.2.5 stirrups not required*/ : lrfdRebar::GetAvOverSMin(fc, bv, fy) /* LRFD 5.7.2.5 (pre2017: 5.8.2.5) */);
          avs_demand = Max(avs_min,avs_demand); // make sure demand is at least the minimum
 
          if (ipoi == 0)
@@ -2232,7 +2249,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
    GET_IFACE(IShearCapacity, pShearCapacity);
    GET_IFACE(IBridge, pBridge);
 
-   const pgsTypes::LimitState limit_states[2]={pgsTypes::StrengthI, pgsTypes::StrengthII};
+   const std::array<pgsTypes::LimitState, 2> limit_states{pgsTypes::StrengthI, pgsTypes::StrengthII};
    Int32 nls = m_bIsPermit ? 2 : 1;
 
    // Loop over pois between faces of support and CSS
@@ -2245,13 +2262,22 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
    const CLongitudinalRebarData* pLRD = pLongRebar->GetSegmentLongitudinalRebarData(m_SegmentKey);
    const auto* pRebar = lrfdRebarPool::GetInstance()->GetRebar(pLRD->BarType, pLRD->BarGrade, WBFL::Materials::Rebar::Size::bs5); // #5
    Float64 rbfy = pRebar->GetYieldStrength();
+   GET_IFACE(IMaterials, pMaterials);
+   if (pMaterials->GetSegmentConcreteType(m_SegmentKey) == pgsTypes::FHWA_UHPC)
+   {
+      // Es*et,loc shall not exceed fy.... use Es*et,loc for rbfy
+      Float64 Es = pRebar->GetE();
+      Float64 etloc = pMaterials->GetSegmentConcreteCrackLocalizationStrain(m_SegmentKey);
+      Float64 Es_etloc = Es * etloc;
+      rbfy = Min(Es_etloc, rbfy);
+   }
+
    Float64 tensile_development_length = 0.0;
    if(m_LongShearCapacityIncreaseMethod == GirderLibraryEntry::isAddingRebar)
    {
-      GET_IFACE(IMaterials,pMaterials);
       Float64 density = pMaterials->GetSegmentStrengthDensity(m_SegmentKey);
 
-      REBARDEVLENGTHDETAILS details = lrfdRebar::GetRebarDevelopmentLengthDetails(pRebar->GetSize(),pRebar->GetNominalArea(),pRebar->GetNominalDimension(),pRebar->GetYieldStrength(),(WBFL::Materials::ConcreteType)config.ConcType,m_pArtifact->GetConcreteStrength(),config.bHasFct,config.Fct,density);
+      REBARDEVLENGTHDETAILS details = lrfdRebar::GetRebarDevelopmentLengthDetails(pRebar->GetSize(),pRebar->GetNominalArea(),pRebar->GetNominalDimension(),pRebar->GetYieldStrength(),(WBFL::Materials::ConcreteType)config.ConcType,m_pArtifact->GetConcreteStrength(),config.bHasFct,config.Fct,density, false, false, true);
       tensile_development_length = details.ld;
       ATLASSERT(0.0 < tensile_development_length);
    }
@@ -2322,6 +2348,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
                      {
                         // in 9th Edition LRFD, ApsFps > AsFy
                         // check this requirement and add more Aps if needed
+                        // NOTE: for UHPC, ApsFps > As*Es*et,loc... rbfy is equal to Es*et,loc but not greater than fy
                         Float64 as_fy = (l_artifact.GetAs() + as)*rbfy;
                         Float64 aps_fps = l_artifact.GetPretensionForce();
                         if (aps_fps < as_fy)
@@ -2357,6 +2384,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
                      {
                         // in 9th Edition LRFD, ApsFps > AsFy
                         // check this requirement and add more Aps if needed
+                        // NOTE: for UHPC, ApsFps > As*Es*et,loc... GetRebarForce returns this value so as_fy is actually As*Es*et,loc with Es*et,loc <= fy
                         Float64 aps = l_artifact.GetAps();
                         Float64 aps_fps = (aps+as)*fps;
                         Float64 as_fy = l_artifact.GetRebarForce();

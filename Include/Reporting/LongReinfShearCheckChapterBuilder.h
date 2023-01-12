@@ -86,8 +86,8 @@ private:
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
-   void BuildForDesign(rptChapter* pChapter, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const;
-   void BuildForRating(rptChapter* pChapter, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const;
+   void BuildForDesign(rptChapter* pChapter, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,bool bFHWAUHPC,Uint16 level) const;
+   void BuildForRating(rptChapter* pChapter, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, bool bFHWAUHPC, Uint16 level) const;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

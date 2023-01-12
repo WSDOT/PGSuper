@@ -40,14 +40,14 @@ static long g_Ncopies = 0; // keeps track of the number of times GDRCONFIG is co
 #define TOOLTIP_WIDTH 400 // 400 characters
 #define TOOLTIP_DURATION 20000 // 20 seconds
 
-// defines the mehod used for computing creep coefficients
+// defines the method used for computing creep coefficients
 #define CREEP_LRFD              0
 #define CREEP_WSDOT             1
 
 #define CREEP_SPEC_PRE_2005     1 // creep based on pre 2005 provisions
 #define CREEP_SPEC_2005         2 // creep based on 2005 interim provisions
 
-// curing method (effects ti for loss and creep calcuations)
+// curing method (effects ti for loss and creep calculations)
 #define CURING_NORMAL           0
 #define CURING_ACCELERATED      1
 
@@ -126,7 +126,7 @@ typedef struct pgsTypes
    {
       sptGrossNoncomposite,       // Based on concrete outline only. Gross section of non-composite girder only, regardless of analysis interval
       sptGross,                   // Based on concrete outline only. Deck is transformed to equivalent girder concrete
-      sptTransformedNoncomposite, // Transformed section of non-composite girder onlye, regardless of analysis interval. All materials transformed to equivalent girder concrete
+      sptTransformedNoncomposite, // Transformed section of non-composite girder only, regardless of analysis interval. All materials transformed to equivalent girder concrete
       sptTransformed,             // All materials including strand, rebar, tendons are transformed to equivalent girder concrete
       sptNetGirder,               // Non-composite girder section with holes for strands/rebar/ducts
       sptNetDeck,                 // Deck section with holes for rebar
@@ -181,7 +181,7 @@ typedef struct pgsTypes
       MaxSimpleContinuousEnvelope 
    } BridgeAnalysisType;
 
-   // Defines the meaning of a generic "SupportIndexType". Support indicies are used
+   // Defines the meaning of a generic "SupportIndexType". Support indices are used
    // in some methods to represent either a pier or a temporary support. This enum is used
    // to tell to what the support index refers
    typedef enum SupportType
@@ -289,10 +289,10 @@ typedef struct pgsTypes
                      ServiceIII_LegalSpecial = 13,
                      StrengthII_PermitRoutine = 14,
                      ServiceI_PermitRoutine = 15,
-                     ServiceIII_PermitRoutine = 16, // for WSDOT BDM Load Rating Requiements (See BDM Chapter 13)
+                     ServiceIII_PermitRoutine = 16, // for WSDOT BDM Load Rating Requirements (See BDM Chapter 13)
                      StrengthII_PermitSpecial = 17,
                      ServiceI_PermitSpecial = 18,
-                     ServiceIII_PermitSpecial = 19, // for WSDOT BDM Load Rating Requiements (See BDM Chapter 13)
+                     ServiceIII_PermitSpecial = 19, // for WSDOT BDM Load Rating Requirements (See BDM Chapter 13)
                      StrengthI_LegalEmergency = 20,
                      ServiceIII_LegalEmergency = 21,
                      LimitStateCount // this should always be the last one as it will define the total number of limit states
@@ -376,13 +376,13 @@ typedef struct pgsTypes
 
    typedef enum MeasurementType
    {
-      NormalToItem    = 0, // measrued normal to the item (alignment, cl pier, cl bearing, cl girder, etc)
+      NormalToItem    = 0, // measured normal to the item (alignment, cl pier, cl bearing, cl girder, etc)
       AlongItem       = 1, // measured along centerline of item (pier, bearing, girder, etc)
    } MeasurementType;
 
    typedef enum MeasurementLocation
    {
-      AtPierLine          = 0, // measrued at pier datum line
+      AtPierLine          = 0, // measured at pier datum line
       AtCenterlineBearing = 1, // measured at centerline bearing
    } MeasurementLocation;
 
@@ -424,7 +424,7 @@ typedef struct pgsTypes
 
    typedef enum DeckOverhangTaper
    {
-      dotNone            = 0,  // No taper, constant thickness deck in overhanges
+      dotNone            = 0,  // No taper, constant thickness deck in overhangs
       dotTopTopFlange    = 1,  // Taper overhang to top of girder top flange
       dotBottomTopFlange = 2   // Taper overhang to bottom of girder top flange
    } DeckOverhangTaper;
@@ -439,7 +439,7 @@ typedef struct pgsTypes
    {
       dptLinear,  // deck edge is linear between deck points
       dptSpline,  // deck edge is a cubic spline between points
-      dptParallel // deck edge parallels alignment. deck points on both sides of transtion must be the same
+      dptParallel // deck edge parallels alignment. deck points on both sides of transition must be the same
    } DeckPointTransitionType;
 
    typedef enum DeckRebarMatType
@@ -471,7 +471,7 @@ typedef struct pgsTypes
 
    typedef enum SupportedDeckType 
    {
-      // NOTE: Assigning explicit values to guarentee consistency with deck type constants
+      // NOTE: Assigning explicit values to guarantee consistency with deck type constants
       //       used prior to adding non-composite sections to PGSuper
       sdtCompositeCIP = 0,       // Composite cast-in-place deck
       sdtCompositeSIP = 1,       // Composite stay-in-place deck panels
@@ -513,7 +513,7 @@ typedef struct pgsTypes
       brtGirder,  // unique bearing at each pier for each girder
    } BearingType;
 
-   // Assummed excess camber input
+   // Assumed excess camber input
    typedef enum AssumedExcessCamberType 
    {
       aecBridge,  // a single camber is used in all spans
@@ -561,6 +561,15 @@ typedef struct pgsTypes
    typedef enum PrestressTransferComputationType { ptUsingSpecification=60, // use current spec
                                                    ptMinuteValue=0          // As close to zero length as we are comfortable
    } PrestressTransferComputationType;
+
+   /// Defines the transfer length type. Transfer length is an uncertain value. The transfer length model
+   /// supports a minimum and maximum length value so a short or long transfer length can be used when
+   /// it is most critical.
+   typedef enum TransferLengthType
+   {
+      tltMinimum, ///< Short transfer length, typically critical for Service and Fatigue Limit States
+      tltMaximum ///< Long transfer length, typically critical for Strength and Extreme Event Limit States
+   } TransferLengthType;
 
    typedef enum TrafficBarrierOrientation
    {
@@ -613,7 +622,7 @@ typedef struct pgsTypes
    // describes the model used for determining live load factors for rating
    typedef enum LiveLoadFactorType
    {
-      gllSingleValue,  // a single constanst value is used
+      gllSingleValue,  // a single value is used
       gllStepped,      // ADTT < a1 gll = g1, otherwise gll = g2
       gllLinear,       // ADTT < a1 gll = g1, ADTT > a2 gll = g2
       gllBilinear,     // ADTT < a1 gll = g1, ADTT = a2, gll = g2, ADTT > a3, gll = g3
@@ -629,9 +638,10 @@ typedef struct pgsTypes
    typedef enum ConcreteType
    {
       Normal,
-      AllLightweight, // Starting with AASHTO LRFD 7th Edition, 2016 Interims, the destinction between All Lightweight and Sand Lightweight is removed. AllLightweight is considered an invalid parameter and it automatically gets converted to SandLightweight
+      AllLightweight, // Starting with AASHTO LRFD 7th Edition, 2016 Interims, the distinction between All Lightweight and Sand Lightweight is removed. AllLightweight is considered an invalid parameter and it automatically gets converted to SandLightweight
       SandLightweight, // Starting with AASHTO LRFD 7th Edition, 2016 Interims SandLightweight means "Lightweight" for all types of lightweight concrete
-      PCI_UHPC, // Concrete is defined by on PCI definition of UHPC
+      PCI_UHPC, // Concrete is defined by PCI definition of UHPC
+      FHWA_UHPC, // Concrete is defined by FHWA definition of UHPC 
       ConcreteTypeCount // this should always be the last value in the enum
    } ConcreteType;
 
@@ -670,7 +680,7 @@ typedef struct pgsTypes
    typedef enum CEBFIPCementType
    {
       RS, // rapid hardening, high strength
-      N,  // normal hardining
+      N,  // normal hardening
       R,  // rapid hardening
       SL  // slow hardening
    } CEBFIPCementType;
@@ -740,7 +750,7 @@ typedef struct pgsTypes
 
    typedef enum ProductForceType 
    { 
-      // externaly applied loads
+      // externally applied loads
       pftGirder,
       pftConstruction,
       pftSlab, 
@@ -1008,10 +1018,10 @@ struct STIRRUPCONFIG
    }
 };
 // NOTE: Data here is not used, but may be useful for someone in the future.
-//       This is a preliminary design for modelling longitudinal rebar.
-//       After some effort, I determined that the data is not necessessary for the 
+//       This is a preliminary design for modeling longitudinal rebar.
+//       After some effort, I determined that the data is not necessary for the 
 //       design algorithm since it is only used for longitudinal reinforcement for shear,
-//       and does not need to be iterated on. (e.g., the algoritm just picks a value
+//       and does not need to be iterated on. (e.g., the algorithm just picks a value
 //       and submits it directly to the final design).
 //-----------------------------------------------------------------------------
 // Struct for longitudinal rebar information.
@@ -1302,7 +1312,7 @@ struct GDRCONFIG
    PRESTRESSCONFIG PrestressConfig; // all prestressing information
 
    // fc/fc28 - The 115% f'c allowance per LRFD 5.12.3.2.5 is only applicable
-   // to stresses. Use Fc28 for strenght analysis
+   // to stresses. Use Fc28 for strength analysis
    Float64 fc28;      // 28 day concrete strength (used for strength)
    Float64 fc;        // 28 or 90 day compressive strength (used for stresses)
    Float64 fci;       // Concrete release strength
@@ -2226,6 +2236,21 @@ inline bool IsGridBasedStrandModel(pgsTypes::StrandDefinitionType strandModelTyp
 inline bool IsDirectStrandModel(pgsTypes::StrandDefinitionType strandModelType)
 {
    return (strandModelType == pgsTypes::sdtDirectRowInput || strandModelType == pgsTypes::sdtDirectStrandInput) ? true : false;
+}
+
+inline bool IsLNWC(pgsTypes::ConcreteType type)
+{
+   return type == pgsTypes::Normal;
+}
+
+inline bool IsLWC(pgsTypes::ConcreteType type)
+{
+   return (type == pgsTypes::AllLightweight || type == pgsTypes::SandLightweight);
+}
+
+inline bool IsUHPC(pgsTypes::ConcreteType type)
+{
+   return (type == pgsTypes::PCI_UHPC || type == pgsTypes::FHWA_UHPC) ? true : false;
 }
 
 #endif // INCLUDED_PGSUPERTYPES_H_

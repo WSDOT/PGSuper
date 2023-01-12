@@ -68,8 +68,6 @@ CTimeDependentLossesTable* CTimeDependentLossesTable::PrepareTable(rptChapter* p
    ColumnIndexType numColumns = 4;
    CTimeDependentLossesTable* table = new CTimeDependentLossesTable( numColumns, pDisplayUnits );
    rptStyleManager::ConfigureTable(table);
-
-   std::_tstring strImagePath(rptStyleManager::GetImagePath());
    
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;

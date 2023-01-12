@@ -55,23 +55,25 @@ private:
    IBroker* m_pBroker;
 };
 
+/// Base class for computing development length. This class manages common parameters
 class pgsDevelopmentLengthBase : public pgsDevelopmentLength
 {
 public:
-   pgsDevelopmentLengthBase();
+   pgsDevelopmentLengthBase() = default;
    pgsDevelopmentLengthBase(Float64 db, Float64 fpe, Float64 fps);
 
    void SetStrandDiameter(Float64 db);
    Float64 GetStrandDiameter() const;
 
 protected:
-   Float64 m_db;
+   Float64 m_db{0.0};
 };
 
+/// This class implements development length calculation based on the AASHTO LRFD BDS
 class pgsLRFDDevelopmentLength : public pgsDevelopmentLengthBase
 {
 public:
-   pgsLRFDDevelopmentLength();
+   pgsLRFDDevelopmentLength() = default;
    pgsLRFDDevelopmentLength(Float64 db, Float64 fpe, Float64 fps, Float64 mbrDepth, bool bDebonded);
 
    Float64 GetDevelopmentLengthFactor() const;
@@ -79,15 +81,78 @@ public:
    virtual Float64 GetDevelopmentLength() const override;
 
 protected:
-   Float64 m_MbrDepth;
-   bool m_bDebonded;
+   Float64 m_MbrDepth{0.0};
+   bool m_bDebonded{false};
 };
 
+/// This class implements development length calculation based on the PCI UHPC Structural Design Guidance
 class pgsPCIUHPCDevelopmentLength : public pgsDevelopmentLengthBase
 {
 public:
-   pgsPCIUHPCDevelopmentLength();
+   pgsPCIUHPCDevelopmentLength() = default;
    pgsPCIUHPCDevelopmentLength(Float64 db, Float64 fpe, Float64 fps);
 
    virtual Float64 GetDevelopmentLength() const override;
+};
+
+/// This class implements development length calculation based on the FHWA UHPC Draft Guide Specifications
+class pgsFHWAUHPCDevelopmentLength : public pgsDevelopmentLengthBase
+{
+public:
+   pgsFHWAUHPCDevelopmentLength() = default;
+   pgsFHWAUHPCDevelopmentLength(Float64 lt,Float64 db, Float64 fpe, Float64 fps);
+
+   virtual Float64 GetDevelopmentLength() const override;
+
+private:
+   Float64 m_lt{ 0.0 };
+};
+
+/// This class provides common introductory reporting content for subclasses that report development length calculation details
+class pgsDevelopmentLengthReporterBase : public pgsDevelopmentLengthReporter
+{
+public:
+   pgsDevelopmentLengthReporterBase() = delete;
+   pgsDevelopmentLengthReporterBase(IBroker* pBroker,const pgsDevelopmentLengthEngineer* pEngineer);
+   virtual void ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const override;
+
+protected:
+   const pgsDevelopmentLengthEngineer* m_pEngineer;
+   IBroker* m_pBroker;
+
+   const std::_tstring& GetAdjustableStrandName() const;
+   PoiAttributeType GetLocationPoiAttribute() const;
+   const PoiList& GetPoiList() const;
+
+private:
+   mutable std::_tstring m_AdjustableStrandName;
+   mutable PoiAttributeType m_PoiType;
+   mutable PoiList m_vPoi;
+};
+
+/// This class reports the details of development length calculations based on the AASHTO LRFD BDS
+class pgsLRFDDevelopmentLengthReporter : public pgsDevelopmentLengthReporterBase
+{
+public:
+   pgsLRFDDevelopmentLengthReporter() = delete;
+   pgsLRFDDevelopmentLengthReporter(IBroker* pBroker,const pgsDevelopmentLengthEngineer* pEngineer);
+   virtual void ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const override;
+};
+
+/// This class reports the details of development length calculations based on the PCI UHPC Structural Design Guidance
+class pgsPCIUHPCDevelopmentLengthReporter : public pgsDevelopmentLengthReporterBase
+{
+public:
+   pgsPCIUHPCDevelopmentLengthReporter() = delete;
+   pgsPCIUHPCDevelopmentLengthReporter(IBroker* pBroker,const pgsDevelopmentLengthEngineer* pEngineer);
+   virtual void ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const override;
+};
+
+/// This class reports the details of development length calculations based on the FHWA UHPC Draft Guide Specifications
+class pgsFHWAUHPCDevelopmentLengthReporter : public pgsDevelopmentLengthReporterBase
+{
+public:
+   pgsFHWAUHPCDevelopmentLengthReporter() = delete;
+   pgsFHWAUHPCDevelopmentLengthReporter(IBroker* pBroker, const pgsDevelopmentLengthEngineer* pEngineer);
+   virtual void ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const override;
 };

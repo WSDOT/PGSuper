@@ -299,8 +299,8 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
 
             if (intervalIdx < liveLoadIntervalIdx)
             {
-               Float64 Fp = pForce->GetPrestressForce(poi, pgsTypes::Permanent, intervalIdx, intervalTime);
-               Float64 Ft = pForce->GetPrestressForce(poi, pgsTypes::Temporary, intervalIdx, intervalTime);
+               Float64 Fp = pForce->GetPrestressForce(poi, pgsTypes::Permanent, intervalIdx, intervalTime, pgsTypes::tltMinimum);
+               Float64 Ft = pForce->GetPrestressForce(poi, pgsTypes::Temporary, intervalIdx, intervalTime, pgsTypes::tltMinimum);
                (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (permanent) = ") << force.SetValue(Fp) << rptNewLine;
                if (bIsAsymmetric)
                {
@@ -333,7 +333,7 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
             }
             else
             {
-               Float64 Fp = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent, pgsTypes::ServiceI, bIncludeElasticEffects);
+               Float64 Fp = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent, pgsTypes::ServiceI, bIncludeElasticEffects, pgsTypes::tltMinimum);
                (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (permanent) = ") << force.SetValue(Fp) << rptNewLine;
                if (bIsAsymmetric)
                {

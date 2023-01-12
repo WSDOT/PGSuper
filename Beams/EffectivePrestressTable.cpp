@@ -73,7 +73,7 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
    GET_IFACE2(pBroker, ISegmentData, pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
    bool bPTTempStrand = pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned ? true : false;
-   bool bUHPC = pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC ? true : false;
+   bool bPCI_UHPC = pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC ? true : false;
 
    bool bIgnoreInitialRelaxation = pDetails->pLosses->IgnoreInitialRelaxation();
 
@@ -94,7 +94,7 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
       numColumns++;
    }
 
-   if (bUHPC)
+   if (bPCI_UHPC)
    {
       numColumns++;
    }
@@ -112,7 +112,7 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
    CEffectivePrestressTable* table = new CEffectivePrestressTable( numColumns, pDisplayUnits );
    rptStyleManager::ConfigureTable(table);
 
-   table->m_bUHPC = bUHPC;
+   table->m_bPCI_UHPC = bPCI_UHPC;
    table->m_bPTTempStrand = bPTTempStrand;
    table->m_bTempStrands = bTempStrands;
    table->m_bIgnoreInitialRelaxation = bIgnoreInitialRelaxation;
@@ -154,7 +154,7 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
 
       *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pES")) << _T(" + ");
 
-      if (bUHPC)
+      if (bPCI_UHPC)
       {
          *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pAS")) << _T(" + ");
       }
@@ -217,7 +217,7 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
 
    (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-   if (bUHPC)
+   if (bPCI_UHPC)
    {
       (*table)(0, col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pAS")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
    }
@@ -318,7 +318,7 @@ void CEffectivePrestressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
    }
 
    Float64 fpAS = 0;
-   if (m_bUHPC)
+   if (m_bPCI_UHPC)
    {
       const std::shared_ptr<const lrfdPCIUHPCLosses> pLosses = std::dynamic_pointer_cast<const lrfdPCIUHPCLosses>(pDetails->pLosses);
       ATLASSERT(pLosses.use_count() == pDetails->pLosses.use_count());
@@ -348,7 +348,7 @@ void CEffectivePrestressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
    
    (*this)(row+rowOffset,col++) << stress.SetValue(fpES);
 
-   if (m_bUHPC)
+   if (m_bPCI_UHPC)
    {
       (*this)(row + rowOffset, col++) << stress.SetValue(fpAS);
    }

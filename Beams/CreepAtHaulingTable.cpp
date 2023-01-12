@@ -63,8 +63,6 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
 {
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
-   bool bUHPC = pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC ? true : false;
-   bool bPCTT = (bUHPC ? pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.bPCTT : false);
 
    GET_IFACE2(pBroker,ISpecification,pSpec);
    std::_tstring strSpecName = pSpec->GetSpecification();
@@ -106,9 +104,9 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
       *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCRH.png")) << rptNewLine;
    }
 
-   if (bUHPC)
+   if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC)
    {
-      if (bPCTT)
+      if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.bPCTT)
       {
          *pParagraph << rptRcImage(strImagePath + _T("CreepAtHauling_UHPC_PCTT.png")) << rptNewLine;
       }
@@ -116,6 +114,10 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
       {
          *pParagraph << rptRcImage(strImagePath + _T("CreepAtHauling_UHPC.png")) << rptNewLine;
       }
+   }
+   else if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC)
+   {
+      *pParagraph << rptRcImage(strImagePath + _T("CreepAtHauling_FHWA_UHPC.png")) << rptNewLine;
    }
    else
    {

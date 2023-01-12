@@ -196,38 +196,45 @@ void CFlexuralStressCheckTable::BuildSectionHeading(rptChapter* pChapter, IBroke
    rptParagraph* pPara = new rptParagraph( rptStyleManager::GetSubheadingStyle() );
    *pChapter << pPara;
 
-   *pPara << strLimitState << rptNewLine;
-
-   if ( bIsStressingInterval )
+   if (task.limitState == pgsTypes::FatigueI && task.stressType == pgsTypes::Tension)
    {
-      *pPara << _T("For Temporary Stresses before Losses [") << LrfdCw8th(_T("5.9.4.1"),_T("5.9.2.3.1")) << _T("]") << rptNewLine;
+      // use a different title for this special case of Fatigue I and Tension - this is an FHWA UHPC check
+      // and the other titles and spec references don't make sense in that context
+      *pPara << _T("Service I stresses are used in this limit state check. See GS 1.5.3.") << rptNewLine;
    }
    else
    {
-      *pPara << _T("Stresses at Service Limit State after Losses [") << LrfdCw8th(_T("5.9.4.2"),_T("5.9.2.3.2")) << _T("]") << rptNewLine;
-   }
+      if (bIsStressingInterval)
+      {
+         *pPara << _T("For Temporary Stresses before Losses [") << LrfdCw8th(_T("5.9.4.1"), _T("5.9.2.3.1")) << _T("]") << rptNewLine;
+      }
+      else
+      {
+         *pPara << _T("Stresses at Service Limit State after Losses [") << LrfdCw8th(_T("5.9.4.2"), _T("5.9.2.3.2")) << _T("]") << rptNewLine;
+      }
 
-   if ( task.stressType == pgsTypes::Compression )
-   {
-      if ( bIsStressingInterval )
+      if ( task.stressType == pgsTypes::Compression )
       {
-         *pPara << _T("Compression Stresses [") << LrfdCw8th(_T("5.9.4.1.1"),_T("5.9.2.3.1a")) << _T("]") << rptNewLine;
+         if ( bIsStressingInterval )
+         {
+            *pPara << _T("Compression Stresses [") << LrfdCw8th(_T("5.9.4.1.1"),_T("5.9.2.3.1a")) << _T("]") << rptNewLine;
+         }
+         else
+         {
+            *pPara << _T("Compression Stresses [") << LrfdCw8th(_T("5.9.4.2.1"),_T("5.9.2.3.2a")) << _T("]") << rptNewLine;
+         }
       }
-      else
-      {
-         *pPara << _T("Compression Stresses [") << LrfdCw8th(_T("5.9.4.2.1"),_T("5.9.2.3.2a")) << _T("]") << rptNewLine;
-      }
-   }
    
-   if ( task.stressType == pgsTypes::Tension )
-   {
-      if ( bIsStressingInterval )
+      if ( task.stressType == pgsTypes::Tension )
       {
-         *pPara << _T("Tension Stresses [") << LrfdCw8th(_T("5.9.4.1.2"),_T("5.9.2.3.1b")) << _T("]") << rptNewLine;
-      }
-      else
-      {
-         *pPara << _T("Tension Stresses [") << LrfdCw8th(_T("5.9.4.2.2"),_T("5.9.2.3.2b")) << _T("]") << rptNewLine;
+         if ( bIsStressingInterval )
+         {
+            *pPara << _T("Tension Stresses [") << LrfdCw8th(_T("5.9.4.1.2"),_T("5.9.2.3.1b")) << _T("]") << rptNewLine;
+         }
+         else
+         {
+            *pPara << _T("Tension Stresses [") << LrfdCw8th(_T("5.9.4.2.2"),_T("5.9.2.3.2b")) << _T("]") << rptNewLine;
+         }
       }
    }
 }
@@ -424,6 +431,12 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, IBroker* pBroke
 
 
    std::_tstring strLimitState = GetLimitStateString(task.limitState);
+   if (task.limitState == pgsTypes::FatigueI && task.stressType == pgsTypes::Tension)
+   {
+      // for FHWA UHPC fatigue tension check, stresses are actually based on the Service I limit state
+      // so force that title here... see GS 1.5.3
+      strLimitState = GetLimitStateString(pgsTypes::ServiceI);
+   }
 
 
    if ( bIncludePrestress )
@@ -952,9 +965,14 @@ void CFlexuralStressCheckTable::BuildAllowSegmentStressInformation(rptParagraph*
    // Required Strength
    //
    Float64 fc_reqd = pSegmentArtifact->GetRequiredSegmentConcreteStrength(task);
+
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
+   auto name = pAllowable->GetAllowableStressParameterName(task.stressType, pMaterials->GetSegmentConcreteType(segmentKey));
+
    if ( 0 < fc_reqd )
    {
-      *pPara << _T("Concrete strength required to satisfy this requirement = ") << stress_u.SetValue( fc_reqd ) << rptNewLine;
+      name[0] = std::toupper(name[0]);
+      *pPara << name << _T(" required to satisfy this requirement = ") << stress_u.SetValue( fc_reqd ) << rptNewLine;
    }
    else if ( IsZero(fc_reqd) )
    {
@@ -962,7 +980,7 @@ void CFlexuralStressCheckTable::BuildAllowSegmentStressInformation(rptParagraph*
    }
    else
    {
-      *pPara << _T("Regardless of the concrete strength, the stress requirements will not be satisfied.") << rptNewLine;
+      *pPara << _T("Regardless of the ") << name << _T(", the stress requirements will not be satisfied.") << rptNewLine;
    }
 }
 

@@ -45,6 +45,7 @@
 #include <Reporting\DuctGeometryCheckTable.h>
 #include <Reporting\PrincipalTensionStressCheckTable.h>
 #include <Reporting\RatingSummaryTable.h>
+#include <Reporting\ReinforcementFatigueCheck.h>
 
 #include <MathEx.h>
 
@@ -263,6 +264,9 @@ rptChapter* CSpecCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
          CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,task,false/*deck stresses*/);
       } // next task
    }
+
+   // Reinforcement fatigue check
+   CReinforcementFatigueCheck().Build(pChapter, pBroker, pGirderArtifact, pDisplayUnits);
 
    // Flexural Capacity
    p = new rptParagraph( rptStyleManager::GetHeadingStyle() );

@@ -20,8 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_LONGREINFSHEARCHECK_H_
-#define INCLUDED_LONGREINFSHEARCHECK_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 
@@ -32,11 +31,11 @@ class pgsGirderArtifact;
 CLASS 
    CLongReinfShearCheck
 
-   Encapsulates the construction of the longitudinal reinf for shear check report content.
+   Encapsulates the construction of the longitudinal reinforcement for shear check report content.
 
 
 DESCRIPTION
-   Encapsulates the construction of the  longitudinal reinf for shear check report content.
+   Encapsulates the construction of the  longitudinal reinforcement for shear check report content.
 
 LOG
    rdp : 06.01.1999 : Created file
@@ -45,88 +44,22 @@ LOG
 class REPORTINGCLASS CLongReinfShearCheck
 {
 public:
-   // GROUP: LIFECYCLE
+   CLongReinfShearCheck() = default;
+   CLongReinfShearCheck(const CLongReinfShearCheck& rOther) = default;
+   ~CLongReinfShearCheck() = default;
+   CLongReinfShearCheck& operator=(const CLongReinfShearCheck& rOther) = default;
 
-   //------------------------------------------------------------------------
-   // Default constructor
-   CLongReinfShearCheck();
-
-   //------------------------------------------------------------------------
-   // Copy constructor
-   CLongReinfShearCheck(const CLongReinfShearCheck& rOther);
-
-   //------------------------------------------------------------------------
-   // Destructor
-   virtual ~CLongReinfShearCheck();
-
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
-   CLongReinfShearCheck& operator = (const CLongReinfShearCheck& rOther);
-
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
-   // Build (design limit states)
-   virtual void Build(rptChapter* pChapter,
-                      IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
-                      IntervalIndexType intervalIdx,pgsTypes::LimitState ls,
-                      IEAFDisplayUnits* pDisplayUnits) const;
+   /// @brief Builds the check report for design limit states
+   void Build(rptChapter* pChapter,
+              IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
+              IntervalIndexType intervalIdx,pgsTypes::LimitState ls,
+              IEAFDisplayUnits* pDisplayUnits) const;
 
 
-   //------------------------------------------------------------------------
-   // Build (rating limit states)
-   virtual void Build(rptChapter* pChapter,
-                      IBroker* pBroker,const CGirderKey& girderKey,
-                      pgsTypes::LimitState ls,
-                      IEAFDisplayUnits* pDisplayUnits) const;
+   /// @brief Builds the check report for rating limit states
+   void Build(rptChapter* pChapter,
+              IBroker* pBroker,const CGirderKey& girderKey,
+              pgsTypes::LimitState ls,
+              IEAFDisplayUnits* pDisplayUnits) const;
 
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   //------------------------------------------------------------------------
-   void MakeCopy(const CLongReinfShearCheck& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const CLongReinfShearCheck& rOther);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-public:
-   // GROUP: DEBUG
-   #if defined _DEBUG
-   //------------------------------------------------------------------------
-   // Returns true if the object is in a valid state, otherwise returns false.
-   virtual bool AssertValid() const;
-
-   //------------------------------------------------------------------------
-   // Dumps the contents of the object to the given dump context.
-   virtual void Dump(WBFL::Debug::LogContext& os) const;
-   #endif // _DEBUG
-
-   #if defined _UNITTEST
-   //------------------------------------------------------------------------
-   // Runs a self-diagnostic test.  Returns true if the test passed,
-   // otherwise false.
-   static bool TestMe(WBFL::Debug::Log& rlog);
-   #endif // _UNITTEST
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_LONGREINFSHEARCHECK_H_

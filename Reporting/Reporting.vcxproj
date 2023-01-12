@@ -175,6 +175,7 @@
     <ClCompile Include="BridgeDescDetailsChapterBuilder.cpp" />
     <ClCompile Include="BrokerReportSpecification.cpp" />
     <ClCompile Include="BrokerReportSpecificationBuilder.cpp" />
+    <ClCompile Include="ReinforcementFatigueCheck.cpp" />
     <ClCompile Include="SplittingCheckDetailsChapterBuilder.cpp" />
     <ClCompile Include="CamberChapterBuilder.cpp" />
     <ClCompile Include="CamberTable.cpp" />
@@ -496,6 +497,7 @@
     <ClInclude Include="..\Include\Reporting\ProjectCriteriaChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\RatingSummaryTable.h" />
     <ClInclude Include="..\Include\Reporting\ReactionInterfaceAdapters.h" />
+    <ClInclude Include="..\Include\Reporting\ReinforcementFatigueCheck.h" />
     <ClInclude Include="..\Include\Reporting\ReportingExp.h" />
     <ClInclude Include="..\Include\Reporting\ReportNotes.h" />
     <ClInclude Include="..\Include\Reporting\SectPropChapterBuilder.h" />

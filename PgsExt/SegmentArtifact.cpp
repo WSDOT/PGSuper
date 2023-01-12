@@ -244,6 +244,16 @@ pgsPrincipalTensionStressArtifact* pgsSegmentArtifact::GetPrincipalTensionStress
    return &m_PrincipalTensionStressArtifact;
 }
 
+const pgsReinforcementFatigueArtifact* pgsSegmentArtifact::GetReinforcementFatigueArtifact() const
+{
+   return &m_ReinforcementFatigueArtifact;
+}
+
+pgsReinforcementFatigueArtifact* pgsSegmentArtifact::GetReinforcementFatigueArtifact()
+{
+   return &m_ReinforcementFatigueArtifact;
+}
+
 void pgsSegmentArtifact::SetTendonStressArtifact(DuctIndexType ductIdx, const pgsTendonStressArtifact& artifact)
 {
    m_TendonStressArtifacts.insert(std::make_pair(ductIdx, artifact));

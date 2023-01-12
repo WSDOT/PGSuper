@@ -854,7 +854,11 @@ interface IMaterials : IUnknown
    virtual Float64 GetSegmentShrinkageK1(const CSegmentKey& segmentKey) const = 0;
    virtual Float64 GetSegmentShrinkageK2(const CSegmentKey& segmentKey) const = 0;
    virtual const std::unique_ptr<WBFL::Materials::ConcreteBase>& GetSegmentConcrete(const CSegmentKey& segmentKey) const = 0;
-   virtual Float64 GetSegmentConcreteFirstCrackingStrength(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetSegmentConcreteFirstCrackingStrength(const CSegmentKey& segmentKey) const = 0; // PCI UHPC f_fc
+   virtual Float64 GetSegmentConcreteInitialEffectiveCrackingStrength(const CSegmentKey& segmentKey) const = 0; // FHWA UHPC ft,cri
+   virtual Float64 GetSegmentConcreteDesignEffectiveCrackingStrength(const CSegmentKey& segmentKey) const = 0; // FHWA UHPC ft,cr
+   virtual Float64 GetSegmentConcreteCrackLocalizationStrength(const CSegmentKey& segmentKey) const = 0; // FHWA UHPC ft,loc
+   virtual Float64 GetSegmentConcreteCrackLocalizationStrain(const CSegmentKey& segmentKey) const = 0; // FHWA UHPC et,loc
 
    // Closure Joint Concrete
    virtual pgsTypes::ConcreteType GetClosureJointConcreteType(const CClosureKey& closureKey) const = 0;
@@ -870,14 +874,12 @@ interface IMaterials : IUnknown
    virtual Float64 GetClosureJointShrinkageK1(const CClosureKey& closureKey) const = 0;
    virtual Float64 GetClosureJointShrinkageK2(const CClosureKey& closureKey) const = 0;
    virtual const std::unique_ptr<WBFL::Materials::ConcreteBase>& GetClosureJointConcrete(const CClosureKey& closureKey) const = 0;
-   virtual Float64 GetClosureJointConcreteFirstCrackingStrength(const CClosureKey& closureKey) const = 0;
 
    // Deck Concrete
    virtual pgsTypes::ConcreteType GetDeckConcreteType() const = 0;
    virtual bool DoesDeckConcreteHaveAggSplittingStrength() const = 0;
    virtual Float64 GetDeckConcreteAggSplittingStrength() const = 0;
    virtual Float64 GetDeckMaxAggrSize() const = 0;
-   virtual Float64 GetDeckConcreteFiberLength() const = 0;
    virtual Float64 GetDeckStrengthDensity() const = 0;
    virtual Float64 GetDeckEccK1() const = 0;
    virtual Float64 GetDeckEccK2() const = 0;
@@ -1008,8 +1010,8 @@ interface ILongRebarGeometry : IUnknown
 
    virtual void GetClosureJointRebarLayout(const CClosureKey& closureKey, IRebarLayout** rebarLayout) const = 0;
 
-   virtual REBARDEVLENGTHDETAILS GetSegmentRebarDevelopmentLengthDetails(const CSegmentKey& segmentKey,IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct) const = 0;
-   virtual REBARDEVLENGTHDETAILS GetDeckRebarDevelopmentLengthDetails(IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct) const = 0;
+   virtual REBARDEVLENGTHDETAILS GetSegmentRebarDevelopmentLengthDetails(const CSegmentKey& segmentKey,IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, bool bIsTopBar, bool bEpoxyCoated, bool bMeetsCoverRequirements) const = 0;
+   virtual REBARDEVLENGTHDETAILS GetDeckRebarDevelopmentLengthDetails(IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, bool bIsTopBar, bool bEpoxyCoated, bool bMeetsCoverRequirements) const = 0;
 
    virtual bool IsAnchored(const pgsPointOfInterest& poi) const = 0;
 };

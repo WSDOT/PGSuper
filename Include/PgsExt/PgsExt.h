@@ -42,3 +42,4 @@
 #include <PgsExt\PrincipalTensionStressArtifact.h>
 #include <PgsExt\GirderLabel.h>
 #include <PgsExt\CapacityToDemand.h>
+#include <PgsExt\ReinforcementFatigueArtifact.h>

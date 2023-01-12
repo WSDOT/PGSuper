@@ -1350,8 +1350,8 @@ private:
    std::array<bool, 2>    m_DoTensStressHaulingMax;
    std::array<Float64, 2> m_TensStressHaulingMax;
 
-   std::array<Float64, 3> m_HaulingModulusOfRuptureCoefficient; // pgsTypes::ConcreteType is the array index, pgsTypes::PCI_UHPC is not valid
-   std::array<Float64, 3> m_LiftingModulusOfRuptureCoefficient; // pgsTypes::ConcreteType is the array index, pgsTypes::PCI_UHPC is not valid
+   std::array<Float64, 3> m_HaulingModulusOfRuptureCoefficient; // pgsTypes::ConcreteType is the array index, pgsTypes::PCI_UHPC and pgsTypes::FHWA_UHPC are not valid
+   std::array<Float64, 3> m_LiftingModulusOfRuptureCoefficient; // pgsTypes::ConcreteType is the array index, pgsTypes::PCI_UHPC and pgsTypes::FHWA_UHPC are not valid
 
    Float64 m_MinLiftPoint;
    Float64 m_LiftPointAccuracy;
@@ -1516,13 +1516,14 @@ private:
    pgsTypes::AnalysisType m_AnalysisType; // this data will be in old library entries (version < 28)
 
    // Concrete limits
-   std::array<Float64, pgsTypes::ConcreteTypeCount> m_MaxSlabFc;
-   std::array<Float64, pgsTypes::ConcreteTypeCount> m_MaxSegmentFci;
-   std::array<Float64, pgsTypes::ConcreteTypeCount> m_MaxSegmentFc;
-   std::array<Float64, pgsTypes::ConcreteTypeCount> m_MaxClosureFci;
-   std::array<Float64, pgsTypes::ConcreteTypeCount> m_MaxClosureFc;
-   std::array<Float64, pgsTypes::ConcreteTypeCount> m_MaxConcreteUnitWeight;
-   std::array<Float64, pgsTypes::ConcreteTypeCount> m_MaxConcreteAggSize;
+   // limiting the size of this array to 3 for NWC and 2 kinds of LWC.. these parameters aren't used for UHPCs yet
+   std::array<Float64, 3/*pgsTypes::ConcreteTypeCount*/> m_MaxSlabFc;
+   std::array<Float64, 3/*pgsTypes::ConcreteTypeCount*/> m_MaxSegmentFci;
+   std::array<Float64, 3/*pgsTypes::ConcreteTypeCount*/> m_MaxSegmentFc;
+   std::array<Float64, 3/*pgsTypes::ConcreteTypeCount*/> m_MaxClosureFci;
+   std::array<Float64, 3/*pgsTypes::ConcreteTypeCount*/> m_MaxClosureFc;
+   std::array<Float64, 3/*pgsTypes::ConcreteTypeCount*/> m_MaxConcreteUnitWeight;
+   std::array<Float64, 3/*pgsTypes::ConcreteTypeCount*/> m_MaxConcreteAggSize;
 
    bool m_bUpdateLoadFactors; // true if the load factors are from an old library entry
    std::array<Float64, 6> m_DCmin;   // index is one of pgsTypes::LimitState constants (except for CLLIM)

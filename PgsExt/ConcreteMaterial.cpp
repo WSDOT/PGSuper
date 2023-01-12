@@ -83,6 +83,14 @@ CConcreteMaterial::CConcreteMaterial()
    AutogenousShrinkage = 0.0;
    bPCTT = false;
 
+   alpha_u = 0.85; // FHWA GS 1.4.2.4.2
+   ecu = -0.0035; // FHWA GS 1.4.2.4.2
+   bExperimental_ecu = false;
+   ftcr = WBFL::Units::ConvertToSysUnits(0.75, WBFL::Units::Measure::KSI);
+   ftcri = 0.75 * ftcr;
+   ftloc = WBFL::Units::ConvertToSysUnits(0.75, WBFL::Units::Measure::KSI);
+   etloc = 0.0025;
+
    bBasePropertiesOnInitialValues = false;
 
    bACIUserParameters = false;
@@ -217,6 +225,33 @@ bool CConcreteMaterial::operator==(const CConcreteMaterial& rOther) const
          return false;
    }
 
+   if (Type == pgsTypes::FHWA_UHPC)
+   {
+      if (!IsEqual(alpha_u, rOther.alpha_u))
+         return false;
+
+      if (bExperimental_ecu != rOther.bExperimental_ecu)
+         return false;
+
+      if (bExperimental_ecu && !IsEqual(ecu, rOther.ecu, 1.0E-6))
+         return false;
+
+      if (!IsEqual(ftcri, rOther.ftcri))
+         return false;
+
+      if (!IsEqual(ftcr, rOther.ftcr))
+         return false;
+
+      if (!IsEqual(ftloc, rOther.ftloc))
+         return false;
+
+      if (!IsEqual(etloc, rOther.etloc, 1.0E-6))
+         return false;
+
+      if (!IsEqual(FiberLength, rOther.FiberLength))
+         return false;
+   }
+
    if ( bBasePropertiesOnInitialValues != rOther.bBasePropertiesOnInitialValues )
    {
       return false;
@@ -288,7 +323,7 @@ bool CConcreteMaterial::operator!=(const CConcreteMaterial& rOther) const
 
 HRESULT CConcreteMaterial::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
-   pStrSave->BeginUnit(_T("Concrete"),4.0);
+   pStrSave->BeginUnit(_T("Concrete"),6.0);
    pStrSave->put_Property(_T("Type"),             CComVariant( lrfdConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)Type,false).c_str() ));
    pStrSave->put_Property(_T("Fc"),               CComVariant(Fc));
 
@@ -302,7 +337,9 @@ HRESULT CConcreteMaterial::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->put_Property(_T("WeightDensity"),    CComVariant(WeightDensity));
    pStrSave->put_Property(_T("StrengthDensity"),  CComVariant(StrengthDensity));
    pStrSave->put_Property(_T("MaxAggregateSize"), CComVariant(MaxAggregateSize));
-   pStrSave->put_Property(_T("FiberLength"), CComVariant(FiberLength)); // added in version 4
+   
+   //pStrSave->put_Property(_T("FiberLength"), CComVariant(FiberLength)); // added in version 4, removed in version 6
+   // This parameter should never have been saved with the conventional concrete properties. It only applies to UHPC and is stored with the UHPC parameters.
 
    pStrSave->put_Property(_T("InitialParameters"),CComVariant(bHasInitial));
    if ( bHasInitial )
@@ -344,6 +381,18 @@ HRESULT CConcreteMaterial::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->put_Property(_T("AutogenousShrinkage"), CComVariant(AutogenousShrinkage)); // added in PCI_UHPC version 2
    pStrSave->put_Property(_T("PCTT"), CComVariant(bPCTT));
    pStrSave->EndUnit(); // PCI_UHPC
+
+   // Added in Version 5
+   pStrSave->BeginUnit(_T("FHWA_UHPC"), 2.0);
+   pStrSave->put_Property(_T("alpha_u"), CComVariant(alpha_u)); // added in FHWA_UHPC version 2
+   pStrSave->put_Property(_T("Experimental_ecu"), CComVariant(bExperimental_ecu));
+   if(bExperimental_ecu) pStrSave->put_Property(_T("ecu"), CComVariant(ecu)); // added in FHWA_UHPC version 2
+   pStrSave->put_Property(_T("ftcri"), CComVariant(ftcri));
+   pStrSave->put_Property(_T("ftcr"), CComVariant(ftcr));
+   pStrSave->put_Property(_T("ftloc"), CComVariant(ftloc));
+   pStrSave->put_Property(_T("etloc"), CComVariant(etloc));
+   pStrSave->put_Property(_T("FiberLength"), CComVariant(FiberLength));
+   pStrSave->EndUnit(); // FHWA_UHPC
 
    pStrSave->put_Property(_T("BasePropertiesOnInitialValues"),CComVariant(bBasePropertiesOnInitialValues));
 
@@ -408,11 +457,13 @@ HRESULT CConcreteMaterial::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    pStrLoad->get_Property(_T("MaxAggregateSize"), &var);
    MaxAggregateSize = var.dblVal;
 
-   if (3 < version)
+   if (3 < version && version < 6)
    {
-      // added in version 4
+      // added in version 4 and removed in version 6
+      // This parameter should never have been saved with the conventional concrete properties. It only applies to UHPC and is stored with the UHPC parameters.
+      // Load the parameter then throw it away.
       pStrLoad->get_Property(_T("FiberLength"), &var);
-      FiberLength = var.dblVal;
+      //FiberLength = var.dblVal;
    }
 
    var.vt = VT_BOOL;
@@ -508,6 +559,51 @@ HRESULT CConcreteMaterial::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       bPCTT = (var.boolVal == VARIANT_TRUE ? true : false);
 
       pStrLoad->EndUnit(); // PCI_UHPC
+   }
+
+   if (4 < version)
+   {
+      // added in Version 5
+      pStrLoad->BeginUnit(_T("FHWA_UHPC"));
+      var.vt = VT_R8;
+
+      Float64 uhpc_version;
+      pStrLoad->get_Version(&uhpc_version);
+
+      if (1 < uhpc_version)
+      {
+         // added in version 2
+         pStrLoad->get_Property(_T("alpha_u"), &var);
+         alpha_u = var.dblVal;
+
+         var.vt = VT_BOOL;
+         pStrLoad->get_Property(_T("Experimental_ecu"), &var);
+         bExperimental_ecu = var.boolVal == VARIANT_TRUE ? true : false;
+         if (bExperimental_ecu)
+         {
+            var.vt = VT_R8;
+            pStrLoad->get_Property(_T("ecu"), &var);
+            ecu = var.dblVal;
+         }
+      }
+
+      var.vt = VT_R8;
+      pStrLoad->get_Property(_T("ftcri"), &var);
+      ftcri = var.dblVal;
+
+      pStrLoad->get_Property(_T("ftcr"), &var);
+      ftcr = var.dblVal;
+
+      pStrLoad->get_Property(_T("ftloc"), &var);
+      ftloc = var.dblVal;
+
+      pStrLoad->get_Property(_T("etloc"), &var);
+      etloc = var.dblVal;
+
+      pStrLoad->get_Property(_T("FiberLength"), &var);
+      FiberLength = var.dblVal;
+
+      pStrLoad->EndUnit(); // FHWA_UHPC
    }
 
    var.vt = VT_BOOL;

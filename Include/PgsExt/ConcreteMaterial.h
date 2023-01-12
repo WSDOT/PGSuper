@@ -74,6 +74,15 @@ public:
    Float64 AutogenousShrinkage; // Autogenous (chemical) shrinkage
    bool bPCTT; // Post-cure thermal treatment
 
+   // FHWA-UHPC Parameters
+   Float64 alpha_u; // compression response reduction factor
+   Float64 ecu; // ultimate compressive strain
+   bool bExperimental_ecu;
+   Float64 ftcri; // tensile strength at release
+   Float64 ftcr; // tensile strength at final
+   Float64 ftloc; // tensile strength at localization
+   Float64 etloc; // localization strain
+
    // Time Dependent Models - General
    bool bBasePropertiesOnInitialValues; // if true, and if bHasInitial is true, the time dependent
                                             // concrete models are based on Fci and Eci, otherwise they are

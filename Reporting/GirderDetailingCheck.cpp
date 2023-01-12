@@ -94,11 +94,14 @@ void CGirderDetailingCheck::Build(rptChapter* pChapter,
    GET_IFACE2(pBroker, IMaterials, pMaterials);
    GET_IFACE2(pBroker, IBridge, pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+
+   // neither of the UHPC Specs, PCI or FHWA, requirement minimum stirrups
+   // use this flag to skip the note
    bool bUHPC = false;
    for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
    {
       CSegmentKey segmentKey(girderKey, segIdx);
-      if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC)
+      if (IsUHPC(pMaterials->GetSegmentConcreteType(segmentKey)))
       {
          bUHPC = true; 
          break;
@@ -106,8 +109,9 @@ void CGirderDetailingCheck::Build(rptChapter* pChapter,
 
       if (segIdx < nSegments-1)
       {
-         if (pMaterials->GetClosureJointConcreteType(segmentKey) == pgsTypes::PCI_UHPC)
+         if (IsUHPC(pMaterials->GetClosureJointConcreteType(segmentKey)))
          {
+            ATLASSERT(false); // closure joints should not be UHPC
             bUHPC = true;
             break;
          }
@@ -123,7 +127,7 @@ void CGirderDetailingCheck::Build(rptChapter* pChapter,
    *p << CStirrupDetailingCheckTable().Build(pBroker,pGirderArtifact,pDisplayUnits,intervalIdx,pgsTypes::StrengthI,&write_note) << rptNewLine;
    *pChapter << p;
 
-   if (!bUHPC && write_note)
+   if (write_note && !bUHPC)
    {
       *p << _T("* - Transverse reinforcement required if ") << Sub2(_T("V"),_T("u")) << _T(" > 0.5") << symbol(phi) << _T("(") << Sub2(_T("V"),_T("c"));
       *p  << _T(" + ") << Sub2(_T("V"),_T("p")) << _T(") [Eqn ") << LrfdCw8th(_T("5.8.2.4-1"),_T("5.7.2.3-1")) << _T("]")<< rptNewLine;
@@ -137,7 +141,7 @@ void CGirderDetailingCheck::Build(rptChapter* pChapter,
       *p << CStirrupDetailingCheckTable().Build(pBroker,pGirderArtifact,pDisplayUnits,intervalIdx,pgsTypes::StrengthII,&write_note) << rptNewLine;
       *pChapter << p;
 
-      if (!bUHPC && write_note)
+      if (write_note && !bUHPC)
       {
          *p << _T("* - Transverse reinforcement required if ") << Sub2(_T("V"),_T("u")) << _T(" > 0.5") << symbol(phi) << _T("(") << Sub2(_T("V"),_T("c"));
          *p  << _T(" + ") << Sub2(_T("V"),_T("p")) << _T(") [Eqn ") << LrfdCw8th(_T("5.8.2.4-1"),_T("5.7.2.3-1")) << _T("]")<< rptNewLine;

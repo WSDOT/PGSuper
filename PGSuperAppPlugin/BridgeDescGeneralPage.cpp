@@ -2336,6 +2336,15 @@ void CBridgeDescGeneralPage::OnMoreProperties()
    dlg.m_PCIUHPC.m_AutogenousShrinkage = m_JointConcrete.AutogenousShrinkage;
    dlg.m_PCIUHPC.m_bPCTT = m_JointConcrete.bPCTT;
 
+   dlg.m_FHWAUHPC.m_ftcri = m_JointConcrete.ftcri;
+   dlg.m_FHWAUHPC.m_ftcr = m_JointConcrete.ftcr;
+   dlg.m_FHWAUHPC.m_ftloc = m_JointConcrete.ftloc;
+   dlg.m_FHWAUHPC.m_etloc = m_JointConcrete.etloc;
+   dlg.m_FHWAUHPC.m_alpha_u = m_JointConcrete.alpha_u;
+   dlg.m_FHWAUHPC.m_ecu = m_JointConcrete.ecu;
+   dlg.m_FHWAUHPC.m_bExperimental_ecu = m_JointConcrete.bExperimental_ecu;
+   dlg.m_FHWAUHPC.m_FiberLength = m_JointConcrete.FiberLength;
+
    if (dlg.DoModal() == IDOK)
    {
       m_JointConcrete.Fc = dlg.m_fc28;
@@ -2360,6 +2369,15 @@ void CBridgeDescGeneralPage::OnMoreProperties()
       m_JointConcrete.FiberLength = dlg.m_PCIUHPC.m_FiberLength;
       m_JointConcrete.AutogenousShrinkage = dlg.m_PCIUHPC.m_AutogenousShrinkage;
       m_JointConcrete.bPCTT = dlg.m_PCIUHPC.m_bPCTT;
+
+      m_JointConcrete.ftcri = dlg.m_FHWAUHPC.m_ftcri;
+      m_JointConcrete.ftcr = dlg.m_FHWAUHPC.m_ftcr;
+      m_JointConcrete.ftloc = dlg.m_FHWAUHPC.m_ftloc;
+      m_JointConcrete.etloc = dlg.m_FHWAUHPC.m_etloc;
+      m_JointConcrete.alpha_u = dlg.m_FHWAUHPC.m_alpha_u;
+      m_JointConcrete.bExperimental_ecu = dlg.m_FHWAUHPC.m_bExperimental_ecu;
+      m_JointConcrete.ecu = dlg.m_FHWAUHPC.m_ecu;
+      m_JointConcrete.FiberLength = dlg.m_FHWAUHPC.m_FiberLength;
 
       m_strUserEc = dlg.m_General.m_strUserEc;
       m_ctrlEc.SetWindowText(m_strUserEc);

@@ -61,7 +61,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
 
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
-   bool bUHPC = pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC ? true : false;
+   bool bPCIUHPC = pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC ? true : false;
 
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
@@ -81,7 +81,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
    if ( bIgnoreInitialRelaxation ) // for perm strands
       numColumns--;
 
-   if (bUHPC)
+   if (bPCIUHPC)
       numColumns++;
 
    if ( pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned ) 
@@ -98,7 +98,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
    CTimeDependentLossesAtShippingTable* table = new CTimeDependentLossesAtShippingTable( numColumns, pDisplayUnits );
    rptStyleManager::ConfigureTable(table);
 
-   table->m_bUHPC = bUHPC;
+   table->m_bPCIUHPC = bPCIUHPC;
    table->m_bTemporaryStrands = bTemporaryStrands;
    table->m_pStrands = pStrands;
 
@@ -140,7 +140,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
 
    *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pES")) << _T(" + ");
 
-   if (bUHPC)
+   if (bPCIUHPC)
    {
       *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pAS")) << _T(" + ");
    }
@@ -180,7 +180,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
 
       (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-      if (bUHPC)
+      if (bPCIUHPC)
       {
          (*table)(1, col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pAS")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
       }
@@ -204,7 +204,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
 
       (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-      if (bUHPC)
+      if (bPCIUHPC)
       {
          (*table)(1, col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pAS")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
       }
@@ -221,7 +221,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
 
       (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-      if (bUHPC)
+      if (bPCIUHPC)
       {
          (*table)(0, col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pAS")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
       }
@@ -253,7 +253,7 @@ void CTimeDependentLossesAtShippingTable::AddRow(rptChapter* pChapter,IBroker* p
    Float64 fpES = pDetails->pLosses->PermanentStrand_ElasticShorteningLosses();
 
    Float64 fpAS = 0;
-   if (m_bUHPC)
+   if (m_bPCIUHPC)
    {
       const std::shared_ptr<const lrfdPCIUHPCLosses> pLosses = std::dynamic_pointer_cast<const lrfdPCIUHPCLosses>(pDetails->pLosses);
       ATLASSERT(pLosses.use_count() == pDetails->pLosses.use_count());
@@ -270,7 +270,7 @@ void CTimeDependentLossesAtShippingTable::AddRow(rptChapter* pChapter,IBroker* p
    fpH += fpES + fpp; // need to add elastic effects to get total change in effective prestress at hauling
 
    (*this)(row+rowOffset,col++) << stress.SetValue(fpES);
-   if (m_bUHPC)
+   if (m_bPCIUHPC)
    {
       (*this)(row + rowOffset, col++) << stress.SetValue(fpAS);
    }
@@ -291,7 +291,7 @@ void CTimeDependentLossesAtShippingTable::AddRow(rptChapter* pChapter,IBroker* p
 
       fpES = pDetails->pLosses->TemporaryStrand_ElasticShorteningLosses();
       fpAS = 0;
-      if (m_bUHPC)
+      if (m_bPCIUHPC)
       {
          const std::shared_ptr<const lrfdPCIUHPCLosses> pLosses = std::dynamic_pointer_cast<const lrfdPCIUHPCLosses>(pDetails->pLosses);
          ATLASSERT(pLosses.use_count() == pDetails->pLosses.use_count());
@@ -302,7 +302,7 @@ void CTimeDependentLossesAtShippingTable::AddRow(rptChapter* pChapter,IBroker* p
       fpH = pDetails->pLosses->TemporaryStrand_AtShipping();
       fpH += fpES + fpAS; // need to add elastic effects to get total change in effective prestress at hauling
       (*this)(row+rowOffset,col++) << stress.SetValue(fpES);
-      if (m_bUHPC)
+      if (m_bPCIUHPC)
       {
          (*this)(row + rowOffset, col++) << stress.SetValue(fpAS);
       }

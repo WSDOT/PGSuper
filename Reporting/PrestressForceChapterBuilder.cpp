@@ -41,22 +41,11 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-/****************************************************************************
-CLASS
-   CPrestressForceChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CPrestressForceChapterBuilder::CPrestressForceChapterBuilder(bool bRating,bool bSelect) :
 CPGSuperChapterBuilder(bSelect), m_bRating(bRating)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CPrestressForceChapterBuilder::GetName() const
 {
    return TEXT("Prestressing Force and Strand Stresses");
@@ -86,7 +75,6 @@ rptChapter* CPrestressForceChapterBuilder::Build(const std::shared_ptr<const WBF
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    // These are the interfaces we are going to be using
    GET_IFACE2(pBroker,IStrandGeometry, pStrandGeom);
-   GET_IFACE2(pBroker,IPretensionForce, pPrestressForce ); 
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IPointOfInterest, pPoi);
@@ -183,17 +171,12 @@ rptChapter* CPrestressForceChapterBuilder::Build(const std::shared_ptr<const WBF
                << RPT_APS << _T(" = ") << area.SetValue(pStrandGeom->GetStrandArea(poiMiddle,releaseIntervalIdx,pgsTypes::Permanent)) << rptNewLine;
 
             *pPara << rptNewLine;
-
-            *pPara << _T("Prestress Transfer Length (Straight) = ") << len.SetValue(pPrestressForce->GetTransferLength(thisSegmentKey, pgsTypes::Straight)) << rptNewLine;
-            *pPara << _T("Prestress Transfer Length (Harped) = ") << len.SetValue(pPrestressForce->GetTransferLength(thisSegmentKey, pgsTypes::Harped)) << rptNewLine;
-            *pPara << _T("Prestress Transfer Length (Temporary) = ") << len.SetValue( pPrestressForce->GetTransferLength(thisSegmentKey,pgsTypes::Temporary) ) << rptNewLine;
          }
          else
          {
+            // else... without temporary strands
             *pPara << RPT_APS << _T(" = ") << area.SetValue( pStrandGeom->GetStrandArea(poiMiddle,releaseIntervalIdx,pgsTypes::Permanent) )<< rptNewLine;
             *pPara << Sub2(_T("P"),_T("jack")) << _T(" = ") << force.SetValue( pStrandGeom->GetPjack(thisSegmentKey,false)) << rptNewLine;
-            *pPara << _T("Prestress Transfer Length (Straight) = ") << len.SetValue(pPrestressForce->GetTransferLength(thisSegmentKey, pgsTypes::Straight)) << rptNewLine;
-            *pPara << _T("Prestress Transfer Length (Harped) = ") << len.SetValue(pPrestressForce->GetTransferLength(thisSegmentKey, pgsTypes::Harped)) << rptNewLine;
          }
 
          // Write out strand forces and stresses at the various stages of prestress loss
@@ -223,22 +206,3 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CPrestressForceChapterBuilder::
 {
    return std::make_unique<CPrestressForceChapterBuilder>(m_bRating,m_bSelect);
 }
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

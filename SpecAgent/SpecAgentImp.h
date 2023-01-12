@@ -199,6 +199,7 @@ public:
    virtual void GetClosureJointAllowableTensionStressCoefficient(const pgsPointOfInterest& poi, const StressCheckTask& task,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) const override;
    virtual void GetDeckAllowableTensionStressCoefficient(const pgsPointOfInterest& poi, const StressCheckTask& task,bool bWithBondedReinforcement,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) const override;
 
+   virtual bool IsStressCheckApplicable(const CSegmentKey& segmentKey, const StressCheckTask& task) const override;
    virtual bool IsStressCheckApplicable(const CGirderKey& girderKey, const StressCheckTask& task) const override;
    virtual bool HasAllowableTensionWithRebarOption(IntervalIndexType intervalIdx,bool bInPTZ,bool bSegment,const CSegmentKey& segmentKey) const override;
 
@@ -214,7 +215,12 @@ public:
    virtual Float64 GetPrincipalTensileStressFcThreshold() const override;
    virtual Float64 GetPrincipalTensileStressRequiredConcreteStrength(const pgsPointOfInterest& poi, Float64 stress) const override;
 
-   virtual Float64 GetAllowableUHPCTensionStressLimitCoefficient() const override;
+   virtual Float64 GetAllowablePCIUHPCTensionStressLimitCoefficient() const override;
+   virtual Float64 GetAllowableFHWAUHPCTensionStressLimitCoefficient() const override;
+   virtual Float64 GetAllowableFHWAUHPCFatigueTensionStressLimitModifier() const override;
+
+   virtual Float64 GetRequiredConcreteStrength(const pgsPointOfInterest& poi, pgsTypes::StressLocation stressLocation, Float64 stressDemand, const StressCheckTask& task, bool bIsInPTZ) const override;
+   virtual std::_tstring GetAllowableStressParameterName(pgsTypes::StressType stressType, pgsTypes::ConcreteType concreteType) const override;
 
 // ITransverseReinforcementSpec
 public:
@@ -268,8 +274,7 @@ public:
    virtual Float64 GetLiftingCamberMultiplier() const override;
    virtual pgsTypes::WindType GetLiftingWindType() const override;
    virtual Float64 GetLiftingWindLoad() const override;
-   virtual WBFL::Stability::LiftingCriteria GetLiftingStabilityCriteria(const CSegmentKey& segmentKey) const override;
-   virtual WBFL::Stability::LiftingCriteria GetLiftingStabilityCriteria(const CSegmentKey& segmentKey,const HANDLINGCONFIG& liftConfig) const override;
+   virtual WBFL::Stability::LiftingCriteria GetLiftingStabilityCriteria(const CSegmentKey& segmentKey, const HANDLINGCONFIG* pLiftConfig = nullptr) const override;
 
 // ISegmentHaulingSpecCriteria
 public:
@@ -314,8 +319,7 @@ public:
    virtual pgsTypes::CFType GetCentrifugalForceType() const override;
    virtual Float64 GetHaulingSpeed() const override;
    virtual Float64 GetTurningRadius() const override;
-   virtual WBFL::Stability::HaulingCriteria GetHaulingStabilityCriteria(const CSegmentKey& segmentKey) const override;
-   virtual WBFL::Stability::HaulingCriteria GetHaulingStabilityCriteria(const CSegmentKey& segmentKey,const HANDLINGCONFIG& haulConfig) const override;
+   virtual WBFL::Stability::HaulingCriteria GetHaulingStabilityCriteria(const CSegmentKey& segmentKey,const HANDLINGCONFIG* pHaulConfig = nullptr) const override;
 
 // IKdotGirderHaulingSpecCriteria
 public:
@@ -356,6 +360,7 @@ public:
    virtual Float64 GetShearResistanceFactor(bool isDebonded, pgsTypes::ConcreteType type) const override;
    virtual Float64 GetClosureJointFlexureResistanceFactor(pgsTypes::ConcreteType type) const override;
    virtual Float64 GetClosureJointShearResistanceFactor(pgsTypes::ConcreteType type) const override;
+   virtual Float64 GetDuctilityCurvatureRatioLimit() const override;
 
 // IInterfaceShearRequirements 
 public:
@@ -382,9 +387,10 @@ private:
 
    StatusCallbackIDType m_scidHaulTruckError;
 
-   const pgsSplittingCheckEngineer* GetSplittingCheckEngineer(const CSegmentKey& segmentKey) const;
-   pgsPCIUHPCSplittingCheckEngineer m_PCIUHPCSplittingCheckEngineer;
+   const pgsSplittingCheckEngineer& GetSplittingCheckEngineer(const CSegmentKey& segmentKey) const;
    pgsLRFDSplittingCheckEngineer m_LRFDSplittingCheckEngineer;
+   pgsPCIUHPCSplittingCheckEngineer m_PCIUHPCSplittingCheckEngineer;
+   pgsFHWAUHPCSplittingCheckEngineer m_FHWAUHPCSplittingCheckEngineer;
 
    const GirderLibraryEntry* GetGirderEntry(const CSegmentKey& segmentKey) const;
    const SpecLibraryEntry* GetSpec() const;

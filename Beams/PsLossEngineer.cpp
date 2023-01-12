@@ -149,11 +149,12 @@ LOSSDETAILS CPsLossEngineer::ComputeLosses(BeamType beamType,const pgsPointOfInt
    GET_IFACE(ILossParameters,pLossParameters);
    pgsTypes::LossMethod loss_method = pLossParameters->GetLossMethod();
 
-   // if the deck or girder is UHPC the loss method must be AASHTO_REFINED, WSDOT_REFINED, or GENERAL_LUMPSUM
+   // if the girder is UHPC the loss method must be AASHTO_REFINED, WSDOT_REFINED, or GENERAL_LUMPSUM
    // and the base LRFD specification must beo 9th Edition 2020 or later
    // If it isn't, post to status center and throw and unwind exception
    GET_IFACE(IMaterials, pMaterials);
-   if (pMaterials->GetSegmentConcreteType(poi.GetSegmentKey()) == pgsTypes::PCI_UHPC)
+   auto concrete_type = pMaterials->GetSegmentConcreteType(poi.GetSegmentKey());
+   if (IsUHPC(concrete_type))
    {
       if (
          !(loss_method == pgsTypes::AASHTO_REFINED || loss_method == pgsTypes::WSDOT_REFINED || loss_method == pgsTypes::GENERAL_LUMPSUM)
@@ -621,26 +622,12 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
    std::shared_ptr<const lrfdCreepCoefficient2005> pDeckCreep = pCamber->GetDeckCreepModel(0);
 
    GET_IFACE(IMaterials, pMaterials);
-   bool bUHPCGirder = pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC;
-   bool bUHPCDeck = pMaterials->GetDeckConcreteType() == pgsTypes::PCI_UHPC ? true : false;
-   if (bUHPCGirder || bUHPCDeck)
+   auto concrete_type = pMaterials->GetSegmentConcreteType(segmentKey);
+   if (concrete_type == pgsTypes::PCI_UHPC)
    {
       GET_IFACE(ISegmentData, pSegment);
       bool bPCTTGirder = pSegment->GetSegmentMaterial(segmentKey)->Concrete.bPCTT;
-      Float64 GdrAutogenousShrinkage = 0.0;
-      if (bUHPCGirder)
-      {
-         GdrAutogenousShrinkage = pMaterials->GetSegmentAutogenousShrinkage(segmentKey);
-      }
-
-      GET_IFACE(IBridgeDescription, pBridgeDesc);
-      bool bPCTTDeck = pBridgeDesc->GetDeckDescription()->Concrete.bPCTT;
-      Float64 DeckAutogenousShrinkage = 0.0;
-      if (bUHPCDeck)
-      {
-         DeckAutogenousShrinkage = pMaterials->GetDeckAutogenousShrinkage();
-      }
-
+      Float64 GdrAutogenousShrinkage = pMaterials->GetSegmentAutogenousShrinkage(segmentKey);
 
       pLoss = std::make_shared<lrfdPCIUHPCLosses>(poi.GetDistFromStart(),
          girder_length,
@@ -665,7 +652,7 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
          coeffFriction,
          angleChange,
          GdrShrinkageK1, GdrShrinkageK2, GdrAutogenousShrinkage,
-         DeckShrinkageK1, DeckShrinkageK2, DeckAutogenousShrinkage,
+         DeckShrinkageK1, DeckShrinkageK2, 
          fc,
          fci,
          fcSlab,
@@ -700,7 +687,68 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
          false,
          relaxationMethod,
          std::dynamic_pointer_cast<const lrfdCreepCoefficient2005>(pGirderCreep),pDeckCreep,
-         bUHPCGirder, bPCTTGirder, bUHPCDeck, bPCTTDeck);
+         true, bPCTTGirder);
+   }
+   else if (concrete_type == pgsTypes::FHWA_UHPC)
+   {
+   pLoss = std::make_shared<lrfdFHWAUHPCLosses>(poi.GetDistFromStart(),
+      girder_length,
+      spType,
+      gradePerm,
+      typePerm,
+      coatingPerm,
+      gradeTemp,
+      typeTemp,
+      coatingTemp,
+      fpjPerm,
+      fpjTTS,
+      ApsPerm,
+      ApsTTS,
+      aps,
+      epermRelease,
+      epermFinal,
+      etemp,
+      usage,
+      anchorSet,
+      wobble,
+      coeffFriction,
+      angleChange,
+      GdrShrinkageK1, GdrShrinkageK2,
+      DeckShrinkageK1, DeckShrinkageK2,
+      fc,
+      fci,
+      fcSlab,
+      Ec,
+      Eci,
+      EcSlab,
+      Ag,
+      Ixx, Iyy, Ixy,
+      Ybg,
+      Ac1,
+      Ic1,
+      Ybc1,
+      Ac2, Ic2, Ybc2,
+      An,
+      Ixxn, Iyyn, Ixyn,
+      Ybn,
+      Acn,
+      Icn,
+      Ybcn,
+      Ad,
+      ed,
+      Ksh,
+      Mdlg,
+      Madlg,
+      Msidl1, Msidl2,
+      rh,
+      ti,
+      th,
+      td,
+      tf,
+      lossAgency != laWSDOT, // ignore initial relaxation if not WSDOT
+      false,
+      relaxationMethod,
+      std::dynamic_pointer_cast<const lrfdCreepCoefficient2005>(pGirderCreep), pDeckCreep);
    }
    else
    {

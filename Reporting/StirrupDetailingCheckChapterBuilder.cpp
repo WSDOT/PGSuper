@@ -49,6 +49,10 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
                                           IntervalIndexType intervalIdx, pgsTypes::LimitState ls,
                                           IEAFDisplayUnits* pDisplayUnits);
 
+void build_max_spacing_paragraph_fhwa_uhpc(IBroker* pBroker, rptChapter* pChapter, const CGirderKey& girderKey,
+   IntervalIndexType intervalIdx, pgsTypes::LimitState ls,
+   IEAFDisplayUnits* pDisplayUnits);
+
 /****************************************************************************
 CLASS
    CStirrupDetailingCheckChapterBuilder
@@ -82,13 +86,30 @@ rptChapter* CStirrupDetailingCheckChapterBuilder::Build(const std::shared_ptr<co
 
    build_min_avs_paragraph(pBroker,pChapter,girderKey,intervalIdx,pDisplayUnits);
 
-   build_max_spacing_paragraph(pBroker,pChapter,girderKey,intervalIdx,pgsTypes::StrengthI,pDisplayUnits);
-   if ( bPermit )
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
+   if (pMaterials->GetSegmentConcreteType(CSegmentKey(girderKey, 0)) == pgsTypes::FHWA_UHPC)
    {
-      build_max_spacing_paragraph(pBroker,pChapter,girderKey,intervalIdx,pgsTypes::StrengthII,pDisplayUnits);
+      build_max_spacing_paragraph_fhwa_uhpc(pBroker, pChapter, girderKey, intervalIdx, pgsTypes::StrengthI, pDisplayUnits);
+      if (bPermit)
+      {
+         build_max_spacing_paragraph_fhwa_uhpc(pBroker, pChapter, girderKey, intervalIdx, pgsTypes::StrengthII, pDisplayUnits);
+      }
+   }
+   else
+   {
+      build_max_spacing_paragraph(pBroker, pChapter, girderKey, intervalIdx, pgsTypes::StrengthI, pDisplayUnits);
+      if (bPermit)
+      {
+         build_max_spacing_paragraph(pBroker, pChapter, girderKey, intervalIdx, pgsTypes::StrengthII, pDisplayUnits);
+      }
    }
 
    return pChapter;
+}
+
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CStirrupDetailingCheckChapterBuilder::Clone() const
+{
+   return std::make_unique<CStirrupDetailingCheckChapterBuilder>();
 }
 
 void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirderKey& girderKey,
@@ -134,6 +155,18 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
       if (concType == pgsTypes::PCI_UHPC)
       {
          *pParagraph << _T("PCI SDG E.7.2.2 - There is no requirement for minimum transverse reinforcement in PCI-UHPC members.") << rptNewLine;
+         return;
+      }
+      else if (concType == pgsTypes::FHWA_UHPC)
+      {
+         pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
+         *pChapter << pParagraph;
+         *pParagraph << _T("Details for Minimum Transverse Reinforcement Check - GS 1.7.2.5");
+
+         pParagraph = new rptParagraph;
+         *pChapter << pParagraph;
+         *pParagraph << _T("Transverse shear reinforcement need not be provided where not required, as specifed in GS Article 1.7.2.3") << rptNewLine;
+         return;
       }
       else
       {
@@ -177,6 +210,7 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
                break;
 
             case pgsTypes::PCI_UHPC:
+            case pgsTypes::FHWA_UHPC:
             default:
                ATLASSERT(false);
             }
@@ -198,6 +232,9 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
 
       if ( segIdx != nSegments-1 )
       {
+         // closure joints can't be UHPC, yet... however, the UHPC code is stubbed out here so it's ready to go in the future
+         ATLASSERT(!IsUHPC(concType)); 
+
          CClosureKey closureKey(girderKey,segIdx);
          pgsTypes::ConcreteType concType = pMaterial->GetClosureJointConcreteType(closureKey);
          bool bHasAggSplittingStrength = pMaterial->DoesClosureJointConcreteHaveAggSplittingStrength(closureKey);
@@ -212,6 +249,10 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
          if (concType == pgsTypes::PCI_UHPC)
          {
             *pParagraph << _T("PCI SDG E.7.2.2 - There is no requirement for minimum transverse reinforcement in PCI-UHPC members.") << rptNewLine;
+         }
+         else if (concType == pgsTypes::FHWA_UHPC)
+         {
+            *pParagraph << _T("GS 1.7.2.5 - There is no requirement for minimum transverse reinforcement in UHPC members.") << rptNewLine;
          }
          else
          {
@@ -247,6 +288,7 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
                break;
 
             case pgsTypes::PCI_UHPC:
+            case pgsTypes::FHWA_UHPC:
             default:
                ATLASSERT(false);
             }
@@ -473,7 +515,91 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
    *pParagraph << petable << rptNewLine;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CStirrupDetailingCheckChapterBuilder::Clone() const
+
+void build_max_spacing_paragraph_fhwa_uhpc(IBroker* pBroker, rptChapter* pChapter, const CGirderKey& girderKey,
+   IntervalIndexType intervalIdx, pgsTypes::LimitState ls,
+   IEAFDisplayUnits* pDisplayUnits)
 {
-   return std::make_unique<CStirrupDetailingCheckChapterBuilder>();
+   // Spacing check 5.7.2.6 (pre2017: 5.8.2.7)
+   rptParagraph* pParagraph;
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
+   *pChapter << pParagraph;
+
+   if (ls == pgsTypes::StrengthI)
+   {
+      *pParagraph << _T("Strength I");
+   }
+   else
+   {
+      *pParagraph << _T("Strength II");
+   }
+
+   *pParagraph << _T(" - Details for Maximum Transverse Reinforcement Spacing Check - GS 1.7.2.6") << rptNewLine;
+
+   pParagraph = new rptParagraph;
+   *pChapter << pParagraph;
+
+   INIT_UV_PROTOTYPE(rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false);
+   INIT_UV_PROTOTYPE(rptAngleUnitValue, angle, pDisplayUnits->GetAngleUnit(), false);
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false);
+   INIT_UV_PROTOTYPE(rptForceSectionValue, shear, pDisplayUnits->GetShearUnit(), false);
+
+   Float64 Smax = WBFL::Units::ConvertToSysUnits(24.0,WBFL::Units::Measure::Inch); // maximum spacing = 24.0 in GS 1.7.2.6
+   dim.ShowUnitTag(true);
+   *pParagraph << Sub2(_T("S"), _T("max")) << _T(" = 0.25") << Sub2(_T("d"), _T("v,UHPC")) << _T(" cot ") << symbol(theta) << _T(" ") << symbol(LTE) << _T(" ") << dim.SetValue(Smax) << rptNewLine;
+   dim.ShowUnitTag(false);
+
+
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(4);
+   *pParagraph << table << rptNewLine;
+   *pParagraph << rptNewLine;
+
+   ColumnIndexType col = 0;
+   (*table)(0, col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table)(0, col++) << COLHDR(Sub2(_T("d"), _T("v,UHPC")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*table)(0, col++) << COLHDR(symbol(theta), rptAngleUnitTag, pDisplayUnits->GetAngleUnit());
+   (*table)(0, col++) << COLHDR(Sub2(_T("S"), _T("max")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+
+   // Fill up the table
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IArtifact, pIArtifact);
+
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+
+   const pgsGirderArtifact* pGirderArtifact = pIArtifact->GetGirderArtifact(girderKey);
+
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey, 0));
+
+   RowIndexType row = table->GetNumberOfHeaderRows();
+
+   for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+   {
+      CSegmentKey segmentKey(girderKey, segIdx);
+      const pgsSegmentArtifact* pSegmentArtifact = pIArtifact->GetSegmentArtifact(segmentKey);
+      const pgsStirrupCheckArtifact* pstirrup_artifact = pSegmentArtifact->GetStirrupCheckArtifact();
+      ATLASSERT(pstirrup_artifact);
+
+      CollectionIndexType nArtifacts = pstirrup_artifact->GetStirrupCheckAtPoisArtifactCount(intervalIdx, pgsTypes::StrengthI);
+      for (CollectionIndexType idx = 0; idx < nArtifacts; idx++)
+      {
+         // it is ok to use a hard coded StrengthI limit state here because
+         // we are only after Bv and Avs Min which are not dependent on loading
+         const pgsStirrupCheckAtPoisArtifact* psArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact(intervalIdx, pgsTypes::StrengthI, idx);
+
+         const pgsPointOfInterest& poi = psArtifact->GetPointOfInterest();
+         ATLASSERT(poi.GetSegmentKey() == segmentKey);
+
+         const pgsStirrupDetailArtifact* pArtifact = psArtifact->GetStirrupDetailArtifact();
+
+
+         col = 0;
+
+         (*table)(row, col++) << location.SetValue(POI_ERECTED_SEGMENT, poi);
+         (*table)(row, col++) << dim.SetValue(pArtifact->GetDv());
+         (*table)(row, col++) << angle.SetValue(pArtifact->GetTheta());
+         (*table)(row, col++) << dim.SetValue(pArtifact->GetSMax());
+
+         row++;
+      } // next artifact
+   } // next segment
 }

@@ -241,7 +241,7 @@ void CClosureJointGeneralPage::OnMoreConcreteProperties()
    int i = GetCheckedRadioButton(IDC_FC1,IDC_FC2);
    bool bFinalProperties = (i == IDC_FC2 ? true : false);
 
-   CConcreteDetailsDlg dlg(bFinalProperties);
+   CConcreteDetailsDlg dlg(bFinalProperties,false/*no uhpc*/);
 
    CDataExchange dx(this,TRUE);
    ExchangeConcreteData(&dx);
@@ -281,11 +281,21 @@ void CClosureJointGeneralPage::OnMoreConcreteProperties()
    dlg.m_CEBFIP.m_BetaSc          = pParent->m_ClosureJoint.GetConcrete().BetaSc;
    dlg.m_CEBFIP.m_CementType      = pParent->m_ClosureJoint.GetConcrete().CEBFIPCementType;
 
-   dlg.m_PCIUHPC.m_ffc = pParent->m_ClosureJoint.GetConcrete().Ffc;
-   dlg.m_PCIUHPC.m_frr = pParent->m_ClosureJoint.GetConcrete().Frr;
-   dlg.m_PCIUHPC.m_FiberLength = pParent->m_ClosureJoint.GetConcrete().FiberLength;
-   dlg.m_PCIUHPC.m_AutogenousShrinkage = pParent->m_ClosureJoint.GetConcrete().AutogenousShrinkage;
-   dlg.m_PCIUHPC.m_bPCTT = pParent->m_ClosureJoint.GetConcrete().bPCTT;
+   // Place holder for PCI_UHPC and FHWA_UHPC
+   //dlg.m_PCIUHPC.m_ffc = pParent->m_ClosureJoint.GetConcrete().Ffc;
+   //dlg.m_PCIUHPC.m_frr = pParent->m_ClosureJoint.GetConcrete().Frr;
+   //dlg.m_PCIUHPC.m_FiberLength = pParent->m_ClosureJoint.GetConcrete().FiberLength;
+   //dlg.m_PCIUHPC.m_AutogenousShrinkage = pParent->m_ClosureJoint.GetConcrete().AutogenousShrinkage;
+   //dlg.m_PCIUHPC.m_bPCTT = pParent->m_ClosureJoint.GetConcrete().bPCTT;
+
+   //dlg.m_FHWAUHPC.m_ftcri = pParent->m_ClosureJoint.GetConcrete().ftcri;
+   //dlg.m_FHWAUHPC.m_ftcr =  pParent->m_ClosureJoint.GetConcrete().ftcr;
+   //dlg.m_FHWAUHPC.m_ftloc = pParent->m_ClosureJoint.GetConcrete().ftloc;
+   //dlg.m_FHWAUHPC.m_etloc = pParent->m_ClosureJoint.GetConcrete().etloc;
+   //dlg.m_FHWAUHPC.m_alpha_u = pParent->m_ClosureJoint.GetConcrete().alpha_u;
+   //dlg.m_FHWAUHPC.m_ecu = pParent->m_ClosureJoint.GetConcrete().ecu;
+   //dlg.m_FHWAUHPC.m_bExperimental_ecu = pParent->m_ClosureJoint.GetConcrete().bExperimental_ecu;
+   //dlg.m_FHWAUHPC.m_FiberLength = pParent->m_ClosureJoint.GetConcrete().FiberLength;
 
    dlg.m_General.m_strUserEc  = m_strUserEc;
 
@@ -325,11 +335,21 @@ void CClosureJointGeneralPage::OnMoreConcreteProperties()
       pParent->m_ClosureJoint.GetConcrete().CEBFIPCementType      = dlg.m_CEBFIP.m_CementType;
 
 
-      pParent->m_ClosureJoint.GetConcrete().Ffc = dlg.m_PCIUHPC.m_ffc;
-      pParent->m_ClosureJoint.GetConcrete().Frr = dlg.m_PCIUHPC.m_frr;
-      pParent->m_ClosureJoint.GetConcrete().FiberLength = dlg.m_PCIUHPC.m_FiberLength;
-      pParent->m_ClosureJoint.GetConcrete().AutogenousShrinkage = dlg.m_PCIUHPC.m_AutogenousShrinkage;
-      pParent->m_ClosureJoint.GetConcrete().bPCTT = dlg.m_PCIUHPC.m_bPCTT;
+      // Place holder for PCI_UHPC and FHWA_UHPC
+      //pParent->m_ClosureJoint.GetConcrete().Ffc = dlg.m_PCIUHPC.m_ffc;
+      //pParent->m_ClosureJoint.GetConcrete().Frr = dlg.m_PCIUHPC.m_frr;
+      //pParent->m_ClosureJoint.GetConcrete().FiberLength = dlg.m_PCIUHPC.m_FiberLength;
+      //pParent->m_ClosureJoint.GetConcrete().AutogenousShrinkage = dlg.m_PCIUHPC.m_AutogenousShrinkage;
+      //pParent->m_ClosureJoint.GetConcrete().bPCTT = dlg.m_PCIUHPC.m_bPCTT;
+
+      //pParent->m_ClosureJoint.GetConcrete().ftcri = dlg.m_FHWAUHPC.m_ftcri;
+      //pParent->m_ClosureJoint.GetConcrete().ftcr = dlg.m_FHWAUHPC.m_ftcr;
+      //pParent->m_ClosureJoint.GetConcrete().ftloc = dlg.m_FHWAUHPC.m_ftloc;
+      //pParent->m_ClosureJoint.GetConcrete().etloc = dlg.m_FHWAUHPC.m_etloc;
+      //pParent->m_ClosureJoint.GetConcrete().alpha_u = dlg.m_FHWAUHPC.m_alpha_u;
+      //pParent->m_ClosureJoint.GetConcrete().ecu = dlg.m_FHWAUHPC.m_ecu;
+      //pParent->m_ClosureJoint.GetConcrete().bExperimental_ecu = dlg.m_FHWAUHPC.m_bExperimental_ecu;
+      //pParent->m_ClosureJoint.GetConcrete().FiberLength = dlg.m_FHWAUHPC.m_FiberLength;
 
       m_strUserEc  = dlg.m_General.m_strUserEc;
       m_ctrlEc.SetWindowText(m_strUserEc);

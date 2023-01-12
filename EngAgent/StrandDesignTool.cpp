@@ -182,6 +182,21 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
          if (m_MaxFci < m_MinFci) m_MaxFci = m_MinFci;
          if (m_MaxFc < m_MinFc) m_MaxFc = m_MinFc;
       }
+      else if (pSegmentMaterial->Concrete.Type == pgsTypes::FHWA_UHPC)
+      {
+         ATLASSERT(false); // not supporting UHPC design yet
+         // need to look at concrete strength range requirements for FHWA UHPC - there is a min f'ci hard limit that PCI UHPC does not have
+         // this is just cobbled together - still needs to be reviewed for accuracy
+         LOG(_T("FHWA-UHPC Concrete"));
+         GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
+         m_MinFci = WBFL::Units::ConvertToSysUnits(14.0, WBFL::Units::Measure::KSI); // minimum per GS 1.9.1.2 (but could be override by owner - override not implemented yet)
+         m_MaxFci = m_DesignOptions.maxFci; // this is from the design strategy defined in the girder
+         m_MinFc = WBFL::Units::ConvertToSysUnits(17.5, WBFL::Units::Measure::KSI); // GS 1.1.1
+         m_MaxFc = m_DesignOptions.maxFc;// this is from the design strategy defined in the girder
+
+         if (m_MaxFci < m_MinFci) m_MaxFci = m_MinFci;
+         if (m_MaxFc < m_MinFc) m_MaxFc = m_MinFc;
+      }
       else
       {
          LOG(_T("Conventional Concrete"));
@@ -310,9 +325,9 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
    m_SegmentLength         = pBridge->GetSegmentLength(m_SegmentKey);
    m_SpanLength            = pBridge->GetSegmentSpanLength(m_SegmentKey);
    m_StartConnectionLength = pBridge->GetSegmentStartEndDistance(m_SegmentKey);
-   m_XFerLength[pgsTypes::Straight]  = pPrestressForce->GetTransferLength(m_SegmentKey,pgsTypes::Straight);
-   m_XFerLength[pgsTypes::Harped]    = pPrestressForce->GetTransferLength(m_SegmentKey,pgsTypes::Harped);
-   m_XFerLength[pgsTypes::Temporary] = pPrestressForce->GetTransferLength(m_SegmentKey,pgsTypes::Temporary);
+   m_XFerLength[pgsTypes::Straight]  = pPrestressForce->GetTransferLength(m_SegmentKey,pgsTypes::Straight,pgsTypes::tltMinimum);
+   m_XFerLength[pgsTypes::Harped]    = pPrestressForce->GetTransferLength(m_SegmentKey,pgsTypes::Harped, pgsTypes::tltMinimum);
+   m_XFerLength[pgsTypes::Temporary] = pPrestressForce->GetTransferLength(m_SegmentKey,pgsTypes::Temporary, pgsTypes::tltMinimum);
 
    // harped offsets, hold-down and max strand slopes
    InitHarpedPhysicalBounds(pSegmentData->GetStrandMaterial(m_SegmentKey,pgsTypes::Harped));
@@ -1405,7 +1420,7 @@ bool pgsStrandDesignTool::AdjustForHoldDownForce()
 
    GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType strandStressingIntervalIdx = pIntervals->GetStressStrandInterval(m_SegmentKey);
-   Float64 Ph = pPrestressForce->GetPrestressForce(poi, pgsTypes::Harped, strandStressingIntervalIdx, pgsTypes::Start, &config);
+   Float64 Ph = pPrestressForce->GetPrestressForce(poi, pgsTypes::Harped, strandStressingIntervalIdx, pgsTypes::Start, pgsTypes::tltMinimum, &config);
    Float64 strand_force = Ph * (1 + m_HoldDownFriction);
    if (!m_bTotalHoldDownForce)
    {
@@ -2006,6 +2021,9 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
 
    ConcStrengthResultType result = ConcSuccess;
 
+#pragma Reminder("UPDATE - Call IAllowableConcreteStress::GetRequiredConcreteStrength instead of having duplicate code here")
+   // IAllowableConcreteStress::GetRequiredConcreteStrength isn't exactly the same as this. It doesn't treat the tension with rebar case
+   // the same. Also, the current return information doesn't tell use if the concrete strength required for tension is for with or without rebar case.
    pgsPointOfInterest dummyPOI(m_SegmentKey,0.0);
    if ( task.stressType == pgsTypes::Compression )
    {
@@ -2017,7 +2035,6 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
    else
    {
       GET_IFACE(IMaterials,pMaterials);
-
       if (pMaterials->GetSegmentConcreteType(GetSegmentKey()) == pgsTypes::PCI_UHPC)
       {
          if (task.intervalIdx == releaseIntervalIdx)
@@ -2033,6 +2050,10 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
          {
             fc_reqd = 0; // stress limit = (2/3)(ffc) which is not a function of f'c
          }
+      }
+      else if (pMaterials->GetSegmentConcreteType(GetSegmentKey()) == pgsTypes::FHWA_UHPC)
+      {
+         fc_reqd = 0; // stress limit = gamma.u * ft,loc which is not a function of f'c
       }
       else
       {
@@ -2066,7 +2087,7 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
                      pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI, pgsTypes::TopGirder, task, true/*with rebar*/, false/*in other than precompressed tensile zone*/, &talt, &bCheckMaxAlt, &fMaxAlt);
                      fc_reqd = pow(fControl / (lambda * talt), 2);
                      result = ConcSuccessWithRebar;
-                     LOG(_T("Min rebar is required to acheive required strength"));
+                     LOG(_T("Min rebar is required to achieve required strength"));
                   }
                   else
                   {
@@ -2103,7 +2124,7 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
    if ( fc_reqd < fc_min )
    {
       fc_reqd = fc_min;
-      LOG(_T("Required strength less than minumum... setting f'c = ") << WBFL::Units::ConvertFromSysUnits(fc_reqd,WBFL::Units::Measure::KSI) << _T(" KSI"));
+      LOG(_T("Required strength less than minimum... setting f'c = ") << WBFL::Units::ConvertFromSysUnits(fc_reqd,WBFL::Units::Measure::KSI) << _T(" KSI"));
    }
    else if ( fc_max < fc_reqd )
    {
@@ -2111,7 +2132,7 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
       if (GetConcreteStrength() < fc_max)
       {
          fc_reqd = fc_max;
-         LOG(_T("Required strength exceeds that allowed by 5.4.2.1 - try setting f'c to max for one interation = ") << WBFL::Units::ConvertFromSysUnits(fc_reqd,WBFL::Units::Measure::KSI) << _T(" KSI"));
+         LOG(_T("Required strength exceeds that allowed by 5.4.2.1 - try setting f'c to max for one iteration = ") << WBFL::Units::ConvertFromSysUnits(fc_reqd,WBFL::Units::Measure::KSI) << _T(" KSI"));
       }
       else
       {
@@ -3497,7 +3518,8 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
       const PoiAttributeType attrib_xfer = POI_PSXFER;
 
       // want longest transfer length
-      Float64 xfer_length = Max(pPrestress->GetTransferLength(m_SegmentKey, pgsTypes::Straight), pPrestress->GetTransferLength(m_SegmentKey, pgsTypes::Harped));
+      Float64 xfer_length = Max(pPrestress->GetTransferLength(m_SegmentKey, pgsTypes::Straight, pgsTypes::tltMinimum), 
+                                pPrestress->GetTransferLength(m_SegmentKey, pgsTypes::Harped, pgsTypes::tltMinimum));
 
       Float64 start_conn = pBridge->GetSegmentStartEndDistance(m_SegmentKey);
       if (xfer_length < start_conn)
@@ -3553,7 +3575,7 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
       for (int i = 0; i < 2; i++)
       {
          pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
-         Float64 xfer_length = pPrestress->GetTransferLength(m_SegmentKey, strandType);
+         Float64 xfer_length = pPrestress->GetTransferLength(m_SegmentKey, strandType, pgsTypes::tltMinimum);
          pgsPointOfInterest lxfer(m_SegmentKey, xfer_length, attrib_xfer);
          AddPOI(lxfer, start_supp, end_supp);
 
@@ -3573,7 +3595,7 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
       
          Int16 nincs = (Int16)floor((leftEnd + 1.0e-05)/db_incr); // we know both locs are equidistant from ends
 
-         Float64 xfer_length = pPrestress->GetTransferLength(m_SegmentKey, pgsTypes::Straight);
+         Float64 xfer_length = pPrestress->GetTransferLength(m_SegmentKey, pgsTypes::Straight, pgsTypes::tltMinimum);
 
          Float64 ldb_loc=0.0;
          Float64 rdb_loc=m_SegmentLength;

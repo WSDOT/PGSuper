@@ -503,7 +503,7 @@ void CBridgeDescRailingSystemPage::OnMoreProperties(CRailingSystem* pRailingSyst
       pRailingSystem->Concrete.bUserEc            = dlg.m_bUserEc28;
 
       pRailingSystem->Concrete.Type               = dlg.m_General.m_Type;
-      ATLASSERT(pRailingSystem->Concrete.Type != pgsTypes::PCI_UHPC);
+      ATLASSERT(!IsUHPC(pRailingSystem->Concrete.Type)); // UHPC not permitted for railings
       pRailingSystem->Concrete.StrengthDensity    = dlg.m_General.m_Ds;
       pRailingSystem->Concrete.WeightDensity      = dlg.m_General.m_Dw;
       pRailingSystem->Concrete.MaxAggregateSize   = dlg.m_General.m_AggSize;
@@ -915,17 +915,17 @@ BOOL CBridgeDescRailingSystemPage::OnKillActive()
    if(bRetValue!=0)
    {
       // the UI should be preventing selection of PCI UHPC concrete
-      ATLASSERT(m_LeftRailingSystem.Concrete.Type != pgsTypes::PCI_UHPC);
-      ATLASSERT(m_RightRailingSystem.Concrete.Type != pgsTypes::PCI_UHPC);
+      ATLASSERT(!IsUHPC(m_LeftRailingSystem.Concrete.Type));
+      ATLASSERT(!IsUHPC(m_RightRailingSystem.Concrete.Type));
 
       if ( !IsDensityInRange(m_LeftRailingSystem.Concrete.StrengthDensity,m_LeftRailingSystem.Concrete.Type) )
       {
-         AfxMessageBox((m_LeftRailingSystem.Concrete.Type == pgsTypes::Normal || m_LeftRailingSystem.Concrete.Type == pgsTypes::PCI_UHPC) ? IDS_NWC_MESSAGE : IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
+         AfxMessageBox((m_LeftRailingSystem.Concrete.Type == pgsTypes::Normal) ? IDS_NWC_MESSAGE : IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
       }
       
       if ( !IsDensityInRange(m_RightRailingSystem.Concrete.StrengthDensity,m_RightRailingSystem.Concrete.Type) )
       {
-         AfxMessageBox((m_RightRailingSystem.Concrete.Type == pgsTypes::Normal || m_RightRailingSystem.Concrete.Type == pgsTypes::PCI_UHPC) ? IDS_NWC_MESSAGE : IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
+         AfxMessageBox((m_RightRailingSystem.Concrete.Type == pgsTypes::Normal) ? IDS_NWC_MESSAGE : IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
       }
    }
 
@@ -940,12 +940,8 @@ void CBridgeDescRailingSystemPage::SetConcreteTypeLabel(UINT nID,pgsTypes::Concr
 
 bool CBridgeDescRailingSystemPage::IsDensityInRange(Float64 density,pgsTypes::ConcreteType type)
 {
-   if (type == pgsTypes::PCI_UHPC)
-   {
-      ATLASSERT(false); // should never get here - UI should prevent railing from being UHPC
-      return true;
-   }
-   else if (type == pgsTypes::Normal )
+   ATLASSERT(!IsUHPC(type));
+   if (type == pgsTypes::Normal )
    {
       return ( m_MinNWCDensity <= density );
    }

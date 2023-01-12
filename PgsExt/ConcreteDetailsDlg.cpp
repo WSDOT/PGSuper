@@ -92,6 +92,7 @@ void CConcreteDetailsDlg::Init()
    m_ACI.m_psp.dwFlags      |= PSP_HASHELP;
    m_CEBFIP.m_psp.dwFlags   |= PSP_HASHELP;
    m_PCIUHPC.m_psp.dwFlags |= PSP_HASHELP;
+   m_FHWAUHPC.m_psp.dwFlags |= PSP_HASHELP;
 
    AddPage( &m_General );
 
@@ -110,7 +111,11 @@ void CConcreteDetailsDlg::Init()
    {
       AddPage( &m_AASHTO );
 
-      if(m_bIncludeUHPC) AddPage(&m_PCIUHPC);
+      if (m_bIncludeUHPC)
+      {
+         AddPage(&m_PCIUHPC);
+         AddPage(&m_FHWAUHPC);
+      }
    }
    else
    {

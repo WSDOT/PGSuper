@@ -221,10 +221,10 @@ void CReporterBase::CreateDetailsReport()
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CCastingYardRebarRequirementChapterBuilder>()) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CMomentCapacityDetailsChapterBuilder>()) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CShearCapacityDetailsChapterBuilder>(true, false)));
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CHorizontalInterfaceShearCapacityDetailsChapterBuilder>(true, false)));
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CStirrupDetailingCheckChapterBuilder>()) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CCritSectionChapterBuilder>(true,false)) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CLongReinfShearCheckChapterBuilder>(true,false)) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CHorizontalInterfaceShearCapacityDetailsChapterBuilder>(true, false)));
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CPrincipalTensionStressDetailsChapterBuilder>()));
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CSplittingCheckDetailsChapterBuilder>()) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CEffFlangeWidthDetailsChapterBuilder>()) );
@@ -272,9 +272,9 @@ void CReporterBase::CreateLoadRatingReport()
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CFinalLossesChapterBuilder>(false)) ); 
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CMomentCapacityDetailsChapterBuilder>(false,false)) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CShearCapacityDetailsChapterBuilder>(false, true, false)));
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CHorizontalInterfaceShearCapacityDetailsChapterBuilder>(false, true, false)));
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CCritSectionChapterBuilder>(false,true,false)) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CLongReinfShearCheckChapterBuilder>(false,true,false)) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CHorizontalInterfaceShearCapacityDetailsChapterBuilder>(false, true, false)));
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CEffFlangeWidthDetailsChapterBuilder>(false)) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CDistributionFactorDetailsChapterBuilder>(false)) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CCrackedSectionDetailsChapterBuilder>(false)) );

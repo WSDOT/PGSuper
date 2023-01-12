@@ -59,8 +59,6 @@ CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter*
 {
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
-   bool bUHPC = pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC ? true : false;
-   bool bPCTT = (bUHPC ? pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.bPCTT : false);
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
@@ -91,9 +89,9 @@ CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter*
       *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCR.png")) << rptNewLine;
    }
 
-   if (bUHPC)
+   if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC)
    {
-      if (bPCTT)
+      if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.bPCTT)
       {
          *pParagraph << rptRcImage(strImagePath + _T("CreepAtDeckPlacement_UHPC_PCTT.png")) << rptNewLine;
       }
@@ -101,6 +99,10 @@ CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter*
       {
          *pParagraph << rptRcImage(strImagePath + _T("CreepAtDeckPlacement_UHPC.png")) << rptNewLine;
       }
+   }
+   else if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC)
+   {
+      *pParagraph << rptRcImage(strImagePath + _T("CreepAtDeckPlacement_FHWA_UHPC.png")) << rptNewLine;
    }
    else
    {

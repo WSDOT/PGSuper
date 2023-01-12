@@ -48,39 +48,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-/****************************************************************************
-CLASS
-   CLongReinfShearCheck
-****************************************************************************/
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-CLongReinfShearCheck::CLongReinfShearCheck()
-{
-}
-
-CLongReinfShearCheck::CLongReinfShearCheck(const CLongReinfShearCheck& rOther)
-{
-   MakeCopy(rOther);
-}
-
-CLongReinfShearCheck::~CLongReinfShearCheck()
-{
-}
-
-//======================== OPERATORS  =======================================
-CLongReinfShearCheck& CLongReinfShearCheck::operator= (const CLongReinfShearCheck& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
-//======================== OPERATIONS =======================================
 void CLongReinfShearCheck::Build(rptChapter* pChapter,
                               IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
                               IntervalIndexType intervalIdx,pgsTypes::LimitState ls,
@@ -93,9 +61,33 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
 
    rptCapacityToDemand cap_demand;
 
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+
+   bool bFHWAUHPC = false;
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
+   for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+   {
+      if (pMaterials->GetSegmentConcreteType(CSegmentKey(girderKey, segIdx)) == pgsTypes::FHWA_UHPC)
+      {
+         bFHWAUHPC = true;
+         break;
+      }
+   }
+
+
    rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
-   *pTitle << _T("Longitudinal Reinforcement for Shear Check - ") << GetLimitStateString(ls) << _T(" [") << LrfdCw8th(_T("5.8.3.5"),_T("5.7.3.5")) << _T("]");
+   *pTitle << _T("Longitudinal Reinforcement for Shear Check - ") << GetLimitStateString(ls) << _T(" [");
+   if (bFHWAUHPC)
+   {
+      *pTitle << _T("1.7.3.5");
+   }
+   else
+   {
+      *pTitle << LrfdCw8th(_T("5.8.3.5"), _T("5.7.3.5"));
+   }
+   *pTitle << _T("]");
 
    rptParagraph* pBody = new rptParagraph;
    *pChapter << pBody;
@@ -105,40 +97,47 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
 
    lrfdVersionMgr::Version vers = lrfdVersionMgr::GetVersion();
 
-   if ( 0 < nDucts )
+   if (bFHWAUHPC)
    {
-      if ( lrfdVersionMgr::EighthEdition2017 <= vers )
-      {
-         *pBody <<rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2017_with_PT.png"))<<rptNewLine;
-      }
-      else if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= vers )
-      {
-         *pBody <<rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2005_with_PT.png"))<<rptNewLine;
-      }
-      else
-      {
-         *pBody <<rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear_with_PT.png"))<<rptNewLine;
-      }
+      *pBody << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("FHWA_UHPC_LongitudinalReinforcementForShear.png")) << rptNewLine;
    }
    else
    {
-      if (lrfdVersionMgr::EighthEdition2017 <= vers )
+      if (0 < nDucts)
       {
-         *pBody <<rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2017.png"))<<rptNewLine;
-      }
-      else if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= vers )
-      {
-         *pBody <<rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2005.png"))<<rptNewLine;
+         if (lrfdVersionMgr::EighthEdition2017 <= vers)
+         {
+            *pBody << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2017_with_PT.png")) << rptNewLine;
+         }
+         else if (lrfdVersionMgr::ThirdEditionWith2005Interims <= vers)
+         {
+            *pBody << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2005_with_PT.png")) << rptNewLine;
+         }
+         else
+         {
+            *pBody << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear_with_PT.png")) << rptNewLine;
+         }
       }
       else
       {
-         *pBody <<rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear.png"))<<rptNewLine;
+         if (lrfdVersionMgr::EighthEdition2017 <= vers)
+         {
+            *pBody << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2017.png")) << rptNewLine;
+         }
+         else if (lrfdVersionMgr::ThirdEditionWith2005Interims <= vers)
+         {
+            *pBody << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2005.png")) << rptNewLine;
+         }
+         else
+         {
+            *pBody << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear.png")) << rptNewLine;
+         }
       }
-   }
 
-   if (lrfdVersionMgr::NinthEdition2020 <= vers)
-   {
-      *pBody << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LRS_ReinforcementLimit.png")) << rptNewLine;
+      if (lrfdVersionMgr::NinthEdition2020 <= vers)
+      {
+         *pBody << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LRS_ReinforcementLimit.png")) << rptNewLine;
+      }
    }
 
    rptRcTable* table = rptStyleManager::CreateDefaultTable(vers < lrfdVersionMgr::NinthEdition2020 ? 5 : 8,_T(""));
@@ -154,7 +153,14 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    if (lrfdVersionMgr::NinthEdition2020 <= vers)
    {
       (*table)(0, col++) << COLHDR(RPT_APS << RPT_FPS, rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
-      (*table)(0, col++) << COLHDR(RPT_AS << RPT_FY, rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+      if (bFHWAUHPC)
+      {
+         (*table)(0, col++) << COLHDR(RPT_AS << RPT_ES << Sub2(symbol(epsilon),_T("t,loc")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+      }
+      else
+      {
+         (*table)(0, col++) << COLHDR(RPT_AS << RPT_FY, rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+      }
       (*table)(0, col++) << _T("Status");
    }
 
@@ -163,8 +169,6 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    location.IncludeSpanAndGirder(1 < nSegments);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
@@ -195,7 +199,14 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
             (*table)(row, col++) << shear.SetValue( C );
             (*table)(row, col++) << shear.SetValue( D );
 
-            (*table)(row,col++) << LrfdCw8th(_T("5.8.3.5-"),_T("5.7.3.5-")) << pArtifact->GetEquation();
+            if (pArtifact->IsFHWAUHPC())
+            {
+               (*table)(row, col++) << _T("1.7.3.5-") << pArtifact->GetEquation();
+            }
+            else
+            {
+               (*table)(row, col++) << LrfdCw8th(_T("5.8.3.5-"), _T("5.7.3.5-")) << pArtifact->GetEquation();
+            }
 
             bool bPassed = pArtifact->PassedCapacity();
             if ( bPassed )
@@ -358,56 +369,3 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
       *pFootnote << _T("* The area of longitudinal reinforcement on the flexural tension side of the member need not exceed the area required to resist the maximum moment acting alone") << rptNewLine;
    }
 }
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-void CLongReinfShearCheck::MakeCopy(const CLongReinfShearCheck& rOther)
-{
-   // Add copy code here...
-}
-
-void CLongReinfShearCheck::MakeAssignment(const CLongReinfShearCheck& rOther)
-{
-   MakeCopy( rOther );
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CLongReinfShearCheck::AssertValid() const
-{
-   return true;
-}
-
-void CLongReinfShearCheck::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for CLongReinfShearCheck") << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CLongReinfShearCheck::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("CLongReinfShearCheck");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CLongReinfShearCheck");
-
-   TESTME_EPILOG("LiveLoadDistributionFactorTable");
-}
-#endif // _UNITTEST

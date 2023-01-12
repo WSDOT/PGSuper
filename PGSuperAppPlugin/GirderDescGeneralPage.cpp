@@ -74,17 +74,17 @@ CGirderDescGeneralPage::~CGirderDescGeneralPage()
 
 void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
 {
-	CPropertyPage::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CGirderDescGeneralPage)
+   CPropertyPage::DoDataExchange(pDX);
+   //{{AFX_DATA_MAP(CGirderDescGeneralPage)
    DDX_Control(pDX, IDC_CONSTRUCTION_EVENT, m_cbConstruction);
    DDX_Control(pDX, IDC_ERECTION_EVENT, m_cbErection);
 
    DDX_Control(pDX, IDC_EC,      m_ctrlEc);
-	DDX_Control(pDX, IDC_ECI,     m_ctrlEci);
-	DDX_Control(pDX, IDC_MOD_EC,  m_ctrlEcCheck);
-	DDX_Control(pDX, IDC_MOD_ECI, m_ctrlEciCheck);
+   DDX_Control(pDX, IDC_ECI,     m_ctrlEci);
+   DDX_Control(pDX, IDC_MOD_EC,  m_ctrlEcCheck);
+   DDX_Control(pDX, IDC_MOD_ECI, m_ctrlEciCheck);
    DDX_Control(pDX, IDC_GIRDER_FC, m_ctrlFc);
-	DDX_Control(pDX, IDC_FCI, m_ctrlFci);
+   DDX_Control(pDX, IDC_FCI, m_ctrlFci);
    DDX_Control(pDX, IDC_TOP_FLANGE_THICKENING, m_ctrlTopFlangeThickening);
    //}}AFX_DATA_MAP
 
@@ -286,15 +286,15 @@ void CGirderDescGeneralPage::ExchangeConcreteData(CDataExchange* pDX)
 }
 
 BEGIN_MESSAGE_MAP(CGirderDescGeneralPage, CPropertyPage)
-	//{{AFX_MSG_MAP(CGirderDescGeneralPage)
+   //{{AFX_MSG_MAP(CGirderDescGeneralPage)
    ON_BN_CLICKED(IDC_MOD_ECI, OnUserEci)
    ON_BN_CLICKED(IDC_MOD_EC, OnUserEc)
-	ON_COMMAND(ID_HELP, OnHelp)
-	ON_EN_CHANGE(IDC_FCI, OnChangeFci)
-	ON_EN_CHANGE(IDC_GIRDER_FC, OnChangeGirderFc)
-	ON_EN_CHANGE(IDC_ECI, OnChangeEci)
-	ON_EN_CHANGE(IDC_EC, OnChangeEc)
-	ON_BN_CLICKED(IDC_MORE, OnMoreConcreteProperties)
+   ON_COMMAND(ID_HELP, OnHelp)
+   ON_EN_CHANGE(IDC_FCI, OnChangeFci)
+   ON_EN_CHANGE(IDC_GIRDER_FC, OnChangeGirderFc)
+   ON_EN_CHANGE(IDC_ECI, OnChangeEci)
+   ON_EN_CHANGE(IDC_EC, OnChangeEc)
+   ON_BN_CLICKED(IDC_MORE, OnMoreConcreteProperties)
    ON_NOTIFY_EX(TTN_NEEDTEXT,0,OnToolTipNotify)
    ON_CBN_SELCHANGE(IDC_GIRDER_NAMEUSE,OnChangeSameGirderType)
    ON_CBN_SELCHANGE(IDC_SLAB_OFFSET_TYPE,OnChangeSlabOffsetType)
@@ -309,7 +309,7 @@ BEGIN_MESSAGE_MAP(CGirderDescGeneralPage, CPropertyPage)
    ON_CBN_SELCHANGE(IDC_ERECTION_EVENT, OnErectionEventChanged)
    ON_CBN_DROPDOWN(IDC_ERECTION_EVENT, OnErectionEventChanging)
    ON_CBN_SELCHANGE(IDC_TOP_WIDTH_TYPE, OnTopWidthTypeChanged)
-	//}}AFX_MSG_MAP
+   //}}AFX_MSG_MAP
    ON_CBN_SELCHANGE(IDC_TOP_FLANGE_THICKENING_TYPE, &CGirderDescGeneralPage::OnTopFlangeThickeningTypeChanged)
    ON_STN_CLICKED(IDC_PRECAMBER_LABEL, &CGirderDescGeneralPage::OnStnClickedPrecamberLabel)
 END_MESSAGE_MAP()
@@ -525,7 +525,7 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
    {
       m_ctrlEc.GetWindowText(m_strUserEc);
    }
-	
+   
    if ( m_strUserEci == _T("") )
    {
       m_ctrlEci.GetWindowText(m_strUserEci);
@@ -582,8 +582,8 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
    UpdateAssumedExcessCamberControls();
    UpdateSlabOffsetControls();
 
-	return TRUE;  // return TRUE unless you set the focus to a control
-	              // EXCEPTION: OCX Property Pages should return FALSE
+   return TRUE;  // return TRUE unless you set the focus to a control
+                 // EXCEPTION: OCX Property Pages should return FALSE
 }
 
 
@@ -1029,6 +1029,15 @@ void CGirderDescGeneralPage::OnMoreConcreteProperties()
    dlg.m_PCIUHPC.m_AutogenousShrinkage = pParent->m_pSegment->Material.Concrete.AutogenousShrinkage;
    dlg.m_PCIUHPC.m_bPCTT = pParent->m_pSegment->Material.Concrete.bPCTT;
 
+   dlg.m_FHWAUHPC.m_ftcri = pParent->m_pSegment->Material.Concrete.ftcri;
+   dlg.m_FHWAUHPC.m_ftcr = pParent->m_pSegment->Material.Concrete.ftcr;
+   dlg.m_FHWAUHPC.m_ftloc = pParent->m_pSegment->Material.Concrete.ftloc;
+   dlg.m_FHWAUHPC.m_etloc = pParent->m_pSegment->Material.Concrete.etloc;
+   dlg.m_FHWAUHPC.m_alpha_u = pParent->m_pSegment->Material.Concrete.alpha_u;
+   dlg.m_FHWAUHPC.m_ecu = pParent->m_pSegment->Material.Concrete.ecu;
+   dlg.m_FHWAUHPC.m_bExperimental_ecu = pParent->m_pSegment->Material.Concrete.bExperimental_ecu;
+   dlg.m_FHWAUHPC.m_FiberLength = pParent->m_pSegment->Material.Concrete.FiberLength;
+
    dlg.m_AASHTO.m_EccK1       = pParent->m_pSegment->Material.Concrete.EcK1;
    dlg.m_AASHTO.m_EccK2       = pParent->m_pSegment->Material.Concrete.EcK2;
    dlg.m_AASHTO.m_CreepK1     = pParent->m_pSegment->Material.Concrete.CreepK1;
@@ -1068,6 +1077,15 @@ void CGirderDescGeneralPage::OnMoreConcreteProperties()
       pParent->m_pSegment->Material.Concrete.AutogenousShrinkage = dlg.m_PCIUHPC.m_AutogenousShrinkage;
       pParent->m_pSegment->Material.Concrete.bPCTT = dlg.m_PCIUHPC.m_bPCTT;
 
+      pParent->m_pSegment->Material.Concrete.ftcri = dlg.m_FHWAUHPC.m_ftcri;
+      pParent->m_pSegment->Material.Concrete.ftcr = dlg.m_FHWAUHPC.m_ftcr;
+      pParent->m_pSegment->Material.Concrete.ftloc = dlg.m_FHWAUHPC.m_ftloc;
+      pParent->m_pSegment->Material.Concrete.etloc = dlg.m_FHWAUHPC.m_etloc;
+      pParent->m_pSegment->Material.Concrete.alpha_u = dlg.m_FHWAUHPC.m_alpha_u;
+      pParent->m_pSegment->Material.Concrete.bExperimental_ecu = dlg.m_FHWAUHPC.m_bExperimental_ecu;
+      pParent->m_pSegment->Material.Concrete.ecu = dlg.m_FHWAUHPC.m_ecu;
+      pParent->m_pSegment->Material.Concrete.FiberLength = dlg.m_FHWAUHPC.m_FiberLength;
+
       pParent->m_pSegment->Material.Concrete.EcK1             = dlg.m_AASHTO.m_EccK1;
       pParent->m_pSegment->Material.Concrete.EcK2             = dlg.m_AASHTO.m_EccK2;
       pParent->m_pSegment->Material.Concrete.CreepK1          = dlg.m_AASHTO.m_CreepK1;
@@ -1101,7 +1119,7 @@ void CGirderDescGeneralPage::OnMoreConcreteProperties()
 
       UpdateConcreteControls(true);
    }
-	
+   
 }
 
 void CGirderDescGeneralPage::UpdateConcreteControls(bool bSkipEcCheckBoxes)

@@ -32,6 +32,7 @@
 #include <IFace\MomentCapacity.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
+#include <IFace\Project.h>
 
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\GirderLabel.h>
@@ -39,8 +40,6 @@
 #include <PGSuperColors.h>
 
 #include <algorithm>
-
-//#include "Helpers.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -50,8 +49,10 @@ static char THIS_FILE[] = __FILE__;
 
 static const COLORREF BACKGROUND_COLOR  = WHITE;
 static const COLORREF VOID_COLOR        = WHITE;
-static const COLORREF COMPRESSION_COLOR = RED;
-static const COLORREF TENSION_COLOR     = BLUE;
+static const COLORREF COMPRESSION_FILL_COLOR = RED;
+static const COLORREF COMPRESSION_BORDER_COLOR = ORANGERED;
+static const COLORREF TENSION_FILL_COLOR     = BLUE;
+static const COLORREF TENSION_BORDER_COLOR = ROYALBLUE;
 
 
 CMomentCapacityChapterBuilder::CMomentCapacityChapterBuilder(bool bSelect) :
@@ -62,9 +63,8 @@ CPGSuperChapterBuilder(bSelect)
 CMomentCapacityChapterBuilder::~CMomentCapacityChapterBuilder(void)
 {
    std::vector<std::_tstring>::iterator iter;
-   for ( iter = m_TemporaryImageFiles.begin(); iter != m_TemporaryImageFiles.end(); iter++ )
+   for(const auto& file : m_TemporaryImageFiles)
    {
-      std::_tstring file = *iter;
       ::DeleteFile( file.c_str() );
    }
 }
@@ -95,6 +95,11 @@ rptChapter* CMomentCapacityChapterBuilder::Build(const std::shared_ptr<const WBF
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
 
+   GET_IFACE2(pBroker, ILibrary, pLib);
+   GET_IFACE2(pBroker, ISpecification, pSpecification);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpecification->GetSpecification().c_str());
+   bool bConsiderReinforcementStrainLimits = pSpecEntry->ConsiderReinforcementStrainLimitForMomentCapacity();
+
    GET_IFACE2(pBroker, IMomentCapacity, pMomentCapacity);
    const MOMENTCAPACITYDETAILS* pmcd = pMomentCapacity->GetMomentCapacityDetails(intervalIdx,poi,bPositiveMoment);
 
@@ -102,6 +107,15 @@ rptChapter* CMomentCapacityChapterBuilder::Build(const std::shared_ptr<const WBF
    CSpanKey spanKey;
    Float64 Xspan;
    pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
+
+
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   bool bPCIUHPC = pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC || (pBridgeDesc->HasStructuralLongitudinalJoints() ? pMaterials->GetLongitudinalJointConcreteType() == pgsTypes::PCI_UHPC : false);
+   bool bFHWAUHPC = pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC || (pBridgeDesc->HasStructuralLongitudinalJoints() ? pMaterials->GetLongitudinalJointConcreteType() == pgsTypes::FHWA_UHPC : false);
+   bool bUnconfinedConcrete = !IsUHPC(pMaterials->GetSegmentConcreteType(segmentKey)) || (pBridgeDesc->HasStructuralLongitudinalJoints() ? !IsUHPC(pMaterials->GetLongitudinalJointConcreteType()) : false);
 
    /////////////////////////////////////
    INIT_UV_PROTOTYPE( rptAreaUnitValue,   area,   pDisplayUnits->GetAreaUnit(),         false );
@@ -133,14 +147,28 @@ rptChapter* CMomentCapacityChapterBuilder::Build(const std::shared_ptr<const WBF
    (*pPara) << _T("Tension Resultant, T = ") << force.SetValue(pmcd->T) << rptNewLine;
    (*pPara) << _T("Depth to Tension Resultant, ") << Sub2(_T("d"),_T("e")) << _T(" = ") << dist.SetValue(pmcd->de) << rptNewLine;
    (*pPara) << _T("Depth to Tension Resultant (for shear), ") << Sub2(_T("d"),_T("e")) << _T(" = ") << dist.SetValue(pmcd->de_shear) << rptNewLine;
+   (*pPara) << _T("Depth to Extreme Layer of Tension Reinforcement, ") << Sub2(_T("d"), _T("t")) << _T(" = ") << dist.SetValue(pmcd->dt) << rptNewLine;
    (*pPara) << Sub2(symbol(epsilon), _T("t")) << _T(" x 1000 = ") << strain.SetValue(pmcd->et * 1000) << rptNewLine;
    (*pPara) << symbol(phi) << _T(" =") << scalar.SetValue(pmcd->Phi) << rptNewLine;
    (*pPara) << _T("Nominal Capacity, ") << Sub2(_T("M"), _T("n")) << _T(" = ") << moment.SetValue(pmcd->Mn) << rptNewLine;
    (*pPara) << _T("Nominal Resistance, ") << Sub2(_T("M"),_T("r")) << _T(" = ") << symbol(phi) << Sub2(_T("M"), _T("n")) << _T(" = ") << moment.SetValue(pmcd->Mr) << rptNewLine;
    (*pPara) << _T("Moment Arm = ") << Sub2(_T("d"),_T("e")) << _T(" - ") << Sub2(_T("d"),_T("c")) << _T(" = ") << Sub2(_T("M"),_T("n")) << _T("/T = ") << dist.SetValue(pmcd->MomentArm) << rptNewLine;
 
-   std::array<std::_tstring, 3> strControl{ _T("concrete crushing"), _T("tension strain limit of reinforcement"), _T("reduced strand stress due to lack of full development per LRFD 5.9.4.3.2") };
-   (*pPara) << _T("Moment capacity controlled by ") << strControl[+pmcd->Controlling] << rptNewLine;
+   std::array<std::_tstring, 4> strControl
+   { _T("concrete crushing at extreme compression fiber"),
+     _T("girder concrete crushing"),
+     _T("girder concrete crack localization"),
+     _T("tension strain limit of reinforcement") 
+   };
+   (*pPara) << _T("Moment capacity controlled by ") << strControl[std::underlying_type<MOMENTCAPACITYDETAILS::ControllingType>::type(pmcd->Controlling)] << rptNewLine;
+   if (pmcd->bDevelopmentLengthReducedStress)
+   {
+      (*pPara) << _T("Strand stresses are reduced due to lack of full development per LRFD 5.9.4.3.2") << rptNewLine;
+   }
+   if (!bFHWAUHPC && !bConsiderReinforcementStrainLimits)
+   {
+      (*pPara) << _T("Reinforcement strain exceeds minimum elongation per the material specification") << rptNewLine;
+   }
 
    // if this is a zero capacity section, just return since there is nothing else to show
    if ( IsZero(pmcd->Mn) )
@@ -148,224 +176,45 @@ rptChapter* CMomentCapacityChapterBuilder::Build(const std::shared_ptr<const WBF
       return pChapter;
    }
 
-   pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
-   (*pChapter) << pPara;
-   (*pPara) << _T("Strain Compatibility Analysis") << rptNewLine;
+   if(pmcd->ConcreteCrushingSolution)
+      ReportSolution(pBroker, _T("Concrete crushing"), pChapter, pmcd->girderShapeIndex,pmcd->deckShapeIndex,pmcd->Section, pmcd->ConcreteCrushingSolution, bPositiveMoment, pDisplayUnits);
 
-   pPara = new rptParagraph;
-   (*pChapter) << pPara;
+   if (pmcd->UHPCGirderCrushingSolution)
+      ReportSolution(pBroker, _T("Girder UHPC crushing"), pChapter, pmcd->girderShapeIndex, pmcd->deckShapeIndex, pmcd->Section, pmcd->UHPCGirderCrushingSolution, bPositiveMoment, pDisplayUnits);
 
-   // Image
-   *pPara << CreateImage(pmcd->CapacitySolution, bPositiveMoment);
+   if (pmcd->UHPCCrackLocalizationSolution)
+      ReportSolution(pBroker, _T("Girder UHPC crack localization"), pChapter, pmcd->girderShapeIndex, pmcd->deckShapeIndex, pmcd->Section, pmcd->UHPCCrackLocalizationSolution, bPositiveMoment, pDisplayUnits);
 
-   // Table
-   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(16,_T(""));
-   (*pPara) << pTable << rptNewLine;
+   if (pmcd->ReinforcementFractureSolution)
+      ReportSolution(pBroker, _T("Reinforcement fracture"), pChapter, pmcd->girderShapeIndex, pmcd->deckShapeIndex, pmcd->Section, pmcd->ReinforcementFractureSolution, bPositiveMoment, pDisplayUnits);
 
-   pTable->SetColumnStyle(1, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
-
-   ColumnIndexType col = 0;
-   (*pTable)(0, col++) << _T("Slice");
-   (*pTable)(0, col++) << _T("Piece");
-   (*pTable)(0, col++) << COLHDR(_T("Area"), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
-   (*pTable)(0, col++) << COLHDR(Sub2(_T("Y"), _T("top")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-   (*pTable)(0, col++) << COLHDR(Sub2(_T("Y"), _T("bot")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-   (*pTable)(0, col++) << COLHDR(Sub2(_T("Y"), _T("cg")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-   (*pTable)(0, col++) << COLHDR(RPT_FPE, rptStressUnitTag, pDisplayUnits->GetStressUnit());
-   (*pTable)(0, col++) << _T("Initial") << rptNewLine << _T("Strain");
-   (*pTable)(0, col++) << _T("Incremental") << rptNewLine << _T("Strain");
-   (*pTable)(0, col++) << _T("Total") << rptNewLine << _T("Strain");
-   (*pTable)(0, col++) << RPT_FPX << _T("/") << RPT_FPS;
-   //(*pTable)(0, col++) << _T("Strain") << rptNewLine << _T("Limit"); // want to report this if strains are limited
-   (*pTable)(0, col++) << COLHDR(_T("Foreground") << rptNewLine << _T("Stress (Fg)"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-   (*pTable)(0, col++) << COLHDR(_T("Background") << rptNewLine << _T("Stress (Bg)"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-   (*pTable)(0, col++) << COLHDR(_T("Stress") << rptNewLine << _T("(Fg - Bg)"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-   (*pTable)(0, col++) << COLHDR(symbol(delta) << _T("F =") << rptNewLine << _T("(Area)(Stress)"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
-   (*pTable)(0, col++) << COLHDR(symbol(delta) << _T("M =") << rptNewLine << _T("(") << symbol(delta) << _T("F") << _T(")(") << Sub2(_T("Y"), _T("cg")) << _T(")"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
-
-   force.ShowUnitTag(false);
-   moment.ShowUnitTag(false);
-
-
-   CComPtr<IGeneralSectionSolution> general_solution;
-   pmcd->CapacitySolution->get_GeneralSectionSolution(&general_solution);
-
-   RowIndexType row = pTable->GetNumberOfHeaderRows();
-   Float64 sum_force = 0;
-   Float64 sum_moment = 0;
-   CollectionIndexType nSlices;
-   general_solution->get_SliceCount(&nSlices);
-   for ( CollectionIndexType sliceIdx = 0; sliceIdx < nSlices; sliceIdx++ )
-   {
-      col = 0;
-
-      CComPtr<IGeneralSectionSlice> slice;
-      general_solution->get_Slice(sliceIdx,&slice);
-
-      IndexType shapeIdx;
-      slice->get_ShapeIndex(&shapeIdx);
-      CComBSTR bstrName;
-      pmcd->Section->get_Name(shapeIdx, &bstrName);
-
-      Float64 slice_area;
-      slice->get_Area(&slice_area);
-
-      CComPtr<IPoint2d> pntCG;
-      slice->get_CG(&pntCG);
-
-      Float64 cgY;
-      pntCG->get_Y(&cgY);
-
-      CComPtr<IShape> shape;
-      slice->get_Shape(&shape);
-      CComQIPtr<IXYPosition> position(shape);
-      CComPtr<IPoint2d> pntTop, pntBottom;
-      position->get_LocatorPoint(lpTopCenter, &pntTop);
-      position->get_LocatorPoint(lpBottomCenter, &pntBottom);
-      Float64 Yt, Yb;
-      pntTop->get_Y(&Yt);
-      pntBottom->get_Y(&Yb);
-
-      CComPtr<ILine2d> naLine;
-      pmcd->CapacitySolution->get_NeutralAxis(&naLine);
-      CComPtr<IPoint2d> p;
-      CComPtr<IVector2d> v;
-      naLine->GetExplicit(&p, &v);
-      Float64 angle;
-      v->get_Direction(&angle);
-      Yt *= cos(angle);
-      Yb *= cos(angle);
-      if (Yt < Yb) std::swap(Yt, Yb);
-
-      Float64 initial_strain;
-      slice->get_InitialStrain(&initial_strain);
-
-      Float64 incremental_strain;
-      slice->get_IncrementalStrain(&incremental_strain);
-
-      Float64 total_strain;
-      slice->get_TotalStrain(&total_strain);
-
-      Float64 f = 0;
-      Float64 emin = 0, emax = 0;
-      Float64 E = 0;
-
-      CComPtr<IStressStrain> ss;
-      slice->get_ForegroundMaterial(&ss);
-      if (ss)
-      {
-         ss->ComputeStress(total_strain, &f);
-         ss->StrainLimits(&emin, &emax);
-         ss->get_ModulusOfElasticity(&E);
-      }
-
-      Float64 fgStress,bgStress,netStress;
-      slice->get_ForegroundStress(&fgStress);
-      slice->get_BackgroundStress(&bgStress);
-
-
-      ATLASSERT(IsEqual(f, fgStress));
-
-      netStress = fgStress - bgStress;
-
-      Float64 F = slice_area * netStress;
-      Float64 M = F*cgY;
-
-      Float64 fpe = E * initial_strain;
-
-      Float64 fpx_fps = 0.0;
-      CComQIPtr<IPowerFormula> pf(ss);
-      if (pf)
-      {
-         pf->get_ReductionFactor(&fpx_fps);
-      }
-
-      (*pTable)(row, col++) << row;
-      (*pTable)(row, col++) << OLE2T(bstrName);
-      (*pTable)(row, col++) << area.SetValue(slice_area);
-      (*pTable)(row, col++) << cg.SetValue(Yt);
-      (*pTable)(row, col++) << cg.SetValue(Yb);
-      (*pTable)(row, col++) << cg.SetValue(cgY);
-      if (IsZero(fpe))
-      {
-         (*pTable)(row, col++) << _T("");
-      }
-      else
-      {
-         (*pTable)(row, col++) << stress.SetValue(fpe);
-      }
-      (*pTable)(row, col++) << initial_strain;
-      (*pTable)(row, col++) << incremental_strain;
-
-      VARIANT_BOOL vbExceededStrainLimit;
-      slice->ExceededStrainLimit(&vbExceededStrainLimit);
-      if (vbExceededStrainLimit == VARIANT_TRUE)
-      {
-         (*pTable)(row, col++) << color(Red) << total_strain << _T(" (") << (total_strain < 0 ? emin : emax) << _T(")") << color(Black);
-      }
-      else
-      {
-         (*pTable)(row, col++) << total_strain;
-      }
-
-      if (IsZero(fpx_fps))
-      {
-         (*pTable)(row, col++) << _T("");
-      }
-      else
-      {
-         (*pTable)(row, col++) << fpx_fps;
-      }
-      (*pTable)(row, col++) << stress.SetValue(fgStress);
-      (*pTable)(row, col++) << stress.SetValue(bgStress);
-      (*pTable)(row, col++) << stress.SetValue(netStress);
-      (*pTable)(row, col++) << force.SetValue(F);
-      (*pTable)(row, col++) << moment.SetValue(M);
-
-      sum_force  += F;
-      sum_moment += M;
-
-      row++;
-   }
-
-   force.ShowUnitTag(true);
-   moment.ShowUnitTag(true);
-
-   *pPara << _T("Total strain in ") << color(Red) << _T("red") << color(Black) << _T(" text indicates the strain exceeds the usable strain limit of the material. The usable strain limit is show in parentheses.") << rptNewLine;
-
-   *pPara << _T("Resultant Force  = ") << symbol(SUM) << _T("(") << symbol(delta) << _T("F) = ") << force.SetValue(sum_force)   << rptNewLine;
-   *pPara << _T("Resultant Moment = ") << symbol(SUM) << _T("(") << symbol(delta) << _T("M) = ") << moment.SetValue(sum_moment) << rptNewLine;
-
-   *pPara << rptNewLine;
-   *pPara << _T("Foreground (Fg) stress = stress in section materials (including voided areas)") << rptNewLine;
-   *pPara << _T("Background (Bg) stress = stress in voids that is subtracted from voided area") << rptNewLine;
-   *pPara << rptNewLine;
+   if (pmcd->ReinforcementStressLimitStateSolution)
+      ReportSolution(pBroker, _T("Capacity at reinforcement stress limit state"), pChapter, pmcd->girderShapeIndex, pmcd->deckShapeIndex, pmcd->Section, pmcd->ReinforcementStressLimitStateSolution, bPositiveMoment, pDisplayUnits);
 
    std::_tstring strImagePath = rptStyleManager::GetImagePath();
 
-   GET_IFACE2(pBroker, IMaterials, pMaterials);
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-
-   bool bUHPC = pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC || (pBridgeDesc->HasStructuralLongitudinalJoints() ? pMaterials->GetLongitudinalJointConcreteType() == pgsTypes::PCI_UHPC : false);
-   if (bUHPC)
+   if (bPCIUHPC)
    {
-      *pPara << _T("PCI UHPC Concrete Stress-Strain Model (PCI UHPC SDG E.6.1)") << rptNewLine;
-      *pPara << rptRcImage(strImagePath + _T("PCIUHPCConcrete.png")) << rptNewLine;
+      *pPara << Bold(_T("PCI UHPC Concrete Stress-Strain Model (PCI UHPC SDG E.6.1)")) << rptNewLine;
+      *pPara << rptRcImage(strImagePath + _T("PCI_UHPC_Concrete.png")) << rptNewLine;
    }
 
-   bool bUnconfinedConcrete = pMaterials->GetSegmentConcreteType(segmentKey) != pgsTypes::PCI_UHPC || (pBridgeDesc->HasStructuralLongitudinalJoints() ? pMaterials->GetLongitudinalJointConcreteType() != pgsTypes::PCI_UHPC : false);
+   if (bFHWAUHPC)
+   {
+      *pPara << Bold(_T("UHPC Concrete Stress-Strain Model (GS 1.4.2.4.3 & 1.4.2.5.4)")) << rptNewLine;
+      *pPara << rptRcImage(strImagePath + _T("FHWA_UHPC_Concrete.png")) << rptNewLine;
+   }
+
    if (bUnconfinedConcrete)
    {
-      *pPara << _T("Unconfined Concrete Stress-Strain Model") << rptNewLine;
+      *pPara << Bold(_T("Unconfined Concrete Stress-Strain Model")) << rptNewLine;
       *pPara << rptRcImage(strImagePath + _T("UnconfinedConcrete.png")) << rptNewLine;
    }
 
-   *pPara << _T("Prestressing Strand Model") << rptNewLine;
+   *pPara << Bold(_T("Prestressing Strand Model")) << rptNewLine;
    *pPara << rptRcImage(strImagePath + _T("PowerFormula.png")) << rptNewLine;
 
-   *pPara << _T("Reinforcement Model") << rptNewLine;
+   *pPara << Bold(_T("Reinforcement Model")) << rptNewLine;
    *pPara << rptRcImage(strImagePath + _T("Rebar.png")) << rptNewLine;
 
    return pChapter;
@@ -376,10 +225,10 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CMomentCapacityChapterBuilder::
    return std::make_unique<CMomentCapacityChapterBuilder>();
 }
 
-rptRcImage* CMomentCapacityChapterBuilder::CreateImage(IMomentCapacitySolution* pSolution,bool bPositiveMoment) const
+rptRcImage* CMomentCapacityChapterBuilder::CreateImage(IndexType girderShapeIndex, IndexType deckShapeIndex, CComPtr<IGeneralSection> section, CComPtr<IMomentCapacitySolution> solution,bool bPositiveMoment, IEAFDisplayUnits* pDisplayUnits) const
 {
    CImage image;
-   DrawSection(image,pSolution,bPositiveMoment);
+   DrawSection(image,girderShapeIndex,deckShapeIndex,section,solution,bPositiveMoment,pDisplayUnits);
 
    // get a temporary file name for the image
    TCHAR temp_path[ _MAX_PATH ];
@@ -442,10 +291,10 @@ rptRcImage* CMomentCapacityChapterBuilder::CreateImage(IMomentCapacitySolution* 
 
 }
 
-void CMomentCapacityChapterBuilder::DrawSection(CImage& image,IMomentCapacitySolution* pSolution,bool bPositiveMoment) const
+void CMomentCapacityChapterBuilder::DrawSection(CImage& image, IndexType girderShapeIndex,IndexType deckShapeIndex,CComPtr<IGeneralSection> section, CComPtr<IMomentCapacitySolution> solution,bool bPositiveMoment,IEAFDisplayUnits* pDisplayUnits) const
 {
    CComPtr<IGeneralSectionSolution> general_solution;
-   pSolution->get_GeneralSectionSolution(&general_solution);
+   solution->get_GeneralSectionSolution(&general_solution);
    CollectionIndexType nSlices;
    general_solution->get_SliceCount(&nSlices);
 
@@ -519,14 +368,20 @@ void CMomentCapacityChapterBuilder::DrawSection(CImage& image,IMomentCapacitySol
    pDC->SelectObject(pOldBrush);
    pDC->SelectObject(pOldPen);
 
+   pDC->SetTextAlign(TA_LEFT | TA_BOTTOM);
+   CFont font;
+   font.CreatePointFont(80, _T("Arial"), pDC);
+   CFont* old_font = pDC->SelectObject(&font);
+   pDC->SetBkMode(TRANSPARENT);
+
    // draw each slice
-   CPen girderPen(PS_SOLID,1,WHITESMOKE);
+   CPen girderPen(PS_SOLID,1, WHITESMOKE);
    CBrush girderBrush(SEGMENT_FILL_COLOR);
    CBrush voidBrush(VOID_COLOR);
-   CBrush tensionBrush(TENSION_COLOR);
-   CBrush compressionBrush(COMPRESSION_COLOR);
-
-   pOldPen = pDC->SelectObject(&girderPen);
+   CPen tensionPen(PS_SOLID, 1, TENSION_BORDER_COLOR);
+   CBrush tensionBrush(TENSION_FILL_COLOR);
+   CPen compressionPen(PS_SOLID, 1, COMPRESSION_BORDER_COLOR);
+   CBrush compressionBrush(COMPRESSION_FILL_COLOR);
 
    std::vector<CollectionIndexType> voidIndices;        // contains slice index for void slices
    std::vector<CollectionIndexType> neutralIndices;     // contains slice index for neutral slices
@@ -570,12 +425,11 @@ void CMomentCapacityChapterBuilder::DrawSection(CImage& image,IMomentCapacitySol
       }
    }
 
-   std::vector<CollectionIndexType>::iterator iter;
    // draw neutral slices first
    pOldBrush = pDC->SelectObject(&girderBrush);
-   for ( iter = neutralIndices.begin(); iter != neutralIndices.end(); iter++ )
+   pOldPen = pDC->SelectObject(&girderPen);
+   for ( auto sliceIdx : neutralIndices)
    {
-      CollectionIndexType sliceIdx = *iter;
       CComPtr<IGeneralSectionSlice> slice;
       general_solution->get_Slice(sliceIdx,&slice);
 
@@ -587,9 +441,9 @@ void CMomentCapacityChapterBuilder::DrawSection(CImage& image,IMomentCapacitySol
 
    // draw compression slices
    pDC->SelectObject(&compressionBrush);
-   for ( iter = compressionIndices.begin(); iter != compressionIndices.end(); iter++ )
+   pDC->SelectObject(&compressionPen);
+   for ( auto sliceIdx : compressionIndices )
    {
-      CollectionIndexType sliceIdx = *iter;
       CComPtr<IGeneralSectionSlice> slice;
       general_solution->get_Slice(sliceIdx,&slice);
 
@@ -600,10 +454,10 @@ void CMomentCapacityChapterBuilder::DrawSection(CImage& image,IMomentCapacitySol
    }
 
    // draw the voids on top of the foreground shape
+   pDC->SelectObject(&girderPen);
    pDC->SelectObject(&voidBrush);
-   for ( iter = voidIndices.begin(); iter != voidIndices.end(); iter++ )
+   for ( auto sliceIdx : voidIndices)
    {
-      CollectionIndexType sliceIdx = *iter;
       CComPtr<IGeneralSectionSlice> slice;
       general_solution->get_Slice(sliceIdx,&slice);
 
@@ -615,11 +469,9 @@ void CMomentCapacityChapterBuilder::DrawSection(CImage& image,IMomentCapacitySol
 
    // draw tension slices
    pDC->SelectObject(&tensionBrush);
-   CPen tensionPen(PS_SOLID,1,TENSION_COLOR);
    pDC->SelectObject(&tensionPen);
-   for ( iter = tensionIndices.begin(); iter != tensionIndices.end(); iter++ )
+   for ( auto sliceIdx : tensionIndices )
    {
-      CollectionIndexType sliceIdx = *iter;
       CComPtr<IGeneralSectionSlice> slice;
       general_solution->get_Slice(sliceIdx,&slice);
 
@@ -636,74 +488,147 @@ void CMomentCapacityChapterBuilder::DrawSection(CImage& image,IMomentCapacitySol
    CPen pen(PS_SOLID,1,BLACK);
    pDC->SelectObject(&pen);
 
-   Float64 top, bottom, left, right;
-   bbox->get_Top(&top);
-   bbox->get_Bottom(&bottom);
-   bbox->get_Left(&left);
-   bbox->get_Right(&right);
-
-   //// Draw Y = 0 line
+   // draw strain profiles
    CPoint p;
-   //mapper.WPtoDP(left,0,&p.x,&p.y);
-   //pDC->MoveTo(p);
-   //mapper.WPtoDP(right,0,&p.x,&p.y);
-   //pDC->LineTo(p);
 
-   CComPtr<IPlane3d> strain_plane;
-   pSolution->get_IncrementalStrainPlane(&strain_plane);
+   CComPtr<IPlane3d> incremental_strain_plane;
+   solution->get_IncrementalStrainPlane(&incremental_strain_plane);
 
-   Float64 eTop, eBottom; // strain top and bottom
-   strain_plane->GetZ(0,mirror_factor*top,&eTop);
-   strain_plane->GetZ(0,mirror_factor*bottom,&eBottom);
+   Float64 Ytg{ 0 }, Ybg{ 0 }, Ytd{ 0 }, Ybd{ 0 };
+   Float64 etg{ 0 }, ebg{ 0 }, etd{ 0 }, ebd{ 0 };
+
+   if (deckShapeIndex != INVALID_INDEX)
+   {
+      // strain diagram for deck
+      CComPtr<IShape> deck_shape;
+      section->get_Shape(deckShapeIndex, &deck_shape);
+      CComPtr<IRect2d> bbDeck;
+      deck_shape->get_BoundingBox(&bbDeck);
+      CComPtr<IPlane3d> deck_initial_strain;
+      section->get_InitialStrain(deckShapeIndex, &deck_initial_strain);
+
+      bbDeck->get_Top(&Ytd);
+      bbDeck->get_Bottom(&Ybd);
+
+      deck_initial_strain->GetZ(0, Ytd, &etd);
+      deck_initial_strain->GetZ(0, Ybd, &ebd);
+
+      Float64 eTop, eBottom; // strain top and bottom
+      incremental_strain_plane->GetZ(0, Ytd, &eTop);
+      incremental_strain_plane->GetZ(0, Ybd, &eBottom);
+
+      etd += eTop;
+      ebd += eBottom;
+   }
+
+   if (girderShapeIndex != INVALID_INDEX)
+   {
+      // strain diagram for girder
+      CComPtr<IShape> girder_shape;
+      section->get_Shape(girderShapeIndex, &girder_shape);
+      CComPtr<IRect2d> bbGirder;
+      girder_shape->get_BoundingBox(&bbGirder);
+      CComPtr<IPlane3d> girder_initial_strain;
+      section->get_InitialStrain(girderShapeIndex, &girder_initial_strain);
+
+      bbGirder->get_Top(&Ytg);
+      bbGirder->get_Bottom(&Ybg);
+
+      girder_initial_strain->GetZ(0, Ytg, &etg);
+      girder_initial_strain->GetZ(0, Ybg, &ebg);
+
+      Float64 eTop, eBottom; // strain top and bottom
+      incremental_strain_plane->GetZ(0, Ytg, &eTop);
+      incremental_strain_plane->GetZ(0, Ybg, &eBottom);
+
+      etg += eTop;
+      ebg += eBottom;
+   }
+
 
    // scale strains so that they plot with the same
    // aspect ratio as the section
-   Float64 strain = Max(fabs(eBottom),fabs(eTop));
-   Float64 scale = (wx/4)/strain;
-   eTop    *= scale;
-   eBottom *= scale;
-   strain  *= scale;
+   Float64 strain = Max(fabs(etd), fabs(ebd), fabs(etg),fabs(ebg));
+   Float64 scale = (wx / 4) / strain;
+   etg *= scale;
+   ebg *= scale;
+   etd *= scale;
+   ebd *= scale;
+   strain *= scale;
 
-   mapper.SetDeviceOrg(3*image.GetWidth()/4+2,2);
-
-   if ( !bPositiveMoment )
-   {
-      std::swap(top,bottom);
-      std::swap(eTop,eBottom);
-   }
+   mapper.SetDeviceOrg(3 * image.GetWidth() / 4 + 2, 2);
 
    // negate the mirror factor so the strain plane draws correctly
-   mapper.GetWorldExt(&wx,&wy);
+   mapper.GetWorldExt(&wx, &wy);
    wx *= mirror_factor;
-   mapper.SetWorldExt(wx,wy);
+   mapper.SetWorldExt(wx, wy);
 
-   mapper.WPtoDP(0,top,&p.x,&p.y);
-   pDC->MoveTo(p);
-   mapper.WPtoDP(eTop,top,&p.x,&p.y);
-   pDC->LineTo(p);
-   mapper.WPtoDP(eBottom,bottom,&p.x,&p.y);
-   pDC->LineTo(p);
-   mapper.WPtoDP(0,bottom,&p.x,&p.y);
-   pDC->LineTo(p);
-   mapper.WPtoDP(0,top,&p.x,&p.y);
-   pDC->LineTo(p);
+   if (deckShapeIndex != INVALID_INDEX)
+   {
+      mapper.WPtoDP(0, mirror_factor * Ytd, &p.x, &p.y);
+      pDC->MoveTo(p);
+      mapper.WPtoDP(etd, mirror_factor * Ytd, &p.x, &p.y);
+      pDC->LineTo(p);
+
+      CString str_etd;
+      str_etd.Format(_T("%f"), etd / scale);
+      pDC->SetTextAlign(TA_LEFT | TA_TOP);
+      pDC->TextOut(p.x, p.y, str_etd);
+
+      mapper.WPtoDP(ebd, mirror_factor * Ybd, &p.x, &p.y);
+      pDC->LineTo(p);
+
+      CString str_ebd;
+      str_ebd.Format(_T("%f"), ebd / scale);
+      pDC->SetTextAlign(TA_LEFT | TA_BOTTOM);
+      pDC->TextOut(p.x, p.y, str_ebd);
+
+      mapper.WPtoDP(0, mirror_factor * Ybd, &p.x, &p.y);
+      pDC->LineTo(p);
+      mapper.WPtoDP(0, mirror_factor * Ytd, &p.x, &p.y);
+      pDC->LineTo(p);
+   }
+
+   if (girderShapeIndex != INVALID_INDEX)
+   {
+      mapper.WPtoDP(0, mirror_factor * Ytg, &p.x, &p.y);
+      pDC->MoveTo(p);
+      mapper.WPtoDP(etg, mirror_factor * Ytg, &p.x, &p.y);
+      pDC->LineTo(p);
+      
+      CString str_etg;
+      str_etg.Format(_T("%f"), etg / scale);
+      pDC->SetTextAlign(TA_LEFT | TA_TOP);
+      pDC->TextOut(p.x, p.y, str_etg);
+
+      mapper.WPtoDP(ebg, mirror_factor * Ybg, &p.x, &p.y);
+      pDC->LineTo(p);
+
+      CString str_ebg;
+      str_ebg.Format(_T("%f"), ebg / scale);
+      pDC->SetTextAlign(TA_LEFT | TA_BOTTOM);
+      pDC->TextOut(p.x, p.y, str_ebg);
+
+      mapper.WPtoDP(0, mirror_factor * Ybg, &p.x, &p.y);
+      pDC->LineTo(p);
+      mapper.WPtoDP(0, mirror_factor * Ytg, &p.x, &p.y);
+      pDC->LineTo(p);
+   }
 
    // Draw the compression resultant
-   CPen cPen(PS_SOLID,5,COMPRESSION_COLOR);
+   CPen cPen(PS_SOLID,5,COMPRESSION_FILL_COLOR);
    pDC->SelectObject(&cPen);
 
    CComPtr<IPoint2d> pntC;
-   pSolution->get_CompressionResultantLocation(&pntC);
+   solution->get_CompressionResultantLocation(&pntC);
    Float64 y;
    pntC->get_Y(&y);
 
-   if ( !bPositiveMoment )
-   {
-      y *= -1;
-   }
+   y *= mirror_factor;
 
    mapper.WPtoDP(strain,y,&p.x,&p.y); 
    pDC->MoveTo(p);   
+
    mapper.WPtoDP(0,y,&p.x,&p.y);
    pDC->LineTo(p);
 
@@ -713,12 +638,20 @@ void CMomentCapacityChapterBuilder::DrawSection(CImage& image,IMomentCapacitySol
    pDC->MoveTo(p.x+5,p.y+5);
    pDC->LineTo(p);
 
+   Float64 C;
+   solution->get_CompressionResultant(&C);
+   CString strC;
+   strC.Format(_T("%s"), ::FormatDimension(-C, pDisplayUnits->GetGeneralForceUnit()));
+   pDC->SetTextAlign(TA_CENTER | TA_BOTTOM);
+   mapper.WPtoDP(strain/2, y, &p.x, &p.y);
+   pDC->TextOut(p.x, p.y, strC);
+
    // Draw the tension resultant
-   CPen tPen(PS_SOLID,5,TENSION_COLOR);
+   CPen tPen(PS_SOLID,5,TENSION_FILL_COLOR);
    pDC->SelectObject(&tPen);
 
    CComPtr<IPoint2d> pntT;
-   pSolution->get_TensionResultantLocation(&pntT);
+   solution->get_TensionResultantLocation(&pntT);
    pntT->get_Y(&y);
 
    if ( !bPositiveMoment )
@@ -726,9 +659,9 @@ void CMomentCapacityChapterBuilder::DrawSection(CImage& image,IMomentCapacitySol
 
    mapper.WPtoDP(0,y,&p.x,&p.y);
    pDC->MoveTo(p);   
-   mapper.WPtoDP(strain,y,&p.x,&p.y);
-   pDC->LineTo(p);   
 
+   mapper.WPtoDP(strain,y,&p.x,&p.y);
+   pDC->LineTo(p);  
 
    // arrow head
    pDC->MoveTo(p.x-5,p.y-5);
@@ -736,7 +669,16 @@ void CMomentCapacityChapterBuilder::DrawSection(CImage& image,IMomentCapacitySol
    pDC->MoveTo(p.x-5,p.y+5);
    pDC->LineTo(p);
 
+   Float64 T;
+   solution->get_TensionResultant(&T);
+   CString strT;
+   strT.Format(_T("%s"), ::FormatDimension(T, pDisplayUnits->GetGeneralForceUnit()));
+   pDC->SetTextAlign(TA_CENTER | TA_BOTTOM);
+   mapper.WPtoDP(strain / 2, y, &p.x, &p.y);
+   pDC->TextOut(p.x, p.y, strT);
+
    pDC->SelectObject(pOldPen);
+   pDC->SelectObject(old_font);
 
    image.ReleaseDC();
 }
@@ -788,4 +730,252 @@ void CMomentCapacityChapterBuilder::DrawSlice(IShape* pShape,CDC* pDC, WBFL::Gra
 
        delete[] points;
    }
+}
+
+void CMomentCapacityChapterBuilder::ReportSolution(IBroker* pBroker,const TCHAR* strTitle,rptChapter* pChapter, IndexType girderShapeIndex, IndexType deckShapeIndex, CComPtr<IGeneralSection> section,CComPtr<IMomentCapacitySolution> solution,bool bPositiveMoment,IEAFDisplayUnits* pDisplayUnits) const
+{
+   INIT_UV_PROTOTYPE(rptAreaUnitValue, area, pDisplayUnits->GetAreaUnit(), false);
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, cg, pDisplayUnits->GetComponentDimUnit(), false);
+   INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
+   INIT_UV_PROTOTYPE(rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), true);
+   INIT_UV_PROTOTYPE(rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), true);
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, dist, pDisplayUnits->GetComponentDimUnit(), true);
+   INIT_UV_PROTOTYPE(rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), true);
+   INIT_UV_PROTOTYPE(rptPerLengthUnitValue, curvature, pDisplayUnits->GetCurvatureUnit(), true);
+
+   rptRcScalar strain;
+   strain.SetFormat(WBFL::System::NumericFormatTool::Format::Automatic);
+   strain.SetWidth(7);
+   strain.SetPrecision(4);
+
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
+
+   auto pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+   (*pChapter) << pPara;
+   (*pPara) << _T("Strain Compatibility Analysis") << rptNewLine;
+
+   pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+   (*pChapter) << pPara;
+   (*pPara) << strTitle << rptNewLine;
+
+   pPara = new rptParagraph;
+   (*pChapter) << pPara;
+
+   Float64 Fz(0.0), Mx(0.0), My(0.0), C(0.0), T(0.0);
+   CComPtr<IPoint2d> cgC, cgT;
+   Float64 c, dc, de, moment_arm, k;
+   solution->get_Fz(&Fz);
+   solution->get_Mx(&Mx);
+   solution->get_My(&My);
+   solution->get_CompressionResultant(&C);
+   solution->get_TensionResultant(&T);
+   solution->get_CompressionResultantLocation(&cgC);
+   solution->get_TensionResultantLocation(&cgT);
+   solution->get_DepthToNeutralAxis(&c);
+   solution->get_DepthToCompressionResultant(&dc);
+   solution->get_DepthToTensionResultant(&de);
+   solution->get_MomentArm(&moment_arm);
+   solution->get_Curvature(&k);
+
+   Float64 Mn = -Mx;
+   ATLASSERT(IsEqual(moment_arm, fabs(Mn) / T));
+
+   (*pPara) << _T("Depth to neutral axis, c = ") << dist.SetValue(c) << rptNewLine;
+   (*pPara) << _T("Compression Resultant, C = ") << force.SetValue(C) << rptNewLine;
+   (*pPara) << _T("Depth to Compression Resultant, ") << Sub2(_T("d"), _T("c")) << _T(" = ") << dist.SetValue(dc) << rptNewLine;
+   (*pPara) << _T("Tension Resultant, T = ") << force.SetValue(T) << rptNewLine;
+   (*pPara) << _T("Depth to Tension Resultant, ") << Sub2(_T("d"), _T("e")) << _T(" = ") << dist.SetValue(de) << rptNewLine;
+   (*pPara) << _T("Nominal Capacity, ") << Sub2(_T("M"), _T("n")) << _T(" = ") << moment.SetValue(Mn) << rptNewLine;
+   (*pPara) << _T("Moment Arm = ") << Sub2(_T("M"), _T("n")) << _T("/T = ") << dist.SetValue(moment_arm) << rptNewLine;
+   (*pPara) << _T("Curvature = ") << curvature.SetValue(k) << rptNewLine;
+
+
+   // Image
+   *pPara << CreateImage(girderShapeIndex,deckShapeIndex, section, solution, bPositiveMoment, pDisplayUnits);
+
+   // Table
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(16, _T(""));
+   (*pPara) << pTable << rptNewLine;
+
+   pTable->SetColumnStyle(1, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+   ColumnIndexType col = 0;
+   (*pTable)(0, col++) << _T("Slice");
+   (*pTable)(0, col++) << _T("Piece");
+   (*pTable)(0, col++) << COLHDR(_T("Area"), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
+   (*pTable)(0, col++) << COLHDR(Sub2(_T("Y"), _T("top")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*pTable)(0, col++) << COLHDR(Sub2(_T("Y"), _T("bot")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*pTable)(0, col++) << COLHDR(Sub2(_T("Y"), _T("cg")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*pTable)(0, col++) << COLHDR(RPT_FPE, rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(0, col++) << _T("Initial") << rptNewLine << _T("Strain");
+   (*pTable)(0, col++) << _T("Incremental") << rptNewLine << _T("Strain");
+   (*pTable)(0, col++) << _T("Total") << rptNewLine << _T("Strain");
+   (*pTable)(0, col++) << RPT_FPX << _T("/") << RPT_FPS;
+   //(*pTable)(0, col++) << _T("Strain") << rptNewLine << _T("Limit"); // want to report this if strains are limited
+   (*pTable)(0, col++) << COLHDR(_T("Foreground") << rptNewLine << _T("Stress (Fg)"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(0, col++) << COLHDR(_T("Background") << rptNewLine << _T("Stress (Bg)"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(0, col++) << COLHDR(_T("Stress") << rptNewLine << _T("(Fg - Bg)"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(0, col++) << COLHDR(symbol(delta) << _T("F =") << rptNewLine << _T("(Area)(Stress)"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+   (*pTable)(0, col++) << COLHDR(symbol(delta) << _T("M =") << rptNewLine << _T("(") << symbol(delta) << _T("F") << _T(")(") << Sub2(_T("Y"), _T("cg")) << _T(")"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
+
+   force.ShowUnitTag(false);
+   moment.ShowUnitTag(false);
+
+
+   CComPtr<IGeneralSectionSolution> general_solution;
+   solution->get_GeneralSectionSolution(&general_solution);
+
+   RowIndexType row = pTable->GetNumberOfHeaderRows();
+   Float64 sum_force = 0;
+   Float64 sum_moment = 0;
+   CollectionIndexType nSlices;
+   general_solution->get_SliceCount(&nSlices);
+   for (CollectionIndexType sliceIdx = 0; sliceIdx < nSlices; sliceIdx++)
+   {
+      col = 0;
+
+      CComPtr<IGeneralSectionSlice> slice;
+      general_solution->get_Slice(sliceIdx, &slice);
+
+      IndexType shapeIdx;
+      slice->get_ShapeIndex(&shapeIdx);
+      CComBSTR bstrName;
+      section->get_Name(shapeIdx, &bstrName);
+
+      Float64 slice_area;
+      slice->get_Area(&slice_area);
+
+      CComPtr<IPoint2d> pntCG;
+      slice->get_CG(&pntCG);
+
+      Float64 cgY;
+      pntCG->get_Y(&cgY);
+
+      CComPtr<IShape> shape;
+      slice->get_Shape(&shape);
+      CComQIPtr<IXYPosition> position(shape);
+      CComPtr<IPoint2d> pntTop, pntBottom;
+      position->get_LocatorPoint(lpTopCenter, &pntTop);
+      position->get_LocatorPoint(lpBottomCenter, &pntBottom);
+      Float64 Yt, Yb;
+      pntTop->get_Y(&Yt);
+      pntBottom->get_Y(&Yb);
+
+      CComPtr<ILine2d> naLine;
+      solution->get_NeutralAxis(&naLine);
+      CComPtr<IPoint2d> p;
+      CComPtr<IVector2d> v;
+      naLine->GetExplicit(&p, &v);
+      Float64 angle;
+      v->get_Direction(&angle);
+      Yt *= cos(angle);
+      Yb *= cos(angle);
+      if (Yt < Yb) std::swap(Yt, Yb);
+
+      Float64 initial_strain;
+      slice->get_InitialStrain(&initial_strain);
+
+      Float64 incremental_strain;
+      slice->get_IncrementalStrain(&incremental_strain);
+
+      Float64 total_strain;
+      slice->get_TotalStrain(&total_strain);
+
+      Float64 f = 0;
+      Float64 emin = 0, emax = 0;
+      Float64 E = 0;
+
+      CComPtr<IStressStrain> ss;
+      slice->get_ForegroundMaterial(&ss);
+      if (ss)
+      {
+         ss->ComputeStress(total_strain, &f);
+         ss->StrainLimits(&emin, &emax);
+         ss->get_ModulusOfElasticity(&E);
+      }
+
+      Float64 fgStress, bgStress, netStress;
+      slice->get_ForegroundStress(&fgStress);
+      slice->get_BackgroundStress(&bgStress);
+
+
+      ATLASSERT(IsEqual(f, fgStress));
+
+      netStress = fgStress - bgStress;
+
+      Float64 F = slice_area * netStress;
+      Float64 M = F * cgY;
+
+      Float64 fpe = 0.0;
+      Float64 fpx_fps = 0.0;
+      CComQIPtr<IPowerFormula> pf(ss);
+      if (pf)
+      {
+         // this assumes reinforcement is always modeled with the power formula 
+         // that might not aways be the case (stainless steel, frp, etc strands???)
+         pf->get_ReductionFactor(&fpx_fps);
+         fpe = E * initial_strain;
+      }
+
+      (*pTable)(row, col++) << row;
+      (*pTable)(row, col++) << OLE2T(bstrName);
+      (*pTable)(row, col++) << area.SetValue(slice_area);
+      (*pTable)(row, col++) << cg.SetValue(Yt);
+      (*pTable)(row, col++) << cg.SetValue(Yb);
+      (*pTable)(row, col++) << cg.SetValue(cgY);
+      if (IsZero(fpe))
+      {
+         (*pTable)(row, col++) << _T("");
+      }
+      else
+      {
+         (*pTable)(row, col++) << stress.SetValue(fpe);
+      }
+      (*pTable)(row, col++) << initial_strain;
+      (*pTable)(row, col++) << incremental_strain;
+
+      VARIANT_BOOL vbExceededStrainLimit;
+      slice->ExceededStrainLimit(&vbExceededStrainLimit);
+      if (vbExceededStrainLimit == VARIANT_TRUE)
+      {
+         (*pTable)(row, col++) << color(Red) << total_strain << _T(" (") << (total_strain < 0 ? emin : emax) << _T(")") << color(Black);
+      }
+      else
+      {
+         (*pTable)(row, col++) << total_strain;
+      }
+
+      if (IsZero(fpx_fps))
+      {
+         (*pTable)(row, col++) << _T("");
+      }
+      else
+      {
+         (*pTable)(row, col++) << fpx_fps;
+      }
+      (*pTable)(row, col++) << stress.SetValue(fgStress);
+      (*pTable)(row, col++) << stress.SetValue(bgStress);
+      (*pTable)(row, col++) << stress.SetValue(netStress);
+      (*pTable)(row, col++) << force.SetValue(F);
+      (*pTable)(row, col++) << moment.SetValue(M);
+
+      sum_force += F;
+      sum_moment += M;
+
+      row++;
+   }
+
+   force.ShowUnitTag(true);
+   moment.ShowUnitTag(true);
+
+   *pPara << _T("Total strain in ") << color(Red) << _T("red") << color(Black) << _T(" text indicates the strain exceeds the usable strain limit of the material. The usable strain limit is show in parentheses.") << rptNewLine;
+
+   *pPara << _T("Resultant Force  = ") << symbol(SUM) << _T("(") << symbol(delta) << _T("F) = ") << force.SetValue(sum_force) << rptNewLine;
+   *pPara << _T("Resultant Moment = ") << symbol(SUM) << _T("(") << symbol(delta) << _T("M) = ") << moment.SetValue(sum_moment) << rptNewLine;
+
+   *pPara << rptNewLine;
+   *pPara << _T("Foreground (Fg) stress = stress in section materials (including voided areas)") << rptNewLine;
+   *pPara << _T("Background (Bg) stress = stress in voids that is subtracted from voided area") << rptNewLine;
+   *pPara << rptNewLine;
 }

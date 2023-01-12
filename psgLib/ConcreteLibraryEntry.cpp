@@ -73,6 +73,10 @@ CString ConcreteLibraryEntry::GetConcreteType(pgsTypes::ConcreteType type)
       lpszType = _T("PCI-UHPC");
       break;
 
+   case pgsTypes::FHWA_UHPC:
+      lpszType = _T("FHWA-UHPC");
+      break;
+
    default:
       ATLASSERT(false);
    }
@@ -172,6 +176,13 @@ m_FiberLength(WBFL::Units::ConvertToSysUnits(0.5,WBFL::Units::Measure::Inch)),
 m_bPCTT(false),
 m_bHasFct(false),
 m_AutogenousShrinkage(0.3e-03),
+m_ftcri(WBFL::Units::ConvertToSysUnits(0.75*0.75, WBFL::Units::Measure::KSI)),
+m_ftcr(WBFL::Units::ConvertToSysUnits(0.75,WBFL::Units::Measure::KSI)),
+m_ftloc(WBFL::Units::ConvertToSysUnits(0.75, WBFL::Units::Measure::KSI)),
+m_etloc(0.0025),
+m_alpha_u(0.85),
+m_ecu(-0.0035),
+m_bExperimental_ecu(false),
 m_bUserACIParameters(false),
 m_CureMethod(pgsTypes::Moist),
 m_ACI209CementType(pgsTypes::TypeI),
@@ -182,35 +193,18 @@ m_CEBFIPCementType(pgsTypes::N)
    WBFL::Materials::CEBFIPConcrete::GetModelParameters((WBFL::Materials::CEBFIPConcrete::CementType)m_CEBFIPCementType,&m_S,&m_BetaSc);
 }
 
-ConcreteLibraryEntry::ConcreteLibraryEntry(const ConcreteLibraryEntry& rOther) :
-libLibraryEntry(rOther)
-{
-   MakeCopy(rOther);
-}
-
 ConcreteLibraryEntry::~ConcreteLibraryEntry()
 {
 }
 
-//======================== OPERATORS  =======================================
-ConcreteLibraryEntry& ConcreteLibraryEntry::operator= (const ConcreteLibraryEntry& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
-//======================== OPERATIONS =======================================
 bool ConcreteLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
 {
-   pSave->BeginUnit(_T("ConcreteMaterialEntry"), 7.0);
+   pSave->BeginUnit(_T("ConcreteMaterialEntry"), 8.0);
 
    // Version 5, re-arranged data and added AASHTO and ACI groups.
    // Version 6, added CEB-FIP Concrete
    // Version 7, added PCI UHPC
+   // Version 8, added FHWA UHPC
 
    pSave->Property(_T("Name"),this->GetName().c_str());
    
@@ -250,6 +244,18 @@ bool ConcreteLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
    pSave->Property(_T("PCTT"), m_bPCTT);
    pSave->Property(_T("AutogenousShrinkage"), m_AutogenousShrinkage); // added in PCIUHPC 2.0
    pSave->EndUnit(); // PCIUHPC
+
+   // Added version 8
+   pSave->BeginUnit(_T("FHWAUHPC"), 1.0);
+   pSave->Property(_T("ftcri"),m_ftcri);
+   pSave->Property(_T("ftcr"), m_ftcr);
+   pSave->Property(_T("ftloc"),m_ftloc);
+   pSave->Property(_T("etloc"),m_etloc);
+   pSave->Property(_T("alpha_u"), m_alpha_u);
+   pSave->Property(_T("ecu"), m_ecu);
+   pSave->Property(_T("Experimental_ecu"), m_bExperimental_ecu);
+   pSave->Property(_T("FiberLength"), m_FiberLength);
+   pSave->EndUnit(); // FHWAUHPC
 
    pSave->BeginUnit(_T("ACI"),1.0);
    pSave->Property(_T("UserACI"),m_bUserACIParameters);
@@ -472,7 +478,7 @@ bool ConcreteLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 
             if (!pLoad->Property(_T("Ffc"), &m_Ffc)) THROW_LOAD(InvalidFileFormat, pLoad);
             if(!pLoad->Property(_T("Frr"), &m_Frr)) THROW_LOAD(InvalidFileFormat, pLoad);
-            if (!pLoad->Property(_T("FiberLength"), &m_FiberLength)) THROW_LOAD(InvalidFileFormat, pLoad);
+            if(!pLoad->Property(_T("FiberLength"), &m_FiberLength)) THROW_LOAD(InvalidFileFormat, pLoad);
             if(!pLoad->Property(_T("PCTT"), &m_bPCTT)) THROW_LOAD(InvalidFileFormat, pLoad);
 
             if (1 < PCIUHPC_Version)
@@ -481,6 +487,21 @@ bool ConcreteLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
             }
 
             if(!pLoad->EndUnit()) THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+
+         if (7 < version)
+         {
+            // added version 8
+            if (!pLoad->BeginUnit(_T("FHWAUHPC"))) THROW_LOAD(InvalidFileFormat, pLoad);
+            if (!pLoad->Property(_T("ftcri"), &m_ftcri)) THROW_LOAD(InvalidFileFormat, pLoad);
+            if (!pLoad->Property(_T("ftcr"), &m_ftcr)) THROW_LOAD(InvalidFileFormat, pLoad);
+            if (!pLoad->Property(_T("ftloc"), &m_ftloc)) THROW_LOAD(InvalidFileFormat, pLoad);
+            if (!pLoad->Property(_T("etloc"), &m_etloc)) THROW_LOAD(InvalidFileFormat, pLoad);
+            if (!pLoad->Property(_T("alpha_u"), &m_alpha_u)) THROW_LOAD(InvalidFileFormat, pLoad);
+            if (!pLoad->Property(_T("ecu"), &m_ecu)) THROW_LOAD(InvalidFileFormat, pLoad);
+            if (!pLoad->Property(_T("Expermental_ecu"), &m_bExperimental_ecu)) THROW_LOAD(InvalidFileFormat, pLoad);
+            if (!pLoad->Property(_T("FiberLength"), &m_FiberLength)) THROW_LOAD(InvalidFileFormat, pLoad);
+            if (!pLoad->EndUnit()) THROW_LOAD(InvalidFileFormat, pLoad);
          }
 
          if ( !pLoad->BeginUnit(_T("ACI")) )
@@ -630,16 +651,11 @@ bool ConcreteLibraryEntry::Compare(const ConcreteLibraryEntry& rOther, std::vect
       vDifferences.push_back(new pgsLibraryEntryDifferenceStressItem(_T("Ec"),m_Ec,rOther.m_Ec,pDisplayUnits->ModE));
    }
 
-   if ( !::IsEqual(m_AggSize,rOther.m_AggSize) )
+   if ( !IsUHPC(m_Type) && !::IsEqual(m_AggSize,rOther.m_AggSize) )
    {
+      // Agg Size not applicable to UHPC - the UI elements in the dialog are hidden
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(_T("Max. Aggregate Size"),m_AggSize,rOther.m_AggSize,pDisplayUnits->ComponentDim));
-   }
-
-   if (m_Type == pgsTypes::PCI_UHPC && !::IsEqual(m_FiberLength, rOther.m_FiberLength))
-   {
-      RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(_T("Fiber Length"), m_FiberLength, rOther.m_FiberLength, pDisplayUnits->ComponentDim));
    }
 
    if ( !::IsEqual(m_EccK1,rOther.m_EccK1) )
@@ -678,7 +694,7 @@ bool ConcreteLibraryEntry::Compare(const ConcreteLibraryEntry& rOther, std::vect
       vDifferences.push_back(new pgsLibraryEntryDifferenceDoubleItem(_T("Shrinkage, K2"),m_ShrinkageK2,rOther.m_ShrinkageK2));
    }
 
-   if ( m_Type != pgsTypes::Normal )
+   if ( IsLWC(m_Type) )
    {
       if ( m_bHasFct != rOther.m_bHasFct )
       {
@@ -723,6 +739,51 @@ bool ConcreteLibraryEntry::Compare(const ConcreteLibraryEntry& rOther, std::vect
       {
          RETURN_ON_DIFFERENCE;
          vDifferences.push_back(new pgsLibraryEntryDifferenceDoubleItem(_T("Autogenous Shrinkage"),m_AutogenousShrinkage, rOther.m_AutogenousShrinkage));
+      }
+   }
+
+   if (m_Type == pgsTypes::FHWA_UHPC)
+   {
+      if (!::IsEqual(m_ftcri, rOther.m_ftcri))
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceStressItem(_T("Initial effective cracking strength (ft,cri)"), m_ftcri, rOther.m_ftcri, pDisplayUnits->Stress));
+      }
+
+      if (!::IsEqual(m_ftcr, rOther.m_ftcr))
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceStressItem(_T("Design effective cracking strength (ft,cr)"), m_ftcr, rOther.m_ftcr, pDisplayUnits->Stress));
+      }
+
+      if (!::IsEqual(m_ftloc, rOther.m_ftloc))
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceStressItem(_T("Crack localization strength (ft,loc)"), m_ftloc, rOther.m_ftloc, pDisplayUnits->Stress));
+      }
+
+      if (!::IsEqual(m_etloc, rOther.m_etloc))
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Crack localization strain (et,loc)"), _T(""), _T("")));// m_etloc, rOther.m_etloc));
+      }
+
+      if (!::IsEqual(m_FiberLength, rOther.m_FiberLength))
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceStressItem(_T("Fiber Length"), m_Frr, rOther.m_Frr, pDisplayUnits->Stress));
+      }
+
+      if (!::IsEqual(m_alpha_u, rOther.m_alpha_u))
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Compression response reduction factor (alpha,u)"), _T(""), _T("")));
+      }
+
+      if (!::IsEqual(m_ecu, rOther.m_ecu))
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Ultimate compression strain (e,cu)"), _T(""), _T("")));
       }
    }
 
@@ -970,6 +1031,30 @@ void ConcreteLibraryEntry::GetPCIUHPC(Float64* ffc, Float64* frr, Float64* fiber
    *pAutogenousShrinkage = m_AutogenousShrinkage;
 }
 
+void ConcreteLibraryEntry::SetFHWAUHPC(Float64 ft_cri, Float64 ft_cr, Float64 ft_loc, Float64 et_loc,Float64 alpha_u,Float64 ecu,bool bExperimentalEcu,Float64 fiberLength)
+{
+   m_ftcri = ft_cri;
+   m_ftcr = ft_cr;
+   m_ftloc = ft_loc;
+   m_etloc = et_loc;
+   m_alpha_u = alpha_u;
+   m_ecu = ecu;
+   m_bExperimental_ecu = bExperimentalEcu;
+   m_FiberLength = fiberLength;
+}
+
+void ConcreteLibraryEntry::GetFHWAUHPC(Float64* ft_cri, Float64* ft_cr, Float64* ft_loc, Float64* et_loc,Float64* alpha_u,Float64* ecu,bool* pbExperimentalEcu,Float64* pFiberLength) const
+{
+   *ft_cri = m_ftcri;
+   *ft_cr = m_ftcr;
+   *ft_loc = m_ftloc;
+   *et_loc = m_etloc;
+   *alpha_u = m_alpha_u;
+   *ecu = m_ecu;
+   *pbExperimentalEcu = m_bExperimental_ecu;
+   *pFiberLength = m_FiberLength;
+}
+
 bool ConcreteLibraryEntry::UserACIParameters() const
 {
    return m_bUserACIParameters;
@@ -1089,6 +1174,7 @@ bool ConcreteLibraryEntry::Edit(bool allowEditing,int nPage)
    dlg.m_General.m_Type      = this->GetType();
 
    GetPCIUHPC(&dlg.m_PCIUHPC.m_ffc, &dlg.m_PCIUHPC.m_frr, &dlg.m_PCIUHPC.m_FiberLength, &dlg.m_PCIUHPC.m_AutogenousShrinkage, &dlg.m_PCIUHPC.m_bPCTT);
+   GetFHWAUHPC(&dlg.m_FHWAUHPC.m_ftcri, &dlg.m_FHWAUHPC.m_ftcr, &dlg.m_FHWAUHPC.m_ftloc, &dlg.m_FHWAUHPC.m_etloc, &dlg.m_FHWAUHPC.m_alpha_u,&dlg.m_FHWAUHPC.m_ecu,&dlg.m_FHWAUHPC.m_bExperimental_ecu,&dlg.m_FHWAUHPC.m_FiberLength);
 
    dlg.m_AASHTO.m_EccK1       = this->GetModEK1();
    dlg.m_AASHTO.m_EccK2       = this->GetModEK2();
@@ -1114,90 +1200,42 @@ bool ConcreteLibraryEntry::Edit(bool allowEditing,int nPage)
    dlg.SetActivePage(nPage);
    if (i==IDOK)
    {
-      this->SetName(dlg.m_General.m_EntryName);
-      this->SetFc(dlg.m_General.m_Fc);
-      this->SetStrengthDensity(dlg.m_General.m_Ds);
-      this->SetWeightDensity(dlg.m_General.m_Dw );
-      this->SetAggregateSize(dlg.m_General.m_AggSize);
-      this->SetEc(dlg.m_General.m_Ec);
-      this->UserEc(dlg.m_General.m_bUserEc);
-      this->SetType(dlg.m_General.m_Type);
+      SetName(dlg.m_General.m_EntryName);
+      SetFc(dlg.m_General.m_Fc);
+      SetStrengthDensity(dlg.m_General.m_Ds);
+      SetWeightDensity(dlg.m_General.m_Dw );
+      SetAggregateSize(dlg.m_General.m_AggSize);
+      SetEc(dlg.m_General.m_Ec);
+      UserEc(dlg.m_General.m_bUserEc);
+      SetType(dlg.m_General.m_Type);
 
-      this->SetModEK1(dlg.m_AASHTO.m_EccK1);
-      this->SetModEK2(dlg.m_AASHTO.m_EccK2);
-      this->SetCreepK1(dlg.m_AASHTO.m_CreepK1);
-      this->SetCreepK2(dlg.m_AASHTO.m_CreepK2);
-      this->SetShrinkageK1(dlg.m_AASHTO.m_ShrinkageK1);
-      this->SetShrinkageK2(dlg.m_AASHTO.m_ShrinkageK2);
-      this->HasAggSplittingStrength(dlg.m_AASHTO.m_bHasFct);
-      this->SetAggSplittingStrength(dlg.m_AASHTO.m_Fct);
+      SetModEK1(dlg.m_AASHTO.m_EccK1);
+      SetModEK2(dlg.m_AASHTO.m_EccK2);
+      SetCreepK1(dlg.m_AASHTO.m_CreepK1);
+      SetCreepK2(dlg.m_AASHTO.m_CreepK2);
+      SetShrinkageK1(dlg.m_AASHTO.m_ShrinkageK1);
+      SetShrinkageK2(dlg.m_AASHTO.m_ShrinkageK2);
+      HasAggSplittingStrength(dlg.m_AASHTO.m_bHasFct);
+      SetAggSplittingStrength(dlg.m_AASHTO.m_Fct);
 
       SetPCIUHPC(dlg.m_PCIUHPC.m_ffc, dlg.m_PCIUHPC.m_frr, dlg.m_PCIUHPC.m_FiberLength, dlg.m_PCIUHPC.m_AutogenousShrinkage, dlg.m_PCIUHPC.m_bPCTT);
+      SetFHWAUHPC(dlg.m_FHWAUHPC.m_ftcri, dlg.m_FHWAUHPC.m_ftcr, dlg.m_FHWAUHPC.m_ftloc, dlg.m_FHWAUHPC.m_etloc, dlg.m_FHWAUHPC.m_alpha_u,dlg.m_FHWAUHPC.m_ecu,dlg.m_FHWAUHPC.m_bExperimental_ecu,dlg.m_FHWAUHPC.m_FiberLength);
 
-      this->UserACIParameters(dlg.m_ACI.m_bUserParameters);
-      this->SetAlpha(dlg.m_ACI.m_A);
-      this->SetBeta(dlg.m_ACI.m_B);
-      this->SetCureMethod(dlg.m_ACI.m_CureMethod);
-      this->SetACI209CementType(dlg.m_ACI.m_CementType);
+      UserACIParameters(dlg.m_ACI.m_bUserParameters);
+      SetAlpha(dlg.m_ACI.m_A);
+      SetBeta(dlg.m_ACI.m_B);
+      SetCureMethod(dlg.m_ACI.m_CureMethod);
+      SetACI209CementType(dlg.m_ACI.m_CementType);
 
-      this->UserCEBFIPParameters(dlg.m_CEBFIP.m_bUserParameters);
-      this->SetS(dlg.m_CEBFIP.m_S);
-      this->SetBetaSc(dlg.m_CEBFIP.m_BetaSc);
-      this->SetCEBFIPCementType(dlg.m_CEBFIP.m_CementType);
+      UserCEBFIPParameters(dlg.m_CEBFIP.m_bUserParameters);
+      SetS(dlg.m_CEBFIP.m_S);
+      SetBetaSc(dlg.m_CEBFIP.m_BetaSc);
+      SetCEBFIPCementType(dlg.m_CEBFIP.m_CementType);
 
       return true;
    }
 
    return false;
-}
-
-
-void ConcreteLibraryEntry::MakeCopy(const ConcreteLibraryEntry& rOther)
-{
-   m_Type    = rOther.m_Type;
-   m_Fc      = rOther.m_Fc;
-   m_Ds      = rOther.m_Ds;      
-   m_Dw      = rOther.m_Dw;       
-   m_AggSize = rOther.m_AggSize;
-   m_bUserEc = rOther.m_bUserEc;
-   m_Ec      = rOther.m_Ec;
-
-   // AASHTO
-   m_EccK1    = rOther.m_EccK1;
-   m_EccK2    = rOther.m_EccK2;
-   m_CreepK1  = rOther.m_CreepK1;
-   m_CreepK2  = rOther.m_CreepK2;
-   m_ShrinkageK1  = rOther.m_ShrinkageK1;
-   m_ShrinkageK2  = rOther.m_ShrinkageK2;
-   m_bHasFct  = rOther.m_bHasFct;
-   m_Fct      = rOther.m_Fct;
-
-   // PCI UHPC
-   m_Ffc = rOther.m_Ffc;
-   m_Frr = rOther.m_Frr;
-   m_FiberLength = rOther.m_FiberLength;
-   m_bPCTT = rOther.m_bPCTT;
-   m_AutogenousShrinkage = rOther.m_AutogenousShrinkage;
-
-
-   // ACI
-   m_bUserACIParameters = rOther.m_bUserACIParameters;
-   m_A                  = rOther.m_A;
-   m_B                  = rOther.m_B;
-   m_CureMethod         = rOther.m_CureMethod;
-   m_ACI209CementType   = rOther.m_ACI209CementType;
-
-   // CEB-FIP
-   m_bUserCEBFIPParameters = rOther.m_bUserCEBFIPParameters;
-   m_S                     = rOther.m_S;
-   m_BetaSc                = rOther.m_BetaSc;
-   m_CEBFIPCementType      = rOther.m_CEBFIPCementType;
-}
-
-void ConcreteLibraryEntry::MakeAssignment(const ConcreteLibraryEntry& rOther)
-{
-   libLibraryEntry::MakeAssignment( rOther );
-   MakeCopy( rOther );
 }
 
 //======================== ACCESS     =======================================

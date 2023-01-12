@@ -113,8 +113,7 @@ interface ISegmentLiftingSpecCriteria : IUnknown
    virtual pgsTypes::WindType GetLiftingWindType() const = 0;
    virtual Float64 GetLiftingWindLoad() const = 0;
 
-   virtual WBFL::Stability::LiftingCriteria GetLiftingStabilityCriteria(const CSegmentKey& segmentKey) const = 0;
-   virtual WBFL::Stability::LiftingCriteria GetLiftingStabilityCriteria(const CSegmentKey& segmentKey,const HANDLINGCONFIG& liftConfig) const = 0;
+   virtual WBFL::Stability::LiftingCriteria GetLiftingStabilityCriteria(const CSegmentKey& segmentKey, const HANDLINGCONFIG* pLiftConfig = nullptr) const = 0;
 };
 
 /*****************************************************************************
@@ -195,8 +194,7 @@ interface ISegmentHaulingSpecCriteria : IUnknown
    virtual Float64 GetHaulingSpeed() const = 0;
    virtual Float64 GetTurningRadius() const = 0;
 
-   virtual WBFL::Stability::HaulingCriteria GetHaulingStabilityCriteria(const CSegmentKey& segmentKey) const = 0;
-   virtual WBFL::Stability::HaulingCriteria GetHaulingStabilityCriteria(const CSegmentKey& segmentKey,const HANDLINGCONFIG& haulConfig) const = 0;
+   virtual WBFL::Stability::HaulingCriteria GetHaulingStabilityCriteria(const CSegmentKey& segmentKey,const HANDLINGCONFIG* pHaulConfig=nullptr) const = 0;
 };
 
 // {CA374433-127A-4850-AEC1-AB250D323724}

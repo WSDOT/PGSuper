@@ -1180,19 +1180,18 @@ void CSegmentAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx
       {
          GET_IFACE(IAllowableConcreteStress,pAllowable);
          const CSegmentKey& segmentKey(m_pGraphController->GetSegmentKey());
-         CGirderKey girderKey(segmentKey.groupIndex,segmentKey.girderIndex);
 
          if (((CSegmentAnalysisResultsGraphController*)m_pGraphController)->PlotStresses(pgsTypes::TopGirder) ||
             ((CSegmentAnalysisResultsGraphController*)m_pGraphController)->PlotStresses(pgsTypes::BottomGirder))
          {
-            if (pAllowable->IsStressCheckApplicable(girderKey,StressCheckTask(intervalIdx,limitState,pgsTypes::Tension)))
+            if (pAllowable->IsStressCheckApplicable(segmentKey,StressCheckTask(intervalIdx,limitState,pgsTypes::Tension)))
             {
                std::vector<Float64> t(pAllowable->GetGirderAllowableTensionStress(vPoi,StressCheckTask(intervalIdx,limitState,pgsTypes::Tension),false/*without rebar*/,false/*not in PTZ*/));
                AddGraphPoints(min_girder_capacity_series,xVals,t);
                m_Graph.SetDataLabel(min_girder_capacity_series,strDataLabel + (strDataLabel.IsEmpty() ? _T("") : _T(" - Girder")));
             }
 
-            if (pAllowable->IsStressCheckApplicable(girderKey,StressCheckTask(intervalIdx,limitState,pgsTypes::Compression)))
+            if (pAllowable->IsStressCheckApplicable(segmentKey,StressCheckTask(intervalIdx,limitState,pgsTypes::Compression)))
             {
                std::vector<Float64> c(pAllowable->GetGirderAllowableCompressionStress(vPoi,StressCheckTask(intervalIdx,limitState,pgsTypes::Compression)));
                AddGraphPoints(max_girder_capacity_series,xVals,c);

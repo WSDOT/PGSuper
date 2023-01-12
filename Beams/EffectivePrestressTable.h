@@ -58,7 +58,7 @@ private:
 
    const CGirderData* m_pGD;
 
-   bool m_bUHPC;
+   bool m_bPCI_UHPC; // pci uhpc has autogenous shrinkage
    bool m_bPTTempStrand;
    bool m_bTempStrands;
    bool m_bIgnoreInitialRelaxation;

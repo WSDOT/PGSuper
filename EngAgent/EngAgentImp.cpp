@@ -560,7 +560,7 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
    // side of every pier. There could be zero, one, two, or more critical sections in a segment.
    // The critical sections do not necessarily occur near the ends of the segments (e.g. cantilever pier segment).
    //
-   // For convensional pretensioned girders, there are two critical sections per girder (each girder with one segment)
+   // For conventional pretensioned girders, there are two critical sections per girder (each girder with one segment)
    // and they occur near the ends of the girder.
    //
    //       Segment               Segment                Segment           Segment
@@ -571,7 +571,7 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
    //  |<-------------------------->|<---------------------->|<----------------------->|
    //
    // * = critical section location
-   // # = location between FOS and critical section (critial section zones)
+   // # = location between FOS and critical section (critical section zones)
 
    ASSERT_GIRDER_KEY(girderKey);
 
@@ -694,7 +694,7 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
          }
       }
 
-#pragma Reminder("Can Optize here by reducing the number adjacent pois. The function below returns way too many.")
+#pragma Reminder("Can Optimize here by reducing the number adjacent pois. The function below returns way too many.")
       PoiList vPoi;
       pIPoi->GetPointsOfInterestInRange(left, poiFaceOfSupport, right, &vPoi);
 
@@ -768,7 +768,7 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
 
       LOG(_T("End of intercept values")<< WBFL::Debug::endl);
 
-      // now that the graphs are created, find the intsection of the unity line with the dv and 0.5dvcot(theta) lines
+      // now that the graphs are created, find the intersection of the unity line with the dv and 0.5dvcot(theta) lines
       // determine intersections
       WBFL::Geometry::Point2d p;
       Float64 x1;
@@ -803,37 +803,40 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
             csDetails.CsDv.CotanThetaDv05 = 0.0;
          }
 
-         LOG(_T("Dv Intersection = (")<<p.X()<<_T(", ")<<p.Y()<<_T(")"));
+         LOG(_T("Dv Intersection = (") << p.X() << _T(", ") << p.Y() << _T(")"));
 
-         // dv cot(theta)
-         nIntersections = dv_cos_theta.Intersect(unity,range,&p);
-         if( nIntersections == 1 )
+         if (!bThirdEdition)
          {
-            x1 = p.X(); // distance from face of support where the intersection occurs
+            // dv cot(theta)
+            nIntersections = dv_cos_theta.Intersect(unity, range, &p);
+            if (nIntersections == 1)
+            {
+               x1 = p.X(); // distance from face of support where the intersection occurs
 
-            csDetails.CsDvt.InRange      = true;
-            csDetails.CsDvt.Intersection = CRITSECTIONDETAILSATPOI::ThetaIntersection;
-            csDetails.CsDvt.DistFromFOS  = x1;
+               csDetails.CsDvt.InRange = true;
+               csDetails.CsDvt.Intersection = CRITSECTIONDETAILSATPOI::ThetaIntersection;
+               csDetails.CsDvt.DistFromFOS = x1;
 
-            // set the critical section poi data... need the segment key and the
-            // distance from the start of the segment. Distance from start of segment is
-            // distance from face of support (x1) + distance from start of segment to the FOS
-	         
-            csDetails.CsDvt.Poi.SetSegmentKey(poiFaceOfSupport.GetSegmentKey());
-            csDetails.CsDvt.Poi.SetDistFromStart(face == pgsTypes::Ahead ? x1 + poiFaceOfSupport.GetDistFromStart() : poiFaceOfSupport.GetDistFromStart() - x1);
+               // set the critical section poi data... need the segment key and the
+               // distance from the start of the segment. Distance from start of segment is
+               // distance from face of support (x1) + distance from start of segment to the FOS
 
-            csDetails.CsDvt.Dv             = dv.Evaluate(x1);
-            csDetails.CsDvt.Theta          = theta.Evaluate(x1);
-            csDetails.CsDvt.CotanThetaDv05 = dv_cos_theta.Evaluate(x1);
+               csDetails.CsDvt.Poi.SetSegmentKey(poiFaceOfSupport.GetSegmentKey());
+               csDetails.CsDvt.Poi.SetDistFromStart(face == pgsTypes::Ahead ? x1 + poiFaceOfSupport.GetDistFromStart() : poiFaceOfSupport.GetDistFromStart() - x1);
 
-            LOG(_T(".5*Dv*cot(theta) Intersection = (")<<p.X()<<_T(", ")<<p.Y()<<_T(")"));
-         }
-         else
-         {
-            ATLASSERT(nIntersections == 0);
-            csDetails.CsDvt.InRange      = false;
-            csDetails.CsDvt.Intersection = CRITSECTIONDETAILSATPOI::NoIntersection;
-            LOG(_T(".5*Dv*cot(theta) on Left Intersection = No Intersection"));
+               csDetails.CsDvt.Dv = dv.Evaluate(x1);
+               csDetails.CsDvt.Theta = theta.Evaluate(x1);
+               csDetails.CsDvt.CotanThetaDv05 = dv_cos_theta.Evaluate(x1);
+
+               LOG(_T(".5*Dv*cot(theta) Intersection = (") << p.X() << _T(", ") << p.Y() << _T(")"));
+            }
+            else
+            {
+               ATLASSERT(nIntersections == 0);
+               csDetails.CsDvt.InRange = false;
+               csDetails.CsDvt.Intersection = CRITSECTIONDETAILSATPOI::NoIntersection;
+               LOG(_T(".5*Dv*cot(theta) on Left Intersection = No Intersection"));
+            }
          }
 
          // Determine the critical section. The critical section is the intersection
@@ -846,7 +849,7 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
          }
          else
          {
-            // 3rd edition and earilier
+            // 3rd edition and earlier
             if ( face == pgsTypes::Ahead )
             {
                if ( csDetails.CsDvt.Poi.GetDistFromStart() < csDetails.CsDv.Poi.GetDistFromStart() )
@@ -928,7 +931,7 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
       {
          GET_IFACE(IEAFStatusCenter,pStatusCenter);
 
-         std::_tstring msg(_T("An error occured while locating the critical section for shear"));
+         std::_tstring msg(_T("An error occurred while locating the critical section for shear"));
          pgsUnknownErrorStatusItem* pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,_T(__FILE__),__LINE__,msg.c_str());
          pStatusCenter->Add(pStatusItem);
 
@@ -1401,29 +1404,29 @@ Float64 CEngAgentImp::GetPjackMax(const CSegmentKey& segmentKey,const WBFL::Mate
 }
 
 //-----------------------------------------------------------------------------
-Float64 CEngAgentImp::GetTransferLength(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType, const GDRCONFIG* pConfig) const
+Float64 CEngAgentImp::GetTransferLength(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType, pgsTypes::TransferLengthType xferType, const GDRCONFIG* pConfig) const
 {
-   return m_TransferLengthEngineer.GetTransferLength(segmentKey,strandType,pConfig);
+   return m_TransferLengthEngineer.GetTransferLength(segmentKey,strandType,xferType,pConfig);
 }
 
-const std::shared_ptr<pgsTransferLength> CEngAgentImp::GetTransferLengthDetails(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig) const
+const std::shared_ptr<pgsTransferLength> CEngAgentImp::GetTransferLengthDetails(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, pgsTypes::TransferLengthType xferType, const GDRCONFIG* pConfig) const
 {
-   return m_TransferLengthEngineer.GetTransferLengthDetails(segmentKey, strandType, pConfig);
+   return m_TransferLengthEngineer.GetTransferLengthDetails(segmentKey, strandType, xferType, pConfig);
 }
 
-Float64 CEngAgentImp::GetTransferLengthAdjustment(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType, const GDRCONFIG* pConfig) const
+Float64 CEngAgentImp::GetTransferLengthAdjustment(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType, pgsTypes::TransferLengthType xferType, const GDRCONFIG* pConfig) const
 {
-   return m_TransferLengthEngineer.GetTransferLengthAdjustment(poi,strandType,pConfig);
+   return m_TransferLengthEngineer.GetTransferLengthAdjustment(poi,strandType, xferType,pConfig);
 }
 
-Float64 CEngAgentImp::GetTransferLengthAdjustment(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, StrandIndexType strandIdx, const GDRCONFIG* pConfig) const
+Float64 CEngAgentImp::GetTransferLengthAdjustment(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, pgsTypes::TransferLengthType xferType, StrandIndexType strandIdx, const GDRCONFIG* pConfig) const
 {
-   return m_TransferLengthEngineer.GetTransferLengthAdjustment(poi, strandType, strandIdx, pConfig);
+   return m_TransferLengthEngineer.GetTransferLengthAdjustment(poi, strandType, xferType, strandIdx, pConfig);
 }
 
-void CEngAgentImp::ReportTransferLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const
+void CEngAgentImp::ReportTransferLengthDetails(const CSegmentKey& segmentKey, pgsTypes::TransferLengthType xferType, rptChapter* pChapter) const
 {
-   return m_TransferLengthEngineer.ReportTransferLengthDetails(segmentKey, pChapter);
+   return m_TransferLengthEngineer.ReportTransferLengthDetails(segmentKey, xferType, pChapter);
 }
 
 //-----------------------------------------------------------------------------
@@ -1464,7 +1467,7 @@ Float64 CEngAgentImp::GetHoldDownForce(const CSegmentKey& segmentKey,bool bTotal
 Float64 CEngAgentImp::GetHorizHarpedStrandForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig) const
 {
    Float64 cos = GetHorizPsComponent(m_pBroker,poi,pConfig);
-   Float64 P = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,intervalTime,pConfig);
+   Float64 P = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,intervalTime,pgsTypes::tltMaximum,pConfig);
    Float64 Hp = fabs(cos*P); // this should always be positive
    return Hp;
 }
@@ -1472,7 +1475,7 @@ Float64 CEngAgentImp::GetHorizHarpedStrandForce(const pgsPointOfInterest& poi,In
 Float64 CEngAgentImp::GetVertHarpedStrandForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig) const
 {
    Float64 sin = GetVertPsComponent(m_pBroker,poi);
-   Float64 P = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,intervalTime,pConfig);
+   Float64 P = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,intervalTime,pgsTypes::tltMaximum,pConfig);
    Float64 Vp = sin*P;
 
    // determine sign of Vp. If Vp has the opposite sign as the shear due to the externally applied
@@ -1515,7 +1518,7 @@ Float64 CEngAgentImp::GetVertHarpedStrandForce(const pgsPointOfInterest& poi,Int
    return Vp;
 }
 
-Float64 CEngAgentImp::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig) const
+Float64 CEngAgentImp::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime, pgsTypes::TransferLengthType xferLengthType,const GDRCONFIG* pConfig) const
 {
    if (pConfig == nullptr)
    {
@@ -1528,33 +1531,33 @@ Float64 CEngAgentImp::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::
       }
       else
       {
-         Float64 F = m_PsForceEngineer.GetPrestressForce(poi, strandType, intervalIdx, intervalTime);
+         Float64 F = m_PsForceEngineer.GetPrestressForce(poi, strandType, intervalIdx, intervalTime, xferLengthType);
          m_PsForce.insert(std::make_pair(key, F));
          return F;
       }
    }
    else
    {
-      return m_PsForceEngineer.GetPrestressForce(poi, strandType, intervalIdx, intervalTime, pConfig);
+      return m_PsForceEngineer.GetPrestressForce(poi, strandType, intervalIdx, intervalTime, xferLengthType, pConfig);
    }
 }
 
-Float64 CEngAgentImp::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,bool bIncludeElasticEffects) const
+Float64 CEngAgentImp::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,bool bIncludeElasticEffects,pgsTypes::TransferLengthType xferLengthType) const
 {
-   return m_PsForceEngineer.GetPrestressForce(poi,strandType,intervalIdx,intervalTime,bIncludeElasticEffects);
+   return m_PsForceEngineer.GetPrestressForce(poi,strandType,intervalIdx,intervalTime,bIncludeElasticEffects,xferLengthType);
 }
 
 Float64 CEngAgentImp::GetPrestressForcePerStrand(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, bool bIncludeElasticEffects) const
 {
-   return GetPrestressForcePerStrand(poi, strandType, intervalIdx, intervalTime, nullptr, bIncludeElasticEffects);
+   return GetPrestressForcePerStrand(poi, strandType, intervalIdx, intervalTime, bIncludeElasticEffects, nullptr);
 }
 
 Float64 CEngAgentImp::GetPrestressForcePerStrand(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, const GDRCONFIG* pConfig) const
 {
-   return GetPrestressForcePerStrand(poi, strandType, intervalIdx, intervalTime, pConfig, true /*include elastic effects*/);
+   return GetPrestressForcePerStrand(poi, strandType, intervalIdx, intervalTime, true /*include elastic effects*/, pConfig);
 }
 
-Float64 CEngAgentImp::GetPrestressForcePerStrand(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig,bool bIncludeElasticEffects) const
+Float64 CEngAgentImp::GetPrestressForcePerStrand(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,bool bIncludeElasticEffects,const GDRCONFIG* pConfig) const
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -1562,11 +1565,11 @@ Float64 CEngAgentImp::GetPrestressForcePerStrand(const pgsPointOfInterest& poi,p
    Float64 Ps;
    if (pConfig)
    {
-      Ps = GetPrestressForce(poi, strandType, intervalIdx, intervalTime, pConfig);
+      Ps = GetPrestressForce(poi, strandType, intervalIdx, intervalTime,pgsTypes::tltMinimum, pConfig);
    }
    else
    {
-      Ps = GetPrestressForce(poi, strandType, intervalIdx, intervalTime, bIncludeElasticEffects);
+      Ps = GetPrestressForce(poi, strandType, intervalIdx, intervalTime, bIncludeElasticEffects,pgsTypes::tltMinimum);
    }
 
    StrandIndexType nStrands = pStrandGeom->GetStrandCount(segmentKey,strandType,pConfig);
@@ -3598,7 +3601,7 @@ void CEngAgentImp::GetRawShearCapacityDetails(pgsTypes::LimitState limitState, I
 #if defined _DEBUG
    GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-   ATLASSERT(liveLoadIntervalIdx <= intervalIdx); // shear is only evaluted when live load is present
+   ATLASSERT(liveLoadIntervalIdx <= intervalIdx); // shear is only evaluated when live load is present
 #endif
 
    if (pConfig)

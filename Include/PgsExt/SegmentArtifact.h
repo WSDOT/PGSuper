@@ -41,6 +41,7 @@
 #include <PgsExt\TendonStressArtifact.h>
 #include <PgsExt\DuctSizeArtifact.h>
 #include <PgsExt\PrincipalTensionStressArtifact.h>
+#include <PgsExt\ReinforcementFatigueArtifact.h>
 
 #include <Stability\Stability.h>
 
@@ -124,6 +125,9 @@ public:
    const pgsPrincipalTensionStressArtifact* GetPrincipalTensionStressArtifact() const;
    pgsPrincipalTensionStressArtifact* GetPrincipalTensionStressArtifact();
 
+   const pgsReinforcementFatigueArtifact* GetReinforcementFatigueArtifact() const;
+   pgsReinforcementFatigueArtifact* GetReinforcementFatigueArtifact();
+
    void SetTendonStressArtifact(DuctIndexType ductIdx, const pgsTendonStressArtifact& artifact);
    const pgsTendonStressArtifact* GetTendonStressArtifact(DuctIndexType ductIdx) const;
    pgsTendonStressArtifact* GetTendonStressArtifact(DuctIndexType ductIdx);
@@ -201,6 +205,7 @@ private:
    pgsHoldDownForceArtifact    m_HoldDownForceArtifact;
    pgsPlantHandlingWeightArtifact m_PlantHandlingWeightArtifact;
    pgsSegmentStabilityArtifact m_StabilityArtifact;
+   pgsReinforcementFatigueArtifact m_ReinforcementFatigueArtifact;
 
    mutable std::map<StressCheckTask,std::vector<pgsFlexuralStressArtifact>> m_FlexuralStressArtifacts;
    std::vector<pgsFlexuralStressArtifact>& GetFlexuralStressArtifacts(const StressCheckTask& task) const;

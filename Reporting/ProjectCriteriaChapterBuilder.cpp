@@ -519,7 +519,7 @@ void write_lifting(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDis
 
    // we are putting the knowledge of how tension stress is evaluated in this report - don't do that
    GET_IFACE2(pBroker, IMaterials, pMaterials);
-   if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC)
+   if (IsUHPC(pMaterials->GetSegmentConcreteType(segmentKey)))
    {
       Float64 ftcy = pSegmentLiftingSpecCriteria->GetLiftingAllowableTensileConcreteStress(segmentKey);
       *pPara << _T("- Tensile Stress = ") << stress.SetValue(ftcy) << rptNewLine;
@@ -626,7 +626,7 @@ void write_wsdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits
    *pPara << _T("- Compressive Stress (With lateral bending) = ") << stress.SetValue(fccy_peak) << rptNewLine;
 
    GET_IFACE2(pBroker, IMaterials, pMaterials);
-   if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC)
+   if (IsUHPC(pMaterials->GetSegmentConcreteType(segmentKey)))
    {
       Float64 ftcy = pHauling->GetHaulingAllowableTensileConcreteStress(segmentKey, pgsTypes::CrownSlope);
       *pPara << _T("- Tensile Stress = ") << stress.SetValue(ftcy) << rptNewLine;
@@ -642,7 +642,8 @@ void write_wsdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits
    *pPara << _T(" Concrete Stress Limits - Hauling - Maximum Superelevation") << rptNewLine;
    *pPara << _T("- Compressive Stress (General) = ") << stress.SetValue(fccy_global) << rptNewLine;
    *pPara << _T("- Compressive Stress (With lateral bending) = ") << stress.SetValue(fccy_peak) << rptNewLine;
-   if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC)
+
+   if (IsUHPC(pMaterials->GetSegmentConcreteType(segmentKey)))
    {
       Float64 ftcy = pHauling->GetHaulingAllowableTensileConcreteStress(segmentKey, pgsTypes::Superelevation);
       *pPara << _T("- Tensile Stress = ") << stress.SetValue(ftcy) << rptNewLine;
@@ -698,7 +699,7 @@ void write_kdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    *pPara<<_T("Concrete Stress Limits - Hauling")<<rptNewLine;
    *pPara<<_T("- Compressive Stress = ")<<stress.SetValue(fccy)<<rptNewLine;
    GET_IFACE2(pBroker, IMaterials, pMaterials);
-   if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC)
+   if (IsUHPC(pMaterials->GetSegmentConcreteType(segmentKey)))
    {
       Float64 ftcy = pHauling->GetKdotHaulingAllowableTensileConcreteStress(segmentKey);
       *pPara << _T("- Tensile Stress = ") << stress.SetValue(ftcy) << rptNewLine;
@@ -743,7 +744,7 @@ void write_temp_strand_removal(rptChapter* pChapter,IBroker* pBroker, IEAFDispla
 
       *pPara<<_T("Tension Stress Limits")<<rptNewLine;
       GET_IFACE2(pBroker, IMaterials, pMaterials);
-      if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC)
+      if (IsUHPC(pMaterials->GetSegmentConcreteType(segmentKey)))
       {
          Float64 fts = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, StressCheckTask(tsRemovalIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension), false);
          *pPara << _T("- Service I = ") << stress.SetValue(fts) << rptNewLine;
@@ -1046,13 +1047,13 @@ void write_shear_capacity(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnit
    }
 
    Int16 method = pSpecEntry->GetLongReinfShearMethod();
-   if (method != WSDOT_METHOD)
+   if (method == WSDOT_METHOD)
    {
-      *pPara << _T("Longitudinal reinforcement requirements computed in accordance with LRFD ") << LrfdCw8th(_T("5.8.3.5"), _T("5.7.3.5")) << rptNewLine;
+      *pPara << _T("Longitudinal reinforcement requirements computed in accordance with WSDOT Bridge Design Manual") << rptNewLine;
    }
    else
    {
-      *pPara << _T("Longitudinal reinforcement requirements computed in accordance with WSDOT Bridge Design Manual") << rptNewLine;
+      *pPara << _T("Longitudinal reinforcement requirements computed in accordance with LRFD ") << LrfdCw8th(_T("5.8.3.5"), _T("5.7.3.5")) << rptNewLine;
    }
 
    switch (pSpecEntry->GetShearFlowMethod())

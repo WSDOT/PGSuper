@@ -144,8 +144,6 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(const s
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
    GET_IFACE2(pBroker, ISegmentData, pSegmentData);
-   bool bUHPC = pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC ? true : false;
-   bool bPCTT = (bUHPC ? pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.bPCTT : false);
 
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time, pDisplayUnits->GetWholeDaysUnit(), true );
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetWholeDaysUnit(), false );
@@ -180,15 +178,21 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(const s
          if ( i == CREEP_MINTIME && j == 0 )
          {
             // first time through loop, report the common information
-            if (bUHPC)
+            if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC)
             {
-               if (bPCTT)
+               if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.bPCTT)
                   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_UHPC_PCTT.png")) << rptNewLine;
                else
                   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_UHPC.png")) << rptNewLine;
 
                *pPara << Bold(_T("where:")) << rptNewLine;
                *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("UHPC_Factors.png")) << rptNewLine;
+            }
+            else if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC)
+            {
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_FHWA_UHPC.png")) << rptNewLine;
+               *pPara << Bold(_T("where:")) << rptNewLine;
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("FHWA_UHPC_Factors.png")) << rptNewLine;
             }
             else if ( details.Spec == CREEP_SPEC_PRE_2005 )
             {
@@ -303,7 +307,15 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(const s
 
             *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << _T(", ");
             *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
-            *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
+            *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd;
+
+            if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC)
+            {
+               *pPara << _T(", ") << Sub2(_T("k"), _T("l")) << _T(" = ") << details.kl << _T(", ");
+            }
+
+            *pPara << rptNewLine;
+
             *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);
             *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< creep.SetValue(details.Ct) << rptNewLine;
          } // spec type
@@ -330,8 +342,6 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(const std::shared_p
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
    GET_IFACE2(pBroker, ISegmentData, pSegmentData);
-   bool bUHPC = pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC ? true : false;
-   bool bPCTT = (bUHPC ? pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.bPCTT : false);
 
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time, pDisplayUnits->GetWholeDaysUnit(), true );
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetWholeDaysUnit(), false );
@@ -365,15 +375,21 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(const std::shared_p
          if ( i == CREEP_MINTIME && j == 0 )
          {
             // first time through loop, report the common information
-            if (bUHPC)
+            if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC)
             {
-               if (bPCTT)
+               if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.bPCTT)
                   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_UHPC_PCTT.png")) << rptNewLine;
                else
                   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_UHPC.png")) << rptNewLine;
 
                *pPara << Bold(_T("where:")) << rptNewLine;
                *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("UHPC_Factors.png")) << rptNewLine;
+            }
+            else if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC)
+            {
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_FHWA_UHPC.png")) << rptNewLine;
+               *pPara << Bold(_T("where:")) << rptNewLine;
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("FHWA_UHPC_Factors.png")) << rptNewLine;
             }
             else if (details.Spec == CREEP_SPEC_PRE_2005)
             {
@@ -487,7 +503,15 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(const std::shared_p
 
             *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << _T(", ");
             *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
-            *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
+            *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd;
+
+            if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC)
+            {
+               *pPara << _T(", ") << Sub2(_T("k"), _T("l")) << _T(" = ") << details.kl << _T(", ");
+            }
+
+            *pPara << rptNewLine;
+
             *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);
             *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< creep.SetValue(details.Ct) << rptNewLine;
          } // spec type
@@ -528,8 +552,6 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(cons
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
    GET_IFACE2(pBroker, ISegmentData, pSegmentData);
-   bool bUHPC = pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC ? true : false;
-   bool bPCTT = (bUHPC ? pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.bPCTT : false);
 
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time, pDisplayUnits->GetWholeDaysUnit(), true );
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetWholeDaysUnit(), false );
@@ -551,15 +573,21 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(cons
      if ( i == CREEP_MINTIME )
      {
         // first time through loop, report the common information
-        if (bUHPC)
+        if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC)
         {
-           if (bPCTT)
+           if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.bPCTT)
               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_UHPC_PCTT.png")) << rptNewLine;
            else
               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_UHPC.png")) << rptNewLine;
 
            *pPara << Bold(_T("where:")) << rptNewLine;
            *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("UHPC_Factors.png")) << rptNewLine;
+        }
+        else if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC)
+        {
+           *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_FHWA_UHPC.png")) << rptNewLine;
+           *pPara << Bold(_T("where:")) << rptNewLine;
+           *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("FHWA_UHPC_Factors.png")) << rptNewLine;
         }
         else if (details.Spec == CREEP_SPEC_PRE_2005)
         {
@@ -616,8 +644,8 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(cons
            *pPara << Bold(_T("where:")) << rptNewLine;
            *pPara << _T("H = ") << details.H << _T("%") << _T(", ");
            *pPara << _T("V/S = ") << length.SetValue(details.VSratio) << _T(", ");
-            *pPara << Sub2(_T("K"),_T("1")) << _T(" = ") << details.K1 << _T(", ");
-            *pPara << Sub2(_T("K"),_T("2")) << _T(" = ") << details.K2 << rptNewLine;
+           *pPara << Sub2(_T("K"),_T("1")) << _T(" = ") << details.K1 << _T(", ");
+           *pPara << Sub2(_T("K"),_T("2")) << _T(" = ") << details.K2 << rptNewLine;
 
            if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
            {
@@ -719,7 +747,14 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(cons
 
          *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << _T(", ");
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
-         *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
+         *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd;
+
+         if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC)
+         {
+            *pPara << _T(", ") << Sub2(_T("k"), _T("l")) << _T(" = ") << details.kl << _T(", ");
+         }
+
+         *pPara << rptNewLine;
          *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);
          *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< creep.SetValue(details.Ct) << rptNewLine;
 
@@ -742,7 +777,15 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(cons
 
          *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << _T(", ");
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
-         *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
+         *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd;
+
+         if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC)
+         {
+            *pPara << _T(", ") << Sub2(_T("k"), _T("l")) << _T(" = ") << details.kl << _T(", ");
+         }
+
+         *pPara << rptNewLine;
+
          *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);
          *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< creep.SetValue(details.Ct) << rptNewLine;
 
@@ -765,7 +808,15 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(cons
 
          *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << _T(", ");
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
-         *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
+         *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd;
+
+         if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC)
+         {
+            *pPara << _T(", ") << Sub2(_T("k"), _T("l")) << _T(" = ") << details.kl << _T(", ");
+         }
+
+         *pPara << rptNewLine;
+
          *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);
          *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< creep.SetValue(details.Ct) << rptNewLine;
 
@@ -788,7 +839,15 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(cons
 
          *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << _T(", ");
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
-         *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
+         *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd;
+         
+         if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC)
+         {
+            *pPara << _T(", ") << Sub2(_T("k"), _T("l")) << _T(" = ") << details.kl << _T(", ");
+         }
+
+         *pPara << rptNewLine;
+
          *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);
          *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< creep.SetValue(details.Ct) << rptNewLine;
 
@@ -811,7 +870,15 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(cons
 
          *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << _T(", ");
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
-         *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
+         *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd;
+
+         if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC)
+         {
+            *pPara << _T(", ") << Sub2(_T("k"), _T("l")) << _T(" = ") << details.kl << _T(", ");
+         }
+
+         *pPara << rptNewLine;
+
          *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);
          *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< creep.SetValue(details.Ct) << rptNewLine;
 
@@ -834,7 +901,15 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(cons
 
          *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << _T(", ");
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
-         *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
+         *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd;
+
+         if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC)
+         {
+            *pPara << _T(", ") << Sub2(_T("k"), _T("l")) << _T(" = ") << details.kl << _T(", ");
+         }
+
+         *pPara << rptNewLine;
+
          *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);
          *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< creep.SetValue(details.Ct) << rptNewLine;
       } // spec type

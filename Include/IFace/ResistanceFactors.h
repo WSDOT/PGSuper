@@ -46,5 +46,8 @@ interface IResistanceFactors : IUnknown
 
    virtual Float64 GetClosureJointFlexureResistanceFactor(pgsTypes::ConcreteType type) const = 0;
    virtual Float64 GetClosureJointShearResistanceFactor(pgsTypes::ConcreteType type) const = 0;
+
+   /// Returns the ductility curvature ratio limit for UHPC GS 1.6.2
+   virtual Float64 GetDuctilityCurvatureRatioLimit() const = 0;
 };
 

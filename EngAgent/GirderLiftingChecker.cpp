@@ -127,7 +127,7 @@ void pgsGirderLiftingChecker::AnalyzeLifting(const CSegmentKey& segmentKey,bool 
    }
 
    GET_IFACE(ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
-   WBFL::Stability::LiftingCriteria criteria = (bUseConfig ? pSegmentLiftingSpecCriteria->GetLiftingStabilityCriteria(segmentKey,liftConfig) : pSegmentLiftingSpecCriteria->GetLiftingStabilityCriteria(segmentKey));
+   WBFL::Stability::LiftingCriteria criteria = pSegmentLiftingSpecCriteria->GetLiftingStabilityCriteria(segmentKey, bUseConfig ? &liftConfig : nullptr);
 
    WBFL::Stability::StabilityEngineer engineer;
    *pArtifact = engineer.CheckLifting(pStabilityModel,pStabilityProblem,criteria);

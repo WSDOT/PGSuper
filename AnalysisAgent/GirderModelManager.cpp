@@ -281,7 +281,7 @@ bool CGirderModelManager::HasShearKeyLoad(const CGirderKey& girderKeyOrig) const
       return true;
    }
 
-   // Next check adjacent beams if we have a continous analysis
+   // Next check adjacent beams if we have a continuous analysis
    GET_IFACE(ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
    if ( analysisType == pgsTypes::Simple)
@@ -943,7 +943,7 @@ void CGirderModelManager::GetLiveLoadRotation(IntervalIndexType intervalIdx,pgsT
    {
       if ( TzMaxConfig )
       {
-         // get reaction that corresonds to T max
+         // get reaction that corresponds to T max
          CComPtr<ILBAMAnalysisEngine> pEngine;
          GetEngine(pModelData,bat == pgsTypes::SimpleSpan ? false : true, &pEngine);
          CComPtr<IBasicVehicularResponse> response;
@@ -976,7 +976,7 @@ void CGirderModelManager::GetLiveLoadRotation(IntervalIndexType intervalIdx,pgsT
          CComPtr<IBasicVehicularResponse> response;
          pEngine->get_BasicVehicularResponse(&response);
 
-         // get reaction that corresonds to T min
+         // get reaction that corresponds to T min
          CComPtr<IResult3Ds> results;
          TzMinConfig->put_ForceEffect(fetFy);
          TzMinConfig->put_Optimization(optMaximize);
@@ -1340,7 +1340,7 @@ void CGirderModelManager::GetDeflLiveLoadDeflection(IProductForces::DeflectionLi
    *pDmax = DyMaxLeft;
 }
 
-void CGirderModelManager::GetDeckShrinkageStresses(const pgsPointOfInterest& poi,Float64 fcGdr,Float64* pftop,Float64* pfbot) const
+void CGirderModelManager::GetDeckShrinkageStresses(const pgsPointOfInterest& poi,Float64 fcGdr, pgsTypes::StressLocation topStressLocation, pgsTypes::StressLocation botStressLocation,Float64* pftop,Float64* pfbot) const
 {
    // This is sort of a dummy function until deck shrinkage stress issues are resolved.
    // If you count on deck shrinkage for elastic gain, then you have to account for the fact
@@ -1384,14 +1384,14 @@ void CGirderModelManager::GetDeckShrinkageStresses(const pgsPointOfInterest& poi
    M = P * ed;
 
    Float64 A  = pProps->GetAg(compositeIntervalIdx,poi,fcGdr);
-   Float64 St = pProps->GetS(compositeIntervalIdx,poi,pgsTypes::TopGirder,fcGdr);
-   Float64 Sb = pProps->GetS(compositeIntervalIdx,poi,pgsTypes::BottomGirder,fcGdr);
+   Float64 St = pProps->GetS(compositeIntervalIdx,poi,topStressLocation,fcGdr);
+   Float64 Sb = pProps->GetS(compositeIntervalIdx,poi,botStressLocation,fcGdr);
 
    *pftop = P/A + M/St;
    *pfbot = P/A + M/Sb;
 }
 
-void CGirderModelManager::GetDeckShrinkageStresses(const pgsPointOfInterest& poi,Float64* pftop,Float64* pfbot) const
+void CGirderModelManager::GetDeckShrinkageStresses(const pgsPointOfInterest& poi, pgsTypes::StressLocation topStressLocation, pgsTypes::StressLocation botStressLocation, Float64* pftop, Float64* pfbot) const
 {
    // This is sort of a dummy function until deck shrinkage stress issues are resolved.
    // If you count on deck shrinkage for elastic gain, then you have to account for the fact
@@ -1402,9 +1402,9 @@ void CGirderModelManager::GetDeckShrinkageStresses(const pgsPointOfInterest& poi
    // Branson, D. E., "Time-Dependent Effects in Composite Concrete Beams", 
    // American Concrete Institute J., Vol 61, Issue 2, (1964) pp. 213-230
    GET_IFACE(IBridge, pBridge);
-   if (IsNonstructuralDeck(pBridge->GetDeckType()))
+   if (IsNonstructuralDeck(pBridge->GetDeckType()) || !pBridge->IsCompositeDeck())
    {
-      // no deck, no deck shrinkage stresses
+      // no deck or deck isn't composite with girder, no deck shrinkage stresses
       *pftop = 0;
       *pfbot = 0;
       return;
@@ -1412,28 +1412,49 @@ void CGirderModelManager::GetDeckShrinkageStresses(const pgsPointOfInterest& poi
 
    VERIFY_ANALYSIS_TYPE;
 
-   GET_IFACE(IPointOfInterest,pPoi);
-   if (pPoi->IsOnSegment(poi) )
+   GET_IFACE(IPointOfInterest, pPoi);
+   if (pPoi->IsOnSegment(poi))
    {
       IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
       ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
 
-      GET_IFACE(IIntervals,pIntervals);
+      GET_IFACE(IIntervals, pIntervals);
       IntervalIndexType compositeIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
 
-      GET_IFACE(ILosses,pLosses);
-      const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,INVALID_INDEX);
+      GET_IFACE(ILosses, pLosses);
+      const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi, INVALID_INDEX);
 
       Float64 P, M;
-      pDetails->pLosses->GetDeckShrinkageEffects(&P,&M);
+      pDetails->pLosses->GetDeckShrinkageEffects(&P, &M);
 
-      GET_IFACE(ISectionProperties,pProps);
-      Float64 A  = pProps->GetAg(compositeIntervalIdx,poi);
-      Float64 St = pProps->GetS(compositeIntervalIdx,poi,pgsTypes::TopGirder);
-      Float64 Sb = pProps->GetS(compositeIntervalIdx,poi,pgsTypes::BottomGirder);
+      GET_IFACE(ISectionProperties, pProps);
+      Float64 A = pProps->GetAg(compositeIntervalIdx, poi);
+      Float64 St = pProps->GetS(compositeIntervalIdx, poi, topStressLocation);
+      Float64 Sb = pProps->GetS(compositeIntervalIdx, poi, botStressLocation);
 
-      *pftop = P/A + M/St;
-      *pfbot = P/A + M/Sb;
+      Float64 n_top = 1.0; // modular ratio for top stress calculation
+      Float64 n_bot = 1.0; // modular ratio for bottom stress calculation
+      if (IsDeckStressLocation(topStressLocation) || IsDeckStressLocation(botStressLocation))
+      {
+         // if one of the stress locations is for the deck, then we need to adjust the properties with the modular ratio
+         // note that St and Sb are already adjusted, but Area is not
+         GET_IFACE(ILossParameters, pLossParams);
+         bool bIsTimeStepAnalysis = (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false);
+
+         GET_IFACE(IMaterials, pMaterials);
+         Float64 Eg = (bIsTimeStepAnalysis ? pMaterials->GetSegmentAgeAdjustedEc(poi.GetSegmentKey(), compositeIntervalIdx) : pMaterials->GetSegmentEc(poi.GetSegmentKey(), compositeIntervalIdx));
+         Float64 Ed = (bIsTimeStepAnalysis ? pMaterials->GetDeckAgeAdjustedEc(deckCastingRegionIdx, compositeIntervalIdx) : pMaterials->GetDeckEc(deckCastingRegionIdx, compositeIntervalIdx));
+         Float64 n = Ed / Eg;
+
+         if (IsDeckStressLocation(topStressLocation))
+            n_top = n;
+
+         if (IsDeckStressLocation(botStressLocation))
+            n_bot = n;
+      }
+
+      *pftop = n_top*P/A + M/St;
+      *pfbot = n_bot*P/A + M/Sb;
    }
    else
    {
@@ -4749,7 +4770,7 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,pgsTypes::Limi
       if ( railingSystemIntervalIdx <= intervalIdx && pPoi->IsOnSegment(poi) )
       {
          Float64 ft_ss, fb_ss;
-         GetDeckShrinkageStresses(poi,&ft_ss,&fb_ss);
+         GetDeckShrinkageStresses(poi, pgsTypes::TopGirder, pgsTypes::BottomGirder,&ft_ss,&fb_ss);
 
          ft_ss *= k;
          fb_ss *= k;
@@ -6049,7 +6070,7 @@ void CGirderModelManager::GM_GetLiveLoadReaction(IntervalIndexType intervalIdx,p
    CGirderModelData* pModelData = nullptr;
    pModelData = GetGirderModel(GetGirderLineIndex(girderKey),bat);
 
-   // Tricky:: We play a game here where the Pedestian uniform lane load value is equal to the live load distribution factor. In the LBAM, the lane load is a unit value.
+   // Tricky:: We play a game here where the Pedestrian uniform lane load value is equal to the live load distribution factor. In the LBAM, the lane load is a unit value.
    //          This means that we must always include the LLDF for pedestrian loads, and the response is always per girder. Force the issue:
    if (llType == pgsTypes::lltPedestrian)
    {
@@ -17735,12 +17756,12 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPoint
    std::array<Float64, 3> P{ 0,0,0 };
    if ( intervalIdx < liveLoadIntervalIdx )
    {
-      P[pgsTypes::Straight] = pPsForce->GetPrestressForce(poi, pgsTypes::Straight, intervalIdx, timeType, bIncludeElasticEffects);
-      P[pgsTypes::Harped] = pPsForce->GetPrestressForce(poi, pgsTypes::Harped, intervalIdx, timeType, bIncludeElasticEffects);
+      P[pgsTypes::Straight] = pPsForce->GetPrestressForce(poi, pgsTypes::Straight, intervalIdx, timeType, bIncludeElasticEffects, pgsTypes::tltMinimum);
+      P[pgsTypes::Harped] = pPsForce->GetPrestressForce(poi, pgsTypes::Harped, intervalIdx, timeType, bIncludeElasticEffects, pgsTypes::tltMinimum);
 
       if ( bIncTempStrands )
       {
-         P[pgsTypes::Temporary] = pPsForce->GetPrestressForce(poi, pgsTypes::Temporary, intervalIdx, timeType, bIncludeElasticEffects);
+         P[pgsTypes::Temporary] = pPsForce->GetPrestressForce(poi, pgsTypes::Temporary, intervalIdx, timeType, bIncludeElasticEffects, pgsTypes::tltMinimum);
       }
    }
    else
@@ -17752,8 +17773,8 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPoint
       }
       else
       {
-         P[pgsTypes::Straight] = pPsForce->GetPrestressForce(poi, pgsTypes::Straight, intervalIdx, timeType, bIncludeElasticEffects);
-         P[pgsTypes::Harped]   = pPsForce->GetPrestressForce(poi, pgsTypes::Harped, intervalIdx, timeType, bIncludeElasticEffects);
+         P[pgsTypes::Straight] = pPsForce->GetPrestressForce(poi, pgsTypes::Straight, intervalIdx, timeType, bIncludeElasticEffects, pgsTypes::tltMinimum);
+         P[pgsTypes::Harped]   = pPsForce->GetPrestressForce(poi, pgsTypes::Harped, intervalIdx, timeType, bIncludeElasticEffects, pgsTypes::tltMinimum);
       }
 
       if ( bIncTempStrands )

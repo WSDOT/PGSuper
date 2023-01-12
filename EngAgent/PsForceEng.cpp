@@ -287,7 +287,7 @@ Float64 pgsPsForceEng::GetHoldDownForce(const CSegmentKey& segmentKey, bool bTot
       }
       for (const pgsPointOfInterest& poi : vPoi)
       {
-         Float64 harped = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,pgsTypes::Start,pConfig);
+         Float64 harped = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,pgsTypes::Start,pgsTypes::tltMinimum,pConfig);
 
          // Adjust for slope
          Float64 slope;
@@ -358,14 +358,14 @@ Float64 pgsPsForceEng::GetHoldDownForce(const CSegmentKey& segmentKey, bool bTot
    }
 }
 
-Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig) const
+Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,pgsTypes::TransferLengthType xferLengthType,const GDRCONFIG* pConfig) const
 {
    GET_IFACE(ISectionProperties, pSectProps);
    bool bIncludeElasticEffects = (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmGross || intervalTime == pgsTypes::End ? true : false);
-   return GetPrestressForce(poi, strandType, intervalIdx, intervalTime, bIncludeElasticEffects, pConfig);
+   return GetPrestressForce(poi, strandType, intervalIdx, intervalTime, bIncludeElasticEffects, xferLengthType, pConfig);
 }
 
-Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,bool bIncludeElasticEffects,const GDRCONFIG* pConfig) const
+Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,bool bIncludeElasticEffects,pgsTypes::TransferLengthType xferLengthType,const GDRCONFIG* pConfig) const
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -380,8 +380,8 @@ Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes:
    Float64 P = 0;
    if (strandType == pgsTypes::Permanent)
    {
-      Float64 Ps = GetPrestressForce(poi, pgsTypes::Straight, intervalIdx, intervalTime, bIncludeElasticEffects, pConfig);
-      Float64 Ph = GetPrestressForce(poi, pgsTypes::Harped, intervalIdx, intervalTime, bIncludeElasticEffects, pConfig);
+      Float64 Ps = GetPrestressForce(poi, pgsTypes::Straight, intervalIdx, intervalTime, bIncludeElasticEffects, xferLengthType, pConfig);
+      Float64 Ph = GetPrestressForce(poi, pgsTypes::Harped, intervalIdx, intervalTime, bIncludeElasticEffects, xferLengthType, pConfig);
       P = Ps + Ph;
    }
    else
@@ -398,7 +398,7 @@ Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes:
       if (releaseIntervalIdx <= intervalIdx)
       {
          GET_IFACE(IPretensionForce, pPSForce);
-         adjust = pPSForce->GetTransferLengthAdjustment(poi, strandType, pConfig);
+         adjust = pPSForce->GetTransferLengthAdjustment(poi, strandType, xferLengthType, pConfig);
       }
 
       P = adjust*Aps*fpe;
@@ -456,7 +456,8 @@ Float64 pgsPsForceEng::GetPrestressForceWithLiveLoad(const pgsPointOfInterest& p
 
    GET_IFACE(IPretensionForce, pPSForce);
    Float64 fpe = GetEffectivePrestressWithLiveLoad(poi,strandType,limitState,vehicleIndex,bIncludeElasticEffects,true/*apply elastic gain reduction*/, pConfig); // this fpj - loss + gain, without adjustment
-   Float64 adjust = pPSForce->GetTransferLengthAdjustment(poi, strandType, pConfig);
+   // The use of this Prestress force (with live load) is for a stress analysis in a service limit state, for this reason, use the minimum transfer length.
+   Float64 adjust = pPSForce->GetTransferLengthAdjustment(poi, strandType, pgsTypes::tltMinimum, pConfig);
 
    Float64 P = adjust*Aps*fpe;
 
@@ -516,7 +517,7 @@ Float64 pgsPsForceEng::GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsT
 
    GET_IFACE(ILosses,pLosses);
    const LOSSDETAILS* pDetails;
-#pragma Reminder("REVIEW = why does on version of GetLosses use the intervalIdx and the other doesnt?")
+#pragma Reminder("REVIEW = why does one version of GetLosses use the intervalIdx and the other doesnt?")
    if ( pConfig )
    {
       pDetails = pLosses->GetLossDetails(poi,*pConfig);

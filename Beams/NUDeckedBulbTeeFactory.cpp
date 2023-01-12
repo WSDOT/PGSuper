@@ -522,7 +522,7 @@ bool CNUDeckedBulbTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions&
     Float64 r1, r2;
     GetDimensions(dimensions, w1, w2, w3, d1, d2, d3, d4, d5, d6, h, t, r1, r2, c1, wmin, wmax);
 
-#pragma Reminder("WORKING HERE - PCI UHPC validate section dimensions")
+//// PCI UHPC validate section dimensions
 //// 0  D1  
 //// 1  D2
 //// 2  D3

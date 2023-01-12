@@ -84,6 +84,7 @@ struct MOMENTCAPACITYDETAILS
    Float64 dc{ 0.0 };        // Distance from extreme compression fiber to the resultant compressive force
    Float64 de{ 0.0 };        // Distance from extreme compression fiber to the resultant tensile force (used to compute c/de)
    Float64 de_shear{ 0.0 };  // Distance from extreme compression fiber to the resultant tensile force for only those strands in tension (used for shear)
+   WBFL::Geometry::Point2d pnt_de; // Location of the resultant tensile force for only those strands in tension (location of de_shear)
    Float64 C{ 0.0 };         // Resultant compressive force
    Float64 T{ 0.0 };         // Resultant tensile force
 
@@ -112,22 +113,53 @@ struct MOMENTCAPACITYDETAILS
    Float64 bw{ 0.0 };
    Float64 MnMin{ 0.0 };           // Minimum nominal capacity of a over reinforced section (Eqn C5.7.3.3.1-1 or 2)
 
-   Float64 fpe_ps{ 0.0 }; // Effective prestress
-   Float64 eps_initial{ 0.0 }; // Initial strain in strands
-
-   std::vector<Float64> fpe_pt_segment; // Effective prestress in segment tendons
-   std::vector<Float64> ept_initial_segment; // Initial strain in segment tendons
-
-   std::vector<Float64> fpe_pt_girder; // Effective prestress in girder tendons
-   std::vector<Float64> ept_initial_girder; // Initial strain in girder  tendons
-
    // solution object provides the full equilibrium state of the moment
    // capacity solution
+   IndexType girderShapeIndex{ INVALID_INDEX }; // Index of the girder shape in the general section model
+   IndexType deckShapeIndex{ INVALID_INDEX }; // Index of the deck shape in the general section model
    CComPtr<IGeneralSection> Section; // this is the section that is analyzed
-   CComPtr<IMomentCapacitySolution> CapacitySolution;
+   CComPtr<IMomentCapacitySolution> ConcreteCrushingSolution; // deck compressive strain at -0.003 (or bottom of girder at concrete strain limit for negative moment)
+   CComPtr<IMomentCapacitySolution> UHPCGirderCrushingSolution; // compressive strain in UHPC girder concrete at it's crushing limit
+   CComPtr<IMomentCapacitySolution> UHPCCrackLocalizationSolution; // tension strain in UHPC girder is at crack localization strain
+   CComPtr<IMomentCapacitySolution> ReinforcementFractureSolution; // reinforcement is at it's fraction strain limit
+   CComPtr<IMomentCapacitySolution> ReinforcementStressLimitStateSolution; // stress in the strand or reinforcement is at its service limit state (0.8fpy or 0.8fy, respectively). This is used for UHPC capacity reduction factor.
    
-   enum class ControllingType { Concrete, ReinforcementStrain, Development };
-   ControllingType Controlling{ ControllingType::Concrete };
+   enum class ControllingType 
+   { 
+      ConcreteCrushing, // ConcreteCrushingSolution is controlling
+      GirderConcreteCrushing, // UHPCGirderCrushingSolution is controlling
+      GirderConcreteLocalization, // UHPCCrackLocalizationSolution is controlling
+      ReinforcementFracture // ReinforcementFractureSolution is controlling
+   };
+   ControllingType Controlling{ ControllingType::ConcreteCrushing };
+   void GetControllingSolution(IMomentCapacitySolution** ppSolution)
+   {
+      switch (Controlling)
+      {
+      case MOMENTCAPACITYDETAILS::ControllingType::ConcreteCrushing:
+         ConcreteCrushingSolution.CopyTo(ppSolution);
+         break;
+
+      case MOMENTCAPACITYDETAILS::ControllingType::GirderConcreteCrushing:
+         UHPCGirderCrushingSolution.CopyTo(ppSolution);
+         break;
+
+      case MOMENTCAPACITYDETAILS::ControllingType::GirderConcreteLocalization:
+         UHPCCrackLocalizationSolution.CopyTo(ppSolution);
+         break;
+
+      case MOMENTCAPACITYDETAILS::ControllingType::ReinforcementFracture:
+         ReinforcementFractureSolution.CopyTo(ppSolution);
+         break;
+
+      default:
+         ASSERT(false); // is there a new controlling type?
+         break;
+      }
+   }
+
+
+   bool bDevelopmentLengthReducedStress{ false };// when true, the section was analyzed with development length reduced stress capability of the strands
 };
 inline constexpr auto operator+(MOMENTCAPACITYDETAILS::ControllingType t) noexcept { return std::underlying_type<MOMENTCAPACITYDETAILS::ControllingType>::type(t); }
 
@@ -209,8 +241,10 @@ struct SHEARCAPACITYDETAILS
    Float64 VptSegment; // vertical component of prestress due to segment tendons
    Float64 VptGirder; // vertical component of prestress due to girder tendons
    Float64 Phi;
-   Float64 dv;
    Float64 bv;
+   Float64 dv;
+   Float64 dv_uhpc; // dv portion of UHPC beams (see GS 1.7.3.3)
+   Float64 controlling_uhpc_dv; // controlling value of dv per GS 1.7.2.8 (used for Vuhpc and shear stress)
    Float64 fpeps;
    Float64 fpeptSegment; // average effective prestress in segment tendons
    Float64 fpeptGirder; // average effective prestress in girder tendons
@@ -257,8 +291,17 @@ struct SHEARCAPACITYDETAILS
    Float64 sxe; // [E5.8.3.4.2-5]
    Float64 sxe_tbl;
    Float64 Theta;
-   Float64 FiberStress;// coefficient for compute the contribution of fibers in UHPC to the shear capacity (taken as 0.75 ksi for now)
-   Float64 Vc; // Shear strength of concrete (= Vcf for PCI UHPC)
+   Float64 fv; // stress in stirrups (this parameter is for FHWA UHPC, but is set equal to fy for other concrete types so calculation of Vs works more generically)
+   Float64 e2; // FHWA UHPC
+   Float64 ev; // FHWA UHPC
+   Float64 etcr; // FHWA UHPC
+   Float64 et_loc; // FHWA UHPC
+   Float64 ft_loc; // FHWA UHPC
+   Float64 rho; // FHWA UHPC
+   Float64 FiberStress;// coefficient for compute the contribution of fibers in PCI UHPC to the shear capacity (taken as 0.75 ksi for now)
+                       // also taken as gamma_u*ft,loc for FHWA UHPC
+   Float64 Vuhpc; // Value of Vuhpc per GS Eq. 1.7.3.3-3
+   Float64 Vc; // Shear strength of concrete (= Vcf for PCI UHPC, Vuhpc for FHWA UHPC)
    Float64 Vs;
    Float64 Vn1;  // [Eqn 5.8.3.3-1]
    Float64 Vn2;  // [Eqn 5.8.3.3-2]
@@ -266,7 +309,7 @@ struct SHEARCAPACITYDETAILS
    Float64 pVn;  // Factored nominal shear resistance
    Float64 VuLimit; // Limiting Vu where stirrups are required [Eqn 5.8.2.4-1]
    bool bStirrupsReqd; // If true, stirrups and/or Vf from fibers is required LRFD 5.7.2.3-1
-   Int16 Equation; // Equation used to comupte ex (Only applicable after LRFD 1999)
+   Int16 Equation; // Equation used to compute ex (Only applicable after LRFD 1999)
    Float64 vfc_tbl;
    Float64 ex_tbl;
 
@@ -285,7 +328,7 @@ struct SHEARCAPACITYDETAILS
    // LRFD 9th Edition
    Float64 bw; // web width without any deductions
    Float64 duct_diameter; // diameter of largest duct in section
-   Float64 delta; // duct diamter correction factor
+   Float64 delta; // duct diameter correction factor
    Float64 lambda_duct; // shear strength reduction factor
 
 };
@@ -423,6 +466,8 @@ struct CREEPCOEFFICIENTDETAILS
    Float64 khc;
    //Float64 kf; // using the kf above
    Float64 ktd;
+
+   Float64 kl; // time factor
 
    Float64 K1, K2; // 2005 and later, from NCHRP Report 496
 };

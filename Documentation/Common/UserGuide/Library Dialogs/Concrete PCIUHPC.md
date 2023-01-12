@@ -11,4 +11,4 @@ Autogenous Shrinkage | Amount of autogenous (chemical) shrinkage in milli-strain
 Post-cure thermal treatment | Check this box if the concrete is subjected to post-cure thermal treatment.
 
 
-Post-cure thermal treatment is defined as heating a UHPC element to a temperatur of 194 F for a period of 48 hours starting after the concrete has reached and age of 24 hours and before it has reached 14 days.
+Post-cure thermal treatment is defined as heating a UHPC element to a temperature of 194 F for a period of 48 hours starting after the concrete has reached and age of 24 hours and before it has reached 14 days.

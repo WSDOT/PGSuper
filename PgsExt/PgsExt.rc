@@ -11,8 +11,7 @@
 #include <WBFLGrid.h>
 #if !defined _NOGRID
 #include "grid\gxresrc.h"
-#endif
-
+#endif
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -159,7 +158,7 @@ BEGIN
     CONTROL         "Mod. Elasticity, Ec",IDC_MOD_E,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,81,74,10
     EDITTEXT        IDC_EC,135,78,55,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_EC_UNIT,196,81,28,8
-    LTEXT           "Max. Aggregate Size",IDC_STATIC,22,96,66,8
+    LTEXT           "Max. Aggregate Size",IDC_AGG_SIZE_LABEL,22,96,66,8
     EDITTEXT        IDC_AGG_SIZE,135,94,55,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
     LTEXT           "Static",IDC_AGG_SIZE_UNIT,196,98,28,8
     PUSHBUTTON      "Copy from library...",IDC_COPY_MATERIAL,42,117,141,13
@@ -395,6 +394,32 @@ BEGIN
     CONTROL         "Post-cure thermal treatment",IDC_PCTT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,27,91,107,10
 END
 
+IDD_FHWAUHPC_CONCRETE DIALOGEX 0, 0, 309, 176
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "FHWA-UHPC"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Initial effective cracking strength (ft,cri)",IDC_STATIC,25,34,129,8
+    EDITTEXT        IDC_FT_CRI,159,31,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_FT_CRI_UNIT,202,33,19,8
+    LTEXT           "Design effective cracking strength (ft,cr)",IDC_STATIC,25,49,132,8
+    EDITTEXT        IDC_FT_CR,159,46,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_FT_CR_UNIT,202,51,19,8
+    LTEXT           "Crack localization strength (ft,loc)",IDC_STATIC,25,65,109,8
+    EDITTEXT        IDC_FT_LOC,159,62,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_FT_LOC_UNIT,202,65,19,8
+    LTEXT           "Crack localization strain (et,loc)",IDC_STATIC,25,82,101,8
+    EDITTEXT        IDC_ET_LOC,159,78,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Compressive stress-strain response reduction factor (alpha.u)",IDC_STATIC,26,114,200,8
+    EDITTEXT        IDC_ALPHA_U,229,112,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    CONTROL         "Experimentally derived ultimate compressive strain (e.cu)",IDC_ECU_CHECK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,27,135,199,10
+    EDITTEXT        IDC_ECU,227,133,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Fiber Length",IDC_FIBER_LABEL,28,154,40,8
+    EDITTEXT        IDC_FIBER,166,151,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_FIBER_UNIT,210,153,19,8
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -555,6 +580,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 124
     END
+
+    IDD_FHWAUHPC_CONCRETE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 302
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 169
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -590,6 +623,11 @@ BEGIN
 END
 
 IDD_PCIUHPC_CONCRETE AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_FHWAUHPC_CONCRETE AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
@@ -635,8 +673,7 @@ LANGUAGE 9, 1
 #endif
 #if !defined _NOGRID
 #include "grid\gxres.rc"
-#endif
-
+#endif
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

@@ -87,7 +87,7 @@ interface IAllowableStrandStress : IUnknown
    // Returns the allowable strand stress immediately after prestress transfer (release)
    virtual Float64 GetAllowableAfterXfer(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) const = 0;
 
-   // Returns the allowable strand stress after all losses have occured
+   // Returns the allowable strand stress after all losses have occurred
    virtual Float64 GetAllowableAfterLosses(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) const = 0;
 };
 
@@ -213,9 +213,12 @@ interface IAllowableConcreteStress : IUnknown
    virtual void GetDeckAllowableTensionStressCoefficient(const pgsPointOfInterest& poi, const StressCheckTask& task,bool bWithBondedReinforcement,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) const = 0;
 
    // Returns true if the stress check is applicable to this interval, limit state, and stress type
+   virtual bool IsStressCheckApplicable(const CSegmentKey& segmentKey, const StressCheckTask& task) const = 0;
+
+   // Returns true if the stress check is applicable to any segment in the girder
    virtual bool IsStressCheckApplicable(const CGirderKey& girderKey, const StressCheckTask& task) const = 0;
 
-   // Returns true if the the allowable tension stress in the specified interval has a "with bonded reinforcement"
+   // Returns true if the allowable tension stress in the specified interval has a "with bonded reinforcement"
    // option. If bInPTZ is true, the result is for the precompressed tensile zone, otherwise it is for areas other than the
    // precompressed tensile zone. If bSegment is true the result is for a precast segment and segmentKey is for that segment
    // otherwise it is for a closure joint and segmentKey is the closure key
@@ -237,7 +240,12 @@ interface IAllowableConcreteStress : IUnknown
    virtual Float64 GetPrincipalTensileStressFcThreshold() const = 0;
    virtual Float64 GetPrincipalTensileStressRequiredConcreteStrength(const pgsPointOfInterest& poi, Float64 stress) const = 0;
 
-   virtual Float64 GetAllowableUHPCTensionStressLimitCoefficient() const = 0;
+   virtual Float64 GetAllowablePCIUHPCTensionStressLimitCoefficient() const = 0;
+   virtual Float64 GetAllowableFHWAUHPCTensionStressLimitCoefficient() const = 0;
+   virtual Float64 GetAllowableFHWAUHPCFatigueTensionStressLimitModifier() const = 0;
+
+   virtual Float64 GetRequiredConcreteStrength(const pgsPointOfInterest& poi, pgsTypes::StressLocation stressLocation, Float64 stressDemand, const StressCheckTask& task, bool bIsInPTZ) const = 0;
+   virtual std::_tstring GetAllowableStressParameterName(pgsTypes::StressType stressType, pgsTypes::ConcreteType concreteType) const = 0;
 };
 
 

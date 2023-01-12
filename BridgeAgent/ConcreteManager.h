@@ -79,7 +79,6 @@ public:
    Float64 GetDeckStrengthDensity() const;
    Float64 GetDeckWeightDensity() const;
    Float64 GetDeckMaxAggrSize() const;
-   Float64 GetDeckConcreteFiberLength() const;
    Float64 GetDeckEccK1() const;
    Float64 GetDeckEccK2() const;
    Float64 GetDeckCreepK1() const;
@@ -146,6 +145,10 @@ public:
    Float64 GetSegmentAgingCoefficient(const CSegmentKey& segmentKey,Float64 timeOfLoading) const;
    Float64 GetSegmentConcreteFirstCrackingStrength(const CSegmentKey& segmentKey) const;
    Float64 GetSegmentAutogenousShrinkage(const CSegmentKey& segmentKey) const;
+   Float64 GetSegmentConcreteInitialEffectiveCrackingStrength(const CSegmentKey& segmentKey) const;
+   Float64 GetSegmentConcreteDesignEffectiveCrackingStrength(const CSegmentKey& segmentKey) const;
+   Float64 GetSegmentConcreteCrackLocalizationStrength(const CSegmentKey& segmentKey) const;
+   Float64 GetSegmentConcreteCrackLocalizationStrain(const CSegmentKey& segmentKey) const;
    const std::unique_ptr<WBFL::Materials::ConcreteBase>& GetSegmentConcrete(const CSegmentKey& segmentKey) const;
 
    Float64 GetClosureJointCastingTime(const CClosureKey& closureKey) const;
@@ -159,7 +162,6 @@ public:
    std::unique_ptr<WBFL::Materials::ConcreteBaseCreepDetails> GetClosureJointCreepCoefficientDetails(const CClosureKey& closureKey,Float64 t,Float64 tla) const;
    Float64 GetClosureJointAgingCoefficient(const CClosureKey& closureKey,Float64 timeOfLoading) const;
    const std::unique_ptr<WBFL::Materials::ConcreteBase>& GetClosureJointConcrete(const CClosureKey& closureKey) const;
-   Float64 GetClosureJointConcreteFirstCrackingStrength(const CClosureKey& closureKey) const;
    Float64 GetClosureJointAutogenousShrinkage(const CClosureKey& closureKey) const;
 
    Float64 GetRailingSystemCastingTime(pgsTypes::TrafficBarrierOrientation orientation) const;

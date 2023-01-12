@@ -418,6 +418,12 @@
     <ClCompile Include="SplittingCheckEngineer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FHWAUHPCConcretePage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ReinforcementFatigueArtifact.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\PgsExt\AASHTOConcretePage.h">
@@ -850,6 +856,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\PgsExt\DevelopmentLength.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\PgsExt\FHWAUHPCConcretePage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\PgsExt\ReinforcementFatigueArtifact.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

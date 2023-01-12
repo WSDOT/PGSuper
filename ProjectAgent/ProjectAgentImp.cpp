@@ -11830,7 +11830,7 @@ void CProjectAgentImp::DealWithGirderLibraryChanges(bool fromLibrary)
             ValidateStrands(segmentKey,pSegment,fromLibrary);
    
             // make sure debond data is consistent with design algorithim
-            Float64 xfer_length = pPrestress->GetTransferLength(segmentKey,pgsTypes::Straight); // this is related to debonding so we assume only straight strands are debonded
+            Float64 xfer_length = pPrestress->GetTransferLength(segmentKey,pgsTypes::Straight, pgsTypes::tltMinimum); // this is related to debonding so we assume only straight strands are debonded
             Float64 ndb, minDist;
             bool bMinDist;
             pGdrEntry->GetMinDistanceBetweenDebondSections(&ndb, &bMinDist, &minDist);

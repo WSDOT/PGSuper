@@ -129,7 +129,7 @@ m_TempStrandRemovalTensStress(WBFL::Units::ConvertToSysUnits(0.19,WBFL::Units::M
 m_TempStrandRemovalTensStressWithRebar(WBFL::Units::ConvertToSysUnits(0.24,WBFL::Units::Measure::SqrtKSI)),
 m_TempStrandRemovalDoTensStressMax(false),
 m_TempStrandRemovalTensStressMax(WBFL::Units::ConvertToSysUnits(0.2,WBFL::Units::Measure::KSI)),
-m_bCheckTemporaryStresses(true), // true is consistant with the original default value
+m_bCheckTemporaryStresses(true), // true is consistent with the original default value
 m_Bs1CompStress(0.6),
 m_Bs1TensStress(WBFL::Units::ConvertToSysUnits(0.19,WBFL::Units::Measure::SqrtKSI)),
 m_Bs1DoTensStressMax(false),
@@ -368,25 +368,38 @@ m_bUseImpactForBearingReactions(false)
    m_PhiFlexureTensionSpliced[pgsTypes::PCI_UHPC] = 1.00;
    m_PhiFlexureCompression[pgsTypes::PCI_UHPC]    = 0.75;
 
+   // These don't make sense since FHWA UHPC uses a variable phi based on ductility ratio.
+   // The variable phi does have min/max values so this might be able to be used for that in the future
+   // At this time, these are just placeholder values. There aren't any UI elements to modify them
+   // and they aren't used in the main program.
+   m_PhiFlexureTensionPS[pgsTypes::FHWA_UHPC] = 0.90;
+   m_PhiFlexureTensionRC[pgsTypes::FHWA_UHPC] = 0.90;
+   m_PhiFlexureTensionSpliced[pgsTypes::FHWA_UHPC] = 1.00;
+   m_PhiFlexureCompression[pgsTypes::FHWA_UHPC] = 0.75;
+
    m_PhiShear[pgsTypes::Normal]          = 0.9;
    m_PhiShear[pgsTypes::SandLightweight] = 0.7;
    m_PhiShear[pgsTypes::AllLightweight]  = 0.7;
-   m_PhiShear[pgsTypes::PCI_UHPC]        = 0.9;
+   m_PhiShear[pgsTypes::PCI_UHPC] = 0.9;
+   m_PhiShear[pgsTypes::FHWA_UHPC] = 0.9;
 
    m_PhiShearDebonded[pgsTypes::Normal]          = 0.85; // set defaults to 8th edition
    m_PhiShearDebonded[pgsTypes::SandLightweight] = 0.85;
    m_PhiShearDebonded[pgsTypes::AllLightweight]  = 0.85;
-   m_PhiShearDebonded[pgsTypes::PCI_UHPC]        = 0.85;
+   m_PhiShearDebonded[pgsTypes::PCI_UHPC]        = 0.9; // PCI UHPC has 0.85, but this is going to get sunset, so we are going to set it to the FHWA value
+   m_PhiShearDebonded[pgsTypes::FHWA_UHPC] = 0.9;
 
    m_PhiClosureJointFlexure[pgsTypes::Normal]          = 0.95;
    m_PhiClosureJointFlexure[pgsTypes::SandLightweight] = 0.90;
    m_PhiClosureJointFlexure[pgsTypes::AllLightweight]  = 0.90;
-   m_PhiClosureJointFlexure[pgsTypes::PCI_UHPC]        = 0.95;
+   m_PhiClosureJointFlexure[pgsTypes::PCI_UHPC] = 0.95;
+   m_PhiClosureJointFlexure[pgsTypes::FHWA_UHPC] = 0.95; // FHWA UHPC doesn't have a fixed phi for flexure
 
    m_PhiClosureJointShear[pgsTypes::Normal]          = 0.90;
    m_PhiClosureJointShear[pgsTypes::SandLightweight] = 0.70;
    m_PhiClosureJointShear[pgsTypes::AllLightweight]  = 0.70;
-   m_PhiClosureJointShear[pgsTypes::PCI_UHPC]        = 0.90;
+   m_PhiClosureJointShear[pgsTypes::PCI_UHPC] = 0.90;
+   m_PhiClosureJointShear[pgsTypes::FHWA_UHPC] = 0.90;
 
 
    m_MaxSlabFc[pgsTypes::Normal]             = WBFL::Units::ConvertToSysUnits(6.0,WBFL::Units::Measure::KSI);
@@ -413,13 +426,22 @@ m_bUseImpactForBearingReactions(false)
    m_MaxConcreteUnitWeight[pgsTypes::SandLightweight] = WBFL::Units::ConvertToSysUnits(125.,WBFL::Units::Measure::LbfPerFeet3);
    m_MaxConcreteAggSize[pgsTypes::SandLightweight]    = WBFL::Units::ConvertToSysUnits(1.5,WBFL::Units::Measure::Inch);
 
-   m_MaxSlabFc[pgsTypes::PCI_UHPC] = WBFL::Units::ConvertToSysUnits(6.0, WBFL::Units::Measure::KSI);
-   m_MaxSegmentFci[pgsTypes::PCI_UHPC] = WBFL::Units::ConvertToSysUnits(10.0, WBFL::Units::Measure::KSI);
-   m_MaxSegmentFc[pgsTypes::PCI_UHPC] = WBFL::Units::ConvertToSysUnits(20.0, WBFL::Units::Measure::KSI);
-   m_MaxClosureFci[pgsTypes::PCI_UHPC] = WBFL::Units::ConvertToSysUnits(6.0, WBFL::Units::Measure::KSI);
-   m_MaxClosureFc[pgsTypes::PCI_UHPC] = WBFL::Units::ConvertToSysUnits(8.0, WBFL::Units::Measure::KSI);
-   m_MaxConcreteUnitWeight[pgsTypes::PCI_UHPC] = WBFL::Units::ConvertToSysUnits(165., WBFL::Units::Measure::LbfPerFeet3);
-   m_MaxConcreteAggSize[pgsTypes::PCI_UHPC] = WBFL::Units::ConvertToSysUnits(1.5, WBFL::Units::Measure::Inch);
+   // Not using these limits for UHPCs yet
+   //m_MaxSlabFc[pgsTypes::PCI_UHPC] = WBFL::Units::ConvertToSysUnits(6.0, WBFL::Units::Measure::KSI);
+   //m_MaxSegmentFci[pgsTypes::PCI_UHPC] = WBFL::Units::ConvertToSysUnits(10.0, WBFL::Units::Measure::KSI);
+   //m_MaxSegmentFc[pgsTypes::PCI_UHPC] = WBFL::Units::ConvertToSysUnits(20.0, WBFL::Units::Measure::KSI);
+   //m_MaxClosureFci[pgsTypes::PCI_UHPC] = WBFL::Units::ConvertToSysUnits(6.0, WBFL::Units::Measure::KSI);
+   //m_MaxClosureFc[pgsTypes::PCI_UHPC] = WBFL::Units::ConvertToSysUnits(8.0, WBFL::Units::Measure::KSI);
+   //m_MaxConcreteUnitWeight[pgsTypes::PCI_UHPC] = WBFL::Units::ConvertToSysUnits(165., WBFL::Units::Measure::LbfPerFeet3);
+   //m_MaxConcreteAggSize[pgsTypes::PCI_UHPC] = WBFL::Units::ConvertToSysUnits(1.5, WBFL::Units::Measure::Inch);
+
+   //m_MaxSlabFc[pgsTypes::FHWA_UHPC] = WBFL::Units::ConvertToSysUnits(6.0, WBFL::Units::Measure::KSI);
+   //m_MaxSegmentFci[pgsTypes::FHWA_UHPC] = WBFL::Units::ConvertToSysUnits(14.0, WBFL::Units::Measure::KSI);
+   //m_MaxSegmentFc[pgsTypes::FHWA_UHPC] = WBFL::Units::ConvertToSysUnits(20.0, WBFL::Units::Measure::KSI);
+   //m_MaxClosureFci[pgsTypes::FHWA_UHPC] = WBFL::Units::ConvertToSysUnits(6.0, WBFL::Units::Measure::KSI);
+   //m_MaxClosureFc[pgsTypes::FHWA_UHPC] = WBFL::Units::ConvertToSysUnits(8.0, WBFL::Units::Measure::KSI);
+   //m_MaxConcreteUnitWeight[pgsTypes::FHWA_UHPC] = WBFL::Units::ConvertToSysUnits(165., WBFL::Units::Measure::LbfPerFeet3);
+   //m_MaxConcreteAggSize[pgsTypes::FHWA_UHPC] = WBFL::Units::ConvertToSysUnits(1.5, WBFL::Units::Measure::Inch);
 
    m_DoCheckStirrupSpacingCompatibility = true;
    m_bCheckSag = true;
@@ -982,11 +1004,13 @@ bool SpecLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
       pSave->EndUnit(); // ResistanceFactor
 
       // added in version 64
-      pSave->BeginUnit(_T("ResistanceFactorDebonded"),1.0);
+      pSave->BeginUnit(_T("ResistanceFactorDebonded"),2.0);
          pSave->Property(_T("Normal"),m_PhiShearDebonded[pgsTypes::Normal]);
          pSave->Property(_T("AllLightweight"),m_PhiShearDebonded[pgsTypes::AllLightweight]);
          pSave->Property(_T("SandLightweight"),m_PhiShearDebonded[pgsTypes::SandLightweight]);
-      pSave->EndUnit(); // ResistanceFactorDebonded
+         pSave->Property(_T("PCI_UHPC"), m_PhiShearDebonded[pgsTypes::PCI_UHPC]); // added v2
+         pSave->Property(_T("FHWA_UHPC"), m_PhiShearDebonded[pgsTypes::FHWA_UHPC]); // added v2
+         pSave->EndUnit(); // ResistanceFactorDebonded
 
       // Added ClosureJointResistanceFactor in version 2 of Shear data block
       pSave->BeginUnit(_T("ClosureJointResistanceFactor"),1.0);
@@ -4178,6 +4202,8 @@ bool SpecLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
                THROW_LOAD(InvalidFileFormat,pLoad);
             }
 
+            Float64 data_block_version = pLoad->GetVersion();
+
             if (!pLoad->Property(_T("Normal"), &m_PhiShearDebonded[pgsTypes::Normal]))
             {
                THROW_LOAD(InvalidFileFormat, pLoad);
@@ -4191,6 +4217,20 @@ bool SpecLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
             if (!pLoad->Property(_T("SandLightweight"), &m_PhiShearDebonded[pgsTypes::SandLightweight]))
             {
                THROW_LOAD(InvalidFileFormat, pLoad);
+            }
+
+            if (1 < data_block_version)
+            {
+               // added version 2 of this data block
+               if (!pLoad->Property(_T("PCI_UHPC"), &m_PhiShearDebonded[pgsTypes::PCI_UHPC]))
+               {
+                  THROW_LOAD(InvalidFileFormat, pLoad);
+               }
+
+               if (!pLoad->Property(_T("FHWA_UHPC"), &m_PhiShearDebonded[pgsTypes::FHWA_UHPC]))
+               {
+                  THROW_LOAD(InvalidFileFormat, pLoad);
+               }
             }
 
             if ( !pLoad->EndUnit() ) // ResistanceFactorDebonded
@@ -5346,12 +5386,13 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
    }
 
    bool bConcreteLimits = true;
-   for ( int i = 0; i < pgsTypes::ConcreteTypeCount && bConcreteLimits == true; i++ )
+   auto count = m_MaxSlabFc.size();
+   for ( int i = 0; i < count && bConcreteLimits == true; i++ )
    {
       pgsTypes::ConcreteType concreteType = pgsTypes::ConcreteType(i);
       if ( concreteType == pgsTypes::AllLightweight && lrfdVersionMgr::SeventhEditionWith2016Interims <= GetSpecificationType() )
       {
-         // All Lightweight not used after LRFD2016, there is only Lightweight and thos parameters are stored with pgsTypes::SandLightweight
+         // All Lightweight not used after LRFD2016, there is only Lightweight and those parameters are stored with pgsTypes::SandLightweight
          continue;
       }
 
@@ -6092,13 +6133,13 @@ void SpecLibraryEntry::SetTurningRadius(Float64 r)
 
 void SpecLibraryEntry::SetHaulingModulusOfRuptureFactor(Float64 fr, pgsTypes::ConcreteType type)
 {
-   ATLASSERT(type != pgsTypes::PCI_UHPC);
+   ATLASSERT(!IsUHPC(type));
    m_HaulingModulusOfRuptureCoefficient[type] = fr;
 }
 
 Float64 SpecLibraryEntry::GetHaulingModulusOfRuptureFactor(pgsTypes::ConcreteType type) const
 {
-   if (type == pgsTypes::PCI_UHPC)
+   if (IsUHPC(type))
       return 0;
 
    return m_HaulingModulusOfRuptureCoefficient[type];
@@ -6106,13 +6147,13 @@ Float64 SpecLibraryEntry::GetHaulingModulusOfRuptureFactor(pgsTypes::ConcreteTyp
 
 void SpecLibraryEntry::SetLiftingModulusOfRuptureFactor(Float64 fr,pgsTypes::ConcreteType type)
 {
-   ATLASSERT(type != pgsTypes::PCI_UHPC);
+   ATLASSERT(!IsUHPC(type));
    m_LiftingModulusOfRuptureCoefficient[type] = fr;
 }
 
 Float64 SpecLibraryEntry::GetLiftingModulusOfRuptureFactor(pgsTypes::ConcreteType type) const
 {
-   if (type == pgsTypes::PCI_UHPC)
+   if (IsUHPC(type))
       return 0;
 
    return m_LiftingModulusOfRuptureCoefficient[type];
@@ -7052,95 +7093,109 @@ pgsTypes::AnalysisType SpecLibraryEntry::GetAnalysisType() const
 
 void SpecLibraryEntry::SetFlexureModulusOfRuptureCoefficient(pgsTypes::ConcreteType type,Float64 fr)
 {
-   ATLASSERT(type != pgsTypes::PCI_UHPC);
+   ATLASSERT(!IsUHPC(type));
    m_FlexureModulusOfRuptureCoefficient[type] = fr;
 }
 
 Float64 SpecLibraryEntry::GetFlexureModulusOfRuptureCoefficient(pgsTypes::ConcreteType type) const
 {
-   ATLASSERT(type != pgsTypes::PCI_UHPC);
+   ATLASSERT(!IsUHPC(type));
    return m_FlexureModulusOfRuptureCoefficient[type];
 }
 
 void SpecLibraryEntry::SetShearModulusOfRuptureCoefficient(pgsTypes::ConcreteType type,Float64 fr)
 {
-   ATLASSERT(type != pgsTypes::PCI_UHPC);
+   ATLASSERT(!IsUHPC(type));
    m_ShearModulusOfRuptureCoefficient[type] = fr;
 }
 
 Float64 SpecLibraryEntry::GetShearModulusOfRuptureCoefficient(pgsTypes::ConcreteType type) const
 {
-   ATLASSERT(type != pgsTypes::PCI_UHPC);
+   ATLASSERT(!IsUHPC(type));
    return m_ShearModulusOfRuptureCoefficient[type];
 }
 
 void SpecLibraryEntry::SetMaxSlabFc(pgsTypes::ConcreteType type,Float64 fc)
 {
+   ATLASSERT(!IsUHPC(type));
    m_MaxSlabFc[type] = fc;
 }
 
 Float64 SpecLibraryEntry::GetMaxSlabFc(pgsTypes::ConcreteType type) const
 {
+   ATLASSERT(!IsUHPC(type));
    return m_MaxSlabFc[type];
 }
 
 void SpecLibraryEntry::SetMaxSegmentFc(pgsTypes::ConcreteType type,Float64 fc)
 {
+   ATLASSERT(!IsUHPC(type));
    m_MaxSegmentFc[type] = fc;
 }
 
 Float64 SpecLibraryEntry::GetMaxSegmentFc(pgsTypes::ConcreteType type) const
 {
+   ATLASSERT(!IsUHPC(type));
    return m_MaxSegmentFc[type];
 }
 
 void SpecLibraryEntry::SetMaxSegmentFci(pgsTypes::ConcreteType type,Float64 fci)
 {
+   ATLASSERT(!IsUHPC(type));
    m_MaxSegmentFci[type] = fci;
 }
 
 Float64 SpecLibraryEntry::GetMaxSegmentFci(pgsTypes::ConcreteType type) const
 {
+   ATLASSERT(!IsUHPC(type));
    return m_MaxSegmentFci[type];
 }
 
 void SpecLibraryEntry::SetMaxClosureFc(pgsTypes::ConcreteType type,Float64 fc)
 {
+   ATLASSERT(!IsUHPC(type));
    m_MaxClosureFc[type] = fc;
 }
 
 Float64 SpecLibraryEntry::GetMaxClosureFc(pgsTypes::ConcreteType type) const
 {
+   ATLASSERT(!IsUHPC(type));
    return m_MaxClosureFc[type];
 }
 
 void SpecLibraryEntry::SetMaxClosureFci(pgsTypes::ConcreteType type,Float64 fci)
 {
+   ATLASSERT(!IsUHPC(type));
    m_MaxClosureFci[type] = fci;
 }
 
 Float64 SpecLibraryEntry::GetMaxClosureFci(pgsTypes::ConcreteType type) const
 {
+   ATLASSERT(!IsUHPC(type));
    return m_MaxClosureFci[type];
 }
 
 void SpecLibraryEntry::SetMaxConcreteUnitWeight(pgsTypes::ConcreteType type,Float64 wc)
 {
+   ATLASSERT(!IsUHPC(type));
    m_MaxConcreteUnitWeight[type] = wc;
 }
 
 Float64 SpecLibraryEntry::GetMaxConcreteUnitWeight(pgsTypes::ConcreteType type) const
 {
+   ATLASSERT(!IsUHPC(type));
    return m_MaxConcreteUnitWeight[type];
 }
 
 void SpecLibraryEntry::SetMaxConcreteAggSize(pgsTypes::ConcreteType type,Float64 agg)
 {
+   ATLASSERT(!IsUHPC(type));
    m_MaxConcreteAggSize[type] = agg;
 }
 
 Float64 SpecLibraryEntry::GetMaxConcreteAggSize(pgsTypes::ConcreteType type) const
 {
+   ATLASSERT(!IsUHPC(type));
    return m_MaxConcreteAggSize[type];
 }
 
@@ -7529,6 +7584,7 @@ void SpecLibraryEntry::SetDuctDiameterRatio(Float64 dr)
 
 void SpecLibraryEntry::SetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64 phiTensionPS,Float64 phiTensionRC,Float64 phiTensionSpliced,Float64 phiCompression)
 {
+   ATLASSERT(type != pgsTypes::FHWA_UHPC); // the values for FHWA UHPC are just placeholders at this time... there isn't a UI to modify them and they aren't used in the main program
    m_PhiFlexureTensionPS[type]      = phiTensionPS;
    m_PhiFlexureTensionRC[type]      = phiTensionRC;
    m_PhiFlexureTensionSpliced[type] = phiTensionSpliced;
@@ -7537,6 +7593,7 @@ void SpecLibraryEntry::SetFlexureResistanceFactors(pgsTypes::ConcreteType type,F
 
 void SpecLibraryEntry::GetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64* phiTensionPS,Float64* phiTensionRC,Float64* phiTensionSpliced,Float64* phiCompression) const
 {
+   ATLASSERT(type != pgsTypes::FHWA_UHPC); // the values for FHWA UHPC are just placeholders at this time... there isn't a UI to modify them and they aren't used in the main program
    *phiTensionPS      = m_PhiFlexureTensionPS[type];
    *phiTensionRC      = m_PhiFlexureTensionRC[type];
    *phiTensionSpliced = m_PhiFlexureTensionSpliced[type];

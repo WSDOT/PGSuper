@@ -82,12 +82,11 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
-   GET_IFACE2(pBroker, ISegmentData, pSegmentData);
-   bool bUHPC = pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC ? true : false;
-   bool bPCTT = (bUHPC ? pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.bPCTT : false);
+   GET_IFACE2(pBroker,IMaterials, pMaterials);
+   bool bIsUHPC = pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC ? true : false;
 
    // Create and configure the table
-   ColumnIndexType numColumns = 13;
+   ColumnIndexType numColumns = bIsUHPC ? 17 : 13;
    CElasticGainDueToDeckShrinkageTable* table = new CElasticGainDueToDeckShrinkageTable( numColumns, pDisplayUnits );
    rptStyleManager::ConfigureTable(table);
 
@@ -116,77 +115,65 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
       *pParagraph << rptRcImage(strImagePath + _T("Delta_FpSS_Transformed.png")) << rptNewLine;
    }
 
-   if (bUHPC)
+   if (pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2006Interims)
    {
-      if (bPCTT)
-         *pParagraph << rptRcImage(strImagePath + _T("DeckCreepShrinkage_UHPC_PCTT.png")) << rptNewLine;
-      else
-         *pParagraph << rptRcImage(strImagePath + _T("DeckCreepShrinkage_UHPC.png")) << rptNewLine;
-
-      *pParagraph << rptRcImage(strImagePath + _T("UHPC_Factors.png")) << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + _T("DeckCreepShrinkage.png")) << rptNewLine;
    }
    else
    {
-      if (pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2006Interims)
-      {
-         *pParagraph << rptRcImage(strImagePath + _T("DeckCreepShrinkage.png")) << rptNewLine;
-      }
-      else
-      {
-         *pParagraph << rptRcImage(strImagePath + _T("DeckCreepShrinkage_2007.png")) << rptNewLine;
-      }
+      *pParagraph << rptRcImage(strImagePath + _T("DeckCreepShrinkage_2007.png")) << rptNewLine;
+   }
 
-      if (pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims)
-      {
-         if (IS_SI_UNITS(pDisplayUnits))
-         {
-            *pParagraph << rptRcImage(strImagePath + _T("KvsEqn-SI.png")) << rptNewLine;
-         }
-         else
-         {
-            *pParagraph << rptRcImage(strImagePath + _T("KvsEqn-US.png")) << rptNewLine;
-         }
-      }
-      else if (pSpecEntry->GetSpecificationType() == lrfdVersionMgr::ThirdEditionWith2006Interims)
-      {
-         if (IS_SI_UNITS(pDisplayUnits))
-         {
-            *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2006-SI.png")) << rptNewLine;
-         }
-         else
-         {
-            *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2006-US.png")) << rptNewLine;
-         }
-      }
-      else
-      {
-         if (IS_SI_UNITS(pDisplayUnits))
-         {
-            *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2007-SI.png")) << rptNewLine;
-         }
-         else
-         {
-            *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2007-US.png")) << rptNewLine;
-         }
-      }
-
-      *pParagraph << rptRcImage(strImagePath + _T("HumidityFactor.png")) << rptNewLine;
-
+   if (pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims)
+   {
       if (IS_SI_UNITS(pDisplayUnits))
       {
-         ATLASSERT(pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims);
-         *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_Deck_SI.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn-SI.png")) << rptNewLine;
       }
       else
       {
-         if (pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims)
-         {
-            *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_Deck_US.png")) << rptNewLine;
-         }
-         else
-         {
-            *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_Deck_US2015.png")) << rptNewLine;
-         }
+         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn-US.png")) << rptNewLine;
+      }
+   }
+   else if (pSpecEntry->GetSpecificationType() == lrfdVersionMgr::ThirdEditionWith2006Interims)
+   {
+      if (IS_SI_UNITS(pDisplayUnits))
+      {
+         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2006-SI.png")) << rptNewLine;
+      }
+      else
+      {
+         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2006-US.png")) << rptNewLine;
+      }
+   }
+   else
+   {
+      if (IS_SI_UNITS(pDisplayUnits))
+      {
+         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2007-SI.png")) << rptNewLine;
+      }
+      else
+      {
+         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2007-US.png")) << rptNewLine;
+      }
+   }
+
+   *pParagraph << rptRcImage(strImagePath + _T("HumidityFactor.png")) << rptNewLine;
+
+   if (IS_SI_UNITS(pDisplayUnits))
+   {
+      ATLASSERT(pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims);
+      *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_Deck_SI.png")) << rptNewLine;
+   }
+   else
+   {
+      if (pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims)
+      {
+         *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_Deck_US.png")) << rptNewLine;
+      }
+      else
+      {
+         *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_Deck_US2015.png")) << rptNewLine;
       }
    }
 
@@ -200,6 +187,21 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
    {
       *pParagraph << rptRcImage(strImagePath + _T("SlabShrinkageStress_Ftop_Transformed.png")) << rptNewLine;
       *pParagraph << rptRcImage(strImagePath + _T("SlabShrinkageStress_Fbot_Transformed.png")) << rptNewLine;
+   }
+
+   if (bIsUHPC)
+   {
+      *pParagraph << _T("Deck stresses due to deck shrinkage") << rptNewLine;
+      if (spMode == pgsTypes::spmGross)
+      {
+         *pParagraph << rptRcImage(strImagePath + _T("SlabShrinkageStress_FtopDeck_Gross.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("SlabShrinkageStress_FbotDeck_Gross.png")) << rptNewLine;
+      }
+      else
+      {
+         *pParagraph << rptRcImage(strImagePath + _T("SlabShrinkageStress_FtopDeck_Transformed.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("SlabShrinkageStress_FbotDeck_Transformed.png")) << rptNewLine;
+      }
    }
 
    rptRcTable* pParamTable = rptStyleManager::CreateDefaultTable(19,_T(""));
@@ -260,7 +262,7 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
    }
 
    (*pParamTable)(row, col++) << table->scalar.SetValue(ptl->GetDeckCreep()->GetKvs());
-   (*pParamTable)(row, col++) << table->scalar.SetValue(ptl->Getkhs());
+   (*pParamTable)(row, col++) << table->scalar.SetValue(ptl->Getkhs_Deck());
    (*pParamTable)(row, col++) << table->scalar.SetValue(ptl->GetDeckCreep()->GetKhc());
    (*pParamTable)(row, col++) << table->stress.SetValue(0.8*ptl->GetFcSlab()); // See NCHRP 496 (page 27 and 30)
    (*pParamTable)(row, col++) << table->stress.SetValue(ptl->GetFcSlab());
@@ -319,7 +321,7 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
    }
 
    (*pParamTable)(row, col++) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKvs());
-   (*pParamTable)(row, col++) << table->scalar.SetValue(ptl->Getkhs());
+   (*pParamTable)(row, col++) << table->scalar.SetValue(ptl->Getkhs_Girder());
    (*pParamTable)(row, col++) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKhc());
    (*pParamTable)(row, col++) << table->stress.SetValue(ptl->GetFci());
    (*pParamTable)(row, col++) << table->stress.SetValue(ptl->GetFc());
@@ -345,6 +347,11 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
       (*table)(row, col++) << COLHDR( Sub2(_T("I"),_T("c")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
       (*table)(row, col++) << COLHDR( Sub2(_T("S"),_T("tc")), rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit() );
       (*table)(row, col++) << COLHDR( Sub2(_T("S"),_T("bc")), rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit() );
+      if (bIsUHPC)
+      {
+         (*table)(row, col++) << COLHDR(Sub2(_T("S"), _T("td")), rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit());
+         (*table)(row, col++) << COLHDR(Sub2(_T("S"), _T("bd")), rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit());
+      }
    }
    else
    {
@@ -355,13 +362,24 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
       (*table)(row, col++) << COLHDR( Sub2(_T("I"),_T("ct")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
       (*table)(row, col++) << COLHDR( Sub2(_T("S"),_T("tct")), rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit() );
       (*table)(row, col++) << COLHDR( Sub2(_T("S"),_T("bct")), rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit() );
+      if (bIsUHPC)
+      {
+         (*table)(row, col++) << COLHDR(Sub2(_T("S"), _T("tdt")), rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit());
+         (*table)(row, col++) << COLHDR(Sub2(_T("S"), _T("bdt")), rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit());
+      }
    }
    (*table)(row, col++) << COLHDR( symbol(DELTA) << RPT_STRESS(_T("cdf")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(row, col++) << Sub2(_T("K"), _T("df"));
    (*table)(row, col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSS")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
    (*table)(row, col++) << COLHDR(RPT_FTOP << rptNewLine << _T("Girder"),rptStressUnitTag,pDisplayUnits->GetStressUnit());
    (*table)(row, col++) << COLHDR(RPT_FBOT << rptNewLine << _T("Girder"),rptStressUnitTag,pDisplayUnits->GetStressUnit());
+   if (bIsUHPC)
+   {
+      (*table)(row, col++) << COLHDR(RPT_FTOP << rptNewLine << _T("Deck"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      (*table)(row, col++) << COLHDR(RPT_FBOT << rptNewLine << _T("Deck"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   }
 
+   table->m_bIsUHPC = bIsUHPC;
    table->m_Sign =  ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 ) ? 1 : -1;
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
@@ -381,12 +399,12 @@ void CElasticGainDueToDeckShrinkageTable::AddRow(rptChapter* pChapter,IBroker* p
    }
 
    GET_IFACE2(pBroker,IProductForces,pProductForces);
-   Float64 fTop,fBot;
-   pProductForces->GetDeckShrinkageStresses(poi,&fTop,&fBot);
 
    GET_IFACE2(pBroker,ISectionProperties,pProps);
-   Float64 St = pProps->GetS(compositeIntervalIdx,poi,pgsTypes::TopGirder);
-   Float64 Sb = pProps->GetS(compositeIntervalIdx,poi,pgsTypes::BottomGirder);
+   Float64 St = pProps->GetS(compositeIntervalIdx, poi, pgsTypes::TopGirder);
+   Float64 Sb = pProps->GetS(compositeIntervalIdx, poi, pgsTypes::BottomGirder);
+   Float64 Std = pProps->GetS(compositeIntervalIdx, poi, pgsTypes::TopDeck);
+   Float64 Sbd = pProps->GetS(compositeIntervalIdx, poi, pgsTypes::BottomDeck);
 
    ColumnIndexType col = 1;
    RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
@@ -400,9 +418,24 @@ void CElasticGainDueToDeckShrinkageTable::AddRow(rptChapter* pChapter,IBroker* p
    (*this)(row+rowOffset, col++) << mom_inertia.SetValue( Ic );
    (*this)(row+rowOffset, col++) << section_modulus.SetValue(St);
    (*this)(row+rowOffset, col++) << section_modulus.SetValue(Sb);
+   if (m_bIsUHPC)
+   {
+      (*this)(row + rowOffset, col++) << section_modulus.SetValue(Std);
+      (*this)(row + rowOffset, col++) << section_modulus.SetValue(Sbd);
+   }
    (*this)(row+rowOffset, col++) << stress.SetValue( ptl->GetDeltaFcdf() );
    (*this)(row+rowOffset, col++) << scalar.SetValue(ptl->GetKdf());
    (*this)(row+rowOffset, col++) << stress.SetValue( ptl->ElasticGainDueToDeckShrinkage() );
+
+   Float64 fTop, fBot;
+   pProductForces->GetDeckShrinkageStresses(poi, pgsTypes::TopGirder, pgsTypes::BottomGirder, &fTop, &fBot);
    (*this)(row+rowOffset, col++) << stress.SetValue( fTop );
    (*this)(row+rowOffset, col++) << stress.SetValue( fBot );
+
+   if (m_bIsUHPC)
+   {
+      pProductForces->GetDeckShrinkageStresses(poi, pgsTypes::TopDeck, pgsTypes::BottomDeck, &fTop, &fBot);
+      (*this)(row + rowOffset, col++) << stress.SetValue(fTop);
+      (*this)(row + rowOffset, col++) << stress.SetValue(fBot);
+   }
 }

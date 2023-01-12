@@ -113,7 +113,7 @@ void CPrincipalTensionStressCheckTable::Build(rptChapter* pChapter, IBroker* pBr
          }
          else
          {
-            ATLASSERT(false); // is there a new applicabilty reason?
+            ATLASSERT(false); // is there a new applicability reason?
          }
       }
    }
@@ -163,8 +163,25 @@ void CPrincipalTensionStressCheckTable::BuildTable(rptChapter* pChapter, IBroker
 
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
    *pChapter << pPara;
-   *pPara << _T("Principal Tension Stresses in Webs [5.9.2.3.3]") << rptNewLine;
    *pPara << _T("Interval ") << LABEL_INTERVAL(liveLoadInterval) << _T(" - ") << pIntervals->GetDescription(liveLoadInterval) << _T(", Service III") << rptNewLine;
+   
+   bool bIsUHPC = false;
+   if (pMaterials->GetSegmentConcreteType(CSegmentKey(girderKey, 0)) == pgsTypes::FHWA_UHPC)
+   {
+      bIsUHPC = true;
+      ATLASSERT(nSegments == 1); // UHPC isn't available for spliced girders yet, so there better be only one segment
+   }
+
+   pPara = new rptParagraph;
+   *pChapter << pPara;
+   if (bIsUHPC)
+   {
+      *pPara << _T("AASHTO UHPC GS 1.9.2.3.3") << rptNewLine;
+   }
+   else
+   {
+      *pPara << _T("AASHTO LRFD BDS 5.9.2.3.3") << rptNewLine;
+   }
 
    pPara = new rptParagraph;
    *pChapter << pPara;
@@ -202,9 +219,15 @@ void CPrincipalTensionStressCheckTable::BuildTable(rptChapter* pChapter, IBroker
       pAllowables->ReportAllowableSegmentPrincipalWebTensionStress(segmentKey, pSegmentPara, pDisplayUnits);
 
       Float64 fc_reqd = pArtifact->GetRequiredSegmentConcreteStrength();
+      
+      GET_IFACE2(pBroker, IMaterials, pMaterials);
+      GET_IFACE2(pBroker, IAllowableConcreteStress, pAllowable);
+      auto name = pAllowable->GetAllowableStressParameterName(pgsTypes::Tension, pMaterials->GetSegmentConcreteType(segmentKey));
+
       if (0 < fc_reqd)
       {
-         *pSegmentPara << _T("Concrete strength required to satisfy this requirement = ") << stress_u.SetValue(fc_reqd) << rptNewLine;
+         name[0] = std::toupper(name[0]);
+         *pSegmentPara << name << _T(" required to satisfy this requirement = ") << stress_u.SetValue(fc_reqd) << rptNewLine;
       }
       else if (IsZero(fc_reqd))
       {
@@ -212,7 +235,7 @@ void CPrincipalTensionStressCheckTable::BuildTable(rptChapter* pChapter, IBroker
       }
       else
       {
-         *pSegmentPara << _T("Regardless of the concrete strength, the stress requirements will not be satisfied.") << rptNewLine;
+         *pSegmentPara << _T("Regardless of the ") << name << _T(", the stress requirements will not be satisfied.") << rptNewLine;
       }
       *pSegmentPara << rptNewLine;
 

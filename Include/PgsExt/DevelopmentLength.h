@@ -28,16 +28,11 @@
 class PGSEXTCLASS pgsDevelopmentLength
 {
 public:
-   pgsDevelopmentLength::pgsDevelopmentLength() :
-      m_fpe(0.0), m_fps(0.0)
-   {
-   }
-
+   pgsDevelopmentLength() = default;
    pgsDevelopmentLength::pgsDevelopmentLength(Float64 fpe, Float64 fps) :
       m_fpe(fpe), m_fps(fps)
    {
    }
-
 
    void SetFpe(Float64 fpe)
    {
@@ -59,10 +54,23 @@ public:
       return m_fps;
    }
 
-
+   /// Returns the development length
    virtual Float64 GetDevelopmentLength() const = 0;
 
 protected:
-   Float64 m_fpe;
-   Float64 m_fps;
+   Float64 m_fpe{0.0};
+   Float64 m_fps{ 0.0 };
+};
+
+/// Abstract class for reporting development lengths
+class PGSEXTCLASS pgsDevelopmentLengthReporter
+{
+public:
+   pgsDevelopmentLengthReporter() = default;
+   virtual ~pgsDevelopmentLengthReporter() = default;
+
+   /// Reports the prestressing strand development length calculation details for the specified segment
+   /// \param segmentKey the segment for reporting
+   /// \param pChapter the chapter into which the report content is added
+   virtual void ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey,rptChapter* pChapter) const = 0;
 };

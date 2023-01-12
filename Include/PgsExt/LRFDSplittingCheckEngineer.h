@@ -73,3 +73,21 @@ protected:
 
    virtual Float64 GetConcreteCapacity(pgsTypes::MemberEndType endType, const pgsSplittingCheckArtifact* pArtifact) const override;
 };
+
+class PGSEXTCLASS pgsFHWAUHPCSplittingCheckEngineer : public pgsLRFDSplittingCheckEngineer
+{
+public:
+   pgsFHWAUHPCSplittingCheckEngineer();
+   pgsFHWAUHPCSplittingCheckEngineer(IBroker* pBroker);
+   virtual ~pgsFHWAUHPCSplittingCheckEngineer();
+
+   virtual std::shared_ptr<pgsSplittingCheckArtifact> Check(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig = nullptr) const override;
+
+protected:
+   virtual std::_tstring GetSpecReference() const override;
+   virtual void ReportDimensions(rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const override;
+   virtual void ReportDemand(rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const override;
+   virtual void ReportResistance(rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const override;
+
+   virtual Float64 GetConcreteCapacity(pgsTypes::MemberEndType endType, const pgsSplittingCheckArtifact* pArtifact) const override;
+};

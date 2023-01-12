@@ -1037,6 +1037,11 @@ void failed_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisp
          bContinue = false;
          break;
 
+      case pgsSegmentDesignArtifact::DesignNotSupported_Material:
+         *pParagraph << _T("Design is not supported for UHPC girders") << rptNewLine;
+         bContinue = false;
+         break;
+
       default:
          ATLASSERT(false); // Should never get here
    }

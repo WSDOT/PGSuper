@@ -38,33 +38,19 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-
-
-/****************************************************************************
-CLASS
-   CDebondCheckTable
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CDebondCheckTable::CDebondCheckTable()
 {
 }
-
 
 CDebondCheckTable::~CDebondCheckTable()
 {
 }
 
-//======================== OPERATORS  =======================================
-
-//======================== OPERATIONS =======================================
 void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker, IBridge, pBridge);
    GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry);
+   GET_IFACE2_NOCHECK(pBroker, IMaterials, pMaterials); // not always used, but we don't want to get it everytime we go through a loop
 
    pgsTypes::StrandType strandType(pgsTypes::Straight); // we only debond straight strands
 
@@ -139,21 +125,21 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsG
       *p << rptNewLine;
 
 
-      // Requirement A
+      // Restriction A
       if (bAfter8thEdition)
       {
          switch (pDebondArtifact->GetSection())
          {
          case pgsDebondArtifact::I:
-            *p << Bold(_T("Requirement A and Requirement I, 3rd bullet")) << rptNewLine;
+            *p << Bold(_T("Restriction A and Restriction I, 3rd bullet")) << rptNewLine;
             break;
 
          case pgsDebondArtifact::J:
-            *p << Bold(_T("Requirement A and Requirement J, 3rd bullet")) << rptNewLine;
+            *p << Bold(_T("Restriction A and Restriction J, 3rd bullet")) << rptNewLine;
             break;
 
          case pgsDebondArtifact::K:
-            *p << Bold(_T("Requirement A and Requirement K, 2nd bullet")) << rptNewLine;
+            *p << Bold(_T("Restriction A and Restriction K, 2nd bullet")) << rptNewLine;
             break;
 
          default:
@@ -188,10 +174,10 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsG
       }
       *p << rptNewLine;
 
-      // Requirement B
+      // Restriction B
       if (bAfter8thEdition)
       {
-         *p << Bold(_T("Requirement B")) << rptNewLine;
+         *p << Bold(_T("Restriction B")) << rptNewLine;
       }
       StrandIndexType nDebonded10orLess, nDebonded;
       bool bCheckMax;
@@ -205,21 +191,29 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsG
       *p << _T(".") << rptNewLine;      
       *p << Build2(pDebondArtifact, pDisplayUnits) << rptNewLine;
 
-      // Requirement C
+      // Restriction C
       if (bAfter8thEdition)
       {
-         *p << Bold(_T("Requirement C")) << rptNewLine;
+         *p << Bold(_T("Restriction C")) << rptNewLine;
       }
-      Float64 ndb, minDistance;
-      bool bUseDist;
-      pDebondLimits->GetMinDistanceBetweenDebondSections(segmentKey, &ndb, &bUseDist, &minDistance);
 
-      *p << _T("Longitudinal spacing of debonding termination locations shall be at least ") << ndb << Sub2(_T("d"), _T("b")) << _T(" apart");
-      if (bUseDist)
+      if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
       {
-         *p << _T(" but not less than ") << loc.SetValue(minDistance);
+         *p << _T("Longitudinal spacing of debonding termination locations shall be at least ") << Sub2(_T("l"), _T("t")) << _T(" apart");
       }
-      *p << _T(".") << rptNewLine;
+      else
+      {
+         Float64 ndb, minDistance;
+         bool bUseDist;
+         pDebondLimits->GetMinDistanceBetweenDebondSections(segmentKey, &ndb, &bUseDist, &minDistance);
+
+         *p << _T("Longitudinal spacing of debonding termination locations shall be at least ") << ndb << Sub2(_T("d"), _T("b")) << _T(" apart");
+         if (bUseDist)
+         {
+            *p << _T(" but not less than ") << loc.SetValue(minDistance);
+         }
+         *p << _T(".") << rptNewLine;
+      }
       Float64 mndbs = pDebondArtifact->GetMinDebondSectionSpacing();
       Float64 mndbsl = pDebondArtifact->GetDebondSectionSpacingLimit();
       *p << _T("The least distance between debond termination sections is ") << loc.SetValue(mndbs) << _T(" and the minimum distance is ") << loc2.SetValue(mndbsl) << rptNewLine;
@@ -232,7 +226,7 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsG
       {
          if (bAfter8thEdition)
          {
-            *p << Bold(_T("Requirement D")) << rptNewLine;
+            *p << Bold(_T("Restriction D")) << rptNewLine;
          }
          *p << _T("Debonded strands shall be symmetrically distributed about the vertical centerline of the member. Debonding shall be terminated symmetrically at the same longitudinal location.") << rptNewLine;
          ATLASSERT(pDebondArtifact->PassedDebondingSymmetry() ? symmetrical_debonding == DEBOND_SYMMETRY_TRUE : symmetrical_debonding == DEBOND_SYMMETRY_FALSE);
@@ -249,7 +243,7 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsG
       {
          if (bAfter8thEdition)
          {
-            *p << Bold(_T("Requirement E")) << rptNewLine;
+            *p << Bold(_T("Restriction E")) << rptNewLine;
          }
          *p << _T("Alternate bonded and debonded strand locations both horizontally and vertically.") << rptNewLine;
          if (pDebondArtifact->PassedAdjacentDebondedStrands())
@@ -292,17 +286,21 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsG
          bReqE = false;
       }
 
-      if (bAfter8thEdition)
+      if (pMaterials->GetSegmentConcreteType(segmentKey) != pgsTypes::FHWA_UHPC) // restriction F does not apply to FHWA UHPC
       {
-         *p << Bold(_T("Requirement F")) << rptNewLine;
+         if (bAfter8thEdition)
+         {
+            *p << Bold(_T("Restriction F")) << rptNewLine;
+         }
+         *p << _T("Development lengths from the end of the debonded zone are determined using LRFD Eq. 5.9.4.3.2-1 with ") << symbol(kappa) << _T(" = 2.0.") << rptNewLine;
+         *p << rptNewLine;
       }
-      *p << _T("Development lengths from the end of the debonded zone are determined using LRFD Eq. 5.9.4.3.2-1 with ") << symbol(kappa) << _T(" = 2.0.") << rptNewLine;
-      *p << rptNewLine;
 
       if (bAfter8thEdition)
       {
-         *p << Bold(_T("Requirement G")) << rptNewLine;
+         *p << Bold(_T("Restriction G")) << rptNewLine;
       }
+
       Float64 dbl_limit;
       pgsTypes::DebondLengthControl control;
       pDebondArtifact->GetDebondLengthLimit(&dbl_limit, &control);
@@ -334,25 +332,25 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsG
             switch (pDebondArtifact->GetSection())
             {
             case pgsDebondArtifact::I:
-               *p << Bold(_T("Requirement I")) << rptNewLine;
+               *p << Bold(_T("Restriction I")) << rptNewLine;
                break;
 
             case pgsDebondArtifact::J:
-               *p << Bold(_T("Requirement J")) << rptNewLine;
+               *p << Bold(_T("Restriction J")) << rptNewLine;
                break;
 
             case pgsDebondArtifact::K:
-               *p << Bold(_T("Requirement K")) << rptNewLine;
+               *p << Bold(_T("Restriction K")) << rptNewLine;
                break;
 
             default:
-               ATLASSERT(false); // should never get here... is there a new requirement type?
+               ATLASSERT(false); // should never get here... is there a new restriction type?
             }
          }
 
          if (pDebondArtifact->GetSection() != pgsDebondArtifact::K)
          {
-            // bonded strands in the web width project is not part of requirement K
+            // bonded strands in the web width project is not part of restriction K
             if (pDebondArtifact->GetSection() == pgsDebondArtifact::I)
             {
                *p << _T("Bond all strands within the horizontal limits of the web when the total number of debonded strands exceeds 25 percent or when the bottom flange to web width ratio, ") << Sub2(_T("b"),_T("f")) << _T("/") << Sub2(_T("b"),_T("w")) << _T(", exceeds 4.") << rptNewLine;
@@ -418,14 +416,14 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsG
       *p << rptNewLine;
       if (bAfter8thEdition || !bReqD || !bReqE)
       {
-         *p << Bold(_T("The following requirements are not evaluated:")) << rptNewLine;
+         *p << Bold(_T("The following restrictions are not evaluated:")) << rptNewLine;
       }
 
       if (!bReqD)
       {
          if (bAfter8thEdition)
          {
-            *p << _T("Requirement D - ");
+            *p << _T("Restriction D - ");
          }
          *p << _T("Debonded strands shall be symmetrically distributed about the vertical centerline of the cross section of the member. Debonding shall be terminated symmetrically at the same longitudinal location.") << rptNewLine;
       }
@@ -434,14 +432,17 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsG
       {
          if (bAfter8thEdition)
          {
-            *p << _T("Requirement E - ");
+            *p << _T("Restriction E - ");
          }
          *p << _T("Alternate bonded and debonded strands both horizontally and vertically") << rptNewLine;
       }
 
-      if (bAfter8thEdition)
+      if (pMaterials->GetSegmentConcreteType(segmentKey) != pgsTypes::FHWA_UHPC) // restriction H does not apply to FHWA UHPC
       {
-         *p << _T("Requirement H - Not evaluated: LRFD 5.12.3.3.9a does not permit debonded strands to be used for positive moment connections at continuity diaphragms") << rptNewLine;
+         if (bAfter8thEdition)
+         {
+            *p << _T("Restriction H - Not evaluated: LRFD 5.12.3.3.9a does not permit debonded strands to be used for positive moment connections at continuity diaphragms") << rptNewLine;
+         }
       }
 
       if (bAfter8thEdition)
@@ -451,21 +452,21 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsG
          case pgsDebondArtifact::I:
             if (!bReqIJK)
             {
-               *p << _T("Requirement I, first and second bullets - Bond all strands within the horizontal limits of the web.") << rptNewLine;
+               *p << _T("Restriction I, first and second bullets - Bond all strands within the horizontal limits of the web.") << rptNewLine;
             }
-            *p << _T("Requirement I, fourth bullet - Position of debonded strands furthest from the vertical centerline") << rptNewLine;
+            *p << _T("Restriction I, fourth bullet - Position of debonded strands furthest from the vertical centerline") << rptNewLine;
             break;
 
          case pgsDebondArtifact::J:
-            *p << _T("Requirement J, first bullet - Uniformly distributed debonded strands between webs.") << rptNewLine;
+            *p << _T("Restriction J, first bullet - Uniformly distributed debonded strands between webs.") << rptNewLine;
             if (!bReqIJK)
             {
-               *p << _T("Requirement J, second bullet - Strands shall be bonded within 1.0 times the web width projection.") << rptNewLine;
+               *p << _T("Restriction J, second bullet - Strands shall be bonded within 1.0 times the web width projection.") << rptNewLine;
             }
             break;
 
          case pgsDebondArtifact::K:
-            *p << _T("Requirement K, first bullet - Debond uniformly across the width of the section.") << rptNewLine;
+            *p << _T("Restriction K, first bullet - Debond uniformly across the width of the section.") << rptNewLine;
             break;
 
          default:
