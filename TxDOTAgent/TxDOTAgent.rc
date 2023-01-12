@@ -78,7 +78,7 @@ BEGIN
             VALUE "FileDescription", "TxDOTAgent Module"
             VALUE "FileVersion", "7.0.2.0"
             VALUE "InternalName", "TOGA"
-            VALUE "LegalCopyright", "Copyright © 1999-2022, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "LegalCopyright", "Copyright © 1999-2023, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperTxDOTAgent.DLL"
             VALUE "ProductName", "PGSuper"
             VALUE "ProductVersion", "7.0.2.0"

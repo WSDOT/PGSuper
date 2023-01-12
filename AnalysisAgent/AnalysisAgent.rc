@@ -81,7 +81,7 @@ BEGIN
             VALUE "FileDescription", "AnalysisAgent Module\0"
             VALUE "FileVersion", "7.0.2.0\0"
             VALUE "InternalName", "Analysis Agent\0"
-            VALUE "LegalCopyright", "Copyright © 1999-2022, Washington State Department of Transportation, All Rights Reserved\0"
+            VALUE "LegalCopyright", "Copyright © 1999-2023, Washington State Department of Transportation, All Rights Reserved\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OLESelfRegister", "\0"
             VALUE "OriginalFilename", "ANALYSISAGENT.DLL\0"
