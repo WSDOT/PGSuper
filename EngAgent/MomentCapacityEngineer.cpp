@@ -3524,6 +3524,15 @@ bool pgsMomentCapacityEngineer::IsDiaphragmConfined(const pgsPointOfInterest& po
    {
       return false;
    }
+
+   // there is not sufficient evidence or guidance at this time (Jan 2023) to support using the UHPC concrete strength
+   // as the diaphragm concrete strength per 5.12.3.3.10
+   GET_IFACE(IMaterials, pMaterials);
+   if (::IsUHPC(pMaterials->GetSegmentConcreteType(backSegmentKey)) || ::IsUHPC(pMaterials->GetSegmentConcreteType(aheadSegmentKey)))
+   {
+      return false;
+   }
+
    return true;
 }
 
