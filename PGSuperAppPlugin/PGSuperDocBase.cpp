@@ -2321,6 +2321,8 @@ HRESULT CPGSDocBase::WriteTheDocument(IStructuredSave* pStrSave)
 
 HRESULT CPGSDocBase::LoadTheDocument(IStructuredLoad* pStrLoad)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    USES_CONVERSION;
    Float64 version;
    HRESULT hr = pStrLoad->get_Version(&version);
@@ -2338,10 +2340,10 @@ HRESULT CPGSDocBase::LoadTheDocument(IStructuredLoad* pStrLoad)
       {
          return hr;
       }
-      m_FileCompatibilityState.SetApplicationVersion(OLE2T(var.bstrVal));
+      m_FileCompatibilityState.SetApplicationVersionFromFile(OLE2T(var.bstrVal));
 
 #if defined _DEBUG
-      TRACE(_T("Loading data saved with PGSuper Version %s\n"), m_FileCompatibilityState.GetApplicationVersion());
+      TRACE(_T("Loading data saved with PGSuper Version %s\n"), m_FileCompatibilityState.GetApplicationVersionFromFile());
 #endif
    }
    else
@@ -2350,7 +2352,7 @@ HRESULT CPGSDocBase::LoadTheDocument(IStructuredLoad* pStrLoad)
       TRACE(_T("Loading data saved with PGSuper Version 2.1 or earlier\n"));
 #endif
       m_FileCompatibilityState.SetPreVersion21Flag();
-   } // colses the bracket for if ( 1.0 < version )
+   } // closes the bracket for if ( 1.0 < version )
 
      // setup the document unit systems (must be done after the file is opened)
    GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
@@ -2365,22 +2367,20 @@ HRESULT CPGSDocBase::LoadTheDocument(IStructuredLoad* pStrLoad)
    CEAFApp* pApp = EAFGetApp();
    if (!pApp->IsCommandLineMode())
    {
-      AFX_MANAGE_STATE(AfxGetStaticModuleState());
-      CPGSuperAppPluginApp* pPluginApp = (CPGSuperAppPluginApp*)AfxGetApp();
-      CString strAppVersion = pPluginApp->GetVersion(true);
-
       bool bMakeCopy = false;
       CString strCopyFileName = m_FileCompatibilityState.GetCopyFileName();
       Uint32 hintSettings = GetUIHintSettings();
 
       CString strFileName = m_FileCompatibilityState.GetFileName();
+      CString strAppVersion = m_FileCompatibilityState.GetApplicationVersion();
+      CString strAppVersionFromFile = m_FileCompatibilityState.GetApplicationVersionFromFile();
 
       if (WBFL::System::Flags<Uint32>::IsClear(hintSettings, UIHINT_FILESAVEWARNING))
       {
-         // if the hint flag is clear, that means we want to warn if appropreate
+         // if the hint flag is clear, that means we want to warn if appropriate
          if (m_FileCompatibilityState.PromptToMakeCopy(strFileName, strAppVersion))
          {
-            CFileSaveWarningDlg dlg(GetRootNodeName(), strFileName, strCopyFileName, m_FileCompatibilityState.GetApplicationVersion(), strAppVersion, EAFGetMainFrame());
+            CFileSaveWarningDlg dlg(GetRootNodeName(), strFileName, strCopyFileName, strAppVersionFromFile, strAppVersion, EAFGetMainFrame());
             auto result = dlg.DoModal();
             if (result == IDOK)
             {
@@ -2397,6 +2397,9 @@ HRESULT CPGSDocBase::LoadTheDocument(IStructuredLoad* pStrLoad)
                   CComPtr<IEAFAppPlugin> pAppPlugin;
                   pTemplate->GetPlugin(&pAppPlugin);
                   CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+
+                  CPGSuperAppPluginApp* pPluginApp = (CPGSuperAppPluginApp*)AfxGetApp();
+
                   CAutoRegistry autoReg(pPGSBase->GetAppName(), pPluginApp);
                   pPluginApp->WriteProfileInt(_T("Options"), _T("DefaultCompatibilitySave"), dlg.m_DefaultCopyOption);
 
@@ -5318,4 +5321,64 @@ void CPGSDocBase::ShowCustomReportDefinitionHelp()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    __super::ShowCustomReportDefinitionHelp();
+}
+
+
+////////////////////////////////////////////
+CString CFileCompatibilityState::GetApplicationVersion() const
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CPGSuperAppPluginApp* pPluginApp = (CPGSuperAppPluginApp*)AfxGetApp();
+   CString strAppVersion = pPluginApp->GetVersion(true);
+   return strAppVersion;
+}
+
+CString CFileCompatibilityState::GetCopyFileName() const
+{
+   CString strFile(m_strFilePath);
+   auto pos = strFile.ReverseFind(_T('.'));
+   if (m_bPreVersion21File)
+   {
+      strFile.Insert(pos, CString(_T("(2.1)")));
+   }
+   else
+   {
+      strFile.Insert(pos, CString(_T("(")) + m_strAppVersionFromFile + CString(_T(")")));
+   }
+   return strFile;
+}
+
+CString CFileCompatibilityState::GetAppVersionForComparison(const CString& strAppVersion) const
+{
+   // assumes app version is in x.y.z.b format, returns x.y
+   int pos = strAppVersion.ReverseFind(_T('.')); // remove the .b
+   auto str = strAppVersion.Left(pos);
+
+   pos = str.ReverseFind(_T('.')); // remove the .z
+   return str.Left(pos);
+}
+
+// Returns true if the user should be warned that the file format is going to change
+// lpszPathName is name of file that is going to be saved
+// lpszCurrentAppVersion is the application version of the application right now
+bool CFileCompatibilityState::PromptToMakeCopy(LPCTSTR lpszPathName, LPCTSTR lpszCurrentAppVersion) const
+{
+   if (m_bCreatingFromTemplate)
+      return false;
+
+   auto version_from_file = GetAppVersionForComparison(m_strAppVersionFromFile);
+   auto version_from_app = GetAppVersionForComparison(GetApplicationVersion());
+   bool bDifferentVersion = m_bPreVersion21File || (version_from_file != version_from_app) ? true : false;
+
+   if (m_bUnnamed && bDifferentVersion)
+   {
+      return m_strFilePath == CString(lpszPathName); // this is a Save As and the file name isn't changing
+   }
+
+   if ((m_bUnnamed == false || m_bNewFromTemplate == false) && bDifferentVersion)
+   {
+      return true; // this is a save, but not for a new file
+   }
+
+   return false;
 }
