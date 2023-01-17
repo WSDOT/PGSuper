@@ -1053,13 +1053,11 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
             default:                         strErrorCode.Format(_T("0x%X"), hr);
             }
 
-            const WBFL::Units::LengthData& unit = pDisplayUnits->GetSpanLengthUnit();
             CString msg;
-            msg.Format(_T("An unknown error occurred while computing %s moment capacity for %s at %f %s from the left end of the girder.\n(hr = %s)\n(Location ID = %d).\nPlease send your file to technical support."),
+            msg.Format(_T("An unknown error occurred while computing %s moment capacity for %s at %s from the left end of the girder.\n(hr = %s)\n(Location ID = %d).\nPlease send your file to technical support."),
                (bPositiveMoment ? _T("positive") : _T("negative")),
                SEGMENT_LABEL(segmentKey),
-               WBFL::Units::ConvertFromSysUnits(poi.GetDistFromStart(), unit.UnitOfMeasure),
-               unit.UnitOfMeasure.UnitTag().c_str(),
+               FormatDimension(poi.GetDistFromStart(), pDisplayUnits->GetSpanLengthUnit()),
                strErrorCode,
                poi.GetID()
             );
@@ -1354,32 +1352,49 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
       // The SpecLibraryEntry has tension controlled and compression controlled phi factors for UHPC
       // but we aren't using them right now. So, Phi for UHPC is basically hard coded here.
       // The SpecLibrary does not have any UI for the UHPC phi factors.
-      Float64 Ysl, Yn;
       if (mcd.ReinforcementStressLimitStateSolution)
-         mcd.ReinforcementStressLimitStateSolution->get_Curvature(&Ysl);
-      else
-         Ysl = 0.0;
-
-      switch (mcd.Controlling)
       {
-      case MOMENTCAPACITYDETAILS::ControllingType::ConcreteCrushing:
-         mcd.ConcreteCrushingSolution->get_Curvature(&Yn); break;
-      case MOMENTCAPACITYDETAILS::ControllingType::GirderConcreteCrushing:
-         mcd.UHPCGirderCrushingSolution->get_Curvature(&Yn); break;
-      case MOMENTCAPACITYDETAILS::ControllingType::GirderConcreteLocalization:
-         mcd.UHPCCrackLocalizationSolution->get_Curvature(&Yn); break;
-      case MOMENTCAPACITYDETAILS::ControllingType::ReinforcementFracture:
-         mcd.ReinforcementFractureSolution->get_Curvature(&Yn); break;
-      default:
-         ATLASSERT(false);// is there a new controlling type?
-      }
+         ATLASSERT(extremeTensionLayerIndex != INVALID_INDEX);
+         Float64 Ysl;
+         mcd.ReinforcementStressLimitStateSolution->get_Curvature(&Ysl);
 
-      Float64 u = IsZero(Ysl) ? Float64_Max : Yn / Ysl; // curvature ductility ratio
-      GET_IFACE(IResistanceFactors, pResistanceFactors);
-      Float64 ul = pResistanceFactors->GetDuctilityCurvatureRatioLimit();
-      Float64 phi = 0.75 + 0.15 * (u - 1.0) / (ul - 1.0);
-      phi = ForceIntoRange(0.75, phi, 0.90);
-      mcd.Phi = phi;
+         Float64 Yn;
+         switch (mcd.Controlling)
+         {
+         case MOMENTCAPACITYDETAILS::ControllingType::ConcreteCrushing:
+            mcd.ConcreteCrushingSolution->get_Curvature(&Yn); break;
+         case MOMENTCAPACITYDETAILS::ControllingType::GirderConcreteCrushing:
+            mcd.UHPCGirderCrushingSolution->get_Curvature(&Yn); break;
+         case MOMENTCAPACITYDETAILS::ControllingType::GirderConcreteLocalization:
+            mcd.UHPCCrackLocalizationSolution->get_Curvature(&Yn); break;
+         case MOMENTCAPACITYDETAILS::ControllingType::ReinforcementFracture:
+            mcd.ReinforcementFractureSolution->get_Curvature(&Yn); break;
+         default:
+            ATLASSERT(false);// is there a new controlling type?
+         }
+
+         Float64 u = Yn / Ysl; // curvature ductility ratio
+         GET_IFACE(IResistanceFactors, pResistanceFactors);
+         Float64 ul = pResistanceFactors->GetDuctilityCurvatureRatioLimit();
+         Float64 phi = 0.75 + 0.15 * (u - 1.0) / (ul - 1.0);
+         phi = ForceIntoRange(0.75, phi, 0.90);
+         mcd.Phi = phi;
+      }
+      else
+      {
+         // GS 1.6.3 - The strain compatibility approach defined in 1.6.3 shall be used for UHPC sections with bonded reinforcement.
+         // If mcd.ReinforcementStressLimitStateSolution is null, there isn't any reinforcement so take phi to be zero
+         ATLASSERT(extremeTensionLayerIndex == INVALID_INDEX);
+         GET_IFACE(IEAFStatusCenter, pStatusCenter);
+         GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
+         CString msg;
+         msg.Format(_T("Bonded tension flexural reinforcement is not provided at %s from the left end of the girder (Location ID = %d). GS 1.6.3 requires the UHPC section to have bonded reinforcement. Capacity reduction factor set to 0.0"),
+            FormatDimension(poi.GetDistFromStart(), pDisplayUnits->GetSpanLengthUnit()),poi.GetID());
+         pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID, m_scidMomentCapacity, msg);
+         pStatusCenter->Add(pStatusItem);
+
+         mcd.Phi = 0.0;
+      }
    }
    else
    {
