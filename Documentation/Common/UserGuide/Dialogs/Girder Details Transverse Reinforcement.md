@@ -9,7 +9,7 @@ Item  | Description
 ------|-------------
 Reinforcement Material | Select the appropriate mild steel for the transverse rebar
 Make Zones Symmetrical about Mid-Girder | When checked, bar zones are symmetric about mid-girder. If zones are made symmetrical about the girder centerline, right-most zone data is either automatically extended or truncated to mid-girder such that the zones are always symmetrical. Similarly, if zones are not symmetrical, right-most zones are either extended or truncated such that the last zone extends to the right end of the girder.
-Top flange is intentionally roughened for interface shear capacity | Check the box to indicate the top flange is intentionally roughened to an amplitude of 0.25 inch to help resist horizontal interface shear. 
+Top flange is intentionally roughened for interface shear capacity | Check the box to indicate the top flange is intentionally roughened to an amplitude of 0.25 inch to help resist horizontal interface shear. For UHPC girders intentionally roughened is taken to mean the top flange is formed with keyed or fluted surface in accordance with the applicable structural design guidance.
 
 Primary Bars
 ------------------
