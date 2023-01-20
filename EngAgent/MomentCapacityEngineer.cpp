@@ -815,6 +815,9 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
 
       if (pPoi->IsOnSegment(poi) && concreteType == pgsTypes::FHWA_UHPC)
       {
+         // use a minimum of 50 slices for UHPC
+         m_MomentCapacitySolver->put_Slices((long)Max(nSlices,(IndexType)50));
+
          // Compute capacity for the case of crushing of the deck concrete
          // This case only applies to positive moments
          // There isn't a deck if deckIndex is INVALID_INDEX

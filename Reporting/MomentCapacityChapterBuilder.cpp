@@ -160,7 +160,8 @@ rptChapter* CMomentCapacityChapterBuilder::Build(const std::shared_ptr<const WBF
      _T("girder concrete crack localization"),
      _T("tension strain limit of reinforcement") 
    };
-   (*pPara) << _T("Moment capacity controlled by ") << strControl[std::underlying_type<MOMENTCAPACITYDETAILS::ControllingType>::type(pmcd->Controlling)] << rptNewLine;
+   
+   (*pPara) << Bold(_T("Moment capacity controlled by ") << strControl[+pmcd->Controlling]) << rptNewLine;
    if (pmcd->bDevelopmentLengthReducedStress)
    {
       (*pPara) << _T("Strand stresses are reduced due to lack of full development per LRFD 5.9.4.3.2") << rptNewLine;
@@ -169,6 +170,7 @@ rptChapter* CMomentCapacityChapterBuilder::Build(const std::shared_ptr<const WBF
    {
       (*pPara) << _T("Reinforcement strain exceeds minimum elongation per the material specification") << rptNewLine;
    }
+   (*pPara) << rptNewLine;
 
    // if this is a zero capacity section, just return since there is nothing else to show
    if ( IsZero(pmcd->Mn) )
@@ -186,7 +188,7 @@ rptChapter* CMomentCapacityChapterBuilder::Build(const std::shared_ptr<const WBF
       ReportSolution(pBroker, _T("Girder UHPC crack localization"), pChapter, pmcd->girderShapeIndex, pmcd->deckShapeIndex, pmcd->Section, pmcd->UHPCCrackLocalizationSolution, bPositiveMoment, pDisplayUnits);
 
    if (pmcd->ReinforcementFractureSolution)
-      ReportSolution(pBroker, _T("Reinforcement fracture"), pChapter, pmcd->girderShapeIndex, pmcd->deckShapeIndex, pmcd->Section, pmcd->ReinforcementFractureSolution, bPositiveMoment, pDisplayUnits);
+      ReportSolution(pBroker, _T("Reinforcement tension strain limit"), pChapter, pmcd->girderShapeIndex, pmcd->deckShapeIndex, pmcd->Section, pmcd->ReinforcementFractureSolution, bPositiveMoment, pDisplayUnits);
 
    if (pmcd->ReinforcementStressLimitStateSolution)
       ReportSolution(pBroker, _T("Capacity at reinforcement stress limit state"), pChapter, pmcd->girderShapeIndex, pmcd->deckShapeIndex, pmcd->Section, pmcd->ReinforcementStressLimitStateSolution, bPositiveMoment, pDisplayUnits);
@@ -752,10 +754,7 @@ void CMomentCapacityChapterBuilder::ReportSolution(IBroker* pBroker,const TCHAR*
 
    auto pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    (*pChapter) << pPara;
-   (*pPara) << _T("Strain Compatibility Analysis") << rptNewLine;
-
-   pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-   (*pChapter) << pPara;
+   pPara->SetName(strTitle);
    (*pPara) << strTitle << rptNewLine;
 
    pPara = new rptParagraph;
@@ -808,9 +807,9 @@ void CMomentCapacityChapterBuilder::ReportSolution(IBroker* pBroker,const TCHAR*
    (*pTable)(0, col++) << COLHDR(Sub2(_T("Y"), _T("bot")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
    (*pTable)(0, col++) << COLHDR(Sub2(_T("Y"), _T("cg")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
    (*pTable)(0, col++) << COLHDR(RPT_FPE, rptStressUnitTag, pDisplayUnits->GetStressUnit());
-   (*pTable)(0, col++) << _T("Initial") << rptNewLine << _T("Strain");
-   (*pTable)(0, col++) << _T("Incremental") << rptNewLine << _T("Strain");
-   (*pTable)(0, col++) << _T("Total") << rptNewLine << _T("Strain");
+   (*pTable)(0, col++) << _T("Initial") << rptNewLine << _T("Strain") << rptNewLine << _T("at ") << Sub2(_T("Y"),_T("cg"));
+   (*pTable)(0, col++) << _T("Incremental") << rptNewLine << _T("Strain") << rptNewLine << _T("at ") << Sub2(_T("Y"), _T("cg"));
+   (*pTable)(0, col++) << _T("Total") << rptNewLine << _T("Strain") << rptNewLine << _T("at ") << Sub2(_T("Y"), _T("cg"));
    (*pTable)(0, col++) << RPT_FPX << _T("/") << RPT_FPS;
    //(*pTable)(0, col++) << _T("Strain") << rptNewLine << _T("Limit"); // want to report this if strains are limited
    (*pTable)(0, col++) << COLHDR(_T("Foreground") << rptNewLine << _T("Stress (Fg)"), rptStressUnitTag, pDisplayUnits->GetStressUnit());

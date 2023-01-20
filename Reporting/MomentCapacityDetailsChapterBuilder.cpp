@@ -503,7 +503,7 @@ void write_moment_data_table(IBroker* pBroker,
       (*table)(row,col++) << dim.SetValue( pmcd->de_shear );
       (*table)(row,col++) << dim.SetValue( pmcd->dt );
 
-      if (bUHPC)
+      if (pPoi->IsOnSegment(poi) && bUHPC)
       {
          CComPtr<IMomentCapacitySolution> solution;
          const_cast<MOMENTCAPACITYDETAILS*>(pmcd)->GetControllingSolution(&solution);
@@ -517,6 +517,11 @@ void write_moment_data_table(IBroker* pBroker,
             pmcd->ReinforcementStressLimitStateSolution->get_Curvature(&k);
          }
          (*table)(row, col++) << curvature.SetValue(k);
+      }
+      else
+      {
+         (*table)(row, col++) << _T("");
+         (*table)(row, col++) << _T("");
       }
 
       if (lrfdVersionMgr::SixthEdition2012 <= lrfdVersionMgr::GetVersion())
