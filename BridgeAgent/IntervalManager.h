@@ -46,7 +46,7 @@ public:
    EventIndexType GetEndEvent(IntervalIndexType idx) const;
    Float64 GetTime(IntervalIndexType idx,pgsTypes::IntervalTimeType timeType) const;
    Float64 GetDuration(IntervalIndexType idx) const;
-   LPCTSTR GetDescription(IntervalIndexType idx) const;
+   std::_tstring GetDescription(IntervalIndexType idx) const;
 
    // returns the index of the first interval that starts with eventIdx
    IntervalIndexType GetInterval(EventIndexType eventIdx) const;

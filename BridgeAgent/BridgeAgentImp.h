@@ -1248,7 +1248,7 @@ public:
    virtual EventIndexType GetEndEvent(IntervalIndexType idx) const override; 
    virtual Float64 GetTime(IntervalIndexType idx,pgsTypes::IntervalTimeType timeType) const override;
    virtual Float64 GetDuration(IntervalIndexType idx) const override;
-   virtual LPCTSTR GetDescription(IntervalIndexType idx) const override;
+   virtual std::_tstring GetDescription(IntervalIndexType idx) const override;
    virtual IntervalIndexType GetInterval(EventIndexType eventIdx) const override;
    virtual IntervalIndexType GetErectPierInterval(PierIndexType pierIdx) const override;
    virtual IntervalIndexType GetFirstStressStrandInterval(const CGirderKey& girderKey) const override;

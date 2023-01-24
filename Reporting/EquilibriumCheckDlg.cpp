@@ -83,7 +83,7 @@ BOOL CEquilibriumCheckDlg::OnInitDialog()
    for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
    {
       CString strLabel;
-      strLabel.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+      strLabel.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx).c_str());
       int idx = pcbIntervals->AddString(strLabel);
       pcbIntervals->SetItemData(idx,(DWORD_PTR)intervalIdx);
    }

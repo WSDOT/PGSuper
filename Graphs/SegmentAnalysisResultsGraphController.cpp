@@ -685,7 +685,7 @@ void CSegmentAnalysisResultsGraphController::FillDropListCtrl_Intervals(bool bRe
       if (intervalIdx == haulSegmentIntervalIdx || !pIntervals->IsHaulSegmentInterval(intervalIdx))
       {
          CString strInterval;
-         strInterval.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+         strInterval.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx).c_str());
 
          if (intervalIdx == erectSegmentIntervalIdx && 1 < nSegmentErectionIntervals)
          {
@@ -813,7 +813,7 @@ void CSegmentAnalysisResultsGraphController::FillSelectListCtrl_Intervals(bool b
             thisSegmentKey.groupIndex = 0;
          }
 
-         str.Format(_T("%d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+         str.Format(_T("%d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx).c_str());
 
          if (intervalIdx == erectSegmentIntervalIdx && 1 < nSegmentErectionIntervals)
          {

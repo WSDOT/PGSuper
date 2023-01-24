@@ -30103,7 +30103,7 @@ Float64 CBridgeAgentImp::GetDuration(IntervalIndexType idx) const
    return m_IntervalManager.GetDuration(idx);
 }
 
-LPCTSTR CBridgeAgentImp::GetDescription(IntervalIndexType idx) const
+std::_tstring CBridgeAgentImp::GetDescription(IntervalIndexType idx) const
 {
    VALIDATE(BRIDGE);
    return m_IntervalManager.GetDescription(idx);

@@ -56,7 +56,7 @@ interface IIntervals : IUnknown
    virtual Float64 GetDuration(IntervalIndexType idx) const = 0;
 
    // returns the interval description
-   virtual LPCTSTR GetDescription(IntervalIndexType idx) const = 0;
+   virtual std::_tstring GetDescription(IntervalIndexType idx) const = 0;
 
    // returns the index of the first interval that starts with the specified event index
    virtual IntervalIndexType GetInterval(EventIndexType eventIdx) const = 0;

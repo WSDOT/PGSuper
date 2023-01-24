@@ -2554,7 +2554,7 @@ rptParagraph* CLoadingDetailsChapterBuilder::CreatePointLoadTable(IBroker* pBrok
    for (IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++)
    {
       CString strInterval;
-      strInterval.Format(_T("Interval %d: %s"), LABEL_INTERVAL(intervalIdx), pIntervals->GetDescription(intervalIdx));
+      strInterval.Format(_T("Interval %d: %s"), LABEL_INTERVAL(intervalIdx), pIntervals->GetDescription(intervalIdx).c_str());
 
       const std::vector<IUserDefinedLoads::UserPointLoad>* ppl = pUdl->GetPointLoads(intervalIdx, spanKey);
       if (ppl != nullptr)
@@ -2636,7 +2636,7 @@ rptParagraph* CLoadingDetailsChapterBuilder::CreateDistributedLoadTable(IBroker*
    for (IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++)
    {
       CString strInterval;
-      strInterval.Format(_T("Interval %d: %s"), LABEL_INTERVAL(intervalIdx), pIntervals->GetDescription(intervalIdx));
+      strInterval.Format(_T("Interval %d: %s"), LABEL_INTERVAL(intervalIdx), pIntervals->GetDescription(intervalIdx).c_str());
 
       const std::vector<IUserDefinedLoads::UserDistributedLoad>* ppl = pUdl->GetDistributedLoads(intervalIdx, spanKey);
       if (ppl != nullptr)
@@ -2718,7 +2718,7 @@ rptParagraph* CLoadingDetailsChapterBuilder::CreateMomentLoadTable(IBroker* pBro
    for (IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++)
    {
       CString strInterval;
-      strInterval.Format(_T("Interval %d: %s"), LABEL_INTERVAL(intervalIdx), pIntervals->GetDescription(intervalIdx));
+      strInterval.Format(_T("Interval %d: %s"), LABEL_INTERVAL(intervalIdx), pIntervals->GetDescription(intervalIdx).c_str());
 
       const std::vector<IUserDefinedLoads::UserMomentLoad>* ppl = pUdl->GetMomentLoads(intervalIdx, spanKey);
       if (ppl != nullptr)

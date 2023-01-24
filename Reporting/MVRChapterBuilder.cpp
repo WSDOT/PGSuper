@@ -389,7 +389,7 @@ rptChapter* CMVRChapterBuilder::Build(const std::shared_ptr<const WBFL::Reportin
       p = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << p;
       CString strName;
-      strName.Format(_T("Combined Results - Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+      strName.Format(_T("Combined Results - Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx).c_str());
       p->SetName(strName);
       *p << p->GetName() << rptNewLine;
 

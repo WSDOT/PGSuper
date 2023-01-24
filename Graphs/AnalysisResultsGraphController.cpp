@@ -754,7 +754,7 @@ void CAnalysisResultsGraphController::FillDropListCtrl_Intervals(bool bRetainSel
       if (!pIntervals->IsHaulSegmentInterval(intervalIdx))
       {
          CString strInterval;
-         strInterval.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+         strInterval.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx).c_str());
          int idx = pcbIntervals->AddString(strInterval);
          pcbIntervals->SetItemData(idx,intervalIdx);
       }
@@ -869,7 +869,7 @@ void CAnalysisResultsGraphController::FillSelectListCtrl_Intervals(bool bRetainS
       if (!pIntervals->IsHaulSegmentInterval(intervalIdx))
       {
          CString str;
-         str.Format(_T("%d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+         str.Format(_T("%d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx).c_str());
          int idx = plbIntervals->AddString(str);
          plbIntervals->SetItemData(idx,intervalIdx);
 

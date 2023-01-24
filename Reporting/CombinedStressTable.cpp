@@ -382,7 +382,7 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
    }
 
    CString strTitle;
-   strTitle.Format(_T("%s - Interval %d %s"),strBasicTitle.c_str(),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+   strTitle.Format(_T("%s - Interval %d %s"),strBasicTitle.c_str(),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx).c_str());
 
 
    rptParagraph* p = new rptParagraph;

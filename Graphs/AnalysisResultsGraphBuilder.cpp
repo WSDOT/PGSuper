@@ -1290,7 +1290,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphTitle()
       IntervalIndexType intervalIdx = vIntervals.back();
 
       GET_IFACE(IIntervals,pIntervals);
-      CString strInterval( pIntervals->GetDescription(intervalIdx) );
+      CString strInterval( pIntervals->GetDescription(intervalIdx).c_str() );
 
       CString strGraphTitle;
       if (actionType == actionLoadRating)

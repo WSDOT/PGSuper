@@ -7225,7 +7225,7 @@ void CGirderModelManager::CreateLBAMStages(GirderIndexType gdr,ILBAMModel* pMode
       CComPtr<IStage> stage;
       stage.CoCreateInstance(CLSID_Stage);
       stage->put_Name( GetLBAMStageName(intervalIdx) );
-      stage->put_Description( CComBSTR(pIntervals->GetDescription(intervalIdx)) );
+      stage->put_Description( CComBSTR(pIntervals->GetDescription(intervalIdx).c_str()) );
       
       stages->Add(stage);
    }

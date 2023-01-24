@@ -534,14 +534,14 @@ void write_camber_factors(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnit
    (*pTable)(row++,1) << scalar.SetValue(cm.DeckPanelFactor);
 
    CString strLabel;
-   strLabel.Format(_T("Slab, User Defined Loads at %s"),pIntervals->GetDescription(noncompositeUserLoadIntervalIdx));
+   strLabel.Format(_T("Slab, User Defined Loads at %s"),pIntervals->GetDescription(noncompositeUserLoadIntervalIdx).c_str());
    (*pTable)(row,0) << strLabel;
    (*pTable)(row++,1) << scalar.SetValue(cm.CreepFactor);
 
    (*pTable)(row,0) << _T("Haunch");
    (*pTable)(row++,1) << scalar.SetValue(cm.SlabPadLoadFactor);
 
-   strLabel.Format(_T("Railing System (Traffic Barrier, Sidewalks), Overlay, User Defined Loads at %s"),pIntervals->GetDescription(compositeUserLoadIntervalIdx));
+   strLabel.Format(_T("Railing System (Traffic Barrier, Sidewalks), Overlay, User Defined Loads at %s"),pIntervals->GetDescription(compositeUserLoadIntervalIdx).c_str());
    (*pTable)(row,0) << strLabel;
    (*pTable)(row++,1) << scalar.SetValue(cm.BarrierSwOverlayUser2Factor);
 }

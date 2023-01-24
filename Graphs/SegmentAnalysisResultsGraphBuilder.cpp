@@ -561,7 +561,7 @@ void CSegmentAnalysisResultsGraphBuilder::UpdateGraphTitle()
       IntervalIndexType intervalIdx = vIntervals.back();
 
       GET_IFACE(IIntervals,pIntervals);
-      CString strInterval( pIntervals->GetDescription(intervalIdx) );
+      CString strInterval( pIntervals->GetDescription(intervalIdx).c_str() );
 
       CString strGraphTitle;
       strGraphTitle.Format(_T("%s - Interval %d: %s - %s %s"),SEGMENT_LABEL(segmentKey),LABEL_INTERVAL(intervalIdx),strInterval,strCombo,strAction);

@@ -144,7 +144,7 @@ rptChapter* CMomentCapacityDetailsChapterBuilder::Build(const std::shared_ptr<co
    for(const auto& thisGirderKey : vGirderKeys)
    {
       CString strLabel;
-      strLabel.Format(_T("Interval %d - %s"),LABEL_INTERVAL(lastIntervalIdx),pIntervals->GetDescription(lastIntervalIdx));
+      strLabel.Format(_T("Interval %d - %s"),LABEL_INTERVAL(lastIntervalIdx),pIntervals->GetDescription(lastIntervalIdx).c_str());
 
       rptParagraph* pPara;
 

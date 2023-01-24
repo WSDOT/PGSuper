@@ -242,9 +242,9 @@ Float64 CIntervalManager::GetDuration(IntervalIndexType idx) const
    return m_Intervals[idx].Duration;
 }
 
-LPCTSTR CIntervalManager::GetDescription(IntervalIndexType idx) const
+std::_tstring CIntervalManager::GetDescription(IntervalIndexType idx) const
 {
-   return m_Intervals[idx].Description.c_str();
+   return m_Intervals[idx].Description;
 }
 
 IntervalIndexType CIntervalManager::GetInterval(EventIndexType eventIdx) const

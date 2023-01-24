@@ -289,7 +289,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
 void CGirderPropertiesGraphBuilder::UpdateGraphTitle(const CGirderKey& girderKey,IntervalIndexType intervalIdx,PropertyType propertyType)
 {
    GET_IFACE(IIntervals,pIntervals);
-   CString strInterval( pIntervals->GetDescription(intervalIdx) );
+   CString strInterval( pIntervals->GetDescription(intervalIdx).c_str() );
 
    CString strGraphTitle;
    if ( girderKey.groupIndex == ALL_GROUPS )

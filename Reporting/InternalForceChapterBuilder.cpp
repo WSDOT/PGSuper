@@ -99,7 +99,7 @@ rptChapter* CInternalForceChapterBuilder::Build(const std::shared_ptr<const WBFL
       pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pPara;
       CString strName;
-      strName.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+      strName.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx).c_str());
       pPara->SetName(strName);
       *pPara << pPara->GetName() << rptNewLine;
 
