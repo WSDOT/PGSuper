@@ -485,13 +485,14 @@ void write_moment_data_table(IBroker* pBroker,
       const CSegmentKey& segmentKey(poi.GetSegmentKey());
       bool bIsOnSegment = pPoi->IsOnSegment(poi);
 
+      bool bUHPC_this_poi = (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC) ? true : false;
+
       const MOMENTCAPACITYDETAILS* pmcd = pMomentCap->GetMomentCapacityDetails(intervalIdx,poi,bPositiveMoment);
 
-      WBFL::System::AutoVariable<bool> avUHPC(&bUHPC, bUHPC);
       if (pPoi->IsInBoundaryPierDiaphragm(poi))
       {
          // no UHPC for pier diaphragms
-         bUHPC = false;
+         bUHPC_this_poi = false;
       }
 
       col = 0;
@@ -503,7 +504,7 @@ void write_moment_data_table(IBroker* pBroker,
       (*table)(row,col++) << dim.SetValue( pmcd->de_shear );
       (*table)(row,col++) << dim.SetValue( pmcd->dt );
 
-      if (pPoi->IsOnSegment(poi) && bUHPC)
+      if (bIsOnSegment && bUHPC_this_poi)
       {
          CComPtr<IMomentCapacitySolution> solution;
          const_cast<MOMENTCAPACITYDETAILS*>(pmcd)->GetControllingSolution(&solution);
@@ -518,8 +519,12 @@ void write_moment_data_table(IBroker* pBroker,
          }
          (*table)(row, col++) << curvature.SetValue(k);
       }
-      else
+      else if (bUHPC && !bUHPC_this_poi)
       {
+         // there is UHPC in the girder line so there are two
+         // columns in the table for curvature, Y.n and Y.sl,
+         // but the material at this POI is not UHPC so
+         // skip those columns
          (*table)(row, col++) << _T("");
          (*table)(row, col++) << _T("");
       }
