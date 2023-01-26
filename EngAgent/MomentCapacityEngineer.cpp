@@ -105,24 +105,61 @@ void GetControllingSolution(bool bPositiveMoment,MOMENTCAPACITYDETAILS& mcd, IMo
    Float64 Mn_CrackLocalization = Mn_Initial;
    Float64 Mn_ReinforcementFracture = Mn_Initial;
 
+   // Notes
+   // 1. There may be cases where the solution has exceeded the strain limit of one or more of the
+   //    materials in the cross section. These are not valid solutions and are not considered
+   //    for the controlling condition. An example is Reinforcement Fracture may require the
+   //    strain in the UHPC to exceed the crushing strain. In this case, the Reinforcement Fracture
+   //    solution is invalid because it cannot physically happen.
+   // 2. Solutions don't have general section solution objects for zero capacity cases. A common case is
+   //    at the face of a member.
+
    if (mcd.ConcreteCrushingSolution)
    {
-      mcd.ConcreteCrushingSolution->get_Mx(&Mn_ConcreteCrushing);
+      CComPtr<IGeneralSectionSolution> solution;
+      mcd.ConcreteCrushingSolution->get_GeneralSectionSolution(&solution);
+      VARIANT_BOOL bExceededStrainLimits = VARIANT_FALSE;
+      if(solution) solution->get_ExceededStrainLimits(&bExceededStrainLimits);
+      if (bExceededStrainLimits == VARIANT_FALSE)
+      {
+         mcd.ConcreteCrushingSolution->get_Mx(&Mn_ConcreteCrushing);
+      }
    }
 
    if (mcd.UHPCGirderCrushingSolution)
    {
-      mcd.UHPCGirderCrushingSolution->get_Mx(&Mn_GirderCrushing);
+      CComPtr<IGeneralSectionSolution> solution;
+      mcd.UHPCGirderCrushingSolution->get_GeneralSectionSolution(&solution);
+      VARIANT_BOOL bExceededStrainLimits = VARIANT_FALSE;
+      if (solution) solution->get_ExceededStrainLimits(&bExceededStrainLimits);
+      if (bExceededStrainLimits == VARIANT_FALSE)
+      {
+         mcd.UHPCGirderCrushingSolution->get_Mx(&Mn_GirderCrushing);
+      }
    }
 
    if (mcd.UHPCCrackLocalizationSolution)
    {
-      mcd.UHPCCrackLocalizationSolution->get_Mx(&Mn_CrackLocalization);
+      CComPtr<IGeneralSectionSolution> solution;
+      mcd.UHPCCrackLocalizationSolution->get_GeneralSectionSolution(&solution);
+      VARIANT_BOOL bExceededStrainLimits = VARIANT_FALSE;
+      if (solution) solution->get_ExceededStrainLimits(&bExceededStrainLimits);
+      if (bExceededStrainLimits == VARIANT_FALSE)
+      {
+         mcd.UHPCCrackLocalizationSolution->get_Mx(&Mn_CrackLocalization);
+      }
    }
 
    if (mcd.ReinforcementFractureSolution)
    {
-      mcd.ReinforcementFractureSolution->get_Mx(&Mn_ReinforcementFracture);
+      CComPtr<IGeneralSectionSolution> solution;
+      mcd.ReinforcementFractureSolution->get_GeneralSectionSolution(&solution);
+      VARIANT_BOOL bExceededStrainLimits = VARIANT_FALSE;
+      if (solution) solution->get_ExceededStrainLimits(&bExceededStrainLimits);
+      if (bExceededStrainLimits == VARIANT_FALSE)
+      {
+         mcd.ReinforcementFractureSolution->get_Mx(&Mn_ReinforcementFracture);
+      }
    }
 
    IndexType controllingIdx;
@@ -815,7 +852,14 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
 
       if (pPoi->IsOnSegment(poi) && concreteType == pgsTypes::FHWA_UHPC)
       {
-         // use a minimum of 50 slices for UHPC
+         // use a minimum of 50 slices for UHPC. There is an abrupt change in the UHPC tension
+         // model that doesn't get directly identified by the moment capacity solver. The moment capacity
+         // solver identifies where the neutral axis is located and subdivides any slices that cross over the neutral axis.
+         // For UHPC, the tension stress-strain model drops to zero at the localization strain. Ideally, the moment
+         // capacity solver would identify this point and subdivide any slices that cross over that point, but it
+         // doesn't. In order to have the drop off of tension capacity of the UHPC occur at the correct location,
+         // smaller slices are needed. If the slices are large, then the UHPC may get too much credit for its tension
+         // contribution to the overall section capacity.
          m_MomentCapacitySolver->put_Slices((long)Max(nSlices,(IndexType)50));
 
          // Compute capacity for the case of crushing of the deck concrete
