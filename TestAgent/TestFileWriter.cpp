@@ -809,6 +809,15 @@ int Test_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& girde
          // Service III
          Float64 invStressRF = pInventoryRatingArtifact->GetStressRatingFactor();
 
+         // WriteFloat64 can't handle large values, like Float64_Max which
+         // is used for infinite rating factors. In this case, use 10. because
+         // we report 10+ when rating factors exceed 10
+         invMomRF = (invMomRF == Float64_Max ? 10. : invMomRF);
+         invShearRF = (invShearRF == Float64_Max ? 10. : invShearRF);
+         oprMomRF = (oprMomRF == Float64_Max ? 10. : oprMomRF);
+         oprShearRF = (oprShearRF == Float64_Max ? 10. : oprShearRF);
+         invStressRF = (invStressRF == Float64_Max ? 10. : invStressRF);
+
          workerB.WriteFloat64(invMomRF, _T("RfInMom"), 8, 6, _T("%6.2f"));
          workerB.WriteFloat64(invShearRF, _T("RfInShr"), 8, 6, _T("%6.2f"));
          workerB.WriteFloat64(oprMomRF, _T("RfOpMom"), 8, 6, _T("%6.2f"));
