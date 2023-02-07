@@ -6631,7 +6631,8 @@ void CAnalysisAgentImp::GetDesignStress(const StressCheckTask& task,const pgsPoi
       Float64 gV2, gpM2, gnM2;
       pLLDF->GetDistributionFactors(poi, task.limitState,fc_lldf,&gpM1,&gnM1,&gV1);
       pLLDF->GetDistributionFactors(poi, task.limitState,&gpM2,&gnM2,&gV2);
-      Float64 lldf_adj = gpM1/gpM2; // multiply by design LLDF and divide out the original LLDF
+      Float64 lldf_adj = IsZero(gpM2) ? 0.0 : gpM1 / gpM2; // multiply by design LLDF and divide out the original LLDF
+      // if original LLDF is user defined, it could have a value of zero so we must guard against divide by zero error
 
       // Deal with different options for application of pedestrian loads
       GET_IFACE(ILiveLoads,pLiveLoads);
