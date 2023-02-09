@@ -581,12 +581,12 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
       IndexType nSlices = pSpecEntry->GetSliceCountForMomentCapacity();
 
       m_MomentCapacitySolver->putref_Section(section);
-      m_MomentCapacitySolver->put_Slices(nSlices);
+      m_MomentCapacitySolver->put_Slices((long)nSlices);
       m_MomentCapacitySolver->put_SliceGrowthFactor(3);
       m_MomentCapacitySolver->put_MaxIterations(50);
 
       // Set the convergence tolerance to 0.1N. This is more than accurate enough for the
-      // output display. Output accurace for SI = 0.01kN = 10N, for US = 0.01kip = 45N
+      // output display. Output accuracy for SI = 0.01kN = 10N, for US = 0.01kip = 45N
       m_MomentCapacitySolver->put_AxialTolerance(0.1);
 
       // determine neutral axis angle
@@ -849,11 +849,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
    }
    else
    {
-      GET_IFACE(IBridge, pBridge);
-
       mcd.MomentArm = fabs(Mn/T);
-
-      Float64 tSlab = pBridge->GetStructuralSlabDepth(poi);
 
       Float64 x1,y1, x2,y2;
       pntCompression->get_X(&x1);
@@ -877,11 +873,15 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
       // calculate average resultant stress in strands and tendons at ultimate
       // also determine de (see PCI BDM 8.4.1.2).
       // de = resultant of tension force due to reinforcement on the tension half of the beam
-      Float64 t = 0; // summ of the tension forces 
-      Float64 tde = 0;
+      Float64 H_over_2 = H / 2;
+      GET_IFACE(IBridge, pBridge);
+      Float64 tSlab = pBridge->GetStructuralSlabDepth(poi);
+      Float64 t = 0; // sum of the tension forces 
+      Float64 tde = 0; // sum of tension force * depth to reinforcement
       Float64 Aps = 0;
       Float64 Apt_Segment = 0;
       Float64 Apt_Girder = 0;
+      enum class ReinforcementType { Strand, SegmentTendon, GirderTendon, GirderRebar, TopMatDeckRebar, BottomMatDeckRebar };
       CComPtr<IGeneralSectionSolution> general_solution;
       solution->get_GeneralSectionSolution(&general_solution);
       IndexType nSlices;
@@ -890,6 +890,42 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
       {
          CComPtr<IGeneralSectionSlice> slice;
          general_solution->get_Slice(sliceIdx, &slice);
+
+         IndexType shapeIdx;
+         slice->get_ShapeIndex(&shapeIdx);
+
+         ReinforcementType reinforcementType;
+         CComBSTR bstrName;
+         mcd.Section->get_Name(shapeIdx, &bstrName);
+         CString strName(bstrName);
+         if (0 <= strName.Find(_T("Strand"), 0))
+         {
+            reinforcementType = ReinforcementType::Strand;
+         }
+         else if (CString(bstrName).Left(14) == _T("Segment Tendon"))
+         {
+            reinforcementType = ReinforcementType::SegmentTendon;
+         }
+         else if (CString(bstrName).Left(13) == _T("Girder Tendon"))
+         {
+            reinforcementType = ReinforcementType::GirderTendon;
+         }
+         else if (CString(bstrName).Left(5) == _T("Girder Rebar"))
+         {
+            reinforcementType = ReinforcementType::GirderRebar;
+         }
+         else if (CString(bstrName) == _T("Top Mat Deck Rebar"))
+         {
+            reinforcementType = ReinforcementType::TopMatDeckRebar;
+         }
+         else if (CString(bstrName) == _T("Bottom Mat Deck Rebar"))
+         {
+            reinforcementType = ReinforcementType::BottomMatDeckRebar;
+         }
+         else
+         {
+            continue;
+         }
 
          Float64 slice_area;
          slice->get_Area(&slice_area);
@@ -908,12 +944,13 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
          slice->get_ForegroundStress(&fgStress);
 
          Float64 F = slice_area * fgStress;
-         Float64 d = cgY - (Haunch + tSlab); // adding dy moves cgY to the Girder Section Coordinate (0,0 at top of bare girder)
-                                                // subtracting (Haunch+tSlab) makes d measured from the top of composite girder section
+         Float64 d = (Haunch + tSlab) - cgY; // cgY is in girder section coordinates (Y=0 at top of non-composite girder)
+         // subtracting from (Haunch+tSlab) makes d a distance from the top of composite girder section
+
          if (0 < F &&  // tension
             (
-               (bPositiveMoment && ::IsLT(d, -H / 2)) || // on bottom half
-               (!bPositiveMoment && ::IsLT(-H / 2, d))    // on top half
+               (bPositiveMoment && ::IsGE(H_over_2, d)) || // on bottom half
+               (!bPositiveMoment && ::IsLE(d, H_over_2))    // on top half
                )
             )
          {
@@ -921,28 +958,22 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
             tde += F * d;
          }
 
-         IndexType shapeIdx;
-         slice->get_ShapeIndex(&shapeIdx);
-
-         CComBSTR bstrName;
-         section->get_Name(shapeIdx, &bstrName);
-         CString strName(bstrName);
-         if(0 <= strName.Find(_T("Strand"),0))
+         if (reinforcementType == ReinforcementType::Strand)
          {
             Aps += slice_area;
             fps_avg += F;
          }
-         else if (CString(bstrName).Left(14) == _T("Segment Tendon"))
+         else if (reinforcementType == ReinforcementType::SegmentTendon)
          {
             Apt_Segment += slice_area;
             fpt_avg_segment += F;
          }
-         else if (CString(bstrName).Left(13) == _T("Girder Tendon"))
+         else if (reinforcementType == ReinforcementType::GirderTendon)
          {
             Apt_Girder += slice_area;
             fpt_avg_girder += F;
          }
-      }
+      } // next slice
 
       if (0 < Aps)
       {
@@ -959,7 +990,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
          fpt_avg_girder /= Apt_Girder;
       }
 
-      mcd.de_shear = (IsZero(t) ? 0 : -tde / t);
+      mcd.de_shear = (IsZero(t) ? 0 : tde / t);
 
       if (!bPositiveMoment)
       {
