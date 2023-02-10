@@ -78,6 +78,7 @@ static void write_aci209_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDi
 static void write_aci209_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTable,Float64 fc28,Float64 Ec28,const CConcreteMaterial& concrete,RowIndexType row,bool bAASHTOParameters,Float64 lambda);
 static void write_cebfip_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const std::vector<CGirderKey>& girderKeys,Uint16 level);
 static void write_cebfip_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTable,Float64 fc28,Float64 Ec28,const CConcreteMaterial& concrete,RowIndexType row);
+static void write_uhpc_concrete_row(IEAFDisplayUnits* pDisplayUnits, std::unique_ptr<rptRcTable>& pUHPCTable, const CConcreteMaterial& concrete, RowIndexType row);
 static void write_deck_reinforcing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 static void write_friction_loss_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 
@@ -1534,6 +1535,79 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
       write_lrfd_concrete_row(pDisplayUnits, pTable, -1.0, fc, -1.0, Ec, bUse90dayStrength, lambda, pBridgeDesc->GetLongitudinalJointMaterial(), row);
       row++;
    }
+
+   // UHPC Concrete Properties
+   std::unique_ptr<rptRcTable> pUHPCTable;
+   pUHPCTable.reset(rptStyleManager::CreateDefaultTable(9, _T("UHPC Concrete Properties")));
+   // don't add to paragraph here. if we don't have UHPC, then this table will just get tossed out
+
+
+   pUHPCTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pUHPCTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pUHPCTable->SetColumnStyle(1, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pUHPCTable->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+
+   col = 0;
+   (*pUHPCTable)(0, col++) << _T("Element");
+   (*pUHPCTable)(0, col++) << COLHDR(RPT_STRESS(_T("t,cri")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pUHPCTable)(0, col++) << COLHDR(RPT_STRESS(_T("t,cr")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pUHPCTable)(0, col++) << COLHDR(RPT_STRESS(_T("t,loc")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pUHPCTable)(0, col++) << Sub2(symbol(epsilon),_T("t,loc")) << _T(" x 1000");
+   (*pUHPCTable)(0, col++) << Sub2(symbol(alpha), _T("u"));
+   (*pUHPCTable)(0, col++) << Sub2(symbol(epsilon), _T("cu")) << _T(" x 1000");
+   (*pUHPCTable)(0, col++) << Sub2(symbol(gamma), _T("u"));
+   (*pUHPCTable)(0, col++) << COLHDR(_T("Fiber Length"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+
+
+   IndexType nUHPC = 0; // keep track of number of UHPC elements reported. Add table to paragraph if 1 or more
+   // otherwise table will automatically delete because it is a unique_ptr
+   row = pUHPCTable->GetNumberOfHeaderRows();
+   for (const auto& thisGirderKey : girderKeys)
+   {
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(thisGirderKey.groupIndex);
+      const CSplicedGirderData* pGirder = pGroup->GetGirder(thisGirderKey.girderIndex);
+      SegmentIndexType nSegments = pGirder->GetSegmentCount();
+      for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+      {
+         CSegmentKey thisSegmentKey(thisGirderKey, segIdx);
+
+         const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+
+         if (pSegment->Material.Concrete.Type == pgsTypes::UHPC)
+         {
+            nUHPC++;
+            (*pUHPCTable)(row, 0) << pgsGirderLabel::GetGirderLabel(thisSegmentKey);
+
+            write_uhpc_concrete_row(pDisplayUnits, pUHPCTable, pSegment->Material.Concrete, row);
+            row++;
+         }
+      } // segIdx
+   } // girderKey
+
+   if (0 < nUHPC)
+   {
+      *pPara << pUHPCTable.release() << rptNewLine;
+   }
+}
+
+void write_uhpc_concrete_row(IEAFDisplayUnits* pDisplayUnits, std::unique_ptr<rptRcTable>& pUHPCTable, const CConcreteMaterial& concrete, RowIndexType row)
+{
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, cmpdim, pDisplayUnits->GetComponentDimUnit(), false);
+   INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
+   ColumnIndexType col = 1;
+   (*pUHPCTable)(row, col++) << stress.SetValue(concrete.ftcri);
+   (*pUHPCTable)(row, col++) << stress.SetValue(concrete.ftcr);
+   (*pUHPCTable)(row, col++) << stress.SetValue(concrete.ftloc);
+   (*pUHPCTable)(row, col++) << concrete.etloc * 1000;
+   (*pUHPCTable)(row, col++) << concrete.alpha_u;
+   if(concrete.bExperimental_ecu)
+      (*pUHPCTable)(row, col++) << concrete.ecu * 1000;
+   else
+      (*pUHPCTable)(row, col++) << _T("");
+
+   (*pUHPCTable)(row, col++) << concrete.gamma_u;
+   (*pUHPCTable)(row, col++) << cmpdim.SetValue(concrete.FiberLength);
 }
 
 void write_lrfd_concrete_row(IEAFDisplayUnits* pDisplayUnits, rptRcTable* pTable, Float64 fci, Float64 fc, Float64 Eci, Float64 Ec, bool bHas90dayStrengthColumns, Float64 lambda, const CConcreteMaterial& concrete, RowIndexType row)
