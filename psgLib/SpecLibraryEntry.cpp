@@ -368,38 +368,38 @@ m_bUseImpactForBearingReactions(false)
    m_PhiFlexureTensionSpliced[pgsTypes::PCI_UHPC] = 1.00;
    m_PhiFlexureCompression[pgsTypes::PCI_UHPC]    = 0.75;
 
-   // These don't make sense since FHWA UHPC uses a variable phi based on ductility ratio.
+   // These don't make sense since UHPC uses a variable phi based on ductility ratio.
    // The variable phi does have min/max values so this might be able to be used for that in the future
    // At this time, these are just placeholder values. There aren't any UI elements to modify them
    // and they aren't used in the main program.
-   m_PhiFlexureTensionPS[pgsTypes::FHWA_UHPC] = 0.90;
-   m_PhiFlexureTensionRC[pgsTypes::FHWA_UHPC] = 0.90;
-   m_PhiFlexureTensionSpliced[pgsTypes::FHWA_UHPC] = 1.00;
-   m_PhiFlexureCompression[pgsTypes::FHWA_UHPC] = 0.75;
+   m_PhiFlexureTensionPS[pgsTypes::UHPC] = 0.90;
+   m_PhiFlexureTensionRC[pgsTypes::UHPC] = 0.90;
+   m_PhiFlexureTensionSpliced[pgsTypes::UHPC] = 1.00;
+   m_PhiFlexureCompression[pgsTypes::UHPC] = 0.75;
 
    m_PhiShear[pgsTypes::Normal]          = 0.9;
    m_PhiShear[pgsTypes::SandLightweight] = 0.7;
    m_PhiShear[pgsTypes::AllLightweight]  = 0.7;
    m_PhiShear[pgsTypes::PCI_UHPC] = 0.9;
-   m_PhiShear[pgsTypes::FHWA_UHPC] = 0.9;
+   m_PhiShear[pgsTypes::UHPC] = 0.9;
 
    m_PhiShearDebonded[pgsTypes::Normal]          = 0.85; // set defaults to 8th edition
    m_PhiShearDebonded[pgsTypes::SandLightweight] = 0.85;
    m_PhiShearDebonded[pgsTypes::AllLightweight]  = 0.85;
-   m_PhiShearDebonded[pgsTypes::PCI_UHPC]        = 0.9; // PCI UHPC has 0.85, but this is going to get sunset, so we are going to set it to the FHWA value
-   m_PhiShearDebonded[pgsTypes::FHWA_UHPC] = 0.9;
+   m_PhiShearDebonded[pgsTypes::PCI_UHPC]        = 0.9; // PCI UHPC has 0.85, but this is going to get sunset, so we are going to set it to the AASHTO UHPC GS value
+   m_PhiShearDebonded[pgsTypes::UHPC] = 0.9;
 
    m_PhiClosureJointFlexure[pgsTypes::Normal]          = 0.95;
    m_PhiClosureJointFlexure[pgsTypes::SandLightweight] = 0.90;
    m_PhiClosureJointFlexure[pgsTypes::AllLightweight]  = 0.90;
    m_PhiClosureJointFlexure[pgsTypes::PCI_UHPC] = 0.95;
-   m_PhiClosureJointFlexure[pgsTypes::FHWA_UHPC] = 0.95; // FHWA UHPC doesn't have a fixed phi for flexure
+   m_PhiClosureJointFlexure[pgsTypes::UHPC] = 0.95; // UHPC doesn't have a fixed phi for flexure
 
    m_PhiClosureJointShear[pgsTypes::Normal]          = 0.90;
    m_PhiClosureJointShear[pgsTypes::SandLightweight] = 0.70;
    m_PhiClosureJointShear[pgsTypes::AllLightweight]  = 0.70;
    m_PhiClosureJointShear[pgsTypes::PCI_UHPC] = 0.90;
-   m_PhiClosureJointShear[pgsTypes::FHWA_UHPC] = 0.90;
+   m_PhiClosureJointShear[pgsTypes::UHPC] = 0.90;
 
 
    m_MaxSlabFc[pgsTypes::Normal]             = WBFL::Units::ConvertToSysUnits(6.0,WBFL::Units::Measure::KSI);
@@ -435,13 +435,13 @@ m_bUseImpactForBearingReactions(false)
    //m_MaxConcreteUnitWeight[pgsTypes::PCI_UHPC] = WBFL::Units::ConvertToSysUnits(165., WBFL::Units::Measure::LbfPerFeet3);
    //m_MaxConcreteAggSize[pgsTypes::PCI_UHPC] = WBFL::Units::ConvertToSysUnits(1.5, WBFL::Units::Measure::Inch);
 
-   //m_MaxSlabFc[pgsTypes::FHWA_UHPC] = WBFL::Units::ConvertToSysUnits(6.0, WBFL::Units::Measure::KSI);
-   //m_MaxSegmentFci[pgsTypes::FHWA_UHPC] = WBFL::Units::ConvertToSysUnits(14.0, WBFL::Units::Measure::KSI);
-   //m_MaxSegmentFc[pgsTypes::FHWA_UHPC] = WBFL::Units::ConvertToSysUnits(20.0, WBFL::Units::Measure::KSI);
-   //m_MaxClosureFci[pgsTypes::FHWA_UHPC] = WBFL::Units::ConvertToSysUnits(6.0, WBFL::Units::Measure::KSI);
-   //m_MaxClosureFc[pgsTypes::FHWA_UHPC] = WBFL::Units::ConvertToSysUnits(8.0, WBFL::Units::Measure::KSI);
-   //m_MaxConcreteUnitWeight[pgsTypes::FHWA_UHPC] = WBFL::Units::ConvertToSysUnits(165., WBFL::Units::Measure::LbfPerFeet3);
-   //m_MaxConcreteAggSize[pgsTypes::FHWA_UHPC] = WBFL::Units::ConvertToSysUnits(1.5, WBFL::Units::Measure::Inch);
+   //m_MaxSlabFc[pgsTypes::UHPC] = WBFL::Units::ConvertToSysUnits(6.0, WBFL::Units::Measure::KSI);
+   //m_MaxSegmentFci[pgsTypes::UHPC] = WBFL::Units::ConvertToSysUnits(14.0, WBFL::Units::Measure::KSI);
+   //m_MaxSegmentFc[pgsTypes::UHPC] = WBFL::Units::ConvertToSysUnits(20.0, WBFL::Units::Measure::KSI);
+   //m_MaxClosureFci[pgsTypes::UHPC] = WBFL::Units::ConvertToSysUnits(6.0, WBFL::Units::Measure::KSI);
+   //m_MaxClosureFc[pgsTypes::UHPC] = WBFL::Units::ConvertToSysUnits(8.0, WBFL::Units::Measure::KSI);
+   //m_MaxConcreteUnitWeight[pgsTypes::UHPC] = WBFL::Units::ConvertToSysUnits(165., WBFL::Units::Measure::LbfPerFeet3);
+   //m_MaxConcreteAggSize[pgsTypes::UHPC] = WBFL::Units::ConvertToSysUnits(1.5, WBFL::Units::Measure::Inch);
 
    m_DoCheckStirrupSpacingCompatibility = true;
    m_bCheckSag = true;
@@ -1009,7 +1009,7 @@ bool SpecLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
          pSave->Property(_T("AllLightweight"),m_PhiShearDebonded[pgsTypes::AllLightweight]);
          pSave->Property(_T("SandLightweight"),m_PhiShearDebonded[pgsTypes::SandLightweight]);
          pSave->Property(_T("PCI_UHPC"), m_PhiShearDebonded[pgsTypes::PCI_UHPC]); // added v2
-         pSave->Property(_T("FHWA_UHPC"), m_PhiShearDebonded[pgsTypes::FHWA_UHPC]); // added v2
+         pSave->Property(_T("UHPC"), m_PhiShearDebonded[pgsTypes::UHPC]); // added v2
          pSave->EndUnit(); // ResistanceFactorDebonded
 
       // Added ClosureJointResistanceFactor in version 2 of Shear data block
@@ -4227,8 +4227,11 @@ bool SpecLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
                   THROW_LOAD(InvalidFileFormat, pLoad);
                }
 
-               if (!pLoad->Property(_T("FHWA_UHPC"), &m_PhiShearDebonded[pgsTypes::FHWA_UHPC]))
+               if (!pLoad->Property(_T("UHPC"), &m_PhiShearDebonded[pgsTypes::UHPC]) 
+                  && 
+                  !pLoad->Property(_T("FHWA_UHPC"), &m_PhiShearDebonded[pgsTypes::UHPC]))
                {
+                  // Early versions of this property used FHWA_UHPC. If UHPC fails, try FHWA_UHPC
                   THROW_LOAD(InvalidFileFormat, pLoad);
                }
             }
@@ -7584,7 +7587,7 @@ void SpecLibraryEntry::SetDuctDiameterRatio(Float64 dr)
 
 void SpecLibraryEntry::SetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64 phiTensionPS,Float64 phiTensionRC,Float64 phiTensionSpliced,Float64 phiCompression)
 {
-   ATLASSERT(type != pgsTypes::FHWA_UHPC); // the values for FHWA UHPC are just placeholders at this time... there isn't a UI to modify them and they aren't used in the main program
+   ATLASSERT(type != pgsTypes::UHPC); // the values for UHPC are just placeholders at this time... there isn't a UI to modify them and they aren't used in the main program
    m_PhiFlexureTensionPS[type]      = phiTensionPS;
    m_PhiFlexureTensionRC[type]      = phiTensionRC;
    m_PhiFlexureTensionSpliced[type] = phiTensionSpliced;
@@ -7593,7 +7596,7 @@ void SpecLibraryEntry::SetFlexureResistanceFactors(pgsTypes::ConcreteType type,F
 
 void SpecLibraryEntry::GetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64* phiTensionPS,Float64* phiTensionRC,Float64* phiTensionSpliced,Float64* phiCompression) const
 {
-   ATLASSERT(type != pgsTypes::FHWA_UHPC); // the values for FHWA UHPC are just placeholders at this time... there isn't a UI to modify them and they aren't used in the main program
+   ATLASSERT(type != pgsTypes::UHPC); // the values for UHPC are just placeholders at this time... there isn't a UI to modify them and they aren't used in the main program
    *phiTensionPS      = m_PhiFlexureTensionPS[type];
    *phiTensionRC      = m_PhiFlexureTensionRC[type];
    *phiTensionSpliced = m_PhiFlexureTensionSpliced[type];

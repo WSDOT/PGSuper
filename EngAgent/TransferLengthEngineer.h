@@ -116,11 +116,11 @@ protected:
    void ReportTransferLengthSpecReference(rptParagraph* pPara) const override;
 };
 
-class pgsFHWAUHPCTransferLength : public pgsTransferLengthBase
+class pgsUHPCTransferLength : public pgsTransferLengthBase
 {
 public:
-   pgsFHWAUHPCTransferLength();
-   pgsFHWAUHPCTransferLength(Float64 db, pgsTypes::TransferLengthType xferType);
+   pgsUHPCTransferLength();
+   pgsUHPCTransferLength(Float64 db, pgsTypes::TransferLengthType xferType);
 
    void SetStrandDiameter(Float64 db);
    Float64 GetStrandDiameter() const;

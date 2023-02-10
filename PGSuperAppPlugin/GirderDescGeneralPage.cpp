@@ -1029,14 +1029,15 @@ void CGirderDescGeneralPage::OnMoreConcreteProperties()
    dlg.m_PCIUHPC.m_AutogenousShrinkage = pParent->m_pSegment->Material.Concrete.AutogenousShrinkage;
    dlg.m_PCIUHPC.m_bPCTT = pParent->m_pSegment->Material.Concrete.bPCTT;
 
-   dlg.m_FHWAUHPC.m_ftcri = pParent->m_pSegment->Material.Concrete.ftcri;
-   dlg.m_FHWAUHPC.m_ftcr = pParent->m_pSegment->Material.Concrete.ftcr;
-   dlg.m_FHWAUHPC.m_ftloc = pParent->m_pSegment->Material.Concrete.ftloc;
-   dlg.m_FHWAUHPC.m_etloc = pParent->m_pSegment->Material.Concrete.etloc;
-   dlg.m_FHWAUHPC.m_alpha_u = pParent->m_pSegment->Material.Concrete.alpha_u;
-   dlg.m_FHWAUHPC.m_ecu = pParent->m_pSegment->Material.Concrete.ecu;
-   dlg.m_FHWAUHPC.m_bExperimental_ecu = pParent->m_pSegment->Material.Concrete.bExperimental_ecu;
-   dlg.m_FHWAUHPC.m_FiberLength = pParent->m_pSegment->Material.Concrete.FiberLength;
+   dlg.m_UHPC.m_ftcri = pParent->m_pSegment->Material.Concrete.ftcri;
+   dlg.m_UHPC.m_ftcr = pParent->m_pSegment->Material.Concrete.ftcr;
+   dlg.m_UHPC.m_ftloc = pParent->m_pSegment->Material.Concrete.ftloc;
+   dlg.m_UHPC.m_etloc = pParent->m_pSegment->Material.Concrete.etloc;
+   dlg.m_UHPC.m_alpha_u = pParent->m_pSegment->Material.Concrete.alpha_u;
+   dlg.m_UHPC.m_ecu = pParent->m_pSegment->Material.Concrete.ecu;
+   dlg.m_UHPC.m_bExperimental_ecu = pParent->m_pSegment->Material.Concrete.bExperimental_ecu;
+   dlg.m_UHPC.m_gamma_u = pParent->m_pSegment->Material.Concrete.gamma_u;
+   dlg.m_UHPC.m_FiberLength = pParent->m_pSegment->Material.Concrete.FiberLength;
 
    dlg.m_AASHTO.m_EccK1       = pParent->m_pSegment->Material.Concrete.EcK1;
    dlg.m_AASHTO.m_EccK2       = pParent->m_pSegment->Material.Concrete.EcK2;
@@ -1077,14 +1078,15 @@ void CGirderDescGeneralPage::OnMoreConcreteProperties()
       pParent->m_pSegment->Material.Concrete.AutogenousShrinkage = dlg.m_PCIUHPC.m_AutogenousShrinkage;
       pParent->m_pSegment->Material.Concrete.bPCTT = dlg.m_PCIUHPC.m_bPCTT;
 
-      pParent->m_pSegment->Material.Concrete.ftcri = dlg.m_FHWAUHPC.m_ftcri;
-      pParent->m_pSegment->Material.Concrete.ftcr = dlg.m_FHWAUHPC.m_ftcr;
-      pParent->m_pSegment->Material.Concrete.ftloc = dlg.m_FHWAUHPC.m_ftloc;
-      pParent->m_pSegment->Material.Concrete.etloc = dlg.m_FHWAUHPC.m_etloc;
-      pParent->m_pSegment->Material.Concrete.alpha_u = dlg.m_FHWAUHPC.m_alpha_u;
-      pParent->m_pSegment->Material.Concrete.bExperimental_ecu = dlg.m_FHWAUHPC.m_bExperimental_ecu;
-      pParent->m_pSegment->Material.Concrete.ecu = dlg.m_FHWAUHPC.m_ecu;
-      pParent->m_pSegment->Material.Concrete.FiberLength = dlg.m_FHWAUHPC.m_FiberLength;
+      pParent->m_pSegment->Material.Concrete.ftcri = dlg.m_UHPC.m_ftcri;
+      pParent->m_pSegment->Material.Concrete.ftcr = dlg.m_UHPC.m_ftcr;
+      pParent->m_pSegment->Material.Concrete.ftloc = dlg.m_UHPC.m_ftloc;
+      pParent->m_pSegment->Material.Concrete.etloc = dlg.m_UHPC.m_etloc;
+      pParent->m_pSegment->Material.Concrete.alpha_u = dlg.m_UHPC.m_alpha_u;
+      pParent->m_pSegment->Material.Concrete.bExperimental_ecu = dlg.m_UHPC.m_bExperimental_ecu;
+      pParent->m_pSegment->Material.Concrete.ecu = dlg.m_UHPC.m_ecu;
+      pParent->m_pSegment->Material.Concrete.gamma_u = dlg.m_UHPC.m_gamma_u;
+      pParent->m_pSegment->Material.Concrete.FiberLength = dlg.m_UHPC.m_FiberLength;
 
       pParent->m_pSegment->Material.Concrete.EcK1             = dlg.m_AASHTO.m_EccK1;
       pParent->m_pSegment->Material.Concrete.EcK2             = dlg.m_AASHTO.m_EccK2;

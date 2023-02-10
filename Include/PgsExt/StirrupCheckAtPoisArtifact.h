@@ -144,15 +144,18 @@ public:
    bool IsApplicable() const;
    void SetApplicability(bool isApplicable);
 
-   void IsFHWAUHPC(bool bIsUHPC);
-   bool IsFHWAUHPC() const;
+   // True if the POI where this check happens is AASHTO UHPC concrete
+   void IsUHPC(bool bIsUHPC);
+   bool IsUHPC() const;
 
    void SetCrackLocalizationStrain(Float64 etloc);
    Float64 GetCrackLocalizationStrain() const;
 
-   // This is actually the tension stress limit, gamma_u*ft,cr
    void SetDesignEffectiveConcreteStrength(Float64 ft);
    Float64 GetDesignEffectiveConcreteStrength() const;
+
+   void SetFiberOrientationReductionFactor(Float64 gamma_u);
+   Float64 GetFiberOrientationReductionFactor() const;
 
    void SetAct(Float64 Act);
    Float64 GetAct() const;
@@ -207,11 +210,12 @@ private:
    bool    m_bIsApplicable{ false };
    bool    m_bPretensionForceLimit{false};
 
-   // FHWA UHPC parameters
-   bool    m_bFHWAUHPC{ false };
+   // AAHSTO UHPC parameters
+   bool    m_bUHPC{ false };
    Float64 m_Act{ 0.0 };
-   Float64 m_ft{ 0.0 }; // gamma_u * ft,cr = tension stress limit
+   Float64 m_ft{ 0.0 }; // ft,cr = tension stress limit
    Float64 m_etloc{ 0.0 }; // crack localization strain
+   Float64 m_gamma_u{ 0.0 }; // gamma_u
 };
 
 // INLINE METHODS

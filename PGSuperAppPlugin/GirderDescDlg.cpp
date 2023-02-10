@@ -69,7 +69,7 @@ bool CGirderDescDlg::HasDeck() const
 
 LPCTSTR CGirderDescDlg::GetIntentionalRougheningPrompt() const
 {
-   return m_pSegment->Material.Concrete.Type == pgsTypes::PCI_UHPC || m_pSegment->Material.Concrete.Type == pgsTypes::FHWA_UHPC ?
+   return m_pSegment->Material.Concrete.Type == pgsTypes::PCI_UHPC || m_pSegment->Material.Concrete.Type == pgsTypes::UHPC ?
       _T("Top flange is intentionally roughened with flutes") :
       _T("Top flange is intentionally roughened for interface shear capacity");
 }

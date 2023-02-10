@@ -28,7 +28,7 @@
 #include "ConcreteEntryGeneralPage.h"
 #include "AASHTOConcretePage.h"
 #include "PCIUHPCConcretePage.h"
-#include "FHWAUHPCConcretePage.h"
+#include "UHPCConcretePage.h"
 #include "ACIConcretePage.h"
 #include "CEBFIPConcretePage.h"
 
@@ -59,7 +59,7 @@ public:
    CConcreteEntryGeneralPage m_General;
    CAASHTOConcretePage m_AASHTO;
    CPCIUHPCConcretePage m_PCIUHPC;
-   CFHWAUHPCConcretePage m_FHWAUHPC;
+   CUHPCConcretePage m_UHPC;
    CACIConcretePage m_ACI;
    CCEBFIPConcretePage m_CEBFIP;
 

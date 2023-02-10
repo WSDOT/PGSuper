@@ -72,7 +72,7 @@ void CPCIUHPCConcretePage::DoDataExchange(CDataExchange* pDX)
       m_AutogenousShrinkage *= 1.0e3;
 
    DDX_Text(pDX, IDC_AUTOGENOUS_SHRINKAGE, m_AutogenousShrinkage);
-   DDV_GreaterThanZero(pDX, IDC_AUTOGENOUS_SHRINKAGE, m_AutogenousShrinkage);
+   DDV_LimitOrMore(pDX, IDC_AUTOGENOUS_SHRINKAGE, m_AutogenousShrinkage, 0.0);
 
    if (pDX->m_bSaveAndValidate)
       m_AutogenousShrinkage /= 1.0e3;

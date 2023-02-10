@@ -64,13 +64,13 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    GET_IFACE2(pBroker, IBridge, pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
-   bool bFHWAUHPC = false;
+   bool bUHPC = false;
    GET_IFACE2(pBroker, IMaterials, pMaterials);
    for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
    {
-      if (pMaterials->GetSegmentConcreteType(CSegmentKey(girderKey, segIdx)) == pgsTypes::FHWA_UHPC)
+      if (pMaterials->GetSegmentConcreteType(CSegmentKey(girderKey, segIdx)) == pgsTypes::UHPC)
       {
-         bFHWAUHPC = true;
+         bUHPC = true;
          break;
       }
    }
@@ -79,9 +79,9 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
    *pTitle << _T("Longitudinal Reinforcement for Shear Check - ") << GetLimitStateString(ls) << _T(" [");
-   if (bFHWAUHPC)
+   if (bUHPC)
    {
-      *pTitle << _T("1.7.3.5");
+      *pTitle << _T("GS 1.7.3.5");
    }
    else
    {
@@ -97,9 +97,9 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
 
    lrfdVersionMgr::Version vers = lrfdVersionMgr::GetVersion();
 
-   if (bFHWAUHPC)
+   if (bUHPC)
    {
-      *pBody << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("FHWA_UHPC_LongitudinalReinforcementForShear.png")) << rptNewLine;
+      *pBody << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("UHPC_LongitudinalReinforcementForShear.png")) << rptNewLine;
    }
    else
    {
@@ -153,9 +153,9 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    if (lrfdVersionMgr::NinthEdition2020 <= vers)
    {
       (*table)(0, col++) << COLHDR(RPT_APS << RPT_FPS, rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
-      if (bFHWAUHPC)
+      if (bUHPC)
       {
-         (*table)(0, col++) << COLHDR(RPT_AS << RPT_ES << Sub2(symbol(epsilon),_T("t,loc")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+         (*table)(0, col++) << COLHDR(RPT_AS << RPT_ES << Sub2(symbol(gamma),_T("u")) << Sub2(symbol(epsilon), _T("t,loc")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
       }
       else
       {
@@ -199,7 +199,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
             (*table)(row, col++) << shear.SetValue( C );
             (*table)(row, col++) << shear.SetValue( D );
 
-            if (pArtifact->IsFHWAUHPC())
+            if (pArtifact->IsUHPC())
             {
                (*table)(row, col++) << _T("1.7.3.5-") << pArtifact->GetEquation();
             }

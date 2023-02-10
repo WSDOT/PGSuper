@@ -163,16 +163,16 @@ CShrinkageAtDeckPlacementTable* CShrinkageAtDeckPlacementTable::PrepareTable(rpt
    if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC)
    {
       if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.bPCTT)
-         *pParagraph << rptRcImage(strImagePath + _T("CreepShrinkageAtDeckPlacement_UHPC_PCTT.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("CreepShrinkageAtDeckPlacement_PCI_UHPC_PCTT.png")) << rptNewLine;
       else
-         *pParagraph << rptRcImage(strImagePath + _T("CreepShrinkageAtDeckPlacement_UHPC.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("CreepShrinkageAtDeckPlacement_PCI_UHPC.png")) << rptNewLine;
 
       *pParagraph << rptRcImage(strImagePath + _T("PCI_UHPC_Factors.png")) << rptNewLine;
    }
-   else if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC)
+   else if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
    {
-      *pParagraph << rptRcImage(strImagePath + _T("CreepShrinkageAtDeckPlacement_FHWA_UHPC.png")) << rptNewLine;
-      *pParagraph << rptRcImage(strImagePath + _T("FHWA_UHPC_Factors.png")) << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + _T("CreepShrinkageAtDeckPlacement_UHPC.png")) << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + _T("UHPC_Factors.png")) << rptNewLine;
    }
    else
    {
@@ -265,7 +265,7 @@ CShrinkageAtDeckPlacementTable* CShrinkageAtDeckPlacementTable::PrepareTable(rpt
    (*pParamTable)(1,5) << table->time.SetValue(ptl->GetFinalAge());
 
    // intermediate results
-   pParamTable = rptStyleManager::CreateDefaultTable(pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC ? 7 : 6,_T(""));
+   pParamTable = rptStyleManager::CreateDefaultTable(pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC ? 7 : 6,_T(""));
    *pParagraph << pParamTable << rptNewLine;
 
    if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
@@ -286,7 +286,7 @@ CShrinkageAtDeckPlacementTable* CShrinkageAtDeckPlacementTable::PrepareTable(rpt
    (*pParamTable)(0,5) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("Initial to Final") << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetMaturityAtFinal());
    table->time.ShowUnitTag(false);
 
-   if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC)
+   if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
    {
       (*pParamTable)(0, 6) << Sub2(_T("k"), _T("l"));
    }
@@ -298,7 +298,7 @@ CShrinkageAtDeckPlacementTable* CShrinkageAtDeckPlacementTable::PrepareTable(rpt
    (*pParamTable)(1,4) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKtd(ptl->GetMaturityAtDeckPlacement()));
    (*pParamTable)(1,5) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKtd(ptl->GetMaturityAtFinal()));
 
-   if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC)
+   if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
    {
       (*pParamTable)(1, 6) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKl(ptl->GetInitialAge()));
    }

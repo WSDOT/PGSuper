@@ -197,9 +197,9 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsG
          *p << Bold(_T("Restriction C")) << rptNewLine;
       }
 
-      if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+      if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
       {
-         *p << _T("Longitudinal spacing of debonding termination locations shall be at least ") << Sub2(_T("l"), _T("t")) << _T(" apart");
+         *p << _T("Longitudinal spacing of debonding termination locations shall be at least ") << Sub2(_T("l"), _T("t")) << _T(" apart.") << rptNewLine;
       }
       else
       {
@@ -286,7 +286,7 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsG
          bReqE = false;
       }
 
-      if (pMaterials->GetSegmentConcreteType(segmentKey) != pgsTypes::FHWA_UHPC) // restriction F does not apply to FHWA UHPC
+      if (pMaterials->GetSegmentConcreteType(segmentKey) != pgsTypes::UHPC) // restriction F does not apply to UHPC
       {
          if (bAfter8thEdition)
          {
@@ -357,7 +357,7 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsG
                Float64 fraction = pDebondArtifact->GetFraDebondedStrands();
                Float64 ratio_start = pDebondArtifact->GetBottomFlangeToWebWidthRatio(pgsTypes::metStart);
                Float64 ratio_end   = pDebondArtifact->GetBottomFlangeToWebWidthRatio(pgsTypes::metEnd);
-               *p << _T("Debonding = ") << percentage.SetValue(fraction) << _T(", ") << Sub2(_T("b"), _T("f")) << _T("/") << Sub2(_T("b"), _T("w")) << _T(" = ") << ratio_start <<_T(" at start, and = ") << ratio_end << _T(" at end of member.") << rptNewLine;
+               *p << _T("Debonding = ") << percentage.SetValue(fraction) << _T(", ") << Sub2(_T("b"), _T("f")) << _T("/") << Sub2(_T("b"), _T("w")) << _T(" = ") << ratio_start <<_T(" at start, and ") << Sub2(_T("b"), _T("f")) << _T("/") << Sub2(_T("b"), _T("w")) << _T(" = ") << ratio_end << _T(" at end of member.") << rptNewLine;
             }
             else
             {
@@ -437,7 +437,7 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsG
          *p << _T("Alternate bonded and debonded strands both horizontally and vertically") << rptNewLine;
       }
 
-      if (pMaterials->GetSegmentConcreteType(segmentKey) != pgsTypes::FHWA_UHPC) // restriction H does not apply to FHWA UHPC
+      if (pMaterials->GetSegmentConcreteType(segmentKey) != pgsTypes::UHPC) // restriction H does not apply to UHPC
       {
          if (bAfter8thEdition)
          {

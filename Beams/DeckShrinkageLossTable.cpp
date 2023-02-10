@@ -83,7 +83,7 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
    GET_IFACE2(pBroker,IMaterials, pMaterials);
-   bool bIsUHPC = pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC ? true : false;
+   bool bIsUHPC = pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC ? true : false;
 
    // Create and configure the table
    ColumnIndexType numColumns = bIsUHPC ? 17 : 13;

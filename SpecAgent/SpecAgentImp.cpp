@@ -70,7 +70,7 @@ STDMETHODIMP CSpecAgentImp::SetBroker(IBroker* pBroker)
 
    m_LRFDSplittingCheckEngineer.SetBroker(pBroker);
    m_PCIUHPCSplittingCheckEngineer.SetBroker(pBroker);
-   m_FHWAUHPCSplittingCheckEngineer.SetBroker(pBroker);
+   m_UHPCSplittingCheckEngineer.SetBroker(pBroker);
 
    return S_OK;
 }
@@ -280,8 +280,8 @@ std::vector<StressCheckTask> CSpecAgentImp::GetStressCheckTasks(const CSegmentKe
       // fatigue checks are not applicable to PCI_UHPC, put are applicable to all other
       vStressCheckTasks.emplace_back(lastIntervalIdx, lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI, pgsTypes::Compression);
 
-      // this is a tension stress check for fatigue in FHWA UHPC. See GS 1.5.3
-      if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+      // this is a tension stress check for fatigue in UHPC. See GS 1.5.3
+      if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
       {
          vStressCheckTasks.emplace_back(lastIntervalIdx, pgsTypes::FatigueI, pgsTypes::Tension);
       }
@@ -872,7 +872,7 @@ std::_tstring CSpecAgentImp::GetAllowableStressParameterName(pgsTypes::StressTyp
    std::_tstring strParamName;
    if (stressType == pgsTypes::Compression)
    {
-      strParamName = _T("conrete strength");
+      strParamName = _T("concrete strength");
    }
    else
    {
@@ -882,9 +882,9 @@ std::_tstring CSpecAgentImp::GetAllowableStressParameterName(pgsTypes::StressTyp
       case pgsTypes::AllLightweight:
       case pgsTypes::SandLightweight:
       case pgsTypes::PCI_UHPC:
-         strParamName = _T("conrete strength");
+         strParamName = _T("concrete strength");
          break;
-      case pgsTypes::FHWA_UHPC:
+      case pgsTypes::UHPC:
          strParamName = _T("cracking strength");
          break;
       }
@@ -901,6 +901,7 @@ void CSpecAgentImp::ReportSegmentAllowableTensionStress(const pgsPointOfInterest
    INIT_UV_PROTOTYPE(rptPressureSectionValue, stress, pDisplayUnits->GetStressUnit(), false);
    INIT_UV_PROTOTYPE(rptPressureSectionValue, stress_u, pDisplayUnits->GetStressUnit(), true);
    INIT_UV_PROTOTYPE(rptSqrtPressureValue, tension_coeff, pDisplayUnits->GetTensionCoefficientUnit(), false);
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
    GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
@@ -923,26 +924,26 @@ void CSpecAgentImp::ReportSegmentAllowableTensionStress(const pgsPointOfInterest
       }
       *pPara << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
    }
-   else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+   else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
    {
       Float64 ft_cri = pMaterials->GetSegmentConcreteInitialEffectiveCrackingStrength(segmentKey);
       Float64 ft_cr = pMaterials->GetSegmentConcreteDesignEffectiveCrackingStrength(segmentKey);
       if (task.limitState == pgsTypes::FatigueI)
       {
-         Float64 k = GetAllowableFHWAUHPCFatigueTensionStressLimitModifier();
-         Float64 gamma_u = GetAllowableFHWAUHPCTensionStressLimitCoefficient();
-         *pPara << _T("Tension stress limit = ") << k << Sub2(symbol(gamma), _T("u")) << Sub2(_T("f"), _T("t,cr")) << _T(" = (") << k << _T(")(") << gamma_u << _T(")(") << stress_u.SetValue(ft_cr) << _T(")");
+         Float64 k = GetAllowableUHPCFatigueTensionStressLimitModifier();
+         Float64 gamma_u = GetAllowableUHPCTensionStressLimitCoefficient(segmentKey);
+         *pPara << _T("Tension stress limit = ") << k << Sub2(symbol(gamma), _T("u")) << Sub2(_T("f"), _T("t,cr")) << _T(" = (") << k << _T(")(") << scalar.SetValue(gamma_u) << _T(")(") << stress_u.SetValue(ft_cr) << _T(")");
       }
       else
       {
-         Float64 gamma_u = GetAllowableFHWAUHPCTensionStressLimitCoefficient();
+         Float64 gamma_u = GetAllowableUHPCTensionStressLimitCoefficient(segmentKey);
          if (bFci)
          {
-            *pPara << _T("Tension stress limit in areas other than the precompressed tensile zone = ") << Sub2(symbol(gamma), _T("u")) << Sub2(_T("f"), _T("t,cri")) << _T(" = ") << gamma_u << _T("(") << stress_u.SetValue(ft_cri) << _T(")");
+            *pPara << _T("Tension stress limit in areas other than the precompressed tensile zone = ") << Sub2(symbol(gamma), _T("u")) << Sub2(_T("f"), _T("t,cri")) << _T(" = ") << scalar.SetValue(gamma_u) << _T("(") << stress_u.SetValue(ft_cri) << _T(")");
          }
          else
          {
-            *pPara << _T("Tension stress limit in the precompressed tensile zone = ") << Sub2(symbol(gamma), _T("u")) << Sub2(_T("f"), _T("t,cr")) << _T(" = ") << gamma_u << __T("(") << stress_u.SetValue(ft_cr) << _T(")");
+            *pPara << _T("Tension stress limit in the precompressed tensile zone = ") << Sub2(symbol(gamma), _T("u")) << Sub2(_T("f"), _T("t,cr")) << _T(" = ") << scalar.SetValue(gamma_u) << __T("(") << stress_u.SetValue(ft_cr) << _T(")");
          }
       }
 
@@ -1225,9 +1226,9 @@ Float64 CSpecAgentImp::GetAllowableTensionStress(pgsTypes::LoadRatingType rating
       Float64 k = GetAllowablePCIUHPCTensionStressLimitCoefficient();
       fallow = k * f_fc;
    }
-   else if(concreteType == pgsTypes::FHWA_UHPC)
+   else if(concreteType == pgsTypes::UHPC)
    {
-      Float64 gamma_u = GetAllowableFHWAUHPCTensionStressLimitCoefficient();
+      Float64 gamma_u = GetAllowableUHPCTensionStressLimitCoefficient(segmentKey);
       Float64 ft_cr = pMaterials->GetSegmentConcreteDesignEffectiveCrackingStrength(segmentKey);
       fallow = gamma_u * ft_cr;
    }
@@ -1569,12 +1570,12 @@ Float64 CSpecAgentImp::GetSegmentAllowableTensionStress(const pgsPointOfInterest
          f = (k * f_fc)*sqrt(fc/fc28);
       }
    }
-   else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+   else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
    {
       Float64 ft_cri = pMaterials->GetSegmentConcreteInitialEffectiveCrackingStrength(segmentKey);
       Float64 ft_cr = pMaterials->GetSegmentConcreteDesignEffectiveCrackingStrength(segmentKey);
-      Float64 gamma_u = GetAllowableFHWAUHPCTensionStressLimitCoefficient();
-      Float64 k = (task.limitState == pgsTypes::FatigueI ? GetAllowableFHWAUHPCFatigueTensionStressLimitModifier() : 1.0);
+      Float64 gamma_u = GetAllowableUHPCTensionStressLimitCoefficient(segmentKey);
+      Float64 k = (task.limitState == pgsTypes::FatigueI ? GetAllowableUHPCFatigueTensionStressLimitModifier() : 1.0);
 
       GET_IFACE(IIntervals, pIntervals);
       IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
@@ -2305,8 +2306,8 @@ bool CSpecAgentImp::IsStressCheckApplicable(const CSegmentKey& segmentKey, const
       case pgsTypes::FatigueI:
       {
          GET_IFACE(IMaterials, pMaterials);
-         if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
-            return true; // FHWA UHPC has a tension stress check for the fatigue limit state
+         if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
+            return true; // UHPC has a tension stress check for the fatigue limit state
          else
             return false; // these are compression only limit states
       }
@@ -2444,11 +2445,11 @@ Float64 CSpecAgentImp::GetAllowableSegmentPrincipalWebTensionStress(const CSegme
       Float64 k = GetAllowablePCIUHPCTensionStressLimitCoefficient();
       return k * f_fc;
    }
-   else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+   else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
    {
       Float64 ft_cr = pMaterials->GetSegmentConcreteDesignEffectiveCrackingStrength(segmentKey);
-      Float64 k = GetAllowableFHWAUHPCTensionStressLimitCoefficient();
-      return k * ft_cr;
+      Float64 gamma_u = GetAllowableUHPCTensionStressLimitCoefficient(segmentKey);
+      return gamma_u * ft_cr;
    }
    else
    {
@@ -2469,6 +2470,7 @@ void CSpecAgentImp::ReportAllowableSegmentPrincipalWebTensionStress(const CSegme
    Float64 fAllowable = GetAllowableSegmentPrincipalWebTensionStress(segmentKey);
    INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true);
    INIT_UV_PROTOTYPE(rptPressureSectionValue, stress_u, pDisplayUnits->GetStressUnit(), true);
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
    GET_IFACE(IMaterials, pMaterials);
    if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC)
@@ -2479,11 +2481,11 @@ void CSpecAgentImp::ReportAllowableSegmentPrincipalWebTensionStress(const CSegme
       *pPara << _T("Tension stress limit = (2/3)(") << Sub2(_T("f"), _T("fc")) << _T(") = (2/3)(") << stress.SetValue(f_fc);
       *pPara << _T(") = ") << stress.SetValue(fAllowable) << rptNewLine;
    }
-   else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+   else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
    {
       Float64 ft_cr = pMaterials->GetSegmentConcreteDesignEffectiveCrackingStrength(segmentKey);
-      Float64 gamma_u = GetAllowableFHWAUHPCTensionStressLimitCoefficient();
-      *pPara << _T("Tension stress limit = ") << Sub2(symbol(gamma), _T("u")) << Sub2(_T("f"), _T("t,cr")) << _T(" = ") << gamma_u << _T("(") << stress_u.SetValue(ft_cr) << _T(")");
+      Float64 gamma_u = GetAllowableUHPCTensionStressLimitCoefficient(segmentKey);
+      *pPara << _T("Tension stress limit = ") << Sub2(symbol(gamma), _T("u")) << Sub2(_T("f"), _T("t,cr")) << _T(" = ") << scalar.SetValue(gamma_u) << _T("(") << stress_u.SetValue(ft_cr) << _T(")");
       *pPara << _T(" = ") << stress.SetValue(fAllowable) << rptNewLine;
    }
    else
@@ -2592,10 +2594,10 @@ Float64 CSpecAgentImp::GetPrincipalTensileStressRequiredConcreteStrength(const p
       // PCI does not have a principal tension stress requirement
       return 0.0; // zero means "do nothing" 
    }
-   else if (concreteType == pgsTypes::FHWA_UHPC)
+   else if (concreteType == pgsTypes::UHPC)
    {
       // GS 1.9.2.3.3, limit is gamma_u*ft,cr
-      Float64 gamma_u = GetAllowableFHWAUHPCTensionStressLimitCoefficient();
+      Float64 gamma_u = GetAllowableUHPCTensionStressLimitCoefficient(poi.GetSegmentKey());
       Float64 ftcr_reqd = stress / gamma_u;
       return ftcr_reqd;
    }
@@ -2612,18 +2614,17 @@ Float64 CSpecAgentImp::GetAllowablePCIUHPCTensionStressLimitCoefficient() const
    return 2.0 / 3.0;
 }
 
-Float64 CSpecAgentImp::GetAllowableFHWAUHPCTensionStressLimitCoefficient() const
+Float64 CSpecAgentImp::GetAllowableUHPCTensionStressLimitCoefficient(const CSegmentKey& segmentKey) const
 {
-   //return 0.85; // GS 1.4.2.5.4 gamma.u (this is the max value, may want to make it a parameter in the project criteria or material)
-   // gamma.u is becoming obsolete in the AASHTO UHPC GS - FHWA is retaining it and setting it to 1.0
-   return 1.0; // GS 1.4.2.5.4 gamma.u (this is the max value, may want to make it a parameter in the project criteria or material)
+   // this is gamma_u that gets multiplied with ft,cr, ft,loc, and et,loc
+   GET_IFACE(IMaterials, pMaterial);
+   return pMaterial->GetSegmentConcreteFiberOrientationReductionFactor(segmentKey);
 }
 
-Float64 CSpecAgentImp::GetAllowableFHWAUHPCFatigueTensionStressLimitModifier() const
+Float64 CSpecAgentImp::GetAllowableUHPCFatigueTensionStressLimitModifier() const
 {
    // this is the value that gets multiplied with gamma_u*ft,cr
-   //return 1.12; // GS 1.5.3 (may want to make this a parameter in the project criteria or material definition)
-   return 0.95; // GS 1.5.3 (may want to make this a parameter in the project criteria or material definition)
+   return 0.95; // GS 1.5.2.3 (may want to make this a parameter in the project criteria or material definition)
 }
 
 Float64 CSpecAgentImp::GetRequiredConcreteStrength(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation, Float64 stressDemand, const StressCheckTask& task, bool bIsInPTZ) const
@@ -2723,10 +2724,10 @@ Float64 CSpecAgentImp::GetRequiredConcreteStrength(const pgsPointOfInterest& poi
             }
             else
             {
-               ASSERT(pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC);
-               Float64 gamma_u = GetAllowableFHWAUHPCTensionStressLimitCoefficient();
-               Float64 k = (task.limitState == pgsTypes::FatigueI ? GetAllowableFHWAUHPCFatigueTensionStressLimitModifier() : 1.0);
-               // FHWA Tension stress limit is a function of tensile strength not compression strength
+               ASSERT(pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC);
+               Float64 gamma_u = GetAllowableUHPCTensionStressLimitCoefficient(segmentKey);
+               Float64 k = (task.limitState == pgsTypes::FatigueI ? GetAllowableUHPCFatigueTensionStressLimitModifier() : 1.0);
+               // Tension stress limit is a function of tensile strength not compression strength
                // Compute the required tensile strength
                fc_reqd = stressDemand / (k*gamma_u);
             }
@@ -2913,9 +2914,9 @@ const pgsSplittingCheckEngineer& CSpecAgentImp::GetSplittingCheckEngineer(const 
    {
       return m_PCIUHPCSplittingCheckEngineer;
    }
-   else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+   else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
    {
-      return m_FHWAUHPCSplittingCheckEngineer;
+      return m_UHPCSplittingCheckEngineer;
    }
    else
    {
@@ -3102,10 +3103,10 @@ Float64 CSpecAgentImp::GetLiftingAllowableTensileConcreteStressEx(const CSegment
       Float64 fc28 = pMaterials->GetSegmentFc28(segmentKey);
       f = k * f_fc * sqrt(fci / fc28);
    }
-   else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+   else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
    {
       Float64 ft_cri = pMaterials->GetSegmentConcreteInitialEffectiveCrackingStrength(segmentKey);
-      Float64 gamma_u = GetAllowableFHWAUHPCTensionStressLimitCoefficient();
+      Float64 gamma_u = GetAllowableUHPCTensionStressLimitCoefficient(segmentKey);
       return gamma_u * ft_cri;
    }
    else
@@ -3286,11 +3287,11 @@ WBFL::Stability::LiftingCriteria CSpecAgentImp::GetLiftingStabilityCriteria(cons
 
       criteria.TensionStressLimit = pTensionStressLimit;
    }
-   else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+   else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
    {
-      auto pTensionStressLimit(std::make_shared<WBFL::Stability::FHWAUHPCLiftingTensionStressLimit>(WBFL::Stability::FHWAUHPCLiftingTensionStressLimit()));
+      auto pTensionStressLimit(std::make_shared<WBFL::Stability::UHPCLiftingTensionStressLimit>(WBFL::Stability::UHPCLiftingTensionStressLimit()));
       pTensionStressLimit->AllowableTension = GetLiftingAllowableTensileConcreteStress(segmentKey);
-      pTensionStressLimit->gamma_u = GetAllowableFHWAUHPCTensionStressLimitCoefficient();
+      pTensionStressLimit->gamma_u = GetAllowableUHPCTensionStressLimitCoefficient(segmentKey);
       pTensionStressLimit->ft_cri = pMaterials->GetSegmentConcreteInitialEffectiveCrackingStrength(segmentKey);
 
       criteria.TensionStressLimit = pTensionStressLimit;
@@ -3450,10 +3451,10 @@ Float64 CSpecAgentImp::GetHaulingAllowableTensileConcreteStressEx(const CSegment
       Float64 k = GetAllowablePCIUHPCTensionStressLimitCoefficient();
       f = k * f_fc;
    }
-   else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+   else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
    {
       Float64 ft_cr = pMaterials->GetSegmentConcreteDesignEffectiveCrackingStrength(segmentKey);
-      Float64 gamma_u = GetAllowableFHWAUHPCTensionStressLimitCoefficient();
+      Float64 gamma_u = GetAllowableUHPCTensionStressLimitCoefficient(segmentKey);
       return gamma_u * ft_cr;
    }
    else
@@ -3716,14 +3717,14 @@ WBFL::Stability::HaulingCriteria CSpecAgentImp::GetHaulingStabilityCriteria(cons
 
       criteria.TensionStressLimit = pTensionStressLimit;
    }
-   else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+   else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
    {
-      auto pTensionStressLimit(std::make_shared<WBFL::Stability::FHWAUHPCHaulingTensionStressLimit>(WBFL::Stability::FHWAUHPCHaulingTensionStressLimit()));
+      auto pTensionStressLimit(std::make_shared<WBFL::Stability::UHPCHaulingTensionStressLimit>(WBFL::Stability::UHPCHaulingTensionStressLimit()));
 
       pTensionStressLimit->AllowableTension[+WBFL::Stability::HaulingSlope::CrownSlope] = GetHaulingAllowableTensileConcreteStress(segmentKey, pgsTypes::CrownSlope);
       pTensionStressLimit->AllowableTension[+WBFL::Stability::HaulingSlope::Superelevation] = GetHaulingAllowableTensileConcreteStress(segmentKey, pgsTypes::Superelevation);
 
-      pTensionStressLimit->gamma_u = GetAllowableFHWAUHPCTensionStressLimitCoefficient();
+      pTensionStressLimit->gamma_u = GetAllowableUHPCTensionStressLimitCoefficient(segmentKey);
       pTensionStressLimit->ft_cr = pMaterials->GetSegmentConcreteDesignEffectiveCrackingStrength(segmentKey);
 
       criteria.TensionStressLimit = pTensionStressLimit;
@@ -3909,7 +3910,7 @@ void CSpecAgentImp::GetMinDistanceBetweenDebondSections(const CSegmentKey& segme
 Float64 CSpecAgentImp::GetMinDistanceBetweenDebondSections(const CSegmentKey& segmentKey) const
 {
    GET_IFACE(IMaterials, pMaterials);
-   if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+   if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
    {
       // LRFD 5.9.4.3.3, Restriction C, replaced with GS 1.9.4.3.3
       GET_IFACE(IPretensionForce, pPrestress);

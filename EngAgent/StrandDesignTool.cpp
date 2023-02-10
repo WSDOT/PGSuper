@@ -182,12 +182,12 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
          if (m_MaxFci < m_MinFci) m_MaxFci = m_MinFci;
          if (m_MaxFc < m_MinFc) m_MaxFc = m_MinFc;
       }
-      else if (pSegmentMaterial->Concrete.Type == pgsTypes::FHWA_UHPC)
+      else if (pSegmentMaterial->Concrete.Type == pgsTypes::UHPC)
       {
          ATLASSERT(false); // not supporting UHPC design yet
-         // need to look at concrete strength range requirements for FHWA UHPC - there is a min f'ci hard limit that PCI UHPC does not have
+         // need to look at concrete strength range requirements for UHPC - there is a min f'ci hard limit that PCI UHPC does not have
          // this is just cobbled together - still needs to be reviewed for accuracy
-         LOG(_T("FHWA-UHPC Concrete"));
+         LOG(_T("UHPC Concrete"));
          GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
          m_MinFci = WBFL::Units::ConvertToSysUnits(14.0, WBFL::Units::Measure::KSI); // minimum per GS 1.9.1.2 (but could be override by owner - override not implemented yet)
          m_MaxFci = m_DesignOptions.maxFci; // this is from the design strategy defined in the girder
@@ -2051,7 +2051,7 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
             fc_reqd = 0; // stress limit = (2/3)(ffc) which is not a function of f'c
          }
       }
-      else if (pMaterials->GetSegmentConcreteType(GetSegmentKey()) == pgsTypes::FHWA_UHPC)
+      else if (pMaterials->GetSegmentConcreteType(GetSegmentKey()) == pgsTypes::UHPC)
       {
          fc_reqd = 0; // stress limit = gamma.u * ft,loc which is not a function of f'c
       }

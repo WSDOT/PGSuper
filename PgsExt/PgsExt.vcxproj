@@ -237,7 +237,7 @@
     <ClCompile Include="DuctSizeArtifact.cpp" />
     <ClCompile Include="EditBridge.cpp" />
     <ClCompile Include="ErectPiersActivity.cpp" />
-    <ClCompile Include="FHWAUHPCConcretePage.cpp" />
+    <ClCompile Include="UHPCConcretePage.cpp" />
     <ClCompile Include="FlexuralCapacityArtifact.cpp" />
     <ClCompile Include="FlexuralStressArtifact.cpp" />
     <ClCompile Include="GirderArtifact.cpp" />
@@ -374,7 +374,7 @@
     <ClInclude Include="..\Include\PgsExt\DuctSizeArtifact.h" />
     <ClInclude Include="..\Include\PgsExt\EditBridge.h" />
     <ClInclude Include="..\Include\PgsExt\ErectPiersActivity.h" />
-    <ClInclude Include="..\Include\PgsExt\FHWAUHPCConcretePage.h" />
+    <ClInclude Include="..\Include\PgsExt\UHPCConcretePage.h" />
     <ClInclude Include="..\Include\PgsExt\FlexuralCapacityArtifact.h" />
     <ClInclude Include="..\Include\PgsExt\FlexuralStressArtifact.h" />
     <ClInclude Include="..\Include\PgsExt\GirderArtifact.h" />

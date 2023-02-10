@@ -206,7 +206,7 @@
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="DuctEntryDlg.cpp" />
     <ClCompile Include="DuctLibraryEntry.cpp" />
-    <ClCompile Include="FHWAUHPCConcretePage.cpp" />
+    <ClCompile Include="UHPCConcretePage.cpp" />
     <ClCompile Include="GirderDebondCriteriaPage.cpp" />
     <ClCompile Include="GirderDiaphragmPage.cpp" />
     <ClCompile Include="GirderDimensionsPage.cpp" />
@@ -363,7 +363,7 @@
     <ClInclude Include="DiaphragmGrid.h" />
     <ClInclude Include="dllmain.h" />
     <ClInclude Include="DuctEntryDlg.h" />
-    <ClInclude Include="FHWAUHPCConcretePage.h" />
+    <ClInclude Include="UHPCConcretePage.h" />
     <ClInclude Include="GirderDebondCriteriaPage.h" />
     <ClInclude Include="GirderDiaphragmPage.h" />
     <ClInclude Include="GirderDimensionsPage.h" />

@@ -177,9 +177,9 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(const std::shared_ptr<const W
 
          CSegmentKey segmentKey(thisGirderKey, segIdx);
 
-         if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+         if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
          {
-            // FHWA UHPC has a two level transfer length model
+            // UHPC has a two level transfer length model
             // In the future regular LRFD may have this as well
             pPSForce->ReportTransferLengthDetails(segmentKey, pgsTypes::tltMinimum, pChapter);
             pPSForce->ReportTransferLengthDetails(segmentKey, pgsTypes::tltMaximum, pChapter);
@@ -206,7 +206,7 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(const std::shared_ptr<const W
          {
             (*pParagraph) << _T(" and PCI UHPC SDG E.10.3.1");
          }
-         else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+         else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
          {
             (*pParagraph) << _T(" and GS 1.10.8.2.1");
          }
@@ -228,9 +228,9 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(const std::shared_ptr<const W
             {
                (*pParagraph) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalRebarDevelopment_PCIUHPC.png")) << rptNewLine;
             }
-            else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+            else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
             {
-               (*pParagraph) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalRebarDevelopment_FHWAUHPC.png")) << rptNewLine;
+               (*pParagraph) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalRebarDevelopment_UHPC.png")) << rptNewLine;
             }
             else
             {
@@ -255,7 +255,7 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(const std::shared_ptr<const W
                }
             }
 
-            if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+            if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
             {
                (*pParagraph) << RPT_FC << _T(" shall not be taken as a value greater than 15.0 ksi for UHPC (GS 1.10.8.2.1)") << rptNewLine;
                (*pParagraph) << Sub2(symbol(lambda),_T("rl")) << _T(" is taken to be 1.0 for UHPC (GS 1.10.8.2.1)") << rptNewLine;

@@ -83,13 +83,14 @@ CConcreteMaterial::CConcreteMaterial()
    AutogenousShrinkage = 0.0;
    bPCTT = false;
 
-   alpha_u = 0.85; // FHWA GS 1.4.2.4.2
-   ecu = -0.0035; // FHWA GS 1.4.2.4.2
+   alpha_u = 0.85; // GS 1.4.2.4.2
+   ecu = -0.0035; // GS 1.4.2.4.2
    bExperimental_ecu = false;
    ftcr = WBFL::Units::ConvertToSysUnits(0.75, WBFL::Units::Measure::KSI);
    ftcri = 0.75 * ftcr;
    ftloc = WBFL::Units::ConvertToSysUnits(0.75, WBFL::Units::Measure::KSI);
    etloc = 0.0025;
+   gamma_u = 1.0; // GS 1.4.2.5.4
 
    bBasePropertiesOnInitialValues = false;
 
@@ -225,7 +226,7 @@ bool CConcreteMaterial::operator==(const CConcreteMaterial& rOther) const
          return false;
    }
 
-   if (Type == pgsTypes::FHWA_UHPC)
+   if (Type == pgsTypes::UHPC)
    {
       if (!IsEqual(alpha_u, rOther.alpha_u))
          return false;
@@ -246,6 +247,9 @@ bool CConcreteMaterial::operator==(const CConcreteMaterial& rOther) const
          return false;
 
       if (!IsEqual(etloc, rOther.etloc, 1.0E-6))
+         return false;
+
+      if (!IsEqual(gamma_u, rOther.gamma_u))
          return false;
 
       if (!IsEqual(FiberLength, rOther.FiberLength))
@@ -383,16 +387,17 @@ HRESULT CConcreteMaterial::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->EndUnit(); // PCI_UHPC
 
    // Added in Version 5
-   pStrSave->BeginUnit(_T("FHWA_UHPC"), 2.0);
-   pStrSave->put_Property(_T("alpha_u"), CComVariant(alpha_u)); // added in FHWA_UHPC version 2
+   pStrSave->BeginUnit(_T("UHPC"), 3.0);
+   pStrSave->put_Property(_T("alpha_u"), CComVariant(alpha_u)); // added in UHPC version 2
    pStrSave->put_Property(_T("Experimental_ecu"), CComVariant(bExperimental_ecu));
-   if(bExperimental_ecu) pStrSave->put_Property(_T("ecu"), CComVariant(ecu)); // added in FHWA_UHPC version 2
+   if(bExperimental_ecu) pStrSave->put_Property(_T("ecu"), CComVariant(ecu)); // added in UHPC version 2
    pStrSave->put_Property(_T("ftcri"), CComVariant(ftcri));
    pStrSave->put_Property(_T("ftcr"), CComVariant(ftcr));
    pStrSave->put_Property(_T("ftloc"), CComVariant(ftloc));
    pStrSave->put_Property(_T("etloc"), CComVariant(etloc));
+   pStrSave->put_Property(_T("gamma_u"), CComVariant(gamma_u)); // added in UHPC version 3
    pStrSave->put_Property(_T("FiberLength"), CComVariant(FiberLength));
-   pStrSave->EndUnit(); // FHWA_UHPC
+   pStrSave->EndUnit(); // UHPC
 
    pStrSave->put_Property(_T("BasePropertiesOnInitialValues"),CComVariant(bBasePropertiesOnInitialValues));
 
@@ -564,7 +569,12 @@ HRESULT CConcreteMaterial::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    if (4 < version)
    {
       // added in Version 5
-      pStrLoad->BeginUnit(_T("FHWA_UHPC"));
+      if (FAILED(pStrLoad->BeginUnit(_T("UHPC"))))
+      { 
+         // during early development this data block was called FHWA_UHPC
+         // if BeginLoad(UHPC) files, try the old name
+         pStrLoad->BeginUnit(_T("FHWA_UHPC"));
+      }
       var.vt = VT_R8;
 
       Float64 uhpc_version;
@@ -600,10 +610,18 @@ HRESULT CConcreteMaterial::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       pStrLoad->get_Property(_T("etloc"), &var);
       etloc = var.dblVal;
 
+      if (2 < uhpc_version)
+      {
+         // added in Version 3
+         var.vt = VT_R8;
+         pStrLoad->get_Property(_T("gamma_u"), &var);
+         gamma_u = var.dblVal;
+      }
+
       pStrLoad->get_Property(_T("FiberLength"), &var);
       FiberLength = var.dblVal;
 
-      pStrLoad->EndUnit(); // FHWA_UHPC
+      pStrLoad->EndUnit(); // UHPC
    }
 
    var.vt = VT_BOOL;

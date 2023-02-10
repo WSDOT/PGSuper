@@ -639,9 +639,9 @@ void pgsMomentCapacityEngineer::GetGirderInitialStrain(IntervalIndexType interva
    if (!bIsOnSegment)
       return;
 
-   // only FHWA UHPC accounts for initial strains in the concrete
+   // only UHPC accounts for initial strains in the concrete
    GET_IFACE(IMaterials, pMaterials);
-   if (pMaterials->GetSegmentConcreteType(segmentKey) != pgsTypes::FHWA_UHPC)
+   if (pMaterials->GetSegmentConcreteType(segmentKey) != pgsTypes::UHPC)
       return;
 
    ATLASSERT(pConfig == nullptr); // pConfig != nullptr when for design and we aren't supporting UHPC design just yet.
@@ -710,10 +710,10 @@ void pgsMomentCapacityEngineer::GetDeckInitialStrain(IntervalIndexType intervalI
    if (!bIsOnSegment)
       return;
 
-   // only FHWA UHPC accounts for initial strains in the concrete
+   // only UHPC accounts for initial strains in the concrete
    // Yes, this is correct - we want to check the segment concrete because the deck is never UHPC
    GET_IFACE(IMaterials, pMaterials);
-   if (pMaterials->GetSegmentConcreteType(segmentKey) != pgsTypes::FHWA_UHPC)
+   if (pMaterials->GetSegmentConcreteType(segmentKey) != pgsTypes::UHPC)
       return;
 
    // Want dead load stresses only (no live load).
@@ -836,7 +836,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
 
       // UHPC has tension capacity so we don't want the slices to grow over the tension zone so use a growth factor of 1.0
       // otherwise, we can make the tension slices larger over the depth of the section to speed up processing of slices that don't matter
-      m_MomentCapacitySolver->put_SliceGrowthFactor(concreteType == pgsTypes::FHWA_UHPC ? 1 : 3);
+      m_MomentCapacitySolver->put_SliceGrowthFactor(concreteType == pgsTypes::UHPC ? 1 : 3);
 
       // Set the convergence tolerance to 0.1N. This is more than accurate enough for the
       // output display. Output accuracy for SI = 0.01kN = 10N, for US = 0.01kip = 45N
@@ -850,7 +850,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
       CTime startTime = CTime::GetCurrentTime();
 #endif // _DEBUG
 
-      if (pPoi->IsOnSegment(poi) && concreteType == pgsTypes::FHWA_UHPC)
+      if (pPoi->IsOnSegment(poi) && concreteType == pgsTypes::UHPC)
       {
          // use a minimum of 50 slices for UHPC. There is an abrupt change in the UHPC tension
          // model that doesn't get directly identified by the moment capacity solver. The moment capacity
@@ -908,7 +908,8 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
          
          initial_strain->GetZ(0, Y, &ei);
          Float64 etloc = pMaterial->GetSegmentConcreteCrackLocalizationStrain(segmentKey);
-         e = etloc - ei; // this is the amount the strain must increase to get to localization strain at the bottom of the girder
+         Float64 gamma_u = pMaterial->GetSegmentConcreteFiberOrientationReductionFactor(segmentKey);
+         e = gamma_u*etloc - ei; // this is the amount the strain must increase to get to localization strain at the bottom of the girder
          m_MomentCapacitySolver->Solve(0.0, na_angle, e, Y, smFixedStrain, &mcd.UHPCCrackLocalizationSolution);
 
          // Solver for the case of reinforcement fracture
@@ -1393,7 +1394,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
       GET_IFACE(IResistanceFactors, pResistanceFactors);
       mcd.Phi = pResistanceFactors->GetClosureJointFlexureResistanceFactor(concreteType);
    }
-   else if (pPoi->IsOnSegment(poi) && concreteType == pgsTypes::FHWA_UHPC)
+   else if (pPoi->IsOnSegment(poi) && concreteType == pgsTypes::UHPC)
    {
       // Calculation phi for UHPC here. See GS Eq 1.5.4.2-1
       // The SpecLibraryEntry has tension controlled and compression controlled phi factors for UHPC
@@ -2022,7 +2023,7 @@ Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(IntervalIndexType interva
       }
       else
       {
-         ATLASSERT(pMaterial->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC);
+         ATLASSERT(pMaterial->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC);
          fr = pMaterial->GetSegmentConcreteDesignEffectiveCrackingStrength(segmentKey);
       }
    }
@@ -2065,7 +2066,7 @@ Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(IntervalIndexType interva
          }
          else
          {
-            if (pMaterial->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+            if (pMaterial->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
             {
                // GS 1.6.3.3 - substitute ft,cr for fr
                fr = pMaterial->GetSegmentConcreteDesignEffectiveCrackingStrength(segmentKey);
@@ -2388,7 +2389,7 @@ void pgsMomentCapacityEngineer::CreateGirderMaterial(IntervalIndexType intervalI
       }
       matGirder->QueryInterface(ppSS);
    }
-   else if (!bIsInBoundaryPierDiaphragm && concreteType == pgsTypes::FHWA_UHPC)
+   else if (!bIsInBoundaryPierDiaphragm && concreteType == pgsTypes::UHPC)
    {
       ASSERT(bIsOnSegment); // can't be in closure joint for UHPC
       CComPtr<IUHPConcrete> matGirder;
@@ -2417,7 +2418,7 @@ void pgsMomentCapacityEngineer::CreateGirderMaterial(IntervalIndexType intervalI
       matGirder->put_ftcr(pLRFDConcrete->GetDesignEffectiveCrackingStrength());
       matGirder->put_ftloc(pLRFDConcrete->GetCrackLocalizationStrength());
       matGirder->put_etloc(pLRFDConcrete->GetCrackLocalizationStrain());
-      matGirder->put_gamma(pAllowables->GetAllowableFHWAUHPCTensionStressLimitCoefficient());
+      matGirder->put_gamma(pAllowables->GetAllowableUHPCTensionStressLimitCoefficient(segmentKey));
 
 
       matGirder->QueryInterface(ppSS);
@@ -2561,7 +2562,7 @@ void pgsMomentCapacityEngineer::CreateLongitudinalJointMaterial(IntervalIndexTyp
       matLongitudinalJoints->put_fc(pMaterial->GetLongitudinalJointFc(intervalIdx));
       matLongitudinalJoints->QueryInterface(ppSS);
    }
-   else if (pMaterial->GetLongitudinalJointConcreteType() == pgsTypes::FHWA_UHPC)
+   else if (pMaterial->GetLongitudinalJointConcreteType() == pgsTypes::UHPC)
    {
       CComPtr<IUHPConcrete> matLongitudinalJoints;
       matLongitudinalJoints.CoCreateInstance(CLSID_UHPConcrete);

@@ -291,17 +291,18 @@ struct SHEARCAPACITYDETAILS
    Float64 sxe; // [E5.8.3.4.2-5]
    Float64 sxe_tbl;
    Float64 Theta;
-   Float64 fv; // stress in stirrups (this parameter is for FHWA UHPC, but is set equal to fy for other concrete types so calculation of Vs works more generically)
-   Float64 e2; // FHWA UHPC
-   Float64 ev; // FHWA UHPC
-   Float64 etcr; // FHWA UHPC
-   Float64 et_loc; // FHWA UHPC
-   Float64 ft_loc; // FHWA UHPC
-   Float64 rho; // FHWA UHPC
+   Float64 fv; // stress in stirrups (this parameter is for UHPC, but is set equal to fy for other concrete types so calculation of Vs works more generically)
+   Float64 e2; // UHPC
+   Float64 ev; // UHPC
+   Float64 etcr; // UHPC
+   Float64 et_loc; // UHPC
+   Float64 ft_loc; // UHPC
+   Float64 gamma_u; // UHPC
+   Float64 rho; // UHPC
    Float64 FiberStress;// coefficient for compute the contribution of fibers in PCI UHPC to the shear capacity (taken as 0.75 ksi for now)
-                       // also taken as gamma_u*ft,loc for FHWA UHPC
+                       // also taken as gamma_u*ft,loc for UHPC
    Float64 Vuhpc; // Value of Vuhpc per GS Eq. 1.7.3.3-3
-   Float64 Vc; // Shear strength of concrete (= Vcf for PCI UHPC, Vuhpc for FHWA UHPC)
+   Float64 Vc; // Shear strength of concrete (= Vcf for PCI UHPC, Vuhpc for UHPC)
    Float64 Vs;
    Float64 Vn1;  // [Eqn 5.8.3.3-1]
    Float64 Vn2;  // [Eqn 5.8.3.3-2]

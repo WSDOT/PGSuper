@@ -384,7 +384,7 @@ void write_debonding(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pD
       Float64 ndb, minDist;
       bool bMinDist;
       pGdrEntry->GetMinDistanceBetweenDebondSections(&ndb, &bMinDist, &minDist);
-      *pPara << _T("Longitudinal spacing of debonding termnation sections = ") << ndb << Sub2(_T("d"), _T("b"));
+      *pPara << _T("Longitudinal spacing of debonding termination sections = ") << ndb << Sub2(_T("d"), _T("b"));
       if (bMinDist)
       {
          *pPara << _T(" but not less than ") << cmpdim.SetValue(minDist) << rptNewLine;
@@ -689,15 +689,15 @@ void write_intermedate_diaphragm_details(IBroker* pBroker,IEAFDisplayUnits* pDis
       switch( rule.MeasureType )
       {
          case GirderLibraryEntry::mtFractionOfSpanLength:
-            *pParagraph << _T("Diarphagm location is measured as a fraction of the span length") << rptNewLine;
+            *pParagraph << _T("Diaphragm location is measured as a fraction of the span length") << rptNewLine;
             break;
 
          case GirderLibraryEntry::mtFractionOfGirderLength:
-            *pParagraph << _T("Diarphagm location is measured as a fraction of the girder length") << rptNewLine;
+            *pParagraph << _T("Diaphragm location is measured as a fraction of the girder length") << rptNewLine;
             break;
 
          case GirderLibraryEntry::mtAbsoluteDistance:
-               *pParagraph << _T("Diarphagm location is measured as a fixed distance") << rptNewLine;
+               *pParagraph << _T("Diaphragm location is measured as a fixed distance") << rptNewLine;
             break;
       }
 
@@ -1132,9 +1132,9 @@ void write_parabolic_tendon_geometry(rptParagraph* pPara, const CDuctData* pDuct
 
    (*pLayoutTable)(0, 0) << pTable << rptNewLine;
    (*pLayoutTable)(0, 1) << _T("Start: Start of tendon location measured from the start of the first span.") << rptNewLine;
-   (*pLayoutTable)(0, 1) << _T("Low: Distance from Start point or previous High point. Measured as a distance or percentagve of the distance between High points. Distance from End in last span.") << rptNewLine;
+   (*pLayoutTable)(0, 1) << _T("Low: Distance from Start point or previous High point. Measured as a distance or percentage of the distance between High points. Distance from End in last span.") << rptNewLine;
    (*pLayoutTable)(0, 1) << _T("IP: Location of inflection point measured from Hight point. Measured as distance or percentage of distance between High and Low points.") << rptNewLine;
-   (*pLayoutTable)(0, 1) << _T("High: High point at centerlien of pier.") << rptNewLine;
+   (*pLayoutTable)(0, 1) << _T("High: High point at centerline of pier.") << rptNewLine;
    (*pLayoutTable)(0, 1) << _T("End: End of tendon location measured from the end of the last span.") << rptNewLine;
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();

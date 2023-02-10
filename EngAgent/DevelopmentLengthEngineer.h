@@ -95,12 +95,12 @@ public:
    virtual Float64 GetDevelopmentLength() const override;
 };
 
-/// This class implements development length calculation based on the FHWA UHPC Draft Guide Specifications
-class pgsFHWAUHPCDevelopmentLength : public pgsDevelopmentLengthBase
+/// This class implements development length calculation based on the UHPC Draft Guide Specifications
+class pgsUHPCDevelopmentLength : public pgsDevelopmentLengthBase
 {
 public:
-   pgsFHWAUHPCDevelopmentLength() = default;
-   pgsFHWAUHPCDevelopmentLength(Float64 lt,Float64 db, Float64 fpe, Float64 fps);
+   pgsUHPCDevelopmentLength() = default;
+   pgsUHPCDevelopmentLength(Float64 lt,Float64 db, Float64 fpe, Float64 fps);
 
    virtual Float64 GetDevelopmentLength() const override;
 
@@ -148,11 +148,11 @@ public:
    virtual void ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const override;
 };
 
-/// This class reports the details of development length calculations based on the FHWA UHPC Draft Guide Specifications
-class pgsFHWAUHPCDevelopmentLengthReporter : public pgsDevelopmentLengthReporterBase
+/// This class reports the details of development length calculations based on the UHPC Draft Guide Specifications
+class pgsUHPCDevelopmentLengthReporter : public pgsDevelopmentLengthReporterBase
 {
 public:
-   pgsFHWAUHPCDevelopmentLengthReporter() = delete;
-   pgsFHWAUHPCDevelopmentLengthReporter(IBroker* pBroker, const pgsDevelopmentLengthEngineer* pEngineer);
+   pgsUHPCDevelopmentLengthReporter() = delete;
+   pgsUHPCDevelopmentLengthReporter(IBroker* pBroker, const pgsDevelopmentLengthEngineer* pEngineer);
    virtual void ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const override;
 };

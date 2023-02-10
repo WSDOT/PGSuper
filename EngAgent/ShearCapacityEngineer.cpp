@@ -212,7 +212,7 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
    }
 
    // Max crushing capacity - 5.7.3.3-2 (pre2017: 5.8.3.3-2)
-   Float64 dv = pscd->ConcreteType == pgsTypes::FHWA_UHPC ? pscd->controlling_uhpc_dv : pscd->dv;
+   Float64 dv = pscd->ConcreteType == pgsTypes::UHPC ? pscd->controlling_uhpc_dv : pscd->dv;
    pscd->Vn2 = 0.25 * pscd->fc * pscd->bv * dv + (shear_capacity_method == pgsTypes::scmVciVcw ? 0 : pscd->Vp);
 
    if (pscd->ShearInRange)
@@ -237,7 +237,7 @@ void pgsShearCapacityEngineer::EvaluateStirrupRequirements(SHEARCAPACITYDETAILS*
    if (IsUHPC(pscd->ConcreteType))
    {
       // minimum stirrups are not a requirement of UHPC
-      // see PCI UHPC SDG E.7.2.2 and FHWA UHPC GS 1.7.2.5
+      // see PCI UHPC SDG E.7.2.2 and AASHTO UHPC GS 1.7.2.5
       pscd->VuLimit = 0;
       pscd->bStirrupsReqd = false;
    }
@@ -884,7 +884,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
       {
       case pgsTypes::Normal:
       case pgsTypes::PCI_UHPC:
-      case pgsTypes::FHWA_UHPC:
+      case pgsTypes::UHPC:
          pscd->bHasFct = false;
          pscd->fct = 0;
          break;
@@ -927,7 +927,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
       {
       case pgsTypes::Normal:
       case pgsTypes::PCI_UHPC:
-      case pgsTypes::FHWA_UHPC:
+      case pgsTypes::UHPC:
          pscd->bHasFct = false;
          pscd->fct = 0;
          break;
@@ -964,7 +964,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
       }
    }
 
-   if (pscd->ConcreteType == pgsTypes::FHWA_UHPC)
+   if (pscd->ConcreteType == pgsTypes::UHPC)
    {
       // dv is limited to UHPC section only per GS 1.7.2.8
       Float64 dv_uhpc = 9999999;
@@ -1017,7 +1017,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
 bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAPACITYDETAILS* pscd) const
 {
    GET_IFACE(IMaterials, pMaterials);
-   if (pMaterials->GetSegmentConcreteType(poi.GetSegmentKey()) == pgsTypes::FHWA_UHPC)
+   if (pMaterials->GetSegmentConcreteType(poi.GetSegmentKey()) == pgsTypes::UHPC)
       return ComputeVuhpc(poi, pscd);
    else
       return ComputeVcc(poi, pscd);
@@ -1075,7 +1075,7 @@ bool pgsShearCapacityEngineer::ComputeVcc(const pgsPointOfInterest& poi, SHEARCA
    bool shear_in_range = true; // assume calc will be successful
    pgsTypes::ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
 
-   ATLASSERT(pscd->ConcreteType != pgsTypes::FHWA_UHPC); // for FHWA UHPC, call ComputeVuhpc
+   ATLASSERT(pscd->ConcreteType != pgsTypes::UHPC); // for UHPC, call ComputeVuhpc
    if(pscd->ConcreteType == pgsTypes::PCI_UHPC)
    {
       // PCI UHPC only uses beta-theta equations
@@ -1293,7 +1293,9 @@ bool pgsShearCapacityEngineer::ComputeVcc(const pgsPointOfInterest& poi, SHEARCA
 
 bool pgsShearCapacityEngineer::ComputeVuhpc(const pgsPointOfInterest& poi, SHEARCAPACITYDETAILS* pscd) const
 {
-   ATLASSERT(pscd->ConcreteType == pgsTypes::FHWA_UHPC);
+   ATLASSERT(pscd->ConcreteType == pgsTypes::UHPC);
+
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    // Gather up the key parameters, put into local variables so the code below is easier to read
    lrfdUHPCShearData data;
@@ -1318,18 +1320,19 @@ bool pgsShearCapacityEngineer::ComputeVuhpc(const pgsPointOfInterest& poi, SHEAR
 
    GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-   GET_IFACE(IAllowableConcreteStress, pAllowables);
-   Float64 ft = pAllowables->GetAllowableTensionStress(poi, pscd->bTensionBottom ? pgsTypes::BottomGirder : pgsTypes::TopGirder, StressCheckTask(liveLoadIntervalIdx, pgsTypes::ServiceIII, pgsTypes::Tension), false, true);
+   GET_IFACE(IMaterials, pMaterial);
+   Float64 ft = pMaterial->GetSegmentConcreteCrackLocalizationStrength(segmentKey);
    pscd->FiberStress = ft;
 
-   GET_IFACE(IMaterials, pMaterial);
-   const auto& pConcrete = pMaterial->GetSegmentConcrete(poi.GetSegmentKey());
+   const auto& pConcrete = pMaterial->GetSegmentConcrete(segmentKey);
    const auto* pLRFDConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(pConcrete.get());
    data.ftloc = pLRFDConcrete->GetCrackLocalizationStrength();
    data.etloc = pLRFDConcrete->GetCrackLocalizationStrain();
    data.etcr = pLRFDConcrete->GetElasticTensileStrainLimit();
+   data.gamma_u = pLRFDConcrete->GetFiberOrientationReductionFactor();
 
    pscd->et_loc = data.etloc;
+   pscd->gamma_u = data.gamma_u;
    pscd->ft_loc = data.ftloc;
    pscd->etcr = data.etcr;
    pscd->ShearInRange = true;
@@ -1341,11 +1344,11 @@ bool pgsShearCapacityEngineer::ComputeVuhpc(const pgsPointOfInterest& poi, SHEAR
    {
       // compute nominal capacity
       GET_IFACE(IAllowableConcreteStress, pAllowable);
-      Float64 gamma_u = pAllowable->GetAllowableFHWAUHPCTensionStressLimitCoefficient();
+      Float64 gamma_u = pAllowable->GetAllowableUHPCTensionStressLimitCoefficient(poi.GetSegmentKey());
       Float64 theta = WBFL::Units::ConvertFromSysUnits(data.Theta, WBFL::Units::Measure::Radian); // need angle in radians
       Float64 cot_theta = 1 / tan(theta);
 
-      pscd->Vuhpc = gamma_u * data.ftloc * data.bv * dv * cot_theta;
+      pscd->Vuhpc = data.gamma_u * data.ftloc * data.bv * dv * cot_theta;
    }
    else
    {
@@ -1449,7 +1452,7 @@ bool pgsShearCapacityEngineer::ComputeVs(const pgsPointOfInterest& poi, SHEARCAP
       cot_theta = 1/tan(Theta);
    }
 
-   Float64 dv = pscd->ConcreteType == pgsTypes::FHWA_UHPC ? pscd->controlling_uhpc_dv : pscd->dv;
+   Float64 dv = pscd->ConcreteType == pgsTypes::UHPC ? pscd->controlling_uhpc_dv : pscd->dv;
 
    Float64 Av = pscd->Av;
    Float64 S  = pscd->S;

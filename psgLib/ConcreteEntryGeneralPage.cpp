@@ -55,7 +55,7 @@ CConcreteEntryGeneralPage::CConcreteEntryGeneralPage(): CPropertyPage(IDD_CONCRE
    m_MaxLWCDensity = lrfdConcreteUtil::GetLWCDensityLimit();
 
    lrfdConcreteUtil::GetPCIUHPCStrengthRange(&m_MinFcUHPC, &m_MaxFcUHPC);
-   // FHWA UHPC does not have a prescribed strength range
+   // UHPC does not have a prescribed strength range
 }
 
 
@@ -155,8 +155,8 @@ BOOL CConcreteEntryGeneralPage::OnInitDialog()
    idx = pcbConcreteType->AddString(ConcreteLibraryEntry::GetConcreteType(pgsTypes::PCI_UHPC));
    pcbConcreteType->SetItemData(idx, (DWORD_PTR)pgsTypes::PCI_UHPC);
 
-   idx = pcbConcreteType->AddString(ConcreteLibraryEntry::GetConcreteType(pgsTypes::FHWA_UHPC));
-   pcbConcreteType->SetItemData(idx, (DWORD_PTR)pgsTypes::FHWA_UHPC);
+   idx = pcbConcreteType->AddString(ConcreteLibraryEntry::GetConcreteType(pgsTypes::UHPC));
+   pcbConcreteType->SetItemData(idx, (DWORD_PTR)pgsTypes::UHPC);
 
 
 	CPropertyPage::OnInitDialog();
@@ -283,7 +283,7 @@ void CConcreteEntryGeneralPage::OnOK()
 bool CConcreteEntryGeneralPage::IsDensityInRange(Float64 density,pgsTypes::ConcreteType type)
 {
    CEAFApp* pApp = EAFGetApp();
-   if ( type == pgsTypes::PCI_UHPC || type == pgsTypes::FHWA_UHPC)
+   if ( type == pgsTypes::PCI_UHPC || type == pgsTypes::UHPC)
    {
       return true; // no density range for UHPC provided by specification, only a typical value
    }
@@ -299,7 +299,7 @@ bool CConcreteEntryGeneralPage::IsDensityInRange(Float64 density,pgsTypes::Concr
 
 bool CConcreteEntryGeneralPage::IsStrengthInRange(Float64 fc, pgsTypes::ConcreteType type)
 {
-   // FHWA UHPC does not have a prescribed strength range
+   // UHPC does not have a prescribed strength range
    if (type == pgsTypes::PCI_UHPC)
    {
       return InRange(m_MinFcUHPC, fc, m_MaxFcUHPC);

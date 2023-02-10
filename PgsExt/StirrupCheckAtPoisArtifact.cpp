@@ -256,15 +256,16 @@ Float64 pgsLongReinfShearArtifact::GetCapacityForce() const
 {
    Float64 Pr = GetRebarForce();
    Float64 Pps = GetPretensionForce();
-   Float64 Pc = GetConcreteForce(); // FHWA UHPC has a contribution due to the tensile strength of UHPC
+   Float64 Pc = GetConcreteForce(); // UHPC has a contribution due to the tensile strength of UHPC
    return Pr + Pps + Pc;
 }
 
 Float64 pgsLongReinfShearArtifact::GetConcreteForce() const
 {
-   if (m_bFHWAUHPC)
+   if (m_bUHPC)
    {
-      return m_Act * m_ft;
+      Float64 k = (m_Equation == 0 ? 1.0 : 0.6);
+      return k*m_Act * m_gamma_u * m_ft;
    }
    else
    {
@@ -279,9 +280,9 @@ Float64 pgsLongReinfShearArtifact::GetPretensionForce() const
 
 Float64 pgsLongReinfShearArtifact::GetRebarForce() const
 {
-   // need to return As*Es*et,loc <= As*Fy for FHWA UHPC
-   if (m_bFHWAUHPC)
-      return Min(m_As * m_Fy, m_As * m_Es * m_etloc); // FHWA GS 1.7.3.5 (Es*et,loc <= fy, As*Es*et,loc <= As*fy)
+   // need to return As*Es*gamma_u*et,loc <= As*Fy for UHPC
+   if (m_bUHPC)
+      return Min(m_As * m_Fy, m_As * m_Es * m_gamma_u * m_etloc); // GS 1.7.3.5 (Es*gamma_u*et,loc <= fy, As*Es*gamma_u*et,loc <= As*fy)
    else
       return m_As*m_Fy;
 }
@@ -338,14 +339,14 @@ void pgsLongReinfShearArtifact::SetApplicability(bool isApplicable)
    m_bIsApplicable = isApplicable;
 }
 
-void pgsLongReinfShearArtifact::IsFHWAUHPC(bool bIsUHPC)
+void pgsLongReinfShearArtifact::IsUHPC(bool bIsUHPC)
 {
-   m_bFHWAUHPC = bIsUHPC;
+   m_bUHPC = bIsUHPC;
 }
 
-bool pgsLongReinfShearArtifact::IsFHWAUHPC() const
+bool pgsLongReinfShearArtifact::IsUHPC() const
 {
-   return m_bFHWAUHPC;
+   return m_bUHPC;
 }
 
 void pgsLongReinfShearArtifact::SetCrackLocalizationStrain(Float64 etloc)
@@ -366,6 +367,16 @@ void pgsLongReinfShearArtifact::SetDesignEffectiveConcreteStrength(Float64 ft)
 Float64 pgsLongReinfShearArtifact::GetDesignEffectiveConcreteStrength() const
 {
    return m_ft;
+}
+
+void pgsLongReinfShearArtifact::SetFiberOrientationReductionFactor(Float64 gamma_u)
+{
+   m_gamma_u = gamma_u;
+}
+
+Float64 pgsLongReinfShearArtifact::GetFiberOrientationReductionFactor() const
+{
+   return m_gamma_u;
 }
 
 void pgsLongReinfShearArtifact::SetAct(Float64 Act)

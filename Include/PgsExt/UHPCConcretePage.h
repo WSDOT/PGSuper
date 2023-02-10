@@ -23,27 +23,28 @@
 #pragma once
 
 #include <PgsExt\PgsExtExp.h>
+#include <MFCTools\CacheEdit.h>
 
-// FHWAUHPCConcretePage.h : header file
+// UHPCConcretePage.h : header file
 //
 
 /////////////////////////////////////////////////////////////////////////////
-// CFHWAUHPCConcretePage dialog
+// CUHPCConcretePage dialog
 
-class CFHWAUHPCConcretePage : public CPropertyPage
+class PGSEXTCLASS CUHPCConcretePage : public CPropertyPage
 {
 // Construction
 public:
-	CFHWAUHPCConcretePage();
+	CUHPCConcretePage();
 
 // Dialog Data
-	//{{AFX_DATA(CFHWAUHPCConcretePage)
+	//{{AFX_DATA(CUHPCConcretePage)
 	//}}AFX_DATA
 
 
 // Overrides
 	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CFHWAUHPCConcretePage)
+	//{{AFX_VIRTUAL(CUHPCConcretePage)
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 	//}}AFX_VIRTUAL
@@ -55,17 +56,20 @@ public:
 	Float64 m_etloc;
 	Float64 m_alpha_u;
 	Float64 m_ecu;
+	Float64 m_gamma_u;
 	Float64 m_FiberLength;
 	bool m_bExperimental_ecu;
 
    // Implementation
 protected:
 	// Generated message map functions
-	//{{AFX_MSG(CFHWAUHPCConcretePage)
+	//{{AFX_MSG(CUHPCConcretePage)
 	virtual BOOL OnInitDialog() override;
-	afx_msg void OnHelp();
+	virtual BOOL OnSetActive();
+   afx_msg void OnHelp();
 	afx_msg void On_ecu();
 	//}}AFX_MSG
+
 	CCacheEdit m_wnd_ecu;
 
 	DECLARE_MESSAGE_MAP()

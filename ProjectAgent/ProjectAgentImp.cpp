@@ -56,7 +56,7 @@
 
 #include <EAF\EAFDocument.h>
 
-// tranactions executed by this agent
+// transactions executed by this agent
 #include "txnEditBridgeDescription.h"
 
 #include <EAF\EAFAutoProgress.h>
@@ -118,7 +118,7 @@ void release_library_entry( pgsLibraryEntryObserver* pObserver, EntryType* pEntr
    pEntry = nullptr;
 }
 
-// pre-declare some needed functions
+// declare some needed functions
 static bool IsValidStraightStrandFill(const CDirectStrandFillCollection* pFill, const GirderLibraryEntry* pGirderEntry);
 static bool IsValidHarpedStrandFill(const CDirectStrandFillCollection* pFill, const GirderLibraryEntry* pGirderEntry);
 static bool IsValidTemporaryStrandFill(const CDirectStrandFillCollection* pFill, const GirderLibraryEntry* pGirderEntry);
@@ -832,7 +832,7 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
    }
    else
    {
-      // it is ok if this fails... older versions files don't have this data block
+      // it is OK if this fails... older versions files don't have this data block
       if (!FAILED(pLoad->BeginUnit(_T("RatingSpecification"))) )
       {
          Float64 top_version;
@@ -894,7 +894,7 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
 
          /////////////////////////////
          // NOTE
-         // Vesrion 1 of all of these data blocks stored the data incorrectly. For example, the DC load factor for
+         // Version 1 of all of these data blocks stored the data incorrectly. For example, the DC load factor for
          // StrengthI_Inventory rating was stored in m_gDC[IndexFromLimitState(pgsTypes::StrengthI_Inventory)]. However,
          // when the data was written to the storage stream, the data from m_gDC[pgsTypes::StrengthI_Inventory] was used. 
          // The data written to the storage stream should have been m_gDC[0], but instead it was m_gDC[6].
@@ -3511,7 +3511,7 @@ HRESULT CProjectAgentImp::PrestressingDataProc2(IStructuredSave* pSave,IStructur
             return hr;
          }
 
-         // pStrandMaterial will not be nullptr if this is a pre version 3 data block
+         // pStrandMaterial will not be nullptr if this is a pre-version 3 data block
          // in this case, the girderData object does not have a strand material set.
          // Set it now
          if ( pStrandMaterial != 0 )
@@ -11829,13 +11829,16 @@ void CProjectAgentImp::DealWithGirderLibraryChanges(bool fromLibrary)
 
             ValidateStrands(segmentKey,pSegment,fromLibrary);
    
-            // make sure debond data is consistent with design algorithim
+            // make sure debond data is consistent with design algorithm
             Float64 xfer_length = pPrestress->GetTransferLength(segmentKey,pgsTypes::Straight, pgsTypes::tltMinimum); // this is related to debonding so we assume only straight strands are debonded
             Float64 ndb, minDist;
             bool bMinDist;
             pGdrEntry->GetMinDistanceBetweenDebondSections(&ndb, &bMinDist, &minDist);
 
-            bool bTooSmall = ndb < 60.0 ? true : false;
+            GET_IFACE(IMaterials, pMaterials);
+            Float64 ndb_max = pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC ? 24.0 : 60.0;
+
+            bool bTooSmall = ndb < ndb_max ? true : false;
             if (bMinDist)
             {
                bTooSmall &= ::IsLT(minDist, xfer_length, 0.001) ? true : false;
@@ -11853,7 +11856,7 @@ void CProjectAgentImp::DealWithGirderLibraryChanges(bool fromLibrary)
                {
                   os << _T("Span ") << LABEL_SPAN(segmentKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(segmentKey.girderIndex);
                }
-               os << _T(": The minimum longitudinal spacing of debonding termiation locations in the girder library is shorter than the transfer length (e.g., 60*Db). This may cause the debonding design algorithm to generate designs that do not pass a specification check.") << std::endl;
+               os << _T(": The minimum longitudinal spacing of debonding termination locations in the girder library is shorter than the transfer length (e.g., ") << ndb_max << Sub2(_T("d"),_T("b")) << _T(". This may cause the debonding design algorithm to generate designs that do not pass a specification check.") << std::endl;
                AddSegmentStatusItem(segmentKey, os.str() );
             }
 

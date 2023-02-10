@@ -13710,6 +13710,11 @@ Float64 CBridgeAgentImp::GetSegmentConcreteCrackLocalizationStrain(const CSegmen
    return m_ConcreteManager.GetSegmentConcreteCrackLocalizationStrain(segmentKey);
 }
 
+Float64 CBridgeAgentImp::GetSegmentConcreteFiberOrientationReductionFactor(const CSegmentKey& segmentKey) const
+{
+   return m_ConcreteManager.GetSegmentConcreteFiberOrientationReductionFactor(segmentKey);
+}
+
 pgsTypes::ConcreteType CBridgeAgentImp::GetClosureJointConcreteType(const CClosureKey& closureKey) const
 {
    return m_ConcreteManager.GetClosureJointConcreteType(closureKey);
@@ -31521,9 +31526,9 @@ const CBridgeAgentImp::SectProp& CBridgeAgentImp::GetSectionProperties(IntervalI
          props.AcBottomHalf = area;
 
          // Area on top half of composite section for LRFD Fig. 5.7.3.4.2-3 (pre2017: 5.8.3.4.2-3)
-         if (bIsOnSegment && GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+         if (bIsOnSegment && GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
          {
-            // "Half" section area is only used for shear calculations. For FHWA UHPC, shear strength
+            // "Half" section area is only used for shear calculations. For UHPC, shear strength
             // is limited to the UHPC part of the section only (ie. only the girder).
             // Get the area of the girder and deduct the bottom half area.
             CComPtr<IShapeProperties> gdrProps;

@@ -913,13 +913,13 @@ void CBridgeDescDeckDetailsPage::OnMoreConcreteProperties()
    //dlg.m_PCIUHPC.m_AutogenousShrinkage = pDeck->Concrete.AutogenousShrinkage;
    //dlg.m_PCIUHPC.m_bPCTT = pDeck->Concrete.bPCTT;
 
-   //dlg.m_FHWAUHPC.m_ftcri = pDeck->Concrete.ftcri;
-   //dlg.m_FHWAUHPC.m_ftcr =  pDeck->Concrete.ftcr;
-   //dlg.m_FHWAUHPC.m_ftloc = pDeck->Concrete.ftloc;
-   //dlg.m_FHWAUHPC.m_etloc = pDeck->Concrete.etloc;
-   //dlg.m_FHWAUHPC.m_alpha_u = pDeck->Concrete.alpha_u;
-   //dlg.m_FHWAUHPC.m_bExperimental_ecu = pDeck->Concrete.bExperimental_ecu;
-   //dlg.m_FHWAUHPC.m_ecu = pDeck->Concrete.ecu;
+   //dlg.m_UHPC.m_ftcri = pDeck->Concrete.ftcri;
+   //dlg.m_UHPC.m_ftcr =  pDeck->Concrete.ftcr;
+   //dlg.m_UHPC.m_ftloc = pDeck->Concrete.ftloc;
+   //dlg.m_UHPC.m_etloc = pDeck->Concrete.etloc;
+   //dlg.m_UHPC.m_alpha_u = pDeck->Concrete.alpha_u;
+   //dlg.m_UHPC.m_bExperimental_ecu = pDeck->Concrete.bExperimental_ecu;
+   //dlg.m_UHPC.m_ecu = pDeck->Concrete.ecu;
 
    WBFL::Materials::ACI209Concrete concrete;
    concrete.SetTimeAtCasting(0);
@@ -973,13 +973,13 @@ void CBridgeDescDeckDetailsPage::OnMoreConcreteProperties()
       //pDeck->Concrete.AutogenousShrinkage = dlg.m_PCIUHPC.m_AutogenousShrinkage;
       //pDeck->Concrete.bPCTT = dlg.m_PCIUHPC.m_bPCTT;
 
-      //pDeck->Concrete.ftcri = dlg.m_FHWAUHPC.m_ftcri;
-      //pDeck->Concrete.ftcr = dlg.m_FHWAUHPC.m_ftcr;
-      //pDeck->Concrete.ftloc = dlg.m_FHWAUHPC.m_ftloc;
-      //pDeck->Concrete.etloc = dlg.m_FHWAUHPC.m_etloc;
-      //pDeck->Concrete.alpha_u = dlg.m_FHWAUHPC.m_alpha_u;
-      //pDeck->Concrete.ecu = dlg.m_FHWAUHPC.m_ecu;
-      //pDeck->Concrete.bExperimental_ecu = dlg.m_FHWAUHPC.m_bExperimental_ecu;
+      //pDeck->Concrete.ftcri = dlg.m_UHPC.m_ftcri;
+      //pDeck->Concrete.ftcr = dlg.m_UHPC.m_ftcr;
+      //pDeck->Concrete.ftloc = dlg.m_UHPC.m_ftloc;
+      //pDeck->Concrete.etloc = dlg.m_UHPC.m_etloc;
+      //pDeck->Concrete.alpha_u = dlg.m_UHPC.m_alpha_u;
+      //pDeck->Concrete.ecu = dlg.m_UHPC.m_ecu;
+      //pDeck->Concrete.bExperimental_ecu = dlg.m_UHPC.m_bExperimental_ecu;
 
 
       m_strUserEc  = dlg.m_General.m_strUserEc;

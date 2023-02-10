@@ -29,7 +29,7 @@ CLASS
    pgsReinforcementFatigueArtifact
 
 DESCRIPTION
-   Artifact for checking reinforcement fatigue. This check is only for FHWA UHPC
+   Artifact for checking reinforcement fatigue. This check is only for AASHTO UHPC
    concrete. See GS 1.5.3 and LRFD 5.5.3.1
 *****************************************************************************/
 

@@ -796,6 +796,7 @@
 #define IDC_ECU_CHECK                   1368
 #define IDC_FRICTION                    1369
 #define IDC_WOBBLE_TAG                  1370
+#define IDC_GAMMA_U                     1370
 #define IDC_ANCHORSET_TAG               1371
 #define IDC_TRUCK_SUPPORT_LOCATION_ACCURACY 1374
 #define IDC_TRUCK_SUPPORT_LOCATION_ACCURACY_UNIT 1375
@@ -1453,7 +1454,7 @@
 #define IDC_FT_LOC                      2025
 #define IDC_FT_LOC_UNIT                 2026
 #define IDC_ET_LOC                      2027
-#define IDD_FHWAUHPC_CONCRETE           2028
+#define IDD_UHPC_CONCRETE           2028
 #define IDR_LIBEDITORTOOLBAR            12132
 #define IDM_ADD_ENTRY                   36864
 #define IDM_EDIT_ENTRY                  36865

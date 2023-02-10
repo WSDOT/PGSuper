@@ -77,7 +77,7 @@ CEffectivePrestressForceTable* CEffectivePrestressForceTable::PrepareTable(rptCh
    *pParagraph << Sub2(_T("P"), _T("pe")) << _T(" = ") << RPT_FPE << _T("[") << symbol(SUM) << _T("(") << symbol(zeta) << RPT_APS << _T(")]") << rptNewLine;
    *pParagraph << symbol(zeta) << _T(" = Prestress Transfer Length Reduction Factor");
    GET_IFACE2(pBroker, IMaterials, pMaterials);
-   if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+   if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
    {
       // The way things are currently setup, we don't have a direct way of getting this value using code.
       // In the AddRow function, we are reporting the transfer length factor based on the minimum transfer length.

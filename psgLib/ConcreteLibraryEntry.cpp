@@ -73,8 +73,8 @@ CString ConcreteLibraryEntry::GetConcreteType(pgsTypes::ConcreteType type)
       lpszType = _T("PCI-UHPC");
       break;
 
-   case pgsTypes::FHWA_UHPC:
-      lpszType = _T("FHWA-UHPC");
+   case pgsTypes::UHPC:
+      lpszType = _T("UHPC");
       break;
 
    default:
@@ -182,6 +182,7 @@ m_ftloc(WBFL::Units::ConvertToSysUnits(0.75, WBFL::Units::Measure::KSI)),
 m_etloc(0.0025),
 m_alpha_u(0.85),
 m_ecu(-0.0035),
+m_gamma_u(1.0),
 m_bExperimental_ecu(false),
 m_bUserACIParameters(false),
 m_CureMethod(pgsTypes::Moist),
@@ -204,7 +205,7 @@ bool ConcreteLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
    // Version 5, re-arranged data and added AASHTO and ACI groups.
    // Version 6, added CEB-FIP Concrete
    // Version 7, added PCI UHPC
-   // Version 8, added FHWA UHPC
+   // Version 8, added UHPC
 
    pSave->Property(_T("Name"),this->GetName().c_str());
    
@@ -246,7 +247,7 @@ bool ConcreteLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
    pSave->EndUnit(); // PCIUHPC
 
    // Added version 8
-   pSave->BeginUnit(_T("FHWAUHPC"), 1.0);
+   pSave->BeginUnit(_T("UHPC"), 2.0);
    pSave->Property(_T("ftcri"),m_ftcri);
    pSave->Property(_T("ftcr"), m_ftcr);
    pSave->Property(_T("ftloc"),m_ftloc);
@@ -254,8 +255,9 @@ bool ConcreteLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
    pSave->Property(_T("alpha_u"), m_alpha_u);
    pSave->Property(_T("ecu"), m_ecu);
    pSave->Property(_T("Experimental_ecu"), m_bExperimental_ecu);
+   pSave->Property(_T("gamma_u"), m_gamma_u); // added version 2 of this data block
    pSave->Property(_T("FiberLength"), m_FiberLength);
-   pSave->EndUnit(); // FHWAUHPC
+   pSave->EndUnit(); // UHPC
 
    pSave->BeginUnit(_T("ACI"),1.0);
    pSave->Property(_T("UserACI"),m_bUserACIParameters);
@@ -492,7 +494,15 @@ bool ConcreteLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
          if (7 < version)
          {
             // added version 8
-            if (!pLoad->BeginUnit(_T("FHWAUHPC"))) THROW_LOAD(InvalidFileFormat, pLoad);
+            if (!pLoad->BeginUnit(_T("UHPC")))
+            {
+               // Early versions of this data block used FHWAUHPC
+               // If UHPC fails, try the old name
+               if (!pLoad->BeginUnit(_T("FHWAUHPC"))) 
+                  THROW_LOAD(InvalidFileFormat, pLoad);
+            }
+
+            Float64 uhpc_version = pLoad->GetVersion();
             if (!pLoad->Property(_T("ftcri"), &m_ftcri)) THROW_LOAD(InvalidFileFormat, pLoad);
             if (!pLoad->Property(_T("ftcr"), &m_ftcr)) THROW_LOAD(InvalidFileFormat, pLoad);
             if (!pLoad->Property(_T("ftloc"), &m_ftloc)) THROW_LOAD(InvalidFileFormat, pLoad);
@@ -500,8 +510,13 @@ bool ConcreteLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
             if (!pLoad->Property(_T("alpha_u"), &m_alpha_u)) THROW_LOAD(InvalidFileFormat, pLoad);
             if (!pLoad->Property(_T("ecu"), &m_ecu)) THROW_LOAD(InvalidFileFormat, pLoad);
             if (!pLoad->Property(_T("Expermental_ecu"), &m_bExperimental_ecu)) THROW_LOAD(InvalidFileFormat, pLoad);
+            if (1 < uhpc_version)
+            {
+               // added version 2 of this data block
+               if (!pLoad->Property(_T("gamma_u"), &m_gamma_u)) THROW_LOAD(InvalidFileFormat, pLoad);
+            }
             if (!pLoad->Property(_T("FiberLength"), &m_FiberLength)) THROW_LOAD(InvalidFileFormat, pLoad);
-            if (!pLoad->EndUnit()) THROW_LOAD(InvalidFileFormat, pLoad);
+            if (!pLoad->EndUnit()) THROW_LOAD(InvalidFileFormat, pLoad); // UHPC
          }
 
          if ( !pLoad->BeginUnit(_T("ACI")) )
@@ -742,7 +757,7 @@ bool ConcreteLibraryEntry::Compare(const ConcreteLibraryEntry& rOther, std::vect
       }
    }
 
-   if (m_Type == pgsTypes::FHWA_UHPC)
+   if (m_Type == pgsTypes::UHPC)
    {
       if (!::IsEqual(m_ftcri, rOther.m_ftcri))
       {
@@ -778,6 +793,12 @@ bool ConcreteLibraryEntry::Compare(const ConcreteLibraryEntry& rOther, std::vect
       {
          RETURN_ON_DIFFERENCE;
          vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Compression response reduction factor (alpha,u)"), _T(""), _T("")));
+      }
+
+      if (!::IsEqual(m_gamma_u, rOther.m_gamma_u))
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Fiber orientation reduction factor (gamma,u)"), _T(""), _T("")));
       }
 
       if (!::IsEqual(m_ecu, rOther.m_ecu))
@@ -1031,7 +1052,7 @@ void ConcreteLibraryEntry::GetPCIUHPC(Float64* ffc, Float64* frr, Float64* fiber
    *pAutogenousShrinkage = m_AutogenousShrinkage;
 }
 
-void ConcreteLibraryEntry::SetFHWAUHPC(Float64 ft_cri, Float64 ft_cr, Float64 ft_loc, Float64 et_loc,Float64 alpha_u,Float64 ecu,bool bExperimentalEcu,Float64 fiberLength)
+void ConcreteLibraryEntry::SetUHPC(Float64 ft_cri, Float64 ft_cr, Float64 ft_loc, Float64 et_loc,Float64 alpha_u,Float64 ecu,bool bExperimentalEcu,Float64 gammaU,Float64 fiberLength)
 {
    m_ftcri = ft_cri;
    m_ftcr = ft_cr;
@@ -1040,10 +1061,11 @@ void ConcreteLibraryEntry::SetFHWAUHPC(Float64 ft_cri, Float64 ft_cr, Float64 ft
    m_alpha_u = alpha_u;
    m_ecu = ecu;
    m_bExperimental_ecu = bExperimentalEcu;
+   m_gamma_u = gammaU;
    m_FiberLength = fiberLength;
 }
 
-void ConcreteLibraryEntry::GetFHWAUHPC(Float64* ft_cri, Float64* ft_cr, Float64* ft_loc, Float64* et_loc,Float64* alpha_u,Float64* ecu,bool* pbExperimentalEcu,Float64* pFiberLength) const
+void ConcreteLibraryEntry::GetUHPC(Float64* ft_cri, Float64* ft_cr, Float64* ft_loc, Float64* et_loc,Float64* alpha_u,Float64* ecu,bool* pbExperimentalEcu,Float64* pGammaU,Float64* pFiberLength) const
 {
    *ft_cri = m_ftcri;
    *ft_cr = m_ftcr;
@@ -1052,6 +1074,7 @@ void ConcreteLibraryEntry::GetFHWAUHPC(Float64* ft_cri, Float64* ft_cr, Float64*
    *alpha_u = m_alpha_u;
    *ecu = m_ecu;
    *pbExperimentalEcu = m_bExperimental_ecu;
+   *pGammaU = m_gamma_u;
    *pFiberLength = m_FiberLength;
 }
 
@@ -1174,7 +1197,7 @@ bool ConcreteLibraryEntry::Edit(bool allowEditing,int nPage)
    dlg.m_General.m_Type      = this->GetType();
 
    GetPCIUHPC(&dlg.m_PCIUHPC.m_ffc, &dlg.m_PCIUHPC.m_frr, &dlg.m_PCIUHPC.m_FiberLength, &dlg.m_PCIUHPC.m_AutogenousShrinkage, &dlg.m_PCIUHPC.m_bPCTT);
-   GetFHWAUHPC(&dlg.m_FHWAUHPC.m_ftcri, &dlg.m_FHWAUHPC.m_ftcr, &dlg.m_FHWAUHPC.m_ftloc, &dlg.m_FHWAUHPC.m_etloc, &dlg.m_FHWAUHPC.m_alpha_u,&dlg.m_FHWAUHPC.m_ecu,&dlg.m_FHWAUHPC.m_bExperimental_ecu,&dlg.m_FHWAUHPC.m_FiberLength);
+   GetUHPC(&dlg.m_UHPC.m_ftcri, &dlg.m_UHPC.m_ftcr, &dlg.m_UHPC.m_ftloc, &dlg.m_UHPC.m_etloc, &dlg.m_UHPC.m_alpha_u,&dlg.m_UHPC.m_ecu,&dlg.m_UHPC.m_bExperimental_ecu,&dlg.m_UHPC.m_gamma_u,&dlg.m_UHPC.m_FiberLength);
 
    dlg.m_AASHTO.m_EccK1       = this->GetModEK1();
    dlg.m_AASHTO.m_EccK2       = this->GetModEK2();
@@ -1219,7 +1242,7 @@ bool ConcreteLibraryEntry::Edit(bool allowEditing,int nPage)
       SetAggSplittingStrength(dlg.m_AASHTO.m_Fct);
 
       SetPCIUHPC(dlg.m_PCIUHPC.m_ffc, dlg.m_PCIUHPC.m_frr, dlg.m_PCIUHPC.m_FiberLength, dlg.m_PCIUHPC.m_AutogenousShrinkage, dlg.m_PCIUHPC.m_bPCTT);
-      SetFHWAUHPC(dlg.m_FHWAUHPC.m_ftcri, dlg.m_FHWAUHPC.m_ftcr, dlg.m_FHWAUHPC.m_ftloc, dlg.m_FHWAUHPC.m_etloc, dlg.m_FHWAUHPC.m_alpha_u,dlg.m_FHWAUHPC.m_ecu,dlg.m_FHWAUHPC.m_bExperimental_ecu,dlg.m_FHWAUHPC.m_FiberLength);
+      SetUHPC(dlg.m_UHPC.m_ftcri, dlg.m_UHPC.m_ftcr, dlg.m_UHPC.m_ftloc, dlg.m_UHPC.m_etloc, dlg.m_UHPC.m_alpha_u,dlg.m_UHPC.m_ecu,dlg.m_UHPC.m_bExperimental_ecu,dlg.m_UHPC.m_gamma_u,dlg.m_UHPC.m_FiberLength);
 
       UserACIParameters(dlg.m_ACI.m_bUserParameters);
       SetAlpha(dlg.m_ACI.m_A);

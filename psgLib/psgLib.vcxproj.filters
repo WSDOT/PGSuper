@@ -280,7 +280,7 @@
     <ClCompile Include="PCIUHPCConcretePage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FHWAUHPCConcretePage.cpp">
+    <ClCompile Include="UHPCConcretePage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -582,7 +582,7 @@
     <ClInclude Include="PCIUHPCConcretePage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FHWAUHPCConcretePage.h">
+    <ClInclude Include="UHPCConcretePage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

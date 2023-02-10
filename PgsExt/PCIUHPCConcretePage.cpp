@@ -90,7 +90,7 @@ void CPCIUHPCConcretePage::DoDataExchange(CDataExchange* pDX)
       DDV_UnitValueGreaterThanZero(pDX, IDC_FFC, m_ffc, pDisplayUnits->Stress);
       DDV_UnitValueGreaterThanZero(pDX, IDC_FRR, m_frr, pDisplayUnits->Stress);
       DDV_UnitValueGreaterThanZero(pDX, IDC_FIBER, m_FiberLength, pDisplayUnits->ComponentDim);
-      DDV_GreaterThanZero(pDX, IDC_AUTOGENOUS_SHRINKAGE, m_AutogenousShrinkage);
+      DDV_LimitOrMore(pDX, IDC_AUTOGENOUS_SHRINKAGE, m_AutogenousShrinkage,0.0);
    }
 }
 

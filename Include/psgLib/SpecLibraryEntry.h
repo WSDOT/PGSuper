@@ -1350,8 +1350,8 @@ private:
    std::array<bool, 2>    m_DoTensStressHaulingMax;
    std::array<Float64, 2> m_TensStressHaulingMax;
 
-   std::array<Float64, 3> m_HaulingModulusOfRuptureCoefficient; // pgsTypes::ConcreteType is the array index, pgsTypes::PCI_UHPC and pgsTypes::FHWA_UHPC are not valid
-   std::array<Float64, 3> m_LiftingModulusOfRuptureCoefficient; // pgsTypes::ConcreteType is the array index, pgsTypes::PCI_UHPC and pgsTypes::FHWA_UHPC are not valid
+   std::array<Float64, 3> m_HaulingModulusOfRuptureCoefficient; // pgsTypes::ConcreteType is the array index, pgsTypes::PCI_UHPC and pgsTypes::UHPC are not valid
+   std::array<Float64, 3> m_LiftingModulusOfRuptureCoefficient; // pgsTypes::ConcreteType is the array index, pgsTypes::PCI_UHPC and pgsTypes::UHPC are not valid
 
    Float64 m_MinLiftPoint;
    Float64 m_LiftPointAccuracy;

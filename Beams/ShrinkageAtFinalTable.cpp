@@ -100,16 +100,16 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
    if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC)
    {
       if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.bPCTT)
-         *pParagraph << rptRcImage(strImagePath + _T("CreepShrinkageAtFinal_UHPC_PCTT.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("CreepShrinkageAtFinal_PCI_UHPC_PCTT.png")) << rptNewLine;
       else
-         *pParagraph << rptRcImage(strImagePath + _T("CreepShrinkageAtFinal_UHPC.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("CreepShrinkageAtFinal_PCI_UHPC.png")) << rptNewLine;
 
-      *pParagraph << rptRcImage(strImagePath + _T("UHPC_Factors.png")) << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + _T("PCI_UHPC_Factors.png")) << rptNewLine;
    }
-   else if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC)
+   else if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
    {
-      *pParagraph << rptRcImage(strImagePath + _T("CreepShrinkageAtFinal_FHWA_UHPC.png")) << rptNewLine;
-      *pParagraph << rptRcImage(strImagePath + _T("FHWA_UHPC_Factors.png")) << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + _T("CreepShrinkageAtFinal_UHPC.png")) << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + _T("UHPC_Factors.png")) << rptNewLine;
    }
    else
    {
@@ -231,7 +231,7 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
    (*pParamTable)(2,9) << table->creep.SetValue(ptl->GetGirderCreep()->GetCreepCoefficient(ptl->GetMaturityAtFinal(),ptl->GetInitialAge()));
 
    // intermediate results
-   pParamTable = rptStyleManager::CreateDefaultTable(pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC ? 6 : 5,_T(""));
+   pParamTable = rptStyleManager::CreateDefaultTable(pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC ? 6 : 5,_T(""));
    *pParagraph << pParamTable << rptNewLine;
 
    if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
@@ -251,7 +251,7 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
    (*pParamTable)(0,4) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetMaturityAtFinal());
    table->time.ShowUnitTag(false);
 
-   if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC)
+   if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
    {
       (*pParamTable)(0, 5) << Sub2(_T("k"), _T("l"));
    }
@@ -261,7 +261,7 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
    (*pParamTable)(1,2) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKhc());
    (*pParamTable)(1,3) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKf());
    (*pParamTable)(1,4) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKtd(ptl->GetMaturityAtFinal()));
-   if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC)
+   if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
    {
       (*pParamTable)(1, 5) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKl(ptl->GetInitialAge()));
    }

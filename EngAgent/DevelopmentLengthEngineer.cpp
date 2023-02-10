@@ -115,11 +115,11 @@ const std::shared_ptr<pgsDevelopmentLength> pgsDevelopmentLengthEngineer::GetDev
    {
       details = std::make_shared<pgsPCIUHPCDevelopmentLength>(db, fpe, fps);
    }
-   else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+   else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
    {
       GET_IFACE(IPretensionForce, pPrestress);
       Float64 lt = pPrestress->GetTransferLength(segmentKey, strandType, pgsTypes::tltMaximum, pConfig);
-      details = std::make_shared<pgsFHWAUHPCDevelopmentLength>(lt, db, fpe, fps);
+      details = std::make_shared<pgsUHPCDevelopmentLength>(lt, db, fpe, fps);
    }
    else
    {
@@ -226,9 +226,9 @@ void pgsDevelopmentLengthEngineer::ReportDevelopmentLengthDetails(const CSegment
       pgsPCIUHPCDevelopmentLengthReporter reporter(m_pBroker, this);
       reporter.ReportDevelopmentLengthDetails(segmentKey, pChapter);
    }
-   else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+   else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
    {
-      pgsFHWAUHPCDevelopmentLengthReporter reporter(m_pBroker, this);
+      pgsUHPCDevelopmentLengthReporter reporter(m_pBroker, this);
       reporter.ReportDevelopmentLengthDetails(segmentKey, pChapter);
    }
    else
@@ -299,12 +299,12 @@ Float64 pgsPCIUHPCDevelopmentLength::GetDevelopmentLength() const
 ////////////////////////
 ////////////////////////
 
-pgsFHWAUHPCDevelopmentLength::pgsFHWAUHPCDevelopmentLength(Float64 lt, Float64 db, Float64 fpe, Float64 fps) :
+pgsUHPCDevelopmentLength::pgsUHPCDevelopmentLength(Float64 lt, Float64 db, Float64 fpe, Float64 fps) :
    pgsDevelopmentLengthBase(db, fpe, fps), m_lt(lt)
 {
 }
 
-Float64 pgsFHWAUHPCDevelopmentLength::GetDevelopmentLength() const
+Float64 pgsUHPCDevelopmentLength::GetDevelopmentLength() const
 {
    Float64 fps_ksi = WBFL::Units::ConvertFromSysUnits(m_fps, WBFL::Units::Measure::KSI);
    Float64 fpe_ksi = WBFL::Units::ConvertFromSysUnits(m_fpe, WBFL::Units::Measure::KSI);
@@ -548,12 +548,12 @@ void pgsPCIUHPCDevelopmentLengthReporter::ReportDevelopmentLengthDetails(const C
 ////////////////////////
 ////////////////////////
 
-pgsFHWAUHPCDevelopmentLengthReporter::pgsFHWAUHPCDevelopmentLengthReporter(IBroker* pBroker,const pgsDevelopmentLengthEngineer* pEngineer) :
+pgsUHPCDevelopmentLengthReporter::pgsUHPCDevelopmentLengthReporter(IBroker* pBroker,const pgsDevelopmentLengthEngineer* pEngineer) :
    pgsDevelopmentLengthReporterBase(pBroker,pEngineer)
 {
 }
 
-void pgsFHWAUHPCDevelopmentLengthReporter::ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const
+void pgsUHPCDevelopmentLengthReporter::ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const
 {
    __super::ReportDevelopmentLengthDetails(segmentKey, pChapter);
 
@@ -569,7 +569,7 @@ void pgsFHWAUHPCDevelopmentLengthReporter::ReportDevelopmentLengthDetails(const 
 
    pPara = new rptParagraph;
    *pChapter << pPara;
-   (*pPara) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("FHWA_UHPC_DevLength.png")) << rptNewLine;
+   (*pPara) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("UHPC_DevLength.png")) << rptNewLine;
    (*pPara) << Sub2(_T("l"), _T("t")) << _T(" is the longer transfer length.") << rptNewLine;
 
    // NOTE: Transfer length is a part of the development length, but we don't list transfer length here

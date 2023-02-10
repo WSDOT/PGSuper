@@ -1400,7 +1400,7 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
    GET_IFACE2(pBroker, IMaterials, pMaterials);
    if (pMaterials->HasUHPC())
    {
-      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Ec_PCI_UHPC.png")) << _T(" for PCI-UHPC and FHWA-UHPC") << rptNewLine;
+      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Ec_PCI_UHPC.png")) << _T(" for PCI-UHPC and AASHTO UHPC GS") << rptNewLine;
    }
 
 

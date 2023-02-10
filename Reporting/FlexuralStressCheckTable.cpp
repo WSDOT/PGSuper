@@ -180,6 +180,12 @@ void CFlexuralStressCheckTable::BuildSectionHeading(rptChapter* pChapter, IBroke
    std::_tstring strLimitState = GetLimitStateString(task.limitState);
    std::_tstring strStress = (task.stressType == pgsTypes::Tension ? _T("Tension") : _T("Compression"));
 
+   if (task.limitState == pgsTypes::FatigueI && task.stressType == pgsTypes::Tension)
+   {
+      strLimitState = _T("Service I, components subjected to cyclic stresses");
+      strStress = _T("");
+   }
+
    std::_tostringstream os;
    os << _T("Interval ") << LABEL_INTERVAL(task.intervalIdx) << _T(": ") << pIntervals->GetDescription(task.intervalIdx) << _T(" : ") << strLimitState << _T(" ") << strStress;
    if (liveLoadIntervalIdx <= task.intervalIdx && !task.bIncludeLiveLoad)
@@ -198,9 +204,9 @@ void CFlexuralStressCheckTable::BuildSectionHeading(rptChapter* pChapter, IBroke
 
    if (task.limitState == pgsTypes::FatigueI && task.stressType == pgsTypes::Tension)
    {
-      // use a different title for this special case of Fatigue I and Tension - this is an FHWA UHPC check
+      // use a different title for this special case of Fatigue I and Tension - this is an UHPC check
       // and the other titles and spec references don't make sense in that context
-      *pPara << _T("Service I stresses are used in this limit state check. See GS 1.5.3.") << rptNewLine;
+      *pPara << _T("Service I stresses are used in this limit state check. See GS 1.5.2.3.") << rptNewLine;
    }
    else
    {
@@ -433,7 +439,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, IBroker* pBroke
    std::_tstring strLimitState = GetLimitStateString(task.limitState);
    if (task.limitState == pgsTypes::FatigueI && task.stressType == pgsTypes::Tension)
    {
-      // for FHWA UHPC fatigue tension check, stresses are actually based on the Service I limit state
+      // for UHPC fatigue tension check, stresses are actually based on the Service I limit state
       // so force that title here... see GS 1.5.3
       strLimitState = GetLimitStateString(pgsTypes::ServiceI);
    }

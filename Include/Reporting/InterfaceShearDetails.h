@@ -87,7 +87,7 @@ private:
    rptRcTable* CreateAvfTable(IBroker* pBroker, rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits);
    void FillAvfTable(rptRcTable* pTable, RowIndexType row, const pgsPointOfInterest& poi, const pgsHorizontalShearArtifact* pArtifact);
    
-   rptRcTable* CreateVniTable(IBroker* pBroker, rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits, bool bIsUHPC, const std::vector<std::pair<SegmentIndexType, const pgsHorizontalShearArtifact*>>& vSegmentArtifacts, std::vector<std::pair<SegmentIndexType, const pgsHorizontalShearArtifact*>>& vClosureArtifacts);
+   rptRcTable* CreateVniTable(IBroker* pBroker, rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits, const CGirderKey& girderKey,bool bIsUHPC, const std::vector<std::pair<SegmentIndexType, const pgsHorizontalShearArtifact*>>& vSegmentArtifacts, std::vector<std::pair<SegmentIndexType, const pgsHorizontalShearArtifact*>>& vClosureArtifacts);
    void FillVniTable(rptRcTable* pTable, RowIndexType row, const pgsPointOfInterest& poi, bool bIsUHPC, const pgsHorizontalShearArtifact* pArtifact);
    
    rptRcTable* CreateMinAvfTable(rptChapter* pChapter, IBridge* pBridge, IEAFDisplayUnits* pDisplayUnits, bool bIsRoughened, bool doAllStirrupsEngageDeck,bool bIsUHPC);

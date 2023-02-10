@@ -560,6 +560,7 @@ public:
    virtual Float64 GetSegmentConcreteDesignEffectiveCrackingStrength(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetSegmentConcreteCrackLocalizationStrength(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetSegmentConcreteCrackLocalizationStrain(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentConcreteFiberOrientationReductionFactor(const CSegmentKey& segmentKey) const override;
 
    virtual pgsTypes::ConcreteType GetClosureJointConcreteType(const CClosureKey& closureKey) const override;
    virtual bool DoesClosureJointConcreteHaveAggSplittingStrength(const CClosureKey& closureKey) const override;

@@ -6939,9 +6939,9 @@ std::shared_ptr<const lrfdCreepCoefficient> CAnalysisAgentImp::GetGirderCreepMod
 
          lrfd_cc = uhpc_cc;
       }
-      else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+      else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
       {
-         std::shared_ptr<lrfdFHWAUHPCCreepCoefficient> uhpc_cc = std::make_shared<lrfdFHWAUHPCCreepCoefficient>();
+         std::shared_ptr<lrfdUHPCCreepCoefficient> uhpc_cc = std::make_shared<lrfdUHPCCreepCoefficient>();
          lrfd_cc = uhpc_cc;
       }
       else

@@ -2026,9 +2026,9 @@ BEGIN
     LTEXT           "x10^-3",IDC_STATIC,209,70,25,8
 END
 
-IDD_FHWAUHPC_CONCRETE DIALOGEX 0, 0, 309, 176
+IDD_UHPC_CONCRETE DIALOGEX 0, 0, 309, 190
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "FHWA-UHPC"
+CAPTION "UHPC"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Initial effective cracking strength (ft,cri)",IDC_STATIC,25,34,129,8
@@ -2042,14 +2042,16 @@ BEGIN
     LTEXT           "Static",IDC_FT_LOC_UNIT,202,65,19,8
     LTEXT           "Crack localization strain (et,loc)",IDC_STATIC,25,82,101,8
     EDITTEXT        IDC_ET_LOC,159,78,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Compressive stress-strain response reduction factor (alpha.u)",IDC_STATIC,26,114,200,8
-    EDITTEXT        IDC_ALPHA_U,229,112,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Compressive stress-strain response reduction factor (alpha.u)",IDC_STATIC,26,100,200,8
+    EDITTEXT        IDC_ALPHA_U,229,98,40,14,ES_RIGHT | ES_AUTOHSCROLL
     CONTROL         "Experimentally derived ultimate compressive strain (e.cu)",IDC_ECU_CHECK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,27,135,199,10
-    EDITTEXT        IDC_ECU,227,133,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Fiber Length",IDC_FIBER_LABEL,28,156,40,8
-    EDITTEXT        IDC_FIBER,166,153,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_FIBER_UNIT,210,155,19,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,27,121,199,10
+    EDITTEXT        IDC_ECU,227,119,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Fiber orientation reduction factor (gamma.u)",IDC_STATIC,27,150,144,8
+    EDITTEXT        IDC_GAMMA_U,175,146,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Fiber Length",IDC_FIBER_LABEL,28,167,40,8
+    EDITTEXT        IDC_FIBER,176,164,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_FIBER_UNIT,220,166,19,8
 END
 
 
@@ -2450,12 +2452,12 @@ BEGIN
         BOTTOMMARGIN, 123
     END
 
-    IDD_FHWAUHPC_CONCRETE, DIALOG
+    IDD_UHPC_CONCRETE, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 302
         TOPMARGIN, 7
-        BOTTOMMARGIN, 169
+        BOTTOMMARGIN, 183
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -2948,7 +2950,7 @@ BEGIN
     0
 END
 
-IDD_FHWAUHPC_CONCRETE AFX_DIALOG_LAYOUT
+IDD_UHPC_CONCRETE AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

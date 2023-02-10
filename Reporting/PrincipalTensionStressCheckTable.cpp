@@ -166,7 +166,7 @@ void CPrincipalTensionStressCheckTable::BuildTable(rptChapter* pChapter, IBroker
    *pPara << _T("Interval ") << LABEL_INTERVAL(liveLoadInterval) << _T(" - ") << pIntervals->GetDescription(liveLoadInterval) << _T(", Service III") << rptNewLine;
    
    bool bIsUHPC = false;
-   if (pMaterials->GetSegmentConcreteType(CSegmentKey(girderKey, 0)) == pgsTypes::FHWA_UHPC)
+   if (pMaterials->GetSegmentConcreteType(CSegmentKey(girderKey, 0)) == pgsTypes::UHPC)
    {
       bIsUHPC = true;
       ATLASSERT(nSegments == 1); // UHPC isn't available for spliced girders yet, so there better be only one segment

@@ -57,7 +57,7 @@ CConcreteGeneralPage::CConcreteGeneralPage() : CPropertyPage()
    m_MaxLWCDensity = lrfdConcreteUtil::GetLWCDensityLimit();
 
    lrfdConcreteUtil::GetPCIUHPCStrengthRange(&m_MinFcUHPC, &m_MaxFcUHPC);
-   // FHWA UHPC does not have a prescribed strength range
+   // AASHTO UHPC does not have a prescribed strength range
 }
 
 
@@ -193,8 +193,8 @@ BOOL CConcreteGeneralPage::OnInitDialog()
       // LRFD must be at least 9th Edition 2020
       //idx = pcbConcreteType->AddString(_T("PCI-UHPC"));
       //pcbConcreteType->SetItemData(idx, (DWORD_PTR)pgsTypes::PCI_UHPC);
-      //idx = pcbConcreteType->AddString(_T("FHWA-UHPC"));
-      //pcbConcreteType->SetItemData(idx, (DWORD_PTR)pgsTypes::FHWA_UHPC);
+      //idx = pcbConcreteType->AddString(_T("UHPC"));
+      //pcbConcreteType->SetItemData(idx, (DWORD_PTR)pgsTypes::UHPC);
    }
    else
    {
@@ -209,11 +209,11 @@ BOOL CConcreteGeneralPage::OnInitDialog()
          idx = pcbConcreteType->AddString(_T("PCI-UHPC"));
          pcbConcreteType->SetItemData(idx, (DWORD_PTR)pgsTypes::PCI_UHPC);
 
-         idx = pcbConcreteType->AddString(_T("FHWA-UHPC"));
-         pcbConcreteType->SetItemData(idx, (DWORD_PTR)pgsTypes::FHWA_UHPC);
+         idx = pcbConcreteType->AddString(_T("UHPC"));
+         pcbConcreteType->SetItemData(idx, (DWORD_PTR)pgsTypes::UHPC);
       }
 
-      ATLASSERT( m_Type == pgsTypes::Normal || m_Type == pgsTypes::SandLightweight || m_Type == pgsTypes::PCI_UHPC || m_Type == pgsTypes::FHWA_UHPC);
+      ATLASSERT( m_Type == pgsTypes::Normal || m_Type == pgsTypes::SandLightweight || m_Type == pgsTypes::PCI_UHPC || m_Type == pgsTypes::UHPC);
    }
 
 	CPropertyPage::OnInitDialog();
@@ -357,7 +357,7 @@ void CConcreteGeneralPage::OnCopyMaterial()
          pParent->m_AASHTO.m_bHasFct     = entry->HasAggSplittingStrength();
 
          entry->GetPCIUHPC(&(pParent->m_PCIUHPC.m_ffc), &(pParent->m_PCIUHPC.m_frr), &(pParent->m_PCIUHPC.m_FiberLength), &(pParent->m_PCIUHPC.m_AutogenousShrinkage), &(pParent->m_PCIUHPC.m_bPCTT));
-         entry->GetFHWAUHPC(&(pParent->m_FHWAUHPC.m_ftcri), &(pParent->m_FHWAUHPC.m_ftcr), &(pParent->m_FHWAUHPC.m_ftloc), &(pParent->m_FHWAUHPC.m_etloc), &(pParent->m_FHWAUHPC.m_alpha_u), &(pParent->m_FHWAUHPC.m_ecu), &(pParent->m_FHWAUHPC.m_bExperimental_ecu),&(pParent->m_FHWAUHPC.m_FiberLength));
+         entry->GetUHPC(&(pParent->m_UHPC.m_ftcri), &(pParent->m_UHPC.m_ftcr), &(pParent->m_UHPC.m_ftloc), &(pParent->m_UHPC.m_etloc), &(pParent->m_UHPC.m_alpha_u), &(pParent->m_UHPC.m_ecu), &(pParent->m_UHPC.m_bExperimental_ecu),&(pParent->m_UHPC.m_gamma_u), &(pParent->m_UHPC.m_FiberLength));
 
          pParent->m_ACI.m_bUserParameters = entry->UserACIParameters();
          pParent->m_ACI.m_A               = entry->GetAlpha();
@@ -464,7 +464,7 @@ void CConcreteGeneralPage::OnOK()
 
 bool CConcreteGeneralPage::IsDensityInRange(Float64 density, pgsTypes::ConcreteType type)
 {
-   if (type == pgsTypes::PCI_UHPC || type == pgsTypes::FHWA_UHPC)
+   if (type == pgsTypes::PCI_UHPC || type == pgsTypes::UHPC)
    {
       return true; // no density range for UHPC provided by specification, only a typical value
    }
@@ -480,7 +480,7 @@ bool CConcreteGeneralPage::IsDensityInRange(Float64 density, pgsTypes::ConcreteT
 
 bool CConcreteGeneralPage::IsStrengthInRange(Float64 fc, pgsTypes::ConcreteType type)
 {
-   // FHWA UHPC does not have a prescribed strength range
+   // AASHTO UHPC does not have a prescribed strength range
    if (type == pgsTypes::PCI_UHPC)
    {
       return InRange(m_MinFcUHPC, fc, m_MaxFcUHPC);

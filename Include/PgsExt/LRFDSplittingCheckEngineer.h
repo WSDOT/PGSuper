@@ -74,12 +74,12 @@ protected:
    virtual Float64 GetConcreteCapacity(pgsTypes::MemberEndType endType, const pgsSplittingCheckArtifact* pArtifact) const override;
 };
 
-class PGSEXTCLASS pgsFHWAUHPCSplittingCheckEngineer : public pgsLRFDSplittingCheckEngineer
+class PGSEXTCLASS pgsUHPCSplittingCheckEngineer : public pgsLRFDSplittingCheckEngineer
 {
 public:
-   pgsFHWAUHPCSplittingCheckEngineer();
-   pgsFHWAUHPCSplittingCheckEngineer(IBroker* pBroker);
-   virtual ~pgsFHWAUHPCSplittingCheckEngineer();
+   pgsUHPCSplittingCheckEngineer();
+   pgsUHPCSplittingCheckEngineer(IBroker* pBroker);
+   virtual ~pgsUHPCSplittingCheckEngineer();
 
    virtual std::shared_ptr<pgsSplittingCheckArtifact> Check(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig = nullptr) const override;
 

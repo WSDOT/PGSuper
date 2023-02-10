@@ -20,17 +20,23 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// FHWAUHPCConcretePage.cpp : implementation file
+// UHPCConcretePage.cpp : implementation file
 //
 
-#include "stdafx.h"
-#include <psgLib\psgLib.h>
-#include "ConcreteEntryDlg.h"
-#include "FHWAUHPCConcretePage.h"
-#include <MfcTools\CustomDDX.h>
-
-#include <EAF\EAFApp.h>
+#include <PgsExt\PgsExtLib.h>
+#include "resource.h"
+#include "PGSuperUnits.h"
+#include <PgsExt\ConcreteDetailsDlg.h>
+#include <PgsExt\UHPCConcretePage.h>
+#include <System\Tokenizer.h>
+#include "CopyConcreteEntry.h"
+#include <Lrfd\Lrfd.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
+#include <IFace\Bridge.h>
+
+#include <PGSuperColors.h>
+#include "..\Documentation\PGSuper.hh"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -39,42 +45,43 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
-// CFHWAUHPCConcretePage dialog
+// CUHPCConcretePage dialog
 
 
-CFHWAUHPCConcretePage::CFHWAUHPCConcretePage() : CPropertyPage(IDD_FHWAUHPC_CONCRETE)
+CUHPCConcretePage::CUHPCConcretePage() : CPropertyPage()
 {
-	//{{AFX_DATA_INIT(CFHWAUHPCConcretePage)
+	//{{AFX_DATA_INIT(CUHPCConcretePage)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   Construct(IDD_UHPC_CONCRETE);
 }
 
 
-void CFHWAUHPCConcretePage::DoDataExchange(CDataExchange* pDX)
+void CUHPCConcretePage::DoDataExchange(CDataExchange* pDX)
 {
    CEAFApp* pApp = EAFGetApp();
    const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    CPropertyPage::DoDataExchange(pDX);
 
+   //{{AFX_DATA_MAP(CUHPCConcretePage)
+   //}}AFX_DATA_MAP
+
    DDX_Control(pDX, IDC_ECU, m_wnd_ecu);
 
-   //{{AFX_DATA_MAP(CFHWAUHPCConcretePage)
-   //}}AFX_DATA_MAP
+   CConcreteDetailsDlg* pParent = (CConcreteDetailsDlg*)GetParent();
+   bool bValidate = pParent->m_General.GetConcreteType() == pgsTypes::UHPC ? true : false;
 
    DDX_UnitValueAndTag(pDX, IDC_FT_CRI, IDC_FT_CRI_UNIT, m_ftcri, pDisplayUnits->Stress);
    DDX_UnitValueAndTag(pDX, IDC_FT_CR, IDC_FT_CR_UNIT, m_ftcr, pDisplayUnits->Stress);
    DDX_UnitValueAndTag(pDX, IDC_FT_LOC, IDC_FT_LOC_UNIT, m_ftloc, pDisplayUnits->Stress);
-   
+
    //if (!pDX->m_bSaveAndValidate)
    //   m_etloc *= 1.0e3;
    DDX_Text(pDX, IDC_ET_LOC, m_etloc);
-   DDV_GreaterThanZero(pDX, IDC_ET_LOC, m_etloc);
-   //if (pDX->m_bSaveAndValidate)
-   //   m_etloc /= 1.0e3;
 
    DDX_Text(pDX, IDC_ALPHA_U, m_alpha_u);
-
    DDX_Check_Bool(pDX, IDC_ECU_CHECK, m_bExperimental_ecu);
 
    // Internally, e_cu is a negative value since it is compression. In the UI we want it to be
@@ -82,37 +89,50 @@ void CFHWAUHPCConcretePage::DoDataExchange(CDataExchange* pDX)
    if (!pDX->m_bSaveAndValidate)
       m_ecu *= -1;
 
-   if (m_wnd_ecu.IsWindowEnabled()) DDX_Text(pDX, IDC_ECU, m_ecu);
+   if(m_wnd_ecu.IsWindowEnabled()) DDX_Text(pDX, IDC_ECU, m_ecu);
 
    if (pDX->m_bSaveAndValidate)
       m_ecu *= -1;
 
-   if (m_bExperimental_ecu) DDV_GreaterThanZero(pDX, IDC_ECU, m_ecu);
-
+   DDX_Text(pDX, IDC_GAMMA_U, m_gamma_u);
    DDX_UnitValueAndTag(pDX, IDC_FIBER, IDC_FIBER_UNIT, m_FiberLength, pDisplayUnits->ComponentDim);
-   DDV_UnitValueGreaterThanZero(pDX, IDC_FIBER, m_FiberLength, pDisplayUnits->ComponentDim);
+
+   if (bValidate)
+   {
+      // only validate if controls are enabled
+      DDV_UnitValueGreaterThanZero(pDX, IDC_FT_CRI, m_ftcri, pDisplayUnits->Stress);
+      DDV_UnitValueGreaterThanZero(pDX, IDC_FT_CR, m_ftcr, pDisplayUnits->Stress);
+      DDV_UnitValueGreaterThanZero(pDX, IDC_FT_LOC, m_ftloc, pDisplayUnits->Stress);
+      DDV_GreaterThanZero(pDX, IDC_ET_LOC, m_etloc);
+
+      if (m_bExperimental_ecu) DDV_GreaterThanZero(pDX, IDC_ECU, m_ecu);
+
+      DDV_UnitValueGreaterThanZero(pDX, IDC_FIBER, m_FiberLength, pDisplayUnits->ComponentDim);
+   }
+
+   //if (pDX->m_bSaveAndValidate)
+   //   m_etloc /= 1.0e3;
 }
 
 
-BEGIN_MESSAGE_MAP(CFHWAUHPCConcretePage, CPropertyPage)
-   //{{AFX_MSG_MAP(CFHWAUHPCConcretePage)
-   ON_BN_CLICKED(ID_HELP, OnHelp)
+BEGIN_MESSAGE_MAP(CUHPCConcretePage, CPropertyPage)
+	//{{AFX_MSG_MAP(CUHPCConcretePage)
+	ON_BN_CLICKED(ID_HELP, OnHelp)
    ON_BN_CLICKED(IDC_ECU_CHECK, On_ecu)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
-// CFHWAUHPCConcretePage message handlers
-void CFHWAUHPCConcretePage::OnHelp()
+// CUHPCConcretePage message handlers
+void CUHPCConcretePage::OnHelp()
 {
-   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_CONCRETE_FHWAUHPC );
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_CONCRETE_UHPC);
 }
 
-void CFHWAUHPCConcretePage::On_ecu()
+void CUHPCConcretePage::On_ecu()
 {
    m_wnd_ecu.EnableWindow(IsDlgButtonChecked(IDC_ECU_CHECK) == BST_CHECKED);
 }
-
 
 inline BOOL CALLBACK EnableChildWindow(HWND hwnd, LPARAM lParam)
 {
@@ -120,11 +140,20 @@ inline BOOL CALLBACK EnableChildWindow(HWND hwnd, LPARAM lParam)
    return TRUE;
 }
 
-BOOL CFHWAUHPCConcretePage::OnInitDialog() 
+BOOL CUHPCConcretePage::OnSetActive()
+{
+   CConcreteDetailsDlg* pParent = (CConcreteDetailsDlg*)GetParent();
+   BOOL bEnable = pParent->m_General.GetConcreteType() == pgsTypes::UHPC ? TRUE : FALSE;
+   EnumChildWindows(GetSafeHwnd(), EnableChildWindow, bEnable);
+   
+   On_ecu();
+
+   return __super::OnSetActive();
+}
+
+BOOL CUHPCConcretePage::OnInitDialog() 
 {
 	CPropertyPage::OnInitDialog();
-
-   On_ecu();
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE

@@ -93,16 +93,16 @@ CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter*
    {
       if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.bPCTT)
       {
-         *pParagraph << rptRcImage(strImagePath + _T("CreepAtDeckPlacement_UHPC_PCTT.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("CreepAtDeckPlacement_PCI_UHPC_PCTT.png")) << rptNewLine;
       }
       else
       {
-         *pParagraph << rptRcImage(strImagePath + _T("CreepAtDeckPlacement_UHPC.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("CreepAtDeckPlacement_PCI_UHPC.png")) << rptNewLine;
       }
    }
-   else if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC)
+   else if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
    {
-      *pParagraph << rptRcImage(strImagePath + _T("CreepAtDeckPlacement_FHWA_UHPC.png")) << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + _T("CreepAtDeckPlacement_UHPC.png")) << rptNewLine;
    }
    else
    {

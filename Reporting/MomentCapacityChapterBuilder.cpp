@@ -114,7 +114,7 @@ rptChapter* CMomentCapacityChapterBuilder::Build(const std::shared_ptr<const WBF
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    bool bPCIUHPC = pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC || (pBridgeDesc->HasStructuralLongitudinalJoints() ? pMaterials->GetLongitudinalJointConcreteType() == pgsTypes::PCI_UHPC : false);
-   bool bFHWAUHPC = pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC || (pBridgeDesc->HasStructuralLongitudinalJoints() ? pMaterials->GetLongitudinalJointConcreteType() == pgsTypes::FHWA_UHPC : false);
+   bool bUHPC = pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC || (pBridgeDesc->HasStructuralLongitudinalJoints() ? pMaterials->GetLongitudinalJointConcreteType() == pgsTypes::UHPC : false);
    bool bUnconfinedConcrete = !IsUHPC(pMaterials->GetSegmentConcreteType(segmentKey)) || (pBridgeDesc->HasStructuralLongitudinalJoints() ? !IsUHPC(pMaterials->GetLongitudinalJointConcreteType()) : false);
 
    /////////////////////////////////////
@@ -166,7 +166,7 @@ rptChapter* CMomentCapacityChapterBuilder::Build(const std::shared_ptr<const WBF
    {
       (*pPara) << _T("Strand stresses are reduced due to lack of full development per LRFD 5.9.4.3.2") << rptNewLine;
    }
-   if (!bFHWAUHPC && !bConsiderReinforcementStrainLimits)
+   if (!bUHPC && !bConsiderReinforcementStrainLimits)
    {
       (*pPara) << _T("Reinforcement strain exceeds minimum elongation per the material specification") << rptNewLine;
    }
@@ -201,10 +201,10 @@ rptChapter* CMomentCapacityChapterBuilder::Build(const std::shared_ptr<const WBF
       *pPara << rptRcImage(strImagePath + _T("PCI_UHPC_Concrete.png")) << rptNewLine;
    }
 
-   if (bFHWAUHPC)
+   if (bUHPC)
    {
       *pPara << Bold(_T("UHPC Concrete Stress-Strain Model (GS 1.4.2.4.3 & 1.4.2.5.4)")) << rptNewLine;
-      *pPara << rptRcImage(strImagePath + _T("FHWA_UHPC_Concrete.png")) << rptNewLine;
+      *pPara << rptRcImage(strImagePath + _T("UHPC_Concrete.png")) << rptNewLine;
    }
 
    if (bUnconfinedConcrete)

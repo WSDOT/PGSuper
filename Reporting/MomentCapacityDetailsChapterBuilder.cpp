@@ -279,7 +279,7 @@ void write_moment_data_table(IBroker* pBroker,
    {
       CSegmentKey segmentKey(girderKey, segIdx);
       nMaxSegmentTendons = Max(nMaxSegmentTendons, pSegmentTendonGeometry->GetDuctCount(segmentKey));
-      if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+      if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
          bUHPC = true;
    }
 
@@ -485,7 +485,7 @@ void write_moment_data_table(IBroker* pBroker,
       const CSegmentKey& segmentKey(poi.GetSegmentKey());
       bool bIsOnSegment = pPoi->IsOnSegment(poi);
 
-      bool bUHPC_this_poi = (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC) ? true : false;
+      bool bUHPC_this_poi = (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC) ? true : false;
 
       const MOMENTCAPACITYDETAILS* pmcd = pMomentCap->GetMomentCapacityDetails(intervalIdx,poi,bPositiveMoment);
 
@@ -597,7 +597,7 @@ void write_moment_data_table(IBroker* pBroker,
 
    if (bUHPC)
    {
-      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("FHWA_UHPC_FlexureResistanceFactor.png")) << rptNewLine;
+      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("UHPC_FlexureResistanceFactor.png")) << rptNewLine;
       GET_IFACE2(pBroker, IResistanceFactors, pResistanceFactors);
       *pPara << Sub2(symbol(mu), _T("l")) << _T(" = ") << pResistanceFactors->GetDuctilityCurvatureRatioLimit() << _T(" GS 1.6.2") << rptNewLine;
    }
@@ -788,9 +788,9 @@ void write_crack_moment_data_table(IBroker* pBroker,
       {
          *pParagraph << RPT_STRESS(_T("r")) << _T(" = tensile stress limit at service limit state") << rptNewLine;
       }
-      else if (pMaterial->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+      else if (pMaterial->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
       {
-         *pParagraph << RPT_STRESS(_T("r")) << _T(" = effective cracking strength = ") << RPT_STRESS(_T("t,cr")) << _T("GS 1.6.3.3") << rptNewLine;
+         *pParagraph << RPT_STRESS(_T("r")) << _T(" = effective cracking strength = ") << RPT_STRESS(_T("t,cr")) << _T(" GS 1.6.3.3") << rptNewLine;
       }
       else
       {
@@ -810,9 +810,9 @@ void write_crack_moment_data_table(IBroker* pBroker,
          {
             *pParagraph << _T(" = tensile stress limit at service limit state") << rptNewLine;
          }
-         else if (pMaterial->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+         else if (pMaterial->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
          {
-            *pParagraph << RPT_STRESS(_T("r")) << _T(" = effective cracking strength = ") << RPT_STRESS(_T("t,cr")) << _T("GS 1.6.3.3") << rptNewLine;
+            *pParagraph << RPT_STRESS(_T("r")) << _T(" = effective cracking strength = ") << RPT_STRESS(_T("t,cr")) << _T(" GS 1.6.3.3") << rptNewLine;
          }
          else
          {

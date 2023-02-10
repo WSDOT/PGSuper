@@ -193,7 +193,7 @@
 #define IDH_CONCRETE_ACI               4002
 #define IDH_CONCRETE_CEBFIP            4003
 #define IDH_CONCRETE_PCIUHPC           4004
-#define IDH_CONCRETE_FHWAUHPC          4005
+#define IDH_CONCRETE_UHPC          4005
 
 #define IDH_ERECT_PIERS                5000
 #define IDH_CONSTRUCT_SEGMENTS         5001

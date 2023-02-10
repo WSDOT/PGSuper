@@ -49,7 +49,7 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
                                           IntervalIndexType intervalIdx, pgsTypes::LimitState ls,
                                           IEAFDisplayUnits* pDisplayUnits);
 
-void build_max_spacing_paragraph_fhwa_uhpc(IBroker* pBroker, rptChapter* pChapter, const CGirderKey& girderKey,
+void build_max_spacing_paragraph_uhpc(IBroker* pBroker, rptChapter* pChapter, const CGirderKey& girderKey,
    IntervalIndexType intervalIdx, pgsTypes::LimitState ls,
    IEAFDisplayUnits* pDisplayUnits);
 
@@ -87,12 +87,12 @@ rptChapter* CStirrupDetailingCheckChapterBuilder::Build(const std::shared_ptr<co
    build_min_avs_paragraph(pBroker,pChapter,girderKey,intervalIdx,pDisplayUnits);
 
    GET_IFACE2(pBroker, IMaterials, pMaterials);
-   if (pMaterials->GetSegmentConcreteType(CSegmentKey(girderKey, 0)) == pgsTypes::FHWA_UHPC)
+   if (pMaterials->GetSegmentConcreteType(CSegmentKey(girderKey, 0)) == pgsTypes::UHPC)
    {
-      build_max_spacing_paragraph_fhwa_uhpc(pBroker, pChapter, girderKey, intervalIdx, pgsTypes::StrengthI, pDisplayUnits);
+      build_max_spacing_paragraph_uhpc(pBroker, pChapter, girderKey, intervalIdx, pgsTypes::StrengthI, pDisplayUnits);
       if (bPermit)
       {
-         build_max_spacing_paragraph_fhwa_uhpc(pBroker, pChapter, girderKey, intervalIdx, pgsTypes::StrengthII, pDisplayUnits);
+         build_max_spacing_paragraph_uhpc(pBroker, pChapter, girderKey, intervalIdx, pgsTypes::StrengthII, pDisplayUnits);
       }
    }
    else
@@ -157,7 +157,7 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
          *pParagraph << _T("PCI SDG E.7.2.2 - There is no requirement for minimum transverse reinforcement in PCI-UHPC members.") << rptNewLine;
          return;
       }
-      else if (concType == pgsTypes::FHWA_UHPC)
+      else if (concType == pgsTypes::UHPC)
       {
          pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
          *pChapter << pParagraph;
@@ -210,7 +210,7 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
                break;
 
             case pgsTypes::PCI_UHPC:
-            case pgsTypes::FHWA_UHPC:
+            case pgsTypes::UHPC:
             default:
                ATLASSERT(false);
             }
@@ -250,7 +250,7 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
          {
             *pParagraph << _T("PCI SDG E.7.2.2 - There is no requirement for minimum transverse reinforcement in PCI-UHPC members.") << rptNewLine;
          }
-         else if (concType == pgsTypes::FHWA_UHPC)
+         else if (concType == pgsTypes::UHPC)
          {
             *pParagraph << _T("GS 1.7.2.5 - There is no requirement for minimum transverse reinforcement in UHPC members.") << rptNewLine;
          }
@@ -288,7 +288,7 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
                break;
 
             case pgsTypes::PCI_UHPC:
-            case pgsTypes::FHWA_UHPC:
+            case pgsTypes::UHPC:
             default:
                ATLASSERT(false);
             }
@@ -516,7 +516,7 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
 }
 
 
-void build_max_spacing_paragraph_fhwa_uhpc(IBroker* pBroker, rptChapter* pChapter, const CGirderKey& girderKey,
+void build_max_spacing_paragraph_uhpc(IBroker* pBroker, rptChapter* pChapter, const CGirderKey& girderKey,
    IntervalIndexType intervalIdx, pgsTypes::LimitState ls,
    IEAFDisplayUnits* pDisplayUnits)
 {

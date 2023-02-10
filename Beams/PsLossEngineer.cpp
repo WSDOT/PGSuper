@@ -689,9 +689,9 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
          std::dynamic_pointer_cast<const lrfdCreepCoefficient2005>(pGirderCreep),pDeckCreep,
          true, bPCTTGirder);
    }
-   else if (concrete_type == pgsTypes::FHWA_UHPC)
+   else if (concrete_type == pgsTypes::UHPC)
    {
-   pLoss = std::make_shared<lrfdFHWAUHPCLosses>(poi.GetDistFromStart(),
+   pLoss = std::make_shared<lrfdUHPCLosses>(poi.GetDistFromStart(),
       girder_length,
       spType,
       gradePerm,

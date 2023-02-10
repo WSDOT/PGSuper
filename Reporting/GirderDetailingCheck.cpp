@@ -95,7 +95,7 @@ void CGirderDetailingCheck::Build(rptChapter* pChapter,
    GET_IFACE2(pBroker, IBridge, pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
-   // neither of the UHPC Specs, PCI or FHWA, requirement minimum stirrups
+   // neither of the UHPC Specs, PCI or AASHTO UHPC GS, requirement minimum stirrups
    // use this flag to skip the note
    bool bUHPC = false;
    for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)

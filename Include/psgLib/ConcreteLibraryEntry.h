@@ -215,9 +215,9 @@ public:
    void GetPCIUHPC(Float64* ffc, Float64* frr, Float64* pFiberLength,Float64* pAutogenousShrinkage,bool* bPCTT) const;
 
    //------------------------------------------------------------------------
-   // Parameters for the FHWA UHPC concrete
-   void SetFHWAUHPC(Float64 ft_cri, Float64 ft_cr, Float64 ft_loc, Float64 et_loc,Float64 alpha_u,Float64 ecu,bool bExperimentalEcu,Float64 fiberLength);
-   void GetFHWAUHPC(Float64* ft_cri, Float64* ft_cr, Float64* ft_loc, Float64* et_loc,Float64* alpha_u,Float64* ecu,bool* pbExpermentalEcu,Float64* pFiberLength) const;
+   // Parameters for the UHPC concrete
+   void SetUHPC(Float64 ft_cri, Float64 ft_cr, Float64 ft_loc, Float64 et_loc,Float64 alpha_u,Float64 ecu,bool bExperimentalEcu,Float64 gammaU,Float64 fiberLength);
+   void GetUHPC(Float64* ft_cri, Float64* ft_cr, Float64* ft_loc, Float64* et_loc,Float64* alpha_u,Float64* ecu,bool* pbExpermentalEcu,Float64* pGammaU,Float64* pFiberLength) const;
 
    //------------------------------------------------------------------------
    // Parameters for the ACI 209R-92 model
@@ -277,7 +277,7 @@ private:
    bool m_bPCTT;
    Float64 m_AutogenousShrinkage;
 
-   // FHWA UHPC Parameters
+   // AASHTO UHPC Parameters
    Float64 m_ftcri;
    Float64 m_ftcr;
    Float64 m_ftloc;
@@ -285,6 +285,7 @@ private:
    Float64 m_alpha_u;
    Float64 m_ecu;
    bool m_bExperimental_ecu;
+   Float64 m_gamma_u;
 
    // ACI Model Parameters
    bool m_bUserACIParameters;

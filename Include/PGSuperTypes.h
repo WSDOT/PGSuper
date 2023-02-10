@@ -641,7 +641,7 @@ typedef struct pgsTypes
       AllLightweight, // Starting with AASHTO LRFD 7th Edition, 2016 Interims, the distinction between All Lightweight and Sand Lightweight is removed. AllLightweight is considered an invalid parameter and it automatically gets converted to SandLightweight
       SandLightweight, // Starting with AASHTO LRFD 7th Edition, 2016 Interims SandLightweight means "Lightweight" for all types of lightweight concrete
       PCI_UHPC, // Concrete is defined by PCI definition of UHPC
-      FHWA_UHPC, // Concrete is defined by FHWA definition of UHPC 
+      UHPC, // Concrete is defined by AASHTO UHPC Guide Specification definition of UHPC 
       ConcreteTypeCount // this should always be the last value in the enum
    } ConcreteType;
 
@@ -2250,7 +2250,7 @@ inline bool IsLWC(pgsTypes::ConcreteType type)
 
 inline bool IsUHPC(pgsTypes::ConcreteType type)
 {
-   return (type == pgsTypes::PCI_UHPC || type == pgsTypes::FHWA_UHPC) ? true : false;
+   return (type == pgsTypes::PCI_UHPC || type == pgsTypes::UHPC) ? true : false;
 }
 
 #endif // INCLUDED_PGSUPERTYPES_H_

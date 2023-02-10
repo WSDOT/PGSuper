@@ -149,6 +149,7 @@ public:
    Float64 GetSegmentConcreteDesignEffectiveCrackingStrength(const CSegmentKey& segmentKey) const;
    Float64 GetSegmentConcreteCrackLocalizationStrength(const CSegmentKey& segmentKey) const;
    Float64 GetSegmentConcreteCrackLocalizationStrain(const CSegmentKey& segmentKey) const;
+   Float64 GetSegmentConcreteFiberOrientationReductionFactor(const CSegmentKey& segmentKey) const;
    const std::unique_ptr<WBFL::Materials::ConcreteBase>& GetSegmentConcrete(const CSegmentKey& segmentKey) const;
 
    Float64 GetClosureJointCastingTime(const CClosureKey& closureKey) const;

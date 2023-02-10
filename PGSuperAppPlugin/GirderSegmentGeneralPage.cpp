@@ -825,21 +825,22 @@ void CGirderSegmentGeneralPage::OnMoreConcreteProperties()
    dlg.m_CEBFIP.m_BetaSc          = pSegment->Material.Concrete.BetaSc;
    dlg.m_CEBFIP.m_CementType      = pSegment->Material.Concrete.CEBFIPCementType;
 
-   // Placeholder for PCI_UHPC and FHWA_UHPC
+   // Placeholder for PCI_UHPC and UHPC
    //dlg.m_PCIUHPC.m_ffc = pSegment->Material.Concrete.Ffc;
    //dlg.m_PCIUHPC.m_frr = pSegment->Material.Concrete.Frr;
    //dlg.m_PCIUHPC.m_FiberLength = pSegment->Material.Concrete.FiberLength;
    //dlg.m_PCIUHPC.m_AutogenousShrinkage = pSegment->Material.Concrete.AutogenousShrinkage;
    //dlg.m_PCIUHPC.m_bPCTT = pSegment->Material.Concrete.bPCTT;
 
-   //dlg.m_FHWAUHPC.m_ftcri = pSegment->Material.Concrete.ftcri;
-   //dlg.m_FHWAUHPC.m_ftcr = pSegment->Material.Concrete.ftcr;
-   //dlg.m_FHWAUHPC.m_ftloc = pSegment->Material.Concrete.ftloc;
-   //dlg.m_FHWAUHPC.m_etloc = pSegment->Material.Concrete.etloc;
-   //dlg.m_FHWAUHPC.m_alpha_u = pSegment->Material.Concrete.alpha_u;
-   //dlg.m_FHWAUHPC.m_ecu = pSegment->Material.Concrete.ecu;
-   //dlg.m_FHWAUHPC.m_bExperimental_ecu = pSegment->Material.Concrete.bExperimental_ecu;
-   //dlg.m_FHWAUHPC.m_FiberLength = pSegment->Material.Concrete.FiberLength;
+   //dlg.m_UHPC.m_ftcri = pSegment->Material.Concrete.ftcri;
+   //dlg.m_UHPC.m_ftcr = pSegment->Material.Concrete.ftcr;
+   //dlg.m_UHPC.m_ftloc = pSegment->Material.Concrete.ftloc;
+   //dlg.m_UHPC.m_etloc = pSegment->Material.Concrete.etloc;
+   //dlg.m_UHPC.m_alpha_u = pSegment->Material.Concrete.alpha_u;
+   //dlg.m_UHPC.m_ecu = pSegment->Material.Concrete.ecu;
+   //dlg.m_UHPC.m_bExperimental_ecu = pSegment->Material.Concrete.bExperimental_ecu;
+   //dlg.m_UHPC.m_gamma_u = pSegment->Material.Concrete.gamma_u;
+   //dlg.m_UHPC.m_FiberLength = pSegment->Material.Concrete.FiberLength;
 
    dlg.m_General.m_strUserEc  = m_strUserEc;
 
@@ -877,21 +878,22 @@ void CGirderSegmentGeneralPage::OnMoreConcreteProperties()
       pSegment->Material.Concrete.BetaSc                = dlg.m_CEBFIP.m_BetaSc;
       pSegment->Material.Concrete.CEBFIPCementType      = dlg.m_CEBFIP.m_CementType;
 
-      // Placeholder for PCI_UHPC and FHWA_UHPC
+      // Placeholder for PCI_UHPC and UHPC
       //pSegment->Material.Concrete.Ffc = dlg.m_PCIUHPC.m_ffc;
       //pSegment->Material.Concrete.Frr = dlg.m_PCIUHPC.m_frr;
       //pSegment->Material.Concrete.FiberLength = dlg.m_PCIUHPC.m_FiberLength;
       //pSegment->Material.Concrete.AutogenousShrinkage = dlg.m_PCIUHPC.m_AutogenousShrinkage;
       //pSegment->Material.Concrete.bPCTT = dlg.m_PCIUHPC.m_bPCTT;
 
-      //pSegment->Material.Concrete.ftcri = dlg.m_FHWAUHPC.m_ftcri;
-      //pSegment->Material.Concrete.ftcr = dlg.m_FHWAUHPC.m_ftcr;
-      //pSegment->Material.Concrete.ftloc = dlg.m_FHWAUHPC.m_ftloc;
-      //pSegment->Material.Concrete.etloc = dlg.m_FHWAUHPC.m_etloc;
-      //pSegment->Material.Concrete.alpha_u = dlg.m_FHWAUHPC.m_alpha_u;
-      //pSegment->Material.Concrete.ecu = dlg.m_FHWAUHPC.m_ecu;
-      //pSegment->Material.Concrete.bExperimental_ecu = dlg.m_FHWAUHPC.m_bExperimental_ecu;
-      //pSegment->Material.Concrete.FiberLength = dlg.m_FHWAUHPC.m_FiberLength;
+      //pSegment->Material.Concrete.ftcri = dlg.m_UHPC.m_ftcri;
+      //pSegment->Material.Concrete.ftcr = dlg.m_UHPC.m_ftcr;
+      //pSegment->Material.Concrete.ftloc = dlg.m_UHPC.m_ftloc;
+      //pSegment->Material.Concrete.etloc = dlg.m_UHPC.m_etloc;
+      //pSegment->Material.Concrete.alpha_u = dlg.m_UHPC.m_alpha_u;
+      //pSegment->Material.Concrete.ecu = dlg.m_UHPC.m_ecu;
+      //pSegment->Material.Concrete.bExperimental_ecu = dlg.m_UHPC.m_bExperimental_ecu;
+      //pSegment->Material.Concrete.gamma_u = dlg.m_UHPC.m_gamma_u;
+      //pSegment->Material.Concrete.FiberLength = dlg.m_UHPC.m_FiberLength;
 
       m_strUserEc  = dlg.m_General.m_strUserEc;
       m_ctrlEc.SetWindowText(m_strUserEc);

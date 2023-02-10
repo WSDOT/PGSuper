@@ -97,9 +97,9 @@ void CInterfaceShearDetails::Build(IBroker* pBroker, rptChapter* pChapter,
       (*pPara) << _T("PCI UHPC SDG E.7.4.1") << rptNewLine;
    }
 
-   if (pMaterials->GetSegmentConcreteType(CSegmentKey(girderKey, 0)) == pgsTypes::FHWA_UHPC)
+   if (pMaterials->GetSegmentConcreteType(CSegmentKey(girderKey, 0)) == pgsTypes::UHPC)
    {
-      (*pPara) << _T("FHWA UHPC GS 1.7.4.1") << rptNewLine;
+      (*pPara) << _T("UHPC GS 1.7.4.1") << rptNewLine;
    }
 
    GET_IFACE2(pBroker, IDocumentType, pDocType);
@@ -153,15 +153,15 @@ void CInterfaceShearDetails::BuildDesign( IBroker* pBroker, rptChapter* pChapter
    }
 
    // PCI UHPC has the same interface shear model as AASHTO LRFD
-   // FHWA UHPC is different, so we need to keep track if we have FHWA UHPC
+   // UHPC is different, so we need to keep track if we have UHPC
    GET_IFACE2(pBroker, IMaterials, pMaterials);
-   bool bIsUHPC = pMaterials->GetSegmentConcreteType(CSegmentKey(girderKey, 0)) == pgsTypes::FHWA_UHPC ? true : false;
+   bool bIsUHPC = pMaterials->GetSegmentConcreteType(CSegmentKey(girderKey, 0)) == pgsTypes::UHPC ? true : false;
    ATLASSERT(nSegments == 1); // UHPC is not available for spliced girders so there can only be one segment per girder
 
    // Initial Capacity Table
    rptRcTable* vui_table = CreateVuiTable(pBroker,pChapter,pDisplayUnits); // creates the table and adds it to the chapter. also adds table footnotes
    rptRcTable* avf_table = CreateAvfTable(pBroker,pChapter,pDisplayUnits);
-   rptRcTable* vni_table = CreateVniTable(pBroker, pChapter, pDisplayUnits, bIsUHPC, vSegmentHorizShearArtifacts, vClosureJointHorizShearArtifacts);
+   rptRcTable* vni_table = CreateVniTable(pBroker, pChapter, pDisplayUnits, girderKey, bIsUHPC, vSegmentHorizShearArtifacts, vClosureJointHorizShearArtifacts);
 
    // Fill up the tables
    RowIndexType vui_row = vui_table->GetNumberOfHeaderRows();
@@ -282,8 +282,8 @@ void CInterfaceShearDetails::BuildRating(IBroker* pBroker, rptChapter* pChapter,
    }
 
    GET_IFACE2(pBroker, IMaterials, pMaterials);
-   bool bIsUHPC = pMaterials->GetSegmentConcreteType(ratings.front().first.GetSegmentKey());
-   rptRcTable* vni_table = CreateVniTable(pBroker, pChapter, pDisplayUnits, bIsUHPC, vSegmentArtifacts, vClosureArtifacts);
+   bool bIsUHPC = pMaterials->GetSegmentConcreteType(ratings.front().first.GetSegmentKey()) == pgsTypes::UHPC ? true : false;
+   rptRcTable* vni_table = CreateVniTable(pBroker, pChapter, pDisplayUnits, ratings.front().first.GetSegmentKey(), bIsUHPC, vSegmentArtifacts, vClosureArtifacts);
 
    // Fill up the tables
    RowIndexType vui_row = vui_table->GetNumberOfHeaderRows();
@@ -461,7 +461,7 @@ void CInterfaceShearDetails::FillAvfTable(rptRcTable* pTable,RowIndexType row,co
    (*pTable)(row, col++) << AvS.SetValue(pArtifact->GetAvOverS());
 }
 
-rptRcTable* CInterfaceShearDetails::CreateVniTable(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits, bool bIsUHPC,const std::vector<std::pair<SegmentIndexType,const pgsHorizontalShearArtifact*>>& vSegmentArtifacts, std::vector<std::pair<SegmentIndexType, const pgsHorizontalShearArtifact*>>& vClosureArtifacts)
+rptRcTable* CInterfaceShearDetails::CreateVniTable(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits, const CGirderKey& girderKey, bool bIsUHPC,const std::vector<std::pair<SegmentIndexType,const pgsHorizontalShearArtifact*>>& vSegmentArtifacts, std::vector<std::pair<SegmentIndexType, const pgsHorizontalShearArtifact*>>& vClosureArtifacts)
 {
    Float64 fy_max = WBFL::Units::ConvertToSysUnits(60.0, WBFL::Units::Measure::KSI); // LRFD 5.7.4.2 (pre2017: 2013 5.8.4.1)
 
@@ -483,6 +483,35 @@ rptRcTable* CInterfaceShearDetails::CreateVniTable(IBroker* pBroker,rptChapter* 
       }
 
       const auto* pArtifact = segIter->second;
+
+      if (bIsUHPC)
+      {
+         *pPara << _T("GS 1.7.4.3") << _T(" ");
+         GET_IFACE2(pBroker, IMaterials, pMaterials);
+         CSegmentKey segmentKey(girderKey, segIter->first);
+         pgsTypes::ConcreteType girderConcType = pMaterials->GetSegmentConcreteType(segmentKey);
+         pgsTypes::ConcreteType slabConcType = pMaterials->GetDeckConcreteType();
+         if (girderConcType == pgsTypes::UHPC)
+         {
+            if (slabConcType == pgsTypes::UHPC)
+            {
+               // UHPC deck on UHPC girder
+               if (pArtifact->IsTopFlangeRoughened())
+                  *pPara << _T("Case 3");
+               else
+                  *pPara << _T("Case 4");
+            }
+            else
+            {
+               // Conventional deck on UHPC girder
+               if (pArtifact->IsTopFlangeRoughened())
+                  *pPara << _T("Case 7");
+               else
+                  *pPara << _T("Case 8");
+            }
+         }
+         *pPara << rptNewLine;
+      }
 
       *pPara << _T("Coeff. of Friction, ") << symbol(mu) << _T(" = ") << pArtifact->GetFrictionFactor() << _T(", ")
          << _T("Cohesion Factor, c = ") << stress_with_tag.SetValue(pArtifact->GetCohesionFactor()) << _T(", ")
@@ -676,7 +705,7 @@ rptRcTable* CInterfaceShearDetails::CreateMinAvfTable(rptChapter* pChapter,IBrid
 
    if (!bIsUHPC)
    {
-      // this statement is not applicable to FHWA UHPC. No waivers for FHWA UHPC
+      // this statement is not applicable to UHPC. No waivers for UHPC
       if (pBridge->GetDeckType() != pgsTypes::sdtNone && !doAllStirrupsEngageDeck)
       {
          *pPara << _T("Minimum reinforcement requirements cannot be waived. All of the primary vertical shear reinforcement does not extend across the girder/slab interface.") << rptNewLine;

@@ -75,19 +75,19 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,const pgsGirderA
    GET_IFACE2(pBroker, IBridge, pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
-   bool bFHWAUHPC = false;
+   bool IsUHPC = false;
    GET_IFACE2(pBroker, IMaterials, pMaterials);
    for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
    {
-      if (pMaterials->GetSegmentConcreteType(CSegmentKey(girderKey, segIdx)) == pgsTypes::FHWA_UHPC)
+      if (pMaterials->GetSegmentConcreteType(CSegmentKey(girderKey, segIdx)) == pgsTypes::UHPC)
       {
-         bFHWAUHPC = true;
+         IsUHPC = true;
          break;
       }
    }
 
    std::_tstring strSpecArticles;
-   if (bFHWAUHPC)
+   if (IsUHPC)
       strSpecArticles = _T("1.7.2.5, 1.7.2.6, 1.10.3");
    else
       strSpecArticles = LrfdCw8th(_T("5.8.2.5, 5.8.2.7, 5.10.3.1.2"), _T("5.7.2.5, 5.7.2.6, 5.10.3.1.2"));

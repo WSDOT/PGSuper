@@ -349,7 +349,7 @@ void CPierLayoutPage::UpdateConcreteTypeLabel()
          break;
 
       case pgsTypes::PCI_UHPC: // UI should prevent UHPC for piers
-      case pgsTypes::FHWA_UHPC:
+      case pgsTypes::UHPC:
       default:
          ATLASSERT(false); // should never get here
          strLabel = _T("Concrete Type Label Error");
@@ -371,7 +371,7 @@ void CPierLayoutPage::UpdateConcreteTypeLabel()
          break;
 
       case pgsTypes::PCI_UHPC: // UI should prevent UHPC for piers
-      case pgsTypes::FHWA_UHPC:
+      case pgsTypes::UHPC:
       default:
          ATLASSERT(false); // should never get here
          strLabel = _T("Concrete Type Label Error");

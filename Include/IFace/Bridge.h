@@ -808,7 +808,7 @@ interface IMaterials : IUnknown
    virtual std::unique_ptr<WBFL::Materials::ConcreteBaseShrinkageDetails> GetTotalRailingSystemFreeShrinakgeStrainDetails(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const = 0;
    virtual std::unique_ptr<WBFL::Materials::ConcreteBaseShrinkageDetails> GetTotalLongitudinalJointFreeShrinkageStrainDetails(IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType time) const = 0;
 
-   // Returns the free shrinkage occuring within the specified interval
+   // Returns the free shrinkage occurring within the specified interval
    virtual Float64 GetIncrementalSegmentFreeShrinkageStrain(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) const = 0;
    virtual Float64 GetIncrementalClosureJointFreeShrinkageStrain(const CSegmentKey& closureKey,IntervalIndexType intervalIdx) const = 0;
    virtual Float64 GetIncrementalDeckFreeShrinkageStrain(IndexType castingRegionIdx, IntervalIndexType intervalIdx) const = 0;
@@ -827,7 +827,7 @@ interface IMaterials : IUnknown
    virtual Float64 GetDeckAutogenousShrinkage() const = 0;
 
    // Returns the creep coefficient at the specified time (timeType) in interval (intervalIdx) for a loading
-   // occuring at time (loadingTimeType) in interval (loadingIntervalIdx). 
+   // occurring at time (loadingTimeType) in interval (loadingIntervalIdx). 
    virtual Float64 GetSegmentCreepCoefficient(const CSegmentKey& segmentKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const = 0;
    virtual Float64 GetClosureJointCreepCoefficient(const CSegmentKey& closureKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const = 0;
    virtual Float64 GetDeckCreepCoefficient(IndexType castingRegionIdx, IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const = 0;
@@ -855,10 +855,11 @@ interface IMaterials : IUnknown
    virtual Float64 GetSegmentShrinkageK2(const CSegmentKey& segmentKey) const = 0;
    virtual const std::unique_ptr<WBFL::Materials::ConcreteBase>& GetSegmentConcrete(const CSegmentKey& segmentKey) const = 0;
    virtual Float64 GetSegmentConcreteFirstCrackingStrength(const CSegmentKey& segmentKey) const = 0; // PCI UHPC f_fc
-   virtual Float64 GetSegmentConcreteInitialEffectiveCrackingStrength(const CSegmentKey& segmentKey) const = 0; // FHWA UHPC ft,cri
-   virtual Float64 GetSegmentConcreteDesignEffectiveCrackingStrength(const CSegmentKey& segmentKey) const = 0; // FHWA UHPC ft,cr
-   virtual Float64 GetSegmentConcreteCrackLocalizationStrength(const CSegmentKey& segmentKey) const = 0; // FHWA UHPC ft,loc
-   virtual Float64 GetSegmentConcreteCrackLocalizationStrain(const CSegmentKey& segmentKey) const = 0; // FHWA UHPC et,loc
+   virtual Float64 GetSegmentConcreteInitialEffectiveCrackingStrength(const CSegmentKey& segmentKey) const = 0; // UHPC ft,cri
+   virtual Float64 GetSegmentConcreteDesignEffectiveCrackingStrength(const CSegmentKey& segmentKey) const = 0; // UHPC ft,cr
+   virtual Float64 GetSegmentConcreteCrackLocalizationStrength(const CSegmentKey& segmentKey) const = 0; // UHPC ft,loc
+   virtual Float64 GetSegmentConcreteCrackLocalizationStrain(const CSegmentKey& segmentKey) const = 0; // UHPC et,loc
+   virtual Float64 GetSegmentConcreteFiberOrientationReductionFactor(const CSegmentKey& segmentKey) const = 0; // UHPC gamma,u
 
    // Closure Joint Concrete
    virtual pgsTypes::ConcreteType GetClosureJointConcreteType(const CClosureKey& closureKey) const = 0;

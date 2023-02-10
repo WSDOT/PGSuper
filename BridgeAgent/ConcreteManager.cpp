@@ -861,7 +861,7 @@ void CConcreteManager::ValidateConcreteParameters(std::unique_ptr<WBFL::Material
          pStatusCenter->Add(pStatusItem);
       }
    }
-   else if (concreteType == pgsTypes::FHWA_UHPC)
+   else if (concreteType == pgsTypes::UHPC)
    {
       if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::NinthEdition2020)
       {
@@ -1971,7 +1971,7 @@ bool CConcreteManager::HasUHPC() const
    //ValidateDeckConcrete();
    //for (auto& item : m_pvDeckConcrete)
    //{
-   //   if (item->GetType() == WBFL::Materials::ConcreteType::PCI_UHPC || item->GetType() == WBFL::Materials::ConcreteType::FHWA_UHPC)
+   //   if (item->GetType() == WBFL::Materials::ConcreteType::PCI_UHPC || item->GetType() == WBFL::Materials::ConcreteType::UHPC)
    //   {
    //      return true;
    //   }
@@ -1986,7 +1986,7 @@ bool CConcreteManager::HasUHPC() const
    //ValidateRailingSystemConcrete();
    //for (auto& item : m_pRailingConcrete)
    //{
-   //   if (item->GetType() == WBFL::Materials::ConcreteType::PCI_UHPC || item->GetType() == WBFL::Materials::ConcreteType::FHWA_UHPC)
+   //   if (item->GetType() == WBFL::Materials::ConcreteType::PCI_UHPC || item->GetType() == WBFL::Materials::ConcreteType::UHPC)
    //   {
    //      ATLASSERT(false); // the UI should prevent UHPC for railings
    //      return true;
@@ -1995,7 +1995,7 @@ bool CConcreteManager::HasUHPC() const
 
    //for (auto& item : m_pPierConcrete)
    //{
-   //   if (item.second->GetType() == WBFL::Materials::ConcreteType::PCI_UHPC || item.second->GetType() == WBFL::Materials::ConcreteType::FHWA_UHPC)
+   //   if (item.second->GetType() == WBFL::Materials::ConcreteType::PCI_UHPC || item.second->GetType() == WBFL::Materials::ConcreteType::UHPC)
    //   {
    //      ATLASSERT(false); // the UI should prevent UHPC for piers
    //      return true;
@@ -2313,14 +2313,14 @@ Float64 CConcreteManager::GetSegmentConcreteInitialEffectiveCrackingStrength(con
    // returns ft,cri
    ValidateConcrete();
    ValidateSegmentConcrete();
-   if (m_pSegmentConcrete[segmentKey]->GetType() == WBFL::Materials::ConcreteType::FHWA_UHPC)
+   if (m_pSegmentConcrete[segmentKey]->GetType() == WBFL::Materials::ConcreteType::UHPC)
    {
       const lrfdLRFDConcreteBase* pConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(m_pSegmentConcrete[segmentKey].get());
       return pConcrete->GetInitialEffectiveCrackingStrength();
    }
    else
    {
-      ATLASSERT(false); // this is a call for FHWA UHPC only so how did you get here?
+      ATLASSERT(false); // this is a call for UHPC only so how did you get here?
       return 0;
    }
 }
@@ -2330,14 +2330,14 @@ Float64 CConcreteManager::GetSegmentConcreteDesignEffectiveCrackingStrength(cons
    // returns ft,cr
    ValidateConcrete();
    ValidateSegmentConcrete();
-   if (m_pSegmentConcrete[segmentKey]->GetType() == WBFL::Materials::ConcreteType::FHWA_UHPC)
+   if (m_pSegmentConcrete[segmentKey]->GetType() == WBFL::Materials::ConcreteType::UHPC)
    {
       const lrfdLRFDConcreteBase* pConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(m_pSegmentConcrete[segmentKey].get());
       return pConcrete->GetDesignEffectiveCrackingStrength();
    }
    else
    {
-      ATLASSERT(false); // this is a call for FHWA UHPC only so how did you get here?
+      ATLASSERT(false); // this is a call for UHPC only so how did you get here?
       return 0;
    }
 }
@@ -2347,7 +2347,7 @@ Float64 CConcreteManager::GetSegmentConcreteCrackLocalizationStrength(const CSeg
    // returns ft,loc
    ValidateConcrete();
    ValidateSegmentConcrete();
-   if (m_pSegmentConcrete[segmentKey]->GetType() == WBFL::Materials::ConcreteType::FHWA_UHPC)
+   if (m_pSegmentConcrete[segmentKey]->GetType() == WBFL::Materials::ConcreteType::UHPC)
    {
       const lrfdLRFDConcreteBase* pConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(m_pSegmentConcrete[segmentKey].get());
       return pConcrete->GetCrackLocalizationStrength();
@@ -2364,10 +2364,27 @@ Float64 CConcreteManager::GetSegmentConcreteCrackLocalizationStrain(const CSegme
    // returns et,loc
    ValidateConcrete();
    ValidateSegmentConcrete();
-   if (m_pSegmentConcrete[segmentKey]->GetType() == WBFL::Materials::ConcreteType::FHWA_UHPC)
+   if (m_pSegmentConcrete[segmentKey]->GetType() == WBFL::Materials::ConcreteType::UHPC)
    {
       const lrfdLRFDConcreteBase* pConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(m_pSegmentConcrete[segmentKey].get());
       return pConcrete->GetCrackLocalizationStrain();
+   }
+   else
+   {
+      ATLASSERT(false); // this is a call for PCI UHPC only so how did you get here?
+      return 0;
+   }
+}
+
+Float64 CConcreteManager::GetSegmentConcreteFiberOrientationReductionFactor(const CSegmentKey& segmentKey) const
+{
+   // returns gamma,u
+   ValidateConcrete();
+   ValidateSegmentConcrete();
+   if (m_pSegmentConcrete[segmentKey]->GetType() == WBFL::Materials::ConcreteType::UHPC)
+   {
+      const lrfdLRFDConcreteBase* pConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(m_pSegmentConcrete[segmentKey].get());
+      return pConcrete->GetFiberOrientationReductionFactor();
    }
    else
    {
@@ -2667,13 +2684,14 @@ std::unique_ptr<lrfdLRFDConcrete> CConcreteManager::CreateLRFDConcreteModel(cons
    pLRFDConcrete->SetPostCrackingTensileStrength(concrete.Frr);
    pLRFDConcrete->SetAutogenousShrinkage(concrete.AutogenousShrinkage);
 
-   // FHWA UHPC
+   // UHPC
    pLRFDConcrete->SetCompressionResponseReductionFactor(concrete.alpha_u);
    if(concrete.bExperimental_ecu)  pLRFDConcrete->SetCompressiveStrainLimit(concrete.ecu);
    pLRFDConcrete->SetInitialEffectiveCrackingStrength(concrete.ftcri);
    pLRFDConcrete->SetDesignEffectiveCrackingStrength(concrete.ftcr);
    pLRFDConcrete->SetCrackLocalizationStrength(concrete.ftloc);
    pLRFDConcrete->SetCrackLocalizationStrain(concrete.etloc);
+   pLRFDConcrete->SetFiberOrientationReductionFactor(concrete.gamma_u);
 
    return pLRFDConcrete;
 }
@@ -2727,13 +2745,14 @@ std::unique_ptr<lrfdLRFDTimeDependentConcrete> CConcreteManager::CreateTimeDepen
    pConcrete->SetPostCrackingTensileStrength(concrete.Frr);
    pConcrete->SetAutogenousShrinkage(concrete.AutogenousShrinkage);
 
-   // FHWA UHPC
+   // UHPC
    pConcrete->SetCompressionResponseReductionFactor(concrete.alpha_u);
    if(concrete.bExperimental_ecu) pConcrete->SetCompressiveStrainLimit(concrete.ecu);
    pConcrete->SetInitialEffectiveCrackingStrength(concrete.ftcri);
    pConcrete->SetDesignEffectiveCrackingStrength(concrete.ftcr);
    pConcrete->SetCrackLocalizationStrength(concrete.ftloc);
    pConcrete->SetCrackLocalizationStrain(concrete.etloc);
+   pConcrete->SetFiberOrientationReductionFactor(concrete.gamma_u);
 
    return pConcrete;
 }

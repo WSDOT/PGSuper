@@ -413,7 +413,7 @@ void pgsShearDesignTool::Initialize(IBroker* pBroker, const LongReinfShearChecke
       m_SMaxMax = Float64_Max;
    }
 
-   if (m_ConcreteType == pgsTypes::FHWA_UHPC)
+   if (m_ConcreteType == pgsTypes::UHPC)
    {
       ATLASSERT(false); 
       // 1. We aren't supporting UHPC design right now
@@ -2263,13 +2263,15 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
    const auto* pRebar = lrfdRebarPool::GetInstance()->GetRebar(pLRD->BarType, pLRD->BarGrade, WBFL::Materials::Rebar::Size::bs5); // #5
    Float64 rbfy = pRebar->GetYieldStrength();
    GET_IFACE(IMaterials, pMaterials);
-   if (pMaterials->GetSegmentConcreteType(m_SegmentKey) == pgsTypes::FHWA_UHPC)
+   if (pMaterials->GetSegmentConcreteType(m_SegmentKey) == pgsTypes::UHPC)
    {
-      // Es*et,loc shall not exceed fy.... use Es*et,loc for rbfy
+      // Es*gamma_u*et,loc shall not exceed fy.... use Es*gamma_u*et,loc for rbfy
+      // GS 1.7.3.5
       Float64 Es = pRebar->GetE();
       Float64 etloc = pMaterials->GetSegmentConcreteCrackLocalizationStrain(m_SegmentKey);
-      Float64 Es_etloc = Es * etloc;
-      rbfy = Min(Es_etloc, rbfy);
+      Float64 gamma_u = pMaterials->GetSegmentConcreteFiberOrientationReductionFactor(m_SegmentKey);
+      Float64 Es_gamma_u_etloc = Es * gamma_u * etloc;
+      rbfy = Min(Es_gamma_u_etloc, rbfy);
    }
 
    Float64 tensile_development_length = 0.0;

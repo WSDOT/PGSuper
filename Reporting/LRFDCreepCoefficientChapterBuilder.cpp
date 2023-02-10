@@ -181,18 +181,18 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(const s
             if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC)
             {
                if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.bPCTT)
-                  *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_UHPC_PCTT.png")) << rptNewLine;
+                  *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_PCI_UHPC_PCTT.png")) << rptNewLine;
                else
-                  *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_UHPC.png")) << rptNewLine;
+                  *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_PCI_UHPC.png")) << rptNewLine;
 
                *pPara << Bold(_T("where:")) << rptNewLine;
-               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("UHPC_Factors.png")) << rptNewLine;
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("PCI_UHPC_Factors.png")) << rptNewLine;
             }
-            else if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC)
+            else if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
             {
-               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_FHWA_UHPC.png")) << rptNewLine;
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_UHPC.png")) << rptNewLine;
                *pPara << Bold(_T("where:")) << rptNewLine;
-               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("FHWA_UHPC_Factors.png")) << rptNewLine;
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("UHPC_Factors.png")) << rptNewLine;
             }
             else if ( details.Spec == CREEP_SPEC_PRE_2005 )
             {
@@ -309,7 +309,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(const s
             *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
             *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd;
 
-            if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC)
+            if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
             {
                *pPara << _T(", ") << Sub2(_T("k"), _T("l")) << _T(" = ") << details.kl << _T(", ");
             }
@@ -378,18 +378,18 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(const std::shared_p
             if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC)
             {
                if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.bPCTT)
-                  *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_UHPC_PCTT.png")) << rptNewLine;
+                  *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_PCI_UHPC_PCTT.png")) << rptNewLine;
                else
-                  *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_UHPC.png")) << rptNewLine;
+                  *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_PCI_UHPC.png")) << rptNewLine;
 
                *pPara << Bold(_T("where:")) << rptNewLine;
-               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("UHPC_Factors.png")) << rptNewLine;
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("PCI_UHPC_Factors.png")) << rptNewLine;
             }
-            else if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC)
+            else if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
             {
-               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_FHWA_UHPC.png")) << rptNewLine;
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_UHPC.png")) << rptNewLine;
                *pPara << Bold(_T("where:")) << rptNewLine;
-               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("FHWA_UHPC_Factors.png")) << rptNewLine;
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("UHPC_Factors.png")) << rptNewLine;
             }
             else if (details.Spec == CREEP_SPEC_PRE_2005)
             {
@@ -505,7 +505,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(const std::shared_p
             *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
             *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd;
 
-            if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC)
+            if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
             {
                *pPara << _T(", ") << Sub2(_T("k"), _T("l")) << _T(" = ") << details.kl << _T(", ");
             }
@@ -576,18 +576,18 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(cons
         if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC)
         {
            if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.bPCTT)
-              *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_UHPC_PCTT.png")) << rptNewLine;
+              *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_PCI_UHPC_PCTT.png")) << rptNewLine;
            else
-              *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_UHPC.png")) << rptNewLine;
+              *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_PCI_UHPC.png")) << rptNewLine;
 
            *pPara << Bold(_T("where:")) << rptNewLine;
-           *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("UHPC_Factors.png")) << rptNewLine;
+           *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("PCI_UHPC_Factors.png")) << rptNewLine;
         }
-        else if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC)
+        else if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
         {
-           *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_FHWA_UHPC.png")) << rptNewLine;
+           *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_UHPC.png")) << rptNewLine;
            *pPara << Bold(_T("where:")) << rptNewLine;
-           *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("FHWA_UHPC_Factors.png")) << rptNewLine;
+           *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("UHPC_Factors.png")) << rptNewLine;
         }
         else if (details.Spec == CREEP_SPEC_PRE_2005)
         {
@@ -749,7 +749,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(cons
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd;
 
-         if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC)
+         if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
          {
             *pPara << _T(", ") << Sub2(_T("k"), _T("l")) << _T(" = ") << details.kl << _T(", ");
          }
@@ -779,7 +779,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(cons
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd;
 
-         if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC)
+         if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
          {
             *pPara << _T(", ") << Sub2(_T("k"), _T("l")) << _T(" = ") << details.kl << _T(", ");
          }
@@ -810,7 +810,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(cons
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd;
 
-         if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC)
+         if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
          {
             *pPara << _T(", ") << Sub2(_T("k"), _T("l")) << _T(" = ") << details.kl << _T(", ");
          }
@@ -841,7 +841,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(cons
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd;
          
-         if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC)
+         if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
          {
             *pPara << _T(", ") << Sub2(_T("k"), _T("l")) << _T(" = ") << details.kl << _T(", ");
          }
@@ -872,7 +872,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(cons
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd;
 
-         if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC)
+         if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
          {
             *pPara << _T(", ") << Sub2(_T("k"), _T("l")) << _T(" = ") << details.kl << _T(", ");
          }
@@ -903,7 +903,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(cons
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd;
 
-         if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::FHWA_UHPC)
+         if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
          {
             *pPara << _T(", ") << Sub2(_T("k"), _T("l")) << _T(" = ") << details.kl << _T(", ");
          }

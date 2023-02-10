@@ -99,9 +99,9 @@ std::shared_ptr<pgsTransferLength> pgsTransferLengthEngineer::GetTransferLengthD
       {
          pTransferLength = std::make_shared<pgsPCIUHPCTransferLength>(pStrand->GetNominalDiameter());
       }
-      else if (pMaterial->Concrete.Type == pgsTypes::FHWA_UHPC)
+      else if (pMaterial->Concrete.Type == pgsTypes::UHPC)
       {
-         pTransferLength = std::make_shared<pgsFHWAUHPCTransferLength>(pStrand->GetNominalDiameter(),xferType);
+         pTransferLength = std::make_shared<pgsUHPCTransferLength>(pStrand->GetNominalDiameter(),xferType);
       }
       else
       {
@@ -600,43 +600,43 @@ void pgsPCIUHPCTransferLength::ReportTransferLengthSpecReference(rptParagraph* p
 ////////////////////////
 ////////////////////////
 
-pgsFHWAUHPCTransferLength::pgsFHWAUHPCTransferLength()
+pgsUHPCTransferLength::pgsUHPCTransferLength()
 {
 }
 
-pgsFHWAUHPCTransferLength::pgsFHWAUHPCTransferLength(Float64 db, pgsTypes::TransferLengthType xferType) :
+pgsUHPCTransferLength::pgsUHPCTransferLength(Float64 db, pgsTypes::TransferLengthType xferType) :
    m_db(db), m_XferType(xferType)
 {
 }
 
-void pgsFHWAUHPCTransferLength::SetStrandDiameter(Float64 db)
+void pgsUHPCTransferLength::SetStrandDiameter(Float64 db)
 {
    m_db = db;
 }
 
-Float64 pgsFHWAUHPCTransferLength::GetStrandDiameter() const
+Float64 pgsUHPCTransferLength::GetStrandDiameter() const
 {
    return m_db;
 }
 
-void pgsFHWAUHPCTransferLength::SetTransferLengthType(pgsTypes::TransferLengthType xferType)
+void pgsUHPCTransferLength::SetTransferLengthType(pgsTypes::TransferLengthType xferType)
 {
    m_XferType = xferType;
 }
 
-pgsTypes::TransferLengthType pgsFHWAUHPCTransferLength::GetTransferLengthType() const
+pgsTypes::TransferLengthType pgsUHPCTransferLength::GetTransferLengthType() const
 {
    return m_XferType;
 }
 
-Float64 pgsFHWAUHPCTransferLength::GetTransferLength() const
+Float64 pgsUHPCTransferLength::GetTransferLength() const
 {
    Float64 xi = GetTransferLengthFactor();
    Float64 lt = xi * 24.0 * m_db;
    return lt;
 }
 
-void pgsFHWAUHPCTransferLength::ReportDetails(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void pgsUHPCTransferLength::ReportDetails(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph;
    (*pChapter) << pPara;
@@ -649,12 +649,12 @@ void pgsFHWAUHPCTransferLength::ReportDetails(rptChapter* pChapter, IEAFDisplayU
    (*pPara) << length.SetValue(GetTransferLength()) << rptNewLine;
 }
 
-void pgsFHWAUHPCTransferLength::ReportTransferLengthSpecReference(rptParagraph* pPara) const
+void pgsUHPCTransferLength::ReportTransferLengthSpecReference(rptParagraph* pPara) const
 {
    *pPara << _T("GS 1.9.4.3.1") << rptNewLine;
 }
 
-Float64 pgsFHWAUHPCTransferLength::GetTransferLengthFactor() const
+Float64 pgsUHPCTransferLength::GetTransferLengthFactor() const
 {
    Float64 xi = m_XferType == pgsTypes::tltMinimum ? 0.75 : 1.0;
    return xi;

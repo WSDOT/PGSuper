@@ -345,7 +345,7 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(const std::shared_ptr<con
 
          write_shear_dimensions_table(pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
 
-         if ( concType == pgsTypes::FHWA_UHPC )
+         if ( concType == pgsTypes::UHPC )
          {
             write_es_table(pBroker, pDisplayUnits, vPoi, pChapter, intervalIdx, stage_name, ls);
             write_theta_fv_table(pBroker, pDisplayUnits, vPoi, pChapter, intervalIdx, stage_name, ls);
@@ -458,13 +458,13 @@ void write_shear_dimensions_table(IBroker* pBroker,
    pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->GetDeckType();
 
    GET_IFACE2(pBroker, IMaterials, pMaterials);
-   bool bUHPC = pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC;
+   bool bUHPC = pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC;
 
    std::_tstring strPicture = pFactory->GetShearDimensionsSchematicImage(deckType);
    *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + strPicture);
 
    *pParagraph << rptNewLine;
-   *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bUHPC ? _T("FHWA_UHPC_dv.png") : _T("dv.png"))) << rptNewLine;
+   *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bUHPC ? _T("UHPC_dv.png") : _T("dv.png"))) << rptNewLine;
    if (bUHPC)
    {
       *pParagraph << _T("LRFD 5.7.2.8 and GS 1.7.2.5 and 1.7.3.3") << rptNewLine;
@@ -1899,7 +1899,7 @@ void write_es_table(IBroker* pBroker,
    IntervalIndexType intervalIdx,
    const std::_tstring& strStageName, pgsTypes::LimitState ls)
 {
-   // longitudinal strain for FHWA UHPC
+   // longitudinal strain for UHPC
    CGirderKey girderKey(vPoi.front().get().GetSegmentKey());
 
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -1935,7 +1935,7 @@ void write_es_table(IBroker* pBroker,
    (*table)(0, col++) << COLHDR(Sub2(_T("E"), _T("s")), rptStressUnitTag, pDisplayUnits->GetModEUnit());
    (*table)(0, col++) << COLHDR(Sub2(_T("A"), _T("ps")) << _T("*"), rptLength2UnitTag, pDisplayUnits->GetAreaUnit());
    (*table)(0, col++) << COLHDR(Sub2(_T("E"), _T("ps")), rptStressUnitTag, pDisplayUnits->GetModEUnit());
-   (*table)(0, col++) << COLHDR(Sub2(symbol(gamma), _T("u")) << RPT_STRESS(_T("t,loc")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*table)(0, col++) << COLHDR(Sub2(symbol(gamma), _T("u")) << RPT_STRESS(_T("t,cr")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
    (*table)(0, col++) << COLHDR(Sub2(_T("A"), _T("ct")), rptLength2UnitTag, pDisplayUnits->GetAreaUnit());
    (*table)(0, col++) << COLHDR(Sub2(_T("E"), _T("c")), rptStressUnitTag, pDisplayUnits->GetModEUnit());
    (*table)(0, col++) << Sub2(symbol(epsilon), _T("s")) << rptNewLine << _T("x 1000");
@@ -1994,7 +1994,7 @@ void write_es_table(IBroker* pBroker,
       (*table)(row, col++) << mod_e.SetValue(scd.Es);
       (*table)(row, col++) << area.SetValue(scd.Aps);
       (*table)(row, col++) << mod_e.SetValue(scd.Eps);
-      (*table)(row, col++) << stress.SetValue(scd.FiberStress);
+      (*table)(row, col++) << stress.SetValue(scd.gamma_u*scd.FiberStress);
       (*table)(row, col++) << area.SetValue(scd.Ac);
       (*table)(row, col++) << mod_e.SetValue(scd.Ec);
       (*table)(row, col++) << scalar.SetValue(scd.ex * 1000.);
@@ -2279,7 +2279,7 @@ void write_theta_fv_table(IBroker* pBroker,
    IntervalIndexType intervalIdx,
    const std::_tstring& strStageName, pgsTypes::LimitState ls)
 {
-   // fv and theta for FHWA UHPC
+   // fv and theta for UHPC
    rptParagraph* pParagraph;
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
@@ -2291,8 +2291,7 @@ void write_theta_fv_table(IBroker* pBroker,
    pParagraph = new rptParagraph();
    *pChapter << pParagraph;
 
-
-   *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("FHWA_UHPC_Shear_Resistance_Parameters.png")) << rptNewLine;
+   *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("UHPC_Shear_Resistance_Parameters.png")) << rptNewLine;
 
    ColumnIndexType nCol = 11;
 
@@ -2310,7 +2309,7 @@ void write_theta_fv_table(IBroker* pBroker,
 
    (*table)(0, col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*table)(0, col++) << symbol(epsilon) << Sub(_T("s")) << _T(" x 1000");
-   (*table)(0, col++) << symbol(epsilon) << Sub(_T("t,loc")) << _T(" x 1000");
+   (*table)(0, col++) << Sub2(symbol(gamma),_T("u")) << symbol(epsilon) << Sub(_T("t,loc")) << _T(" x 1000");
    (*table)(0, col++) << COLHDR(RPT_STRESS(_T("t,loc")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
    (*table)(0, col++) << COLHDR(Sub2(_T("E"), (_T("c"))), rptStressUnitTag, pDisplayUnits->GetModEUnit());
    (*table)(0, col++) << COLHDR(symbol(alpha), rptAngleUnitTag, pDisplayUnits->GetAngleUnit());
@@ -2355,7 +2354,7 @@ void write_theta_fv_table(IBroker* pBroker,
 
       (*table)(row, col++) << location.SetValue(POI_SPAN, poi);
       (*table)(row, col++) << scalar.SetValue(scd.ex * 1000);
-      (*table)(row, col++) << scalar.SetValue(scd.et_loc * 1000);
+      (*table)(row, col++) << scalar.SetValue(scd.gamma_u * scd.et_loc * 1000);
       (*table)(row, col++) << stress.SetValue(scd.ft_loc);
       (*table)(row, col++) << mod_e.SetValue(scd.Ec);
       (*table)(row, col++) << angle.SetValue(scd.Alpha);
@@ -2391,7 +2390,7 @@ void write_Vs_table(IBroker* pBroker,
    {
       if (bIsUHPC)
       {
-         *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("FHWA_UHPC_Vs.png")) << rptNewLine;
+         *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("UHPC_Vs.png")) << rptNewLine;
       }
       else
       {
@@ -2430,10 +2429,12 @@ void write_Vs_table(IBroker* pBroker,
    (*table)(0, col++) << COLHDR( Sub2(_T("A"),_T("v")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
    (*table)(0, col++) << COLHDR( _T("s"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*table)(0, col++) << COLHDR( Sub2(_T("A"),_T("v")) << _T("/S"), rptLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
+   
    if(bIsUHPC)
       (*table)(0, col++) << COLHDR( Sub2(_T("d"),_T("v,UHPC")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    else
       (*table)(0, col++) << COLHDR(Sub2(_T("d"), _T("v")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+
    (*table)(0, col++) << COLHDR( symbol(theta), rptAngleUnitTag, pDisplayUnits->GetAngleUnit() );
    (*table)(0, col++) << COLHDR( symbol(alpha), rptAngleUnitTag, pDisplayUnits->GetAngleUnit() );
    if (bDuctAdjustment)
@@ -2492,7 +2493,7 @@ void write_Vs_table(IBroker* pBroker,
          (*table)(row, col++) << avs.SetValue( 0.0 );
       }
 
-      Float64 dv = scd.ConcreteType == pgsTypes::FHWA_UHPC ? scd.controlling_uhpc_dv : scd.dv;
+      Float64 dv = scd.ConcreteType == pgsTypes::UHPC ? scd.controlling_uhpc_dv : scd.dv;
       (*table)(row, col++) << dim.SetValue( dv );
 
       if (scd.ShearInRange)
@@ -2613,7 +2614,7 @@ void write_Vc_table(IBroker* pBroker,
                break;
 
             case pgsTypes::PCI_UHPC:
-            case pgsTypes::FHWA_UHPC:
+            case pgsTypes::UHPC:
                ATLASSERT(false); // should not be UHPC, see Vcf table
                strImage = _T("VcfEquation.png");
                break;
@@ -2805,7 +2806,7 @@ void write_Vuhpc_table(IBroker* pBroker,
    (*table)(0, colIdx++) << COLHDR(Sub2(_T("b"), _T("v")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
    (*table)(0, colIdx++) << COLHDR(Sub2(_T("d"), _T("v,UHPC")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
    (*table)(0, colIdx++) << COLHDR(symbol(theta), rptAngleUnitTag, pDisplayUnits->GetAngleUnit());
-   (*table)(0, colIdx++) << COLHDR(Sub2(_T("V"), _T("UHPC")) << _T(" = ") << Sub2(symbol(gamma), _T("u")) << RPT_STRESS(_T("t,loc")) << Sub2(_T("b"), _T("v")) << Sub2(_T("d"), _T("v,UHPC")) << _T("cot") << symbol(theta), rptForceUnitTag, pDisplayUnits->GetShearUnit());
+   (*table)(0, colIdx++) << COLHDR(Sub2(_T("V"), _T("UHPC")), rptForceUnitTag, pDisplayUnits->GetShearUnit());
 
    //location.IncludeSpanAndGirder(span == ALL_SPANS);
 
@@ -2831,7 +2832,7 @@ void write_Vuhpc_table(IBroker* pBroker,
       pShearCap->GetShearCapacityDetails(ls, intervalIdx, poi, nullptr, &scd);
 
       (*table)(row, colIdx++) << location.SetValue(POI_SPAN, poi);
-      (*table)(row, colIdx++) << stress.SetValue(scd.FiberStress); // gamma_u*ft,loc
+      (*table)(row, colIdx++) << stress.SetValue(scd.gamma_u*scd.FiberStress); // gamma_u*ft,loc
       (*table)(row, colIdx++) << dim.SetValue(scd.bv);
       (*table)(row, colIdx++) << dim.SetValue(scd.controlling_uhpc_dv);
       (*table)(row, colIdx++) << angle.SetValue(scd.Theta);
@@ -3028,7 +3029,7 @@ void write_Vci_table(IBroker* pBroker,
                break;
 
             case pgsTypes::PCI_UHPC: // should never have PCI UHPC with Vci/Vcw method because of minimum LRFD edition
-            case pgsTypes::FHWA_UHPC:
+            case pgsTypes::UHPC:
             default:
                ATLASSERT(false);
             }
@@ -3174,7 +3175,7 @@ void write_Vcw_table(IBroker* pBroker,
                break;
 
             case pgsTypes::PCI_UHPC: // should never have PCI UHPC with Vci/Vcw method because of minimum LRFD edition
-            case pgsTypes::FHWA_UHPC:
+            case pgsTypes::UHPC:
             default:
                ATLASSERT(false);
             }
@@ -3315,7 +3316,7 @@ void write_theta_table(IBroker* pBroker,
                break;
 
             case pgsTypes::PCI_UHPC: // Vci/Vcw method not applicable to UHPC so how did we get here?
-            case pgsTypes::FHWA_UHPC:
+            case pgsTypes::UHPC:
             default:
                ATLASSERT(false);
             }
@@ -3422,7 +3423,7 @@ void write_Vn_table(IBroker* pBroker,
    (*table)(0,col++)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*table)(0,col++) << COLHDR( RPT_FC, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << COLHDR( Sub2(_T("b"),_T("v")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   if (concreteType == pgsTypes::FHWA_UHPC)
+   if (concreteType == pgsTypes::UHPC)
       (*table)(0, col++) << COLHDR(Sub2(_T("d"), _T("v,UHPC")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
    else
       (*table)(0, col++) << COLHDR(Sub2(_T("d"), _T("v")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
@@ -3442,7 +3443,7 @@ void write_Vn_table(IBroker* pBroker,
       {
          (*table)(0, col++) << COLHDR(Sub2(_T("V"), _T("cf")), rptForceUnitTag, pDisplayUnits->GetShearUnit());
       }
-      else if (concreteType == pgsTypes::FHWA_UHPC)
+      else if (concreteType == pgsTypes::UHPC)
       {
          (*table)(0, col++) << COLHDR(Sub2(_T("V"), _T("UHPC")), rptForceUnitTag, pDisplayUnits->GetShearUnit());
       }
@@ -3495,7 +3496,7 @@ void write_Vn_table(IBroker* pBroker,
       (*table)(row,col++) << stress.SetValue( scd.fc );
       (*table)(row,col++) << dim.SetValue( scd.bv );
 
-      Float64 dv = (concreteType == pgsTypes::FHWA_UHPC ? scd.controlling_uhpc_dv : scd.dv);
+      Float64 dv = (concreteType == pgsTypes::UHPC ? scd.controlling_uhpc_dv : scd.dv);
       (*table)(row,col++) << dim.SetValue( dv );
 
       if ( shear_capacity_method != pgsTypes::scmVciVcw )
@@ -3542,7 +3543,7 @@ void write_Vn_table(IBroker* pBroker,
    {
       *pParagraph << Sub2(_T("V"), _T("cf"));
    }
-   else if (concreteType == pgsTypes::FHWA_UHPC)
+   else if (concreteType == pgsTypes::UHPC)
    {
       *pParagraph << Sub2(_T("V"), _T("UHPC"));
    }
@@ -3563,7 +3564,7 @@ void write_Vn_table(IBroker* pBroker,
       {
          *pParagraph << _T(" [Eqn ") << _T("GS 7.3.2-1") << _T("]") << rptNewLine;
       }
-      else if (concreteType == pgsTypes::FHWA_UHPC)
+      else if (concreteType == pgsTypes::UHPC)
       {
          *pParagraph << _T(" [Eqn ") << _T("GS 1.7.3.3-1") << _T("]") << rptNewLine;
       }
@@ -3574,7 +3575,7 @@ void write_Vn_table(IBroker* pBroker,
    }
 
    *pParagraph << Super(_T("#")) << Sub2(_T("V"), _T("n2")) << _T(" = 0.25") << RPT_FC << Sub2(_T("b"), _T("v"));
-   if(concreteType == pgsTypes::FHWA_UHPC)
+   if(concreteType == pgsTypes::UHPC)
       *pParagraph << Sub2(_T("d"), _T("v,UHPC"));
    else
       *pParagraph << Sub2(_T("d"), _T("v"));
@@ -3590,7 +3591,7 @@ void write_Vn_table(IBroker* pBroker,
       {
          *pParagraph << _T(" [") << _T("GS C7.3.2") << _T("]") << rptNewLine;
       }
-      else if (concreteType == pgsTypes::FHWA_UHPC)
+      else if (concreteType == pgsTypes::UHPC)
       {
          *pParagraph << _T(" [Eqn ") << _T("GS 1.7.3.3-2") << _T("]") << rptNewLine;
       }
@@ -3639,9 +3640,9 @@ void write_Avs_table(IBroker* pBroker,
       {
          *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("PCI_UHPC_RequiredShearReinforcement.png"));
       }
-      else if (concreteType == pgsTypes::FHWA_UHPC)
+      else if (concreteType == pgsTypes::UHPC)
       {
-         *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("FHWA_UHPC_RequiredShearReinforcement.png"));
+         *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("UHPC_RequiredShearReinforcement.png"));
       }
       else
       {
@@ -3669,7 +3670,7 @@ void write_Avs_table(IBroker* pBroker,
    {
       (*table)(0, col++) << COLHDR(Sub2(_T("V"), _T("cf")), rptForceUnitTag, pDisplayUnits->GetShearUnit());
    }
-   else if (concreteType == pgsTypes::FHWA_UHPC)
+   else if (concreteType == pgsTypes::UHPC)
    {
       (*table)(0, col++) << COLHDR(Sub2(_T("V"), _T("UHPC")), rptForceUnitTag, pDisplayUnits->GetShearUnit());
    }
@@ -3693,7 +3694,7 @@ void write_Avs_table(IBroker* pBroker,
       (*table)(0, col++) << COLHDR(Sub2(_T("V"), _T("s")) << _T(" *"), rptForceUnitTag, pDisplayUnits->GetShearUnit());
    }
 
-   if (concreteType == pgsTypes::FHWA_UHPC)
+   if (concreteType == pgsTypes::UHPC)
    {
       (*table)(0, col++) << COLHDR(RPT_STRESS(_T("v,") << symbol(alpha)), rptStressUnitTag, pDisplayUnits->GetStressUnit());
       (*table)(0, col++) << COLHDR(Sub2(_T("d"), _T("v,UHPC")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
@@ -3747,7 +3748,7 @@ void write_Avs_table(IBroker* pBroker,
       (*table)(row,col++) << shear.SetValue( scd.VsReqd );
       (*table)(row,col++) << stress.SetValue( scd.fy );
 
-      Float64 dv = concreteType == pgsTypes::FHWA_UHPC ? scd.controlling_uhpc_dv : scd.dv;
+      Float64 dv = concreteType == pgsTypes::UHPC ? scd.controlling_uhpc_dv : scd.dv;
       (*table)(row,col++) << dim.SetValue( dv );
 
       (*table)(row,col++) << angle.SetValue( scd.Theta );
@@ -3771,7 +3772,7 @@ void write_Avs_table(IBroker* pBroker,
       {
          // do nothing
       }
-      else if (concreteType == pgsTypes::FHWA_UHPC)
+      else if (concreteType == pgsTypes::UHPC)
       {
          *pParagraph << _T("* Transverse reinforcement required if ") << Sub2(_T("V"), _T("u")) << _T(" > ") << symbol(phi) << _T("(") << Sub2(_T("V"), _T("UHPC"));
          *pParagraph << _T(" + ") << Sub2(_T("V"), _T("p")) << _T(") [GS Eqn ") << _T("1.7.2.3-1") << _T("]") << rptNewLine;

@@ -2251,14 +2251,14 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	         // After bridge is open to traffic, we only check tension under three conditions
             // 1) Service III limit state
             // 2) Service I limit state and CheckFinalDeadLoadTensionStress() is true
-            // 3) It is a FHWA UHPC Segment and its the Fatigue I limit state
+            // 3) It is a UHPC Segment and its the Fatigue I limit state
             // otherwise, only compression is checked for the "Effective Prestress + Permanent Loads only case" (LRFD 5.9.2.3.2 (pre2017: 5.9.4.2)).
 	         if (liveLoadIntervalIdx <= task.intervalIdx && task.stressType == pgsTypes::Tension )
 	         {
                bool bIsApplicable = (
                   IsServiceIIILimitState(task.limitState) || 
                   (task.limitState == pgsTypes::ServiceI && pAllowable->CheckFinalDeadLoadTensionStress()) ||
-                  (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC && task.limitState == pgsTypes::FatigueI) ) ? true : false;
+                  (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC && task.limitState == pgsTypes::FatigueI) ) ? true : false;
 	            artifact.IsApplicable(topStressLocation, bIsInPTZ[TOP] ? bIsApplicable : false);
 	            artifact.IsApplicable(botStressLocation, bIsInPTZ[BOT] ? bIsApplicable : false);
 	         }
@@ -2270,16 +2270,19 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	         // NOTE, don't return here if stress check is not applicable. We want to capture the stress information
 	         // at this POI for reporting purposes
 
-            // NOTE: FHWA UHPC has a tension stress check for the fatigue limit state but it uses the Service I load combination. See GS 1.5.3.
+            // NOTE: UHPC has a tension stress check for the fatigue limit state but it uses the Service I load combination. See GS 1.5.2.3.
+            // The original UHPC Structural Design Guidance (SDG) presented this as a Fatigue I limit state check using the Service I limit
+            // state combination. After AASHTO T-10 developed the GS, the requirements were moved to GS 1.5.2.3 and it no longer specifically
+            // talks about the Fatigue I limit state, however it is a stress limit for cyclic loads. This is effectively a fatigue check.
             // This is totally different than anything we've seen before.  The task has been set up with the FatigueI limit state and Tension stress.
             // When this task occurs, we want to get the concrete stresses using the ServiceI limit state. For this reason, we create a local
-            // limitState variable and assign it the task's limit state. If this is the FHWA UHPC Fatigue Tension check, we set the local limitState variable
+            // limitState variable and assign it the task's limit state. If this is the UHPC Fatigue Tension check, we set the local limitState variable
             // to ServiceI. All the calls below use the local limitState variable instead of task.limitState.
             pgsTypes::LimitState limitState = task.limitState;
             if (task.limitState == pgsTypes::FatigueI && task.stressType == pgsTypes::Tension)
             {
                limitState = pgsTypes::ServiceI;
-               ATLASSERT(pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC);
+               ATLASSERT(pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC);
             }
 	
 	         // get segment stress due to prestressing
@@ -3167,10 +3170,10 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
                   fci_reqd = pow(1.5 * f / f_fc, 2) * fc_28;
                }
             }
-            else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+            else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
             {
                ATLASSERT(false); // not designing for UHPC yet
-               //Float64 gamma_u = pAllowable->GetAllowableFHWAUHPCTensionStressLimitCoefficient();
+               //Float64 gamma_u = pAllowable->GetAllowableUHPCTensionStressLimitCoefficient(segmentKey);
                //fci_reqd = f / gamma_u;
                fci_reqd = 0;
             }
@@ -3941,7 +3944,7 @@ void pgsDesigner2::CheckFullStirrupDetailing(const pgsPointOfInterest& poi,
    pArtifact->SetFc(fcGdr);
    pArtifact->SetFy(fy);
 
-   // need theta for FHWA UHPC (GS 1.7.2.6)
+   // need theta for UHPC (GS 1.7.2.6)
    pArtifact->SetTheta(scd.Theta);
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
@@ -3995,9 +3998,9 @@ void pgsDesigner2::CheckFullStirrupDetailing(const pgsPointOfInterest& poi,
    bool bIsInClosure = pPoi->IsInClosureJoint(poi, &closureKey);
 
    GET_IFACE(IMaterials, pMaterials);
-   if ((bIsInClosure && pMaterials->GetClosureJointConcreteType(closureKey) == pgsTypes::FHWA_UHPC)
+   if ((bIsInClosure && pMaterials->GetClosureJointConcreteType(closureKey) == pgsTypes::UHPC)
       || 
-      pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+      pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
    {
       ATLASSERT(!bIsInClosure); // closures can't be UHPC yet
       Float64 theta = WBFL::Units::ConvertFromSysUnits(scd.Theta, WBFL::Units::Measure::Radian); // must be in radian
@@ -4055,9 +4058,9 @@ void pgsDesigner2::CheckFullStirrupDetailing(const pgsPointOfInterest& poi,
 
    // min bar spacing
    Float64 s_min = 0.0;
-   if ((bIsInClosure && pMaterials->GetClosureJointConcreteType(closureKey) == pgsTypes::FHWA_UHPC)
+   if ((bIsInClosure && pMaterials->GetClosureJointConcreteType(closureKey) == pgsTypes::UHPC)
       ||
-      pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+      pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
    {
       // UHPC GS 1.10.3
       ATLASSERT(!bIsInClosure); // closures can't be UHPC yet
@@ -4166,7 +4169,7 @@ Float64 pgsDesigner2::GetAvsMin(const pgsPointOfInterest& poi,const SHEARCAPACIT
          break;
 
       case pgsTypes::PCI_UHPC: // drop through
-      case pgsTypes::FHWA_UHPC: // drop through
+      case pgsTypes::UHPC: // drop through
       default:
          ATLASSERT(false); // is there a new concrete type? - shouldn't get here with UHPC
          avs *= sqrt(fc); 
@@ -4177,7 +4180,7 @@ Float64 pgsDesigner2::GetAvsMin(const pgsPointOfInterest& poi,const SHEARCAPACIT
    {
       if (IsUHPC(scd.ConcreteType))
       {
-         avs = 0.0; // there isn't a minimum Av/S for UHPC, stirrups not required - see PCI GS E.7.2.2 and FHWA GS 1.7.2.5
+         avs = 0.0; // there isn't a minimum Av/S for UHPC, stirrups not required - see PCI GS E.7.2.2 and AASHTO UHPC GS 1.7.2.5
       }
       else
       {
@@ -4443,18 +4446,20 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
       pArtifact->SetMr(Mr);
    }
 
-   if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+   if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
    {
       ATLASSERT(pConfig == nullptr); // pConfig is for design, no UHPC design(?)
-      pArtifact->IsFHWAUHPC(true);
+      pArtifact->IsUHPC(true);
 
       Float64 et_loc = pMaterials->GetSegmentConcreteCrackLocalizationStrain(segmentKey);
       pArtifact->SetCrackLocalizationStrain(et_loc);
 
       GET_IFACE(IAllowableConcreteStress, pAllowables);
-      Float64 gamma_u = pAllowables->GetAllowableFHWAUHPCTensionStressLimitCoefficient();
+      Float64 gamma_u = pAllowables->GetAllowableUHPCTensionStressLimitCoefficient(segmentKey);
+      pArtifact->SetFiberOrientationReductionFactor(gamma_u);
+
       Float64 ft_cr = pMaterials->GetSegmentConcreteDesignEffectiveCrackingStrength(segmentKey);
-      pArtifact->SetDesignEffectiveConcreteStrength(gamma_u * ft_cr);
+      pArtifact->SetDesignEffectiveConcreteStrength(ft_cr);
 
       pArtifact->SetAct(scd.Ac);
    }
@@ -6291,9 +6296,9 @@ void pgsDesigner2::CheckReinforcementFatigue(const CSegmentKey& segmentKey, pgsR
    // from the rebar in the deck.
 #pragma Reminder("Add Reinforcement Fatigue check per GS 1.5.3 and LRFD 5.5.3.1 for negative moments continuity in UHPC deck bulb tees, slabs, and other no-deck systems")
    GET_IFACE(IMaterials, pMaterials);
-   if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::FHWA_UHPC)
+   if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
    {
-      // Reinforcement fatigue must be checked for FHWA UHPC per GS 1.5.3 using the procedures of LRFD 5.5.3.1
+      // Reinforcement fatigue must be checked for UHPC per GS 1.5.3 using the procedures of LRFD 5.5.3.1
       pArtifact->IsApplicable(true);
 
       GET_IFACE(ILoadFactors, pILoadFactors);

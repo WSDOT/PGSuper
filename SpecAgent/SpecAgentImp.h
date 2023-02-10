@@ -216,8 +216,8 @@ public:
    virtual Float64 GetPrincipalTensileStressRequiredConcreteStrength(const pgsPointOfInterest& poi, Float64 stress) const override;
 
    virtual Float64 GetAllowablePCIUHPCTensionStressLimitCoefficient() const override;
-   virtual Float64 GetAllowableFHWAUHPCTensionStressLimitCoefficient() const override;
-   virtual Float64 GetAllowableFHWAUHPCFatigueTensionStressLimitModifier() const override;
+   virtual Float64 GetAllowableUHPCTensionStressLimitCoefficient(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetAllowableUHPCFatigueTensionStressLimitModifier() const override;
 
    virtual Float64 GetRequiredConcreteStrength(const pgsPointOfInterest& poi, pgsTypes::StressLocation stressLocation, Float64 stressDemand, const StressCheckTask& task, bool bIsInPTZ) const override;
    virtual std::_tstring GetAllowableStressParameterName(pgsTypes::StressType stressType, pgsTypes::ConcreteType concreteType) const override;
@@ -390,7 +390,7 @@ private:
    const pgsSplittingCheckEngineer& GetSplittingCheckEngineer(const CSegmentKey& segmentKey) const;
    pgsLRFDSplittingCheckEngineer m_LRFDSplittingCheckEngineer;
    pgsPCIUHPCSplittingCheckEngineer m_PCIUHPCSplittingCheckEngineer;
-   pgsFHWAUHPCSplittingCheckEngineer m_FHWAUHPCSplittingCheckEngineer;
+   pgsUHPCSplittingCheckEngineer m_UHPCSplittingCheckEngineer;
 
    const GirderLibraryEntry* GetGirderEntry(const CSegmentKey& segmentKey) const;
    const SpecLibraryEntry* GetSpec() const;

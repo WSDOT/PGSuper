@@ -102,9 +102,9 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
       strVniArticle = _T("SDG E.7.4.1");
    }
 
-   if (pMaterials->GetSegmentConcreteType(CSegmentKey(girderKey, 0)) == pgsTypes::FHWA_UHPC)
+   if (pMaterials->GetSegmentConcreteType(CSegmentKey(girderKey, 0)) == pgsTypes::UHPC)
    {
-      (*pPara) << _T("FHWA UHPC GS 1.7.4") << rptNewLine;
+      (*pPara) << _T("UHPC GS 1.7.4") << rptNewLine;
       strSmaxArticle = _T("GS 1.7.4.5");
       strAvfMinArticle = _T("GS 1.7.4.2");
       strVniArticle = _T("GS 1.7.4.1");
