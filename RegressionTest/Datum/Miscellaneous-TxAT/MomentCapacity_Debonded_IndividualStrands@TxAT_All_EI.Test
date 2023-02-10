@@ -1,0 +1,90 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 51.62    6   9.42                     1     1    I-BEA    *     36  0.6  270  25.31  17.41  10.00  10.00   2.08                                               4  60.0  6.0  7.500  9.000   4.017    -4.188     9101   0.818  0.818   4.104 -1.940 -0.054 -0.086 -2.080 111.44  275.51    4.00   14.00   14.00    0.00    1.71    0.00    2.27    1.03 
+Warning: Beam 1 in span 1 has mixed harped and debonded strands. This is an invalid strand configuration for TxDOT, and is not supported by the TxDOT CAD Data Export feature. Strand data may not be reported correctly.
+
+
+The Specification Check was Not Successful
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 51.62    6   9.42                     1     2    I-BEA    *     36  0.6  270  25.31  17.41  10.00  10.00   1.82                                               4  60.0  6.0  7.500  9.000   4.089    -4.243     9003   0.746  0.912   4.092 -2.195 -0.051 -0.082 -2.328 111.44  275.51    4.00   14.00   14.00    0.00    1.52    0.00    2.02    1.02 
+Warning: Beam 2 in span 1 has mixed harped and debonded strands. This is an invalid strand configuration for TxDOT, and is not supported by the TxDOT CAD Data Export feature. Strand data may not be reported correctly.
+
+
+The Specification Check was Not Successful
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 51.62    6   9.42                     1     4    I-BEA    *     36  0.6  270  25.31  17.41  10.00  10.00   1.82                                               4  60.0  6.0  7.500  9.000   4.089    -4.243     9003   0.746  0.912   4.092 -2.195 -0.051 -0.082 -2.328 111.44  275.51    4.00   14.00   14.00    0.00    1.52    0.00    2.02    1.02 
+Warning: Beam 4 in span 1 has mixed harped and debonded strands. This is an invalid strand configuration for TxDOT, and is not supported by the TxDOT CAD Data Export feature. Strand data may not be reported correctly.
+
+
+The Specification Check was Not Successful
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 51.62    6   9.42                     2     1    I-BEA    *     36  0.6  270  25.20  13.83  10.00  10.00   1.98                                               6  60.0  8.0  7.500  9.000   3.830    -3.852     8061   0.818  0.818   3.889 -1.908 -0.005 -0.009 -1.922 111.29  275.35    4.00   14.00   14.00    0.00    1.85    0.00    2.45    1.31 
+Warning: Beam 1 in span 2 has mixed harped and debonded strands. This is an invalid strand configuration for TxDOT, and is not supported by the TxDOT CAD Data Export feature. Strand data may not be reported correctly.
+
+
+The Specification Check was Not Successful
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 51.62    6   9.42                     2     2    I-BEA    *     36  0.6  270  25.20  13.83  10.00  10.00   1.73                                               6  60.0  8.0  7.500  9.000   3.931    -3.927     8017   0.745  0.912   3.877 -2.159 -0.005 -0.008 -2.172 111.29  275.35    4.00   14.00   14.00    0.00    1.64    0.00    2.18    1.30 
+Warning: Beam 2 in span 2 has mixed harped and debonded strands. This is an invalid strand configuration for TxDOT, and is not supported by the TxDOT CAD Data Export feature. Strand data may not be reported correctly.
+
+
+The Specification Check was Not Successful
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 51.62    6   9.42                     2     4    I-BEA    *     36  0.6  270  25.20  13.83  10.00  10.00   1.73                                               6  60.0  8.0  7.500  9.000   3.931    -3.927     8017   0.745  0.912   3.877 -2.159 -0.005 -0.008 -2.172 111.29  275.35    4.00   14.00   14.00    0.00    1.64    0.00    2.18    1.30 
+Warning: Beam 4 in span 2 has mixed harped and debonded strands. This is an invalid strand configuration for TxDOT, and is not supported by the TxDOT CAD Data Export feature. Strand data may not be reported correctly.
+
+
+The Specification Check was Not Successful
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 51.62    6   9.42                     3     1    I-BEA    *     36  0.6  270  25.31  17.41  10.00  10.00   2.08                                               4  60.0  6.0  7.500  9.000   4.017    -4.188     9101   0.818  0.818   4.104 -1.940 -0.054 -0.086 -2.080 111.44  275.51    4.00   14.00   14.00    0.00    1.71    0.00    2.27    1.03 
+Warning: Beam 1 in span 3 has mixed harped and debonded strands. This is an invalid strand configuration for TxDOT, and is not supported by the TxDOT CAD Data Export feature. Strand data may not be reported correctly.
+
+
+The Specification Check was Not Successful
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 51.62    6   9.42                     3     2    I-BEA    *     36  0.6  270  25.31  17.41  10.00  10.00   1.82                                               4  60.0  6.0  7.500  9.000   4.089    -4.243     9003   0.746  0.912   4.092 -2.195 -0.051 -0.082 -2.327 111.44  275.51    4.00   14.00   14.00    0.00    1.52    0.00    2.02    1.02 
+Warning: Beam 2 in span 3 has mixed harped and debonded strands. This is an invalid strand configuration for TxDOT, and is not supported by the TxDOT CAD Data Export feature. Strand data may not be reported correctly.
+
+
+The Specification Check was Not Successful
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 51.62    6   9.42                     3     4    I-BEA    *     36  0.6  270  25.31  17.41  10.00  10.00   1.82                                               4  60.0  6.0  7.500  9.000   4.089    -4.243     9003   0.746  0.912   4.092 -2.195 -0.051 -0.082 -2.327 111.44  275.51    4.00   14.00   14.00    0.00    1.52    0.00    2.02    1.02 
+Warning: Beam 4 in span 3 has mixed harped and debonded strands. This is an invalid strand configuration for TxDOT, and is not supported by the TxDOT CAD Data Export feature. Strand data may not be reported correctly.
+
+
+The Specification Check was Not Successful
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+
+
