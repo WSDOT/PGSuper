@@ -290,7 +290,7 @@ bool pgsBarrierSidewalkLoadDistributionTool::DistributeBSWLoadEvenly(BarrSwType 
       // Special case of no load distribution. Defaults take care of this
       return true;
    }
-   else if ( (oppositeExists && m_SegmentLoadFractionData.m_TotalGMSWs/2 < m_nMaxDistributed) || m_SegmentLoadFractionData.m_TotalGMSWs < m_nMaxDistributed)
+   else if ( (oppositeExists && m_SegmentLoadFractionData.m_TotalGMSWs/2 < m_nMaxDistributed) || m_SegmentLoadFractionData.m_TotalGMSWs <= m_nMaxDistributed)
    {
       // Distribute load evenly to all GMSW's
       m_SegmentLoadFractionData.m_GMSWsAppliedTo[barrswType] = m_SegmentLoadFractionData.m_TotalGMSWs;
