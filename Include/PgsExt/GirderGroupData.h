@@ -38,7 +38,7 @@ typedef struct CGirderTopWidthGroup
 {
    GirderIndexType firstGdrIdx, lastGdrIdx;
    pgsTypes::TopWidthType type;
-   Float64 left[2], right[2]; // array index is pgsTypes::MemberEndType
+   std::array<Float64, 2> left, right; // array index is pgsTypes::MemberEndType
 } CGirderTopWidthGroup;
 
 /*****************************************************************************
@@ -209,7 +209,7 @@ public:
 
 
    // =================================================================================
-   // Miscellanous
+   // Miscellaneous
    // =================================================================================
    bool IsExteriorGirder(GirderIndexType gdrIdx) const;
    bool IsInteriorGirder(GirderIndexType gdrIdx) const;
@@ -236,8 +236,8 @@ private:
    GroupIDType m_GroupID;
 
    CBridgeDescription2* m_pBridgeDesc;
-   CPierData2* m_pPier[2]; // pier at the start of the group
-   PierIndexType m_PierIndex[2]; // pier index at the start of the group (INVALID_INDEX if m_pPier points to an actual pier)
+   std::array<CPierData2*, 2> m_pPier; // pier at the start of the group
+   std::array<PierIndexType, 2> m_PierIndex; // pier index at the start of the group (INVALID_INDEX if m_pPier points to an actual pier)
 
    std::vector<CSplicedGirderData*> m_Girders;
 

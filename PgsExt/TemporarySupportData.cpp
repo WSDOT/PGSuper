@@ -607,12 +607,12 @@ const CClosureJointData* CTemporarySupportData::GetClosureJoint(GirderIndexType 
 
 CBridgeDescription2* CTemporarySupportData::GetBridgeDescription()
 {
-   return m_pSpan->GetBridgeDescription();
+   return m_pSpan ? m_pSpan->GetBridgeDescription() : nullptr;
 }
 
 const CBridgeDescription2* CTemporarySupportData::GetBridgeDescription() const
 {
-   return m_pSpan->GetBridgeDescription();
+   return m_pSpan ? m_pSpan->GetBridgeDescription() : nullptr;
 }
 
 void CTemporarySupportData::SetGirderEndDistance(Float64 endDist,ConnectionLibraryEntry::EndDistanceMeasurementType measure)

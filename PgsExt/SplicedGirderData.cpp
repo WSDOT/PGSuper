@@ -58,7 +58,7 @@ static char THIS_FILE[] = __FILE__;
 //    at this level of the model.
 //
 // My suspicion is that users will generally layout the overall framing with prismatic girders and then
-// modify the depth of the section as needed to accomodate the stress and strength requirements. The
+// modify the depth of the section as needed to accommodate the stress and strength requirements. The
 // weirdness that will come from not merging adjacent segments should be minimal.
 
 CSplicedGirderData::CSplicedGirderData()
@@ -334,8 +334,8 @@ void CSplicedGirderData::MakeCopy(const CSplicedGirderData& rOther,bool bCopyDat
          *m_Segments[segIdx] = *pOtherSegment;
       }
 
-      if ( pMyTimelineMgr && pOtherTimelineMgr // make sure timeline managers are not null
-         && pMyTimelineMgr != pOtherTimelineMgr // make sure they aren't the same timeline manager (it's a waste of effort if the pointers reference the same object)
+      if ( pMyTimelineMgr && pOtherTimelineMgr // make sure time line managers are not null
+         && pMyTimelineMgr != pOtherTimelineMgr // make sure they aren't the same time line manager (it's a waste of effort if the pointers reference the same object)
          )
       {
          SegmentIDType otherSegID = pOtherSegment->GetID();
@@ -370,7 +370,7 @@ void CSplicedGirderData::MakeCopy(const CSplicedGirderData& rOther,bool bCopyDat
             }
          }
 
-         if (!bCopyDataOnly && (pMyTimelineMgr && pOtherTimelineMgr) /*both not null*/ && (pMyTimelineMgr != pOtherTimelineMgr)/*pointers don't refernece same object*/ )
+         if (!bCopyDataOnly && (pMyTimelineMgr && pOtherTimelineMgr) /*both not null*/ && (pMyTimelineMgr != pOtherTimelineMgr)/*pointers don't reference same object*/ )
          {
             ClosureIDType otherClosureID = pOtherClosure->GetID();
             ClosureIDType closureID = m_Closures[segIdx]->GetID();
@@ -1240,7 +1240,7 @@ void CSplicedGirderData::JoinSegmentsAtTemporarySupport(SupportIndexType tsIdx)
             }
          }
 
-         // remove the construction and erection events for the right segment from the timeline
+         // remove the construction and erection events for the right segment from the time line
          RemoveSegmentFromTimelineManager(pRightSegment);
 
          delete pRightSegment; // we are done with the right segment... it no longer exists
@@ -1333,7 +1333,7 @@ void CSplicedGirderData::SplitSegmentsAtTemporarySupport(SupportIndexType tsIdx)
          pNewSegment->m_SlabOffset[pgsTypes::metEnd] = pNewSegment->m_SlabOffset[pgsTypes::metStart];
 
          // don't copy strands, shear data, or longitudinal rebar data to
-         // the new segment. It may not be compatable with its geometry.
+         // the new segment. It may not be compatible with its geometry.
 
          m_Segments.insert(segIter+1,pNewSegment);
          m_Closures.insert(closureIter,pNewClosure);
@@ -1342,7 +1342,7 @@ void CSplicedGirderData::SplitSegmentsAtTemporarySupport(SupportIndexType tsIdx)
 
          AddSegmentToTimelineManager(pSegment,pNewSegment);
 
-         // Find the timeline event where the closure joint activity includes the temporary support where the segments are split
+         // Find the time line event where the closure joint activity includes the temporary support where the segments are split
          CTimelineManager* pTimelineMgr = GetTimelineManager();
          ATLASSERT(pTimelineMgr);
          EventIndexType nEvents = pTimelineMgr->GetEventCount();
@@ -1612,7 +1612,7 @@ void CSplicedGirderData::SplitSegmentRight(CPrecastSegmentData* pLeftSegment,CPr
          // split in right prismatic section
 
          // shorten the length of the right prismatic zone of the left segment and make the right segment
-         // have the sortened length
+         // have the shortened length
          Float64 length,height,bottomFlangeDepth;
          pLeftSegment->GetVariationParameters(pgsTypes::sztRightPrismatic,true,&length,&height,&bottomFlangeDepth);
          Float64 delta_length = leftSegmentLength - newLeftSegmentLength;
@@ -1637,7 +1637,7 @@ void CSplicedGirderData::SplitSegmentRight(CPrecastSegmentData* pLeftSegment,CPr
          pRightSegment->SetVariationType(leftVariation);
          pRightSegment->SetVariationParameters(pgsTypes::sztLeftPrismatic,0,commonHeight,commonBottomFlangeDepth);
 
-         // right segment right prismatic takes on the values of the old left segment right prismitic zone
+         // right segment right prismatic takes on the values of the old left segment right prismatic zone
          pRightSegment->SetVariationParameters(pgsTypes::sztRightPrismatic,rightPrismaticLength,rightHeight,rightBottomFlangeDepth);
       }
    }
@@ -1810,7 +1810,7 @@ void CSplicedGirderData::RemoveSegmentsFromTimelineManager()
 
 void CSplicedGirderData::RemoveClosureJointFromTimelineManager(const CClosureJointData* pClosure)
 {
-   if ( m_pGirderGroup && m_pGirderGroup->GetGirderCount() == 1 )
+   if ( m_pGirderGroup && m_pGirderGroup->GetGirderCount() == 0 )
    {
       // Any particular closure joint is cast for all girders at the same time. Even though we
       // model every closure joint individually in the physical model, they are cast at the same time.
@@ -1818,8 +1818,8 @@ void CSplicedGirderData::RemoveClosureJointFromTimelineManager(const CClosureJoi
       // The closure between segment 3 and 4 for all girders is also cast at the same time, but not
       // necessarily at the same time as the closure between segments 2 and 3.
       //
-      // For this reason, we only remove the closure casting activity from the timeline when 
-      // there is only one girder
+      // For this reason, we only remove the closure casting activity from the time line when 
+      // the girder count is zero
 
       CTimelineManager* pTimelineMgr = GetTimelineManager();
       if ( pTimelineMgr )
@@ -1834,7 +1834,7 @@ void CSplicedGirderData::RemoveClosureJointFromTimelineManager(const CClosureJoi
                pTimelineEvent->GetCastClosureJointActivity().RemovePier(pClosure->GetPier()->GetID());
             }
 
-            if ( pClosure->GetTemporarySupport() && m_pGirderGroup->GetGirderCount() == 1 )
+            if ( pClosure->GetTemporarySupport() )
             {
                pTimelineEvent->GetCastClosureJointActivity().RemoveTempSupport(pClosure->GetTemporarySupport()->GetID());
             }

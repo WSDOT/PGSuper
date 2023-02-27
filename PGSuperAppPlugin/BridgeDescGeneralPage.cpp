@@ -865,7 +865,7 @@ void CBridgeDescGeneralPage::FillGirderOrientationComboBox()
    // Assume plumb if no current selection
    pgsTypes::GirderOrientationType curOrientation = (curSel!=CB_ERR) ? (pgsTypes::GirderOrientationType)pOrientation->GetItemData(curSel) : pgsTypes::Plumb;
 
-   // Refill cb
+   // Refill combo box
    pOrientation->ResetContent();
    int numInList = 0;
    std::vector<pgsTypes::GirderOrientationType> vTypes = m_Factory->GetSupportedGirderOrientation();
@@ -1046,7 +1046,7 @@ void CBridgeDescGeneralPage::FillWorkPointLocationComboBox()
    }
    else
    {
-      curSel = 0; // Top wp location available only
+      curSel = 0; // Top work point location available only
       m_CacheWorkPointTypeIdx = oldSel; // cache old setting
    }
 
@@ -1280,7 +1280,7 @@ void CBridgeDescGeneralPage::OnGirderFamilyChanged()
 
    InitGirderName();          // sets the current girder name to the first girder of the family
    UpdateGirderFactory();     // gets the new factory for this girder family
-   FillGirderOrientationComboBox(); // filles the girder orientation combo box
+   FillGirderOrientationComboBox(); // fills the girder orientation combo box
    FillGirderNameComboBox();  // fills the girder name combo box with girders from this family
    FillGirderSpacingTypeComboBox(); // get new spacing options for this girder family
    FillDeckTypeComboBox();          // set deck type options to match this girder family
@@ -1593,7 +1593,7 @@ void CBridgeDescGeneralPage::OnGirderSpacingTypeChanged()
    GetDlgItem(IDC_REF_GIRDER_OFFSET_TYPE)->EnableWindow(bEnableRefGirder);
    GetDlgItem(IDC_GIRDER_SPACING_MEASURE)->EnableWindow(bEnableRefGirder); // should this be bEnableSpacing?
 
-   // update the the unit of measure
+   // update the unit of measure
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
@@ -1712,7 +1712,7 @@ void CBridgeDescGeneralPage::OnDeckTypeChanged()
 
    if (pTimelineMgr->GetCastDeckEventIndex() == INVALID_INDEX && newDeckType != pgsTypes::sdtNone)
    {
-      // we are changing to a "deck" option and there isn't a deck contruction activity in the timeline
+      // we are changing to a "deck" option and there isn't a deck construction activity in the time line
       // create one now
       const CTimelineEvent* pEventBeforeDeckCasting;
       EventIndexType castDiaphragmEventIdx = pTimelineMgr->GetIntermediateDiaphragmsLoadEventIndex();
@@ -1746,7 +1746,7 @@ void CBridgeDescGeneralPage::OnDeckTypeChanged()
       {
          pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth = minSlabOffset;
 
-         // Since we are changing deck type here, data could be whacky. So use lrfd 9.7.1.1—Minimum Depth and Cover to
+         // Since we are changing deck type here, data could be wacky. So use LRFD 9.7.1.1—Minimum Depth and Cover to
          // insure that we have a reasonable slab depth
          if (pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth <= 0.0)
          {
@@ -1762,7 +1762,7 @@ void CBridgeDescGeneralPage::OnDeckTypeChanged()
       {
          pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth = minSlabOffset - pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth; // decrease the cast depth
 
-         // Since we are changing deck type here, data could be wacky. So use lrfd 9.7.1.1—Minimum Depth and Cover to
+         // Since we are changing deck type here, data could be wacky. So use LRFD 9.7.1.1—Minimum Depth and Cover to
          // insure that we have a reasonable slab depth
          if (pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth <= 0.0)
          {
@@ -1811,7 +1811,7 @@ void CBridgeDescGeneralPage::UpdateGirderTopWidthSpacingLimits()
          const IBeamFactory::Dimensions& dimensions = pGdrEntry->GetDimensions();
 
          // don't use m_Factory because if we have a cross section with mixed beam types
-         // (ie, I-beams and NU beams) the dimensions list and the factory wont match up
+         // (i.e., I-beams and NU beams) the dimensions list and the factory wont match up
          // and GetAllowableTopWidthRange will be all messed up.
          CComPtr<IBeamFactory> factory;
          pGdrEntry->GetBeamFactory(&factory);
@@ -1923,7 +1923,7 @@ BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
          const IBeamFactory::Dimensions& dimensions = pGdrEntry->GetDimensions();
 
          // don't use m_Factory because if we have a cross section with mixed beam types
-         // (ie, I-beams and NU beams) the dimensions list and the factory wont match up
+         // (i.e. , I-beams and NU beams) the dimensions list and the factory wont match up
          // and GetAllowableSpacingRange will be all messed up.
          CComPtr<IBeamFactory> factory;
          pGdrEntry->GetBeamFactory(&factory);
@@ -2195,7 +2195,7 @@ BOOL CBridgeDescGeneralPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pRe
          break;
 
       case IDC_REF_GIRDER_OFFSET:
-         m_strToolTipText = _T("Locates the girders, in plan view, relative to the Aligment or Bridge Line");
+         m_strToolTipText = _T("Locates the girders, in plan view, relative to the Alignment or Bridge Line");
          bShowTip = TRUE;
          break;
 
@@ -2206,7 +2206,7 @@ BOOL CBridgeDescGeneralPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pRe
       if ( bShowTip )
       {
          ::SendMessage(pNMHDR->hwndFrom,TTM_SETDELAYTIME,TTDT_AUTOPOP,TOOLTIP_DURATION); // sets the display time to 10 seconds
-         ::SendMessage(pNMHDR->hwndFrom,TTM_SETMAXTIPWIDTH,0,TOOLTIP_WIDTH); // makes it a multi-line tooltip
+         ::SendMessage(pNMHDR->hwndFrom,TTM_SETMAXTIPWIDTH,0,TOOLTIP_WIDTH); // makes it a multi-line tool tip
          pTTT->lpszText = m_strToolTipText.LockBuffer();
          pTTT->hinst = nullptr;
          return TRUE;
@@ -2307,9 +2307,9 @@ void CBridgeDescGeneralPage::OnMoreProperties()
 {
    UpdateData(TRUE);
    CConcreteDetailsDlg dlg(true  /*properties are based on f'c*/,
-      true /*include uhpc*/,
+      true /*include UHPC*/,
       false /*don't enable Compute Time Parameters option*/,
-      false /*hide the CopyFromLibrary buton*/);
+      false /*hide the CopyFromLibrary button*/);
 
    dlg.m_fc28 = m_JointConcrete.Fc;
    dlg.m_Ec28 = m_JointConcrete.Ec;

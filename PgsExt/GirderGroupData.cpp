@@ -499,8 +499,36 @@ void CGirderGroupData::RemoveGirders(GirderIndexType nGirdersToRemove)
 
 
    // Update the girder spacing (number of girders and number of spaces are related)
-   m_pPier[pgsTypes::metStart]->GetGirderSpacing(pgsTypes::Ahead)->RemoveGirders(nGirdersToRemove);
-   m_pPier[pgsTypes::metEnd  ]->GetGirderSpacing(pgsTypes::Back )->RemoveGirders(nGirdersToRemove);
+   CPierData2* pStartPier = m_pPier[pgsTypes::metStart];
+   CPierData2* pEndPier = m_pPier[pgsTypes::metEnd];
+   PierIndexType endPierIdx = pEndPier->GetIndex();
+   for (CPierData2* pPier = pStartPier; pPier != nullptr && pPier->GetIndex() <= endPierIdx; )
+   {
+      if (pPier == pStartPier)
+      {
+         pPier->GetGirderSpacing(pgsTypes::Ahead)->RemoveGirders(nGirdersToRemove);
+      }
+      else if (pPier == pEndPier)
+      {
+         pPier->GetGirderSpacing(pgsTypes::Back)->RemoveGirders(nGirdersToRemove);
+      }
+      else
+      {
+         pPier->GetGirderSpacing(pgsTypes::Ahead)->RemoveGirders(nGirdersToRemove);
+         pPier->GetGirderSpacing(pgsTypes::Back)->RemoveGirders(nGirdersToRemove);
+      }
+
+      // advance to next pier
+      if (pPier->GetNextSpan())
+      {
+         pPier = pPier->GetNextSpan()->GetNextPier();
+      }
+      else
+      {
+         pPier = nullptr;
+      }
+   }
+
 
    PGS_ASSERT_VALID;
 }
@@ -597,6 +625,7 @@ void CGirderGroupData::AddGirders(GirderIndexType nGirdersToAdd)
          pPier->GetGirderSpacing(pgsTypes::Back)->AddGirders(nGirdersToAdd);
       }
 
+      // advance to next pier
       if ( pPier->GetNextSpan() )
       {
          pPier = pPier->GetNextSpan()->GetNextPier();
