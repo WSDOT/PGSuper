@@ -2693,12 +2693,15 @@ void write_ts_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
 
 void write_framing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
 {
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   if (pBridgeDesc->GetGirderCount() == 1)
+      return;
+
    rptParagraph* pPara;
    pPara = new rptParagraph;
    *pChapter << pPara;
-
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    // Setup the table
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(3,_T("Framing"));
@@ -2932,7 +2935,7 @@ void write_span_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    }
    else if (pgsTypes::Balanced == orientType)
    {
-      *pPara << _T("balanced to mimimize haunch depth at both ends of ") << strGrp << rptNewLine;
+      *pPara << _T("balanced to minimize haunch depth at both ends of ") << strGrp << rptNewLine;
    }
    else
    {

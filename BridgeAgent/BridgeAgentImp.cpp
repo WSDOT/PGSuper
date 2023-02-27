@@ -11498,27 +11498,27 @@ void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType 
    }
 }
 
-Float64 CBridgeAgentImp::GetBearingStation(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace) const
+Float64 CBridgeAgentImp::GetBearingStation(PierIndexType pierIdx, pgsTypes::PierFaceType pierFace) const
 {
-   VALIDATE( BRIDGE );
+   VALIDATE(BRIDGE);
 
-   GroupIndexType grpIdx = GetGirderGroupAtPier(pierIdx,pierFace);
-   CGirderKey leftGirderKey(grpIdx,0);
-   CGirderKey rightGirderKey(grpIdx,GetGirderCount(grpIdx)-1);
+   GroupIndexType grpIdx = GetGirderGroupAtPier(pierIdx, pierFace);
+   CGirderKey leftGirderKey(grpIdx, 0);
+   CGirderKey rightGirderKey(grpIdx, GetGirderCount(grpIdx) - 1);
 
    // Get the segments that intersects this pier
    CComPtr<ISuperstructureMemberSegment> leftSegment, rightSegment;
-   GetSegmentAtPier(pierIdx,leftGirderKey, &leftSegment);
-   GetSegmentAtPier(pierIdx,rightGirderKey,&rightSegment);
+   GetSegmentAtPier(pierIdx, leftGirderKey, &leftSegment);
+   GetSegmentAtPier(pierIdx, rightGirderKey, &rightSegment);
 
    // Get the girder line for the segments
-   CComPtr<IGirderLine> leftGirderLine,rightGirderLine;
+   CComPtr<IGirderLine> leftGirderLine, rightGirderLine;
    leftSegment->get_GirderLine(&leftGirderLine);
    rightSegment->get_GirderLine(&rightGirderLine);
 
    // Get the pier line
    CComPtr<IPierLine> pierLine;
-   GetPierLine(pierIdx,&pierLine);
+   GetPierLine(pierIdx, &pierLine);
 
    // Get intersection of alignment and pier
    CComPtr<IPoint2d> pntPierAlignment;
@@ -11528,24 +11528,24 @@ Float64 CBridgeAgentImp::GetBearingStation(PierIndexType pierIdx,pgsTypes::PierF
    CComPtr<ILine2d> clPier;
    pierLine->get_Centerline(&clPier);
 
-   CComPtr<IPath> leftGdrPath,rightGdrPath;
+   CComPtr<IPath> leftGdrPath, rightGdrPath;
    leftGirderLine->get_Path(&leftGdrPath);
    rightGirderLine->get_Path(&rightGdrPath);
 
-   CComPtr<IPoint2d> pntPierLeftGirder,pntPierRightGirder;
-   leftGdrPath->Intersect(clPier,pntPierAlignment,&pntPierLeftGirder);
-   rightGdrPath->Intersect(clPier,pntPierAlignment,&pntPierRightGirder);
+   CComPtr<IPoint2d> pntPierLeftGirder, pntPierRightGirder;
+   leftGdrPath->Intersect(clPier, pntPierAlignment, &pntPierLeftGirder);
+   rightGdrPath->Intersect(clPier, pntPierAlignment, &pntPierRightGirder);
 
    // Get the offset from the CL pier to the point of bearing, measured along the CL girder
    CComPtr<IDirection> leftGirderDirection, rightGirderDirection;
    leftGirderLine->get_Direction(&leftGirderDirection);
    rightGirderLine->get_Direction(&rightGirderDirection);
 
-   Float64 leftBrgOffset,rightBrgOffset;
-   pierLine->GetBearingOffset(pierFace == pgsTypes::Ahead ? pfAhead : pfBack,leftGirderDirection,&leftBrgOffset);
-   pierLine->GetBearingOffset(pierFace == pgsTypes::Ahead ? pfAhead : pfBack,rightGirderDirection,&rightBrgOffset);
+   Float64 leftBrgOffset, rightBrgOffset;
+   pierLine->GetBearingOffset(pierFace == pgsTypes::Ahead ? pfAhead : pfBack, leftGirderDirection, &leftBrgOffset);
+   pierLine->GetBearingOffset(pierFace == pgsTypes::Ahead ? pfAhead : pfBack, rightGirderDirection, &rightBrgOffset);
 
-   if ( pierFace == pgsTypes::Back )
+   if (pierFace == pgsTypes::Back)
    {
       leftBrgOffset *= -1;
       rightBrgOffset *= -1;
@@ -11555,29 +11555,35 @@ Float64 CBridgeAgentImp::GetBearingStation(PierIndexType pierIdx,pgsTypes::PierF
    // Locate the intersection of the CL girder and the point of bearing
    CComPtr<ILocate2> locate;
    m_CogoEngine->get_Locate(&locate);
-   CComPtr<IPoint2d> pntBrgLeftGirder,pntBrgRightGirder;
-   locate->ByDistDir(pntPierLeftGirder, leftBrgOffset, CComVariant(leftGirderDirection), 0.0,&pntBrgLeftGirder);
-   locate->ByDistDir(pntPierRightGirder,rightBrgOffset,CComVariant(rightGirderDirection),0.0,&pntBrgRightGirder);
+   CComPtr<IPoint2d> pntBrgLeftGirder, pntBrgRightGirder;
+   locate->ByDistDir(pntPierLeftGirder, leftBrgOffset, CComVariant(leftGirderDirection), 0.0, &pntBrgLeftGirder);
+   locate->ByDistDir(pntPierRightGirder, rightBrgOffset, CComVariant(rightGirderDirection), 0.0, &pntBrgRightGirder);
 
-   // Create a line for the CL Bearing line by connecting the left/right brg/girder intersection points
-   CComPtr<ILine2d> brgLine;
-   brgLine.CoCreateInstance(CLSID_Line2d);
-   brgLine->ThroughPoints(pntBrgLeftGirder,pntBrgRightGirder);
-
-   // Intersect the bearing line with the alignment
+	// Create a line for the CL Bearing line by connecting the left/right brg/girder intersection points
    CComPtr<IAlignment> alignment;
    GetAlignment(&alignment);
+   CComPtr<IPoint2d> pntAlignmentBearingIntersection;
 
-   CComPtr<IPoint2d> pnt;
-   alignment->Intersect(brgLine,pntBrgLeftGirder,&pnt);
+	CComPtr<ILine2d> brgLine;
+	brgLine.CoCreateInstance(CLSID_Line2d);
+	if (SUCCEEDED(brgLine->ThroughPoints(pntBrgLeftGirder, pntBrgRightGirder)))
+	{
+		// Intersect the bearing line with the alignment
+		alignment->Intersect(brgLine, pntBrgLeftGirder, &pntAlignmentBearingIntersection);
+	}
+	else
+	{
+		// if this fails, it is because there is only a single girder line
+		pntAlignmentBearingIntersection = pntBrgLeftGirder;
+	}
 
-   // Get station and offset for this point
-   CComPtr<IStation> objStation;
-   Float64 station, offset;
-   alignment->Offset(pnt,&objStation,&offset);
-   objStation->get_Value(&station);
+	// Get station and offset for this point
+	CComPtr<IStation> objStation;
+	Float64 station, offset;
+	alignment->Offset(pntAlignmentBearingIntersection,&objStation,&offset);
+	objStation->get_Value(&station);
 
-   ATLASSERT(IsZero(offset));
+	ATLASSERT(IsZero(offset));
 
    return station;
 }
