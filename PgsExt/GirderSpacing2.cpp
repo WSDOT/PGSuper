@@ -401,9 +401,9 @@ void CGirderSpacingData2::Expand(GroupIndexType groupIdx)
    }
 
    std::vector<SpacingGroup>::iterator iter = m_SpacingGroups.begin() + groupIdx;
-   std::vector<SpacingGroup>::iterator pos  = m_SpacingGroups.erase(iter); // returns the iter the element after the one removed
+   std::vector<SpacingGroup>::iterator pos  = m_SpacingGroups.erase(iter); // returns the iterator the element after the one removed
 
-   // inserted element goes before the iterator... insert retuns position of newly inserted item
+   // inserted element goes before the iterator... insert returns position of newly inserted item
    // go in reverse order
    for ( GirderIndexType gdrIdx = lastGdrIdx; firstGdrIdx < gdrIdx; gdrIdx-- )
    {
@@ -491,7 +491,7 @@ void CGirderSpacingData2::Join(GirderIndexType firstGdrIdx,GirderIndexType lastG
       SpacingGroup spacingGroup = *iter;
       if ( spacingGroup.second == lastGdrIdx )
       {
-         iter++; // move iter to next position... breaking out of the loop skips the incrementer
+         iter++; // move iterator to next position because breaking out of the loop skips the increment operation
          break;
       }
    }
@@ -550,41 +550,48 @@ void CGirderSpacingData2::InitGirderCount(GirderIndexType nGirders)
    m_SpacingGroups.clear();
    m_GirderSpacing.clear();
 
-   SpacingGroup group;
-   group.first = 0;
-   group.second = nGirders-1;
+   if (1 < nGirders)
+   {
+      SpacingGroup group;
+      group.first = 0;
+      group.second = nGirders - 1;
 
-   m_SpacingGroups.push_back(group);
+      m_SpacingGroups.push_back(group);
 
-   m_GirderSpacing.insert(m_GirderSpacing.end(),nGirders-1,m_DefaultSpacing);
+      m_GirderSpacing.insert(m_GirderSpacing.end(), nGirders - 1, m_DefaultSpacing);
+   }
 }
 
-void CGirderSpacingData2::AddGirders(GirderIndexType nGirders)
+void CGirderSpacingData2::AddGirders(GirderIndexType nGirdersToAdd)
 {
+   if (nGirdersToAdd == 0) return;
+
    if ( m_GirderSpacing.size() == 0 )
    {
       SpacingGroup group;
       group.first = 0;
-      group.second = nGirders-1;
+      group.second = nGirdersToAdd -1;
 
       m_SpacingGroups.push_back(group);
 
-      SpacingIndexType nSpaces = nGirders-1; // there is one fewer spaces then girders
+      SpacingIndexType nSpaces = nGirdersToAdd -1; // there is one fewer spaces then girders
       m_GirderSpacing.insert(m_GirderSpacing.end(),nSpaces,m_DefaultSpacing);
    }
    else
    {
-      SpacingIndexType nSpaces = nGirders; // adding the same number of spaces as girders
+      SpacingIndexType nSpaces = nGirdersToAdd; // adding the same number of spaces as girders
       Float64 spacing = m_GirderSpacing.back();
       m_GirderSpacing.insert(m_GirderSpacing.end(),nSpaces, spacing );
 
       SpacingGroup& group = m_SpacingGroups.back();
-      group.second += nGirders;
+      group.second += nGirdersToAdd;
    }
 }
 
 void CGirderSpacingData2::RemoveGirders(GirderIndexType nGirdersToRemove)
 {
+   if (nGirdersToRemove == 0) return;
+
    _ASSERT( nGirdersToRemove <= (GirderIndexType)(m_GirderSpacing.size()+1) ); // trying to remove too many girders
 
    Float64 default_spacing = m_GirderSpacing.front(); // hang onto this spacing before we change the size of the vector
@@ -983,7 +990,7 @@ Float64 CGirderSpacing2::GetSpacingWidth() const
          // think of a left exterior decked girders defined by its top width with 
          // the flange on the left side of the web begin longer than the flange on
          // the right side of the web. the web line is the girder "centerline".
-         // (girder width)/2 doesn't guarentee we have the centerline location
+         // (girder width)/2 doesn't guarantee we have the centerline location
          // relative to the left edge of the girder top flange
          Float64 wLeft, wRight;
          GetGirderWidth(pGirder,&wLeft,&wRight);
@@ -1134,9 +1141,17 @@ void CGirderSpacing2::AssertValid() const
 
       if ( bIsSpacingHere )
       {
-         ATLASSERT(nGirders == m_GirderSpacing.size()+1);
-         ATLASSERT(m_SpacingGroups.front().first == 0);
-         ATLASSERT(m_SpacingGroups.back().second == nGirders-1);
+         ATLASSERT(nGirders == m_GirderSpacing.size() + 1);
+         if (1 < nGirders)
+         {
+            ATLASSERT(m_SpacingGroups.front().first == 0);
+            ATLASSERT(m_SpacingGroups.back().second == nGirders - 1);
+         }
+         else
+         {
+            ATLASSERT(m_SpacingGroups.empty());
+            ATLASSERT(m_SpacingGroups.empty());
+         }
       }
    }
 }

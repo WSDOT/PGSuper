@@ -3203,6 +3203,7 @@ void CBridgeDescription2::MakeCopy(const CBridgeDescription2& rOther)
    {
       CTemporarySupportData* pNewTS = new CTemporarySupportData;
       *pNewTS = *pTS; // assign everything
+      ATLASSERT(*pNewTS == *pTS);
       m_TemporarySupports.push_back(pNewTS);
    }
 
