@@ -38,7 +38,7 @@ User defined loads can be modeled by selecting *Loads > Add Point Load*, *Loads 
 User defined loads can also be created and edited in the Girder View.
 
 ### Other information about user defined loads ###
-* Loads can be applied in any bridge construction event
+* Loads can be modeled in the DC and DW load combinations at time of deck casting (applied to the non-composite section) or at time of railing system installation (applied to the composite section). Loads applied to the LL+IM load case are always applied to the final with live load case. For time-step analysis, loads can be applied at any construction event from segment erection to the end of the time line.
 * Loads are never removed from the model. To simulate load removal, add a load of equal and opposite magnitude during the construction event when the load is removed
 * Loads are assigned to either the DC or DW dead load cases or can be added to the HL-93 live load response for the LL+IM load case.
 * Loads that are assigned to the LL+IM load case are static loads. For moving loads, see the discussion below for user defined vehicular loads.
