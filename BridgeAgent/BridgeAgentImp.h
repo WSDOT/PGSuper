@@ -1124,6 +1124,7 @@ public:
    virtual Float64 GetHeight(const pgsPointOfInterest& poi) const override;
    virtual Float64 GetShearWidth(const pgsPointOfInterest& poi) const override;
    virtual Float64 GetShearInterfaceWidth(const pgsPointOfInterest& poi) const override;
+   virtual InterfaceShearWidthDetails GetInterfaceShearWidthDetails(const pgsPointOfInterest& poi) const override;
    virtual WebIndexType GetWebCount(const CGirderKey& girderKey) const override;
 	virtual Float64 GetWebLocation(const pgsPointOfInterest& poi,WebIndexType webIdx) const override;
 	virtual Float64 GetWebSpacing(const pgsPointOfInterest& poi,WebIndexType spaceIdx) const override;

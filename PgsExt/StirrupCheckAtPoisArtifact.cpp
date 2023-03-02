@@ -702,16 +702,6 @@ void pgsHorizontalShearArtifact::SetVn(Float64 Vn1, Float64 Vn2, Float64 Vn3)
    ASSERTVALID;
 }
 
-Float64 pgsHorizontalShearArtifact::GetBv() const
-{
-   return m_Bv;
-}
-
-void pgsHorizontalShearArtifact::SetBv(Float64 bv)
-{
-   m_Bv = bv;
-}
-
 Float64 pgsHorizontalShearArtifact::GetSAdditional() const
 {
    return m_SAdditional;

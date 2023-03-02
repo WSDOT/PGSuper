@@ -3634,9 +3634,9 @@ void pgsDesigner2::CheckHorizontalShear(pgsTypes::LimitState limitState, const p
    pArtifact->SetNormalCompressionForceLoadFactor(gamma_dc);
 
 
-   // Area of shear transfer
-   Float64 Acv = pGdr->GetShearInterfaceWidth( poi );
-   pArtifact->SetAcv(Acv);
+   // Interface shear width (bvi = Acv per unit length)
+   InterfaceShearWidthDetails bvi_details = pGdr->GetInterfaceShearWidthDetails(poi);
+   pArtifact->SetInterfaceShearWidthDetails(bvi_details);
 
    // Take minimum concrete strength at interface
    Float64 fc = Min(fcSlab,fcGdr);
@@ -3674,7 +3674,7 @@ void pgsDesigner2::CheckHorizontalShear(pgsTypes::LimitState limitState, const p
    pArtifact->SetFy(fy);
 
    Float64 Vn1, Vn2, Vn3;
-   lrfdConcreteUtil::InterfaceShearResistances(c, u, K1, K2, Acv, pArtifact->GetAvOverS(), gamma_dc*Pc, fc, fy, &Vn1, &Vn2, &Vn3);
+   lrfdConcreteUtil::InterfaceShearResistances(c, u, K1, K2, bvi_details.bvi, pArtifact->GetAvOverS(), gamma_dc*Pc, fc, fy, &Vn1, &Vn2, &Vn3);
    pArtifact->SetVn(Vn1, Vn2, Vn3);
 
    GET_IFACE(IResistanceFactors,pResistanceFactors);
@@ -3698,18 +3698,16 @@ void pgsDesigner2::CheckHorizontalShear(pgsTypes::LimitState limitState, const p
    // Minimum steel check 5.7.4.1-4
    // This sucker has changed for every spec so far.
 
-   Float64 bv = pGdr->GetShearInterfaceWidth( poi );
-   pArtifact->SetBv(bv);
 
    Float64 sMax = pInterfaceShear->GetMaxShearConnectorSpacing(poi);
    pArtifact->SetSmax(sMax);
 
-   lrfdConcreteUtil::HsAvfOverSMinType avfmin = lrfdConcreteUtil::AvfOverSMin(bv,fy,Vuh,phi,c,u,Pc);
+   lrfdConcreteUtil::HsAvfOverSMinType avfmin = lrfdConcreteUtil::AvfOverSMin(bvi_details.bvi,fy,Vuh,phi,c,u,Pc);
    pArtifact->SetAvOverSMin_5_7_4_2_1(avfmin.res5_7_4_2_1);
    pArtifact->SetAvOverSMin_5_7_4_1_3(avfmin.res5_7_4_2_3);
    pArtifact->SetAvOverSMin(avfmin.AvfOverSMin);
 
-   Uint16 min_num_legs = lrfdConcreteUtil::MinLegsForBv(bv);
+   Uint16 min_num_legs = lrfdConcreteUtil::MinLegsForBv(bvi_details.bvi);
    pArtifact->SetNumLegsReqd(min_num_legs);
 
    // Determine average shear stress.
@@ -3717,13 +3715,13 @@ void pgsDesigner2::CheckHorizontalShear(pgsTypes::LimitState limitState, const p
    Float64 Vsavg;
    if ( lrfdVersionMgr::FourthEdition2007 <= lrfdVersionMgr::GetVersion() )
    {
-      Float64 vui = Vuh/Acv;
+      Float64 vui = IsZero(bvi_details.bvi) ? 0.0 : Vuh/ bvi_details.bvi;
       Vsavg = vui;
    }
    else
    {
       Float64 Vnmin = Min(Vn1, Vn2, Vn3);
-      Vsavg = Vnmin/Acv;
+      Vsavg = IsZero(bvi_details.bvi) ? 0.0 : Vnmin/ bvi_details.bvi;
    }
 
    pArtifact->SetVsAvg(Vsavg);
@@ -3734,7 +3732,7 @@ void pgsDesigner2::CheckHorizontalShear(pgsTypes::LimitState limitState, const p
 
    // Get Av/S required for design algorithm
    Float64 avs_reqd = lrfdConcreteUtil::AvfRequiredForHoriz(Vuh, phi, avfmin.AvfOverSMin, c, u, K1, K2,
-                                                            bv, Acv, pArtifact->GetAvOverS(), Pc, fc, fy);
+      bvi_details.bvi, bvi_details.bvi, pArtifact->GetAvOverS(), Pc, fc, fy);
    pArtifact->SetAvOverSReqd(avs_reqd);
 }
 

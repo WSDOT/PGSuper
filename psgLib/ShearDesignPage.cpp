@@ -127,6 +127,8 @@ void CShearDesignPage::DoDataExchange(CDataExchange* pDX)
 
    DDX_CBIndex(pDX, IDC_LONG_REINF_SHEAR_METHOD, m_LongReinfShearMethod);
 
+   DDX_UnitValueAndTag(pDX, IDC_INTERFACE_SHEAR_WIDTH_REDUCTION, IDC_INTERFACE_SHEAR_WIDTH_REDUCTION_UNIT, m_InterfaceShearWidthReduction, pDisplayUnits->ComponentDim);
+
    if (pDX->m_bSaveAndValidate)
    {
       // Get data from grid - remove any duplicates
@@ -267,6 +269,27 @@ BOOL CShearDesignPage::OnInitDialog()
    m_pGrid->CustomInit();
 
    CPropertyPage::OnInitDialog();
+
+   // If this is a spliced girder, hide everything except the horizontal interface shear controls
+   CGirderMainSheet* pDad = (CGirderMainSheet*)GetParent();
+   if (pDad->IsSplicedGirder())
+   {
+      CWnd* pwndChild = GetWindow(GW_CHILD);
+      while (pwndChild)
+      {
+         auto id = pwndChild->GetDlgCtrlID();
+         if (id == IDC_INTERFACE_SHEAR_WIDTH_REDUCTION_GROUP || id == IDC_INTERFACE_SHEAR_WIDTH_REDUCTION_LABEL || id == IDC_INTERFACE_SHEAR_WIDTH_REDUCTION || id == IDC_INTERFACE_SHEAR_WIDTH_REDUCTION_UNIT)
+         {
+            // do nothing
+         }
+         else
+         {
+            // hide control
+            pwndChild->ShowWindow(SW_HIDE);
+         }
+         pwndChild = pwndChild->GetNextWindow();
+      }
+   }
 
    // disable delete button on start
    OnEnableDelete(false);

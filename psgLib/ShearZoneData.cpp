@@ -33,15 +33,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-/****************************************************************************
-CLASS
-   CShearZoneData2
-****************************************************************************/
 
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CShearZoneData2::CShearZoneData2():
 ZoneNum(0),
 BarSpacing(0),
@@ -54,26 +46,6 @@ legacy_HorzBarSize(WBFL::Materials::Rebar::Size::bsNone),
 legacy_nHorzBars(2)
 {
 
-}
-
-CShearZoneData2::CShearZoneData2(const CShearZoneData2& rOther)
-{
-   MakeCopy(rOther);
-}
-
-CShearZoneData2::~CShearZoneData2()
-{
-}
-
-//======================== OPERATORS  =======================================
-CShearZoneData2& CShearZoneData2::operator= (const CShearZoneData2& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
 }
 
 bool CShearZoneData2::operator == (const CShearZoneData2& rOther) const
@@ -131,7 +103,6 @@ bool CShearZoneData2::operator != (const CShearZoneData2& rOther) const
    return !operator==( rOther );
 }
 
-//======================== OPERATIONS =======================================
 HRESULT CShearZoneData2::Load(WBFL::System::IStructuredLoad* pStrLoad, bool bConvertToShearDataVersion9, 
                 WBFL::Materials::Rebar::Size confinementBarSize,Uint32 NumConfinementZones, 
                 bool bDoStirrupsEngageDeck)
@@ -356,42 +327,3 @@ HRESULT CShearZoneData2::Save(WBFL::System::IStructuredSave* pStrSave)
 
    return hr;
 }
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-void CShearZoneData2::MakeCopy(const CShearZoneData2& rOther)
-{
-   ZoneNum       = rOther.ZoneNum;
-   BarSpacing    = rOther.BarSpacing;
-   ZoneLength    = rOther.ZoneLength;
-   VertBarSize   = rOther.VertBarSize;
-   nVertBars     = rOther.nVertBars;
-   nHorzInterfaceBars     = rOther.nHorzInterfaceBars;
-   ConfinementBarSize     = rOther.ConfinementBarSize;
-
-   legacy_HorzBarSize = rOther.legacy_HorzBarSize;
-   legacy_nHorzBars   = rOther.legacy_nHorzBars;
-}
-
-void CShearZoneData2::MakeAssignment(const CShearZoneData2& rOther)
-{
-   MakeCopy( rOther );
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================

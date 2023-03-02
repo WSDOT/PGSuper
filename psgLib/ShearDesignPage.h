@@ -89,6 +89,8 @@ public:
 
    int m_LongReinfShearMethod;
 
+   Float64 m_InterfaceShearWidthReduction;
+
 private:
    std::unique_ptr<CShearBarsLegsGrid> m_pGrid;
 };

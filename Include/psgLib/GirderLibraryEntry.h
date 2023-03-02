@@ -20,17 +20,12 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_GIRDERLIBRARYENTRY_H_
-#define INCLUDED_GIRDERLIBRARYENTRY_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
 #include <map>
 #include <WBFLTools.h>
 #include <WBFLGeometry.h>
 
-// PROJECT INCLUDES
-//
 #include <PGSuperTypes.h>
 
 #include "psgLibLib.h"
@@ -51,11 +46,6 @@
 
 #include <psgLib\ShearData.h>
 #include <pgsExt\CamberMultipliers.h>
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
 
 class pgsLibraryEntryDifferenceItem;
 class pgsCompatibilityData;
@@ -68,8 +58,6 @@ PSGLIBTPL WBFL::System::SubjectT<GirderLibraryEntryObserver, GirderLibraryEntry>
 interface IStrandGrid;
 interface IBeamFactory;
 
-// MISCELLANEOUS
-//
 
 /*****************************************************************************
 CLASS 
@@ -170,8 +158,8 @@ public:
                            mtAbsoluteDistance       = 2
    };
 
-   typedef std::pair<std::_tstring,Float64> Dimension;
-   typedef std::vector<Dimension> Dimensions;
+   using Dimension = std::pair<std::_tstring,Float64>;
+   using Dimensions = std::vector<Dimension>;
 
    //------------------------------------------------------------------------
    // information about rows of longitudinal steel
@@ -197,7 +185,7 @@ public:
               NumberOfBars == rOther.NumberOfBars;} 
 
    };
-   typedef std::vector<LongSteelInfo> LongSteelInfoVec;
+   using LongSteelInfoVec = std::vector<LongSteelInfo>;
 
    //------------------------------------------------------------------------
    // diaphragm layout rule definition
@@ -281,7 +269,7 @@ public:
          return true;
       }
    };
-   typedef std::vector<DiaphragmLayoutRule> DiaphragmLayoutRules;
+   using DiaphragmLayoutRules = std::vector<DiaphragmLayoutRule>;
 
    //------------------------------------------------------------------------
    // a base class for types of errors that can occur when the entry data
@@ -327,7 +315,7 @@ public:
       std::_tstring m_Msg;      // a default error message
    };
 
-   typedef std::vector<GirderEntryDataError> GirderEntryDataErrorVec;
+   using GirderEntryDataErrorVec = std::vector<GirderEntryDataError>;
 
    enum CreateType
    {
@@ -426,7 +414,7 @@ public:
    StrandIndexType GetMaxStraightStrands() const;
 
    //------------------------------------------------------------------------
-   // Allow non-paralell harped strand pattern
+   // Allow non-parallel harped strand pattern
    // e.g., Use Different Harped Grid At Ends
    void UseDifferentHarpedGridAtEnds(bool d);
    bool IsDifferentHarpedGridAtEndsUsed() const;
@@ -494,14 +482,14 @@ public:
 
    //------------------------------------------------------------------------
    // Adds a strand to the permanent strand grid. The strand is defined by its type and position
-   // in a straight or hapred strand grid. The position in the permanent strand grid is returned.
+   // in a straight or harped strand grid. The position in the permanent strand grid is returned.
    // Use this method when you are programatically creating a strand grid (See TxDOT TOGA for example)
    GridIndexType AddStrandToPermStrandGrid(psStrandType type,  GridIndexType gridIdx);
 
    //------------------------------------------------------------------------
    // Given a total number of permanent strands, the number of straight and harped strands 
    // is determined. Returns true if the total number of strands can be distributed into
-   // straight and harped strans based on the definition of the straight and harped strand
+   // straight and harped strands based on the definition of the straight and harped strand
    // grids, otherwise returns false.
    bool GetPermStrandDistribution(StrandIndexType totalNumStrands, StrandIndexType* numStraight, StrandIndexType* numHarped) const;
 
@@ -557,16 +545,16 @@ public:
    Float64 GetStraightStrandIncrement() const;
 
    //------------------------------------------------------------------------
-   // Set/Get shear data struct
+   // Set/Get shear data
    void SetShearData(const CShearData2& cdata);
    const CShearData2& GetShearData() const;
 
    //------------------------------------------------------------------------
-   // Set vector of longitidinal steel information.
+   // Set vector of longitudinal steel information.
    void SetLongSteelInfo(const LongSteelInfoVec& vec);
 
    //------------------------------------------------------------------------
-   // Get vector of longitidinal steel information.
+   // Get vector of longitudinal steel information.
    LongSteelInfoVec GetLongSteelInfo() const;
 
    //------------------------------------------------------------------------
@@ -694,6 +682,9 @@ public:
    LongShearCapacityIncreaseMethod GetLongShearCapacityIncreaseMethod() const;
    void SetLongShearCapacityIncreaseMethod(LongShearCapacityIncreaseMethod method);
 
+   Float64 GetInterfaceShearWidthReduction() const;
+   void SetInterfaceShearWidthReduction(Float64 bvir);
+
    // Prestressing design strategies
    IndexType GetNumPrestressDesignStrategies() const;
    void GetPrestressDesignStrategy(IndexType index,  arFlexuralDesignType* pFlexuralDesignType, Float64* pMaxFci, Float64* pMaxFc) const;
@@ -705,7 +696,7 @@ public:
    Float64 GetMinFilletValue() const;
    void SetMinFilletValue(Float64 minVal);
 
-   // Minimum A dimension at bearling line location
+   // Minimum A dimension at bearing line location
    bool GetMinHaunchAtBearingLines(Float64* minVal) const; // returns true if we are checking. If false, value is bogus
    void SetMinHaunchAtBearingLines(bool doCheck, Float64 minVal); // returns true if we are checking. If false, value is bogus
 
@@ -801,9 +792,9 @@ private:
       {return ::IsEqual(m_Xstart,rOther.m_Xstart) && ::IsEqual(m_Ystart,rOther.m_Ystart) && ::IsEqual(m_Xend,rOther.m_Xend) && ::IsEqual(m_Yend,rOther.m_Yend) && m_bCanDebond==rOther.m_bCanDebond;}
    };
 
-   typedef std::vector<StraightStrandLocation>       StraightStrandCollection;
-   typedef StraightStrandCollection::iterator        StraightStrandIterator;
-   typedef StraightStrandCollection::const_iterator  ConstStraightStrandIterator;
+   using StraightStrandCollection = std::vector<StraightStrandLocation>;
+   using StraightStrandIterator = StraightStrandCollection::iterator;
+   using ConstStraightStrandIterator = StraightStrandCollection::const_iterator;
 
    StraightStrandCollection m_StraightStrands;
    StraightStrandCollection m_TemporaryStrands;
@@ -840,9 +831,9 @@ private:
       }
    };
 
-   typedef std::vector<HarpedStrandLocation>       HarpedStrandCollection;
-   typedef HarpedStrandCollection::iterator        HarpedStrandIterator;
-   typedef HarpedStrandCollection::const_iterator  ConstHarpedStrandIterator;
+   using HarpedStrandCollection = std::vector<HarpedStrandLocation>;
+   using HarpedStrandIterator = HarpedStrandCollection::iterator;
+   using ConstHarpedStrandIterator = HarpedStrandCollection::const_iterator;
 
    HarpedStrandCollection m_HarpedStrands;
 
@@ -856,11 +847,11 @@ private:
       bool operator==(const PermanentStrand& rOther) const
       {return m_GridIdx==rOther.m_GridIdx && m_StrandType==rOther.m_StrandType;} 
 
-      GridIndexType m_GridIdx; // index in the straight or hapred strand grid
+      GridIndexType m_GridIdx; // index in the straight or harped strand grid
       psStrandType m_StrandType; // defines the strand grid type (straight or harped)
    };
 
-   typedef std::vector<PermanentStrand> PermanentStrandCollection;
+   using PermanentStrandCollection = std::vector<PermanentStrand>;
    PermanentStrandCollection m_PermanentStrands;
 
    // Diaphragms
@@ -963,7 +954,7 @@ private:
          } 
       };
 
-      typedef std::vector<ShearZoneInfo> ShearZoneInfoVec;
+      using ShearZoneInfoVec = std::vector<ShearZoneInfo>;
       ShearZoneInfoVec m_ShearZoneInfo;
    };
 
@@ -982,10 +973,7 @@ private:
       }
    };
 
-   typedef std::vector<StirrupSizeBarCombo> StirrupSizeBarComboColl;
-   typedef StirrupSizeBarComboColl::iterator StirrupSizeBarComboIter;
-
-   StirrupSizeBarComboColl m_StirrupSizeBarComboColl;
+   std::vector<StirrupSizeBarCombo> m_StirrupSizeBarComboColl;
    std::vector<Float64> m_AvailableBarSpacings;
    Float64 m_MaxSpacingChangeInZone;
    Float64 m_MaxShearCapacityChangeInZone;
@@ -994,6 +982,7 @@ private:
    bool m_DoExtendBarsIntoDeck;
    bool m_DoBarsActAsConfinement;
    LongShearCapacityIncreaseMethod m_LongShearCapacityIncreaseMethod;
+   Float64 m_InterfaceShearWidthReduction;
 
    // Data members for prestressed design strategy
    struct PrestressDesignStrategy
@@ -1029,9 +1018,9 @@ private:
       }
    };
 
-   typedef std::vector<PrestressDesignStrategy> PrestressDesignStrategyContainer;
-   typedef PrestressDesignStrategyContainer::iterator PrestressDesignStrategyIterator;
-   typedef PrestressDesignStrategyContainer::const_iterator PrestressDesignStrategyConstIterator;
+   using PrestressDesignStrategyContainer = std::vector<PrestressDesignStrategy>;
+   using PrestressDesignStrategyIterator = PrestressDesignStrategyContainer::iterator;
+   using PrestressDesignStrategyConstIterator = PrestressDesignStrategyContainer::const_iterator;
 
    PrestressDesignStrategyContainer m_PrestressDesignStrategies;
 
@@ -1068,11 +1057,3 @@ private:
    static std::_tstring TranslateCLSID(const std::_tstring& strCLSID);
    static bool m_bsInitCLSIDMap;
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_GIRDERLIBRARYENTRY_H_

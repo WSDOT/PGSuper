@@ -24,7 +24,7 @@ Rules for Layout of Transverse Reinforcement Zones
 Transverse reinforcement zones are defined from the ends of the girder toward the middle. These rules describe the possible changes in stirrup zone layout geometry and allowable bar spacing between adjacent zones.
 
 Item | Description
----------|-----------------
+-----|-----------------
 Maximum change in bar spacing between zones | This length measurement defines the maximum change in stirrup spacing between two adjacent zones. For example, if the maximum change value is 6", the algorithm cannot change spacing values from 12" to 24" from one zone to the next.
 Maximum change in shear capacity between zones | This percentage value defines the maximum change in shear capacity (i.e., stirrup area / spacing) between adjacent zones that can be made by the design algorithm.
 Minimum zone length | These two values together define the minimum length of stirrup zones that can be created by the design algorithm.
@@ -33,7 +33,14 @@ Design Control Options
 ------------------------
 
 Item | Description
-------|--------------
+-----|--------------
 Extend primary shear bars into deck for horizontal interface shear capacity | Select this check box to extend primary shear bars into the deck to provide horizontal interface shear capacity (LRFD 5.7.4 (*pre-2017: 5.8.4*))
 Primary shear bars act as confinement reinforcement | Select this check box if primary shear stirrups provide confinement capacity (LRFD 5.9.4.4.2 ](*pre-2017: 5.10.10.2*))
 When designing for longitudinal reinforcement for shear, increase capacity by: | If existing prestressing strands and longitudinal rebar do not provide adequate capacity for longitudinal reinforcement for shear requirements (LRFD 5.7.3.5 (*pre-2017: 5.8.3.5*)), the design algorithm will attempt to increase capacity using one of two methods: <ol><li> Add longitudinal mild steel reinforcement. This will add full-length #5 rebars into the bottom flange of the girder</li><li>Add prestressing strands. Prestressing strands will be added using the order defined on the permanent strands tab. This can only be done if a flexural design is being run in addition to shear design and will restart the flexural design algorithm.</li></ol>
+
+Interface Shear
+----------------
+
+Item | Description
+-----|----------------
+Total interface shear width reduction | The interface width considered to be engaged in shear transfer per LRFD 5.7.4.3 is reduced by the specified amount. When the deck system consists of stay-in-place panels one-half of this value is used for exterior girders and this value is not used for interior girders. This parameter is typically used to reduce the interface width because of intentionally smooth finish and bond breaker at the extremities of top flanges to facilitate deck removal.

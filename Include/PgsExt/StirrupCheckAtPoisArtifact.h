@@ -44,6 +44,8 @@
 
 #include <PgsExt\PointOfInterest.h>
 
+#include <IFace/Bridge.h> // for InterfaceShearWidthDetails
+
 // LOCAL INCLUDES
 //
 
@@ -379,8 +381,10 @@ public:
    void SetNormalCompressionForce(Float64 force) { m_NormalCompressionForce = force; }
    Float64 GetNormalCompressionForceLoadFactor() const { return m_gamma_Pc; }
    void SetNormalCompressionForceLoadFactor(Float64 gamma) { m_gamma_Pc = gamma; }
-   Float64 GetAcv() const {return m_Acv;}
-   void SetAcv(Float64 Acv) {m_Acv = Acv;}
+   void SetInterfaceShearWidthDetails(const InterfaceShearWidthDetails& details) { m_bviDetails = details; }
+   const InterfaceShearWidthDetails& GetInterfaceShearWidthDetails() const { return m_bviDetails; }
+   Float64 GetAcv() const {return m_bviDetails.bvi;}
+   Float64 GetBvi() const { return m_bviDetails.bvi; }
    Float64 GetCohesionFactor() const {return m_CohesionFactor;}
    void SetCohesionFactor(Float64 factor) {m_CohesionFactor = factor;}
    Float64 GetFrictionFactor() const {return m_FrictionFactor;}
@@ -403,8 +407,6 @@ public:
    Float64 GetCapacity() const;
 
    // additional data for 5.7.4.3-1-4 (pre2017: 5.8.4.1)
-   Float64 GetBv() const;
-   void SetBv(Float64 bv);
    Float64 GetSmax() const;
    void SetSmax(Float64 sMax);
    Float64 GetFy() const;
@@ -485,7 +487,7 @@ private:
    Float64 m_UltimateHorizontalShear{ 0.0 };
    Float64 m_NormalCompressionForce{ 0.0 };
    Float64 m_gamma_Pc{ 0.0 };
-   Float64 m_Acv{ 0.0 };
+   InterfaceShearWidthDetails m_bviDetails;
    Float64 m_CohesionFactor{ 0.0 };
    Float64 m_FrictionFactor{ 0.0 };
    Float64 m_K1{ 0.0 }, m_K2{ 0.0 }; // strength factors added in LRFD 2007
@@ -497,7 +499,6 @@ private:
    bool m_bDoAllPrimaryStirrupsEngageDeck{false};
    bool m_bIsTopFlangeRoughened{false};
 
-   Float64 m_Bv{ 0.0 };
    Float64 m_Smax{ 0.0 }; // maximum allowable spacing [5.7.4.5 (pre2017: 5.8.4.2)]
    Float64 m_Fy{ 0.0 };
    bool    m_bWasFyLimited{ false }; // true if fy is limited to 60 ksi per LRFD2013 5.7.4.3 (pre2017: 5.8.4.1)
@@ -515,7 +516,7 @@ private:
    Float64 m_AvSatCS{ 0.0 };
 
 
-   // parameters used to compute horizonal shear from vertical shear
+   // parameters used to compute horizontal shear from vertical shear
    Float64 m_Dv{ 0.0 };
    Float64 m_I{ 0.0 };
    Float64 m_Q{ 0.0 };

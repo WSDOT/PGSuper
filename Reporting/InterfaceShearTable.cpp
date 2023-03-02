@@ -146,7 +146,7 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
    (*table)(1,9) << _T("Status") << rptNewLine << _T("(") << symbol(phi) << Sub2(_T("v"),_T("ni")) << _T("/") << _T("|") << Sub2(_T("v"),_T("ui")) << _T("|)");
 
    // Fill up the table
-   Float64 bvmax = lrfdConcreteUtil::UpperLimitForBv();
+   Float64 bvi_max = lrfdConcreteUtil::UpperLimitForBv();
    Float64 minlegs;
    bool do_note=false;
    bool bDidAvsDecreaseAtEnd = false;
@@ -234,7 +234,7 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
          (*table)(row,col++) << shear.SetValue( vu );
          (*table)(row,col++) << shear.SetValue( vr );
 
-         if (bvmax <= pArtifact->GetBv())
+         if (bvi_max <= pArtifact->GetBvi())
          {
             if (pArtifact->GetNumLegs() < pArtifact->GetNumLegsReqd())
             {
@@ -266,7 +266,7 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
 
        pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
        *pChapter << pPara;
-       *pPara<<color(Blue)<< _T("*") << color(Black)<<_T(" Note: b")<<Sub(_T("v"))<<_T(" exceeds ")<<dimu.SetValue(bvmax)<<_T(" and number of legs < ")<< scalar.SetValue(minlegs)<<rptNewLine;
+       *pPara<<color(Blue)<< _T("*") << color(Black)<<_T(" Note: ") << Sub2(_T("b"),_T("vi")) << _T(" exceeds ") << dimu.SetValue(bvi_max) << _T(" and number of legs < ") << scalar.SetValue(minlegs) << rptNewLine;
    }
 
    pPara = new rptParagraph();

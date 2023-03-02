@@ -63,7 +63,7 @@ LOG
 
 class PSGLIBCLASS CShearZoneData2
 {
-   friend CShearData2; // only or friend can see legacy data
+   friend CShearData2; // only our friend can see legacy data
 
 public:
    ZoneIndexType  ZoneNum;
@@ -76,33 +76,15 @@ public:
 
    bool bWasDesigned; // For use by design algorithm only
 
-private:
-   // These values are used only for CShearData version < 9
-   WBFL::Materials::Rebar::Size  legacy_HorzBarSize;
-   Uint32          legacy_nHorzBars;
-
-   // GROUP: LIFECYCLE
 public:
-   //------------------------------------------------------------------------
-   // Default constructor
    CShearZoneData2();
+   CShearZoneData2(const CShearZoneData2 & rOther) = default;
 
-   //------------------------------------------------------------------------
-   // Copy constructor
-   CShearZoneData2(const CShearZoneData2& rOther);
+   ~CShearZoneData2() = default;
 
-   //------------------------------------------------------------------------
-   // Destructor
-   ~CShearZoneData2();
-
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
-   CShearZoneData2& operator = (const CShearZoneData2& rOther);
+   CShearZoneData2& operator=(const CShearZoneData2& rOther) = default;
    bool operator == (const CShearZoneData2& rOther) const;
    bool operator != (const CShearZoneData2& rOther) const;
-
-   // GROUP: OPERATIONS
 
 	HRESULT Load(WBFL::System::IStructuredLoad* pStrLoad, bool bConvertToShearDataVersion9, 
                 WBFL::Materials::Rebar::Size ConfinementBarSize,Uint32 NumConfinementZones, 
@@ -110,37 +92,12 @@ public:
 
 	HRESULT Save(WBFL::System::IStructuredSave* pStrSave);
 
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   //------------------------------------------------------------------------
-   void MakeCopy(const CShearZoneData2& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const CShearZoneData2& rOther);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
+   // These values are used only for CShearData version < 9
+   WBFL::Materials::Rebar::Size  legacy_HorzBarSize;
+   Uint32          legacy_nHorzBars;
 };
 
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
 class PSGLIBCLASS ShearZoneData2Less
 {
 public:

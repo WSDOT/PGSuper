@@ -124,7 +124,7 @@ void CInterfaceShearDetails::BuildDesign( IBroker* pBroker, rptChapter* pChapter
 
    const pgsGirderArtifact* pGirderArtifact = pIArtifact->GetGirderArtifact(girderKey);
 
-   // create vector of horiz shear artifacts that will be used to report common information
+   // create vector of horizontal shear artifacts that will be used to report common information
    // this is typically the first applicable artifact in each segment
    std::vector<std::pair<SegmentIndexType,const pgsHorizontalShearArtifact*>> vSegmentHorizShearArtifacts;
    std::vector<std::pair<SegmentIndexType, const pgsHorizontalShearArtifact*>> vClosureJointHorizShearArtifacts;
@@ -159,7 +159,7 @@ void CInterfaceShearDetails::BuildDesign( IBroker* pBroker, rptChapter* pChapter
    ATLASSERT(nSegments == 1); // UHPC is not available for spliced girders so there can only be one segment per girder
 
    // Initial Capacity Table
-   rptRcTable* vui_table = CreateVuiTable(pBroker,pChapter,pDisplayUnits); // creates the table and adds it to the chapter. also adds table footnotes
+   rptRcTable* vui_table = CreateVuiTable(pBroker,pChapter,girderKey,pDisplayUnits); // creates the table and adds it to the chapter. also adds table footnotes
    rptRcTable* avf_table = CreateAvfTable(pBroker,pChapter,pDisplayUnits);
    rptRcTable* vni_table = CreateVniTable(pBroker, pChapter, pDisplayUnits, girderKey, bIsUHPC, vSegmentHorizShearArtifacts, vClosureJointHorizShearArtifacts);
 
@@ -259,7 +259,7 @@ void CInterfaceShearDetails::BuildRating(IBroker* pBroker, rptChapter* pChapter,
    const pgsRatingArtifact* pArtifact = pIArtifact->GetRatingArtifact(girderKey, ratingType, INVALID_INDEX);
 
   // Initial Capacity Table
-   rptRcTable* vui_table = CreateVuiTable(pBroker, pChapter, pDisplayUnits); // creates the table and adds it to the chapter. also adds table footnotes
+   rptRcTable* vui_table = CreateVuiTable(pBroker, pChapter, girderKey, pDisplayUnits); // creates the table and adds it to the chapter. also adds table footnotes
    rptRcTable* avf_table = CreateAvfTable(pBroker, pChapter, pDisplayUnits);
 
    const pgsRatingArtifact::ShearRatings& ratings = pArtifact->GetShearRatings();
@@ -343,8 +343,16 @@ void CInterfaceShearDetails::BuildRating(IBroker* pBroker, rptChapter* pChapter,
    } // next rating
 }
 
-rptRcTable* CInterfaceShearDetails::CreateVuiTable(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
+rptRcTable* CInterfaceShearDetails::CreateVuiTable(IBroker* pBroker,rptChapter* pChapter,const CGirderKey& girderKey,IEAFDisplayUnits* pDisplayUnits)
 {
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   m_bDeckPanels = false;
+   if (pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP)
+      m_bDeckPanels = true;
+
+   GET_IFACE2(pBroker, IGirder, pGirder);
+   auto nMatingSurfaces = pGirder->GetMatingSurfaceCount(girderKey);
+
    rptParagraph* pPara = new rptParagraph();
    *pChapter << pPara;
    if (m_ShearFlowMethod == pgsTypes::sfmLRFD)
@@ -352,7 +360,32 @@ rptRcTable* CInterfaceShearDetails::CreateVuiTable(IBroker* pBroker,rptChapter* 
       *pPara << Sub2(_T("d"), _T("vi")) << _T(" = ") << Sub2(_T("Y"), _T("t girder")) << _T(" + Strand Eccentricity + ") << Sub2(_T("t"), _T("slab")) << _T("/2") << rptNewLine;
    }
 
-   ColumnIndexType nCol = m_ShearFlowMethod == pgsTypes::sfmLRFD ? 6 : 7;
+   if (m_bDeckPanels)
+   {
+      IndexType nSupportLocations;
+      if (pBridge->IsInteriorGirder(girderKey))
+      {
+         nSupportLocations = 2 * nMatingSurfaces;
+         *pPara << Sub2(_T("b"), _T("vi")) << _T(" = ") << Sub2(_T("w"), _T("ms")) << _T(" - ") << Sub2(_T("w"), _T("dp")) << rptNewLine;
+      }
+      else
+      {
+         nSupportLocations = 2 * nMatingSurfaces - 1;
+         *pPara << Sub2(_T("b"), _T("vi")) << _T(" = ") << Sub2(_T("w"), _T("ms")) << _T(" - ") << Sub2(_T("w"), _T("dp")) << _T(" - ") << Sub2(_T("b"), _T("vir")) << rptNewLine;
+      }
+      *pPara << Sub2(_T("w"), _T("dp")) << _T(" = ") << _T("deck panel support width for ") << nSupportLocations << _T(" support locations.") << rptNewLine;
+   }
+   else
+   {
+      *pPara << Sub2(_T("b"),_T("vi")) << _T(" = ") << Sub2(_T("w"),_T("ms")) << _T(" - ") << Sub2(_T("b"),_T("vir")) << rptNewLine;
+   }
+   *pPara << Sub2(_T("w"), _T("ms")) << _T(" = ") << _T("sum of mating surface widths (typically sum of top flange widths)") << rptNewLine;
+   *pPara << Sub2(_T("b"), _T("vir")) << _T(" = ") << _T("interface shear width reduction") << rptNewLine;
+
+
+   ColumnIndexType nCol = m_ShearFlowMethod == pgsTypes::sfmLRFD ? 8 : 9;
+
+   if (m_bDeckPanels) nCol++;
 
    rptRcTable* vui_table = rptStyleManager::CreateDefaultTable(nCol);
 
@@ -376,15 +409,21 @@ rptRcTable* CInterfaceShearDetails::CreateVuiTable(IBroker* pBroker,rptChapter* 
 
    if (m_ShearFlowMethod == pgsTypes::sfmLRFD)
    {
-      (*vui_table)(0, col++) << COLHDR(Sub2(_T("v"), _T("ui")) << _T(" = ") << Sub2(_T("V"), _T("u")) << _T("/") << Sub2(_T("d"), _T("vi")), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit());
+      (*vui_table)(0, col++) << COLHDR(Sub2(_T("V"), _T("ui")) << _T(" = ") << Sub2(_T("V"), _T("u")) << _T("/") << Sub2(_T("d"), _T("vi")), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit());
    }
    else
    {
-      (*vui_table)(0, col++) << COLHDR(Sub2(_T("v"), _T("ui")) << _T(" = ") << Sub2(_T("V"), _T("u")) << _T("Q/I"), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit());
+      (*vui_table)(0, col++) << COLHDR(Sub2(_T("V"), _T("ui")) << _T(" = ") << Sub2(_T("V"), _T("u")) << _T("Q/I"), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit());
    }
 
+   (*vui_table)(0, col++) << COLHDR(Sub2(_T("W"), _T("tf")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   if (m_bDeckPanels)
+   {
+      (*vui_table)(0, col++) << COLHDR(Sub2(_T("w"), _T("dp")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   }
+   (*vui_table)(0, col++) << COLHDR(Sub2(_T("b"), _T("vir")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
    (*vui_table)(0, col++) << COLHDR(Sub2(_T("b"), _T("vi")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-   (*vui_table)(0, col++) << COLHDR(Sub2(symbol(nu), _T("ui")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*vui_table)(0, col++) << COLHDR(Sub2(symbol(nu), _T("ui")) << _T(" = ") << Sub2(_T("V"),_T("ui")) << _T("/") Sub2(_T("b"), _T("vi")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
 
    return vui_table;
 }
@@ -407,8 +446,16 @@ void CInterfaceShearDetails::FillVuiTable(rptRcTable* pTable,RowIndexType row,co
 
    (*pTable)(row, col++) << shear.SetValue(pArtifact->GetVu());
    (*pTable)(row, col++) << shear_per_length.SetValue(Vui);
-   (*pTable)(row, col++) << dim.SetValue(pArtifact->GetBv());
-   (*pTable)(row, col++) << stress.SetValue(Vui / pArtifact->GetBv());
+
+   const auto& bvi_details = pArtifact->GetInterfaceShearWidthDetails();
+   (*pTable)(row, col++) << dim.SetValue(bvi_details.wMating);
+   if (m_bDeckPanels)
+   {
+      (*pTable)(row, col++) << dim.SetValue(bvi_details.wPanel);
+   }
+   (*pTable)(row, col++) << dim.SetValue(bvi_details.wReduction);
+   (*pTable)(row, col++) << dim.SetValue(bvi_details.bvi);
+   (*pTable)(row, col++) << stress.SetValue(pArtifact->GetVsAvg());
 }
 
 rptRcTable* CInterfaceShearDetails::CreateAvfTable(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)

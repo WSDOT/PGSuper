@@ -76,19 +76,19 @@ public:
    bool  bAreZonesSymmetrical;
    bool  bUsePrimaryForSplitting;
 
-   typedef std::vector<CShearZoneData2> ShearZoneVec;
-   typedef ShearZoneVec::iterator ShearZoneIterator;
-   typedef ShearZoneVec::const_iterator ShearZoneConstIterator;
-   typedef ShearZoneVec::reverse_iterator ShearZoneReverseIterator;
-   typedef ShearZoneVec::const_reverse_iterator ShearZoneConstReverseIterator;
+   using ShearZoneVec = std::vector<CShearZoneData2>;
+   using ShearZoneIterator = ShearZoneVec::iterator;
+   using ShearZoneConstIterator = ShearZoneVec::const_iterator;
+   using ShearZoneReverseIterator = ShearZoneVec::reverse_iterator;
+   using ShearZoneConstReverseIterator = ShearZoneVec::const_reverse_iterator;
    ShearZoneVec ShearZones;
 
    // Horiz interface zones, splitting and confinement data added in v 9
-   typedef std::vector<CHorizontalInterfaceZoneData> HorizontalInterfaceZoneVec;
-   typedef HorizontalInterfaceZoneVec::iterator HorizontalInterfaceZoneIterator;
-   typedef HorizontalInterfaceZoneVec::const_iterator HorizontalInterfaceZoneConstIterator;
-   typedef HorizontalInterfaceZoneVec::reverse_iterator HorizontalInterfaceZoneReverseIterator;
-   typedef HorizontalInterfaceZoneVec::const_reverse_iterator HorizontalInterfaceZoneConstReverseIterator;
+   using HorizontalInterfaceZoneVec = std::vector<CHorizontalInterfaceZoneData>;
+   using HorizontalInterfaceZoneIterator = HorizontalInterfaceZoneVec::iterator;
+   using HorizontalInterfaceZoneConstIterator = HorizontalInterfaceZoneVec::const_iterator;
+   using HorizontalInterfaceZoneReverseIterator = HorizontalInterfaceZoneVec::reverse_iterator;
+   using HorizontalInterfaceZoneConstReverseIterator = HorizontalInterfaceZoneVec::const_reverse_iterator;
    HorizontalInterfaceZoneVec HorizontalInterfaceZones;
 
    // Additional reinforcement at girder ends

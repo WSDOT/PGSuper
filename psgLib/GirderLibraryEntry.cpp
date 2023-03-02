@@ -273,6 +273,7 @@ m_pCompatibilityData(nullptr)
    m_DoExtendBarsIntoDeck            = true;
    m_DoBarsActAsConfinement          = true;
    m_LongShearCapacityIncreaseMethod   = isAddingRebar;
+   m_InterfaceShearWidthReduction = 0.0;
    
    InitCLSIDMap();
 
@@ -615,9 +616,8 @@ bool GirderLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
       pSave->EndUnit();
    }
 
-   for ( DiaphragmLayoutRules::const_iterator itd = m_DiaphragmLayoutRules.begin(); itd != m_DiaphragmLayoutRules.end(); itd++ )
+   for ( const auto& dlr : m_DiaphragmLayoutRules)
    {
-      const DiaphragmLayoutRule& dlr = *itd;
       pSave->BeginUnit(_T("DiaphragmLayoutRule"),2.0);
 
       pSave->Property(_T("Description"),dlr.Description.c_str());
@@ -645,23 +645,23 @@ bool GirderLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
 
 
    // Added in version 20 - shear design data
-   pSave->BeginUnit(_T("ShearDesign"),1.0);
+   pSave->BeginUnit(_T("ShearDesign"),2.0);
    {
       pSave->Property(_T("StirrupSizeBarComboCollSize"),(long)m_StirrupSizeBarComboColl.size());
       pSave->BeginUnit(_T("StirrupSizeBarComboColl"),1.0);
-         for(StirrupSizeBarComboIter ssiter=m_StirrupSizeBarComboColl.begin(); ssiter!=m_StirrupSizeBarComboColl.end(); ssiter++)
+         for(const auto& stirrup_size : m_StirrupSizeBarComboColl)
          {
-            pSave->Property(_T("BarSize"),(long)ssiter->Size);
-            pSave->Property(_T("NLegs"),(long)ssiter->NLegs);
+            pSave->Property(_T("BarSize"),(long)stirrup_size.Size);
+            pSave->Property(_T("NLegs"),(long)stirrup_size.NLegs);
 
          }
       pSave->EndUnit(); // StirrupSizeBarComboColl
 
       pSave->Property(_T("NumAvailableBarSpacings"),(long)m_AvailableBarSpacings.size());
       pSave->BeginUnit(_T("AvailableBarSpacings"),1.0);
-         for(std::vector<Float64>::iterator bsiter=m_AvailableBarSpacings.begin(); bsiter!=m_AvailableBarSpacings.end(); bsiter++)
+         for(const auto& spacing : m_AvailableBarSpacings)
          {
-               pSave->Property(_T("Spacing"), *bsiter);
+               pSave->Property(_T("Spacing"), spacing);
          }
       pSave->EndUnit(); // AvailableBarSpacings
 
@@ -674,6 +674,7 @@ bool GirderLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
       pSave->Property(_T("DoBarsProvideSplittingCapacity"), true); // Same note as IsTopFlangeRoughened above
       pSave->Property(_T("DoBarsActAsConfinement"), m_DoBarsActAsConfinement);
       pSave->Property(_T("LongShearCapacityIncreaseMethod"), (long)m_LongShearCapacityIncreaseMethod);
+      pSave->Property(_T("InterfaceShearWidthReduction"), m_InterfaceShearWidthReduction); // added in version 2 of ShearDesign data block
    }
    pSave->EndUnit(); // ShearDesign
 
@@ -2580,6 +2581,8 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
+         Float64 shear_design_version = pLoad->GetVersion();
+
          IndexType size;
          if ( !pLoad->Property(_T("StirrupSizeBarComboCollSize"),&size) )
          {
@@ -2694,6 +2697,15 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
          }
 
          m_LongShearCapacityIncreaseMethod = (LongShearCapacityIncreaseMethod)lval;
+
+         if (1 < shear_design_version)
+         {
+            // added in version 2 of ShearDesign data block
+            if (!pLoad->Property(_T("InterfaceShearWidthReduction"), &m_InterfaceShearWidthReduction))
+            {
+               THROW_LOAD(InvalidFileFormat, pLoad);
+            }
+         }
 
          if ( !pLoad->EndUnit() ) // ShearDesign
          {
@@ -3240,7 +3252,9 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
            !::IsEqual(m_MinZoneLengthLength, rOther.m_MinZoneLengthLength) ||
            m_DoExtendBarsIntoDeck != rOther.m_DoExtendBarsIntoDeck ||
            m_DoBarsActAsConfinement != rOther.m_DoBarsActAsConfinement ||
-           m_LongShearCapacityIncreaseMethod != rOther.m_LongShearCapacityIncreaseMethod )
+           m_LongShearCapacityIncreaseMethod != rOther.m_LongShearCapacityIncreaseMethod ||
+         !::IsEqual(m_InterfaceShearWidthReduction,rOther.m_InterfaceShearWidthReduction)
+         )
       {
          RETURN_ON_DIFFERENCE;
          vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Shear Design Parameters are different"),_T(""),_T("")));
@@ -4832,6 +4846,7 @@ void GirderLibraryEntry::MakeCopy(const GirderLibraryEntry& rOther)
    m_DoExtendBarsIntoDeck            = rOther.m_DoExtendBarsIntoDeck;
    m_DoBarsActAsConfinement          = rOther.m_DoBarsActAsConfinement;
    m_LongShearCapacityIncreaseMethod = rOther.m_LongShearCapacityIncreaseMethod;
+   m_InterfaceShearWidthReduction = rOther.m_InterfaceShearWidthReduction;
 
    m_PrestressDesignStrategies     = rOther.m_PrestressDesignStrategies;
 
@@ -5369,6 +5384,16 @@ GirderLibraryEntry::LongShearCapacityIncreaseMethod GirderLibraryEntry::GetLongS
 void GirderLibraryEntry::SetLongShearCapacityIncreaseMethod(LongShearCapacityIncreaseMethod method) 
 {
    m_LongShearCapacityIncreaseMethod = method;
+}
+
+Float64 GirderLibraryEntry::GetInterfaceShearWidthReduction() const
+{
+   return m_InterfaceShearWidthReduction;
+}
+
+void GirderLibraryEntry::SetInterfaceShearWidthReduction(Float64 bvir)
+{
+   m_InterfaceShearWidthReduction = bvir;
 }
 
 IndexType GirderLibraryEntry::GetNumPrestressDesignStrategies() const

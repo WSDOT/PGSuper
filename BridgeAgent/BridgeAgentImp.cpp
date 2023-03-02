@@ -25602,78 +25602,95 @@ Float64 CBridgeAgentImp::GetShearWidth(const pgsPointOfInterest& poi) const
 
 Float64 CBridgeAgentImp::GetShearInterfaceWidth(const pgsPointOfInterest& poi) const
 {
+   auto details = GetInterfaceShearWidthDetails(poi);
+   return details.bvi;
+}
+
+InterfaceShearWidthDetails CBridgeAgentImp::GetInterfaceShearWidthDetails(const pgsPointOfInterest& poi) const
+{
    VALIDATE( BRIDGE );
+
+   InterfaceShearWidthDetails details;
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
+
+   if (IsNonstructuralDeck(pDeck->GetDeckType()))
+   {
+      // the deck isn't structural so there isn't any interface shear resistance
+      return details;
+   }
 
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
    if (FAILED(hr))
    {
-      return 0;
+      return details;
    }
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
-   Float64 wMating = 0; // sum of mating surface widths... less deck panel support width
 
-   if ( pDeck->GetDeckType() == pgsTypes::sdtCompositeCIP || pDeck->GetDeckType() == pgsTypes::sdtCompositeOverlay )
+   // sum all the mating surface widths
+   MatingSurfaceIndexType nMatingSurfaces = GetMatingSurfaceCount(segmentKey);
+   for (MatingSurfaceIndexType i = 0; i < nMatingSurfaces; i++)
    {
-      MatingSurfaceIndexType nMatingSurfaces = GetMatingSurfaceCount(segmentKey);
-      for ( MatingSurfaceIndexType i = 0; i < nMatingSurfaces; i++ )
-      {
-         wMating += GetMatingSurfaceWidth(poi,i);
-      }
+      details.wMating += GetMatingSurfaceWidth(poi, i);
    }
-   else if ( pDeck->GetDeckType() == pgsTypes::sdtCompositeSIP )
+   details.bvi = details.wMating;
+
+   const GirderLibraryEntry* pGirderEntry = GetGirderLibraryEntry(segmentKey);
+   Float64 bvir = pGirderEntry->GetInterfaceShearWidthReduction(); // this is the total reduction
+
+   if (pDeck->GetDeckType() == pgsTypes::sdtCompositeSIP)
    {
-      // SIP Deck Panel System... Area beneath the deck panesl aren't part of the
+      // SIP Deck Panel System... Area beneath the deck panels aren't part of the
       // shear transfer area
-      MatingSurfaceIndexType nMatingSurfaces = GetMatingSurfaceCount(segmentKey);
       Float64 panel_support = pDeck->PanelSupport;
-      for ( MatingSurfaceIndexType i = 0; i < nMatingSurfaces; i++ )
+
+      CComPtr<ISuperstructureMember> ssMbr;
+      GetSuperstructureMember(segmentKey, &ssMbr);
+      LocationType locationType;
+      ssMbr->get_LocationType(&locationType);
+
+      if (locationType == ltLeftExteriorGirder || locationType == ltRightExteriorGirder)
       {
-         CComPtr<ISuperstructureMember> ssMbr;
-         GetSuperstructureMember(segmentKey,&ssMbr);
-         LocationType locationType;
-         ssMbr->get_LocationType(&locationType);
-
-         if ( (locationType == ltLeftExteriorGirder && i == 0) ||
-              (locationType == ltRightExteriorGirder && i == nMatingSurfaces-1)
-            )
-         {
-            wMating += GetMatingSurfaceWidth(poi,i) - panel_support;
-         }
-         else
-         {
-            wMating += GetMatingSurfaceWidth(poi,i) - 2*panel_support;
-         }
+         // For exterior girders, the panel is only on the interior side of the beam
+         details.nMatingSurfaces = (2 * nMatingSurfaces - 1);
+         details.wPanel = details.nMatingSurfaces * panel_support;
+         details.wReduction = bvir / 2; // apply only half the reduction for the exterior side of the beam only
       }
-
-      if ( wMating < 0 )
+      else
       {
-         wMating = 0;
-
-         CString strMsg;
-         strMsg.Format(_T("%s, Deck panel support width exceeds half the width of the supporting flange. An interface shear width of 0.0 will be used"),GIRDER_LABEL(segmentKey));
-
-         std::unique_ptr<pgsBridgeDescriptionStatusItem> pStatusItem = std::make_unique<pgsBridgeDescriptionStatusItem>(m_StatusGroupID,m_scidBridgeDescriptionWarning,pgsBridgeDescriptionStatusItem::Deck,strMsg);
-
-         GET_IFACE(IEAFStatusCenter,pStatusCenter);
-         pStatusCenter->Add(pStatusItem.release());
-
+         details.nMatingSurfaces = 2 * nMatingSurfaces;
+         details.wPanel = details.nMatingSurfaces * panel_support;
+         details.wReduction = 0; // bvi reduction isn't applied to interior girders when SIP deck panels are used
       }
+      details.bvi -= details.wPanel + details.wReduction;
    }
    else
    {
-      // all other deck types are non-composite so there is no
-      // interface width for horizontal shear
-      wMating = 0;
+      details.wReduction = bvir;
+      details.bvi -= details.wReduction;
    }
 
-   return wMating;
+
+   if ( details.bvi < 0 )
+   {
+      details.bvi = 0;
+
+      CString strMsg;
+      strMsg.Format(_T("%s, The interface shear width is a negative value after applying interface shear width reductions. An interface shear width of 0.0 will be used"),GIRDER_LABEL(segmentKey));
+
+      std::unique_ptr<pgsBridgeDescriptionStatusItem> pStatusItem = std::make_unique<pgsBridgeDescriptionStatusItem>(m_StatusGroupID,m_scidBridgeDescriptionWarning,pgsBridgeDescriptionStatusItem::Deck,strMsg);
+
+      GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      pStatusCenter->Add(pStatusItem.release());
+
+   }
+
+   return details;
 }
 
 WebIndexType CBridgeAgentImp::GetWebCount(const CGirderKey& girderKey) const

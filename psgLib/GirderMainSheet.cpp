@@ -107,7 +107,7 @@ void CGirderMainSheet::UpdatePropertyPages()
    {
       AddPage(&m_GirderDimensionsPage);
       AddPage(&m_FlexureDesignPage); // contains debond limits
-      //AddPage(&m_ShearDesignPage); // no shear design for spliced girders
+      AddPage(&m_ShearDesignPage); // no shear design for spliced girders, but we need the interface shear width reduction UI
       //AddPage(&m_LongSteelPage); // no default long. reinforcement for spliced girders
       //AddPage(&m_ShearSteelPage); // no default trans. reinforcement for spliced girders
       AddPage(&m_GirderHaunchAndCamberPage);
@@ -960,6 +960,8 @@ void CGirderMainSheet::UploadShearDesignData(CDataExchange* pDX)
    m_ShearDesignPage.m_bBarsProvideConfinement = m_Entry.GetBarsActAsConfinement();
 
    m_ShearDesignPage.m_LongReinfShearMethod = m_Entry.GetLongShearCapacityIncreaseMethod();
+
+   m_ShearDesignPage.m_InterfaceShearWidthReduction = m_Entry.GetInterfaceShearWidthReduction();
 }
 
 void CGirderMainSheet::DownloadShearDesignData(CDataExchange* pDX)
@@ -989,6 +991,8 @@ void CGirderMainSheet::DownloadShearDesignData(CDataExchange* pDX)
    m_Entry.SetBarsActAsConfinement( B2b(m_ShearDesignPage.m_bBarsProvideConfinement) );
 
    m_Entry.SetLongShearCapacityIncreaseMethod( (GirderLibraryEntry::LongShearCapacityIncreaseMethod)(m_ShearDesignPage.m_LongReinfShearMethod) );
+
+   m_Entry.SetInterfaceShearWidthReduction(m_ShearDesignPage.m_InterfaceShearWidthReduction);
 }
 
 

@@ -107,7 +107,7 @@ struct IntermedateDiaphragm
    m_bCompute(false),P(0),H(0),T(0),W(0),Location(0)
    {
    }
-   bool m_bCompute; // if true, compuated based on H, T, and W, other use P
+   bool m_bCompute; // if true, computed based on H, T, and W, other use P
    Float64 P; // weight
    Float64 H; // height
    Float64 T; // thickness
@@ -151,6 +151,15 @@ struct BearingElevationDetails
    Float64 BearingDeduct; // TxDOT Specific value
 };
 
+struct InterfaceShearWidthDetails
+{
+   Float64 wMating{0.0}; // total mating surface width
+   Float64 wPanel{ 0.0 }; // reduction for precast panel support width
+   Float64 wReduction{ 0.0 }; // general interface width reduction (from girder library entry)
+   Float64 bvi{ 0.0 }; // interface shear width
+   MatingSurfaceIndexType nMatingSurfaces{ 0 };
+};
+
 /*****************************************************************************
 INTERFACE
    IBridge
@@ -169,7 +178,7 @@ interface IBridge : IUnknown
    // General Bridge Information
    ///////////////////////////////////////////////////
 
-   // Returns true if the specifed girder implements the IAsymmetric interface
+   // Returns true if the specified girder implements the IAsymmetric interface
    virtual bool IsAsymmetricGirder(const CGirderKey& girderKey) const = 0;
 
    // Returns true if bridge contains any girders with an asymmetric cross section
@@ -250,7 +259,7 @@ interface IBridge : IUnknown
    // from/to the CL-Bearing.
    virtual Float64 GetFullSpanLength(const CSpanKey& spanKey) const = 0;
 
-   // returns the length of a girderline
+   // returns the length of a girder line
    virtual Float64 GetGirderlineLength(GirderIndexType gdrLineIdx) const = 0;
 
    // returns the layout length of a girder
@@ -284,7 +293,7 @@ interface IBridge : IUnknown
    // Returns a vector of segment index/length pairs for the length of each segment in a span for a given girder.
    // The first item in the pair is the segment index and the second item is the length of the segment
    // within the given span. Segment lengths are measured between CL-Piers and CL-Temporary Supports except for the
-   // first segment in the first group and and last segment in the last group where the start and end of the segments 
+   // first segment in the first group and last segment in the last group where the start and end of the segments 
    // are measured from the CL-Bearing.
    virtual std::vector<std::pair<SegmentIndexType,Float64>> GetSegmentLengths(const CSpanKey& spanKey) const = 0;
 
@@ -337,7 +346,7 @@ interface IBridge : IUnknown
    virtual Float64 GetElevationAdjustment(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetRotationAdjustment(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const = 0;
 
-   // Distnace from CLPier to CL Bearing, measured along CL of segment
+   // Distance from CLPier to CL Bearing, measured along CL of segment
    virtual Float64 GetCLPierToCLBearingDistance(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType,pgsTypes::MeasurementType measure) const = 0;
    virtual Float64 GetCLPierToSegmentEndDistance(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType,pgsTypes::MeasurementType measure) const = 0;
 
@@ -403,7 +412,7 @@ interface IBridge : IUnknown
    // Returns true if the girder segment has a roughened surface
    virtual bool AreGirderTopFlangesRoughened(const CSegmentKey& segmentKey) const = 0;
 
-   // Gets the span index for a given staiton. Returns false is the station is before or after the bridge
+   // Gets the span index for a given station. Returns false is the station is before or after the bridge
    virtual bool GetSpan(Float64 station,SpanIndexType* pSpanIdx) const = 0;
 
    // clear distance between girders. If poi is on an exterior girder, the left/right parameter will
@@ -471,7 +480,7 @@ interface IBridge : IUnknown
    // girder.
    virtual std::vector<IntermedateDiaphragm> GetPrecastDiaphragms(const CSegmentKey& segmentKey) const = 0;
 
-   // Returns a vector of interemdiate diaphragm loads for diaphragms that are cast at the bridge site.
+   // Returns a vector of intermediate diaphragm loads for diaphragms that are cast at the bridge site.
    virtual std::vector<IntermedateDiaphragm> GetCastInPlaceDiaphragms(const CSpanKey& spanKey) const = 0;
 
    ///////////////////////////////////////////////////
@@ -513,14 +522,14 @@ interface IBridge : IUnknown
    // Xb is measured in Bridge Line Coordinates and can be easily determined by station
    // at the section where the end offset is desired and the station of pier 0
    virtual Float64 GetLeftSlabEdgeOffset(Float64 Xb) const = 0;
-   // returns the edge offset at the location where the CL Pier intserects the alignment
+   // returns the edge offset at the location where the CL Pier intersects the alignment
    virtual Float64 GetLeftSlabEdgeOffset(PierIndexType pierIdx) const = 0;
 
    // Returns distance from the alignment to the right slab edge, measured normal to the alignment
    // Xb is measured in Bridge Line Coordinates and can be easily determined by station
    // at the section where the end offset is desired and the station of pier 0
    virtual Float64 GetRightSlabEdgeOffset(Float64 Xb) const = 0;
-   // returns the edge offset at the location where the CL Pier intserects the alignment
+   // returns the edge offset at the location where the CL Pier intersects the alignment
    virtual Float64 GetRightSlabEdgeOffset(PierIndexType pierIdx) const = 0;
 
    // Returns the curb-to-curb width of the deck measured normal to the alignment along a line
@@ -595,7 +604,7 @@ interface IBridge : IUnknown
    virtual void GetDeckCastingRegionLimits(IndexType regionIdx, PierIndexType* pStartPierIdx, Float64* pXstart, PierIndexType* pEndPierIdx, Float64* pXend, CCastingRegion::RegionType* pRegionType, IndexType* pSequenceIdx,const CCastDeckActivity* pActivity=nullptr) const = 0;
 
    // Gets the perimeter of the deck casting region.
-   // If startSpanIdx or endSpanIdx is specifed, the perimeter of the region is constrained by the piers at the boundries of this spans
+   // If startSpanIdx or endSpanIdx is specified, the perimeter of the region is constrained by the piers at the boundaries of this spans
    // To get the full region, use ALL_SPANS for startSpanIdx and endSpanIdx
    virtual void GetDeckCastingRegionPerimeter(IndexType regionIdx, IndexType nPoints, pgsTypes::PlanCoordinateType pcType, CCastingRegion::RegionType* pRegionType, IndexType* pSequenceIdx, const CCastDeckActivity* pActivity, IPoint2dCollection** ppPoints) const = 0;
    virtual void GetDeckCastingRegionPerimeter(IndexType regionIdx, SpanIndexType startSpanIdx, SpanIndexType endSpanIdx, IndexType nPoints, pgsTypes::PlanCoordinateType pcType, CCastingRegion::RegionType* pRegionType, IndexType* pSequenceIdx, const CCastDeckActivity* pActivity, IPoint2dCollection** ppPoints) const = 0;
@@ -632,7 +641,7 @@ interface IBridge : IUnknown
    virtual bool GetPierLocation(const CGirderKey& girderKey,PierIndexType pierIdx,Float64* pXgp) const = 0;
 
    // returns the skew angle of a line define defined by the orientation string at a given station
-   // this is usefuly for determing the skew angle of piers that aren't in the bridge model yet
+   // this is usually for determining the skew angle of piers that aren't in the bridge model yet
    // returns false if there is an error in the strOrientation string
    virtual bool GetSkewAngle(Float64 station,LPCTSTR strOrientation,Float64* pSkew) const = 0;
 
@@ -1645,15 +1654,15 @@ interface IGirder : public IUnknown
    virtual MatingSurfaceIndexType  GetMatingSurfaceCount(const CGirderKey& girderKey) const = 0;
 
    // Location of mating surface, measured from the CL girder. < 0 if left of CL.
-   // if bGirderOnly is false, structural longitinal joints are considered as part of the mating surface
+   // if bGirderOnly is false, structural longitudinal joints are considered as part of the mating surface
    virtual Float64 GetMatingSurfaceLocation(const pgsPointOfInterest& poi,MatingSurfaceIndexType msIdx, bool bGirderOnly=false) const = 0;
 
    // Returns the width of a mating surface
-   // if bGirderOnly is false, structural longitinal joints are considered as part of the mating surface
+   // if bGirderOnly is false, structural longitudinal joints are considered as part of the mating surface
    virtual Float64 GetMatingSurfaceWidth(const pgsPointOfInterest& poi,MatingSurfaceIndexType msIdx, bool bGirderOnly = false) const = 0;
 
-   // Gets the mating surface profile. Returns true if sucessful. Can return false or a nullptr container if a mating surface profile is not available
-   // if bGirderOnly is false, structural longitinal joints are considered as part of the mating surface
+   // Gets the mating surface profile. Returns true if successful. Can return false or a nullptr container if a mating surface profile is not available
+   // if bGirderOnly is false, structural longitudinal joints are considered as part of the mating surface
    virtual bool GetMatingSurfaceProfile(const pgsPointOfInterest& poi, MatingSurfaceIndexType msIdx, bool bGirderOnly, IPoint2dCollection** ppPoints) const = 0;
 
    // Returns the number of top flanges
@@ -1670,7 +1679,7 @@ interface IGirder : public IUnknown
 
    // Returns the overall top width of a girder (for U-beam, this would be out-to-out width at top of girder)
    // If pLeft and pRight are not nullptr, the left and right dimensions that make up the overall width are provided
-   // This is meaningful if a section is asymmetric. If not asymetric section, left and right is taken to be half the width
+   // This is meaningful if a section is asymmetric. If not asymmetric section, left and right is taken to be half the width
    virtual Float64 GetTopWidth(const pgsPointOfInterest& poi,Float64* pLeft=nullptr,Float64* pRight=nullptr) const = 0;
 
    // Returns the thickness of a top flange
@@ -1738,6 +1747,7 @@ interface IGirder : public IUnknown
 
    // Returns the width used for horizontal interface shear calculations (acv for horizontal shear)
    virtual Float64 GetShearInterfaceWidth(const pgsPointOfInterest& poi) const = 0;
+   virtual InterfaceShearWidthDetails GetInterfaceShearWidthDetails(const pgsPointOfInterest& poi) const = 0;
 
    // Returns the number of webs
    virtual WebIndexType GetWebCount(const CGirderKey& girderKey) const = 0;
@@ -1748,7 +1758,7 @@ interface IGirder : public IUnknown
    // Returns the spacing between CL webs
 	virtual Float64 GetWebSpacing(const pgsPointOfInterest& poi,WebIndexType spaceIdx) const = 0;
 
-   // Returns the thickness of the web (average thickeness for tapered webs... see IBeams)
+   // Returns the thickness of the web (average thickness for tapered webs... see IBeams)
    virtual Float64 GetWebThickness(const pgsPointOfInterest& poi,WebIndexType webIdx) const = 0;
 
    // Returns the horizontal distance from the CL Girder to the CL of the exterior web

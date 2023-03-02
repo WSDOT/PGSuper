@@ -80,8 +80,9 @@ private:
 
    bool m_bIsSpec2007orNewer;
    pgsTypes::ShearFlowMethod m_ShearFlowMethod;
+   bool m_bDeckPanels;
 
-   rptRcTable* CreateVuiTable(IBroker* pBroker, rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
+   rptRcTable* CreateVuiTable(IBroker* pBroker, rptChapter* pChapter,const CGirderKey& girderKey,IEAFDisplayUnits* pDisplayUnits);
    void FillVuiTable(rptRcTable* pTable, RowIndexType row, const pgsPointOfInterest& poi, const pgsHorizontalShearArtifact* pArtifact);
    
    rptRcTable* CreateAvfTable(IBroker* pBroker, rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits);

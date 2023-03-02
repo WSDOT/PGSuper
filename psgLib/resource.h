@@ -1440,6 +1440,10 @@
 #define IDC_ALPHA_U                     1738
 #define IDC_ECU                         1739
 #define IDC_AGG_SIZE_LABEL              1740
+#define IDC_INTERFACE_SHEAR_WIDTH_REDUCTION 1741
+#define IDC_INTERFACE_SHEAR_WIDTH_REDUCTION_UNIT 1742
+#define IDC_INTERFACE_SHEAR_WIDTH_REDUCTION_GROUP 1743
+#define IDC_INTERFACE_SHEAR_WIDTH_REDUCTION_LABEL 1744
 #define IDS_E_INVALIDVERSION            1750
 #define IDS_E_USERDEFINED               1752
 #define IDC_DIAPHRAGM_NOTE              1858
@@ -1454,7 +1458,7 @@
 #define IDC_FT_LOC                      2025
 #define IDC_FT_LOC_UNIT                 2026
 #define IDC_ET_LOC                      2027
-#define IDD_UHPC_CONCRETE           2028
+#define IDD_UHPC_CONCRETE               2028
 #define IDR_LIBEDITORTOOLBAR            12132
 #define IDM_ADD_ENTRY                   36864
 #define IDM_EDIT_ENTRY                  36865
@@ -1479,9 +1483,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        333
+#define _APS_NEXT_RESOURCE_VALUE        334
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1741
+#define _APS_NEXT_CONTROL_VALUE         1745
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
