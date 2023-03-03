@@ -69,7 +69,6 @@ protected:
    // virtual overrides for grid
    virtual int GetColWidth(ROWCOL nCol);
    virtual BOOL OnRButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt);
-   virtual BOOL OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt);
 
 public:
    // custom stuff for grid
@@ -77,7 +76,7 @@ public:
    // insert a row above the currently selected cell or at the top if no selection
    void InsertRow(bool append);
    void DoRemoveRows();
-   // get a cell value whether is is selected or not
+   // get a cell value whether it is selected or not
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
    // get data for a row
    bool GetRowData(ROWCOL nRow, ROWCOL numRows, CHorizontalInterfaceZoneData* pz);
@@ -90,7 +89,7 @@ public:
 private:
    // set up styles for interior rows
    void SetRowStyle(ROWCOL nRow);
-   bool EnableItemDelete();
+   BOOL EnableItemDelete();
    WBFL::Materials::Rebar::Size GetBarSize(ROWCOL row,ROWCOL col);
    bool m_IsSymmetrical;
 };

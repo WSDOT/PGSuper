@@ -443,7 +443,7 @@ void CPGSuperDoc::DoDesignGirder(const std::vector<CGirderKey>& girderKeys, bool
 
          if ( pArtifact == nullptr )
          {
-            AfxMessageBox(_T("Design Cancelled"),MB_OK);
+            AfxMessageBox(_T("Design Canceled"),MB_OK);
             return;
          }
          

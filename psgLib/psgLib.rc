@@ -1990,7 +1990,7 @@ BEGIN
     PUSHBUTTON      "Delete Row",IDC_REMOVEHORIZROWS,239,63,51,14
     LTEXT           "Additional bars for horizontal interface shear capacity",IDC_STATIC,7,7,172,8
     PUSHBUTTON      "Help",ID_HELP,252,192,50,14
-    LTEXT           "This input generally isn't used. In the AASHTO LRFD 1st Edition, 1994, Article 5.8.4 required a minimum of four bars corssed the interface plane with the deck. Extra bars where commonly added to the top flange",IDC_STATIC,7,107,295,47
+    LTEXT           "This input generally isn't used. In the AASHTO LRFD 1st Edition, 1994, Article 5.8.4 required a minimum of four bars corssed the interface plane with the deck. Extra bars were commonly added to the top flange",IDC_STATIC,7,107,295,47
 END
 
 IDD_SPEC_BEARINGS DIALOGEX 0, 0, 379, 114

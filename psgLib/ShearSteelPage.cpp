@@ -173,7 +173,7 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
             if (IsEqual(lsi.ZoneLength, lsi.BarSpacing, zone_bar_spacing_tolerance))
             {
                // sometimes zone length and bar spacing are the same, but come out a little differently numerically
-               // becase zone length is in feet and bar spacing in inches. For example, zone of 0.20833 ft with spacing of 2.5" are
+               // because zone length is in feet and bar spacing in inches. For example, zone of 0.20833 ft with spacing of 2.5" are
                // the same but numerically the bar spacing is greater than the zone length. When this situation occurs,
                // force the bar spacing to match the zone length
                lsi.BarSpacing = lsi.ZoneLength;
