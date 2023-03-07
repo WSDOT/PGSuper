@@ -131,10 +131,6 @@ void CAdditionalInterfaceShearBarDlg::DoDataExchange(CDataExchange* pDX)
       }
       m_pHorizGrid->FillGrid(vec, m_bAreZonesSymmetrical);
 
-      // can't delete strands at start
-      CWnd* pdel = GetDlgItem(IDC_REMOVEHORIZROWS);
-      ASSERT(pdel);
-      pdel->EnableWindow(FALSE);
    }
 }
 
@@ -163,6 +159,12 @@ BOOL CAdditionalInterfaceShearBarDlg::OnInitDialog()
       GetDlgItem(IDC_REMOVEHORIZROWS)->EnableWindow(FALSE);
    }
 
+   if (m_HorizontalInterfaceZones.size() == 0)
+   {
+      // if there isn't any data, disable the delete button
+      OnEnableHorizDelete(FALSE);
+   }
+
    return TRUE;  // return TRUE unless you set the focus to a control
                  // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -172,11 +174,11 @@ void CAdditionalInterfaceShearBarDlg::GetLastZoneName(CString& strSymmetric, CSt
    m_pParent->GetLastZoneName(strSymmetric, strEnd);
 }
 
-void CAdditionalInterfaceShearBarDlg::OnEnableHorizDelete(bool canDelete)
+void CAdditionalInterfaceShearBarDlg::OnEnableHorizDelete(BOOL bEnable)
 {
    CWnd* pdel = GetDlgItem(IDC_REMOVEHORIZROWS);
    ASSERT(pdel);
-   pdel->EnableWindow(canDelete);
+   pdel->EnableWindow(bEnable);
 }
 
 void CAdditionalInterfaceShearBarDlg::OnRemoveHorizRows()
@@ -187,11 +189,6 @@ void CAdditionalInterfaceShearBarDlg::OnRemoveHorizRows()
 void CAdditionalInterfaceShearBarDlg::DoRemoveHorizRows()
 {
    m_pHorizGrid->DoRemoveRows();
-
-   // selection is gone after row is deleted
-   CWnd* pdel = GetDlgItem(IDC_REMOVEHORIZROWS);
-   ASSERT(pdel);
-   pdel->EnableWindow(FALSE);
 }
 
 void CAdditionalInterfaceShearBarDlg::OnInsertHorizRow()

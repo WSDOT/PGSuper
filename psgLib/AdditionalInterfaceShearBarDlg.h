@@ -49,7 +49,7 @@ public:
 	enum { IDD = IDD_EDIT_ADDITIONAL_INTERFACE_STEEL };
 #endif
 
-   void OnEnableHorizDelete(bool canDelete);
+   void OnEnableHorizDelete(BOOL canDelete);
    void DoRemoveHorizRows();
    void DoInsertHorizRow();
 

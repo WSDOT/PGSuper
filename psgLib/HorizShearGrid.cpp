@@ -110,25 +110,6 @@ BOOL CHorizShearGrid::OnRButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFla
 	return TRUE;
 }
 
-BOOL CHorizShearGrid::OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt)
-{
-   CAdditionalInterfaceShearBarDlg* pDlg = (CAdditionalInterfaceShearBarDlg*)GetParent();
-   ASSERT(pDlg->IsKindOf(RUNTIME_CLASS(CAdditionalInterfaceShearBarDlg)));
-
-   ROWCOL nrows = GetRowCount();
-
-   if (nCol == 0 && (nRow != 0 && nRow != nrows))
-   {
-      pDlg->OnEnableHorizDelete(true);
-   }
-   else
-   {
-      pDlg->OnEnableHorizDelete(false);
-   }
-
-   return TRUE;
-}
-
 void CHorizShearGrid::OnEditInsertRow()
 {
    // call back to parent for this so things get set up correctly
@@ -166,7 +147,9 @@ void CHorizShearGrid::InsertRow(bool bAppend)
    Float64 zonlen = 0.0;
    CString cval;
    cval.Format(_T("%g"),zonlen);
-   SetStyleRange(CGXRange(nRow,1), CGXStyle().SetValue(cval));
+   SetStyleRange(CGXRange(nRow, 1), CGXStyle().SetValue(cval)); //zone length
+   SetStyleRange(CGXRange(nRow, 3), CGXStyle().SetValue(cval)); // spacing
+   SetStyleRange(CGXRange(nRow, 4), CGXStyle().SetValue(0L)); // # of legs
 
    // zone length in the last row is infinite.
    ROWCOL nrows = GetRowCount();
@@ -190,6 +173,11 @@ void CHorizShearGrid::InsertRow(bool bAppend)
    }
 
 	ScrollCellInView(nRow+1, GetLeftCol());
+
+
+   CAdditionalInterfaceShearBarDlg* pDlg = (CAdditionalInterfaceShearBarDlg*)GetParent();
+   ASSERT(pDlg->IsKindOf(RUNTIME_CLASS(CAdditionalInterfaceShearBarDlg)));
+   pDlg->OnEnableHorizDelete(EnableItemDelete());
 }
 
 void CHorizShearGrid::OnEditRemoveRows()
@@ -203,14 +191,24 @@ void CHorizShearGrid::OnEditRemoveRows()
 
 void CHorizShearGrid::DoRemoveRows()
 {
+   ROWCOL currRow, currCol;
+   BOOL bCurrCell = GetCurrentCell(currRow, currCol);
+
 	CGXRangeList* pSelList = GetParam()->GetRangeList();
-	if (pSelList->IsAnyCellFromCol(0) && pSelList->GetCount() == 1)
-	{
-		CGXRange range = pSelList->GetHead();
-		range.ExpandRange(1, 0, GetRowCount(), 0);
-		RemoveRows(range.top, range.bottom);
-      SetCurrentCell(range.top,1); // if this is not here, the next insert will go below grid bottom
-	}
+   if (0 < pSelList->GetCount() || bCurrCell)
+   {
+      CGXRange range = (0 < pSelList->GetCount() ? pSelList->GetHead() : CGXRange(currRow,currCol));
+      range.ExpandRange(1, 0, GetRowCount(), 0);
+      RemoveRows(range.top, range.bottom);
+      if (0 < GetRowCount())
+      {
+         SetCurrentCell(range.top-1 == 0 ? range.top : range.top - 1, 1); // if this is not here, the next insert will go below grid bottom
+      }
+
+      CAdditionalInterfaceShearBarDlg* pDlg = (CAdditionalInterfaceShearBarDlg*)GetParent();
+      ASSERT(pDlg->IsKindOf(RUNTIME_CLASS(CAdditionalInterfaceShearBarDlg)));
+      pDlg->OnEnableHorizDelete(EnableItemDelete());
+   }
 }
 
 void CHorizShearGrid::OnUpdateEditRemoveRows(CCmdUI* pCmdUI)
@@ -219,17 +217,16 @@ void CHorizShearGrid::OnUpdateEditRemoveRows(CCmdUI* pCmdUI)
    pCmdUI->Enable(flag);
 }
 
-bool CHorizShearGrid::EnableItemDelete()
+BOOL CHorizShearGrid::EnableItemDelete()
 {
-	if (GetParam() == nullptr)
-		return false;
+   if (GetParam() == nullptr)
+      return FALSE;
 
-   ROWCOL nrows = GetRowCount();
+   ROWCOL currRow, currCol;
+   BOOL bCurrCell = GetCurrentCell(currRow, currCol);
 
-	CGXRangeList* pSelList = GetParam()->GetRangeList();
-	return (pSelList->IsAnyCellFromCol(0) && 
-           !pSelList->IsAnyCellFromRow(nrows) &&
-           pSelList->GetCount() == 1);
+   CGXRangeList* pSelList = GetParam()->GetRangeList();
+   return (0 < pSelList->GetCount() || bCurrCell);
 }
 
 void CHorizShearGrid::SetSymmetry(bool isSymmetrical)
@@ -512,10 +509,6 @@ void CHorizShearGrid::FillGrid(const CShearData2::HorizontalInterfaceZoneVec& rv
 
          nRow++;
       }
-   }
-   else
-   {
-	   InsertRow(true);
    }
 
 	ScrollCellInView(1, GetLeftCol());

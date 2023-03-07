@@ -14723,6 +14723,11 @@ matRebar::Size CBridgeAgentImp::GetPrimaryConfinementBarSize(const CSegmentKey& 
 ZoneIndexType CBridgeAgentImp::GetHorizInterfaceZoneCount(const CSegmentKey& segmentKey) const
 {
    const CShearData2* pShearData = GetShearData(segmentKey);
+   return GetHorizInterfaceZoneCount(segmentKey, pShearData);
+}
+
+ZoneIndexType CBridgeAgentImp::GetHorizInterfaceZoneCount(const CSegmentKey& segmentKey, const CShearData2* pShearData) const
+{
    ZoneIndexType nZones = pShearData->HorizontalInterfaceZones.size();
    if (nZones == 0)
    {
@@ -14773,7 +14778,7 @@ void CBridgeAgentImp::GetHorizInterfaceZoneBounds(const CSegmentKey& segmentKey,
 
    if(pShearData->bAreZonesSymmetrical)
    {
-      ZoneIndexType nz = GetHorizInterfaceZoneCount(segmentKey);
+      ZoneIndexType nz = GetHorizInterfaceZoneCount(segmentKey, pShearData);
       ATLASSERT(zone < nz);
 
       ZoneIndexType idx = GetHorizInterfaceZoneIndex(segmentKey,pShearData,zone);
@@ -15109,7 +15114,7 @@ Float64 CBridgeAgentImp::GetAdditionalHorizInterfaceBarCount(const pgsPointOfInt
 
    // Additional horizontal bars
    const CHorizontalInterfaceZoneData* pHIZoneData = GetHorizInterfaceShearZoneDataAtPoi( poi,pShearData );
-   if ( pHIZoneData->BarSize != matRebar::bsNone )
+   if (pHIZoneData && pHIZoneData->BarSize != matRebar::bsNone )
    {
       cnt = pHIZoneData->nBars;
    }
@@ -15168,26 +15173,37 @@ Float64 CBridgeAgentImp::GetAdditionalHorizInterfaceAvs(const pgsPointOfInterest
    Float64 Abar(0.0);
    Float64 nBars(0.0);
    Float64 spacing(0.0);
+   matRebar::Size barSize;
 
    const CShearData2* pShearData = GetShearData(poi.GetSegmentKey());
    
    const CHorizontalInterfaceZoneData* pHIZoneData = GetHorizInterfaceShearZoneDataAtPoi( poi, pShearData );
 
-   matRebar::Size barSize = pHIZoneData->BarSize;
-
-   if ( barSize != matRebar::bsNone && !IsZero(pHIZoneData->BarSpacing) && 0.0 < pHIZoneData->nBars )
+   if (pHIZoneData)
    {
-      lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
-      const matRebar* pbar = prp->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,barSize);
+      barSize = pHIZoneData->BarSize;
 
-      Abar    = pbar->GetNominalArea();
-      nBars   = pHIZoneData->nBars;
-      spacing = pHIZoneData->BarSpacing;
-
-      if (0.0 < spacing)
+      if (barSize != matRebar::bsNone && !IsZero(pHIZoneData->BarSpacing) && 0.0 < pHIZoneData->nBars)
       {
-         avs =  nBars * Abar / spacing;
+         lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
+         const auto* pbar = prp->GetRebar(pShearData->ShearBarType, pShearData->ShearBarGrade, barSize);
+
+         Abar = pbar->GetNominalArea();
+         nBars = pHIZoneData->nBars;
+         spacing = pHIZoneData->BarSpacing;
+
+         if (0.0 < spacing)
+         {
+            avs = nBars * Abar / spacing;
+         }
       }
+   }
+   else
+   {
+      barSize = matRebar::bsNone;
+      Abar = 0;
+      nBars = 0;
+      spacing = 0;
    }
 
    *pSize          = barSize;
@@ -15246,7 +15262,7 @@ Float64 CBridgeAgentImp::GetSplittingAv(const CSegmentKey& segmentKey,Float64 st
          {
             // We have bars in region. multiply av/s * length
             lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
-            const matRebar* pbar = prp->GetRebar(pShearData->ShearBarType, pShearData->ShearBarGrade, pShearData->SplittingBarSize);
+            const auto* pbar = prp->GetRebar(pShearData->ShearBarType, pShearData->ShearBarGrade, pShearData->SplittingBarSize);
 
             Float64 Abar = pbar->GetNominalArea();
             Float64 avs  = pShearData->nSplittingBars * Abar / spacing;
@@ -15551,7 +15567,7 @@ ZoneIndexType CBridgeAgentImp::GetPrimaryZoneIndex(const CSegmentKey& segmentKey
 ZoneIndexType CBridgeAgentImp::GetHorizInterfaceZoneIndex(const CSegmentKey& segmentKey, const CShearData2* pShearData, ZoneIndexType zone) const
 {
    // mapping so that we only need to store half of the zones
-   ZoneIndexType nZones = GetHorizInterfaceZoneCount(segmentKey); 
+   ZoneIndexType nZones = GetHorizInterfaceZoneCount(segmentKey, pShearData); 
    ATLASSERT(zone < nZones);
    if (pShearData->bAreZonesSymmetrical)
    {
@@ -15660,7 +15676,7 @@ ZoneIndexType CBridgeAgentImp::GetHorizInterfaceShearZoneIndexAtPoi(const pgsPoi
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   ZoneIndexType nz = GetHorizInterfaceZoneCount(segmentKey);
+   ZoneIndexType nz = GetHorizInterfaceZoneCount(segmentKey,pShearData);
    if (nz == 0)
    {
       return INVALID_INDEX;

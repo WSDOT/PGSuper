@@ -1585,6 +1585,8 @@ private:
    // Cache shear data - copies are expensive
    void InvalidateStirrupData();
    const CShearData2* GetShearData(const CSegmentKey& segmentKey) const;
+   ZoneIndexType GetHorizInterfaceZoneCount(const CSegmentKey& segmentKey,const CShearData2* pShearData) const;
+
 
    typedef std::map<CSegmentKey, CShearData2> ShearDataMap;
    typedef ShearDataMap::const_iterator ShearDataIterator;
