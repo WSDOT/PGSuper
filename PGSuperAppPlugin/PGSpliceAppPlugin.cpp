@@ -114,8 +114,10 @@ BOOL CPGSpliceAppPlugin::Init(CEAFApp* pParent)
    if ( m_hMenuShared == nullptr )
       return FALSE;
 
-   if ( !EAFGetApp()->GetCommandLineInfo().m_bCommandLineMode )
-      UpdateCache(); // we don't want to do this if we are running in batch/command line mode
+   if (!EAFGetApp()->GetCommandLineInfo().m_bCommandLineMode && !EAFGetApp()->IsFirstRun())
+   {
+      UpdateCache(); // we don't want to do this if we are running in batch/command line mode or if this is the first run situation (because configuration will happen later)
+   }
 
    return TRUE;
 }

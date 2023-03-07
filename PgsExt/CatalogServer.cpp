@@ -1825,21 +1825,8 @@ bool CFileSystemCatalogServer::CheckForUpdates(const CString& publisher, IProgre
 {
    // if the md5 files are missing, assume that an update is pending
    // so start with a default of true
-#if defined _DEBUG
-   // In the development environment, the source of the workgroup templates folder
-   // have CVS information. When PGSuper sync's with this source, the templates
-   // are copied to the Application Data folder along with the md5 file that
-   // was created considering the CVS information. When PGSuper computes the md5
-   // of the cached data, it will always be different because the Application Data
-   // folder does not contain the CVS information.
-   // 
-   // To prevent us from getting asked to update the templates every time the program
-   // is run, we don't create any md5 files and assume there is not an updated if the
-   // md5 files are missing.
-   bool bUpdatePending = false;
-#else
    bool bUpdatePending = true;
-#endif
+
    CString cachedMasterLibFile  = cacheFolder + CString(_T("\\")) + GetMasterLibraryFileName();
    CString cachedTemplateFolder = cacheFolder + CString(_T("\\")) + GetTemplateSubFolderName()+ CString(_T("\\"));
 
