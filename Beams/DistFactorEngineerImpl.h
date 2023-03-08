@@ -573,8 +573,7 @@ void CDistFactorEngineerImpl<T>::HandleRangeOfApplicabilityError(const lrfdXRang
    pStatusCenter->Add(pStatusItem);
 
    std::_tostringstream os;
-   std::_tstring errmsg;
-   e.GetErrorMessage( &errmsg );
+   std::_tstring errmsg = e.GetErrorMessage();
    os << _T("Live Load Distribution Factors could not be calculated for the following reason") << std::endl;
    os << errmsg << std::endl;
    os << _T("A refined method of analysis is required for this bridge") << std::endl;

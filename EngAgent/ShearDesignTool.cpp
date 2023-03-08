@@ -1055,8 +1055,7 @@ Float64 pgsShearDesignTool::GetVerticalAvsDemand(Float64 distFromStart) const
    }
    catch (WBFL::Math::XFunction& e)
    {
-      std::_tstring msg;
-      e.GetErrorMessage(&msg);
+      std::_tstring msg = e.GetErrorMessage();
       ATLASSERT(false); // This should never happen, but catch here to make debugging easier
       return 0.0;
    }
@@ -1137,8 +1136,7 @@ Float64 pgsShearDesignTool::GetHorizontalAvsDemand(Float64 distFromStart) const
    }
    catch (WBFL::Math::XFunction& e)
    {
-      std::_tstring msg;
-      e.GetErrorMessage(&msg);
+      std::_tstring msg = e.GetErrorMessage();
       ATLASSERT(false); // This should never happen, but catch here to make debugging easier
       return 0.0;
    }
@@ -1154,8 +1152,7 @@ Float64 pgsShearDesignTool::GetVerticalAvsMaxInRange(Float64 leftBound, Float64 
    }
    catch (WBFL::Math::XFunction& e)
    {
-      std::_tstring msg;
-      e.GetErrorMessage(&msg);
+      std::_tstring msg = e.GetErrorMessage();
       ATLASSERT(false); // This should never happen, but catch here to make debugging easier
       return 0.0;
    }
@@ -1175,8 +1172,7 @@ Float64 pgsShearDesignTool::GetHorizontalAvsMaxInRange(Float64 leftBound, Float6
    }
    catch (WBFL::Math::XFunction& e)
    {
-      std::_tstring msg;
-      e.GetErrorMessage(&msg);
+      std::_tstring msg = e.GetErrorMessage();
       ATLASSERT(false); // This should never happen, but catch here to make debugging easier
       return 0.0;
    }

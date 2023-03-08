@@ -660,8 +660,7 @@ HRESULT pgslibLoadLibrary(IStructuredLoad* pStrLoad,psgLibraryManager* pLibMgr,e
          cmsg += _T("Undetermined error reading data file.  Extended error information is as follows: ");
       }
 
-      std::_tstring msg;
-      rLoad.GetErrorMessage(&msg);
+      std::_tstring msg = rLoad.GetErrorMessage();
       cmsg += msg.c_str();
 
       AfxMessageBox(cmsg, MB_OK | MB_ICONEXCLAMATION);

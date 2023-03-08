@@ -292,8 +292,7 @@ void CTxDOTAgentImp::ProcessTOGAReport(const CTxDOTCommandLineInfo& rCmdInfo)
    }
    catch(const WBFL::System::XBase& e)
    {
-      std::_tstring msg;
-      e.GetErrorMessage(&msg);
+      std::_tstring msg = e.GetErrorMessage();
       std::_tofstream os;
       os.open(errfile);
       os <<_T("Error running TOGA report for input file: ")<<rCmdInfo.m_strFileName<<std::endl<< msg;
