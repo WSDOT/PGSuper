@@ -306,8 +306,8 @@ bool CPGSuperReportView::CreateReport(CollectionIndexType rptIdx,BOOL bPromptFor
             }
 
 
-            // Creata a CSegmentReportSpecification. A single report view news a specification for a 
-            // single segmentr.
+            // Create a CSegmentReportSpecification. A single report view news a specification for a 
+            // single segment.
             // Set the segment to report on
             std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec( std::make_shared<CGirderReportSpecification>(pSGRptSpec->GetReportTitle().c_str(),pBroker,girderKey) );
             CGirderReportSpecification* pMyReportSpec = (CGirderReportSpecification*)pRptSpec.get();
@@ -354,7 +354,7 @@ bool CPGSuperReportView::CreateReport(CollectionIndexType rptIdx,BOOL bPromptFor
          CEAFMainFrame* pFrame = EAFGetMainFrame();
          pFrame->DisableFailCreateMessage();
          pFrame->CreateCanceled();
-         return false; // user probably cancelled dialog
+         return false; // user probably canceled dialog
       }
    }
    else

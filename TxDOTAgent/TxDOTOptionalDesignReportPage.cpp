@@ -165,7 +165,7 @@ BOOL CTxDOTOptionalDesignReportPage::OnSetActive()
 
 void CTxDOTOptionalDesignReportPage::DisplayErrorMode(TxDOTBrokerRetrieverException& exc)
 {
-   // go into error mode - delete browser and displaymessage
+   // go into error mode - delete browser and display message
 
    m_BrowserPlaceholder.ShowWindow(SW_HIDE);
    m_pBrowser = nullptr;
@@ -328,6 +328,10 @@ void CTxDOTOptionalDesignReportPage::OnCmenuSelected(UINT id)
 
   case CCS_RB_SELECT_ALL:
      m_pBrowser->SelectAll();
+     break;
+
+  case CCS_RB_COPY:
+     m_pBrowser->Copy();
      break;
 
   case CCS_RB_PRINT:

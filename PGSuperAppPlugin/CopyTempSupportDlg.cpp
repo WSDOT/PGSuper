@@ -599,6 +599,10 @@ void CCopyTempSupportDlg::OnCmenuSelected(UINT id)
      m_pBrowser->SelectAll();
      break;
 
+  case CCS_RB_COPY:
+     m_pBrowser->Copy();
+     break;
+
   case CCS_RB_PRINT:
      m_pBrowser->Print(true);
      break;
