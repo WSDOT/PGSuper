@@ -948,19 +948,35 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
             // to determine the capacity reduction factor.
             // Compute capacity at the reinforcement limit state
             // assume straight strands are lowest in the cross section
-            pgsTypes::StrandType strandType = pgsTypes::Straight;
-            Float64 fsl, Es;
+            Float64 esl;
             if (bPositiveMoment)
             {
                // for positive moment, assume reinforcement limit for strands
+               pgsTypes::StrandType strandType = pgsTypes::Straight;
                GET_IFACE(IAllowableStrandStress, pAllow);
-               fsl = pAllow->GetAllowableAfterLosses(segmentKey, strandType);
-               Es = pMaterial->GetStrandMaterial(segmentKey, strandType)->GetE();
+               Float64 fsl = pAllow->GetAllowableAfterLosses(segmentKey, strandType);
+               
+               // Need to determine the strain associated with this level of stress
+               // using the stress-strain model. For grade 270 strand, fsl = 0.8fy = 194.4 ksi
+               // and Eps = 28500 ksi, so fsl/Eps = 0.006821. If you plug this into the
+               // power formula, you get 191.1 ksi. For this reason, we use a root finder
+               // to get the exact strain for fsl.
+               CComPtr<IStressStrain> ssModel;
+               mcd.Section->get_ForegroundMaterial(extremeTensionLayerIndex, &ssModel);
+               CComQIPtr<IPowerFormula> powerFormula(ssModel);
+               // if the stress-strain model is reduced do to lack of development length, we need to
+               // reduce fsl as well.
+               Float64 K;
+               powerFormula->get_ReductionFactor(&K);
+               fsl *= K;
+               // solve for the strain.
+               WBFL::Math::BrentsRootFinder rootFinder;
+               esl = rootFinder.FindRootInRange([&ssModel, fsl](Float64 strain) {Float64 f; ssModel->ComputeStress(strain, &f); return fsl - f; }, 0.0, esr, 1.0e-8);
             }
             else
             {
                // for negative moment, assume reinforcement limit for deck rebar
-               Float64 fy, fu;
+               Float64 fy, fu, Es;
                if (deckIndex == INVALID_INDEX)
                {
                   // no deck, use segment rebar
@@ -970,9 +986,9 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
                {
                   pMaterial->GetDeckRebarProperties(&Es, &fy, &fu);
                }
-               fsl = 0.8 * fy; // GS 1.5.2 (last bullet in list)
+               Float64 fsl = 0.8 * fy; // GS 1.5.2 (last bullet in list)
+               esl = fsl / Es;// this is the strain at the limit state
             }
-            Float64 esl = fsl / Es; // this is the strain at the limit state
             e = esl - ei; // this is the amount the strain must increase to get to the limit state strain from the initial conditions
             m_MomentCapacitySolver->Solve(0.0, na_angle, e, Ycg, smFixedStrain, &mcd.ReinforcementStressLimitStateSolution);
          }
