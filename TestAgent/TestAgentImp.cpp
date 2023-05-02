@@ -1770,7 +1770,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50052, ")<<-1<<_T(", ")<< QUIET(WBFL::Units::ConvertFromSysUnits(Xcs, WBFL::Units::Measure::Millimeter)) <<_T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
    }
 
-#pragma Reminder("UPDATE: assuming precast girder bridge") // there could be more than one constructability check artifact per girder (one for each span)
+#pragma Reminder("UPDATE: assuming precast girder bridge") // there could be more than one constructibility check artifact per girder (one for each span)
    SpanIndexType spanIdx = segmentKey.groupIndex;
 
    const pgsConstructabilityArtifact* pConstr =  pGdrArtifact->GetConstructabilityArtifact();
@@ -2930,7 +2930,7 @@ bool CTestAgentImp::RunAlignmentTest(std::_tofstream& resultsFile)
       if (!IsZero(vcd.L1))
       {
          resultsFile << _T("Vert Curve ") << vcIdx << std::endl;
-         CComPtr<IVertCurve> vc;
+         CComPtr<IVerticalCurve> vc;
          pRoadway->GetVertCurve(vcIdx, &vc);
 
          Float64 sta, elev;
@@ -2985,7 +2985,8 @@ bool CTestAgentImp::RunAlignmentTest(std::_tofstream& resultsFile)
          Float64 L1, L2, Length;
          vc->get_L1(&L1);
          vc->get_L2(&L2);
-         vc->get_Length(&Length);
+         CComQIPtr<IProfileElement> element(vc);
+         element->GetLength(&Length);
          resultsFile << _T("Lengths L1 : ") << L1 << _T(", L2 : ") << L2 << _T(", L: ") << Length << std::endl;
 
 

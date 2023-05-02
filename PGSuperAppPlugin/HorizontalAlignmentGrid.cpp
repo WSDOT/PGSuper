@@ -275,7 +275,6 @@ void CHorizontalAlignmentGrid::SetRowData(ROWCOL nRow,CompoundCurveData& data)
    UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
    Float64 station = data.PIStation;
-   station = WBFL::Units::ConvertFromSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    CComPtr<IStation> objStation;
    objStation.CoCreateInstance(CLSID_Station);
@@ -329,7 +328,6 @@ bool CHorizontalAlignmentGrid::GetRowData(ROWCOL nRow,Float64* pStation,Float64*
 
    Float64 station_value;
    station->get_Value(&station_value);
-   station_value = WBFL::Units::ConvertToSysUnits(station_value,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    *pStation = station_value;
 
    // assume input is an angle

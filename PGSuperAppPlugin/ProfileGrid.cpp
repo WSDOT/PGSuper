@@ -223,12 +223,9 @@ void CProfileGrid::SetRowData(ROWCOL nRow,VertCurveData& data)
    GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
    UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
-   Float64 station = data.PVIStation;
-   station = WBFL::Units::ConvertFromSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
-
    CComPtr<IStation> objStation;
    objStation.CoCreateInstance(CLSID_Station);
-   objStation->put_Value(station);
+   objStation->put_Value(data.PVIStation);
    CComBSTR bstrStation;
    objStation->AsString(unit_mode,VARIANT_FALSE,&bstrStation);
    SetValueRange(CGXRange(nRow,1),CString(bstrStation));
@@ -261,7 +258,6 @@ bool CProfileGrid::GetRowData(ROWCOL nRow,Float64* pStation,Float64* pGrade,Floa
 
    Float64 station_value;
    station->get_Value(&station_value);
-   station_value = WBFL::Units::ConvertToSysUnits(station_value,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    *pStation = station_value;
 
    CString strGrade = GetCellValue(nRow,2);

@@ -42,6 +42,8 @@
 
 #include <limits>
 
+#include <EAF/EAFApp.h>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -105,7 +107,9 @@ void pgsWsdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey&
    const WBFL::Stability::IHaulingStabilityProblem* pStabilityProblem = pGirder->GetSegmentHaulingStabilityProblem(segmentKey);
    Float64 Ll, Lr;
    pStabilityProblem->GetSupportLocations(&Ll,&Lr);
-   reporter.BuildSpecCheckChapter(pStabilityModel,pStabilityProblem,&m_HaulingArtifact,pChapter,_T("Location from<BR/>Left Bunk Point"),Ll);
+
+   auto* pApp = EAFGetApp();
+   reporter.BuildSpecCheckChapter(pStabilityModel,pStabilityProblem,&m_HaulingArtifact,pChapter,pApp->GetDisplayUnits(), _T("Location from<BR/>Left Bunk Point"), Ll);
 }
 
 void pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const
@@ -117,7 +121,8 @@ void pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKe
    Float64 Ll, Lr;
    pStabilityProblem->GetSupportLocations(&Ll,&Lr);
    const WBFL::Stability::HaulingResults& results = m_HaulingArtifact.GetHaulingResults();
-   reporter.BuildDetailsChapter(pStabilityModel,pStabilityProblem,&results,pChapter,_T("Location from<BR/>Left Bunk Point"),Ll);
+   auto* pApp = EAFGetApp();
+   reporter.BuildDetailsChapter(pStabilityModel,pStabilityProblem,&results,pChapter,pApp->GetDisplayUnits(), _T("Location from<BR/>Left Bunk Point"), Ll);
 }
 
 void pgsWsdotHaulingAnalysisArtifact::Write1250Data(const CSegmentKey& segmentKey,std::_tofstream& resultsFile, std::_tofstream& poiFile, IBroker* pBroker,

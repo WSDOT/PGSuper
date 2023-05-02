@@ -1067,7 +1067,7 @@ void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
       }
       else
       {
-         CComPtr<IVertCurve> vc;
+         CComPtr<IVerticalCurve> vc;
          pRoadway->GetVertCurve(col-1,&vc);
 
          CComPtr<IProfilePoint> bvc;
@@ -1115,7 +1115,8 @@ void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
          Float64 L1,L2, Length;
          vc->get_L1(&L1);
          vc->get_L2(&L2);
-         vc->get_Length(&Length);
+         CComQIPtr<IProfileElement> element(vc);
+         element->GetLength(&Length);
 
          CComPtr<IProfilePoint> high;
          vc->get_HighPoint(&high);

@@ -5881,7 +5881,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
 
          GET_IFACE(IEAFStatusCenter, pStatusCenter);
          CString strMsg;
-         strMsg.Format(_T("Horizonal curve %d: The curve radius is less than the minimum so it has been set to 0 to model an angle point in the alignment."), LABEL_INDEX(curveIdx));
+         strMsg.Format(_T("Horizontal curve %d: The curve radius is less than the minimum so it has been set to 0 to model an angle point in the alignment."), LABEL_INDEX(curveIdx));
 
          pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID, m_scidBridgeDescriptionInfo, strMsg);
          pStatusCenter->Add(pStatusItem);

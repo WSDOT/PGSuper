@@ -2835,7 +2835,7 @@ void CBridgeSectionView::BuildRoadwayCrossSectionDisplayObjects()
          doText->SetAngle((LONG)angle); 
 
          // change the slope from our analytical model to
-         // the sign convension of the input
+         // the sign convention of the input
          // slopes down and away from the controlling crown point are < 0
          if (pRoadwayData->GetRoadwaySectionData().slopeMeasure == RoadwaySectionData::RelativeToAlignmentPoint && icp <= contrl_crown_point)
          {

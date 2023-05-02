@@ -196,8 +196,8 @@ public:
    virtual void GetCurve(CollectionIndexType idx, pgsTypes::PlanCoordinateType pcType,ICompoundCurve** ppCurve) const override;
    virtual HCURVESTATIONS GetCurveStations(IndexType hcIdx) const override;
    virtual CollectionIndexType GetVertCurveCount() const override;
-   virtual void GetVertCurve(CollectionIndexType idx,IVertCurve** ppCurve) const override;
-   virtual void GetRoadwaySurface(Float64 station,IDirection* pDirection,IPoint2dCollection** ppPoints) const override;
+   virtual void GetVertCurve(CollectionIndexType idx,IVerticalCurve** ppCurve) const override;
+   virtual void GetRoadwaySurface(Float64 station,IAngle* pSkewAngle, IPoint2dCollection** ppPoints) const override;
    virtual IndexType GetCrownPointIndexCount(Float64 station) const override;
    virtual IndexType GetAlignmentPointIndex(Float64 station) const override;
    virtual Float64 GetAlignmentOffset(IndexType crownPointIdx, Float64 station) const override;
@@ -226,7 +226,6 @@ public:
    virtual HRESULT LineSegmentCircle(ILineSegment2d* pSeg,Float64 offset,IPoint2d* center,Float64 radius,IPoint2d* nearest, IPoint2d** point) const override;
    virtual HRESULT PointOnLineByPoints(IPoint2d* pnt,IPoint2d* start,IPoint2d* end,Float64 offset,IPoint2d** point) const override;
    virtual HRESULT PointOnLineSegment(IPoint2d* from,ILineSegment2d* seg,Float64 offset,IPoint2d** point) const override;
-   virtual HRESULT PointOnCurve(IPoint2d* pnt,ICompoundCurve* curve,IPoint2d** point) const override;
    virtual HRESULT Arc(IPoint2d* from, IPoint2d* vertex, IPoint2d* to,CollectionIndexType nParts,IPoint2dCollection** points) const override;
    virtual HRESULT BetweenPoints(IPoint2d* from, IPoint2d* to,CollectionIndexType nParts,IPoint2dCollection** points) const override;
    virtual HRESULT LineSegment(ILineSegment2d* seg,CollectionIndexType nParts,IPoint2dCollection** points) const override;
@@ -1513,7 +1512,7 @@ private:
    void ValidateGirders();
 
    // helper function for computing station range for roadway surface objects
-   void ComputeReasonableSurfaceStationRange(ICogoModel* pCogoModel, const CBridgeDescription2* pBridgeDesc, const AlignmentData2& alignmentData, IAlignment* pAlignment, const ProfileData2& profileData, Float64* pStartStation, Float64* pEndStation);
+   std::pair<Float64,Float64> ComputeReasonableSurfaceStationRange(const CBridgeDescription2* pBridgeDesc, const AlignmentData2& alignmentData, IAlignment* pAlignment);
 
    // helper functions for building the bridge model
    bool LayoutPiers(const CBridgeDescription2* pBridgeDesc);

@@ -29,6 +29,10 @@
 
 #include <IFace\Project.h>
 
+CogoObjectID CBridgeGeometryModelBuilder::AlignmentID = 999;
+CogoObjectID CBridgeGeometryModelBuilder::ProfileID = 999;
+CogoObjectID CBridgeGeometryModelBuilder::SurfaceID = 999;
+
 // utility function to get midpoint between two points
 inline void GetMidPoint(IPoint2d* P1, IPoint2d* P2, IPoint2d** pMid)
 {
@@ -56,7 +60,6 @@ static char THIS_FILE[] = __FILE__;
 
 CBridgeGeometryModelBuilder::CBridgeGeometryModelBuilder()
 {
-   m_AlignmentID = 999;
 }
 
 bool CBridgeGeometryModelBuilder::BuildBridgeGeometryModel(const CBridgeDescription2* pBridgeDesc,ICogoModel* pCogoModel,IAlignment* pAlignment,IBridgeGeometry* pBridgeGeometry, GirderOrientationCollection& orientationCollection)
@@ -69,13 +72,13 @@ bool CBridgeGeometryModelBuilder::BuildBridgeGeometryModel(const CBridgeDescript
    pBridgeGeometry->putref_CogoModel(pCogoModel);
 
    // Associate an alignment with the bridge model (bridges can be associated with many alignments)
-   pBridgeGeometry->putref_Alignment(m_AlignmentID,pAlignment);
+   pBridgeGeometry->putref_Alignment(AlignmentID,pAlignment);
 
    // Set the alignment offset
    pBridgeGeometry->put_AlignmentOffset(pBridgeDesc->GetAlignmentOffset());
 
    // Set the ID of the main bridge alignment (all other alignments are secondary)
-   pBridgeGeometry->put_BridgeAlignmentID(m_AlignmentID);
+   pBridgeGeometry->put_BridgeAlignmentID(AlignmentID);
 
    if ( !LayoutPiers(pBridgeDesc,pBridgeGeometry) )
    {
@@ -87,7 +90,7 @@ bool CBridgeGeometryModelBuilder::BuildBridgeGeometryModel(const CBridgeDescript
       return false;
    }
 
-   pBridgeGeometry->UpdateGeometry(GF_BRIDGELINE | GF_PIERS); // this makes the pier lines available so we can layout girder lines and diaphagm lines
+   pBridgeGeometry->UpdateGeometry(GF_BRIDGELINE | GF_PIERS); // this makes the pier lines available so we can layout girder lines and diaphragm lines
 
    if ( !LayoutGirderLines(pBridgeDesc,pBridgeGeometry, orientationCollection) )
    {
@@ -188,7 +191,7 @@ bool CBridgeGeometryModelBuilder::LayoutPiers(const CBridgeDescription2* pBridge
       Float64 station = pPier->GetStation();
       std::_tstring strOrientation = pPier->GetOrientation();
       CComPtr<IPierLine> pierline;
-      pBridgeGeometry->CreatePierLine(pierID,m_AlignmentID,CComVariant(station),CComBSTR(strOrientation.c_str()),pier_length,left_end_offset,&pierline);
+      pBridgeGeometry->CreatePierLine(pierID,AlignmentID,CComVariant(station),CComBSTR(strOrientation.c_str()),pier_length,left_end_offset,&pierline);
      
       CPierData2::PierConnectionFlags conFlag = pPier->IsConnectionDataAvailable();
 
@@ -398,7 +401,7 @@ bool CBridgeGeometryModelBuilder::LayoutTemporarySupports(const CBridgeDescripti
 
       std::_tstring strOrientation = pTS->GetOrientation();
       CComPtr<IPierLine> tsLine;
-      pBridgeGeometry->CreatePierLine(tsID,m_AlignmentID,CComVariant(station),CComBSTR(strOrientation.c_str()),pier_width,left_end_offset,&tsLine);
+      pBridgeGeometry->CreatePierLine(tsID,AlignmentID,CComVariant(station),CComBSTR(strOrientation.c_str()),pier_width,left_end_offset,&tsLine);
 
       Float64 brgOffset;
       ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure;
@@ -595,7 +598,7 @@ bool CBridgeGeometryModelBuilder::LayoutUniformGirderLines(const CBridgeDescript
    factory->put_LayoutLineCount(nGirders);
    factory->put_Offset(-refGirderOffset);  // refGirderOffset < 0 = left of alignment; WBFL Bridge Geometry: positive value is to the left of the alignment; Change sign
    factory->put_OffsetIncrement(-spacing); // positive value places lines to the left of the previous line (want to place the lines to the right)
-   factory->put_AlignmentID(m_AlignmentID);
+   factory->put_AlignmentID(AlignmentID);
    pBridgeGeometry->CreateLayoutLines(factory);
 
    //
@@ -640,7 +643,7 @@ bool CBridgeGeometryModelBuilder::LayoutUniformGirderLines(const CBridgeDescript
       } // girder loop
    } // group loop
 
-   // Need to compute and store girder orientations for later use in bridgeagent
+   // Need to compute and store girder orientations for later use in BridgeAgent
    pgsTypes::GirderOrientationType orientType = pBridgeDesc->GetGirderOrientation();
    for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
    {
@@ -697,7 +700,7 @@ bool CBridgeGeometryModelBuilder::LayoutGeneralGirderLines(const CBridgeDescript
    factory.CoCreateInstance(CLSID_SimpleLayoutLineFactory);
 
    CComPtr<IAlignment> alignment;
-   pBridgeGeometry->get_Alignment(m_AlignmentID,&alignment);
+   pBridgeGeometry->get_Alignment(AlignmentID,&alignment);
 
    Float64 alignmentOffset = pBridgeDesc->GetAlignmentOffset();
 
@@ -775,7 +778,7 @@ bool CBridgeGeometryModelBuilder::LayoutGeneralGirderLines(const CBridgeDescript
                {
                   Float64 beamHeight = pGdr->GetGirderLibraryEntry()->GetBeamHeight(pgsTypes::metStart);
 
-                  shift = -orientation * beamHeight;
+                  shift = orientation * beamHeight;
                }
             }
 
@@ -801,8 +804,8 @@ bool CBridgeGeometryModelBuilder::LayoutGeneralGirderLines(const CBridgeDescript
             girderPoints[2*segIdx]->get_Item(gdrIdx,&pntStart);
             girderPoints[2*segIdx+1]->get_Item(gdrIdx,&pntEnd);
 
-            CComPtr<ILineSegment2d> lineSegment;
-            lineSegment.CoCreateInstance(CLSID_LineSegment2d);
+            CComPtr<IPathSegment> lineSegment;
+            lineSegment.CoCreateInstance(CLSID_PathSegment);
             lineSegment->ThroughPoints(pntStart,pntEnd);
 
             // Shift layout line if workpoint is not at top for non-plumb girder
@@ -810,7 +813,7 @@ bool CBridgeGeometryModelBuilder::LayoutGeneralGirderLines(const CBridgeDescript
             auto found = orientationCollection.find(segkey);
             if (found != orientationCollection.end())
             {
-               lineSegment->Offset2(found->second.m_LayoutLineShift);
+               lineSegment->Offset(found->second.m_LayoutLineShift);
             }
             else
             {
@@ -819,7 +822,8 @@ bool CBridgeGeometryModelBuilder::LayoutGeneralGirderLines(const CBridgeDescript
 
             CComPtr<IPath> path;
             path.CoCreateInstance(CLSID_Path);
-            path->AddEx(lineSegment);
+            CComQIPtr<IPathElement> element(lineSegment);
+            path->Add(element);
 
             LineIDType ID = ::GetGirderSegmentLineID(grpIdx,gdrIdx,segIdx);
             factory->AddPath(ID,path);
@@ -958,7 +962,7 @@ void CBridgeGeometryModelBuilder::GetSkewAndDirection(IAlignment* pAlignment,Flo
    pAlignment->GetDirection(CComVariant(station),CComBSTR(strOrientation),ppDirection);
 
    CComPtr<IDirection> normal; // normal to the alignment
-   pAlignment->Normal(CComVariant(station),&normal);
+   pAlignment->GetNormal(CComVariant(station),&normal);
    normal->IncrementBy(CComVariant(M_PI)); // We want the normal to the left... Increment by 180 degrees
 
    (*ppDirection)->AngleBetween(normal,ppSkew);
@@ -971,7 +975,7 @@ bool CBridgeGeometryModelBuilder::LayoutDiaphragmLines(const CBridgeDescription2
    // though there is no point in doing this unless the generic bridge model or
    // the bridge agent make use of the diaphragm geometry.
    //
-   // also, the software can be updated to accomodate more general diaphragm layouts including
+   // also, the software can be updated to accommodate more general diaphragm layouts including
    // staggered diaphragm lines.
    return true;
 }
@@ -1037,18 +1041,17 @@ void CBridgeGeometryModelBuilder::GetSpacingDataAtPier(IBridgeGeometry* pBridgeG
 
       CComPtr<IStation> station;
       Float64 offset;
-      alignment->Offset(pnt,&station,&offset);
+      alignment->StationAndOffset(pnt,&station,&offset);
 
       ATLASSERT(IsZero(offset));
-
-      station->get_NormalizedValue(alignment,&measureStation);
+      alignment->ConvertToNormalizedStation(CComVariant(station), &measureStation);
    }
 
    CComPtr<IDirection> measureDirection;
    if ( pSpacing->GetMeasurementType() == pgsTypes::NormalToItem )
    {
       // spacing is measured normal to the alignment
-      alignment->Normal(CComVariant(measureStation),&measureDirection);
+      alignment->GetNormal(CComVariant(measureStation),&measureDirection);
    }
    else
    {
@@ -1083,7 +1086,7 @@ void CBridgeGeometryModelBuilder::GetSpacingDataAtTempSupport(IBridgeGeometry* p
    if ( pSpacing->GetMeasurementType() == pgsTypes::NormalToItem )
    {
       // spacing is measured normal to the alignment
-      alignment->Normal(CComVariant(measureStation),&measureDirection);
+      alignment->GetNormal(CComVariant(measureStation),&measureDirection);
    }
    else
    {
@@ -1147,7 +1150,7 @@ void CBridgeGeometryModelBuilder::ResolveSegmentSpacing(IBridgeGeometry* pBridge
 Float64 CBridgeGeometryModelBuilder::GetSkewAngle(IAlignment* pAlignment,Float64 measureStation,IDirection* pMeasureDirection)
 {
    CComPtr<IDirection> normal;
-   pAlignment->Normal(CComVariant(measureStation),&normal);
+   pAlignment->GetNormal(CComVariant(measureStation),&normal);
    normal->IncrementBy(CComVariant(M_PI));
 
    CComPtr<IAngle> angle;
@@ -1220,7 +1223,7 @@ void CBridgeGeometryModelBuilder::ResolveSegmentSpacing(IBridgeGeometry* pBridge
 {
    // NOTE: supportStation is the station where the girder spacing is measured. It could be at the
    // center of the support or at the centerline of bearing. You must check the girder spacing object
-   // and use the appropreate value
+   // and use the appropriate value
 
    if ( *ppStartPoints == nullptr )
    {
@@ -1413,17 +1416,17 @@ Float64 CBridgeGeometryModelBuilder::ComputeGirderOrientation(pgsTypes::GirderOr
    Float64 orientation(0.0);
 
    CComPtr<IAlignment> pAlignment;
-   pBridgeGeometry->get_Alignment(m_AlignmentID,&pAlignment);
+   pBridgeGeometry->get_Alignment(AlignmentID,&pAlignment);
    CComPtr<IProfile> pProfile;
-   pAlignment->get_Profile(&pProfile);
+   pAlignment->GetProfile(ProfileID,&pProfile);
 
    // Orientation angle is based on elevations at top flange edges of the girder group
    // Create line segment along girder. We will offset this to get locations for elevation measurements
    // Don't mess with this object because it owns our caller's points
    CComPtr<ILineSegment2d> gdrLine;
    gdrLine.CoCreateInstance(CLSID_LineSegment2d);
-   gdrLine->putref_StartPoint(pStartPoint);
-   gdrLine->putref_EndPoint(pEndPoint);
+   gdrLine->put_StartPoint(pStartPoint);
+   gdrLine->put_EndPoint(pEndPoint);
 
    // Create a working line we can change
    CComPtr<ILineSegment2d> offsetLine;
@@ -1440,33 +1443,33 @@ Float64 CBridgeGeometryModelBuilder::ComputeGirderOrientation(pgsTypes::GirderOr
       Float64 leftWidthStart, rightWidthStart, leftWidthEnd, rightWidthEnd;;
       pGirder->GetGirderLibraryEntry()->GetBeamTopWidth(pgsTypes::metStart, &leftWidthStart, &rightWidthStart);
       pGirder->GetGirderLibraryEntry()->GetBeamTopWidth(pgsTypes::metEnd, &leftWidthEnd, &rightWidthEnd);
-      // Use an average width to normalze slope
+      // Use an average width to normalize slope
       Float64 leftWidth = (leftWidthStart + leftWidthEnd) / 2.0;
       Float64 rightWidth = (rightWidthStart + rightWidthEnd) / 2.0;
 
       // Start end
       CComPtr<IStation> start_station;
       Float64 start_offset;
-      pAlignment->Offset(pStartPoint, &start_station, &start_offset);
+      pAlignment->StationAndOffset(pStartPoint, &start_station, &start_offset);
 
       Float64 start_leftElevation, start_ClElevation, start_rightElevation;
-      pProfile->Elevation(CComVariant(start_station), start_offset - leftWidth , &start_leftElevation);
-      pProfile->Elevation(CComVariant(start_station), start_offset             , &start_ClElevation);
-      pProfile->Elevation(CComVariant(start_station), start_offset + rightWidth, &start_rightElevation);
+      pProfile->Elevation(SurfaceID, CComVariant(start_station), start_offset - leftWidth , &start_leftElevation);
+      pProfile->Elevation(SurfaceID, CComVariant(start_station), start_offset             , &start_ClElevation);
+      pProfile->Elevation(SurfaceID, CComVariant(start_station), start_offset + rightWidth, &start_rightElevation);
 
       // we want elevation changes relative to CL girder
       start_leftElevation -= start_ClElevation;
       start_rightElevation -= start_ClElevation;
 
-      // end end
+      // End end
       CComPtr<IStation> end_station;
       Float64 end_offset;
-      pAlignment->Offset(pEndPoint, &end_station, &end_offset);
+      pAlignment->StationAndOffset(pEndPoint, &end_station, &end_offset);
 
       Float64 end_leftElevation, end_ClElevation, end_rightElevation;
-      pProfile->Elevation(CComVariant(end_station), end_offset - leftWidth , &end_leftElevation);
-      pProfile->Elevation(CComVariant(end_station), end_offset             , &end_ClElevation);
-      pProfile->Elevation(CComVariant(end_station), end_offset + rightWidth, &end_rightElevation);
+      pProfile->Elevation(SurfaceID, CComVariant(end_station), end_offset - leftWidth, &end_leftElevation);
+      pProfile->Elevation(SurfaceID, CComVariant(end_station), end_offset, &end_ClElevation);
+      pProfile->Elevation(SurfaceID, CComVariant(end_station), end_offset + rightWidth, &end_rightElevation);
 
       end_leftElevation -= end_ClElevation;
       end_rightElevation -= end_ClElevation;
@@ -1479,8 +1482,8 @@ Float64 CBridgeGeometryModelBuilder::ComputeGirderOrientation(pgsTypes::GirderOr
       Float64 distApart = leftWidth + rightWidth;
       if (IsZero(distApart))
       {
-         ATLASSERT(0); // this is likely a symptom of a problem
-         pProfile->Slope(CComVariant(start_station), start_offset, &orientation);
+         ATLASSERT(false); // this is likely a symptom of a problem
+         pProfile->CrossSlope(SurfaceID, CComVariant(start_station), start_offset, &orientation);
       }
       else
       {
@@ -1500,13 +1503,13 @@ Float64 CBridgeGeometryModelBuilder::ComputeGirderOrientation(pgsTypes::GirderOr
          pGirder->GetGirderLibraryEntry()->GetBeamTopWidth(pgsTypes::metStart, &leftWidth, &rightWidth);
 
          // station and offset at start of girder
-         pAlignment->Offset(pStartPoint, &station, &offset);
+         pAlignment->StationAndOffset(pStartPoint, &station, &offset);
       }
       else if (pgsTypes::EndNormal == orientType)
       {
          // Orientation defined at end of girder
          pGirder->GetGirderLibraryEntry()->GetBeamTopWidth(pgsTypes::metEnd, &leftWidth, &rightWidth);
-         pAlignment->Offset(pEndPoint, &station, &offset);
+         pAlignment->StationAndOffset(pEndPoint, &station, &offset);
       }
       else if (pgsTypes::MidspanNormal == orientType)
       {
@@ -1517,11 +1520,11 @@ Float64 CBridgeGeometryModelBuilder::ComputeGirderOrientation(pgsTypes::GirderOr
          leftWidth = (leftWidthStart + leftWidthEnd) / 2.0;
          rightWidth = (rightWidthStart + rightWidthEnd) / 2.0;;
 
-         // Mid point along girderline
+         // Mid point along girder line
          CComPtr<IPoint2d> pMidPoint;
          GetMidPoint(pStartPoint, pEndPoint, &pMidPoint);
 
-         pAlignment->Offset(pMidPoint, &station, &offset);
+         pAlignment->StationAndOffset(pMidPoint, &station, &offset);
       }
       else
       {
@@ -1530,13 +1533,13 @@ Float64 CBridgeGeometryModelBuilder::ComputeGirderOrientation(pgsTypes::GirderOr
 
       // compute slope based on elevations at left and right side
       Float64 leftElevation, rightElevation;
-      pProfile->Elevation(CComVariant(station), offset - leftWidth, &leftElevation);
-      pProfile->Elevation(CComVariant(station), offset + rightWidth, &rightElevation);
+      pProfile->Elevation(SurfaceID, CComVariant(station), offset - leftWidth, &leftElevation);
+      pProfile->Elevation(SurfaceID, CComVariant(station), offset + rightWidth, &rightElevation);
 
       Float64 distApart = leftWidth + rightWidth;
       if (IsZero(distApart))
       {
-         pProfile->Slope(CComVariant(station), offset, &orientation);
+         pProfile->CrossSlope(SurfaceID, CComVariant(station), offset, &orientation);
       }
       else
       {

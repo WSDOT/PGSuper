@@ -39,6 +39,8 @@
 
 #include <limits>
 
+#include <EAF/EAFApp.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -136,7 +138,8 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(const std::shared_ptr<cons
             Float64 Ll, Lr;
             pStabilityProblem->GetSupportLocations(&Ll, &Lr);
             WBFL::Stability::LiftingStabilityReporter reporter;
-            reporter.BuildDetailsChapter(pStabilityModel, pStabilityProblem, &results, pChapter, _T("Location from<BR/>Left Pick Point"), Ll);
+            auto* pApp = EAFGetApp();
+            reporter.BuildDetailsChapter(pStabilityModel, pStabilityProblem, &results, pChapter, pApp->GetDisplayUnits(), _T("Location from<BR/>Left Pick Point"), Ll);
          } // next segment
       } // next group
    }

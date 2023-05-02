@@ -57,6 +57,10 @@ public:
    CBridgeGeometryModelBuilder();
    bool BuildBridgeGeometryModel(const CBridgeDescription2* pBridgeDesc,ICogoModel* pCogoModel,IAlignment* pAlignment,IBridgeGeometry* pBridgeGeometry, GirderOrientationCollection& coll);
 
+   static CogoObjectID AlignmentID;
+   static CogoObjectID ProfileID;
+   static CogoObjectID SurfaceID;
+
 protected:
    bool LayoutPiers(const CBridgeDescription2* pBridgeDesc,IBridgeGeometry* pBridgeGeometry);
    bool LayoutTemporarySupports(const CBridgeDescription2* pBridgeDesc,IBridgeGeometry* pBridgeGeometry);
@@ -99,5 +103,4 @@ protected:
    // Gets the pier line properties based on girder spacing, measured along the CL pier
    void GetPierLineProperties(const CBridgeDescription2* pBridgeDesc,const CGirderSpacing2* pSpacing,Float64 skewAngle,Float64* pWidth,Float64* pOffset);
 
-   CogoObjectID m_AlignmentID;
 };

@@ -41,6 +41,8 @@
 
 #include <limits>
 
+#include <EAF/EAFApp.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -135,7 +137,8 @@ void CLiftingCheck::Build(rptChapter* pChapter,
       Float64 Ll, Lr;
       pStabilityProblem->GetSupportLocations(&Ll, &Lr);
       WBFL::Stability::LiftingStabilityReporter reporter;
-      reporter.BuildSpecCheckChapter(pStabilityModel, pStabilityProblem, pArtifact, pChapter, _T("Location from<BR/>Left Pick Point"), Ll);
+      auto* pApp = EAFGetApp();
+      reporter.BuildSpecCheckChapter(pStabilityModel, pStabilityProblem, pArtifact, pChapter, pApp->GetDisplayUnits(), _T("Location from<BR/>Left Pick Point"), Ll);
    }
    else
    {

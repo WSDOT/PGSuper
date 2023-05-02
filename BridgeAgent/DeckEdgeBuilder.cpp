@@ -84,6 +84,23 @@ void CDeckEdgeBuilder::BuildDeckEdges(const CBridgeDescription2* pBridgeDesc,ICo
       m_DeckPoints.push_back(dp);
    }
 
+   if (m_DeckPoints.size() < 2)
+   {
+      // we need a minimum of 2 points to defined the deck
+      ASSERT(m_DeckPoints.size() == 1);
+      CDeckPoint dp = m_DeckPoints.back();
+      dp.Station += lastPierStation;
+      dp.LeftTransitionType = pgsTypes::dptLinear;
+      dp.RightTransitionType = pgsTypes::dptLinear;
+      ASSERT(m_DeckPoints.back().Station < dp.Station); // don't want the deck points to be out of order or at the same location
+
+      // make the previous point have a parallel transition to the point at the end of the bridge
+      m_DeckPoints.back().LeftTransitionType = pgsTypes::dptParallel;
+      m_DeckPoints.back().RightTransitionType = pgsTypes::dptParallel;
+
+      m_DeckPoints.push_back(dp);
+   }
+
    // start state
    m_LeftEdgeState  = -1;
    m_RightEdgeState = -1;
@@ -111,7 +128,7 @@ void CDeckEdgeBuilder::NextDeckPoint()
 
    // Locate the deck edge points in X-Y space
    CComPtr<IDirection> alignmentNormal;
-   m_Alignment->Normal(CComVariant(deckPoint.Station),&alignmentNormal);
+   m_Alignment->GetNormal(CComVariant(deckPoint.Station),&alignmentNormal);
 
    Float64 left_offset;
    Float64 right_offset;
@@ -138,7 +155,7 @@ void CDeckEdgeBuilder::NextDeckPoint()
    {
       if ( deckPoint.LeftTransitionType == pgsTypes::dptLinear )
       {
-         m_LeftEdgeState = LinearTransition(m_LeftPath,left_point,deckPoint.LeftTransitionType);
+         m_LeftEdgeState = BeginLinearTransition(m_LeftPath,left_point, &m_LeftLinearTransitionStartPoint,deckPoint.LeftTransitionType);
       }
       else if ( deckPoint.LeftTransitionType == pgsTypes::dptSpline )
       {
@@ -152,16 +169,14 @@ void CDeckEdgeBuilder::NextDeckPoint()
    else if ( m_LeftEdgeState == pgsTypes::dptLinear )
    {
       // currently in linear transition state
-      if ( deckPoint.LeftTransitionType != pgsTypes::dptLinear )
-      {
-         // end linear transition
-         m_LeftEdgeState = LinearTransition(m_LeftPath,left_point,deckPoint.LeftTransitionType);
-      }
+      // end linear transition
+      m_LeftEdgeState = EndLinearTransition(m_LeftPath,left_point, m_LeftLinearTransitionStartPoint,deckPoint.LeftTransitionType);
+      m_LeftLinearTransitionStartPoint.Release();
 
       // state change
       if ( m_LeftEdgeState == pgsTypes::dptLinear )
       {
-         m_LeftEdgeState = LinearTransition(m_LeftPath,left_point,deckPoint.LeftTransitionType);
+         m_LeftEdgeState = BeginLinearTransition(m_LeftPath,left_point, &m_LeftLinearTransitionStartPoint,deckPoint.LeftTransitionType);
       }
       else if ( m_LeftEdgeState == pgsTypes::dptSpline )
       {
@@ -183,7 +198,7 @@ void CDeckEdgeBuilder::NextDeckPoint()
 
       if ( m_LeftEdgeState == pgsTypes::dptLinear )
       {
-         // moving into a linear transtions. 
+         // moving into a linear transitions. 
          // do nothing
       }
       else if ( m_LeftEdgeState == pgsTypes::dptParallel )
@@ -193,7 +208,7 @@ void CDeckEdgeBuilder::NextDeckPoint()
       }
       else if ( m_LeftEdgeState == pgsTypes::dptSpline )
       {
-         // still in a spline state, capture the splien point
+         // still in a spline state, capture the spline point
          m_LeftEdgeState = Spline(m_LeftPath,left_point,m_LeftSpline,deckPoint.LeftTransitionType);
       }
    }
@@ -207,13 +222,13 @@ void CDeckEdgeBuilder::NextDeckPoint()
 
       if ( m_LeftEdgeState == pgsTypes::dptLinear )
       {
-         // moving into a linear transtions. 
+         // moving into a linear transitions. 
          // capture the point at the end of the parallel section
-         m_LeftEdgeState = LinearTransition(m_LeftPath,left_point,deckPoint.LeftTransitionType);
+         m_LeftEdgeState = BeginLinearTransition(m_LeftPath,left_point, &m_LeftLinearTransitionStartPoint,deckPoint.LeftTransitionType);
       }
       else if ( m_LeftEdgeState == pgsTypes::dptSpline )
       {
-         // begining a splien state
+         // beginning a spline state
          m_LeftEdgeState = BeginSpline(m_LeftPath,left_point,&m_LeftSpline,deckPoint.LeftTransitionType,true/*left*/);
       }
       else if ( m_LeftEdgeState == pgsTypes::dptParallel )
@@ -230,7 +245,7 @@ void CDeckEdgeBuilder::NextDeckPoint()
    {
       if ( deckPoint.RightTransitionType == pgsTypes::dptLinear )
       {
-         m_RightEdgeState = LinearTransition(m_RightPath,right_point,deckPoint.RightTransitionType);
+         m_RightEdgeState = BeginLinearTransition(m_RightPath,right_point, &m_RightLinearTransitionStartPoint,deckPoint.RightTransitionType);
       }
       else if ( deckPoint.RightTransitionType == pgsTypes::dptSpline )
       {
@@ -244,16 +259,14 @@ void CDeckEdgeBuilder::NextDeckPoint()
    else if ( m_RightEdgeState == pgsTypes::dptLinear )
    {
       // currently in linear transition state
-      if ( deckPoint.RightTransitionType != pgsTypes::dptLinear )
-      {
-         // end linear transition
-         m_RightEdgeState = LinearTransition(m_RightPath,right_point,deckPoint.RightTransitionType);
-      }
+      // end linear transition
+      m_RightEdgeState = EndLinearTransition(m_RightPath,right_point, m_RightLinearTransitionStartPoint,deckPoint.RightTransitionType);
+      m_RightLinearTransitionStartPoint.Release();
 
       // state change
       if ( m_RightEdgeState == pgsTypes::dptLinear )
       {
-         m_RightEdgeState = LinearTransition(m_RightPath,right_point,deckPoint.RightTransitionType);
+         m_RightEdgeState = BeginLinearTransition(m_RightPath,right_point, &m_RightLinearTransitionStartPoint,deckPoint.RightTransitionType);
       }
       else if ( m_RightEdgeState == pgsTypes::dptSpline )
       {
@@ -275,7 +288,7 @@ void CDeckEdgeBuilder::NextDeckPoint()
 
       if ( m_RightEdgeState == pgsTypes::dptLinear )
       {
-         // moving into a linear transtions. 
+         // moving into a linear transitions. 
          // do nothing
       }
       else if ( m_RightEdgeState == pgsTypes::dptParallel )
@@ -285,7 +298,7 @@ void CDeckEdgeBuilder::NextDeckPoint()
       }
       else if ( m_RightEdgeState == pgsTypes::dptSpline )
       {
-         // still in a spline state, capture the splien point
+         // still in a spline state, capture the spline point
          m_RightEdgeState = Spline(m_RightPath,right_point,m_RightSpline,deckPoint.RightTransitionType);
       }
    }
@@ -299,13 +312,13 @@ void CDeckEdgeBuilder::NextDeckPoint()
 
       if ( m_RightEdgeState == pgsTypes::dptLinear )
       {
-         // moving into a linear transtions. 
+         // moving into a linear transitions. 
          // capture the point at the end of the parallel section
-         m_RightEdgeState = LinearTransition(m_RightPath,right_point,deckPoint.RightTransitionType);
+         m_RightEdgeState = BeginLinearTransition(m_RightPath,right_point, &m_RightLinearTransitionStartPoint,deckPoint.RightTransitionType);
       }
       else if ( m_RightEdgeState == pgsTypes::dptSpline )
       {
-         // begining a spline state
+         // beginning a spline state
          m_RightEdgeState = BeginSpline(m_RightPath,right_point,&m_RightSpline,deckPoint.RightTransitionType,false/*right*/);
       }
       else if ( m_RightEdgeState == pgsTypes::dptParallel )
@@ -350,7 +363,7 @@ int CDeckEdgeBuilder::BeginSpline(IPath* pPath,IPoint2d* pPoint,ICubicSpline** p
    if ( m_DeckPointIdx == 0 || prevTransition == pgsTypes::dptParallel )
    {
       // the deck edge description starts with a curve so make the tangent parallel the alignment
-      m_Alignment->Bearing(CComVariant(deckPoint.Station),&tangent);
+      m_Alignment->GetBearing(CComVariant(deckPoint.Station),&tangent);
    }
    else
    {
@@ -360,37 +373,9 @@ int CDeckEdgeBuilder::BeginSpline(IPath* pPath,IPoint2d* pPoint,ICubicSpline** p
       CComPtr<IPathElement> path_element;
       pPath->get_Item(nPathElements-2,&path_element); // the point at the start of the spline is the last point in the container... we want the point that's before the start of the spline
 
-      PathElementType type;
-      path_element->get_Type(&type);
-
-      CComPtr<IUnknown> punk;
-      path_element->get_Value(&punk);
-
-      if ( type == petPoint )
-      {
-         CComQIPtr<IPoint2d> prev_point(punk);
-
-         CComQIPtr<IMeasure2> measure(m_CogoEngine);
-         measure->Direction(prev_point, pPoint, &tangent);
-      }
-      else if ( type == petCompoundCurve )
-      {
-         CComQIPtr<ICompoundCurve> hc(punk);
-         hc->get_FwdTangentBrg(&tangent);
-      }
-      else if ( type == petLineSegment )
-      {
-         CComQIPtr<IMeasure2> measure(m_CogoEngine);
-         CComPtr<IPoint2d> p1,p2;
-         CComQIPtr<ILineSegment2d> ls(punk);
-         ls->get_StartPoint(&p1);
-         ls->get_EndPoint(&p2);
-         measure->Direction(p1,p2,&tangent);
-      }
-      else
-      {
-         ATLASSERT(false); // should never get here
-      }
+      Float64 L;
+      path_element->GetLength(&L);
+      path_element->GetBearing(L, &tangent);
    }
    (*ppSpline)->put_StartDirection(CComVariant(tangent));
 
@@ -418,7 +403,7 @@ int CDeckEdgeBuilder::EndSpline(IPath* pPath,IPoint2d* pPoint,ICubicSpline* pSpl
    {
       // this is the last point or the transition to next is parallel
       // make the curve tangent parallel the alignment
-      m_Alignment->Bearing(CComVariant(deckPoint.Station),&tangent);
+      m_Alignment->GetBearing(CComVariant(deckPoint.Station),&tangent);
    }
    else
    {
@@ -427,7 +412,7 @@ int CDeckEdgeBuilder::EndSpline(IPath* pPath,IPoint2d* pPoint,ICubicSpline* pSpl
 
       // Locate the deck edge points in X-Y space
       CComPtr<IDirection> nextAlignmentNormal;
-      m_Alignment->Normal(CComVariant(nextDeckPoint.Station),&nextAlignmentNormal);
+      m_Alignment->GetNormal(CComVariant(nextDeckPoint.Station),&nextAlignmentNormal);
 
       // does alignment offset need to be considered if measured from alignment?
       Float64 offset = (bLeft ? nextDeckPoint.LeftEdge : -nextDeckPoint.RightEdge);
@@ -440,7 +425,8 @@ int CDeckEdgeBuilder::EndSpline(IPath* pPath,IPoint2d* pPoint,ICubicSpline* pSpl
    }
    pSpline->put_EndDirection(CComVariant(tangent));
 
-   pPath->AddEx(pSpline);
+   CComQIPtr<IPathElement> pe(pSpline);
+   pPath->Add(pe);
 
    pSpline = nullptr;
 
@@ -459,8 +445,9 @@ int CDeckEdgeBuilder::EndParallel(IPath* pPath,Float64 startStation,Float64 endS
    CComPtr<IPath> subPath;
    m_Alignment->CreateSubPath(CComVariant(startStation),CComVariant(endStation),&subPath);
 
+   CComQIPtr<IPathElement> element(subPath);
    CComPtr<IPath> edgeSubPath;
-   subPath->CreateOffsetPath(-offset,&edgeSubPath);
+   element->CreateOffsetPath(-offset,&edgeSubPath);
 
    CollectionIndexType nPathElements;
    edgeSubPath->get_Count(&nPathElements);
@@ -469,15 +456,28 @@ int CDeckEdgeBuilder::EndParallel(IPath* pPath,Float64 startStation,Float64 endS
       CComPtr<IPathElement> pe;
       edgeSubPath->get_Item(i,&pe);
 
-      pPath->Add(pe);
+      CComPtr<IPathElement> clone;
+      pe->Clone(&clone);
+      pPath->Add(clone);
    }
 
    return (m_DeckPointIdx == m_nDeckPoints - 1 ? -1 : transition);
 }
 
-int CDeckEdgeBuilder::LinearTransition(IPath* pPath,IPoint2d* pPoint,pgsTypes::DeckPointTransitionType transition)
+int CDeckEdgeBuilder::BeginLinearTransition(IPath* pPath, IPoint2d* pPoint, IPoint2d** ppBeginPoint, pgsTypes::DeckPointTransitionType transition)
 {
-   pPath->AddEx(pPoint);
+   (*ppBeginPoint) = pPoint;
+   (*ppBeginPoint)->AddRef();
+   return (m_DeckPointIdx == m_nDeckPoints - 1 ? -1 : transition);
+}
+
+int CDeckEdgeBuilder::EndLinearTransition(IPath* pPath,IPoint2d* pPoint,IPoint2d* pBeginPoint,pgsTypes::DeckPointTransitionType transition)
+{
+   CComPtr<IPathSegment> segment;
+   segment.CoCreateInstance(CLSID_PathSegment);
+   segment->ThroughPoints(pBeginPoint, pPoint);
+   CComQIPtr<IPathElement> pe(segment);
+   pPath->Add(pe);
    return (m_DeckPointIdx == m_nDeckPoints-1 ? -1 : transition);
 }
 

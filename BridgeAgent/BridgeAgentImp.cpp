@@ -90,11 +90,8 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 #if defined _DEBUG || defined _BETA_VERSION
-//#define CHECK_POI_CONVERSIONS // if this is defined the POI conversion methods are checked. Note, this can significally reduce performance
+//#define CHECK_POI_CONVERSIONS // if this is defined the POI conversion methods are checked. Note, this can significantly reduce performance
 #endif
-
-CogoObjectID g_AlignmentID = 999;
-
 
 #define CLEAR_ALL       0
 #define COGO_MODEL      1
@@ -1796,7 +1793,7 @@ void CBridgeAgentImp::ValidateSegmentOrientation(const CSegmentKey& segmentKey) 
    segment->put_Orientation(orientation);
 }
 
-void CBridgeAgentImp::ComputeReasonableSurfaceStationRange(ICogoModel* pCogoModel, const CBridgeDescription2* pBridgeDesc, const AlignmentData2& alignmentData, IAlignment* pAlignment, const ProfileData2& profileData, Float64* pStartStation, Float64* pEndStation)
+std::pair<Float64,Float64> CBridgeAgentImp::ComputeReasonableSurfaceStationRange(const CBridgeDescription2* pBridgeDesc, const AlignmentData2& alignmentData, IAlignment* pAlignment)
 {
    // Want a reasonable start and end station where we can put our model and retain some numerical accuracy
    Float64 bridge_length = pBridgeDesc->GetLength();
@@ -1804,141 +1801,89 @@ void CBridgeAgentImp::ComputeReasonableSurfaceStationRange(ICogoModel* pCogoMode
    Float64 startStation = pPier->GetStation();
    startStation -= bridge_length;
 
-   if ( 0 < alignmentData.CompoundCurves.size() )
-   {
-      const auto& curve_data = alignmentData.CompoundCurves.front();
-      CComPtr<ICompoundCurveCollection> curves;
-      pCogoModel->get_CompoundCurves(&curves);
-      IndexType nHCurves;
-      curves->get_Count(&nHCurves);
-
-      if ( IsZero(curve_data.Radius) || nHCurves == 0 )
-      {
-         startStation = Min(startStation,curve_data.PIStation);
-      }
-      else
-      {
-         CComPtr<ICompoundCurve> hc;
-         CogoObjectID curveID;
-         curves->ID(0,&curveID);
-         curves->get_Item(curveID,&hc);
-
-         CComPtr<IPoint2d> pntTS;
-         hc->get_TS(&pntTS);
-
-         CComPtr<IStation> objStation;
-         Float64 offset;
-         pAlignment->Offset(pntTS,&objStation,&offset);
-
-         Float64 station;
-         objStation->get_NormalizedValue(pAlignment,&station);
-         startStation = Min(startStation,station);
-      }
-   }
-
-   CComPtr<IVertCurveCollection> vcurves;
-   pCogoModel->get_VertCurves(&vcurves);
-   IndexType nVCurves;
-   vcurves->get_Count(&nVCurves);
-   if ( 0 < nVCurves )
-   {
-      CComPtr<IVertCurve> vc;
-      CogoObjectID curveID;
-      vcurves->ID(0,&curveID);
-      vcurves->get_Item(curveID,&vc);
-      CComPtr<IProfilePoint> bvcPoint;
-      vc->get_BVC(&bvcPoint);
-      CComPtr<IStation> objStation;
-      bvcPoint->get_Station(&objStation);
-      Float64 station;
-      objStation->get_NormalizedValue(pAlignment,&station);
-      startStation = Min(startStation,station);
-   }
-
    // end station
-   pPier = pBridgeDesc->GetPier(pBridgeDesc->GetPierCount()-1);
+   pPier = pBridgeDesc->GetPier(pBridgeDesc->GetPierCount() - 1);
    Float64 endStation = pPier->GetStation();
    endStation += bridge_length;
 
-   if ( 0 < alignmentData.CompoundCurves.size() )
+   IndexType nPathElements;
+   pAlignment->get_Count(&nPathElements);
+   if (0 < nPathElements)
    {
-      const auto& curve_data = alignmentData.CompoundCurves.back();
-      CComPtr<ICompoundCurveCollection> curves;
-      pCogoModel->get_CompoundCurves(&curves);
-      IndexType nHCurves;
-      curves->get_Count(&nHCurves);
-      if ( IsZero(curve_data.Radius) || nHCurves == 0 )
-      {
-         endStation = Max(endStation,curve_data.PIStation);
-      }
-      else
-      {
-         CComPtr<ICompoundCurve> hc;
-         CogoObjectID curveID;
-         HRESULT hr = curves->ID(nHCurves-1,&curveID);
-         ATLASSERT(SUCCEEDED(hr));
-         hr = curves->get_Item(curveID,&hc); // 1 is the ID of the first curve
-         ATLASSERT(SUCCEEDED(hr));
-
-         CComPtr<IPoint2d> pntST;
-         hc->get_ST(&pntST);
-
-         CComPtr<IStation> objStation;
-         Float64 offset;
-         pAlignment->Offset(pntST,&objStation,&offset);
-
-         Float64 station;
-         objStation->get_NormalizedValue(pAlignment,&station);
-         endStation = Max(endStation,station);
-      }
-   }
-
-   if ( 0 < nVCurves )
-   {
-      CComPtr<IVertCurveCollection> vcurves;
-      pCogoModel->get_VertCurves(&vcurves);
-      CComPtr<IVertCurve> vc;
-      CogoObjectID curveID;
-      vcurves->ID(profileData.VertCurves.size()-1,&curveID);
-      vcurves->get_Item(curveID,&vc);
-      CComPtr<IProfilePoint> evcPoint;
-      vc->get_EVC(&evcPoint);
+      CComPtr<IPathElement> element;
+      pAlignment->get_Item(0, &element);
+      CComPtr<IPoint2d> pntStart;
+      element->GetStartPoint(&pntStart);
       CComPtr<IStation> objStation;
-      evcPoint->get_Station(&objStation);
+      Float64 offset;
+      pAlignment->StationAndOffset(pntStart, &objStation, &offset);
+
       Float64 station;
-      objStation->get_NormalizedValue(pAlignment,&station);
-      endStation = Max(endStation,station);
+      pAlignment->ConvertToNormalizedStation(CComVariant(objStation), &station);
+      startStation = Min(startStation, station);
+
+      element.Release();
+      objStation.Release();
+      pAlignment->get_Item(nPathElements - 1, &element);
+      CComPtr<IPoint2d> pntEnd;
+      element->GetEndPoint(&pntEnd);
+      pAlignment->StationAndOffset(pntEnd, &objStation, &offset);
+      pAlignment->ConvertToNormalizedStation(CComVariant(objStation), &station);
+      endStation = Max(endStation, station);
    }
 
-   Float64 refStation = alignmentData.RefStation;
-   CComPtr<IPoint2d> refPoint;
-   pAlignment->LocatePoint(CComVariant(refStation), omtNormal, 0.0, CComVariant(0), &refPoint);
-   Float64 x, y;
-   refPoint->Location(&x, &y); // this is in local coordinates, we want it in global coordinates
-   x += m_DeltaX;
-   y += m_DeltaY;
-   if (!IsZero(refStation) || !IsZero(x) || !IsZero(y))
+   CComPtr<IProfile> pProfile;
+   if (SUCCEEDED(pAlignment->GetProfile(CBridgeGeometryModelBuilder::ProfileID, &pProfile)))
+   {
+      IndexType nProfileElements;
+      pProfile->get_ProfileElementCount(&nProfileElements);
+      if (0 < nProfileElements)
+      {
+         // get start station of first profile element
+         CComPtr<IProfileElement> element;
+         pProfile->get_Item(0, &element);
+         CComPtr<IProfilePoint> pntStart;
+         element->GetStartPoint(&pntStart);
+         CComPtr<IStation> objStation;
+         pntStart->get_Station(&objStation);
+         Float64 station;
+         pAlignment->ConvertToNormalizedStation(CComVariant(objStation), &station);
+         startStation = Min(startStation, station);
+
+         // get end station of last profile element
+         element.Release();
+         objStation.Release();
+         pProfile->get_Item(nProfileElements - 1, &element);
+         CComPtr<IProfilePoint> pntEnd;
+         element->GetEndPoint(&pntEnd);
+         pntEnd->get_Station(&objStation);
+         pAlignment->ConvertToNormalizedStation(CComVariant(objStation), &station);
+         endStation = Max(endStation, station);
+      }
+   }
+
+   if (!IsZero(alignmentData.RefStation) || !IsZero(alignmentData.xRefPoint) || !IsZero(alignmentData.yRefPoint))
    {
       // we'll ignore the ref point at 0+00 (N 0, E 0)
       // this is the default and it probably means the user didn't input the values
-      startStation = Min(startStation, refStation);
-      endStation   = Max(endStation, refStation);
+      startStation = Min(startStation, alignmentData.RefStation);
+      endStation   = Max(endStation, alignmentData.RefStation);
    }
 
-   if (profileData.VertCurves.size() == 0)
-   {
-      Float64 L = 100;
-      startStation = Min(startStation, profileData.Station + L);
-      endStation   = Max(endStation, profileData.Station + L);
-   }
+   //if (profileData.VertCurves.size() == 0)
+   //{
+   //   Float64 L = 100;
+   //   startStation = Min(startStation, profileData.Station + L);
+   //   endStation   = Max(endStation, profileData.Station + L);
+   //}
 
-   *pStartStation = startStation;
-   *pEndStation = endStation;
+   return std::make_pair(startStation, endStation);
 }
 
 
 bool CBridgeAgentImp::BuildCogoModel()
 {
+#pragma Reminder("TODO - Break this into 3 methods for clarity, BuildAlignment,BuildProfile,BuildSurface")
    ATLASSERT(m_CogoModel == nullptr);
    m_CogoModel.Release();
    m_CogoModel.CoCreateInstance(CLSID_CogoModel);
@@ -1953,19 +1898,10 @@ bool CBridgeAgentImp::BuildCogoModel()
    const ProfileData2&   profile_data     = pIAlignment->GetProfileData2();
    const RoadwaySectionData& section_data = pIAlignment->GetRoadwaySectionData();
 
-   CComPtr<IAlignmentCollection> alignments;
-   m_CogoModel->get_Alignments(&alignments);
 
-   CComPtr<IAlignment> alignment;
-   alignments->Add(g_AlignmentID,&alignment); // create the main alignment object
-   ATLASSERT(alignment);
-
-   CComPtr<IProfile> profile;
-   alignment->get_Profile(&profile);
-   profile->Clear();
-
-   CComPtr<IPointCollection> points;
-   m_CogoModel->get_Points(&points);
+   m_CogoModel->StoreAlignment(CBridgeGeometryModelBuilder::AlignmentID); // create the main alignment in the cogo model
+   m_CogoModel->StoreProfile(CBridgeGeometryModelBuilder::ProfileID);
+   m_CogoModel->AttachProfileToAlignment(CBridgeGeometryModelBuilder::ProfileID, CBridgeGeometryModelBuilder::AlignmentID);
 
    // Setup the alignment
    if ( alignment_data.CompoundCurves.size() == 0 )
@@ -1973,18 +1909,14 @@ bool CBridgeAgentImp::BuildCogoModel()
       // straight alignment
       CogoObjectID id1 = 20000;
       CogoObjectID id2 = 20001;
-      points->Add(id1,0,0,nullptr); // start at point 0,0
+      m_CogoModel->StorePoint(id1,0,0); // start at point 0,0
 
       CComQIPtr<ILocate> locate(m_CogoModel);
       locate->ByDistDir(id2,id1,100.00,CComVariant(alignment_data.Direction),0.00);
 
-      CComPtr<IPoint2d> pnt1, pnt2;
-      points->get_Item(id1,&pnt1);
-      points->get_Item(id2,&pnt2);
-
-      alignment->put_RefStation(CComVariant(0.00));
-      alignment->AddEx(pnt1);
-      alignment->AddEx(pnt2);
+      m_CogoModel->StorePathSegment(0, id1, id2);
+      m_CogoModel->AddPathElementToAlignmentByID(CBridgeGeometryModelBuilder::AlignmentID, petPathSegment, 0);
+      m_CogoModel->SetAlignmentReferenceStation(CBridgeGeometryModelBuilder::AlignmentID,CComVariant(0.00));
    }
    else
    {
@@ -1997,11 +1929,7 @@ bool CBridgeAgentImp::BuildCogoModel()
       pbt.CoCreateInstance(CLSID_Point2d);
       pbt->Move(0,0);
 
-      CComPtr<ICompoundCurveCollection> curves;
-      m_CogoModel->get_CompoundCurves(&curves);
 
-      CComPtr<IPointCollection> points;
-      m_CogoModel->get_Points(&points);
 
       Float64 back_tangent = alignment_data.Direction;
 
@@ -2048,6 +1976,7 @@ bool CBridgeAgentImp::BuildCogoModel()
       }
 
       CogoObjectID curveID = 1;
+      CogoObjectID pointID = 0;
       IndexType curveIdx = 0;
       IndexType realCurveIdx = 0;
 
@@ -2068,8 +1997,9 @@ bool CBridgeAgentImp::BuildCogoModel()
             if ( iter == begin )
             {
                // if first curve, add a point on the back tangent
-               points->AddEx(curveID++,pbt);
-               alignment->AddEx(pbt);
+               m_CogoModel->StorePointEx(pointID, pbt);
+               m_CogoModel->AddPathElementToAlignmentByID(CBridgeGeometryModelBuilder::AlignmentID, petPoint, pointID);
+               pointID++;
             }
 
             // locate the PI
@@ -2083,8 +2013,9 @@ bool CBridgeAgentImp::BuildCogoModel()
                if (pi->SameLocation(pbt) == S_FALSE )
                {
                   // add the PI
-                  points->AddEx(curveID, pi);
-                  alignment->AddEx(pi);
+                  m_CogoModel->StorePointEx(pointID, pi);
+                  m_CogoModel->AddPathElementToAlignmentByID(CBridgeGeometryModelBuilder::AlignmentID, petPoint, pointID);
+                  pointID++;
                }
             }
 
@@ -2096,14 +2027,15 @@ bool CBridgeAgentImp::BuildCogoModel()
                fwd_tangent += back_tangent;
             }
 
-            if ( iter == end-1 )
+            if ( iter == std::prev(end) )
             {
                // this is the last point so add one more to model the last line segment
                CComQIPtr<ILocate2> locate(m_CogoEngine);
                CComPtr<IPoint2d> pnt;
                locate->ByDistDir(pi,100.00,CComVariant(fwd_tangent),0.00,&pnt);
-               points->AddEx(++curveID,pnt); // pre-increment is important
-               alignment->AddEx(pnt);
+               m_CogoModel->StorePointEx(pointID,pnt);
+               m_CogoModel->AddPathElementToAlignmentByID(CBridgeGeometryModelBuilder::AlignmentID, petPoint, pointID);
+               pointID++;
             }
 
             pbt = pi;
@@ -2127,7 +2059,7 @@ bool CBridgeAgentImp::BuildCogoModel()
                fwd_tangent += back_tangent;
             }
 
-            // locate a point on the foward tangent.... at which distance? it doesn't matter... use
+            // locate a point on the forward tangent.... at which distance? it doesn't matter... use
             // the curve radius for simplicity
             CComPtr<IPoint2d> pft; // point on forward tangent
             locate->ByDistDir(pi, curve_data.Radius, CComVariant( fwd_tangent ), 0.00, &pft );
@@ -2141,7 +2073,9 @@ bool CBridgeAgentImp::BuildCogoModel()
                GET_IFACE(IEAFStatusCenter,pStatusCenter);
                pStatusCenter->Add(pStatusItem.release());
                
-               alignment->AddEx(pi);
+               m_CogoModel->StorePointEx(pointID, pi);
+               m_CogoModel->AddPathElementToAlignmentByID(CBridgeGeometryModelBuilder::AlignmentID, petPoint, pointID);
+               pointID++;
 
                back_tangent = fwd_tangent;
                prev_curve_ST_station = pi_station;
@@ -2149,7 +2083,7 @@ bool CBridgeAgentImp::BuildCogoModel()
                if ( curveIdx == 0 )
                {
                   // this is the first curve so set the reference station at the PI
-                  alignment->put_RefStation( CComVariant(pi_station) );
+                  m_CogoModel->SetAlignmentReferenceStation(CBridgeGeometryModelBuilder::AlignmentID,CComVariant(pi_station));
                }
 
                continue; // GO TO NEXT HORIZONTAL CURVE
@@ -2158,13 +2092,19 @@ bool CBridgeAgentImp::BuildCogoModel()
                //THROW_UNWIND(strMsg.c_str(),-1);
             }
 
-            CComPtr<ICompoundCurve> hc;
-            HRESULT hr = curves->Add(curveID,pbt,pi,pft,curve_data.Radius,curve_data.EntrySpiral,curve_data.ExitSpiral,&hc);
-            ATLASSERT( SUCCEEDED(hr) );
-
+            IDType pbtID = pointID++;
+            IDType piID = pointID++;
+            IDType pftID = pointID++;
+            m_CogoModel->StorePointEx(pbtID, pbt);
+            m_CogoModel->StorePointEx(piID, pi);
+            m_CogoModel->StorePointEx(pftID, pft);
+            m_CogoModel->StoreCompoundCurve(curveID, pbtID, piID, pftID, curve_data.Radius, curve_data.EntrySpiral, TransitionCurveType::Clothoid, curve_data.ExitSpiral, TransitionCurveType::Clothoid);
+            m_CogoModel->AddPathElementToAlignmentByID(CBridgeGeometryModelBuilder::AlignmentID, petCompoundCurve, curveID);
             m_CompoundCurveKeys.insert(std::make_pair(realCurveIdx++,std::make_pair(curveIdx,curveID)));
 
             // Make sure this curve and the previous curve don't overlap
+            CComPtr<ICompoundCurve> hc;
+            m_CogoModel->CreateCompoundCurveByIndex(curveIdx, &hc);
             hc->get_BkTangentLength(&T);
             if ( 0 < curveIdx )
             {
@@ -2179,7 +2119,8 @@ bool CBridgeAgentImp::BuildCogoModel()
                      // these 2 stations are within a 0.01 ft of each other... tweak this curve so it
                      // starts where the previous curve ends
                      CComPtr<ICompoundCurve> prev_curve, this_curve;
-                     curves->get_Item(curveID-1,&prev_curve);
+                     m_CogoModel->CreateCompoundCurveByIndex(curveIdx - 1, &prev_curve);
+
                      CComPtr<IPoint2d> pntST;
                      prev_curve->get_ST(&pntST);
 
@@ -2190,7 +2131,8 @@ bool CBridgeAgentImp::BuildCogoModel()
                      pntST->Location(&stX,&stY);
                      pntTS->Location(&tsX,&tsY);
 
-                     hc->Offset(stX-tsX,stY-tsY);
+                     CComQIPtr<IPathElement> element(hc);
+                     element->Offset(stX - tsX, stY - tsY);
          
 #if defined _DEBUG
                      pntTS.Release();
@@ -2226,19 +2168,11 @@ bool CBridgeAgentImp::BuildCogoModel()
             // determine the station of the ST point because this point will serve
             // as the next point on back tangent
             Float64 L;
-            hr = hc->get_TotalLength(&L);
+            HRESULT hr = hc->get_TotalLength(&L);
             if ( FAILED(hr) )
             {
                std::_tostringstream os;
-               if ( hr == COGO_E_SPIRALSOVERLAP )
-               {
-                  os << _T("The description of horizontal curve ") << curveID << _T(" is invalid. The entry and exit spirals overlap.");
-               }
-               else
-               {
-                  os << _T("An unknown error occured while modeling horizontal curve ") << curveID << _T(".");
-               }
-
+               os << _T("An error occurred while modeling horizontal curve ") << curveID << _T(".");
                os << std::endl;
                os << _T("The horizontal curve was ignored.");
 
@@ -2249,8 +2183,6 @@ bool CBridgeAgentImp::BuildCogoModel()
 
                continue;
             }
-
-            alignment->AddEx(hc);
 
             back_tangent = fwd_tangent;
             pbt.Release();
@@ -2263,51 +2195,16 @@ bool CBridgeAgentImp::BuildCogoModel()
             // this is the first curve so set the reference station at the TS 
             if ( IsZero(curve_data.Radius) )
             {
-               alignment->put_RefStation( CComVariant(pi_station - 100) );
+               m_CogoModel->SetAlignmentReferenceStation(CBridgeGeometryModelBuilder::AlignmentID, CComVariant(pi_station - 100) );
             }
             else
             {
-               alignment->put_RefStation( CComVariant(pi_station - T) );
+               m_CogoModel->SetAlignmentReferenceStation( CBridgeGeometryModelBuilder::AlignmentID, CComVariant(pi_station - T) );
             }
          }
       }
    }
 
-   // Move the alignment such that the intersection of the alignment and the pierline of the first pier
-   // is at coordinate (0,0). The purpose of doing this is to keep the bridge model in a local coordinate
-   // system.
-
-   // 1) Get station of first pierline
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   Float64 station = pIBridgeDesc->GetPier(0)->GetStation();
-
-   // 2) Create a point at the intersection of the alignment and the first pierline
-   CComPtr<IPoint2d> objRefPoint1;
-   alignment->LocatePoint(CComVariant(station),omtAlongDirection, 0.00,CComVariant(0.00),&objRefPoint1);
-
-   // 3) create a point at the origin of the coordinate system.
-   CComPtr<IPoint2d> objRefPoint2;
-   objRefPoint2.CoCreateInstance(CLSID_Point2d);
-   objRefPoint2->Move(0,0);
-
-   // 4) measure the distance and direction between the point on alignment and the desired origin
-   CComQIPtr<IMeasure2> measure(m_CogoEngine);
-   Float64 distance;
-   CComPtr<IDirection> objDirection;
-   measure->Inverse(objRefPoint1,objRefPoint2,&distance,&objDirection);
-
-   // 5) move the alignment such that the intersection of the alignment and the first pierline is at the origin
-   alignment->Move(distance,objDirection);
-
-   // NOTE: THE BRIDGE AND ALIGNMENT ARE NOW IN THE LOCAL COORDINATE SYSTEM
-
-   // 6) determine the location of the actual alignment reference point in the local coordinate system
-   CComPtr<IPoint2d> objRefPoint;
-   alignment->LocatePoint(CComVariant(alignment_data.RefStation), omtAlongDirection, 0.00, CComVariant(0.00), &objRefPoint);
-   Float64 dx,dy;
-   objRefPoint->Location(&dx,&dy);
-   m_DeltaX = alignment_data.xRefPoint - dx;
-   m_DeltaY = alignment_data.yRefPoint - dy;
 
    // Setup the profile
    if ( profile_data.VertCurves.size() == 0 )
@@ -2323,8 +2220,12 @@ bool CBridgeAgentImp::BuildCogoModel()
       ppEnd->put_Station(CComVariant(profile_data.Station + L));
       ppEnd->put_Elevation( profile_data.Elevation + profile_data.Grade*L );
 
-      profile->AddEx(ppStart);
-      profile->AddEx(ppEnd);
+      IDType id1 = 20000;
+      IDType id2 = 20001;
+      m_CogoModel->StoreProfilePointEx(id1, ppStart);
+      m_CogoModel->StoreProfilePointEx(id2, ppEnd);
+      m_CogoModel->StoreProfileSegment(0, id1, id2);
+      m_CogoModel->AddProfileElementByID(CBridgeGeometryModelBuilder::ProfileID, ProfileElementType::peProfileSegment, 0);
    }
    else
    {
@@ -2335,26 +2236,21 @@ bool CBridgeAgentImp::BuildCogoModel()
 
       Float64 prev_EVC = pbg_station;
       
-      CComPtr<IVertCurveCollection> vcurves;
-      m_CogoModel->get_VertCurves(&vcurves);
-
-      CComPtr<IProfilePointCollection> profilepoints;
-      m_CogoModel->get_ProfilePoints(&profilepoints);
-
       CogoObjectID curveID = 1;
+      CogoObjectID pointID = 0;
       IndexType curveIdx = 0;
       IndexType realCurveIdx = 0;
 
       auto iter = std::cbegin(profile_data.VertCurves);
       auto end = std::cend(profile_data.VertCurves);
-      for ( ; iter != end; iter++, curveIdx++ )
+      for ( ; iter != end; iter++, curveIdx++ , curveID++)
       {
          const auto& curve_data = *iter;
 
          Float64 L1 = curve_data.L1;
          Float64 L2 = curve_data.L2;
 
-         // if L2 is zero, interpert that as a symmetrical vertical curve with L1
+         // if L2 is zero, interpret that as a symmetrical vertical curve with L1
          // being the full curve length.
          // Cut L1 in half and assign half to L2
          if ( IsZero(L2) )
@@ -2369,7 +2265,7 @@ bool CBridgeAgentImp::BuildCogoModel()
          if( curveID == 1 && IsEqual(pbg_station,curve_data.PVIStation) )
          {
             // it is a common input _T("mistake") to start with the PVI of the first curve...
-            // project the begining point back
+            // project the beginning point back
             pbg_station   = pbg_station - 2*L1;
             pbg_elevation = pbg_elevation - 2*L1*entry_grade;
             pbg->put_Station(CComVariant(pbg_station));
@@ -2394,7 +2290,7 @@ bool CBridgeAgentImp::BuildCogoModel()
 
          if ( IsZero(L1) && IsZero(L2) )
          {
-            // zero length vertical curve.... this is ok as it creates
+            // zero length vertical curve.... this is OK as it creates
             // a profile point. It isn't common so warn the user
             std::_tostringstream os;
             os << _T("Vertical curve ") << curveID << _T(" is a zero length curve.");
@@ -2443,13 +2339,24 @@ bool CBridgeAgentImp::BuildCogoModel()
 //            THROW_UNWIND(strMsg.c_str(),-1);
          }
 
-         CComPtr<IVertCurve> vc;
-         HRESULT hr = vcurves->Add(curveID,pbg,pvi,pfg,L1,L2,&vc);
-         ATLASSERT(SUCCEEDED(hr));
+         IDType pbgID = pointID++;
+         IDType pviID = pointID++;
+         IDType pfgID = pointID++;
+         m_CogoModel->StoreProfilePointEx(pbgID, pbg);
+         m_CogoModel->StoreProfilePointEx(pviID, pvi);
+         m_CogoModel->StoreProfilePointEx(pfgID, pfg);
+         m_CogoModel->StoreVerticalCurve(curveID, pbgID, pviID, pfgID, L1, L2); // store the vertical curve in the COGO model
+         m_CogoModel->AddProfileElementByID(CBridgeGeometryModelBuilder::ProfileID, ProfileElementType::peVertCurve, curveID); // add the vertical curve to the profile definition
 
          m_VertCurveKeys.insert(std::make_pair(realCurveIdx++,std::make_pair(curveIdx,curveID)));
-        
-         profile->AddEx(vc);
+
+#pragma Reminder("UPDATE - this test should go somewhere else")
+         // NOTE: The following check for grades required that the stations making up the vertical curve
+         // are normalized. This might not be the case in the future.
+         //
+         // We should use the actual vertical curve in the real profile, not create one on the fly here
+         CComPtr<IVerticalCurve> vc;
+         m_CogoModel->CreateVerticalCurveByID(curveID,&vc);
 
          Float64 g1,g2;
          vc->get_EntryGrade(&g1);
@@ -2472,26 +2379,15 @@ bool CBridgeAgentImp::BuildCogoModel()
          entry_grade   = curve_data.ExitGrade;
 
          prev_EVC = EVC;
-
-         curveID++;
       }
    }
 
    // Create the roadway surface model. Make it much wider than the bridge so
    // none of the points fall off the surface.
-   CComPtr<ISurfaceCollection> surfaces;
-   profile->get_Surfaces(&surfaces);
 
-   CComPtr<ISurface> surface;
-   surface.CoCreateInstance(CLSID_Surface);
-   surfaces->Add(surface);
-
-   surface->put_ID(COGO_FINISHED_SURFACE_ID);
-
-   CComPtr<ISurfaceTemplateCollection> templates;
-   surface->get_SurfaceTemplates(&templates);
 
    // NOTE: total width of roadway surface is arbitrary... just make sure it is wider than the bridge
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    Float64 bridge_width = pBridgeDesc->GetBridgeWidth(); // this is an approximate width, but we are going to double it so that's ok
    if ( bridge_width <= 0 )
@@ -2502,102 +2398,96 @@ bool CBridgeAgentImp::BuildCogoModel()
    Float64 width = 4*bridge_width;
 
    // Before we start building the roadway surface, determine a reasonable station range in which to layout the surface
+   CComPtr<IAlignment> alignment;
+   m_CogoModel->CreateAlignmentByID(CBridgeGeometryModelBuilder::AlignmentID, &alignment);
    Float64 startStation, endStation;
-   ComputeReasonableSurfaceStationRange(m_CogoModel, pBridgeDesc, alignment_data, alignment, profile_data, &startStation, &endStation);
+   std::tie(startStation,endStation) = ComputeReasonableSurfaceStationRange(pBridgeDesc, alignment_data, alignment);
 
-   std::size_t numTempls = section_data.RoadwaySectionTemplates.size();
-   if (numTempls == 0)
+   if (section_data.RoadwaySectionTemplates.empty())
    {
       // If no section templates are defined, we have a flat level roadway with crown at center
-      surface->put_AlignmentPoint(1);
-      surface->put_ProfileGradePoint(1);
+      IndexType templateIdx = 0;
 
-      CComPtr<ISurfaceTemplate> leftTemplate;
-      leftTemplate.CoCreateInstance(CLSID_SurfaceTemplate);
-      leftTemplate->put_Station(CComVariant(startStation));
-      leftTemplate->AddSegment(width/2, 0.0, tsHorizontal);
-      leftTemplate->AddSegment(width/2, 0.0, tsHorizontal);
-      templates->Add(leftTemplate);
+      m_CogoModel->StoreSurface(CBridgeGeometryModelBuilder::SurfaceID, 2, 1, 1); // surface with 2 segments, alignment and profile at ridge point index 1
+      m_CogoModel->AttachSurfaceToProfile(CBridgeGeometryModelBuilder::SurfaceID, CBridgeGeometryModelBuilder::ProfileID);
 
-      CComPtr<ISurfaceTemplate> rightTemplate;
-      rightTemplate.CoCreateInstance(CLSID_SurfaceTemplate);
-      rightTemplate->put_Station(CComVariant(endStation));
-      rightTemplate->AddSegment(width/2, 0.0, tsHorizontal);
-      rightTemplate->AddSegment(width/2, 0.0, tsHorizontal);
-      templates->Add(rightTemplate);
+      m_CogoModel->AddSurfaceTemplate(CBridgeGeometryModelBuilder::SurfaceID, CComVariant(startStation));
+      m_CogoModel->UpdateSurfaceTemplateSegmentByID(CBridgeGeometryModelBuilder::SurfaceID, 0, templateIdx++, width / 2, 0.0, tsHorizontal); // left template segment
+      m_CogoModel->UpdateSurfaceTemplateSegmentByID(CBridgeGeometryModelBuilder::SurfaceID, 0, templateIdx++, width / 2, 0.0, tsHorizontal); // right template segment
+
+      templateIdx = 0;
+      m_CogoModel->AddSurfaceTemplate(CBridgeGeometryModelBuilder::SurfaceID, CComVariant(endStation));
+      m_CogoModel->UpdateSurfaceTemplateSegmentByID(CBridgeGeometryModelBuilder::SurfaceID, 0, templateIdx++, width / 2, 0.0, tsHorizontal); // left template segment
+      m_CogoModel->UpdateSurfaceTemplateSegmentByID(CBridgeGeometryModelBuilder::SurfaceID, 0, templateIdx++, width / 2, 0.0, tsHorizontal); // right template segment
    }
    else
    {
       // we have user defined templates. use input data
-      surface->put_AlignmentPoint(section_data.AlignmentPointIdx);
-      surface->put_ProfileGradePoint(section_data.ProfileGradePointIdx);
+      m_CogoModel->StoreSurface(CBridgeGeometryModelBuilder::SurfaceID, section_data.NumberOfSegmentsPerSection, section_data.AlignmentPointIdx, section_data.ProfileGradePointIdx);
+      m_CogoModel->AttachSurfaceToProfile(CBridgeGeometryModelBuilder::SurfaceID, CBridgeGeometryModelBuilder::ProfileID);
 
-      std::size_t it = 0;
-      for (const auto& super : section_data.RoadwaySectionTemplates)
+      IndexType templateIdx = 0;
+      auto begin = section_data.RoadwaySectionTemplates.begin();
+      auto iter = begin;
+      auto end = section_data.RoadwaySectionTemplates.end();
+      auto last = std::prev(end);
+      for (; iter != end; iter++)
       {
-         CComPtr<ISurfaceTemplate> surfaceTemplate;
-         surfaceTemplate.CoCreateInstance(CLSID_SurfaceTemplate);
-         surfaceTemplate->put_Station(CComVariant(super.Station));
+         const auto& super(*iter);
+
+         if (section_data.RoadwaySectionTemplates.size() == 1)
+         {
+            m_CogoModel->AddSurfaceTemplate(CBridgeGeometryModelBuilder::SurfaceID, CComVariant(Min(super.Station,startStation)));
+         }
+         else
+         {
+            m_CogoModel->AddSurfaceTemplate(CBridgeGeometryModelBuilder::SurfaceID, CComVariant(super.Station));
+         }
+
+         IndexType surfaceTemplateSegmentIdx = 0;
 
          // left infinite segment
-         surfaceTemplate->AddSegment(width, (section_data.slopeMeasure == RoadwaySectionData::RelativeToAlignmentPoint ?  -1 : 1)*super.LeftSlope, tsHorizontal);
+         m_CogoModel->UpdateSurfaceTemplateSegmentByID(CBridgeGeometryModelBuilder::SurfaceID,templateIdx, surfaceTemplateSegmentIdx++,width, (section_data.slopeMeasure == RoadwaySectionData::RelativeToAlignmentPoint ? -1 : 1)* super.LeftSlope, tsHorizontal);
 
          // interior segments
          IndexType ridgePointIdx = 1;
          for (const auto& segment : super.SegmentDataVec)
          {
             Float64 sign = section_data.slopeMeasure == RoadwaySectionData::RelativeToAlignmentPoint ? (ridgePointIdx < section_data.AlignmentPointIdx ? -1 : 1) : 1;
-            surfaceTemplate->AddSegment(segment.Length, sign*segment.Slope, tsHorizontal);
+            m_CogoModel->UpdateSurfaceTemplateSegmentByID(CBridgeGeometryModelBuilder::SurfaceID, templateIdx, surfaceTemplateSegmentIdx++, segment.Length, sign* segment.Slope, tsHorizontal);
             ridgePointIdx++;
          }
 
          // right infinite segment
-         surfaceTemplate->AddSegment(width, super.RightSlope, tsHorizontal);
+         m_CogoModel->UpdateSurfaceTemplateSegmentByID(CBridgeGeometryModelBuilder::SurfaceID, templateIdx, surfaceTemplateSegmentIdx++, width, super.RightSlope, tsHorizontal);
 
          // Deal with bounding stations. We need to make sure our template collection spans the required boundaries
-         if (numTempls == 1)
+         if (section_data.RoadwaySectionTemplates.size() == 1)
          {
-            // Only one template. We need to create a prismatic surface along bounds
-            surfaceTemplate->put_Station(CComVariant(startStation));  // place at startstation
-            templates->Add(surfaceTemplate);
-
-            CComPtr<ISurfaceTemplate> endTemplate;
-            surfaceTemplate->Clone(&endTemplate);
-            endTemplate->put_Station(CComVariant(endStation));
-            templates->Add(endTemplate);
+            m_CogoModel->CopySurfaceTemplateByID(CBridgeGeometryModelBuilder::SurfaceID, templateIdx++, CComVariant(endStation));
          }
-         else if (it == 0)
+         else if (iter == begin)
          {
+            // the first user defined template has been created above.
+            // if the stationing range begins before the first user template,
+            // move the user template to the start of the stationing range
             if (startStation < super.Station)
             {
-               // add a template at start so we have a prismatic surface until our first defined template
-               CComPtr<ISurfaceTemplate> startTemplate;
-               surfaceTemplate->Clone(&startTemplate);
-               startTemplate->put_Station(CComVariant(startStation));
-               templates->Add(startTemplate);
+               m_CogoModel->CopySurfaceTemplateByID(CBridgeGeometryModelBuilder::SurfaceID, templateIdx++, CComVariant(startStation));
             }
-
-            templates->Add(surfaceTemplate);
          }
-         else if (it == numTempls-1)
+         else if (iter == last)
          {
-            templates->Add(surfaceTemplate);
-
+            // the last user defined template has been created above.
+            // if the stationing range ends after the last user template,
+            // move the user template to the end of the stationing rage
             if (super.Station < endStation)
             {
-               // add a template at end so we have a prismatic surface until the end station
-               CComPtr<ISurfaceTemplate> endTemplate;
-               surfaceTemplate->Clone(&endTemplate);
-               endTemplate->put_Station(CComVariant(endStation));
-               templates->Add(endTemplate);
+               m_CogoModel->CopySurfaceTemplateByID(CBridgeGeometryModelBuilder::SurfaceID, templateIdx++, CComVariant(endStation));
             }
          }
-         else
-         {
-            templates->Add(surfaceTemplate);
-         }
 
-         it++;
+         templateIdx++;
       }
    }
    
@@ -2611,19 +2501,54 @@ bool CBridgeAgentImp::BuildBridgeGeometryModel()
    CComPtr<IBridgeGeometry> bridgeGeometry;
    m_Bridge->get_BridgeGeometry(&bridgeGeometry);
 
-   // Get the alignment that will be used for the bridge
-   CComPtr<IAlignmentCollection> alignments;
-   m_CogoModel->get_Alignments(&alignments);
-
+   // Create the alignment that will be used for the bridge
    CComPtr<IAlignment> alignment;
-   alignments->get_Item(g_AlignmentID,&alignment);
+   m_CogoModel->CreateAlignmentByID(CBridgeGeometryModelBuilder::AlignmentID,&alignment);
+
+   // Move the alignment such that the intersection of the alignment and the pier line of the first pier
+   // is at coordinate (0,0). The purpose of doing this is to keep the bridge model in a local coordinate
+   // system.
+
+   // 1) Get station of first pier line
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   Float64 station = pBridgeDesc->GetPier(0)->GetStation();
+
+   // 2) Create a point at the intersection of the alignment and the first pier line
+   CComPtr<IPoint2d> objRefPoint1;
+   alignment->LocatePoint(CComVariant(station), omtAlongDirection, 0.00, CComVariant(0.00), &objRefPoint1);
+
+   // 3) create a point at the origin of the coordinate system.
+   CComPtr<IPoint2d> objRefPoint2;
+   objRefPoint2.CoCreateInstance(CLSID_Point2d);
+   objRefPoint2->Move(0, 0);
+
+   // 4) measure the distance and direction between the point on alignment and the desired origin
+   CComQIPtr<IMeasure2> measure(m_CogoEngine);
+   Float64 distance;
+   CComPtr<IDirection> objDirection;
+   measure->Inverse(objRefPoint1, objRefPoint2, &distance, &objDirection);
+
+   // 5) move the alignment such that the intersection of the alignment and the first pier line is at the origin
+   alignment->Move(distance, CComVariant(objDirection));
+
+   // NOTE: THE BRIDGE AND ALIGNMENT ARE NOW IN THE LOCAL COORDINATE SYSTEM
+
+   // 6) determine the location of the actual alignment reference point in the local coordinate system
+   GET_IFACE(IRoadwayData, pIAlignment);
+   const AlignmentData2& alignment_data = pIAlignment->GetAlignmentData2();
+   CComPtr<IPoint2d> objRefPoint;
+   alignment->LocatePoint(CComVariant(alignment_data.RefStation), omtAlongDirection, 0.00, CComVariant(0.00), &objRefPoint);
+   Float64 dx, dy;
+   objRefPoint->Location(&dx, &dy);
+   m_DeltaX = alignment_data.xRefPoint - dx;
+   m_DeltaY = alignment_data.yRefPoint - dy;
 
    // associated alignment with the bridge geometry
-   bridgeGeometry->putref_Alignment(g_AlignmentID,alignment);
-   bridgeGeometry->put_BridgeAlignmentID(g_AlignmentID);
-
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   bridgeGeometry->putref_Alignment(CBridgeGeometryModelBuilder::AlignmentID,alignment);
+   bridgeGeometry->put_BridgeAlignmentID(CBridgeGeometryModelBuilder::AlignmentID);
+   bridgeGeometry->put_ProfileID(CBridgeGeometryModelBuilder::ProfileID);
+   bridgeGeometry->put_SurfaceID(CBridgeGeometryModelBuilder::SurfaceID);
 
    CBridgeGeometryModelBuilder model_builder;
    return model_builder.BuildBridgeGeometryModel(pBridgeDesc,m_CogoModel,alignment,bridgeGeometry,m_GirderOrientationCollection);
@@ -3725,7 +3650,7 @@ bool CBridgeAgentImp::LayoutFullDeck(const CBridgeDescription2* pBridgeDesc,IBri
    // the deck edge is described by a series of points. the transitions
    // between the points can be parallel to alignment, linear or spline. 
    // for spline transitions a cubic spline will be used. 
-   // for parallel transitations, a parallel alignment sub-path will be used.
+   // for parallel transitions, a parallel alignment sub-path will be used.
    CComPtr<IAlignment> alignment;
    m_Bridge->get_Alignment(&alignment);
 
@@ -5775,7 +5700,7 @@ void CBridgeAgentImp::LayoutPoiForSlabCastingRegions(const CGirderKey& girderKey
             m_Bridge->get_Alignment(&alignment);
 
             CComPtr<IDirection> normal;
-            alignment->Normal(CComVariant(objStation), &normal);
+            alignment->GetNormal(CComVariant(objStation), &normal);
 
             Float64 value;
             normal->get_Value(&value);
@@ -6581,78 +6506,38 @@ void CBridgeAgentImp::GetStartPoint(Float64 n,Float64* pStartStation,Float64* pS
    }
 
    CComPtr<IProfile> profile;
-   alignment->get_Profile(&profile);
+   alignment->GetProfile(CBridgeGeometryModelBuilder::ProfileID,&profile);
    IndexType nElements;
-   profile->get_Count(&nElements);
-   if ( 0 < nElements )
+   profile->get_ProfileElementCount(&nElements);
+   if (0 < nElements)
    {
       CComPtr<IProfileElement> profileElement;
-      profile->get_Item(0,&profileElement);
-      ProfileElementType type;
-      profileElement->get_Type(&type);
-      CComPtr<IUnknown> punk;
-      profileElement->get_Value(&punk);
-      if ( type == pePoint )
-      {
-         CComQIPtr<IProfilePoint> pp(punk);
-         CComPtr<IStation> objStation;
-         pp->get_Station(&objStation);
-         Float64 station;
-         objStation->get_NormalizedValue(alignment,&station);
-
-         CComPtr<IProfileElement> profileElement;
-         profile->get_Item(1, &profileElement); // profiles must always have a minimum of 2 points
-         ProfileElementType type;
-         profileElement->get_Type(&type);
-         if (nElements == 2 && type == pePoint && IsZero(station))
-         {
-            // often, the roadway profile is defined by a single point at station 0+00
-            // if there are 2 profile elements, both points, and the profile starts at station 0+00
-            // skip it... the graphics come out bad
-         }
-         else
-         {
-            *pStartStation = Min(*pStartStation, station);
-         }
-      }
-      else 
-      {
-         ATLASSERT( type == peVertCurve );
-         CComQIPtr<IVertCurve> vc(punk);
-         CComPtr<IProfilePoint> pp;
-         vc->get_BVC(&pp);
-         CComPtr<IStation> objStation;
-         pp->get_Station(&objStation);
-         Float64 station;
-         objStation->get_NormalizedValue(alignment,&station);
-         *pStartStation = Min(*pStartStation,station);
-      }
+      profile->get_Item(0, &profileElement);
+      CComPtr<IProfilePoint> startPoint;
+      profileElement->GetStartPoint(&startPoint);
+      CComPtr<IStation> objStation;
+      startPoint->get_Station(&objStation);
+      Float64 station;
+      alignment->ConvertToNormalizedStation(CComVariant(objStation), &station);
+      *pStartStation = Min(*pStartStation, station);
    }
 
-   CComPtr<ISurfaceCollection> surfaces;
-   profile->get_Surfaces(&surfaces);
-   IndexType nSurfaces;
-   surfaces->get_Count(&nSurfaces);
-   if ( 0 < nSurfaces )
+   CComPtr<ISurface> surface;
+   profile->GetSurface(CBridgeGeometryModelBuilder::SurfaceID, &surface);
+   CComPtr<IStation> objStartStation, objEndStation;
+   surface->GetStationRange(&objStartStation, &objEndStation);
+   Float64 station;
+   alignment->ConvertToNormalizedStation(CComVariant(objStartStation), &station);
+   if (station < (pierStation - spanLength / n) && IsZero(station))
    {
-      CComPtr<ISurface> surface;
-      surfaces->get_Item(0,&surface);
-
-      CComPtr<IStation> objStartStation, objEndStation;
-      surface->GetStationRange(&objStartStation,&objEndStation);
-      Float64 station;
-      objStartStation->get_NormalizedValue(alignment,&station);
-      if ( nSurfaces == 1 && station < (pierStation - spanLength/n) && IsZero(station) )
-      {
-         // often, the roadway surface is defined by a single point at station 0+00
-         // if there is only one surface defintion and it starts before the bridge
-         // and it is at 0+00, skip it so we don't end up with a really long alignment
-         // and a really short bridge... the graphics come out bad
-      }
-      else
-      {
-         *pStartStation = Min(*pStartStation,station);
-      }
+      // often, the roadway surface is defined by a single point at station 0+00
+      // if there is only one surface definition and it starts before the bridge
+      // and it is at 0+00, skip it so we don't end up with a really long alignment
+      // and a really short bridge... the graphics come out bad
+   }
+   else
+   {
+      *pStartStation = Min(*pStartStation, station);
    }
 
    GET_IFACE(IRoadwayData, pIAlignment);
@@ -6702,55 +6587,29 @@ void CBridgeAgentImp::GetEndPoint(Float64 n,Float64* pEndStation,Float64* pEndEl
    }
 
    CComPtr<IProfile> profile;
-   alignment->get_Profile(&profile);
+   alignment->GetProfile(CBridgeGeometryModelBuilder::ProfileID, &profile);
    IndexType nElements;
-   profile->get_Count(&nElements);
+   profile->get_ProfileElementCount(&nElements);
    if ( 0 < nElements )
    {
       CComPtr<IProfileElement> profileElement;
-      profile->get_Item(nElements-1,&profileElement);
-      ProfileElementType type;
-      profileElement->get_Type(&type);
-      CComPtr<IUnknown> punk;
-      profileElement->get_Value(&punk);
-      if ( type == pePoint )
-      {
-         CComQIPtr<IProfilePoint> pp(punk);
-         CComPtr<IStation> objStation;
-         pp->get_Station(&objStation);
-         Float64 station;
-         objStation->get_NormalizedValue(alignment,&station);
-         *pEndStation = Max(*pEndStation,station);
-      }
-      else 
-      {
-         ATLASSERT( type == peVertCurve );
-         CComQIPtr<IVertCurve> vc(punk);
-         CComPtr<IProfilePoint> pp;
-         vc->get_EVC(&pp);
-         CComPtr<IStation> objStation;
-         pp->get_Station(&objStation);
-         Float64 station;
-         objStation->get_NormalizedValue(alignment,&station);
-         *pEndStation = Max(*pEndStation,station);
-      }
-   }
-
-   CComPtr<ISurfaceCollection> surfaces;
-   profile->get_Surfaces(&surfaces);
-   IndexType nSurfaces;
-   surfaces->get_Count(&nSurfaces);
-   if ( 0 < nSurfaces )
-   {
-      CComPtr<ISurface> surface;
-      surfaces->get_Item(nSurfaces-1,&surface);
-
-      CComPtr<IStation> objStartStation, objEndStation;
-      surface->GetStationRange(&objStartStation,&objEndStation);
+      profile->get_Item(nElements-1, &profileElement);
+      CComPtr<IProfilePoint> endPoint;
+      profileElement->GetEndPoint(&endPoint);
+      CComPtr<IStation> objStation;
+      endPoint->get_Station(&objStation);
       Float64 station;
-      objEndStation->get_NormalizedValue(alignment,&station);
+      alignment->ConvertToNormalizedStation(CComVariant(objStation), &station);
       *pEndStation = Max(*pEndStation,station);
    }
+
+   CComPtr<ISurface> surface;
+   profile->GetSurface(CBridgeGeometryModelBuilder::SurfaceID, &surface);
+   CComPtr<IStation> objStartStation, objEndStation;
+   surface->GetStationRange(&objStartStation, &objEndStation);
+   Float64 station;
+   alignment->ConvertToNormalizedStation(CComVariant(objEndStation), &station);
+   *pEndStation = Max(*pEndStation,station);
 
    GetPoint(*pEndStation,0,nullptr,pgsTypes::pcGlobal,ppPoint);
    *pEndElevation = GetElevation(*pEndStation,0);
@@ -6765,7 +6624,7 @@ Float64 CBridgeAgentImp::GetSlope(Float64 station,Float64 offset) const
    GetProfile(&profile);
 
    Float64 slope;
-   profile->Slope(CComVariant(station),offset,&slope);
+   profile->CrossSlope(CBridgeGeometryModelBuilder::SurfaceID,CComVariant(station),offset,&slope);
 
    return slope;
 }
@@ -6790,7 +6649,7 @@ Float64 CBridgeAgentImp::GetElevation(Float64 station,Float64 offset) const
    GetProfile(&profile);
 
    Float64 elev;
-   profile->Elevation(CComVariant(station),offset,&elev);
+   profile->Elevation(CBridgeGeometryModelBuilder::SurfaceID, CComVariant(station), offset,&elev);
    return elev;
 }
 
@@ -6801,7 +6660,7 @@ void CBridgeAgentImp::GetBearing(Float64 station,IDirection** ppBearing) const
    CComPtr<IAlignment> alignment;
    GetAlignment(&alignment);
 
-   alignment->Bearing(CComVariant(station),ppBearing);
+   alignment->GetBearing(CComVariant(station),ppBearing);
 }
 
 void CBridgeAgentImp::GetBearingNormal(Float64 station,IDirection** ppNormal) const
@@ -6811,35 +6670,31 @@ void CBridgeAgentImp::GetBearingNormal(Float64 station,IDirection** ppNormal) co
    CComPtr<IAlignment> alignment;
    GetAlignment(&alignment);
 
-   alignment->Normal(CComVariant(station),ppNormal);
+   alignment->GetNormal(CComVariant(station),ppNormal);
 }
 
 CollectionIndexType CBridgeAgentImp::GetCurveCount() const
 {
    VALIDATE( COGO_MODEL );
 
-   CComPtr<ICompoundCurveCollection> curves;
-   m_CogoModel->get_CompoundCurves(&curves);
-
-   CollectionIndexType nCurves;
-   curves->get_Count(&nCurves);
+   IndexType nCurves;
+   m_CogoModel->GetCompoundCurveCountByID(CBridgeGeometryModelBuilder::AlignmentID, &nCurves);
    return nCurves;
 }
 
 void CBridgeAgentImp::GetCurve(CollectionIndexType idx, ICompoundCurve** ppCurve) const
 {
    // this is a private method, not accessible through the IAlignment interface
-   VALIDATE(COGO_MODEL);
-
-   CComPtr<ICompoundCurveCollection> curves;
-   m_CogoModel->get_CompoundCurves(&curves);
+   VALIDATE(BRIDGE);
+   CComPtr<IAlignment> alignment;
+   m_Bridge->get_Alignment(&alignment);
 
    auto found = m_CompoundCurveKeys.find(idx);
    ATLASSERT(found != std::end(m_CompoundCurveKeys));
 
-   auto key = found->second.second;
-   HRESULT hr = curves->get_Item(key, ppCurve);
-   ATLASSERT(SUCCEEDED(hr));
+   CComPtr<IPathElement> element;
+   alignment->get_Item(found->first, &element);
+   VERIFY(element.QueryInterface(ppCurve) == S_OK);
 }
 
 void CBridgeAgentImp::GetCurve(CollectionIndexType idx, pgsTypes::PlanCoordinateType pcType,ICompoundCurve** ppCurve) const
@@ -6847,10 +6702,17 @@ void CBridgeAgentImp::GetCurve(CollectionIndexType idx, pgsTypes::PlanCoordinate
    CComPtr<ICompoundCurve> curve;
    GetCurve(idx, &curve);
 
-   curve->Clone(ppCurve);
+   // It is very important to make a copy of the curve here. The curve can be manipulated outside of this method
+   // which will change the original alignment. Return a copy so the copy gets changed, not the original.
+   CComQIPtr<IPathElement> element(curve);
+   CComPtr<IPathElement> clone;
+   element->Clone(&clone);
+   clone.QueryInterface(ppCurve);
    if (pcType == pgsTypes::pcGlobal)
    {
-      (*ppCurve)->Offset(m_DeltaX, m_DeltaY);
+      element.Release();
+      (*ppCurve)->QueryInterface(&element);
+      element->Offset(m_DeltaX, m_DeltaY);
    }
 }
 
@@ -6899,51 +6761,52 @@ CollectionIndexType CBridgeAgentImp::GetVertCurveCount() const
 {
    VALIDATE( COGO_MODEL );
 
-   CComPtr<IVertCurveCollection> curves;
-   m_CogoModel->get_VertCurves(&curves);
-
-   CollectionIndexType nCurves;
-   curves->get_Count(&nCurves);
+   IndexType nCurves;
+   m_CogoModel->GetVerticalCurveCount(&nCurves);
    return nCurves;
 }
 
-void CBridgeAgentImp::GetVertCurve(CollectionIndexType idx,IVertCurve** ppCurve) const
+void CBridgeAgentImp::GetVertCurve(CollectionIndexType idx,IVerticalCurve** ppCurve) const
 {
-   VALIDATE( COGO_MODEL );
-
-   CComPtr<IVertCurveCollection> curves;
-   m_CogoModel->get_VertCurves(&curves);
+   VALIDATE(BRIDGE);
+   CComPtr<IAlignment> alignment;
+   m_Bridge->get_Alignment(&alignment);
+   CComPtr<IProfile> profile;
+   alignment->GetProfile(CBridgeGeometryModelBuilder::ProfileID, &profile);
 
    auto found = m_VertCurveKeys.find(idx);
    ATLASSERT(found != std::end(m_VertCurveKeys));
 
-   auto key = found->second.second;
-   HRESULT hr = curves->get_Item(key, ppCurve);
-   ATLASSERT(SUCCEEDED(hr));
+   CComPtr<IProfileElement> element;
+   profile->get_Item(found->first, &element);
+   element.QueryInterface(ppCurve);
 }
 
-void CBridgeAgentImp::GetRoadwaySurface(Float64 station,IDirection* pDirection,IPoint2dCollection** ppPoints) const
+void CBridgeAgentImp::GetRoadwaySurface(Float64 station,IAngle* pSkewAngle,IPoint2dCollection** ppPoints) const
 {
-   CComPtr<IAlignment> alignment;
-   GetAlignment(&alignment);
-
    CComPtr<IStation> objStation;
    objStation.CoCreateInstance(CLSID_Station);
    objStation->SetStation(INVALID_INDEX,station);
    CComVariant varStation(objStation);
 
    CComPtr<IProfile> profile;
-   alignment->get_Profile(&profile);
+   GetProfile(&profile);
 
    CComPtr<ISurface> surface;
-   profile->GetSurface(COGO_FINISHED_SURFACE_ID,varStation,&surface);
+   profile->GetSurface(CBridgeGeometryModelBuilder::SurfaceID,&surface);
+
+   Float64 skew_angle = 0.; // pSkewAngle == nullptr means the cut is normal to the alignment
+   if (pSkewAngle) pSkewAngle->get_Value(&skew_angle);
 
    CComPtr<IPoint2dCollection> points;
    points.CoCreateInstance(CLSID_Point2dCollection);
-   if ( pDirection == nullptr )
+   if (IsZero(skew_angle))
    {
-      // direction == nullptr means the cut is normal to the alignment
+      // cut is normal to the alignment
       // using surface templates is faster but only works for normal cuts
+      CComPtr<ISurfaceTemplate> surfaceTemplate;
+      surface->CreateSurfaceTemplateSectionCut(varStation, VARIANT_TRUE, &surfaceTemplate);
+
       Float64 Xb = ConvertRouteToBridgeLineCoordinate(station);
       Float64 leftEdgeOffset  = GetLeftSlabEdgeOffset(Xb);
       Float64 rightEdgeOffset = GetRightSlabEdgeOffset(Xb);
@@ -6951,26 +6814,23 @@ void CBridgeAgentImp::GetRoadwaySurface(Float64 station,IDirection* pDirection,I
       IndexType alignmentRidgePointIdx;
       surface->get_AlignmentPoint(&alignmentRidgePointIdx);
 
-      CComPtr<ISurfaceTemplate> surfaceTemplate;
-      surface->CreateSurfaceTemplate(varStation,VARIANT_TRUE,&surfaceTemplate);
-
       SegmentIndexType nSegments;
       surfaceTemplate->get_Count(&nSegments);
       IndexType nRidgePoints = nSegments+1;
       for ( IndexType ridgePointIdx = 0; ridgePointIdx < nRidgePoints; ridgePointIdx++ )
       {
          Float64 x,y;
-         profile->RidgePointElevation(COGO_FINISHED_SURFACE_ID,varStation,ridgePointIdx,alignmentRidgePointIdx,&x,&y);
+         profile->GetRidgePointOffsetAndElevation(CBridgeGeometryModelBuilder::SurfaceID,varStation,alignmentRidgePointIdx,ridgePointIdx,&x,&y);
 
          if ( x < leftEdgeOffset )
          {
             x = leftEdgeOffset;
-            profile->Elevation(varStation,x,&y);
+            profile->Elevation(CBridgeGeometryModelBuilder::SurfaceID,varStation, x,&y);
          }
          else if ( rightEdgeOffset < x )
          {
             x = rightEdgeOffset;
-            profile->Elevation(varStation,x,&y);
+            profile->Elevation(CBridgeGeometryModelBuilder::SurfaceID,varStation, x,&y);
          }
 
          CComPtr<IPoint2d> point;
@@ -6982,7 +6842,7 @@ void CBridgeAgentImp::GetRoadwaySurface(Float64 station,IDirection* pDirection,I
    else
    {
       CComPtr<ISurfaceProfile> surfaceProfile;
-      surface->CreateSurfaceProfile(varStation,CComVariant(pDirection),VARIANT_TRUE,&surfaceProfile);
+      surface->CreateSurfaceProfileSectionCut(varStation,CComVariant(pSkewAngle),VARIANT_TRUE,&surfaceProfile);
 
       IndexType nRidgePoints;
       surfaceProfile->get_Count(&nRidgePoints);
@@ -7039,7 +6899,7 @@ void CBridgeAgentImp::GetStationAndOffset(pgsTypes::PlanCoordinateType pcType,IP
 
    CComPtr<IStation> station;
    Float64 offset;
-   alignment->Offset(point,&station,&offset);
+   alignment->StationAndOffset(point,&station,&offset);
 
    ATLASSERT(station);
    if (station)
@@ -7056,41 +6916,25 @@ void CBridgeAgentImp::GetStationAndOffset(pgsTypes::PlanCoordinateType pcType,IP
 
 IndexType CBridgeAgentImp::GetCrownPointIndexCount(Float64 station) const
 {
-   CComPtr<IAlignment> alignment;
-   GetAlignment(&alignment);
-
-   CComPtr<IStation> objStation;
-   objStation.CoCreateInstance(CLSID_Station);
-   objStation->SetStation(INVALID_INDEX,station);
-   CComVariant varStation(objStation);
-
    CComPtr<IProfile> profile;
-   alignment->get_Profile(&profile);
+   GetProfile(&profile);
 
    CComPtr<ISurface> surface;
-   profile->GetSurface(COGO_FINISHED_SURFACE_ID,varStation,&surface);
+   profile->GetSurface(CBridgeGeometryModelBuilder::SurfaceID,&surface);
 
    IndexType cnt;
-   surface->get_SegmentCount(&cnt);
+   surface->GetSurfaceTemplateCount(&cnt);
 
    return cnt+1;
 }
 
 IndexType CBridgeAgentImp::GetAlignmentPointIndex(Float64 station) const
 {
-   CComPtr<IAlignment> alignment;
-   GetAlignment(&alignment);
-
-   CComPtr<IStation> objStation;
-   objStation.CoCreateInstance(CLSID_Station);
-   objStation->SetStation(INVALID_INDEX,station);
-   CComVariant varStation(objStation);
-
    CComPtr<IProfile> profile;
-   alignment->get_Profile(&profile);
+   GetProfile(&profile);
 
    CComPtr<ISurface> surface;
-   profile->GetSurface(COGO_FINISHED_SURFACE_ID,varStation,&surface);
+   profile->GetSurface(CBridgeGeometryModelBuilder::SurfaceID, &surface);
 
    IndexType cnt;
    surface->get_AlignmentPoint(&cnt);
@@ -7101,78 +6945,53 @@ IndexType CBridgeAgentImp::GetAlignmentPointIndex(Float64 station) const
 
 Float64 CBridgeAgentImp::GetAlignmentOffset(IndexType crownPointIdx, Float64 station) const
 {
-   CComPtr<IAlignment> alignment;
-   GetAlignment(&alignment);
-
-   CComPtr<IStation> objStation;
-   objStation.CoCreateInstance(CLSID_Station);
-   objStation->SetStation(INVALID_INDEX,station);
-   CComVariant varStation(objStation);
-
    CComPtr<IProfile> profile;
-   alignment->get_Profile(&profile);
+   GetProfile(&profile);
 
    CComPtr<ISurface> surface;
-   profile->GetSurface(COGO_FINISHED_SURFACE_ID,varStation,&surface);
+   profile->GetSurface(CBridgeGeometryModelBuilder::SurfaceID, &surface);
 
    IndexType alignmentRidgePointIdx;
    surface->get_AlignmentPoint(&alignmentRidgePointIdx);
 
    CComPtr<ISurfaceTemplate> surfaceTemplate;
-   surface->CreateSurfaceTemplate(varStation,VARIANT_TRUE,&surfaceTemplate);
+   surface->CreateSurfaceTemplateSectionCut(CComVariant(station), VARIANT_TRUE, &surfaceTemplate);
 
    Float64 offset;
-   surfaceTemplate->GetRidgePointOffset(crownPointIdx,alignmentRidgePointIdx,&offset);
+   surfaceTemplate->GetRidgePointOffset(alignmentRidgePointIdx,crownPointIdx,&offset);
 
    return offset;
 }
 
 IndexType CBridgeAgentImp::GetProfileGradeLineIndex(Float64 station) const
 {
-   CComPtr<IAlignment> alignment;
-   GetAlignment(&alignment);
-
-   CComPtr<IStation> objStation;
-   objStation.CoCreateInstance(CLSID_Station);
-   objStation->SetStation(INVALID_INDEX, station);
-   CComVariant varStation(objStation);
-
    CComPtr<IProfile> profile;
-   alignment->get_Profile(&profile);
+   GetProfile(&profile);
 
    CComPtr<ISurface> surface;
-   profile->GetSurface(COGO_FINISHED_SURFACE_ID, varStation, &surface);
+   profile->GetSurface(CBridgeGeometryModelBuilder::SurfaceID, &surface);
 
-   IndexType pgl;
-   surface->get_ProfileGradePoint(&pgl);
-
-   return pgl;
+   IndexType pglIdx;
+   surface->get_ProfileGradePoint(&pglIdx);
+   return pglIdx;
 }
 
 Float64 CBridgeAgentImp::GetProfileGradeLineOffset(IndexType crownPointIdx, Float64 station) const
 {
-   CComPtr<IAlignment> alignment;
-   GetAlignment(&alignment);
-
-   CComPtr<IStation> objStation;
-   objStation.CoCreateInstance(CLSID_Station);
-   objStation->SetStation(INVALID_INDEX, station);
-   CComVariant varStation(objStation);
-
    CComPtr<IProfile> profile;
-   alignment->get_Profile(&profile);
+   GetProfile(&profile);
 
    CComPtr<ISurface> surface;
-   profile->GetSurface(COGO_FINISHED_SURFACE_ID, varStation, &surface);
+   profile->GetSurface(CBridgeGeometryModelBuilder::SurfaceID, &surface);
 
    IndexType pgl;
    surface->get_ProfileGradePoint(&pgl);
 
    CComPtr<ISurfaceTemplate> surfaceTemplate;
-   surface->CreateSurfaceTemplate(varStation, VARIANT_TRUE, &surfaceTemplate);
+   surface->CreateSurfaceTemplateSectionCut(CComVariant(station), VARIANT_TRUE, &surfaceTemplate);
 
    Float64 offset;
-   surfaceTemplate->GetRidgePointOffset(crownPointIdx, pgl, &offset);
+   surfaceTemplate->GetRidgePointOffset(pgl, crownPointIdx, &offset);
 
    return offset;
 }
@@ -7317,13 +7136,6 @@ HRESULT CBridgeAgentImp::PointOnLineSegment(IPoint2d* from,ILineSegment2d* seg,F
    CComPtr<IProject2> project;
    m_CogoEngine->get_Project(&project);
    return project->PointOnLineSegment(from,seg,offset,point);
-}
-
-HRESULT CBridgeAgentImp::PointOnCurve(IPoint2d* pnt,ICompoundCurve* curve,IPoint2d** point) const
-{
-   CComPtr<IProject2> project;
-   m_CogoEngine->get_Project(&project);
-   return project->PointOnCurve(pnt,curve,point);
 }
 
 HRESULT CBridgeAgentImp::Arc(IPoint2d* from, IPoint2d* vertex, IPoint2d* to,CollectionIndexType nParts,IPoint2dCollection** points) const
@@ -8015,7 +7827,7 @@ std::vector<Float64> CBridgeAgentImp::GetGirderSpacing(PierIndexType pierIdx,pgs
          // measuring along a line that is normal to the CL Pier line
          Float64 station = pIBridgeDesc->GetPier(pierIdx)->GetStation();
          CComPtr<IDirection> normal;
-         alignment->Normal(CComVariant(station),&normal);
+         alignment->GetNormal(CComVariant(station),&normal);
          Float64 dir;
          normal->get_Value(&dir);
 
@@ -8031,7 +7843,7 @@ std::vector<Float64> CBridgeAgentImp::GetGirderSpacing(PierIndexType pierIdx,pgs
       {
          // measuring along a line that is normal the CL Bearing line
          // NOTE: in the general case, there can be multiple CL Bearing lines.
-         // to make things managable, we'll create a CL Bearing line by connecting the CL Bearing point
+         // to make things manageable, we'll create a CL Bearing line by connecting the CL Bearing point
          // for the two exterior girders
          CSegmentKey leftSegmentKey = GetSegmentAtPier(pierIdx,CGirderKey(grpIdx,0));
          CSegmentKey rightSegmentKey = GetSegmentAtPier(pierIdx,CGirderKey(grpIdx,nGirders-1));
@@ -8058,10 +7870,10 @@ std::vector<Float64> CBridgeAgentImp::GetGirderSpacing(PierIndexType pierIdx,pgs
 
          CComPtr<IStation> station;
          Float64 offset;
-         alignment->Offset(pntBrg,&station,&offset);
+         alignment->StationAndOffset(pntBrg,&station,&offset);
 
          CComPtr<IDirection> normal;
-         alignment->Normal(CComVariant(station),&normal);
+         alignment->GetNormal(CComVariant(station),&normal);
          Float64 dir;
          normal->get_Value(&dir);
 
@@ -8176,7 +7988,7 @@ std::vector<Float64> CBridgeAgentImp::GetGirderSpacingAtTemporarySupport(Support
          // measuring along a line that is normal to the CL Temporary Support line
          Float64 station = pIBridgeDesc->GetTemporarySupport(tsIdx)->GetStation();
          CComPtr<IDirection> normal;
-         alignment->Normal(CComVariant(station), &normal);
+         alignment->GetNormal(CComVariant(station), &normal);
          Float64 dir;
          normal->get_Value(&dir);
 
@@ -8221,10 +8033,10 @@ std::vector<Float64> CBridgeAgentImp::GetGirderSpacingAtTemporarySupport(Support
 
          CComPtr<IStation> station;
          Float64 offset;
-         alignment->Offset(pntBrg, &station, &offset);
+         alignment->StationAndOffset(pntBrg, &station, &offset);
 
          CComPtr<IDirection> normal;
-         alignment->Normal(CComVariant(station), &normal);
+         alignment->GetNormal(CComVariant(station), &normal);
          Float64 dir;
          normal->get_Value(&dir);
 
@@ -8398,7 +8210,7 @@ std::vector<SpaceBetweenGirder> CBridgeAgentImp::GetGirderSpacing(Float64 statio
    GetAlignment(&alignment);
 
    CComPtr<IDirection> normal;
-   alignment->Normal(CComVariant(station),&normal);
+   alignment->GetNormal(CComVariant(station),&normal);
    Float64 dirNormal;
    normal->get_Value(&dirNormal);
 
@@ -8581,7 +8393,7 @@ std::vector<Float64> CBridgeAgentImp::GetGirderSpacing(SpanIndexType spanIdx,Flo
    GetAlignment(&alignment);
 
    CComPtr<IDirection> normal;
-   alignment->Normal(CComVariant(station),&normal);
+   alignment->GetNormal(CComVariant(station),&normal);
    Float64 dirNormal;
    normal->get_Value(&dirNormal);
 
@@ -9178,7 +8990,6 @@ bool CBridgeAgentImp::GetSegmentPierIntersection(const CSegmentKey& segmentKey,P
    HRESULT hr = path->IntersectEx(line,nearest,VARIANT_FALSE,VARIANT_FALSE,ppPoint);
    if ( FAILED(hr) )
    {
-      ATLASSERT(hr == COGO_E_NOINTERSECTION);
       return false;
    }
 
@@ -9212,7 +9023,6 @@ bool CBridgeAgentImp::GetSegmentTempSupportIntersection(const CSegmentKey& segme
    HRESULT hr = path->IntersectEx(line,nearest,VARIANT_FALSE,VARIANT_FALSE,ppPoint);
    if ( FAILED(hr) )
    {
-      ATLASSERT(hr == COGO_E_NOINTERSECTION);
       return false;
    }
 
@@ -10893,7 +10703,7 @@ Float64 CBridgeAgentImp::GetSlabEdgeOffset(std::map<Float64, Float64>& slabEdgeO
    GetAlignment(&alignment);
 
    Float64 offsetStation;
-   objOffsetStation->get_NormalizedValue(alignment, &offsetStation);
+   alignment->ConvertToNormalizedStation(CComVariant(objOffsetStation), &offsetStation);
 
    if (!IsEqual(station, offsetStation))
    {
@@ -10940,7 +10750,7 @@ Float64 CBridgeAgentImp::GetCurbOffset(DirectionType side,Float64 Xb) const
    GetAlignment(&alignment);
 
    Float64 offsetStation;
-   objOffsetStation->get_NormalizedValue(alignment, &offsetStation);
+   alignment->ConvertToNormalizedStation(CComVariant(objOffsetStation), &offsetStation);
 
    if (!IsEqual(station, offsetStation))
    {
@@ -11305,14 +11115,14 @@ void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType 
          else
          {
             // p1 and p2 are at the same point... can't create a line
-            Float64 distFromStart;
+            CComPtr<IStation> station;
             VARIANT_BOOL vbOnProjection;
-            alignment->ProjectPoint(p1, &pntIntersect, &distFromStart,&vbOnProjection);
+            alignment->ProjectPoint(p1, &pntIntersect, &station,&vbOnProjection);
          }
 
          CComPtr<IStation> objStation;
          Float64 offset;
-         alignment->Offset(pntIntersect, &objStation, &offset);
+         alignment->StationAndOffset(pntIntersect, &objStation, &offset);
 
          Float64 station;
          objStation->get_Value(&station);
@@ -11357,14 +11167,14 @@ void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType 
          else
          {
             // p1 and p2 are at the same point... can't create a line
-            Float64 distFromStart;
+            CComPtr<IStation> station;
             VARIANT_BOOL vbOnProjection;
-            alignment->ProjectPoint(p1, &pntIntersect, &distFromStart, &vbOnProjection);
+            alignment->ProjectPoint(p1, &pntIntersect, &station, &vbOnProjection);
          }
 
          CComPtr<IStation> objStation;
          Float64 offset;
-         alignment->Offset(pntIntersect, &objStation, &offset);
+         alignment->StationAndOffset(pntIntersect, &objStation, &offset);
 
          Float64 station;
          objStation->get_Value(&station);
@@ -11431,7 +11241,7 @@ void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType 
          if (start_normal_station_right < station && station < end_normal_station_right)
          {
             CComPtr<IDirection> objDirection;
-            alignment->Normal(CComVariant(station), &objDirection);
+            alignment->GetNormal(CComVariant(station), &objDirection);
 
             CComPtr<IPoint2d> point;
             HRESULT hr = m_BridgeGeometryTool->DeckEdgePoint(m_Bridge, station, objDirection, qcbRight, &point);
@@ -11460,7 +11270,7 @@ void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType 
          if (start_normal_station_left < station && station < end_normal_station_left)
          {
             CComPtr<IDirection> objDirection;
-            alignment->Normal(CComVariant(station), &objDirection);
+            alignment->GetNormal(CComVariant(station), &objDirection);
 
             CComPtr<IPoint2d> point;
             HRESULT hr = m_BridgeGeometryTool->DeckEdgePoint(m_Bridge, station, objDirection, qcbLeft, &point);
@@ -11580,7 +11390,7 @@ Float64 CBridgeAgentImp::GetBearingStation(PierIndexType pierIdx, pgsTypes::Pier
 	// Get station and offset for this point
 	CComPtr<IStation> objStation;
 	Float64 station, offset;
-	alignment->Offset(pntAlignmentBearingIntersection,&objStation,&offset);
+	alignment->StationAndOffset(pntAlignmentBearingIntersection,&objStation,&offset);
 	objStation->get_Value(&station);
 
 	ATLASSERT(IsZero(offset));
@@ -11644,7 +11454,7 @@ void CBridgeAgentImp::GetWorkingPointLocation(PierIndexType pierIdx,pgsTypes::Pi
    Float64 station, offset;
    CComPtr<IAlignment> alignment;
    GetAlignment(&alignment);
-   alignment->Offset(pntBrgGirder,&objStation,&offset);
+   alignment->StationAndOffset(pntBrgGirder,&objStation,&offset);
    objStation->get_Value(&station);
 
    *pStation = station;
@@ -11854,7 +11664,7 @@ bool CBridgeAgentImp::GetSkewAngle(Float64 station,LPCTSTR strOrientation,Float6
       }
 
       CComPtr<IDirection> normal;
-      alignment->Normal(CComVariant(station),&normal);
+      alignment->GetNormal(CComVariant(station),&normal);
 
       CComPtr<IAngle> angle;
       brg->AngleBetween(normal,&angle);
@@ -12185,7 +11995,7 @@ void CBridgeAgentImp::GetTemporarySupportLocation(SupportIndexType tsIdx,GirderI
          // previous span this distance needs to be reduced by the length of this segment in the
          // previous span
          Float64 dist,offset;
-         gdrPath->Offset(pntIntersect,&dist,&offset);
+         gdrPath->DistanceAndOffset(pntIntersect,&dist,&offset);
          ATLASSERT(IsZero(offset));
 
          if ( segIdx == 0 )
@@ -31207,12 +31017,8 @@ HRESULT CBridgeAgentImp::OnAnalysisTypeChanged()
 
 void CBridgeAgentImp::GetAlignment(IAlignment** ppAlignment) const
 {
-   VALIDATE( COGO_MODEL );
-
-   CComPtr<IAlignmentCollection> alignments;
-   m_CogoModel->get_Alignments(&alignments);
-
-   HRESULT hr = alignments->get_Item(g_AlignmentID,ppAlignment);
+   VALIDATE(BRIDGE);
+   HRESULT hr = m_Bridge->get_Alignment(ppAlignment);
    ATLASSERT(SUCCEEDED(hr));
 }
 
@@ -31220,8 +31026,9 @@ void CBridgeAgentImp::GetProfile(IProfile** ppProfile) const
 {
    CComPtr<IAlignment> alignment;
    GetAlignment(&alignment);
-
-   alignment->get_Profile(ppProfile);
+   HRESULT hr = alignment->GetProfile(CBridgeGeometryModelBuilder::ProfileID,ppProfile);
+   ATLASSERT(SUCCEEDED(hr));
+   ATLASSERT(*ppProfile != nullptr);
 }
 
 void CBridgeAgentImp::GetBarrierProperties(pgsTypes::TrafficBarrierOrientation orientation,IShapeProperties** props) const
@@ -35569,26 +35376,35 @@ void CBridgeAgentImp::CreateOverlayDeckEdgePaths(const CBridgeDescription2* pBri
       SegmentIndexType nSegments = pBridgeDesc->GetGirderGroup(grpIdx)->GetGirder(0)->GetSegmentCount();
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
-         CComPtr<IPoint2d> point_on_edge;
+         CComPtr<IPoint2d> point_on_edge1;
+         CComPtr<IPoint2d> point_on_edge2;
+         CComPtr<IPoint2d> point_on_edge3;
+         CComPtr<IPoint2d> point_on_edge4;
 
          // left edge - start of segment
-         NoDeckEdgePoint(grpIdx,segIdx,pgsTypes::metStart,qcbLeft,&point_on_edge);
-         left_path->AddEx(point_on_edge);
+         NoDeckEdgePoint(grpIdx,segIdx,pgsTypes::metStart,qcbLeft,&point_on_edge1);
 
          // left edge - end of segment
-         point_on_edge.Release();
-         NoDeckEdgePoint(grpIdx,segIdx,pgsTypes::metEnd,qcbLeft,&point_on_edge);
-         left_path->AddEx(point_on_edge);
+         NoDeckEdgePoint(grpIdx,segIdx,pgsTypes::metEnd,qcbLeft,&point_on_edge2);
 
          // right edge - start of segment
-         point_on_edge.Release();
-         NoDeckEdgePoint(grpIdx,segIdx,pgsTypes::metStart,qcbRight,&point_on_edge);
-         right_path->AddEx(point_on_edge);
+         NoDeckEdgePoint(grpIdx,segIdx,pgsTypes::metStart,qcbRight,&point_on_edge3);
 
          // right edge - end of segment
-         point_on_edge.Release();
-         NoDeckEdgePoint(grpIdx,segIdx,pgsTypes::metEnd,qcbRight,&point_on_edge);
-         right_path->AddEx(point_on_edge);
+         NoDeckEdgePoint(grpIdx,segIdx,pgsTypes::metEnd,qcbRight,&point_on_edge4);
+
+         CComPtr<IPathSegment> left_segment, right_segment;
+         left_segment.CoCreateInstance(CLSID_PathSegment);
+         right_segment.CoCreateInstance(CLSID_PathSegment);
+
+         left_segment->ThroughPoints(point_on_edge1, point_on_edge2);
+         right_segment->ThroughPoints(point_on_edge3, point_on_edge4);
+
+         CComQIPtr<IPathElement> left_element(left_segment);
+         CComQIPtr<IPathElement> right_element(right_segment);
+
+         left_path->Add(left_element);
+         right_path->Add(right_element);
       } // next segment
    } // next group
 
@@ -35872,7 +35688,6 @@ bool CBridgeAgentImp::SegmentLineIntersect(const CSegmentKey& segmentKey,ILine2d
    HRESULT hr = path->IntersectEx(pLine,pntStartOfSegment,VARIANT_FALSE,VARIANT_FALSE,&pnt);
    if ( FAILED(hr) )
    {
-      ATLASSERT(hr == COGO_E_NOINTERSECTION);
       return false;
    }
 

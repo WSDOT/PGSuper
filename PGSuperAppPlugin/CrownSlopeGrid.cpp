@@ -203,12 +203,6 @@ void CCrownSlopeGrid::InitRowData(ROWCOL row)
 
 void CCrownSlopeGrid::CustomInit()
 {
-   CCrownSlopePage* pParent = (CCrownSlopePage*)GetParent();
-
-   GET_IFACE2(pParent->GetBroker(), IEAFDisplayUnits, pDisplayUnits);
-   const WBFL::Units::LengthData& alignment_unit = pDisplayUnits->GetAlignmentLengthUnit();
-   std::_tstring strUnitTag = alignment_unit.UnitOfMeasure.UnitTag();
-
    // Initialize the grid. For CWnd based grids this call is // 
    // essential. For view based grids this initialization is done 
    // in OnInitialUpdate.
@@ -400,7 +394,6 @@ void CCrownSlopeGrid::SetRowData(ROWCOL nRow, const RoadwaySectionTemplate& data
    UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
    Float64 station = data.Station;
-   station = WBFL::Units::ConvertFromSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    ROWCOL col = 0;
    SetValueRange(CGXRange(nRow,col++),nRow-1); // row num
@@ -450,7 +443,6 @@ bool CCrownSlopeGrid::GetRowData(ROWCOL nRow,RoadwaySectionTemplate& data)
 
    Float64 station_value;
    station->get_Value(&station_value);
-   station_value = WBFL::Units::ConvertToSysUnits(station_value,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    data.Station = station_value;
 
    CString strVal = GetCellValue(nRow,2);
