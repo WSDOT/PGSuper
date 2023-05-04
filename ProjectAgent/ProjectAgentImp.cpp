@@ -5983,7 +5983,8 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    }
    else
    {
-      if ( IsJointSpacing(m_BridgeDescription.GetGirderSpacingType()) )
+      auto spacing_type = m_BridgeDescription.GetGirderSpacingType();
+      if ( IsJointSpacing(spacing_type) && !IsTopWidthSpacing(spacing_type))
       {
          // input is girder spacing, but should be joint width... get the girder width and subtract if from the girder spacing
          // the result will be the joint width
