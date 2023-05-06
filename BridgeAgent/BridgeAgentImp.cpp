@@ -2387,17 +2387,11 @@ bool CBridgeAgentImp::BuildCogoModel()
 
 
    // NOTE: total width of roadway surface is arbitrary... just make sure it is wider than the bridge
-   GET_IFACE(IBridgeDescription, pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   Float64 bridge_width = pBridgeDesc->GetBridgeWidth(); // this is an approximate width, but we are going to double it so that's ok
-   if ( bridge_width <= 0 )
-   {
-      ATLASSERT(false); // this should never happen
-      bridge_width = 100;
-   }
-   Float64 width = 4*bridge_width;
+   Float64 width = Float64_Max / 2;
 
    // Before we start building the roadway surface, determine a reasonable station range in which to layout the surface
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    CComPtr<IAlignment> alignment;
    m_CogoModel->CreateAlignmentByID(CBridgeGeometryModelBuilder::AlignmentID, &alignment);
    Float64 startStation, endStation;
