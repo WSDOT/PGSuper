@@ -1932,7 +1932,7 @@ void CBridgeAgentImp::ComputeReasonableSurfaceStationRange(ICogoModel* pCogoMode
    if (profileData.VertCurves.size() == 0)
    {
       Float64 L = 100;
-      startStation = Min(startStation, profileData.Station + L);
+      startStation = Min(startStation, profileData.Station - L);
       endStation   = Max(endStation, profileData.Station + L);
    }
 
@@ -2496,16 +2496,10 @@ bool CBridgeAgentImp::BuildCogoModel()
    surface->get_SurfaceTemplates(&templates);
 
    // NOTE: total width of roadway surface is arbitrary... just make sure it is wider than the bridge
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   Float64 bridge_width = pBridgeDesc->GetBridgeWidth(); // this is an approximate width, but we are going to double it so that's ok
-   if ( bridge_width <= 0 )
-   {
-      ATLASSERT(false); // this should never happen
-      bridge_width = 100;
-   }
-   Float64 width = 4*bridge_width;
+   Float64 width = Float64_Max / 2;
 
    // Before we start building the roadway surface, determine a reasonable station range in which to layout the surface
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    Float64 startStation, endStation;
    ComputeReasonableSurfaceStationRange(m_CogoModel, pBridgeDesc, alignment_data, alignment, profile_data, &startStation, &endStation);
 
