@@ -402,7 +402,8 @@ void CEffectivePrestressGraphBuilder::UpdatePretensionGraphData(GroupIndexType g
 
    // Get the points of interest we need.
    GET_IFACE(IPointOfInterest,pIPoi);
-   CSegmentKey segmentKey(grpIdx,gdrIdx,ALL_SEGMENTS);
+   CGirderKey girderKey(grpIdx, gdrIdx);
+   CSegmentKey segmentKey(girderKey,ALL_SEGMENTS);
    PoiList vPoi;
    pIPoi->GetPointsOfInterest(segmentKey, &vPoi);
 
@@ -431,8 +432,12 @@ void CEffectivePrestressGraphBuilder::UpdatePretensionGraphData(GroupIndexType g
 
       CString strLabel;
       strLabel.Format(_T("Interval %d"),LABEL_INTERVAL(intervalIdx));
+
       IndexType dataSeries = m_Graph.CreateDataSeries(strLabel,PS_SOLID,GRAPH_PEN_WEIGHT,color);
-      IndexType dataSeries2 = m_Graph.CreateDataSeries(_T(""),PS_SOLID,GRAPH_PEN_WEIGHT,color);
+      IndexType dataSeries2 = m_Graph.CreateDataSeries(_T(""), PS_SOLID, GRAPH_PEN_WEIGHT, color);
+
+      bool bPermanentStrandReleaseThisInterval = true;
+      bool bTemporaryStrandInstallationThisInterval = true;
 
       auto iter(vPoi.begin());
       auto end(vPoi.end());
@@ -448,6 +453,9 @@ void CEffectivePrestressGraphBuilder::UpdatePretensionGraphData(GroupIndexType g
          IntervalIndexType stressTempStrandIntervalIdx       = pIntervals->GetTemporaryStrandStressingInterval(thisSegmentKey);
          IntervalIndexType tempStrandInstallationIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(thisSegmentKey);
          IntervalIndexType tempStrandRemovalIntervalIdx      = pIntervals->GetTemporaryStrandRemovalInterval(thisSegmentKey);
+
+         bPermanentStrandReleaseThisInterval &= (intervalIdx == releaseIntervalIdx);
+         bTemporaryStrandInstallationThisInterval &= (intervalIdx == tempStrandInstallationIntervalIdx);
 
          if ( !bPermanent && // plotting for temporary strands - AND -
                ((tempStrandInstallationIntervalIdx == INVALID_INDEX) || // temp strands not installed - OR -
@@ -474,8 +482,7 @@ void CEffectivePrestressGraphBuilder::UpdatePretensionGraphData(GroupIndexType g
          Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, time, true/*include elastic effects*/);
          if (bStresses)
          {
-            Float64 Aps = pStrandGeom->GetStrandArea(poi, intervalIdx, strandType);
-            Fpe = IsZero(Aps) ? 0.0 : Fpe / Aps; // now a stress
+            Fpe = pPSForce->GetEffectivePrestress(poi, strandType, intervalIdx, time);
          }
          AddGraphPoint(dataSeries, X, Fpe);
 
@@ -489,12 +496,21 @@ void CEffectivePrestressGraphBuilder::UpdatePretensionGraphData(GroupIndexType g
             Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::End);
             if (bStresses)
             {
-               Float64 Aps = pStrandGeom->GetStrandArea(poi, intervalIdx, strandType);
-               Fpe = IsZero(Aps) ? 0.0 : Fpe / Aps; // now a stress
+               Fpe = pPSForce->GetEffectivePrestress(poi, strandType, intervalIdx, pgsTypes::End);
             }
             AddGraphPoint(dataSeries2, X, Fpe);
          }
       } // next poi
+
+      if (bPermanentStrandReleaseThisInterval || bTemporaryStrandInstallationThisInterval)
+      {
+         strLabel.Format(_T("Interval %d, before xfer"), LABEL_INTERVAL(intervalIdx));
+         m_Graph.SetDataLabel(dataSeries, strLabel);
+
+         strLabel.Format(_T("Interval %d, after xfer"), LABEL_INTERVAL(intervalIdx));
+         m_Graph.SetDataLabel(dataSeries2, strLabel);
+
+      }
    } // next interval
 }
 

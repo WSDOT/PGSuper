@@ -5299,6 +5299,9 @@ void CBridgeAgentImp::LayoutPrestressTransferAndDebondPoi(const CSegmentKey& seg
                Float64 Xg = Xgp - first_segment_start_offset;
                pgsPointOfInterest poiDBD(segmentKey, Xs, Xsp, Xg, Xgp, attrib_debond);
                VERIFY(m_pPoiMgr->AddPointOfInterest(poiDBD) != INVALID_ID);
+
+               poiDBD.SetDistFromStart(d1 - 0.001);
+               VERIFY(m_pPoiMgr->AddPointOfInterest(poiDBD) != INVALID_ID);
             }
 
             Float64 Xs  = d2;
@@ -5322,6 +5325,9 @@ void CBridgeAgentImp::LayoutPrestressTransferAndDebondPoi(const CSegmentKey& seg
                Float64 Xgp = segmentOffset + Xsp;
                Float64 Xg = Xgp - first_segment_start_offset;
                pgsPointOfInterest poiDBD(segmentKey, Xs, Xsp, Xg, Xgp, attrib_debond);
+               VERIFY(m_pPoiMgr->AddPointOfInterest(poiDBD) != INVALID_ID);
+
+               poiDBD.SetDistFromStart(d1 + 0.001);
                VERIFY(m_pPoiMgr->AddPointOfInterest(poiDBD) != INVALID_ID);
             }
 
