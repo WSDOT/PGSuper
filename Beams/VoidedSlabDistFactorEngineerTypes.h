@@ -45,7 +45,7 @@ struct VOIDEDSLAB_LLDFDETAILS : public BASE_LLDFDETAILS
    Float64 leftDe;
    Float64 rightDe;
    Float64 J;
-   Float64 PossionRatio;
+   Float64 PoissonRatio;
    pgsTypes::AdjacentTransverseConnectivity TransverseConnectivity;
 
    Int16 nVoids;
