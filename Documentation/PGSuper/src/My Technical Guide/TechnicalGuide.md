@@ -45,6 +45,7 @@ Topics
 * @subpage tg_splitting_zone_checks
 * @subpage tg_stability
 * @subpage tg_structural_analysis_models
+* @subpage tg_torsion_constant
 * @subpage tg_tensile_stress_limits
 * @subpage tg_time_dependent_material_models
 * @subpage tg_transfer_length

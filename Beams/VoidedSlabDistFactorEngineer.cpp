@@ -91,7 +91,7 @@ void CVoidedSlabDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptC
       GetPierDF(pier1, gdrIdx, pgsTypes::StrengthI, pgsTypes::Ahead, USE_CURRENT_FC, &pier1_lldf);
       GetPierDF(pier2, gdrIdx, pgsTypes::StrengthI, pgsTypes::Back,  USE_CURRENT_FC, &pier2_lldf);
 
-      // do a sanity check to make sure the fundimental values are correct
+      // do a sanity check to make sure the fundamental values are correct
       ATLASSERT(span_lldf.Method  == pier1_lldf.Method);
       ATLASSERT(span_lldf.Method  == pier2_lldf.Method);
       ATLASSERT(pier1_lldf.Method == pier2_lldf.Method);
@@ -149,7 +149,7 @@ void CVoidedSlabDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptC
       (*pPara) << _T("Beam Depth: d = ") << xdim2.SetValue(span_lldf.d) << rptNewLine;
       Float64 de = span_lldf.Side==dfLeft ? span_lldf.leftDe:span_lldf.rightDe;
       (*pPara) << _T("Distance from exterior web of exterior beam to curb line: d") << Sub(_T("e")) << _T(" = ") << xdim.SetValue(de) << rptNewLine;
-      (*pPara) << _T("Possion Ratio: ") << symbol(mu) << _T(" = ") << span_lldf.PossionRatio << rptNewLine;
+      (*pPara) << _T("Poisson Ratio: ") << symbol(mu) << _T(" = ") << span_lldf.PoissonRatio << rptNewLine;
    //   (*pPara) << _T("Skew Angle at start: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs(span_lldf.skew1)) << rptNewLine;
    //   (*pPara) << _T("Skew Angle at end: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs(span_lldf.skew2)) << rptNewLine;
       GET_IFACE(ISpecification, pSpec);
@@ -178,7 +178,7 @@ void CVoidedSlabDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptC
          else
          {
             (*pPara) << rptRcImage(strImagePath + _T("J_closed_thin_wall.png")) << rptNewLine;
-            (*pPara) << rptRcImage(strImagePath + _T("VoidedSlab_TorsionalConstant.gif")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + _T("VoidedSlab_TorsionalConstant.png")) << rptNewLine;
             (*pPara) << _T("Area enclosed by centerlines of elements: ") << Sub2(_T("A"),_T("o")) << _T(" = ") << area.SetValue(span_lldf.Jvoid.Ao) << rptNewLine;
 
             rptRcTable* p_table = rptStyleManager::CreateDefaultTable(3,_T(""));
@@ -435,17 +435,6 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLLDFParame
    Float64 VoidDiameter = pGirderEntry->GetDimension(_T("Void_Diameter"));
    Int16 nVoids         = (Int16)pGirderEntry->GetDimension(_T("Number_of_Voids"));
 
-   // thickness of exterior _T("web")
-   Float64 t_ext;
-   if (0 < nVoids)
-   {
-      t_ext = (Width - (nVoids-1)*(VoidSpacing) - VoidDiameter)/2;
-   }
-   else
-   {
-      t_ext = Width;
-   }
-
    plldf->b            = Width;
    plldf->d            = Height;
 
@@ -461,7 +450,7 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLLDFParame
       plldf->I = pSectProp->GetIxx(pgsTypes::sptGross,llIntervalIdx,poi);
    }
 
-   plldf->PossionRatio = 0.2;
+   plldf->PoissonRatio = 0.2;
    plldf->nVoids = nVoids; // need to make WBFL::LRFD consistent
    plldf->TransverseConnectivity = pDeck->TransverseConnectivity;
 
@@ -511,19 +500,22 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLLDFParame
    {
       // voided slab
 
-      // Deterine J
+      // Determine J
 
       VOIDEDSLAB_J_VOID Jvoid;
 
       Float64 Sum_s_over_t = 0;
 
-      // NOTE: t_ext is computed above
-
-      // thickness of interior vertical elements
-      Float64 t_int = VoidSpacing - VoidDiameter;
-
-      // length of internal, vertical elements between voids
-      Float64 s_int = (Height + VoidDiameter)/2;
+      // thickness of exterior "web" (edge of beam to first void)
+      Float64 t_ext;
+      if (0 < nVoids)
+      {
+         t_ext = (Width - (nVoids - 1) * (VoidSpacing)-VoidDiameter) / 2;
+      }
+      else
+      {
+         t_ext = Width;
+      }
 
       // s and t for top and bottom
       Float64 s_top = Width - t_ext;
@@ -533,6 +525,12 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLLDFParame
 
       Float64 slab_depth = pBridge->GetStructuralSlabDepth(poi);
       t_top += slab_depth;
+
+      // thickness of interior vertical elements
+      Float64 t_int = VoidSpacing - VoidDiameter;
+
+      // length of internal, vertical elements between voids
+      Float64 s_int = Height + slab_depth - t_top / 2 - t_bot / 2;
 
       Jvoid.Elements.push_back(VOIDEDSLAB_J_VOID::Element(s_top,t_top)); // top
       Jvoid.Elements.push_back(VOIDEDSLAB_J_VOID::Element(s_bot,t_bot)); // bottom
@@ -581,7 +579,7 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLLDFParame
                                          plldf->d,
                                          plldf->leftDe,
                                          plldf->rightDe,
-                                         plldf->PossionRatio,
+                                         plldf->PoissonRatio,
                                          plldf->skew1, 
                                          plldf->skew2);
    }
@@ -643,7 +641,7 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLLDFParame
                                    plldf->d,
                                    plldf->leftDe,
                                    plldf->rightDe,
-                                   plldf->PossionRatio,
+                                   plldf->PoissonRatio,
                                    plldf->skew1, 
                                    plldf->skew2,
                                    bSkewMoment,
@@ -666,7 +664,7 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLLDFParame
                             plldf->d,
                             plldf->leftDe,
                             plldf->rightDe,
-                            plldf->PossionRatio,
+                            plldf->PoissonRatio,
                             plldf->skew1, 
                             plldf->skew2,
                             bSkewMoment,
@@ -1000,7 +998,7 @@ void CVoidedSlabDistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_L
 
             if (gV1.ControllingMethod & MOMENT_OVERRIDE)
             {
-               (*pPara) << _T("Overriden by moment factor because J or I was out of range for shear equation")<<rptNewLine;
+               (*pPara) << _T("Overridden by moment factor because J or I was out of range for shear equation")<<rptNewLine;
                (*pPara) << _T("e = ") << gV1.EqnData.e << rptNewLine;
                (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << _T("(e)(mg") << Super(_T("MI")) << Sub(_T("1")) << _T(") = ") << scalar.SetValue(gV1.EqnData.mg*gV1.EqnData.e) << rptNewLine;
             }
@@ -1055,7 +1053,7 @@ void CVoidedSlabDistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_L
                REPORT_LLDF_INTOVERRIDE(gV2);
                if (gV2.ControllingMethod & MOMENT_OVERRIDE)
                {
-                  (*pPara) << _T("Overriden by moment factor because J or I was out of range for shear equation")<<rptNewLine;
+                  (*pPara) << _T("Overridden by moment factor because J or I was out of range for shear equation")<<rptNewLine;
                   (*pPara) << _T("e = ") << gV2.EqnData.e << rptNewLine;
                   (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("2")) << _T(" = ") << _T("(e)(mg") << Super(_T("ME")) << Sub(_T("2")) << _T(") = ") << scalar.SetValue(gV2.EqnData.mg*gV2.EqnData.e) << rptNewLine;
                }
@@ -1125,7 +1123,7 @@ void CVoidedSlabDistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_L
          {
             if (gV1.ControllingMethod & MOMENT_OVERRIDE)
             {
-               (*pPara) << _T("Overriden by moment factor because J or I was out of range for shear equation")<<rptNewLine;
+               (*pPara) << _T("Overridden by moment factor because J or I was out of range for shear equation")<<rptNewLine;
                (*pPara) << _T("mg") << Super(_T("VI")) << Sub(_T("1")) << _T(" = ") << _T("mg") << Super(_T("MI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg) << rptNewLine;
             }
             else
@@ -1164,7 +1162,7 @@ void CVoidedSlabDistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_L
             {
                if (gV2.ControllingMethod & MOMENT_OVERRIDE)
                {
-                  (*pPara) << _T("Overriden by moment factor because J or I was out of range for shear equation")<<rptNewLine;
+                  (*pPara) << _T("Overridden by moment factor because J or I was out of range for shear equation")<<rptNewLine;
                   (*pPara) << _T("mg") << Super(_T("VI")) << Sub(_T("2")) << _T(" = ") << _T("mg") << Super(_T("MI")) << Sub(_T("2")) << _T(" = ") << scalar.SetValue(gV2.mg) << rptNewLine;
                }
                else
@@ -1219,7 +1217,7 @@ std::_tstring CVoidedSlabDistFactorEngineer::GetComputationDescription(const CGi
    std::_tstring descr;
    if ( lldfMethod == LLDF_TXDOT )
    {
-      descr += std::_tstring(_T("TxDOT method per per TxDOT Bridge Design Manual - LRFD"));
+      descr += std::_tstring(_T("TxDOT method per TxDOT Bridge Design Manual - LRFD"));
    }
    else if ( lldfMethod == LLDF_LRFD || lldfMethod == LLDF_WSDOT  )
    {
