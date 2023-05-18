@@ -2878,8 +2878,6 @@ void CBridgeSectionView::BuildRoadwayCrossSectionDisplayObjects()
    // bridge plan view where the alignment display object is really a drop site
    CComQIPtr<iDropSite> drop_site(events);
    drop_site->SetDisplayObject(dispObj);
-
-   ATLASSERT(bfinished); // crown point model is not wide enough for our needs
 }
 
 void CBridgeSectionView::CreateLineDisplayObject(IPoint2d* pntStart,IPoint2d* pntEnd,iLineDisplayObject** ppLineDO)
