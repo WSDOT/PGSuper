@@ -2387,7 +2387,7 @@ bool CBridgeAgentImp::BuildCogoModel()
 
 
    // NOTE: total width of roadway surface is arbitrary... just make sure it is wider than the bridge
-   Float64 width = Float64_Max / 2;
+   Float64 width = 1e9;
 
    // Before we start building the roadway surface, determine a reasonable station range in which to layout the surface
    GET_IFACE(IBridgeDescription, pIBridgeDesc);
