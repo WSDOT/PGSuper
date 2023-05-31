@@ -7120,7 +7120,7 @@ IndexType CBridgeAgentImp::GetCrownPointIndexCount(Float64 station) const
    profile->GetSurface(CBridgeGeometryModelBuilder::SurfaceID,&surface);
 
    IndexType cnt;
-   surface->GetSurfaceTemplateCount(&cnt);
+   surface->get_SurfaceTemplateSegmentCount(&cnt);
 
    return cnt+1;
 }
