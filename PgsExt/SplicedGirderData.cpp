@@ -204,6 +204,18 @@ void CSplicedGirderData::Resize(SegmentIndexType nSegments)
 #endif
 }
 
+void CSplicedGirderData::CopyHaunchData(const CSplicedGirderData& rOther)
+{
+   ATLASSERT(m_Segments.size() == rOther.m_Segments.size()); // this won't end well
+
+   SegmentIndexType nSegs = m_Segments.size();
+   for (SegmentIndexType iSeg=0; iSeg<nSegs; iSeg++)
+   {
+      std::vector<Float64> haunches = rOther.m_Segments[iSeg]->GetDirectHaunchDepths(true);
+      m_Segments[iSeg]->SetDirectHaunchDepths(haunches);
+   }
+}
+
 CSplicedGirderData& CSplicedGirderData::operator= (const CSplicedGirderData& rOther)
 {
    if( this != &rOther )
@@ -1026,6 +1038,42 @@ pgsTypes::ConditionFactorType CSplicedGirderData::GetConditionFactorType() const
 void CSplicedGirderData::SetConditionFactorType(pgsTypes::ConditionFactorType conditionFactorType)
 {
    m_ConditionFactorType = conditionFactorType;
+}
+
+void CSplicedGirderData::SetDirectHaunchDepths(const std::vector<Float64>& haunchDepths)
+{
+   for (auto& segment: m_Segments)
+   {
+      segment->SetDirectHaunchDepths(haunchDepths);
+   }
+}
+
+void CSplicedGirderData::SetDirectHaunchDepths(SegmentIndexType segIdx, const std::vector<Float64>& rHaunchDepths)
+{
+   ATLASSERT(segIdx < m_Segments.size());
+   return m_Segments[segIdx]->SetDirectHaunchDepths(rHaunchDepths);
+}
+
+std::vector<Float64> CSplicedGirderData::GetDirectHaunchDepths(SegmentIndexType segIdx,bool bGetRawValue) const
+{
+   ATLASSERT(segIdx < m_Segments.size());
+   if (bGetRawValue)
+   {
+      return m_Segments[segIdx]->GetDirectHaunchDepths(bGetRawValue);
+   }
+   else
+   {
+      const CBridgeDescription2* pBridgeDesc = GetBridgeDescription();
+      pgsTypes::HaunchInputLocationType type = pBridgeDesc->GetHaunchInputLocationType();
+      if (type == pgsTypes::hilSame4Bridge)
+      {
+         return pBridgeDesc->GetDirectHaunchDepths();
+      }
+      else
+      {
+         return m_Segments[segIdx]->GetDirectHaunchDepths(true); // Get raw value - segment is our storage
+      }
+   }
 }
 
 CGirderKey CSplicedGirderData::GetGirderKey() const

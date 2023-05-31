@@ -117,6 +117,22 @@ public:
    void CopyAssumedExcessCamber(GirderIndexType sourceGdrIdx,GirderIndexType targetGdrIdx);
 
    // =================================================================================
+   // Direct Haunch Depth Used only when the parent bridge's HaunchLayoutType==hltAlongSpans
+   // and HaunchInputLocationType==hilSame4AllGirders or hilPerEach
+   // =================================================================================
+   // Set the Haunch at a span (same for all girders)
+   void SetDirectHaunchDepths(const std::vector<Float64>& haunchDepths);
+
+   // Set/Get the Haunch Depth at a span for a specific girder
+   // Use when hilSame4AllGirders
+   void SetDirectHaunchDepths(GirderIndexType gdrIdx, const std::vector<Float64>& HaunchDepth);
+   std::vector<Float64> GetDirectHaunchDepths(GirderIndexType gdrIdx,bool bGetRawValue = false) const;
+
+   // Copies girder-by-girder Haunch Depth data from one girder to another
+   void CopyHaunchDepth(GirderIndexType sourceGdrIdx,GirderIndexType targetGdrIdx);
+
+
+   // =================================================================================
    // Live Load Distribution Factors (for Directly Input)
    // =================================================================================
    void SetLLDFPosMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls,Float64 gM);
@@ -177,6 +193,11 @@ private:
 
    // make sure AssumedExcessCamber data stays intact from girder count changes
    void ProtectAssumedExcessCamber() const;
+
+   mutable std::vector< std::vector<Float64>> m_vHaunchDepths; // vector of Haunch Depths for each girder in span. First value is used for hilSame4AllGirders
+
+   // make sure Haunch Depth data stays intact from girder count changes
+   void ProtectHaunchDepth() const;
 
    friend CBridgeDescription2;
 };

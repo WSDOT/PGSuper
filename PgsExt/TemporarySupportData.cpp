@@ -41,7 +41,7 @@ CLASS
    CTemporarySupportData
 ****************************************************************************/
 CTemporarySupportData::CTemporarySupportData() :
-   m_SlabOffset{0.0,0.0}
+   m_PrivateSlabOffset{0.0,0.0}
 {
    m_ID    = INVALID_ID;
    m_Index = INVALID_INDEX;
@@ -156,15 +156,6 @@ bool CTemporarySupportData::operator==(const CTemporarySupportData& rOther) cons
    if ( m_BearingOffsetMeasurementType != rOther.m_BearingOffsetMeasurementType )
    {
       return false;
-   }
-
-   const auto* pBridge = GetBridgeDescription();
-   if (pBridge && pBridge->GetSlabOffsetType() == pgsTypes::sotBearingLine && HasSlabOffset())
-   {
-      if (!IsEqual(GetSlabOffset(pgsTypes::Back), rOther.GetSlabOffset(pgsTypes::Back)) || !IsEqual(GetSlabOffset(pgsTypes::Ahead), rOther.GetSlabOffset(pgsTypes::Ahead)))
-      {
-         return false;
-      }
    }
 
    if ( HasElevationAdjustment() && !IsEqual(m_ElevationAdjustment,rOther.m_ElevationAdjustment) )
@@ -282,15 +273,15 @@ HRESULT CTemporarySupportData::Load(IStructuredLoad* pStrLoad,IProgress* pProgre
          hr = pStrLoad->get_Property(_T("SupportWidth"), &var);
       }
 
-      if (4 < version && HasSlabOffset())
+      if (version==5 && ( m_SupportType == pgsTypes::StrongBack || (m_SupportType == pgsTypes::ErectionTower && m_ConnectionType == pgsTypes::tsctClosureJoint )))
       {
-         // added in version 5
+         // added in version 5, and removed in version 6
          var.vt = VT_R8;
          hr = pStrLoad->get_Property(_T("BackSlabOffset"), &var);
-         m_SlabOffset[pgsTypes::Back] = var.dblVal;
+         m_PrivateSlabOffset[pgsTypes::Back] = var.dblVal;
 
          hr = pStrLoad->get_Property(_T("AheadSlabOffset"), &var);
-         m_SlabOffset[pgsTypes::Ahead] = var.dblVal;
+         m_PrivateSlabOffset[pgsTypes::Ahead] = var.dblVal;
       }
 
       if ( 2 < version )
@@ -333,7 +324,7 @@ HRESULT CTemporarySupportData::Save(IStructuredSave* pStrSave,IProgress* pProgre
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("TemporarySupportData"),5.0);
+   pStrSave->BeginUnit(_T("TemporarySupportData"),6.0);
    pStrSave->put_Property(_T("ID"),CComVariant(m_ID));
    switch( m_SupportType )
 
@@ -371,12 +362,12 @@ HRESULT CTemporarySupportData::Save(IStructuredSave* pStrSave,IProgress* pProgre
    pStrSave->put_Property(_T("GirderBearingOffset"),         CComVariant(m_GirderBearingOffset));
    pStrSave->put_Property(_T("BearingOffsetMeasurementType"),CComVariant(ConnectionLibraryEntry::StringForBearingOffsetMeasurementType(m_BearingOffsetMeasurementType).c_str()) );
    
-   // added in version 5
-   if (HasSlabOffset())
-   {
-      pStrSave->put_Property(_T("BackSlabOffset"), CComVariant(m_SlabOffset[pgsTypes::Back]));
-      pStrSave->put_Property(_T("AheadSlabOffset"), CComVariant(m_SlabOffset[pgsTypes::Ahead]));
-   }
+   // added in version 5, and removed in version 6
+   //if (HasSlabOffset())
+   //{
+   //   pStrSave->put_Property(_T("BackSlabOffset"), CComVariant(m_SlabOffset[pgsTypes::Back]));
+   //   pStrSave->put_Property(_T("AheadSlabOffset"), CComVariant(m_SlabOffset[pgsTypes::Ahead]));
+   //}
 
    // added in version 3, changed conditional in version 5
    //if ( m_SupportType == pgsTypes::ErectionTower )
@@ -416,7 +407,6 @@ void CTemporarySupportData::MakeCopy(const CTemporarySupportData& rOther,bool bC
    m_EndDistanceMeasurementType   = rOther.m_EndDistanceMeasurementType;
    m_BearingOffsetMeasurementType = rOther.m_BearingOffsetMeasurementType;
 
-   m_SlabOffset = rOther.m_SlabOffset;
    m_ElevationAdjustment = rOther.m_ElevationAdjustment;
 
    m_Spacing                      = rOther.m_Spacing;
@@ -639,57 +629,19 @@ void CTemporarySupportData::GetBearingOffset(Float64* pOffset,ConnectionLibraryE
    *pMeasure = m_BearingOffsetMeasurementType;
 }
 
-bool CTemporarySupportData::HasSlabOffset() const
+void CTemporarySupportData::GetSlabOffsetPrivate(Float64* pBackSlabOffset, Float64* pAheadSlabOffset) const
 {
-   // slab offsets are applicable at strongback (since they are always at segment ends)
-   // and at erection towers that have closure joints
-   // no slab offsets when segments are continuous over the temporary support
-   return (m_SupportType == pgsTypes::StrongBack || (m_SupportType == pgsTypes::ErectionTower && m_ConnectionType == pgsTypes::tsctClosureJoint)) ? true : false;
-}
-
-void CTemporarySupportData::SetSlabOffset(pgsTypes::PierFaceType face, Float64 slabOffset)
-{
-   m_SlabOffset[face] = slabOffset;
-}
-
-void CTemporarySupportData::SetSlabOffset(Float64 backSlabOffset, Float64 aheadSlabOffset)
-{
-   m_SlabOffset[pgsTypes::Back] = backSlabOffset;
-   m_SlabOffset[pgsTypes::Ahead] = aheadSlabOffset;
-}
-
-Float64 CTemporarySupportData::GetSlabOffset(pgsTypes::PierFaceType face,bool bRawData) const
-{
-   // if this assert fires, there isn't a slab offset at this pier
-   ATLASSERT(HasSlabOffset());
-
-   const CBridgeDescription2* pBridgeDesc = GetBridgeDescription();
-   if (bRawData || pBridgeDesc == nullptr || pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBearingLine)
-   {
-      return m_SlabOffset[face];
-   }
-   else if (pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge)
-   {
-      return pBridgeDesc->GetSlabOffset();
-   }
-   else
-   {
-      ATLASSERT(false); // should never get here
-                        // if slab offset type is sotSegment, we don't know which girder
-      return m_SlabOffset[face];
-   }
-}
-
-void CTemporarySupportData::GetSlabOffset(Float64* pBackSlabOffset, Float64* pAheadSlabOffset, bool bRawData) const
-{
-   *pBackSlabOffset = GetSlabOffset(pgsTypes::Back,bRawData);
-   *pAheadSlabOffset = GetSlabOffset(pgsTypes::Ahead,bRawData);
+   // Assert on old condition in a removed function called HasSlabOffset()
+   ATLASSERT((m_SupportType == pgsTypes::StrongBack || (m_SupportType == pgsTypes::ErectionTower && m_ConnectionType == pgsTypes::tsctClosureJoint)));
+   *pBackSlabOffset = m_PrivateSlabOffset[pgsTypes::Back];
+   *pAheadSlabOffset = m_PrivateSlabOffset[pgsTypes::Ahead];
 }
 
 bool CTemporarySupportData::HasElevationAdjustment() const
 {
    // elevation adjustments go hand in hand with slab offsets
-   return HasSlabOffset();
+   // this needs beefing up
+   return m_SupportType == pgsTypes::StrongBack || (m_SupportType == pgsTypes::ErectionTower && m_ConnectionType == pgsTypes::tsctClosureJoint);
 }
 
 void CTemporarySupportData::SetElevationAdjustment(Float64 elevAdj)

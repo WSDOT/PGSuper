@@ -727,6 +727,8 @@ Float64 CPrecastSegmentData::GetSlabOffset(pgsTypes::MemberEndType end,bool bRaw
    else
    {
       const CBridgeDescription2* pBridge = m_pGirder->GetGirderGroup()->GetBridgeDescription();
+      ATLASSERT(pBridge->GetHaunchInputDepthType() == pgsTypes::hidACamber); // Should be asking if this is not the case
+
       switch (pBridge->GetSlabOffsetType())
       {
          case pgsTypes::sotBridge:
@@ -744,7 +746,10 @@ Float64 CPrecastSegmentData::GetSlabOffset(pgsTypes::MemberEndType end,bool bRaw
             }
             else
             {
-               return pTS->GetSlabOffset(face);
+               // Function call below is for older versions of PGSplice only. Slab offset data was removed in 2023
+               Float64 backA,aheadA;
+               pTS->GetSlabOffsetPrivate(&backA, &aheadA);
+               return face == pgsTypes::Ahead ? aheadA : backA;
             }
          }
          case pgsTypes::sotSegment:
@@ -877,11 +882,41 @@ bool CPrecastSegmentData::operator==(const CPrecastSegmentData& rOther) const
       }
    }
 
-   if (m_pGirder && m_pGirder->GetGirderGroup()->GetBridgeDescription()->GetSlabOffsetType() == pgsTypes::sotSegment)
+   if (m_pGirder)
    {
-      if (!IsEqual(GetSlabOffset(pgsTypes::metStart), rOther.GetSlabOffset(pgsTypes::metStart)) || !IsEqual(GetSlabOffset(pgsTypes::metEnd), rOther.GetSlabOffset(pgsTypes::metEnd)))
+      if (m_pGirder->GetGirderGroup()->GetBridgeDescription()->GetHaunchInputDepthType() == pgsTypes::hidACamber)
+      {
+         if (m_pGirder->GetGirderGroup()->GetBridgeDescription()->GetSlabOffsetType() == pgsTypes::sotSegment)
+         {
+            if (!IsEqual(GetSlabOffset(pgsTypes::metStart),rOther.GetSlabOffset(pgsTypes::metStart)) || !IsEqual(GetSlabOffset(pgsTypes::metEnd),rOther.GetSlabOffset(pgsTypes::metEnd)))
       {
          return false;
+      }
+   }
+      }
+      else
+      {
+         // direct input of haunch
+         if (m_pGirder->GetGirderGroup()->GetBridgeDescription()->GetHaunchInputLocationType() != pgsTypes::hilSame4Bridge)
+         {
+            if (m_vHaunchDepths.size() != rOther.m_vHaunchDepths.size())
+            {
+               return false;
+            }
+
+            std::vector<Float64>::const_iterator ithis = m_vHaunchDepths.begin();
+            std::vector<Float64>::const_iterator iother = rOther.m_vHaunchDepths.begin();
+            while (ithis != m_vHaunchDepths.end())
+            {
+               if (!IsEqual(*ithis,*iother))
+               {
+                  return false;
+               }
+
+               ithis++;
+               iother++;
+            }
+         }
       }
    }
 
@@ -1137,6 +1172,24 @@ HRESULT CPrecastSegmentData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
          hr = pStrLoad->EndUnit(); // TopFlangeThickening
       }
 
+      if (4 < version)
+      {
+         m_vHaunchDepths.clear();
+         pStrLoad->BeginUnit(_T("HaunchDepthsPerSegment"));
+
+         var.vt = VT_INDEX;
+         hr = pStrLoad->get_Property(_T("nValues"),&var);
+         IndexType nvals = VARIANT2INDEX(var);
+         var.vt = VT_R8;
+         for (IndexType iv = 0; iv < nvals; iv++)
+         {
+            hr = pStrLoad->get_Property(_T("HaunchDepthVal"),&var);
+            m_vHaunchDepths.push_back(var.dblVal);
+         }
+
+         pStrLoad->EndUnit(); // HaunchDepthsPerSegment
+      }
+
       hr = pStrLoad->EndUnit(); // PrecastSegment
    }
    catch (HRESULT)
@@ -1151,7 +1204,7 @@ HRESULT CPrecastSegmentData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
 
 HRESULT CPrecastSegmentData::Save(IStructuredSave* pStrSave, IProgress* pProgress)
 {
-   pStrSave->BeginUnit(_T("PrecastSegment"), 4.0);
+   pStrSave->BeginUnit(_T("PrecastSegment"), 5.0);
 
    pStrSave->put_Property(_T("ID"), CComVariant(m_SegmentID));
 
@@ -1268,6 +1321,15 @@ HRESULT CPrecastSegmentData::Save(IStructuredSave* pStrSave, IProgress* pProgres
       pStrSave->put_Property(_T("Value"), CComVariant(TopFlangeThickening));
    pStrSave->EndUnit(); // TopFlangeThickening
 
+   // added in version 5
+   pStrSave->BeginUnit(_T("HaunchDepthsPerSegment"),1.0);
+   pStrSave->put_Property(_T("nValues"),CComVariant(m_vHaunchDepths.size()));
+   for (const auto& vhaunch : m_vHaunchDepths)
+   {
+         pStrSave->put_Property(_T("HaunchDepthVal"),CComVariant(vhaunch));
+   }
+   pStrSave->EndUnit(); // HaunchDepths
+
    pStrSave->EndUnit(); // PrecastSegment
 
    return S_OK;
@@ -1314,6 +1376,8 @@ void CPrecastSegmentData::MakeCopy(const CPrecastSegmentData& rOther,bool bCopyI
       Precamber = rOther.Precamber;
 
       m_SlabOffset = rOther.m_SlabOffset;
+
+      m_vHaunchDepths = rOther.m_vHaunchDepths;
    }
 
    ResolveReferences();
@@ -1462,6 +1526,35 @@ LPCTSTR CPrecastSegmentData::GetSegmentVariation(pgsTypes::SegmentVariationType 
    }
 
    return nullptr;
+}
+
+void CPrecastSegmentData::SetDirectHaunchDepths(const std::vector<Float64>& HaunchDepths)
+{
+   m_vHaunchDepths = HaunchDepths;
+}
+
+std::vector<Float64> CPrecastSegmentData::GetDirectHaunchDepths(bool bGetRawValue) const
+{
+   if (bGetRawValue || m_pGirder == nullptr || m_pGirder->GetGirderGroup() == nullptr || m_pGirder->GetGirderGroup()->GetBridgeDescription() == nullptr)
+   {
+      ATLASSERT(m_vHaunchDepths.size()>0 || bGetRawValue); // someone upstream should have set our data
+      return m_vHaunchDepths;
+   }
+   else
+   {
+      const CBridgeDescription2* pBridge = m_pGirder->GetGirderGroup()->GetBridgeDescription();
+      ATLASSERT(pBridge->GetHaunchInputDepthType() != pgsTypes::hidACamber || pBridge->GetHaunchLayoutType() != pgsTypes::hltAlongSpans); // Should not be asking if this is the case
+
+      if (pBridge->GetHaunchInputLocationType() == pgsTypes::hilPerEach)
+      {
+         ATLASSERT(!m_vHaunchDepths.empty()); // someone upstream should have set our data
+         return m_vHaunchDepths;
+      }
+      else
+      {
+         return m_pGirder->GetDirectHaunchDepths(this->GetIndex(),bGetRawValue);
+      }
+   }
 }
 
 #if defined _DEBUG

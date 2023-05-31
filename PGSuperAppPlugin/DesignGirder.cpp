@@ -319,7 +319,7 @@ void txnDesignGirder::DoExecute(int i)
             PierIndexType pierIdx = 0;
             for (const auto& offsets : m_OldPierSlabOffsets)
             {
-               pIBridgeDesc->SetSlabOffset(pgsTypes::stPier,pierIdx, offsets.first, offsets. second);
+               pIBridgeDesc->SetSlabOffset(pierIdx, offsets.first, offsets. second);
                pierIdx++;
             }
          }
@@ -360,8 +360,8 @@ void txnDesignGirder::DoExecute(int i)
          else if (m_NewSlabOffsetType==sodtPier)
          {
             pIBridgeDesc->SetSlabOffsetType(pgsTypes::sotBearingLine);
-            pIBridgeDesc->SetSlabOffset(pgsTypes::stPier, (PierIndexType)m_FromSpanIdx, pgsTypes::Ahead,   m_DesignSlabOffset[pgsTypes::metStart]);
-            pIBridgeDesc->SetSlabOffset(pgsTypes::stPier, (PierIndexType)(m_FromSpanIdx+1), pgsTypes::Back, m_DesignSlabOffset[pgsTypes::metEnd]);
+            pIBridgeDesc->SetSlabOffset((PierIndexType)m_FromSpanIdx, pgsTypes::Ahead,   m_DesignSlabOffset[pgsTypes::metStart]);
+            pIBridgeDesc->SetSlabOffset((PierIndexType)(m_FromSpanIdx+1), pgsTypes::Back, m_DesignSlabOffset[pgsTypes::metEnd]);
          }
          else if (m_NewSlabOffsetType==sodtGirder)
          {

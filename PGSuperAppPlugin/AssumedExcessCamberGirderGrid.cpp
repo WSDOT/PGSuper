@@ -25,7 +25,7 @@
 
 #include "stdafx.h"
 #include "AssumedExcessCamberGirderGrid.h"
-#include "EditHaunchDlg.h"
+#include "EditHaunchACamberDlg.h"
 
 #include <System\Tokenizer.h>
 #include "PGSuperUnits.h"
@@ -90,8 +90,8 @@ void CAssumedExcessCamberGirderGrid::CustomInit()
 	GetParam( )->EnableUndo(FALSE);
 
    // Create entire grid with read-only place holders for inputs. Fill grid will change types to writeable later
-   CEditHaunchDlg* pParent = (CEditHaunchDlg*)(GetParent()->GetParent());
-   SpanIndexType nSpans = pParent->m_BridgeDesc.GetSpanCount();
+   CEditHaunchACamberDlg* pParent = (CEditHaunchACamberDlg*)GetParent()->GetParent();
+   SpanIndexType nSpans = pParent->GetBridgeDesc()->GetSpanCount();
 
    const int num_rows = 0;
    const int num_cols = (int)nSpans;
@@ -139,7 +139,7 @@ void CAssumedExcessCamberGirderGrid::DoDataExchange(CDataExchange* pDX)
    __super::DoDataExchange(pDX);
    if (pDX->m_bSaveAndValidate)
    {
-      CEditHaunchDlg* pParent = (CEditHaunchDlg*)(GetParent()->GetParent());
+      CEditHaunchACamberDlg* pParent = (CEditHaunchACamberDlg*)GetParent()->GetParent();
       if (pParent->GetAssumedExcessCamberType() == pgsTypes::aecGirder)
       {
          GetGridData(pDX);
@@ -162,14 +162,15 @@ void CAssumedExcessCamberGirderGrid::FillGrid()
       RemoveRows(1, nRows);
    }
 
-   CEditHaunchDlg* pParent = (CEditHaunchDlg*)(GetParent()->GetParent());
+   CEditHaunchACamberDlg* pParent = (CEditHaunchACamberDlg*)GetParent()->GetParent();
+   CBridgeDescription2* pBridge = pParent->GetBridgeDesc();
    long nMaxGirders = -1;
-   SpanIndexType nSpans = pParent->m_BridgeDesc.GetSpanCount();
+   SpanIndexType nSpans = pBridge->GetSpanCount();
    for (SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++)
    {
       ROWCOL col = (ROWCOL)(spanIdx + 1);
 
-      auto* pSpan = pParent->m_BridgeDesc.GetSpan(spanIdx);
+      auto* pSpan = pBridge->GetSpan(spanIdx);
       auto nGirders = pSpan->GetGirderCount();
       for (auto gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
       {
@@ -204,14 +205,15 @@ void CAssumedExcessCamberGirderGrid::FillGrid()
 
 void CAssumedExcessCamberGirderGrid::GetGridData(CDataExchange* pDX)
 {
-   CEditHaunchDlg* pParent = (CEditHaunchDlg*)(GetParent()->GetParent());
+   CEditHaunchACamberDlg* pParent = (CEditHaunchACamberDlg*)GetParent()->GetParent();
+   CBridgeDescription2* pBridge = pParent->GetBridgeDesc();
 
-   SpanIndexType nSpans = pParent->m_BridgeDesc.GetSpanCount();
+   SpanIndexType nSpans = pBridge->GetSpanCount();
    for (SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++)
    {
       ROWCOL col = (ROWCOL)(spanIdx + 1);
 
-      auto* pSpan = pParent->m_BridgeDesc.GetSpan(spanIdx);
+      auto* pSpan = pBridge->GetSpan(spanIdx);
       auto nGirders = pSpan->GetGirderCount();
       for (auto gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
       {

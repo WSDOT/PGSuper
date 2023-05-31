@@ -1,6 +1,6 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.58    6   7.17                     1     1    WF95P    *     12  0.6  270  44.03  42.70   9.00   9.00                                              5.000 10.258   2.196    -2.685    11766   0.669  0.776  -0.311 -0.427  0.000 -0.039 -0.466   7.96  116.65    0.00    0.00    0.00    2.50    0.00    3.24    0.00    0.75 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 40.58    6   7.17                     1     1    WF95P    *     12  0.6  270  44.03  42.70                                              5.000 10.258   2.196    -2.685    11766   0.669  0.776  -0.311 -0.427  0.000 -0.039 -0.466   7.96  116.65    0.00    0.00    0.00    2.50    0.00    3.24    0.00    0.75 
 
 
 The Specification Check was Not Successful
@@ -50,14 +50,14 @@ Hauling checks failed for Segment 1.
 Lifting checks failed for Segment 2.
 Lifting checks failed for Segment 3.
 Hauling checks failed for Segment 3.
-Slab Offset ("A" Dimension) check failed
+Finished elevation check failed
 Duct Size check failed for Duct 1.
 Duct Size check failed for Duct 2.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.58    6   7.17                     1     2    WF95P    *     12  0.6  270  44.03  42.70   9.00   9.00                                              5.000 10.258   2.213    -2.699    11717   0.649  0.776  -0.334 -0.452  0.000 -0.039 -0.491   7.96  116.24    0.00    0.00    0.00    2.54    0.00    3.29    0.00    0.79 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 40.58    6   7.17                     1     2    WF95P    *     12  0.6  270  44.03  42.70                                              5.000 10.258   2.213    -2.699    11717   0.649  0.776  -0.334 -0.452  0.000 -0.039 -0.491   7.96  116.24    0.00    0.00    0.00    2.54    0.00    3.29    0.00    0.79 
 
 
 The Specification Check was Not Successful
@@ -107,7 +107,7 @@ Hauling checks failed for Segment 1.
 Lifting checks failed for Segment 2.
 Lifting checks failed for Segment 3.
 Hauling checks failed for Segment 3.
-Slab Offset ("A" Dimension) check failed
+Finished elevation check failed
 Duct Size check failed for Duct 1.
 Duct Size check failed for Duct 2.
 

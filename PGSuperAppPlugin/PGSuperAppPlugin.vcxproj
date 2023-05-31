@@ -209,7 +209,10 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClCompile Include="CopyTempSupportDlg.cpp" />
     <ClCompile Include="CopyTempSupportPropertiesCallbacks.cpp" />
     <ClCompile Include="DrawDeckRegionControl.cpp" />
+    <ClCompile Include="EditHaunchACamberDlg.cpp" />
+    <ClCompile Include="EditHaunchByHaunchDlg.cpp" />
     <ClCompile Include="FileSaveWarningDlg.cpp" />
+    <ClCompile Include="GeometryControlDlg.cpp" />
     <ClCompile Include="GirderDescGeneralPage.cpp" />
     <ClCompile Include="BridgeDescLiftingPage.cpp" />
     <ClCompile Include="BridgeDescLongitudinalRebar.cpp" />
@@ -293,6 +296,10 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClCompile Include="GMDisplayMgrEventsImpl.cpp" />
     <ClCompile Include="GraphView.cpp" />
     <ClCompile Include="GraphViewChildFrame.cpp" />
+    <ClCompile Include="HaunchDirectEntireBridgeGrid.cpp" />
+    <ClCompile Include="HaunchDirectSameAsGrid.cpp" />
+    <ClCompile Include="HaunchDirectSegmentGrid.cpp" />
+    <ClCompile Include="HaunchDirectSpansGrid.cpp" />
     <ClCompile Include="HorizontalAlignmentGrid.cpp" />
     <ClCompile Include="HorizontalAlignmentPage.cpp" />
     <ClCompile Include="InplaceEditDisplayObjectEvents.cpp" />
@@ -382,6 +389,7 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClCompile Include="StructuralAnalysisMethodDlg.cpp" />
     <ClCompile Include="SupportDrawStrategyImpl.cpp" />
     <ClCompile Include="SegmentTendonGrid.cpp" />
+    <ClCompile Include="TempSupportElevAdjustGrid.cpp" />
     <ClCompile Include="TimelineReportDlg.cpp" />
     <ClCompile Include="TrafficBarrierDisplayObjectEvents.cpp" />
     <ClCompile Include="AboutDlg.cpp" />
@@ -601,7 +609,10 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClInclude Include="CopyTempSupportPropertiesCallbacks.h" />
     <ClInclude Include="DrawDeckRegionControl.h" />
     <ClInclude Include="EditAnalysisType.h" />
+    <ClInclude Include="EditHaunchACamberDlg.h" />
+    <ClInclude Include="EditHaunchByHaunchDlg.h" />
     <ClInclude Include="FileSaveWarningDlg.h" />
+    <ClInclude Include="GeometryControlDlg.h" />
     <ClInclude Include="GirderDescGeneralPage.h" />
     <ClInclude Include="BridgeDescLiftingPage.h" />
     <ClInclude Include="BridgeDescLongitudinalRebar.h" />
@@ -688,6 +699,10 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClInclude Include="GMDisplayMgrEventsImpl.h" />
     <ClInclude Include="GraphView.h" />
     <ClInclude Include="GraphViewChildFrame.h" />
+    <ClInclude Include="HaunchDirectEntireBridgeGrid.h" />
+    <ClInclude Include="HaunchDirectSameAsGrid.h" />
+    <ClInclude Include="HaunchDirectSegmentGrid.h" />
+    <ClInclude Include="HaunchDirectSpansGrid.h" />
     <ClInclude Include="HorizontalAlignmentGrid.h" />
     <ClInclude Include="HorizontalAlignmentPage.h" />
     <ClInclude Include="..\Include\BridgeModelViewController.h" />
@@ -799,6 +814,7 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClInclude Include="SupportDrawStrategy.h" />
     <ClInclude Include="SupportDrawStrategyImpl.h" />
     <ClInclude Include="SegmentTendonGrid.h" />
+    <ClInclude Include="TempSupportElevAdjustGrid.h" />
     <ClInclude Include="TimelineReportDlg.h" />
     <ClInclude Include="TrafficBarrierDisplayObjectEvents.h" />
     <ClInclude Include="AboutDlg.h" />
@@ -984,9 +1000,6 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ProjectReference Include="..\GraphingAgent\GraphingAgent.vcxproj">
       <Project>{30dd6886-34ba-48bd-9bb6-08e8cd79cad7}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="..\Graphs\Graphs.vcxproj">
-      <Project>{a29f3c02-af58-4e29-a791-caa5a1ce28b6}</Project>
     </ProjectReference>
     <ProjectReference Include="..\KDOTExport\KDOTExport.vcxproj">
       <Project>{c6f6e6a6-916e-491d-a1df-dc1e8814c3fb}</Project>

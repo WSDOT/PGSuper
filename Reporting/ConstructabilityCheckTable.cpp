@@ -517,11 +517,13 @@ void CConstructabilityCheckTable::BuildMinimumHaunchCLCheck(rptChapter* pChapter
 {
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   bool isPGSuper = pDocType->IsPGSuperDocument();
 
    // Create table - delete it later if we don't need it
    bool needSpanCols = true; // ConstrNeedSpanCols(girderList, pBridge);
 
-   ColumnIndexType nCols = needSpanCols ? 5 : 3; // put span/girder in table if multi girder
+   ColumnIndexType nCols = needSpanCols ? 6 : 4; // put span/girder in table if multi girder
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nCols,_T(""));
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
@@ -533,11 +535,12 @@ void CConstructabilityCheckTable::BuildMinimumHaunchCLCheck(rptChapter* pChapter
    ColumnIndexType col = 0;
    if (needSpanCols)
    {
-      (*pTable)(0,col++) << _T("Span");
+      (*pTable)(0,col++) << (isPGSuper ? _T("Span") : _T("Group"));
       (*pTable)(0,col++) << _T("Girder");
    }
 
-   (*pTable)(0,col++) << COLHDR(_T("Provided") << rptNewLine << _T("Haunch Depth"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*pTable)(0,col++) << COLHDR(_T("Provided") << rptNewLine << _T("Haunch Depth") << rptNewLine << _T("CL Start Brg"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+   (*pTable)(0,col++) << COLHDR(_T("Provided") << rptNewLine << _T("Haunch Depth") << rptNewLine << _T("CL End Brg"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*pTable)(0,col++) << COLHDR(_T("Required") << rptNewLine << _T("Haunch Depth"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*pTable)(0,col++) << _T("Status");
 
@@ -546,51 +549,62 @@ void CConstructabilityCheckTable::BuildMinimumHaunchCLCheck(rptChapter* pChapter
    {
       const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetGirderArtifact(girderKey);
       const pgsConstructabilityArtifact* pConstrArtifact = pGdrArtifact->GetConstructabilityArtifact();
-
-      SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
-      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
-      {
-         const auto& artifact = pConstrArtifact->GetSegmentArtifact(segIdx);
       
-         pgsSegmentConstructabilityArtifact::SlabOffsetBearingCLApplicabilityType appt = artifact.GetHaunchAtBearingCLsApplicability();
-         if (pgsSegmentConstructabilityArtifact::sobappNA != appt)
+      pgsConstructabilityArtifact::HaunchBearingCLApplicabilityType appt = pConstrArtifact->GetHaunchBearingCLApplicability();
+      if (pgsConstructabilityArtifact::hbcAppNA != appt)
+      {
+         row++;
+         col = 0;
+
+         if (needSpanCols)
          {
-            row++;
-            col = 0;
-
-            if (needSpanCols)
+            GroupIndexType group = girderKey.groupIndex;
+            GirderIndexType girder = girderKey.girderIndex;
+            if (isPGSuper)
             {
-               GroupIndexType group = girderKey.groupIndex;
-               GirderIndexType girder = girderKey.girderIndex;
-               (*pTable)(row, col++) << LABEL_SPAN(group);
-               (*pTable)(row, col++) << LABEL_GIRDER(girder);
-            }
-
-            (*pTable)(row, col++) << dim.SetValue(artifact.GetProvidedHaunchAtBearingCLs());
-            (*pTable)(row, col++) << dim.SetValue(artifact.GetRequiredHaunchAtBearingCLs());
-
-            if (pgsSegmentConstructabilityArtifact::sobappNAPrintOnly == appt)
-            {
-               (*pTable)(row, col++) << RPT_NA;
-            }
-            else if(artifact.HaunchAtBearingCLsPassed() )
-            {
-               (*pTable)(row, col++) << RPT_PASS;
+               (*pTable)(row,col++) << LABEL_SPAN(group);
             }
             else
             {
-               (*pTable)(row, col++) << RPT_FAIL;
+               (*pTable)(row,col++) << LABEL_GROUP(group);
             }
+            (*pTable)(row,col++) << LABEL_GIRDER(girder);
          }
-      } // next girder
-   } // span
+
+         Float64 startH,endH;
+         pConstrArtifact->GetProvidedHaunchAtBearingCLs(&startH,&endH);
+         (*pTable)(row,col++) << dim.SetValue(startH);
+         (*pTable)(row,col++) << dim.SetValue(endH);
+         (*pTable)(row,col++) << dim.SetValue(pConstrArtifact->GetRequiredHaunchAtBearingCLs());
+
+         if (pgsConstructabilityArtifact::hbcAppNAPrintOnly == appt)
+         {
+            (*pTable)(row,col++) << RPT_NA;
+         }
+         else if (pConstrArtifact->HaunchAtBearingCLsPassed())
+         {
+            (*pTable)(row,col++) << RPT_PASS;
+         }
+         else
+         {
+            (*pTable)(row,col++) << RPT_FAIL;
+         }
+      }
+   } // next girder
 
    // Only add table if it has content
    if (0 < row)
    {
       rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
       *pChapter << pTitle;
-      *pTitle << _T("Minimum Haunch Depth at Bearing Centerlines");
+      if (isPGSuper)
+      {
+         *pTitle << _T("Minimum Haunch Depth at Bearing Centerlines");
+      }
+      else
+      {
+         *pTitle << _T("Minimum Haunch Depth at Bearing Centerlines at Terminal Ends of Group");
+      }
       rptParagraph* pBody = new rptParagraph;
       *pChapter << pBody;
       *pBody << pTable;
@@ -630,7 +644,7 @@ void CConstructabilityCheckTable::BuildMinimumFilletCheck(rptChapter* pChapter,I
 
    rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
-   *pTitle << _T("Minimum Fillet Depth");
+   *pTitle << _T("Minimum Provided Fillet Depth");
    rptParagraph* pBody = new rptParagraph;
    *pChapter << pBody;
    *pBody << _T("This table compares the provided Fillet dimension to the minimum Fillet dimension specified in the girder library. A failed status indicates that the Fillet dimension is too small.") << rptNewLine;
@@ -695,7 +709,7 @@ void CConstructabilityCheckTable::BuildMinimumFilletCheck(rptChapter* pChapter,I
          (*pTable)(row, col++) << dim.SetValue(artifact.GetProvidedFillet());
          (*pTable)(row, col++) << dim.SetValue(artifact.GetRequiredMinimumFillet());
 
-         if (!artifact.IsSlabOffsetApplicable())
+         if (!artifact.IsSlabOffsetApplicable() && !artifact.GetFinishedElevationApplicability())
          {
             (*pTable)(row, col++) << RPT_NA;
          }
@@ -1196,32 +1210,43 @@ void CConstructabilityCheckTable::BuildFinishedElevationCheck(rptChapter* pChapt
 {
    GET_IFACE2(pBroker, IArtifact, pIArtifact);
    GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   bool isPGSuper = pDocType->IsPGSuperDocument();
 
-   // if there is only one span/girder, don't need to print span info
-   bool needSpanCols = true; // ConstrNeedSpanCols(girderList, pBridge);
+   ColumnIndexType nCols = 9;
 
+   // Only need to present controlling interval if more than one spec check interval is defined
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   std::vector<IntervalIndexType> checkIntervals = pIntervals->GetSpecCheckGeometryControlIntervals();
+   bool bPrintInterval = checkIntervals.size() > 1;
+   if (bPrintInterval)
+   {
+      nCols += 1;
+   }
                              // Create table - delete it later if we don't need it
-   ColumnIndexType nCols = needSpanCols ? 8 : 6; // put span/girder in table if multi girder
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nCols, _T(""));
 
-   INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetSpanLengthUnit(), false);
+   INIT_UV_PROTOTYPE(rptLengthUnitValue,dim,pDisplayUnits->GetSpanLengthUnit(),false);
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, cmpdim, pDisplayUnits->GetComponentDimUnit(), false);
    std::_tstring strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
 
    pTable->SetColumnStyle(nCols - 1, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
    pTable->SetStripeRowColumnStyle(nCols - 1, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    ColumnIndexType col = 0;
-   if (needSpanCols)
-   {
-      (*pTable)(0, col++) << _T("Span");
-      (*pTable)(0, col++) << _T("Girder");
-   }
-
+   (*pTable)(0,col++) << (isPGSuper ? _T("Span") : _T("Segment"));
+   (*pTable)(0, col++) << _T("Girder");
    (*pTable)(0, col++) << COLHDR(_T("Station"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*pTable)(0, col++) << COLHDR(_T("Offset"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   if (bPrintInterval)
+   {
+      (*pTable)(0,col++) << _T("Controlling") << rptNewLine << _T("Interval");
+   }
+
    (*pTable)(0, col++) << COLHDR(_T("Design Elevation"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*pTable)(0, col++) << COLHDR(_T("Finished Elevation"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*pTable)(0, col++) << COLHDR(_T("Difference"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*pTable)(0,col++) << COLHDR(_T("Difference"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
    (*pTable)(0, col++) << _T("Status");
 
    RowIndexType row = 0;
@@ -1240,13 +1265,17 @@ void CConstructabilityCheckTable::BuildFinishedElevationCheck(rptChapter* pChapt
             row++;
             col = 0;
 
-            if (needSpanCols)
+            if (isPGSuper)
             {
-               GroupIndexType group = girderKey.groupIndex;
-               GirderIndexType girder = girderKey.girderIndex;
-               (*pTable)(row, col++) << LABEL_SPAN(group);
-               (*pTable)(row, col++) << LABEL_GIRDER(girder);
+               (*pTable)(row,col++) << LABEL_SPAN(segIdx);
             }
+            else
+            {
+               (*pTable)(row,col++) << LABEL_SEGMENT(segIdx);
+            }
+
+            GirderIndexType girder = girderKey.girderIndex;
+            (*pTable)(row,col++) << LABEL_GIRDER(girder);
 
             Float64 station, offset, designElev, finishedElev;
             pgsPointOfInterest poi;
@@ -1256,9 +1285,16 @@ void CConstructabilityCheckTable::BuildFinishedElevationCheck(rptChapter* pChapt
 
             (*pTable)(row, col++) << rptRcStation(station, &pDisplayUnits->GetStationFormat());
             (*pTable)(row, col++) << RPT_OFFSET(offset,dim);
+            if (bPrintInterval)
+            {
+               IntervalIndexType ctrlInterval = artifact.GetFinishedElevationControllingInterval();
+               (*pTable)(row,col++) << LABEL_INTERVAL(ctrlInterval) << _T(": ") << pIntervals->GetDescription(ctrlInterval);
+            }
+
             (*pTable)(row, col++) << dim.SetValue(designElev);
             (*pTable)(row, col++) << dim.SetValue(finishedElev);
-            (*pTable)(row, col++) << dim.SetValue(diff);
+            (*pTable)(row,col++) << dim.SetValue(diff);
+            (*pTable)(row, col++) << cmpdim.SetValue(diff);
 
             if (artifact.FinishedElevationPassed())
             {
@@ -1275,10 +1311,6 @@ void CConstructabilityCheckTable::BuildFinishedElevationCheck(rptChapter* pChapt
    // Only add table if it has content
    if (0 < row)
    {
-      rptParagraph* pTitle = new rptParagraph(rptStyleManager::GetHeadingStyle());
-      *pChapter << pTitle;
-      *pTitle << _T("Finished Elevation");
-
       rptParagraph* pBody = new rptParagraph;
       *pChapter << pBody;
 
@@ -1292,9 +1324,139 @@ void CConstructabilityCheckTable::BuildFinishedElevationCheck(rptChapter* pChapt
       *pBody << _T("Tolerance: ") << symbol(PLUS_MINUS) << dim1.SetValue(tolerance) << _T(" (") << symbol(PLUS_MINUS) << dim2.SetValue(tolerance) << _T(")") << rptNewLine;
       *pBody << _T("Design Elevation = elevation defined by the alignment, profile, and superelevations") << rptNewLine;
       *pBody << _T("Finished Elevation = top of finished girder, or overlay if applicable, including the effects of camber") << rptNewLine;
-      *pBody << _T("Difference = greated difference between Design Elevation and Finished Elevation which occurs at Station and Offset.") << rptNewLine;
+      *pBody << _T("Difference = greatest difference between Design Elevation and Finished Elevation which occurs at Station and Offset.") << rptNewLine;
       
       *pBody << pTable;
+   }
+   else
+   {
+      delete pTable;
+   }
+}
+
+void CConstructabilityCheckTable::BuildMinimumHaunchCheck(rptChapter* pChapter,IBroker* pBroker,const std::vector<CGirderKey>& girderList,IEAFDisplayUnits* pDisplayUnits) const
+{
+   GET_IFACE2(pBroker,IArtifact,pIArtifact);
+   GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   bool isPGSuper = pDocType->IsPGSuperDocument();
+
+   ColumnIndexType nCols = 6;
+
+   // Only need to present controlling interval if more than one spec check interval is defined
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   std::vector<IntervalIndexType> checkIntervals = pIntervals->GetSpecCheckGeometryControlIntervals();
+   bool bPrintInterval = checkIntervals.size() > 1;
+   if (bPrintInterval)
+   {
+      nCols += 1;
+   }
+
+   // Create table - delete it later if we don't need it
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nCols,_T(""));
+
+   INIT_UV_PROTOTYPE(rptLengthUnitValue,dim,pDisplayUnits->GetSpanLengthUnit(),false);
+   INIT_UV_PROTOTYPE(rptLengthUnitValue,cmpdim,pDisplayUnits->GetComponentDimUnit(),false);
+
+   pTable->SetColumnStyle(nCols - 1,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(nCols - 1,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+   ColumnIndexType col = 0;
+   (*pTable)(0,col++) << (isPGSuper ? _T("Span") : _T("Segment"));
+   (*pTable)(0,col++) << _T("Girder");
+   (*pTable)(0,col++) << COLHDR(_T("Station"),rptLengthUnitTag,pDisplayUnits->GetSpanLengthUnit());
+   (*pTable)(0,col++) << COLHDR(_T("Offset"),rptLengthUnitTag,pDisplayUnits->GetSpanLengthUnit());
+   if (bPrintInterval)
+   {
+      (*pTable)(0,col++) << _T("Controlling") << rptNewLine << _T("Interval");
+   }
+
+   (*pTable)(0,col++) << COLHDR(_T("Minimum Haunch Depth"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+   (*pTable)(0,col++) << _T("Status");
+
+   // Get minimum haunch depth along all girders/segments. Check if it may be excessive
+   Float64 minOfAllHaunches(Float64_Max);
+   Float64 excessiveWarnTol(0.0);
+
+   RowIndexType row = 0;
+   for (const auto& girderKey : girderList)
+   {
+      const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetGirderArtifact(girderKey);
+      const pgsConstructabilityArtifact* pConstrArtifact = pGdrArtifact->GetConstructabilityArtifact();
+
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+      for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+      {
+         const auto& artifact = pConstrArtifact->GetSegmentArtifact(segIdx);
+
+         if (artifact.GetFinishedElevationApplicability())
+         {
+            row++;
+            col = 0;
+
+            if (isPGSuper)
+            {
+               (*pTable)(row,col++) << LABEL_SPAN(segIdx);
+            }
+            else
+            {
+               (*pTable)(row,col++) << LABEL_SEGMENT(segIdx);
+            }
+
+            GirderIndexType girder = girderKey.girderIndex;
+            (*pTable)(row,col++) << LABEL_GIRDER(girder);
+
+            Float64 station,offset,minHaunch;
+            pgsPointOfInterest poi;
+            artifact.GetMinimumHaunchDepth(&station,&offset,&poi,&minHaunch);
+
+            minOfAllHaunches = min(minOfAllHaunches,minHaunch);
+            excessiveWarnTol = artifact.GetExcessSlabOffsetWarningTolerance();
+
+            (*pTable)(row,col++) << rptRcStation(station,&pDisplayUnits->GetStationFormat());
+            (*pTable)(row,col++) << RPT_OFFSET(offset,dim);
+            if (bPrintInterval)
+            {
+               IntervalIndexType ctrlInterval = artifact.GetMinimumHaunchDepthControllingInterval();
+               (*pTable)(row,col++) << LABEL_INTERVAL(ctrlInterval) << _T(": ") << pIntervals->GetDescription(ctrlInterval);
+            }
+
+            (*pTable)(row,col++) << cmpdim.SetValue(minHaunch);
+
+            if (artifact.MinimumHaunchDepthPassed())
+            {
+               (*pTable)(row,col++) << RPT_PASS;
+            }
+            else
+            {
+               (*pTable)(row,col++) << RPT_FAIL;
+            }
+         }
+      }
+   }
+
+   // Only add table if it has content
+   if (0 < row)
+   {
+      rptParagraph* pTitle = new rptParagraph(rptStyleManager::GetHeadingStyle());
+      *pChapter << pTitle;
+      *pTitle << _T("Minimum Haunch Depth Check");
+
+      rptParagraph* pBody = new rptParagraph;
+      *pChapter << pBody;
+
+      Float64 fillet = pBridge->GetFillet();
+
+      INIT_UV_PROTOTYPE(rptLengthSectionValue,dimc,pDisplayUnits->GetComponentDimUnit(),true);
+      *pBody << _T("Minimum haunch depth is taken along entire girder length and is compared with a fillet value of ") << dimc.SetValue(fillet) << rptNewLine;
+      *pBody << pTable;
+
+      Float64 excessive = excessiveWarnTol + fillet;
+      if (minOfAllHaunches > excessive)
+      {
+         *pBody << Bold(_T("Warning:")) << _T(" The smallest haunch depth along the entire girder is ") << dimc.SetValue(minOfAllHaunches) << _T(". This is larger than the fillet value + the allowable tolerance for this girder = ")
+            << dimc.SetValue(excessive)  << Bold(_T(". Hence, the haunch depth is excessive for this girder.")) << _T(" Consider reducing the haunch depth along the girder to reduce waste material.") << rptNewLine << rptNewLine;
+      }
    }
    else
    {

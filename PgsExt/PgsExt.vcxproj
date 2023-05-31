@@ -240,6 +240,7 @@
     <ClCompile Include="UHPCConcretePage.cpp" />
     <ClCompile Include="FlexuralCapacityArtifact.cpp" />
     <ClCompile Include="FlexuralStressArtifact.cpp" />
+    <ClCompile Include="GeometryControlActivity.cpp" />
     <ClCompile Include="GirderArtifact.cpp" />
     <ClCompile Include="GirderArtifactTool.cpp" />
     <ClCompile Include="GirderData.cpp" />
@@ -253,6 +254,7 @@
     <ClCompile Include="GirderTypes.cpp" />
     <ClCompile Include="HandlingData.cpp" />
     <ClCompile Include="HaulingAnalysisArtifact.cpp" />
+    <ClCompile Include="HaunchDepthInputConversionTool.cpp" />
     <ClCompile Include="HaunchShapeComboBox.cpp" />
     <ClCompile Include="Helpers.cpp" />
     <ClCompile Include="HoldDownForceArtifact.cpp" />
@@ -377,6 +379,7 @@
     <ClInclude Include="..\Include\PgsExt\UHPCConcretePage.h" />
     <ClInclude Include="..\Include\PgsExt\FlexuralCapacityArtifact.h" />
     <ClInclude Include="..\Include\PgsExt\FlexuralStressArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\GeometryControlActivity.h" />
     <ClInclude Include="..\Include\PgsExt\GirderArtifact.h" />
     <ClInclude Include="..\Include\PgsExt\GirderArtifactTool.h" />
     <ClInclude Include="..\Include\PgsExt\GirderData.h" />
@@ -388,6 +391,7 @@
     <ClInclude Include="..\Include\PgsExt\GirderSpacing2.h" />
     <ClInclude Include="..\Include\PgsExt\HandlingData.h" />
     <ClInclude Include="..\Include\PgsExt\HaulingAnalysisArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\HaunchDepthInputConversionTool.h" />
     <ClInclude Include="..\Include\PgsExt\HaunchShapeComboBox.h" />
     <ClInclude Include="..\Include\PgsExt\Helpers.h" />
     <ClInclude Include="..\Include\PgsExt\HoldDownForceArtifact.h" />

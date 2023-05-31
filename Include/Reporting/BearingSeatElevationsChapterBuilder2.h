@@ -40,10 +40,10 @@ public:
 
 private:
    rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildTable(const CString& strLabel, PierIndexType pierIdx, pgsTypes::PierFaceType face, 
-                           IEAFDisplayUnits* pDisplayUnits, IBridge* pBridge, IBridgeDescription* pIBridgeDesc) const;
+                           IEAFDisplayUnits* pDisplayUnits, IBridge* pBridge, IBridgeDescription* pIBridgeDesc, GirderIndexType girderIndex) const;
 
    rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildGirderEdgeTable(const CString& strLabel, PierIndexType pierIdx, pgsTypes::PierFaceType face, 
-                           IEAFDisplayUnits* pDisplayUnits, IBridge* pBridge, IBridgeDescription* pIBridgeDesc) const;
+                           IEAFDisplayUnits* pDisplayUnits, IBridge* pBridge, IBridgeDescription* pIBridgeDesc,GirderIndexType girderIndex) const;
 
    CBearingSeatElevationsChapterBuilderBase();
    TableType m_TableType;

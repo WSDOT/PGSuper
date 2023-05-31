@@ -764,7 +764,7 @@ bool CTestAgentImp::RunGeometryTest(std::_tofstream& resultsFile, std::_tofstrea
    // ============================
    CGirderKey testGirder(segmentKey);
    // Write out all bearings at start end of girder
-   std::vector<BearingElevationDetails> startBearings = pBridge->GetBearingElevationDetails(startPierIdx, pgsTypes::Ahead);
+   std::vector<BearingElevationDetails> startBearings = pBridge->GetBearingElevationDetails(startPierIdx, pgsTypes::Ahead, testGirder.girderIndex, false);
    for (const BearingElevationDetails& beDet : startBearings)
    {
       if (beDet.GirderKey == testGirder)
@@ -777,7 +777,7 @@ bool CTestAgentImp::RunGeometryTest(std::_tofstream& resultsFile, std::_tofstrea
    }
 
    // Write out all bearings at end end of girder
-   std::vector<BearingElevationDetails> endBearings = pBridge->GetBearingElevationDetails(endPierIdx, pgsTypes::Back);
+   std::vector<BearingElevationDetails> endBearings = pBridge->GetBearingElevationDetails(endPierIdx, pgsTypes::Back, testGirder.girderIndex, false);
    for (const BearingElevationDetails& beDet : endBearings)
    {
       if (beDet.GirderKey == testGirder)
@@ -794,7 +794,7 @@ bool CTestAgentImp::RunGeometryTest(std::_tofstream& resultsFile, std::_tofstrea
    GET_IFACE_NOCHECK(ITempSupport, pTempSupport);
    for (SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++)
    {
-      std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> vElevDetails = pTempSupport->GetElevationDetails(tsIdx);
+      std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> vElevDetails = pTempSupport->GetElevationDetails(tsIdx, ALL_GIRDERS);
       for (const auto& tsElev : vElevDetails)
       {
          resultsFile << bridgeId << _T(", ") << pid << _T(", 88250, ") << _T("-1") << _T(", ") << tsIdx << _T(", ") << tsElev.girderIdx << _T(", ") << QUIET(tsElev.Elevation) << std::endl;

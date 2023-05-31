@@ -1128,12 +1128,14 @@ struct TEMPORARYSUPPORTELEVATIONDETAILS
 
    Float64 Station;
    Float64 Offset;
-   Float64 FinishedGradeElevation;
+   Float64 DesignGradeElevation; // Design (target) roadway elevation at Station and Offset (top of overlay if overlay built with bridge, top of deck for no overlay or future overlay)
+   Float64 FinishedGradeElevation; // Computed roadway elevation at bearing. For "A" dim input this is always same as the design elevation. For spliced girders this may vary from design
    Float64 OverlayDepth;
    Float64 ProfileGrade;
    Float64 GirderGrade;
    Float64 GirderOrientation;
    Float64 SlabOffset;
+   Float64 HaunchDepth;
    Float64 Hg;
    Float64 ElevationAdjustment; // elevation adjustment from temporary support tower
    Float64 Elevation; // elevation at bottom of girder

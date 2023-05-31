@@ -466,8 +466,50 @@ rptChapter* CSpecCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
 
    if (pBridge->GetDeckType() == pgsTypes::sdtNone)
    {
+      p = new rptParagraph(rptStyleManager::GetHeadingStyle());
+      p->SetName(_T("Finished Elevation Checks"));
+      *p << rptNewLine << _T("Finished Elevation Checks") << rptNewLine;
+      *pChapter << p;
+
+      if (!pSpecEntry->IsSlabOffsetCheckEnabled())
+      {
+         p = new rptParagraph;
+         *p << color(Red) << Bold(_T("Note: Finished elevations specification Checks are Disabled in the Project Criteria.")) << color(Black) << rptNewLine;
+         *pChapter << p;
+      }
+      else
+      {
       // Finished Elevation Check
-      CConstructabilityCheckTable().BuildFinishedElevationCheck(pChapter, pBroker, girderList, pDisplayUnits);
+         CConstructabilityCheckTable().BuildFinishedElevationCheck(pChapter,pBroker,girderList,pDisplayUnits);
+      }
+   }
+   else if (pBridge->GetHaunchInputDepthType() != pgsTypes::hidACamber) // direct haunch input
+   {
+      p = new rptParagraph(rptStyleManager::GetHeadingStyle());
+      p->SetName(_T("Finished Elevation and Haunch Checks"));
+      *p << rptNewLine << _T("Finished Elevation and Haunch Checks") << rptNewLine;
+      *pChapter << p;
+
+      if (!pSpecEntry->IsSlabOffsetCheckEnabled())
+      {
+         p = new rptParagraph;
+         *p << color(Red) << Bold(_T("Note: Finished elevations specification Checks are Disabled in the Project Criteria.")) << color(Black) << rptNewLine;
+         *pChapter << p;
+      }
+      else
+      {
+         // Finished Elevation Check
+         CConstructabilityCheckTable().BuildFinishedElevationCheck(pChapter,pBroker,girderList,pDisplayUnits);
+
+         // Minimum Haunch Check
+         CConstructabilityCheckTable().BuildMinimumHaunchCheck(pChapter,pBroker,girderList,pDisplayUnits);
+
+         // Min Haunch at bearing centerlines check
+         CConstructabilityCheckTable().BuildMinimumHaunchCLCheck(pChapter,pBroker,girderList,pDisplayUnits);
+
+         // Fillet Check
+         CConstructabilityCheckTable().BuildMinimumFilletCheck(pChapter,pBroker,girderList,pDisplayUnits);
+      }
    }
    else
    {

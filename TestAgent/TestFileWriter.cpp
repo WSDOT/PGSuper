@@ -548,7 +548,7 @@ int Test_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& girde
    workerB.WriteFloat64(strandEccEnd,_T("EccEn"),7,5,_T("%5.2f"));
 
    Int16 extraSpacesForSlabOffset = 0; // Pad in debond additional lines for output of A
-   if (isExtendedVersion && pBridge->GetDeckType()!=pgsTypes::sdtNone)
+   if (isExtendedVersion && pBridge->GetDeckType()!=pgsTypes::sdtNone && pBridge->GetHaunchInputDepthType()==pgsTypes::hidACamber)
    {
       PierIndexType startPierIdx, endPierIdx;
       pBridge->GetGirderGroupPiers(segmentKey.groupIndex, &startPierIdx, &endPierIdx);

@@ -54,6 +54,26 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+inline CString GetHaunchIncrementString(IndexType inc,IndexType numVals)
+{
+   CString strLabel;
+   if (numVals > 1)
+   {
+      strLabel.Format(_T("%.2f"),(float)(inc) / (numVals - 1));
+      if (strLabel.GetAt(3) == '0') // trim excess zeroes
+      {
+         strLabel.Truncate(3);
+      }
+   }
+   else
+   {
+      strLabel = _T("Uniform Depth");
+   }
+
+   return strLabel;
+}
+
+
 static void write_alignment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 static void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 static void write_crown_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
@@ -70,6 +90,7 @@ static void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
 static void write_pt_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rptChapter* pChapter, Uint16 level, const std::vector<CGirderKey>& girderKeys);
 static void write_segment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,GroupIndexType grpIdx,GirderIndexType gdrIdx,Uint16 level);
 static void write_slab_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
+static void write_haunch_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const std::vector<CGirderKey>& girderKeys,Uint16 level);
 static void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const std::vector<CGirderKey>& girderKeys,Uint16 level);
 static void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const std::vector<CGirderKey>& girderKeys,Uint16 level);
 static void write_lrfd_concrete_row(IEAFDisplayUnits* pDisplayUnits, rptRcTable* pTable, Float64 fci, Float64 fc, Float64 Eci, Float64 Ec, bool bHas90dayStrengthColumns, Float64 lambda, const CConcreteMaterial& concrete, RowIndexType row);
@@ -154,6 +175,12 @@ rptChapter* CBridgeDescChapterBuilder::Build(const std::shared_ptr<const WBFL::R
    write_bearing_data( pBroker, pDisplayUnits, pChapter, level, girderKeys );
    write_ps_data( pBroker, pDisplayUnits, pChapter, level, girderKeys );
    write_pt_data(pBroker, pDisplayUnits, pChapter, level, girderKeys);
+
+   if (pBridge->GetHaunchInputDepthType() != pgsTypes::hidACamber)
+   {
+      write_haunch_data(pBroker, pDisplayUnits, pChapter, girderKeys, level);
+   }
+
    write_slab_data( pBroker, pDisplayUnits, pChapter, level );
    write_deck_reinforcing_data( pBroker, pDisplayUnits, pChapter, level );
 
@@ -3053,7 +3080,7 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          (*pTable)(row,1) << pGirder->GetGirderName();
          row++;
 
-         if (pBridgeDesc->GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone)
+         if (pBridgeDesc->GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone && pBridge->GetHaunchInputDepthType() == pgsTypes::hidACamber)
          {
             for (int i = 0; i < 2; i++)
             {
@@ -3891,17 +3918,22 @@ void write_slab_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
 
       if (!IsOverlayDeck(deckType))
       {
-         (*table)(0, 0) << _T("Fillet = ") << dim.SetValue(pBridgeDesc->GetFillet()) << rptNewLine;
+         (*table)(0,0) << _T("Fillet = ") << dim.SetValue(pBridgeDesc->GetFillet()) << rptNewLine;
+         (*table)(0,0) << _T("Fillet Shape: ") << (pBridgeDesc->GetDeckDescription()->HaunchShape==pgsTypes::hsSquare ? _T("Square") : _T("Filleted")) << _T(" Corners") << rptNewLine;
       }
 
-      if ( pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge )
+      if (pBridgeDesc->GetHaunchInputDepthType() == pgsTypes::hidACamber)
       {
-         (*table)(0,0) << _T("Slab Offset (\"A\" Dimension) = ") << dim.SetValue(pBridgeDesc->GetSlabOffset()) << rptNewLine;
+         if (pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge)
+         {
+            (*table)(0,0) << _T("Slab Offset (\"A\" Dimension) = ") << dim.SetValue(pBridgeDesc->GetSlabOffset()) << rptNewLine;
+         }
+         else
+         {
+            (*table)(0,0) << _T("Slab offset by girder") << rptNewLine;
+         }
       }
-      else
-      {
-         (*table)(0,0) << _T("Slab offset by girder") << rptNewLine;
-      }
+
       (*table)(0,0) << rptNewLine;
    }
 
@@ -4014,6 +4046,225 @@ void write_slab_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
 
    // Picture
    (*table)(1,0) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + strPicture );
+}
+
+void write_haunch_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const std::vector<CGirderKey>& girderKeys,Uint16 level)
+{
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   bool isPGSuper = pDocType->IsPGSuperDocument();
+
+   rptParagraph* pPara1 = new rptParagraph;
+   pPara1->SetStyleName(rptStyleManager::GetHeadingStyle());
+   *pChapter << pPara1;
+   *pPara1 << _T("Haunch Depth Input");
+
+   rptParagraph* pPara2 = new rptParagraph;
+   *pChapter << pPara2;
+
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   pgsTypes::HaunchLayoutType haunchLayoutType = pBridgeDesc->GetHaunchLayoutType();
+   pgsTypes::HaunchInputLocationType haunchInputLocationType = pBridgeDesc->GetHaunchInputLocationType();
+   pgsTypes::HaunchInputDistributionType haunchInputDistributionType = pBridgeDesc->GetHaunchInputDistributionType();
+
+   std::_tstring strLayout(haunchLayoutType == pgsTypes::hltAlongSpans ? _T("Span") : _T("Segment"));
+
+   *pPara2 << _T("Haunch depths are distributed ");
+   if (haunchInputDistributionType == pgsTypes::hidUniform)
+   {
+      *pPara2 << _T("Unformly");
+   }
+   else if (haunchInputDistributionType == pgsTypes::hidAtEnds)
+   {
+      *pPara2 << _T("Linearly between Ends");
+   }
+   else if (haunchInputDistributionType == pgsTypes::hidParabolic)
+   {
+      *pPara2 << _T("Parabolically");
+   }
+   else if (haunchInputDistributionType == pgsTypes::hidQuarterPoints)
+   {
+      *pPara2 << _T("Linearly between Quarter Points");
+   }
+   else if (haunchInputDistributionType == pgsTypes::hidTenthPoints)
+   {
+      *pPara2 << _T("Linearly between Tenth Points");
+   }
+   else
+   {
+      ATLASSERT(0);
+   }
+
+   *pPara2 << _T(" along ") << strLayout << _T("s, and are defined ");
+   if (haunchInputLocationType == pgsTypes::hilSame4Bridge)
+   {
+      *pPara2 << _T("the Same for all ")<<strLayout<<_T("s in the Bridge. ");
+   }
+   else if (haunchInputLocationType == pgsTypes::hilSame4AllGirders)
+   {
+      *pPara2 << _T("the Same for all Girder Lines. ");
+   }
+   else if (haunchInputLocationType == pgsTypes::hilPerEach)
+   {
+      *pPara2 << (isPGSuper ?  _T("Uniquely per Girder.") : _T("Uniquely per Segment."));
+   }
+   else
+   {
+      ATLASSERT(0);
+   }
+
+   if (haunchInputLocationType == pgsTypes::hilSame4Bridge && haunchInputDistributionType == pgsTypes::hidUniform)
+   {
+      // No table needed for this one
+      INIT_UV_PROTOTYPE(rptLengthUnitValue,dimtit,pDisplayUnits->GetComponentDimUnit(),true);
+      std::vector<Float64> haunches = pBridgeDesc->GetDirectHaunchDepths();
+      *pPara2 << rptNewLine << _T("Uniform haunch depth for all locations: ") << dimtit.SetValue(haunches.front());
+   }
+   else
+   {
+      *pPara2 << rptNewLine;
+      *pPara2 << _T("Locations are fractional distance along ") << strLayout << _T("s.") << _T("Tables contain Haunch Depth Values in (") << pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag() << _T(")");
+
+      INIT_UV_PROTOTYPE(rptLengthUnitValue,dim,pDisplayUnits->GetComponentDimUnit(),false);
+
+      if (haunchInputLocationType == pgsTypes::hilSame4Bridge)
+      {
+         std::vector<Float64> haunches = pBridgeDesc->GetDirectHaunchDepths();
+
+         IndexType numHaunches = haunches.size();
+         rptRcTable* pTable = rptStyleManager::CreateDefaultTable(numHaunches + 1,_T(""));
+         *pPara2 << pTable;
+
+         pTable->SetNumberOfHeaderRows(2);
+         pTable->SetRowSpan(0,0,2);
+         pTable->SetColumnSpan(0,1,numHaunches);
+         (*pTable)(2,0) << _T("All Girders");
+         (*pTable)(0,1) << _T("All ") << strLayout << _T("s");
+
+         RowIndexType row = pTable->GetNumberOfHeaderRows();
+         ColumnIndexType col = 1;
+         for (auto haunch : haunches)
+         {
+            (*pTable)(1,col) << GetHaunchIncrementString(col - 1,numHaunches);
+            (*pTable)(row,col++) << dim.SetValue(haunch);
+         }
+      }
+      else if (haunchLayoutType == pgsTypes::hltAlongSpans)
+      {
+         SpanIndexType numSpans = pBridgeDesc->GetSpanCount();
+         for (SpanIndexType iSpan = 0; iSpan < numSpans; iSpan++)
+         {
+            IndexType numHaunches = (IndexType)haunchInputDistributionType;
+            rptRcTable* pTable = rptStyleManager::CreateDefaultTable(numHaunches + 1,_T(""));
+            *pPara2 << pTable << rptNewLine;
+
+            pTable->SetNumberOfHeaderRows(2);
+            pTable->SetRowSpan(0,0,2);
+            pTable->SetColumnSpan(0,1,numHaunches);
+            (*pTable)(0,1) << _T("Span ") << LABEL_SPAN(iSpan);
+
+            if (haunchInputLocationType == pgsTypes::hilSame4AllGirders)
+            {
+               // Only need one girder
+               (*pTable)(2,0) << _T("All Girders");
+               std::vector<Float64> haunches = pBridgeDesc->GetSpan(iSpan)->GetDirectHaunchDepths(0); // All girders are same
+               ATLASSERT(numHaunches == haunches.size());
+
+               RowIndexType row = pTable->GetNumberOfHeaderRows();
+               ColumnIndexType col = 1;
+               for (auto haunch : haunches)
+               {
+                  (*pTable)(1,col) << GetHaunchIncrementString(col - 1,numHaunches);
+                  (*pTable)(row,col++) << dim.SetValue(haunch);
+               }
+            }
+            else
+            {
+               (*pTable)(0,0) << _T("Girder");
+               RowIndexType row = pTable->GetNumberOfHeaderRows();
+               GirderIndexType numGirders = pBridgeDesc->GetSpan(iSpan)->GetGirderCount();
+
+               for (GirderIndexType iGdr = 0; iGdr < numGirders; iGdr++)
+               {
+                  (*pTable)(row,0) << LABEL_GIRDER(iGdr);
+
+                  std::vector<Float64> haunches = pBridgeDesc->GetSpan(iSpan)->GetDirectHaunchDepths(iGdr);
+                  ATLASSERT(numHaunches == haunches.size());
+
+                  ColumnIndexType col = 1;
+                  for (auto haunch : haunches)
+                  {
+                     if (iGdr==0)
+                     {
+                        (*pTable)(1,col) << GetHaunchIncrementString(col - 1,numHaunches);
+                     }
+                     (*pTable)(row,col++) << dim.SetValue(haunch);
+                  }
+
+                  row++;
+               }
+            }
+         }
+      }
+      else if (haunchLayoutType == pgsTypes::hltAlongSegments)
+      {
+         auto* pGroup = pBridgeDesc->GetGirderGroup(girderKeys.front().groupIndex);
+         auto nGirders = haunchInputLocationType == pgsTypes::hilSame4AllGirders ? 1 : pGroup->GetGirderCount();
+
+         // assume number of segments is same for all girders in group
+         auto* pGirder0 = pGroup->GetGirder(0);
+         auto nSegments = pGirder0->GetSegmentCount();
+
+         for (auto iSeg = 0; iSeg < nSegments; iSeg++)
+         {
+            IndexType numHaunches = (IndexType)haunchInputDistributionType;
+            rptRcTable* pTable = rptStyleManager::CreateDefaultTable(numHaunches + 1,_T(""));
+            *pPara2 << pTable << rptNewLine;
+
+            pTable->SetNumberOfHeaderRows(2);
+            pTable->SetRowSpan(0,0,2);
+            pTable->SetColumnSpan(0,1,numHaunches);
+            if (haunchInputLocationType != pgsTypes::hilSame4AllGirders)
+            {
+               (*pTable)(0,0) << _T("Girder");
+            }
+            (*pTable)(0,1) << _T("Segment ") << LABEL_SEGMENT(iSeg);
+
+            RowIndexType row = pTable->GetNumberOfHeaderRows();
+
+            for (auto iGdr = 0; iGdr < nGirders; iGdr++,row++)
+            {
+               auto* pGirder = pGroup->GetGirder(iGdr);
+               std::vector<Float64> haunches = pGirder->GetDirectHaunchDepths(iSeg);
+
+               if (haunchInputLocationType == pgsTypes::hilSame4AllGirders)
+               {
+                  // Only need one girder
+                  (*pTable)(2,0) << _T("All Girders");
+               }
+               else
+               {
+                  (*pTable)(row,0) << LABEL_GIRDER(iGdr);
+               }
+
+               ColumnIndexType col = 1;
+               for (auto haunch : haunches)
+               {
+                  if (iGdr==0)
+                  {
+                     (*pTable)(1,col) << GetHaunchIncrementString(col - 1,numHaunches);
+                  }
+                  (*pTable)(row,col++) << dim.SetValue(haunch);
+               }
+            }
+         }
+      }
+      else
+      {
+         ATLASSERT(0);
+      }
+   }
 }
 
 void write_pt_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rptChapter* pChapter, Uint16 level, const std::vector<CGirderKey>& girderKeys)

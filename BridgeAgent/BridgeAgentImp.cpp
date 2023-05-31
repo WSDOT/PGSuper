@@ -58,6 +58,7 @@
 
 #include <MathEx.h>
 #include <Math\MathUtils.h>
+#include <Math\PiecewiseFunction.h>
 #include <System\Flags.h>
 #include <Materials/Materials.h>
 
@@ -2809,7 +2810,7 @@ bool CBridgeAgentImp::LayoutGirders(const CBridgeDescription2* pBridgeDesc)
             CComQIPtr<IItemData> item_data(segment);
             item_data->AddItemData(CComBSTR(_T("Precast Girder")), girder);
 
-            // ALSO SEE LayoutGirdersPass2() for additional configuration steps
+            // ALSO SEE LayoutSsmHaunchesAdimInput() for additional configuration steps
          } // segment loop
 
          // add a tendon collection to the superstructure member... spliced girders know how to use it
@@ -3126,13 +3127,19 @@ void CBridgeAgentImp::CreateStrandModel(IPrecastGirder* girder,ISuperstructureMe
    strandModel->putref_StrandMaterial(Temporary, temporaryStrandMaterial);
 }
 
-void CBridgeAgentImp::GetHaunchDepth(const CPrecastSegmentData* pSegment,Float64* pStartHaunch,Float64* pMidHaunch,Float64* pEndHaunch)
+void CBridgeAgentImp::GetHaunchDepth4ADimInput(const CPrecastSegmentData* pSegment, CComPtr<IDblArray>& pHaunchDepths)
 {
+   // Haunch depths were input using "A" and assumed excess camber. This is only supported in PGSuper models
+#if defined _DEBUG
+   GET_IFACE(IDocumentType,pDocType);
+   ATLASSERT(pDocType->IsPGSuperDocument());
+#endif
+
    // The generic bridge model wants haunch depths at the end of each segment
    const CSegmentKey& segmentKey = pSegment->GetSegmentKey();
    const CDeckDescription2* pDeck = pSegment->GetGirder()->GetGirderGroup()->GetBridgeDescription()->GetDeckDescription();
    Float64 tDeck;
-   if ( pDeck->GetDeckType() == pgsTypes::sdtCompositeSIP )
+   if (pDeck->GetDeckType() == pgsTypes::sdtCompositeSIP)
    {
       tDeck = pDeck->GrossDepth + pDeck->PanelDepth;
    }
@@ -3142,9 +3149,9 @@ void CBridgeAgentImp::GetHaunchDepth(const CPrecastSegmentData* pSegment,Float64
    }
 
    PoiList vPoi;
-   GetPointsOfInterest(segmentKey, POI_0L | POI_5L | POI_10L | POI_ERECTED_SEGMENT, &vPoi);
+   GetPointsOfInterest(segmentKey,POI_0L | POI_5L | POI_10L | POI_ERECTED_SEGMENT,&vPoi);
    ATLASSERT(vPoi.size() == 3);
-   std::array<Float64, 2> haunch_at_support;
+   std::array<Float64,2> haunch_at_support;
    haunch_at_support[pgsTypes::metStart] = GetTopSlabToTopGirderChordDistance(vPoi.front()) - tDeck;
    haunch_at_support[pgsTypes::metEnd]   = GetTopSlabToTopGirderChordDistance(vPoi.back()) - tDeck;
    Float64 haunchNoCamber = GetTopSlabToTopGirderChordDistance(vPoi[1]) - tDeck;
@@ -3156,28 +3163,17 @@ void CBridgeAgentImp::GetHaunchDepth(const CPrecastSegmentData* pSegment,Float64
    std::array<const CPierData2*,2> pPier;
    std::array<const CTemporarySupportData*,2> pTS;
    pSegment->GetSupport(pgsTypes::metStart,&pPier[pgsTypes::metStart],&pTS[pgsTypes::metStart]);
-   pSegment->GetSupport(pgsTypes::metEnd  ,&pPier[pgsTypes::metEnd],  &pTS[pgsTypes::metEnd]  );
+   pSegment->GetSupport(pgsTypes::metEnd,&pPier[pgsTypes::metEnd],&pTS[pgsTypes::metEnd]);
 
    std::array<const CSpanData2*,2> pSpan;
    pSpan[pgsTypes::metStart] = pSegment->GetSpan(pgsTypes::metStart);
-   pSpan[pgsTypes::metEnd  ] = pSegment->GetSpan(pgsTypes::metEnd);
+   pSpan[pgsTypes::metEnd] = pSegment->GetSpan(pgsTypes::metEnd);
 
-   GET_IFACE(ISpecification, pSpec );
+   GET_IFACE(ISpecification,pSpec);
    bool bIsAssumedExcessCamber = pSpec->IsAssumedExcessCamberForSectProps();
 
-   // Make an attempt to see if this is a pgsuper-like segment. A function called IsSplicedGirder would be nice
-   bool isPGS = pSpan[pgsTypes::metStart]->GetIndex() == pSpan[pgsTypes::metEnd]->GetIndex() &&
-                pPier[pgsTypes::metStart] != nullptr && pPier[pgsTypes::metEnd] != nullptr &&
-                pTS[pgsTypes::metStart] == nullptr && pTS[pgsTypes::metEnd] == nullptr;
-
    Float64 mid_haunch;
-   if (!isPGS)
-   {
-#pragma Reminder("Calculation of middle haunch depth works correctly assuming Precast Girders but not so logical for generalized splice")
-      // Not a pgsuper model - assume zero camber
-      mid_haunch = haunchNoCamber;
-   }
-   else if (bIsAssumedExcessCamber)
+   if (bIsAssumedExcessCamber)
    {
       // A pgsuper model, and user defined assumed excess camber. Use this as our haunch geometry to view
       Float64 camber = pSpan[pgsTypes::metStart]->GetAssumedExcessCamber(segmentKey.girderIndex);
@@ -3198,17 +3194,20 @@ void CBridgeAgentImp::GetHaunchDepth(const CPrecastSegmentData* pSegment,Float64
    Float64 span_length = GetSegmentSpanLength(segmentKey);
 
    // There is a linear part of the variation, and potentially a parabolic part
-   Float64 lin_start_haunch, lin_end_haunch;
-   if (IsEqual(haunch_at_support[pgsTypes::metStart], haunch_at_support[pgsTypes::metEnd]))
+   Float64 lin_start_haunch,lin_end_haunch;
+   if (IsEqual(haunch_at_support[pgsTypes::metStart],haunch_at_support[pgsTypes::metEnd]))
    {
       lin_start_haunch = haunch_at_support[pgsTypes::metStart];
       lin_end_haunch =  haunch_at_support[pgsTypes::metEnd];
    }
    else
    {
-      lin_start_haunch = ::LinInterp(-segment_start_end_dist,            haunch_at_support[pgsTypes::metStart], haunch_at_support[pgsTypes::metEnd], span_length);
-      lin_end_haunch   = ::LinInterp(span_length + segment_end_end_dist, haunch_at_support[pgsTypes::metStart], haunch_at_support[pgsTypes::metEnd], span_length);
+      lin_start_haunch = ::LinInterp(-segment_start_end_dist,haunch_at_support[pgsTypes::metStart],haunch_at_support[pgsTypes::metEnd],span_length);
+      lin_end_haunch = ::LinInterp(span_length + segment_end_end_dist,haunch_at_support[pgsTypes::metStart],haunch_at_support[pgsTypes::metEnd],span_length);
    }
+
+   // Now we can determine the three hunch depths that define our parabola
+   Float64 startHaunch,midHaunch,endHaunch;
 
    // Parabolic part
    Float64 lin_mid_haunch = (lin_start_haunch + lin_end_haunch) / 2.0;
@@ -3216,8 +3215,8 @@ void CBridgeAgentImp::GetHaunchDepth(const CPrecastSegmentData* pSegment,Float64
    if (IsZero(bulge))
    {
       // No parabola, just need linear part
-      *pStartHaunch = lin_start_haunch;
-      *pEndHaunch   = lin_end_haunch;
+      startHaunch = lin_start_haunch;
+      endHaunch = lin_end_haunch;
    }
    else
    {
@@ -3225,11 +3224,193 @@ void CBridgeAgentImp::GetHaunchDepth(const CPrecastSegmentData* pSegment,Float64
       Float64 par_start_haunch = parabola.Evaluate(-segment_start_end_dist);
       Float64 par_end_haunch =   parabola.Evaluate(span_length + segment_end_end_dist);
 
-      *pStartHaunch = lin_start_haunch + par_start_haunch;
-      *pEndHaunch   = lin_end_haunch + par_end_haunch;
+      startHaunch = lin_start_haunch + par_start_haunch;
+      endHaunch = lin_end_haunch + par_end_haunch;
    }
 
-   *pMidHaunch = mid_haunch;
+   midHaunch = mid_haunch;
+
+   // Put into return array
+   pHaunchDepths->Add(startHaunch);
+   pHaunchDepths->Add(midHaunch);
+   pHaunchDepths->Add(endHaunch);
+
+   // if these fire, something is really messed up... one likely cause is 
+   // the slab depth is equal to the "A" dimension so build-up doesn't fit
+   // at actual ends of the segment.. this is not really a bug, but rather bad input
+   ATLASSERT(0 <= startHaunch && startHaunch < 1e9);
+   ATLASSERT(midHaunch < 1e9);
+   ATLASSERT(0 <= endHaunch && endHaunch < 1e9);
+
+   if (midHaunch < 0)
+   {
+      GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      GET_IFACE(ISpecification,pSpec);
+      bool bIsParabolic = pSpec->IsAssumedExcessCamberInputEnabled();
+
+      CString msg;
+      if (bIsParabolic)
+      {
+         msg.Format(_T("The assumed excess camber for span %s, girder %s is larger than the haunch depth at mid span. The girder will intrude into the bottom of the slab. For analysis purposes, the haunch depth will be assumed to be zero."),LABEL_SPAN(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex));
+      }
+      else
+      {
+         msg.Format(_T("The girder top chord for span %s, girder %s intrudes into the bottom of the slab at mid-span."),LABEL_SPAN(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex));
+      }
+      std::unique_ptr<pgsBridgeDescriptionStatusItem> pStatusItem = std::make_unique<pgsBridgeDescriptionStatusItem>(m_StatusGroupID,m_scidBridgeDescriptionWarning,pgsBridgeDescriptionStatusItem::Deck,msg);
+      pStatusCenter->Add(pStatusItem.release());
+   }
+}
+
+void CBridgeAgentImp::GetHaunchDepth4BySpanInput(const CPrecastSegmentData* pSegment,const CBridgeDescription2* pBridgeDesc,CComPtr<IDblArray>& pHaunchDepths)
+{
+   // Haunch is direct input across spans. Need to convert to per-segment layout
+   CSegmentKey segmentKey = pSegment->GetSegmentKey();
+   GirderIndexType gdrIdx = segmentKey.girderIndex;
+
+   if (pBridgeDesc->GetHaunchInputDistributionType() == pgsTypes::hidUniform)
+   {
+      // Special, trivial case. Haunch is uniform across span. Just use haunch depth of first span on segment
+      const CSpanData2* pSpan = pSegment->GetSpan(pgsTypes::metStart);
+      std::vector<Float64> spanHaunches = pSpan->GetDirectHaunchDepths(gdrIdx);
+      ATLASSERT(spanHaunches.size() == 1);
+
+      pHaunchDepths->Add(spanHaunches.front());
+   }
+   else
+   {
+      pgsTypes::HaunchInputDistributionType haunchInputDistributionType = pBridgeDesc->GetHaunchInputDistributionType();
+
+      // The parabolic case needs special treatment in the case of pgsuper-type models where a segment lies entirely 
+      // within a span.
+      SpanIndexType startSpanIdx = pSegment->GetSpan(pgsTypes::metStart)->GetIndex();
+      SpanIndexType endSpanIdx = pSegment->GetSpan(pgsTypes::metEnd)->GetIndex();
+
+      if (haunchInputDistributionType != pgsTypes::hidParabolic)
+      {
+         // For all cases Except for parabolic when segment lies within a single span:
+         // Use linear interpolation of piecewise linear span locations to determine haunch values across segments
+         // Values at span locations can be outside of the bounds of segments - extrapolate those values
+         WBFL::Math::PiecewiseFunction pwLinearFunction;
+         pwLinearFunction.SetOutOfRangeBehavior(WBFL::Math::PiecewiseFunction::orbExtrapolate);
+
+         Float64 segmentLength = GetSegmentLength(segmentKey);
+
+         // Build layout along segments. Use GirderLineCoord's as basis
+         for (SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++)
+         {
+            CSpanKey spanKey(spanIdx,gdrIdx);
+            // Need location of XSpan below in "Span Coordinates". This starts at bearing location in first span
+            Float64 spanLength = GetSpanLength(spanKey); // this is cl pier to cl pier
+
+            const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
+            std::vector<Float64> spanHaunches = pSpan->GetDirectHaunchDepths(gdrIdx);
+
+            std::size_t numHaunches = spanHaunches.size();
+            std::size_t currLoc = 0;
+            for (auto haunch : spanHaunches)
+            {
+               Float64 Xspan = spanLength * (Float64)currLoc / (Float64)(numHaunches - 1);
+               pgsPointOfInterest spanPoi = ConvertSpanPointToPoi(spanKey,Xspan);
+               Float64 Xgirderline = ConvertPoiToGirderlineCoordinate(spanPoi);
+               pwLinearFunction.AddPoint(Xgirderline,haunch);
+               currLoc++;
+            }
+         }
+
+         // Create haunch depths along segment at same distribution as for spans. Don't try to match jumps 
+         int numSegmentLocs = (int)haunchInputDistributionType;
+         for (int iSegmentLoc = 0; iSegmentLoc < numSegmentLocs; iSegmentLoc++)
+         {
+            Float64 XSegment = segmentLength * (Float64)iSegmentLoc / (Float64)(numSegmentLocs - 1);
+            Float64 Xgl = ConvertSegmentCoordinateToGirderlineCoordinate(segmentKey,XSegment);
+            Float64 haunch = pwLinearFunction.Evaluate(Xgl);
+
+            pHaunchDepths->Add(haunch);
+         }
+      }
+      else if (haunchInputDistributionType == pgsTypes::hidParabolic && startSpanIdx != endSpanIdx)
+      {
+         // For parabolic when segment lies within multiple spans:
+         // Use linear interpolation of piecewise linear span locations to determine haunch values across segments
+         // Place haunch depths at along span to attempt to capture odd jump
+         const IndexType numSpanSegs = 45; // after some experimentation, these values seem to work well
+         const IndexType numSegSegs = numSpanSegs / 3;
+
+         WBFL::Math::PiecewiseFunction pwLinearFunction;
+         pwLinearFunction.SetOutOfRangeBehavior(WBFL::Math::PiecewiseFunction::orbExtrapolate);
+
+         Float64 segmentLength = GetSegmentLength(segmentKey);
+
+         // Build layout along spans. Use GirderLineCoord's as basis
+         for (SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++)
+         {
+            CSpanKey spanKey(spanIdx,gdrIdx);
+            // Need location of XSpan below in "Span Coordinates". This starts at bearing location in first span
+            Float64 spanLength = GetSpanLength(spanKey); // this is cl pier to cl pier
+
+            const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
+            std::vector<Float64> spanHaunches = pSpan->GetDirectHaunchDepths(gdrIdx);
+
+            for (IndexType iseg = 0; iseg <= numSpanSegs; iseg++)
+            {
+               Float64 xSpan = spanLength * (Float64)iseg / (Float64)(numSpanSegs - 1);
+               pgsPointOfInterest spanPoi = ConvertSpanPointToPoi(spanKey,xSpan);
+               Float64 Xgirderline = ConvertPoiToGirderlineCoordinate(spanPoi);
+
+               Float64 haunch = ::ComputeHaunchDepthAlongSegment(xSpan,spanLength,spanHaunches);
+
+               pwLinearFunction.AddPoint(Xgirderline,haunch);
+            }
+         }
+
+         // Create haunch depths along segment. Use less resolution than above for performance
+         for (IndexType iseg = 0; iseg < numSegSegs; iseg++)
+         {
+            Float64 XSegment = segmentLength * (Float64)iseg / (Float64)(numSegSegs - 1);
+            Float64 Xgl = ConvertSegmentCoordinateToGirderlineCoordinate(segmentKey,XSegment);
+
+            Float64 haunch = pwLinearFunction.Evaluate(Xgl);
+            pHaunchDepths->Add(haunch);
+         }
+      }
+      else
+      {
+         // Parabolic distribution  where a segment lies entirely within a span
+         ATLASSERT(startSpanIdx == endSpanIdx);
+
+         SpanIndexType spanIdx = startSpanIdx;
+         CSpanKey spanKey(spanIdx,gdrIdx);
+         const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
+
+         std::vector<Float64> spanHaunches = pSpan->GetDirectHaunchDepths(gdrIdx);
+         std::size_t numHaunches = spanHaunches.size();
+         ATLASSERT(numHaunches == 3);
+
+         // Span length below starts at bearing location in first span
+         Float64 spanLength = GetSpanLength(spanKey); // this is cl pier to cl pier
+
+         Float64 segmentLength = GetSegmentLength(segmentKey);
+
+         // Create haunch depths along segment at same distribution as for spans.
+         std::size_t numSegmentLocs = numHaunches;
+         for (int iSegmentLoc = 0; iSegmentLoc < numHaunches; iSegmentLoc++)
+         {
+            Float64 XSegment = segmentLength * (Float64)iSegmentLoc / (Float64)(numSegmentLocs - 1);
+
+            // Get distance along span of segment location
+            CSpanKey newSpanKey;
+            Float64 xSpan;
+            ConvertSegmentCoordinateToSpanPoint(segmentKey,XSegment,&newSpanKey,&xSpan);
+
+            // use generic bridge helper function to determine haunch values along span
+#pragma Reminder("This could be optimized by turning function below into a tool class and pre-multiplying many of the values")
+            Float64 haunch = ::ComputeHaunchDepthAlongSegment(xSpan,spanLength,spanHaunches);
+
+            pHaunchDepths->Add(haunch);
+         }
+      }
+   }
 }
 
 bool CBridgeAgentImp::LayoutDeck(const CBridgeDescription2* pBridgeDesc)
@@ -3966,19 +4147,35 @@ bool CBridgeAgentImp::LayoutTrafficBarrier(const CBridgeDescription2* pBridgeDes
 
 bool CBridgeAgentImp::BuildGirders()
 {
-   UpdatePrestressing(ALL_GROUPS, ALL_GIRDERS, ALL_SEGMENTS);
-   return LayoutGirdersPass2();
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   pgsTypes::HaunchInputDepthType haunchInputDepthType = pBridgeDesc->GetHaunchInputDepthType();
+
+   // Dependencies are complicated here. "A" dim input needs poi layout to determine haunch depths, and so prestressing needs haunch depths
+   // Direct haunch depth does not need pois, so call order is reversed below
+   if (haunchInputDepthType == pgsTypes::hidACamber)
+   {
+      UpdatePrestressing(ALL_GROUPS,ALL_GIRDERS,ALL_SEGMENTS);
+      return LayoutSsmHaunches();
+   }
+   else
+   {
+      LayoutSsmHaunches();
+      UpdatePrestressing(ALL_GROUPS,ALL_GIRDERS,ALL_SEGMENTS);
+      return true;
+   }
 }
 
-bool CBridgeAgentImp::LayoutGirdersPass2()
+bool CBridgeAgentImp::LayoutSsmHaunches()
 {
    // need to do final layout after POI's have been built
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   Float64 gross_slab_depth = pBridgeDesc->GetDeckDescription()->GrossDepth;
    pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->GetDeckType();
    pgsTypes::HaunchShapeType haunchShape = pBridgeDesc->GetDeckDescription()->HaunchShape;
+   pgsTypes::HaunchInputDepthType haunchInputDepthType = pBridgeDesc->GetHaunchInputDepthType();
+   pgsTypes::HaunchLayoutType haunchLayoutType = pBridgeDesc->GetHaunchLayoutType();
 
    GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
    for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
@@ -3999,53 +4196,53 @@ bool CBridgeAgentImp::LayoutGirdersPass2()
          for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
          {
             const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
-            CSegmentKey segmentKey(pSegment->GetSegmentKey());
 
             CComPtr<ISuperstructureMemberSegment> segment;
             ssmbr->get_Segment(segIdx, &segment);
 
-            Float64 startHaunch = 0;
-            Float64 midHaunch = 0;
-            Float64 endHaunch = 0;
             Float64 fillet = 0;
+            CComPtr<IDblArray> pHaunchDepths;
+            pHaunchDepths.CoCreateInstance(CLSID_DblArray);
             if ( deckType != pgsTypes::sdtNone )
             {
-               GetHaunchDepth(pSegment,&startHaunch,&midHaunch,&endHaunch);
+               if (haunchInputDepthType == pgsTypes::hidACamber)
+               {
+                  // Haunch depths were input using "A" and assumed excess camber. This is only supported in PGSuper models
+                  GetHaunchDepth4ADimInput(pSegment,pHaunchDepths);
+               }
+               else
+               {
+                  // Haunch depths were input directly. i.e., hidHaunchDirectly or hidHaunchPlusSlabDirectly. Note that the UI subtracts the deck
+                  // depth for the case of hidHaunchPlusSlabDirectly, so haunch depth values can be used without modification for this case.
+
+                  if (haunchLayoutType == pgsTypes::hltAlongSegments)
+                  {
+                     // Simple case - input is direct to segments
+                     std::vector<Float64> haunches = pGirder->GetDirectHaunchDepths(segIdx);
+                     for (auto haunch : haunches)
+                     {
+                        pHaunchDepths->Add(haunch);
+                     }
+                  }
+                  else if (haunchLayoutType == pgsTypes::hltAlongSpans)
+                  {
+                     // Loads are laid out along spans - need to do some work to map to segment
+                     GetHaunchDepth4BySpanInput(pSegment, pBridgeDesc, pHaunchDepths);
+                  }
+               }
 
                fillet = GetFillet();
                segment->put_FilletShape((FilletShape)haunchShape);
             }
+            else
+            {
+               pHaunchDepths->Add(0.0); // constant haunch of zero
+            }
 
-            segment->SetHaunchDepth(startHaunch,midHaunch,endHaunch);
+            segment->SetHaunchDepth(pHaunchDepths);
 
             // fillet in model is only used to draw
             segment->put_Fillet(fillet);
-
-            // if these fire, something is really messed up... one likely cause is 
-            // the slab depth is equal to the "A" dimension so build-up doesn't fit
-            // at actual ends of the segment.. this is not really a bug, but rather bad input
-            ATLASSERT( 0 <= startHaunch && startHaunch < 1e9 );
-            ATLASSERT( midHaunch < 1e9 );
-            ATLASSERT( 0 <= endHaunch   && endHaunch   < 1e9 );
-
-            if (midHaunch < 0)
-            {
-               GET_IFACE(IEAFStatusCenter, pStatusCenter);
-               GET_IFACE(ISpecification, pSpec );
-               bool bIsParabolic = pSpec->IsAssumedExcessCamberInputEnabled();
-
-               CString msg;
-               if (bIsParabolic)
-               {
-                  msg.Format(_T("The assumed excess camber for span %s, girder %s is larger than the haunch depth at mid span. The girder will intrude into the bottom of the slab. For analysis purposes, the haunch depth will be assumed to be zero."), LABEL_SPAN(segmentKey.groupIndex), LABEL_GIRDER(segmentKey.girderIndex));
-               }
-               else
-               {
-                  msg.Format(_T("The girder top chord for span %s, girder %s intrudes into the bottom of the slab at mid-span."), LABEL_SPAN(segmentKey.groupIndex), LABEL_GIRDER(segmentKey.girderIndex));
-               }
-               std::unique_ptr<pgsBridgeDescriptionStatusItem> pStatusItem = std::make_unique<pgsBridgeDescriptionStatusItem>(m_StatusGroupID, m_scidBridgeDescriptionWarning, pgsBridgeDescriptionStatusItem::Deck, msg);
-               pStatusCenter->Add(pStatusItem.release());
-            }
          }
       }
    }
@@ -6359,7 +6556,7 @@ STDMETHODIMP CBridgeAgentImp::RegInterfaces()
    pBrokerInit->RegInterface( IID_IUserDefinedLoads,              this );
    pBrokerInit->RegInterface( IID_ITempSupport,                   this );
    pBrokerInit->RegInterface( IID_IGirder,                        this );
-   pBrokerInit->RegInterface(IID_IGirderTendonGeometry,           this );
+   pBrokerInit->RegInterface(IID_IGirderTendonGeometry,           this);
    pBrokerInit->RegInterface(IID_ISegmentTendonGeometry,          this );
    pBrokerInit->RegInterface( IID_IIntervals,                     this );
 
@@ -9878,11 +10075,17 @@ GDRCONFIG CBridgeAgentImp::GetSegmentConfiguration(const CSegmentKey& segmentKey
    config.bUserEc  = pMaterial->Concrete.bUserEc;
 
    // Slab offset
-   PierIndexType startPierIdx, endPierIdx;
-   GetGirderGroupPiers(segmentKey.groupIndex, &startPierIdx, &endPierIdx);
-   GetSlabOffset(segmentKey, &config.SlabOffset[pgsTypes::metStart], &config.SlabOffset[pgsTypes::metEnd]);
-
+   if (this->GetHaunchInputDepthType() == pgsTypes::hidACamber)
+   {
+      GetSlabOffset(segmentKey,&config.SlabOffset[pgsTypes::metStart],&config.SlabOffset[pgsTypes::metEnd]);
    config.AssumedExcessCamber = GetAssumedExcessCamber(segmentKey.groupIndex,segmentKey.girderIndex);
+   }
+   else
+   {
+      // haunch is defined by direct input - slab offsets are not used - make zero 
+      config.SlabOffset[pgsTypes::metStart] = config.SlabOffset[pgsTypes::metEnd] = GetGrossSlabDepth();
+      config.AssumedExcessCamber = 0.0;
+   }
 
    // Stirrup data
 	const CShearData2* pShearData = GetShearData(segmentKey);
@@ -10393,7 +10596,6 @@ Float64 CBridgeAgentImp::GetElevationAdjustment(IntervalIndexType intervalIdx, c
       const CPrecastSegmentData* pSegment = pBridgeDesc->GetSegment(segmentKey);
 
       // get elevation adjustments at the ends of the segment
-      // elevation adjustments are measured at the CL Bearing
       std::array<Float64, 2> elev_adj{ 0.0,0.0 };
       for (int i = 0; i < 2; i++)
       {
@@ -10408,11 +10610,11 @@ Float64 CBridgeAgentImp::GetElevationAdjustment(IntervalIndexType intervalIdx, c
          }
       }
 
+      // Elevation adjustments are along entire segment length
       // interpolate for the subject poi
-      Float64 Ls = GetSegmentSpanLength(segmentKey); // CL Brg to CL Brg span length of segment
+      Float64 Ls = GetSegmentLength(segmentKey); 
       Float64 Xpoi = poi.GetDistFromStart();
-      Float64 Xend = GetSegmentStartEndDistance(segmentKey);
-      elevAdj = ::LinInterp(Xpoi - Xend, elev_adj[pgsTypes::metStart], elev_adj[pgsTypes::metEnd], Ls);
+      elevAdj = ::LinInterp(Xpoi, elev_adj[pgsTypes::metStart], elev_adj[pgsTypes::metEnd], Ls);
    }
 
    return elevAdj;
@@ -10449,9 +10651,7 @@ Float64 CBridgeAgentImp::GetRotationAdjustment(IntervalIndexType intervalIdx, co
       }
 
       // interpolate for the subject poi
-      Float64 Ls = GetSegmentSpanLength(segmentKey); // CL Brg to CL Brg span length of segment
-      Float64 Xpoi = poi.GetDistFromStart();
-      Float64 Xend = GetSegmentStartEndDistance(segmentKey);
+      Float64 Ls = GetSegmentLength(segmentKey); // CL Brg to CL Brg span length of segment
       slopeAdj = (elev_adj[pgsTypes::metStart] - elev_adj[pgsTypes::metEnd])/ Ls;
    }
 
@@ -10516,10 +10716,17 @@ Float64 CBridgeAgentImp::GetOverlayWeight() const
    return weight;
 }
 
-Float64 CBridgeAgentImp::GetOverlayDepth() const
+Float64 CBridgeAgentImp::GetOverlayDepth(IntervalIndexType interval) const
 {
-   Float64 depth;
-   m_Bridge->get_WearingSurfaceDepth(&depth);
+   Float64 depth(0.0);
+   if (HasOverlay() && !IsFutureOverlay())
+   {
+      if (interval >= GetOverlayInterval())
+      {
+         m_Bridge->get_WearingSurfaceDepth(&depth);
+      }
+   }
+
    return depth;
 }
 
@@ -10616,6 +10823,13 @@ Float64 CBridgeAgentImp::GetPanelDepth(const pgsPointOfInterest& poi) const
    VALIDATE( BRIDGE );
    Float64 panel_depth = GetPanelDepth();
    return panel_depth;
+}
+
+pgsTypes::HaunchInputDepthType CBridgeAgentImp::GetHaunchInputDepthType() const
+{
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   return pBridgeDesc->GetHaunchInputDepthType();
 }
 
 Float64 CBridgeAgentImp::GetLeftSlabOverhang(Float64 Xb) const
@@ -12141,14 +12355,14 @@ bool CBridgeAgentImp::HasTemporarySupportElevationAdjustments() const
    return false;
 }
 
-std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails(PierIndexType pierIdx, pgsTypes::PierFaceType face) const
+std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails(PierIndexType pierIdx, pgsTypes::PierFaceType face, GirderIndexType gdrIdx, bool bIgnoreUnrecoverableDeformations) const
 {
-   return GetBearingElevationDetails_Generic(pierIdx, face, CBridgeAgentImp::batBearings);
+   return GetBearingElevationDetails_Generic(pierIdx, face, CBridgeAgentImp::batBearings, gdrIdx, bIgnoreUnrecoverableDeformations);
 }
 
-std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetailsAtGirderEdges(PierIndexType pierIdx, pgsTypes::PierFaceType face) const
+std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetailsAtGirderEdges(PierIndexType pierIdx, pgsTypes::PierFaceType face, GirderIndexType gdrIdx) const
 {
-   return GetBearingElevationDetails_Generic(pierIdx, face, CBridgeAgentImp::batGirderEdges);
+   return GetBearingElevationDetails_Generic(pierIdx, face, CBridgeAgentImp::batGirderEdges, gdrIdx, false);
 }
 
 void CBridgeAgentImp::GetPierDisplaySettings(pgsTypes::DisplayEndSupportType* pStartPierType, pgsTypes::DisplayEndSupportType* pEndPierType, PierIndexType* pStartPierNumber) const
@@ -12159,7 +12373,7 @@ void CBridgeAgentImp::GetPierDisplaySettings(pgsTypes::DisplayEndSupportType* pS
    pBridgeDesc->GetPierDisplaySettings(pStartPierType, pEndPierType, pStartPierNumber);
 }
 
-std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails_Generic(PierIndexType pierIdx, pgsTypes::PierFaceType face, CBridgeAgentImp::BearingElevLocType locType) const
+std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails_Generic(PierIndexType pierIdx, pgsTypes::PierFaceType face, CBridgeAgentImp::BearingElevLocType locType,GirderIndexType gdrIndex,bool bIgnoreUnrecoverableDeformations) const
 {
    PierIndexType nPiers = GetPierCount();
    // these are invalid locations so return an empty vector
@@ -12169,18 +12383,35 @@ std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails
    }
 
    GroupIndexType grpIdx    = GetGirderGroupAtPier(pierIdx,face);
-   GirderIndexType nGirders = GetGirderCount(grpIdx);
+
+   GirderIndexType startGirder,endGirder;
+   if (gdrIndex == ALL_GIRDERS)
+   {
+      startGirder = 0;
+      endGirder = GetGirderCount(grpIdx) - 1;
+   }
+   else
+   {
+      startGirder = gdrIndex;
+      endGirder   = gdrIndex;
+   }
+      
    bool isBoundaryPier = IsBoundaryPier(pierIdx);
 
    GET_IFACE(IBridgeDescription,pBridgeDesc);
+   GET_IFACE_NOCHECK(IDeformedGirderGeometry,pDeformedGirderGeometry);
+
+   // If haunchInputDepthType==hidACamber, we know that design and computed deck elevations are the same at bearings.
+   pgsTypes::HaunchInputDepthType haunchInputDepthType = pBridgeDesc->GetHaunchInputDepthType();
 
    std::vector<BearingElevationDetails> vElevDetails;
 
-   Float64 overlayDepth = 0;
-   if ( HasOverlay() && !IsFutureOverlay() )
-   {
-      overlayDepth = GetOverlayDepth();
-   }
+   // Bearing elevation values are reported at the GCE
+   IntervalIndexType gceInterval = GetGeometryControlInterval();
+
+   bool bIsDeck = GetDeckType() != pgsTypes::sdtNone;
+
+   Float64 overlayDepth = GetOverlayDepth(gceInterval);
 
    // Get pier direction
    CComPtr<IDirection> pierDirection;
@@ -12189,7 +12420,7 @@ std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails
    pierDirection->get_Value(&pierDir);
    CComVariant pierDirVar(pierDir);
 
-   for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+   for ( GirderIndexType gdrIdx = startGirder; gdrIdx <= endGirder; gdrIdx++ )
    {
       const CBearingData2* pBearingData = pBridgeDesc->GetBearingData(pierIdx, face, gdrIdx);
       if (pBearingData == nullptr)
@@ -12225,6 +12456,7 @@ std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails
       Float64 basicGirderSlope = GetSegmentSlope(segmentKey); // includes temporary support elevation adjustment slopes
       basicGirderSlope = IsZero(basicGirderSlope) ? 0 : basicGirderSlope;
       Float64 precamberSlope = GetPrecamberSlope(poi);
+      precamberSlope = IsZero(precamberSlope) ? 0 : precamberSlope;
 
       Float64 girderSlope = basicGirderSlope + precamberSlope;
 
@@ -12244,7 +12476,7 @@ std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails
       GetPoint(workPointStation, workPointOffset,  normal, pgsTypes::pcLocal, &workPointPoint);
 
       // Get finished grade elevation at work point
-      Float64 workPointFinishedGradeElevation = GetElevation(workPointStation, workPointOffset);
+      Float64 workPointDesignGradeElevation = GetElevation(workPointStation, workPointOffset);
 
       Float64 crossSlope = GetSlope(workPointStation, workPointOffset);
       crossSlope = IsZero(crossSlope) ? 0 : crossSlope;
@@ -12261,10 +12493,24 @@ std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails
 
       // Slab Offset can vary along segment since it can be different at each end, and affected by erection tower elevation adjustment
       // Get actual geometric slab offset at CL girder. Fix for Mantis 1256
-      GET_IFACE(IBridge,pBridge);
-      Float64 slabOffset = pBridge->GetTopSlabToTopGirderChordDistance(poi);
+      Float64 slabOffset(0.0), haunchDepth(0.0);
+      if (bIsDeck)
+      {
+         if (haunchInputDepthType == pgsTypes::hidACamber)
+         {
+            slabOffset = GetTopSlabToTopGirderChordDistance(poi);
+            haunchDepth = slabOffset - grossSlabDepth;
+         }
+         else
+         {
+            // Elevations for direct haunch input are not attached to the girder chord
+            haunchDepth = GetStructuralHaunchDepth(poi,pgsTypes::hspDetailedDescription);
+            slabOffset = haunchDepth + grossSlabDepth;
+         }
+      }
 
-      Float64 workPointElevation = workPointFinishedGradeElevation - adjOverlayDepth - slabOffset;
+      // Compute elevation as if pier is not deflected from pgl. We will adjust for that later
+      Float64 workPointElevation = workPointDesignGradeElevation - adjOverlayDepth - slabOffset;
 
       // Now locate BCL. BCL is CL bearing seat location at CL girder adjusted for girder orientation.
       // This is the location on pier where bearings are measured from along bearing line
@@ -12336,7 +12582,6 @@ std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails
          leftBrgLoc = Spacing/2.0; // location of first bearing from cl girder
       }
 
-
       // Tricky: For multiple bearings at a girder, Bearing information of the BCL will always be the first result in the collection
       //         and the number of bearings reported will be numBrgs + 1.
       //         For single bearing cases, there will be only one result
@@ -12362,6 +12607,7 @@ std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails
          // brgLoc is along pier at pier slope. Adjust bearing location to horizontal distance from BCL
          Float64 brgLocAdjusted = brgLoc * cosGirderSlopeAlongPier;
 
+         // Begin filling our struct
          BearingElevationDetails elevDetails;
          elevDetails.GirderKey = girderKey;
          elevDetails.PierFace = face;
@@ -12385,17 +12631,45 @@ std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails
             elevDetails.BearingIdx = brgIdx - 1;
          }
 
-         // Compute station and offset of directly above CL Bearing
-         Float64 station, offset;
-         CComPtr<IPoint2d> brgPoint;
-         ByDistDir(pointBCL, brgLocAdjusted, pierDirVar, 0.0, &brgPoint);
-         GetStationAndOffset(pgsTypes::pcLocal, brgPoint, &station, &offset);
+         // Compute station, offset and Design elevation directly above CL Bearing
+         Float64 brgClStation, brgClOffset;
+         CComPtr<IPoint2d> brgClPoint;
+         ByDistDir(pointBCL, brgLocAdjusted, pierDirVar, 0.0, &brgClPoint);
+         GetStationAndOffset(pgsTypes::pcLocal, brgClPoint, &brgClStation, &brgClOffset);
 
-         elevDetails.Station = station;
-         elevDetails.Offset = offset;
+         Float64 brgClDesignElevation = GetElevation(brgClStation,brgClOffset);
 
-         // compute elevation of roadway surface directly above bearing
-         elevDetails.FinishedGradeElevation = GetElevation(station, offset);
+         elevDetails.Station = brgClStation;
+         elevDetails.Offset = brgClOffset;
+         elevDetails.DesignGradeElevation = brgClDesignElevation;
+
+         // Finished elevation is tricky
+         Float64 elevationAdjustmentForDeformation = 0.0;
+         if (haunchInputDepthType == pgsTypes::hidACamber || bIgnoreUnrecoverableDeformations)
+         {
+            // For "A" dim input, the finished elevation is at the PGL by definition
+            elevDetails.FinishedGradeElevation = brgClDesignElevation;
+         }
+         else
+         {
+            // Haunch depth input - including unrecoverable deformations. 
+            // The elevation of the beam at bearing cl depends on the pre-deformed girder shape and bearing location.
+            // ASSUMPTION: The elevation adjustment at the CL girder-bearing is the same as at the workpoint location
+            // Compute the relative excursion of the finished elevation due to adjusments made at the time of pier erection at CL.
+            Float64 clStation,clOffset;
+            GetStationAndOffset(poi,&clStation,&clOffset);
+            Float64 clDesignElevation = GetElevation(clStation,clOffset);
+
+            // Note that the call below starts a full bridge analysis up to the geometry control event interval. This is no longer just a geometry comp
+            Float64 lftHaunch,ctrHaunch,rgtHaunch;
+            Float64 clFinishedElevation = pDeformedGirderGeometry->GetFinishedElevation(poi, gceInterval, &lftHaunch, &ctrHaunch, &rgtHaunch);
+
+            // Adjustment at girder cl - bearing line intersection
+            elevationAdjustmentForDeformation = clFinishedElevation - clDesignElevation;
+
+            // Apply adjustment to elevation at workpoint
+            elevDetails.FinishedGradeElevation = brgClDesignElevation + elevationAdjustmentForDeformation;
+         }
 
          elevDetails.GrossSlabDepth = grossSlabDepth;
 
@@ -12416,6 +12690,7 @@ std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails
 
          elevDetails.OverlayDepth = adjOverlayDepth;
          elevDetails.SlabOffset = slabOffset; // this is a vertical dimension.... don't adjust for roadway angle
+         elevDetails.HaunchDepth = haunchDepth;
 
          // bearing seat elevation is roadway surface elevation directly above CL bearing less height of girder, bearing, overlay, and slab offset
          elevDetails.BrgSeatElevation = elevDetails.FinishedGradeElevation - (heightBCL + elevDetails.OverlayDepth + elevDetails.SlabOffset);
@@ -16097,6 +16372,7 @@ Float64 CBridgeAgentImp::GetSuperstructureDepth(PierIndexType pierIdx) const
    if ( pPier->IsBoundaryPier() || (pPier->IsInteriorPier() && !::IsSegmentContinuousOverPier(pPier->GetSegmentConnectionType())))
    {
       ATLASSERT(pPier->HasSlabOffset());
+      bool isHaunchDirectInput = pBridgeDesc->GetHaunchInputDepthType() != pgsTypes::hidACamber;
 
       // There are segments on each side of the pier (unless the pier is an abutment)
       const CGirderGroupData* pBackGroup  = pPier->GetGirderGroup(pgsTypes::Back);
@@ -16123,8 +16399,18 @@ Float64 CBridgeAgentImp::GetSuperstructureDepth(PierIndexType pierIdx) const
             IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(segmentKey);
             Float64 Hg = GetHg(releaseIntervalIdx, segmentEndPoi);
 
+            Float64 slabOffset;
+            if (isHaunchDirectInput)
+            {
+               Float64 deckDepth = GetGrossSlabDepth(segmentEndPoi);
+               Float64 haunchDepth = GetStructuralHaunchDepth(segmentEndPoi,pgsTypes::hspDetailedDescription); // Detailed description in this call will get direct input
+               slabOffset = deckDepth + haunchDepth;
+            }
+            else
+            {
             SegmentIndexType nSegments = pBackGroup->GetGirder(gdrIdx)->GetSegmentCount();
-            Float64 slabOffset = pBackGroup->GetGirder(gdrIdx)->GetSegment(nSegments-1)->GetSlabOffset(pgsTypes::metEnd);
+               slabOffset = pBackGroup->GetGirder(gdrIdx)->GetSegment(nSegments - 1)->GetSlabOffset(pgsTypes::metEnd);
+            }
 
             Dmax = Max(Dmax,Hg+slabOffset);
          }
@@ -16154,7 +16440,17 @@ Float64 CBridgeAgentImp::GetSuperstructureDepth(PierIndexType pierIdx) const
             IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(segmentKey);
             Float64 Hg = GetHg(releaseIntervalIdx, segmentEndPoi);
 
-            Float64 slabOffset = pAheadGroup->GetGirder(gdrIdx)->GetSegment(0)->GetSlabOffset(pgsTypes::metStart);
+            Float64 slabOffset;
+            if (isHaunchDirectInput)
+            {
+               Float64 deckDepth = GetGrossSlabDepth(segmentEndPoi);
+               Float64 haunchDepth = GetStructuralHaunchDepth(segmentEndPoi,pgsTypes::hspDetailedDescription); // Detailed description in this call will get direct input
+               slabOffset = deckDepth + haunchDepth;
+            }
+            else
+            {
+               slabOffset = pAheadGroup->GetGirder(gdrIdx)->GetSegment(0)->GetSlabOffset(pgsTypes::metStart);
+            }
 
             Dmax = Max(Dmax,Hg+slabOffset);
          }
@@ -16164,6 +16460,9 @@ Float64 CBridgeAgentImp::GetSuperstructureDepth(PierIndexType pierIdx) const
    {
       // Segment is continuous over the pier so there isn't a slab offset
       // at the pier
+      IntervalIndexType gceInterval = GetGeometryControlInterval();
+      Float64 overlay_depth = GetOverlayDepth(gceInterval);
+
       ATLASSERT(!pPier->HasSlabOffset());
       GirderIndexType nGirders = GetGirderCountBySpan(pierIdx);
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
@@ -16178,7 +16477,7 @@ Float64 CBridgeAgentImp::GetSuperstructureDepth(PierIndexType pierIdx) const
          Float64 profile_elev = GetProfileChordElevation(poi);
          Float64 chord_elev = GetTopGirderChordElevation(poi);
 
-         Float64 haunch_depth = profile_elev - chord_elev;
+         Float64 haunch_depth = profile_elev - overlay_depth - chord_elev;
 
          Dmax = Max(Dmax,Hg+haunch_depth);
       }
@@ -21300,19 +21599,10 @@ pgsTypes::SectionPropertyMode CBridgeAgentImp::GetSectionPropertiesMode() const
 
 pgsTypes::HaunchAnalysisSectionPropertiesType CBridgeAgentImp::GetHaunchAnalysisSectionPropertiesType()const 
 {
-   GET_IFACE(IDocumentType, pDocType);
-   bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
-   if (bIsSplicedGirder)
-   {
-      return pgsTypes::hspZeroHaunch; // spliced girders don't do haunch props
-   }
-   else
-   {
       GET_IFACE(ILibrary, pLib);
       GET_IFACE(ISpecification, pSpec);
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
       return pSpecEntry->GetHaunchAnalysisSectionPropertiesType();
-   }
 }
 
 std::vector<WBFL::Geometry::Point2d> CBridgeAgentImp::GetStressPoints(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig) const
@@ -22556,17 +22846,12 @@ Float64 CBridgeAgentImp::GetStructuralHaunchDepth(const pgsPointOfInterest & poi
    }
 }
 
-Float64 CBridgeAgentImp::GetTopSlabToTopGirderChordDistance(const pgsPointOfInterest& poi) const
+Float64 CBridgeAgentImp::GetRoadwayToTopGirderChordDistance(const pgsPointOfInterest& poi) const
 {
    // camber effects are ignored
-   VALIDATE( BRIDGE );
+   VALIDATE(BRIDGE);
 
-   if (GetDeckType() == pgsTypes::sdtNone)
-   {
-      return 0;
-   }
-
-   // top of girder chord elevation
+   // top of girder chord elevation is set from roadway surface including overlay if overlay is installed at or before the GCE
    Float64 yc = GetTopGirderChordElevation(poi);
 
    // get station and offset for poi
@@ -22580,6 +22865,21 @@ Float64 CBridgeAgentImp::GetTopSlabToTopGirderChordDistance(const pgsPointOfInte
    return ya - yc;
 }
 
+Float64 CBridgeAgentImp::GetTopSlabToTopGirderChordDistance(const pgsPointOfInterest& poi) const
+{
+   Float64 top_rw = GetRoadwayToTopGirderChordDistance(poi);
+
+   IntervalIndexType gceInterval = GetGeometryControlInterval();
+
+   // Remove temporary support elevation adjustment.
+   Float64 ts_adj = GetElevationAdjustment(gceInterval,poi);
+
+   // We place the girder chord the GCE - determine overlay depth at that time. (future overlays are after the GCE)
+   Float64 overlay_depth = GetOverlayDepth(gceInterval);
+
+   return top_rw + ts_adj - overlay_depth;
+}
+
 Float64 CBridgeAgentImp::GetTopSlabToTopGirderChordDistance(const pgsPointOfInterest& poi, Float64 Astart, Float64 Aend) const
 {
    // camber effects are ignored
@@ -22590,7 +22890,7 @@ Float64 CBridgeAgentImp::GetTopSlabToTopGirderChordDistance(const pgsPointOfInte
       return 0;
    }
 
-   // top of girder chord elevation
+   // top of girder chord elevation. This is adjusted for overlay if it exists
    Float64 yc = GetTopGirderChordElevation(poi, Astart, Aend);
 
    // get station and offset for poi
@@ -22601,7 +22901,11 @@ Float64 CBridgeAgentImp::GetTopSlabToTopGirderChordDistance(const pgsPointOfInte
    // top of alignment elevation above girder
    Float64 ya = GetElevation(station,offset);
 
-   return ya - yc;
+   // subtract overlay if it exists at the GCE
+   IntervalIndexType gceInterval = GetGeometryControlInterval();
+   Float64 overlay_depth = GetOverlayDepth(gceInterval);
+
+   return ya - overlay_depth - yc;
 }
 
 IndexType CBridgeAgentImp::GetDeckCastingRegionCount() const
@@ -24388,30 +24692,48 @@ std::vector<SupportIndexType> CBridgeAgentImp::GetTemporarySupports(GroupIndexTy
    return vTS;
 }
 
-std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> CBridgeAgentImp::GetElevationDetails(SupportIndexType tsIdx) const
+std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> CBridgeAgentImp::GetElevationDetails(SupportIndexType tsIdx,GirderIndexType gdrIndex) const
 {
    VALIDATE(BRIDGE);
 
    std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> vDetails;
 
+   GET_IFACE_NOCHECK(IDeformedGirderGeometry,pDeformedGirderGeometry);
    GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    // Elevation = Finished Grade Elevation - Overlay - Haunch - Hgirder
    // Haunch = Bottom Slab Elevation - Top Girder Elevation
+   // 
+   // We measure deck depth at the GCE - determine overlay depth at that time. (future overlays are after the GCE)
+   IntervalIndexType gceInterval = GetGeometryControlInterval();
 
-   Float64 overlay_depth = 0;
-   if (HasOverlay() && !IsFutureOverlay())
-   {
-      overlay_depth = GetOverlayDepth();
-   }
+   Float64 overlay_depth = GetOverlayDepth(gceInterval);
+   Float64 gross_slab_depth = GetGrossSlabDepth();
+
+   // Get temp support elevation just prior to removal
+   IntervalIndexType tsInterval = GetTemporarySupportRemovalInterval(tsIdx) - 1;
+
+   // If haunchInputDepthType==hidACamber, we know that design and computed deck elevations are the same at bearings.
+   pgsTypes::HaunchInputDepthType haunchInputDepthType = pBridgeDesc->GetHaunchInputDepthType();
 
    const CTemporarySupportData* pTS = pBridgeDesc->GetTemporarySupport(tsIdx);
 
    const CSpanData2* pSpan = pTS->GetSpan();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
    GroupIndexType grpIdx = pGroup->GetIndex();
-   GirderIndexType nGirders = pGroup->GetGirderCount();
+
+   GirderIndexType startGirder,endGirder;
+   if (gdrIndex == ALL_GIRDERS)
+   {
+      startGirder = 0;
+      endGirder = GetGirderCount(grpIdx) - 1;
+   }
+   else
+   {
+      startGirder = gdrIndex;
+      endGirder = gdrIndex;
+   }
 
    // use girder 0 because all girders in this group have the same number of segments
    // and temporary supports
@@ -24433,7 +24755,7 @@ std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> CBridgeAgentImp::GetElevationDetai
             bool bContinuous;
             pgsTypes::MemberEndType endType;
             CComPtr<IPoint2d> pnt;
-            for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
+            for (GirderIndexType gdrIdx = startGirder; gdrIdx <= endGirder; gdrIdx++)
             {
                CSegmentKey segmentKey(grpIdx, gdrIdx, segIdx);
                if (ts->GetConnectionType() == pgsTypes::tsctContinuousSegment)
@@ -24482,24 +24804,58 @@ std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> CBridgeAgentImp::GetElevationDetai
                // total adjustment due to slope and tilt angle of girder
                Float64 girder_height_adjustment_factor = girder_slope_adjustment / girder_orientation_adjustment;
 
+               // Want deflection and properties at ends of segments if at a closure joint
+               pgsPointOfInterest poi;
+               if (bContinuous)
+               {
+                  poi = GetTemporarySupportPointOfInterest(segmentKey,tsIdx);
+               }
+               else
+               {
+                  PoiAttributeType attrib = (endType == pgsTypes::metStart ? (POI_0L | POI_ERECTED_SEGMENT) : (POI_10L | POI_ERECTED_SEGMENT));
+                  PoiList vPois;
+                  GetPointsOfInterest(segmentKey,attrib,&vPois);
+                  ATLASSERT(vPois.size() == 1);
+                  poi = vPois.front();
+               }
 
-               Float64 station, offset;
-               GetStationAndOffset(pgsTypes::pcLocal, pnt, &station, &offset);
-               Float64 finished_elevation = GetElevation(station, offset);
-
-               PoiAttributeType attrib = (endType == pgsTypes::metStart ? (POI_0L | POI_ERECTED_SEGMENT) : (POI_10L | POI_ERECTED_SEGMENT));
-               PoiList vPois;
-               GetPointsOfInterest(segmentKey, attrib, &vPois);
-               ATLASSERT(vPois.size() == 1);
-               const pgsPointOfInterest& poi = vPois.front();
-
-               Float64 slab_offset = GetSlabOffset(segmentKey, endType);
+               Float64 slab_offset, haunch_depth;
+               if (haunchInputDepthType == pgsTypes::hidACamber)
+               {
+                  slab_offset = GetTopSlabToTopGirderChordDistance(poi);
+                  haunch_depth = slab_offset - gross_slab_depth;
+               }
+               else
+               {
+                  // Elevations for direct haunch input are not attached to the girder chord
+                  haunch_depth = GetStructuralHaunchDepth(poi,pgsTypes::hspDetailedDescription);
+                  slab_offset = haunch_depth + gross_slab_depth;
+               }
 
                IntervalIndexType intervalIdx = GetPrestressReleaseInterval(segmentKey);
-               Float64 Hg = GetHg(intervalIdx, poi); // this is the basic height of the segment
+               Float64 Hg = GetHg(intervalIdx,poi); // this is the basic height of the segment
                Hg *= girder_height_adjustment_factor; // adjust the vertical dimension for orientation and grade slopes
 
-               Float64 girder_chord_elevation = GetTopGirderChordElevation(poi);
+               Float64 elevAdj = GetElevationAdjustment(gceInterval, poi);
+
+               Float64 station,offset;
+               GetStationAndOffset(pgsTypes::pcLocal,pnt,&station,&offset);
+               Float64 design_elevation = GetElevation(station,offset);
+
+               Float64 finished_elevation;
+               if (haunchInputDepthType == pgsTypes::hidACamber)
+               {
+                  // For "A" dim input, the finished elevation is at the PGL by definition
+                  finished_elevation = design_elevation + elevAdj;
+               }
+               else
+               {
+                  // Haunch depth input
+                  // The elevation of the beam at bearing cl depends on the pre-deformed girder shape and bearing location, and the elevation adjustment
+                  // Note that the call below starts a full bridge analysis up to the geometry control event interval. This is no longer just a geometry comp
+                  Float64 lftHaunch,ctrHaunch,rgtHaunch;
+                  finished_elevation = pDeformedGirderGeometry->GetFinishedElevation(poi,tsInterval,&lftHaunch,&ctrHaunch,&rgtHaunch);
+               }
 
                Float64 crossSlope = GetSlope(station, offset);
                crossSlope = IsZero(crossSlope) ? 0 : crossSlope;
@@ -24511,8 +24867,6 @@ std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> CBridgeAgentImp::GetElevationDetai
 
                Float64 roadwayAngleAdjust = crossSlopeAdjust * profileAngleAdjust;
 
-               Float64 elevAdj = pTS->GetElevationAdjustment();
-
                TEMPORARYSUPPORTELEVATIONDETAILS elevDetails;
 
                elevDetails.girderIdx = gdrIdx;
@@ -24521,15 +24875,17 @@ std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> CBridgeAgentImp::GetElevationDetai
                elevDetails.bContinuous = bContinuous;
                elevDetails.Station = station;
                elevDetails.Offset = offset;
+               elevDetails.DesignGradeElevation = design_elevation;
                elevDetails.FinishedGradeElevation = finished_elevation;
                elevDetails.ProfileGrade = profileGrade;
                elevDetails.GirderGrade = girderSlope;
                elevDetails.GirderOrientation = girderOrientation;
                elevDetails.Hg = Hg;
                elevDetails.SlabOffset = slab_offset;
+               elevDetails.HaunchDepth = haunch_depth;
                elevDetails.OverlayDepth = overlay_depth / roadwayAngleAdjust;
                elevDetails.ElevationAdjustment = elevAdj;
-               elevDetails.Elevation = finished_elevation - elevDetails.OverlayDepth - elevDetails.SlabOffset - Hg + elevAdj;
+               elevDetails.Elevation = finished_elevation - elevDetails.OverlayDepth - elevDetails.SlabOffset - Hg;
 
                vDetails.push_back(elevDetails);
 
@@ -24591,7 +24947,7 @@ bool CBridgeAgentImp::IsPrismatic(IntervalIndexType intervalIdx,const CSegmentKe
       else
       {
          // we have a composite deck and interval is composite. See if haunch is non-prismatic
-         if (GetHaunchAnalysisSectionPropertiesType() == pgsTypes::hspVariableParabolic)
+         if (GetHaunchAnalysisSectionPropertiesType() == pgsTypes::hspDetailedDescription)
          {
             return false;
          }
@@ -25725,11 +26081,12 @@ Float64 CBridgeAgentImp::GetProfileChordElevation(const pgsPointOfInterest& poi)
 
 Float64 CBridgeAgentImp::GetTopGirderChordElevation(const pgsPointOfInterest& poi) const
 {
+   VALIDATE(BRIDGE);
+
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
    const auto& fn = GetGirderTopChordElevationFunction(segmentKey);
    Float64 Xpoi = poi.GetDistFromStart();
-   Float64 end_dist = GetSegmentStartEndDistance(segmentKey);
-   return fn.Evaluate(Xpoi-end_dist);
+   return fn.Evaluate(Xpoi);
 }
 
 Float64 CBridgeAgentImp::GetTopGirderChordElevation(const pgsPointOfInterest& poi, Float64 Astart, Float64 Aend) const
@@ -25782,208 +26139,19 @@ Float64 CBridgeAgentImp::GetTopGirderChordElevation(const pgsPointOfInterest& po
    Float64 startElevation = GetElevation(startStation,startOffset);
    Float64 endElevation   = GetElevation(endStation,  endOffset);
 
+   // overlay is measured at the GCE. If it exists prior to the GCE, then it's included in the chord elev
+   IntervalIndexType gceInterval = GetGeometryControlInterval();
+   Float64 overlayDepth = GetOverlayDepth(gceInterval);
+
    Float64 length;
    pntBrg1->DistanceEx(pntBrg4,&length);
 
    Float64 Xg = ConvertPoiToGirderCoordinate(poi);
    Float64 end_dist = GetSegmentStartEndDistance(startSegmentKey);
 
-   Float64 yc = ::LinInterp(Xg-end_dist,startElevation-Astart,endElevation-Aend,length);
+   Float64 yc = ::LinInterp(Xg-end_dist,startElevation-Astart-overlayDepth, endElevation-Aend-overlayDepth,length);
 
    return yc;
-}
-
-Float64 CBridgeAgentImp::GetTopGirderElevation(const pgsPointOfInterest& poi,MatingSurfaceIndexType matingSurfaceIdx,const GDRCONFIG* pConfig) const
-{
-   // returns top of girder elevation, including effects of camber, at a poi along a mating surface
-   // if matingSurfaceIdx is INVALID_INDEX, 0 is assumed
-   VALIDATE(GIRDER);
-
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-   PoiList vPoi;
-   GetPointsOfInterest(segmentKey, POI_0L | POI_ERECTED_SEGMENT, &vPoi);
-   ATLASSERT(vPoi.size() == 1);
-   pgsPointOfInterest poiCLBrg(vPoi.front());
-
-   Float64 tft_clbrg = GetTopFlangeThickening(poiCLBrg);
-   Float64 tft_poi = GetTopFlangeThickening(poi);
-   Float64 tft_adjustment = tft_clbrg - tft_poi;
-
-   Float64 webOffset = (matingSurfaceIdx == INVALID_INDEX ? 0 : GetMatingSurfaceLocation(poi,matingSurfaceIdx));
-
-   Float64 girder_slope = GetSegmentSlope(segmentKey); // accounts for elevation changes at temporary supports
-   Float64 dist_from_start_bearing = poi.GetDistFromStart() - poiCLBrg.GetDistFromStart();
-
-   Float64 top_girder_chord_elevation = GetTopGirderChordElevation(poiCLBrg);
-
-   // get the camber
-   GET_IFACE(ICamber,pCamber);
-   Float64 excess_camber = pCamber->GetExcessCamber(poi,CREEP_MAXTIME,pConfig);
-
-   Float64 top_gdr_elev = top_girder_chord_elevation + girder_slope*dist_from_start_bearing + excess_camber - tft_adjustment;
-   return top_gdr_elev;
-}
-
-void CBridgeAgentImp::GetTopGirderElevation(const pgsPointOfInterest& poi, IDirection* pDirection, Float64* pLeft,Float64* pCenter,Float64* pRight) const
-{
-   VALIDATE(GIRDER);
-
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-   // get the centerline bearing poi
-   PoiList vPoi;
-   GetPointsOfInterest(segmentKey, POI_0L | POI_ERECTED_SEGMENT, &vPoi);
-   ATLASSERT(vPoi.size() == 1);
-   pgsPointOfInterest poiCLBrg(vPoi.front());
-
-   // get distance to left and right edge of the girder, from the cl, at the poi under consideration
-   Float64 leftEdge, rightEdge;
-   GetTopWidth(poi, &leftEdge, &rightEdge);
-
-   // get the start pier POI
-   PierIndexType pierIdx = GetGirderGroupStartPier(segmentKey.groupIndex);
-
-   // these parameters are used for computing the elevation change from the CL Bearing due to girder slope
-   Float64 girder_slope = GetSegmentSlope(segmentKey);
-   Float64 dist_from_start_bearing = poi.GetDistFromStart() - poiCLBrg.GetDistFromStart();
-
-   Float64 slab_offset_at_start = GetSlabOffset(segmentKey,pgsTypes::metStart);
-
-   Float64 tft_clbrg = GetTopFlangeThickening(poiCLBrg);
-
-   Float64 overlay = 0;
-   if (HasOverlay() && !IsFutureOverlay() )
-   {
-      overlay = GetOverlayDepth();
-   }
-
-   CComPtr<IDirection> segmentNormal;
-   GetSegmentNormal(segmentKey,&segmentNormal);
-
-   if (pDirection == nullptr || segmentNormal->IsEqual(pDirection) == S_OK)
-   {
-      // cut line is assumed to be normal to the girder
-
-      // girder offset at start bearing
-      Float64 station, zs;
-      GetStationAndOffset(poiCLBrg, &station, &zs);
-
-      // roadway surface elevation at start bearing
-      Float64 YsbLeft = GetElevation(station, zs - leftEdge);
-      Float64 YsbCenter = GetElevation(station, zs);
-      Float64 YsbRight = GetElevation(station, zs + rightEdge);
-
-      // get the camber
-      GET_IFACE(ICamber, pCamber);
-      Float64 excess_camber = pCamber->GetExcessCamber(poi, CREEP_MAXTIME, nullptr);
-
-      Float64 tft_center = GetTopFlangeThickening(poi);
-
-      Float64 tft_adjustment = tft_clbrg - tft_center;
-
-      *pLeft   = YsbLeft   - slab_offset_at_start + girder_slope*dist_from_start_bearing + excess_camber - overlay - tft_adjustment;
-      *pCenter = YsbCenter - slab_offset_at_start + girder_slope*dist_from_start_bearing + excess_camber - overlay - tft_adjustment;
-      *pRight  = YsbRight  - slab_offset_at_start + girder_slope*dist_from_start_bearing + excess_camber - overlay - tft_adjustment;
-   }
-   else
-   {
-      // we are measuring to the left/right edges along a skewed cut line
-
-      // get the angle between the CL Girder and the cut line
-      CComPtr<IDirection> segmentNormal;
-      GetSegmentNormal(segmentKey,&segmentNormal);
-
-      CComPtr<IAngle> skewAngle;
-      pDirection->AngleBetween(segmentNormal,&skewAngle);
-
-      Float64 angle;
-      skewAngle->get_Value(&angle);
-
-      ATLASSERT(!IsEqual(angle, PI_OVER_2));
-
-      // get (x,y) on the CL Girder
-      CComPtr<IPoint2d> point_on_cl_girder;
-      GetPoint(poiCLBrg, pgsTypes::pcLocal, &point_on_cl_girder);
-
-      // Locate the points where the cut line and the edges of the girder intersect
-      // note: dividing the edge_offset by the cosine of the angle puts the measurement along the direction
-      CComPtr<IPoint2d> point_on_left_edge;
-      ByDistDir(point_on_cl_girder, leftEdge / cos(angle), CComVariant(pDirection), 0, &point_on_left_edge);
-
-      CComPtr<IPoint2d> point_on_right_edge;
-      ByDistDir(point_on_cl_girder, -rightEdge / cos(angle), CComVariant(pDirection), 0, &point_on_right_edge);
-
-      // compute the station and offset for the three points
-      Float64 station[3], offset[3];
-      GetStationAndOffset(pgsTypes::pcLocal, point_on_left_edge, &station[0], &offset[0]);
-      GetStationAndOffset(poiCLBrg, &station[1], &offset[1]);
-      GetStationAndOffset(pgsTypes::pcLocal, point_on_right_edge, &station[2], &offset[2]);
-
-      // compute the roadway surface elevation for the three points
-      Float64 YsbLeft   = GetElevation(station[0], offset[0]);
-      Float64 YsbCenter = GetElevation(station[1], offset[1]);
-      Float64 YsbRight  = GetElevation(station[2], offset[2]);
-
-      // the three points, projected onto the CL Girder are at different locations along the camber curve
-      // there is a lot of overhead in computing excess cambers at POIs that are created on the fly (poi.ID = INVALID_ID)
-      // we can get a good approxiation of the excess camber at the left and right edges by getting the excess
-      // camber on the centerline and the slope due to excess camber, and projecting the excess camber along the girder
-      // to x_left and x_right from the CL girder point
-      //
-      //                               |<->| x_left
-      //            ...................|..*.................
-      //            :                  | :
-      //           :                   |:
-      //          :- - - - - - - - - - * - - - - - - - - -
-      //         :                    :|
-      //        :                    : |
-      //        ....................*..|................
-      //                           |<->| x_right
-      //
-      // 
-      // Get distance to edge points relative to the current poi
-      Float64 x_left = -leftEdge*tan(angle);
-      Float64 x_right = rightEdge*tan(angle);
-
-      // Get the excess camber and slope at the current poi
-      GET_IFACE(ICamber, pCamber);
-      Float64 cl_excess_camber    = pCamber->GetExcessCamber(poi,  CREEP_MAXTIME, nullptr); // this includes precamber
-      Float64 excess_camber_slope = pCamber->GetExcessCamberRotation(poi, CREEP_MAXTIME, nullptr);
-
-      // assuming slope is a straight line, project the camber along the girder to x_left and x_right
-      Float64 left_excess_camber  = cl_excess_camber + excess_camber_slope*x_left;
-      Float64 right_excess_camber = cl_excess_camber + excess_camber_slope*x_right;
-
-      // Get top flange thickening adjustments
-      Float64 Xpoi_Left  = poi.GetDistFromStart() + x_left;
-      Float64 Xpoi_Right = poi.GetDistFromStart() + x_right;
-      
-      Float64 tft_left   = GetTopFlangeThickening(segmentKey,Xpoi_Left);
-      Float64 tft_center = GetTopFlangeThickening(poi);
-      Float64 tft_right  = GetTopFlangeThickening(segmentKey, Xpoi_Right);
-
-      Float64 tft_adjustment_left   = tft_clbrg - tft_left;
-      Float64 tft_adjustment_center = tft_clbrg - tft_center;
-      Float64 tft_adjustment_right  = tft_clbrg - tft_right;
-
-      // compute the elevation for each location
-      *pLeft   = YsbLeft   - slab_offset_at_start + girder_slope*dist_from_start_bearing + left_excess_camber  - overlay - tft_adjustment_left;
-      *pCenter = YsbCenter - slab_offset_at_start + girder_slope*dist_from_start_bearing + cl_excess_camber    - overlay - tft_adjustment_center;
-      *pRight  = YsbRight  - slab_offset_at_start + girder_slope*dist_from_start_bearing + right_excess_camber - overlay - tft_adjustment_right;
-   }
-}
-
-void CBridgeAgentImp::GetFinishedElevation(const pgsPointOfInterest& poi, IDirection* pDirection, bool bIncludeOverlay, Float64* pLeft, Float64* pCenter, Float64* pRight) const
-{
-   GetTopGirderElevation(poi, pDirection, pLeft, pCenter, pRight);
-   if (bIncludeOverlay && GetWearingSurfaceType() == pgsTypes::wstOverlay)
-   {
-      Float64 overlay = GetOverlayDepth();
-      *pLeft += overlay;
-      *pCenter += overlay;
-      *pRight += overlay;
-   }
 }
 
 bool CBridgeAgentImp::CanPrecamber(const CSegmentKey& segmentKey) const
@@ -30688,6 +30856,24 @@ IntervalIndexType CBridgeAgentImp::GetLastCompositeInterval() const
    {
       return trafficBarrierIntervalIdx;
    }
+}
+
+IntervalIndexType CBridgeAgentImp::GetGeometryControlInterval() const
+{
+   VALIDATE(BRIDGE);
+   return m_IntervalManager.GetGeometryControlEventInterval();
+}
+
+std::vector<IntervalIndexType> CBridgeAgentImp::GetReportingGeometryControlIntervals() const
+{
+   VALIDATE(BRIDGE);
+   return m_IntervalManager.GetGeometryControlIntervals(pgsTypes::gcaGeometryReportingEvent);
+}
+
+std::vector<IntervalIndexType> CBridgeAgentImp::GetSpecCheckGeometryControlIntervals() const
+{
+   VALIDATE(BRIDGE);
+   return m_IntervalManager.GetGeometryControlIntervals(pgsTypes::gcaSpecCheckEvent);
 }
 
 ////////////////////////////////////
@@ -36113,16 +36299,29 @@ void CBridgeAgentImp::ValidateGirderTopChordElevation(const CGirderKey& girderKe
       return; // we've already done this girder
    }
    
-   ValidateGirderTopChordElevation(girderKey, &m_GirderTopChordElevationFunctions); // don't ignore elevation adjustments
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   if (pBridgeDesc->GetHaunchInputDepthType() == pgsTypes::hidACamber)
+   {
+      // Old "A" dimension and assumed excess camber input
+      ValidateGirderTopChordElevationADimInput(girderKey,pBridgeDesc,&m_GirderTopChordElevationFunctions);
+   }
+   else
+   {
+      ValidateGirderTopChordElevationDirectHaunchInput(girderKey,pBridgeDesc,&m_GirderTopChordElevationFunctions);
+   }
 }
 
-void CBridgeAgentImp::ValidateGirderTopChordElevation(const CGirderKey& girderKey,std::map<CSegmentKey, WBFL::Math::LinearFunction>* pFunctions) const
+void CBridgeAgentImp::ValidateGirderTopChordElevationADimInput(const CGirderKey& girderKey,const CBridgeDescription2* pBridgeDesc,std::map<CSegmentKey,WBFL::Math::LinearFunction>* pFunctions) const
 {
    VALIDATE(BRIDGE);
 
-   // Create the functions
-   GET_IFACE(IBridgeDescription, pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   // overlay is measured at the GCE. If it exists prior to the GCE, then it's included in the chord elev
+   IntervalIndexType gceInterval = GetGeometryControlInterval();
+   Float64 overlayDepth = GetOverlayDepth(gceInterval);
+
+   // Create the functions. Functions expect basis at start end of segment
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
    const CSplicedGirderData* pGirder = pGroup->GetGirder(girderKey.girderIndex);
    SegmentIndexType nSegments = pGirder->GetSegmentCount();
@@ -36131,21 +36330,33 @@ void CBridgeAgentImp::ValidateGirderTopChordElevation(const CGirderKey& girderKe
       const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
       const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
 
-      std::array<Float64,2> slab_offset;
-      pSegment->GetSlabOffset(&slab_offset[pgsTypes::metStart], &slab_offset[pgsTypes::metEnd]);
-
-
-      // get (X,Y), Station/Offset, and Elevation at start of segment
+      // get (X,Y), Station/Offset, and Elevation at bearing locations
       CComPtr<IPoint2d> pntPier1, pntEnd1, pntBrg1, pntBrg2, pntEnd2, pntPier2;
       GetSegmentEndPoints(segmentKey, pgsTypes::pcLocal, &pntPier1, &pntEnd1, &pntBrg1, &pntBrg2, &pntEnd2, &pntPier2);
       Float64 startStation, startOffset;
-      GetStationAndOffset(pgsTypes::pcLocal, pntBrg1, &startStation, &startOffset);
+      GetStationAndOffset(pgsTypes::pcLocal,pntBrg1, &startStation, &startOffset);
       Float64 startProfileElevation = GetElevation(startStation, startOffset);
 
       Float64 endStation, endOffset;
-      GetStationAndOffset(pgsTypes::pcLocal, pntBrg2, &endStation, &endOffset);
+      GetStationAndOffset(pgsTypes::pcLocal,pntBrg2, &endStation, &endOffset);
       Float64 endProfileElevation = GetElevation(endStation, endOffset);
 
+      // Slab offsets are also at bearing locations, so sum them with end elevations
+      std::array<Float64,2> slab_offset;
+      pSegment->GetSlabOffset(&slab_offset[pgsTypes::metStart],&slab_offset[pgsTypes::metEnd]);
+
+      // Compute unadjusted elevations at ends of segments
+      Float64 segLength = GetSegmentLength(segmentKey);
+      Float64 startLoc = GetSegmentStartEndDistance(segmentKey);
+      Float64 endLoc = segLength - GetSegmentEndEndDistance(segmentKey);
+
+      WBFL::Math::LinearFunction tmpf = GenerateLineFunc2dFromPoints(startLoc, startProfileElevation-slab_offset[pgsTypes::metStart]- overlayDepth, 
+                                                                     endLoc,   endProfileElevation-slab_offset[pgsTypes::metEnd]    - overlayDepth);
+      std::array<Float64,2> unadj_elev_ends;
+      unadj_elev_ends[pgsTypes::metStart] = tmpf.Evaluate(0.0);
+      unadj_elev_ends[pgsTypes::metEnd] = tmpf.Evaluate(segLength);
+
+      // Elevation adjustments are always at segment ends, so these can be added directly
       std::array<Float64, 2> elev_adj{ 0.0,0.0 };
       for (int i = 0; i < 2; i++)
       {
@@ -36159,19 +36370,133 @@ void CBridgeAgentImp::ValidateGirderTopChordElevation(const CGirderKey& girderKe
          }
       }
 
-      // distance between two elevation control points
-      Float64 L;
-      pntBrg1->DistanceEx(pntBrg2, &L);
-
-      // this is a function for the basic straight line that connections the top of the segment at the two CL Bearing points
-      Float64 elevStart = startProfileElevation - slab_offset[pgsTypes::metStart] + elev_adj[pgsTypes::metStart];
-      Float64 elevEnd = endProfileElevation - slab_offset[pgsTypes::metEnd] + elev_adj[pgsTypes::metEnd];
-      Float64 m = (elevEnd - elevStart) / L;
+      // Create a function for the basic straight line that connects the top of the segment at the two ends
+      Float64 elevStart = unadj_elev_ends[pgsTypes::metStart] + elev_adj[pgsTypes::metStart];
+      Float64 elevEnd =   unadj_elev_ends[pgsTypes::metEnd]   + elev_adj[pgsTypes::metEnd];
+      Float64 m = (elevEnd - elevStart) / segLength;
       // y = mx+b
       // x = 0 is at start pier CL Brg. so b = elevStart
       WBFL::Math::LinearFunction fnBasic(m, elevStart);
 
       pFunctions->insert(std::make_pair(segmentKey, fnBasic));
+   }
+}
+
+void CBridgeAgentImp::ValidateGirderTopChordElevationDirectHaunchInput(const CGirderKey& girderKey,const CBridgeDescription2* pBridgeDesc,std::map<CSegmentKey,WBFL::Math::LinearFunction>* pFunctions) const
+{
+   VALIDATE(BRIDGE);
+
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
+   const CSplicedGirderData* pGirder = pGroup->GetGirder(girderKey.girderIndex);
+
+   Float64 deckDepth = GetGrossSlabDepth();
+
+   // overlay is measured at the GCE
+   IntervalIndexType gceInterval = GetGeometryControlInterval();
+
+   Float64 overlayDepth = GetOverlayDepth(gceInterval);
+
+   // Haunch depths come from WBFL
+   CComPtr<ISuperstructureMember> ssmbr;
+   IDType ssmbrID = ::GetSuperstructureMemberID(girderKey.groupIndex,girderKey.girderIndex);
+   m_Bridge->get_SuperstructureMember(ssmbrID,&ssmbr);
+
+   SegmentIndexType nSegments = pGirder->GetSegmentCount();
+   for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+   {
+      const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+      const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
+
+      // Elevation adjustments 
+      std::array<Float64,2> elev_adj{ 0.0,0.0 };
+      for (int i = 0; i < 2; i++)
+      {
+         pgsTypes::MemberEndType end = (pgsTypes::MemberEndType)i;
+         const CPierData2* pPier;
+         const CTemporarySupportData* pTS;
+         pSegment->GetSupport(end,&pPier,&pTS);
+         if (pTS && pTS->HasElevationAdjustment())
+         {
+            elev_adj[end] = pTS->GetElevationAdjustment();
+         }
+      }
+
+      // Controlling locations for direct haunch input are at ends of segments unless the
+      // end of the segment is at then end of a group, then they are at bearing locations
+      const CPierData2* pPier;
+      const CTemporarySupportData* pTS;
+      pSegment->GetSupport(pgsTypes::metStart,&pPier,&pTS);
+      bool bAtStartBrg = nullptr != pPier && pPier->IsBoundaryPier();
+
+      pSegment->GetSupport(pgsTypes::metEnd,&pPier,&pTS);
+      bool bAtEndBrg = nullptr != pPier && pPier->IsBoundaryPier();
+
+      // Get (X,Y), Station/Offset, and Elevation at control points
+      CComPtr<IPoint2d> pntPierStart,pntEndStart,pntBrgStart,pntBrgEnd,pntEndEnd,pntPierEnd;
+      GetSegmentEndPoints(segmentKey,pgsTypes::pcLocal,&pntPierStart,&pntEndStart,&pntBrgStart,&pntBrgEnd,&pntEndEnd,&pntPierEnd);
+
+      Float64 startStation,startOffset;
+      if (bAtStartBrg)
+      {
+         GetStationAndOffset(pgsTypes::pcLocal,pntBrgStart,&startStation,&startOffset);
+      }
+      else
+      {
+         GetStationAndOffset(pgsTypes::pcLocal,pntEndStart,&startStation,&startOffset);
+      }
+
+      Float64 startProfileElevation = GetElevation(startStation,startOffset);
+
+      Float64 endStation,endOffset;
+      if (bAtEndBrg)
+      {
+         GetStationAndOffset(pgsTypes::pcLocal,pntBrgEnd,&endStation,&endOffset);
+      }
+      else
+      {
+         GetStationAndOffset(pgsTypes::pcLocal,pntEndEnd,&endStation,&endOffset);
+      }
+
+      Float64 endProfileElevation = GetElevation(endStation,endOffset);
+
+      // Get haunch depths at control points
+      CComPtr<ISuperstructureMemberSegment> segment;
+      ssmbr->get_Segment(segIdx,&segment);
+
+      Float64 segLength = GetSegmentLength(segmentKey);
+      Float64 startDist = bAtStartBrg ? GetSegmentStartEndDistance(segmentKey) : 0.0;
+      Float64 endDist = bAtEndBrg ? GetSegmentEndEndDistance(segmentKey) : 0.0;
+
+      Float64 startLoc = startDist;
+      Float64 endLoc = segLength - endDist;
+
+      Float64 haunchStart,haunchEnd;
+      segment->ComputeHaunchDepth(startLoc,&haunchStart);
+      segment->ComputeHaunchDepth(endLoc,&haunchEnd);
+
+      Float64 elevStart = startProfileElevation - deckDepth - overlayDepth - haunchStart;
+      Float64 elevEnd   = endProfileElevation - deckDepth - overlayDepth - haunchEnd;
+
+      // At this point, we have elevations which may, or may not, be at the segment ends.
+      // The function object we are building requires its basis at segment ends, so fix that if not so.
+      if (bAtStartBrg || bAtEndBrg)
+      {
+         WBFL::Math::LinearFunction tmpf = GenerateLineFunc2dFromPoints(startLoc,elevStart,endLoc,elevEnd);
+         elevStart = tmpf.Evaluate(0.0);
+         elevEnd = tmpf.Evaluate(segLength);
+      }
+
+      // Elevation adjustments are always at ends
+      elevStart += elev_adj[pgsTypes::metStart];
+      elevEnd   += elev_adj[pgsTypes::metEnd];
+
+      // this is a function for the basic straight line that connects at the top of the segment its ends
+      Float64 m = (elevEnd - elevStart) / segLength;
+      // y = mx+b
+      // x = 0 is at start pier CL Brg. so b = elevStart
+      WBFL::Math::LinearFunction fnBasic(m, elevStart);
+
+      pFunctions->insert(std::make_pair(segmentKey,fnBasic));
    }
 }
 

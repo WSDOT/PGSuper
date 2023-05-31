@@ -77,8 +77,8 @@ protected:
    afx_msg void OnErectionStageChanged();
    afx_msg void OnErectionStageChanging();
    afx_msg HBRUSH OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlColor);
+   afx_msg void OnBnClickedEditHaunchButton();
 	//}}AFX_MSG
-   afx_msg void OnChangeSlabOffset();
    DECLARE_MESSAGE_MAP()
 
    CComPtr<IStation> m_objStation;
@@ -100,15 +100,13 @@ protected:
 
    int m_PierFaceCount;
 
-   std::array<Float64,2> m_SlabOffset; // access with pgsTypes::PierFaceType
+   CEdit m_ctrlBackSlabOffset;
+   CEdit m_ctrlAheadSlabOffset;
 
-   CCacheEdit m_ctrlBackSlabOffset;
-   CCacheEdit m_ctrlAheadSlabOffset;
+   void UpdateHaunchAndCamberControls();
+   void UpdateHaunchAndCamberData(CDataExchange* pDX);
+   void DisableHaunchAndCamberControls();
 
-   CComboBox m_ctrlSlabOffsetType;
-
-   pgsTypes::SlabOffsetType m_InitialSlabOffsetType;
-   void UpdateSlabOffsetWindowState();
 };
 
 //{{AFX_INSERT_LOCATION}}

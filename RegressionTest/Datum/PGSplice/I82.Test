@@ -1,6 +1,6 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 59.00    7   9.00   River bridge      1     1    Bridg    *     34  0.6  270  50.95  68.87  12.00  12.00                                              5.000 10.099  10.099    10.099    12182   0.785  0.884   0.252 -0.160 -0.034 -0.023 -0.217 122.81  584.25   10.00   10.00   10.00    3.37    0.90    4.37    1.21    1.19 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 59.00    7   9.00   River bridge      1     1    Bridg    *     34  0.6  270  50.95  68.87                                              5.000 10.099  10.099    10.099    12182   0.785  0.884   0.252 -0.160 -0.034 -0.023 -0.217 122.81  584.25   10.00   10.00   10.00    3.37    0.90    4.37    1.21    1.19 
 
 
 The Specification Check was Not Successful
@@ -80,15 +80,16 @@ Lifting checks failed for Segment 8.
 Hauling checks failed for Segment 8.
 Lifting checks failed for Segment 9.
 Hauling checks failed for Segment 9.
+Finished elevation check failed
 Duct Size check failed for Duct 1.
 Duct Size check failed for Duct 2.
 Duct Size check failed for Duct 3.
 Duct Size check failed for Duct 4.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 59.00    7   9.00   River bridge      1     2    Bridg    *     34  0.6  270  50.95  68.87  12.00  12.00                                              5.000 10.099  10.099    10.099    12466   0.785  0.884   0.252 -0.174 -0.033 -0.022 -0.229 122.81  582.18   10.00   10.00   10.00    3.39    0.83    4.40    1.11    1.23 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 59.00    7   9.00   River bridge      1     2    Bridg    *     34  0.6  270  50.95  68.87                                              5.000 10.099  10.099    10.099    12466   0.785  0.884   0.252 -0.174 -0.033 -0.022 -0.229 122.81  582.18   10.00   10.00   10.00    3.39    0.83    4.40    1.11    1.23 
 
 
 The Specification Check was Not Successful
@@ -169,6 +170,7 @@ Lifting checks failed for Segment 8.
 Hauling checks failed for Segment 8.
 Lifting checks failed for Segment 9.
 Hauling checks failed for Segment 9.
+Finished elevation check failed
 Duct Size check failed for Duct 1.
 Duct Size check failed for Duct 2.
 Duct Size check failed for Duct 3.

@@ -192,20 +192,20 @@
 #define IDI_ICON1                       395
 #define IDI_RW_CS                       395
 #define IDD_FILESAVEWARNINGDLG          401
+#define IDD_GEOMETRY_CONTROL            408
 #define IDR_PGSUPER_TEMPLATE_ICON       500
 #define IDR_PGSPLICE_TEMPLATE_ICON      501
 #define IDD_ABOUTBOX                    999
 #define IDC_BRIDGE                      1000
 #define IDC_ALIGNMENT                   1001
 #define IDD_FILLETSAME4_BRIDGE          1001
-#define IDD_ASSUMED_EXCESS_CAMBER_BY_BRIDGE 1001
+#define IDD_ASSUMED_EXCESS_CAMBER_BRIDGE 1001
 #define IDC_VERSION                     1002
 #define IDC_BRIDGEID                    1002
-#define IDD_FILLET_SPAN_BY_SPAN         1002
-#define IDD_ASSUMED_EXCESS_CAMBER_BY_SPAN 1002
+#define IDD_ASSUMED_EXCESS_CAMBER_SPAN  1002
 #define IDC_COPYRIGHT                   1003
-#define IDD_FILLET_BY_GIRDER            1003
-#define IDD_ASSUMED_EXCESS_CAMBER_BY_GIRDER 1003
+#define IDD_ASSUMED_EXCESS_CAMBER_GIRDER 1003
+#define IDD_ASSUMED_EXCESS_CAMBER_SEGMENT 1003
 #define IDC_JOBNUMBER                   1004
 #define IDD_BEARING_PIER_BY_PIER        1004
 #define IDC_APPICON                     1005
@@ -305,7 +305,9 @@
 #define IDD_COPY_PIER_PROPERTIES        1113
 #define IDC_BEFORE_XFER_TAG             1114
 #define IDD_COPY_PIER_PROPERTIES1       1114
+#define IDD_EDIT_HAUNCH_ACAMBER         1114
 #define IDC_SHIPPING                    1115
+#define IDD_EDIT_HAUNCH_BY_HAUNCH       1115
 #define IDC_HPOFFSET_END                1116
 #define IDC_SHIPPING_TAG                1116
 #define IDC_FINAL_TAG                   1117
@@ -586,6 +588,7 @@
 #define IDC_FILLET_TYPE                 1409
 #define IDC_GDR_SPC_TYPE_COMBO          1409
 #define IDC_ASSUMED_EXCESS_CAMBER_TYPE  1409
+#define IDC_BY_SEG_SPAN                 1409
 #define IDC_HP_COMBO_END                1410
 #define IDC_PIER_GIRDER                 1410
 #define IDC_PERMIT_PEDES_COMBO          1410
@@ -1210,6 +1213,7 @@
 #define IDC_HAUNCH_SHAPE_LABEL          1880
 #define IDC_HAUNCH_SHAPE_LABEL2         1881
 #define IDC_ALLOWABLE_TENSION_LABEL     1882
+#define IDC_DECK_DEPTH                  1882
 #define IDC_MATERIAL_GROUP              1883
 #define IDC_CAP_GROUP                   1884
 #define IDC_COLUMN_GROUP                1885
@@ -1295,6 +1299,7 @@
 #define IDC_STRANDS_CG                  1925
 #define IDC_BRG_RECESS_LENGTH           1925
 #define IDC_DONT_WARN                   1925
+#define IDC_GCE_CHECK                   1925
 #define IDC_STRANDS_CG2                 1926
 #define IDC_SECTION_CG                  1926
 #define IDC_EDIT1                       1926
@@ -1423,6 +1428,28 @@
 #define IDC_HARPED_STRAND_LABEL         2034
 #define IDC_PROPERTY_LIST               2035
 #define IDC_SLOPE_NOTE                  2036
+#define IDC_PLACE_HOLDER                2037
+#define IDC_SKETCH_PLACE_HOLDER         2038
+#define IDC_HAUNCH_INPUT_TYPE           2038
+#define IDC_HAUNCH_DISTRIBUTION         2039
+#define IDC_PLACE_HOLDER3               2039
+#define IDC_TS_ELEV_GROUPBOX            2039
+#define IDC_HAUNCH_BOX                  2040
+#define IDC_HAUNCH_DEPTH_TYPE           2041
+#define IDC_HAUNCH_DIRECT_GRID          2042
+#define IDC_HAUNCH_UNIT                 2043
+#define IDC_DISTRIBUTED_TEXT            2044
+#define IDC_HAUNCH_DIRECT_SPAN_GRID     2045
+#define IDC_PLACEHOLDER                 2046
+#define IDC_HAUNCH_DIRECT_SAMEAS_GRID   2047
+#define IDC_HAUNCH_LABEL                2048
+#define IDC_HAUNCH_DIRECT_ENTIRE_BRIDGE_GRID 2048
+#define IDC_HAUNCH                      2049
+#define IDC_HAUNCH_DIRECT_SAMEAS_GRID2  2049
+#define IDC_HAUNCH_DIRECT_SAMEAS_SEGMENT_GRID 2049
+#define IDC_H_UNIT                      2050
+#define IDC_HAUNCH_INPUT_UNIT           2050
+#define IDC_TS_ELEVATION_ADJUST_GRID    2051
 #define IDS_E_WRITE                     2500
 #define IDS_E_UNSAFESAVE                2501
 #define IDS_E_SAVERECOVER1              2502
@@ -1589,6 +1616,7 @@
 #define ID_OPTIONS_AUTOSAVE             37010
 #define ID_COPY_TEMPORARYSUPPORT        37012
 #define ID_TEMPORARYSUPPORT_PLACEHOLDER 37013
+#define ID_ACTIVITIES_GEOMETRYCONTROLEVENT 37013
 #define IDM_COPY_TEMPSUPPORT_PROPS      37014
 #define IDM_COPY_PIER_PROPS             37015
 #define ID_COPY_GIRDER_PROPS            37016
@@ -1599,9 +1627,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        407
-#define _APS_NEXT_COMMAND_VALUE         37013
-#define _APS_NEXT_CONTROL_VALUE         2037
+#define _APS_NEXT_RESOURCE_VALUE        410
+#define _APS_NEXT_COMMAND_VALUE         37014
+#define _APS_NEXT_CONTROL_VALUE         2052
 #define _APS_NEXT_SYMED_VALUE           115
 #endif
 #endif

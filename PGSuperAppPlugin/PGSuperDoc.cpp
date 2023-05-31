@@ -218,12 +218,36 @@ bool CPGSuperDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,int
       newGirderData.m_Girder.SetTopWidth(type,leftStart,rightStart,leftEnd,rightEnd);
       *newGirderData.m_Girder.GetSegment(segmentKey.segmentIndex) = *dlg.GetSegment();
 
-      newGirderData.m_SlabOffsetType = dlg.m_General.m_SlabOffsetType;
-      newGirderData.m_SlabOffset[pgsTypes::metStart] = dlg.m_General.m_SlabOffset[pgsTypes::metStart];
-      newGirderData.m_SlabOffset[pgsTypes::metEnd]   = dlg.m_General.m_SlabOffset[pgsTypes::metEnd];
+      if (pBridgeDesc->GetHaunchInputDepthType() == pgsTypes::hidACamber)
+      {
+         newGirderData.m_SlabOffsetType = pBridgeDesc->GetSlabOffsetType(); // Not changed by the dialog
+         newGirderData.m_SlabOffset[pgsTypes::metStart] = dlg.m_General.m_SlabOffsetOrHaunch[pgsTypes::metStart];
+         newGirderData.m_SlabOffset[pgsTypes::metEnd] = dlg.m_General.m_SlabOffsetOrHaunch[pgsTypes::metEnd];
 
-      newGirderData.m_AssumedExcessCamberType = dlg.m_General.m_AssumedExcessCamberType;
+         newGirderData.m_AssumedExcessCamberType = pBridgeDesc->GetAssumedExcessCamberType(); // Not changed by the dialog
       newGirderData.m_AssumedExcessCamber = dlg.m_General.m_AssumedExcessCamber;
+      }
+      else
+      {
+         // Direct input of haunch depth
+         if (dlg.m_General.m_CanDisplayHauchDepths == CGirderDescGeneralPage::cdhEdit)
+         {
+            // Haunch value was edited in dialog. Determine if 1 or 2 values
+            if (pBridgeDesc->GetHaunchInputDistributionType() == pgsTypes::hidUniform)
+            {
+               newGirderData.m_HaunchDepths.push_back( dlg.m_General.m_SlabOffsetOrHaunch[pgsTypes::metStart]);
+            }
+            else if (pBridgeDesc->GetHaunchInputDistributionType() == pgsTypes::hidAtEnds)
+            {
+               newGirderData.m_HaunchDepths.push_back(dlg.m_General.m_SlabOffsetOrHaunch[pgsTypes::metStart]);
+               newGirderData.m_HaunchDepths.push_back(dlg.m_General.m_SlabOffsetOrHaunch[pgsTypes::metEnd]);
+            }
+            else
+            {
+               ATLASSERT(0); // above should be only options
+            }
+         }
+      }
 
       newGirderData.m_strGirderName = dlg.m_strGirderName;
 
@@ -322,7 +346,6 @@ void CPGSuperDoc::DesignGirder(bool bPrompt, arSlabOffsetDesignType designSlabOf
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    GET_IFACE_NOCHECK(IBridge, pBridge);
-   GET_IFACE(ISectionProperties, pSectProp);
    GET_IFACE(ILossParameters, pLossParams);
    if (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP)
    {
@@ -337,30 +360,40 @@ void CPGSuperDoc::DesignGirder(bool bPrompt, arSlabOffsetDesignType designSlabOf
       return;
    }
 
-   // We cannot design directly if transformed sections or non-prismatic haunch section properties are specified. Inform user if this is the case.
-   CString noDesignMsg;
-   if (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmTransformed)
+   if (pBridge->GetHaunchInputDepthType() != pgsTypes::hidACamber)
    {
-      noDesignMsg = (_T("The Project Criteria specifies an analysis based on Transformed Sections. "));
+      CString msg(_T("Geometric design of the slab haunch is only available if the \"A\" dimension input format is used to define the haunch. Haunch geometry will be not be modified during the design."));
+      AfxMessageBox(msg,MB_OK | MB_ICONWARNING);
+      designSlabOffset = sodPreserveHaunch;
    }
-
-   if (pSectProp->GetHaunchAnalysisSectionPropertiesType() == pgsTypes::hspVariableParabolic && IsStructuralDeck(pBridge->GetDeckType()))
+   else
    {
-      if (!noDesignMsg.IsEmpty())
+      GET_IFACE(ISectionProperties,pSectProp);
+      // We cannot design directly if transformed sections or non-prismatic haunch section properties are specified. Inform user if this is the case.
+      CString noDesignMsg;
+      if (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmTransformed)
       {
-         noDesignMsg += _T("Also, ");
+         noDesignMsg = (_T("The Project Criteria specifies an analysis based on Transformed Sections. "));
       }
 
-      noDesignMsg += _T("The Project Criteria specifies an analysis based on non-prismatic composite section properties accounting for Parabolic Haunch depth. ");
-   }
-
-   if (!noDesignMsg.IsEmpty())
-   {
-      CString msg;
-      msg.Format(_T("Warning: %s \n\nThese options are not accurately accounted for by the automated design algorithm. For this reason, girder designs are performed using gross section properties and a constant haunch depth.\n\nThe resulting design may not be optimal. Be sure to verify design results using a Spec Check.\n\nWould you like to proceed?"), noDesignMsg);
-      if (AfxMessageBox(msg, MB_YESNO | MB_ICONWARNING) != IDYES)
+      if (pSectProp->GetHaunchAnalysisSectionPropertiesType() == pgsTypes::hspDetailedDescription && IsStructuralDeck(pBridge->GetDeckType()))
       {
-         return;
+         if (!noDesignMsg.IsEmpty())
+         {
+            noDesignMsg += _T("Also, ");
+         }
+
+         noDesignMsg += _T("The Project Criteria specifies an analysis based on non-prismatic composite section properties accounting for Parabolic Haunch depth. ");
+      }
+
+      if (!noDesignMsg.IsEmpty())
+      {
+         CString msg;
+         msg.Format(_T("Warning: %s \n\nThese options are not accurately accounted for by the automated design algorithm. For this reason, girder designs are performed using gross section properties and a constant haunch depth.\n\nThe resulting design may not be optimal. Be sure to verify design results using a Spec Check.\n\nWould you like to proceed?"),noDesignMsg);
+         if (AfxMessageBox(msg,MB_YESNO | MB_ICONWARNING) != IDYES)
+         {
+            return;
+         }
       }
    }
 

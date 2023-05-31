@@ -52,6 +52,10 @@ struct txnEditGirderData
    pgsTypes::AssumedExcessCamberType m_AssumedExcessCamberType;
    Float64 m_AssumedExcessCamber;
 
+   // Vector below is used for direct input of haunch depths. It can contain 0, 1, or 2 values indexed by pgsTypes::MemberEndType. 
+   // If empty, it means that no haunch depths were collected at input for this girder
+   std::vector<Float64> m_HaunchDepths;
+
    pgsTypes::BearingType m_BearingType; // 
    std::array<CBearingData2, 2> m_BearingData;  // index is pgsTypes::MemberEndType
 };

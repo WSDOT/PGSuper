@@ -43,6 +43,7 @@
 #include "StressTendonDlg.h"
 #include "CastDeckDlg.h"
 #include "CastLongitudinalJointsDlg.h"
+#include "GeometryControlDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -59,6 +60,7 @@ static char THIS_FILE[] = __FILE__;
 #define CAST_DECK             6
 #define CAST_LONGITUDINAL_JOINTS 7
 #define APPLY_LOADS           8
+#define GEOMETRY_CONTROL      9
 
 GRID_IMPLEMENT_REGISTER(CActivityGrid, CS_DBLCLKS, 0, 0, 0);
 
@@ -225,6 +227,11 @@ void CActivityGrid::Refresh()
       AddActivity(_T("Apply Loads"),APPLY_LOADS);
    }
 
+   if (pParent->m_pTimelineEvent->GetGeometryControlActivity().IsEnabled())
+   {
+      AddActivity(_T("Roadway Geometry Control"),GEOMETRY_CONTROL);
+   }
+
    ResizeColWidthsToFit(CGXRange(0,0,GetRowCount(),GetColCount()));
 }
 
@@ -358,6 +365,14 @@ void CActivityGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
          pParent->UpdateTimelineManager(dlg.m_TimelineMgr);
       }
    }
+   else if ((ActivityKeyType)style.GetItemDataPtr() == GEOMETRY_CONTROL)
+   {
+      CGeometryControlDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex,m_bReadOnly);
+      if (dlg.DoModal() == IDOK)
+      {
+         pParent->UpdateTimelineManager(dlg.m_TimelineMgr);
+      }
+   }
    else
    {
       ATLASSERT(false); // is there a new activity type?
@@ -429,6 +444,11 @@ void CActivityGrid::RemoveActivity()
       {
          pParent->m_pTimelineEvent->GetApplyLoadActivity().Enable(false);
          pParent->m_pTimelineEvent->GetApplyLoadActivity().Clear();
+      }
+
+      if (activityType == GEOMETRY_CONTROL)
+      {
+         pParent->m_pTimelineEvent->GetGeometryControlActivity().Clear();
       }
    }
 

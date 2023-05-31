@@ -30,6 +30,7 @@
 #include "TemporarySupportLayoutPage.h"
 #include "TimelineEventDlg.h"
 #include "SelectItemDlg.h"
+#include "EditHaunchDlg.h"
 #include "Utilities.h"
 
 #include <EAF\EAFDisplayUnits.h>
@@ -47,6 +48,12 @@
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+// free fuction to determine if a temp support can possibly have haunch input
+static bool CanHaveHaunchInput(CTemporarySupportData* pTS)
+{
+   return pTS->GetSupportType() == pgsTypes::StrongBack || (pTS->GetSupportType() == pgsTypes::ErectionTower && pTS->GetConnectionType() == pgsTypes::tsctClosureJoint);
+}
 
 
 // CTemporarySupportLayoutPage dialog
@@ -96,11 +103,6 @@ void CTemporarySupportLayoutPage::DoDataExchange(CDataExchange* pDX)
 
    DDX_UnitValueAndTag(pDX, IDC_ADJUSTMENT, IDC_ADJUSTMENT_UNIT, m_ElevAdjustment, pDisplayUnits->GetComponentDimUnit());
 
-   DDX_CBItemData(pDX, IDC_SLAB_OFFSET_TYPE, m_SlabOffsetType);
-
-   DDX_UnitValueAndTag(pDX, IDC_BACK_SLAB_OFFSET, IDC_BACK_SLAB_OFFSET_UNIT, m_SlabOffset[pgsTypes::Back], pDisplayUnits->GetComponentDimUnit());
-   DDX_UnitValueAndTag(pDX, IDC_AHEAD_SLAB_OFFSET, IDC_AHEAD_SLAB_OFFSET_UNIT, m_SlabOffset[pgsTypes::Ahead], pDisplayUnits->GetComponentDimUnit());
-
    if ( pDX->m_bSaveAndValidate )
    {
 #pragma Reminder("Validate temporary support orientation")
@@ -147,30 +149,6 @@ void CTemporarySupportLayoutPage::DoDataExchange(CDataExchange* pDX)
          pDX->Fail();
       }
 
-      pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
-      CClosureJointData* pCJ = pParent->m_pTS->GetClosureJoint(0);
-      if (deckType != pgsTypes::sdtNone && pCJ != nullptr && m_SlabOffsetType != pgsTypes::sotSegment)
-      {
-         Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
-         CString strMinValError;
-         strMinValError.Format(_T("Slab Offset value must be greater or equal to gross slab depth (%s)"), FormatDimension(minSlabOffset,pDisplayUnits->GetComponentDimUnit()));
-
-         if (::IsLT(m_SlabOffset[pgsTypes::Back], minSlabOffset))
-         {
-            pDX->PrepareCtrl(IDC_BACK_SLAB_OFFSET);
-            AfxMessageBox(strMinValError);
-            pDX->Fail();
-         }
-
-         if (::IsLT(m_SlabOffset[pgsTypes::Ahead], minSlabOffset))
-         {
-            pDX->PrepareCtrl(IDC_AHEAD_SLAB_OFFSET);
-            AfxMessageBox(strMinValError);
-            pDX->Fail();
-         }
-      }
-
-
       // copy the local page data in the bridge model owned by the parent property sheet
       pParent->m_pTS->SetOrientation(m_strOrientation.c_str());
       pParent->m_pTS->SetSupportType(m_Type);
@@ -186,35 +164,6 @@ void CTemporarySupportLayoutPage::DoDataExchange(CDataExchange* pDX)
 
          pParent->m_pTS = pBridgeDesc->GetTemporarySupport(tsIdx);
          ATLASSERT(pParent->m_pTS != nullptr);
-      }
-
-      if (pParent->m_pTS->HasSlabOffset())
-      {
-         // only set the data into the bridge model if there is a closure joint at this temporary support
-         // if there isn't a closure joint, the segments are continuous over this temporary support and
-         // there isn't any slab offset parameters
-         pParent->m_BridgeDesc.SetSlabOffsetType(m_SlabOffsetType);
-         if (m_SlabOffsetType == pgsTypes::sotBridge)
-         {
-            ATLASSERT(IsEqual(m_SlabOffset[pgsTypes::Back], m_SlabOffset[pgsTypes::Ahead]));
-            pParent->m_BridgeDesc.SetSlabOffset(m_SlabOffset[pgsTypes::Back]);
-         }
-         else if (m_SlabOffsetType == pgsTypes::sotSegment)
-         {
-            if (m_InitialSlabOffsetType != pgsTypes::sotSegment)
-            {
-               // slab offset started off as Bridge or Pier and it is now Girder... this means the
-               // slab offset at this temporary support applies to all segments
-               ATLASSERT(IsEqual(m_SlabOffset[pgsTypes::Back], m_SlabOffset[pgsTypes::Ahead]));
-               std::function<void(CPrecastSegmentData*, void*)> fn = UpdateSlabOffset;
-               pParent->m_BridgeDesc.ForEachSegment(fn, (void*)&m_SlabOffset);
-            }
-         }
-         else
-         {
-            ATLASSERT(m_SlabOffsetType == pgsTypes::sotBearingLine);
-            pParent->m_pTS->SetSlabOffset(m_SlabOffset[pgsTypes::Back], m_SlabOffset[pgsTypes::Ahead]);
-         }
       }
 
       CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
@@ -239,6 +188,20 @@ void CTemporarySupportLayoutPage::DoDataExchange(CDataExchange* pDX)
          }
       }
    }
+
+   // Set unit text regardless of input type
+   DDX_Tag(pDX,IDC_BACK_SLAB_OFFSET_UNIT,pDisplayUnits->GetComponentDimUnit());
+   DDX_Tag(pDX,IDC_AHEAD_SLAB_OFFSET_UNIT,pDisplayUnits->GetComponentDimUnit());
+
+   if (pDX->m_bSaveAndValidate)
+   {
+      UpdateHaunchAndCamberData(pDX);
+   }
+   else
+   {
+      // UpdateHaunchAndCamberControls(); Called from OnSupportTypeChanged
+   }
+
 }
 
 
@@ -248,8 +211,8 @@ BEGIN_MESSAGE_MAP(CTemporarySupportLayoutPage, CPropertyPage)
    ON_CBN_DROPDOWN(IDC_ERECTION_EVENT, &CTemporarySupportLayoutPage::OnErectionEventChanging)
    ON_CBN_SELCHANGE(IDC_REMOVAL_EVENT, &CTemporarySupportLayoutPage::OnRemovalEventChanged)
    ON_CBN_DROPDOWN(IDC_REMOVAL_EVENT, &CTemporarySupportLayoutPage::OnRemovalEventChanging)
-   ON_CBN_SELCHANGE(IDC_SLAB_OFFSET_TYPE,&CTemporarySupportLayoutPage::OnSlabOffsetTypeChanged)
 	ON_COMMAND(ID_HELP, OnHelp)
+   ON_BN_CLICKED(IDC_EDIT_HAUNCH_BUTTON,&OnBnClickedEditHaunchButton)
 END_MESSAGE_MAP()
 
 
@@ -258,74 +221,12 @@ END_MESSAGE_MAP()
 BOOL CTemporarySupportLayoutPage::OnInitDialog()
 {
    CTemporarySupportDlg* pParent = (CTemporarySupportDlg*)GetParent();
-   m_SlabOffsetType = pParent->m_BridgeDesc.GetSlabOffsetType();
-   m_InitialSlabOffsetType = m_SlabOffsetType;
-
-   if (m_SlabOffsetType == pgsTypes::sotSegment)
-   {
-      // Do nothing... there is a unique slab offset per segment forming into this temporary support
-      // We can't display one single meaningful value
-      // The caching edit control will show/hide values based on it's enabled/disabled state
-
-      // Initialize with GirderLine 0 values so the control shows something meaningful
-      const CClosureJointData* pCJ = pParent->m_pTS->GetClosureJoint(0);
-      if (pCJ)
-      {
-         const CPrecastSegmentData* pBackSegment = pCJ->GetLeftSegment();
-         const CPrecastSegmentData* pAheadSegment = pCJ->GetRightSegment();
-
-         m_SlabOffset[pgsTypes::Back] = pBackSegment->GetSlabOffset(pgsTypes::metEnd);
-         m_SlabOffset[pgsTypes::Ahead] = pAheadSegment->GetSlabOffset(pgsTypes::metStart);
-      }
-      else
-      {
-         m_SlabOffset[pgsTypes::Back] = pParent->m_BridgeDesc.GetSlabOffset();
-         m_SlabOffset[pgsTypes::Ahead] = m_SlabOffset[pgsTypes::Back];
-      }
-   }
-   else if (pParent->m_pTS->HasSlabOffset())
-   {
-      pParent->m_pTS->GetSlabOffset(&m_SlabOffset[pgsTypes::Back], &m_SlabOffset[pgsTypes::Ahead]);
-
-      m_wndSlabOffset[pgsTypes::Back].ShowDefaultWhenDisabled(TRUE);
-      m_wndSlabOffset[pgsTypes::Ahead].ShowDefaultWhenDisabled(TRUE);
-   }
-   else
-   {
-      ATLASSERT(m_SlabOffsetType == pgsTypes::sotBridge);
-      m_SlabOffset[pgsTypes::Back] = pParent->m_BridgeDesc.GetSlabOffset();
-      m_SlabOffset[pgsTypes::Ahead] = m_SlabOffset[pgsTypes::Back];
-
-      m_wndSlabOffset[pgsTypes::Back].ShowDefaultWhenDisabled(TRUE);
-      m_wndSlabOffset[pgsTypes::Ahead].ShowDefaultWhenDisabled(TRUE);
-   }
 
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_TS_TYPE);
-   pCB->SetItemData(pCB->AddString(_T("Erection Tower")), (DWORD_PTR)pgsTypes::ErectionTower);
-   pCB->SetItemData(pCB->AddString(_T("Strong Back")),    (DWORD_PTR)pgsTypes::StrongBack);
+   pCB->SetItemData(pCB->AddString(_T("Erection Tower")),(DWORD_PTR)pgsTypes::ErectionTower);
+   pCB->SetItemData(pCB->AddString(_T("Strong Back")),(DWORD_PTR)pgsTypes::StrongBack);
 
    FillEventList();
-
-   pCB = (CComboBox*)GetDlgItem(IDC_SLAB_OFFSET_TYPE);
-
-   if (m_InitialSlabOffsetType == pgsTypes::sotBridge || m_InitialSlabOffsetType == pgsTypes::sotBearingLine)
-   {
-      int idx = pCB->AddString(GetSlabOffsetTypeAsString(pgsTypes::sotBridge,false));
-      pCB->SetItemData(idx, (DWORD_PTR)pgsTypes::sotBridge);
-
-      idx = pCB->AddString(GetSlabOffsetTypeAsString(pgsTypes::sotBearingLine,false));
-      pCB->SetItemData(idx, (DWORD_PTR)pgsTypes::sotBearingLine);
-   }
-   else
-   {
-      ATLASSERT(m_InitialSlabOffsetType == pgsTypes::sotSegment);
-      int idx = pCB->AddString(GetSlabOffsetTypeAsString(pgsTypes::sotSegment, false));
-      pCB->SetItemData(idx, (DWORD_PTR)pgsTypes::sotSegment);
-
-      idx = pCB->AddString(GetSlabOffsetTypeAsString(pgsTypes::sotBearingLine, false));
-      pCB->SetItemData(idx, (DWORD_PTR)pgsTypes::sotBearingLine);
-   }
-   pCB->SetCurSel(m_InitialSlabOffsetType == pgsTypes::sotSegment ? 0 : 1);
 
    CPropertyPage::OnInitDialog();
 
@@ -407,7 +308,7 @@ void CTemporarySupportLayoutPage::OnSupportTypeChanged()
       pParent->m_pTS->SetConnectionType(pgsTypes::tsctClosureJoint,castClosureEventIndex);
    }
 
-   UpdateSlabOffsetControls();
+   UpdateHaunchAndCamberControls();
 }
 
 void CTemporarySupportLayoutPage::FillEventList()
@@ -545,122 +446,288 @@ EventIndexType CTemporarySupportLayoutPage::CreateEvent()
 BOOL CTemporarySupportLayoutPage::OnSetActive()
 {
    FillEventList();
-   UpdateSlabOffsetControls();
 
    return CPropertyPage::OnSetActive();
 }
 
-void CTemporarySupportLayoutPage::OnSlabOffsetTypeChanged()
-{
-   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_SLAB_OFFSET_TYPE);
-   int curSel = pCB->GetCurSel();
-   if (curSel == CB_ERR)
-   {
-      return;
-   }
-
-   pgsTypes::SlabOffsetType slabOffsetType = (pgsTypes::SlabOffsetType)pCB->GetItemData(curSel);
-
-   if (slabOffsetType != pgsTypes::sotBearingLine)
-   {
-      // the slab offset type was just changed from pier to something else. We don't know which
-      // slab offset is to be applied.
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-
-      // get current values out of the controls
-      std::array<Float64, 2> slabOffset;
-      CDataExchange dx(this, TRUE);
-      DDX_UnitValueAndTag(&dx, IDC_BACK_SLAB_OFFSET, IDC_BACK_SLAB_OFFSET_UNIT, slabOffset[pgsTypes::Back], pDisplayUnits->GetComponentDimUnit());
-      DDX_UnitValueAndTag(&dx, IDC_AHEAD_SLAB_OFFSET, IDC_AHEAD_SLAB_OFFSET_UNIT, slabOffset[pgsTypes::Ahead], pDisplayUnits->GetComponentDimUnit());
-
-      // take back value as default
-      Float64 slab_offset = slabOffset[pgsTypes::Back];
-
-      // check if back/ahead values are equal
-      if (!IsEqual(slabOffset[pgsTypes::Back], slabOffset[pgsTypes::Ahead]))
-      {
-         // nope... make the user select which slab offset to use
-         CSelectItemDlg dlg;
-         dlg.m_ItemIdx = 0;
-         dlg.m_strTitle = _T("Select Slab Offset");
-         dlg.m_strLabel = _T("A single slab offset will be used for the entire bridge. Select a value.");
-
-         CString strItems;
-         strItems.Format(_T("Back side of temporary support (%s)\nAhead side of temporary support (%s)"),
-            ::FormatDimension(slabOffset[pgsTypes::Back], pDisplayUnits->GetComponentDimUnit()),
-            ::FormatDimension(slabOffset[pgsTypes::Ahead], pDisplayUnits->GetComponentDimUnit()));
-
-         dlg.m_strItems = strItems;
-         if (dlg.DoModal() == IDOK)
-         {
-            if (dlg.m_ItemIdx == 0)
-            {
-               slab_offset = slabOffset[pgsTypes::Back];
-            }
-            else
-            {
-               slab_offset = slabOffset[pgsTypes::Ahead];
-            }
-         }
-         else
-         {
-            // user cancelled... get the heck outta here
-            return;
-         }
-      }
-
-      // put the data back in the controls
-      dx.m_bSaveAndValidate = FALSE;
-      DDX_UnitValueAndTag(&dx, IDC_BACK_SLAB_OFFSET, IDC_BACK_SLAB_OFFSET_UNIT, slab_offset, pDisplayUnits->GetComponentDimUnit());
-      DDX_UnitValueAndTag(&dx, IDC_AHEAD_SLAB_OFFSET, IDC_AHEAD_SLAB_OFFSET_UNIT, slab_offset, pDisplayUnits->GetComponentDimUnit());
-   }
-   UpdateSlabOffsetControls();
-}
 
 void CTemporarySupportLayoutPage::OnHelp()
 {
    EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_TSDETAILS_GENERAL );
 }
 
-void CTemporarySupportLayoutPage::UpdateSlabOffsetControls()
+void CTemporarySupportLayoutPage::UpdateHaunchAndCamberControls()
 {
+   // Function takes bridge data and puts into dialog controls
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
    CTemporarySupportDlg* pParent = (CTemporarySupportDlg*)GetParent();
-   pgsTypes::TemporarySupportType type = pParent->m_pTS->GetSupportType();
-   int nShowCmd = pParent->m_pTS->HasElevationAdjustment() ? SW_SHOW : SW_HIDE;
 
-   GetDlgItem(IDC_SLAB_OFFSET_GROUP)->ShowWindow(nShowCmd);
-   GetDlgItem(IDC_SLAB_OFFSET_TYPE)->ShowWindow(nShowCmd);
-   GetDlgItem(IDC_BACK_SLAB_OFFSET_LABEL)->ShowWindow(nShowCmd);
-   GetDlgItem(IDC_BACK_SLAB_OFFSET)->ShowWindow(nShowCmd);
-   GetDlgItem(IDC_BACK_SLAB_OFFSET_UNIT)->ShowWindow(nShowCmd);
-   GetDlgItem(IDC_AHEAD_SLAB_OFFSET_LABEL)->ShowWindow(nShowCmd);
-   GetDlgItem(IDC_AHEAD_SLAB_OFFSET)->ShowWindow(nShowCmd);
-   GetDlgItem(IDC_AHEAD_SLAB_OFFSET_UNIT)->ShowWindow(nShowCmd);
-
-   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_SLAB_OFFSET_TYPE);
-   int curSel = pCB->GetCurSel();
-   if (curSel == CB_ERR)
+   pgsTypes::HaunchInputDepthType inputType = pParent->m_BridgeDesc.GetHaunchInputDepthType();
+   if (inputType == pgsTypes::hidACamber)
    {
+      ATLASSERT(0); // temporary supports cannot have "A" dimensions. this is a logic error at input
+      EnableHaunchAndCamberControls(FALSE, FALSE);
       return;
    }
 
-   pgsTypes::SlabOffsetType slabOffsetType = (pgsTypes::SlabOffsetType)pCB->GetItemData(curSel);
+   pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
+   if (deckType == pgsTypes::sdtNone)
+   {
+      EnableHaunchAndCamberControls(FALSE,FALSE);
+      return;
+   }
 
-   BOOL bEnable = (slabOffsetType == pgsTypes::sotBearingLine ? TRUE : FALSE);
-   m_wndSlabOffset[pgsTypes::Back].EnableWindow(bEnable);
-   m_wndSlabOffset[pgsTypes::Ahead].EnableWindow(bEnable);
+   // At this point we are dealing with direct haunch input only
+   // Group box title
+   if (inputType == pgsTypes::hidHaunchDirectly)
+   {
+      GetDlgItem(IDC_SLAB_OFFSET_GROUP)->SetWindowText(_T("Haunch Depth"));
+   }
+   else if (inputType == pgsTypes::hidHaunchPlusSlabDirectly)
+   {
+      GetDlgItem(IDC_SLAB_OFFSET_GROUP)->SetWindowText(_T("Haunch+Slab Depth"));
+   }
 
-   // Elevation adjustment controls follow the same rule as slab offset controls
+   // Determine if TS can have haunch input based only on TS properties
+   bool bCanHaveHaunchData = CanHaveHaunchInput(pParent->m_pTS);
+   if (!bCanHaveHaunchData)
+   {
+      EnableHaunchAndCamberControls(FALSE,FALSE);
+   }
+   else
+   {
+      // This dialog only deals with haunch input at segment ends
+      pgsTypes::HaunchLayoutType haunchLayoutType = pParent->m_BridgeDesc.GetHaunchLayoutType();
+      pgsTypes::HaunchInputDistributionType haunchInputDistributionType = pParent->m_BridgeDesc.GetHaunchInputDistributionType();
+
+      if (haunchLayoutType == pgsTypes::hltAlongSegments && (haunchInputDistributionType == pgsTypes::hidUniform || haunchInputDistributionType == pgsTypes::hidAtEnds))
+      {
+         EnableHaunchAndCamberControls(TRUE, TRUE);
+
+         // Need deck thickness for haunch+deck case
+         const CDeckDescription2* pDeck = pParent->m_BridgeDesc.GetDeckDescription();
+         Float64 Tdeck;
+         if (pDeck->GetDeckType() == pgsTypes::sdtCompositeSIP)
+   {
+            Tdeck = pDeck->GrossDepth + pDeck->PanelDepth;
+         }
+         else
+         {
+            Tdeck = pDeck->GrossDepth;
+         }
+
+         pgsTypes::HaunchInputLocationType haunchInputLocationType = pParent->m_BridgeDesc.GetHaunchInputLocationType();
+
+         if (haunchInputLocationType == pgsTypes::hilSame4Bridge)
+            {
+            // Put same4bridge data into disabled controls
+            m_wndSlabOffset[pgsTypes::Back].EnableWindow(FALSE);
+            m_wndSlabOffset[pgsTypes::Ahead].EnableWindow(FALSE);
+
+            CString strVal;
+            std::vector<Float64> haunchVals = pParent->m_BridgeDesc.GetDirectHaunchDepths(); // will have either 1 or 2 values
+            Float64 haunchVal = haunchVals.back();
+            haunchVal += (inputType == pgsTypes::hidHaunchPlusSlabDirectly ? Tdeck : 0.0); // Add deck depth if need be
+            strVal.Format(_T("%s"),FormatDimension(haunchVal,pDisplayUnits->GetComponentDimUnit(),false));
+            m_wndSlabOffset[pgsTypes::Back].SetWindowText(strVal);
+
+            haunchVal = haunchVals.front();
+            haunchVal += (inputType == pgsTypes::hidHaunchPlusSlabDirectly ? Tdeck : 0.0); // Add deck depth if need be
+            strVal.Format(_T("%s"),FormatDimension(haunchVal,pDisplayUnits->GetComponentDimUnit(),false));
+            m_wndSlabOffset[pgsTypes::Ahead].SetWindowText(strVal);
+         }
+         else if (haunchInputLocationType == pgsTypes::hilSame4AllGirders)
+         {
+            // For this case, we can actually allow input of data.
+            CString strVal;
+
+            // Haunch data is in CSplicedGirderData for segments to left and right of TS
+            SegmentIndexType leftSegIndex = pParent->m_pTS->GetClosureJoint(0)->GetLeftSegment()->GetIndex();
+            std::vector<Float64> haunchVals = pParent->m_pTS->GetClosureJoint(0)->GetGirder()->GetDirectHaunchDepths(leftSegIndex);
+            Float64 haunchVal = haunchVals.back();
+            haunchVal += (inputType == pgsTypes::hidHaunchPlusSlabDirectly ? Tdeck : 0.0); // Add deck depth if need be
+            strVal.Format(_T("%s"),FormatDimension(haunchVal,pDisplayUnits->GetComponentDimUnit(),false));
+            m_wndSlabOffset[pgsTypes::Back].SetWindowText(strVal);
+
+            SegmentIndexType rightSegIndex = pParent->m_pTS->GetClosureJoint(0)->GetRightSegment()->GetIndex();
+            haunchVals = pParent->m_pTS->GetClosureJoint(0)->GetGirder()->GetDirectHaunchDepths(rightSegIndex);
+            haunchVal = haunchVals.front();
+            haunchVal += (inputType == pgsTypes::hidHaunchPlusSlabDirectly ? Tdeck : 0.0); // Add deck depth if need be
+            strVal.Format(_T("%s"),FormatDimension(haunchVal,pDisplayUnits->GetComponentDimUnit(),false));
+            m_wndSlabOffset[pgsTypes::Ahead].SetWindowText(strVal);
+            }
+            else
+            {
+            // Data is hilPerEach (girder-dependent). Show nothing
+            EnableHaunchAndCamberControls(FALSE,TRUE);
+            }
+         }
+         else
+         {
+         EnableHaunchAndCamberControls(FALSE,TRUE);
+         }
+      }
+
+   // Elevation adjustment controls
+   int nShowCmd = pParent->m_pTS->HasElevationAdjustment() ? SW_SHOW : SW_HIDE;
    GetDlgItem(IDC_ADJUSTMENT_GROUP)->ShowWindow(nShowCmd);
    GetDlgItem(IDC_ADJUSTMENT_LABEL)->ShowWindow(nShowCmd);
    GetDlgItem(IDC_ADJUSTMENT)->ShowWindow(nShowCmd);
    GetDlgItem(IDC_ADJUSTMENT_UNIT)->ShowWindow(nShowCmd);
 
-   // Temporary disable the elevation adjustment feature
-   GetDlgItem(IDC_ADJUSTMENT_GROUP)->EnableWindow(FALSE);
-   GetDlgItem(IDC_ADJUSTMENT_LABEL)->EnableWindow(FALSE);
-   GetDlgItem(IDC_ADJUSTMENT)->EnableWindow(FALSE);
-   GetDlgItem(IDC_ADJUSTMENT_UNIT)->EnableWindow(FALSE);
+   if (nShowCmd == SW_SHOW)
+   {
+      CString strVal;
+      Float64 adjust = pParent->m_pTS->GetElevationAdjustment();
+      strVal.Format(_T("%s"),FormatDimension(adjust,pDisplayUnits->GetComponentDimUnit(),false));
+      GetDlgItem(IDC_ADJUSTMENT)->SetWindowText(strVal);
+   }
+}
+
+void CTemporarySupportLayoutPage::EnableHaunchAndCamberControls(BOOL bControls,BOOL bButton)
+{
+   GetDlgItem(IDC_BACK_SLAB_OFFSET_LABEL)->EnableWindow(bControls);
+   m_wndSlabOffset[pgsTypes::Back].EnableWindow(bControls);
+   GetDlgItem(IDC_BACK_SLAB_OFFSET_UNIT)->EnableWindow(bControls);
+
+   GetDlgItem(IDC_AHEAD_SLAB_OFFSET_LABEL)->EnableWindow(bControls);
+   m_wndSlabOffset[pgsTypes::Ahead].EnableWindow(bControls);
+   GetDlgItem(IDC_AHEAD_SLAB_OFFSET_UNIT)->EnableWindow(bControls);
+
+   if (!bControls)
+   {
+      m_wndSlabOffset[pgsTypes::Back].SetWindowText(_T(""));
+      m_wndSlabOffset[pgsTypes::Ahead].SetWindowText(_T(""));
+   }
+
+   GetDlgItem(IDC_EDIT_HAUNCH_BUTTON)->EnableWindow(bButton);
+}
+
+void CTemporarySupportLayoutPage::UpdateHaunchAndCamberData(CDataExchange* pDX)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   CTemporarySupportDlg* pParent = (CTemporarySupportDlg*)GetParent();
+   pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
+   pgsTypes::HaunchInputDepthType inputType = pParent->m_BridgeDesc.GetHaunchInputDepthType();
+
+   if (deckType == pgsTypes::sdtNone)
+   {
+      return; // Go no further
+   }
+   else if (inputType == pgsTypes::hidACamber)
+   {
+      ATLASSERT(0); 
+      return;
+   }
+   else
+   {
+      // Direct input of haunch
+      bool bCanHaveHaunchData = CanHaveHaunchInput(pParent->m_pTS);
+
+      pgsTypes::HaunchInputLocationType haunchInputLocationType = pParent->m_BridgeDesc.GetHaunchInputLocationType();
+      pgsTypes::HaunchLayoutType haunchLayoutType = pParent->m_BridgeDesc.GetHaunchLayoutType();
+      pgsTypes::HaunchInputDistributionType haunchInputDistributionType = pParent->m_BridgeDesc.GetHaunchInputDistributionType();
+
+      // only case where data is input
+      if (bCanHaveHaunchData && haunchLayoutType == pgsTypes::hltAlongSegments && 
+         haunchInputLocationType == pgsTypes::hilSame4AllGirders && 
+         (haunchInputDistributionType == pgsTypes::hidUniform || haunchInputDistributionType == pgsTypes::hidAtEnds))
+      {
+         CComPtr<IBroker> pBroker;
+         EAFGetBroker(&pBroker);
+         GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
+         const CDeckDescription2* pDeck = pParent->m_BridgeDesc.GetDeckDescription();
+         Float64 Tdeck;
+         if (pDeck->GetDeckType() == pgsTypes::sdtCompositeSIP)
+         {
+            Tdeck = pDeck->GrossDepth + pDeck->PanelDepth;
+         }
+         else
+         {
+            Tdeck = pDeck->GrossDepth;
+         }
+
+         Float64 minHaunch = pParent->m_BridgeDesc.GetMinimumAllowableHaunchDepth(inputType);
+
+         CString strMinValError;
+         if (inputType == pgsTypes::hidHaunchPlusSlabDirectly)
+         {
+            strMinValError.Format(_T("Haunch Depth must be greater or equal to fillet (%s)"),FormatDimension(minHaunch,pDisplayUnits->GetComponentDimUnit()));
+         }
+         else
+         {
+            strMinValError.Format(_T("Haunch+Slab Depth must be greater or equal to deck depth+fillet (%s)"),FormatDimension(minHaunch,pDisplayUnits->GetComponentDimUnit()));
+         }
+
+         // Get current values out of the controls
+         CDataExchange dx(this,TRUE);
+         Float64 haunchDepth;
+
+         // Back value
+         DDX_UnitValueAndTag(&dx,IDC_BACK_SLAB_OFFSET,IDC_BACK_SLAB_OFFSET_UNIT,haunchDepth,pDisplayUnits->GetComponentDimUnit());
+         if (::IsLT(haunchDepth,minHaunch))
+         {
+            pDX->PrepareCtrl(IDC_BACK_SLAB_OFFSET);
+            AfxMessageBox(strMinValError);
+            pDX->Fail();
+         }
+
+         // Subtract deck depth if need be
+         haunchDepth -= (inputType == pgsTypes::hidHaunchPlusSlabDirectly ? Tdeck : 0.0);
+
+         SegmentIndexType leftSegIndex = pParent->m_pTS->GetClosureJoint(0)->GetLeftSegment()->GetIndex();
+         std::vector<Float64> haunchVals = pParent->m_pTS->GetClosureJoint(0)->GetGirder()->GetDirectHaunchDepths(leftSegIndex);
+         haunchVals.back() = haunchDepth;
+         pParent->m_pTS->GetClosureJoint(0)->GetGirder()->SetDirectHaunchDepths(leftSegIndex,haunchVals);
+
+         // Ahead value
+         DDX_UnitValueAndTag(&dx,IDC_AHEAD_SLAB_OFFSET,IDC_AHEAD_SLAB_OFFSET_UNIT,haunchDepth,pDisplayUnits->GetComponentDimUnit());
+         if (::IsLT(haunchDepth,minHaunch))
+         {
+            pDX->PrepareCtrl(IDC_AHEAD_SLAB_OFFSET);
+            AfxMessageBox(strMinValError);
+            pDX->Fail();
+         }
+
+         haunchDepth -= (inputType == pgsTypes::hidHaunchPlusSlabDirectly ? Tdeck : 0.0);
+
+         SegmentIndexType rightSegIndex = pParent->m_pTS->GetClosureJoint(0)->GetRightSegment()->GetIndex();
+         haunchVals = pParent->m_pTS->GetClosureJoint(0)->GetGirder()->GetDirectHaunchDepths(rightSegIndex);
+         haunchVals.front() = haunchDepth;
+         pParent->m_pTS->GetClosureJoint(0)->GetGirder()->SetDirectHaunchDepths(rightSegIndex,haunchVals);
+      }
+   }
+}
+
+void CTemporarySupportLayoutPage::OnBnClickedEditHaunchButton()
+{
+   // Need to validate main dialog data before we go into haunch dialog
+   try
+   {
+      if (TRUE != UpdateData(TRUE))
+      {
+         return;
+      }
+   }
+   catch (...)
+   {
+      ATLASSERT(0);
+      return;
+   }
+
+   CTemporarySupportDlg* pParent = (CTemporarySupportDlg*)GetParent();
+   CEditHaunchDlg dlg(&(pParent->m_BridgeDesc));
+   if (dlg.DoModal() == IDOK)
+   {
+      // Cannot copy entire bridge description here because this dialog has hooks into pointers withing bridgedescr.
+      // Use function to copy haunch and slab offset data
+      pParent->m_BridgeDesc.CopyHaunchSettings(dlg.m_BridgeDesc);
+
+      UpdateHaunchAndCamberControls();
+   }
 }

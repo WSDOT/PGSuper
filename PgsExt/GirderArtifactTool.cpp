@@ -570,6 +570,11 @@ void ListVariousFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirder
       rFailures.emplace_back(_T("Finished elevation check failed"));
    }
 
+   if (!pConstruct->MinimumHaunchDepthPassed())
+   {
+      rFailures.emplace_back(_T("Minimum haunch depth vs fillet check failed"));
+   }
+
    if ( pConstruct->IsHaunchAtBearingCLsApplicable() && !pConstruct->HaunchAtBearingCLsPassed() )
    {
       rFailures.emplace_back(_T("Minimum haunch depth at bearing centerlines check failed"));

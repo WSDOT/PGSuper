@@ -26,7 +26,24 @@ Graphical Results
 ------------------
 You can view a wide variety of graphical results. The most common results of interest are moments, shears, deflections, and stresses. You can also see graphical representations of girder properties, effective prestress, and more.
 
-### Viewing Graphical Results ###
-1. Begin by opening the Analysis Results window. Select *View > Graphs > Analysis Results*. ![](Tutorial_General_Analysis_Results.png)
-2. Use the controls along the left side of the Analysis Results window to select the various graphs that are available. Note that these graphs call also be printed. Go ahead and select some graphics now.
+### Viewing Graphical Stress Results ###
+1) Begin by opening the Analysis Results window. Select *View > Graphs > Analysis Results*. 
+
+![](Tutorial_General_Analysis_Results.png)
+2) Use the controls along the left side of the Analysis Results window to select the various graphs that are available. Note that these graphs call also be printed. Go ahead and select some graphics now.
+
+### Viewing Deformed Girder Elevations  ###
+1) Begin by opening the Analysis Results window. Select *View > Graphs > Finished Elevations*. 
+2) Select graph options to show finished deck vs PGL at service as shown. Note that the view shows elevations, but the results are not that useful.
+
+![](Tutorial_General_Finished_Elevations.png)
+
+3) Now switch the graph type to *Elevation Differential from PGL* and also show the elevation tolerance. We can now see that roadway elevations are acceptable at time of open to traffic.
+
+![](Tutorial_General_Finished_Elevations_Diff.png)
+
+> Tip: The *Fill Haunch Input with Computed Values"* feature can design a haunch layout for you. Give it a try to see how finished elevations change after the haunch has been designed.
+
+Try selecting multiple other intervals along the timeline. This is useful for visualizing how your bridge will deform over time.
+
 

@@ -341,7 +341,7 @@ public:
    virtual bool HasOverlay() const override;
    virtual bool IsFutureOverlay() const override;
    virtual Float64 GetOverlayWeight() const override;
-   virtual Float64 GetOverlayDepth() const override;
+   virtual Float64 GetOverlayDepth(IntervalIndexType interval) const override;
    virtual Float64 GetSacrificalDepth() const override;
    virtual Float64 GetFillet() const override;
    virtual Float64 GetAssumedExcessCamber(SpanIndexType spanIdx,GirderIndexType gdr) const override;
@@ -349,6 +349,7 @@ public:
    virtual Float64 GetStructuralSlabDepth(const pgsPointOfInterest& poi) const override;
    virtual Float64 GetCastSlabDepth(const pgsPointOfInterest& poi) const override;
    virtual Float64 GetPanelDepth(const pgsPointOfInterest& poi) const override;
+   virtual pgsTypes::HaunchInputDepthType GetHaunchInputDepthType() const override;
    virtual Float64 GetLeftSlabEdgeOffset(Float64 Xb) const override;
    virtual Float64 GetRightSlabEdgeOffset(Float64 Xb) const override;
    virtual Float64 GetLeftSlabOverhang(Float64 Xb) const override;
@@ -387,6 +388,7 @@ public:
    virtual void GetLeftCurbLinePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint3d** point) const override;
    virtual void GetRightCurbLinePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint2d** point) const override;
    virtual void GetRightCurbLinePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint3d** point) const override;
+   virtual Float64 GetRoadwayToTopGirderChordDistance(const pgsPointOfInterest& poi) const override;
    virtual Float64 GetTopSlabToTopGirderChordDistance(const pgsPointOfInterest& poi) const override;
    virtual Float64 GetTopSlabToTopGirderChordDistance(const pgsPointOfInterest& poi, Float64 Astart, Float64 Aend) const override;
    virtual IndexType GetDeckCastingRegionCount() const override;
@@ -423,8 +425,8 @@ public:
    virtual void GetSegmentsAtTemporarySupport(GirderIndexType gdrIdx,SupportIndexType tsIdx,CSegmentKey* pLeftSegmentKey,CSegmentKey* pRightSegmentKey) const override;
    virtual void GetTemporarySupportDirection(SupportIndexType tsIdx,IDirection** ppDirection) const override;
    virtual bool HasTemporarySupportElevationAdjustments() const override;
-   virtual std::vector<BearingElevationDetails> GetBearingElevationDetails(PierIndexType pierIdx,pgsTypes::PierFaceType face) const override;
-   virtual std::vector<BearingElevationDetails> GetBearingElevationDetailsAtGirderEdges(PierIndexType pierIdx,pgsTypes::PierFaceType face) const override;
+   virtual std::vector<BearingElevationDetails> GetBearingElevationDetails(PierIndexType pierIdx,pgsTypes::PierFaceType face,GirderIndexType gdrIdx, bool bIgnoreUnrecoverableDeformations) const override;
+   virtual std::vector<BearingElevationDetails> GetBearingElevationDetailsAtGirderEdges(PierIndexType pierIdx,pgsTypes::PierFaceType face,GirderIndexType gdrIdx) const override;
    virtual void GetPierDisplaySettings(pgsTypes::DisplayEndSupportType* pStartPierType, pgsTypes::DisplayEndSupportType* pEndPierType, PierIndexType* pStartPierNumber) const override;
 
 // IMaterials
@@ -1085,7 +1087,7 @@ public:
    virtual void GetDirection(SupportIndexType tsIdx,IDirection** ppDirection) const override;
    virtual void GetSkew(SupportIndexType tsIdx,IAngle** ppAngle) const override;
    virtual std::vector<SupportIndexType> GetTemporarySupports(GroupIndexType grpIdx) const override;
-   virtual std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> GetElevationDetails(SupportIndexType tsIdx) const override;
+   virtual std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> GetElevationDetails(SupportIndexType tsIdx,GirderIndexType gdrIndex) const override;
 
 // IGirder
 public:
@@ -1138,9 +1140,6 @@ public:
    virtual Float64 GetProfileChordElevation(const pgsPointOfInterest& poi) const override;
    virtual Float64 GetTopGirderChordElevation(const pgsPointOfInterest& poi) const override;
    virtual Float64 GetTopGirderChordElevation(const pgsPointOfInterest& poi, Float64 Astart, Float64 Aend) const override;
-   virtual Float64 GetTopGirderElevation(const pgsPointOfInterest& poi,MatingSurfaceIndexType matingSurfaceIdx,const GDRCONFIG* pConfig=nullptr) const override;
-   virtual void GetTopGirderElevation(const pgsPointOfInterest& poi, IDirection* pDirection, Float64* pLeft, Float64* pCenter, Float64* pRight) const override;
-   virtual void GetFinishedElevation(const pgsPointOfInterest& poi, IDirection* pDirection, bool bIncludeOverlay, Float64* pLeft, Float64* pCenter, Float64* pRight) const override;
    virtual Float64 GetSplittingZoneHeight(const pgsPointOfInterest& poi) const override;
    virtual pgsTypes::SplittingDirection GetSplittingDirection(const CGirderKey& girderKey) const override;
    virtual bool CanPrecamber(const CSegmentKey& segmentKey) const override;
@@ -1314,6 +1313,10 @@ public:
    virtual IntervalIndexType GetCompositeUserLoadInterval() const override;
    virtual IntervalIndexType GetLastNoncompositeInterval() const override;
    virtual IntervalIndexType GetLastCompositeInterval() const override;
+   virtual IntervalIndexType GetGeometryControlInterval() const override;
+   virtual std::vector<IntervalIndexType> GetReportingGeometryControlIntervals() const override;
+   virtual std::vector<IntervalIndexType> GetSpecCheckGeometryControlIntervals() const override;
+
 
 private:
    DECLARE_EAF_AGENT_DATA;
@@ -1517,8 +1520,9 @@ private:
    // helper functions for building the bridge model
    bool LayoutPiers(const CBridgeDescription2* pBridgeDesc);
    bool LayoutGirders(const CBridgeDescription2* pBridgeDesc);
-   bool LayoutGirdersPass2();
-   void GetHaunchDepth(const CPrecastSegmentData* pSegment,Float64* pStartHaunch,Float64* pMidHaunch,Float64* pEndHaunch);
+   bool LayoutSsmHaunches();
+   void GetHaunchDepth4ADimInput(const CPrecastSegmentData* pSegment,CComPtr<IDblArray>& pHaunchDepths);
+   void GetHaunchDepth4BySpanInput(const CPrecastSegmentData* pSegment,const CBridgeDescription2* pBridgeDesc, CComPtr<IDblArray>& pHaunchDepths);
    bool LayoutDeck(const CBridgeDescription2* pBridgeDesc);
    bool LayoutOverlayDeck(const CBridgeDescription2* pBridgeDesc,IBridgeDeck** ppDeck);
    bool LayoutSimpleDeck(const CBridgeDescription2* pBridgeDesc,IBridgeDeck** ppDeck);
@@ -1739,12 +1743,13 @@ private:
 
    const WBFL::Math::LinearFunction& GetGirderTopChordElevationFunction(const CSegmentKey& segmentKey) const;
    void ValidateGirderTopChordElevation(const CGirderKey& girderKey) const;
-   void ValidateGirderTopChordElevation(const CGirderKey& girderKey,std::map<CSegmentKey, WBFL::Math::LinearFunction>* pFunctions) const;
-   mutable std::map<CSegmentKey, WBFL::Math::LinearFunction> m_GirderTopChordElevationFunctions; // linear functions that represent the top girder chord elevations
+   void ValidateGirderTopChordElevationADimInput(const CGirderKey& girderKey,const CBridgeDescription2* pBridgeDesc,std::map<CSegmentKey,WBFL::Math::LinearFunction>* pFunctions) const;
+   void ValidateGirderTopChordElevationDirectHaunchInput(const CGirderKey& girderKey,const CBridgeDescription2* pBridgeDesc,std::map<CSegmentKey,WBFL::Math::LinearFunction>* pFunctions) const;
+   mutable std::map<CSegmentKey,WBFL::Math::LinearFunction> m_GirderTopChordElevationFunctions; // linear functions that represent the top girder chord elevations
 
    // Common function to return bearing elevation details at bearings or at girder edges
    enum BearingElevLocType { batBearings, batGirderEdges };
-   std::vector<BearingElevationDetails> GetBearingElevationDetails_Generic(PierIndexType pierIdx,pgsTypes::PierFaceType face, BearingElevLocType locType) const;
+   std::vector<BearingElevationDetails> GetBearingElevationDetails_Generic(PierIndexType pierIdx,pgsTypes::PierFaceType face, BearingElevLocType locType,GirderIndexType gdrIdx,bool bIgnoreUnrecoverableDeformations) const;
 
    std::vector<IntermedateDiaphragm> CBridgeAgentImp::GetCastInPlaceDiaphragms(const CSpanKey& spanKey, bool bLocationOnly) const;
    Float64 GetHalfElevation(Float64 gdrHeight, Float64 deckThickness) const;

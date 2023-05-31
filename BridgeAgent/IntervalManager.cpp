@@ -169,6 +169,8 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr)
 
    m_GirderTendonStressingIntervals.clear();
 
+   m_vGeometryControlIntervals.clear();
+
    const CBridgeDescription2* pBridgeDesc = pTimelineMgr->GetBridgeDescription();
 
    // work through all the events in the timeline and build analysis intervals
@@ -873,6 +875,37 @@ std::vector<IntervalIndexType> CIntervalManager::GetGirderTendonStressingInterva
    intervals.erase(std::unique(std::begin(intervals), std::end(intervals)), std::end(intervals));
 
    return intervals;
+}
+
+std::vector<IntervalIndexType> CIntervalManager::GetGeometryControlIntervals(pgsTypes::GeometryControlActivityType type) const
+{
+   std::vector<IntervalIndexType> intervals;
+   for (const auto& pair : m_vGeometryControlIntervals)
+   {
+      if (pair.second >= type)
+      {
+         intervals.push_back(pair.first);
+      }
+   }
+
+   return intervals;
+}
+
+IntervalIndexType CIntervalManager::GetGeometryControlEventInterval() const
+{
+   IntervalIndexType GceInterval = INVALID_INDEX;
+   for (const auto& pair : m_vGeometryControlIntervals)
+   {
+      if (pair.second == pgsTypes::gcaGeometryControlEvent)
+      {
+         GceInterval = pair.first;
+         break;
+      }
+   }
+
+   ATLASSERT(GceInterval != INVALID_INDEX);
+
+   return GceInterval;
 }
 
 IntervalIndexType CIntervalManager::GetTemporarySupportErectionInterval(SupportIndexType tsIdx) const
@@ -2032,6 +2065,20 @@ void CIntervalManager::ProcessStep4(EventIndexType eventIdx, const CTimelineEven
          }
       }
    } // end if loading activity
+
+   // Geometry control event
+   const CGeometryControlActivity& geometryControlActivity = pTimelineEvent->GetGeometryControlActivity();
+   pgsTypes::GeometryControlActivityType geomType = geometryControlActivity.GetGeometryControlEventType();
+   if (pgsTypes::gcaDisabled != geomType)
+   {
+      m_vGeometryControlIntervals.push_back(std::make_pair(intervalIdx,geomType));
+
+      // Only add description for the main event
+      if (pgsTypes::gcaGeometryControlEvent == geomType)
+      {
+         strDescriptions.push_back(_T("Roadway Geometry Control"));
+      }
+   }
 
    if ( strDescriptions.size() == 0 )
    {

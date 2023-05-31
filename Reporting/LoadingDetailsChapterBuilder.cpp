@@ -469,6 +469,8 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(IBroker* pBroker, rptChapter*
       GET_IFACE2_NOCHECK(pBroker,IIntervals,pIntervals);
       GET_IFACE2_NOCHECK(pBroker,IMaterials,pMaterial);
 
+      bool isSlabOffsetInput = pBridge->GetHaunchInputDepthType() == pgsTypes::hidACamber;
+
       pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pPara;
 
@@ -537,7 +539,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(IBroker* pBroker, rptChapter*
             (*p_table)(0,0) << COLHDR(_T("Location")<<rptNewLine<<_T("From Left Bearing"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
             (*p_table)(0,1) << COLHDR(_T("Panel Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
             (*p_table)(0,2) << _T("Cast ") << strDeckName << _T(" Weight");
-            (*p_table)(0,3) << COLHDR(_T("Assumed")<<rptNewLine<<_T("Haunch Depth"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+            (*p_table)(0,3) << COLHDR(_T("Haunch Depth"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
             (*p_table)(0,4) << COLHDR(_T("Haunch Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
             (*p_table)(0,5) << COLHDR(_T("Total ") << strDeckName << _T(" Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
 
@@ -617,7 +619,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(IBroker* pBroker, rptChapter*
             (*p_table)(0, col++) << COLHDR(_T("Location")<<rptNewLine<<_T("From Left Bearing"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
             (*p_table)(0, col++) << _T("Casting") << rptNewLine << _T("Region");
             (*p_table)(0, col++) << COLHDR(_T("Main ") << strDeckName << _T(" Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-            (*p_table)(0, col++) << COLHDR(_T("Assumed")<<rptNewLine<<_T("Haunch Depth"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+            (*p_table)(0, col++) << COLHDR(_T("Haunch Depth"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
             (*p_table)(0, col++) << COLHDR(_T("Haunch Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
             (*p_table)(0, col++) << COLHDR(_T("Total ") << strDeckName << _T(" Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
 
@@ -639,18 +641,22 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(IBroker* pBroker, rptChapter*
          }
       } // end if ( pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP )
 
-      if(do_report_haunch)     
+      if(do_report_haunch)  
       {
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
-         GET_IFACE2( pBroker, ISpecification, pSpec );
-         if (pgsTypes::hlcAccountForCamber == pSpec->GetHaunchLoadComputationType())
+         GET_IFACE2_NOCHECK(pBroker,ISpecification,pSpec);
+         pgsTypes::HaunchLoadComputationType HaunchLoadComputationType = pSpec->GetHaunchLoadComputationType();
+         
+         if (pgsTypes::hlcZeroCamber == HaunchLoadComputationType)
          {
-            *pNotePara <<rptNewLine<< _T("Haunch weight includes effects of roadway geometry and is measured along the centerline of the girder. Haunch depth used when computing haunch load is reduced for camber assuming that excess camber is a linear-piecewise parabola defined by the user-input assumed excess camber at mid-span.");
+            *pNotePara << rptNewLine << _T("Haunch weight is computed on slab offset and includes effects of roadway geometry, and is measured along the centerline of the girder, but does not include a reduction for camber.");
+         }
+         else if (isSlabOffsetInput)
+         {
+            *pNotePara << rptNewLine << _T("Haunch weight includes effects of roadway geometry and is measured along the centerline of the girder. Haunch depth used when computing haunch load is reduced for camber assuming that excess camber is a linear-piecewise parabola defined by the user-input assumed excess camber at mid-span.");
          }
          else
          {
-            *pNotePara <<rptNewLine<< _T("Haunch weight includes effects of roadway geometry, and is measured along the centerline of the girder, but does not include a reduction for camber.");
+            *pNotePara << rptNewLine << _T("Haunch weight is computed from user-input haunch depths.");
          }
       }
 
@@ -708,9 +714,9 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(IBroker* pBroker, rptChapter*
       {
          CComPtr<IBroker> pBroker;
          EAFGetBroker(&pBroker);
-         GET_IFACE2(pBroker,ISpecification,pSpec);
+         GET_IFACE2_NOCHECK(pBroker,ISpecification,pSpec);
 
-         bool report_camber = pSpec->GetHaunchLoadComputationType() == pgsTypes::hlcAccountForCamber;
+         bool report_camber = isSlabOffsetInput &&  pSpec->GetHaunchLoadComputationType() == pgsTypes::hlcDetailedAnalysis;
 
          pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
          *pChapter << pPara;
@@ -732,7 +738,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(IBroker* pBroker, rptChapter*
          {
             (*p_table)(0, col++) << COLHDR(_T("*Assumed") << rptNewLine << _T("Excess") << rptNewLine << _T("Camber"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
          }
-         (*p_table)(0,col++) << COLHDR(_T("Assumed")<<rptNewLine<<_T("Haunch")<<rptNewLine<<_T("Depth"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         (*p_table)(0,col++) << COLHDR(_T("Haunch")<<rptNewLine<<_T("Depth"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
          (*p_table)(0,col++) << COLHDR(_T("Haunch")<<rptNewLine<<_T("Load"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
 
          RowIndexType row = p_table->GetNumberOfHeaderRows();

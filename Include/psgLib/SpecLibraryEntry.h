@@ -244,8 +244,8 @@ public:
    void SetUHPCStrengthAtFirstCrack(Float64 f1);
    Float64 GetUHPCStrengthAtFirstCrack() const;
 
-   // Get/Set the parameter that determines if the slab offset ("A" Dimension)
-   // is checked
+   // Get/Set the parameter that determines if the slab offset ("A" Dimension) and finished elevations
+   // are checked
    void EnableSlabOffsetCheck(bool enable);
    bool IsSlabOffsetCheckEnabled() const;
 
@@ -779,12 +779,12 @@ public:
    void SetHaunchLoadComputationType(pgsTypes::HaunchLoadComputationType type);
 
    // set/get solution tolerance between camber used to compute haunch load and computed excess camber.
-   // This value is only used if HaunchLoadComputationType==hspAccountForCamber or HaunchAnalysisSectionPropertiesType==hspVariableParabolic
+   // This value is only used if HaunchLoadComputationType==hspAccountForCamber or HaunchAnalysisSectionPropertiesType==hspDetailedDescription
    Float64 GetHaunchLoadCamberTolerance() const;
    void SetHaunchLoadCamberTolerance(Float64 tol);
 
    // Set/get factor applied to assumed excess camber when computing haunch loads
-   // This value is only used if HaunchLoadComputationType==hlcAccountForCamber
+   // This value is only used if HaunchLoadComputationType==hlcDetailedAnalysis && slab offset input
    // Valid values are 0.0< to <=1.0
    Float64 GetHaunchLoadCamberFactor() const;
    void SetHaunchLoadCamberFactor(Float64 tol);

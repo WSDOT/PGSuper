@@ -8,9 +8,9 @@ Compression stress check failed for Service I Limit State in Interval 2 Prestres
 Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Tension stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Compression stress check failed for Service I Limit State in Interval 10 Install Intermediate Diaphragms
-Compression stress check failed for Service I Limit State in Interval 14 Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 14 Open to Traffic
-Compression stress check failed for Service IA Limit State in Interval 14 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 14 Open to Traffic, Roadway Geometry Control
+Compression stress check failed for Service I Limit State in Interval 14 Open to Traffic, Roadway Geometry Control
+Compression stress check failed for Service IA Limit State in Interval 14 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Bursting check failed.
@@ -31,8 +31,8 @@ Compression stress check failed for Service I Limit State in Interval 2 Prestres
 Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Tension stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Compression stress check failed for Service I Limit State in Interval 10 Install Intermediate Diaphragms
-Compression stress check failed for Service I Limit State in Interval 14 Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 14 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 14 Open to Traffic, Roadway Geometry Control
+Compression stress check failed for Service I Limit State in Interval 14 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Bursting check failed.
 Confinement zone check failed.

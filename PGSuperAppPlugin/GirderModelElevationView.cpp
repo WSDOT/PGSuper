@@ -2982,6 +2982,7 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSDocBase* pDoc, IB
    GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    GET_IFACE2_NOCHECK(pBroker,IGirder,pIGirder);
    GET_IFACE2_NOCHECK(pBroker, ICamber, pCamber);
+   GET_IFACE2_NOCHECK(pBroker, ISectionProperties,pSectProps);
 
    // assume a typical cover
    Float64 top_cover = WBFL::Units::ConvertToSysUnits(1.0,WBFL::Units::Measure::Inch);
@@ -3037,7 +3038,7 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSDocBase* pDoc, IB
          }
 
          PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(segmentKey.groupIndex);
-         Float64 slab_offset = pBridge->GetSlabOffset(segmentKey,pgsTypes::metStart); // use for dummy top of stirrup if they are extended into deck
+         Float64 slab_offset = pSectProps->GetStructuralHaunchDepth(start_poi,pgsTypes::hspDetailedDescription); // use for dummy top of stirrup if they are extended into deck
 
          bool bDoStirrupsEngageDeck = pStirrupGeom->DoStirrupsEngageDeck(segmentKey);
 

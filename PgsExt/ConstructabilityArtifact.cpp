@@ -53,10 +53,6 @@ m_bIsSlabOffsetApplicable(false)
    m_LeastHaunch = 0;
    m_LeastHaunchLocation = 0;
 
-   m_ProvidedAtBearingCLs  = 0;
-   m_RequiredAtBearingCLs  = 0;
-   m_HaunchAtBearingCLsApplicable = sobappNA;
-
    m_bIsPrecamberApplicable = false;
   
    m_bIsBottomFlangeClearanceApplicable = false;
@@ -71,11 +67,19 @@ m_bIsSlabOffsetApplicable(false)
 
 
    m_bIsFinishedElevationApplicable = false;
+   m_FinishedElevationControllingInterval = INVALID_INDEX;
    m_FinishedElevationTolerance = 0;
-   m_Station = 0;
-   m_Offset = 0;
+   m_FinishedElevationStation = 0;
+   m_FinishedElevationOffset = 0;
    m_DesignElevation = 0;
    m_FinishedElevation = 0;
+
+   m_bIsMinimumHaunchCheckApplicable = false;
+   m_MinimumHaunchCheckControllingInterval = INVALID_INDEX;
+   m_MinimumAllowableHaunchDepth = 0;
+   m_MinimumHaunchStation = 0;
+   m_MinimumHaunchOffset = 0;
+   m_MinimumHaunchDepth = 0;
 }
 
 pgsSegmentConstructabilityArtifact::pgsSegmentConstructabilityArtifact(const pgsSegmentConstructabilityArtifact& rOther)
@@ -159,7 +163,7 @@ Float64 pgsSegmentConstructabilityArtifact::GetProvidedFillet() const
 bool pgsSegmentConstructabilityArtifact::MinimumFilletPassed() const
 {
    // min fillet uses same applicability as slab offset check
-   if (m_bIsSlabOffsetApplicable)
+   if (m_bIsSlabOffsetApplicable || m_bIsMinimumHaunchCheckApplicable)
    {
    return m_ProvidedFillet + TOLERANCE > m_MinimumRequiredFillet;
    }
@@ -248,42 +252,6 @@ void pgsSegmentConstructabilityArtifact::CheckStirrupLength(bool bCheck)
 bool pgsSegmentConstructabilityArtifact::CheckStirrupLength() const
 {
    return m_bIsSlabOffsetApplicable && m_bCheckStirrupLength;
-}
-
-void pgsSegmentConstructabilityArtifact::SetProvidedHaunchAtBearingCLs(Float64 provided)
-{
-   m_ProvidedAtBearingCLs = provided;
-}
-
-Float64 pgsSegmentConstructabilityArtifact::GetProvidedHaunchAtBearingCLs() const
-{
-   return m_ProvidedAtBearingCLs;
-}
-
-void pgsSegmentConstructabilityArtifact::SetRequiredHaunchAtBearingCLs(Float64 reqd)
-{
-   m_RequiredAtBearingCLs = reqd;
-}
-
-Float64 pgsSegmentConstructabilityArtifact::GetRequiredHaunchAtBearingCLs() const
-{
-   return m_RequiredAtBearingCLs;
-}
-
-void pgsSegmentConstructabilityArtifact::SetHaunchAtBearingCLsApplicability(SlabOffsetBearingCLApplicabilityType bSet)
-{
-   m_HaunchAtBearingCLsApplicable = bSet;
-}
-
-pgsSegmentConstructabilityArtifact::SlabOffsetBearingCLApplicabilityType pgsSegmentConstructabilityArtifact::GetHaunchAtBearingCLsApplicability() const
-{
-   return m_HaunchAtBearingCLsApplicable;
-}
-
-bool pgsSegmentConstructabilityArtifact::HaunchAtBearingCLsPassed() const
-{
-   return m_HaunchAtBearingCLsApplicable!=pgsSegmentConstructabilityArtifact::sobappYes ||
-          m_ProvidedAtBearingCLs+TOLERANCE >= m_RequiredAtBearingCLs;
 }
 
 void pgsSegmentConstructabilityArtifact::SetPrecamberApplicability(bool bSet)
@@ -473,11 +441,6 @@ bool pgsSegmentConstructabilityArtifact::Passed() const
       return false;
    }
 
-   if (!HaunchAtBearingCLsPassed())
-   {
-      return false;
-   }
-
    if (!MinimumFilletPassed())
    {
       return false;
@@ -503,6 +466,11 @@ bool pgsSegmentConstructabilityArtifact::Passed() const
       return false;
    }
 
+   if (!MinimumHaunchDepthPassed())
+   {
+      return false;
+   }
+
    return true;
 }
 
@@ -516,6 +484,16 @@ void pgsSegmentConstructabilityArtifact::SetFinishedElevationApplicability(bool 
 bool pgsSegmentConstructabilityArtifact::GetFinishedElevationApplicability() const
 {
    return m_bIsFinishedElevationApplicable;
+}
+
+void pgsSegmentConstructabilityArtifact::SetFinishedElevationControllingInterval(IntervalIndexType interval)
+{
+   m_FinishedElevationControllingInterval = interval;
+}
+
+IntervalIndexType pgsSegmentConstructabilityArtifact::GetFinishedElevationControllingInterval() const
+{
+   return m_FinishedElevationControllingInterval;
 }
 
 void pgsSegmentConstructabilityArtifact::SetFinishedElevationTolerance(Float64 tol)
@@ -532,18 +510,18 @@ void pgsSegmentConstructabilityArtifact::SetMaxFinishedElevation(Float64 station
 {
    ATLASSERT(m_SegmentKey == poi.GetSegmentKey());
 
-   m_Station = station;
-   m_Offset = offset;
-   m_Poi = poi;
+   m_FinishedElevationStation = station;
+   m_FinishedElevationOffset = offset;
+   m_FinishedElevationPoi = poi;
    m_DesignElevation = designElevation;
    m_FinishedElevation = finishedElevation;
 }
 
 void pgsSegmentConstructabilityArtifact::GetMaxFinishedElevation(Float64* pStation, Float64* pOffset, pgsPointOfInterest* pPoi, Float64* pDesignElevation, Float64* pFinishedElevation) const
 {
-   *pStation = m_Station;
-   *pOffset = m_Offset;
-   *pPoi = m_Poi;
+   *pStation = m_FinishedElevationStation;
+   *pOffset = m_FinishedElevationOffset;
+   *pPoi = m_FinishedElevationPoi;
    *pDesignElevation = m_DesignElevation;
    *pFinishedElevation = m_FinishedElevation;
 }
@@ -551,6 +529,64 @@ void pgsSegmentConstructabilityArtifact::GetMaxFinishedElevation(Float64* pStati
 bool pgsSegmentConstructabilityArtifact::FinishedElevationPassed() const
 {
    return IsEqual(m_DesignElevation, m_FinishedElevation, m_FinishedElevationTolerance) ? true : false;
+}
+
+void pgsSegmentConstructabilityArtifact::SetMinimumHaunchDepthApplicability(bool bSet)
+{
+   m_bIsMinimumHaunchCheckApplicable = bSet;
+}
+
+bool pgsSegmentConstructabilityArtifact::GetMinimumHaunchDepthApplicability() const
+{
+   return m_bIsMinimumHaunchCheckApplicable;
+}
+
+void pgsSegmentConstructabilityArtifact::SetMinimumHaunchDepthControllingInterval(IntervalIndexType interval)
+{
+   m_MinimumHaunchCheckControllingInterval = interval;
+}
+
+IntervalIndexType pgsSegmentConstructabilityArtifact::GetMinimumHaunchDepthControllingInterval() const
+{
+   return m_MinimumHaunchCheckControllingInterval;
+}
+
+void pgsSegmentConstructabilityArtifact::SetMinimumAllowableHaunchDepth(Float64 haunchDepth)
+{
+   m_MinimumAllowableHaunchDepth = haunchDepth;
+}
+
+Float64 pgsSegmentConstructabilityArtifact::GetMinimumAllowableHaunchDepth() const
+{
+   return m_MinimumAllowableHaunchDepth;
+}
+
+void pgsSegmentConstructabilityArtifact::SetMinimumHaunchDepth(Float64 station,Float64 offset,const pgsPointOfInterest& poi,Float64 minimumHaunchDepth)
+{
+   m_MinimumHaunchStation = station;
+   m_MinimumHaunchOffset = offset;
+   m_MinimumHaunchPoi = poi;
+   m_MinimumHaunchDepth = minimumHaunchDepth;
+}
+
+void pgsSegmentConstructabilityArtifact::GetMinimumHaunchDepth(Float64* pStation,Float64* pOffset,pgsPointOfInterest* pPoi,Float64* pMinimumHaunchDepth) const
+{
+   *pPoi = m_MinimumHaunchPoi;
+   *pStation = m_MinimumHaunchStation;
+   *pOffset = m_MinimumHaunchOffset;
+   *pMinimumHaunchDepth = m_MinimumHaunchDepth;
+}
+
+bool pgsSegmentConstructabilityArtifact::MinimumHaunchDepthPassed() const
+{
+   if (m_MinimumAllowableHaunchDepth == 0 && m_MinimumHaunchDepth == 0) // default condition is a pass
+   {
+      return true;
+   }
+   else
+   {
+      return m_MinimumAllowableHaunchDepth < m_MinimumHaunchDepth+TOLERANCE;
+   }
 }
 
 ////////////////////////// PROTECTED  ///////////////////////////////////////
@@ -574,10 +610,6 @@ void pgsSegmentConstructabilityArtifact::MakeCopy(const pgsSegmentConstructabili
    m_MinimumRequiredFillet = rOther.m_MinimumRequiredFillet;
    m_ProvidedFillet = rOther.m_ProvidedFillet;
 
-   m_ProvidedAtBearingCLs  = rOther.m_ProvidedAtBearingCLs;
-   m_RequiredAtBearingCLs  = rOther.m_RequiredAtBearingCLs;
-   m_HaunchAtBearingCLsApplicable  = rOther.m_HaunchAtBearingCLsApplicable;
-
    m_bIsPrecamberApplicable = rOther.m_bIsPrecamberApplicable;
    m_Precamber = rOther.m_Precamber;
 
@@ -592,12 +624,21 @@ void pgsSegmentConstructabilityArtifact::MakeCopy(const pgsSegmentConstructabili
    m_AssumedMinimumHaunchDepth = rOther.m_AssumedMinimumHaunchDepth;
 
    m_bIsFinishedElevationApplicable = rOther.m_bIsFinishedElevationApplicable;
+   m_FinishedElevationControllingInterval = rOther.m_FinishedElevationControllingInterval;
    m_FinishedElevationTolerance = rOther.m_FinishedElevationTolerance;
-   m_Station = rOther.m_Station;
-   m_Offset = rOther.m_Offset;
-   m_Poi = rOther.m_Poi;
+   m_FinishedElevationStation = rOther.m_FinishedElevationStation;
+   m_FinishedElevationOffset = rOther.m_FinishedElevationOffset;
+   m_FinishedElevationPoi = rOther.m_FinishedElevationPoi;
    m_DesignElevation = rOther.m_DesignElevation;
    m_FinishedElevation = rOther.m_FinishedElevation;
+
+   m_bIsMinimumHaunchCheckApplicable = rOther.m_bIsMinimumHaunchCheckApplicable;
+   m_MinimumHaunchCheckControllingInterval = rOther.m_MinimumHaunchCheckControllingInterval;
+   m_MinimumHaunchStation = rOther.m_MinimumHaunchStation;
+   m_MinimumHaunchOffset = rOther.m_MinimumHaunchOffset;
+   m_MinimumHaunchPoi = rOther.m_MinimumHaunchPoi;
+   m_MinimumAllowableHaunchDepth = rOther.m_MinimumAllowableHaunchDepth;
+   m_MinimumHaunchDepth = rOther.m_MinimumHaunchDepth;
 }
 
 void pgsSegmentConstructabilityArtifact::MakeAssignment(const pgsSegmentConstructabilityArtifact& rOther)
@@ -627,6 +668,8 @@ CLASS
 //======================== LIFECYCLE  =======================================
 pgsConstructabilityArtifact::pgsConstructabilityArtifact()
 {
+   m_RequiredAtBearingCLs = 0;
+   m_HaunchBearingCLApplicability = hbcAppNA;
 }
 
 pgsConstructabilityArtifact::pgsConstructabilityArtifact(const pgsConstructabilityArtifact& rOther)
@@ -677,6 +720,51 @@ const pgsSegmentConstructabilityArtifact& pgsConstructabilityArtifact::GetSegmen
    //return nullptr;
 }
 
+void pgsConstructabilityArtifact::SetProvidedHaunchAtBearingCLs(Float64 startEnd, Float64 endEnd)
+{
+   m_ProvidedAtBearingCLs[pgsTypes::metStart] = startEnd;
+   m_ProvidedAtBearingCLs[pgsTypes::metEnd] = endEnd;
+}
+
+void pgsConstructabilityArtifact::GetProvidedHaunchAtBearingCLs(Float64* pStartEnd,Float64* pEndEnd) const
+{
+   *pStartEnd = m_ProvidedAtBearingCLs[pgsTypes::metStart];
+   *pEndEnd   = m_ProvidedAtBearingCLs[pgsTypes::metEnd];
+}
+
+void pgsConstructabilityArtifact::SetRequiredHaunchAtBearingCLs(Float64 reqd)
+{
+   m_RequiredAtBearingCLs = reqd;
+}
+
+Float64 pgsConstructabilityArtifact::GetRequiredHaunchAtBearingCLs() const
+{
+   return m_RequiredAtBearingCLs;
+}
+
+void pgsConstructabilityArtifact::SetHaunchBearingCLApplicability(HaunchBearingCLApplicabilityType bSet)
+{
+   m_HaunchBearingCLApplicability = bSet;
+}
+
+pgsConstructabilityArtifact::HaunchBearingCLApplicabilityType pgsConstructabilityArtifact::GetHaunchBearingCLApplicability() const
+{
+   return m_HaunchBearingCLApplicability;
+}
+
+bool pgsConstructabilityArtifact::HaunchAtBearingCLsPassed() const
+{
+   if (m_HaunchBearingCLApplicability != pgsConstructabilityArtifact::hbcAppYes)
+   {
+      return true;
+   }
+   else
+   {
+      return m_ProvidedAtBearingCLs[pgsTypes::metStart] + TOLERANCE >= m_RequiredAtBearingCLs &&
+             m_ProvidedAtBearingCLs[pgsTypes::metEnd]   + TOLERANCE >= m_RequiredAtBearingCLs;
+   }
+}
+
 bool pgsConstructabilityArtifact::Passed() const
 {
    ATLASSERT(!m_SegmentArtifacts.empty());
@@ -686,7 +774,7 @@ bool pgsConstructabilityArtifact::Passed() const
          return false;
    }
 
-   return true;
+   return HaunchAtBearingCLsPassed();
 }
 
 bool pgsConstructabilityArtifact::IsSlabOffsetApplicable() const
@@ -715,28 +803,7 @@ bool pgsConstructabilityArtifact::SlabOffsetPassed() const
 
 bool pgsConstructabilityArtifact::IsHaunchAtBearingCLsApplicable() const
 {
-   ATLASSERT(!m_SegmentArtifacts.empty());
-   for (const auto& artf : m_SegmentArtifacts)
-   {
-      if (artf.GetHaunchAtBearingCLsApplicability() == pgsSegmentConstructabilityArtifact::sobappYes)
-      {
-         return true;
-      }
-   }
-
-   return false;
-}
-
-bool pgsConstructabilityArtifact::HaunchAtBearingCLsPassed() const
-{
-   ATLASSERT(!m_SegmentArtifacts.empty());
-   for (const auto& artf : m_SegmentArtifacts)
-   {
-      if (!artf.HaunchAtBearingCLsPassed())
-         return false;
-   }
-
-   return true;
+   return m_HaunchBearingCLApplicability == hbcAppYes;
 }
 
 bool pgsConstructabilityArtifact::IsPrecamberApplicable() const
@@ -835,6 +902,18 @@ bool pgsConstructabilityArtifact::FinishedElevationPassed() const
    return true;
 }
 
+bool pgsConstructabilityArtifact::MinimumHaunchDepthPassed() const
+{
+   ATLASSERT(!m_SegmentArtifacts.empty());
+   for (const auto& artf : m_SegmentArtifacts)
+   {
+      if (!artf.MinimumHaunchDepthPassed())
+         return false;
+   }
+
+   return true;
+}
+
 bool pgsConstructabilityArtifact::CheckStirrupLength() const
 {
    ATLASSERT(!m_SegmentArtifacts.empty());
@@ -855,6 +934,10 @@ bool pgsConstructabilityArtifact::CheckStirrupLength() const
 void pgsConstructabilityArtifact::MakeCopy(const pgsConstructabilityArtifact& rOther)
 {
    m_SegmentArtifacts = rOther.m_SegmentArtifacts;
+
+   m_HaunchBearingCLApplicability = rOther.m_HaunchBearingCLApplicability;
+   m_ProvidedAtBearingCLs = rOther.m_ProvidedAtBearingCLs;
+   m_RequiredAtBearingCLs = rOther.m_RequiredAtBearingCLs;
 }
 
 void pgsConstructabilityArtifact::MakeAssignment(const pgsConstructabilityArtifact& rOther)

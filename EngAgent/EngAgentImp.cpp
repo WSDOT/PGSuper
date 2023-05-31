@@ -4275,7 +4275,7 @@ const pgsGirderDesignArtifact* CEngAgentImp::CreateDesignArtifact(const CGirderK
       GET_IFACE(ISectionProperties, pSectProp);
 
       bool doTrans = pSectProp->GetSectionPropertiesMode() == pgsTypes::spmTransformed;
-      bool doHaunch = pSectProp->GetHaunchAnalysisSectionPropertiesType() == pgsTypes::hspVariableParabolic && IsStructuralDeck(pBridge->GetDeckType());
+      bool doHaunch = pSectProp->GetHaunchAnalysisSectionPropertiesType() == pgsTypes::hspDetailedDescription && IsStructuralDeck(pBridge->GetDeckType());
 
       // Use the class below to temporarly set transformed and prismatic haunch properties in library and then reset them back
       DesignOverrider overrider(doTrans, doHaunch, m_pBroker);

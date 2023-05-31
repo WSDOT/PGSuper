@@ -55,6 +55,24 @@ rptChapter* CTemporarySupportElevationsChapterBuilder::Build(const std::shared_p
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
+   auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
+   auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
+
+   GirderIndexType girderIndex;
+   if (pGdrRptSpec)
+   {
+      girderIndex = pGdrRptSpec->GetGirderKey().girderIndex;
+   }
+   else if (pGdrLineRptSpec)
+   {
+      girderIndex = pGdrLineRptSpec->GetGirderKey().girderIndex;
+   }
+   else
+   {
+      ATLASSERT(false); // not expecting a different kind of report spec
+      return pChapter;
+   }
+
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
@@ -74,7 +92,7 @@ rptChapter* CTemporarySupportElevationsChapterBuilder::Build(const std::shared_p
 
    for (SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++)
    {
-      std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> vElevDetails = pTempSupport->GetElevationDetails(tsIdx);
+      std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> vElevDetails = pTempSupport->GetElevationDetails(tsIdx, girderIndex);
 
       CString strTitle;
       strTitle.Format(_T("Temporary Support %d - %s"), LABEL_TEMPORARY_SUPPORT(tsIdx), CTemporarySupportData::AsString(pBridge->GetTemporarySupportType(tsIdx)));

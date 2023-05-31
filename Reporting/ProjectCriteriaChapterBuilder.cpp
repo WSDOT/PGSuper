@@ -1169,9 +1169,9 @@ void write_haunch_dead_load(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUn
    {
       *pPara<<_T("Haunch dead load is computed assuming that the top of the girder is flat (Zero assumed excess camber)")<<rptNewLine;
    }
-   else if (pgsTypes::hlcAccountForCamber==hlctype)
+   else if (pgsTypes::hlcDetailedAnalysis==hlctype)
    {
-      *pPara<<_T("Haunch dead load is computed assuming that the top of the girder is parabolic with the parabola defined by the user-input assumed excess camber.")<<rptNewLine;
+      *pPara<<_T("Haunch dead load is computed using detailed input. When explicit haunch depths are input directly, dead load is based on those depths. When haunch depth is defined by slab offets and assumed camber, depths along girder are computed assuming that the top of the girder is parabolic with the parabola defined by the user-input assumed excess camber.")<<rptNewLine;
       *pPara << _T("- Use ")<< pSpecEntry->GetHaunchLoadCamberFactor()*100 << _T(" % of assumed excess camber when computing haunch dead load.") << rptNewLine;
    }
    else
@@ -1189,9 +1189,9 @@ void write_haunch_dead_load(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUn
    {
       *pPara << _T("Composite section properties and capacities are computed assuming a Constant Haunch Depth equal to the Fillet value") << rptNewLine;
    }
-   else if (pgsTypes::hspVariableParabolic == hpctype)
+   else if (pgsTypes::hspDetailedDescription == hpctype)
    {
-      *pPara << _T("Composite section properties and capacities are computed assuming a Parabolically varying Haunch Depth defined by the roadway geometry and assumed excess camber ") << rptNewLine;
+      *pPara << _T("Composite section properties and capacities are computed using detailed input. When explicit haunch depths are input directly, dead load is based on those depths. When haunch depth is defined by slab offets and assumed camber, assume a Parabolically varying Haunch Depth defined by the roadway geometry and assumed excess camber ") << rptNewLine;
    }
    else
    {

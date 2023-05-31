@@ -180,6 +180,8 @@ void CAnalysisAgentImp::Invalidate(bool clearStatus)
    }
 
    m_ExternalLoadState.clear();
+
+   m_ElevationDeflectionAdjustmentFunctions.clear();
 }
 
 void CAnalysisAgentImp::InvalidateCamberModels()
@@ -1146,11 +1148,12 @@ STDMETHODIMP CAnalysisAgentImp::RegInterfaces()
    pBrokerInit->RegInterface( IID_IExternalLoading,          this );
    pBrokerInit->RegInterface( IID_IPretensionStresses,       this );
    pBrokerInit->RegInterface( IID_ICamber,                   this );
-   pBrokerInit->RegInterface( IID_IContraflexurePoints,      this );
+   pBrokerInit->RegInterface(IID_IContraflexurePoints,       this);
    pBrokerInit->RegInterface( IID_IContinuity,               this );
    pBrokerInit->RegInterface( IID_IBearingDesign,            this );
    pBrokerInit->RegInterface( IID_IPrecompressedTensileZone, this );
    pBrokerInit->RegInterface( IID_IReactions,                this );
+   pBrokerInit->RegInterface(IID_IDeformedGirderGeometry,    this);
 
    return S_OK;
 };
@@ -10328,6 +10331,589 @@ void CAnalysisAgentImp::GetCombinedLiveLoadReaction(IntervalIndexType intervalId
 {
    m_pGirderModelManager->GM_GetCombinedLiveLoadReaction(intervalIdx,llType,vPiers,girderKey,bat,bIncludeImpact,pRmin,pRmax);
 }
+
+/////////////////////////////////////////////
+// IDeformedGirderGeometry
+/////////////////////////////////////////////
+Float64 CAnalysisAgentImp::GetTopGirderElevation(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig) const
+{
+   // returns top of girder elevation, including effects of camber, at a poi at CL girder
+   GET_IFACE(IPointOfInterest,pPoi);
+   GET_IFACE(IGirder,pGirder);
+
+   const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+   PoiList vPoi;
+   pPoi->GetPointsOfInterest(segmentKey,POI_0L | POI_ERECTED_SEGMENT,&vPoi);
+   ATLASSERT(vPoi.size() == 1);
+   pgsPointOfInterest poiCLBrg(vPoi.front());
+
+   Float64 tft_clbrg = pGirder->GetTopFlangeThickening(poiCLBrg);
+   Float64 tft_poi = pGirder->GetTopFlangeThickening(poi);
+   Float64 tft_adjustment = tft_clbrg - tft_poi;
+
+   Float64 top_girder_chord_elevation = pGirder->GetTopGirderChordElevation(poi);// accounts for elevation changes at temporary supports
+
+   // get the camber
+   GET_IFACE(ICamber,pCamber);
+   Float64 excess_camber = pCamber->GetExcessCamber(poi,CREEP_MAXTIME,pConfig);
+
+   Float64 top_gdr_elev = top_girder_chord_elevation + excess_camber - tft_adjustment;
+   return top_gdr_elev;
+}
+
+void CAnalysisAgentImp::GetTopGirderElevation(const pgsPointOfInterest& poi,IDirection* pDirection,Float64* pLeft,Float64* pCenter,Float64* pRight) const
+{
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->GetDeckType();
+   pgsTypes::HaunchInputDepthType haunchInputDepthType = pBridgeDesc->GetHaunchInputDepthType();
+
+   if (pgsTypes::hidACamber == haunchInputDepthType || pgsTypes::sdtNone == deckType)
+   {
+      // Elevation comp is very different when A dimension is input
+      GetTopGirderElevation4ADim(poi,pDirection,pLeft,pCenter,pRight);
+   }
+   else
+   {
+      // This function gets elevations at time of Geometry Control Event interval
+      GET_IFACE(IIntervals,pIntervals);
+      IntervalIndexType gceInterval = pIntervals->GetGeometryControlInterval();
+
+      GetTopGirderElevationEx4DirectHaunch(poi,gceInterval,pDirection,pLeft,pCenter,pRight);
+   }
+}
+
+void CAnalysisAgentImp::GetTopGirderElevationEx(const pgsPointOfInterest& poi,IntervalIndexType interval,IDirection* pDirection,Float64* pLeft,Float64* pCenter,Float64* pRight) const
+{
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   pgsTypes::HaunchInputDepthType haunchInputDepthType = pBridgeDesc->GetHaunchInputDepthType();
+   if (pgsTypes::hidACamber != haunchInputDepthType)
+   {
+      GetTopGirderElevationEx4DirectHaunch(poi,interval,pDirection,pLeft,pCenter,pRight);
+   }
+   else
+   {
+      // This function is only valid for direct haunch input. Return bad numbers to clue caller
+      ATLASSERT(0);
+      *pLeft = *pCenter = *pRight = Float64_Max;
+   }
+}
+
+void CAnalysisAgentImp::GetTopGirderElevationEx4DirectHaunch(const pgsPointOfInterest& poi,IntervalIndexType interval,IDirection* pDirection,Float64* pLeft,Float64* pCenter,Float64* pRight) const
+{
+   GET_IFACE(IGirder,pIGirder);
+   GET_IFACE(IBridge,pBridge);
+
+   const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+   // Distance to left and right edge of the girder, from the cl, at the poi under consideration
+   Float64 leftEdge,rightEdge;
+   pIGirder->GetTopWidth(poi,&leftEdge,&rightEdge);
+
+   // Girder orientation effect
+   Float64 orientation = pIGirder->GetOrientation(segmentKey);
+   Float64 sinor = sin(orientation);
+   Float64 lft_orient_eff = -leftEdge * sinor;
+   Float64 rgt_orient_eff = rightEdge * sinor;
+
+   // Get elevation at CL girder
+   *pCenter = GetTopCLGirderElevationEx4DirectHaunch(poi,interval);
+
+   CComPtr<IDirection> segmentNormal;
+   pBridge->GetSegmentNormal(segmentKey,&segmentNormal);
+   if (pDirection == nullptr || segmentNormal->IsEqual(pDirection) == S_OK)
+   {
+      // cut line is normal to the girder
+      *pLeft = *pCenter + lft_orient_eff;
+      *pRight = *pCenter + rgt_orient_eff;
+   }
+   else
+   {
+      // we are measuring to the left/right edges along a skewed cut line
+      // get the angle between the CL Girder and the cut line
+      CComPtr<IDirection> segmentNormal;
+      pBridge->GetSegmentNormal(segmentKey,&segmentNormal);
+
+      CComPtr<IAngle> skewAngle;
+      pDirection->AngleBetween(segmentNormal,&skewAngle);
+
+      Float64 angle;
+      skewAngle->get_Value(&angle);
+      ATLASSERT(!IsEqual(angle,PI_OVER_2));
+
+      // Get distance to edge points relative to the current poi
+      Float64 x_left = -leftEdge * tan(angle);
+      Float64 x_right = rightEdge * tan(angle);
+
+      // Create temporary pois along the segment and get CL elevations
+      Float64 distFromStart = poi.GetDistFromStart();
+      pgsPointOfInterest lftPoi = poi;
+      lftPoi.SetDistFromStart(distFromStart + x_left);
+
+      Float64 lftCLElevation = GetTopCLGirderElevationEx4DirectHaunch(lftPoi,interval);
+      *pLeft = lftCLElevation + lft_orient_eff;
+
+      pgsPointOfInterest rgtPoi = poi;
+      rgtPoi.SetDistFromStart(distFromStart + x_right);
+
+      Float64 rgtCLElevation = GetTopCLGirderElevationEx4DirectHaunch(rgtPoi,interval);
+      *pRight = rgtCLElevation + rgt_orient_eff;
+   }
+}
+
+Float64 CAnalysisAgentImp::GetTopCLGirderElevationEx4DirectHaunch(const pgsPointOfInterest& poi,IntervalIndexType interval) const
+{
+   GET_IFACE(IGirder,pIGirder);
+   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   // Must first get elevations at time of Geometry Control Event interval
+   IntervalIndexType gceInterval = pIntervals->GetGeometryControlInterval();
+
+   Float64 girderChordElevation = pIGirder->GetTopGirderChordElevation(poi); // accounts for temp support elevation adjustments
+   Float64 tftCenter = pIGirder->GetTopFlangeThickening(poi);
+
+   // Adjust elevation by deflections at ends of segments, or bearing at ends of group. This will make segment ends match PG at ends
+   Float64 deflAdjustment = GetElevationDeflectionAdjustment(poi);
+
+   Float64 deflElevation(0);
+
+   // For time step method we use ServiceI to get camber  If not time-step, we can only compute at the GCE.
+   // Use camber calculation to account for camber factors
+   GET_IFACE(ILossParameters,pLossParams);
+   if (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP)
+   {
+      GET_IFACE(ILimitStateForces,pLimitStateForces);
+      GET_IFACE(IProductForces,pProduct);
+      pgsTypes::BridgeAnalysisType bat = pProduct->GetBridgeAnalysisType(pgsTypes::Minimize);
+
+      // Min and max should be the same since we use Service I and no transient loads
+      Float64 gceDeflMin,gceDeflMax;
+      pLimitStateForces->GetDeflection(gceInterval,pgsTypes::ServiceI,poi,bat,true,false,false,true,true,&gceDeflMin,&gceDeflMax);
+
+      Float64 gceDeflElevation = girderChordElevation + tftCenter + gceDeflMin - deflAdjustment;
+
+      // Use different delta factor based on whether going backward or forward in time
+      Float64 deltafac = interval > gceInterval ? 1.0 : 1.0;
+
+      deflElevation = gceDeflElevation;
+      if (interval != gceInterval)
+      {
+         // Deflection at our interval
+         Float64 itvDeflMin,itvDeflMax;
+         pLimitStateForces->GetDeflection(interval,pgsTypes::ServiceI,poi,bat,true,false,false,true,true,&itvDeflMin,&itvDeflMax);
+
+         Float64 deltaDefl = itvDeflMin - gceDeflMin;
+
+         deflElevation += deltaDefl;
+      }
+   }
+   else
+   {
+      ATLASSERT(interval == pIntervals->GetGeometryControlInterval());
+      GET_IFACE(ICamber,pCamber);
+      Float64 camber = pCamber->GetExcessCamber(poi,CREEP_MAXTIME,nullptr);
+
+      deflElevation = girderChordElevation + tftCenter + camber - deflAdjustment;
+   }
+
+   return deflElevation;
+}
+
+void CAnalysisAgentImp::GetTopGirderElevation4ADim(const pgsPointOfInterest& poi,IDirection* pDirection,Float64* pLeft,Float64* pCenter,Float64* pRight) const
+{
+   GET_IFACE(IPointOfInterest,pPoi);
+   GET_IFACE(IGirder,pGirder);
+   GET_IFACE(IBridge,pBridge);
+   GET_IFACE_NOCHECK(IRoadway,pAlignment);
+
+   const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+   // get the centerline bearing poi
+   PoiList vPoi;
+   pPoi->GetPointsOfInterest(segmentKey,POI_0L | POI_ERECTED_SEGMENT,&vPoi);
+   ATLASSERT(vPoi.size() == 1);
+   pgsPointOfInterest poiCLBrg(vPoi.front());
+
+   // get distance to left and right edge of the girder, from the cl, at the poi under consideration
+   Float64 leftEdge,rightEdge;
+   pGirder->GetTopWidth(poi,&leftEdge,&rightEdge);
+
+   // get the start pier POI
+   PierIndexType pierIdx = pBridge->GetGirderGroupStartPier(segmentKey.groupIndex);
+
+   // these parameters are used for computing the elevation change from the CL Bearing due to girder slope
+   Float64 girder_slope = pBridge->GetSegmentSlope(segmentKey);
+   Float64 dist_from_start_bearing = poi.GetDistFromStart() - poiCLBrg.GetDistFromStart();
+
+   Float64 slab_offset_at_start = pBridge->GetDeckType() == pgsTypes::sdtNone ? 0.0 : pBridge->GetSlabOffset(segmentKey,pgsTypes::metStart);
+
+   Float64 tft_clbrg = pGirder->GetTopFlangeThickening(poiCLBrg);
+
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType gceInterval = pIntervals->GetGeometryControlInterval();
+
+   Float64 overlay = pBridge->GetOverlayDepth(gceInterval);
+
+   CComPtr<IDirection> segmentNormal;
+   pBridge->GetSegmentNormal(segmentKey,&segmentNormal);
+
+   if (pDirection == nullptr || segmentNormal->IsEqual(pDirection) == S_OK)
+   {
+      // cut line is assumed to be normal to the girder
+
+      // girder offset at start bearing
+      Float64 station,zs;
+      pBridge->GetStationAndOffset(poiCLBrg,&station,&zs);
+
+      // roadway surface elevation at start bearing
+      Float64 YsbLeft = pAlignment->GetElevation(station,zs - leftEdge);
+      Float64 YsbCenter = pAlignment->GetElevation(station,zs);
+      Float64 YsbRight = pAlignment->GetElevation(station,zs + rightEdge);
+
+      // get the camber
+      Float64 excess_camber;
+      GET_IFACE(ILossParameters,pLossParams);
+      if (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP)
+      {
+         GET_IFACE(IProductForces,pProduct);
+         GET_IFACE(ILimitStateForces,pLimitStateForces);
+         pgsTypes::BridgeAnalysisType bat = pProduct->GetBridgeAnalysisType(pgsTypes::Minimize);
+
+         Float64 endDeflMax;
+         pLimitStateForces->GetDeflection(gceInterval,pgsTypes::ServiceI,poi,bat,true,false,false,true,true,&excess_camber,&endDeflMax);
+      }
+      else
+      {
+         GET_IFACE(ICamber,pCamber);
+         excess_camber = pCamber->GetExcessCamber(poi,CREEP_MAXTIME,nullptr);
+      }
+
+      Float64 tft_center = pGirder->GetTopFlangeThickening(poi);
+
+      Float64 tft_adjustment = tft_clbrg - tft_center;
+
+      *pLeft = YsbLeft - slab_offset_at_start + girder_slope * dist_from_start_bearing + excess_camber - overlay - tft_adjustment;
+      *pCenter = YsbCenter - slab_offset_at_start + girder_slope * dist_from_start_bearing + excess_camber - overlay - tft_adjustment;
+      *pRight = YsbRight - slab_offset_at_start + girder_slope * dist_from_start_bearing + excess_camber - overlay - tft_adjustment;
+   }
+   else
+   {
+      // we are measuring to the left/right edges along a skewed cut line
+
+      // get the angle between the CL Girder and the cut line
+      CComPtr<IDirection> segmentNormal;
+      pBridge->GetSegmentNormal(segmentKey,&segmentNormal);
+
+      CComPtr<IAngle> skewAngle;
+      pDirection->AngleBetween(segmentNormal,&skewAngle);
+
+      Float64 angle;
+      skewAngle->get_Value(&angle);
+
+      ATLASSERT(!IsEqual(angle,PI_OVER_2));
+
+      // get (x,y) on the CL Girder
+      CComPtr<IPoint2d> point_on_cl_girder;
+      pBridge->GetPoint(poiCLBrg,pgsTypes::pcLocal,&point_on_cl_girder);
+
+      GET_IFACE(IGeometry,pGeom);
+      // Locate the points where the cut line and the edges of the girder intersect
+      // note: dividing the edge_offset by the cosine of the angle puts the measurement along the direction
+      CComPtr<IPoint2d> point_on_left_edge;
+      pGeom->ByDistDir(point_on_cl_girder,leftEdge / cos(angle),CComVariant(pDirection),0,&point_on_left_edge);
+
+      CComPtr<IPoint2d> point_on_right_edge;
+      pGeom->ByDistDir(point_on_cl_girder,-rightEdge / cos(angle),CComVariant(pDirection),0,&point_on_right_edge);
+
+      // compute the station and offset for the three points
+      Float64 station[3],offset[3];
+      pAlignment->GetStationAndOffset(pgsTypes::pcLocal,point_on_left_edge,&station[0],&offset[0]);
+      pBridge->GetStationAndOffset(poiCLBrg,&station[1],&offset[1]);
+      pAlignment->GetStationAndOffset(pgsTypes::pcLocal,point_on_right_edge,&station[2],&offset[2]);
+
+      // compute the roadway surface elevation for the three points
+      Float64 YsbLeft = pAlignment->GetElevation(station[0],offset[0]);
+      Float64 YsbCenter = pAlignment->GetElevation(station[1],offset[1]);
+      Float64 YsbRight = pAlignment->GetElevation(station[2],offset[2]);
+
+      // the three points, projected onto the CL Girder are at different locations along the camber curve
+      // there is a lot of overhead in computing excess cambers at POIs that are created on the fly (poi.ID = INVALID_ID)
+      // we can get a good approxiation of the excess camber at the left and right edges by getting the excess
+      // camber on the centerline and the slope due to excess camber, and projecting the excess camber along the girder
+      // to x_left and x_right from the CL girder point
+      //
+      //                               |<->| x_left
+      //            ...................|..*.................
+      //            :                  | :
+      //           :                   |:
+      //          :- - - - - - - - - - * - - - - - - - - -
+      //         :                    :|
+      //        :                    : |
+      //        ....................*..|................
+      //                           |<->| x_right
+      //
+      // 
+      // Get distance to edge points relative to the current poi
+      Float64 x_left = -leftEdge * tan(angle);
+      Float64 x_right = rightEdge * tan(angle);
+
+      // Get the excess camber and slope at the current poi
+      Float64 cl_excess_camber;
+      Float64 excess_camber_slope;
+      GET_IFACE(ILossParameters,pLossParams);
+      if (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP)
+      {
+         GET_IFACE(IProductForces,pProduct);
+         GET_IFACE(ILimitStateForces,pLimitStateForces);
+         pgsTypes::BridgeAnalysisType bat = pProduct->GetBridgeAnalysisType(pgsTypes::Minimize);
+
+         Float64 endDeflMax;
+         pLimitStateForces->GetDeflection(gceInterval,pgsTypes::ServiceI,poi,bat,true,false,false,true,true,&cl_excess_camber,&endDeflMax);
+         pLimitStateForces->GetRotation(gceInterval,pgsTypes::ServiceI,poi,bat,true,false,false,true,true,&excess_camber_slope,&endDeflMax);
+      }
+      else
+      {
+         GET_IFACE(ICamber,pCamber);
+         cl_excess_camber = pCamber->GetExcessCamber(poi,CREEP_MAXTIME,nullptr); // this includes precamber
+         excess_camber_slope = pCamber->GetExcessCamberRotation(poi,CREEP_MAXTIME,nullptr);
+      }
+
+      // assuming slope is a straight line, project the camber along the girder to x_left and x_right
+      Float64 left_excess_camber = cl_excess_camber + excess_camber_slope * x_left;
+      Float64 right_excess_camber = cl_excess_camber + excess_camber_slope * x_right;
+
+      // Get top flange thickening adjustments
+      Float64 Xpoi_Left = poi.GetDistFromStart() + x_left;
+      Float64 Xpoi_Right = poi.GetDistFromStart() + x_right;
+
+      Float64 tft_left = pGirder->GetTopFlangeThickening(segmentKey,Xpoi_Left);
+      Float64 tft_center = pGirder->GetTopFlangeThickening(poi);
+      Float64 tft_right = pGirder->GetTopFlangeThickening(segmentKey,Xpoi_Right);
+
+      Float64 tft_adjustment_left = tft_clbrg - tft_left;
+      Float64 tft_adjustment_center = tft_clbrg - tft_center;
+      Float64 tft_adjustment_right = tft_clbrg - tft_right;
+
+      // compute the elevation for each location
+      *pLeft = YsbLeft - slab_offset_at_start + girder_slope * dist_from_start_bearing + left_excess_camber - overlay - tft_adjustment_left;
+      *pCenter = YsbCenter - slab_offset_at_start + girder_slope * dist_from_start_bearing + cl_excess_camber - overlay - tft_adjustment_center;
+      *pRight = YsbRight - slab_offset_at_start + girder_slope * dist_from_start_bearing + right_excess_camber - overlay - tft_adjustment_right;
+   }
+}
+
+Float64 CAnalysisAgentImp::GetElevationDeflectionAdjustment(const pgsPointOfInterest& poi) const
+{
+   const CSegmentKey& segmentKey = poi.GetSegmentKey();
+   const auto& fn = GetElevationDeflectionAdjustmentFunction(segmentKey);
+   Float64 Xpoi = poi.GetDistFromStart();
+   return fn.Evaluate(Xpoi);
+}
+
+const WBFL::Math::LinearFunction& CAnalysisAgentImp::GetElevationDeflectionAdjustmentFunction(const CSegmentKey& segmentKey) const
+{
+   auto found = m_ElevationDeflectionAdjustmentFunctions.find(segmentKey);
+   if (found == m_ElevationDeflectionAdjustmentFunctions.end())
+   {
+      ValidateElevationDeflectionAdjustment(segmentKey);
+      found = m_ElevationDeflectionAdjustmentFunctions.find(segmentKey);
+      ATLASSERT(found != m_ElevationDeflectionAdjustmentFunctions.end());
+   }
+
+   return found->second;
+}
+
+void CAnalysisAgentImp::ValidateElevationDeflectionAdjustment(const CSegmentKey& segmentKey) const
+{
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   if (pBridgeDesc->GetHaunchInputDepthType() == pgsTypes::hidACamber)
+   {
+      // Function not valid for Old "A" dimension and assumed excess camber input. this will not end well
+      ATLASSERT(0);
+   }
+   else
+   {
+      GET_IFACE_NOCHECK(IPointOfInterest,pPoi);
+
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
+      const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
+      const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
+      const CPierData2* pStartPier;
+      const CPierData2* pEndPier;
+      const CTemporarySupportData* pTS;
+      pSegment->GetSupport(pgsTypes::metStart,&pStartPier,&pTS);
+      pSegment->GetSupport(pgsTypes::metEnd,&pEndPier,&pTS);
+      bool bAtStartBrg = nullptr != pStartPier && pStartPier->IsBoundaryPier();
+      bool bAtEndBrg = nullptr != pEndPier && pEndPier->IsBoundaryPier();
+
+      // Segment chord datum is at ends of segments unless end is at end of a group. 
+      // In that case the SCD is at the end bearing location
+      pgsPointOfInterest startPoi,endPoi;
+      if (bAtStartBrg)
+      {
+         PoiList vSupportPoi;
+         pPoi->GetPointsOfInterest(segmentKey,POI_0L | POI_ERECTED_SEGMENT,&vSupportPoi);
+         startPoi = vSupportPoi.front();
+
+         if (startPoi.GetDistFromStart() < 0.0) // keep pois within segment
+         {
+            startPoi = pPoi->GetPointOfInterest(segmentKey,0.0);
+         }
+      }
+      else
+      {
+         startPoi = pPoi->GetPointOfInterest(segmentKey,0.0);
+      }
+
+      GET_IFACE(IBridge,pBridge);
+      Float64 segLength = pBridge->GetSegmentLength(segmentKey);
+      if (bAtEndBrg)
+      {
+         PoiList vSupportPoi;
+         pPoi->GetPointsOfInterest(segmentKey,POI_10L | POI_ERECTED_SEGMENT,&vSupportPoi);
+         endPoi = vSupportPoi.front();
+
+         if (endPoi.GetDistFromStart() > segLength) // keep pois within segment
+         {
+            endPoi = pPoi->GetPointOfInterest(segmentKey,segLength);
+         }
+      }
+      else
+      {
+         endPoi = pPoi->GetPointOfInterest(segmentKey,segLength);
+      }
+
+      Float64 startDefl,endDefl;
+      GET_IFACE(ILossParameters,pLossParams);
+      if (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP)
+      {
+         GET_IFACE(IProductForces,pProduct);
+         GET_IFACE(ILimitStateForces,pLimitStateForces);
+
+         pgsTypes::BridgeAnalysisType bat = pProduct->GetBridgeAnalysisType(pgsTypes::Minimize);
+
+         // Get deflections at the geometry control event
+         GET_IFACE(IIntervals,pIntervals);
+         IntervalIndexType gceInterval = pIntervals->GetGeometryControlInterval();
+
+         Float64 startDeflMax,endDeflMax;
+         pLimitStateForces->GetDeflection(gceInterval,pgsTypes::ServiceI,startPoi,bat,true,false,false,true,true,&startDefl,&startDeflMax);
+         pLimitStateForces->GetDeflection(gceInterval,pgsTypes::ServiceI,endPoi,bat,true,false,false,true,true,&endDefl,&endDeflMax);
+      }
+      else
+      {
+         // must use camber function that includes camber factors
+         GET_IFACE(ICamber,pCamber);
+         startDefl = pCamber->GetExcessCamber(startPoi,CREEP_MAXTIME,nullptr);
+         endDefl   = pCamber->GetExcessCamber(endPoi,CREEP_MAXTIME,nullptr);
+      }
+
+      // Goal here is to make linear adjustment along segment such that chord will be zero at the SCD locations.
+      WBFL::Math::LinearFunction tmpfun = GenerateLineFunc2dFromPoints(startPoi.GetDistFromStart(),startDefl,endPoi.GetDistFromStart(),endDefl);
+
+      m_ElevationDeflectionAdjustmentFunctions.insert(std::make_pair(segmentKey,tmpfun));
+   }
+}
+
+
+void CAnalysisAgentImp::GetFinishedElevation(const pgsPointOfInterest& poi,IDirection* pDirection,Float64* pLeft,Float64* pCenter,Float64* pRight) const
+{
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
+   pgsTypes::SupportedDeckType deckType = pDeck->GetDeckType();
+
+   if (pgsTypes::sdtNone == deckType)
+   {
+      GetTopGirderElevation(poi,pDirection,pLeft,pCenter,pRight);
+
+      GET_IFACE(IIntervals,pIntervals);
+      GET_IFACE(IBridge,pBridge);
+      IntervalIndexType gceInterval = pIntervals->GetGeometryControlInterval();
+      Float64 overlay = pBridge->GetOverlayDepth(gceInterval);
+      if (overlay > 0.0)
+      {
+         *pLeft += overlay;
+         *pCenter += overlay;
+         *pRight += overlay;
+      }
+   }
+   else
+   {
+      // This function is only valid for no deck bridges. Return bad numbers to clue release callers
+      ATLASSERT(0);
+      *pLeft = *pCenter = *pRight = Float64_Max;
+   }
+}
+
+Float64 CAnalysisAgentImp::GetFinishedElevation(const pgsPointOfInterest& poi,IntervalIndexType interval,Float64* pLftHaunch,Float64* pCtrHaunch,Float64* pRgtHaunch) const
+{
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
+   pgsTypes::HaunchInputDepthType haunchInputDepthType = pBridgeDesc->GetHaunchInputDepthType();
+
+   if (pgsTypes::hidHaunchDirectly == haunchInputDepthType || pgsTypes::hidHaunchPlusSlabDirectly == haunchInputDepthType)
+   {
+      CSegmentKey segmentKey = poi.GetSegmentKey();
+
+      // Get elevations at top of girder
+      Float64 lftGrdElev,ctrGrdElev,rgtGrdElev;
+      GetTopGirderElevationEx4DirectHaunch(poi,interval,nullptr,&lftGrdElev,&ctrGrdElev,&rgtGrdElev);
+
+      // Detailed description in this call will get direct input
+      GET_IFACE(IBridge,pBridge);
+      GET_IFACE(IGirder,pGirder);
+      GET_IFACE(ISectionProperties,pSectProps);
+      Float64 haunchDepth = pSectProps->GetStructuralHaunchDepth(poi,pgsTypes::hspDetailedDescription);
+      Float64 slabDepth = pBridge->GetGrossSlabDepth(poi);
+
+      // overlay is measured at the GCE
+      GET_IFACE(IIntervals,pIntervals);
+      IntervalIndexType gceInterval = pIntervals->GetGeometryControlInterval();
+      Float64 overlay = pBridge->GetOverlayDepth(gceInterval);
+
+      ctrGrdElev += haunchDepth + slabDepth + overlay;
+
+      // Haunch at CL girder is what is input. Outer haunch depths are pliable, and must
+      // follow roadway slope(s) along girder normal
+      *pCtrHaunch = haunchDepth;
+
+      Float64 leftEdge,rightEdge;
+      pGirder->GetTopWidth(poi,&leftEdge,&rightEdge);
+
+      // Cut line is normal to the girder
+      Float64 station,zs;
+      pBridge->GetStationAndOffset(poi,&station,&zs);
+
+      // roadway surface elevations above girder locations
+      GET_IFACE(IRoadway,pAlignment);
+      Float64 YsbLeft = pAlignment->GetElevation(station,zs - leftEdge);
+      Float64 YsbCenter = pAlignment->GetElevation(station,zs);
+      Float64 YsbRight = pAlignment->GetElevation(station,zs + rightEdge);
+
+      Float64 lftSlope = (YsbLeft - YsbCenter) / leftEdge;
+      *pLftHaunch = *pCtrHaunch + leftEdge * lftSlope;
+
+      Float64 rgtSlope = (YsbRight - YsbCenter) / rightEdge;
+      *pRgtHaunch = *pCtrHaunch + rightEdge * rgtSlope;
+
+      return ctrGrdElev;
+   }
+   else
+   {
+      // Function is only valid for direct haunch input
+      ATLASSERT(0);
+      *pLftHaunch = *pCtrHaunch = *pRgtHaunch = Float64_Max;
+      return Float64_Max;
+   }
+}
+
 
 /////////////////////////////////////////////////
 // IBearingDesign

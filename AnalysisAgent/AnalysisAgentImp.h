@@ -61,6 +61,7 @@ class ATL_NO_VTABLE CAnalysisAgentImp :
    public IBearingDesign,
    public IPrecompressedTensileZone,
    public IReactions,
+   public IDeformedGirderGeometry,
    public IBridgeDescriptionEventSink,
    public ISpecificationEventSink,
    public IRatingSpecificationEventSink,
@@ -93,6 +94,7 @@ BEGIN_COM_MAP(CAnalysisAgentImp)
    COM_INTERFACE_ENTRY(IBearingDesign)
    COM_INTERFACE_ENTRY(IPrecompressedTensileZone)
    COM_INTERFACE_ENTRY(IReactions)
+   COM_INTERFACE_ENTRY(IDeformedGirderGeometry)
    COM_INTERFACE_ENTRY(IBridgeDescriptionEventSink)
    COM_INTERFACE_ENTRY(ISpecificationEventSink)
    COM_INTERFACE_ENTRY(IRatingSpecificationEventSink)
@@ -442,6 +444,13 @@ public:
    virtual void GetCombinedLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax) const override;
    virtual void GetCombinedLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<PierIndexType>& vPiers,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,std::vector<Float64>* pRmin,std::vector<Float64>* pRmax) const override;
 
+   // IDeformedGirderGeometry
+   virtual Float64 GetTopGirderElevation(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig = nullptr) const override;
+   virtual void GetTopGirderElevation(const pgsPointOfInterest& poi,IDirection* pDirection,Float64* pLeft,Float64* pCenter,Float64* pRight) const override;
+   virtual void GetTopGirderElevationEx(const pgsPointOfInterest& poi,IntervalIndexType interval,IDirection* pDirection,Float64* pLeft,Float64* pCenter,Float64* pRight) const override;
+   virtual void GetFinishedElevation(const pgsPointOfInterest& poi,IDirection* pDirection,Float64* pLeft,Float64* pCenter,Float64* pRight) const override;
+   virtual Float64 GetFinishedElevation(const pgsPointOfInterest& poi,IntervalIndexType interval,Float64* pLftHaunch,Float64* pCtrHaunch,Float64* pRgtHaunch) const override;
+
 // IBridgeDescriptionEventSink
 public:
    virtual HRESULT OnBridgeChanged(CBridgeChangedHint* pHint) override;
@@ -613,6 +622,18 @@ private:
    void ApplyRotationAdjustment(IntervalIndexType intervalIdx,const PoiList& vPoi,std::vector<Float64>* pRotation1,std::vector<Float64>* pRotation2) const;
 
    std::shared_ptr<WBFL::Math::LinearFunction> GetUnrecoverableDeflectionVariables(sagInterval sagint,pgsTypes::BridgeAnalysisType bat,IntervalIndexType storageIntervalIdx,const CSegmentKey& segmentKey,Float64* pDeflectionFactor) const;
+
+   // Girder elevations for A dimension haunch input, and for direct haunch input are computed differently
+   void GetTopGirderElevation4ADim(const pgsPointOfInterest& poi,IDirection* pDirection,Float64* pLeft,Float64* pCenter,Float64* pRight) const;
+   void GetTopGirderElevationEx4DirectHaunch(const pgsPointOfInterest& poi,IntervalIndexType interval,IDirection* pDirection,Float64* pLeft,Float64* pCenter,Float64* pRight) const;
+   Float64 GetTopCLGirderElevationEx4DirectHaunch(const pgsPointOfInterest& poi,IntervalIndexType interval) const;
+
+   // Girder chord must be adjusted so that zero deflection occurs at segment chord datums for elevation comp's. These functions 
+   // compute and cache the adjustment
+   Float64 GetElevationDeflectionAdjustment(const pgsPointOfInterest& poi) const;
+   const WBFL::Math::LinearFunction& GetElevationDeflectionAdjustmentFunction(const CSegmentKey& segmentKey) const;
+   void ValidateElevationDeflectionAdjustment(const CSegmentKey& girderKey) const;
+   mutable std::map<CSegmentKey,WBFL::Math::LinearFunction> m_ElevationDeflectionAdjustmentFunctions; // linear functions that represent the adjustment
 
    void ComputeTimeDependentEffects(const CGirderKey& girderKey,IntervalIndexType intervalIdx) const;
 

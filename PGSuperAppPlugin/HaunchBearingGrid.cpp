@@ -25,7 +25,7 @@
 
 #include "stdafx.h"
 #include "HaunchBearingGrid.h"
-#include "EditHaunchDlg.h"
+#include "EditHaunchACamberDlg.h"
 
 #include <System\Tokenizer.h>
 #include "PGSuperUnits.h"
@@ -33,6 +33,7 @@
 #include <EAF\EAFDisplayUnits.h>
 
 #include <PgsExt\ClosureJointData.h>
+#include <PgsExt\HaunchDepthInputConversionTool.h>
 
 
 #ifdef _DEBUG
@@ -149,7 +150,7 @@ void CHaunchBearingGrid::DoDataExchange(CDataExchange*pDX)
 {
    if (pDX->m_bSaveAndValidate)
    {
-      CEditHaunchDlg* pParent = (CEditHaunchDlg*)(GetParent()->GetParent());
+      CEditHaunchACamberDlg* pParent = (CEditHaunchACamberDlg*)(GetParent()->GetParent());
       if (pParent->GetSlabOffsetType() == pgsTypes::sotBearingLine)
       {
          GetGridData(pDX);
@@ -163,6 +164,10 @@ void CHaunchBearingGrid::DoDataExchange(CDataExchange*pDX)
 
 void CHaunchBearingGrid::FillGrid()
 {
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
    GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
 
@@ -175,22 +180,29 @@ void CHaunchBearingGrid::FillGrid()
    // we want to merge cells
    SetMergeCellsMode(gxnMergeEvalOnDisplay);
 
-   CEditHaunchDlg* pParent = (CEditHaunchDlg*)(GetParent()->GetParent());
+   CEditHaunchACamberDlg* pParent = (CEditHaunchACamberDlg*)(GetParent()->GetParent());
+   const CBridgeDescription2* pBridgeOrig = pParent->GetBridgeDesc();
+
+   // Convert current haunch data if needed
+   HaunchDepthInputConversionTool conversionTool(pBridgeOrig,pBroker,false);
+   auto convPair = conversionTool.ConvertToSlabOffsetInput(pgsTypes::sotBearingLine);
+   const CBridgeDescription2* pBridge = &convPair.second;
+
    // get all the piers and temporary supports where slab offset is defined
    std::vector<std::pair<const CPierData2*, const CTemporarySupportData*>> vSupports;
-   PierIndexType nPiers = pParent->m_BridgeDesc.GetPierCount();
+   PierIndexType nPiers = pBridge->GetPierCount();
    for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
    {
-      const CPierData2* pPier = pParent->m_BridgeDesc.GetPier(pierIdx);
+      const CPierData2* pPier = pBridge->GetPier(pierIdx);
       if (pPier->HasSlabOffset())
       {
          vSupports.emplace_back(pPier, nullptr);
       }
    }
-   SupportIndexType nTS = pParent->m_BridgeDesc.GetTemporarySupportCount();
+   SupportIndexType nTS = pBridge->GetTemporarySupportCount();
    for (SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++)
    {
-      const CTemporarySupportData* pTS = pParent->m_BridgeDesc.GetTemporarySupport(tsIdx);
+      const CTemporarySupportData* pTS = pBridge->GetTemporarySupport(tsIdx);
       if (pTS->GetClosureJoint(0))
       {
          vSupports.emplace_back(nullptr, pTS);
@@ -212,7 +224,7 @@ void CHaunchBearingGrid::FillGrid()
          auto* pPier = support.first;
          auto pierIdx = pPier->GetIndex();
          std::array<Float64, 2> slabOffset;
-         pPier->GetSlabOffset(&slabOffset[pgsTypes::Back], &slabOffset[pgsTypes::Ahead],pParent->m_BridgeDesc.GetSlabOffsetType() == pgsTypes::sotSegment ? true : false);
+         pPier->GetSlabOffset(&slabOffset[pgsTypes::Back], &slabOffset[pgsTypes::Ahead],pBridge->GetSlabOffsetType() == pgsTypes::sotSegment ? true : false);
          CString strSupport;
          strSupport.Format(_T("%s"), LABEL_PIER_EX(pPier->IsAbutment(),pierIdx));
          if (pPier->IsAbutment())
@@ -248,37 +260,9 @@ void CHaunchBearingGrid::FillGrid()
                .SetEnabled(TRUE)
                .SetValue(FormatDimension(slabOffset[pgsTypes::Ahead], *m_pUnit, false)).SetItemDataPtr((void*)pgsTypes::Ahead));
          }
-      }
-      else
-      {
-         auto* pTS = support.second;
-         auto tsIdx = pTS->GetIndex();
-         std::array<Float64, 2> slabOffset;
-         pTS->GetSlabOffset(&slabOffset[pgsTypes::Back], &slabOffset[pgsTypes::Ahead], pParent->m_BridgeDesc.GetSlabOffsetType() == pgsTypes::sotSegment ? true : false);
-
-         InsertRows(row, 2);
-         SetRowStyle(row);
-         CString strSupport;
-         strSupport.Format(_T("TS %d (%s)"), LABEL_TEMPORARY_SUPPORT(tsIdx), pTS->GetSupportType() == pgsTypes::ErectionTower ? _T("ET") : _T("SB"));
-
-         SetStyleRange(CGXRange(row, _STARTCOL, row + 1, _STARTCOL), CGXStyle().SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE).SetValue(strSupport).SetItemDataPtr((void*)TS));
-
-         SetStyleRange(CGXRange(row, _STARTCOL + 1), CGXStyle().SetValue(_T("Back")).SetItemDataPtr((void*)tsIdx));
-         SetStyleRange(CGXRange(row, _STARTCOL + 2), CGXStyle()
-            .SetReadOnly(FALSE)
-            .SetEnabled(TRUE)
-            .SetValue(FormatDimension(slabOffset[pgsTypes::Back], *m_pUnit, false)).SetItemDataPtr((void*)pgsTypes::Back));
 
          row++;
-         SetRowStyle(row);
-
-         SetStyleRange(CGXRange(row, _STARTCOL + 1), CGXStyle().SetValue(_T("Ahead")).SetItemDataPtr((void*)tsIdx));
-         SetStyleRange(CGXRange(row, _STARTCOL + 2), CGXStyle()
-            .SetReadOnly(FALSE)
-            .SetEnabled(TRUE)
-            .SetValue(FormatDimension(slabOffset[pgsTypes::Ahead], *m_pUnit, false)).SetItemDataPtr((void*)pgsTypes::Ahead));
       }
-      row++;
    } // next support
    
    ResizeRowHeightsToFit(CGXRange(0,0,GetRowCount(),GetColCount()));
@@ -291,11 +275,12 @@ void CHaunchBearingGrid::FillGrid()
 
 void CHaunchBearingGrid::GetGridData(CDataExchange* pDX)
 {
-   CEditHaunchDlg* pParent = (CEditHaunchDlg*)(GetParent()->GetParent());
+   CEditHaunchACamberDlg* pParent = (CEditHaunchACamberDlg*)(GetParent()->GetParent());
+   CBridgeDescription2* pBridge = pParent->GetBridgeDesc();
 
-   Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
+   Float64 minSlabOffset = pBridge->GetMinSlabOffset();
    CString strMinValError;
-   strMinValError.Format(_T("Slab Offset must be greater or equal to slab depth (%s)"), FormatDimension(minSlabOffset, *m_pUnit));
+   strMinValError.Format(_T("Slab Offset must be greater or equal to slab depth + fillet (%s)"), FormatDimension(minSlabOffset, *m_pUnit));
 
    ROWCOL nRows = GetRowCount();
    for (ROWCOL row = 1; row <= nRows; row++)
@@ -331,13 +316,8 @@ void CHaunchBearingGrid::GetGridData(CDataExchange* pDX)
 
          if (type == PIER)
          {
-            auto* pPier = pParent->m_BridgeDesc.GetPier(idx);
+            auto* pPier = pBridge->GetPier(idx);
             pPier->SetSlabOffset(face, slabOffset);
-         }
-         else
-         {
-            auto* pTS = pParent->m_BridgeDesc.GetTemporarySupport(idx);
-            pTS->SetSlabOffset(face, slabOffset);
          }
       }
    }

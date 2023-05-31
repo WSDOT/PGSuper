@@ -5,10 +5,10 @@
 
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 11 Cast Deck
-Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
-Compression stress check failed for Service IA Limit State in Interval 16 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 16 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic, Roadway Geometry Control
+Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic, Roadway Geometry Control
+Compression stress check failed for Service IA Limit State in Interval 16 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 16 Open to Traffic, Roadway Geometry Control
 Horizontal Interface Shear check failed for Strength I Limit State.
 Slab Offset ("A" Dimension) check failed
 
@@ -19,7 +19,7 @@ Slab Offset ("A" Dimension) check failed
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic, Roadway Geometry Control
 Horizontal Interface Shear check failed for Strength I Limit State.
 Slab Offset ("A" Dimension) check failed
 

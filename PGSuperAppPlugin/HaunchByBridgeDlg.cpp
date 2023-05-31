@@ -25,10 +25,11 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "HaunchByBridgeDlg.h"
-#include "EditHaunchDlg.h"
+#include "EditHaunchACamberDlg.h"
 
 #include <EAF\EAFDisplayUnits.h>
 #include "PGSuperUnits.h"
+#include <PgsExt\HaunchDepthInputConversionTool.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -59,24 +60,31 @@ void CHaunchByBridgeDlg::DoDataExchange(CDataExchange* pDX)
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   CEditHaunchDlg* pParent = (CEditHaunchDlg*)GetParent();
+   CEditHaunchACamberDlg* pParent = (CEditHaunchACamberDlg*)GetParent();
+   CBridgeDescription2* pBridgeOrig = pParent->GetBridgeDesc();
 
-   Float64 slabOffset = pParent->m_BridgeDesc.GetSlabOffset();
+   // Convert current haunch data if needed
+   HaunchDepthInputConversionTool conversionTool(pBridgeOrig,pBroker,false);
+   auto convPair = conversionTool.ConvertToSlabOffsetInput(pgsTypes::sotBridge);
+   const CBridgeDescription2* pBridge = &convPair.second;
+
+   Float64 slabOffset = pBridge->GetSlabOffset();
    DDX_UnitValueAndTag( pDX, IDC_SLAB_OFFSET, IDC_SLAB_OFFSET_UNITS, slabOffset, pDisplayUnits->GetComponentDimUnit() );
 
    if (pDX->m_bSaveAndValidate && pParent->GetSlabOffsetType() == pgsTypes::sotBridge)
    {
       // Get min slab offset value and build error message for too small of A
-      Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
+      Float64 minSlabOffset = pBridge->GetMinSlabOffset();
       if (::IsLT(slabOffset, minSlabOffset))
       {
          CString strMinValError;
-         strMinValError.Format(_T("Slab Offset must be greater or equal to slab depth (%s)"), FormatDimension(minSlabOffset, pDisplayUnits->GetComponentDimUnit()));
+         strMinValError.Format(_T("Slab Offset must be greater or equal to slab depth + fillet (%s)"), FormatDimension(minSlabOffset, pDisplayUnits->GetComponentDimUnit()));
          AfxMessageBox(strMinValError, MB_ICONERROR | MB_OK);
          pDX->PrepareEditCtrl(IDC_SLAB_OFFSET);
          pDX->Fail();
       }
-      pParent->m_BridgeDesc.SetSlabOffset(slabOffset);
+
+      pBridgeOrig->SetSlabOffset(slabOffset);
    }
 }
 

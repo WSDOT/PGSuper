@@ -120,6 +120,7 @@ void CGirderGraphControllerBase::SelectGirder(const CGirderKey& girderKey)
       OnGroupChanged();
       OnGirderChanged();
 
+      // this also capture the span setting if that's the case
       CComboBox* pcbGroup = (CComboBox*)GetDlgItem(IDC_GROUP);
       pcbGroup->SetCurSel(m_GirderKey.groupIndex == ALL_GROUPS ? 0 : (int)m_GirderKey.groupIndex + (m_bAllGroups ? 1 : 0));
 
@@ -249,6 +250,8 @@ void CGirderGraphControllerBase::FillGroupCtrl()
       return; // not using a group list
    }
 
+   int cursel = pcbGroup->GetCurSel();
+
    pcbGroup->ResetContent();
 
    GET_IFACE(IDocumentType,pDocType);
@@ -283,7 +286,14 @@ void CGirderGraphControllerBase::FillGroupCtrl()
       pcbGroup->SetItemData(idx,grpIdx);
    }
 
-   pcbGroup->SetCurSel(0);
+   int nCount = pcbGroup->GetCount();
+
+   if ((cursel == CB_ERR) || cursel > nCount - 1)
+   {
+      cursel = 0;
+   }
+
+   pcbGroup->SetCurSel(cursel);
 }
 
 void CGirderGraphControllerBase::FillGirderCtrl()
@@ -559,7 +569,7 @@ BOOL CMultiIntervalGirderGraphControllerBase::OnInitDialog()
 void CMultiIntervalGirderGraphControllerBase::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
    CGirderGraphControllerBase::OnUpdate(pSender,lHint,pHint);
-   if ( lHint == HINT_BRIDGECHANGED )
+   if ( lHint == HINT_BRIDGECHANGED || lHint == HINT_SPECCHANGED)
    {
       FillIntervalCtrl();
    }

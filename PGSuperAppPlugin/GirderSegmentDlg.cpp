@@ -123,10 +123,6 @@ void CGirderSegmentDlg::CommonInit(const CBridgeDescription2* pBridgeDesc,const 
    m_SegmentKey = segmentKey;
    m_SegmentID = pSegment->GetID();
 
-   m_GeneralPage.m_MinSlabOffset = pBridgeDesc->GetMinSlabOffset();
-   m_GeneralPage.m_SlabOffsetType = pBridgeDesc->GetSlabOffsetType();
-   pSegment->GetSlabOffset(&m_GeneralPage.m_SlabOffset[pgsTypes::metStart], &m_GeneralPage.m_SlabOffset[pgsTypes::metEnd]);
-
    m_TimelineMgr = *(pBridgeDesc->GetTimelineManager());
 
    m_StrandsPage.Init(m_Girder.GetSegment(segmentKey.segmentIndex));

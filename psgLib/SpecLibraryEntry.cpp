@@ -5093,20 +5093,20 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
    }
 
    if ( m_HaunchLoadComputationType != rOther.m_HaunchLoadComputationType ||
-      (m_HaunchLoadComputationType == pgsTypes::hlcAccountForCamber && !::IsEqual(m_HaunchLoadCamberTolerance, rOther.m_HaunchLoadCamberTolerance)) )
+      (m_HaunchLoadComputationType == pgsTypes::hlcDetailedAnalysis && !::IsEqual(m_HaunchLoadCamberTolerance, rOther.m_HaunchLoadCamberTolerance)) )
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Haunch Loads are different"),_T(""),_T("")));
    }
    
-   if ( m_HaunchLoadComputationType == pgsTypes::hlcAccountForCamber && !::IsEqual(m_HaunchLoadCamberFactor, rOther.m_HaunchLoadCamberFactor) )
+   if ( m_HaunchLoadComputationType == pgsTypes::hlcDetailedAnalysis && !::IsEqual(m_HaunchLoadCamberFactor, rOther.m_HaunchLoadCamberFactor) )
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Haunch Loads Camber Factors are different"),_T(""),_T("")));
    }
 
    if ( m_HaunchAnalysisSectionPropertiesType != rOther.m_HaunchAnalysisSectionPropertiesType ||
-      (m_HaunchAnalysisSectionPropertiesType == pgsTypes::hspVariableParabolic && !::IsEqual(m_HaunchLoadCamberTolerance, rOther.m_HaunchLoadCamberTolerance)) )
+      (m_HaunchAnalysisSectionPropertiesType == pgsTypes::hspDetailedDescription && !::IsEqual(m_HaunchLoadCamberTolerance, rOther.m_HaunchLoadCamberTolerance)) )
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Method using haunch geometry to compute composite section properties is different"),_T(""),_T("")));

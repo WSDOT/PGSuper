@@ -556,7 +556,7 @@ void CBridgeDescGeneralPage::UpdateBridgeDescription()
 
    if ( bNewGirderFamily )
    {
-      pParent->m_BridgeDesc.CopyDown(true,true,true,true,true,true);
+      pParent->m_BridgeDesc.CopyDown(true,true,true,true,true,true,true);
    }
 }
 
@@ -1542,7 +1542,7 @@ void CBridgeDescGeneralPage::OnGirderSpacingTypeChanged()
             // something reasonable
             m_GirderSpacing = m_MaxGirderSpacing; // get some spread since we a coming from that world
             pParent->m_BridgeDesc.SetGirderSpacing(m_GirderSpacing);
-            pParent->m_BridgeDesc.CopyDown(false,false,true,false,false,false);
+            pParent->m_BridgeDesc.CopyDown(false,false,true,false,false,false,false);
          }
          else if (m_GirderSpacingType == pgsTypes::sbsGeneral && old_spacing_type == pgsTypes::sbsUniformAdjacent)
          {
@@ -1550,7 +1550,7 @@ void CBridgeDescGeneralPage::OnGirderSpacingTypeChanged()
             // something reasonable
             m_GirderSpacing = m_MinGirderSpacing; // get some spread since we a coming from that world
             pParent->m_BridgeDesc.SetGirderSpacing(m_GirderSpacing);
-            pParent->m_BridgeDesc.CopyDown(false, false, true, false, false, false);
+            pParent->m_BridgeDesc.CopyDown(false, false, true, false, false, false, false);
          }
          else
          {

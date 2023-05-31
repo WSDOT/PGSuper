@@ -32,6 +32,7 @@
 #include <Graphs\AnalysisResultsGraphBuilder.h>
 #include <Graphs\SegmentAnalysisResultsGraphBuilder.h>
 #include <Graphs\EffectivePrestressGraphBuilder.h>
+#include <Graphs\FinishedElevationGraphBuilder.h>
 #include <Graphs\StabilityGraphBuilder.h>
 #include <Graphs\StressHistoryGraphBuilder.h>
 #include <Graphs\GirderPropertiesGraphBuilder.h>
@@ -55,6 +56,7 @@ void CGrapherBase::InitCommonGraphBuilders()
    pGraphMgr->AddGraphBuilder(std::move(std::make_unique<CAnalysisResultsGraphBuilder>())); // Analysis Results - After Erection
    pGraphMgr->AddGraphBuilder(std::move(std::make_unique<CConcretePropertyGraphBuilder>()));
    pGraphMgr->AddGraphBuilder(std::move(std::make_unique<CDeflectionHistoryGraphBuilder>()));
+   pGraphMgr->AddGraphBuilder(std::move(std::make_unique<CFinishedElevationGraphBuilder>()));
    pGraphMgr->AddGraphBuilder(std::move(std::make_unique<CEffectivePrestressGraphBuilder>()));
    pGraphMgr->AddGraphBuilder(std::move(std::make_unique<CGirderPropertiesGraphBuilder>()));
    pGraphMgr->AddGraphBuilder(std::move(std::make_unique<CStabilityGraphBuilder>()));

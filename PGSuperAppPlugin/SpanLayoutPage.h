@@ -58,9 +58,8 @@ public:
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
    afx_msg void OnHelp();
+	afx_msg void OnBnClickedEditHaunchButton();
 	//}}AFX_VIRTUAL
-   afx_msg void OnChangingSlabOffset();
-   afx_msg void OnChangeSlabOffset();
 
 // Implementation
 protected:
@@ -76,25 +75,13 @@ protected:
 
    Float64 m_SpanLength;
 
-   CCacheEdit m_ctrlStartSlabOffset;
-   CCacheEdit m_ctrlEndSlabOffset;
+   CEdit m_ctrlStartSlabOffset;
+	CEdit m_ctrlEndSlabOffset;
+	CEdit m_ctrlAssumedExcessCamber;
 
-   bool m_bHasSlabOffset; // keeps track if we are showing slab offset input
-   pgsTypes::SlabOffsetType m_SlabOffsetType; // used for DDX
-   pgsTypes::SlabOffsetType m_PrevSlabOffsetType; // slab offset type just before the combobox changed so we can roll it back if needed
-   std::array<Float64, 2> m_SlabOffset;
-   pgsTypes::SlabOffsetType GetCurrentSlabOffsetType();
-   void UpdateSlabOffsetWindowState();
-
-
-   CCacheEdit m_ctrlAssumedExcessCamber;
-   bool m_bCanAssumedExcessCamberInputBeEnabled;
-
-   pgsTypes::AssumedExcessCamberType m_InitialAssumedExcessCamberType;
-   void UpdateAssumedExcessCamberWindowState();
-
-public:
-   afx_msg void OnCbnSelchangeAssumedExcessCamberCombo();
+   void UpdateHaunchAndCamberControls();
+   void UpdateHaunchAndCamberData(CDataExchange* pDX);
+   void EnableHaunchAndCamberControls(BOOL bEnableControls, BOOL bEnableButton, bool bShowCamber);
 };
 
 //{{AFX_INSERT_LOCATION}}

@@ -19,6 +19,7 @@ Topics
 * @subpage tg_face_of_support
 * @subpage tg_fatigue
 * @subpage tg_flexural_resistance_factor
+* @subpage tg_vertical_geometry
 * @subpage tg_girder_spacing
 * @subpage tg_grade_300
 * @subpage tg_interface_shear
@@ -41,7 +42,6 @@ Topics
 * @subpage tg_shear_capacity
 * @subpage tg_simple_spans_made_continuous
 * @subpage tg_sign_convention
-* @subpage tg_slab_offset
 * @subpage tg_splitting_zone_checks
 * @subpage tg_stability
 * @subpage tg_structural_analysis_models

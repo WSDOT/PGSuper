@@ -33,8 +33,6 @@ struct txnEditPrecastSegmentData
    CSegmentKey m_SegmentKey;
    CPrecastSegmentData m_SegmentData;
    CTimelineManager m_TimelineMgr;
-   pgsTypes::SlabOffsetType m_SlabOffsetType;
-   std::array<Float64, 2> m_SlabOffset;
 };
 
 class txnEditPrecastSegment : public CEAFTransaction

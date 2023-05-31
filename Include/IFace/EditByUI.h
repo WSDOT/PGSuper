@@ -145,4 +145,5 @@ interface IEditByUI : IUnknown
 
    // Bearing dialog
    virtual bool EditBearings() = 0;
+   virtual bool EditHaunch() = 0;
 };

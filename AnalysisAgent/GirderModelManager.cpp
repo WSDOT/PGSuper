@@ -14475,8 +14475,6 @@ void CGirderModelManager::GetEngine(CGirderModelData* pModelData,bool bContinuou
 
 void CGirderModelManager::CheckGirderEndGeometry(IBridge* pBridge,const CGirderKey& girderKey) const
 {
-   GET_IFACE(IDocumentType,pDocType);
-
    CSegmentKey segmentKey(girderKey,0);
    Float64 s_end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
@@ -14499,6 +14497,7 @@ void CGirderModelManager::CheckGirderEndGeometry(IBridge* pBridge,const CGirderK
          os<<"right end";
       }
 
+      GET_IFACE(IDocumentType,pDocType);
       if ( pDocType->IsPGSuperDocument() )
       {
          os<<" of Girder "<<LABEL_GIRDER(girderKey.girderIndex)<<" in Span "<< LABEL_SPAN(girderKey.groupIndex) <<". \r\nThis problem can be resolved by increasing the girder End Distance in the Connection library, or by decreasing the skew angle of the girder with respect to the pier.";
@@ -14519,36 +14518,33 @@ void CGirderModelManager::CheckGirderEndGeometry(IBridge* pBridge,const CGirderK
    }
 
    // Check that the slab offset is >= gross slab depth + fillet
-   if ( pDocType->IsPGSuperDocument() ) // This check is not clear for spliced girders
-   {
-      if (pBridge->GetDeckType() != pgsTypes::sdtNone)
+   if (pBridge->GetDeckType() != pgsTypes::sdtNone && pBridge->GetHaunchInputDepthType() == pgsTypes::hidACamber)
       {
          Float64 fillet = pBridge->GetFillet();
 
-         PierIndexType startPierIdx, endPierIdx;
-         pBridge->GetGirderGroupPiers(segmentKey.groupIndex, &startPierIdx, &endPierIdx);
+      PierIndexType startPierIdx,endPierIdx;
+      pBridge->GetGirderGroupPiers(segmentKey.groupIndex,&startPierIdx,&endPierIdx);
 
          Float64 startA = pBridge->GetSlabOffset(segmentKey,pgsTypes::metStart);
          Float64 endA   = pBridge->GetSlabOffset(segmentKey,pgsTypes::metEnd);
 
          Float64 dSlab = pBridge->GetGrossSlabDepth(pgsPointOfInterest(segmentKey,0.0));
-         if ( startA-dSlab-fillet < -TOLERANCE || endA-dSlab-fillet < -TOLERANCE )
+      if (startA - dSlab - fillet < -TOLERANCE || endA - dSlab - fillet < -TOLERANCE)
          {
             std::_tostringstream os;
-            os<<"Error - The slab offset must be greater than or equal to the gross slab depth plus the fillet depth for "
-              <<" Girder "<<LABEL_GIRDER(girderKey.girderIndex)<<" in Span "<< LABEL_SPAN(girderKey.groupIndex) <<". \r\nThis problem can be resolved by increasing the girder's slab offset or decreasing the fillet depth.";
+         os << "Error - The slab offset must be greater than or equal to the gross slab depth plus the fillet depth for "
+            << " Girder " << LABEL_GIRDER(girderKey.girderIndex) << " in Span " << LABEL_SPAN(girderKey.groupIndex) << ". \r\nThis problem can be resolved by increasing the girder's slab offset or decreasing the fillet depth.";
 
             pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidInformationalError,os.str().c_str());
     
             GET_IFACE(IEAFStatusCenter,pStatusCenter);
             pStatusCenter->Add(pStatusItem);
 
-            os<<"\r\nSee the Status Center for Details";
+         os << "\r\nSee the Status Center for Details";
 
             THROW_UNWIND(os.str().c_str(),-1);
          }
       }
-   }
 }
 
 CComBSTR CGirderModelManager::GetLoadGroupName(pgsTypes::ProductForceType pfType) const
@@ -15343,15 +15339,15 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
    GET_IFACE(IGirder, pGirder);
    GET_IFACE(IMaterials,pMaterial);
    GET_IFACE(IPointOfInterest,pPoi);
-   GET_IFACE(ISpecification, pSpec );
+   GET_IFACE_NOCHECK(ISpecification, pSpec );
    GET_IFACE(IRoadway, pAlignment);
+   GET_IFACE_NOCHECK(ISectionProperties,pSectProps);
 
    IndexType deckCastingRegionIdx = 0; // assume region zero to get properties that are common to all castings
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
    Float64 deck_density = pMaterial->GetDeckWeightDensity(deckCastingRegionIdx, castDeckIntervalIdx);
    Float64 deck_unit_weight = deck_density * WBFL::Units::System::GetGravitationalAcceleration();
-
 
    Float64 panel_support_width = 0;
    if (deckType == pgsTypes::sdtCompositeSIP )
@@ -15383,15 +15379,26 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
    const pgsPointOfInterest& poi_mid(vSupPoi[1]);
    const pgsPointOfInterest& poi_right_brg(vSupPoi.back());
 
-   std::unique_ptr<WBFL::Math::Function> imposedShape;
    // precamber and top flange thickening is measured using the ends of the girder as the datum
+   std::unique_ptr<WBFL::Math::Function> imposedShape;
    vPoi2.clear();
    pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE, &vPoi2);
    ATLASSERT(vPoi2.size() == 2);
    const pgsPointOfInterest& poi_left(vPoi2.front());
    const pgsPointOfInterest& poi_right(vPoi2.back());
 
-   if (pSpec->IsAssumedExcessCamberForLoad())
+   pgsTypes::HaunchInputDepthType haunchInputType = pBridge->GetHaunchInputDepthType();
+   bool isHaunchDirect = haunchInputType == pgsTypes::hidHaunchDirectly || haunchInputType == pgsTypes::hidHaunchPlusSlabDirectly;
+
+   pgsTypes::HaunchLoadComputationType HaunchLoadComputationType = pSpec->GetHaunchLoadComputationType();
+
+   if (isHaunchDirect) 
+   {
+      // With direct haunch input we don't need to compute camber or flange thickening or precamber. 
+      camberShape = std::make_unique<WBFL::Math::ZeroFunction>();
+      imposedShape = std::make_unique<WBFL::Math::ZeroFunction>();
+   }
+   else if (pSpec->IsAssumedExcessCamberForLoad())
    {
 #pragma Reminder("UPDATE: assuming precast girder bridge - Note that time-dependent analyses only use the zero camber approach below")
       // Shape of girder is assumed to follow the fillet dimension. Assume parabolic shape with zero at supports and
@@ -15450,6 +15457,8 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
    else
    {
       // Slab pad load assumes no natural camber
+      ATLASSERT(pgsTypes::hlcZeroCamber == HaunchLoadComputationType);
+
       camberShape = std::make_unique<WBFL::Math::ZeroFunction>();
 
       Float64 departure = 0; // departure from flat due to imposed curvature of the top of the girder
@@ -15498,7 +15507,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
 
       Float64 top_girder_to_top_slab;
       Float64 girder_chord_elevation;
-      if (useDesignValues)
+      if (useDesignValues && !isHaunchDirect)
       {
          top_girder_to_top_slab = pBridge->GetTopSlabToTopGirderChordDistance(poi,dsnAstart,dsnAend);
          girder_chord_elevation = pGirder->GetTopGirderChordElevation(poi,dsnAstart,dsnAend);
@@ -15509,7 +15518,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
          girder_chord_elevation = pGirder->GetTopGirderChordElevation(poi);
       }
 
-      Float64 slab_offset = rdwy_elevation - girder_chord_elevation;
+      Float64 slab_offset = top_girder_to_top_slab;
 
       Float64 cast_depth             = pBridge->GetCastSlabDepth(poi);
       Float64 panel_depth            = pBridge->GetPanelDepth(poi);
@@ -15660,11 +15669,18 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
       camber += imposed_shape_adj;
 
       // height of pad for slab pad load
-      Float64 real_pad_hgt = top_girder_to_top_slab - cast_depth - camber;
+      Float64 real_pad_hgt;
+      if (isHaunchDirect && pgsTypes::hlcDetailedAnalysis == HaunchLoadComputationType)
+      {
+         real_pad_hgt = pSectProps->GetStructuralHaunchDepth(poi,pgsTypes::hspDetailedDescription);
+      }
+      else
+      {
+         real_pad_hgt = top_girder_to_top_slab - cast_depth - camber;
+      }
 
       // Don't use negative haunch depth for loading
       Float64 pad_hgt = 0.0 < real_pad_hgt ? real_pad_hgt : 0.0;
-
       // mating surface
       Float64 mating_surface_width = 0;
       MatingSurfaceIndexType nMatingSurfaces = pGirder->GetMatingSurfaceCount(segmentKey);

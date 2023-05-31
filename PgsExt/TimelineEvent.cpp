@@ -195,6 +195,11 @@ bool CTimelineEvent::operator==(const CTimelineEvent& rOther) const
       return false;
    }
 
+   if (m_GeometryControl != rOther.m_GeometryControl)
+   {
+      return false;
+   }
+
    if ( m_StressTendons != rOther.m_StressTendons )
    {
       return false;
@@ -443,6 +448,21 @@ CApplyLoadActivity& CTimelineEvent::GetApplyLoadActivity()
    return m_ApplyLoads;
 }
 
+void CTimelineEvent::SetGeometryControlActivity(const CGeometryControlActivity& activity)
+{
+   m_GeometryControl = activity;
+}
+
+const CGeometryControlActivity& CTimelineEvent::GetGeometryControlActivity() const
+{
+   return m_GeometryControl;
+}
+
+CGeometryControlActivity& CTimelineEvent::GetGeometryControlActivity()
+{
+   return m_GeometryControl;
+}
+
 Float64 CTimelineEvent::GetMinElapsedTime() const
 {
    // The minimum elapsed time for this event is
@@ -546,6 +566,16 @@ HRESULT CTimelineEvent::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       hr = m_CastDeck.Load(pStrLoad,pProgress);
       hr = m_ApplyLoads.Load(pStrLoad,pProgress);
 
+      if (2 < version)
+      {
+         hr = m_GeometryControl.Load(pStrLoad,pProgress); // added in version 3.0
+      }
+      else if (m_ApplyLoads.IsLiveLoadApplied())
+      {
+         // By default set the live load application event to when roadway geometry is controlled.
+         m_GeometryControl.SetGeometryControlEventType(pgsTypes::gcaGeometryControlEvent);
+      }
+
       // DeckCast activity, datablock version 4 added the closure joint casting region. However, the region cannot be resolved
       // in the cast deck activity object because it doesn't know if a closure joint is added at the same time. The casting region
       // is INVALID_INDEX if it was never set. INVALID_INDEX also means there is not a closure joint cast with the deck.
@@ -575,7 +605,7 @@ HRESULT CTimelineEvent::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
 HRESULT CTimelineEvent::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
-   pStrSave->BeginUnit(_T("TimelineEvent"),2.0);
+   pStrSave->BeginUnit(_T("TimelineEvent"),3.0);
    pStrSave->put_Property(_T("ID"),CComVariant(m_ID));
    pStrSave->put_Property(_T("Description"),CComVariant(m_Description.c_str()));
    pStrSave->put_Property(_T("Day"),CComVariant(m_Day));
@@ -588,6 +618,7 @@ HRESULT CTimelineEvent::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    m_RemoveTempSupports.Save(pStrSave,pProgress);
    m_CastDeck.Save(pStrSave,pProgress);
    m_ApplyLoads.Save(pStrSave,pProgress);
+   m_GeometryControl.Save(pStrSave,pProgress);
 
    m_CastLongitudinalJoints.Save(pStrSave, pProgress); // added in version 2
 
@@ -610,6 +641,7 @@ void CTimelineEvent::MakeCopy(const CTimelineEvent& rOther)
    m_ApplyLoads         = rOther.m_ApplyLoads;
    m_StressTendons      = rOther.m_StressTendons;
    m_CastLongitudinalJoints = rOther.m_CastLongitudinalJoints;
+   m_GeometryControl    = rOther.m_GeometryControl;
 
    if ( m_pTimelineMgr )
    {

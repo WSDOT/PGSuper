@@ -166,6 +166,10 @@
     <ClCompile Include="EffectivePrestressGraphController.cpp" />
     <ClCompile Include="EffectivePrestressGraphViewControllerImp.cpp" />
     <ClCompile Include="ExportGraphXYTool.cpp" />
+    <ClCompile Include="FillHaunchDlg.cpp" />
+    <ClCompile Include="FinishedElevationGraphBuilder.cpp" />
+    <ClCompile Include="FinishedElevationGraphController.cpp" />
+    <ClCompile Include="FinishedElevationGraphViewControllerImp.cpp" />
     <ClCompile Include="GirderGraphBuilderBase.cpp" />
     <ClCompile Include="GirderGraphControllerBase.cpp" />
     <ClCompile Include="GirderPropertiesGraphBuilder.cpp" />
@@ -205,6 +209,8 @@
     <ClInclude Include="..\Include\Graphs\DrawBeamTool.h" />
     <ClInclude Include="..\Include\Graphs\EffectivePrestressGraphBuilder.h" />
     <ClInclude Include="..\Include\Graphs\EffectivePrestressGraphViewController.h" />
+    <ClInclude Include="..\Include\Graphs\FinishedElevationGraphBuilder.h" />
+    <ClInclude Include="..\Include\Graphs\FinishedElevationGraphViewController.h" />
     <ClInclude Include="..\Include\Graphs\GirderGraphBuilderBase.h" />
     <ClInclude Include="..\Include\Graphs\GirderPropertiesGraphBuilder.h" />
     <ClInclude Include="..\Include\Graphs\GirderPropertiesGraphViewController.h" />
@@ -226,6 +232,9 @@
     <ClInclude Include="DeflectionHistoryGraphViewControllerImp.h" />
     <ClInclude Include="EffectivePrestressGraphController.h" />
     <ClInclude Include="EffectivePrestressGraphViewControllerImp.h" />
+    <ClInclude Include="FillHaunchDlg.h" />
+    <ClInclude Include="FinishedElevationGraphController.h" />
+    <ClInclude Include="FinishedElevationGraphViewControllerImp.h" />
     <ClInclude Include="GirderGraphControllerBase.h" />
     <ClInclude Include="GirderPropertiesGraphController.h" />
     <ClInclude Include="GirderPropertiesGraphViewControllerImp.h" />

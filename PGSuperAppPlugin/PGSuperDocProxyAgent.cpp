@@ -1347,6 +1347,11 @@ bool CPGSuperDocProxyAgent::EditBearings()
    return m_pMyDocument->DoEditBearing();
 }
 
+bool CPGSuperDocProxyAgent::EditHaunch()
+{
+   return m_pMyDocument->DoEditHaunch();
+}
+
 ///////////////////////////////////////////////////////////////////////////////////
 // IDesign
 void CPGSuperDocProxyAgent::DesignGirder(bool bPrompt,bool bDesignSlabOffset,const CGirderKey& girderKey)

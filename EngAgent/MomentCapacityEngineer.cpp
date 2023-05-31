@@ -3052,7 +3052,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
         // put slab in correct location to account for additional moment arm due to haunch depth
         Float64 haunch_depth; // aka, top_girder_to_bottom_slab
 
-        if (!bPositiveMoment && hatype != pgsTypes::hspVariableParabolic)
+        if (!bPositiveMoment && hatype != pgsTypes::hspDetailedDescription)
         {
            // Until 4/2018, the haunch depth for negative moment capacity was always computed using the computed excess camber
            // Retain this behavior and extend it to pgsTypes::hspFillet
@@ -3064,7 +3064,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
         else
         {
            // for the other cases, use the assumed excess camber and roadway from the wbfl model
-           ATLASSERT(hatype==pgsTypes::hspVariableParabolic || hatype==pgsTypes::hspConstFilletDepth);
+           ATLASSERT(hatype==pgsTypes::hspDetailedDescription || hatype==pgsTypes::hspConstFilletDepth);
            GET_IFACE(ISectionProperties,pSectProps);
 
            haunch_depth = pSectProps->GetStructuralHaunchDepth(poi, hatype);

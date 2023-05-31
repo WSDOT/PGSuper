@@ -5,7 +5,7 @@
 
 
 The Specification Check was Not Successful
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts

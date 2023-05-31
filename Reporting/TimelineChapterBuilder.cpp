@@ -387,6 +387,38 @@ rptChapter* CTimelineChapterBuilder::Build(const std::shared_ptr<const WBFL::Rep
          nActivities++;
       }
 
+      const auto& geometryControlActivity = pTimelineEvent->GetGeometryControlActivity();
+      if (geometryControlActivity.IsEnabled())
+      {
+         if (0 < nActivities) row++;
+
+         CString name;
+         pgsTypes::GeometryControlActivityType type = geometryControlActivity.GetGeometryControlEventType();
+         if (type == pgsTypes::gcaGeometryControlEvent)
+         {
+            name = _T("Roadway Geometry Control Event");
+         }
+         else if (type == pgsTypes::gcaSpecCheckEvent)
+         {
+            name = _T("Roadway Geometry Control Spec Check Only");
+         }
+         else if (type == pgsTypes::gcaGeometryReportingEvent)
+         {
+            name = _T("Roadway Geometry Control Report Only");
+         }
+         else
+         {
+            ATLASSERT(0);
+         }
+
+         (*pEventTable)(row,col) << name << rptNewLine;
+         (*pEventTable)(row,col + 1) << _T("") << rptNewLine;
+         (*pEventTable)(row,col + 2) << _T("") << rptNewLine;
+
+         nActivities++;
+      }
+
+
       if (nActivities == 0)
       {
          (*pEventTable)(row, col++) << _T("") << rptNewLine;

@@ -164,7 +164,7 @@ inline void CheckDesignCtrl(int idc, int idd, int list[], CWnd* pme)
 
 void CSpecDesignPage::OnCheckA() 
 {
-   int list[]={-1};
+   int list[]={ IDC_ELEVATION_TOLERANCE_LABEL,IDC_ELEVATION_TOLERANCE,IDC_ELEVATION_TOLERANCE_UNIT,IDC_ELEVATION_TOLERANCE_NOTE, -1};
 
    CheckDesignCtrl(IDC_CHECK_A, IDC_DESIGN_A, list, this);
 

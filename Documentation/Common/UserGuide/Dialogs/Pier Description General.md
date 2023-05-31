@@ -12,14 +12,26 @@ Station | Enter the location of the reference line as a station along the horizo
 Orientation | Enter the orientation of the reference line. The orientation may be entered as the keyword "NORMAL", a bearing, or a skew angle.
 Erection Event | Select the event when this pier/abutment is erected. (PGSplice only)
 
-Slab Offset ("A" Dimension)
----------------------------
-Define the slab offset at the pier.
+Haunch Geometry
+---------------
+Define the geometry of the slab haunch
+
+> A complete description of vertical bridge geometry, haunch design, and haunch input methods can be found at @ref tg_vertical_geometry
+
+Different options are shown depending on the selected haunch input method
+
+###"A" and Assumed Excess Camber Method (PGSuper Only)###
 
 Item | Description
------|------------
-Type | From the drop down list, select slab offset for the entire bridge or only for this pier.
-Back | Slab offset on the back side of this pier
-Ahead | Slab offset on the ahead side of this pier
+-----|-------------
+Slab Offset ("A" Dimension) | Enter the slab offset dimension for the pier.
+Assumed Excess Camber <sup>+</sup>  | Enter the excess camber that is used to define the parabolic haunch depth used for computing composite section properties and/or haunch dead load. Note that this option is only available if the parabolic option is selected for computing composite section properties or haunch loading in the current Project Criteria library entry.
 
-If the slab offset is defined by pier and you click the drop down list to change the slab offset to be a single value for the entire bridge, the slab offset defined for this pier will be applied to the entire bridge. If the back and ahead slab offsets are different, you will be prompted to select one value.
+###Explicit Haunch Depth input method###
+
+Item | Description
+-----|-------------
+Haunch Depth | Haunch depth is shown when applicable
+
+###Edit Haunch Description....###
+Click on this button to bring up the @ref ug_dialogs_haunch

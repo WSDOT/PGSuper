@@ -106,6 +106,18 @@
     <ClCompile Include="Graphs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FinishedElevationGraphBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FinishedElevationGraphController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FinishedElevationGraphViewControllerImp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FillHaunchDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AnalysisResultsGraphController.h">
@@ -247,6 +259,21 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Graphs\SegmentGraphBuilderBase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Graphs\FinishedElevationGraphBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Graphs\FinishedElevationGraphViewController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FillHaunchDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FinishedElevationGraphController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FinishedElevationGraphViewControllerImp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

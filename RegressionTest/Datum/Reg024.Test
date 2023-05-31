@@ -6,7 +6,7 @@
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 9 Install Intermediate Diaphragms
-Compression stress check failed for Service I Limit State in Interval 13 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 13 Open to Traffic, Roadway Geometry Control
 Stirrup detailing checks failed for the Strength I Limit State.
 Confinement zone check failed.
 Lifting checks failed
@@ -22,7 +22,7 @@ Finished elevation check failed
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 9 Install Intermediate Diaphragms
-Compression stress check failed for Service I Limit State in Interval 13 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 13 Open to Traffic, Roadway Geometry Control
 Stirrup detailing checks failed for the Strength I Limit State.
 Confinement zone check failed.
 Lifting checks failed

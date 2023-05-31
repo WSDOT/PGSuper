@@ -255,52 +255,62 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
    m_pArtifact->SetReleaseStrength( ifci );
    m_FciControl.Init(ifci,releaseIntervalIdx);
 
-   Float64 tSlab = pBridge->GetGrossSlabDepth( pgsPointOfInterest(m_SegmentKey,0.00) );
-   m_AbsoluteMinimumSlabOffset = tSlab;
-
-   if ( IsNonstructuralDeck(pBridge->GetDeckType()) || m_DesignOptions.doDesignSlabOffset == sodPreserveHaunch )
+   if (pBridge->GetHaunchInputDepthType() == pgsTypes::hidACamber)
    {
-      // if there is no deck, set the artifact value to the current value
-      PierIndexType startPierIdx, endPierIdx;
-      pBridge->GetGirderGroupPiers(m_SegmentKey.groupIndex,&startPierIdx,&endPierIdx);
-      ATLASSERT(endPierIdx == startPierIdx+1);
+      Float64 tSlab = pBridge->GetGrossSlabDepth(pgsPointOfInterest(m_SegmentKey,0.00));
+      m_AbsoluteMinimumSlabOffset = tSlab;
 
-      m_pArtifact->SetSlabOffset( pgsTypes::metStart, pBridge->GetSlabOffset(m_SegmentKey,pgsTypes::metStart) );
-      m_pArtifact->SetSlabOffset( pgsTypes::metEnd,   pBridge->GetSlabOffset(m_SegmentKey,pgsTypes::metEnd) );
-   }
-   else
-   {
-      // Determine absolute minimum A
-      Float64 min_haunch;
-      if (!m_pGirderEntry->GetMinHaunchAtBearingLines(&min_haunch))
+      m_bIsDesignSlabOffset = m_DesignOptions.doDesignSlabOffset != sodPreserveHaunch;
+      if (IsNonstructuralDeck(pBridge->GetDeckType()) || !m_bIsDesignSlabOffset)
       {
-         min_haunch = 0.0;
+         // if there is no deck, set the artifact value to the current value
+         PierIndexType startPierIdx,endPierIdx;
+         pBridge->GetGirderGroupPiers(m_SegmentKey.groupIndex,&startPierIdx,&endPierIdx);
+         ATLASSERT(endPierIdx == startPierIdx + 1);
+
+         m_pArtifact->SetSlabOffset(pgsTypes::metStart,pBridge->GetSlabOffset(m_SegmentKey,pgsTypes::metStart));
+         m_pArtifact->SetSlabOffset(pgsTypes::metEnd,pBridge->GetSlabOffset(m_SegmentKey,pgsTypes::metEnd));
+      }
+      else
+      {
+         // Determine absolute minimum A
+         Float64 min_haunch;
+         if (!m_pGirderEntry->GetMinHaunchAtBearingLines(&min_haunch))
+         {
+            min_haunch = 0.0;
+         }
+
+         m_AbsoluteMinimumSlabOffset = tSlab + min_haunch;
+
+         Float64 defaultA = Max(m_AbsoluteMinimumSlabOffset,1.5 * tSlab);
+
+         m_pArtifact->SetSlabOffset(pgsTypes::metStart,defaultA);
+         m_pArtifact->SetSlabOffset(pgsTypes::metEnd,defaultA);
       }
 
-      m_AbsoluteMinimumSlabOffset = tSlab + min_haunch;
+      // Set initial design for AssumedExcessCamber here. Design is only for haunch load determination
+      GET_IFACE_NOCHECK(ISpecification,pSpec);
+      m_bIsDesignExcessCamber = ((m_DesignOptions.doDesignSlabOffset == sodDesignHaunch) && pSpec->IsAssumedExcessCamberForLoad()) ? true : false;
 
-      Float64 defaultA = Max( m_AbsoluteMinimumSlabOffset, 1.5*tSlab );
+      // don't let tolerance be impossible
+      if (m_bIsDesignExcessCamber)
+      {
+         m_AssumedExcessCamberTolerance = min(WBFL::Units::ConvertToSysUnits(0.5,WBFL::Units::Measure::Inch),pSpec->GetCamberTolerance());
+      }
+      else
+      {
+         m_AssumedExcessCamberTolerance = WBFL::Units::ConvertToSysUnits(0.5,WBFL::Units::Measure::Inch); // doesn't matter
+      }
 
-      m_pArtifact->SetSlabOffset( pgsTypes::metStart, defaultA);
-      m_pArtifact->SetSlabOffset( pgsTypes::metEnd,   defaultA);
-   }
-
-   // Set initial design for AssumedExcessCamber here. Design is only for haunch load determination
-   GET_IFACE_NOCHECK(ISpecification,pSpec);
-   m_bIsDesignExcessCamber = ((m_DesignOptions.doDesignSlabOffset == sodDesignHaunch) && pSpec->IsAssumedExcessCamberForLoad()) ? true : false;
-
-   // don't let tolerance be impossible
-   if (m_bIsDesignExcessCamber)
-   {
-      m_AssumedExcessCamberTolerance = min(WBFL::Units::ConvertToSysUnits(0.5, WBFL::Units::Measure::Inch), pSpec->GetCamberTolerance());
+      Float64 assumedExcessCamber = pBridge->GetAssumedExcessCamber(m_SegmentKey.groupIndex,m_SegmentKey.girderIndex);
+      m_pArtifact->SetAssumedExcessCamber(assumedExcessCamber);
    }
    else
    {
-      m_AssumedExcessCamberTolerance = WBFL::Units::ConvertToSysUnits(0.5, WBFL::Units::Measure::Inch); // doesn't matter
+      // Don't touch haunch design if not A dim input
+      m_bIsDesignSlabOffset = false;
+      m_bIsDesignExcessCamber = false;
    }
-
-   Float64 assumedExcessCamber = pBridge->GetAssumedExcessCamber(m_SegmentKey.groupIndex, m_SegmentKey.girderIndex);
-   m_pArtifact->SetAssumedExcessCamber(assumedExcessCamber);
 
    // Initialize Prestressing
    m_pArtifact->SetNumStraightStrands( 0 );
@@ -2198,9 +2208,15 @@ bool pgsStrandDesignTool::Bump500(const StressCheckTask& task,pgsTypes::StressLo
    return true;
 }
 
+bool pgsStrandDesignTool::IsDesignSlabOffset() const 
+{
+   return m_bIsDesignSlabOffset;
+}
+
 void pgsStrandDesignTool::SetSlabOffset(pgsTypes::MemberEndType end,Float64 offset)
 {
    ATLASSERT(m_MinSlabOffset <= offset);
+   ATLASSERT(IsDesignSlabOffset());
 
    LOG(_T("** Set slab offset to ") <<WBFL::Units::ConvertFromSysUnits(offset,WBFL::Units::Measure::Inch) << (end == pgsTypes::metStart ? _T(" at Start of Girder") : _T(" at End of Girder")));
    m_pArtifact->SetSlabOffset(end,offset);
@@ -2209,23 +2225,27 @@ void pgsStrandDesignTool::SetSlabOffset(pgsTypes::MemberEndType end,Float64 offs
 
 Float64 pgsStrandDesignTool::GetSlabOffset(pgsTypes::MemberEndType end) const
 {
+   ATLASSERT(IsDesignSlabOffset());
    return m_pArtifact->GetSlabOffset(end);
 }
 
 void pgsStrandDesignTool::SetMinimumSlabOffset(Float64 offset)
 {
+   ATLASSERT(IsDesignSlabOffset());
    ATLASSERT(0.0 <= offset);
    m_MinSlabOffset = offset;
 }
 
 Float64 pgsStrandDesignTool::GetMinimumSlabOffset() const
 {
+   ATLASSERT(IsDesignSlabOffset());
    return max(m_MinSlabOffset,m_AbsoluteMinimumSlabOffset);
 }
 
 Float64 pgsStrandDesignTool::GetAbsoluteMinimumSlabOffset() const
 {
-   ATLASSERT(m_AbsoluteMinimumSlabOffset>0.0); 
+   ATLASSERT(IsDesignSlabOffset());
+   ATLASSERT(m_AbsoluteMinimumSlabOffset>0.0);
    return m_AbsoluteMinimumSlabOffset;
 }
 

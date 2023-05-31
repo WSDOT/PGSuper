@@ -1,6 +1,6 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.58    4  10.50                     1     1    U66PT    *      0  0.6  270   0.00   0.00   9.00   9.00                                              5.000 10.258  10.258    10.258    11273   0.956  1.048  -0.873 -0.715  0.000 -0.049 -0.764   0.00    0.00    0.00    0.00    0.00    2.42    0.51    3.13    0.66    0.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 40.58    4  10.50                     1     1    U66PT    *      0  0.6  270   0.00   0.00                                              5.000 10.258  10.258    10.258    11273   0.956  1.048  -0.873 -0.715  0.000 -0.049 -0.764   0.00    0.00    0.00    0.00    0.00    2.42    0.51    3.13    0.66    0.00 
 
 
 The Specification Check was Not Successful
@@ -68,12 +68,13 @@ Lifting checks failed for Segment 3.
 Hauling checks failed for Segment 3.
 Lifting checks failed for Segment 4.
 Hauling checks failed for Segment 4.
-Slab Offset ("A" Dimension) check failed
+Finished elevation check failed
+Minimum haunch depth vs fillet check failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.58    4  10.50                     1     2    U66PT    *      0  0.6  270   0.00   0.00   9.00   9.00                                              5.000 10.258  10.258    10.258    10142   0.677  1.048  -0.890 -0.702  0.000 -0.049 -0.752   0.00    0.00    0.00    0.00    0.00    3.40    0.51    4.40    0.66    0.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 40.58    4  10.50                     1     2    U66PT    *      0  0.6  270   0.00   0.00                                              5.000 10.258  10.258    10.258    10142   0.677  1.048  -0.890 -0.702  0.000 -0.049 -0.752   0.00    0.00    0.00    0.00    0.00    3.40    0.51    4.40    0.66    0.00 
 
 
 The Specification Check was Not Successful
@@ -141,6 +142,7 @@ Lifting checks failed for Segment 3.
 Hauling checks failed for Segment 3.
 Lifting checks failed for Segment 4.
 Hauling checks failed for Segment 4.
-Slab Offset ("A" Dimension) check failed
+Finished elevation check failed
+Minimum haunch depth vs fillet check failed
 
 

@@ -44,19 +44,18 @@ protected:
    void FillEventList();
    EventIndexType CreateEvent();
 
-   void UpdateSlabOffsetControls();
+   void UpdateHaunchAndCamberControls();
+   void UpdateHaunchAndCamberData(CDataExchange* pDX);
+   void EnableHaunchAndCamberControls(BOOL bControls, BOOL bButton);
 
    CWideDropDownComboBox m_cbErection;
    CWideDropDownComboBox m_cbRemoval;
-   std::array<CCacheEdit, 2> m_wndSlabOffset;
+   std::array<CEdit, 2> m_wndSlabOffset; // back, ahead
 
    Float64 m_Station;
    std::_tstring m_strOrientation;
    pgsTypes::TemporarySupportType m_Type;
    Float64 m_ElevAdjustment;
-   pgsTypes::SlabOffsetType m_SlabOffsetType;
-   std::array<Float64, 2> m_SlabOffset{ 0.0,0.0 }; // use pgsTypes::PierFaceType to access array. data only valid if m_SlabOffsetType is sotBridge or sotBearingLine
-   pgsTypes::SlabOffsetType m_InitialSlabOffsetType;
 
    int m_PrevErectionEventIdx;
    int m_PrevRemovalEventIdx;
@@ -70,6 +69,6 @@ public:
    afx_msg void OnErectionEventChanging();
    afx_msg void OnRemovalEventChanged();
    afx_msg void OnRemovalEventChanging();
-   afx_msg void OnSlabOffsetTypeChanged();
    afx_msg void OnHelp();
+   afx_msg void OnBnClickedEditHaunchButton();
 };

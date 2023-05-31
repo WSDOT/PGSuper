@@ -1057,9 +1057,6 @@ void CAnalysisResultsGraphController::UpdateElevAdjustment()
    {
       pWnd->ShowWindow(SW_HIDE);
    }
-
-   // This feature is disabled until we fix bugs in adjustments
-   pWnd->EnableWindow(FALSE);
 }
 
 void CAnalysisResultsGraphController::UpdateUnrecoverableDeflAdjustment()

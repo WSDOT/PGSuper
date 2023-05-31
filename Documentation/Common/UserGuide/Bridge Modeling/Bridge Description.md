@@ -60,26 +60,22 @@ Spline transitions can be used to make any type of curve as shown in this exampl
 ### Haunch Geometry ###
 The haunch is the concrete build-up between the top of the girder and the bottom of the deck. The top surface of the haunch is defined by the bottom surface of the deck. The bottom surface of the haunch is defined by the top surface of the girder. The top surface of the girder is not flat because of natural and imposed camber. Since the girder camber is not generally known before design the shape of the haunch must be estimated and then refined.
 
-The haunch geometry is defined by the Slab Offset (also known as the "A" Dimension in WSDOT jargon) and the Fillet. The slab offset is the distance from the roadway surface to the top of the girder at the intersection of the centerline of bearing and the centerline of the girder. The fillet is the least distance between the bottom of the deck and the top of the girder (this is assumed to occur at mid-span).
+Haunch depths in PGSuper can be defined by the Slab Offset (also known as the "A" Dimension in WSDOT jargon), or by Explicit direct haunch depth input. A full description of haunch geometry and vertical geometry calculations may be found at @ref tg_vertical_geometry.
 
-The girder arrangement locates the girders transversely and the Slab Offset locates the girders vertically with respect to the top of the deck.
-
-Slab offset can be defined with a single value for the entire bridge, a unique value at each bearing line, or a unique value at each end of every girder.
+The fillet is the least allowable distance between the bottom of the deck and the top of the girder (this is assumed to occur at mid-span).
 
 ![](Haunch.png)
 
 ### Girder Elevation at Erection ###
-For typically precast girder bridges, the girder elevation at erection is defined by the slab offset. The top of girder elevation at erection, at the intersection of the centerline bearing and centerline girder, is equal to the profile grade elevation less the slab offset. Since girders span between permanent abutments and piers, the girder does not move from its installation location.
+For typical precast girder bridges, the girder elevation at erection is defined by the slab offset. The slab offset defines the depth of slab and haunch at the centerline bearing and locates the top of the segment relative to the roadway surface. Depending on the haunch input method, the slab offset is either directly input, or can be computed from explicity haunch depth data along the span.  The top of girder elevation at erection, at the intersection of the centerline bearing and centerline girder, is equal to the profile grade elevation less the slab offset. Since girders span between permanent abutments and piers, the girder does not move from its installation location.
 
-Elevations at erection for spliced girder segments is a bit more involved. Precast segments are erected onto permanent and temporary supports. Post-tensioning, temporary support removal, and application of external loads cause deflections in the structure and can change the final elevation of girder segments. The erection elevation of spliced girder segments, at the intersection of the centerline of bearing (which could be a permanent bearing at an abutment or pier or a point of bearing in a temporary support) and the centerline segment, is equal to the profile grade elevation less the slab offset plus, if applicable, a temporary support elevation adjustment.
-
-The slab offset defines the depth of slab and haunch at the centerline bearing and locates the top of the segment relative to the roadway surface. The temporary support elevation adjustment modifies the elevation of the segment end(s) at erection and is typically used to modify the final elevation of the segments.
+Elevations at erection for spliced girder segments is a bit more involved. Precast segments are erected onto permanent and temporary supports. Post-tensioning, temporary support removal, time-dependent effects, and application of external loads cause deflections in the structure and can change the final elevation of girder segments. The temporary support elevation adjustment modifies the elevation of the segment end(s) at erection and is typically used to modify the final elevation of the segments. A detailed discussion can be found at @ref tg_vertical_geometry. 
 
 Consider at single span spliced girder bridge consisting of three precast segments. If the anticipated final deflection is downward, the segment ends at the erection towers can be elevated to compensate. 
 
 ![](ElevAdjExample.png)
 
-Slab offset can be defined with a single value for the entire bridge, a unique value at each bearing line, or a unique value at the end of every precast segment. Temporary support elevation adjustments can be defined at erection towers and strong backs that support the ends of a segment.
+Haunch depths can be defined with a single value for the entire bridge, a unique value at each bearing line, or a unique value at the end of every precast segment. Temporary support elevation adjustments can be defined at erection towers and strong backs that support the ends of a segment.
 
 The elevation of all other permanent and temporary supports are defined by the chord line connecting the ends of precast segments.
 

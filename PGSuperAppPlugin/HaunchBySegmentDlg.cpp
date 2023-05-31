@@ -60,7 +60,10 @@ void CHaunchBySegmentDlg::DoDataExchange(CDataExchange* pDX)
    GET_IFACE2(pBroker, IDocumentType, pDocType);
    if (pDocType->IsPGSuperDocument())
    {
-      m_pGrid->UpdateData(pDX->m_bSaveAndValidate);
+      if (FALSE == m_pGrid->UpdateData(pDX->m_bSaveAndValidate))
+      {
+         pDX->Fail();
+      }
    }
    else
    {
@@ -70,11 +73,13 @@ void CHaunchBySegmentDlg::DoDataExchange(CDataExchange* pDX)
       {
          auto& tabInfo = beam.GetTab(i);
          CHaunchSegmentGrid* pGrid = (CHaunchSegmentGrid*)tabInfo.pExtra;
-         pGrid->UpdateData(pDX->m_bSaveAndValidate);
+         if (FALSE == pGrid->UpdateData(pDX->m_bSaveAndValidate))
+         {
+            pDX->Fail();
+         }
       }
    }
 }
-
 
 BEGIN_MESSAGE_MAP(CHaunchBySegmentDlg, CDialog)
 END_MESSAGE_MAP()
@@ -93,8 +98,9 @@ BOOL CHaunchBySegmentDlg::OnInitDialog()
    else
    {
       m_TabWnd.SubclassDlgItem(IDC_HAUNCH_GRID, this);
-      CEditHaunchDlg* pParent = (CEditHaunchDlg*)GetParent();
-      GroupIndexType nGroups = pParent->m_BridgeDesc.GetGirderGroupCount();
+      CEditHaunchACamberDlg* pParent = (CEditHaunchACamberDlg*)GetParent();
+      const CBridgeDescription2* pBridge = pParent->GetBridgeDesc();
+      GroupIndexType nGroups = pBridge->GetGirderGroupCount();
       for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
       {
          CString strLabel;

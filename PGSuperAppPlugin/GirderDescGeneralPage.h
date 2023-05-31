@@ -62,18 +62,12 @@ public:
    
    bool m_bUseSameGirderType;
 
-   pgsTypes::SlabOffsetType m_SlabOffsetType;
-   pgsTypes::SlabOffsetType m_PrevSlabOffsetType;
-
-   std::array<Float64, 2> m_SlabOffset;
-   std::array<CString, 2> m_strSlabOffsetCache;
-
-   pgsTypes::AssumedExcessCamberType m_AssumedExcessCamberType;
-   pgsTypes::AssumedExcessCamberType m_AssumedExcessCamberTypeCache;
-
+   // Use for "A" input or direct haunch
+   std::array<Float64, 2> m_SlabOffsetOrHaunch;
    Float64 m_AssumedExcessCamber;
-   CString m_strAssumedExcessCamberCache;
-   bool m_bCanAssumedExcessCamberInputBeEnabled;
+
+   // use simplified enum here to indicate whether setting are such that direct haunch input values can be displayed or edited.
+   enum CanDisplayHauchDepths { cdhHide,cdhDisplay,cdhEdit } m_CanDisplayHauchDepths;
 
    std::array<Float64, 2> m_MinTopWidth;
    std::array<Float64, 2> m_MaxTopWidth;
@@ -109,9 +103,6 @@ protected:
    afx_msg void OnErectionEventChanging();
    //}}AFX_MSG
    afx_msg void OnChangeSameGirderType();
-   afx_msg void OnChangingSlabOffsetType();
-   afx_msg void OnChangeSlabOffsetType();
-   afx_msg void OnChangeAssumedExcessCamberType();
    afx_msg void OnTopFlangeThickeningTypeChanged();
    afx_msg void OnTopWidthTypeChanged();
    DECLARE_MESSAGE_MAP()
@@ -125,19 +116,12 @@ protected:
    void ExchangeConcreteData(CDataExchange* pDX);
 
    void UpdateGirderTypeControls();
-   void UpdateSlabOffsetControls();
-   void UpdateAssumedExcessCamberControls();
-
-   pgsTypes::SlabOffsetType GetCurrentSlabOffsetType();
 
    void UpdateConcreteControls(bool bSkipEcCheckBoxes=false);
    void UpdateConcreteParametersToolTip();
    CString m_strTip;
 
    void FillGirderComboBox();
-
-   void FillSlabOffsetComboBox();
-   void FillAssumedExcessCamberComboBox();
 
    void UpdateEci();
    void UpdateEc();
@@ -155,6 +139,10 @@ protected:
                         // (needed to revert the combobox if user doesn't want to change)
 public:
    afx_msg void OnStnClickedPrecamberLabel();
+
+   void UpdateHaunchAndCamberControls();
+   void UpdateHaunchAndCamberData(CDataExchange* pDX);
+   void EnableHaunchAndCamberControls(BOOL bEnableADim,BOOL bEnableCamber,bool bShowCamber);
 };
 
 //{{AFX_INSERT_LOCATION}}

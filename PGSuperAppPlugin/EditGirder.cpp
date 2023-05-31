@@ -58,6 +58,8 @@ txnEditGirderData::txnEditGirderData(const txnEditGirderData& rOther)
 
    m_AssumedExcessCamberType = rOther.m_AssumedExcessCamberType;
    m_AssumedExcessCamber = rOther.m_AssumedExcessCamber;
+
+   m_HaunchDepths = rOther.m_HaunchDepths;
 }
 
 /////////////////////////////////////////////////////////////
@@ -108,8 +110,6 @@ bool txnEditGirder::Execute()
       oldGirderData.m_bUseSameGirder = pIBridgeDesc->UseSameGirderForEntireBridge();
       oldGirderData.m_strGirderName = pGroup->GetGirderName(gdrIdx);
 
-      oldGirderData.m_SlabOffsetType = pBridgeDesc->GetSlabOffsetType();
-
       // this is a precast girder (only one segment per girder)
       PierIndexType startPierIdx = pGroup->GetPierIndex(pgsTypes::metStart);
       PierIndexType endPierIdx = pGroup->GetPierIndex(pgsTypes::metEnd);
@@ -117,12 +117,35 @@ bool txnEditGirder::Execute()
       ATLASSERT(pGroup->GetGirder(gdrIdx)->GetSegmentCount() == 1); // this is for PGSuper only
       CSegmentKey segmentKey(m_GirderKey.groupIndex, gdrIdx, 0);
 
+
+      oldGirderData.m_SlabOffsetType = pBridgeDesc->GetSlabOffsetType();
+      oldGirderData.m_AssumedExcessCamberType = pBridgeDesc->GetAssumedExcessCamberType();
+      if (pIBridgeDesc->GetHaunchInputDepthType() == pgsTypes::hidACamber)
+      {
       oldGirderData.m_SlabOffset[pgsTypes::metStart] = pIBridgeDesc->GetSlabOffset(segmentKey,pgsTypes::metStart);
       oldGirderData.m_SlabOffset[pgsTypes::metEnd] = pIBridgeDesc->GetSlabOffset(segmentKey,pgsTypes::metEnd);
 
-      oldGirderData.m_AssumedExcessCamberType = pBridgeDesc->GetAssumedExcessCamberType();
       // this is a precast girder (only one segment per girder)
-      oldGirderData.m_AssumedExcessCamber = pIBridgeDesc->GetAssumedExcessCamber(m_GirderKey.groupIndex, gdrIdx);
+         oldGirderData.m_AssumedExcessCamber = pIBridgeDesc->GetAssumedExcessCamber(m_GirderKey.groupIndex,gdrIdx);
+      }
+      else
+      {
+         // Direct input of haunch. Zero out slab offset data
+         oldGirderData.m_SlabOffset[pgsTypes::metStart] = 0.0;
+         oldGirderData.m_SlabOffset[pgsTypes::metEnd] = 0.0;
+         oldGirderData.m_AssumedExcessCamber = 0.0;
+
+         pgsTypes::HaunchInputLocationType haunchInputLocationType = pBridgeDesc->GetHaunchInputLocationType();
+         pgsTypes::HaunchLayoutType haunchLayoutType = pBridgeDesc->GetHaunchLayoutType();
+         pgsTypes::HaunchInputDistributionType haunchInputDistributionType = pBridgeDesc->GetHaunchInputDistributionType();
+
+         if (haunchLayoutType == pgsTypes::hltAlongSpans && haunchInputLocationType == pgsTypes::hilPerEach &&
+            (haunchInputDistributionType == pgsTypes::hidUniform || haunchInputDistributionType == pgsTypes::hidAtEnds))
+         {
+            // haunch depths are in span object
+            oldGirderData.m_HaunchDepths = pBridgeDesc->GetSpan(m_GirderKey.groupIndex)->GetDirectHaunchDepths(m_GirderKey.girderIndex);
+         }
+      }
 
       oldGirderData.m_Girder = *pGroup->GetGirder(gdrIdx);
       oldGirderData.m_TimelineMgr = (*pIBridgeDesc->GetTimelineManager());
@@ -205,13 +228,16 @@ void txnEditGirder::SetGirderData(const CGirderKey& girderKey,const txnEditGirde
 
    pIBridgeDesc->SetTimelineManager(gdrData.m_TimelineMgr);
 
+   // Haunch and slab offset
+   if (pIBridgeDesc->GetHaunchInputDepthType() == pgsTypes::hidACamber)
+   {
    // set the slab offset
-   if ( gdrData.m_SlabOffsetType == pgsTypes::sotBridge )
+      if (gdrData.m_SlabOffsetType == pgsTypes::sotBridge)
    {
       // for the entire bridge
-      pIBridgeDesc->SetSlabOffset( gdrData.m_SlabOffset[pgsTypes::metStart] );
+         pIBridgeDesc->SetSlabOffset(gdrData.m_SlabOffset[pgsTypes::metStart]);
    }
-   else if ( gdrData.m_SlabOffsetType == pgsTypes::sotBearingLine )
+      else if (gdrData.m_SlabOffsetType == pgsTypes::sotBearingLine)
    {
       // for this bearing line
       const CGirderGroupData* pGroup = pIBridgeDesc->GetGirderGroup(girderKey.groupIndex);
@@ -219,8 +245,8 @@ void txnEditGirder::SetGirderData(const CGirderKey& girderKey,const txnEditGirde
       PierIndexType endPierIdx   = pGroup->GetPier(pgsTypes::metEnd)->GetIndex();
       ATLASSERT(startPierIdx == endPierIdx - 1);
 
-      pIBridgeDesc->SetSlabOffset(pgsTypes::stPier, startPierIdx, pgsTypes::Ahead, gdrData.m_SlabOffset[pgsTypes::metStart]);
-      pIBridgeDesc->SetSlabOffset(pgsTypes::stPier, endPierIdx,   pgsTypes::Back,  gdrData.m_SlabOffset[pgsTypes::metEnd]);
+         pIBridgeDesc->SetSlabOffset(startPierIdx,pgsTypes::Ahead,gdrData.m_SlabOffset[pgsTypes::metStart]);
+         pIBridgeDesc->SetSlabOffset(endPierIdx,pgsTypes::Back,gdrData.m_SlabOffset[pgsTypes::metEnd]);
    }
    else
    {
@@ -229,7 +255,7 @@ void txnEditGirder::SetGirderData(const CGirderKey& girderKey,const txnEditGirde
       PierIndexType startPierIdx = pGroup->GetPierIndex(pgsTypes::metStart);
       PierIndexType endPierIdx   = pGroup->GetPierIndex(pgsTypes::metEnd);
 
-      if ( !bUndo && gdrData.m_SlabOffsetType != m_NewGirderData.m_SlabOffsetType )
+         if (!bUndo && gdrData.m_SlabOffsetType != m_NewGirderData.m_SlabOffsetType)
       {
          // we are changing the slab offset type from something to "by girder"
 
@@ -242,32 +268,44 @@ void txnEditGirder::SetGirderData(const CGirderKey& girderKey,const txnEditGirde
 
          // set the value for each girder to this current value
          GirderIndexType nGirders = pIBridgeDesc->GetBridgeDescription()->GetGirderGroup(girderKey.groupIndex)->GetGirderCount();
-         for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+            for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
          {
-            CSegmentKey thisSegmentKey(segmentKey.groupIndex, gdrIdx, 0);
+               CSegmentKey thisSegmentKey(segmentKey.groupIndex,gdrIdx,0);
             pIBridgeDesc->SetSlabOffset(thisSegmentKey,start,end);
          }
       }
       
       // change the girder that was edited
-      pIBridgeDesc->SetSlabOffset(segmentKey, gdrData.m_SlabOffset[pgsTypes::metStart], gdrData.m_SlabOffset[pgsTypes::metEnd]  );
+         pIBridgeDesc->SetSlabOffset(segmentKey,gdrData.m_SlabOffset[pgsTypes::metStart],gdrData.m_SlabOffset[pgsTypes::metEnd]);
    }
 
    // set the Assumed Excess Camber
-   if ( gdrData.m_AssumedExcessCamberType == pgsTypes::aecBridge )
+      if (gdrData.m_AssumedExcessCamberType == pgsTypes::aecBridge)
    {
       // for the entire bridge
-      pIBridgeDesc->SetAssumedExcessCamber( gdrData.m_AssumedExcessCamber);
+         pIBridgeDesc->SetAssumedExcessCamber(gdrData.m_AssumedExcessCamber);
    }
-   else if ( gdrData.m_AssumedExcessCamberType == pgsTypes::aecSpan )
+      else if (gdrData.m_AssumedExcessCamberType == pgsTypes::aecSpan)
    {
       // for this span
-      pIBridgeDesc->SetAssumedExcessCamber(girderKey.groupIndex, gdrData.m_AssumedExcessCamber);
+         pIBridgeDesc->SetAssumedExcessCamber(girderKey.groupIndex,gdrData.m_AssumedExcessCamber);
    }
    else
    {
       // change the girder that was edited
-      pIBridgeDesc->SetAssumedExcessCamber(segmentKey.groupIndex, segmentKey.girderIndex, gdrData.m_AssumedExcessCamber);
+         pIBridgeDesc->SetAssumedExcessCamber(segmentKey.groupIndex,segmentKey.girderIndex,gdrData.m_AssumedExcessCamber);
+      }
+   }
+   else
+   {
+      // Input by direct haunch
+      std::size_t siz = gdrData.m_HaunchDepths.size();
+      if (siz > 0)
+      {
+         ATLASSERT(siz == pIBridgeDesc->GetHaunchInputDistributionType()); // vectors are sized per enum value
+         // Haunch values are stored in spans.
+         pIBridgeDesc->SetDirectHaunchDepthsPerSpan(segmentKey.groupIndex,segmentKey.girderIndex,gdrData.m_HaunchDepths);
+      }
    }
 
    // set the bearing data

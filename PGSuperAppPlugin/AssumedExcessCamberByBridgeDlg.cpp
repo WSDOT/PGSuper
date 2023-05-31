@@ -25,7 +25,7 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "AssumedExcessCamberByBridgeDlg.h"
-#include "EditHaunchDlg.h"
+#include "EditHaunchACamberDlg.h"
 
 #include <EAF\EAFDisplayUnits.h>
 #include "PGSuperUnits.h"
@@ -58,13 +58,14 @@ void CAssumedExcessCamberByBridgeDlg::DoDataExchange(CDataExchange* pDX)
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
-   CEditHaunchDlg* pParent = (CEditHaunchDlg*)GetParent();
-   Float64 assumedExcessCamber = pParent->m_BridgeDesc.GetAssumedExcessCamber();
+   CEditHaunchACamberDlg* pParent = (CEditHaunchACamberDlg*)GetParent();
+   CBridgeDescription2* pBridge = pParent->GetBridgeDesc();
+   Float64 assumedExcessCamber = pBridge->GetAssumedExcessCamber();
    DDX_UnitValueAndTag(pDX, IDC_ASSUMED_EXCESS_CAMBER, IDC_ASSUMED_EXCESS_CAMBER_UNITS, assumedExcessCamber, pDisplayUnits->GetComponentDimUnit());
 
    if (pDX->m_bSaveAndValidate && pParent->GetAssumedExcessCamberType() == pgsTypes::aecBridge)
    {
-      pParent->m_BridgeDesc.SetAssumedExcessCamber(assumedExcessCamber);
+      pBridge->SetAssumedExcessCamber(assumedExcessCamber);
    }
 }
 
@@ -73,8 +74,8 @@ END_MESSAGE_MAP()
 
 BOOL CAssumedExcessCamberByBridgeDlg::OnInitDialog()
 {
-   CEditHaunchDlg* pParent = (CEditHaunchDlg*)GetParent();
-   if (!pParent->IsAssumedExcessCamberEnabled())
+   CEditHaunchACamberDlg* pParent = (CEditHaunchACamberDlg*)GetParent();
+   if (!pParent->m_bCanAssumedExcessCamberInputBeEnabled)
    {
       GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER)->EnableWindow(FALSE);
       GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_LABEL)->EnableWindow(FALSE);  

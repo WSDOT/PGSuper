@@ -200,6 +200,18 @@ void GetConfinementZoneLengths(const CSegmentKey& segmentKey, IGirder* pGdr, Flo
    *pEndLength = 1.5 * (*pEndd);
 }
 
+class MatchPoiOffSegment
+{
+public:
+   MatchPoiOffSegment(IPointOfInterest* pIPointOfInterest) : m_pIPointOfInterest(pIPointOfInterest) {}
+   bool operator()(const pgsPointOfInterest& poi) const
+   {
+      return m_pIPointOfInterest->IsOffSegment(poi);
+   }
+
+   IPointOfInterest* m_pIPointOfInterest;
+};
+
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 
@@ -445,7 +457,11 @@ void pgsDesigner2::GetSlabOffsetDetails(const CSegmentKey& segmentKey,const GDRC
 
    GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
+   IntervalIndexType gceInterval = pIntervals->GetGeometryControlInterval();
 
+   Float64 overlay_depth = pBridge->GetOverlayDepth(gceInterval);
+
+   GET_IFACE(IDeformedGirderGeometry,pDeformedGirderGeometry);
 
    // determine the minumum and maximum difference in elevation between the
    // roadway surface and the top of the segment.... measured directly above 
@@ -471,7 +487,7 @@ void pgsDesigner2::GetSlabOffsetDetails(const CSegmentKey& segmentKey,const GDRC
       Float64 top_width = pGdr->GetTopWidth(poi);
 
       // top of girder elevation, including camber effects
-      Float64 elev_top_girder = pGdr->GetTopGirderElevation(poi,INVALID_INDEX/*CL Segment rather than a particular mating surface*/,pConfig);
+      Float64 elev_top_girder = pDeformedGirderGeometry->GetTopGirderElevation(poi,pConfig);
 
       // get station and normal offset for this poi
       Float64 station, offset;
@@ -515,7 +531,7 @@ void pgsDesigner2::GetSlabOffsetDetails(const CSegmentKey& segmentKey,const GDRC
       slab_offset.tSlab = tSlab;
       slab_offset.Wtop = top_width;
       slab_offset.ElevTopGirder = elev_top_girder;
-      slab_offset.TopSlabToTopGirder = slab_offset.ElevAlignment - slab_offset.ElevTopGirder;
+      slab_offset.TopSlabToTopGirder = slab_offset.ElevAlignment - slab_offset.ElevTopGirder - overlay_depth;
       slab_offset.ElevAdjustment = elev_adj;
 
       slab_offset.RequiredSlabOffsetRaw = tSlab + fillet + section_profile_effect + section_girder_orientation_effect + camber_effect + top_flange_shape_effect;
@@ -1209,7 +1225,7 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
          {
             // reset outcomes
             bool keep_prop = false;
-            if (m_DesignerOutcome.DidConcreteChange())
+            if (m_DesignerOutcome.DidConcreteChange() && m_StrandDesignTool.IsDesignSlabOffset())
             {
                LOG(_T("Concrete changed on last iteration. Reset min slab offset to zero"));
                m_StrandDesignTool.SetMinimumSlabOffset(0.0);
@@ -3272,14 +3288,12 @@ void pgsDesigner2::CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,
 
       Mu = MuMax;
 
-      if ( bDesign )
+      if ( bDesign && m_StrandDesignTool.IsDesignSlabOffset())
       {
          // Mu is based on the current input values. Since we are doing design, the "A" dimension
          // is likely different than the input value. This changes the slab and slab pad moment.
          // Add the moment adjustments to Mu here.
          Float64 fcgdr = m_StrandDesignTool.GetConcreteStrength();
-         Float64 startSlabOffset = m_StrandDesignTool.GetSlabOffset(pgsTypes::metStart);
-         Float64 endSlabOffset   = m_StrandDesignTool.GetSlabOffset(pgsTypes::metEnd);
 
          const GDRCONFIG& config = m_StrandDesignTool.GetSegmentConfiguration();
 
@@ -5373,13 +5387,13 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
 {
    ASSERT_GIRDER_KEY(girderKey);
 
-   GET_IFACE(ILibrary, pLib );
-   GET_IFACE(ISpecification, pSpec );
+   GET_IFACE(ILibrary,pLib);
+   GET_IFACE(ISpecification,pSpec);
    GET_IFACE(IBridge,pBridge);
-   GET_IFACE_NOCHECK(IProductLoads, pProdLoads);
+   GET_IFACE_NOCHECK(IProductLoads,pProdLoads);
 
    std::_tstring spec_name = pSpec->GetSpecification();
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(spec_name.c_str());
 
    // min fillet is zero if girders are adjacently spaced.
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
@@ -5387,8 +5401,7 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
    pgsTypes::SupportedBeamSpacing spacingType = pBridgeDesc->GetGirderSpacingType();
    bool isAdjacentSpacing = IsAdjacentSpacing(spacingType);
 
-   
-   GET_IFACE_NOCHECK(IGirderHaunch, pGdrHaunch);
+   GET_IFACE_NOCHECK(IGirderHaunch,pGdrHaunch);
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
    const CSplicedGirderData* pGirder = pGroup->GetGirder(girderKey.girderIndex);
    const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
@@ -5396,12 +5409,12 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
    // we need to know if the stirrups engage the deck along the length of the girder
    // below we loop over all segments and do evaluation... we need to know stirrup engaguement
    // before entering the loop.... figure it out here
-   GET_IFACE(IStirrupGeometry, pStirrupGeometry);
+   GET_IFACE(IStirrupGeometry,pStirrupGeometry);
    SegmentIndexType nSegments = pGirder->GetSegmentCount();
    bool bDoStirrupsEngageDeck = false;
    for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
    {
-      CSegmentKey segmentKey(girderKey, segIdx);
+      CSegmentKey segmentKey(girderKey,segIdx);
       bDoStirrupsEngageDeck = pStirrupGeometry->DoStirrupsEngageDeck(segmentKey);
       if (bDoStirrupsEngageDeck)
       {
@@ -5414,222 +5427,293 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
    // Check Slab Offset ("A" Dimension)
    //
    ///////////////////////////////////////////////////////////////
+   GET_IFACE(IProgress,pProgress);
+   CEAFAutoProgress ap(pProgress);
+   pProgress->UpdateMessage(_T("Checking constructability requirements"));
+
+   bool isHaunchCheck = pSpecEntry->IsSlabOffsetCheckEnabled();
+   pgsTypes::HaunchInputDepthType haunchInputType = pBridge->GetHaunchInputDepthType();
+
+#pragma Reminder("Assumes constant slab thickness throughout bridge")
+   Float64 tSlab = pBridge->GetGrossSlabDepth(pgsPointOfInterest(CSegmentKey(0,0,0),0.0));
 
    // Constructibility check is for all segments in a girder
-   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+   for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
    {
       // artifact for each span
-      CSegmentKey segmentKey(girderKey, segIdx);
+      CSegmentKey segmentKey(girderKey,segIdx);
       pgsSegmentConstructabilityArtifact artifact(segmentKey);
 
-      // if there is no deck, slab offset is not applicable
-      if (pBridge->GetDeckType() == pgsTypes::sdtNone)
+      if (!isHaunchCheck)
       {
          artifact.SetSlabOffsetApplicability(false);
-
-         artifact.SetFinishedElevationApplicability(true);
-
-         Float64 tolerance = pSpecEntry->GetFinishedElevationTolerance();
-         artifact.SetFinishedElevationTolerance(tolerance);
-
-
-         const int Left = 0;
-         const int Center = 1;
-         const int Right = 2;
-
-         GET_IFACE(IPointOfInterest, pPoi);
-         GET_IFACE(IRoadway, pAlignment);
-         GET_IFACE(IGirder, pIGirder);
-
-         PoiList vPoi;
-         pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | POI_TENTH_POINTS, &vPoi);
-         ATLASSERT(vPoi.size() == 11);
-
-         Float64 maxDiff = 0;
-         for (const pgsPointOfInterest& poi : vPoi)
-         {
-            Float64 station, offset;
-            pBridge->GetStationAndOffset(poi, &station, &offset);
-            Float64 elev = pAlignment->GetElevation(station, offset);
-
-            std::array<Float64, 3> finished_elevation;
-            pIGirder->GetFinishedElevation(poi, nullptr, true /*include overlay depth*/, &finished_elevation[Left], &finished_elevation[Center], &finished_elevation[Right]);
-
-            Float64 diff = fabs(finished_elevation[Center] - elev);
-
-            if (maxDiff < diff)
-            {
-               artifact.SetMaxFinishedElevation(station, offset, poi, elev, finished_elevation[Center]);
-               maxDiff = diff;
-            }
-         }
+         artifact.SetFinishedElevationApplicability(false);
       }
       else
       {
-         GET_IFACE(IProgress,pProgress);
-         CEAFAutoProgress ap(pProgress);
-         pProgress->UpdateMessage( _T("Checking constructibility requirements") );
-
-         artifact.SetSlabOffsetApplicability(pSpecEntry->IsSlabOffsetCheckEnabled());
-
-         //  provided slab offsets
-         std::array<Float64, 2> slabOffset;
-         pBridge->GetSlabOffset(segmentKey, &slabOffset[pgsTypes::metStart], &slabOffset[pgsTypes::metEnd]);
-
-         artifact.SetProvidedSlabOffset(slabOffset[pgsTypes::metStart], slabOffset[pgsTypes::metEnd]);
-
-         // get required slab offset
-         Float64 requiredSlabOffset = pGdrHaunch->GetRequiredSlabOffset(segmentKey);
-         artifact.SetRequiredSlabOffset( requiredSlabOffset );
-
-         const auto& slab_offset_details = pGdrHaunch->GetSlabOffsetDetails(segmentKey);
-
-         // Get least haunch depth and its location along girder
-         Float64 minval(Float64_Max);
-         Float64 minloc;
-         for(const auto& slab_offset : slab_offset_details.SlabOffset)
+         // If there is no deck, or haunch input is direct; slab offset is not applicable
+         if (pBridge->GetDeckType() == pgsTypes::sdtNone)
          {
-            Float64 val = slab_offset.TopSlabToTopGirder - slab_offset.tSlab - slab_offset.GirderOrientationEffect;
-            if (val < minval)
+            artifact.SetSlabOffsetApplicability(false);
+            artifact.SetFinishedElevationApplicability(true);
+
+            // For no-deck bridges, check only at geometry control interval. This will need to be redefined when no-deck girders are added to pgsplice
+            GET_IFACE(IIntervals,pIntervals);
+            IntervalIndexType geomCtrlInterval = pIntervals->GetGeometryControlInterval();
+            artifact.SetFinishedElevationControllingInterval(geomCtrlInterval);
+
+            Float64 tolerance = pSpecEntry->GetFinishedElevationTolerance();
+            artifact.SetFinishedElevationTolerance(tolerance);
+
+            GET_IFACE(IPointOfInterest,pPoi);
+            GET_IFACE(IRoadway,pAlignment);
+            GET_IFACE(IDeformedGirderGeometry,pDeformedGirderGeometry);
+            const int Left = 0;
+            const int Center = 1;
+            const int Right = 2;
+
+            PoiList vPoi;
+            pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_TENTH_POINTS,&vPoi);
+            ATLASSERT(vPoi.size() == 11);
+
+            Float64 maxDiff = 0;
+            for (const pgsPointOfInterest& poi : vPoi)
             {
-               minval = val;
-               minloc = slab_offset.PointOfInterest.GetDistFromStart();
+               Float64 station,offset;
+               pBridge->GetStationAndOffset(poi,&station,&offset);
+               Float64 elev = pAlignment->GetElevation(station,offset);
+
+               std::array<Float64,3> finished_elevation;
+               pDeformedGirderGeometry->GetFinishedElevation(poi,nullptr,&finished_elevation[Left],&finished_elevation[Center],&finished_elevation[Right]);
+
+               Float64 diff = fabs(finished_elevation[Center] - elev);
+
+               if (maxDiff < diff)
+               {
+                  artifact.SetMaxFinishedElevation(station,offset,poi,elev,finished_elevation[Center]);
+                  maxDiff = diff;
+               }
             }
          }
-
-         artifact.SetLeastHaunchDepth(minloc, minval);
-
-         // minimum fillet requirements
-         if (isAdjacentSpacing)
+         else if (pgsTypes::hidHaunchDirectly == haunchInputType || pgsTypes::hidHaunchPlusSlabDirectly == haunchInputType)
          {
-            // Min fillet is zero for adjacently spaced beams
-            artifact.SetRequiredMinimumFillet(0.0);
+            artifact.SetSlabOffsetApplicability(false);
+            artifact.SetFinishedElevationApplicability(true);
+            artifact.SetMinimumHaunchDepthApplicability(true);
+
+            Float64 tolerance = pSpecEntry->GetFinishedElevationTolerance();
+            artifact.SetFinishedElevationTolerance(tolerance);
+
+            GET_IFACE(IPointOfInterest,pPoi);
+            GET_IFACE(IRoadway,pAlignment);
+            GET_IFACE(IIntervals,pIntervals);
+            GET_IFACE(IDeformedGirderGeometry,pDeformedGirderGeometry);
+            GET_IFACE_NOCHECK(ISectionProperties,pSectProps);
+
+            // minimum fillet input requirements are applicable for this case
+            if (isAdjacentSpacing)
+            {
+               // Min fillet is zero for adjacently spaced beams
+               artifact.SetRequiredMinimumFillet(0.0);
+            }
+            else
+            {
+               Float64 min_fillet = pGirderEntry->GetMinFilletValue();
+               artifact.SetRequiredMinimumFillet(min_fillet);
+            }
+
+            Float64 fillet = pBridge->GetFillet();
+            artifact.SetProvidedFillet(fillet);
+
+            // Finished elevation and minimum haunch depth checs
+            artifact.SetMinimumAllowableHaunchDepth(fillet);
+
+            // check at geometry control interval and user-specified intervals
+            std::vector<IntervalIndexType> checkIntervals = pIntervals->GetSpecCheckGeometryControlIntervals();
+
+            PoiList vPoi;
+            pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_TENTH_POINTS,&vPoi);
+            pPoi->GetPointsOfInterest(segmentKey,POI_SPAN | POI_0L | POI_10L,&vPoi);
+            pPoi->GetPointsOfInterest(segmentKey,POI_START_FACE | POI_END_FACE,&vPoi);
+            // We can't compute accurate elevations within closure joints. Get rid of any pois off segments
+            vPoi.erase(std::remove_if(vPoi.begin(),vPoi.end(),MatchPoiOffSegment(pPoi)),std::end(vPoi));
+            pPoi->SortPoiList(&vPoi); // sorts and removes duplicates
+
+            Float64 maxElevDiff = 0;
+            Float64 minHaunchDepth = Float32_Max;
+
+            for (auto interval : checkIntervals)
+            {
+               for (const pgsPointOfInterest& poi : vPoi)
+               {
+                  Float64 station,offset;
+                  pBridge->GetStationAndOffset(poi,&station,&offset);
+                  Float64 elev = pAlignment->GetElevation(station,offset);
+
+                  Float64 lftHaunch,ctrHaunch,rgtHaunch;
+                  Float64 finished_elevation = pDeformedGirderGeometry->GetFinishedElevation(poi,interval,&lftHaunch,&ctrHaunch,&rgtHaunch);
+
+                  Float64 diff = fabs(finished_elevation - elev);
+
+                  if (maxElevDiff < diff)
+                  {
+                     artifact.SetMaxFinishedElevation(station,offset,poi,elev,finished_elevation);
+                     artifact.SetFinishedElevationControllingInterval(interval);
+                     maxElevDiff = diff;
+                  }
+
+                  // Check min haunch depth at edges of top flange against fillet requirements
+                  Float64 minDepth = min(lftHaunch,rgtHaunch);
+                  if (minDepth < minHaunchDepth)
+                  {
+                     artifact.SetMinimumHaunchDepth(station,offset,poi,minDepth);
+                     artifact.SetMinimumHaunchDepthControllingInterval(interval);
+                     minHaunchDepth = minDepth;
+                  }
+               }
+            }
          }
          else
          {
-            Float64 min_fillet = pGirderEntry->GetMinFilletValue();
-            artifact.SetRequiredMinimumFillet(min_fillet);
-         }
+            artifact.SetSlabOffsetApplicability(true);
+            artifact.SetFinishedElevationApplicability(false);
 
-         Float64 fillet = pBridge->GetFillet();
-         artifact.SetProvidedFillet(fillet);
+            //  provided slab offsets
+            std::array<Float64,2> slabOffset;
+            pBridge->GetSlabOffset(segmentKey,&slabOffset[pgsTypes::metStart],&slabOffset[pgsTypes::metEnd]);
+
+            artifact.SetProvidedSlabOffset(slabOffset[pgsTypes::metStart],slabOffset[pgsTypes::metEnd]);
+
+            // get required slab offset
+            Float64 requiredSlabOffset = pGdrHaunch->GetRequiredSlabOffset(segmentKey);
+            artifact.SetRequiredSlabOffset(requiredSlabOffset);
+
+            const auto& slab_offset_details = pGdrHaunch->GetSlabOffsetDetails(segmentKey);
+
+            // Get least haunch depth and its location along girder
+            Float64 minval(Float64_Max);
+            Float64 minloc;
+            for (const auto& slab_offset : slab_offset_details.SlabOffset)
+            {
+               Float64 val = slab_offset.TopSlabToTopGirder - slab_offset.tSlab - slab_offset.GirderOrientationEffect;
+               if (val < minval)
+               {
+                  minval = val;
+                  minloc = slab_offset.PointOfInterest.GetDistFromStart();
+               }
+            }
+
+            artifact.SetLeastHaunchDepth(minloc,minval);
+
+            // minimum fillet requirements
+            if (isAdjacentSpacing)
+            {
+               // Min fillet is zero for adjacently spaced beams
+               artifact.SetRequiredMinimumFillet(0.0);
+            }
+            else
+            {
+               Float64 min_fillet = pGirderEntry->GetMinFilletValue();
+               artifact.SetRequiredMinimumFillet(min_fillet);
+            }
+
+            Float64 fillet = pBridge->GetFillet();
+            artifact.SetProvidedFillet(fillet);
+
+            // warning tolerance for excessive haunch
+            Float64 warn_tol = pGirderEntry->GetExcessiveSlabOffsetWarningTolerance();
+            artifact.SetExcessSlabOffsetWarningTolerance(warn_tol);
+
+            // determine if stirrup lengths could be a problem
+
+         // warn of possible stirrup length issue if the difference in haunch depth along the girder is more than half the deck thickness"
+            artifact.CheckStirrupLength(bDoStirrupsEngageDeck && tSlab / 2 < fabs(slab_offset_details.HaunchDiff));
+         }
 
          // warning tolerance for excessive haunch
          Float64 warn_tol = pGirderEntry->GetExcessiveSlabOffsetWarningTolerance();
          artifact.SetExcessSlabOffsetWarningTolerance(warn_tol);
 
-         // determine if stirrup lengths could be a problem
-
-   #pragma Reminder("Assumes constant slab thickness throughout bridge")
-         // warn of possible stirrup length issue if the difference in haunch depth along the girder is more than half the deck thickness"
-         GET_IFACE(IPointOfInterest, pPoi);
-         PoiList vPoi;
-         pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | POI_5L, &vPoi);
-         ATLASSERT(vPoi.size() == 1);
-         pgsPointOfInterest msPOI = vPoi.front();
-         Float64 tSlab = pBridge->GetGrossSlabDepth(msPOI);
-         artifact.CheckStirrupLength( bDoStirrupsEngageDeck && tSlab/2 < fabs(slab_offset_details.HaunchDiff) );
-
-         // Check A requirements at bearing centerlines if appropriate
-         Float64 min_haunch;
-         if (!pGirderEntry->GetMinHaunchAtBearingLines(&min_haunch))
+         ///////////////////////////////////////////////////////////////
+         //
+         // Camber Tolerance for Haunch 
+         //
+         ///////////////////////////////////////////////////////////////
+         if (!pSpec->IsAssumedExcessCamberInputEnabled())
          {
-            artifact.SetHaunchAtBearingCLsApplicability(pgsSegmentConstructabilityArtifact::sobappNA);
-         }
-         else
-         {
-            artifact.SetHaunchAtBearingCLsApplicability((pSpecEntry->IsSlabOffsetCheckEnabled() ? 
-                                                         pgsSegmentConstructabilityArtifact::sobappYes : 
-                                                         pgsSegmentConstructabilityArtifact::sobappNAPrintOnly));
-
-            artifact.SetRequiredHaunchAtBearingCLs(min_haunch);
-
-            Float64 haunchstrt = slabOffset[pgsTypes::metStart] - tSlab;
-            Float64 haunchend  = slabOffset[pgsTypes::metEnd] - tSlab;
-            artifact.SetProvidedHaunchAtBearingCLs( Min(haunchstrt,haunchend) );
-         }
-      }
-
-      ///////////////////////////////////////////////////////////////
-      //
-      // Camber Tolerance for Haunch 
-      //
-      ///////////////////////////////////////////////////////////////
-      if (!pSpec->IsAssumedExcessCamberInputEnabled())
-      {
-         artifact.SetHaunchGeometryCheckApplicability(false);
-      }
-      else
-      {
-         artifact.SetHaunchGeometryCheckApplicability(true);
-
-         Float64 tolerance = pSpecEntry->GetHaunchLoadCamberTolerance();
-         artifact.SetHaunchGeometryTolerance(tolerance);
-
-         Float64 assumedExcessCamber = pBridge->GetAssumedExcessCamber(segmentKey.groupIndex,segmentKey.girderIndex);
-         artifact.SetAssumedExcessCamber(assumedExcessCamber);
-
-         GET_IFACE(IGirderHaunch,pGdrHaunch);
-         const auto& slab_offset_details = pGdrHaunch->GetSlabOffsetDetails(segmentKey);
-
-         // Need excess camber at mid-span - get details there
-         ATLASSERT(std::is_sorted(std::begin(slab_offset_details.SlabOffset), std::end(slab_offset_details.SlabOffset), [](const auto& a, const auto& b) {return a.PointOfInterest < b.PointOfInterest;}));
-         // search only the middle of the container
-         auto nItems = slab_offset_details.SlabOffset.size();
-         auto begin_search = std::begin(slab_offset_details.SlabOffset);
-         std::advance(begin_search, nItems / 2 - 1);
-         auto end_search = begin_search;
-         std::advance(end_search, 2);
-
-         auto find_midspan_poi = [](const auto& a) {return a.PointOfInterest.IsMidSpan(POI_ERECTED_SEGMENT);}; // named lamda express for searching
-         
-         auto hit(std::find_if(begin_search,end_search, find_midspan_poi));
-         if (hit == end_search)
-         {
-            // not found, search the entire container
-            ATLASSERT(false); // it is ok that we get here... the assert is to let us know that the above quicker search
-            // didn't work... if we get here a lot, there is probably something wrong with the strategy above
-            hit = std::find_if(std::begin(slab_offset_details.SlabOffset), std::end(slab_offset_details.SlabOffset), find_midspan_poi);
-         }
-
-         if (hit != std::end(slab_offset_details.SlabOffset))
-         {
-            Float64 haunch_depth = hit->CamberEffect;
-            artifact.SetComputedExcessCamber(haunch_depth);
-         }
-         else
-         {
-            ATLASSERT(false); // THIS IS A BIG DEAL!! Can't find mid-span details. Cannot perform check. 
-           // Should never happen, but kill check to avoid later crash
             artifact.SetHaunchGeometryCheckApplicability(false);
          }
-         // minimum assumed haunch depth
-         std::vector<SlabLoad> slab_loads;
-         CSegmentKey segKey(girderKey.groupIndex, girderKey.girderIndex, 0);
-         pProdLoads->GetMainSpanSlabLoad(segKey, &slab_loads);
-
-         Float64 minDepth = Float64_Max;
-         for (const auto& sload : slab_loads)
+         else
          {
-            minDepth = min(minDepth, sload.HaunchDepth);
+            artifact.SetHaunchGeometryCheckApplicability(true);
+
+            Float64 tolerance = pSpecEntry->GetHaunchLoadCamberTolerance();
+            artifact.SetHaunchGeometryTolerance(tolerance);
+
+            Float64 assumedExcessCamber = pBridge->GetAssumedExcessCamber(segmentKey.groupIndex,segmentKey.girderIndex);
+            artifact.SetAssumedExcessCamber(assumedExcessCamber);
+
+            GET_IFACE(IGirderHaunch,pGdrHaunch);
+            const auto& slab_offset_details = pGdrHaunch->GetSlabOffsetDetails(segmentKey);
+
+            // Need excess camber at mid-span - get details there
+            ATLASSERT(std::is_sorted(std::begin(slab_offset_details.SlabOffset),std::end(slab_offset_details.SlabOffset),[](const auto& a,const auto& b) {return a.PointOfInterest < b.PointOfInterest; }));
+            // search only the middle of the container
+            auto nItems = slab_offset_details.SlabOffset.size();
+            auto begin_search = std::begin(slab_offset_details.SlabOffset);
+            std::advance(begin_search,nItems / 2 - 1);
+            auto end_search = begin_search;
+            std::advance(end_search,2);
+
+            auto find_midspan_poi = [](const auto& a) {return a.PointOfInterest.IsMidSpan(POI_ERECTED_SEGMENT); }; // named lamda express for searching
+
+            auto hit(std::find_if(begin_search,end_search,find_midspan_poi));
+            if (hit == end_search)
+            {
+               // not found, search the entire container
+               ATLASSERT(false); // it is ok that we get here... the assert is to let us know that the above quicker search
+               // didn't work... if we get here a lot, there is probably something wrong with the strategy above
+               hit = std::find_if(std::begin(slab_offset_details.SlabOffset),std::end(slab_offset_details.SlabOffset),find_midspan_poi);
+            }
+
+            if (hit != std::end(slab_offset_details.SlabOffset))
+            {
+               Float64 haunch_depth = hit->CamberEffect;
+               artifact.SetComputedExcessCamber(haunch_depth);
+            }
+            else
+            {
+               ATLASSERT(false); // THIS IS A BIG DEAL!! Can't find mid-span details. Cannot perform check. 
+               // Should never happen, but kill check to avoid later crash
+               artifact.SetHaunchGeometryCheckApplicability(false);
+            }
+            // minimum assumed haunch depth
+            std::vector<SlabLoad> slab_loads;
+            CSegmentKey segKey(girderKey.groupIndex,girderKey.girderIndex,0);
+            pProdLoads->GetMainSpanSlabLoad(segKey,&slab_loads);
+
+            Float64 minDepth = Float64_Max;
+            for (const auto& sload : slab_loads)
+            {
+               minDepth = min(minDepth,sload.HaunchDepth);
+            }
+
+            minDepth = IsZero(minDepth) ? 0.0 : minDepth; // tolerancing
+
+            artifact.SetAssumedMinimumHaunchDepth(minDepth);
          }
-
-         minDepth = IsZero(minDepth) ? 0.0 : minDepth; // tolerance
-
-         artifact.SetAssumedMinimumHaunchDepth(minDepth);         
       }
-
       ///////////////////////////////////////////////////////////////
       // Check Precamber (if applicable)
       ///////////////////////////////////////////////////////////////
       if (pGirderEntry->CanPrecamber())
       {
-         GET_IFACE(IGirder, pIGirder);
+         GET_IFACE(IGirder,pIGirder);
          artifact.SetPrecamberApplicability(true);
          SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
          for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
          {
-            CSegmentKey segmentKey(girderKey, segIdx);
+            CSegmentKey segmentKey(girderKey,segIdx);
             Float64 L = pBridge->GetSegmentLength(segmentKey);
             Float64 N = pGirderEntry->GetPrecamberLimit();
             Float64 limit = IsZero(N) ? 0 : L / N;
@@ -5644,39 +5728,39 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
       ///////////////////////////////////////////////////////////////
       pgsTypes::SupportedBeamSpacing spacingType = pIBridgeDesc->GetGirderSpacingType();
 
-      if ( pSpecEntry->CheckBottomFlangeClearance() && ::IsGirderSpacing(spacingType) )
+      if (pSpecEntry->CheckBottomFlangeClearance() && ::IsGirderSpacing(spacingType))
       {
          artifact.SetBottomFlangeClearanceApplicability(true);
 
-         GET_IFACE(IPointOfInterest, pPoi);
+         GET_IFACE(IPointOfInterest,pPoi);
 
          PoiList vPoi;
-         pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE, &vPoi);
+         pPoi->GetPointsOfInterest(segmentKey,POI_START_FACE | POI_END_FACE,&vPoi);
          ATLASSERT(vPoi.size() == 2);
 
-         Float64 CleftStart, CrightStart;
+         Float64 CleftStart,CrightStart;
          pBridge->GetBottomFlangeClearance(vPoi.front(),&CleftStart,&CrightStart);
 
-         Float64 CleftEnd, CrightEnd;
+         Float64 CleftEnd,CrightEnd;
          pBridge->GetBottomFlangeClearance(vPoi.back(),&CleftEnd,&CrightEnd);
 
-         Float64 Cleft  = Min(CleftStart, CleftEnd);
+         Float64 Cleft = Min(CleftStart,CleftEnd);
          Float64 Cright = Min(CrightStart,CrightEnd);
 
          Float64 CthisSegment = 0;
-         if ( 0 < Cleft && 0 < Cright )
+         if (0 < Cleft && 0 < Cright)
          {
             CthisSegment = Min(Cleft,Cright);
          }
-         else if ( Cleft < 0 && 0 < Cright)
+         else if (Cleft < 0 && 0 < Cright)
          {
             CthisSegment = Cright;
          }
-         else if (0 < Cleft && Cright < 0 )
+         else if (0 < Cleft && Cright < 0)
          {
             CthisSegment = Cleft;
          }
-         else 
+         else
          {
             // Cleft and Cright < 0... this is a single girder bridges
             artifact.SetBottomFlangeClearanceApplicability(false); // not applicable
@@ -5692,7 +5776,59 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
 
       pArtifact->AddSegmentArtifact(artifact);
    }
+
+   // Along entire girderline
+   // Check minimum haunch depth requirements at bearing centerlines if appropriate
+   Float64 min_haunch;
+   if (!pGirderEntry->GetMinHaunchAtBearingLines(&min_haunch))
+   {
+      pArtifact->SetHaunchBearingCLApplicability(pgsConstructabilityArtifact::hbcAppNA);
+   }
+   else
+   {
+
+      pArtifact->SetHaunchBearingCLApplicability(isHaunchCheck ?
+         pgsConstructabilityArtifact::hbcAppYes :
+         pgsConstructabilityArtifact::hbcAppNAPrintOnly);
+
+      pArtifact->SetRequiredHaunchAtBearingCLs(min_haunch);
+
+      if (pgsTypes::hidHaunchDirectly == haunchInputType || pgsTypes::hidHaunchPlusSlabDirectly == haunchInputType)
+      {
+         GET_IFACE_NOCHECK(ISectionProperties,pSectProps);
+         GET_IFACE(IPointOfInterest,pPoi);
+
+         // Haunch depth at start end bearing
+         CSegmentKey startSegmentKey(girderKey,0);
+
+         PoiList vPoi;
+         pPoi->GetPointsOfInterest(startSegmentKey,POI_ERECTED_SEGMENT | POI_0L ,&vPoi);
+         ATLASSERT(vPoi.size() == 1);
+         Float64 haunchstrt = pSectProps->GetStructuralHaunchDepth(vPoi.front(),pgsTypes::hspDetailedDescription);
+
+         CSegmentKey endSegmentKey(girderKey, nSegments-1);
+         vPoi.clear();
+         pPoi->GetPointsOfInterest(endSegmentKey,POI_ERECTED_SEGMENT | POI_10L,&vPoi);
+         ATLASSERT(vPoi.size() == 1);
+         Float64 haunchend = pSectProps->GetStructuralHaunchDepth(vPoi.back(),pgsTypes::hspDetailedDescription);
+
+         pArtifact->SetProvidedHaunchAtBearingCLs(haunchstrt, haunchend);
+      }
+      else
+      {
+         ATLASSERT(nSegments == 1); // pgsuper
+         CSegmentKey segmentKey(girderKey,0);
+
+         Float64 haunchstrt,haunchend;
+         pBridge->GetSlabOffset(segmentKey,&haunchstrt,&haunchend);
+
+         haunchstrt -= tSlab;
+         haunchend  -= tSlab;
+         pArtifact->SetProvidedHaunchAtBearingCLs(haunchstrt,haunchend);
+      }
+   }
 }
+
 
 void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey, pgsDebondArtifact* pArtifact) const
 {
@@ -6741,7 +6877,7 @@ void pgsDesigner2::DesignMidZone(bool bUseCurrentStrands, const arDesignOptions&
    Int16 nIterMax = 40;
    Int16 nIterEarlyStage = (options.doDesignSlabOffset != sodPreserveHaunch) ? 10 : 5; // Early design stage - NOTE: DO NOT change this value unless you run all design tests VERY SENSITIVE!!!
    StrandIndexType Ns, Nh, Nt;
-   Float64 fc, fci, start_slab_offset, end_slab_offset;
+   Float64 fc, fci, start_slab_offset(0), end_slab_offset(0);
 
    LOG(_T(""));
    LOG(_T("UPDATE INITIAL DESIGN PARAMETERS IN MID-ZONE"));
@@ -6764,8 +6900,11 @@ void pgsDesigner2::DesignMidZone(bool bUseCurrentStrands, const arDesignOptions&
       fc = m_StrandDesignTool.GetConcreteStrength();
       ConcStrengthResultType str_result;
       fci = m_StrandDesignTool.GetReleaseStrength(&str_result);
+      if (options.doDesignSlabOffset != sodPreserveHaunch)
+      {
       start_slab_offset = m_StrandDesignTool.GetSlabOffset(pgsTypes::metStart);
       end_slab_offset   = m_StrandDesignTool.GetSlabOffset(pgsTypes::metEnd);
+      }
 
       LOG(_T(""));
       LOG(_T("Initial Design Parameters Trial # ") << cIter);
@@ -6901,6 +7040,7 @@ void pgsDesigner2::DesignMidZone(bool bUseCurrentStrands, const arDesignOptions&
          }
       }
 
+      bool Aconverged;
       if (options.doDesignSlabOffset != sodPreserveHaunch)
       {
          pProgress->UpdateMessage(_T("Designing Slab Offset - inner loop"));
@@ -6911,19 +7051,21 @@ void pgsDesigner2::DesignMidZone(bool bUseCurrentStrands, const arDesignOptions&
          {
             return;
          }
+
+         // slab offset must be equal to or slightly larger than calculated. If it is smaller, we might under design.
+         Float64 AdiffStart = start_slab_offset - m_StrandDesignTool.GetSlabOffset(pgsTypes::metStart);
+         Float64 AdiffEnd = end_slab_offset - m_StrandDesignTool.GetSlabOffset(pgsTypes::metEnd);
+         Aconverged = (0.0 <= AdiffStart && AdiffStart <= WBFL::Units::ConvertToSysUnits(0.5,WBFL::Units::Measure::Inch)) &&
+            (0.0 <= AdiffEnd && AdiffEnd <= WBFL::Units::ConvertToSysUnits(0.5,WBFL::Units::Measure::Inch));
       }
       else
       {
          LOG(_T("Skipping Slab Offset Design due to user input"));
+         Aconverged = true; // we did not touch A
       }
 
       m_StrandDesignTool.DumpDesignParameters();
 
-      // slab offset must be equal to or slightly larger than calculated. If it is smaller, we might under design.
-      Float64 AdiffStart = start_slab_offset - m_StrandDesignTool.GetSlabOffset(pgsTypes::metStart);
-      Float64 AdiffEnd   = end_slab_offset   - m_StrandDesignTool.GetSlabOffset(pgsTypes::metEnd);
-      bool Aconverged = (0.0 <= AdiffStart && AdiffStart <= WBFL::Units::ConvertToSysUnits(0.5,WBFL::Units::Measure::Inch)) &&
-                        (0.0 <= AdiffEnd   && AdiffEnd   <= WBFL::Units::ConvertToSysUnits(0.5,WBFL::Units::Measure::Inch));
 
       LOG(_T("End of trial ")<<cIter);
       LOG(_T("======================================================================")<<cIter);
@@ -6932,7 +7074,10 @@ void pgsDesigner2::DesignMidZone(bool bUseCurrentStrands, const arDesignOptions&
       LOG(_T("Nt: ")<< (Nt==m_StrandDesignTool.GetNt() ? _T("Converged"):_T("Did not Converge")) );
       LOG(_T("f'c: ")<< (IsEqual(fc,m_StrandDesignTool.GetConcreteStrength()) ? _T("Converged"):_T("Did not Converge")) );
       LOG(_T("f'ci: ")<< (IsEqual(fci,m_StrandDesignTool.GetReleaseStrength()) ? _T("Converged"):_T("Did not Converge")) );
-      LOG(_T("Slab Offset:")<< (Aconverged ? _T("Converged"):_T("Did not Converge")) );
+      if (options.doDesignSlabOffset != sodPreserveHaunch)
+      {
+         LOG(_T("Slab Offset:") << (Aconverged ? _T("Converged") : _T("Did not Converge")));
+      }
       LOG(_T("======================================================================")<<cIter);
 
       if ( Ns == m_StrandDesignTool.GetNs()     &&
@@ -7631,11 +7776,14 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands, IProgres
    pBridge->GetGirderGroupPiers(segmentKey.groupIndex, &startPierIdx, &endPierIdx);
    ATLASSERT(endPierIdx == startPierIdx + 1);
 
+   if (m_StrandDesignTool.IsDesignSlabOffset())
+   {
    LOG(_T(""));
-   LOG(_T("Bridge A dimension  (Start) = ") << WBFL::Units::ConvertFromSysUnits(pBridge->GetSlabOffset(segmentKey,pgsTypes::metStart), WBFL::Units::Measure::Inch) << _T(" in"));
-   LOG(_T("Bridge A dimension  (End)   = ") << WBFL::Units::ConvertFromSysUnits(pBridge->GetSlabOffset(segmentKey,pgsTypes::metEnd), WBFL::Units::Measure::Inch) << _T(" in"));
-   LOG(_T("Current A dimension (Start) = ") << WBFL::Units::ConvertFromSysUnits(m_StrandDesignTool.GetSlabOffset(pgsTypes::metStart), WBFL::Units::Measure::Inch) << _T(" in"));
-   LOG(_T("Current A dimension (End)   = ") << WBFL::Units::ConvertFromSysUnits(m_StrandDesignTool.GetSlabOffset(pgsTypes::metEnd), WBFL::Units::Measure::Inch) << _T(" in"));
+      LOG(_T("Bridge A dimension  (Start) = ") << WBFL::Units::ConvertFromSysUnits(pBridge->GetSlabOffset(segmentKey,pgsTypes::metStart),WBFL::Units::Measure::Inch) << _T(" in"));
+      LOG(_T("Bridge A dimension  (End)   = ") << WBFL::Units::ConvertFromSysUnits(pBridge->GetSlabOffset(segmentKey,pgsTypes::metEnd),WBFL::Units::Measure::Inch) << _T(" in"));
+      LOG(_T("Current A dimension (Start) = ") << WBFL::Units::ConvertFromSysUnits(m_StrandDesignTool.GetSlabOffset(pgsTypes::metStart),WBFL::Units::Measure::Inch) << _T(" in"));
+      LOG(_T("Current A dimension (End)   = ") << WBFL::Units::ConvertFromSysUnits(m_StrandDesignTool.GetSlabOffset(pgsTypes::metEnd),WBFL::Units::Measure::Inch) << _T(" in"));
+   }
    LOG(_T(""));
    LOG(_T("M girder      = ") << WBFL::Units::ConvertFromSysUnits(pProductForces->GetMoment(erectSegmentIntervalIdx, pgsTypes::pftGirder, poi, bat, rtCumulative), WBFL::Units::Measure::KipFeet) << _T(" k-ft"));
    LOG(_T("M diaphragm   = ") << WBFL::Units::ConvertFromSysUnits(pProductForces->GetMoment(castDiaphragmIntervalIdx, pgsTypes::pftDiaphragm, poi, bat, rtIncremental), WBFL::Units::Measure::KipFeet) << _T(" k-ft"));

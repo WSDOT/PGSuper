@@ -5,7 +5,6 @@
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
-Finished elevation check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
@@ -13,7 +12,6 @@ Finished elevation check failed
  28.00    4   0.03                     1     2    7DS23          36  1/2  270  10.09  10.06   2    2.5   28     2    2   0   0   0   0   4.000  5.000   2.336    -2.709     2088   0.671  0.671   2.012  0.000 -0.094 -0.102 -0.196  66.76  238.65    0.00    0.00    0.00    1.06    1.13    1.37    2.04    1.07 
 
 
-The Specification Check was Not Successful
-Finished elevation check failed
+The Specification Check was Successful
 
 

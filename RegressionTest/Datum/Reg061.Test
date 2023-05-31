@@ -4,7 +4,7 @@
 
 
 The Specification Check was Not Successful
-Tension stress check failed for Service III Limit State in Interval 16 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 16 Open to Traffic, Roadway Geometry Control
 Horizontal Interface Shear check failed for Strength I Limit State.
 Splitting check failed.
 Confinement zone check failed.
@@ -18,7 +18,7 @@ Hauling checks failed
 
 
 The Specification Check was Not Successful
-Tension stress check failed for Service III Limit State in Interval 16 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 16 Open to Traffic, Roadway Geometry Control
 Horizontal Interface Shear check failed for Strength I Limit State.
 Splitting check failed.
 Confinement zone check failed.

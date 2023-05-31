@@ -29,6 +29,7 @@
 #include <PgsExt\SegmentActivity.h>
 #include <PgsExt\StressTendonActivity.h>
 #include <PgsExt\CastLongitudinalJointActivity.h>
+#include <PgsExt\GeometryControlActivity.h>
 
 class CTimelineManager;
 
@@ -118,6 +119,10 @@ public:
    const CApplyLoadActivity& GetApplyLoadActivity() const;
    CApplyLoadActivity& GetApplyLoadActivity();
 
+   void SetGeometryControlActivity(const CGeometryControlActivity& activity);
+   const CGeometryControlActivity& GetGeometryControlActivity() const;
+   CGeometryControlActivity& GetGeometryControlActivity();
+
    // Returns the minimum elapsed time to the next event. The minimum elapsed time
    // is the sum of the time parameters associated with the activities
    // that are active during this event. This method is used to help
@@ -151,6 +156,7 @@ protected:
    CStressTendonActivity m_StressTendons;
    CRemoveTemporarySupportsActivity m_RemoveTempSupports;
    CCastLongitudinalJointActivity m_CastLongitudinalJoints;
+   CGeometryControlActivity m_GeometryControl;
 
    Uint16 GetActivityScore() const;
 

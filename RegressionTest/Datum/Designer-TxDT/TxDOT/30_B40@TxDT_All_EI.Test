@@ -33,7 +33,6 @@ Confinement zone check failed.
 The Specification Check was Not Successful
 Bursting check failed.
 Confinement zone check failed.
-Finished elevation check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
@@ -44,7 +43,6 @@ Finished elevation check failed
 The Specification Check was Not Successful
 Bursting check failed.
 Confinement zone check failed.
-Finished elevation check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
@@ -55,6 +53,5 @@ Finished elevation check failed
 The Specification Check was Not Successful
 Bursting check failed.
 Confinement zone check failed.
-Finished elevation check failed
 
 

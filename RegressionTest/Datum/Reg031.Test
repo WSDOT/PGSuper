@@ -8,8 +8,8 @@ Compression stress check failed for Service I Limit State in Interval 2 Prestres
 Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Tension stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Compression stress check failed for Service I Limit State in Interval 12 Install composite overlay
-Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic, Roadway Geometry Control
+Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic, Roadway Geometry Control
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Horizontal Interface Shear check failed for Strength I Limit State.
 Bursting check failed.
@@ -29,8 +29,8 @@ Compression stress check failed for Service I Limit State in Interval 2 Prestres
 Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Tension stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Compression stress check failed for Service I Limit State in Interval 12 Install composite overlay
-Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic, Roadway Geometry Control
+Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic, Roadway Geometry Control
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Horizontal Interface Shear check failed for Strength I Limit State.
 Bursting check failed.

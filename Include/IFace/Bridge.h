@@ -132,9 +132,11 @@ struct BearingElevationDetails
    IndexType BearingIdx; // Can be more than one bearing for girder
    Float64 Station; // station where the elevations are computed
    Float64 Offset; // offset where the elevations are computed
-   Float64 FinishedGradeElevation; // final design surface elevation at Station and Offset (top of overlay if overlay built with bridge, top of deck for no overlay or future overlay)
+   Float64 DesignGradeElevation; // Design (target) roadway elevation at Station and Offset (top of overlay if overlay built with bridge, top of deck for no overlay or future overlay)
+   Float64 FinishedGradeElevation; // Computed roadway elevation at bearing. For "A" dim input this is always same as the design elevation. For spliced girders this may vary from design
    Float64 OverlayDepth; // depth of overlay (future overlays not considered)
    Float64 GrossSlabDepth;
+   Float64 HaunchDepth;
    Float64 SlabOffset;
    Float64 Hg; // adjusted for girder orientation
    Float64 BrgRecess;
@@ -493,7 +495,7 @@ interface IBridge : IUnknown
    virtual bool HasOverlay() const = 0;
    virtual bool IsFutureOverlay() const = 0;
    virtual Float64 GetOverlayWeight() const = 0;
-   virtual Float64 GetOverlayDepth() const = 0;
+   virtual Float64 GetOverlayDepth(IntervalIndexType interval) const = 0; // will return 0.0 if before overlay application interval
    virtual Float64 GetSacrificalDepth() const = 0;
    virtual Float64 GetFillet() const = 0;
    virtual Float64 GetAssumedExcessCamber(SpanIndexType spanIdx,GirderIndexType gdr) const = 0;
@@ -501,6 +503,8 @@ interface IBridge : IUnknown
    virtual Float64 GetStructuralSlabDepth(const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetCastSlabDepth(const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetPanelDepth(const pgsPointOfInterest& poi) const = 0;
+   virtual pgsTypes::HaunchInputDepthType GetHaunchInputDepthType() const = 0;
+
 
    // Returns distance from the left exterior girder to the edge of slab, measured normal to the alignment
    // Xb is measured in Bridge Line Coordinates and can be easily determined by station
@@ -592,7 +596,11 @@ interface IBridge : IUnknown
    virtual void GetRightCurbLinePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint2d** point) const = 0;
    virtual void GetRightCurbLinePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint3d** point) const = 0;
 
-   // Distance from top of slab to top of girder - Does not account for camber
+   // Distance from Roadway surface to girder top chord. This is adjusted for temp support elev adjustments, if applicable.
+   virtual Float64 GetRoadwayToTopGirderChordDistance(const pgsPointOfInterest& poi) const = 0;
+
+   // Distance from top of slab of girder top chord line. Does not include temporary support elevation chord adjustment. 
+   // Same as top of girder if no slab. Same as roadway if no overlay at time of GCE and no TS elevation adjustment.
    virtual Float64 GetTopSlabToTopGirderChordDistance(const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetTopSlabToTopGirderChordDistance(const pgsPointOfInterest& poi, Float64 Astart, Float64 Aend) const = 0;
    
@@ -690,12 +698,14 @@ interface IBridge : IUnknown
    // Compute bearing elevation data for each girder along bearing line
    // Vector returned has special cases for results with BearingIndex values at CL girder and for single bearing locations. For multi
    // bearing cases an extra CL value is inserted at the start of each girder location. For single bearings, only one value is 
-   // returned since it is by definition at the CL.
+   // returned since it is by definition at the CL. All bearings along a bearing line can be requested by setting gdrIdx==ALL_GIRDERS
+   // Elevation computation can be a pure geometry comp if bIgnoreUnrecoverableDeformations==true. However, this is not exactly accurate
+   //   because the effect can be significant. However, the ignore option is given to avoid a full structural analysis of the girderline.
    enum specialBearingIndexType {sbiCLValue=INVALID_INDEX, sbiSingleBearingValue=INVALID_INDEX-1};
-   virtual std::vector<BearingElevationDetails> GetBearingElevationDetails(PierIndexType pierIdx,pgsTypes::PierFaceType face) const = 0;
+   virtual std::vector<BearingElevationDetails> GetBearingElevationDetails(PierIndexType pierIdx,pgsTypes::PierFaceType face, GirderIndexType gdrIdx, bool bIgnoreUnrecoverableDeformations) const = 0;
 
    // Compute bearing elevation data for each girder along bearing line at edges of girder bottom. Will return two values 0=Left, 1=Right
-   virtual std::vector<BearingElevationDetails> GetBearingElevationDetailsAtGirderEdges(PierIndexType pierIdx,pgsTypes::PierFaceType face) const = 0;
+   virtual std::vector<BearingElevationDetails> GetBearingElevationDetailsAtGirderEdges(PierIndexType pierIdx,pgsTypes::PierFaceType face,GirderIndexType gdrIdx) const = 0;
 
    // Internally, all bridges start and Abutment 0 and end and abutment n-1. However, users can chose to start at a different pier or abutment
    // for display purposes. This is carried through the UI and reporting
@@ -1626,7 +1636,7 @@ interface ITempSupport : public IUnknown
    virtual void GetDirection(SupportIndexType tsIdx,IDirection** ppDirection) const = 0;
    virtual void GetSkew(SupportIndexType tsIdx,IAngle** ppAngle) const = 0;
    virtual std::vector<SupportIndexType> GetTemporarySupports(GroupIndexType grpIdx) const = 0;
-   virtual std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> GetElevationDetails(SupportIndexType tsIdx) const = 0;
+   virtual std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> GetElevationDetails(SupportIndexType tsIdx,GirderIndexType gdrIndex) const = 0;
 };
 
 /*****************************************************************************
@@ -1800,22 +1810,6 @@ interface IGirder : public IUnknown
 
    // Returns the elevation along the top of girder chord defined by the provided "A" dimension values (straight line along the top of the girder)
    virtual Float64 GetTopGirderChordElevation(const pgsPointOfInterest& poi, Float64 Astart, Float64 Aend) const = 0;
-
-   // Returns the top of girder elevation at the centerline of the specified mating surface. If pConfig is nullptr, the slab offset and excess camber from the
-   // bridge model are used, otherwise the slab offset from the config is used and the excess camber is computed using the supplied configuration
-   virtual Float64 GetTopGirderElevation(const pgsPointOfInterest& poi,MatingSurfaceIndexType matingSurfaceIdx,const GDRCONFIG* pConfig=nullptr) const = 0;
-
-   // Returns the top of girder elevation for the left, center, and right edges of the girder at the specified poi. The elevation takes into
-   // account slab offsets and excess camber. Direction defines a tranverse line passing through poi. Left and Right elevations are computed
-   // where the transverse line intersects the edges of the girder. If pDirection is nullptr, the transverse line is taken to be normal to the girder
-   virtual void GetTopGirderElevation(const pgsPointOfInterest& poi, IDirection* pDirection,Float64* pLeft, Float64* pCenter, Float64* pRight) const = 0;
-
-   // Returns the finished top of girder elevation for the left, center, and right edges of the girder at the specified poi. The elevation takes into
-   // account slab offsets and excess camber. Direction defines a tranverse line passing through poi. Left and Right elevations are computed
-   // where the transverse line intersects the edges of the girder. If pDirection is nullptr, the transverse line is taken to be normal to the girder.
-   // if bIncludeOverlay is true, the depth of the overlay is included (future overlays are not included), otherwise this method is the same
-   // as GetTopGirderElevation
-   virtual void GetFinishedElevation(const pgsPointOfInterest& poi, IDirection* pDirection, bool bIncludeOverlay, Float64* pLeft, Float64* pCenter, Float64* pRight) const = 0;
 
    // Returns the height of the splitting zone 
    virtual Float64 GetSplittingZoneHeight(const pgsPointOfInterest& poi) const = 0;

@@ -543,6 +543,7 @@ public:
    bool DoLoadMasterLibrary(const CString& rPath);
 
    bool DoEditBearing();
+   bool DoEditHaunch();
 
    void InitProjectProperties();
 

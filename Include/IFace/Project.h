@@ -542,7 +542,7 @@ interface ISpecification : IUnknown
 
    virtual pgsTypes::OverlayLoadDistributionType GetOverlayLoadDistributionType() const = 0;
 
-   // Tolerance value is only used if HaunchLoadComputationType==hlcAccountForCamber
+   // Tolerance value is only used if HaunchLoadComputationType==hlcDetailedAnalysis && slab offset input
    virtual pgsTypes::HaunchLoadComputationType GetHaunchLoadComputationType() const = 0;
    virtual Float64 GetCamberTolerance() const = 0;
    virtual Float64 GetHaunchLoadCamberFactor() const = 0;
@@ -1093,23 +1093,28 @@ interface IBridgeDescription : IUnknown
 
    virtual void SetWearingSurfaceType(pgsTypes::WearingSurfaceType wearingSurfaceType) = 0;
 
-   // slab offset
+   /////////// Haunch Input //////////////
+   // Define how haunch is input. This can be older Slab Offset dimension method or newer hidHaunchDirectly and hidHaunchPlusSlabDirectly methods
+   virtual void SetHaunchInputDepthType(pgsTypes::HaunchInputDepthType type) = 0;
+   virtual pgsTypes::HaunchInputDepthType GetHaunchInputDepthType() const = 0;
+
+   // slab offset (valid only when HaunchInputDepthType == pgsTypes::hidACamber)
    // changes slab offset type to be sotBridge
    virtual void SetSlabOffsetType(pgsTypes::SlabOffsetType offsetType) = 0;
    virtual void SetSlabOffset( Float64 slabOffset) = 0;
    virtual pgsTypes::SlabOffsetType GetSlabOffsetType() const = 0;
-   // changes slab offset type to sotBearingLine
-   virtual void SetSlabOffset(pgsTypes::SupportType supportType, SupportIndexType supportIdx, pgsTypes::PierFaceType face, Float64 offset) = 0;
-   virtual void SetSlabOffset(pgsTypes::SupportType supportType, SupportIndexType supportIdx, Float64 backSlabOffset,Float64 aheadSlabOffset) = 0;
-   virtual Float64 GetSlabOffset(pgsTypes::SupportType supportType, SupportIndexType supportIdx, pgsTypes::PierFaceType face) const = 0;
-   virtual void GetSlabOffset(pgsTypes::SupportType supportType, SupportIndexType supportIdx, Float64* pBackSlabOffset, Float64* pAheadSlabOffset) const = 0;
+   // changes slab offset type to sotBearingLine at permanent piers.
+   virtual void SetSlabOffset(SupportIndexType supportIdx, pgsTypes::PierFaceType face, Float64 offset) = 0;
+   virtual void SetSlabOffset(SupportIndexType supportIdx, Float64 backSlabOffset,Float64 aheadSlabOffset) = 0;
+   virtual Float64 GetSlabOffset(SupportIndexType supportIdx, pgsTypes::PierFaceType face) const = 0;
+   virtual void GetSlabOffset(SupportIndexType supportIdx, Float64* pBackSlabOffset, Float64* pAheadSlabOffset) const = 0;
    // sets slab offset per girder ... sets the slab offset type to sotSegment
    virtual void SetSlabOffset(const CSegmentKey& segmentKey, pgsTypes::MemberEndType end, Float64 offset) = 0;
    virtual void SetSlabOffset(const CSegmentKey& segmentKey, Float64 startSlabOffset,Float64 endSlabOffset) = 0;
    virtual Float64 GetSlabOffset(const CSegmentKey& segmentKey, pgsTypes::MemberEndType end) const = 0;
    virtual void GetSlabOffset(const CSegmentKey& segmentKey, Float64* pStartSlabOffset,Float64* pEndSlabOffset) const = 0;
 
-   // fillet
+   // fillet is used for both slab offset and direct haunch input
    virtual void SetFillet( Float64 Fillet) = 0;
    virtual Float64 GetFillet() const = 0;
 
@@ -1123,6 +1128,28 @@ interface IBridgeDescription : IUnknown
    // sets AssumedExcessCamber per girder ... sets the AssumedExcessCamber type to aecGirder
    virtual void SetAssumedExcessCamber( SpanIndexType spanIdx, GirderIndexType gdrIdx, Float64 assumedExcessCamber) = 0;
    virtual Float64 GetAssumedExcessCamber( SpanIndexType spanIdx, GirderIndexType gdrIdx) const = 0;
+
+   // Direct input of haunch depths (valid only when HaunchInputDepthType == pgsTypes::hidHaunchDirectly or hidHaunchPlusSlabDirectly)
+   virtual void SetHaunchInputLocationType(pgsTypes::HaunchInputLocationType type) = 0;
+   virtual pgsTypes::HaunchInputLocationType GetHaunchInputLocationType() const = 0;
+   virtual void SetHaunchLayoutType(pgsTypes::HaunchLayoutType type) = 0;
+   virtual pgsTypes::HaunchLayoutType GetHaunchLayoutType() const = 0;
+   virtual void SetHaunchInputDistributionType(pgsTypes::HaunchInputDistributionType type) = 0;
+   virtual pgsTypes::HaunchInputDistributionType GetHaunchInputDistributionType() const = 0;
+   // Set haunch depths for entire bridge (segments or spans depending on HaunchLayoutType) (HaunchInputLocationType must be preset to hilSame4Bridge)
+   virtual void SetDirectHaunchDepths4Bridge(const std::vector<Float64>& haunchDepths) = 0;
+   // Method valid only when HaunchLayoutType==hltAlongSpans && HaunchInputLocationType==hilSame4AllGirders
+   virtual void SetDirectHaunchDepthsPerSpan(SpanIndexType spanIdx,const std::vector<Float64>& haunchDepths) = 0;
+   // Method valid only when HaunchLayoutType==hltAlongSpans && HaunchInputLocationType==hilPerEach
+   virtual void SetDirectHaunchDepthsPerSpan(SpanIndexType spanIdx,GirderIndexType gdrIdx,const std::vector<Float64>& haunchDepths) = 0;
+   // Method valid only when HaunchLayoutType==hltAlongSegments && HaunchInputLocationType==hilSame4AllGirders
+   virtual void SetDirectHaunchDepthsPerSegment(GroupIndexType group,SegmentIndexType SegmentIdx,const std::vector<Float64>& haunchDepths) = 0;
+   // Method valid only when HaunchLayoutType==hltAlongSegments && HaunchInputLocationType==hilPerEach
+   virtual void SetDirectHaunchDepthsPerSegment(GroupIndexType group,GirderIndexType gdrIdx,SegmentIndexType SegmentIdx,const std::vector<Float64>& haunchDepths) = 0;
+   // Method valid only when HaunchLayoutType==hltAlongSpans
+   virtual std::vector<Float64> GetDirectHaunchDepthsPerSpan(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
+   // Method valid only when HaunchLayoutType==hltAlongSegments
+   virtual std::vector<Float64> GetDirectHaunchDepthsPerSegment(GroupIndexType group,GirderIndexType gdrIdx, SegmentIndexType SegmentIdx) = 0;
 
    // Returns a vector of valid connection types
    virtual std::vector<pgsTypes::BoundaryConditionType> GetBoundaryConditionTypes(PierIndexType pierIdx) const = 0;

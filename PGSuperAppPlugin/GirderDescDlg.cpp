@@ -259,16 +259,43 @@ void CGirderDescDlg::InitialzePages()
 
    // Setup girder data for our pages
    m_General.m_bUseSameGirderType = pBridgeDesc->UseSameGirderForEntireBridge();
-   m_General.m_SlabOffsetType = pBridgeDesc->GetSlabOffsetType();
-   m_General.m_SlabOffset[pgsTypes::metStart] = pGirder->GetSegment(m_SegmentKey.segmentIndex)->GetSlabOffset(pgsTypes::metStart); // must use original girder, not our local copy
-   m_General.m_SlabOffset[pgsTypes::metEnd] = pGirder->GetSegment(m_SegmentKey.segmentIndex)->GetSlabOffset(pgsTypes::metEnd);
 
-   // assumed excess camber
-   GET_IFACE2(pBroker,ISpecification, pSpec );
+   if (pBridgeDesc->GetHaunchInputDepthType() == pgsTypes::hidACamber)
+   {
+      // slab offset and assumed excess camber
+      m_General.m_SlabOffsetOrHaunch[pgsTypes::metStart] = pGirder->GetSegment(m_SegmentKey.segmentIndex)->GetSlabOffset(pgsTypes::metStart); // must use original girder, not our local copy
+      m_General.m_SlabOffsetOrHaunch[pgsTypes::metEnd] = pGirder->GetSegment(m_SegmentKey.segmentIndex)->GetSlabOffset(pgsTypes::metEnd);
+
+      GET_IFACE2(pBroker,ISpecification,pSpec);
    m_bCanAssumedExcessCamberInputBeEnabled = pSpec->IsAssumedExcessCamberInputEnabled();
+      m_General.m_AssumedExcessCamber = m_bCanAssumedExcessCamberInputBeEnabled ? pIBridgeDesc->GetAssumedExcessCamber(m_SegmentKey.groupIndex,m_SegmentKey.girderIndex) : 0.0;
+   }
+   else
+   {
+      pgsTypes::HaunchInputLocationType haunchInputLocationType = pBridgeDesc->GetHaunchInputLocationType();
+      pgsTypes::HaunchLayoutType haunchLayoutType = pBridgeDesc->GetHaunchLayoutType();
+      pgsTypes::HaunchInputDistributionType haunchInputDistributionType = pBridgeDesc->GetHaunchInputDistributionType();
 
-   m_General.m_AssumedExcessCamberType = m_bCanAssumedExcessCamberInputBeEnabled ? pIBridgeDesc->GetAssumedExcessCamberType() : pgsTypes::aecBridge;
-   m_General.m_AssumedExcessCamber     =  m_bCanAssumedExcessCamberInputBeEnabled ? pIBridgeDesc->GetAssumedExcessCamber(m_SegmentKey.groupIndex,m_SegmentKey.girderIndex) : 0.0;
+      if (haunchLayoutType == pgsTypes::hltAlongSpans &&
+         (haunchInputDistributionType == pgsTypes::hidUniform || haunchInputDistributionType == pgsTypes::hidAtEnds))
+      {
+         // haunch depths are in span object
+         std::vector<Float64> haunchDepths = pBridgeDesc->GetSpan(m_SegmentKey.groupIndex)->GetDirectHaunchDepths(m_SegmentKey.girderIndex);
+         m_General.m_SlabOffsetOrHaunch[pgsTypes::metStart] = haunchDepths.front();
+         m_General.m_SlabOffsetOrHaunch[pgsTypes::metEnd] = haunchDepths.back();
+
+         m_General.m_CanDisplayHauchDepths = (haunchInputLocationType == pgsTypes::hilPerEach) ? CGirderDescGeneralPage::cdhEdit : CGirderDescGeneralPage::cdhDisplay;
+      }
+      else
+      {
+         m_General.m_SlabOffsetOrHaunch[pgsTypes::metStart] = 0.0;
+         m_General.m_SlabOffsetOrHaunch[pgsTypes::metEnd] = 0.0;
+         m_General.m_CanDisplayHauchDepths = CGirderDescGeneralPage::cdhHide;
+      }
+
+      m_bCanAssumedExcessCamberInputBeEnabled = false;
+      m_General.m_AssumedExcessCamber = 0.0;
+   }
 
    // shear page
    m_Shear.m_CurGrdName = pGirder->GetGirderName();

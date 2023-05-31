@@ -258,4 +258,13 @@ interface IIntervals : IUnknown
    // bridges, it could be the interval when longitudinal joints become composite or
    // when intermediate diaphragms are composite if there are no concrete elements composite with the girder
    virtual IntervalIndexType GetLastCompositeInterval() const = 0;
+
+   // Interval of "the" Geometry Control Event (GCE)
+   virtual IntervalIndexType GetGeometryControlInterval() const = 0;
+
+   // All intervals to report finished elevations
+   virtual std::vector<IntervalIndexType> GetReportingGeometryControlIntervals() const = 0;
+
+   // All intervals whem finished elevations are to be spec check'd
+   virtual std::vector<IntervalIndexType> GetSpecCheckGeometryControlIntervals() const = 0;
 };

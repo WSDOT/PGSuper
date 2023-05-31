@@ -25,13 +25,14 @@
 
 #include "stdafx.h"
 #include "HaunchSegmentGrid.h"
-#include "EditHaunchDlg.h"
+#include "EditHaunchACamberDlg.h"
 
 #include <System\Tokenizer.h>
 #include "PGSuperUnits.h"
 #include <Units\Measure.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <PgsExt\GirderLabel.h>
+#include <PgsExt\HaunchDepthInputConversionTool.h>
 
 
 #ifdef _DEBUG
@@ -75,18 +76,18 @@ int CHaunchSegmentGrid::GetColWidth(ROWCOL nCol)
    return (int)(rect.Width( )*(Float64)1/7);
 }
 
-CEditHaunchDlg* CHaunchSegmentGrid::GetParentDlg()
+CBridgeDescription2* CHaunchSegmentGrid::GetBridgeDesc()
 {
-   CEditHaunchDlg* pParent;
+   CEditHaunchACamberDlg* pParent;
    if (m_GroupIdx == ALL_GROUPS)
    {
-      pParent = (CEditHaunchDlg*)(GetParent()->GetParent());
+      pParent = (CEditHaunchACamberDlg*)(GetParent()->GetParent());
    }
    else
    {
-      pParent = (CEditHaunchDlg*)(GetParent()->GetParent()->GetParent());
+      pParent = (CEditHaunchACamberDlg*)(GetParent()->GetParent()->GetParent());
    }
-   return pParent;
+   return pParent->GetBridgeDesc();
 }
 
 void CHaunchSegmentGrid::CustomInit(GroupIndexType grpIdx)
@@ -104,24 +105,27 @@ void CHaunchSegmentGrid::CustomInit(GroupIndexType grpIdx)
 // in OnInitialUpdate.
 	Initialize( );
 
+   // Don't allow pasting to increase grid size
+   m_nClipboardFlags |= GX_DNDNOAPPENDCOLS | GX_DNDNOAPPENDROWS;
+
 	GetParam( )->EnableUndo(FALSE);
 
    // we want to merge cells
    SetMergeCellsMode(gxnMergeEvalOnDisplay);
 
-   CEditHaunchDlg* pParent = GetParentDlg();
+   CBridgeDescription2* pBridge = GetBridgeDesc();
 
    ROWCOL nRows;
    ROWCOL nCols;
    if (m_GroupIdx == ALL_GROUPS)
    {
       nRows = 2;
-      nCols = (ROWCOL)(pParent->m_BridgeDesc.GetPierCount() * 2 - 2);
+      nCols = (ROWCOL)(pBridge->GetPierCount() * 2 - 2);
    }
    else
    {
       nRows = 3;
-      nCols = (ROWCOL)(pParent->m_BridgeDesc.GetGirderGroup(m_GroupIdx)->GetGirder(0)->GetSegmentCount() * 2);
+      nCols = (ROWCOL)(pBridge->GetGirderGroup(m_GroupIdx)->GetGirder(0)->GetSegmentCount() * 2);
    }
 
    m_nExtraHeaderRows = nRows - 1;
@@ -134,12 +138,12 @@ void CHaunchSegmentGrid::CustomInit(GroupIndexType grpIdx)
    // no row moving
 	GetParam()->EnableMoveRows(FALSE);
 
-   SetFrozenRows(nRows/*# frozen rows*/, m_nExtraHeaderRows/*# extra header rows*/);
+   SetFrozenRows(nRows-1/*# frozen rows*/, m_nExtraHeaderRows/*# extra header rows*/);
 
    ROWCOL col = 1;
    if (m_GroupIdx == ALL_GROUPS)
    {
-      PierIndexType nPiers = pParent->m_BridgeDesc.GetPierCount();
+      PierIndexType nPiers = pBridge->GetPierCount();
       for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
       {
          if (pierIdx == 0 || pierIdx == nPiers - 1)
@@ -196,7 +200,7 @@ void CHaunchSegmentGrid::CustomInit(GroupIndexType grpIdx)
    }
    else
    {
-      auto* pGroup = pParent->m_BridgeDesc.GetGirderGroup(m_GroupIdx);
+      auto* pGroup = pBridge->GetGirderGroup(m_GroupIdx);
       auto* pGirder = pGroup->GetGirder(0); // all girders in the group have the same number of segments
       SegmentIndexType nSegments = pGirder->GetSegmentCount();
       for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
@@ -286,8 +290,8 @@ void CHaunchSegmentGrid::DoDataExchange(CDataExchange* pDX)
    __super::DoDataExchange(pDX);
    if (pDX->m_bSaveAndValidate)
    {
-      CEditHaunchDlg* pParent = GetParentDlg();
-      if (pParent->GetSlabOffsetType() == pgsTypes::sotSegment)
+      const CBridgeDescription2* pBridge = GetBridgeDesc();
+      if (pBridge->GetSlabOffsetType() == pgsTypes::sotSegment)
       {
          GetGridData(pDX);
       }
@@ -300,12 +304,21 @@ void CHaunchSegmentGrid::DoDataExchange(CDataExchange* pDX)
 
 void CHaunchSegmentGrid::FillGrid()
 {
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+
    GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
 
-   CEditHaunchDlg* pParent = GetParentDlg();
+   const CBridgeDescription2* pBridgeOrig = GetBridgeDesc();
+
+   // Convert current haunch data if needed
+   HaunchDepthInputConversionTool conversionTool(pBridgeOrig,pBroker,false);
+   auto convPair = conversionTool.ConvertToSlabOffsetInput(pgsTypes::sotSegment);
+   const CBridgeDescription2* pBridge = &convPair.second;
+
    GroupIndexType startGroupIdx = (m_GroupIdx == ALL_GROUPS ? 0 : m_GroupIdx);
-   GroupIndexType endGroupIdx = (m_GroupIdx == ALL_GROUPS ? pParent->m_BridgeDesc.GetGirderGroupCount() - 1 : startGroupIdx);
+   GroupIndexType endGroupIdx = (m_GroupIdx == ALL_GROUPS ? pBridge->GetGirderGroupCount() - 1 : startGroupIdx);
 
    ROWCOL nRows = GetRowCount();
    if (m_nExtraHeaderRows+1 < nRows)
@@ -318,7 +331,7 @@ void CHaunchSegmentGrid::FillGrid()
    {
       ROWCOL row = m_nExtraHeaderRows+1;
 
-      auto* pGroup = pParent->m_BridgeDesc.GetGirderGroup(grpIdx);
+      auto* pGroup = pBridge->GetGirderGroup(grpIdx);
       auto nGirders = pGroup->GetGirderCount();
 
       for (auto gdrIdx = 0; gdrIdx < nGirders; gdrIdx++, row++)
@@ -343,7 +356,7 @@ void CHaunchSegmentGrid::FillGrid()
             auto* pSegment = pGirder->GetSegment(segIdx);
 
             std::array<Float64, 2> slabOffset;
-            pSegment->GetSlabOffset(&slabOffset[pgsTypes::metStart], &slabOffset[pgsTypes::metEnd]);
+            pSegment->GetSlabOffset(&slabOffset[pgsTypes::metStart], &slabOffset[pgsTypes::metEnd], true);
 
             SetStyleRange(CGXRange(row, col), CGXStyle()
                .SetReadOnly(FALSE)
@@ -375,19 +388,19 @@ void CHaunchSegmentGrid::FillGrid()
 
 void CHaunchSegmentGrid::GetGridData(CDataExchange* pDX)
 {
-   CEditHaunchDlg* pParent = GetParentDlg();
+   CBridgeDescription2* pBridge = GetBridgeDesc();
 
-   Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
+   Float64 minSlabOffset = pBridge->GetMinSlabOffset();
    CString strMinValError;
-   strMinValError.Format(_T("Slab Offset must be greater or equal to slab depth (%s)"), FormatDimension(minSlabOffset, *m_pUnit));
+   strMinValError.Format(_T("Slab Offset must be greater or equal to slab depth + fillet (%s)"), FormatDimension(minSlabOffset, *m_pUnit));
 
    GroupIndexType startGroupIdx = (m_GroupIdx == ALL_GROUPS ? 0 : m_GroupIdx);
-   GroupIndexType endGroupIdx = (m_GroupIdx == ALL_GROUPS ? pParent->m_BridgeDesc.GetGirderGroupCount() - 1 : startGroupIdx);
+   GroupIndexType endGroupIdx = (m_GroupIdx == ALL_GROUPS ? pBridge->GetGirderGroupCount() - 1 : startGroupIdx);
    for (GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++)
    {
       ROWCOL row = m_nExtraHeaderRows + 1;
 
-      auto* pGroup = pParent->m_BridgeDesc.GetGirderGroup(grpIdx);
+      auto* pGroup = pBridge->GetGirderGroup(grpIdx);
       auto nGirders = pGroup->GetGirderCount();
       for (auto gdrIdx = 0; gdrIdx < nGirders; gdrIdx++, row++)
       {

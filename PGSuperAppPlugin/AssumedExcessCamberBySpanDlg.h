@@ -35,7 +35,7 @@ public:
 	virtual ~CAssumedExcessCamberBySpanDlg();
 
 // Dialog Data
-	enum { IDD = IDD_ASSUMED_EXCESS_CAMBER_BY_SPAN };
+	enum { IDD = IDD_ASSUMED_EXCESS_CAMBER_SPAN };
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support

@@ -903,7 +903,7 @@ void CBridgePlanView::UpdateSegmentTooltips()
             }
 
             CString strMsg5;
-            if (pBridge->GetDeckType() != pgsTypes::sdtNone)
+            if (pBridge->GetDeckType() != pgsTypes::sdtNone && pBridge->GetHaunchInputDepthType() == pgsTypes::hidACamber)
             {
                // Slab Offset
                PierIndexType startPierIdx, endPierIdx;

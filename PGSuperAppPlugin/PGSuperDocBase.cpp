@@ -587,27 +587,7 @@ bool CPGSDocBase::EditSpanDescription(SpanIndexType spanIdx, int nPage)
 
 void CPGSDocBase::OnEditHaunch() 
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-
-   const CBridgeDescription2* pOldBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-
-   CEditHaunchDlg dlg(pOldBridgeDesc);
-   if ( dlg.DoModal() == IDOK )
-   {
-      GET_IFACE(IEnvironment, pEnvironment );
-      enumExposureCondition oldExposureCondition = pEnvironment->GetExposureCondition();
-      Float64 oldRelHumidity = pEnvironment->GetRelHumidity();
-
-      std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc,     dlg.m_BridgeDesc,
-                                              oldExposureCondition, oldExposureCondition, 
-                                              oldRelHumidity,       oldRelHumidity));
-
-
-      GET_IFACE(IEAFTransactions,pTransactions);
-      pTransactions->Execute(std::move(pTxn));
-   }
+   DoEditHaunch();
 }
 
 void CPGSDocBase::OnUpdateEditHaunch(CCmdUI* pCmdUI)
@@ -656,6 +636,43 @@ bool CPGSDocBase::DoEditBearing()
    }
 }
 
+bool CPGSDocBase::DoEditHaunch()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   GET_IFACE(IBridge,pBridge);
+   if (pgsTypes::sdtNone == pBridge->GetDeckType())
+   {
+      ATLASSERT(0); // probably shouldn't be calling if no deck
+      return false;
+   }
+   else
+   {
+      GET_IFACE(IBridgeDescription,pIBridgeDesc);
+      const CBridgeDescription2* pOldBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+      CEditHaunchDlg dlg(pOldBridgeDesc);
+      if (dlg.DoModal() == IDOK)
+      {
+         GET_IFACE(IEnvironment,pEnvironment);
+         enumExposureCondition oldExposureCondition = pEnvironment->GetExposureCondition();
+         Float64 oldRelHumidity = pEnvironment->GetRelHumidity();
+
+         std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc,dlg.m_BridgeDesc,
+            oldExposureCondition,oldExposureCondition,
+            oldRelHumidity,oldRelHumidity));
+
+
+         GET_IFACE(IEAFTransactions,pTransactions);
+         pTransactions->Execute(std::move(pTxn));
+         return true;
+      }
+      else
+      {
+         return false;
+      }
+   }
+}
+
 void CPGSDocBase::OnUpdateEditBearing(CCmdUI* pCmdUI)
 {
    pCmdUI->Enable(TRUE);
@@ -683,19 +700,6 @@ bool CPGSDocBase::EditDirectSelectionPrestressing(const CSegmentKey& segmentKey)
    oldSegmentData.m_SegmentKey  = segmentKey;
    oldSegmentData.m_SegmentData = *pSegment;
    oldSegmentData.m_TimelineMgr = *pTimelineMgr;
-
-   // This function doesn't change slab offset data but we need to reserve it with the transaction
-   oldSegmentData.m_SlabOffsetType = pBridgeDesc->GetSlabOffsetType();
-   if (oldSegmentData.m_SlabOffsetType == pgsTypes::sotBridge)
-   {
-      oldSegmentData.m_SlabOffset[pgsTypes::metStart] = pBridgeDesc->GetSlabOffset();
-      oldSegmentData.m_SlabOffset[pgsTypes::metEnd] = oldSegmentData.m_SlabOffset[pgsTypes::metStart];
-   }
-   else
-   {
-      oldSegmentData.m_SlabOffset[pgsTypes::metStart] = pSegment->GetSlabOffset(pgsTypes::metStart);
-      oldSegmentData.m_SlabOffset[pgsTypes::metEnd]   =  pSegment->GetSlabOffset(pgsTypes::metEnd);
-   }
 
    if (pSegment->Strands.GetStrandDefinitionType() != pgsTypes::sdtDirectSelection )
    {
@@ -822,19 +826,6 @@ bool CPGSDocBase::EditDirectRowInputPrestressing(const CSegmentKey& segmentKey)
    oldSegmentData.m_SegmentData = *pSegment;
    oldSegmentData.m_TimelineMgr = *pTimelineMgr;
 
-   // This function doesn't change slab offset data but we need to reserve it with the transaction
-   oldSegmentData.m_SlabOffsetType = pBridgeDesc->GetSlabOffsetType();
-   if (oldSegmentData.m_SlabOffsetType == pgsTypes::sotBridge)
-   {
-      oldSegmentData.m_SlabOffset[pgsTypes::metStart] = pBridgeDesc->GetSlabOffset();
-      oldSegmentData.m_SlabOffset[pgsTypes::metEnd] = oldSegmentData.m_SlabOffset[pgsTypes::metStart];
-   }
-   else
-   {
-      oldSegmentData.m_SlabOffset[pgsTypes::metStart] = pSegment->GetSlabOffset(pgsTypes::metStart);
-      oldSegmentData.m_SlabOffset[pgsTypes::metEnd]   =  pSegment->GetSlabOffset(pgsTypes::metEnd);
-   }
-
    if (pSegment->Strands.GetStrandDefinitionType() != pgsTypes::sdtDirectRowInput )
    {
       // We can go no further
@@ -909,19 +900,6 @@ bool CPGSDocBase::EditDirectStrandInputPrestressing(const CSegmentKey& segmentKe
    oldSegmentData.m_SegmentKey = segmentKey;
    oldSegmentData.m_SegmentData = *pSegment;
    oldSegmentData.m_TimelineMgr = *pTimelineMgr;
-
-   // This function doesn't change slab offset data but we need to reserve it with the transaction
-   oldSegmentData.m_SlabOffsetType = pBridgeDesc->GetSlabOffsetType();
-   if (oldSegmentData.m_SlabOffsetType == pgsTypes::sotBridge)
-   {
-      oldSegmentData.m_SlabOffset[pgsTypes::metStart] = pBridgeDesc->GetSlabOffset();
-      oldSegmentData.m_SlabOffset[pgsTypes::metEnd] = oldSegmentData.m_SlabOffset[pgsTypes::metStart];
-   }
-   else
-   {
-      oldSegmentData.m_SlabOffset[pgsTypes::metStart] = pSegment->GetSlabOffset(pgsTypes::metStart);
-      oldSegmentData.m_SlabOffset[pgsTypes::metEnd]   =  pSegment->GetSlabOffset(pgsTypes::metEnd);
-   }
 
    if (pSegment->Strands.GetStrandDefinitionType() != pgsTypes::sdtDirectStrandInput)
    {

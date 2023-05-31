@@ -40,6 +40,7 @@
 #include <IFace\TransverseReinforcementSpec.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\SplittingChecks.h>
+#include <IFace/Alignment.h>
 
 #include <EAF\EAFDisplayUnits.h>
 

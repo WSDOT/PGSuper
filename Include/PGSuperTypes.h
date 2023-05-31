@@ -498,6 +498,37 @@ typedef struct pgsTypes
       wplBottomGirder
    } WorkPointLocation;
 
+   //// Enums controlling direct input of haunch depths ////
+   typedef enum HaunchInputDepthType
+   {
+      hidACamber,               // Use "A" (slab offset) input for haunch. This is for PGSuper only
+      hidHaunchDirectly,        // Input haunch depths (top of girder to bottom of slab) directly 
+      hidHaunchPlusSlabDirectly // Input haunch depths as total depth from top of girder to top of slab
+   } HaunchInputDepthType;
+
+   typedef enum HaunchInputLocationType 
+   { 
+      hilSame4Bridge,       // Use same haunch distribution for entire bridge
+      hilSame4AllGirders,   // Use same distribution for all girders in a span or segment
+      hilPerEach            // Unique haunch distribution for each segment or girder
+   } HaunchInputLocationType;
+
+   typedef enum HaunchLayoutType
+   { 
+      hltAlongSpans,    // Layout haunch distribution on per span basis
+      hltAlongSegments  // Layout haunch distribution per segment
+   } HaunchLayoutType;
+
+   typedef enum HaunchInputDistributionType // Values of enums below represent number of values needed to define each method
+   { 
+      hidUniform = 1,      // Apply haunch uniformly along span or segment
+      hidAtEnds = 2,       // Apply haunch linearly between ends of span or segment
+      hidParabolic = 3,    // Haunch is distributed parabolically along span or segment. Control points at ends and middle of element
+      hidQuarterPoints = 5,// Haunch is linearly distributed along quarter points of span or segment
+      hidTenthPoints = 11  // Haunch is linearly distributed along 10th points of span or segment
+   } HaunchInputDistributionType;
+
+///////// Slab Offset and Assumed Excess Camber are older haunch definition methods and are used only to define haunch depths in PGSuper  ///////////
    typedef enum SlabOffsetType
    {
       sotBridge,  // a single slab offset is used in all spans
@@ -505,6 +536,12 @@ typedef struct pgsTypes
       sotSegment,  // the slab offset is defined at the end of each segment individually
    } SlabOffsetType;
 
+   typedef enum AssumedExcessCamberType 
+   {
+      aecBridge,  // a single camber is used in all spans
+      aecSpan,    // the camber is defined at each span
+      aecGirder,  // the camber is defined at each girder
+   } AssumedExcessCamberType;
 
    typedef enum BearingType
    {
@@ -512,14 +549,6 @@ typedef struct pgsTypes
       brtPier,    // unique bearing is defined at each abutment, pier, and temporary support and applies to all segments supported by that element
       brtGirder,  // unique bearing at each pier for each girder
    } BearingType;
-
-   // Assumed excess camber input
-   typedef enum AssumedExcessCamberType 
-   {
-      aecBridge,  // a single camber is used in all spans
-      aecSpan,    // the camber is defined at each span
-      aecGirder,  // the camber is defined at each girder
-   } AssumedExcessCamberType;
 
    // Define connectivity (per AASHTO jargon) of adjacent beams.
    // This is only used if SupportedBeamSpacing==sbsUniformAdjacent or sbsGeneralAdjacent
@@ -545,11 +574,16 @@ typedef struct pgsTypes
    typedef enum OverlayLoadDistributionType
    { olDistributeEvenly=0, olDistributeTributaryWidth=1 } OverlayLoadDistributionType;
 
+   // For computing haunch load
+   // hlcZeroCamber: Use geometric data to compute haunch assuming girder is flat
+   // hlcDetailedAnalysis:
+   //       - If HaunchInputDepthType==hidACamber, use assumed excess camber, "A" and geometry to determine haunch depth
+   //       - else, direct haunch input. Use input values directly
    typedef enum HaunchLoadComputationType
-   { hlcZeroCamber, hlcAccountForCamber } HaunchLoadComputationType;
+   { hlcZeroCamber, hlcDetailedAnalysis } HaunchLoadComputationType;
 
    typedef enum HaunchAnalysisSectionPropertiesType
-   { hspZeroHaunch, hspConstFilletDepth, hspVariableParabolic } HaunchAnalysisSectionPropertiesType;
+   { hspZeroHaunch, hspConstFilletDepth, hspDetailedDescription } HaunchAnalysisSectionPropertiesType;
 
    typedef enum GirderLocation
    { Interior = 0, Exterior = 1 } GirderLocation;
@@ -881,6 +915,17 @@ typedef struct pgsTypes
       ditYesFreeStartEnd, 
       ditYesFreeEndEnd 
    } DropInType;
+
+   // The Geometry Control Event is when elevations of segment chords in the bridge model are matched to
+   // controlling haunch depths. Other geometry control activities can be created to specify when alternate roadway
+   // geometry spec checks occur, or when only reporting of elevations are requested
+   typedef enum GeometryControlActivityType
+   {
+      gcaDisabled = 0,
+      gcaGeometryReportingEvent = 2,  // Generate report only
+      gcaSpecCheckEvent = 4,          // Generate spec check and geometry report
+      gcaGeometryControlEvent = 8,    // Controlling event. There can be only one activity of this type
+   } GeometryControlActivityType;
 
 } pgsTypes;
 

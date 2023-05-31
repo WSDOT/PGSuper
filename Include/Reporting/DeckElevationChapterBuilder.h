@@ -57,6 +57,8 @@ public:
    //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
+   void BuildNoDeckElevationContent(rptChapter* pChapter,const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const;
+
    //------------------------------------------------------------------------
    virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 

@@ -25,18 +25,19 @@ Screed camber is equal to the amount the girder will deflect when the wet deck, 
 However, some agencies factor the components of deflection in order to generate results that better compare with empirical data. A generalized form of “C” camber is presented later in this document.
 
 Excess Camber
--------------
-The excess camber is the amount of camber that remains in the girder after the diaphragms and deck are placed. Excess camber can also be defined as the amount of camber that remains at the initial time when the girder is put into service, not including effects of live loads. Excess camber can be computed as D - C.
-
-The schematic at the top of this document shows the definition of  excess camber in a perfect world. However, in reality the components of deflection and losses needed to compute this value are practically impossible to compute accurately, so empirical methods are often used to estimate excess camber. Empirical methods typically apply factors to the individual camber components, so the concept of generalized excess camber will be presented in the next section. 
-
-Generalized Excess and “C” Camber
 ===============================
-For WSDOT, and versions of PGSuper prior to 3.0,  excess camber is computed by simply summing all computed girder deflections up until service: 
+Excess camber is the amount of camber (deflection) that remains in the girder after the diaphragms and deck are placed. Excess camber can also be defined as the amount of camber that remains at the initial time when the girder is put into service, not including effects of live loads. Excess camber can be computed as D - C.
+
+**For WSDOT projects, and when using the Time-Step loss method**,  excess camber is computed by simply summing all computed girder deflections up until service: 
 
   ![](WsdotCamberEqn.gif)
 
-However, as we mentioned previously, many agencies including TxDOT, use empirical methods to compute excess camber. For example, TxDOT currently uses 80% of the deflection due to the slab weight, so for this case we can write:
+This equation, and the schematic at the top of this document, show the definition of  excess camber in a perfect world. However, in reality the components of deflection and losses needed to compute excess camber are practically impossible to compute accurately, so empirical methods are often used to estimate excess camber. Empirical methods typically apply factors to the individual camber components, so the concept of generalized excess camber will be presented in the next section. 
+
+Generalized Excess and “C” Camber
+----------------------------
+
+As mentioned previously, many agencies including TxDOT, use empirical methods to compute excess camber. For example, TxDOT currently uses 80% of the deflection due to the slab weight, so for this case we can write:
 
   ![](TxdotCamberEqn.gif)
 
@@ -48,13 +49,15 @@ Using the same variables, the “C” (screed) camber can be redefined:
 
   ![](ScreedCamberEqn.gif)
 
-The k’s (or camber deflection multiplier constants) in the equations above provide flexibility so agencies can define camber as they see fit. For example; for WSDOT, all of the constants in the above equations are equal to 1.0. Multiplier methods for other agencies such as PCI can also be easily accomodated.
+The k’s (or camber deflection multiplier constants) in the equations above provide flexibility so agencies can define camber as they see fit. For example: for WSDOT, all of the constants in the above equations are equal to 1.0. Multiplier methods for other agencies such as PCI can also be easily accomodated.
 
-> TIP: Camber deflection multiplier constants are defined for each girder type on the Haunch and Camber tab in the girder library. Also, the Camber Details chapter in the Details report shows all details of the camber computations.
+> TIP: Camber deflection multiplier constants are defined for each girder type on the Haunch and Camber tab in the girder library. Also, the Camber Details chapter in the Details report shows all details of the camber computations. Multipliers are not used for the time-step loss method.
 
 Computed Camber vs Assumed Excess Camber
 ----------------------------------------
 Camber discussed in this section of the Technical Guide is referred to as **Computed Camber** meaning that camber is calculated based on losses and deflections from load. In fact, the term **Computed Excess Camber** is used widely throughout PGSuper and PGSplice. Another term: **Assumed Excess Camber** is a user-input value that is optionally used in PGSuper to compute the haunch depth when determining haunch dead load, and non-prismatic composite section properties. Refer to  the Slab Haunch loading section of @ref tg_structural_analysis_models in the Technical Guide for more information about how the haunch dead load can be defined. Refer to @ref tg_section_properties in the Technical Guide for more information about how composite section properties are modelled.
+
+> NOTE: Assumed excess camber input is only applicable when haunch depths are defined using Slab Offset input. 
 
 Camber Variability
 ----------------------

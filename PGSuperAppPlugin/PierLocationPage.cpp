@@ -31,6 +31,7 @@
 #include "PierLocationPage.h"
 #include "PierDetailsDlg.h"
 #include "TimelineEventDlg.h"
+#include "EditHaunchDlg.h"
 #include "Utilities.h"
 
 #include <EAF\EAFDisplayUnits.h>
@@ -70,6 +71,10 @@ CPierLocationPage::~CPierLocationPage()
 
 void CPierLocationPage::DoDataExchange(CDataExchange* pDX)
 {
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
    CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
 
    CPropertyPage::DoDataExchange(pDX);
@@ -77,22 +82,18 @@ void CPierLocationPage::DoDataExchange(CDataExchange* pDX)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	//}}AFX_DATA_MAP
 
-   DDX_Control(pDX, IDC_SLAB_OFFSET_TYPE, m_ctrlSlabOffsetType);
    DDX_Control(pDX, IDC_BACK_SLAB_OFFSET,  m_ctrlBackSlabOffset);
    DDX_Control(pDX, IDC_AHEAD_SLAB_OFFSET, m_ctrlAheadSlabOffset);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   // Set unit text regardless of input type
+   DDX_Tag(pDX,IDC_BACK_SLAB_OFFSET_UNIT,pDisplayUnits->GetComponentDimUnit());
+   DDX_Tag(pDX,IDC_AHEAD_SLAB_OFFSET_UNIT,pDisplayUnits->GetComponentDimUnit());
 
    DDX_Station(pDX,IDC_STATION,m_Station,pDisplayUnits->GetStationFormat());
 
    DDX_CBItemData(pDX,IDC_MOVE_PIER,m_MovePierOption);
 
    DDX_String(pDX,IDC_ORIENTATION,m_strOrientation);
-
-   DDX_UnitValueAndTag(pDX,IDC_BACK_SLAB_OFFSET,  IDC_BACK_SLAB_OFFSET_UNIT,  m_SlabOffset[pgsTypes::Back],  pDisplayUnits->GetComponentDimUnit());
-   DDX_UnitValueAndTag(pDX,IDC_AHEAD_SLAB_OFFSET, IDC_AHEAD_SLAB_OFFSET_UNIT, m_SlabOffset[pgsTypes::Ahead], pDisplayUnits->GetComponentDimUnit());
 
    if ( pDX->m_bSaveAndValidate )
    {
@@ -114,75 +115,11 @@ void CPierLocationPage::DoDataExchange(CDataExchange* pDX)
       pParent->m_BridgeDesc.MovePier(pParent->m_pPier->GetIndex(), m_Station, m_MovePierOption);
       pParent->m_pPier->SetOrientation(m_strOrientation.c_str());
 
-      pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
-      if (deckType != pgsTypes::sdtNone && pParent->m_pPier->HasSlabOffset())
-      {
-         Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
-         CString strMinValError;
-         strMinValError.Format(_T("Slab Offset must be greater or equal to slab depth (%s)"), FormatDimension(minSlabOffset, pDisplayUnits->GetComponentDimUnit()));
-
-         if (::IsLT(m_SlabOffset[pgsTypes::Back], minSlabOffset))
-         {
-            pDX->PrepareCtrl(IDC_BACK_SLAB_OFFSET);
-            AfxMessageBox(strMinValError);
-            pDX->Fail();
-         }
-
-         if (::IsLT(m_SlabOffset[pgsTypes::Ahead], minSlabOffset))
-         {
-            pDX->PrepareCtrl(IDC_AHEAD_SLAB_OFFSET);
-            AfxMessageBox(strMinValError);
-            pDX->Fail();
-         }
-
-         // Copy the temporary data from this dialog in to actual bridge model
-         if ( pParent->m_BridgeDesc.GetSlabOffsetType() == pgsTypes::sotBridge )
-         {
-            if ( pParent->m_pPier->GetGirderGroup(pgsTypes::Back) )
-            {
-               pParent->m_BridgeDesc.SetSlabOffset(m_SlabOffset[pgsTypes::Back]);
+      UpdateHaunchAndCamberData(pDX);
             }
             else
             {
-               pParent->m_BridgeDesc.SetSlabOffset(m_SlabOffset[pgsTypes::Ahead]);
-            }
-         }
-         else if ( pParent->m_BridgeDesc.GetSlabOffsetType() == pgsTypes::sotBearingLine )
-         {
-            if ( m_PierFaceCount == 1 )
-            {
-               // the UI has only one input parameter
-               ATLASSERT(pParent->m_pPier->IsAbutment());
-               if ( pParent->m_pPier->GetPrevSpan() == nullptr )
-               {
-                  // we are at the start of the bridge so the data is in the ahead controls
-                  pParent->m_pPier->SetSlabOffset(pgsTypes::Ahead,m_SlabOffset[pgsTypes::Ahead]);
-               }
-               else
-               {
-                  // we are at the end of the bridge so the data is in the back controls
-                  pParent->m_pPier->SetSlabOffset(pgsTypes::Back,m_SlabOffset[pgsTypes::Back]);
-               }
-            }
-            else
-            {
-               pParent->m_pPier->SetSlabOffset(pgsTypes::Back,m_SlabOffset[pgsTypes::Back]);
-               pParent->m_pPier->SetSlabOffset(pgsTypes::Ahead,m_SlabOffset[pgsTypes::Ahead]);
-            }
-         }
-         else
-         {
-            ATLASSERT(pParent->m_BridgeDesc.GetSlabOffsetType() == pgsTypes::sotSegment);
-            if ( m_InitialSlabOffsetType != pgsTypes::sotSegment )
-            {
-               // Slab offset started off as Bridge or Pier and now it is Girder... this means the
-               // slab offset at this Pier applies to all girders/segments
-               ATLASSERT(IsEqual(m_SlabOffset[pgsTypes::Back], m_SlabOffset[pgsTypes::Ahead]));
-               std::function<void(CPrecastSegmentData*, void*)> fn = UpdateSlabOffset;
-               pParent->m_BridgeDesc.ForEachSegment(fn, (void*)&m_SlabOffset);
-            }
-         }
-      }
+      UpdateHaunchAndCamberControls();
    }
 }
 
@@ -196,7 +133,7 @@ BEGIN_MESSAGE_MAP(CPierLocationPage, CPropertyPage)
    ON_CBN_SELCHANGE(IDC_ERECTION_EVENT, OnErectionStageChanged)
    ON_CBN_DROPDOWN(IDC_ERECTION_EVENT, OnErectionStageChanging)
    ON_WM_CTLCOLOR()
-   ON_CBN_SELCHANGE(IDC_SLAB_OFFSET_TYPE, OnChangeSlabOffset)
+   ON_BN_CLICKED(IDC_EDIT_HAUNCH_BUTTON,&OnBnClickedEditHaunchButton)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -215,57 +152,13 @@ BOOL CPierLocationPage::OnInitDialog()
       GetDlgItem(IDC_ERECTION_EVENT)->EnableWindow(FALSE);
    }
 
+   CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
+
 	CPropertyPage::OnInitDialog();
 
    // move options are not available until the station changes
    UpdateMoveOptionList();
 
-   CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
-
-   pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
-
-   CEAFDocument* pDoc = EAFGetDocument();
-   BOOL bIsPGSuper = pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc));
-
-   if (deckType == pgsTypes::sdtNone)
-   {
-      // no deck, no slab offset
-      m_ctrlSlabOffsetType.EnableWindow(FALSE);
-
-      GetDlgItem(IDC_BACK_SLAB_OFFSET_LABEL)->EnableWindow(FALSE);
-      m_ctrlBackSlabOffset.EnableWindow(FALSE);
-      GetDlgItem(IDC_BACK_SLAB_OFFSET_UNIT)->EnableWindow(FALSE);
-
-      GetDlgItem(IDC_AHEAD_SLAB_OFFSET_LABEL)->EnableWindow(FALSE);
-      m_ctrlAheadSlabOffset.EnableWindow(FALSE);
-      GetDlgItem(IDC_AHEAD_SLAB_OFFSET_UNIT)->EnableWindow(FALSE);
-   }
-   else
-   {
-      if (m_InitialSlabOffsetType == pgsTypes::sotBridge )
-      {
-         m_ctrlSlabOffsetType.AddString(GetSlabOffsetTypeAsString(pgsTypes::sotBridge,bIsPGSuper));
-         m_ctrlSlabOffsetType.AddString(GetSlabOffsetTypeAsString(pgsTypes::sotBearingLine,bIsPGSuper));
-
-         m_ctrlBackSlabOffset.ShowDefaultWhenDisabled(TRUE);
-         m_ctrlAheadSlabOffset.ShowDefaultWhenDisabled(TRUE);
-      }
-      else if ( m_InitialSlabOffsetType == pgsTypes::sotSegment )
-      {
-         m_ctrlSlabOffsetType.AddString(GetSlabOffsetTypeAsString(pgsTypes::sotSegment,bIsPGSuper));
-         m_ctrlSlabOffsetType.AddString(GetSlabOffsetTypeAsString(pgsTypes::sotBearingLine,bIsPGSuper));
-      }
-      else
-      {
-         m_ctrlSlabOffsetType.AddString(GetSlabOffsetTypeAsString(pgsTypes::sotBearingLine,bIsPGSuper));
-         m_ctrlSlabOffsetType.AddString(GetSlabOffsetTypeAsString(pgsTypes::sotBridge,bIsPGSuper));
-
-         m_ctrlBackSlabOffset.ShowDefaultWhenDisabled(TRUE);
-         m_ctrlAheadSlabOffset.ShowDefaultWhenDisabled(TRUE);
-      }
-
-      m_ctrlSlabOffsetType.SetCurSel(0);
-   }
 
    EventIndexType eventIdx = pParent->m_BridgeDesc.GetTimelineManager()->GetPierErectionEventIndex(m_PierID);
    CDataExchange dx(this,FALSE);
@@ -294,8 +187,6 @@ BOOL CPierLocationPage::OnInitDialog()
    fmt.LoadString( IDS_DLG_ORIENTATIONFMT );
    GetDlgItem(IDC_ORIENTATION_FORMAT)->SetWindowText( fmt );
 
-   UpdateSlabOffsetWindowState();
-
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -306,8 +197,6 @@ void CPierLocationPage::Init(const CPierData2* pPier)
 
    m_PierIdx = pPier->GetIndex();
    m_PierID  = pPier->GetID();
-
-   m_InitialSlabOffsetType = pBridgeDesc->GetSlabOffsetType();
 
    m_nSpans = pBridgeDesc->GetSpanCount();
 
@@ -333,28 +222,6 @@ void CPierLocationPage::Init(const CPierData2* pPier)
    }
 
    m_strOrientation = pPier->GetOrientation();
-
-   const CGirderGroupData* pBackGroup = pPier->GetGirderGroup(pgsTypes::Back);
-   const CGirderGroupData* pAheadGroup = pPier->GetGirderGroup(pgsTypes::Ahead);
-   if (pBackGroup)
-   {
-      m_SlabOffset[pgsTypes::Back] = pPier->GetSlabOffset(pgsTypes::Back, m_InitialSlabOffsetType == pgsTypes::sotBearingLine ? false : true);
-
-      if (!pAheadGroup)
-      {
-         m_SlabOffset[pgsTypes::Ahead] = m_SlabOffset[pgsTypes::Back]; // fill with decent values so we don't have garbage
-      }
-   }
-
-   if (pAheadGroup)
-   {
-      m_SlabOffset[pgsTypes::Ahead] = pPier->GetSlabOffset(pgsTypes::Ahead, m_InitialSlabOffsetType == pgsTypes::sotBearingLine ? false : true);
-
-      if (!pBackGroup)
-      {
-         m_SlabOffset[pgsTypes::Back] = m_SlabOffset[pgsTypes::Ahead]; // fill with decent values so we don't have garbage
-      }
-   }
 }
 
 void CPierLocationPage::OnChangeStation() 
@@ -629,122 +496,458 @@ EventIndexType CPierLocationPage::CreateEvent()
    return INVALID_INDEX;
 }
 
-void CPierLocationPage::OnChangeSlabOffset()
+void CPierLocationPage::UpdateHaunchAndCamberControls()
+{
+   // Function takes bridge data and puts into dialog controls
+   CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
+
+   m_PierFaceCount = 0;
+
+   pgsTypes::HaunchInputDepthType inputType = pParent->m_BridgeDesc.GetHaunchInputDepthType();
+
+   pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
+   if (deckType == pgsTypes::sdtNone)
+   {
+      // No deck, no haunch
+      DisableHaunchAndCamberControls();
+   }
+   else
+   {
+      // First deal with visibility of controls. 
+      if (inputType == pgsTypes::hidACamber && !pParent->m_pPier->HasSlabOffset())
+      {
+         DisableHaunchAndCamberControls();
+      }
+      else
+      {
+         if (pParent->m_pPier->IsAbutment())
+         {
+            m_PierFaceCount = 1;
+
+            if (pParent->m_pPier->GetPrevSpan() == nullptr)
+            {
+               GetDlgItem(IDC_AHEAD_SLAB_OFFSET_LABEL)->ShowWindow(SW_HIDE);
+               GetDlgItem(IDC_BACK_SLAB_OFFSET_LABEL)->ShowWindow(SW_HIDE);
+               GetDlgItem(IDC_BACK_SLAB_OFFSET)->ShowWindow(SW_HIDE);
+               GetDlgItem(IDC_BACK_SLAB_OFFSET_UNIT)->ShowWindow(SW_HIDE);
+
+               CRect rOffset,rUnit;
+               GetDlgItem(IDC_BACK_SLAB_OFFSET)->GetWindowRect(&rOffset);
+               GetDlgItem(IDC_BACK_SLAB_OFFSET_UNIT)->GetWindowRect(&rUnit);
+
+               ScreenToClient(&rOffset);
+               ScreenToClient(&rUnit);
+
+               GetDlgItem(IDC_AHEAD_SLAB_OFFSET)->MoveWindow(rOffset);
+               GetDlgItem(IDC_AHEAD_SLAB_OFFSET_UNIT)->MoveWindow(rUnit);
+            }
+            else
+            {
+               GetDlgItem(IDC_BACK_SLAB_OFFSET_LABEL)->ShowWindow(SW_HIDE);
+               GetDlgItem(IDC_AHEAD_SLAB_OFFSET_LABEL)->ShowWindow(SW_HIDE);
+               GetDlgItem(IDC_AHEAD_SLAB_OFFSET)->ShowWindow(SW_HIDE);
+               GetDlgItem(IDC_AHEAD_SLAB_OFFSET_UNIT)->ShowWindow(SW_HIDE);
+      }
+   }
+         else if (pParent->m_pPier->IsInteriorPier())
+   {
+            // when segments are continuous over a pier, there isn't an "A" dimension at the pier
+            int nShowCmd;
+            if (inputType == pgsTypes::hidACamber && IsSegmentContinuousOverPier(pParent->m_pPier->GetSegmentConnectionType()) )
+      {
+               m_PierFaceCount = 1;
+               nShowCmd = SW_HIDE;
+      }
+      else
+      {
+               m_PierFaceCount = 2;
+               nShowCmd = SW_SHOW;
+      }
+
+            GetDlgItem(IDC_SLAB_OFFSET_GROUP)->ShowWindow(nShowCmd);
+            GetDlgItem(IDC_BACK_SLAB_OFFSET_LABEL)->ShowWindow(nShowCmd);
+            GetDlgItem(IDC_BACK_SLAB_OFFSET)->ShowWindow(nShowCmd);
+            GetDlgItem(IDC_BACK_SLAB_OFFSET_UNIT)->ShowWindow(nShowCmd);
+            GetDlgItem(IDC_AHEAD_SLAB_OFFSET_LABEL)->ShowWindow(nShowCmd);
+            GetDlgItem(IDC_AHEAD_SLAB_OFFSET)->ShowWindow(nShowCmd);
+            GetDlgItem(IDC_AHEAD_SLAB_OFFSET_UNIT)->ShowWindow(nShowCmd);
+   }
+
+         GetDlgItem(IDC_EDIT_HAUNCH_BUTTON)->EnableWindow(TRUE);
+
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+         GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
+         if (inputType == pgsTypes::hidACamber)
+         {
+            // Input is via slab offset
+            pgsTypes::SlabOffsetType slabOffsetType = pParent->m_BridgeDesc.GetSlabOffsetType();
+            GetDlgItem(IDC_SLAB_OFFSET_LABEL)->SetWindowText(_T("Slab Offset (\"A\" Dimension)"));
+
+            BOOL bEnable = TRUE;
+            if (slabOffsetType == pgsTypes::sotBridge || slabOffsetType == pgsTypes::sotSegment)
+            {
+               bEnable = FALSE;
+            }
+
+            m_ctrlBackSlabOffset.EnableWindow(bEnable);
+            m_ctrlAheadSlabOffset.EnableWindow(bEnable);
+
+            // Now that visibility is established, set values in control text
+            // Put whole bridge value into disabled controls if needed
+            CString strSlabOffset;
+            if (slabOffsetType == pgsTypes::sotBridge)
+      {
+               Float64 allBridgeA = pParent->m_BridgeDesc.GetSlabOffset();
+               strSlabOffset.Format(_T("%s"),FormatDimension(allBridgeA,pDisplayUnits->GetComponentDimUnit(),false));
+               m_ctrlAheadSlabOffset.SetWindowText(strSlabOffset);
+               m_ctrlBackSlabOffset.SetWindowText(strSlabOffset);
+            }
+            else if (slabOffsetType == pgsTypes::sotSegment)
+            {
+               m_ctrlAheadSlabOffset.SetWindowText(_T(""));
+               m_ctrlBackSlabOffset.SetWindowText(_T(""));
+            }
+            else if (slabOffsetType == pgsTypes::sotBearingLine)
+            {
+               if (m_PierFaceCount == 1)
+               {
+                  // the UI has only one input parameter
+                  ATLASSERT(pParent->m_pPier->IsAbutment());
+                  if (pParent->m_pPier->GetPrevSpan() == nullptr)
+                  {
+                     // We are at the start of the bridge so the data is in the ahead controls
+                     Float64 aheadSlabOffset = pParent->m_pPier->GetSlabOffset(pgsTypes::Ahead);
+                     strSlabOffset.Format(_T("%s"),FormatDimension(aheadSlabOffset,pDisplayUnits->GetComponentDimUnit(),false));
+                     m_ctrlBackSlabOffset.SetWindowText(_T(""));
+                     m_ctrlAheadSlabOffset.SetWindowText(strSlabOffset);
+                  }
+                  else
+                  {
+                     // we are at the end of the bridge so the data is in the back controls
+                     Float64 backSlabOffset = pParent->m_pPier->GetSlabOffset(pgsTypes::Back);
+                     strSlabOffset.Format(_T("%s"),FormatDimension(backSlabOffset,pDisplayUnits->GetComponentDimUnit(),false));
+                     m_ctrlAheadSlabOffset.SetWindowText(_T(""));
+                     m_ctrlBackSlabOffset.SetWindowText(strSlabOffset);
+                  }
+               }
+               else
+               {
+                  Float64 backSlabOffset = pParent->m_pPier->GetSlabOffset(pgsTypes::Back);
+                  strSlabOffset.Format(_T("%s"),FormatDimension(backSlabOffset,pDisplayUnits->GetComponentDimUnit(),false));
+                  m_ctrlBackSlabOffset.SetWindowText(strSlabOffset);
+
+                  Float64 aheadSlabOffset = pParent->m_pPier->GetSlabOffset(pgsTypes::Ahead);
+                  strSlabOffset.Format(_T("%s"),FormatDimension(aheadSlabOffset,pDisplayUnits->GetComponentDimUnit(),false));
+                  m_ctrlAheadSlabOffset.SetWindowText(strSlabOffset);
+               }
+            }
+            else
+            {
+               ATLASSERT(0); // ??
+            }
+         } // end A Camber
+         else
+         {
+            // Direct input of haunch depths
+            if (inputType == pgsTypes::hidHaunchDirectly)
+            {
+               GetDlgItem(IDC_SLAB_OFFSET_LABEL)->SetWindowText(_T("Haunch Depth"));
+            }
+            else
+         {
+               GetDlgItem(IDC_SLAB_OFFSET_LABEL)->SetWindowText(_T("Haunch+Slab Depth"));
+            }
+
+            const CDeckDescription2* pDeck = pParent->m_BridgeDesc.GetDeckDescription();
+            Float64 Tdeck;
+            if (pDeck->GetDeckType() == pgsTypes::sdtCompositeSIP)
+            {
+               Tdeck = pDeck->GrossDepth + pDeck->PanelDepth;
+            }
+            else
+            {
+               Tdeck = pDeck->GrossDepth;
+            }
+
+            pgsTypes::HaunchInputLocationType haunchInputLocationType = pParent->m_BridgeDesc.GetHaunchInputLocationType();
+            pgsTypes::HaunchLayoutType haunchLayoutType = pParent->m_BridgeDesc.GetHaunchLayoutType();
+            pgsTypes::HaunchInputDistributionType haunchInputDistributionType = pParent->m_BridgeDesc.GetHaunchInputDistributionType();
+
+            bool bHasBackHaunch(true),bHasAheadHaunch(true);
+            if (m_PierFaceCount == 1)
+            {
+               ATLASSERT(pParent->m_pPier->IsAbutment());
+               if (pParent->m_pPier->GetPrevSpan() == nullptr)
+               {
+                  bHasBackHaunch = false;
+         }
+         else
+         {
+                  bHasAheadHaunch = false;
+               }
+            }
+
+            BOOL bEnableBack(FALSE),bEnableAhead(FALSE);
+            if (haunchLayoutType == pgsTypes::hltAlongSpans && haunchInputLocationType == pgsTypes::hilSame4AllGirders && haunchInputDistributionType == pgsTypes::hidAtEnds)
+            {
+               // only case where we might allow editing of data
+               bEnableBack = bHasBackHaunch ? TRUE : FALSE;
+               bEnableAhead = bHasAheadHaunch ? TRUE : FALSE;
+            }
+
+            m_ctrlBackSlabOffset.EnableWindow(bEnableBack);
+            m_ctrlAheadSlabOffset.EnableWindow(bEnableAhead);
+
+            m_ctrlAheadSlabOffset.SetWindowText(_T(""));
+            m_ctrlBackSlabOffset.SetWindowText(_T(""));
+
+            // Now that visibility is established, set values in control text
+            Float64 haunchDepth;
+            CString strHaunchVal;
+            if (haunchInputLocationType == pgsTypes::hilSame4Bridge && haunchLayoutType == pgsTypes::hltAlongSpans)
+            {
+               // Put whole bridge value into disabled controls if needed
+               std::vector<Float64> allBridgeHaunches = pParent->m_BridgeDesc.GetDirectHaunchDepths();
+               if (haunchInputDistributionType == pgsTypes::hidAtEnds)
+               {
+                  ATLASSERT(allBridgeHaunches.size() == 2);
+                  if (bHasBackHaunch)
+                  {
+                     haunchDepth = allBridgeHaunches.back() + (inputType == pgsTypes::hidHaunchPlusSlabDirectly ? Tdeck : 0.0);
+                     strHaunchVal.Format(_T("%s"),FormatDimension(haunchDepth, pDisplayUnits->GetComponentDimUnit(),false));
+                     m_ctrlBackSlabOffset.SetWindowText(strHaunchVal);
+                  }
+
+                  if (bHasAheadHaunch)
+                  {
+                     haunchDepth = allBridgeHaunches.front() + (inputType == pgsTypes::hidHaunchPlusSlabDirectly ? Tdeck : 0.0);
+                     strHaunchVal.Format(_T("%s"),FormatDimension(haunchDepth,pDisplayUnits->GetComponentDimUnit(),false));
+                     m_ctrlAheadSlabOffset.SetWindowText(strHaunchVal);
+                  }
+               }
+               else if (haunchInputDistributionType == pgsTypes::hidUniform)
+               {
+                  ATLASSERT(allBridgeHaunches.size() == 1);
+                  haunchDepth = allBridgeHaunches.front() + (inputType == pgsTypes::hidHaunchPlusSlabDirectly ? Tdeck : 0.0);
+
+                  if (bHasBackHaunch)
+                  {
+                     strHaunchVal.Format(_T("%s"),FormatDimension(haunchDepth,pDisplayUnits->GetComponentDimUnit(),false));
+                     m_ctrlBackSlabOffset.SetWindowText(strHaunchVal);
+                  }
+
+                  if (bHasAheadHaunch)
+                  {
+                     strHaunchVal.Format(_T("%s"),FormatDimension(haunchDepth,pDisplayUnits->GetComponentDimUnit(),false));
+                     m_ctrlAheadSlabOffset.SetWindowText(strHaunchVal);
+                  }
+         }
+      }
+            else if (bEnableBack || bEnableAhead)
+            {
+               if (bEnableBack)
+               {
+                  // we are at the end of the bridge so the data is in the back controls
+                  std::vector<Float64> backHaunches = pParent->m_pPier->GetPrevSpan()->GetDirectHaunchDepths(0);
+                  ATLASSERT(backHaunches.size() == 2);
+                  haunchDepth = backHaunches.back() + (inputType == pgsTypes::hidHaunchPlusSlabDirectly ? Tdeck : 0.0);
+                  strHaunchVal.Format(_T("%s"),FormatDimension(haunchDepth,pDisplayUnits->GetComponentDimUnit(),false));
+                  m_ctrlBackSlabOffset.SetWindowText(strHaunchVal);
+               }
+
+               if (bEnableAhead)
+               {
+                  std::vector<Float64> aheadHaunches = pParent->m_pPier->GetNextSpan()->GetDirectHaunchDepths(0);
+                  ATLASSERT(aheadHaunches.size() == 2);
+                  haunchDepth = aheadHaunches.front() + (inputType == pgsTypes::hidHaunchPlusSlabDirectly ? Tdeck : 0.0);
+                  strHaunchVal.Format(_T("%s"),FormatDimension(haunchDepth,pDisplayUnits->GetComponentDimUnit(),false));
+                  m_ctrlAheadSlabOffset.SetWindowText(strHaunchVal);
+               }
+            }
+         }  // end direct haunch
+   }
+   }
+}
+
+void CPierLocationPage::DisableHaunchAndCamberControls()
+{
+   GetDlgItem(IDC_SLAB_OFFSET_LABEL)->EnableWindow(FALSE);
+   GetDlgItem(IDC_BACK_SLAB_OFFSET_LABEL)->ShowWindow(SW_HIDE);
+   m_ctrlBackSlabOffset.EnableWindow(FALSE);
+   m_ctrlBackSlabOffset.SetWindowText(_T(""));
+   GetDlgItem(IDC_BACK_SLAB_OFFSET_UNIT)->EnableWindow(FALSE);
+
+   GetDlgItem(IDC_AHEAD_SLAB_OFFSET_LABEL)->ShowWindow(SW_HIDE);
+   m_ctrlAheadSlabOffset.ShowWindow(SW_HIDE);
+   GetDlgItem(IDC_AHEAD_SLAB_OFFSET_UNIT)->ShowWindow(SW_HIDE);
+
+   GetDlgItem(IDC_EDIT_HAUNCH_BUTTON)->EnableWindow(FALSE);
+}
+
+void CPierLocationPage::UpdateHaunchAndCamberData(CDataExchange* pDX)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
-   pgsTypes::SlabOffsetType slabOffsetType = pParent->m_BridgeDesc.GetSlabOffsetType();
-
-   if ( m_InitialSlabOffsetType == pgsTypes::sotBridge || m_InitialSlabOffsetType == pgsTypes::sotBearingLine )
+   pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
+   if (deckType == pgsTypes::sdtNone)
    {
-      // if slab offset was bridge or pier when the dialog was created, toggle between
-      // bridge and pier mode
-      if (slabOffsetType == pgsTypes::sotBearingLine)
-      {
-         pParent->m_BridgeDesc.SetSlabOffsetType(pgsTypes::sotBridge);
-      }
-      else
-      {
-         pParent->m_BridgeDesc.SetSlabOffsetType(pgsTypes::sotBearingLine);
-      }
+      return; // No deck, no haunch. Go no further
    }
    else
    {
-      // if slab offset was girder when the dialog was created, toggle between
-      // girder and pier
-      ATLASSERT(m_InitialSlabOffsetType == pgsTypes::sotSegment);
-      if ( slabOffsetType == pgsTypes::sotBearingLine )
+      pgsTypes::HaunchInputDepthType inputType = pParent->m_BridgeDesc.GetHaunchInputDepthType();
+      if (inputType == pgsTypes::hidACamber)
       {
-         // going from pier to girder so both ends of girder are the same. default values can be shown
-         pParent->m_BridgeDesc.SetSlabOffsetType(pgsTypes::sotSegment);
-         m_ctrlBackSlabOffset.ShowDefaultWhenDisabled(TRUE);
-         m_ctrlAheadSlabOffset.ShowDefaultWhenDisabled(TRUE);
+   pgsTypes::SlabOffsetType slabOffsetType = pParent->m_BridgeDesc.GetSlabOffsetType();
+         if (slabOffsetType == pgsTypes::sotBearingLine)
+         {
+            CComPtr<IBroker> pBroker;
+            EAFGetBroker(&pBroker);
+            GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
+            Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
+            CString strMinValError;
+            strMinValError.Format(_T("Slab Offset must be greater or equal to slab depth (%s)"),FormatDimension(minSlabOffset,pDisplayUnits->GetComponentDimUnit()));
+
+            // Determine which values are needed
+            bool bHasBack(true),bHasAhead(true);
+            if (m_PierFaceCount == 1)
+            {
+               ATLASSERT(pParent->m_pPier->IsAbutment());
+               if (pParent->m_pPier->GetPrevSpan() == nullptr)
+               {
+                  bHasBack = false;
+               }
+               else
+               {
+                  bHasAhead = false;
+               }
+            }
+
+            // Get current values out of the controls
+            CDataExchange dx(this,TRUE);
+            Float64 slabOffset;
+            if (bHasBack)
+            {
+               DDX_UnitValueAndTag(&dx,IDC_BACK_SLAB_OFFSET,IDC_BACK_SLAB_OFFSET_UNIT,slabOffset,pDisplayUnits->GetComponentDimUnit());
+               if (::IsLT(slabOffset,minSlabOffset))
+   {
+                  pDX->PrepareCtrl(IDC_BACK_SLAB_OFFSET);
+                  AfxMessageBox(strMinValError);
+                  pDX->Fail();
+   }
+
+               pParent->m_pPier->SetSlabOffset(pgsTypes::Back,slabOffset);
+            }
+
+            if (bHasAhead)
+            {
+               DDX_UnitValueAndTag(&dx,IDC_AHEAD_SLAB_OFFSET,IDC_AHEAD_SLAB_OFFSET_UNIT,slabOffset,pDisplayUnits->GetComponentDimUnit());
+
+               if (::IsLT(slabOffset,minSlabOffset))
+               {
+                  pDX->PrepareCtrl(IDC_AHEAD_SLAB_OFFSET);
+                  AfxMessageBox(strMinValError);
+                  pDX->Fail();
+               }
+
+               pParent->m_pPier->SetSlabOffset(pgsTypes::Ahead,slabOffset);
+            }
+         }
       }
       else
       {
-         pParent->m_BridgeDesc.SetSlabOffsetType(pgsTypes::sotBearingLine);
-      }
-   }
+         // Direct input of haunch
+         pgsTypes::HaunchInputLocationType haunchInputLocationType = pParent->m_BridgeDesc.GetHaunchInputLocationType();
+         pgsTypes::HaunchLayoutType haunchLayoutType = pParent->m_BridgeDesc.GetHaunchLayoutType();
+         pgsTypes::HaunchInputDistributionType haunchInputDistributionType = pParent->m_BridgeDesc.GetHaunchInputDistributionType();
 
-   if ( slabOffsetType == pgsTypes::sotBearingLine && pParent->m_BridgeDesc.GetSlabOffsetType() == pgsTypes::sotBridge )
-   {
-      // going from span-by-span to one for the entire bridge
-      // need to check the span values and if they are different, ask the user which one is to
-      // be used for the entire bridge
-
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
-      // get current values out of the controls
-      std::array<Float64,2> slabOffset;
-      CDataExchange dx(this,TRUE);
-      DDX_UnitValueAndTag(&dx, IDC_BACK_SLAB_OFFSET,  IDC_BACK_SLAB_OFFSET_UNIT,  slabOffset[pgsTypes::Back],  pDisplayUnits->GetComponentDimUnit());
-      DDX_UnitValueAndTag(&dx, IDC_AHEAD_SLAB_OFFSET, IDC_AHEAD_SLAB_OFFSET_UNIT, slabOffset[pgsTypes::Ahead], pDisplayUnits->GetComponentDimUnit());
-
-      // take start value as default
-      Float64 slab_offset = slabOffset[pgsTypes::Back];
-
-      // check if start/end values are equal
-      if ( m_PierFaceCount == 2 && !IsEqual(slabOffset[pgsTypes::Back],slabOffset[pgsTypes::Ahead]) )
-      {
-         // nope... make the user select which slab offset to use
-         CSelectItemDlg dlg;
-         dlg.m_ItemIdx = 0;
-         dlg.m_strTitle = _T("Select Slab Offset");
-         dlg.m_strLabel = _T("A single slab offset will be used for the entire bridge. Select a value.");
-         
-         CString strItems;
-         strItems.Format(_T("Back side of pier (%s)\nAhead side of pier (%s)"),
-                         ::FormatDimension(slabOffset[pgsTypes::Back],pDisplayUnits->GetComponentDimUnit()),
-                         ::FormatDimension(slabOffset[pgsTypes::Ahead],  pDisplayUnits->GetComponentDimUnit()));
-
-         dlg.m_strItems = strItems;
-         if ( dlg.DoModal() == IDOK )
+         if (haunchLayoutType == pgsTypes::hltAlongSpans && haunchInputLocationType == pgsTypes::hilSame4AllGirders && haunchInputDistributionType == pgsTypes::hidAtEnds)
          {
-            if (dlg.m_ItemIdx == 0)
+            CComPtr<IBroker> pBroker;
+            EAFGetBroker(&pBroker);
+            GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
+            const CDeckDescription2* pDeck = pParent->m_BridgeDesc.GetDeckDescription();
+            Float64 Tdeck;
+            if (pDeck->GetDeckType() == pgsTypes::sdtCompositeSIP)
+   {
+               Tdeck = pDeck->GrossDepth + pDeck->PanelDepth;
+            }
+            else
+      {
+               Tdeck = pDeck->GrossDepth;
+            }
+
+            Float64 minHaunch = pParent->m_BridgeDesc.GetMinimumAllowableHaunchDepth(inputType);
+
+            CString strMinValError;
+            if (inputType == pgsTypes::hidHaunchPlusSlabDirectly)
             {
-               slab_offset = slabOffset[pgsTypes::Back];
+               strMinValError.Format(_T("Haunch Depth must be greater or equal to fillet (%s)"),FormatDimension(minHaunch,pDisplayUnits->GetComponentDimUnit()));
             }
             else
             {
-               slab_offset = slabOffset[pgsTypes::Ahead];
+               strMinValError.Format(_T("Haunch+Slab Depth must be greater or equal to deck depth+fillet (%s)"),FormatDimension(minHaunch,pDisplayUnits->GetComponentDimUnit()));
             }
-         }
-         else
-         {
-            // user cancelled... get the heck outta here
-            return;
-         }
+
+            // Determine which values are needed
+            bool bHasBack(true),bHasAhead(true);
+            if (m_PierFaceCount == 1)
+            {
+               ATLASSERT(pParent->m_pPier->IsAbutment());
+               if (pParent->m_pPier->GetPrevSpan() == nullptr)
+               {
+                  bHasBack = false;
+      }
+      else
+      {
+                  bHasAhead = false;
+               }
+            }
+
+            // Get current values out of the controls
+            CDataExchange dx(this,TRUE);
+            Float64 haunchDepth;
+            if (bHasBack)
+            {
+               DDX_UnitValueAndTag(&dx,IDC_BACK_SLAB_OFFSET,IDC_BACK_SLAB_OFFSET_UNIT,haunchDepth,pDisplayUnits->GetComponentDimUnit());
+               if (::IsLT(haunchDepth,minHaunch))
+               {
+                  pDX->PrepareCtrl(IDC_BACK_SLAB_OFFSET);
+                  AfxMessageBox(strMinValError);
+                  pDX->Fail();
       }
 
-      // put the data back in the controls
-      dx.m_bSaveAndValidate = FALSE;
-      DDX_UnitValueAndTag(&dx, IDC_BACK_SLAB_OFFSET,  IDC_BACK_SLAB_OFFSET_UNIT,  slab_offset, pDisplayUnits->GetComponentDimUnit());
-      DDX_UnitValueAndTag(&dx, IDC_AHEAD_SLAB_OFFSET, IDC_AHEAD_SLAB_OFFSET_UNIT, slab_offset, pDisplayUnits->GetComponentDimUnit());
+               haunchDepth -= (inputType == pgsTypes::hidHaunchPlusSlabDirectly ? Tdeck : 0.0);
+               std::vector<Float64> haunchDepths = pParent->m_pPier->GetPrevSpan()->GetDirectHaunchDepths(0);
+               haunchDepths.back() = haunchDepth;
+               pParent->m_pPier->GetPrevSpan()->SetDirectHaunchDepths(haunchDepths);
    }
 
-   UpdateSlabOffsetWindowState();
+            if (bHasAhead)
+            {
+               DDX_UnitValueAndTag(&dx,IDC_AHEAD_SLAB_OFFSET,IDC_AHEAD_SLAB_OFFSET_UNIT,haunchDepth,pDisplayUnits->GetComponentDimUnit());
 
-   return;
-}
-
-void CPierLocationPage::UpdateSlabOffsetWindowState()
-{
-   CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
-   pgsTypes::SlabOffsetType slabOffsetType = pParent->m_BridgeDesc.GetSlabOffsetType();
-
-   BOOL bEnable = TRUE;
-   if ( slabOffsetType == pgsTypes::sotBridge || slabOffsetType == pgsTypes::sotSegment )
+               if (::IsLT(haunchDepth,minHaunch))
    {
-      bEnable = FALSE;
+                  pDX->PrepareCtrl(IDC_AHEAD_SLAB_OFFSET);
+                  AfxMessageBox(strMinValError);
+                  pDX->Fail();
+               }
+
+               haunchDepth -= (inputType == pgsTypes::hidHaunchPlusSlabDirectly ? Tdeck : 0.0);
+               std::vector<Float64> haunchDepths = pParent->m_pPier->GetNextSpan()->GetDirectHaunchDepths(0);
+               haunchDepths.front() = haunchDepth;
+               pParent->m_pPier->GetNextSpan()->SetDirectHaunchDepths(haunchDepths);
+            }
+         }
+      }
    }
-
-   m_ctrlBackSlabOffset.EnableWindow(bEnable);
-   m_ctrlAheadSlabOffset.EnableWindow(bEnable);
 }
-
 
 BOOL CPierLocationPage::OnSetActive()
 {
@@ -752,49 +955,34 @@ BOOL CPierLocationPage::OnSetActive()
 
    CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
 
-   m_PierFaceCount = pParent->m_pPier->IsBoundaryPier() && !pParent->m_pPier->IsAbutment() ? 2 : 1;
-
-   if (pParent->m_pPier->IsAbutment())
-   {
-      ATLASSERT(m_PierFaceCount == 1);
-      if (pParent->m_pPier->GetPrevSpan() == nullptr)
-      {
-         GetDlgItem(IDC_AHEAD_SLAB_OFFSET_LABEL)->ShowWindow(SW_HIDE);
-         GetDlgItem(IDC_BACK_SLAB_OFFSET_LABEL)->ShowWindow(SW_HIDE);
-         GetDlgItem(IDC_BACK_SLAB_OFFSET)->ShowWindow(SW_HIDE);
-         GetDlgItem(IDC_BACK_SLAB_OFFSET_UNIT)->ShowWindow(SW_HIDE);
-
-         CRect rOffset, rUnit;
-         GetDlgItem(IDC_BACK_SLAB_OFFSET)->GetWindowRect(&rOffset);
-         GetDlgItem(IDC_BACK_SLAB_OFFSET_UNIT)->GetWindowRect(&rUnit);
-
-         ScreenToClient(&rOffset);
-         ScreenToClient(&rUnit);
-
-         GetDlgItem(IDC_AHEAD_SLAB_OFFSET)->MoveWindow(rOffset);
-         GetDlgItem(IDC_AHEAD_SLAB_OFFSET_UNIT)->MoveWindow(rUnit);
-      }
-      else
-      {
-         GetDlgItem(IDC_BACK_SLAB_OFFSET_LABEL)->ShowWindow(SW_HIDE);
-         GetDlgItem(IDC_AHEAD_SLAB_OFFSET_LABEL)->ShowWindow(SW_HIDE);
-         GetDlgItem(IDC_AHEAD_SLAB_OFFSET)->ShowWindow(SW_HIDE);
-         GetDlgItem(IDC_AHEAD_SLAB_OFFSET_UNIT)->ShowWindow(SW_HIDE);
-      }
-   }
-   else if (pParent->m_pPier->IsInteriorPier())
-   {
-      // when segments are continuous over a pier, there isn't an "A" dimension at the pier
-      int nShowCmd = IsSegmentContinuousOverPier(pParent->m_pPier->GetSegmentConnectionType()) ? SW_HIDE : SW_SHOW;
-      GetDlgItem(IDC_SLAB_OFFSET_GROUP)->ShowWindow(nShowCmd);
-      GetDlgItem(IDC_SLAB_OFFSET_TYPE)->ShowWindow(nShowCmd);
-      GetDlgItem(IDC_BACK_SLAB_OFFSET_LABEL)->ShowWindow(nShowCmd);
-      GetDlgItem(IDC_BACK_SLAB_OFFSET)->ShowWindow(nShowCmd);
-      GetDlgItem(IDC_BACK_SLAB_OFFSET_UNIT)->ShowWindow(nShowCmd);
-      GetDlgItem(IDC_AHEAD_SLAB_OFFSET_LABEL)->ShowWindow(nShowCmd);
-      GetDlgItem(IDC_AHEAD_SLAB_OFFSET)->ShowWindow(nShowCmd);
-      GetDlgItem(IDC_AHEAD_SLAB_OFFSET_UNIT)->ShowWindow(nShowCmd);
-   }
 
    return bResult;
+}
+
+void CPierLocationPage::OnBnClickedEditHaunchButton()
+{
+   // Need to validate main dialog data before we go into haunch dialog
+   try
+   {
+      if (TRUE != UpdateData(TRUE))
+      {
+         return;
+      }
+   }
+   catch (...)
+   {
+      ATLASSERT(0);
+      return;
+   }
+
+   CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
+   CEditHaunchDlg dlg(&(pParent->m_BridgeDesc));
+   if (dlg.DoModal() == IDOK)
+   {
+      // Cannot copy entire bridge description here because this dialog has hooks into pointers withing bridgedescr.
+      // Use function to copy haunch and slab offset data
+      pParent->m_BridgeDesc.CopyHaunchSettings(dlg.m_BridgeDesc);
+
+      UpdateHaunchAndCamberControls();
+   }
 }

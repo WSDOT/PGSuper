@@ -1,6 +1,6 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 26.00    5   6.48   Cascade River     1     1    WF60P    *      6  1/2  270  -0.30  -0.93   5.25   5.25                                              3.077  6.313   6.313     6.313     4336   0.555  0.706   2.638 -0.962  0.000 -0.138 -1.101   3.97   66.67    0.00    0.00    0.00    1.25    0.37    1.61    0.63    0.99 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 26.00    5   6.48   Cascade River     1     1    WF60P    *      6  1/2  270  -0.30  -0.93                                              3.077  6.313   6.313     6.313     4336   0.555  0.706   2.638 -0.962  0.000 -0.138 -1.101   3.97   66.67    0.00    0.00    0.00    1.25    0.37    1.61    0.63    0.99 
 
 
 The Specification Check was Not Successful
@@ -23,16 +23,17 @@ Girder Dimension Detailing check failed for Segment 1.
 Girder Dimension Detailing check failed for Segment 2.
 Lifting checks failed for Segment 2.
 Girder Dimension Detailing check failed for Segment 3.
-Slab Offset ("A" Dimension) check failed
+Finished elevation check failed
+Minimum haunch depth vs fillet check failed
 Minimum fillet value exceeded for bridge check failed
 Duct Size check failed for Duct 1.
 Duct Size check failed for Duct 2.
 Duct Size check failed for Duct 3.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 26.00    5   6.48   Cascade River     1     2    WF60P    *      6  1/2  270  -0.30  -0.93   5.25   5.25                                              3.077  6.313   6.313     6.313     4515   0.555  0.706   2.490 -1.364  0.000 -0.130 -1.495   3.97   66.34    0.00    0.00    0.00    1.19    0.34    1.55    0.58    0.89 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 26.00    5   6.48   Cascade River     1     2    WF60P    *      6  1/2  270  -0.30  -0.93                                              3.077  6.313   6.313     6.313     4515   0.555  0.706   2.490 -1.364  0.000 -0.130 -1.495   3.97   66.34    0.00    0.00    0.00    1.19    0.34    1.55    0.58    0.89 
 
 
 The Specification Check was Not Successful
@@ -55,7 +56,8 @@ Girder Dimension Detailing check failed for Segment 1.
 Girder Dimension Detailing check failed for Segment 2.
 Lifting checks failed for Segment 2.
 Girder Dimension Detailing check failed for Segment 3.
-Slab Offset ("A" Dimension) check failed
+Finished elevation check failed
+Minimum haunch depth vs fillet check failed
 Minimum fillet value exceeded for bridge check failed
 Duct Size check failed for Duct 1.
 Duct Size check failed for Duct 2.

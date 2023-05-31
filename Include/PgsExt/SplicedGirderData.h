@@ -145,6 +145,22 @@ public:
    Float64 GetConditionFactor() const;
    void SetConditionFactor(Float64 conditionFactor);
 
+   // =================================================================================
+   // Direct Haunch Depth Used only when the parent bridge's HaunchInputDepthType==hidHaunchDirectly or hidHaunchPlusSlabDirectly,
+   // and  HaunchLayoutType==hltAlongSegments, and HaunchInputLocationType==hilSame4AllGirders or hilPerEach
+   // Note that data from girder 0 is used for all segments when hilSame4AllGirders
+   // =================================================================================
+   // Set the Haunch at a girder the same for all segments.
+   void SetDirectHaunchDepths(const std::vector<Float64>& haunchDepth);
+
+   // Set/Get the Haunch Depth at a girder for a specific segment. i.e.; 
+   // Use when hilPerEach
+   void SetDirectHaunchDepths(SegmentIndexType segIdx, const std::vector<Float64>& HaunchDepth);
+   std::vector<Float64> GetDirectHaunchDepths(SegmentIndexType segIdx,bool bGetRawValue = false) const;
+
+   // Haunch input data is tricky to copy - use a function to do this.
+   void CopyHaunchData(const CSplicedGirderData& rOther);
+
    CGirderKey GetGirderKey() const;
 
 #if defined _DEBUG
@@ -226,6 +242,7 @@ protected:
    GirderIDType m_GirderID;
 
    PierIndexType m_PierIndex[2];
+
 
    // this is a special flag that is set to true when we are creating a new girder
    // that is a copy of an existing girder. it tells MakeCopy to ignore the

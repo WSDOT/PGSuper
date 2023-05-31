@@ -668,7 +668,7 @@ void CBridgeSectionView::UpdateGirderTooltips()
       }
 
       CString strMsg4;
-      if (pBridge->GetDeckType() != pgsTypes::sdtNone)
+      if (pBridge->GetDeckType() != pgsTypes::sdtNone && pBridge->GetHaunchInputDepthType() == pgsTypes::hidACamber)
       {
          // Slab Offset
          PierIndexType startPierIdx, endPierIdx;
@@ -1313,10 +1313,12 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
    CString strMsg1(_T("Double click to edit deck.\r\nRight click for more options."));
 
    CString strMsg2;
-   if ( deckType != pgsTypes::sdtNone )
+   if (deckType != pgsTypes::sdtNone)
+   {
+      if (pBridge->GetHaunchInputDepthType() == pgsTypes::hidACamber)
    {
       pgsTypes::SlabOffsetType slabOffsetType = pBridgeDesc->GetSlabOffsetType();
-      if ( slabOffsetType == pgsTypes::sotBridge )
+         if (slabOffsetType == pgsTypes::sotBridge)
       {
          strMsg2.Format(_T("\r\n\nDeck: %s\r\nSlab Thickness: %s\r\nSlab Offset: %s\r\n%s\r\nf'c: %s"),
                         GetDeckTypeName(deckType),
@@ -1334,6 +1336,16 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
                         lrfdConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pDeck->Concrete.Type,true).c_str(),
                         FormatDimension(pDeck->Concrete.Fc,pDisplayUnits->GetStressUnit())
                         );
+      }
+   }
+      else
+      {
+         strMsg2.Format(_T("\r\n\nDeck: %s\r\nSlab Thickness: %s\r\nHaunch Depths Defined by Direct Input\r\n%s\r\nf'c: %s"),
+            GetDeckTypeName(deckType),
+            FormatDimension(pDeck->GrossDepth,pDisplayUnits->GetComponentDimUnit()),
+            lrfdConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pDeck->Concrete.Type,true).c_str(),
+            FormatDimension(pDeck->Concrete.Fc,pDisplayUnits->GetStressUnit())
+         );
       }
    }
 
@@ -1371,8 +1383,11 @@ void CBridgeSectionView::BuildOverlayDisplayObjects()
       return;
    }
 
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType geomCtrlInterval = pIntervals->GetGeometryControlInterval();
+
    Float64 overlay_weight = pBridge->GetOverlayWeight();
-   Float64 depth = pBridge->GetOverlayDepth();
+   Float64 depth = pBridge->GetOverlayDepth(geomCtrlInterval);
 
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);

@@ -165,6 +165,10 @@ public:
 
    static LPCTSTR GetSegmentVariation(pgsTypes::SegmentVariationType type);
 
+   // Haunch Depths along segment. Use directly when hilPerEach
+   void SetDirectHaunchDepths(const std::vector<Float64>& HaunchDepths);
+   std::vector<Float64> GetDirectHaunchDepths(bool bGetRawValue = false) const;
+
 #if defined _DEBUG
    void AssertValid();
 #endif
@@ -214,4 +218,8 @@ protected:
    mutable Float64 m_Height;
    mutable bool m_bBottomFlangeThicknessComputed;
    mutable Float64 m_BottomFlangeThickness;
+
+   // Haunch depths along segment
+   mutable std::vector<Float64> m_vHaunchDepths; // vector of Haunch Depths. Size is same as pgsTypes::HaunchInputDistributionType
+
 };

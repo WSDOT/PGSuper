@@ -4,7 +4,7 @@
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic, Roadway Geometry Control
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
@@ -13,7 +13,7 @@ Compression stress check failed for Service I Limit State in Interval 17 Open to
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic, Roadway Geometry Control
 Debond arrangement checks failed.
 
 
@@ -24,6 +24,6 @@ Debond arrangement checks failed.
 
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
-Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic, Roadway Geometry Control
 
 

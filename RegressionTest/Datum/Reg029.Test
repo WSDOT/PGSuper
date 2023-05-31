@@ -5,7 +5,7 @@
 
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tension stress check failed for Service III Limit State in Interval 16 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 16 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
@@ -24,7 +24,7 @@ Slab Offset ("A" Dimension) check failed
 
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tension stress check failed for Service III Limit State in Interval 16 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 16 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State

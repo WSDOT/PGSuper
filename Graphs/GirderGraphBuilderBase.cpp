@@ -356,7 +356,15 @@ void CGirderGraphBuilderBase::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
       Xend   += shift;
       Xstart = m_pXFormat->Convert(Xstart);
       Xend   = m_pXFormat->Convert(Xend);
-      m_Graph.SetMinimumSize(Xstart,Xend,0,1.0e-06);
+
+      WBFL::Graphing::Rect wrect = m_Graph.GetRawWorldRect();
+
+      m_Graph.SetMinimumSize(Xstart,Xend,wrect.Bottom(),wrect.Top());
+   }
+   else
+   {
+      WBFL::Graphing::Rect wrect = m_Graph.GetRawWorldRect();
+      m_Graph.SetMinimumSize(wrect.Left(), wrect.Right(),wrect.Bottom(),wrect.Top());
    }
 
    m_Graph.UpdateGraphMetrics(pDC->GetSafeHdc());

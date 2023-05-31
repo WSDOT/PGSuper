@@ -2067,7 +2067,7 @@ void CPierData2::SetSlabOffset(Float64 back, Float64 ahead)
 Float64 CPierData2::GetSlabOffset(pgsTypes::PierFaceType face, bool bRawData) const
 {
    // if this assert fires, there isn't a slab offset at this pier
-   ATLASSERT( HasSlabOffset() );
+   ATLASSERT( bRawData || HasSlabOffset() );
 
    if (bRawData || m_pBridgeDesc == nullptr || m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBearingLine)
    {

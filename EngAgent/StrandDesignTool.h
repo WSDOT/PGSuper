@@ -323,6 +323,7 @@ public:
    ConcStrengthResultType ComputeRequiredConcreteStrength(Float64 fControl, const StressCheckTask& task,Float64* pfc) const;
 
    // "A"
+   bool IsDesignSlabOffset() const; 
    void SetSlabOffset(pgsTypes::MemberEndType end,Float64 offset);
    Float64 GetSlabOffset(pgsTypes::MemberEndType end) const; 
 
@@ -411,6 +412,8 @@ private:
 
    mutable StrandIndexType        m_MinPermanentStrands;
    StrandIndexType        m_MinTempStrands;
+
+   bool m_bIsDesignSlabOffset;
    Float64                m_MinSlabOffset;
    Float64                m_AbsoluteMinimumSlabOffset;
 

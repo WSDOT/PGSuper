@@ -36,6 +36,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\BeamFactory.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <IFace\DocumentType.h>
 
 #include "SelectItemDlg.h"
 #include "GirderDescDlg.h"
@@ -64,7 +65,8 @@ static char THIS_FILE[] = __FILE__;
 
 IMPLEMENT_DYNCREATE(CGirderDescGeneralPage, CPropertyPage)
 
-CGirderDescGeneralPage::CGirderDescGeneralPage() : CPropertyPage(CGirderDescGeneralPage::IDD)
+CGirderDescGeneralPage::CGirderDescGeneralPage() : CPropertyPage(CGirderDescGeneralPage::IDD),
+   m_CanDisplayHauchDepths(cdhHide)
 {
 }
 
@@ -110,37 +112,6 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridge);
    const CBridgeDescription2* pBridgeDesc = pIBridge->GetBridgeDescription();
-   pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->GetDeckType();
-   if ( deckType != pgsTypes::sdtNone )
-   {
-      DDX_CBItemData(pDX, IDC_SLAB_OFFSET_TYPE, m_SlabOffsetType);
-      DDX_UnitValueAndTag( pDX, IDC_START_SLAB_OFFSET, IDC_START_SLAB_OFFSET_UNIT, m_SlabOffset[pgsTypes::metStart], pDisplayUnits->GetComponentDimUnit() );
-      DDX_UnitValueAndTag( pDX, IDC_END_SLAB_OFFSET,   IDC_END_SLAB_OFFSET_UNIT,   m_SlabOffset[pgsTypes::metEnd],   pDisplayUnits->GetComponentDimUnit() );
-
-      // validate slab offset... (must be greater or equal gross deck thickess)
-      if ( pDX->m_bSaveAndValidate && m_SlabOffsetType == pgsTypes::sotSegment)
-      {
-         Float64 minSlabOffset = pBridgeDesc->GetMinSlabOffset();
-
-         if (::IsLT(m_SlabOffset[pgsTypes::metStart], minSlabOffset))
-         {
-            pDX->PrepareEditCtrl(IDC_START_SLAB_OFFSET);
-            CString msg;
-            msg.Format(_T("The slab offset at the start of the girder must be at least equal to the slab depth of %s"), FormatDimension(minSlabOffset, pDisplayUnits->GetComponentDimUnit()));
-            AfxMessageBox(msg, MB_ICONERROR | MB_OK);
-            pDX->Fail();
-         }
-
-         if (::IsLT(m_SlabOffset[pgsTypes::metEnd], minSlabOffset))
-         {
-            pDX->PrepareEditCtrl(IDC_END_SLAB_OFFSET);
-            CString msg;
-            msg.Format(_T("The slab offset at the end of the girder must be at least equal to the slab depth of %s"), FormatDimension(minSlabOffset, pDisplayUnits->GetComponentDimUnit()));
-            AfxMessageBox(msg, MB_ICONERROR | MB_OK);
-            pDX->Fail();
-         }
-      }
-   }
 
    pgsTypes::TopWidthType topWidthType;
    Float64 leftStart, rightStart, leftEnd, rightEnd;
@@ -216,12 +187,6 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
       }
    }
 
-   if (m_bCanAssumedExcessCamberInputBeEnabled)
-   {
-      DDX_CBItemData(pDX, IDC_ASSUMED_EXCESS_CAMBER_TYPES, m_AssumedExcessCamberType);
-      DDX_UnitValueAndTag(pDX, IDC_ASSUMED_EXCESS_CAMBER, IDC_ASSUMED_EXCESS_CAMBER_UNIT, m_AssumedExcessCamber, pDisplayUnits->GetComponentDimUnit());
-   }
-
    DDX_CBEnum(pDX, IDC_CONDITION_FACTOR_TYPE, pParent->m_ConditionFactorType);
    DDX_Text(pDX,   IDC_CONDITION_FACTOR,      pParent->m_ConditionFactor);
 
@@ -236,6 +201,16 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
          pDX->Fail();
       }
    }
+
+   if (pDX->m_bSaveAndValidate)
+   {
+      UpdateHaunchAndCamberData(pDX);
+   }
+   else
+   {
+      UpdateHaunchAndCamberControls();
+   }
+
 }
 
 void CGirderDescGeneralPage::ExchangeConcreteData(CDataExchange* pDX)
@@ -297,8 +272,6 @@ BEGIN_MESSAGE_MAP(CGirderDescGeneralPage, CPropertyPage)
    ON_BN_CLICKED(IDC_MORE, OnMoreConcreteProperties)
    ON_NOTIFY_EX(TTN_NEEDTEXT,0,OnToolTipNotify)
    ON_CBN_SELCHANGE(IDC_GIRDER_NAMEUSE,OnChangeSameGirderType)
-   ON_CBN_SELCHANGE(IDC_SLAB_OFFSET_TYPE,OnChangeSlabOffsetType)
-   ON_CBN_SELCHANGE(IDC_ASSUMED_EXCESS_CAMBER_TYPES,OnChangeAssumedExcessCamberType)
    ON_CBN_SELCHANGE(IDC_GIRDER_NAME,OnChangeGirderName)
    ON_CBN_DROPDOWN(IDC_GIRDER_NAME,OnBeforeChangeGirderName)
    ON_BN_CLICKED(IDC_FC1,OnConcreteStrength)
@@ -319,13 +292,15 @@ END_MESSAGE_MAP()
 
 BOOL CGirderDescGeneralPage::OnInitDialog() 
 {
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   ATLASSERT(pDocType->IsPGSuperDocument()); // Things will not go well if this fires
+
    FillGirderComboBox();
    FillEventList();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,ILossParameters,pLossParams);
    m_LossMethod = pLossParams->GetLossMethod();
    m_TimeDependentModel = pLossParams->GetTimeDependentModel();
@@ -453,30 +428,6 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
       GetDlgItem(IDC_GIRDER_MODIFIERS_NOTE)->SetWindowText(_T("This girder does not have modifiers"));
    }
 
-   GET_IFACE2(pBroker,ISpecification, pSpec );
-   m_bCanAssumedExcessCamberInputBeEnabled = pSpec->IsAssumedExcessCamberInputEnabled();
-
-   if ( m_AssumedExcessCamberType == pgsTypes::aecBridge || m_AssumedExcessCamberType == pgsTypes::aecSpan )
-   {
-      m_AssumedExcessCamberTypeCache = pgsTypes::aecGirder;
-   }
-   else
-   {
-      m_AssumedExcessCamberTypeCache = pgsTypes::aecBridge;
-   }
-
-   m_strAssumedExcessCamberCache.Format(_T("%s"), FormatDimension(m_AssumedExcessCamber, pDisplayUnits->GetComponentDimUnit(), false));
-
-   FillAssumedExcessCamberComboBox();
-
-
-   // since the bridge model isn't accessable from here,
-   // slab offset type and slab offset are initialized outside of this dialog
-   m_strSlabOffsetCache[pgsTypes::metStart].Format(_T("%s"), FormatDimension(m_SlabOffset[pgsTypes::metStart], pDisplayUnits->GetComponentDimUnit(), false));
-   m_strSlabOffsetCache[pgsTypes::metEnd].Format(_T("%s"), FormatDimension(m_SlabOffset[pgsTypes::metEnd], pDisplayUnits->GetComponentDimUnit(), false));
-
-   FillSlabOffsetComboBox();
-
    CPropertyPage::OnInitDialog();
 
    m_ctrlTopFlangeThickening.ShowDefaultWhenDisabled(FALSE);
@@ -554,8 +505,6 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
    if (pIBridgeDesc->GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone)
    {
       // disable slab offset input if there isn't a deck
-      GetDlgItem(IDC_SLAB_OFFSET_TYPE)->EnableWindow(FALSE);
-
       GetDlgItem(IDC_SLAB_OFFSET_LABEL)->EnableWindow(FALSE);
 
       GetDlgItem(IDC_START_SLAB_OFFSET_LABEL)->EnableWindow(FALSE);
@@ -569,18 +518,6 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
       GetDlgItem(IDC_START_SLAB_OFFSET)->SetWindowText(_T(""));
       GetDlgItem(IDC_END_SLAB_OFFSET)->SetWindowText(_T(""));
    }
-
-   if (!m_bCanAssumedExcessCamberInputBeEnabled)
-   {
-      GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_LABEL)->EnableWindow(FALSE);
-      GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_TYPES)->EnableWindow(FALSE);
-      GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER)->EnableWindow(FALSE);
-      GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_UNIT)->EnableWindow(FALSE);
-      GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER)->SetWindowText(_T(""));
-   }
-
-   UpdateAssumedExcessCamberControls();
-   UpdateSlabOffsetControls();
 
    return TRUE;  // return TRUE unless you set the focus to a control
                  // EXCEPTION: OCX Property Pages should return FALSE
@@ -1277,176 +1214,6 @@ void CGirderDescGeneralPage::UpdateGirderTypeControls()
    GetDlgItem(IDC_GIRDER_NAME)->EnableWindow( m_bUseSameGirderType ? FALSE : TRUE );
 }
 
-pgsTypes::SlabOffsetType CGirderDescGeneralPage::GetCurrentSlabOffsetType()
-{
-   CComboBox* pcbSlabOffsetType = (CComboBox*)GetDlgItem(IDC_SLAB_OFFSET_TYPE);
-   int curSel = pcbSlabOffsetType->GetCurSel();
-   return (pgsTypes::SlabOffsetType)pcbSlabOffsetType->GetItemData(curSel);
-}
-
-void CGirderDescGeneralPage::OnChangingSlabOffsetType()
-{
-   m_PrevSlabOffsetType = GetCurrentSlabOffsetType();
-}
-
-void CGirderDescGeneralPage::OnChangeSlabOffsetType()
-{
-   pgsTypes::SlabOffsetType slabOffsetType = GetCurrentSlabOffsetType();
-   
-   CWnd* pwndStart = GetDlgItem(IDC_START_SLAB_OFFSET);
-   CWnd* pwndEnd   = GetDlgItem(IDC_END_SLAB_OFFSET);
-   if (slabOffsetType == pgsTypes::sotSegment )
-   {
-      // going into girder by girder slab offset mode
-      CString strTempStart = m_strSlabOffsetCache[pgsTypes::metStart];
-      CString strTempEnd   = m_strSlabOffsetCache[pgsTypes::metEnd];
-
-      pwndStart->GetWindowText(m_strSlabOffsetCache[pgsTypes::metStart]);
-      pwndEnd->GetWindowText(m_strSlabOffsetCache[pgsTypes::metEnd]);
-
-      pwndStart->SetWindowText(strTempStart);
-      pwndEnd->SetWindowText(strTempEnd);
-   }
-   else if (slabOffsetType == pgsTypes::sotBearingLine )
-   {
-      // Do nothing here... the same data for segments is used for bearing lines
-   }
-   else
-   {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
-      GET_IFACE2(pBroker, IBridgeDescription, pIBridge);
-      const CBridgeDescription2* pBridgeDesc = pIBridge->GetBridgeDescription();
-      Float64 minSlabOffset = pBridgeDesc->GetMinSlabOffset();
-
-      std::array<Float64,2> slabOffset;
-      CDataExchange dx(this,TRUE);
-      DDX_UnitValueAndTag(&dx, IDC_START_SLAB_OFFSET,IDC_START_SLAB_OFFSET_UNIT, slabOffset[pgsTypes::metStart], pDisplayUnits->GetComponentDimUnit());
-      DDX_UnitValueAndTag(&dx, IDC_END_SLAB_OFFSET,  IDC_END_SLAB_OFFSET_UNIT,   slabOffset[pgsTypes::metEnd],   pDisplayUnits->GetComponentDimUnit());
-
-      Float64 slab_offset = slabOffset[pgsTypes::metStart];
-
-      if ( !IsEqual(slabOffset[pgsTypes::metStart],slabOffset[pgsTypes::metEnd]) )
-      {
-         // going to a single slab offset for the entire bridge, but the current start and end are different
-         // make the user choose one
-         CSelectItemDlg dlg;
-         dlg.m_ItemIdx = 0;
-         dlg.m_strTitle = _T("Select Slab Offset");
-         dlg.m_strLabel = _T("A single slab offset will be used for the entire bridge. Select a value.");
-         
-         CString strItems;
-         strItems.Format(_T("Start of Span (%s)\nEnd of Span (%s)"),
-                         ::FormatDimension(slabOffset[pgsTypes::metStart],pDisplayUnits->GetComponentDimUnit()),
-                         ::FormatDimension(slabOffset[pgsTypes::metEnd],  pDisplayUnits->GetComponentDimUnit()));
-
-         dlg.m_strItems = strItems;
-         if ( dlg.DoModal() == IDOK )
-         {
-            slab_offset = slabOffset[dlg.m_ItemIdx == 0 ? pgsTypes::metStart : pgsTypes::metEnd];
-         }
-         else
-         {
-            // roll back the edit... nothing is changing
-            ComboBoxSelectByItemData(this, IDC_SLAB_OFFSET_TYPE, m_PrevSlabOffsetType);
-            return;
-         }
-      }
-
-      // when we switch to slab offset by bridge, the UI is disabled and you can't change the slab offset value
-      // the slab offset must be valid before going on
-      if (::IsLT(slab_offset, minSlabOffset))
-      {
-         CDataExchange dx(this, TRUE);
-         dx.PrepareEditCtrl(IDC_START_SLAB_OFFSET);
-         CString msg;
-         msg.Format(_T("The slab offset must be at least equal to the slab depth of %s"), FormatDimension(minSlabOffset, pDisplayUnits->GetComponentDimUnit()));
-         AfxMessageBox(msg, MB_ICONERROR | MB_OK);
-
-         // roll back the edit... nothing is changing
-         ComboBoxSelectByItemData(this, IDC_SLAB_OFFSET_TYPE, m_PrevSlabOffsetType);
-
-         dx.Fail();
-      }
-
-      GetDlgItem(IDC_START_SLAB_OFFSET)->GetWindowText(m_strSlabOffsetCache[pgsTypes::metStart]);
-      GetDlgItem(IDC_END_SLAB_OFFSET)->GetWindowText(m_strSlabOffsetCache[pgsTypes::metEnd]);
-
-      GetDlgItem(IDC_START_SLAB_OFFSET)->SetWindowText( ::FormatDimension(slab_offset,pDisplayUnits->GetComponentDimUnit(),false) );
-      GetDlgItem(IDC_END_SLAB_OFFSET)->SetWindowText( ::FormatDimension(slab_offset,pDisplayUnits->GetComponentDimUnit(),false) );
-   }
-
-   UpdateSlabOffsetControls();
-}
-
-void CGirderDescGeneralPage::OnChangeAssumedExcessCamberType()
-{
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   pgsTypes::AssumedExcessCamberType temp = m_AssumedExcessCamberType;
-   m_AssumedExcessCamberType = m_AssumedExcessCamberTypeCache;
-   m_AssumedExcessCamberTypeCache = temp;
-
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-
-   CWnd* pwndAssumedExcessCamber = GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER);
-   if ( m_AssumedExcessCamberType == pgsTypes::aecGirder )
-   {
-      // going into girder by girder slab offset mode
-      CString strTemp = m_strAssumedExcessCamberCache;
-
-      pwndAssumedExcessCamber->GetWindowText(m_strAssumedExcessCamberCache);
-      pwndAssumedExcessCamber->SetWindowText(strTemp);
-   }
-   else if ( m_AssumedExcessCamberType == pgsTypes::aecSpan )
-   {
-      //pwndAssumedExcessCamber->SetWindowText(m_strAssumedExcessCamberCache);
-   }
-   else
-   {
-      Float64 assumedExcessCamber;
-      CDataExchange dx(this,TRUE);
-      DDX_UnitValueAndTag(&dx, IDC_ASSUMED_EXCESS_CAMBER,IDC_ASSUMED_EXCESS_CAMBER_UNIT, assumedExcessCamber, pDisplayUnits->GetComponentDimUnit());
-
-      GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER)->GetWindowText(m_strAssumedExcessCamberCache);
-      GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER)->SetWindowText( ::FormatDimension(assumedExcessCamber,pDisplayUnits->GetComponentDimUnit(),false) );
-   }
-
-
-   m_strAssumedExcessCamberCache.Format(_T("%s"), FormatDimension(m_AssumedExcessCamber, pDisplayUnits->GetComponentDimUnit(), false));
-   FillAssumedExcessCamberComboBox();
-   CComboBox* pcbAssumedExcessCamberType = (CComboBox*)GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_TYPES);
-   pcbAssumedExcessCamberType->SetCurSel(m_AssumedExcessCamberType == pgsTypes::aecGirder ? 1 : 0);
-
-   UpdateAssumedExcessCamberControls();
-}
-
-void CGirderDescGeneralPage::UpdateSlabOffsetControls()
-{
-   // Enable/Disable Slab Offset controls
-   pgsTypes::SlabOffsetType slabOffsetType = GetCurrentSlabOffsetType();
-   BOOL bEnable = (slabOffsetType == pgsTypes::sotSegment ? TRUE : FALSE);
-
-   GetDlgItem(IDC_START_SLAB_OFFSET_LABEL)->EnableWindow(bEnable);
-   GetDlgItem(IDC_START_SLAB_OFFSET)->EnableWindow(bEnable);
-   GetDlgItem(IDC_START_SLAB_OFFSET_UNIT)->EnableWindow(bEnable);
-
-   GetDlgItem(IDC_END_SLAB_OFFSET_LABEL)->EnableWindow(bEnable);
-   GetDlgItem(IDC_END_SLAB_OFFSET)->EnableWindow(bEnable);
-   GetDlgItem(IDC_END_SLAB_OFFSET_UNIT)->EnableWindow(bEnable);
-}
-
-void CGirderDescGeneralPage::UpdateAssumedExcessCamberControls()
-{
-   BOOL bEnable = (m_bCanAssumedExcessCamberInputBeEnabled && m_AssumedExcessCamberType == pgsTypes::aecGirder ? TRUE : FALSE);
-   GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER)->EnableWindow(bEnable);
-   GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_UNIT)->EnableWindow(bEnable);
-}
-
 void CGirderDescGeneralPage::OnBeforeChangeGirderName()
 {
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_GIRDER_NAME);
@@ -1761,45 +1528,262 @@ void CGirderDescGeneralPage::OnTopWidthTypeChanged()
    }
 }
 
-void CGirderDescGeneralPage::FillSlabOffsetComboBox()
-{
-   CComboBox* pcbSlabOffsetType = (CComboBox*)GetDlgItem(IDC_SLAB_OFFSET_TYPE);
-   pcbSlabOffsetType->ResetContent();
-
-   if (m_SlabOffsetType == pgsTypes::sotBridge || m_SlabOffsetType == pgsTypes::sotSegment)
-   {
-      int idx = pcbSlabOffsetType->AddString(GetSlabOffsetTypeAsString(pgsTypes::sotBridge, TRUE));
-      pcbSlabOffsetType->SetItemData(idx, (DWORD_PTR)pgsTypes::sotBridge);
-   }
-   else
-   {
-      int idx = pcbSlabOffsetType->AddString(GetSlabOffsetTypeAsString(pgsTypes::sotBearingLine, TRUE));
-      pcbSlabOffsetType->SetItemData(idx, (DWORD_PTR)pgsTypes::sotBearingLine);
-   }
-   int idx = pcbSlabOffsetType->AddString(GetSlabOffsetTypeAsString(pgsTypes::sotSegment, TRUE));
-   pcbSlabOffsetType->SetItemData(idx, (DWORD_PTR)pgsTypes::sotSegment);
-}
-
-void CGirderDescGeneralPage::FillAssumedExcessCamberComboBox()
-{
-   CComboBox* pcbAssumedExcessCamberType = (CComboBox*)GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_TYPES);
-   pcbAssumedExcessCamberType->ResetContent();
-
-   if (m_AssumedExcessCamberType == pgsTypes::aecBridge || m_AssumedExcessCamberType == pgsTypes::aecGirder)
-   {
-      int idx = pcbAssumedExcessCamberType->AddString(_T("A single Assumed Excess Camber is used in all spans"));
-      pcbAssumedExcessCamberType->SetItemData(idx, (DWORD_PTR)pgsTypes::aecBridge);
-   }
-   else
-   {
-      int idx = pcbAssumedExcessCamberType->AddString(_T("A unique Assumed Excess Camber is used in each span"));
-      pcbAssumedExcessCamberType->SetItemData(idx, (DWORD_PTR)pgsTypes::aecSpan);
-   }
-   int idx = pcbAssumedExcessCamberType->AddString(_T("Assumed Excess Cambers are defined girder by girder"));
-   pcbAssumedExcessCamberType->SetItemData(idx, (DWORD_PTR)pgsTypes::aecGirder);
-}
-
 void CGirderDescGeneralPage::OnStnClickedPrecamberLabel()
 {
    // TODO: Add your control notification handler code here
 }
+
+void CGirderDescGeneralPage::UpdateHaunchAndCamberControls()
+{
+   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+
+   const CBridgeDescription2* pBridgeDesc2 = pIBridgeDesc->GetBridgeDescription(); // We don't make top-level haunch-type changes in this dialog
+
+   pgsTypes::HaunchInputDepthType inputType = pBridgeDesc2->GetHaunchInputDepthType();
+
+   if (inputType == pgsTypes::hidACamber)
+   {
+      // Input is via slab offset
+      GetDlgItem(IDC_SLAB_OFFSET_LABEL)->SetWindowText(_T("Slab Offset (\"A\" Dimension)"));
+   }
+   else if (inputType == pgsTypes::hidHaunchDirectly)
+   {
+      GetDlgItem(IDC_SLAB_OFFSET_LABEL)->SetWindowText(_T("Haunch Depth"));
+   }
+   else
+   {
+      GetDlgItem(IDC_SLAB_OFFSET_LABEL)->SetWindowText(_T("Haunch+Slab Depth"));
+   }
+
+   pgsTypes::SupportedDeckType deckType = pBridgeDesc2->GetDeckDescription()->GetDeckType();
+   bool bCanAssumedExcessCamberInputBeEnabled = pSpec->IsAssumedExcessCamberInputEnabled();
+
+   if (deckType == pgsTypes::sdtNone)
+   {
+      EnableHaunchAndCamberControls(FALSE,FALSE,bCanAssumedExcessCamberInputBeEnabled && inputType == pgsTypes::hidACamber);
+   }
+   else if (inputType == pgsTypes::hidACamber)
+   {
+      pgsTypes::SlabOffsetType slabOffsetType = pBridgeDesc2->GetSlabOffsetType();
+      pgsTypes::AssumedExcessCamberType assumedExcessCamberType = pBridgeDesc2->GetAssumedExcessCamberType();
+
+      BOOL bEnableADim = (slabOffsetType == pgsTypes::sotSegment) ? TRUE : FALSE;
+      BOOL bEnableCamber = (bCanAssumedExcessCamberInputBeEnabled && assumedExcessCamberType == pgsTypes::aecGirder) ? TRUE : FALSE;
+      EnableHaunchAndCamberControls(bEnableADim,bEnableCamber,bCanAssumedExcessCamberInputBeEnabled);
+
+      CString strSlabOffset;
+      strSlabOffset.Format(_T("%s"),FormatDimension(m_SlabOffsetOrHaunch[pgsTypes::metStart],pDisplayUnits->GetComponentDimUnit(),false));
+      GetDlgItem(IDC_START_SLAB_OFFSET)->SetWindowText(strSlabOffset);
+
+      strSlabOffset.Format(_T("%s"),FormatDimension(m_SlabOffsetOrHaunch[pgsTypes::metEnd],pDisplayUnits->GetComponentDimUnit(),false));
+      GetDlgItem(IDC_END_SLAB_OFFSET)->SetWindowText(strSlabOffset);
+
+      // Camber
+      CString strCamber;
+      strCamber.Format(_T("%s"),FormatDimension(m_AssumedExcessCamber,pDisplayUnits->GetComponentDimUnit(),false));
+      GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER)->SetWindowText(strCamber);
+   }
+   else
+   {
+      // direct haunch input
+      const CDeckDescription2* pDeck = pBridgeDesc2->GetDeckDescription();
+      Float64 Tdeck;
+      if (pDeck->GetDeckType() == pgsTypes::sdtCompositeSIP)
+      {
+         Tdeck = pDeck->GrossDepth + pDeck->PanelDepth;
+      }
+      else
+      {
+         Tdeck = pDeck->GrossDepth;
+      }
+
+      pgsTypes::HaunchInputDistributionType haunchInputDistributionType = pBridgeDesc2->GetHaunchInputDistributionType();
+
+      CString strHaunchVal;
+      if (m_CanDisplayHauchDepths == CGirderDescGeneralPage::cdhEdit || m_CanDisplayHauchDepths == CGirderDescGeneralPage::cdhDisplay)
+      {
+         EnableHaunchAndCamberControls(m_CanDisplayHauchDepths == CGirderDescGeneralPage::cdhEdit?TRUE:FALSE, FALSE, false);
+
+         // Always have start value
+         Float64 haunchDepth = m_SlabOffsetOrHaunch[pgsTypes::metStart] + (inputType == pgsTypes::hidHaunchPlusSlabDirectly ? Tdeck : 0.0);
+         strHaunchVal.Format(_T("%s"),FormatDimension(haunchDepth,pDisplayUnits->GetComponentDimUnit(),false));
+         GetDlgItem(IDC_START_SLAB_OFFSET)->SetWindowText(strHaunchVal);
+
+         if (haunchInputDistributionType == pgsTypes::hidAtEnds)
+   {
+            haunchDepth = m_SlabOffsetOrHaunch[pgsTypes::metEnd] + (inputType == pgsTypes::hidHaunchPlusSlabDirectly ? Tdeck : 0.0);
+            strHaunchVal.Format(_T("%s"),FormatDimension(haunchDepth,pDisplayUnits->GetComponentDimUnit(),false));
+            GetDlgItem(IDC_END_SLAB_OFFSET)->SetWindowText(strHaunchVal);
+         }
+         else
+         {
+            // Data is input uniformly along span. Hide end location and label
+            GetDlgItem(IDC_START_SLAB_OFFSET_LABEL)->ShowWindow(SW_HIDE);
+            GetDlgItem(IDC_END_SLAB_OFFSET_LABEL)->ShowWindow(SW_HIDE);
+            GetDlgItem(IDC_END_SLAB_OFFSET)->ShowWindow(SW_HIDE);
+            GetDlgItem(IDC_END_SLAB_OFFSET_UNIT)->ShowWindow(SW_HIDE);
+         }
+   }
+   else
+   {
+         // no values are shown
+         EnableHaunchAndCamberControls(FALSE,FALSE,false);
+      }
+   }
+}
+
+void CGirderDescGeneralPage::UpdateHaunchAndCamberData(CDataExchange* pDX)
+{
+   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+
+   const CBridgeDescription2* pBridgeDesc2 = pIBridgeDesc->GetBridgeDescription(); // We don't make top-level haunch-type changes in this dialog
+
+   pgsTypes::SupportedDeckType deckType = pBridgeDesc2->GetDeckDescription()->GetDeckType();
+   if (deckType == pgsTypes::sdtNone)
+   {
+      return;
+   }
+
+   pgsTypes::HaunchInputDepthType inputType = pBridgeDesc2->GetHaunchInputDepthType();
+   if (inputType == pgsTypes::hidACamber)
+   {
+      GET_IFACE2(pBroker,ISpecification,pSpec);
+      bool bCanAssumedExcessCamberInputBeEnabled = pSpec->IsAssumedExcessCamberInputEnabled();
+      pgsTypes::SlabOffsetType slabOffsetType = pBridgeDesc2->GetSlabOffsetType();
+      pgsTypes::AssumedExcessCamberType assumedExcessCamberType = pBridgeDesc2->GetAssumedExcessCamberType();
+
+      BOOL bEnableADim = (slabOffsetType == pgsTypes::sotSegment) ? TRUE : FALSE;
+      BOOL bEnableCamber = (bCanAssumedExcessCamberInputBeEnabled && assumedExcessCamberType == pgsTypes::aecGirder) ? TRUE : FALSE;
+
+      if (bEnableADim)
+      {
+         CString strMinValError;
+         Float64 minSlabOffset = pBridgeDesc2->GetMinSlabOffset();
+         strMinValError.Format(_T("Slab Offset value must be greater or equal to (%s)"),FormatDimension(minSlabOffset,pDisplayUnits->GetComponentDimUnit()));
+
+         DDX_UnitValueAndTag(pDX,IDC_START_SLAB_OFFSET,IDC_START_SLAB_OFFSET_UNIT,m_SlabOffsetOrHaunch[pgsTypes::metStart],pDisplayUnits->GetComponentDimUnit());
+         if (::IsLT(m_SlabOffsetOrHaunch[pgsTypes::metStart], minSlabOffset))
+         {
+            pDX->PrepareCtrl(IDC_START_SLAB_OFFSET);
+            AfxMessageBox(strMinValError);
+            pDX->Fail();
+         }
+
+         DDX_UnitValueAndTag(pDX,IDC_END_SLAB_OFFSET,IDC_END_SLAB_OFFSET_UNIT,m_SlabOffsetOrHaunch[pgsTypes::metEnd],pDisplayUnits->GetComponentDimUnit());
+         if (::IsLT(m_SlabOffsetOrHaunch[pgsTypes::metEnd], minSlabOffset))
+         {
+            pDX->PrepareCtrl(IDC_END_SLAB_OFFSET);
+            AfxMessageBox(strMinValError);
+            pDX->Fail();
+         }
+      }
+
+      if (bEnableCamber)
+      {
+         DDX_UnitValueAndTag(pDX,IDC_ASSUMED_EXCESS_CAMBER,IDC_ASSUMED_EXCESS_CAMBER_UNIT,m_AssumedExcessCamber,pDisplayUnits->GetComponentDimUnit());
+      }
+   }
+   else
+   {
+      // Direct input of haunch depths
+      const CDeckDescription2* pDeck = pBridgeDesc2->GetDeckDescription();
+      Float64 Tdeck;
+      if (pDeck->GetDeckType() == pgsTypes::sdtCompositeSIP)
+      {
+         Tdeck = pDeck->GrossDepth + pDeck->PanelDepth;
+      }
+      else
+      {
+         Tdeck = pDeck->GrossDepth;
+      }
+
+      if (m_CanDisplayHauchDepths == CGirderDescGeneralPage::cdhEdit)
+      {
+
+         Float64 minHaunch = pBridgeDesc2->GetMinimumAllowableHaunchDepth(inputType);
+
+         CString strMinValError;
+         if (inputType == pgsTypes::hidHaunchPlusSlabDirectly)
+   {
+            strMinValError.Format(_T("Haunch+Slab Depth must be greater or equal to deck depth+fillet (%s)"),FormatDimension(minHaunch,pDisplayUnits->GetComponentDimUnit()));
+   }
+   else
+   {
+            strMinValError.Format(_T("Haunch Depth must be greater or equal to fillet (%s)"),FormatDimension(minHaunch,pDisplayUnits->GetComponentDimUnit()));
+         }
+
+         // Get current values out of the controls
+         CDataExchange dx(this,TRUE);
+         Float64 haunchDepth;
+         DDX_UnitValueAndTag(&dx,IDC_START_SLAB_OFFSET,IDC_START_SLAB_OFFSET_UNIT,haunchDepth,pDisplayUnits->GetComponentDimUnit());
+         if (::IsLT(haunchDepth,minHaunch))
+         {
+            pDX->PrepareCtrl(IDC_START_SLAB_OFFSET);
+            AfxMessageBox(strMinValError);
+            pDX->Fail();
+         }
+
+         haunchDepth -= (inputType == pgsTypes::hidHaunchPlusSlabDirectly ? Tdeck : 0.0);
+         m_SlabOffsetOrHaunch[pgsTypes::metStart] = haunchDepth;
+
+         pgsTypes::HaunchInputDistributionType haunchInputDistributionType = pBridgeDesc2->GetHaunchInputDistributionType();
+         if (haunchInputDistributionType == pgsTypes::hidAtEnds)
+         {
+            DDX_UnitValueAndTag(&dx,IDC_END_SLAB_OFFSET,IDC_END_SLAB_OFFSET_UNIT,haunchDepth,pDisplayUnits->GetComponentDimUnit());
+            if (::IsLT(haunchDepth,minHaunch))
+            {
+               pDX->PrepareCtrl(IDC_END_SLAB_OFFSET);
+               AfxMessageBox(strMinValError);
+               pDX->Fail();
+            }
+
+            haunchDepth -= (inputType == pgsTypes::hidHaunchPlusSlabDirectly ? Tdeck : 0.0);
+            m_SlabOffsetOrHaunch[pgsTypes::metEnd] = haunchDepth;
+         }
+      }
+   }
+}
+
+void CGirderDescGeneralPage::EnableHaunchAndCamberControls(BOOL bEnableADim,BOOL bEnableCamber,bool bShowCamber)
+{
+   GetDlgItem(IDC_SLAB_OFFSET_LABEL)->ShowWindow(SW_SHOW);
+   GetDlgItem(IDC_START_SLAB_OFFSET)->ShowWindow(SW_SHOW);
+   GetDlgItem(IDC_START_SLAB_OFFSET_UNIT)->ShowWindow(SW_SHOW);
+   GetDlgItem(IDC_END_SLAB_OFFSET_LABEL)->ShowWindow(SW_SHOW);
+   GetDlgItem(IDC_END_SLAB_OFFSET)->ShowWindow(SW_SHOW);
+   GetDlgItem(IDC_END_SLAB_OFFSET_UNIT)->ShowWindow(SW_SHOW);
+
+   GetDlgItem(IDC_START_SLAB_OFFSET)->EnableWindow(bEnableADim);
+   GetDlgItem(IDC_START_SLAB_OFFSET_LABEL)->EnableWindow(bEnableADim);
+   GetDlgItem(IDC_START_SLAB_OFFSET)->EnableWindow(bEnableADim);
+   GetDlgItem(IDC_START_SLAB_OFFSET_UNIT)->EnableWindow(bEnableADim);
+   GetDlgItem(IDC_END_SLAB_OFFSET_LABEL)->EnableWindow(bEnableADim);
+   GetDlgItem(IDC_END_SLAB_OFFSET)->EnableWindow(bEnableADim);
+   GetDlgItem(IDC_END_SLAB_OFFSET_UNIT)->EnableWindow(bEnableADim);
+
+   int show = bShowCamber ? SW_SHOW : SW_HIDE;
+   GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER)->ShowWindow(show);
+   GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_UNIT)->ShowWindow(show);
+   GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_LABEL2)->ShowWindow(show);
+   GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_LABEL)->ShowWindow(show);
+
+   GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER)->EnableWindow(bEnableCamber);
+   GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_UNIT)->EnableWindow(bEnableCamber);
+
+   GetDlgItem(IDC_START_SLAB_OFFSET)->SetWindowText(_T(""));
+   GetDlgItem(IDC_END_SLAB_OFFSET)->SetWindowText(_T(""));
+   GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER)->SetWindowText(_T(""));
+}
+
+

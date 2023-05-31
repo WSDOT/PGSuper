@@ -2276,6 +2276,117 @@ EventIDType CTimelineManager::FindUserLoadEventID(LoadIDType loadID) const
    return pEvent->GetID();
 }
 
+
+EventIndexType CTimelineManager::GetPrimaryGeometryControlEventIndex() const
+{
+   PGS_ASSERT_VALID;
+
+   auto& iter(m_TimelineEvents.cbegin());
+   const auto& end(m_TimelineEvents.cend());
+   for (; iter != end; iter++)
+   {
+      const auto* pTimelineEvent = *iter;
+      if (pTimelineEvent->GetGeometryControlActivity().IsGeometryControlEvent())
+      {
+         return std::distance(m_TimelineEvents.cbegin(),iter);
+      }
+   }
+   return INVALID_INDEX;
+}
+
+std::vector<EventIndexType> CTimelineManager::GetGeometryControlEventIndices(pgsTypes::GeometryControlActivityType type) const
+{
+   PGS_ASSERT_VALID;
+   std::vector<EventIndexType> events;
+
+   auto& iter(m_TimelineEvents.cbegin());
+   const auto& end(m_TimelineEvents.cend());
+   for (; iter != end; iter++)
+   {
+      const auto* pTimelineEvent = *iter;
+      if (pTimelineEvent->GetGeometryControlActivity().GetGeometryControlEventType() == type)
+      {
+         events.push_back( std::distance(m_TimelineEvents.cbegin(),iter) );
+      }
+   }
+
+   if (events.empty())
+   {
+      events.push_back(INVALID_INDEX);
+   }
+
+   return events;
+}
+
+void CTimelineManager::SetGeometryControlEventByIndex(EventIndexType eventIdx,pgsTypes::GeometryControlActivityType type)
+{
+   if(eventIdx != INVALID_INDEX)
+   {
+      if (type == pgsTypes::gcaGeometryControlEvent)
+      {
+         // can have only one main event
+         EventIndexType currentGeometryControlEventIdx = GetPrimaryGeometryControlEventIndex();
+         if (currentGeometryControlEventIdx != INVALID_INDEX)
+         {
+            CTimelineEvent* pOldGeometryControlEvent = m_TimelineEvents[currentGeometryControlEventIdx];
+            pOldGeometryControlEvent->GetGeometryControlActivity().SetGeometryControlEventType(pgsTypes::gcaDisabled);
+         }
+         else
+         {
+            ATLASSERT(0); // should always have a prime event set
+         }
+      }
+
+      CTimelineEvent new_geom_event = *m_TimelineEvents[eventIdx];
+      new_geom_event.GetGeometryControlActivity().SetGeometryControlEventType(pgsTypes::gcaGeometryControlEvent);
+      int result = SetEventByIndex(eventIdx,new_geom_event,false);
+      ATLASSERT(result != TLM_SUCCESS);
+   }
+   else
+   {
+      ATLASSERT(0);
+   }
+}
+
+std::vector <EventIDType> CTimelineManager::GetGeometryControlEventIDs(pgsTypes::GeometryControlActivityType type) const
+{
+   PGS_ASSERT_VALID;
+
+   std::vector <EventIDType> events;
+   for (const auto* pTimelineEvent : m_TimelineEvents)
+   {
+      if (pTimelineEvent->GetGeometryControlActivity().GetGeometryControlEventType() == type)
+      {
+         events.push_back( pTimelineEvent->GetID() );
+      }
+   }
+
+   if (events.empty())
+   {
+      events.push_back(INVALID_ID);
+   }
+
+   return events;
+}
+
+void CTimelineManager::SetGeometryControlEventByID(EventIDType ID,pgsTypes::GeometryControlActivityType type)
+{
+   auto& iter(m_TimelineEvents.cbegin());
+   const auto& end(m_TimelineEvents.cend());
+   for (; iter != end; iter++)
+   {
+      const auto* pTimelineEvent = *iter;
+      if (pTimelineEvent->GetID() == ID)
+      {
+
+         SetGeometryControlEventByIndex(std::distance(m_TimelineEvents.cbegin(),iter), type);
+         return;
+      }
+   }
+
+   PGS_ASSERT_VALID;
+}
+
 Uint32 CTimelineManager::Validate() const
 {
    ClearValidationCaches();
@@ -2338,6 +2449,54 @@ Uint32 CTimelineManager::Validate() const
       }
    }
 
+   // Geometry Control Events (GCE)
+   EventIndexType castDeckEventIdx = GetCastDeckEventIndex();
+   bool isDeck = INVALID_INDEX != castDeckEventIdx; // indirect way to determine
+   EventIndexType firstPossibleGCE; // event just before the earliest event when a GCE can occur
+   if (isDeck)
+   {
+      firstPossibleGCE = castDeckEventIdx;
+   }
+   else
+   {
+      firstPossibleGCE = GetLastSegmentErectionEventIndex();
+   }
+
+   EventIndexType currEventIdx = 0;
+   EventIndexType gceIndex = INVALID_INDEX;
+   for (const auto pTimelineEvent : m_TimelineEvents)
+   {
+      pgsTypes::GeometryControlActivityType gcType = pTimelineEvent->GetGeometryControlActivity().GetGeometryControlEventType();
+      if (pgsTypes::gcaDisabled != gcType)
+      {
+         if (currEventIdx <= firstPossibleGCE)
+         {
+            // geometry control cannot take place before firstPossibleGCE
+            error |= TLM_GEOM_EVENT_TIME_ERROR;
+            m_GeomEventTimeError.push_back(currEventIdx);
+         }
+         else if (pgsTypes::gcaGeometryControlEvent == gcType)
+         {
+            // look for duplicate event
+            if (gceIndex != INVALID_INDEX)
+            {
+               error |= TLM_GEOM_EVENT_DUPL_ERROR;
+               m_GeomEventDuplicateError.push_back(std::make_pair(currEventIdx,gceIndex));
+            }
+
+            gceIndex = currEventIdx;
+         }
+      }
+
+      currEventIdx++;
+   }
+
+   if (gceIndex == INVALID_INDEX)
+   {
+      // Must have one GCE
+      error |= TLM_GEOM_EVENT_MISSING_ERROR;
+   }
+
    // Make sure railing system is installed after the deck, or if there is no
    // deck, after the last segment is erected
    EventIndexType diaphragmEventIdx = GetIntermediateDiaphragmsLoadEventIndex();
@@ -2351,7 +2510,6 @@ Uint32 CTimelineManager::Validate() const
    }
    else
    {
-      EventIndexType castDeckEventIdx = GetCastDeckEventIndex();
       if (GetRailingSystemLoadEventIndex() <= castDeckEventIdx)
       {
          error |= TLM_RAILING_SYSTEM_ERROR;
@@ -3148,6 +3306,36 @@ std::_tstring CTimelineManager::GetErrorMessage(Uint32 errorCode) const
    if (WBFL::System::Flags<Uint32>::IsSet(errorCode, TLM_USER_LOAD_ERROR))
    {
       os << _T("User defined loads are applied before segments are erected. They must be applied after all segments are erected. To fix the problem add an Apply Load activity with user defined loads at or after the event containing the last Erect Segment activity to the timeline.") << std::endl << std::endl;
+   }
+
+   if (WBFL::System::Flags<Uint32>::IsSet(errorCode,TLM_GEOM_EVENT_TIME_ERROR))
+   {
+      bool isDeck = INVALID_INDEX != GetCastDeckEventIndex(); // indirect way to determine
+
+      for (auto event : m_GeomEventTimeError)
+      {
+         if (isDeck)
+         {
+            os << _T("Roadway Geometry Control Events (GCE) must occur after deck placement. Please remove the GCE from event ") << LABEL_EVENT(event) << std::endl << std::endl;
+         }
+         else
+         {
+            os << _T("Roadway Geometry Control Events (GCE) must occur after last segment has been erected. Please remove the GCE from event ") << LABEL_EVENT(event) << std::endl << std::endl;
+         }
+      }
+   }
+
+   if (WBFL::System::Flags<Uint32>::IsSet(errorCode,TLM_GEOM_EVENT_MISSING_ERROR))
+   {
+      os << _T("There must be a Roadway Geometry Control Event (GCE) defined. Please add a GCE after placement of deck.") << std::endl << std::endl;
+   }
+
+   if (WBFL::System::Flags<Uint32>::IsSet(errorCode,TLM_GEOM_EVENT_DUPL_ERROR))
+   {
+      for (auto dup : m_GeomEventDuplicateError)
+      {
+         os << _T("Only one Roadway Geometry Control Event (GCE) can be defined. There are duplicates in events ") << LABEL_EVENT(dup.first) << _T(" and ") << LABEL_EVENT(dup.second) << std::endl << std::endl;
+      }
    }
 
    return os.str();

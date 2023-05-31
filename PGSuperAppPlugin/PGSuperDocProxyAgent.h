@@ -275,6 +275,7 @@ public:
    virtual bool EditEffectiveFlangeWidth() override;
    virtual bool SelectProjectCriteria() override;
    virtual bool EditBearings() override;
+   virtual bool EditHaunch() override;
 
 // IDesign
 public:
