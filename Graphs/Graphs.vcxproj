@@ -166,7 +166,6 @@
     <ClCompile Include="EffectivePrestressGraphController.cpp" />
     <ClCompile Include="EffectivePrestressGraphViewControllerImp.cpp" />
     <ClCompile Include="ExportGraphXYTool.cpp" />
-    <ClCompile Include="FillHaunchDlg.cpp" />
     <ClCompile Include="FinishedElevationGraphBuilder.cpp" />
     <ClCompile Include="FinishedElevationGraphController.cpp" />
     <ClCompile Include="FinishedElevationGraphViewControllerImp.cpp" />
@@ -232,7 +231,6 @@
     <ClInclude Include="DeflectionHistoryGraphViewControllerImp.h" />
     <ClInclude Include="EffectivePrestressGraphController.h" />
     <ClInclude Include="EffectivePrestressGraphViewControllerImp.h" />
-    <ClInclude Include="FillHaunchDlg.h" />
     <ClInclude Include="FinishedElevationGraphController.h" />
     <ClInclude Include="FinishedElevationGraphViewControllerImp.h" />
     <ClInclude Include="GirderGraphControllerBase.h" />

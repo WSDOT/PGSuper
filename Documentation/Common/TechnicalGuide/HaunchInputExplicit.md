@@ -14,7 +14,7 @@ Since Haunch(x) is explicitly defined by user input along the structure; haunch 
 
 Automated Haunch Design for Explicit Input
 ----------------------------------------
-The **Fill Input Data with Computed Haunch Depths** tool located on the **Finished Elevations Graph** window can be used to find an optimal haunch layout.
+The **Design Haunch Input Data with Computed Haunch Depths** tool located on the **Finished Elevations Graph** window can be used to find an optimal haunch layout.
 
 > Tip: Haunch design is an iterative process, so you may need to run the design tool more than once in order to find a satisfactory solution.
 

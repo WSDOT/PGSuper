@@ -330,32 +330,7 @@ BEGIN
     PUSHBUTTON      "Edit Haunch",IDC_EDIT_HAUNCH,6,331,68,14
     CONTROL         "Show allowable elevation tolerance",IDC_ELEVATION_TOLERANCE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,319,133,10
-    PUSHBUTTON      "Fill Haunch Input with Computed Values...",IDC_FILL_HAUNCH,14,347,142,14
-END
-
-IDD_FILL_HAUNCH DIALOGEX 0, 0, 321, 242
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Fill Haunch Input Data With Computed Haunch Depths"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    CONTROL         "Selected girder",IDC_RADIO_SELECTED_GIRDER,"Button",BS_AUTORADIOBUTTON | WS_GROUP,18,23,193,10
-    CONTROL         "All girders",IDC_RADIO_SELECT_ALL_GIRDERS,"Button",BS_AUTORADIOBUTTON,18,38,193,10
-    CONTROL         "Compute Haunch Depths required to raise deck elevations to meet roadway elevations at the time of the Geometry Control Event.",IDC_COMPUTE_HAUNCH_RADIO,
-                    "Button",BS_AUTORADIOBUTTON | BS_TOP | BS_MULTILINE | WS_GROUP,18,81,271,16
-    COMBOBOX        IDC_COMPUTE_HAUNCH_GIRDER,239,103,32,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_COMPUTE_HAUNCH_COMBO,135,122,157,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Add the value below to current haunch depths",IDC_ADD_HAUNCH_RADIO,
-                    "Button",BS_AUTORADIOBUTTON,18,168,174,10
-    EDITTEXT        IDC_ADD_HAUNCH_EDIT,43,182,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    DEFPUSHBUTTON   "Fill Input Data",IDOK,107,221,59,14
-    PUSHBUTTON      "Cancel",IDCANCEL,176,221,50,14
-    PUSHBUTTON      "Help",IDHELP,235,221,50,14
-    GROUPBOX        "Select Fill Option",IDC_STATIC,7,67,307,143
-    LTEXT           "Distribute Haunch Depths at",IDC_COMPUTE_HAUNCH_STATIC,40,124,91,8
-    LTEXT           "Note that this option requires a full analysis of the selected girderline that may take a long time. Once started, the analysis cannot be cancelled.",IDC_COMPUTE_HAUNCH_STATIC2,39,140,267,18
-    LTEXT           "Static",IDC_ADD_HAUNCH_UNIT,90,186,19,8
-    LTEXT           "Girderline along which required haunches are to be computed",IDC_COMPUTE_HAUNCH_STATIC3,40,105,199,8
-    GROUPBOX        "Select Girder to be Modified",IDC_STATIC,7,7,307,49
+    PUSHBUTTON      "Design Haunch Input with Computed Values...",IDC_FILL_HAUNCH,6,347,158,14
 END
 
 
@@ -455,14 +430,6 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 361
     END
-
-    IDD_FILL_HAUNCH, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 314
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 235
-    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -518,11 +485,6 @@ BEGIN
 END
 
 IDD_FINISHED_ELEVATION_GRAPH_CONTROLLER AFX_DIALOG_LAYOUT
-BEGIN
-    0
-END
-
-IDD_FILL_HAUNCH AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

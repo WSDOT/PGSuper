@@ -16,12 +16,9 @@
 #define IDD_INITIALSTRAIN_GRAPH_CONTROLLER 203
 #define IDD_SEGMENT_ANALYSISRESULTS_GRAPH_CONTROLLER 204
 #define IDD_FINISHED_ELEVATION_GRAPH_CONTROLLER 205
-#define IDD_FILL_HAUNCH                 215
 #define IDC_EVENT                       1096
 #define IDC_FROM_SPAN                   1422
 #define IDC_FROM_GIRDER                 1435
-#define IDC_COMPUTE_HAUNCH_COMBO        1436
-#define IDC_COMPUTE_HAUNCH_GIRDER       1437
 #define IDC_SIMPLE                      1478
 #define IDC_SIMPLE2                     1479
 #define IDC_SIMPLE3                     1480
@@ -99,17 +96,8 @@
 #define IDC_EDIT_HAUNCH                 3073
 #define IDC_GIRDER_TEXT                 3073
 #define IDC_FILL_HAUNCH                 3074
-#define IDC_COMPUTE_HAUNCH_RADIO        3074
-#define IDC_ADD_HAUNCH_RADIO            3075
 #define IDC_COPY_HAUNCH_RADIO           3076
-#define IDC_ADD_HAUNCH_EDIT             3077
-#define IDC_ADD_HAUNCH_UNIT             3078
-#define IDC_COMPUTE_HAUNCH_STATIC2      3079
-#define IDC_COMPUTE_HAUNCH_STATIC       3080
-#define IDC_COMPUTE_HAUNCH_STATIC3      3081
-#define IDC_RADIO_SELECTED_GIRDER       3082
 #define IDC_RADIO2                      3083
-#define IDC_RADIO_SELECT_ALL_GIRDERS    3083
 
 // Next default values for new objects
 // 

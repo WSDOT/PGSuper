@@ -38,6 +38,7 @@
 #include "DesignGirderDlg.h"
 #include "DesignOutcomeDlg.h"
 #include "StructuralAnalysisMethodDlg.h"
+#include "FillHaunchDlg.h"
 
 // Interfaces
 #include <IFace\EditByUI.h> // for EDG_GENERAL
@@ -79,7 +80,9 @@ BEGIN_MESSAGE_MAP(CPGSuperDoc, CPGSDocBase)
 	ON_COMMAND(ID_EDIT_HAUNCH, OnEditHaunch)
    ON_UPDATE_COMMAND_UI(ID_EDIT_HAUNCH,OnUpdateEditHaunch)
 	ON_COMMAND(ID_EDIT_HAUNCH, OnEditHaunch)
-	ON_COMMAND(ID_EDIT_BEARING, OnEditBearing)
+   ON_COMMAND(ID_PROJECT_DESIGNHAUNCH,OnProjectDesignHaunch)
+   ON_UPDATE_COMMAND_UI(ID_PROJECT_DESIGNHAUNCH,OnUpdateProjectDesignHaunch)
+   ON_COMMAND(ID_EDIT_BEARING, OnEditBearing)
    ON_UPDATE_COMMAND_UI(ID_EDIT_BEARING,OnUpdateEditBearing)
    //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -304,6 +307,21 @@ void CPGSuperDoc::OnUpdateProjectDesignGirderDirectPreserveHaunch(CCmdUI* pCmdUI
    pCmdUI->Enable( bDesignSlabOffset );
 }
 
+void CPGSuperDoc::OnProjectDesignHaunch()
+{
+   GroupIndexType group = m_Selection.GroupIdx == ALL_GROUPS ? 0 : m_Selection.GroupIdx;
+   GirderIndexType girder = m_Selection.GirderIdx == ALL_GIRDERS ? 0 : m_Selection.GirderIdx;
+   
+   DoDesignHaunch(CGirderKey(group,girder));
+}
+
+void CPGSuperDoc::OnUpdateProjectDesignHaunch(CCmdUI* pCmdUI)
+{
+   GET_IFACE_NOCHECK(IBridge,pBridge); // short circuit evaluation may cause this interface to be unused
+   bool bDesign = pBridge->GetDeckType() != pgsTypes::sdtNone && pBridge->GetHaunchInputDepthType() != pgsTypes::hidACamber;
+   pCmdUI->Enable(bDesign);
+}
+
 void CPGSuperDoc::OnProjectAnalysis() 
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -524,6 +542,50 @@ void CPGSuperDoc::DoDesignGirder(const std::vector<CGirderKey>& girderKeys, bool
          pTransactions->Execute(std::move(pTxn));
       }
    }
+}
+
+bool CPGSuperDoc::DesignHaunch(const CGirderKey& girderKey)
+{
+   return DoDesignHaunch(girderKey);
+}
+
+bool CPGSuperDoc::DoDesignHaunch(const CGirderKey& girderKey)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   CFillHaunchDlg dlg(girderKey,m_pBroker);
+   if (IDOK == dlg.DoModal())
+   {
+      GET_IFACE(IBridgeDescription,pIBridgeDesc);
+      const CBridgeDescription2* pOldBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+      CBridgeDescription2 newBridgeDescr(*pOldBridgeDesc);
+
+      if (dlg.ModifyBridgeDescription(newBridgeDescr))
+      {
+         GET_IFACE(IEnvironment,pEnvironment);
+         enumExposureCondition oldExposureCondition = pEnvironment->GetExposureCondition();
+         Float64 oldRelHumidity = pEnvironment->GetRelHumidity();
+
+         std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc,newBridgeDescr,
+            oldExposureCondition,oldExposureCondition,oldRelHumidity,oldRelHumidity));
+
+         GET_IFACE(IEAFTransactions,pTransactions);
+         pTransactions->Execute(std::move(pTxn));
+
+         // Give user some confirmation that values where changed. A report of some kind might be better, but not sure it's worth the effort.
+         CString msg(_T("Haunch depths were modified. Click Yes to view/edit new haunch values"));
+         AFX_MANAGE_STATE(AfxGetStaticModuleState());
+         if (AfxMessageBox(msg,MB_YESNO | MB_ICONQUESTION) == IDYES)
+         {
+            OnEditHaunch();
+         }
+
+         return true;
+      }
+   }
+
+   return false;
 }
 
 UINT CPGSuperDoc::GetStandardToolbarResourceID()

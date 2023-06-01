@@ -23,7 +23,7 @@ Show Girder Top Chord | Toggle plot of girder chord lines
 Show Haunch Depths | (Only for differential view). Overlay plot of haunch depths with other data.
 Edit Haunch | Bridge up the Edit Haunch dialog. Haunch can be modified here and then results are plotted directly
 Export Graph Data | Data from graphs can be exported to Microsoft Excel or CSV files by clicking on the [Export Graph Data] button. See @ref ug_exporting_graph_data for more information.
-Fill Haunch Input with Computed Values... | (Explicit haunch input only) Brings up dialog enabling automated design of direct haunch depths. Dialog also can add a scalar value to current haunch depths.
+Design Haunch Input with Computed Values... | (Explicit haunch input only) Brings up dialog enabling automated design of direct haunch depths. Dialog also can add a scalar value to current haunch depths.
 
 See @ref tg_vertical_geometry in the Technical Guide for more information about vertical geometry design and haunch options.
 

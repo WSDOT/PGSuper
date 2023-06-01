@@ -212,6 +212,7 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClCompile Include="EditHaunchACamberDlg.cpp" />
     <ClCompile Include="EditHaunchByHaunchDlg.cpp" />
     <ClCompile Include="FileSaveWarningDlg.cpp" />
+    <ClCompile Include="FillHaunchDlg.cpp" />
     <ClCompile Include="GeometryControlDlg.cpp" />
     <ClCompile Include="GirderDescGeneralPage.cpp" />
     <ClCompile Include="BridgeDescLiftingPage.cpp" />
@@ -612,6 +613,7 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClInclude Include="EditHaunchACamberDlg.h" />
     <ClInclude Include="EditHaunchByHaunchDlg.h" />
     <ClInclude Include="FileSaveWarningDlg.h" />
+    <ClInclude Include="FillHaunchDlg.h" />
     <ClInclude Include="GeometryControlDlg.h" />
     <ClInclude Include="GirderDescGeneralPage.h" />
     <ClInclude Include="BridgeDescLiftingPage.h" />

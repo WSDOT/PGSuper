@@ -42,7 +42,7 @@ You can view a wide variety of graphical results. The most common results of int
 
 ![](Tutorial_General_Finished_Elevations_Diff.png)
 
-> Tip: The *Fill Haunch Input with Computed Values"* feature can design a haunch layout for you. Give it a try to see how finished elevations change after the haunch has been designed.
+> Tip: The *Design Haunch Input with Computed Values"* feature can design a haunch layout for you. Give it a try to see how finished elevations change after the haunch has been designed.
 
 Try selecting multiple other intervals along the timeline. This is useful for visualizing how your bridge will deform over time.
 

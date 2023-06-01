@@ -82,6 +82,7 @@
 #define IDR_LOADS_CTX                   212
 #define IDI_POINT_LOAD                  214
 #define IDI_DISTRIBUTED_LOAD            215
+#define IDD_FILL_HAUNCH                 215
 #define IDD_GIRDERDESC_DEBOND           226
 #define IDD_ALIGNMENT_HORIZONTAL        227
 #define IDD_PROFILE_PAGE                228
@@ -622,6 +623,8 @@
 #define IDC_MEASUREMENT_DATUM           1434
 #define IDC_FROM_GIRDER                 1435
 #define IDC_RIGHT_CONCRETE_LABEL        1436
+#define IDC_COMPUTE_HAUNCH_COMBO        1436
+#define IDC_COMPUTE_HAUNCH_GIRDER       1437
 #define IDC_DEBOND_GRID                 1443
 #define IDC_DELETE                      1444
 #define IDC_PICTURE                     1445
@@ -1454,6 +1457,15 @@
 #define IDS_E_UNSAFESAVE                2501
 #define IDS_E_SAVERECOVER1              2502
 #define IDS_E_SAVERECOVER2              2503
+#define IDC_COMPUTE_HAUNCH_RADIO        3074
+#define IDC_ADD_HAUNCH_RADIO            3075
+#define IDC_ADD_HAUNCH_EDIT             3077
+#define IDC_ADD_HAUNCH_UNIT             3078
+#define IDC_COMPUTE_HAUNCH_STATIC2      3079
+#define IDC_COMPUTE_HAUNCH_STATIC       3080
+#define IDC_COMPUTE_HAUNCH_STATIC3      3081
+#define IDC_RADIO_SELECTED_GIRDER       3082
+#define IDC_RADIO_SELECT_ALL_GIRDERS    3083
 #define IDC_APPLIST                     3333
 #define IDR_PGSUPER_STDTOOLBAR          12129
 #define IDR_LIBTOOLBAR                  12130
@@ -1618,6 +1630,7 @@
 #define ID_TEMPORARYSUPPORT_PLACEHOLDER 37013
 #define ID_ACTIVITIES_GEOMETRYCONTROLEVENT 37013
 #define IDM_COPY_TEMPSUPPORT_PROPS      37014
+#define ID_PROJECT_DESIGNHAUNCH         37014
 #define IDM_COPY_PIER_PROPS             37015
 #define ID_COPY_GIRDER_PROPS            37016
 #define ID_COPY_PIER_PROPS              37017
@@ -1628,7 +1641,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        410
-#define _APS_NEXT_COMMAND_VALUE         37014
+#define _APS_NEXT_COMMAND_VALUE         37015
 #define _APS_NEXT_CONTROL_VALUE         2052
 #define _APS_NEXT_SYMED_VALUE           115
 #endif

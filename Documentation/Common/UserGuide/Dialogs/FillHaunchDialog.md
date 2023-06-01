@@ -1,4 +1,4 @@
-Fill Haunch Input with Computed Values {#ug_dialogs_fill_haunch}
+Design Haunch Input with Computed Values {#ug_dialogs_fill_haunch}
 ==============================================
 
 Select Girder to be Modified
@@ -7,11 +7,11 @@ Select Girder to be Modified
 
 Select the span(s) or segment(s) that are to be modified by this dialog.
 
-There are two diffent fill options:
+There are two diffent options:
 
 Compute Haunch Depths....
 --------------------
-Design a haunch new layout based on an analysis based on current bridge data. This will attempt to find an optimal haunch layout for the selected girder based on current haunch data.
+Design a haunch new layout based on an analysis of current bridge data. This will attempt to find an optimal haunch layout for the selected girder based on current haunch data.
 
 > Note that design of the haunch is an iterative process. The design algorithm will compute a better design if the current data is closer to the optimal design. It may require multiple runs to converge on a satisfactory solution.
 
@@ -26,3 +26,5 @@ Add a Scalar Value to the Current Haunch Design
 Enter a value to be added to all current haunch depths for the selected girder. This number can be positive or negative.
 
 > Tip: This feature is useful for shrinking the overall haunch depth when fine-tuning a successful design
+
+> Learn more about haunch design in the Technical Guide - @ref tg_vertical_geometry.

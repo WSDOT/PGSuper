@@ -27,4 +27,7 @@ DEFINE_GUID(IID_IDesign,
 interface IDesign : IUnknown
 {
    virtual void DesignGirder(bool bPrompt,bool bDesignSlabOffset,const CGirderKey& girderKey) = 0;
+
+   // Always brings up dialog prompt. Returns true if design is done
+   virtual bool DesignHaunch(const CGirderKey& girderKey) = 0;
 };

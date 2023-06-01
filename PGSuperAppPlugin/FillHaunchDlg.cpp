@@ -24,12 +24,12 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "afxdialogex.h"
 #include "FillHaunchDlg.h"
 
 #include <IFace\DocumentType.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
+#include <EAF\EAFDisplayUnits.h>
 
 #include <MFCTools\CustomDDX.h>
 #include <EAF\EAFAutoProgress.h>

@@ -33,9 +33,9 @@
 #include <IFace\Selection.h>
 #include <IFace\EditByUI.h>
 #include <IFace\Transactions.h>
+#include <IFace\Design.h>
 
 #include <Hints.h>
-#include "FillHaunchDlg.h"
 
 #include <EAF\EAFGraphBuilderBase.h>
 #include <EAF\EAFGraphView.h>
@@ -212,43 +212,20 @@ void CFinishedElevationGraphController::OnEditHaunch()
 
 void CFinishedElevationGraphController::OnFillHaunchData()
 {
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pOldBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   GET_IFACE(IBridge,pBridge);
 
    // See if we can even do this
-   if (pOldBridgeDesc->GetHaunchInputDepthType() == pgsTypes::hidACamber)
+   if (pBridge->GetHaunchInputDepthType() == pgsTypes::hidACamber)
    {
       // We normally won't get here, but there is a chance if the input type is changed outside and autocalc is Off
       ::AfxMessageBox(_T("The fill haunch feature is not available when haunches are defined using the Slab Offset (\"A\") input method"),MB_OK | MB_ICONINFORMATION);
    }
    else
    {
-      CFillHaunchDlg dlg(this->GetGirderKey(),m_pBroker);
-      if (IDOK == dlg.DoModal())
-      {
-         CBridgeDescription2 newBridgeDescr(*pOldBridgeDesc);
+      const CGirderKey& girderKey = GetGirderKey();
 
-         if (dlg.ModifyBridgeDescription(newBridgeDescr))
-         {
-            GET_IFACE(IEnvironment,pEnvironment);
-            enumExposureCondition oldExposureCondition = pEnvironment->GetExposureCondition();
-            Float64 oldRelHumidity = pEnvironment->GetRelHumidity();
-
-            std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc,newBridgeDescr,
-               oldExposureCondition,oldExposureCondition,oldRelHumidity,oldRelHumidity));
-
-            GET_IFACE(IEAFTransactions,pTransactions);
-            pTransactions->Execute(std::move(pTxn));
-
-            // Give user some confirmation that values where changed. A report of some kind might be better, but not sure it's worth the effort.
-            CString msg(_T("Haunch depths were modified. Click Yes to view/edit new haunch values"));
-            AFX_MANAGE_STATE(AfxGetStaticModuleState());
-            if (AfxMessageBox(msg,MB_YESNO | MB_ICONQUESTION) == IDYES)
-            {
-               OnEditHaunch();
-            }
-         }
-      }
+      GET_IFACE(IDesign,pDesign);
+      pDesign->DesignHaunch(girderKey);
    }
 }
 

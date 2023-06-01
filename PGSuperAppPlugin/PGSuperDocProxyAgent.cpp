@@ -1361,6 +1361,11 @@ void CPGSuperDocProxyAgent::DesignGirder(bool bPrompt,bool bDesignSlabOffset,con
    ((CPGSuperDoc*)m_pMyDocument)->DesignGirder(bPrompt,designSlabOffset,girderKey);
 }
 
+bool CPGSuperDocProxyAgent::DesignHaunch(const CGirderKey& girderKey)
+{
+   return ((CPGSuperDoc*)m_pMyDocument)->DesignHaunch(girderKey);
+}
+
 ///////////////////////////////////////////////////////////////////////////////////
 // IVersionInfo
 CString CPGSuperDocProxyAgent::GetVersionString(bool bIncludeBuildNumber)

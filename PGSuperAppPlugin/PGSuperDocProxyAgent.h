@@ -280,6 +280,7 @@ public:
 // IDesign
 public:
    virtual void DesignGirder(bool bPrompt,bool bDesignSlabOffset,const CGirderKey& girderKey) override;
+   virtual bool DesignHaunch(const CGirderKey& girderKey) override;
 
 // IViews
 public:

@@ -854,6 +854,9 @@
     <ClCompile Include="TempSupportElevAdjustGrid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FillHaunchDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PGSuperAppPlugin_i.h" />
@@ -1813,6 +1816,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TempSupportElevAdjustGrid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FillHaunchDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
