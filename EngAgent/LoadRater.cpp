@@ -97,6 +97,7 @@ pgsRatingArtifact pgsLoadRater::Rate(const CGirderKey& girderKey,pgsTypes::LoadR
       pPoi->RemovePointsOfInterest(vPoi,POI_LIFT_SEGMENT,    POI_SPAN);
       pPoi->RemovePointsOfInterest(vPoi,POI_STORAGE_SEGMENT, POI_SPAN);
       pPoi->RemovePointsOfInterest(vPoi,POI_HAUL_SEGMENT,    POI_SPAN);
+      pPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER,   POI_SPAN);
    
       // get some general information that all ratings need
       IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval();
