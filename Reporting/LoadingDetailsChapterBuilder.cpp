@@ -658,6 +658,11 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(IBroker* pBroker, rptChapter*
          {
             *pNotePara << rptNewLine << _T("Haunch weight is computed from user-input haunch depths.");
          }
+
+         if (deck_type == pgsTypes::sdtCompositeSIP)
+         {
+            *pNotePara << rptNewLine << _T(" Haunch weight includes material between edges of adjacent panels.");
+         }
       }
 
       // the rest of the content is for the non-simplified version (full boat)
