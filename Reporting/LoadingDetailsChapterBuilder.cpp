@@ -661,7 +661,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(IBroker* pBroker, rptChapter*
 
          if (deck_type == pgsTypes::sdtCompositeSIP)
          {
-            *pNotePara << rptNewLine << _T(" Haunch weight includes material between edges of adjacent panels.");
+            *pNotePara << rptNewLine << _T(" Haunch weight includes material between edges of panels.");
          }
       }
 
