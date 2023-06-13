@@ -107,8 +107,8 @@ static char THIS_FILE[] = __FILE__;
 
 #define VALIDATE_POINTS_OF_INTEREST(_girder_key_) (const_cast<CBridgeAgentImp*>(this)->ValidatePointsOfInterest(_girder_key_))
 
-#define LEFT_DECK_EDGE_LAYOUT_LINE_ID  -500
-#define RIGHT_DECK_EDGE_LAYOUT_LINE_ID -501
+constexpr IDType LEFT_DECK_EDGE_LAYOUT_LINE_ID = -500;
+constexpr IDType RIGHT_DECK_EDGE_LAYOUT_LINE_ID = -501;
 
 #define DECK_REBAR_OFFSET 0.0015 // distance from the deck rebar cutoff point to the adjacent POI that is offset just a little so we capture jumps
 
@@ -1908,8 +1908,8 @@ bool CBridgeAgentImp::BuildCogoModel()
    if ( alignment_data.CompoundCurves.size() == 0 )
    {
       // straight alignment
-      CogoObjectID id1 = 20000;
-      CogoObjectID id2 = 20001;
+      IDType id1 = 20000;
+      IDType id2 = 20001;
       m_CogoModel->StorePoint(id1,0,0); // start at point 0,0
 
       CComQIPtr<ILocate> locate(m_CogoModel);
@@ -1976,8 +1976,8 @@ bool CBridgeAgentImp::BuildCogoModel()
          prev_curve_ST_station = first_curve_data.PIStation - 1.5*T;
       }
 
-      CogoObjectID curveID = 1;
-      CogoObjectID pointID = 0;
+      IDType curveID = 1;
+      IDType pointID = 0;
       IndexType curveIdx = 0;
       IndexType realCurveIdx = 0;
 
@@ -2237,8 +2237,8 @@ bool CBridgeAgentImp::BuildCogoModel()
 
       Float64 prev_EVC = pbg_station;
       
-      CogoObjectID curveID = 1;
-      CogoObjectID pointID = 0;
+      IDType curveID = 1;
+      IDType pointID = 0;
       IndexType curveIdx = 0;
       IndexType realCurveIdx = 0;
 
@@ -2540,7 +2540,7 @@ bool CBridgeAgentImp::BuildBridgeGeometryModel()
    m_DeltaY = alignment_data.yRefPoint - dy;
 
    // associated alignment with the bridge geometry
-   bridgeGeometry->putref_Alignment(CBridgeGeometryModelBuilder::AlignmentID,alignment);
+   bridgeGeometry->AddAlignment(CBridgeGeometryModelBuilder::AlignmentID,alignment);
    bridgeGeometry->put_BridgeAlignmentID(CBridgeGeometryModelBuilder::AlignmentID);
    bridgeGeometry->put_ProfileID(CBridgeGeometryModelBuilder::ProfileID);
    bridgeGeometry->put_SurfaceID(CBridgeGeometryModelBuilder::SurfaceID);
@@ -2619,10 +2619,6 @@ bool CBridgeAgentImp::BuildBridgeModel()
    {
       return false;
    }
-
-   // Layout the bridge again to complete the geometry
-   // This updates the geometry for the items that were added (girder, deck, etc)
-   m_Bridge->UpdateBridgeModel(GF_DECK);
 
    // check bridge for errors - will throw an exception if there are errors
    CheckBridge();
@@ -2716,8 +2712,6 @@ bool CBridgeAgentImp::LayoutPiers(const CBridgeDescription2* pBridgeDesc)
    //   }
    //}
 
-   m_Bridge->UpdateBridgeModel(BGF_PIERS);
-
    return true;
 }
 
@@ -2771,7 +2765,7 @@ bool CBridgeAgentImp::LayoutGirders(const CBridgeDescription2* pBridgeDesc)
             ssmbr->AddSegment(segment);
 
             // associate girder line with segment so segment has plan view geometry
-            LineIDType girderLineID = ::GetGirderSegmentLineID(segmentKey);
+            IDType girderLineID = ::GetGirderSegmentLineID(segmentKey);
             CComPtr<IGirderLine> girderLine;
             geometry->FindGirderLine(girderLineID,&girderLine);
 
@@ -3660,7 +3654,7 @@ bool CBridgeAgentImp::LayoutOverlayDeck(const CBridgeDescription2* pBridgeDesc,I
    CComPtr<IBridgeGeometry> bridgeGeometry;
    m_Bridge->get_BridgeGeometry(&bridgeGeometry);
 
-   CogoObjectID alignmentID;
+   IDType alignmentID;
    bridgeGeometry->get_BridgeAlignmentID(&alignmentID);
 
    HRESULT hr = S_OK;
@@ -3684,7 +3678,7 @@ bool CBridgeAgentImp::LayoutOverlayDeck(const CBridgeDescription2* pBridgeDesc,I
    layoutLineFactory.CoCreateInstance(CLSID_SimpleLayoutLineFactory);
    layoutLineFactory->AddPath(LEFT_DECK_EDGE_LAYOUT_LINE_ID,left_path);
    layoutLineFactory->AddPath(RIGHT_DECK_EDGE_LAYOUT_LINE_ID,right_path);
-   bridgeGeometry->CreateLayoutLines(layoutLineFactory);
+   bridgeGeometry->AddLayoutLineFactory(layoutLineFactory);
 
    // create the deck boundary
    CComPtr<ISimpleDeckBoundaryFactory> deckBoundaryFactory;
@@ -3696,7 +3690,7 @@ bool CBridgeAgentImp::LayoutOverlayDeck(const CBridgeDescription2* pBridgeDesc,I
    deckBoundaryFactory->put_EdgeID(stLeft, LEFT_DECK_EDGE_LAYOUT_LINE_ID); 
    deckBoundaryFactory->put_EdgeID(stRight, RIGHT_DECK_EDGE_LAYOUT_LINE_ID);
 
-   bridgeGeometry->CreateDeckBoundary(deckBoundaryFactory); 
+   bridgeGeometry->AddDeckBoundaryFactory(deckBoundaryFactory); 
 
    // get the deck boundary
    CComPtr<IDeckBoundary> deckBoundary;
@@ -3736,14 +3730,14 @@ bool CBridgeAgentImp::LayoutSimpleDeck(const CBridgeDescription2* pBridgeDesc,IB
    if ( deckPoint.MeasurementType == pgsTypes::omtAlignment )
    {
       // deck edge is measured from the alignment
-      left_offset  =  deckPoint.LeftEdge;
-      right_offset = -deckPoint.RightEdge;
+      left_offset  = -deckPoint.LeftEdge;
+      right_offset = deckPoint.RightEdge;
    }
    else
    {
       // deck edge is measured from the CL bridge. compute the offsets from the alignment
-      left_offset  = -alignment_offset + deckPoint.LeftEdge;
-      right_offset = -alignment_offset - deckPoint.RightEdge;
+      left_offset  = alignment_offset - deckPoint.LeftEdge;
+      right_offset = alignment_offset + deckPoint.RightEdge;
    }
 
    //
@@ -3754,7 +3748,7 @@ bool CBridgeAgentImp::LayoutSimpleDeck(const CBridgeDescription2* pBridgeDesc,IB
 
    PierIndexType nPiers = pBridgeDesc->GetPierCount();
 
-   CogoObjectID alignmentID;
+   IDType alignmentID;
    bridgeGeometry->get_BridgeAlignmentID(&alignmentID);
 
    // Create slab edge paths
@@ -3763,11 +3757,14 @@ bool CBridgeAgentImp::LayoutSimpleDeck(const CBridgeDescription2* pBridgeDesc,IB
    factory->put_AlignmentID(alignmentID);
    factory->put_LayoutLineID(LEFT_DECK_EDGE_LAYOUT_LINE_ID); // left edge
    factory->put_Offset(left_offset);
-   bridgeGeometry->CreateLayoutLines(factory);
+   bridgeGeometry->AddLayoutLineFactory(factory);
 
+   factory.Release();
+   factory.CoCreateInstance(CLSID_AlignmentOffsetLayoutLineFactory);
+   factory->put_AlignmentID(alignmentID);
    factory->put_LayoutLineID(RIGHT_DECK_EDGE_LAYOUT_LINE_ID); // right edge
    factory->put_Offset(right_offset);
-   bridgeGeometry->CreateLayoutLines(factory);
+   bridgeGeometry->AddLayoutLineFactory(factory);
 
    CComPtr<ISimpleDeckBoundaryFactory> deckBoundaryFactory;
    deckBoundaryFactory.CoCreateInstance(CLSID_SimpleDeckBoundaryFactory);
@@ -3793,7 +3790,7 @@ bool CBridgeAgentImp::LayoutSimpleDeck(const CBridgeDescription2* pBridgeDesc,IB
 //   deckBoundaryFactory->put_EdgeBreakID(stLeft,-1001);
 //   deckBoundaryFactory->put_EdgeBreakID(stRight,-2001);
 
-   bridgeGeometry->CreateDeckBoundary(deckBoundaryFactory); 
+   bridgeGeometry->AddDeckBoundaryFactory(deckBoundaryFactory); 
 
    CComPtr<IDeckBoundary> deckBoundary;
    bridgeGeometry->get_DeckBoundary(&deckBoundary);
@@ -3842,7 +3839,7 @@ bool CBridgeAgentImp::LayoutFullDeck(const CBridgeDescription2* pBridgeDesc,IBri
    layoutLineFactory.CoCreateInstance(CLSID_SimpleLayoutLineFactory);
    layoutLineFactory->AddPath(LEFT_DECK_EDGE_LAYOUT_LINE_ID,left_path);
    layoutLineFactory->AddPath(RIGHT_DECK_EDGE_LAYOUT_LINE_ID,right_path);
-   geometry->CreateLayoutLines(layoutLineFactory);
+   geometry->AddLayoutLineFactory(layoutLineFactory);
 
    // create the bridge deck boundary
    CComPtr<ISimpleDeckBoundaryFactory> deckBoundaryFactory;
@@ -3853,7 +3850,7 @@ bool CBridgeAgentImp::LayoutFullDeck(const CBridgeDescription2* pBridgeDesc,IBri
    deckBoundaryFactory->put_TransverseEdgeType(etEnd,setPier);
    deckBoundaryFactory->put_EdgeID(stLeft,LEFT_DECK_EDGE_LAYOUT_LINE_ID);
    deckBoundaryFactory->put_EdgeID(stRight,RIGHT_DECK_EDGE_LAYOUT_LINE_ID);
-   geometry->CreateDeckBoundary(deckBoundaryFactory);
+   geometry->AddDeckBoundaryFactory(deckBoundaryFactory);
 
    // get the deck boundary
    CComPtr<IDeckBoundary> deckBoundary;
@@ -8652,7 +8649,7 @@ void CBridgeAgentImp::GetSpacingAlongGirder(const pgsPointOfInterest& poi,Float6
 
 std::vector<std::pair<SegmentIndexType,Float64>> CBridgeAgentImp::GetSegmentLengths(const CSpanKey& spanKey) const
 {
-   // NOTE: this method looks like it is something that should be in WBFLBridgeGeometry
+   // NOTE: this method looks like it is something that should be in the generic bridge library
    ASSERT_SPAN_KEY(spanKey);
 
    std::vector<std::pair<SegmentIndexType,Float64>> seg_lengths;
@@ -12192,7 +12189,7 @@ void CBridgeAgentImp::GetTemporarySupportLocation(SupportIndexType tsIdx,GirderI
          // the start of this segment to the temporary support. Add this distance to the running total
 
          // get the girder line
-         LineIDType segID = ::GetGirderSegmentLineID(segmentKey);
+         IDType segID = ::GetGirderSegmentLineID(segmentKey);
          CComPtr<IGirderLine> girderLine;
          geometry->FindGirderLine(segID,&girderLine);
 
@@ -24621,7 +24618,7 @@ void CBridgeAgentImp::GetControlPoints(SupportIndexType tsIdx,pgsTypes::PlanCoor
 
    // since we don't have deck edges just yet, use the first and last girderline
    CComPtr<IGirderLine> left_girderline;
-   LineIDType segID = ::GetGirderSegmentLineID(grpIdx,gdrIdx,segIdx);
+   IDType segID = ::GetGirderSegmentLineID(grpIdx,gdrIdx,segIdx);
    geometry->FindGirderLine( segID, &left_girderline);
    CComPtr<IPath> left_path;
    left_girderline->get_Path(&left_path);

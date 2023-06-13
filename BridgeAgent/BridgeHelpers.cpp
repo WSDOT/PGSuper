@@ -87,19 +87,19 @@ SupportIndexType GetTempSupportIndex(SupportIDType tsLineID)
    return (SupportIndexType)(-tsLineID - TEMPORARY_SUPPORT_ID_OFFSET);
 }
 
-LineIDType GetGirderSegmentLineID(GroupIndexType grpIdx,GirderIndexType gdrIdx,SegmentIndexType segIdx)
+IDType GetGirderSegmentLineID(GroupIndexType grpIdx,GirderIndexType gdrIdx,SegmentIndexType segIdx)
 {
    ATLASSERT( grpIdx < Int16_Max && gdrIdx < Int8_Max && segIdx < Int8_Max );
    Int16 id = ::make_Int16((Int8)gdrIdx,(Int8)segIdx);
    return ::make_Int32((Int16)grpIdx,(Int16)id);
 }
 
-LineIDType GetGirderSegmentLineID(const CSegmentKey& segmentKey)
+IDType GetGirderSegmentLineID(const CSegmentKey& segmentKey)
 {
    return GetGirderSegmentLineID(segmentKey.groupIndex,segmentKey.girderIndex,segmentKey.segmentIndex);
 }
 
-LineIDType GetGirderLineID(const CSpanKey& spanKey)
+IDType GetGirderLineID(const CSpanKey& spanKey)
 {
    ATLASSERT( spanKey.spanIndex < Int16_Max && spanKey.girderIndex < Int16_Max );
    return ::make_Int32((Int16)spanKey.girderIndex,(Int16)spanKey.spanIndex);

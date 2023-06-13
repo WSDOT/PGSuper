@@ -41,8 +41,6 @@
 #include <WBFLGenericBridgeTools_i.c>
 #include <WBFLUnitServer_i.c>
 
-#include <WBFLBridgeGeometry_i.c>
-
 #include "BridgeAgentImp.h"
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFTransactions.h>

@@ -57,9 +57,9 @@ public:
    CBridgeGeometryModelBuilder();
    bool BuildBridgeGeometryModel(const CBridgeDescription2* pBridgeDesc,ICogoModel* pCogoModel,IAlignment* pAlignment,IBridgeGeometry* pBridgeGeometry, GirderOrientationCollection& coll);
 
-   static CogoObjectID AlignmentID;
-   static CogoObjectID ProfileID;
-   static CogoObjectID SurfaceID;
+   static IDType AlignmentID;
+   static IDType ProfileID;
+   static IDType SurfaceID;
 
 protected:
    bool LayoutPiers(const CBridgeDescription2* pBridgeDesc,IBridgeGeometry* pBridgeGeometry);

@@ -51,8 +51,6 @@ extern CComModule _Module;
 
 #include <GenericBridge\Helpers.h>
 
-#include <WBFLBridgeGeometry.h>
-
 #include <Materials/Materials.h>
 
 #include <Stability\Stability.h>

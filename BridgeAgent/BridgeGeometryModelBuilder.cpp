@@ -29,9 +29,9 @@
 
 #include <IFace\Project.h>
 
-CogoObjectID CBridgeGeometryModelBuilder::AlignmentID = 999;
-CogoObjectID CBridgeGeometryModelBuilder::ProfileID = 999;
-CogoObjectID CBridgeGeometryModelBuilder::SurfaceID = 999;
+IDType CBridgeGeometryModelBuilder::AlignmentID = 999;
+IDType CBridgeGeometryModelBuilder::ProfileID = 999;
+IDType CBridgeGeometryModelBuilder::SurfaceID = 999;
 
 // utility function to get midpoint between two points
 inline void GetMidPoint(IPoint2d* P1, IPoint2d* P2, IPoint2d** pMid)
@@ -66,16 +66,11 @@ bool CBridgeGeometryModelBuilder::BuildBridgeGeometryModel(const CBridgeDescript
 {
    orientationCollection.clear();
 
-   //
-   // Associate COGO model with bridge
-   //
-   pBridgeGeometry->putref_CogoModel(pCogoModel);
-
    // Associate an alignment with the bridge model (bridges can be associated with many alignments)
-   pBridgeGeometry->putref_Alignment(AlignmentID,pAlignment);
+   pBridgeGeometry->AddAlignment(AlignmentID,pAlignment);
 
-   // Set the alignment offset
-   pBridgeGeometry->put_AlignmentOffset(pBridgeDesc->GetAlignmentOffset());
+   // Set the bridge line offset
+   pBridgeGeometry->put_BridgeLineOffset(pBridgeDesc->GetAlignmentOffset());
 
    // Set the ID of the main bridge alignment (all other alignments are secondary)
    pBridgeGeometry->put_BridgeAlignmentID(AlignmentID);
@@ -90,8 +85,6 @@ bool CBridgeGeometryModelBuilder::BuildBridgeGeometryModel(const CBridgeDescript
       return false;
    }
 
-   pBridgeGeometry->UpdateGeometry(GF_BRIDGELINE | GF_PIERS); // this makes the pier lines available so we can layout girder lines and diaphragm lines
-
    if ( !LayoutGirderLines(pBridgeDesc,pBridgeGeometry, orientationCollection) )
    {
       return false;
@@ -101,8 +94,6 @@ bool CBridgeGeometryModelBuilder::BuildBridgeGeometryModel(const CBridgeDescript
    {
       return false;
    }
-
-   pBridgeGeometry->UpdateGeometry(GF_GIRDERS | GF_DIAPHRAGMS);
 
    return true;
 }
@@ -190,8 +181,15 @@ bool CBridgeGeometryModelBuilder::LayoutPiers(const CBridgeDescription2* pBridge
 
       Float64 station = pPier->GetStation();
       std::_tstring strOrientation = pPier->GetOrientation();
-      CComPtr<IPierLine> pierline;
-      pBridgeGeometry->CreatePierLine(pierID,AlignmentID,CComVariant(station),CComBSTR(strOrientation.c_str()),pier_length,left_end_offset,&pierline);
+
+      CComPtr<ISinglePierLineFactory> factory;
+      factory.CoCreateInstance(CLSID_SinglePierLineFactory);
+      factory->put_PierLineID(pierID);
+      factory->put_AlignmentID(AlignmentID);
+      factory->put_Station(CComVariant(station));
+      factory->put_Direction(CComBSTR(strOrientation.c_str()));
+      factory->put_Length(pier_length);
+      factory->put_Offset(left_end_offset);
      
       CPierData2::PierConnectionFlags conFlag = pPier->IsConnectionDataAvailable();
 
@@ -201,32 +199,32 @@ bool CBridgeGeometryModelBuilder::LayoutPiers(const CBridgeDescription2* pBridge
          Float64 offset;
          ConnectionLibraryEntry::BearingOffsetMeasurementType offsetMeasureType;
          pPier->GetBearingOffset(pgsTypes::Back,&offset,&offsetMeasureType);
-         pierline->put_BearingOffset( pfBack, offset );
-         pierline->put_BearingOffsetMeasurementType( pfBack, offsetMeasureType == ConnectionLibraryEntry::AlongGirder ? mtAlongItem : mtNormal );
+         factory->put_BearingOffset( pfBack, offset );
+         factory->put_BearingOffsetMeasurementType( pfBack, offsetMeasureType == ConnectionLibraryEntry::AlongGirder ? mtAlongItem : mtNormal );
 
          Float64 endDist;
          ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasureType;
          pPier->GetGirderEndDistance(pgsTypes::Back,&endDist,&endDistMeasureType);
-         pierline->put_EndDistance( pfBack, endDist );
+         factory->put_EndDistance( pfBack, endDist );
          if ( endDistMeasureType == ConnectionLibraryEntry::FromBearingAlongGirder )
          {
-            pierline->put_EndDistanceMeasurementLocation( pfBack, mlCenterlineBearing );
-            pierline->put_EndDistanceMeasurementType(     pfBack, mtAlongItem );
+            factory->put_EndDistanceMeasurementLocation( pfBack, mlCenterlineBearing );
+            factory->put_EndDistanceMeasurementType(     pfBack, mtAlongItem );
          }
          else if ( endDistMeasureType == ConnectionLibraryEntry::FromBearingNormalToPier )
          {
-            pierline->put_EndDistanceMeasurementLocation( pfBack, mlCenterlineBearing );
-            pierline->put_EndDistanceMeasurementType(     pfBack, mtNormal );
+            factory->put_EndDistanceMeasurementLocation( pfBack, mlCenterlineBearing );
+            factory->put_EndDistanceMeasurementType(     pfBack, mtNormal );
          }
          else if ( endDistMeasureType == ConnectionLibraryEntry::FromPierAlongGirder )
          {
-            pierline->put_EndDistanceMeasurementLocation( pfBack, mlPierLine );
-            pierline->put_EndDistanceMeasurementType(     pfBack, mtAlongItem );
+            factory->put_EndDistanceMeasurementLocation( pfBack, mlPierLine );
+            factory->put_EndDistanceMeasurementType(     pfBack, mtAlongItem );
          }
          else if ( endDistMeasureType == ConnectionLibraryEntry::FromPierNormalToPier )
          {
-            pierline->put_EndDistanceMeasurementLocation( pfBack, mlPierLine );
-            pierline->put_EndDistanceMeasurementType(     pfBack, mtNormal );
+            factory->put_EndDistanceMeasurementLocation( pfBack, mlPierLine );
+            factory->put_EndDistanceMeasurementType(     pfBack, mtNormal );
          }
       }
 
@@ -236,34 +234,36 @@ bool CBridgeGeometryModelBuilder::LayoutPiers(const CBridgeDescription2* pBridge
          Float64 offset;
          ConnectionLibraryEntry::BearingOffsetMeasurementType offsetMeasureType;
          pPier->GetBearingOffset(pgsTypes::Ahead,&offset,&offsetMeasureType);
-         pierline->put_BearingOffset( pfAhead, offset );
-         pierline->put_BearingOffsetMeasurementType( pfAhead, offsetMeasureType == ConnectionLibraryEntry::AlongGirder ? mtAlongItem : mtNormal );
+         factory->put_BearingOffset( pfAhead, offset );
+         factory->put_BearingOffsetMeasurementType( pfAhead, offsetMeasureType == ConnectionLibraryEntry::AlongGirder ? mtAlongItem : mtNormal );
 
          Float64 endDist;
          ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasureType;
          pPier->GetGirderEndDistance(pgsTypes::Ahead,&endDist,&endDistMeasureType);
-         pierline->put_EndDistance( pfAhead, endDist );
+         factory->put_EndDistance( pfAhead, endDist );
          if ( endDistMeasureType == ConnectionLibraryEntry::FromBearingAlongGirder )
          {
-            pierline->put_EndDistanceMeasurementLocation( pfAhead, mlCenterlineBearing );
-            pierline->put_EndDistanceMeasurementType(     pfAhead, mtAlongItem );
+            factory->put_EndDistanceMeasurementLocation( pfAhead, mlCenterlineBearing );
+            factory->put_EndDistanceMeasurementType(     pfAhead, mtAlongItem );
          }
          else if ( endDistMeasureType == ConnectionLibraryEntry::FromBearingNormalToPier )
          {
-            pierline->put_EndDistanceMeasurementLocation( pfAhead, mlCenterlineBearing );
-            pierline->put_EndDistanceMeasurementType(     pfAhead, mtNormal );
+            factory->put_EndDistanceMeasurementLocation( pfAhead, mlCenterlineBearing );
+            factory->put_EndDistanceMeasurementType(     pfAhead, mtNormal );
          }
          else if ( endDistMeasureType == ConnectionLibraryEntry::FromPierAlongGirder )
          {
-            pierline->put_EndDistanceMeasurementLocation( pfAhead, mlPierLine );
-            pierline->put_EndDistanceMeasurementType(     pfAhead, mtAlongItem );
+            factory->put_EndDistanceMeasurementLocation( pfAhead, mlPierLine );
+            factory->put_EndDistanceMeasurementType(     pfAhead, mtAlongItem );
          }
          else if ( endDistMeasureType == ConnectionLibraryEntry::FromPierNormalToPier )
          {
-            pierline->put_EndDistanceMeasurementLocation( pfAhead, mlPierLine );
-            pierline->put_EndDistanceMeasurementType(     pfAhead, mtNormal );
+            factory->put_EndDistanceMeasurementLocation( pfAhead, mlPierLine );
+            factory->put_EndDistanceMeasurementType(     pfAhead, mtNormal );
          }
       }
+
+      pBridgeGeometry->AddPierLineFactory(factory);
 
       const CSpanData2* pSpan = pPier->GetNextSpan();
       if ( pSpan )
@@ -400,51 +400,60 @@ bool CBridgeGeometryModelBuilder::LayoutTemporarySupports(const CBridgeDescripti
       }
 
       std::_tstring strOrientation = pTS->GetOrientation();
-      CComPtr<IPierLine> tsLine;
-      pBridgeGeometry->CreatePierLine(tsID,AlignmentID,CComVariant(station),CComBSTR(strOrientation.c_str()),pier_width,left_end_offset,&tsLine);
+
+      CComPtr<ISinglePierLineFactory> factory;
+      factory.CoCreateInstance(CLSID_SinglePierLineFactory);
+      factory->put_PierLineID(tsID);
+      factory->put_AlignmentID(AlignmentID);
+      factory->put_Station(CComVariant(station));
+      factory->put_Direction(CComBSTR(strOrientation.c_str()));
+      factory->put_Length(pier_width);
+      factory->put_Offset(left_end_offset);
 
       Float64 brgOffset;
       ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure;
       pTS->GetBearingOffset(&brgOffset,&brgOffsetMeasure);
-      tsLine->put_BearingOffset( pfBack, brgOffset);
-      tsLine->put_BearingOffsetMeasurementType( pfBack, (MeasurementType)brgOffsetMeasure );
-      tsLine->put_BearingOffset( pfAhead, brgOffset);
-      tsLine->put_BearingOffsetMeasurementType( pfAhead, (MeasurementType)brgOffsetMeasure );
+      factory->put_BearingOffset( pfBack, brgOffset);
+      factory->put_BearingOffsetMeasurementType( pfBack, (MeasurementType)brgOffsetMeasure );
+      factory->put_BearingOffset( pfAhead, brgOffset);
+      factory->put_BearingOffsetMeasurementType( pfAhead, (MeasurementType)brgOffsetMeasure );
 
       // layout connection geometry on both sides of temporary support
       Float64 endDistance;
       ConnectionLibraryEntry::EndDistanceMeasurementType measureType;
       pTS->GetGirderEndDistance(&endDistance,&measureType);
-      tsLine->put_EndDistance( pfBack, endDistance );
-      tsLine->put_EndDistance( pfAhead, endDistance );
+      factory->put_EndDistance( pfBack, endDistance );
+      factory->put_EndDistance( pfAhead, endDistance );
       if ( measureType == ConnectionLibraryEntry::FromBearingAlongGirder )
       {
-         tsLine->put_EndDistanceMeasurementLocation( pfBack, mlCenterlineBearing );
-         tsLine->put_EndDistanceMeasurementType(     pfBack, mtAlongItem );
-         tsLine->put_EndDistanceMeasurementLocation( pfAhead, mlCenterlineBearing );
-         tsLine->put_EndDistanceMeasurementType(     pfAhead, mtAlongItem );
+         factory->put_EndDistanceMeasurementLocation(pfBack, mlCenterlineBearing);
+         factory->put_EndDistanceMeasurementType(pfBack, mtAlongItem);
+         factory->put_EndDistanceMeasurementLocation(pfAhead, mlCenterlineBearing);
+         factory->put_EndDistanceMeasurementType(     pfAhead, mtAlongItem );
       }
       else if ( measureType == ConnectionLibraryEntry::FromBearingNormalToPier )
       {
-         tsLine->put_EndDistanceMeasurementLocation( pfBack, mlCenterlineBearing );
-         tsLine->put_EndDistanceMeasurementType(     pfBack, mtNormal );
-         tsLine->put_EndDistanceMeasurementLocation( pfAhead, mlCenterlineBearing );
-         tsLine->put_EndDistanceMeasurementType(     pfAhead, mtNormal );
+         factory->put_EndDistanceMeasurementLocation( pfBack, mlCenterlineBearing );
+         factory->put_EndDistanceMeasurementType(     pfBack, mtNormal );
+         factory->put_EndDistanceMeasurementLocation( pfAhead, mlCenterlineBearing );
+         factory->put_EndDistanceMeasurementType(     pfAhead, mtNormal );
       }
       else if ( measureType == ConnectionLibraryEntry::FromPierAlongGirder )
       {
-         tsLine->put_EndDistanceMeasurementLocation( pfBack, mlPierLine );
-         tsLine->put_EndDistanceMeasurementType(     pfBack, mtAlongItem );
-         tsLine->put_EndDistanceMeasurementLocation( pfAhead, mlPierLine );
-         tsLine->put_EndDistanceMeasurementType(     pfAhead, mtAlongItem );
+         factory->put_EndDistanceMeasurementLocation( pfBack, mlPierLine );
+         factory->put_EndDistanceMeasurementType(     pfBack, mtAlongItem );
+         factory->put_EndDistanceMeasurementLocation( pfAhead, mlPierLine );
+         factory->put_EndDistanceMeasurementType(     pfAhead, mtAlongItem );
       }
       else if ( measureType == ConnectionLibraryEntry::FromPierNormalToPier )
       {
-         tsLine->put_EndDistanceMeasurementLocation( pfBack, mlPierLine );
-         tsLine->put_EndDistanceMeasurementType(     pfBack, mtNormal );
-         tsLine->put_EndDistanceMeasurementLocation( pfAhead, mlPierLine );
-         tsLine->put_EndDistanceMeasurementType(     pfAhead, mtNormal );
+         factory->put_EndDistanceMeasurementLocation( pfBack, mlPierLine );
+         factory->put_EndDistanceMeasurementType(     pfBack, mtNormal );
+         factory->put_EndDistanceMeasurementLocation( pfAhead, mlPierLine );
+         factory->put_EndDistanceMeasurementType(     pfAhead, mtNormal );
       }
+
+      pBridgeGeometry->AddPierLineFactory(factory);
    }
 
    return true;
@@ -594,21 +603,17 @@ bool CBridgeGeometryModelBuilder::LayoutUniformGirderLines(const CBridgeDescript
    CComPtr<IAlignmentOffsetLayoutLineFactory> factory;
    factory.CoCreateInstance(CLSID_AlignmentOffsetLayoutLineFactory);
    factory->put_LayoutLineID(0); // ID of first layout line
-   factory->put_LayoutLineIDInc(1);
+   factory->put_LayoutLineIDIncrement(1);
    factory->put_LayoutLineCount(nGirders);
-   factory->put_Offset(-refGirderOffset);  // refGirderOffset < 0 = left of alignment; WBFL Bridge Geometry: positive value is to the left of the alignment; Change sign
-   factory->put_OffsetIncrement(-spacing); // positive value places lines to the left of the previous line (want to place the lines to the right)
+   factory->put_Offset(refGirderOffset);  
+   factory->put_OffsetIncrement(spacing); 
    factory->put_AlignmentID(AlignmentID);
-   pBridgeGeometry->CreateLayoutLines(factory);
+   pBridgeGeometry->AddLayoutLineFactory(factory);
 
    //
    // Build Girder Lines
    //
    Float64 alignmentOffset = pBridgeDesc->GetAlignmentOffset();
-
-   CComPtr<ISingleGirderLineFactory> glFactory;
-   HRESULT hr = glFactory.CoCreateInstance(CLSID_SingleGirderLineFactory);
-   ATLASSERT(SUCCEEDED(hr));
 
    GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
@@ -621,7 +626,11 @@ bool CBridgeGeometryModelBuilder::LayoutUniformGirderLines(const CBridgeDescript
          SegmentIndexType nSegments = pGirder->GetSegmentCount();
          for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
          {
-            LineIDType segID = ::GetGirderSegmentLineID(grpIdx,gdrIdx,segIdx);
+            CComPtr<ISingleGirderLineFactory> glFactory;
+            HRESULT hr = glFactory.CoCreateInstance(CLSID_SingleGirderLineFactory);
+            ATLASSERT(SUCCEEDED(hr));
+
+            IDType segID = ::GetGirderSegmentLineID(grpIdx,gdrIdx,segIdx);
             glFactory->put_GirderLineID( segID );   // girder line ID
             glFactory->put_LayoutLineID( gdrIdx );  // layout line used to layout this girder line
             glFactory->put_Type(glChord);           // layout as a chord
@@ -638,7 +647,7 @@ bool CBridgeGeometryModelBuilder::LayoutUniformGirderLines(const CBridgeDescript
             glFactory->put_StartPierID(startID);
             glFactory->put_EndPierID(endID);
 
-            pBridgeGeometry->CreateGirderLines(glFactory);
+            pBridgeGeometry->AddGirderLineFactory(glFactory);
          } // segment loop
       } // girder loop
    } // group loop
@@ -696,11 +705,8 @@ bool CBridgeGeometryModelBuilder::LayoutGeneralGirderLines(const CBridgeDescript
    //
    // Do some preliminary setup for the function
    //
-   CComPtr<ISimpleLayoutLineFactory> factory;
-   factory.CoCreateInstance(CLSID_SimpleLayoutLineFactory);
-
    CComPtr<IAlignment> alignment;
-   pBridgeGeometry->get_Alignment(AlignmentID,&alignment);
+   pBridgeGeometry->GetAlignment(AlignmentID,&alignment);
 
    Float64 alignmentOffset = pBridgeDesc->GetAlignmentOffset();
 
@@ -709,6 +715,9 @@ bool CBridgeGeometryModelBuilder::LayoutGeneralGirderLines(const CBridgeDescript
    GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
+      CComPtr<ISimpleLayoutLineFactory> factory;
+      factory.CoCreateInstance(CLSID_SimpleLayoutLineFactory);
+
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
       const CSplicedGirderData* pGirder = pGroup->GetGirder(0); // all girders in a group have the same number of segments... girder 0 is just as good as any other girder in this group
       SegmentIndexType nSegments = pGirder->GetSegmentCount();
@@ -825,21 +834,18 @@ bool CBridgeGeometryModelBuilder::LayoutGeneralGirderLines(const CBridgeDescript
             CComQIPtr<IPathElement> element(lineSegment);
             path->Add(element);
 
-            LineIDType ID = ::GetGirderSegmentLineID(grpIdx,gdrIdx,segIdx);
+            IDType ID = ::GetGirderSegmentLineID(grpIdx,gdrIdx,segIdx);
             factory->AddPath(ID,path);
          } // end of segment loop
       } // end of girder loop
 
       // create the layout lines
       // there is a layout line for each segment. The layout line ID is derived from grpIdx/gdrIdx/segIdx
-      pBridgeGeometry->CreateLayoutLines(factory);
-      factory->Reset();
+      pBridgeGeometry->AddLayoutLineFactory(factory);
 
       //
       // Create the girder lines
       //
-      CComPtr<ISingleGirderLineFactory> glFactory;
-      glFactory.CoCreateInstance(CLSID_SingleGirderLineFactory);
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
       {
          const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
@@ -847,10 +853,7 @@ bool CBridgeGeometryModelBuilder::LayoutGeneralGirderLines(const CBridgeDescript
 
          for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
          {
-            LineIDType ID = ::GetGirderSegmentLineID(grpIdx,gdrIdx,segIdx);
-
-            glFactory->put_GirderLineID( ID ); // girder line ID
-            glFactory->put_LayoutLineID( ID ); // layout line used to layout this girder line
+            IDType ID = ::GetGirderSegmentLineID(grpIdx,gdrIdx,segIdx);
 
             const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
             PierIDType startID, endID;
@@ -885,6 +888,10 @@ bool CBridgeGeometryModelBuilder::LayoutGeneralGirderLines(const CBridgeDescript
             }
 
 
+            CComPtr<ISingleGirderLineFactory> glFactory;
+            glFactory.CoCreateInstance(CLSID_SingleGirderLineFactory);
+            glFactory->put_GirderLineID(ID); // girder line ID
+            glFactory->put_LayoutLineID(ID); // layout line used to layout this girder line
             glFactory->put_StartPierID( startID );
             glFactory->put_EndPierID(   endID   );
             glFactory->put_Type(glChord);
@@ -892,8 +899,7 @@ bool CBridgeGeometryModelBuilder::LayoutGeneralGirderLines(const CBridgeDescript
             glFactory->put_StartMeasurementLocation( pStartSpacing->GetMeasurementLocation() == pgsTypes::AtPierLine ? mlPierLine : mlCenterlineBearing );
             glFactory->put_EndMeasurementType( pEndSpacing->GetMeasurementType() == pgsTypes::AlongItem ? mtAlongItem : mtNormal );
             glFactory->put_EndMeasurementLocation( pEndSpacing->GetMeasurementLocation() == pgsTypes::AtPierLine ? mlPierLine : mlCenterlineBearing );
-            pBridgeGeometry->CreateGirderLines(glFactory);
-            glFactory->Reset();
+            pBridgeGeometry->AddGirderLineFactory(glFactory);
          }
       }
    } // end of group loop
@@ -1267,11 +1273,8 @@ void CBridgeGeometryModelBuilder::ResolveSegmentSpacing(IBridgeGeometry* pBridge
    // the intersection of the centerline of the support and girder
    //
 
-   CComPtr<ICogoModel> cogoModel;
-   pBridgeGeometry->get_CogoModel(&cogoModel);
-
    CComPtr<ICogoEngine> cogoEngine;
-   cogoModel->get_Engine(&cogoEngine);
+   cogoEngine.CoCreateInstance(CLSID_CogoEngine);
 
    CComPtr<ILocate2> locate;
    cogoEngine->get_Locate(&locate);
@@ -1416,7 +1419,7 @@ Float64 CBridgeGeometryModelBuilder::ComputeGirderOrientation(pgsTypes::GirderOr
    Float64 orientation(0.0);
 
    CComPtr<IAlignment> pAlignment;
-   pBridgeGeometry->get_Alignment(AlignmentID,&pAlignment);
+   pBridgeGeometry->GetAlignment(AlignmentID,&pAlignment);
    CComPtr<IProfile> pProfile;
    pAlignment->GetProfile(ProfileID,&pProfile);
 
