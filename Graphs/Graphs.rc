@@ -271,7 +271,7 @@ BEGIN
     CONTROL         "Include Elevation Adjustments",IDC_ELEV_ADJUSTMENT,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,109,113,10
     CONTROL         "Show Grid",IDC_GRID,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,137,48,15
-    CONTROL         "Include Permanent Deflections\nPrior to Erection",IDC_PRECAMBER,
+    CONTROL         "Include Unrecoverable Deflections\nPrior to Erection",IDC_PRECAMBER,
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,6,122,142,15
     PUSHBUTTON      "Export Graph Data",IDC_EXPORT_GRAPH_BTN,35,155,81,14
 END

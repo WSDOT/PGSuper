@@ -276,7 +276,11 @@ void CDeflectionHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& p
    GET_IFACE(IProductForces,pProductForces);
    pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
 
-   IntervalIndexType startIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+   bool include_unrec = ((CDeflectionHistoryGraphController*)m_pGraphController)->IncludeUnrecoverableDefl();
+
+   // unrecoverable deflection is only computed after erection
+   IntervalIndexType startIntervalIdx = include_unrec ? pIntervals->GetPrestressReleaseInterval(segmentKey) : pIntervals->GetErectSegmentInterval(segmentKey);
+
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
 
    if ( m_XAxisType == X_AXIS_INTERVAL )

@@ -28,10 +28,8 @@ Top Deck | Toggles stress plot for top of deck
 Bottom Deck | Toggles stress plot for bottom of deck
 Include Elevation Adjustments | When checked, elevation adjustments are added to computed deflections (PGSplice)
 Structural Analysis Method | Select the structural analysis method (PGSuper)
-Include Unrecoverable Deflection | When checked, unrecoverable deflection from prior to erection are summed with deflections occuring at and after erection. Precamber (PGSuper) is treated as an unrecoverable deflection.
+Include Unrecoverable Deflection | When checked, unrecoverable deflection from prior to erection are summed with deflections occuring at and after erection. Precamber (PGSuper), and pretensioning are treated as unrecoverable deflections.
 Export Graph Data | Data from graphs can be exported to Microsoft Excel or CSV files by clicking on the [Export Graph Data] button. See @ref ug_exporting_graph_data for more information.
-
-> NOTE: Temporary support Elevation Adjustment feature has been disabled for this version of the software. Any existing adjustments created with previous versions of the software have been set to zero and an information item has been posted in the Status Center. This feature is being redeveloped and will be available in the next version of the software.
 
 > NOTE: Analysis results for the Lifting and Hauling Intervals are for plumb girder subjected to self-weight and prestress loading only.
 

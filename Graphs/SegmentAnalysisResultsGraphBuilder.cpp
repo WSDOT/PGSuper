@@ -336,8 +336,8 @@ void CSegmentAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CSegmentK
    // Diaphragm loads never occur 
 //   m_pGraphDefinitions->AddGraphDefinition(CSegmentAnalysisResultsGraphDefinition(graphID++,pProductLoads->GetProductLoadName(pgsTypes::pftDiaphragm),pgsTypes::pftDiaphragm,vAllIntervals,ACTIONS_ALL | ACTIONS_X_DEFLECTION));
 
-   // Special case for unrecoverable delfection from girder load
-   m_pGraphDefinitions->AddGraphDefinition(CSegmentAnalysisResultsGraphDefinition(graphID++,_T("Unrecoverable Girder Deflection"),pgsTypes::ProductForceType(PL_UNRECOVERABLE),vUnrecoverableDeflIntervals,ACTIONS_DEFLECTION));
+   // Special case for unrecoverable deflection from girder load
+   m_pGraphDefinitions->AddGraphDefinition(CSegmentAnalysisResultsGraphDefinition(graphID++,_T("Unrecoverable Girder Dead Load"),pgsTypes::ProductForceType(PL_UNRECOVERABLE),vUnrecoverableDeflIntervals,ACTIONS_DEFLECTION));
 
    // Combined Results
    m_pGraphDefinitions->AddGraphDefinition(CSegmentAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetLoadCombinationName(lcDC), lcDC, vAllIntervals,  ACTIONS_ALL | ACTIONS_X_DEFLECTION) );
