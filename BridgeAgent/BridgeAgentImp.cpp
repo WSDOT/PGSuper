@@ -12604,6 +12604,12 @@ std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails
          // brgLoc is along pier at pier slope. Adjust bearing location to horizontal distance from BCL
          Float64 brgLocAdjusted = brgLoc * cosGirderSlopeAlongPier;
 
+         if (locType == batGirderEdges)
+         {
+            // bearing spacing is measured along CL bearing, while girder width is not
+            brgLocAdjusted = brgLocAdjusted / sin(girderPierSkewAngle);
+         }
+
          // Begin filling our struct
          BearingElevationDetails elevDetails;
          elevDetails.GirderKey = girderKey;
