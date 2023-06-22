@@ -4467,21 +4467,21 @@ Float64 CBridgeDescription2::GetBridgeWidth() const
                {
                   // if there is a closure joint, only back spacing is valid
                   const CGirderSpacing2* pSpacing = pPier->GetGirderSpacing(pgsTypes::Back);
-                  Float64 w = pSpacing->GetSpacingWidth();
+                  Float64 w = pSpacing->GetSpacingWidth(0.0);
                   max_spacing_width = Max(max_spacing_width,w);
                }
                
                if ( pPier->GetPrevSpan() != nullptr )
                {
                   const CGirderSpacing2* pSpacing = pPier->GetGirderSpacing(pgsTypes::Back);
-                  Float64 w = pSpacing->GetSpacingWidth();
+                  Float64 w = pSpacing->GetSpacingWidth(0.0);
                   max_spacing_width = Max(max_spacing_width,w);
                }
 
                if ( pPier->GetNextSpan() != nullptr )
                {
                   const CGirderSpacing2* pSpacing = pPier->GetGirderSpacing(pgsTypes::Ahead);
-                  Float64 w = pSpacing->GetSpacingWidth();
+                  Float64 w = pSpacing->GetSpacingWidth(0.0);
                   max_spacing_width = Max(max_spacing_width,w);
                }
             }
@@ -4494,7 +4494,7 @@ Float64 CBridgeDescription2::GetBridgeWidth() const
             if ( pTS->HasSpacing() )
             {
                const CGirderSpacing2* pSpacing = pTS->GetSegmentSpacing();
-               Float64 w = pSpacing->GetSpacingWidth();
+               Float64 w = pSpacing->GetSpacingWidth(0.0);
                max_spacing_width = Max(max_spacing_width,w);
             }
          }

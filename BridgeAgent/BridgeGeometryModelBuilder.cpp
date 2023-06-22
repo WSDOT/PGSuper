@@ -1175,6 +1175,8 @@ Float64 CBridgeGeometryModelBuilder::GetLeftGirderOffset(IAlignment* pAlignment,
 {
    // returns the offset from the alignment to the left-most girder
 
+   Float64 skew = GetSkewAngle(pAlignment, measureStation, pMeasureDirection);
+
    GirderIndexType refGirderIdx = pSpacing->GetRefGirder();
    Float64 refGirderOffset = pSpacing->GetRefGirderOffset();
    pgsTypes::OffsetMeasurementType refGirderOffsetType = pSpacing->GetRefGirderOffsetType();
@@ -1183,20 +1185,19 @@ Float64 CBridgeGeometryModelBuilder::GetLeftGirderOffset(IAlignment* pAlignment,
    if ( refGirderIdx == INVALID_INDEX )
    {
       // reference girder is the center of the spacing group
-      Float64 width = pSpacing->GetSpacingWidth();
+      Float64 width = pSpacing->GetSpacingWidth(skew);
       refGirderOffset -= width/2;
       refGirderIdx = 0;
    }
    else
    {
       // a specific girder is the reference girder
-      Float64 width = pSpacing->GetSpacingWidthToGirder(refGirderIdx);
+      Float64 width = pSpacing->GetSpacingWidthToGirder(refGirderIdx,skew);
       refGirderOffset -= width;
       refGirderIdx = 0;
    }
 
    // convert offset so that it is measured along the centerline of the support
-   Float64 skew = GetSkewAngle(pAlignment, measureStation, pMeasureDirection);
    pgsTypes::MeasurementType measureType = pSpacing->GetMeasurementType();
    if ( measureType == pgsTypes::NormalToItem )
    {
@@ -1596,7 +1597,7 @@ void CBridgeGeometryModelBuilder::GetGirderWidth(const CSplicedGirderData* pGird
 
 void CBridgeGeometryModelBuilder::GetPierLineProperties(const CBridgeDescription2* pBridgeDesc,const CGirderSpacing2* pSpacing,Float64 skewAngle,Float64* pWidth,Float64* pOffset)
 {
-   Float64 width = pSpacing->GetSpacingWidth();
+   Float64 width = pSpacing->GetSpacingWidth(skewAngle);
 
    Float64 cosine_skew_angle = cos(skewAngle);
 
@@ -1614,7 +1615,7 @@ void CBridgeGeometryModelBuilder::GetPierLineProperties(const CBridgeDescription
    else
    {
       // a specific girder is the reference girder
-      refGirderOffset -= pSpacing->GetSpacingWidthToGirder(refGirderIdx);
+      refGirderOffset -= pSpacing->GetSpacingWidthToGirder(refGirderIdx, skewAngle);
       refGirderIdx = 0;
    }
 
