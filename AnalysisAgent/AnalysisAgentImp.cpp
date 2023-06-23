@@ -3227,6 +3227,18 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
                deflIter += vSegmentPoi.size();
             }
          }
+         else if (intervalIdx < erectionIntervalIdx)
+         {
+            // before erection - results are in the segment models
+            GET_IFACE(IPointOfInterest,pPoi);
+            std::list<PoiList> poiLists;
+            pPoi->GroupBySegment(vPoi,&poiLists);
+            for (PoiList& poiList : poiLists)
+            {
+               auto d = m_pSegmentModelManager->GetDeflection(intervalIdx,pfType,poiList,resultsType);
+               deflections.insert(deflections.end(),d.begin(),d.end());
+            }
+         }
          else
          {
             deflections = m_pGirderModelManager->GetDeflection(intervalIdx,pfType,vPoi,bat,resultsType);
@@ -3390,6 +3402,36 @@ std::vector<Float64> CAnalysisAgentImp::GetUnrecoverableGirderDeflectionFromStor
    return deflections;
 }
 
+std::vector<Float64> CAnalysisAgentImp::GetUnrecoverableGirderXDeflectionFromStorage(sagInterval sagint,pgsTypes::BridgeAnalysisType bat,const PoiList& vPoi) const
+{
+   // We'll modify the Y deflections for biaxial effects
+   std::vector<Float64> deflections( GetUnrecoverableGirderDeflectionFromStorage(sagint, bat, vPoi) );
+
+   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IPointOfInterest,pPoi);
+   GET_IFACE(ISectionProperties,pSectProp);
+   CSegmentKey segmentKey(vPoi.front().get().GetSegmentKey());
+
+   // Use section properties at mid-span during storage interval
+   IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
+
+   PoiList v5Poi;
+   pPoi->GetPointsOfInterest(segmentKey, POI_5L | POI_RELEASED_SEGMENT, &v5Poi);
+   ATLASSERT(v5Poi.size() == 1);
+   const pgsPointOfInterest& spPoi = v5Poi.front();
+   ATLASSERT(spPoi.IsMidSpan(POI_RELEASED_SEGMENT));
+
+   Float64 Iyy = pSectProp->GetIyy(storageIntervalIdx,spPoi);
+   Float64 Ixy = pSectProp->GetIxy(storageIntervalIdx,spPoi);
+
+   // lateral deflections are (delta Y)*(-Ixy/Iyy)
+   // scale deltaY by D 
+   Float64 D = -Ixy / Iyy;
+
+   std::transform(deflections.cbegin(),deflections.cend(),deflections.begin(),[D](const auto& dY) {return dY * D; });
+
+   return deflections;
+}
 
 std::vector<Float64> CAnalysisAgentImp::GetUnrecoverableGirderRotationFromStorage(sagInterval sagint,pgsTypes::BridgeAnalysisType bat,const PoiList& vPoi) const
 {

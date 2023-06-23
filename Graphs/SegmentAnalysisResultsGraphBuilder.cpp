@@ -337,7 +337,7 @@ void CSegmentAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CSegmentK
 //   m_pGraphDefinitions->AddGraphDefinition(CSegmentAnalysisResultsGraphDefinition(graphID++,pProductLoads->GetProductLoadName(pgsTypes::pftDiaphragm),pgsTypes::pftDiaphragm,vAllIntervals,ACTIONS_ALL | ACTIONS_X_DEFLECTION));
 
    // Special case for unrecoverable deflection from girder load
-   m_pGraphDefinitions->AddGraphDefinition(CSegmentAnalysisResultsGraphDefinition(graphID++,_T("Unrecoverable Girder Dead Load"),pgsTypes::ProductForceType(PL_UNRECOVERABLE),vUnrecoverableDeflIntervals,ACTIONS_DEFLECTION));
+   m_pGraphDefinitions->AddGraphDefinition(CSegmentAnalysisResultsGraphDefinition(graphID++,_T("Unrecoverable Girder Dead Load"),pgsTypes::ProductForceType(PL_UNRECOVERABLE),vUnrecoverableDeflIntervals,ACTIONS_DEFLECTION | ACTIONS_X_DEFLECTION));
 
    // Combined Results
    m_pGraphDefinitions->AddGraphDefinition(CSegmentAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetLoadCombinationName(lcDC), lcDC, vAllIntervals,  ACTIONS_ALL | ACTIONS_X_DEFLECTION) );
@@ -906,7 +906,27 @@ void CSegmentAnalysisResultsGraphBuilder::ProductLoadGraph(IndexType graphIdx,co
       }
       case actionXDeflection:
       {
-         std::vector<Float64> deflections(pForces->GetXDeflection(intervalIdx, pfType, vPoi, bat[analysisIdx], resultsType));
+         std::vector<Float64> deflections;
+         if (PL_UNRECOVERABLE == pfType && rtCumulative == resultsType)
+         {
+            GET_IFACE(IIntervals,pIntervals);
+            IntervalIndexType haulInterval = pIntervals->GetHaulSegmentInterval(vPoi.front().get().GetSegmentKey());
+
+            if (intervalIdx >= haulInterval) // modulus hardening doesn't happen until after storage
+            {
+               IProductForces2::sagInterval sagInt = intervalIdx == haulInterval ? IProductForces2::sagHauling : IProductForces2::sagErection;
+
+               deflections = pForces->GetUnrecoverableGirderXDeflectionFromStorage(sagInt,bat[analysisIdx],vPoi);
+            }
+            else
+            {
+               deflections.assign(vPoi.size(),0.0);
+            }
+         }
+         else
+         {
+            deflections = pForces->GetXDeflection(intervalIdx,pfType,vPoi,bat[analysisIdx],resultsType);
+         }
          AddGraphPoints(data_series_id[analysisIdx], xVals, deflections);
          break;
       }

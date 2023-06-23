@@ -481,6 +481,7 @@ interface IProductForces2 : IUnknown
    // Function returns permanent deflection caused by girder dead load and modulus stiffening at storage. Values are adjusted for support location for given interval
    enum sagInterval { sagHauling,sagErection };
    virtual std::vector<Float64> GetUnrecoverableGirderDeflectionFromStorage(sagInterval interval,pgsTypes::BridgeAnalysisType bat,const PoiList& vPoi) const = 0;
+   virtual std::vector<Float64> GetUnrecoverableGirderXDeflectionFromStorage(sagInterval interval,pgsTypes::BridgeAnalysisType bat,const PoiList& vPoi) const = 0;
    virtual std::vector<Float64> GetUnrecoverableGirderRotationFromStorage(sagInterval interval,pgsTypes::BridgeAnalysisType bat,const PoiList& vPoi) const=0;
 
 };

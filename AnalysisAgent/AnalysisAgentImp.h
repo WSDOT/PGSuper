@@ -238,6 +238,7 @@ public:
    virtual void GetVehicularLiveLoadStress(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTopMin,std::vector<Float64>* pfTopMax,std::vector<Float64>* pfBotMin,std::vector<Float64>* pfBotMax,std::vector<AxleConfiguration>* pMinAxleConfigTop=nullptr,std::vector<AxleConfiguration>* pMaxAxleConfigTop=nullptr,std::vector<AxleConfiguration>* pMinAxleConfigBot=nullptr,std::vector<AxleConfiguration>* pMaxAxleConfigBot=nullptr) const override;
    // Function returns permanent deflection caused by girder dead load and modulus stiffening at storage. Values are adjusted for support location for given interval
    std::vector<Float64> GetUnrecoverableGirderDeflectionFromStorage(sagInterval interval,pgsTypes::BridgeAnalysisType bat,const PoiList& vPoi) const override;
+   std::vector<Float64> GetUnrecoverableGirderXDeflectionFromStorage(sagInterval interval,pgsTypes::BridgeAnalysisType bat,const PoiList& vPoi) const override;
    std::vector<Float64> GetUnrecoverableGirderRotationFromStorage(sagInterval interval,pgsTypes::BridgeAnalysisType bat,const PoiList& vPoi) const override;
 
 // ICombinedForces
