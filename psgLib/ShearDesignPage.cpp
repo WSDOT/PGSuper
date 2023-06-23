@@ -81,7 +81,7 @@ void CShearDesignPage::DoDataExchange(CDataExchange* pDX)
       m_pGrid->FillGrid(m_StirrupSizeBarComboColl);
 
       // Fill bar spacings
-      WBFL::System::NumericFormatTool ftool(WBFL::System::NumericFormatTool::Format::Automatic,pDisplayUnits->ComponentDim.Width,pDisplayUnits->ComponentDim.Precision);
+      WBFL::System::NumericFormatTool ftool(WBFL::System::NumericFormatTool::Format::Fixed,pDisplayUnits->ComponentDim.Width,pDisplayUnits->ComponentDim.Precision);
       std::_tostringstream  os_spacings;
       std::vector<Float64>::size_type size = m_BarSpacings.size();
       for (std::vector<Float64>::size_type sf=0; sf<size; sf++)
