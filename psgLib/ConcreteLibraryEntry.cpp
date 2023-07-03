@@ -129,7 +129,7 @@ CString ConcreteLibraryEntry::GetCEBFIPCementType(pgsTypes::CEBFIPCementType typ
    switch(type)
    {
    case pgsTypes::RS:
-      lpszType = _T("Rapid Hardening, High Strength Cemetn (RS)");
+      lpszType = _T("Rapid Hardening, High Strength Cement (RS)");
       break;
 
    case pgsTypes::N:
@@ -285,7 +285,7 @@ bool ConcreteLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
    if(pLoad->BeginUnit(_T("ConcreteMaterialEntry")))
    {
       Float64 version = pLoad->GetVersion();
-      if (7.0 < version )
+      if (8.0 < version )
       {
          THROW_LOAD(BadVersion,pLoad);
       }
