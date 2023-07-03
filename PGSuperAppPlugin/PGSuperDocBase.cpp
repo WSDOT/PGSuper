@@ -1540,6 +1540,11 @@ BOOL CPGSDocBase::UpdateTemplates()
    broker_persist->GetSaveMissingAgentDataFlag(&bFlag);
    broker_persist->SetSaveMissingAgentDataFlag(VARIANT_FALSE);
 
+   // we don't want the program to stop and prompt us about saving
+   // a backup copy of the file before it's format is updated.
+   // CreatingFromTemplate prevents the prompt
+   m_FileCompatibilityState.CreatingFromTemplate();
+
    UpdateTemplates(pProgress,workgroup_folder);
 
    // restore the flag to its previous state
