@@ -509,7 +509,7 @@ bool ConcreteLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
             if (!pLoad->Property(_T("etloc"), &m_etloc)) THROW_LOAD(InvalidFileFormat, pLoad);
             if (!pLoad->Property(_T("alpha_u"), &m_alpha_u)) THROW_LOAD(InvalidFileFormat, pLoad);
             if (!pLoad->Property(_T("ecu"), &m_ecu)) THROW_LOAD(InvalidFileFormat, pLoad);
-            if (!pLoad->Property(_T("Expermental_ecu"), &m_bExperimental_ecu)) THROW_LOAD(InvalidFileFormat, pLoad);
+            if (!pLoad->Property(_T("Experimental_ecu"), &m_bExperimental_ecu)) THROW_LOAD(InvalidFileFormat, pLoad);
             if (1 < uhpc_version)
             {
                // added version 2 of this data block
