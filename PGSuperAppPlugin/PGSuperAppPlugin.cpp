@@ -114,6 +114,7 @@ BOOL CPGSuperAppPlugin::Init(CEAFApp* pParent)
 
    if (!EAFGetApp()->GetCommandLineInfo().m_bCommandLineMode && !EAFGetApp()->IsFirstRun())
    {
+      AFX_MANAGE_STATE(AfxGetStaticModuleState()); // need state of this dll
       UpdateCache(); // we don't want to do this if we are running in batch/command line mode or if this is the first run situation (because configuration will happen later)
    }
 
