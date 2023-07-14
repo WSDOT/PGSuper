@@ -35,9 +35,9 @@
 #include "PluginManagerDlg.h"
 
 #include <EAF\EAFMainFrame.h>
+#include <EAF\EAFUtilities.h>
 
 #include <MFCTools\AutoRegistry.h>
-
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -114,8 +114,12 @@ BOOL CPGSuperAppPlugin::Init(CEAFApp* pParent)
 
    if (!EAFGetApp()->GetCommandLineInfo().m_bCommandLineMode && !EAFGetApp()->IsFirstRun())
    {
-      AFX_MANAGE_STATE(AfxGetStaticModuleState()); // need state of this dll
-      UpdateCache(); // we don't want to do this if we are running in batch/command line mode or if this is the first run situation (because configuration will happen later)
+      // Don't update cache if there are other instances of bridgelink running. This avoids race condition on libraries and templates
+      if (!EAFAreOtherBridgeLinksRunning())
+      {
+         AFX_MANAGE_STATE(AfxGetStaticModuleState()); // need state of this dll
+         UpdateCache(); // we don't want to do this if we are running in batch/command line mode or if this is the first run situation (because configuration will happen later)
+      }
    }
 
    return TRUE;
