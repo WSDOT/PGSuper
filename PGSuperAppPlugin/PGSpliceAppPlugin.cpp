@@ -117,7 +117,7 @@ BOOL CPGSpliceAppPlugin::Init(CEAFApp* pParent)
    if (!EAFGetApp()->GetCommandLineInfo().m_bCommandLineMode && !EAFGetApp()->IsFirstRun())
    {
       // Don't update cache if there are other instances of bridgelink running. This avoids race condition on libraries and templates
-      if (!EAFAreOtherBridgeLinksRunning())
+      if (!EAFAreOtherProgramInstancesRunning())
       {
          UpdateCache(); // we don't want to do this if we are running in batch/command line mode or if this is the first run situation (because configuration will happen later)
       }

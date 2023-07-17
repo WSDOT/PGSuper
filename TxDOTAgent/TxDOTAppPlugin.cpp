@@ -73,7 +73,7 @@ BOOL CTxDOTAppPlugin::Init(CEAFApp* pParent)
       if (!EAFGetApp()->GetCommandLineInfo().m_bCommandLineMode && !EAFGetApp()->IsFirstRun())
       {
          // Don't update cache if there are other instances of bridgelink running. This avoids race condition on libraries and templates
-         if (!EAFAreOtherBridgeLinksRunning())
+         if (!EAFAreOtherProgramInstancesRunning())
          {
             AFX_MANAGE_STATE(AfxGetStaticModuleState()); // need state of this dll
             UpdateCache(); // we don't want to do this if we are running in batch/command line mode or if this is the first run situation (because configuration will happen later)
