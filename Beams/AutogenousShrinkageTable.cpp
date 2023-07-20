@@ -445,7 +445,7 @@ void CAutogenousShrinkageTable::AddRow(rptChapter* pChapter,IBroker* pBroker,con
       }
    }
 
-   const std::shared_ptr<const lrfdPCIUHPCLosses> pLosses = std::dynamic_pointer_cast<const lrfdPCIUHPCLosses>(pDetails->pLosses);
+   const std::shared_ptr<const WBFL::LRFD::PCIUHPCLosses> pLosses = std::dynamic_pointer_cast<const WBFL::LRFD::PCIUHPCLosses>(pDetails->pLosses);
    ATLASSERT(pLosses.use_count() == pDetails->pLosses.use_count());
 
    (*this)(row + rowOffset, col++) << area.SetValue(pDetails->pLosses->GetApsPermanent());

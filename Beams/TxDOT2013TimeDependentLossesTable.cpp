@@ -91,7 +91,7 @@ CTxDOT2013TimeDependentLossesTable* CTxDOT2013TimeDependentLossesTable::PrepareT
 void CTxDOT2013TimeDependentLossesTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    // Typecast to our known type (eating own doggy food)
-   std::shared_ptr<const lrfdRefinedLossesTxDOT2013> ptl = std::dynamic_pointer_cast<const lrfdRefinedLossesTxDOT2013>(pDetails->pLosses);
+   std::shared_ptr<const WBFL::LRFD::RefinedLossesTxDOT2013> ptl = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLossesTxDOT2013>(pDetails->pLosses);
    if (!ptl)
    {
       ATLASSERT(false); // made a bad cast? Bail...

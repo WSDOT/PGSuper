@@ -734,12 +734,12 @@ bool CBridgeGeometryModelBuilder::LayoutGeneralGirderLines(const CBridgeDescript
 
    #if defined _DEBUG
       // verify all girder offset arrays are the same length
-      for ( CollectionIndexType i = 0; i < nSegments; i++ )
+      for ( IndexType i = 0; i < nSegments; i++ )
       {
-         CollectionIndexType size1;
+         IndexType size1;
          girderPoints[2*i]->get_Count(&size1);
 
-         CollectionIndexType size2;
+         IndexType size2;
          girderPoints[2*i+1]->get_Count(&size2);
 
          ATLASSERT(size1 == size2);

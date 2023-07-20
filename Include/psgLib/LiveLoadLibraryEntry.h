@@ -84,7 +84,7 @@ LOG
    rdp : 01.24.2005 : Created file
 *****************************************************************************/
 
-class PSGLIBCLASS LiveLoadLibraryEntry : public libLibraryEntry, public ISupportIcon,
+class PSGLIBCLASS LiveLoadLibraryEntry : public WBFL::Library::LibraryEntry, public ISupportIcon,
        public WBFL::System::SubjectT<LiveLoadLibraryEntryObserver, LiveLoadLibraryEntry>
 {
 public:
@@ -109,16 +109,16 @@ public:
 
    //------------------------------------------------------------------------
    // Copy constructor
-   LiveLoadLibraryEntry(const LiveLoadLibraryEntry& rOther);
+   LiveLoadLibraryEntry(const LiveLoadLibraryEntry& rOther) = default;
 
    //------------------------------------------------------------------------
    // Destructor
-   virtual ~LiveLoadLibraryEntry();
+   virtual ~LiveLoadLibraryEntry() = default;
 
    // GROUP: OPERATORS
    //------------------------------------------------------------------------
    // Assignment operator
-   LiveLoadLibraryEntry& operator = (const LiveLoadLibraryEntry& rOther);
+   LiveLoadLibraryEntry& operator=(const LiveLoadLibraryEntry& rOther) = default;
 
    // GROUP: OPERATIONS
 
@@ -242,25 +242,6 @@ private:
    // GROUP: OPERATIONS
    // GROUP: ACCESS
    // GROUP: INQUIRY
-
-public:
-   // GROUP: DEBUG
-   #if defined _DEBUG
-   //------------------------------------------------------------------------
-   // Returns true if the object is in a valid state, otherwise returns false.
-   virtual bool AssertValid() const;
-
-   //------------------------------------------------------------------------
-   // Dumps the contents of the object to the given dump context.
-   virtual void Dump(WBFL::Debug::LogContext& os) const;
-   #endif // _DEBUG
-
-   #if defined _UNITTEST
-   //------------------------------------------------------------------------
-   // Runs a self-diagnostic test.  Returns true if the test passed,
-   // otherwise false.
-   static bool TestMe(WBFL::Debug::Log& rlog);
-   #endif // _UNITTEST
 };
 
 // INLINE METHODS

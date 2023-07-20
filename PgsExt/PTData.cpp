@@ -31,7 +31,7 @@ CLASS
 #include <Units\Convert.h>
 #include <StdIo.h>
 
-#include <Lrfd\StrandPool.h>
+#include <LRFD\StrandPool.h>
 
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\SplicedGirderData.h>
@@ -250,12 +250,12 @@ void CLinearDuctGeometry::AddPoint(Float64 location,Float64 offset,OffsetType of
    m_Points.push_back(record);
 }
 
-CollectionIndexType CLinearDuctGeometry::GetPointCount() const
+IndexType CLinearDuctGeometry::GetPointCount() const
 {
    return m_Points.size();
 }
 
-void CLinearDuctGeometry::GetPoint(CollectionIndexType pntIdx,Float64* pLocation,Float64 *pOffset,OffsetType *pOffsetType) const
+void CLinearDuctGeometry::GetPoint(IndexType pntIdx,Float64* pLocation,Float64 *pOffset,OffsetType *pOffsetType) const
 {
    PointRecord record = m_Points[pntIdx];
    *pLocation     = record.location;
@@ -326,11 +326,11 @@ HRESULT CLinearDuctGeometry::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
 
    var.vt = VT_INDEX;
    pStrLoad->get_Property(_T("PointCount"),&var);
-   CollectionIndexType nPoints = VARIANT2INDEX(var);
+   IndexType nPoints = VARIANT2INDEX(var);
 
    m_Points.clear();
 
-   for ( CollectionIndexType idx = 0; idx < nPoints; idx++ )
+   for ( IndexType idx = 0; idx < nPoints; idx++ )
    {
       PointRecord point;
       pStrLoad->BeginUnit(_T("Point"));
@@ -1019,10 +1019,10 @@ HRESULT COffsetDuctGeometry::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
 
    var.vt = VT_I4;
    pStrLoad->get_Property(_T("OffsetPointCount"),&var);
-   CollectionIndexType nPoints = var.iVal;
+   IndexType nPoints = var.iVal;
 
    Points.clear();
-   for ( CollectionIndexType idx = 0; idx < nPoints; idx++ )
+   for ( IndexType idx = 0; idx < nPoints; idx++ )
    {
       Point point;
 
@@ -1345,7 +1345,7 @@ CPTData::CPTData()
    DuctType = pgsTypes::dtMetal;
    InstallationType = pgsTypes::sitPush;
 
-   pStrand = lrfdStrandPool::GetInstance()->GetStrand(WBFL::Materials::PsStrand::Grade::Gr1860, 
+   pStrand = WBFL::LRFD::StrandPool::GetInstance()->GetStrand(WBFL::Materials::PsStrand::Grade::Gr1860, 
                                                       WBFL::Materials::PsStrand::Type::LowRelaxation,
                                                       WBFL::Materials::PsStrand::Coating::None,
                                                       WBFL::Materials::PsStrand::Size::D1524);
@@ -1628,7 +1628,7 @@ HRESULT CPTData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    }
    else
    {
-      lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+      const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
       Int64 key = var.lVal;
       if ( version < 4 )
       {
@@ -1727,7 +1727,7 @@ HRESULT CPTData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
    pStrSave->BeginUnit(_T("PTData"),4.0);
 
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+   const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
    Int64 key = pPool->GetStrandKey(pStrand); // beginning with version 4, the strand key includes an including for strand coating type
    pStrSave->put_Property(_T("TendonMaterialKey"),CComVariant(key));
 

@@ -164,7 +164,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       {
       const WBFL::Units::LengthData& heightUnit = pDisplayUnits->GetComponentDimUnit();
       m_pYFormat = new WBFL::Units::LengthTool(heightUnit);
-      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      m_Graph.SetYAxisValueFormat(m_pYFormat);
       std::_tstring strYAxisTitle = _T("Height (") + ((WBFL::Units::LengthTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
@@ -174,7 +174,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       {
       const WBFL::Units::Length2Data& areaUnit = pDisplayUnits->GetAreaUnit();
       m_pYFormat = new WBFL::Units::AreaTool(areaUnit);
-      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      m_Graph.SetYAxisValueFormat(m_pYFormat);
       std::_tstring strYAxisTitle = _T("Area (") + ((WBFL::Units::AreaTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
@@ -184,7 +184,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       {
       const WBFL::Units::Length4Data& momentOfInertiaUnit = pDisplayUnits->GetMomentOfInertiaUnit();
       m_pYFormat = new WBFL::Units::MomentOfInertiaTool(momentOfInertiaUnit);
-      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      m_Graph.SetYAxisValueFormat(m_pYFormat);
       std::_tstring strYAxisTitle = _T("Moment of Inertia (") + ((WBFL::Units::MomentOfInertiaTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
@@ -194,7 +194,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       {
       const WBFL::Units::LengthData& heightUnit = pDisplayUnits->GetComponentDimUnit();
       m_pYFormat = new WBFL::Units::LengthTool(heightUnit);
-      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      m_Graph.SetYAxisValueFormat(m_pYFormat);
       std::_tstring strYAxisTitle = _T("Centroid (") + ((WBFL::Units::LengthTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
@@ -204,7 +204,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       {
       const WBFL::Units::Length3Data& sectionModulusUnit = pDisplayUnits->GetSectModulusUnit();
       m_pYFormat = new WBFL::Units::SectionModulusTool(sectionModulusUnit);
-      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      m_Graph.SetYAxisValueFormat(m_pYFormat);
       std::_tstring strYAxisTitle = _T("Section Modulus (") + ((WBFL::Units::SectionModulusTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
@@ -214,7 +214,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
    {
       const WBFL::Units::Length2Data& areaUnit = pDisplayUnits->GetAreaUnit();
       m_pYFormat = new WBFL::Units::AreaTool(areaUnit);
-      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      m_Graph.SetYAxisValueFormat(m_pYFormat);
       std::_tstring strYAxisTitle = _T("Aps (") + ((WBFL::Units::AreaTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
@@ -224,7 +224,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       {
       const WBFL::Units::LengthData& heightUnit = pDisplayUnits->GetComponentDimUnit();
       m_pYFormat = new WBFL::Units::LengthTool(heightUnit);
-      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      m_Graph.SetYAxisValueFormat(m_pYFormat);
       std::_tstring strYAxisTitle = _T("Kern Point (") + ((WBFL::Units::LengthTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
@@ -235,7 +235,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       {
       const WBFL::Units::LengthData& heightUnit = pDisplayUnits->GetComponentDimUnit();
       m_pYFormat = new WBFL::Units::LengthTool(heightUnit);
-      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      m_Graph.SetYAxisValueFormat(m_pYFormat);
       std::_tstring strYAxisTitle = _T("Eccentricty (") + ((WBFL::Units::LengthTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
@@ -245,7 +245,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       {
       const WBFL::Units::LengthData& heightUnit = pDisplayUnits->GetComponentDimUnit();
       m_pYFormat = new WBFL::Units::LengthTool(heightUnit);
-      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      m_Graph.SetYAxisValueFormat(m_pYFormat);
       std::_tstring strYAxisTitle = _T("Elevation from top of non-composite girder (") + ((WBFL::Units::LengthTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
@@ -255,7 +255,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       {
       const WBFL::Units::LengthData& heightUnit = pDisplayUnits->GetComponentDimUnit();
       m_pYFormat = new WBFL::Units::LengthTool(heightUnit);
-      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      m_Graph.SetYAxisValueFormat(m_pYFormat);
       std::_tstring strYAxisTitle = _T("Effective Flange Width (") + ((WBFL::Units::LengthTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
@@ -265,7 +265,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       {
       const WBFL::Units::StressData& stressUnit = pDisplayUnits->GetStressUnit();
       m_pYFormat = new WBFL::Units::StressTool(stressUnit);
-      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      m_Graph.SetYAxisValueFormat(m_pYFormat);
       std::_tstring strYAxisTitle = _T("fc (") + ((WBFL::Units::StressTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
@@ -275,7 +275,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       {
       const WBFL::Units::StressData& stressUnit = pDisplayUnits->GetModEUnit();
       m_pYFormat = new WBFL::Units::StressTool(stressUnit);
-      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      m_Graph.SetYAxisValueFormat(m_pYFormat);
       std::_tstring strYAxisTitle = _T("Ec (") + ((WBFL::Units::StressTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;

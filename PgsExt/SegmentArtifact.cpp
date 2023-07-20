@@ -133,13 +133,13 @@ void pgsSegmentArtifact::AddFlexuralStressArtifact(const pgsFlexuralStressArtifa
    std::sort(std::begin(artifacts),std::end(artifacts));
 }
 
-CollectionIndexType pgsSegmentArtifact::GetFlexuralStressArtifactCount(const StressCheckTask& task) const
+IndexType pgsSegmentArtifact::GetFlexuralStressArtifactCount(const StressCheckTask& task) const
 {
    const auto& artifacts( GetFlexuralStressArtifacts(task) );
    return artifacts.size();
 }
 
-const pgsFlexuralStressArtifact* pgsSegmentArtifact::GetFlexuralStressArtifact(const StressCheckTask& task,CollectionIndexType idx) const
+const pgsFlexuralStressArtifact* pgsSegmentArtifact::GetFlexuralStressArtifact(const StressCheckTask& task,IndexType idx) const
 {
    const auto& artifacts( GetFlexuralStressArtifacts(task) );
    if ( idx < artifacts.size() )
@@ -152,7 +152,7 @@ const pgsFlexuralStressArtifact* pgsSegmentArtifact::GetFlexuralStressArtifact(c
    }
 }
 
-pgsFlexuralStressArtifact* pgsSegmentArtifact::GetFlexuralStressArtifact(const StressCheckTask& task,CollectionIndexType idx)
+pgsFlexuralStressArtifact* pgsSegmentArtifact::GetFlexuralStressArtifact(const StressCheckTask& task,IndexType idx)
 {
    auto& artifacts( GetFlexuralStressArtifacts(task) );
    if ( idx < artifacts.size() )

@@ -419,7 +419,7 @@ void CSegmentAnalysisResultsGraphBuilder::UpdateYAxisUnits()
       {
       const WBFL::Units::MomentData& momentUnit = pDisplayUnits->GetMomentUnit();
       m_pYFormat = new WBFL::Units::MomentTool(momentUnit);
-      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      m_Graph.SetYAxisValueFormat(m_pYFormat);
       std::_tstring strYAxisTitle = _T("Moment (") + ((WBFL::Units::MomentTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
@@ -428,7 +428,7 @@ void CSegmentAnalysisResultsGraphBuilder::UpdateYAxisUnits()
       {
       const WBFL::Units::ForceData& shearUnit = pDisplayUnits->GetShearUnit();
       m_pYFormat = new WBFL::Units::ShearTool(shearUnit);
-      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      m_Graph.SetYAxisValueFormat(m_pYFormat);
       std::_tstring strYAxisTitle = _T("Shear (") + ((WBFL::Units::ShearTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
@@ -437,7 +437,7 @@ void CSegmentAnalysisResultsGraphBuilder::UpdateYAxisUnits()
       {
       const WBFL::Units::ForceData& axialUnit = pDisplayUnits->GetGeneralForceUnit();
       m_pYFormat = new WBFL::Units::ForceTool(axialUnit);
-      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      m_Graph.SetYAxisValueFormat(m_pYFormat);
       std::_tstring strYAxisTitle = _T("Axial (") + ((WBFL::Units::ForceTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
@@ -447,7 +447,7 @@ void CSegmentAnalysisResultsGraphBuilder::UpdateYAxisUnits()
    {
       const WBFL::Units::LengthData& deflectionUnit = pDisplayUnits->GetDeflectionUnit();
       m_pYFormat = new WBFL::Units::DeflectionTool(deflectionUnit);
-      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      m_Graph.SetYAxisValueFormat(m_pYFormat);
       std::_tstring strYAxisTitle = _T("Deflection (") + ((WBFL::Units::DeflectionTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
@@ -456,7 +456,7 @@ void CSegmentAnalysisResultsGraphBuilder::UpdateYAxisUnits()
       {
       const WBFL::Units::AngleData& rotationUnit = pDisplayUnits->GetRadAngleUnit();
       m_pYFormat = new WBFL::Units::RotationTool(rotationUnit);
-      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      m_Graph.SetYAxisValueFormat(m_pYFormat);
       std::_tstring strYAxisTitle = _T("Rotation (") + ((WBFL::Units::RotationTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
@@ -466,7 +466,7 @@ void CSegmentAnalysisResultsGraphBuilder::UpdateYAxisUnits()
    {
       const WBFL::Units::StressData& stressUnit = pDisplayUnits->GetStressUnit();
       m_pYFormat = new WBFL::Units::StressTool(stressUnit);
-      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      m_Graph.SetYAxisValueFormat(m_pYFormat);
       std::_tstring strYAxisTitle = _T("Stress (") + ((WBFL::Units::StressTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
@@ -475,13 +475,13 @@ void CSegmentAnalysisResultsGraphBuilder::UpdateYAxisUnits()
       {
       const WBFL::Units::ForceData& shearUnit = pDisplayUnits->GetShearUnit();
       m_pYFormat = new WBFL::Units::ShearTool(shearUnit);
-      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      m_Graph.SetYAxisValueFormat(m_pYFormat);
       std::_tstring strYAxisTitle = _T("Reaction (") + ((WBFL::Units::ShearTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
       }
    default:
-      ASSERT(0); 
+      ASSERT(false); 
    }
 }
 

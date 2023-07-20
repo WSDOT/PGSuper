@@ -33,7 +33,7 @@
 
 #include <PgsExt\Helpers.h>
 
-#include <Lrfd\RebarPool.h>
+#include <LRFD\RebarPool.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -176,7 +176,7 @@ void CBridgeDescDeckReinforcementPage::FillRebarComboBox(CComboBox* pcbRebar)
 {
    int idx = pcbRebar->AddString(_T("None"));
    pcbRebar->SetItemData(idx,(DWORD_PTR)WBFL::Materials::Rebar::Size::bsNone);
-   lrfdRebarIter rebarIter(m_RebarData.TopRebarType,m_RebarData.TopRebarGrade);
+   WBFL::LRFD::RebarIter rebarIter(m_RebarData.TopRebarType,m_RebarData.TopRebarGrade);
    for ( rebarIter.Begin(); rebarIter; rebarIter.Next() )
    {
       const auto* pRebar = rebarIter.GetCurrentRebar();

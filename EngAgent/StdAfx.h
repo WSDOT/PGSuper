@@ -52,7 +52,7 @@ extern CComModule _Module;
 #include <Stability\Stability.h>
 
 #include <System\System.h>
-#include <Lrfd\Lrfd.h>
+#include <LRFD\Lrfd.h>
 #include <Math\Math.h>
 
 //{{AFX_INSERT_LOCATION}}

@@ -36,10 +36,10 @@ public:
    LPCTSTR GetAppName() const;
    void SetTemplateFileExtenstion(LPCTSTR strExt);
    void AddServer(CCatalogServer* pserver);
-   CollectionIndexType GetServerCount() const;
-   const CCatalogServer* GetServer(CollectionIndexType index) const;
+   IndexType GetServerCount() const;
+   const CCatalogServer* GetServer(IndexType index) const;
    const CCatalogServer* GetServer(LPCTSTR strName) const;
-   void RemoveServer(CollectionIndexType index);
+   void RemoveServer(IndexType index);
    void RemoveServer(LPCTSTR strName);
    bool IsServerDefined(LPCTSTR strName) const;
 

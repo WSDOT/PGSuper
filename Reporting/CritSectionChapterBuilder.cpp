@@ -92,7 +92,7 @@ rptChapter* CCritSectionChapterBuilder::Build(const std::shared_ptr<const WBFL::
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfterThirdEdition = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::ThirdEdition2004 ? true : false );
+   bool bAfterThirdEdition = ( pSpecEntry->GetSpecificationType() >= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 ? true : false );
 
    GET_IFACE2_NOCHECK(pBroker,ILimitStateForces,pLimitStateForces); // not used if bDesign = false
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -192,7 +192,7 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfterThirdEdition = ( lrfdVersionMgr::ThirdEdition2004 <= pSpecEntry->GetSpecificationType() ? true : false );
+   bool bAfterThirdEdition = ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 <= pSpecEntry->GetSpecificationType() ? true : false );
 
    GET_IFACE2(pBroker,IShearCapacity,pShearCapacity);
    const std::vector<CRITSECTDETAILS>& vcsDetails(pShearCapacity->GetCriticalSectionDetails(limitState,girderKey));
@@ -206,14 +206,14 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
    if ( bAfterThirdEdition )
    {
       *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Critical Section Picture 2004.jpg")) << rptNewLine;
-      *pPara << _T("LRFD ") << LrfdCw8th(_T("5.7.3.2"),_T("5.8.3.2"))<<rptNewLine;
+      *pPara << _T("LRFD ") << WBFL::LRFD::LrfdCw8th(_T("5.7.3.2"),_T("5.8.3.2"))<<rptNewLine;
       *pPara << _T("Critical Section = d") << Sub(_T("v")) << _T(" measured at d") << Sub(_T("v")) << _T(" from the face of support") << rptNewLine;
       nColumns = 4;
    }
    else
    {
       *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Critical Section Picture.jpg")) << rptNewLine;
-      *pPara << _T("LRFD ") << LrfdCw8th(_T("5.7.3.2"),_T("5.8.3.2"))<<rptNewLine;
+      *pPara << _T("LRFD ") << WBFL::LRFD::LrfdCw8th(_T("5.7.3.2"),_T("5.8.3.2"))<<rptNewLine;
       *pPara << _T("Critical Section = max(CS1, CS2)") << rptNewLine;
       *pPara << _T("CS1 = d")<<Sub(_T("v")) << rptNewLine;
       *pPara << _T("CS2 = 0.5 cot(")<<symbol(theta)<<_T(") d")<<Sub(_T("v")) << rptNewLine;

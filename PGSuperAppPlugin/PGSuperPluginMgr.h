@@ -35,14 +35,14 @@ public:
 
    bool LoadPlugins();
    void UnloadPlugins();
-   CollectionIndexType GetImporterCount();
-   CollectionIndexType GetExporterCount();
-   void GetImporter(CollectionIndexType key,bool bByIndex,IPGSDataImporter** ppImporter);
-   void GetExporter(CollectionIndexType key,bool bByIndex,IPGSDataExporter** ppExporter);
-   UINT GetImporterCommand(CollectionIndexType idx);
-   UINT GetExporterCommand(CollectionIndexType idx);
-   const CBitmap* GetImporterBitmap(CollectionIndexType idx);
-   const CBitmap* GetExporterBitmap(CollectionIndexType idx);
+   IndexType GetImporterCount();
+   IndexType GetExporterCount();
+   void GetImporter(IndexType key,bool bByIndex,IPGSDataImporter** ppImporter);
+   void GetExporter(IndexType key,bool bByIndex,IPGSDataExporter** ppExporter);
+   UINT GetImporterCommand(IndexType idx);
+   UINT GetExporterCommand(IndexType idx);
+   const CBitmap* GetImporterBitmap(IndexType idx);
+   const CBitmap* GetExporterBitmap(IndexType idx);
    void LoadDocumentationMaps();
    eafTypes::HelpResult GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nHID,CString& strURL);
 

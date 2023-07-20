@@ -150,11 +150,11 @@ inline void TxDOTDebondTool::Compute()
    // We also want to see if there is a common debond increment, and if by chance, it is 3 feet
    FloatSet section_spacings;
 
-   CollectionIndexType size;
+   IndexType size;
    coords->get_Count(&size);
    ATLASSERT(nss==size);
    // loop over all strands and put debond strands in rows and sections
-   for (CollectionIndexType idx = 0; idx < size; idx++)
+   for (IndexType idx = 0; idx < size; idx++)
    {
       // get elevation of strand
       CComPtr<IPoint2d> point;
@@ -221,7 +221,7 @@ inline void TxDOTDebondTool::Compute()
    CComPtr<IPoint2dCollection> hcoords;
    m_pStrandGeometry->GetStrandPositions(poi, pgsTypes::Harped, &hcoords);
    hcoords->get_Count(&size);
-   for (CollectionIndexType idx = 0; idx < size; idx++)
+   for (IndexType idx = 0; idx < size; idx++)
    {
       CComPtr<IPoint2d> point;
       hcoords->get_Item(idx,&point);

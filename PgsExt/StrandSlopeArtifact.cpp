@@ -140,27 +140,3 @@ void pgsStrandSlopeArtifact::MakeAssignment(const pgsStrandSlopeArtifact& rOther
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool pgsStrandSlopeArtifact::AssertValid() const
-{
-   return true;
-}
-
-void pgsStrandSlopeArtifact::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << "Dump for pgsStrandSlopeArtifact" << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool pgsStrandSlopeArtifact::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("pgsStrandSlopeArtifact");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for pgsStrandSlopeArtifact");
-
-   TESTME_EPILOG("pgsStrandSlopeArtifact");
-}
-#endif // _UNITTEST

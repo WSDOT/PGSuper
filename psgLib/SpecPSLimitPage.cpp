@@ -123,12 +123,12 @@ BOOL CSpecStrandPage::OnSetActive()
 
    // deal with 2017 crosswalk
    CWnd* pWnd = GetDlgItem(IDC_GPRES);
-   pWnd->SetWindowText(CString(_T("Stress Limits for Prestressing (")) + pDad->LrfdCw8th(_T("5.9.3"),_T("5.9.2.2")) + _T(")"));
+   pWnd->SetWindowText(CString(_T("Stress Limits for Prestressing (")) + WBFL::LRFD::LrfdCw8th(_T("5.9.3"),_T("5.9.2.2")) + _T(")"));
 
    pWnd = GetDlgItem(IDC_GPOST);
-   pWnd->SetWindowText(CString(_T("Stress Limits for Post-tensioning (")) + pDad->LrfdCw8th(_T("5.9.3"),_T("5.9.2.2")) + _T(")"));
+   pWnd->SetWindowText(CString(_T("Stress Limits for Post-tensioning (")) + WBFL::LRFD::LrfdCw8th(_T("5.9.3"),_T("5.9.2.2")) + _T(")"));
 
-   if (lrfdVersionMgr::NinthEdition2020 <= pDad->GetSpecVersion())
+   if (WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= pDad->GetSpecVersion())
    {
       GetDlgItem(IDC_DUCT_SIZE_LABEL)->SetWindowText(_T("Nominal diameter of duct shall not exceed "));
    }

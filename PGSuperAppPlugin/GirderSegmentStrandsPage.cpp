@@ -248,7 +248,7 @@ void CGirderSegmentStrandsPage::DoDataExchange(CDataExchange* pDX)
    if (pDX->m_bSaveAndValidate)
    {
       // strand material
-      lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+      const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
       const auto* pStraightStrand = pPool->GetStrand(m_StrandKey[pgsTypes::Straight]);
       const auto* pHarpedStrand = pPool->GetStrand(m_StrandKey[pgsTypes::Harped]);
       const auto* pTemporaryStrand = pPool->GetStrand(m_StrandKey[pgsTypes::Temporary]);
@@ -311,7 +311,7 @@ BOOL CGirderSegmentStrandsPage::OnInitDialog()
    //m_DrawStrands.CustomInit(m_pSegment,&m_Strands,&m_Tendons); // we will do this in OnSetActive
 
    // Select the strand size
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+   const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
    for (int i = 0; i < 3; i++)
    {
       pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
@@ -429,8 +429,8 @@ Float64 CGirderSegmentStrandsPage::GetMaxPjack(StrandIndexType nStrands,pgsTypes
    pEvents->HoldEvents();
 
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
-   LldfRangeOfApplicabilityAction action = pLiveLoads->GetLldfRangeOfApplicabilityAction();
-   pLiveLoads->SetLldfRangeOfApplicabilityAction(roaIgnore);
+   WBFL::LRFD::RangeOfApplicabilityAction action = pLiveLoads->GetRangeOfApplicabilityAction();
+   pLiveLoads->SetRangeOfApplicabilityAction(WBFL::LRFD::RangeOfApplicabilityAction::Ignore);
 
    Float64 PjackMax;
    try
@@ -439,11 +439,11 @@ Float64 CGirderSegmentStrandsPage::GetMaxPjack(StrandIndexType nStrands,pgsTypes
    }
    catch (... )
    {
-      pLiveLoads->SetLldfRangeOfApplicabilityAction(action);
+      pLiveLoads->SetRangeOfApplicabilityAction(action);
       throw;
    }
 
-   pLiveLoads->SetLldfRangeOfApplicabilityAction(action);
+   pLiveLoads->SetRangeOfApplicabilityAction(action);
    pEvents->CancelPendingEvents();
 
    return PjackMax;
@@ -549,7 +549,7 @@ void CGirderSegmentStrandsPage::OnEpoxyChanged()
 void CGirderSegmentStrandsPage::UpdateStrandList(UINT nIDC)
 {
    CComboBox* pList = (CComboBox*)GetDlgItem(nIDC);
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+   const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
 
    // capture the current selection, if any
    int cur_sel = pList->GetCurSel();
@@ -578,7 +578,7 @@ void CGirderSegmentStrandsPage::UpdateStrandList(UINT nIDC)
       {
          WBFL::Materials::PsStrand::Type type = (j == 0 ? WBFL::Materials::PsStrand::Type::LowRelaxation : WBFL::Materials::PsStrand::Type::StressRelieved);
 
-         lrfdStrandIter iter(grade,type,coating);
+         WBFL::LRFD::StrandIter iter(grade,type,coating);
 
          for ( iter.Begin(); iter; iter.Next() )
          {
@@ -617,7 +617,7 @@ void CGirderSegmentStrandsPage::OnStrandTypeChanged(int nIDC,pgsTypes::StrandTyp
    int curSel = pList->GetCurSel();
    m_StrandKey[strandType] = (Int64)pList->GetItemData(curSel);
 
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+   const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
 
    m_pSegment->Strands.SetStrandMaterial(strandType, pPool->GetStrand(m_StrandKey[strandType]));
 

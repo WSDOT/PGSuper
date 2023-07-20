@@ -315,12 +315,12 @@ bool CGirderStrandGrid::GetRowData(ROWCOL nRow, Float64* pX, Float64* pY)
 void CGirderStrandGrid::FillGrid(IPoint2dCollection* points)
 {
    GetParam()->SetLockReadOnly(FALSE);
-   CollectionIndexType count;
+   IndexType count;
    points->get_Count(&count);
    if (0 < count)
    {
       // size grid
-      for (CollectionIndexType i = 0; i < count; i++)
+      for (IndexType i = 0; i < count; i++)
       {
 	      Insertrow();
       }

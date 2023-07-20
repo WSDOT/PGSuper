@@ -56,39 +56,39 @@ public:
    // =================================================================================
    // Loads
    // =================================================================================
-   CollectionIndexType GetPointLoadCount() const;
-   CollectionIndexType AddPointLoad(EventIDType eventID,const CPointLoadData& pld);
-   const CPointLoadData* GetPointLoad(CollectionIndexType idx) const;
+   IndexType GetPointLoadCount() const;
+   IndexType AddPointLoad(EventIDType eventID,const CPointLoadData& pld);
+   const CPointLoadData* GetPointLoad(IndexType idx) const;
    const CPointLoadData* FindPointLoad(LoadIDType loadID) const;
    EventIndexType GetPointLoadEventIndex(LoadIDType loadID) const;
    EventIDType GetPointLoadEventID(LoadIDType loadID) const;
-   bool UpdatePointLoad(CollectionIndexType idx, EventIDType eventID, const CPointLoadData& pld, bool* pbMovedGirders, CSpanKey* pPrevKey);
+   bool UpdatePointLoad(IndexType idx, EventIDType eventID, const CPointLoadData& pld, bool* pbMovedGirders, CSpanKey* pPrevKey);
    bool UpdatePointLoadByID(LoadIDType loadID, EventIDType eventID, const CPointLoadData& pld, bool* pbMovedGirders, CSpanKey* pPrevKey);
-   void DeletePointLoad(CollectionIndexType idx, CSpanKey* pKey);
+   void DeletePointLoad(IndexType idx, CSpanKey* pKey);
    void DeletePointLoadByID(LoadIDType loadID, CSpanKey* pKey);
    std::vector<CPointLoadData> GetPointLoads(const CSpanKey& spanKey) const;
 
-   CollectionIndexType GetDistributedLoadCount() const;
-   CollectionIndexType AddDistributedLoad(EventIDType eventID,const CDistributedLoadData& pld);
-   const CDistributedLoadData* GetDistributedLoad(CollectionIndexType idx) const;
+   IndexType GetDistributedLoadCount() const;
+   IndexType AddDistributedLoad(EventIDType eventID,const CDistributedLoadData& pld);
+   const CDistributedLoadData* GetDistributedLoad(IndexType idx) const;
    const CDistributedLoadData* FindDistributedLoad(LoadIDType loadID) const;
    EventIndexType GetDistributedLoadEventIndex(LoadIDType loadID) const;
    EventIDType GetDistributedLoadEventID(LoadIDType loadID) const;
-   bool UpdateDistributedLoad(CollectionIndexType idx, EventIDType eventID, const CDistributedLoadData& pld, bool* pbMovedGirders, CSpanKey* pPrevKey);
+   bool UpdateDistributedLoad(IndexType idx, EventIDType eventID, const CDistributedLoadData& pld, bool* pbMovedGirders, CSpanKey* pPrevKey);
    bool UpdateDistributedLoadByID(LoadIDType loadID, EventIDType eventID, const CDistributedLoadData& pld, bool* pbMovedGirders, CSpanKey* pPrevKey);
-   void DeleteDistributedLoad(CollectionIndexType idx,CSpanKey* pKey);
+   void DeleteDistributedLoad(IndexType idx,CSpanKey* pKey);
    void DeleteDistributedLoadByID(LoadIDType loadID, CSpanKey* pKey);
    std::vector<CDistributedLoadData> GetDistributedLoads(const CSpanKey& spanKey) const;
 
-   CollectionIndexType GetMomentLoadCount() const;
-   CollectionIndexType AddMomentLoad(EventIDType eventID,const CMomentLoadData& pld);
-   const CMomentLoadData* GetMomentLoad(CollectionIndexType idx) const;
+   IndexType GetMomentLoadCount() const;
+   IndexType AddMomentLoad(EventIDType eventID,const CMomentLoadData& pld);
+   const CMomentLoadData* GetMomentLoad(IndexType idx) const;
    const CMomentLoadData* FindMomentLoad(LoadIDType loadID) const;
    EventIndexType GetMomentLoadEventIndex(LoadIDType loadID) const;
    EventIDType GetMomentLoadEventID(LoadIDType loadID) const;
-   bool UpdateMomentLoad(CollectionIndexType idx, EventIDType eventID, const CMomentLoadData& pld, bool* pbMovedGirders, CSpanKey* pPrevKey);
+   bool UpdateMomentLoad(IndexType idx, EventIDType eventID, const CMomentLoadData& pld, bool* pbMovedGirders, CSpanKey* pPrevKey);
    bool UpdateMomentLoadByID(LoadIDType loadID, EventIDType eventID, const CMomentLoadData& pld, bool* pbMovedGirders, CSpanKey* pPrevKey);
-   void DeleteMomentLoad(CollectionIndexType idx,CSpanKey* pKey);
+   void DeleteMomentLoad(IndexType idx,CSpanKey* pKey);
    void DeleteMomentLoadByID(LoadIDType loadID, CSpanKey* pKey);
    std::vector<CMomentLoadData> GetMomentLoads(const CSpanKey& spanKey) const;
 

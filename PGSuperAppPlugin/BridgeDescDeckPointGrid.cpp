@@ -485,8 +485,8 @@ void CBridgeDescDeckPointGrid::FillGrid(const CDeckDescription2* pDeck)
    }
 
    std::vector<CDeckPoint>::const_iterator iter;
-   CollectionIndexType cPoint = 0;
-   CollectionIndexType nPoints = pDeck->DeckEdgePoints.size();
+   IndexType cPoint = 0;
+   IndexType nPoints = pDeck->DeckEdgePoints.size();
    for ( iter = pDeck->DeckEdgePoints.begin(); iter != pDeck->DeckEdgePoints.end(); iter++, cPoint++ )
    {
       const CDeckPoint& point = *iter;

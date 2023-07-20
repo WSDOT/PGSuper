@@ -536,7 +536,7 @@ void pgsLoadRater::GetCriticalSectionZones(const CGirderKey& girderKey,pgsTypes:
       PoiList vCSPoi;
       pPoi->GetCriticalSections(limitState, thisGirderKey,&vCSPoi);
       std::vector<CRITSECTDETAILS> vCS = pShearCapacity->GetCriticalSectionDetails(limitState, thisGirderKey);
-      if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEdition2004)
+      if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004)
       {
          // if the LRFD is before 2004, critical section for shear was a function of loading.... we end up with many critical section POIs but
          // only a few (usually 2) critical section details. Match the details to the POIs and throw out the other POIs. LRFD 2004 and later only depend on Mu
@@ -723,8 +723,8 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const PoiList& vPoi,p
    GET_IFACE(IProductLoads,pProductLoads);
    std::vector<std::_tstring> strLLNames = pProductLoads->GetVehicleNames(llType,girderKey);
 
-   CollectionIndexType nPOI = vMyPoi.size();
-   for ( CollectionIndexType i = 0; i < nPOI; i++ )
+   IndexType nPOI = vMyPoi.size();
+   for ( IndexType i = 0; i < nPOI; i++ )
    {
       const pgsPointOfInterest& poi = vMyPoi[i];
 

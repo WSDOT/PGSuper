@@ -319,26 +319,3 @@ void CTendonStressCheckTable::MakeAssignment(const CTendonStressCheckTable& rOth
 {
    MakeCopy( rOther );
 }
-
-#if defined _DEBUG
-bool CTendonStressCheckTable::AssertValid() const
-{
-   return true;
-}
-
-void CTendonStressCheckTable::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for CTendonStressCheckTable") << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CTendonStressCheckTable::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("CTendonStressCheckTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CTendonStressCheckTable");
-
-   TESTME_EPILOG("CTendonStressCheckTable");
-}
-#endif // _UNITTEST

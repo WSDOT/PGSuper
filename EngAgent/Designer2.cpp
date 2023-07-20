@@ -64,7 +64,7 @@
 
 #include <Units\Convert.h>
 
-#include <Lrfd\Rebar.h>
+#include <LRFD\Rebar.h>
 #include <algorithm>
 #include <iterator>
 
@@ -109,23 +109,23 @@ public:
       m_pLiveLoads(pLiveLoads)
    {
       pEvents->HoldEvents();
-      m_OldRoa = pLiveLoads->GetLldfRangeOfApplicabilityAction();
-      if (m_OldRoa == roaEnforce)
+      m_OldRoa = pLiveLoads->GetRangeOfApplicabilityAction();
+      if (m_OldRoa == WBFL::LRFD::RangeOfApplicabilityAction::Enforce)
       {
-         pLiveLoads->SetLldfRangeOfApplicabilityAction(roaIgnore);
+         pLiveLoads->SetRangeOfApplicabilityAction(WBFL::LRFD::RangeOfApplicabilityAction::Ignore);
       }
    }
 
    ~AutoDesign()
    {
-      m_pLiveLoads->SetLldfRangeOfApplicabilityAction(m_OldRoa);
+      m_pLiveLoads->SetRangeOfApplicabilityAction(m_OldRoa);
       m_pEvents->CancelPendingEvents();
    }
 
 private:
    IEvents* m_pEvents; // weak reference to interface
    ILiveLoads* m_pLiveLoads; // weak reference
-   LldfRangeOfApplicabilityAction m_OldRoa;
+   WBFL::LRFD::RangeOfApplicabilityAction m_OldRoa;
 };
 
 bool CanDesign(pgsTypes::StrandDefinitionType type)
@@ -305,7 +305,7 @@ static Float64 GetSectionGirderOrientationEffect(const pgsPointOfInterest& poi, 
       bool bHasMSProfile = (pGdr->GetMatingSurfaceProfile(poi, 0, true, &matingSurfaceProfile) == false || matingSurfaceProfile == nullptr) ? false : true;
       if (bHasMSProfile)
       {
-         CollectionIndexType nPoints;
+         IndexType nPoints;
          matingSurfaceProfile->get_Count(&nPoints);
          if (nPoints == 3)
          {
@@ -1738,7 +1738,7 @@ void pgsDesigner2::CheckTendonDetailing(const CGirderKey& girderKey,pgsGirderArt
          Float64 Aduct = pSegmentTendonGeometry->GetInsideDuctArea(segmentKey, ductIdx);
 
          // starting with 9th edition, the duct diameter limit and the duct reduction for shear is based on nominal duct diameter
-         Float64 duct_diameter = (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::NinthEdition2020 ? pSegmentTendonGeometry->GetOutsideDiameter(segmentKey,ductIdx) : pSegmentTendonGeometry->GetNominalDiameter(segmentKey, ductIdx));
+         Float64 duct_diameter = (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 ? pSegmentTendonGeometry->GetOutsideDiameter(segmentKey,ductIdx) : pSegmentTendonGeometry->GetNominalDiameter(segmentKey, ductIdx));
 
          Float64 r = pSegmentTendonGeometry->GetMinimumRadiusOfCurvature(segmentKey, ductIdx);
 
@@ -1773,7 +1773,7 @@ void pgsDesigner2::CheckTendonDetailing(const CGirderKey& girderKey,pgsGirderArt
       Float64 Aduct = pGirderTendonGeometry->GetInsideDuctArea(girderKey,ductIdx);
 
       // starting with 9th edition, the duct diameter limit and the duct reduction for shear is based on nominal duct diameter
-      Float64 duct_diameter = (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::NinthEdition2020 ? pGirderTendonGeometry->GetOutsideDiameter(girderKey, ductIdx) : pGirderTendonGeometry->GetNominalDiameter(girderKey, ductIdx));
+      Float64 duct_diameter = (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 ? pGirderTendonGeometry->GetOutsideDiameter(girderKey, ductIdx) : pGirderTendonGeometry->GetNominalDiameter(girderKey, ductIdx));
 
       Float64 r = pGirderTendonGeometry->GetMinimumRadiusOfCurvature(girderKey,ductIdx);
 
@@ -2046,7 +2046,7 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
    IntervalIndexType compositeClosureIntervalIdx     = pIntervals->GetCompositeClosureJointInterval(segmentKey);
    IntervalIndexType lastIntervalIdx                 = pIntervals->GetIntervalCount()-1;
 
-   bool bSISpec = lrfdVersionMgr::GetVersion() == lrfdVersionMgr::SI ? true : false;
+   bool bSISpec = WBFL::LRFD::LRFDVersionMgr::GetUnits() == WBFL::LRFD::LRFDVersionMgr::Units::SI ? true : false;
 
    GET_IFACE(IPretensionStresses,       pPretensionStresses);
    GET_IFACE(ILimitStateForces,         pLimitStateForces);
@@ -2909,7 +2909,7 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
    pgsTypes::BridgeAnalysisType batTop, batBottom;
    GetBridgeAnalysisType(segmentKey.girderIndex,task,batTop,batBottom);
 
-   bool bSISpec = lrfdVersionMgr::GetVersion() == lrfdVersionMgr::SI ? true : false;
+   bool bSISpec = WBFL::LRFD::LRFDVersionMgr::GetUnits() == WBFL::LRFD::LRFDVersionMgr::Units::SI ? true : false;
 
    gbtAlternativeTensileStressRequirements altTensionRequirements;
    altTensionRequirements.concreteType = (WBFL::Materials::ConcreteType)pMaterials->GetSegmentConcreteType(segmentKey);
@@ -3165,7 +3165,7 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
                ATLASSERT(false); // not designing for UHPC yet
 
                const auto& pConcrete = pMaterials->GetSegmentConcrete(segmentKey);
-               const lrfdLRFDConcreteBase* pLRFDConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(pConcrete.get());
+               const WBFL::LRFD::LRFDConcreteBase* pLRFDConcrete = dynamic_cast<const WBFL::LRFD::LRFDConcreteBase*>(pConcrete.get());
                Float64 f_fc = pLRFDConcrete->GetFirstCrackingStrength();
                Float64 fc_28 = (pConfig == nullptr ? pMaterials->GetSegmentFc28(segmentKey) : pConfig->fc);
 
@@ -3263,7 +3263,7 @@ void pgsDesigner2::CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,
    GET_IFACE(ISpecification, pSpec);
 
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool c_over_de = ( pSpec->GetMomentCapacityMethod() == LRFD_METHOD && pSpecEntry->GetSpecificationType() < lrfdVersionMgr::ThirdEditionWith2006Interims );
+   bool c_over_de = ( pSpec->GetMomentCapacityMethod() == LRFD_METHOD && pSpecEntry->GetSpecificationType() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2006Interims );
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
    pArtifact->SetPointOfInterest(poi);
@@ -3368,7 +3368,7 @@ void pgsDesigner2::CreateStirrupCheckAtPoisArtifact(const pgsPointOfInterest& po
       std::_tostringstream os;
       os << _T("Cannot perform shear check. The Span-to-Depth ratio is less than ")<< MIN_SPAN_DEPTH_RATIO <<_T(" for Span ")
          << LABEL_SPAN(spanKey.spanIndex) << _T(" Girder ")<< LABEL_GIRDER(spanKey.girderIndex)
-         << _T(" (See LRFD ") << LrfdCw8th(_T("5.8.1.1"),_T("5.7.1.1"))<<_T(")");
+         << _T(" (See LRFD ") << WBFL::LRFD::LrfdCw8th(_T("5.8.1.1"),_T("5.7.1.1"))<<_T(")");
 
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
       pgsBridgeDescriptionStatusItem* pStatusItem = new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionError,pgsBridgeDescriptionStatusItem::General,os.str().c_str());
@@ -3670,7 +3670,7 @@ void pgsDesigner2::CheckHorizontalShear(pgsTypes::LimitState limitState, const p
    pgsTypes::ConcreteType girderConcType = pMaterial->GetSegmentConcreteType(segmentKey);
    pgsTypes::ConcreteType slabConcType = pMaterial->GetDeckConcreteType();
    Float64 c, u, K1, K2;
-   lrfdConcreteUtil::InterfaceShearParameters(is_roughened, (WBFL::Materials::ConcreteType)girderConcType, (WBFL::Materials::ConcreteType)slabConcType, &c, &u, &K1, &K2);
+   WBFL::LRFD::ConcreteUtil::InterfaceShearParameters(is_roughened, (WBFL::Materials::ConcreteType)girderConcType, (WBFL::Materials::ConcreteType)slabConcType, &c, &u, &K1, &K2);
 
    pArtifact->SetCohesionFactor(c);
    pArtifact->SetFrictionFactor(u);
@@ -3678,7 +3678,7 @@ void pgsDesigner2::CheckHorizontalShear(pgsTypes::LimitState limitState, const p
    pArtifact->SetK2(K2);
 
    // nominal shear capacities 5.7.4.1-2,3 (pre2017: 5.8.4.1)
-   if ( lrfdVersionMgr:: FourthEdition2007 <= lrfdVersionMgr::GetVersion() && gs_60KSI < fy)
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() && gs_60KSI < fy)
    {
       // 60 ksi limit was added in 4th Edition 2007
       fy = gs_60KSI;
@@ -3688,7 +3688,7 @@ void pgsDesigner2::CheckHorizontalShear(pgsTypes::LimitState limitState, const p
    pArtifact->SetFy(fy);
 
    Float64 Vn1, Vn2, Vn3;
-   lrfdConcreteUtil::InterfaceShearResistances(c, u, K1, K2, bvi_details.bvi, pArtifact->GetAvOverS(), gamma_dc*Pc, fc, fy, &Vn1, &Vn2, &Vn3);
+   WBFL::LRFD::ConcreteUtil::InterfaceShearResistances(c, u, K1, K2, bvi_details.bvi, pArtifact->GetAvOverS(), gamma_dc*Pc, fc, fy, &Vn1, &Vn2, &Vn3);
    pArtifact->SetVn(Vn1, Vn2, Vn3);
 
    GET_IFACE(IResistanceFactors,pResistanceFactors);
@@ -3716,18 +3716,18 @@ void pgsDesigner2::CheckHorizontalShear(pgsTypes::LimitState limitState, const p
    Float64 sMax = pInterfaceShear->GetMaxShearConnectorSpacing(poi);
    pArtifact->SetSmax(sMax);
 
-   lrfdConcreteUtil::HsAvfOverSMinType avfmin = lrfdConcreteUtil::AvfOverSMin(bvi_details.bvi,fy,Vuh,phi,c,u,Pc);
+   WBFL::LRFD::ConcreteUtil::HsAvfOverSMinType avfmin = WBFL::LRFD::ConcreteUtil::AvfOverSMin(bvi_details.bvi,fy,Vuh,phi,c,u,Pc);
    pArtifact->SetAvOverSMin_5_7_4_2_1(avfmin.res5_7_4_2_1);
    pArtifact->SetAvOverSMin_5_7_4_1_3(avfmin.res5_7_4_2_3);
    pArtifact->SetAvOverSMin(avfmin.AvfOverSMin);
 
-   Uint16 min_num_legs = lrfdConcreteUtil::MinLegsForBv(bvi_details.bvi);
+   Uint16 min_num_legs = WBFL::LRFD::ConcreteUtil::MinLegsForBv(bvi_details.bvi);
    pArtifact->SetNumLegsReqd(min_num_legs);
 
    // Determine average shear stress.
    // Average shear stress. Note: This value is vni prior to 2007 and vui afterwards 
    Float64 Vsavg;
-   if ( lrfdVersionMgr::FourthEdition2007 <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       Float64 vui = IsZero(bvi_details.bvi) ? 0.0 : Vuh/ bvi_details.bvi;
       Vsavg = vui;
@@ -3741,11 +3741,11 @@ void pgsDesigner2::CheckHorizontalShear(pgsTypes::LimitState limitState, const p
    pArtifact->SetVsAvg(Vsavg);
 
    // Shear strength so that equation 5.7.4.3-4 (pre2017: 5.8.4.1-4) is not applicable
-   Float64 vs_limit = lrfdConcreteUtil::LowerLimitOfShearStrength(is_roughened,do_all_stirrups_engage_deck);
+   Float64 vs_limit = WBFL::LRFD::ConcreteUtil::LowerLimitOfShearStrength(is_roughened,do_all_stirrups_engage_deck);
    pArtifact->SetVsLimit(vs_limit);
 
    // Get Av/S required for design algorithm
-   Float64 avs_reqd = lrfdConcreteUtil::AvfRequiredForHoriz(Vuh, phi, avfmin.AvfOverSMin, c, u, K1, K2,
+   Float64 avs_reqd = WBFL::LRFD::ConcreteUtil::AvfRequiredForHoriz(Vuh, phi, avfmin.AvfOverSMin, c, u, K1, K2,
       bvi_details.bvi, bvi_details.bvi, pArtifact->GetAvOverS(), Pc, fc, fy);
    pArtifact->SetAvOverSReqd(avs_reqd);
 }
@@ -3943,7 +3943,7 @@ void pgsDesigner2::CheckFullStirrupDetailing(const pgsPointOfInterest& poi,
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfter1999 = ( lrfdVersionMgr::SecondEditionWith2000Interims <= pSpecEntry->GetSpecificationType() ? true : false );
+   bool bAfter1999 = ( WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims <= pSpecEntry->GetSpecificationType() ? true : false );
 
    pArtifact->SetAfter1999(bAfter1999);
 
@@ -4034,7 +4034,7 @@ void pgsDesigner2::CheckFullStirrupDetailing(const pgsPointOfInterest& poi,
       if (bAfter1999)
       {
          // applied shear stress
-         Float64 vu = lrfdShear::ComputeShearStress(Vu, scd.Vp, scd.Phi, scd.bv, scd.dv);
+         Float64 vu = WBFL::LRFD::Shear::ComputeShearStress(Vu, scd.Vp, scd.Phi, scd.bv, scd.dv);
          pArtifact->Setvu(vu);
 
          Float64 vu_limit = 0.125 * fcGdr; // 5.7.2.6 (pre2017: 5.8.2.7)
@@ -4096,7 +4096,7 @@ void pgsDesigner2::CheckFullStirrupDetailing(const pgsPointOfInterest& poi,
             pMaterials->GetSegmentTransverseRebarMaterial(segmentKey, &type, &grade);
          }
 
-         lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
+         const auto* prp = WBFL::LRFD::RebarPool::GetInstance();
          const auto* pRebar = prp->GetRebar(type, grade, size);
 
          Float64 db = pRebar->GetNominalDimension();
@@ -4123,7 +4123,7 @@ Float64 pgsDesigner2::GetAvsMin(const pgsPointOfInterest& poi,const SHEARCAPACIT
    const WBFL::Units::AreaPerLength* pAvsUnit;
    Float64 K;
    Float64 Kfct;
-   if ( lrfdVersionMgr::GetUnits() == lrfdVersionMgr::US )
+   if ( WBFL::LRFD::LRFDVersionMgr::GetUnits() == WBFL::LRFD::LRFDVersionMgr::Units::US )
    {
       pLengthUnit = &WBFL::Units::Measure::Inch;
       pStressUnit = &WBFL::Units::Measure::KSI;
@@ -4150,7 +4150,7 @@ Float64 pgsDesigner2::GetAvsMin(const pgsPointOfInterest& poi,const SHEARCAPACIT
    Float64 lambda = pMaterials->GetSegmentLambda(poi.GetSegmentKey());
    avs *= lambda;
 
-   if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2016Interims )
+   if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims )
    {
       switch( scd.ConcreteType )
       {
@@ -4236,7 +4236,7 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
    // the tension tie
    GET_IFACE(IGirderTendonGeometry, pGirderTendonGeometry);
    auto nDucts = pGirderTendonGeometry->GetDuctCount(segmentKey);
-   pArtifact->PretensionForceMustExceedBarForce((scd.bTensionBottom || 0 < nDucts) && lrfdVersionMgr::NinthEdition2020 <= pSpecEntry->GetSpecificationType() ? true : false);
+   pArtifact->PretensionForceMustExceedBarForce((scd.bTensionBottom || 0 < nDucts) && WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= pSpecEntry->GetSpecificationType() ? true : false);
 
    // Longitudinal steel
    GET_IFACE(IMaterials, pMaterials);
@@ -4379,7 +4379,7 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
    // shear demand 
    Float64 phi_shear = scd.Phi;
 
-   if ( lrfdVersionMgr::SecondEditionWith2000Interims <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
        if ( vu/phi_shear < vs )
        {
@@ -4410,7 +4410,7 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
    Float64 demand;
    Uint16 equation = 999; // dummy value
 
-   if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       if ( bInCriticalSectionZone && !bContinuous )
       {
@@ -4428,11 +4428,11 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
    else
    {
       if (// Spec is 2003 or earlier AND poi is at one of the points of support 
-           (lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::SecondEditionWith2003Interims && 
+           (WBFL::LRFD::LRFDVersionMgr::GetVersion() <= WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2003Interims && 
             (poi.HasAttribute(POI_FACEOFSUPPORT) && !bContinuous) )
             ||
            // Spec is 2004 AND poi is in a critical section zone
-           (lrfdVersionMgr::SecondEditionWith2003Interims < lrfdVersionMgr::GetVersion() && lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::ThirdEdition2004 && 
+           (WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2003Interims < WBFL::LRFD::LRFDVersionMgr::GetVersion() && WBFL::LRFD::LRFDVersionMgr::GetVersion() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 && 
               ( bInCriticalSectionZone && !bContinuous ))
          )
       {
@@ -4493,14 +4493,14 @@ void pgsDesigner2::CheckConfinement(const CSegmentKey& segmentKey, const GDRCONF
 
    // Get spec constraints
    GET_IFACE(ITransverseReinforcementSpec,pTransverseReinforcementSpec);
-   WBFL::Materials::Rebar::Size szmin = pTransverseReinforcementSpec->GetMinConfinmentBarSize();
-   Float64 smax = pTransverseReinforcementSpec->GetMaxConfinmentBarSpacing();
+   WBFL::Materials::Rebar::Size szmin = pTransverseReinforcementSpec->GetMinConfinementBarSize();
+   Float64 smax = pTransverseReinforcementSpec->GetMaxConfinementBarSpacing();
 
    WBFL::Materials::Rebar::Grade grade;
    WBFL::Materials::Rebar::Type type;
    pMaterial->GetSegmentTransverseRebarMaterial(segmentKey,&type,&grade);
 
-   pArtifact->SetMinBar(lrfdRebarPool::GetInstance()->GetRebar(type,grade,szmin));
+   pArtifact->SetMinBar(WBFL::LRFD::RebarPool::GetInstance()->GetRebar(type,grade,szmin));
    pArtifact->SetSMax(smax);
 
    // Use utility function to get confinement zone lengths at girder ends
@@ -4534,11 +4534,11 @@ void pgsDesigner2::CheckConfinement(const CSegmentKey& segmentKey, const GDRCONF
 
    pArtifact->SetStartS(start_s);
    pArtifact->SetStartProvidedZoneLength(start_zl);
-   pArtifact->SetStartBar(lrfdRebarPool::GetInstance()->GetRebar(type,grade,start_rbsiz));
+   pArtifact->SetStartBar(WBFL::LRFD::RebarPool::GetInstance()->GetRebar(type,grade,start_rbsiz));
 
    pArtifact->SetEndS(end_s);
    pArtifact->SetEndProvidedZoneLength(end_zl);
-   pArtifact->SetEndBar(lrfdRebarPool::GetInstance()->GetRebar(type,grade,end_rbsiz));
+   pArtifact->SetEndBar(WBFL::LRFD::RebarPool::GetInstance()->GetRebar(type,grade,end_rbsiz));
 }
 
 void pgsDesigner2::CheckMomentCapacity(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsGirderArtifact* pGirderArtifact) const
@@ -4725,7 +4725,7 @@ void pgsDesigner2::InitShearCheck(const CSegmentKey& segmentKey,IntervalIndexTyp
       pPoi->GetCriticalSections(limitState, segmentKey,&vCSPoi);
       std::vector<CRITSECTDETAILS> vCS = pShearCapacity->GetCriticalSectionDetails(limitState,segmentKey);
 
-      if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEdition2004)
+      if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004)
       {
          // if the LRFD is before 2004, critical section for shear was a function of loading.... we end up with many critical section POIs but
          // only a few (usually 2) critical section details. Match the details to the POIs and throw out the other POIs. LRFD 2004 and later only depend on Mu
@@ -4769,7 +4769,7 @@ void pgsDesigner2::InitShearCheck(const CSegmentKey& segmentKey,IntervalIndexTyp
 
       const std::vector<CRITSECTDETAILS>& vCS = pShearCapacity->GetCriticalSectionDetails(limitState,segmentKey,pConfig);
 
-      if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEdition2004)
+      if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004)
       {
          // if the LRFD is before 2004, critical section for shear was a function of loading.... we end up with many critical section POIs but
          // only a few (usually 2) critical section details. Match the details to the POIs and throw out the other POIs. LRFD 2004 and later only depend on Mu
@@ -5970,7 +5970,7 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey, pgsDebondArtifa
       // LRFD 9th Edition, 5.9.4.3.3, Restriction I, J, K (exterior strands in row must be debonded)
       if (pDebondLimits->IsExteriorStrandBondingRequiredInRow(segmentKey, pgsTypes::metStart, rowIdx))
       {
-         if (pArtifact->GetSection() == pgsDebondArtifact::K && lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::NinthEdition2020)
+         if (pArtifact->GetSection() == pgsDebondArtifact::K && WBFL::LRFD::LRFDVersionMgr::GetVersion() <= WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020)
          {
             // this is a multi-web, no flange section - LRFD 9th Edition, 5.9.4.3.3 Requirement K applies. Exterior strands in each web need to be bonded
             if (nWebs == 0)
@@ -5998,7 +5998,7 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey, pgsDebondArtifa
       {
          // exterior strands are not required to be bonded in this row
          // this requirement was first introduced in LRFD 9th edition for I-Beams (5.9.4.3.3 Restriction I)
-         ATLASSERT(lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion());
+         ATLASSERT(WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= WBFL::LRFD::LRFDVersionMgr::GetVersion());
          pArtifact->SetExtriorStrandBondState(rowIdx, pgsDebondArtifact::None);
       }
    }
@@ -6360,7 +6360,7 @@ void pgsDesigner2::CheckPrincipalTensionStressInWebs(const CSegmentKey& segmentK
 {
    // First determine of this check is applicable... 
 
-   if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::EighthEdition2017)
+   if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017)
    {
       // this requirement was added in LRFD 8th Edition, 2017... so any spec before this
       // the requirement is not applicable
@@ -7170,7 +7170,7 @@ void pgsDesigner2::DesignMidZoneFinalConcrete(IProgress* pProgress) const
    vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(pgsTypes::ServiceI,_T("Service I final with live load"),lastIntervalIdx,true,pgsTypes::Compression,pgsTypes::BottomGirder,POI_HARPINGPOINT|POI_PSXFER));
    vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(pgsTypes::ServiceI, _T("Service I final without live load"), lastIntervalIdx, false, pgsTypes::Compression, pgsTypes::BottomGirder, POI_HARPINGPOINT | POI_PSXFER));
    vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(pgsTypes::ServiceI, _T("Service I final without live load"), lastIntervalIdx, false, pgsTypes::Compression, pgsTypes::TopGirder, (POI_SPAN | POI_5L)));
-   vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI,lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? _T("Service IA") : _T("Fatigue I"),lastIntervalIdx,true,pgsTypes::Compression,pgsTypes::BottomGirder,POI_HARPINGPOINT|POI_PSXFER));
+   vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI,WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims ? _T("Service IA") : _T("Fatigue I"),lastIntervalIdx,true,pgsTypes::Compression,pgsTypes::BottomGirder,POI_HARPINGPOINT|POI_PSXFER));
    vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(pgsTypes::ServiceIII,_T("Service III"),lastIntervalIdx,true,pgsTypes::Tension,pgsTypes::BottomGirder,POI_HARPINGPOINT|(POI_SPAN | POI_5L)));
 
    GET_IFACE(IAllowableConcreteStress,pAllowable);
@@ -7824,7 +7824,7 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands, IProgres
    Float64 fc_lldf = fcgdr;
    if ( pGirderMaterial->Concrete.bUserEc )
    {
-      fc_lldf = lrfdConcreteUtil::FcFromEc( (WBFL::Materials::ConcreteType)(pGirderMaterial->Concrete.Type), pGirderMaterial->Concrete.Ec, pGirderMaterial->Concrete.StrengthDensity );
+      fc_lldf = WBFL::LRFD::ConcreteUtil::FcFromEc( (WBFL::Materials::ConcreteType)(pGirderMaterial->Concrete.Type), pGirderMaterial->Concrete.Ec, pGirderMaterial->Concrete.StrengthDensity );
    }
 
    GET_IFACE(ILiveLoadDistributionFactors,pLLDF);
@@ -7843,7 +7843,7 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands, IProgres
    // The following 3 lines are commented out because we don't want to look at the compression cases but left here as a reminder of what we don't want to do.
    //vInitialDesignParameters.push_back(InitialDesignParameters(lastIntervalIdx, true /*with live load*/,  pgsTypes::ServiceI, _T("Service I"), pgsTypes::TopGirder, _T("Top"), pgsTypes::Compression)); // 0.6f'c
    //vInitialDesignParameters.push_back(InitialDesignParameters(lastIntervalIdx, false /*without live load*/, pgsTypes::ServiceI, _T("Service I"), pgsTypes::TopGirder, _T("Top"), pgsTypes::Compression)); // 0.45f'c
-   //vInitialDesignParameters.push_back(InitialDesignParameters(lastIntervalIdx, true /*with live load*/,  lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI,lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? _T("Service IA") : _T("Fatigue I"),pgsTypes::TopGirder,_T("Top"),pgsTypes::Compression));
+   //vInitialDesignParameters.push_back(InitialDesignParameters(lastIntervalIdx, true /*with live load*/,  WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI,WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims ? _T("Service IA") : _T("Fatigue I"),pgsTypes::TopGirder,_T("Top"),pgsTypes::Compression));
    vInitialDesignParameters.push_back(InitialDesignParameters(lastIntervalIdx, true /*with live load*/,  pgsTypes::ServiceIII,_T("Service III"),pgsTypes::BottomGirder,_T("Bottom"),pgsTypes::Tension));
    if ( pAllowStress->CheckFinalDeadLoadTensionStress() )
    {
@@ -10456,7 +10456,7 @@ void pgsDesigner2::DesignShear(pgsSegmentDesignArtifact* pArtifact, bool bDoStar
             WBFL::Materials::Rebar::Grade barGrade;
             WBFL::Materials::Rebar::Type barType;
             pMaterials->GetSegmentTransverseRebarMaterial(segmentKey,&barType,&barGrade);
-            lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
+            const auto* pool = WBFL::LRFD::RebarPool::GetInstance();
             ATLASSERT(pool != nullptr);
 
             Float64 max_agg_size = pMaterials->GetSegmentMaxAggrSize(segmentKey); // for 1.33 max agg size for bar spacing
@@ -10630,30 +10630,6 @@ void pgsDesigner2::DesignShear(pgsSegmentDesignArtifact* pArtifact, bool bDoStar
 
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool pgsDesigner2::AssertValid() const
-{
-   return true;
-}
-
-void pgsDesigner2::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for pgsDesigner2") << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool pgsDesigner2::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("pgsDesigner2");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for pgsDesigner2");
-
-   TESTME_EPILOG("Designer");
-}
-#endif // _UNITTEST
 
 bool pgsDesigner2::CollapseZoneData(CShearZoneData zoneData[MAX_ZONES], ZoneIndexType numZones) const
 {

@@ -59,7 +59,7 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\GirderGroupData.h>
 #include <PgsExt\DistributedLoadData.h>
-#include <Lrfd\StrandPool.h>
+#include <LRFD\StrandPool.h>
 
 #include <PsgLib\BeamFamilyManager.h>
 
@@ -1391,8 +1391,8 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
 
    // Applied dead loads
    // First delete any distributed loads
-   CollectionIndexType ndl = pUserDefinedLoadData->GetDistributedLoadCount();
-   for (CollectionIndexType idl=0; idl<ndl; idl++)
+   IndexType ndl = pUserDefinedLoadData->GetDistributedLoadCount();
+   for (IndexType idl=0; idl<ndl; idl++)
    {
       pUserDefinedLoadData->DeleteDistributedLoad(0);
    }
@@ -1517,7 +1517,7 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
    WBFL::Materials::PsStrand::Size  size;
    pOdGirderData->GetStrandData(&grade,&type,&coating,&size);
 
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+   const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
    for ( int i = 0; i < 3; i++ )
    {
       pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;

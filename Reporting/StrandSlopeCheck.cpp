@@ -178,27 +178,3 @@ void CStrandSlopeCheck::MakeAssignment(const CStrandSlopeCheck& rOther)
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CStrandSlopeCheck::AssertValid() const
-{
-   return true;
-}
-
-void CStrandSlopeCheck::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for CStrandSlopeCheck") << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CStrandSlopeCheck::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("CStrandSlopeCheck");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CStrandSlopeCheck");
-
-   TESTME_EPILOG("LiveLoadDistributionFactorTable");
-}
-#endif // _UNITTEST

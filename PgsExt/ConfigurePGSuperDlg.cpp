@@ -251,8 +251,8 @@ void CConfigurePGSuperDlg::ServerList()
    pCB->ResetContent();
 
 
-   CollectionIndexType nServers = m_Servers.GetServerCount();
-   for ( CollectionIndexType i = 0; i < nServers; i++ )
+   IndexType nServers = m_Servers.GetServerCount();
+   for ( IndexType i = 0; i < nServers; i++ )
    {
       CString strName, strAddress;
       const CCatalogServer* pserver = m_Servers.GetServer(i);

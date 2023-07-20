@@ -69,7 +69,7 @@ void pgsLibraryEntryObserver::Update(ConcreteLibraryEntry& subject, Int32 hint)
 void pgsLibraryEntryObserver::Update(GirderLibraryEntry& subject, Int32 hint)
 {
    m_pAgent->HoldEvents();
-   if (hint & LibraryHints::EntryRenamed)
+   if (hint & WBFL::Library::Hint_EntryRenamed)
    {
       if (m_pAgent->m_BridgeDescription.GetGirderLibraryEntry() == &subject)
       {
@@ -117,7 +117,7 @@ void pgsLibraryEntryObserver::Update(GirderLibraryEntry& subject, Int32 hint)
                                       // are updated to display the correct name
    }
 
-   if (hint & LibraryHints::EntryEdited)
+   if (hint & WBFL::Library::Hint_EntryEdited)
    {
       ClearStatusItems();
 
@@ -135,13 +135,13 @@ void pgsLibraryEntryObserver::Update(GirderLibraryEntry& subject, Int32 hint)
 void pgsLibraryEntryObserver::Update(SpecLibraryEntry& subject, Int32 hint)
 {
    m_pAgent->HoldEvents();
-   if (hint & LibraryHints::EntryRenamed)
+   if (hint & WBFL::Library::Hint_EntryRenamed)
    {
       m_pAgent->m_Spec = subject.GetName();
       m_pAgent->SpecificationRenamed();
    }
 
-   if (hint & LibraryHints::EntryEdited)
+   if (hint & WBFL::Library::Hint_EntryEdited)
    {
       ClearStatusItems();
       m_pAgent->SpecificationChanged(true);
@@ -155,10 +155,10 @@ void pgsLibraryEntryObserver::Update(SpecLibraryEntry& subject, Int32 hint)
 void pgsLibraryEntryObserver::Update(RatingLibraryEntry& subject, Int32 hint)
 {
    m_pAgent->HoldEvents();
-   if (hint & LibraryHints::EntryRenamed)
+   if (hint & WBFL::Library::Hint_EntryRenamed)
       m_pAgent->m_RatingSpec = subject.GetName();
 
-   if (hint & LibraryHints::EntryEdited)
+   if (hint & WBFL::Library::Hint_EntryEdited)
    {
       ClearStatusItems();
       m_pAgent->RatingSpecificationChanged(true);
@@ -172,7 +172,7 @@ void pgsLibraryEntryObserver::Update(RatingLibraryEntry& subject, Int32 hint)
 void pgsLibraryEntryObserver::Update(TrafficBarrierEntry& subject, Int32 hint)
 {
    m_pAgent->HoldEvents();
-   if (hint & LibraryHints::EntryRenamed)
+   if (hint & WBFL::Library::Hint_EntryRenamed)
    {
       if ( m_pAgent->m_BridgeDescription.GetLeftRailingSystem()->GetExteriorRailing() == &subject )
          m_pAgent->m_BridgeDescription.GetLeftRailingSystem()->strExteriorRailing = subject.GetName();
@@ -187,7 +187,7 @@ void pgsLibraryEntryObserver::Update(TrafficBarrierEntry& subject, Int32 hint)
          m_pAgent->m_BridgeDescription.GetRightRailingSystem()->strInteriorRailing = subject.GetName();
    }
 
-   if (hint & LibraryHints::EntryEdited)
+   if (hint & WBFL::Library::Hint_EntryEdited)
    {
       ClearStatusItems();
       m_pAgent->Fire_BridgeChanged();
@@ -201,7 +201,7 @@ void pgsLibraryEntryObserver::Update(TrafficBarrierEntry& subject, Int32 hint)
 void pgsLibraryEntryObserver::Update(LiveLoadLibraryEntry& subject, Int32 hint)
 {
    m_pAgent->HoldEvents();
-   if ( hint & LibraryHints::EntryRenamed )
+   if ( hint & WBFL::Library::Hint_EntryRenamed )
    {
       bool bWasEntryUsed = false;
       std::_tstring strOldName;
@@ -239,7 +239,7 @@ void pgsLibraryEntryObserver::Update(LiveLoadLibraryEntry& subject, Int32 hint)
       }
    }
 
-   if ( hint & LibraryHints::EntryEdited )
+   if ( hint & WBFL::Library::Hint_EntryEdited )
    {
       ClearStatusItems();
       m_pAgent->Fire_LiveLoadChanged();
@@ -253,7 +253,7 @@ void pgsLibraryEntryObserver::Update(LiveLoadLibraryEntry& subject, Int32 hint)
 void pgsLibraryEntryObserver::Update(DuctLibraryEntry& subject,Int32 hint)
 {
    m_pAgent->HoldEvents();
-   if ( hint & LibraryHints::EntryRenamed )
+   if ( hint & WBFL::Library::Hint_EntryRenamed )
    {
       GroupIndexType nGroups = m_pAgent->m_BridgeDescription.GetGirderGroupCount();
       for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
@@ -277,7 +277,7 @@ void pgsLibraryEntryObserver::Update(DuctLibraryEntry& subject,Int32 hint)
       }
    }
 
-   if ( hint & LibraryHints::EntryEdited )
+   if ( hint & WBFL::Library::Hint_EntryEdited )
    {
       ClearStatusItems();
       m_pAgent->Fire_BridgeChanged();
@@ -291,7 +291,7 @@ void pgsLibraryEntryObserver::Update(DuctLibraryEntry& subject,Int32 hint)
 void pgsLibraryEntryObserver::Update(HaulTruckLibraryEntry& subject,Int32 hint)
 {
    m_pAgent->HoldEvents();
-   if ( hint & LibraryHints::EntryRenamed )
+   if ( hint & WBFL::Library::Hint_EntryRenamed )
    {
 #if defined _USE_MULTITHREADING
       std::vector<std::future<void>> vFutures;
@@ -346,7 +346,7 @@ void pgsLibraryEntryObserver::Update(HaulTruckLibraryEntry& subject,Int32 hint)
 #endif
    }
 
-   if ( hint & LibraryHints::EntryEdited )
+   if ( hint & WBFL::Library::Hint_EntryEdited )
    {
       ClearStatusItems();
       m_pAgent->Fire_BridgeChanged();
@@ -386,27 +386,3 @@ void pgsLibraryEntryObserver::ClearStatusItems()
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool pgsLibraryEntryObserver::AssertValid() const
-{
-   return true;
-}
-
-void pgsLibraryEntryObserver::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << "Dump for pgsLibraryEntryObserver" << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool pgsLibraryEntryObserver::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("pgsLibraryEntryObserver");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for pgsLibraryEntryObserver");
-
-   TESTME_EPILOG("LibraryEntryObserver");
-}
-#endif // _UNITTEST

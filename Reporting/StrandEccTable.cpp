@@ -529,27 +529,3 @@ void CStrandEccTable::MakeAssignment(const CStrandEccTable& rOther)
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CStrandEccTable::AssertValid() const
-{
-   return true;
-}
-
-void CStrandEccTable::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for CStrandEccTable") << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CStrandEccTable::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("CStrandEccTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CStrandEccTable");
-
-   TESTME_EPILOG("StrandEccTable");
-}
-#endif // _UNITTEST

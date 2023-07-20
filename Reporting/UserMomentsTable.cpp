@@ -196,27 +196,3 @@ void CUserMomentsTable::MakeAssignment(const CUserMomentsTable& rOther)
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CUserMomentsTable::AssertValid() const
-{
-   return true;
-}
-
-void CUserMomentsTable::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for CUserMomentsTable") << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CUserMomentsTable::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("CUserMomentsTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CUserMomentsTable");
-
-   TESTME_EPILOG("CUserMomentsTable");
-}
-#endif // _UNITTEST

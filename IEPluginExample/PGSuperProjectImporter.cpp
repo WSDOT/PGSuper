@@ -251,7 +251,7 @@ void CPGSuperProjectImporter::BuildBridge(IBroker* pBroker)
    deck.Concrete.ShrinkageK2 = 1.0;
 
    deck.Concrete.bUserEc = false;
-   deck.Concrete.Ec = lrfdConcreteUtil::ModE((WBFL::Materials::ConcreteType)deck.Concrete.Type,deck.Concrete.Fc,deck.Concrete.StrengthDensity,false);
+   deck.Concrete.Ec = WBFL::LRFD::ConcreteUtil::ModE((WBFL::Materials::ConcreteType)deck.Concrete.Type,deck.Concrete.Fc,deck.Concrete.StrengthDensity,false);
    deck.bInputAsDepthAndDensity = false;
    deck.OverlayWeight = WBFL::Units::ConvertToSysUnits(0.025,WBFL::Units::Measure::KSF);
 
@@ -288,7 +288,7 @@ void CPGSuperProjectImporter::SetSpecification(IBroker* pBroker)
 
 void CPGSuperProjectImporter::InitGirderData(IBroker* pBroker)
 {
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+   const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
    const auto* pStrand = pPool->GetStrand(
       WBFL::Materials::PsStrand::Grade::Gr1860,
       WBFL::Materials::PsStrand::Type::LowRelaxation,

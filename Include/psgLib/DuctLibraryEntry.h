@@ -55,15 +55,15 @@ CLASS
    A library entry class for duct definitions.
 *****************************************************************************/
 
-class PSGLIBCLASS DuctLibraryEntry : public libLibraryEntry, public ISupportIcon,
+class PSGLIBCLASS DuctLibraryEntry : public WBFL::Library::LibraryEntry, public ISupportIcon,
        public WBFL::System::SubjectT<DuctLibraryEntryObserver, DuctLibraryEntry>
 {
 public:
-   DuctLibraryEntry();
-   DuctLibraryEntry(const DuctLibraryEntry& rOther);
-   virtual ~DuctLibraryEntry();
+   DuctLibraryEntry() = default;
+   DuctLibraryEntry(const DuctLibraryEntry& rOther) = default;
+   virtual ~DuctLibraryEntry() = default;
 
-   DuctLibraryEntry& operator = (const DuctLibraryEntry& rOther);
+   DuctLibraryEntry& operator=(const DuctLibraryEntry& rOther) = default;
 
    //------------------------------------------------------------------------
    // Edit the entry
@@ -72,6 +72,8 @@ public:
    //------------------------------------------------------------------------
    // Get the icon for this entry
    virtual HICON GetIcon() const;
+
+   virtual void Notify(int hint) override {};
 
    //------------------------------------------------------------------------
    // Save to structured storage
@@ -112,13 +114,11 @@ public:
    bool IsEqual(const DuctLibraryEntry& rOther,bool bConsiderName=false) const;
 
 protected:
-   void MakeCopy(const DuctLibraryEntry& rOther);
-   void MakeAssignment(const DuctLibraryEntry& rOther);
 
 private:
    // GROUP: DATA MEMBERS
-   Float64 m_OD;
-   Float64 m_ID;
-   Float64 m_ND;
-   Float64 m_Z;
+   Float64 m_OD = 0.0;
+   Float64 m_ID = 0.0;
+   Float64 m_ND = 0.0;
+   Float64 m_Z = 0.0;
 };

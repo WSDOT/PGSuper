@@ -59,6 +59,6 @@ void CInplaceSpanLengthEditEvents::Handle_OnChanged(iDisplayObject* pDO)
    if ( !IsEqual(old_span_length,new_span_length) )
    {
       std::unique_ptr<txnEditSpanLength> pTxn(std::make_unique<txnEditSpanLength>(m_SpanIdx,old_span_length,new_span_length));
-      CEAFTxnManager::GetInstance()->Execute(std::move(pTxn));
+      CEAFTxnManager::GetInstance().Execute(std::move(pTxn));
    }
 }

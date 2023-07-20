@@ -31,7 +31,7 @@
 
 #include <PgsExt\StrandData.h>
 
-class lrfdLosses;
+class WBFL::LRFD::Losses;
 
 /////////////////////////////////////////////////////////////////////////////
 // CTimeDependentLossesAtShippingTable

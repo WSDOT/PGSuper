@@ -208,9 +208,9 @@ void CLinearDuctGrid::SetData(const CLinearDuctGeometry& ductGeometry)
 
    m_DuctGeometry = ductGeometry;
 
-   CollectionIndexType nPoints = ductGeometry.GetPointCount();
+   IndexType nPoints = ductGeometry.GetPointCount();
    InsertRows(1,(ROWCOL)nPoints);
-   for (CollectionIndexType idx = 0; idx < nPoints; idx++ )
+   for (IndexType idx = 0; idx < nPoints; idx++ )
    {
       ROWCOL row = ROWCOL(idx+1);
       SetRowStyle(row);

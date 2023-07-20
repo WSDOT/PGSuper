@@ -68,22 +68,22 @@ void pgsGirderArtifact::AddNegativeMomentFlexuralCapacityArtifact(IntervalIndexT
    AddFlexuralCapacityArtifact(&m_FlexuralCapacityArtifacts[NEGATIVE][ls], intervalIdx, artifact);
 }
 
-CollectionIndexType pgsGirderArtifact::GetPositiveMomentFlexuralCapacityArtifactCount(IntervalIndexType intervalIdx, pgsTypes::LimitState ls) const
+IndexType pgsGirderArtifact::GetPositiveMomentFlexuralCapacityArtifactCount(IntervalIndexType intervalIdx, pgsTypes::LimitState ls) const
 {
    return GetFlexuralCapacityArtifactCount(&m_FlexuralCapacityArtifacts[POSITIVE][ls], intervalIdx);
 }
 
-CollectionIndexType pgsGirderArtifact::GetNegativeMomentFlexuralCapacityArtifactCount(IntervalIndexType intervalIdx, pgsTypes::LimitState ls) const
+IndexType pgsGirderArtifact::GetNegativeMomentFlexuralCapacityArtifactCount(IntervalIndexType intervalIdx, pgsTypes::LimitState ls) const
 {
    return GetFlexuralCapacityArtifactCount(&m_FlexuralCapacityArtifacts[NEGATIVE][ls], intervalIdx);
 }
 
-const pgsFlexuralCapacityArtifact* pgsGirderArtifact::GetPositiveMomentFlexuralCapacityArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,CollectionIndexType artifactIdx) const
+const pgsFlexuralCapacityArtifact* pgsGirderArtifact::GetPositiveMomentFlexuralCapacityArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,IndexType artifactIdx) const
 {
    return GetFlexuralCapacityArtifact(&m_FlexuralCapacityArtifacts[POSITIVE][ls], intervalIdx, artifactIdx);
 }
 
-const pgsFlexuralCapacityArtifact* pgsGirderArtifact::GetNegativeMomentFlexuralCapacityArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,CollectionIndexType artifactIdx) const
+const pgsFlexuralCapacityArtifact* pgsGirderArtifact::GetNegativeMomentFlexuralCapacityArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,IndexType artifactIdx) const
 {
    return GetFlexuralCapacityArtifact(&m_FlexuralCapacityArtifacts[NEGATIVE][ls], intervalIdx, artifactIdx);
 }
@@ -509,7 +509,7 @@ void pgsGirderArtifact::AddFlexuralCapacityArtifact(FlexuralCapacityContainer* p
    std::sort(vArtifacts.begin(), vArtifacts.end(), [](const auto& a, const auto& b) {return a.GetPointOfInterest() < b.GetPointOfInterest();});
 }
 
-CollectionIndexType pgsGirderArtifact::GetFlexuralCapacityArtifactCount(const FlexuralCapacityContainer* pArtifacts, IntervalIndexType intervalIdx) const
+IndexType pgsGirderArtifact::GetFlexuralCapacityArtifactCount(const FlexuralCapacityContainer* pArtifacts, IntervalIndexType intervalIdx) const
 {
    const auto& found = pArtifacts->find(intervalIdx);
    if (found == pArtifacts->end())
@@ -521,7 +521,7 @@ CollectionIndexType pgsGirderArtifact::GetFlexuralCapacityArtifactCount(const Fl
    return vArtifacts.size();
 }
 
-const pgsFlexuralCapacityArtifact* pgsGirderArtifact::GetFlexuralCapacityArtifact(const FlexuralCapacityContainer* pArtifacts, IntervalIndexType intervalIdx, CollectionIndexType artifactIdx) const
+const pgsFlexuralCapacityArtifact* pgsGirderArtifact::GetFlexuralCapacityArtifact(const FlexuralCapacityContainer* pArtifacts, IntervalIndexType intervalIdx, IndexType artifactIdx) const
 {
    const auto& found = pArtifacts->find(intervalIdx);
    if (found == pArtifacts->end())

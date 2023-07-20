@@ -85,7 +85,7 @@ BOOL CSpecClosurePage::OnSetActive()
    CWnd* pWnd = GetDlgItem(IDC_FATIGUE_LABEL);
    CWnd* pGrp = GetDlgItem(IDC_FATIGUE_GROUP);
    CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
-   if (pDad->m_Entry.GetSpecificationType() < lrfdVersionMgr::FourthEditionWith2009Interims)
+   if (pDad->m_Entry.GetSpecificationType() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims)
    {
       pGrp->SetWindowText(_T("Stress limit at Fatigue Limit State (LRFD 5.9.4.2.1)"));
       pWnd->SetWindowText(_T("Service IA (Live Load Plus One-Half of Permanent Loads)"));
@@ -98,8 +98,8 @@ BOOL CSpecClosurePage::OnSetActive()
 
 
    // 2017 crosswalk chapter 5 reorg
-   GetDlgItem(IDC_GTEMP)->SetWindowText(CString(_T("Stress Limits for Temporary Stresses before Losses (LRFD ")) + pDad->LrfdCw8th(_T("5.9.4.1"), _T("5.9.2.3.1")) + _T(", ") + pDad->LrfdCw8th(_T("5.14.1.3.2d"),_T("5.12.3.4.2d")) + _T(")"));
-   GetDlgItem(IDC_GPERM)->SetWindowText(CString(_T("Stress Limits at Service Limit State after Losses (LRFD ")) + pDad->LrfdCw8th(_T("5.9.4.2"), _T("5.9.2.3.2")) + _T(", ") + pDad->LrfdCw8th(_T("5.14.1.3.2d"),_T("5.12.3.4.2d")) + _T(")"));
+   GetDlgItem(IDC_GTEMP)->SetWindowText(CString(_T("Stress Limits for Temporary Stresses before Losses (LRFD ")) + WBFL::LRFD::LrfdCw8th(_T("5.9.4.1"), _T("5.9.2.3.1")) + _T(", ") + WBFL::LRFD::LrfdCw8th(_T("5.14.1.3.2d"),_T("5.12.3.4.2d")) + _T(")"));
+   GetDlgItem(IDC_GPERM)->SetWindowText(CString(_T("Stress Limits at Service Limit State after Losses (LRFD ")) + WBFL::LRFD::LrfdCw8th(_T("5.9.4.2"), _T("5.9.2.3.2")) + _T(", ") + WBFL::LRFD::LrfdCw8th(_T("5.14.1.3.2d"),_T("5.12.3.4.2d")) + _T(")"));
 
 
    return CPropertyPage::OnSetActive();

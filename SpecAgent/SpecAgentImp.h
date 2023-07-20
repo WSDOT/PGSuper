@@ -224,9 +224,9 @@ public:
 
 // ITransverseReinforcementSpec
 public:
-   virtual WBFL::Materials::Rebar::Size GetMinConfinmentBarSize() const override;
-   virtual Float64 GetMaxConfinmentBarSpacing() const override;
-   virtual Float64 GetMinConfinmentAvS() const override;
+   virtual WBFL::Materials::Rebar::Size GetMinConfinementBarSize() const override;
+   virtual Float64 GetMaxConfinementBarSpacing() const override;
+   virtual Float64 GetMinConfinementAvS() const override;
    virtual void GetMaxStirrupSpacing(Float64 dv,Float64* sUnderLimit, Float64* sOverLimit) const override;
    virtual Float64 GetMinStirrupSpacing(Float64 maxAggregateSize, Float64 barDiameter) const override;
 

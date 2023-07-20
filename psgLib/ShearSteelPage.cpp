@@ -36,7 +36,7 @@
 #include <MfcTools\CustomDDX.h>
 
 
-#include <Lrfd\RebarPool.h>
+#include <LRFD\RebarPool.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -369,7 +369,7 @@ void CShearSteelPage::FillBarComboBox(CComboBox* pcbRebar)
 {
    int idx = pcbRebar->AddString(_T("None"));
    pcbRebar->SetItemData(idx,(DWORD_PTR)WBFL::Materials::Rebar::Size::bsNone);
-   lrfdRebarIter rebarIter(m_ShearData.ShearBarType,m_ShearData.ShearBarGrade,true);
+   WBFL::LRFD::RebarIter rebarIter(m_ShearData.ShearBarType,m_ShearData.ShearBarGrade,true);
    for ( rebarIter.Begin(); rebarIter; rebarIter.Next() )
    {
       const auto* pRebar = rebarIter.GetCurrentRebar();

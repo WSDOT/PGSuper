@@ -105,10 +105,10 @@ public:
    void AddPoint(Float64 location,Float64 offset,OffsetType offsetType);
 
    // returns the number of points
-   CollectionIndexType GetPointCount() const;
+   IndexType GetPointCount() const;
 
    // gets a specific point
-   void GetPoint(CollectionIndexType pntIdx,Float64* location,Float64 *pOffset,OffsetType *pOffsetType) const;
+   void GetPoint(IndexType pntIdx,Float64* location,Float64 *pOffset,OffsetType *pOffsetType) const;
 
    // removes all points from the duct definition that are beyond Lmax
    // for a girder whose length is Lg (Lg only used if mesaurement type is AlongGirder

@@ -164,7 +164,7 @@ rptChapter* CTOGATitlePageBuilder::Build(const std::shared_ptr<const WBFL::Repor
 
    // Status Center Items
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
-   CollectionIndexType nItems = pStatusCenter->Count();
+   IndexType nItems = pStatusCenter->Count();
 
    if ( nItems != 0 )
    {
@@ -190,7 +190,7 @@ rptChapter* CTOGATitlePageBuilder::Build(const std::shared_ptr<const WBFL::Repor
 
       row = 1;
       CString strSeverityType[] = { _T("Information"), _T("Warning"), _T("Error") };
-      for ( CollectionIndexType i = 0; i < nItems; i++ )
+      for ( IndexType i = 0; i < nItems; i++ )
       {
          CEAFStatusItem* pItem = pStatusCenter->GetByIndex(i);
 

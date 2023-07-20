@@ -899,7 +899,7 @@ std::_tstring CVoidedSlab2Factory::GetInteriorGirderEffectiveFlangeWidthImage(IB
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
+   if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
    {
       return _T("VoidedSlab_Effective_Flange_Width_Interior_Girder_2008.gif");
    }
@@ -914,7 +914,7 @@ std::_tstring CVoidedSlab2Factory::GetExteriorGirderEffectiveFlangeWidthImage(IB
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
+   if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
    {
       return _T("VoidedSlab_Effective_Flange_Width_Exterior_Girder_2008.gif");
    }
@@ -1221,7 +1221,7 @@ bool CVoidedSlab2Factory::CanPrecamber() const
 void CVoidedSlab2Factory::DimensionAndPositionBeam(const IBeamFactory::Dimensions& dimensions, IVoidedSlab2* pBeam) const
 {
    Float64 H, W, D1, D2, H1, H2, S1, S2, C1, C2, C3, J, EndBlockLength;
-   CollectionIndexType N;
+   IndexType N;
    GetDimensions(dimensions, H, W, D1, D2, H1, H2, S1, S2, C1, C2, C3, N, J, EndBlockLength);
 
    pBeam->put_Height(H);

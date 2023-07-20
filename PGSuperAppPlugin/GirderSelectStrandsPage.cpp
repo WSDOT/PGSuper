@@ -525,9 +525,9 @@ void CGirderSelectStrandsPage::OnPaint()
    CComQIPtr<ICompositeShape> compshape(shape);
    if ( compshape )
    {
-      CollectionIndexType nShapes;
+      IndexType nShapes;
       compshape->get_Count(&nShapes);
-      for ( CollectionIndexType idx = 0; idx < nShapes; idx++ )
+      for ( IndexType idx = 0; idx < nShapes; idx++ )
       {
          CComPtr<ICompositeShapeItem> item;
          compshape->get_Item(idx,&item);
@@ -570,7 +570,7 @@ void CGirderSelectStrandsPage::DrawShape(CDC* pDC,IShape* shape, WBFL::Graphing:
    CComPtr<IPoint2dCollection> objPoints;
    shape->get_PolyPoints(&objPoints);
 
-   CollectionIndexType nPoints;
+   IndexType nPoints;
    objPoints->get_Count(&nPoints);
 
    CPoint* points = new CPoint[nPoints];
@@ -1468,8 +1468,8 @@ Float64 CGirderSelectStrandsPage::GetMaxPjack(StrandIndexType nStrands,pgsTypes:
    pEvents->HoldEvents();
 
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
-   LldfRangeOfApplicabilityAction action = pLiveLoads->GetLldfRangeOfApplicabilityAction();
-   pLiveLoads->SetLldfRangeOfApplicabilityAction(roaIgnore);
+   WBFL::LRFD::RangeOfApplicabilityAction action = pLiveLoads->GetRangeOfApplicabilityAction();
+   pLiveLoads->SetRangeOfApplicabilityAction(WBFL::LRFD::RangeOfApplicabilityAction::Ignore);
 
    Float64 PjackMax;
    try
@@ -1478,12 +1478,12 @@ Float64 CGirderSelectStrandsPage::GetMaxPjack(StrandIndexType nStrands,pgsTypes:
    }
    catch (... )
    {
-      pLiveLoads->SetLldfRangeOfApplicabilityAction(action);
+      pLiveLoads->SetRangeOfApplicabilityAction(action);
       pEvents->CancelPendingEvents();
       throw;
    }
 
-   pLiveLoads->SetLldfRangeOfApplicabilityAction(action);
+   pLiveLoads->SetRangeOfApplicabilityAction(action);
    pEvents->CancelPendingEvents();
 
    return PjackMax;

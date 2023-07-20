@@ -65,20 +65,20 @@ END_MESSAGE_MAP()
 
 CDeflectionHistoryGraphBuilder::CDeflectionHistoryGraphBuilder() :
 CEAFAutoCalcGraphBuilder(),
-m_Graph(DUMMY_TOOL,DUMMY_TOOL),
-m_pTimeFormat(0),
-m_pIntervalFormat(0),
-m_pYFormat(0)
+m_Graph(&DUMMY_TOOL,&DUMMY_TOOL),
+m_pTimeFormat(nullptr),
+m_pIntervalFormat(nullptr),
+m_pYFormat(nullptr)
 {
    Init();
 }
 
 CDeflectionHistoryGraphBuilder::CDeflectionHistoryGraphBuilder(const CDeflectionHistoryGraphBuilder& other) :
 CEAFAutoCalcGraphBuilder(other),
-m_Graph(DUMMY_TOOL,DUMMY_TOOL),
-m_pTimeFormat(0),
-m_pIntervalFormat(0),
-m_pYFormat(0)
+m_Graph(&DUMMY_TOOL, &DUMMY_TOOL),
+m_pTimeFormat(nullptr),
+m_pIntervalFormat(nullptr),
+m_pYFormat(nullptr)
 {
    Init();
 }
@@ -384,7 +384,7 @@ void CDeflectionHistoryGraphBuilder::UpdateXAxis()
 
    m_pTimeFormat = new WBFL::Units::ScalarTool(m_Time);
    m_pIntervalFormat = new IntervalTool(m_Interval);
-   m_Graph.SetXAxisValueFormat(*m_pTimeFormat);
+   m_Graph.SetXAxisValueFormat(m_pTimeFormat);
    m_Graph.SetXAxisNumberOfMajorTics(11);
 
    if ( m_XAxisType == X_AXIS_TIME_LINEAR )
@@ -393,7 +393,7 @@ void CDeflectionHistoryGraphBuilder::UpdateXAxis()
       m_Graph.SetXAxisTitle(_T("Time (days)"));
       m_Graph.XAxisNiceRange(true);
       m_Graph.SetXAxisNumberOfMinorTics(10);
-      m_Graph.SetXAxisValueFormat(*m_pTimeFormat);
+      m_Graph.SetXAxisValueFormat(m_pTimeFormat);
    }
    else if ( m_XAxisType == X_AXIS_TIME_LOG )
    {
@@ -401,7 +401,7 @@ void CDeflectionHistoryGraphBuilder::UpdateXAxis()
       m_Graph.SetXAxisTitle(_T("Time (days)"));
       m_Graph.XAxisNiceRange(true);
       m_Graph.SetXAxisNumberOfMinorTics(10);
-      m_Graph.SetXAxisValueFormat(*m_pTimeFormat);
+      m_Graph.SetXAxisValueFormat(m_pTimeFormat);
    }
    else
    {
@@ -409,7 +409,7 @@ void CDeflectionHistoryGraphBuilder::UpdateXAxis()
       m_Graph.SetXAxisTitle(_T("Interval"));
       m_Graph.XAxisNiceRange(false);
       m_Graph.SetXAxisNumberOfMinorTics(0);
-      m_Graph.SetXAxisValueFormat(*m_pIntervalFormat);
+      m_Graph.SetXAxisValueFormat(m_pIntervalFormat);
    }
 }
 
@@ -423,7 +423,7 @@ void CDeflectionHistoryGraphBuilder::UpdateYAxis()
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::LengthData& deflectionUnit = pDisplayUnits->GetDeflectionUnit();
    m_pYFormat = new WBFL::Units::DeflectionTool(deflectionUnit);
-   m_Graph.SetYAxisValueFormat(*m_pYFormat);
+   m_Graph.SetYAxisValueFormat(m_pYFormat);
    m_Graph.SetYAxisTitle(std::_tstring(_T("Deflection (")+m_pYFormat->UnitTag()+_T(")")).c_str());
    m_Graph.YAxisNiceRange(true);
    m_Graph.SetYAxisNumberOfMinorTics(5);

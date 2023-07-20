@@ -59,15 +59,15 @@ void CCatalogServers::AddServer(CCatalogServer* server)
 	m_Servers.insert( ServerPtr(server) );
 }
 
-CollectionIndexType CCatalogServers::GetServerCount() const
+IndexType CCatalogServers::GetServerCount() const
 {
    return m_Servers.size();
 }
 
-const CCatalogServer* CCatalogServers::GetServer(CollectionIndexType index) const
+const CCatalogServer* CCatalogServers::GetServer(IndexType index) const
 {
    Servers::const_iterator iter = m_Servers.begin();
-   for ( CollectionIndexType i = 0; i < index; i++ )
+   for ( IndexType i = 0; i < index; i++ )
       iter++;
 
    return iter->get();
@@ -89,10 +89,10 @@ const CCatalogServer* CCatalogServers::GetServer(LPCTSTR strName) const
    }
 }
 
-void CCatalogServers::RemoveServer(CollectionIndexType index)
+void CCatalogServers::RemoveServer(IndexType index)
 {
    Servers::iterator iter = m_Servers.begin();
-   for ( CollectionIndexType i = 0; i < index; i++ )
+   for ( IndexType i = 0; i < index; i++ )
       iter++;
 
    m_Servers.erase(iter);

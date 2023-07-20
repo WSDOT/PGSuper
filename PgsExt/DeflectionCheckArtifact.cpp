@@ -165,27 +165,3 @@ void pgsDeflectionCheckArtifact::MakeAssignment(const pgsDeflectionCheckArtifact
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool pgsDeflectionCheckArtifact::AssertValid() const
-{
-   return true;
-}
-
-void pgsDeflectionCheckArtifact::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << "Dump for pgsDeflectionCheckArtifact" << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool pgsDeflectionCheckArtifact::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("pgsDeflectionCheckArtifact");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for pgsDeflectionCheckArtifact");
-
-   TESTME_EPILOG("pgsDeflectionCheckArtifact");
-}
-#endif // _UNITTEST

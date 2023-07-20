@@ -39,8 +39,8 @@ interface IViews : public IUnknown
    virtual void CreateGirderView(const CGirderKey& girderKey, IGirderModelViewController** ppViewController = nullptr) = 0;
    virtual void CreateLoadsView(ILoadsViewController** ppViewController=nullptr) = 0;
    virtual void CreateLibraryEditorView() = 0;
-   virtual void CreateReportView(CollectionIndexType rptIdx,BOOL bPromptForSpec=TRUE) = 0;
-   virtual void CreateGraphView(CollectionIndexType graphIdx, IEAFViewController** ppViewController = nullptr) = 0;
+   virtual void CreateReportView(IndexType rptIdx,BOOL bPromptForSpec=TRUE) = 0;
+   virtual void CreateGraphView(IndexType graphIdx, IEAFViewController** ppViewController = nullptr) = 0;
    virtual void CreateGraphView(LPCTSTR lpszGraph, IEAFViewController** ppViewController = nullptr) = 0;
 
    virtual void BuildReportMenu(CEAFMenu* pMenu, bool bQuickReport) = 0;

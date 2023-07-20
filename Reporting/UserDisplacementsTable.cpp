@@ -187,27 +187,3 @@ void CUserDeflectionsTable::MakeAssignment(const CUserDeflectionsTable& rOther)
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CUserDeflectionsTable::AssertValid() const
-{
-   return true;
-}
-
-void CUserDeflectionsTable::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for CUserDeflectionsTable") << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CUserDeflectionsTable::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("CUserDeflectionsTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CUserDeflectionsTable");
-
-   TESTME_EPILOG("CUserDeflectionsTable");
-}
-#endif // _UNITTEST

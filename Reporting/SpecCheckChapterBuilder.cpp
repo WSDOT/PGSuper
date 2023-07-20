@@ -134,7 +134,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
 
    pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
-   *pPara << _T("Stress Limitations on Prestressing Tendons [") << LrfdCw8th(_T("5.9.3"),_T("5.9.2.2")) << _T("]");
+   *pPara << _T("Stress Limitations on Prestressing Tendons [") << WBFL::LRFD::LrfdCw8th(_T("5.9.3"),_T("5.9.2.2")) << _T("]");
    *pChapter << pPara;
 
    // Stresses in prestressing strands
@@ -408,7 +408,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
 
    // Lifting
    GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
-   if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled() || lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion())
+   if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled() || WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
    {
       // starting with 9th edition, stability checks are manditory so always report the outcome
       p = new rptParagraph;
@@ -420,7 +420,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
 
    // Hauling
    GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
-   if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled() || lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion())
+   if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled() || WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
    {
       // starting with 9th edition, stability checks are manditory so always report the outcome
       p = new rptParagraph;
@@ -593,7 +593,7 @@ void write_confinement_check(IBroker* pBroker,
 
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
-   (*pPara) << _T("Confinement Stirrup Check [") << LrfdCw8th(_T("5.10.10.2"),_T("5.9.4.4.2")) << _T("]") << rptNewLine;
+   (*pPara) << _T("Confinement Stirrup Check [") << WBFL::LRFD::LrfdCw8th(_T("5.10.10.2"),_T("5.9.4.4.2")) << _T("]") << rptNewLine;
 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -612,7 +612,7 @@ void write_confinement_check(IBroker* pBroker,
       pPara = new rptParagraph;
       *pChapter << pPara;
 
-      (*pPara) << _T("  Minimum Required Bar Size in Confinement Zone: ")<< lrfdRebarPool::GetBarSize(rConfine.GetMinBar()->GetSize()) << rptNewLine;
+      (*pPara) << _T("  Minimum Required Bar Size in Confinement Zone: ")<< WBFL::LRFD::RebarPool::GetBarSize(rConfine.GetMinBar()->GetSize()) << rptNewLine;
       (*pPara) << _T("  Maximum Required Bar Spacing in Confinement Zone = ")<< dim.SetValue(rConfine.GetSMax()) << rptNewLine << rptNewLine;
 
       (*pPara) << Bold(_T("Left End of Girder:")) << rptNewLine;
@@ -621,7 +621,7 @@ void write_confinement_check(IBroker* pBroker,
                << length.SetValue(rConfine.GetStartRequiredZoneLength()) << rptNewLine;
       (*pPara) << _T("  Provided Confinement Zone Length within Required Zone Length = ") << length.SetValue(rConfine.GetStartProvidedZoneLength()) << rptNewLine;
       WBFL::Materials::Rebar::Size size = rConfine.GetStartBar()==nullptr ? WBFL::Materials::Rebar::Size::bsNone : rConfine.GetStartBar()->GetSize();
-      (*pPara) << _T("  Bar Size in Zone: ")<< lrfdRebarPool::GetBarSize(size) << rptNewLine;
+      (*pPara) << _T("  Bar Size in Zone: ")<< WBFL::LRFD::RebarPool::GetBarSize(size) << rptNewLine;
       (*pPara) << _T("  Bar Spacing in Zone = ")<< dim.SetValue(rConfine.GetStartS()) << rptNewLine;
       (*pPara) << _T("  Status = ");
       if ( rConfine.StartPassed() )
@@ -641,7 +641,7 @@ void write_confinement_check(IBroker* pBroker,
                << length.SetValue(rConfine.GetEndRequiredZoneLength()) << rptNewLine;
       (*pPara) << _T("  Provided Confinement Zone Length within Required Zone Length = ") << length.SetValue(rConfine.GetEndProvidedZoneLength()) << rptNewLine;
       size = rConfine.GetEndBar()==nullptr ? WBFL::Materials::Rebar::Size::bsNone : rConfine.GetEndBar()->GetSize();
-      (*pPara) << _T("  Bar Size in Zone: ")<< lrfdRebarPool::GetBarSize(size) << rptNewLine;
+      (*pPara) << _T("  Bar Size in Zone: ")<< WBFL::LRFD::RebarPool::GetBarSize(size) << rptNewLine;
       (*pPara) << _T("  Bar Spacing in Zone = ")<< dim.SetValue(rConfine.GetEndS()) << rptNewLine;
       (*pPara) << _T("  Status = ");
       if ( rConfine.EndPassed() )

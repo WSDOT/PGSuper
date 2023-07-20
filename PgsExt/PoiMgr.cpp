@@ -647,9 +647,9 @@ bool pgsPoiMgr::ReplacePointOfInterest(PoiIDType ID,const pgsPointOfInterest& po
 }
 
 //======================== ACCESS     =======================================
-CollectionIndexType pgsPoiMgr::GetPointOfInterestCount() const
+IndexType pgsPoiMgr::GetPointOfInterestCount() const
 {
-   CollectionIndexType nPoi = 0;
+   IndexType nPoi = 0;
    for( const auto& poiData : m_PoiData)
    {
       const PoiContainer& poiContainer(poiData.second);

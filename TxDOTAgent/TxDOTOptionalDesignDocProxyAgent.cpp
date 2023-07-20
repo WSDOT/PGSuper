@@ -467,7 +467,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
       pgsTypes::LimitState lstates[num_cases] = {pgsTypes::ServiceI,   pgsTypes::ServiceI,   pgsTypes::ServiceI,    pgsTypes::ServiceI   , pgsTypes::ServiceIII,  pgsTypes::FatigueI,    pgsTypes::ServiceIA};
       pgsTypes::StressType ststype[num_cases] = {pgsTypes::Tension,    pgsTypes::Compression,pgsTypes::Compression, pgsTypes::Compression, pgsTypes::Tension,     pgsTypes::Compression, pgsTypes::Compression};
 
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
          lstates[num_cases-1] = pgsTypes::FatigueI;
 
       // Loop over all pois and limit states and factor results in our copy
@@ -479,8 +479,8 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
          pIPoi->GetPointsOfInterest(fabrSegmentKey,&vPOI);
          ATLASSERT(vPOI.size()>0);
 
-         if ( (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims && lstates[icase] == pgsTypes::FatigueI) || 
-              (lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion()&& lstates[icase] == pgsTypes::ServiceIA)
+         if ( (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims && lstates[icase] == pgsTypes::FatigueI) || 
+              (WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion()&& lstates[icase] == pgsTypes::ServiceIA)
               )
          {
             // if before LRFD 2009 and Fatigue I 
@@ -501,8 +501,8 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
          task.limitState = lstates[icase];
          task.stressType = ststype[icase];
          task.bIncludeLiveLoad = true;
-         CollectionIndexType nArtifacts = m_GirderArtifact.GetSegmentArtifact(0)->GetFlexuralStressArtifactCount( task);
-         for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++) 
+         IndexType nArtifacts = m_GirderArtifact.GetSegmentArtifact(0)->GetFlexuralStressArtifactCount( task);
+         for ( IndexType idx = 0; idx < nArtifacts; idx++) 
          {
             pFabrStressArtifact = m_GirderArtifact.GetSegmentArtifact(0)->GetFlexuralStressArtifact( task,idx );
             const pgsPointOfInterest& poi(pFabrStressArtifact->GetPointOfInterest());
@@ -652,8 +652,8 @@ void CTxDOTOptionalDesignDocProxyAgent::CheckShear(IPointOfInterest* pIPoi)
    m_ShearPassed = true; // until otherwise
 
    const pgsStirrupCheckArtifact *pStirrups = m_GirderArtifact.GetSegmentArtifact(0)->GetStirrupCheckArtifact();
-   CollectionIndexType nArtifacts = pStirrups->GetStirrupCheckAtPoisArtifactCount(liveLoadIntervalIdx,pgsTypes::StrengthI);
-   for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
+   IndexType nArtifacts = pStirrups->GetStirrupCheckAtPoisArtifactCount(liveLoadIntervalIdx,pgsTypes::StrengthI);
+   for ( IndexType idx = 0; idx < nArtifacts; idx++ )
    {
       // Only checking Strength I here. No TxDOT permit truck
       const pgsStirrupCheckAtPoisArtifact* pPoiArtifacts = pStirrups->GetStirrupCheckAtPoisArtifact( liveLoadIntervalIdx,pgsTypes::StrengthI,idx );

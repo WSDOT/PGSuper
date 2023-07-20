@@ -64,7 +64,7 @@ END_MESSAGE_MAP()
 
 CSegmentGraphBuilderBase::CSegmentGraphBuilderBase() :
 CEAFAutoCalcGraphBuilder(),
-m_Graph(DUMMY_TOOL,DUMMY_TOOL),
+m_Graph(&DUMMY_TOOL,&DUMMY_TOOL),
 m_pXFormat(nullptr),
 m_pYFormat(nullptr),
 m_ZeroToleranceX(TOLERANCE),
@@ -76,7 +76,7 @@ m_bShift(false)
 
 CSegmentGraphBuilderBase::CSegmentGraphBuilderBase(const CSegmentGraphBuilderBase& other) :
 CEAFAutoCalcGraphBuilder(other),
-m_Graph(DUMMY_TOOL,DUMMY_TOOL),
+m_Graph(&DUMMY_TOOL, &DUMMY_TOOL),
 m_pXFormat(nullptr),
 m_pYFormat(nullptr),
 m_ZeroToleranceX(TOLERANCE),
@@ -165,7 +165,7 @@ void CSegmentGraphBuilderBase::UpdateXAxis()
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::LengthData& lengthUnit = pDisplayUnits->GetSpanLengthUnit();
    m_pXFormat = new WBFL::Units::LengthTool(lengthUnit);
-   m_Graph.SetXAxisValueFormat(*m_pXFormat);
+   m_Graph.SetXAxisValueFormat(m_pXFormat);
    m_Graph.SetXAxisNumberOfMinorTics(0);
    m_Graph.XAxisNiceRange(false);
    m_Graph.SetXAxisNumberOfMajorTics(11);
@@ -182,7 +182,7 @@ void CSegmentGraphBuilderBase::UpdateYAxis()
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::StressData& stressUnit = pDisplayUnits->GetStressUnit();
    m_pYFormat = new WBFL::Units::StressTool(stressUnit);
-   m_Graph.SetYAxisValueFormat(*m_pYFormat);
+   m_Graph.SetYAxisValueFormat(m_pYFormat);
    m_Graph.YAxisNiceRange(true);
    m_Graph.SetYAxisNumberOfMinorTics(5);
    m_Graph.SetYAxisNumberOfMajorTics(21);

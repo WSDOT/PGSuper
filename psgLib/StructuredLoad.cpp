@@ -237,30 +237,3 @@ std::_tstring CStructuredLoad::GetUnit() const
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CStructuredLoad::AssertValid() const
-{
-   if ( m_pStrLoad == 0 )
-      return false;
-
-   return true;
-}
-
-void CStructuredLoad::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for CStructuredLoad") << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CStructuredLoad::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("CStructuredLoad");
-
-   // Nothing to test
-
-   TESTME_EPILOG("CStructuredLoad");
-}
-#endif // _UNITTEST

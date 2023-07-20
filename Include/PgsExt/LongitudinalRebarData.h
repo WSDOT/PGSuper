@@ -80,7 +80,7 @@ public:
 
       pgsTypes::FaceType  Face;
       WBFL::Materials::Rebar::Size BarSize;
-      CollectionIndexType NumberOfBars;
+      IndexType NumberOfBars;
       Float64     Cover;
       Float64     BarSpacing;
 

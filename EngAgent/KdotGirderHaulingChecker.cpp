@@ -371,31 +371,6 @@ pgsHaulingAnalysisArtifact* pgsKdotGirderHaulingChecker::DesignHauling(const CSe
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
 
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool pgsKdotGirderHaulingChecker::AssertValid() const
-{
-   return true;
-}
-
-void pgsKdotGirderHaulingChecker::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << "Dump for pgsKdotGirderHaulingChecker" << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool pgsKdotGirderHaulingChecker::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("pgsKdotGirderHaulingChecker");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for pgsKdotGirderHaulingChecker");
-
-   TESTME_EPILOG("GirderHandlingChecker");
-}
-#endif // _UNITTEST
-
-
 ////////////////////////////////////////////////////////
 // hauling
 ////////////////////////////////////////////////////////
@@ -530,7 +505,7 @@ void pgsKdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& segm
    pHaulingSpecCriteria->GetKdotHaulingAllowableTensileConcreteStressParameters(&rcsT,&rcsBfmax,&rcsFmax);
    Float64 rcsTalt = pHaulingSpecCriteria->GetKdotHaulingWithMildRebarAllowableStressFactor();
 
-   bool bSISpec = lrfdVersionMgr::GetVersion() == lrfdVersionMgr::SI ? true : false;
+   bool bSISpec = WBFL::LRFD::LRFDVersionMgr::GetUnits() == WBFL::LRFD::LRFDVersionMgr::Units::SI ? true : false;
    // Use calculator object to deal with casting yard higher allowable stress
    Float64 fsMax = (bSISpec ? WBFL::Units::ConvertToSysUnits(206.0,WBFL::Units::Measure::MPa) : WBFL::Units::ConvertToSysUnits(30.0,WBFL::Units::Measure::KSI) );
    pgsAlternativeTensileStressCalculator altCalc(segmentKey, haulSegmentIntervalIdx, pBridge, pGdr, pShapes, pSectProps, pRebarGeom, pMaterials, pPoi, true/*limit bar stress*/, fsMax, true/*girder stresses*/);

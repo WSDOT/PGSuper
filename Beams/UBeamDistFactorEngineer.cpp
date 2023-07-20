@@ -175,7 +175,7 @@ void CUBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
       Float64 de = span_lldf.Side==dfLeft ? span_lldf.leftDe:span_lldf.rightDe;
       (*pPara) << _T("Distance from exterior web of exterior beam to curb line: d") << Sub(_T("e")) << _T(" = ") << xdim.SetValue(de) << rptNewLine;
 
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
       {
          pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pPara) << _T("Strength and Service Limit States");
@@ -276,7 +276,7 @@ void CUBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
       ////////////////////////////////////////////////////////////////////////////
       // Fatigue limit states
       ////////////////////////////////////////////////////////////////////////////
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
       {
          pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pPara) << _T("Fatigue Limit States");
@@ -355,7 +355,7 @@ void CUBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
 }
 
 
-lrfdLiveLoadDistributionFactorBase* CUBeamDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,Float64 fcgdr,UBEAM_LLDFDETAILS* plldf)
+WBFL::LRFD::LiveLoadDistributionFactorBase* CUBeamDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,Float64 fcgdr,UBEAM_LLDFDETAILS* plldf)
 {
    GET_IFACE(IGirder, pGdr);
    GET_IFACE(IBarriers,pBarriers);
@@ -415,7 +415,7 @@ lrfdLiveLoadDistributionFactorBase* CUBeamDistFactorEngineer::GetLLDFParameters(
    bool bSkewMoment = pSpecEntry->IgnoreSkewReductionForMoment() ? false : bSkew;
    bool bSkewShear = bSkew;
 
-   if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       // Starting with LRFD 7th Edition, 2014, skew correction is only applied from
       // the obtuse corner to mid-span of exterior and first interior girders.
@@ -446,10 +446,10 @@ lrfdLiveLoadDistributionFactorBase* CUBeamDistFactorEngineer::GetLLDFParameters(
       }
    }
 
-   lrfdLiveLoadDistributionFactorBase* pLLDF;
+   WBFL::LRFD::LiveLoadDistributionFactorBase* pLLDF;
    if ( plldf->Method == LLDF_LRFD )
    {
-      pLLDF = new lrfdLldfTypeBC(plldf->gdrNum, // to fix this warning, clean up the WBFL data types
+      pLLDF = new WBFL::LRFD::LldfTypeBC(plldf->gdrNum, // to fix this warning, clean up the WBFL data types
                                  plldf->Savg,
                                  plldf->gdrSpacings,
                                  plldf->leftCurbOverhang,
@@ -467,7 +467,7 @@ lrfdLiveLoadDistributionFactorBase* CUBeamDistFactorEngineer::GetLLDFParameters(
    }
    else if ( plldf->Method == LLDF_WSDOT )
    {
-      pLLDF = new lrfdWsdotLldfTypeBC(plldf->gdrNum, // to fix this warning, clean up the WBFL data types
+      pLLDF = new WBFL::LRFD::WsdotLldfTypeBC(plldf->gdrNum, // to fix this warning, clean up the WBFL data types
                                       plldf->Savg,
                                       plldf->gdrSpacings,
                                       plldf->leftCurbOverhang,
@@ -497,7 +497,7 @@ lrfdLiveLoadDistributionFactorBase* CUBeamDistFactorEngineer::GetLLDFParameters(
          }
       }
 
-      pLLDF = new lrfdTxDotLldfTypeBC(plldf->gdrNum, // to fix this warning, clean up the WBFL data types
+      pLLDF = new WBFL::LRFD::TxDotLldfTypeBC(plldf->gdrNum, // to fix this warning, clean up the WBFL data types
                                       plldf->Savg,
                                       plldf->gdrSpacings,
                                       plldf->leftCurbOverhang,
@@ -520,12 +520,12 @@ lrfdLiveLoadDistributionFactorBase* CUBeamDistFactorEngineer::GetLLDFParameters(
    }
 
    GET_IFACE(ILiveLoads,pLiveLoads);
-   pLLDF->SetRangeOfApplicabilityAction( pLiveLoads->GetLldfRangeOfApplicabilityAction() );
+   pLLDF->SetRangeOfApplicabilityAction( pLiveLoads->GetRangeOfApplicabilityAction() );
 
    return pLLDF;
 }
 
-void CUBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierIdx, rptParagraph* pPara,UBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gM1,lrfdILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
+void CUBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierIdx, rptParagraph* pPara,UBEAM_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
 {
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
@@ -537,7 +537,7 @@ void CUBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierIdx, rptParagrap
 
    if ( lldf.bExteriorGirder )
    {
-      if ( gM1.ControllingMethod & INTERIOR_OVERRIDE )
+      if ( gM1.ControllingMethod & WBFL::LRFD::INTERIOR_OVERRIDE )
       {
          (*pPara) << Bold(_T("1 Loaded Lane: Exterior factor may not be less than that for interior")) << rptNewLine;
          (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << _T("mg") << Super(_T("MI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg) << rptNewLine;
@@ -583,7 +583,7 @@ void CUBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierIdx, rptParagrap
 
       if ( lldf.Nl >= 2 )
       {
-         if ( gM2.ControllingMethod & INTERIOR_OVERRIDE )
+         if ( gM2.ControllingMethod & WBFL::LRFD::INTERIOR_OVERRIDE )
          {
             (*pPara) << Bold(_T("2+ Loaded Lanes: Exterior factor may not be less than that for interior")) << rptNewLine;
             (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("2")) << _T(" = ") << _T("mg") << Super(_T("MI")) << Sub(_T("2")) << _T(" = ") << scalar.SetValue(gM2.mg) << rptNewLine;
@@ -639,7 +639,7 @@ void CUBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierIdx, rptParagrap
          (*pPara) << rptNewLine;
       }
 
-      if (gM1.ControllingMethod & LANES_DIV_BEAMS &&  gM2.ControllingMethod & LANES_DIV_BEAMS ) 
+      if (gM1.ControllingMethod & WBFL::LRFD::LANES_DIV_BEAMS &&  gM2.ControllingMethod & WBFL::LRFD::LANES_DIV_BEAMS ) 
       {
          (*pPara) << _T("Skew Correction not applied to N")<<Sub(_T("l"))<<_T("/N")<<Sub(_T("b"))<<_T(" method")<< rptNewLine;
          if ( lldf.Nl >= 2 )
@@ -653,7 +653,7 @@ void CUBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierIdx, rptParagrap
       }
       else
       {
-         if ( gM1.ControllingMethod & MOMENT_SKEW_CORRECTION_APPLIED )
+         if ( gM1.ControllingMethod & WBFL::LRFD::MOMENT_SKEW_CORRECTION_APPLIED )
          {
             (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
             Float64 skew_delta_max = WBFL::Units::ConvertToSysUnits( 10.0, WBFL::Units::Measure::Degree );
@@ -664,7 +664,7 @@ void CUBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierIdx, rptParagrap
             (*pPara) << rptNewLine;
             (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg);
 
-            bool singleControlled = !(gM1.ControllingMethod & OVERRIDE_USING_MULTILANE_FACTOR) && (lldf.Nl == 1 || gM1.mg >= gM2.mg);
+            bool singleControlled = !(gM1.ControllingMethod & WBFL::LRFD::OVERRIDE_USING_MULTILANE_FACTOR) && (lldf.Nl == 1 || gM1.mg >= gM2.mg);
 
             (singleControlled) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine: (*pPara) << rptNewLine;
 
@@ -675,7 +675,7 @@ void CUBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierIdx, rptParagrap
             }
          }
 
-         if (lldf.Method==LLDF_TXDOT && gM1.ControllingMethod & OVERRIDE_USING_MULTILANE_FACTOR)
+         if (lldf.Method==LLDF_TXDOT && gM1.ControllingMethod & WBFL::LRFD::OVERRIDE_USING_MULTILANE_FACTOR)
          {
             (*pPara) << Italic(_T("TxDOT method, and roadway width is >= 20.0 ft: ")<<Bold(_T("multi-lane factor controls."))) << rptNewLine << rptNewLine;
          }
@@ -732,7 +732,7 @@ void CUBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierIdx, rptParagrap
          (*pPara) << rptNewLine;
       }
 
-      if (gM1.ControllingMethod & LANES_DIV_BEAMS &&  gM2.ControllingMethod & LANES_DIV_BEAMS ) 
+      if (gM1.ControllingMethod & WBFL::LRFD::LANES_DIV_BEAMS &&  gM2.ControllingMethod & WBFL::LRFD::LANES_DIV_BEAMS ) 
       {
          (*pPara) << _T("Skew Correction not applied to N")<<Sub(_T("l"))<<_T("/N")<<Sub(_T("b"))<<_T(" method")<< rptNewLine;
          if ( lldf.Nl >= 2 )
@@ -746,7 +746,7 @@ void CUBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierIdx, rptParagrap
       }
       else
       {
-         if ( gM1.ControllingMethod & MOMENT_SKEW_CORRECTION_APPLIED )
+         if ( gM1.ControllingMethod & WBFL::LRFD::MOMENT_SKEW_CORRECTION_APPLIED )
          {
             (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
             Float64 skew_delta_max = WBFL::Units::ConvertToSysUnits( 10.0, WBFL::Units::Measure::Degree );
@@ -767,7 +767,7 @@ void CUBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierIdx, rptParagrap
    }
 }
 
-void CUBeamDistFactorEngineer::ReportShear(IndexType spanOrPierIdx,rptParagraph* pPara,UBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gV1,lrfdILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
+void CUBeamDistFactorEngineer::ReportShear(IndexType spanOrPierIdx,rptParagraph* pPara,UBEAM_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
 {
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
@@ -779,7 +779,7 @@ void CUBeamDistFactorEngineer::ReportShear(IndexType spanOrPierIdx,rptParagraph*
 
    if ( lldf.bExteriorGirder )
    {
-      if ( gV1.ControllingMethod & INTERIOR_OVERRIDE )
+      if ( gV1.ControllingMethod & WBFL::LRFD::INTERIOR_OVERRIDE )
       {
          (*pPara) << Bold(_T("1 Loaded Lane: Exterior factor may not be less than that for interior")) << rptNewLine;
          (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << _T("mg") << Super(_T("VI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg) << rptNewLine;
@@ -825,7 +825,7 @@ void CUBeamDistFactorEngineer::ReportShear(IndexType spanOrPierIdx,rptParagraph*
 
       if ( lldf.Nl >= 2 )
       {
-         if ( gV2.ControllingMethod & INTERIOR_OVERRIDE )
+         if ( gV2.ControllingMethod & WBFL::LRFD::INTERIOR_OVERRIDE )
          {
             (*pPara) << Bold(_T("2+ Loaded Lanes: Exterior factor may not be less than that for interior")) << rptNewLine;
             (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("2")) << _T(" = ") << _T("mg") << Super(_T("VI")) << Sub(_T("2")) << _T(" = ") << scalar.SetValue(gV2.mg) << rptNewLine;
@@ -881,7 +881,7 @@ void CUBeamDistFactorEngineer::ReportShear(IndexType spanOrPierIdx,rptParagraph*
       }
       (*pPara) << rptNewLine;
 
-      if ( gV1.ControllingMethod & LANES_DIV_BEAMS &&  gV2.ControllingMethod & LANES_DIV_BEAMS )
+      if ( gV1.ControllingMethod & WBFL::LRFD::LANES_DIV_BEAMS &&  gV2.ControllingMethod & WBFL::LRFD::LANES_DIV_BEAMS )
       {
          (*pPara) << _T("Skew Correction not applied to N")<<Sub(_T("l"))<<_T("/N")<<Sub(_T("b"))<<_T(" method")<< rptNewLine;
          if ( lldf.Nl >= 2 )
@@ -895,14 +895,14 @@ void CUBeamDistFactorEngineer::ReportShear(IndexType spanOrPierIdx,rptParagraph*
       }
       else
       {
-         if ( gV1.ControllingMethod & SHEAR_SKEW_CORRECTION_APPLIED )
+         if ( gV1.ControllingMethod & WBFL::LRFD::SHEAR_SKEW_CORRECTION_APPLIED )
          {
             (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
             (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("SkewCorrection_Shear_TypeC_SI.png") : _T("SkewCorrection_Shear_TypeC_US.png"))) << rptNewLine;
             (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gV1.SkewCorrectionFactor) << rptNewLine;
             (*pPara) << rptNewLine;
 
-            bool singleControlled = !(gV1.ControllingMethod & OVERRIDE_USING_MULTILANE_FACTOR) && (lldf.Nl == 1 || gV1.mg >= gV2.mg);
+            bool singleControlled = !(gV1.ControllingMethod & WBFL::LRFD::OVERRIDE_USING_MULTILANE_FACTOR) && (lldf.Nl == 1 || gV1.mg >= gV2.mg);
 
             (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg);
             (singleControlled) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine: (*pPara) << rptNewLine;
@@ -913,7 +913,7 @@ void CUBeamDistFactorEngineer::ReportShear(IndexType spanOrPierIdx,rptParagraph*
             }
          }
 
-         if (lldf.Method==LLDF_TXDOT && gV1.ControllingMethod & OVERRIDE_USING_MULTILANE_FACTOR)
+         if (lldf.Method==LLDF_TXDOT && gV1.ControllingMethod & WBFL::LRFD::OVERRIDE_USING_MULTILANE_FACTOR)
          {
             (*pPara) << Italic(_T("TxDOT method, and roadway width is >= 20.0 ft: ")<<Bold(_T("multi-lane factor controls."))) << rptNewLine << rptNewLine;
          }
@@ -983,7 +983,7 @@ void CUBeamDistFactorEngineer::ReportShear(IndexType spanOrPierIdx,rptParagraph*
       }
       else
       {
-         if ( gV1.ControllingMethod & SHEAR_SKEW_CORRECTION_APPLIED )
+         if ( gV1.ControllingMethod & WBFL::LRFD::SHEAR_SKEW_CORRECTION_APPLIED )
          {
             (*pPara) << Bold(_T("Skew Correction")) << rptNewLine << rptRcImage(strImagePath + (bSIUnits ? _T("SkewCorrection_Shear_TypeC_SI.png") : _T("SkewCorrection_Shear_TypeC_US.png"))) << rptNewLine;
             (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gV1.SkewCorrectionFactor) << rptNewLine;

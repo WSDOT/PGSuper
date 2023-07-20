@@ -126,7 +126,7 @@ void CDuctSizeCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const pgsG
    (*pTable)(0,col++) << COLHDR(Sub2(_T("A"),_T("pt")),rptAreaUnitTag,pDisplayUnits->GetAreaUnit());
    (*pTable)(0,col++) << Sub2(_T("A"),_T("duct")) << _T("/") << Sub2(_T("A"),_T("pt"));
    (*pTable)(0,col++) << _T("Status");
-   if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::NinthEdition2020)
+   if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020)
    {
       (*pTable)(0, col++) << COLHDR(_T("OD"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
    }
@@ -135,7 +135,7 @@ void CDuctSizeCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const pgsG
       (*pTable)(0, col++) << COLHDR(_T("Nominal Diameter (ND)"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
    }
    (*pTable)(0,col++) << COLHDR(_T("Least") << rptNewLine << _T("Thickness (Tmin)"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
-   if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::NinthEdition2020)
+   if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020)
    {
       (*pTable)(0, col++) << _T("OD/Tmin");
    }

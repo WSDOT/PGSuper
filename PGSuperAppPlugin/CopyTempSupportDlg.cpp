@@ -365,8 +365,8 @@ void CCopyTempSupportDlg::UpdateReportData()
    std::vector<ICopyTemporarySupportPropertiesCallback*> callbacks = GetSelectedCopyTempSupportPropertiesCallbacks();
 
    // We know we put at least one of our own chapter builders into the report builder. Find it and set its data
-   CollectionIndexType numchs = pBuilder->GetChapterBuilderCount();
-   for (CollectionIndexType ich = 0; ich < numchs; ich++)
+   IndexType numchs = pBuilder->GetChapterBuilderCount();
+   for (IndexType ich = 0; ich < numchs; ich++)
    {
       std::shared_ptr<WBFL::Reporting::ChapterBuilder> pChb = pBuilder->GetChapterBuilder(ich);
       std::shared_ptr<CCopyTempSupportPropertiesChapterBuilder> pRptCpBuilder = std::dynamic_pointer_cast<CCopyTempSupportPropertiesChapterBuilder,WBFL::Reporting::ChapterBuilder>(pChb);

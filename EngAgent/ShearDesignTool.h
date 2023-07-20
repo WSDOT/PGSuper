@@ -164,7 +164,7 @@ private:
 
    // Design by Modifying existing stirrup layout 
    bool ModifyPreExistingStirrupDesign() const;
-   bool DesignPreExistingStirrups(StirrupZoneIter& rIter, Float64 locCSS,  WBFL::Materials::Rebar::Grade barGrade, WBFL::Materials::Rebar::Type barType, lrfdRebarPool* pool) const;
+   bool DesignPreExistingStirrups(StirrupZoneIter& rIter, Float64 locCSS,  WBFL::Materials::Rebar::Grade barGrade, WBFL::Materials::Rebar::Type barType, const WBFL::LRFD::RebarPool* pool) const;
    void ExpandStirrupZoneLengths(CShearData2::ShearZoneVec& ShearZones) const;
 
    // Design additional horizontal shear bars if needed
@@ -346,7 +346,7 @@ private:
    bool GetBarSpacingForAvs(Float64 avsDemand, Float64 maxSpacing, WBFL::Materials::Rebar::Size Size, Float64 Av, Float64* pSpacing) const;
 
    // Get next (or same) available bar size for a given min bar size
-   bool GetMinAvailableBarSize(WBFL::Materials::Rebar::Size minSize, WBFL::Materials::Rebar::Grade barGrade, WBFL::Materials::Rebar::Type barType, lrfdRebarPool* pool, WBFL::Materials::Rebar::Size* pSize) const;
+   bool GetMinAvailableBarSize(WBFL::Materials::Rebar::Size minSize, WBFL::Materials::Rebar::Grade barGrade, WBFL::Materials::Rebar::Type barType, const WBFL::LRFD::RebarPool* pool, WBFL::Materials::Rebar::Size* pSize) const;
 
    // Av/S demand at poi
    Float64 GetVerticalAvsDemand(IndexType PoiIdx) const;

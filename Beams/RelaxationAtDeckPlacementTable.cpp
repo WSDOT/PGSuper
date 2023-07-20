@@ -54,7 +54,7 @@ CRelaxationAtDeckPlacementTable* CRelaxationAtDeckPlacementTable::PrepareTable(r
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
 
   // Typecast to our known type (eating own doggy food)
-   std::shared_ptr<const lrfdRefinedLosses2005> ptl = std::dynamic_pointer_cast<const lrfdRefinedLosses2005>(pDetails->pLosses);
+   std::shared_ptr<const WBFL::LRFD::RefinedLosses2005> ptl = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLosses2005>(pDetails->pLosses);
    if (!ptl)
    {
       ATLASSERT(false); // made a bad cast? Bail...
@@ -63,11 +63,11 @@ CRelaxationAtDeckPlacementTable* CRelaxationAtDeckPlacementTable::PrepareTable(r
 
    // Create and configure the table
    ColumnIndexType numColumns = 2;
-   if ( ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Simplified )
+   if ( ptl->GetRelaxationLossMethod() == WBFL::LRFD::RefinedLosses2005::RelaxationLossMethod::Simplified )
    {
       numColumns++;
    }
-   else if (ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Refined )
+   else if (ptl->GetRelaxationLossMethod() == WBFL::LRFD::RefinedLosses2005::RelaxationLossMethod::Refined )
    {
       numColumns += 4;
    }
@@ -79,7 +79,7 @@ CRelaxationAtDeckPlacementTable* CRelaxationAtDeckPlacementTable::PrepareTable(r
    
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << _T("[") << LrfdCw8th(_T("5.9.5.4.2c"),_T("5.9.3.4.2c")) << _T("] Relaxation of Prestressing Strands : ") << symbol(DELTA) << RPT_STRESS(_T("pR1")) << rptNewLine;
+   *pParagraph << _T("[") << WBFL::LRFD::LrfdCw8th(_T("5.9.5.4.2c"),_T("5.9.3.4.2c")) << _T("] Relaxation of Prestressing Strands : ") << symbol(DELTA) << RPT_STRESS(_T("pR1")) << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
@@ -88,13 +88,13 @@ CRelaxationAtDeckPlacementTable* CRelaxationAtDeckPlacementTable::PrepareTable(r
 
    switch(ptl->GetRelaxationLossMethod() )
    {
-   case lrfdRefinedLosses2005::Simplified:
+   case WBFL::LRFD::RefinedLosses2005::RelaxationLossMethod::Simplified:
       *pParagraph << rptRcImage(strImagePath + _T("Delta_FpR1_Simplified.png")) << rptNewLine;
       *pParagraph << RPT_FY << _T(" = ") << table->stress.SetValue(ptl->GetFpyPermanent())              << rptNewLine;
       *pParagraph << Sub2(_T("K"),_T("L")) << _T(" = ") << ptl->GetPermanentStrandKL()                        << rptNewLine;
       break;
 
-   case lrfdRefinedLosses2005::Refined:
+   case WBFL::LRFD::RefinedLosses2005::RelaxationLossMethod::Refined:
       *pParagraph << rptRcImage(strImagePath + _T("Delta_FpR1.png")) << rptNewLine;
       *pParagraph << RPT_FY << _T(" = ") << table->stress.SetValue(ptl->GetFpyPermanent())                              << rptNewLine;
       *pParagraph << Sub2(_T("K'"),_T("L")) << _T(" = ") << ptl->GetPermanentStrandKL()                                       << rptNewLine;
@@ -102,7 +102,7 @@ CRelaxationAtDeckPlacementTable* CRelaxationAtDeckPlacementTable::PrepareTable(r
       *pParagraph << Sub2(_T("t"),_T("d"))  << _T(" = ") << table->time.SetValue(ptl->GetAgeAtDeckPlacement()) << rptNewLine;
       break;
 
-   case lrfdRefinedLosses2005::LumpSum:
+   case WBFL::LRFD::RefinedLosses2005::RelaxationLossMethod::LumpSum:
       break;
 
    default:
@@ -123,11 +123,11 @@ CRelaxationAtDeckPlacementTable* CRelaxationAtDeckPlacementTable::PrepareTable(r
    *pParagraph << table << rptNewLine;
    (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
 
-   if (ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Simplified )
+   if (ptl->GetRelaxationLossMethod() == WBFL::LRFD::RefinedLosses2005::RelaxationLossMethod::Simplified )
    {
       (*table)(0,col++) << COLHDR(RPT_STRESS(_T("pt")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
-   else if (ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Refined )
+   else if (ptl->GetRelaxationLossMethod() == WBFL::LRFD::RefinedLosses2005::RelaxationLossMethod::Refined )
    {
       (*table)(0,col++) << COLHDR(RPT_STRESS(_T("pt")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSR")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -146,18 +146,18 @@ void CRelaxationAtDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* pBrok
    RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
 
   // Typecast to our known type (eating own doggy food)
-   std::shared_ptr<const lrfdRefinedLosses2005> ptl = std::dynamic_pointer_cast<const lrfdRefinedLosses2005>(pDetails->pLosses);
+   std::shared_ptr<const WBFL::LRFD::RefinedLosses2005> ptl = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLosses2005>(pDetails->pLosses);
    if (!ptl)
    {
       ATLASSERT(false); // made a bad cast? Bail...
       return;
    }
 
-   if (ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Simplified )
+   if (ptl->GetRelaxationLossMethod() == WBFL::LRFD::RefinedLosses2005::RelaxationLossMethod::Simplified )
    {
       (*this)(row+rowOffset,col++) << stress.SetValue(ptl->GetPermanentStrandFpt());
    }
-   else if (ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Refined )
+   else if (ptl->GetRelaxationLossMethod() == WBFL::LRFD::RefinedLosses2005::RelaxationLossMethod::Refined )
    {
       (*this)(row+rowOffset,col++) << stress.SetValue(ptl->GetPermanentStrandFpt());
       (*this)(row+rowOffset,col++) << stress.SetValue(ptl->ShrinkageLossBeforeDeckPlacement());

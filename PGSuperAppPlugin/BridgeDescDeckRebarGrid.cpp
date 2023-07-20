@@ -334,7 +334,7 @@ void CBridgeDescDeckRebarGrid::SetRowStyle(ROWCOL nRow)
    WBFL::Materials::Rebar::Grade grade;
    pParent->GetRebarMaterial(&type,&grade);
    CString strBarSizeChoiceList(_T("None\n"));
-   lrfdRebarIter rebarIter(type,grade);
+   WBFL::LRFD::RebarIter rebarIter(type,grade);
    for ( rebarIter.Begin(); rebarIter; rebarIter.Next() )
    {
       const auto* pRebar = rebarIter.GetCurrentRebar();
@@ -522,7 +522,7 @@ void CBridgeDescDeckRebarGrid::PutRowData(ROWCOL nRow, const CDeckRebarData::Neg
 
    // bar size
    CString tmp;
-   tmp.Format(_T("%s"),lrfdRebarPool::GetBarSize(rebarData.RebarSize).c_str());
+   tmp.Format(_T("%s"),WBFL::LRFD::RebarPool::GetBarSize(rebarData.RebarSize).c_str());
    VERIFY(SetValueRange(CGXRange(nRow, 3), tmp));
 
    // spacing
@@ -650,10 +650,10 @@ void CBridgeDescDeckRebarGrid::FillGrid(const std::vector<CDeckRebarData::NegMom
 	   RemoveRows(1, rows);
    }
 
-   CollectionIndexType size = vRebarData.size();
+   IndexType size = vRebarData.size();
 
    // size grid
-   for (CollectionIndexType i = 0; i < size; i++)
+   for (IndexType i = 0; i < size; i++)
    {
 	   ROWCOL nRow = 0;
       nRow = GetRowCount()+1;

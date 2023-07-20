@@ -357,7 +357,7 @@ void CDrawStrandControl::DrawShape(CDC* pDC, WBFL::Graphing::PointMapper& mapper
 
 void CDrawStrandControl::Draw(CDC* pDC, WBFL::Graphing::PointMapper& mapper,IPoint2dCollection* pPolyPoints,BOOL bPolygon)
 {
-   CollectionIndexType nPoints;
+   IndexType nPoints;
    pPolyPoints->get_Count(&nPoints);
 
    IPoint2d** points = new IPoint2d*[nPoints];
@@ -370,7 +370,7 @@ void CDrawStrandControl::Draw(CDC* pDC, WBFL::Graphing::PointMapper& mapper,IPoi
    ATLASSERT(nFetched == nPoints);
 
    CPoint* dev_points = new CPoint[nPoints];
-   for ( CollectionIndexType i = 0; i < nPoints; i++ )
+   for ( IndexType i = 0; i < nPoints; i++ )
    {
       LONG dx,dy;
       WBFL::Graphing::Point point;

@@ -57,7 +57,7 @@ CTrafficBarrierDlg::CTrafficBarrierDlg(bool allowEditing,
 
    m_BarrierPoints.CoCreateInstance(CLSID_Point2dCollection);
 
-   m_Ec = WBFL::Units::ConvertToSysUnits(lrfdConcreteUtil::ModE(WBFL::Materials::ConcreteType::Normal, 4.0,155.0,false),WBFL::Units::Measure::KSI);
+   m_Ec = WBFL::Units::ConvertToSysUnits(WBFL::LRFD::ConcreteUtil::ModE(WBFL::Materials::ConcreteType::Normal, 4.0,155.0,false),WBFL::Units::Measure::KSI);
 
    m_bStructurallyContinuous = false;
 }

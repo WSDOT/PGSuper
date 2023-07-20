@@ -53,10 +53,10 @@ CConcreteGeneralPage::CConcreteGeneralPage() : CPropertyPage()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    Construct(IDD_CONCRETE_DETAILS);
 
-   m_MinNWCDensity = lrfdConcreteUtil::GetNWCDensityLimit();
-   m_MaxLWCDensity = lrfdConcreteUtil::GetLWCDensityLimit();
+   m_MinNWCDensity = WBFL::LRFD::ConcreteUtil::GetNWCDensityLimit();
+   m_MaxLWCDensity = WBFL::LRFD::ConcreteUtil::GetLWCDensityLimit();
 
-   lrfdConcreteUtil::GetPCIUHPCStrengthRange(&m_MinFcUHPC, &m_MaxFcUHPC);
+   WBFL::LRFD::ConcreteUtil::GetPCIUHPCStrengthRange(&m_MinFcUHPC, &m_MaxFcUHPC);
    // AASHTO UHPC does not have a prescribed strength range
 }
 
@@ -179,7 +179,7 @@ BOOL CConcreteGeneralPage::OnInitDialog()
    }
 
    CComboBox* pcbConcreteType = (CComboBox*)GetDlgItem(IDC_CONCRETE_TYPE);
-   if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2016Interims )
+   if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims )
    {  
       int idx = pcbConcreteType->AddString(_T("Normal weight"));
       pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::Normal);
@@ -204,7 +204,7 @@ BOOL CConcreteGeneralPage::OnInitDialog()
       idx = pcbConcreteType->AddString(_T("Lightweight"));
       pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::SandLightweight);
 
-      if (lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion() && pParent->m_bIncludeUHPC)
+      if (WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() && pParent->m_bIncludeUHPC)
       {
          idx = pcbConcreteType->AddString(_T("PCI-UHPC"));
          pcbConcreteType->SetItemData(idx, (DWORD_PTR)pgsTypes::PCI_UHPC);

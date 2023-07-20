@@ -1149,11 +1149,11 @@ void GirderPrimaryStirrupComparison(rptParagraph* pPara, IBroker* pBroker,IEAFDi
                   {
                      (*p_table)(row, iCol++) << _T("to mid-span");
                   }
-                  (*p_table)(row, iCol++) << lrfdRebarPool::GetBarSize(stirrupZone.VertBarSize) << rptNewLine;
+                  (*p_table)(row, iCol++) << WBFL::LRFD::RebarPool::GetBarSize(stirrupZone.VertBarSize) << rptNewLine;
                   (*p_table)(row, iCol++) << dim.SetValue(stirrupZone.BarSpacing) << rptNewLine;
                   (*p_table)(row, iCol++) << stirrupZone.nVertBars << rptNewLine;
                   (*p_table)(row, iCol++) << stirrupZone.nHorzInterfaceBars << rptNewLine;
-                  (*p_table)(row, iCol++) << lrfdRebarPool::GetBarSize(stirrupZone.ConfinementBarSize) << rptNewLine;
+                  (*p_table)(row, iCol++) << WBFL::LRFD::RebarPool::GetBarSize(stirrupZone.ConfinementBarSize) << rptNewLine;
 
                   if (bFirst)
                   {
@@ -1232,7 +1232,7 @@ void GirderSecondaryStirrupComparison(rptParagraph* pPara, IBroker* pBroker,IEAF
             else
             {
                (*p_table)(row, col++) << span.SetValue(pShr->SplittingZoneLength) << rptNewLine;
-               (*p_table)(row, col++) << lrfdRebarPool::GetBarSize(pShr->SplittingBarSize) << rptNewLine;
+               (*p_table)(row, col++) << WBFL::LRFD::RebarPool::GetBarSize(pShr->SplittingBarSize) << rptNewLine;
                (*p_table)(row, col++) << dim.SetValue(pShr->SplittingBarSpacing) << rptNewLine;
                (*p_table)(row, col++) << pShr->nSplittingBars << rptNewLine;
             }
@@ -1245,7 +1245,7 @@ void GirderSecondaryStirrupComparison(rptParagraph* pPara, IBroker* pBroker,IEAF
             else
             {
                (*p_table)(row, col++) << span.SetValue(pShr->ConfinementZoneLength) << rptNewLine;
-               (*p_table)(row, col++) << lrfdRebarPool::GetBarSize(pShr->ConfinementBarSize) << rptNewLine;
+               (*p_table)(row, col++) << WBFL::LRFD::RebarPool::GetBarSize(pShr->ConfinementBarSize) << rptNewLine;
                (*p_table)(row, col++) << dim.SetValue(pShr->ConfinementBarSpacing) << rptNewLine;
             }
 
@@ -1477,7 +1477,7 @@ void GirderMaterialsComparison(rptParagraph* pPara, CComPtr<IBroker> pBroker, co
             WriteCompareCell(p_table, row, iCol++, isFrom, bEqual);
 
             pgsTypes::ConcreteType type = pMaterial->Concrete.Type;
-            std::_tstring  name = lrfdConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)type, false);
+            std::_tstring  name = WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)type, false);
             (*p_table)(row, iCol++) << name;
 
             if (isTimeStep && pMaterial->Concrete.bBasePropertiesOnInitialValues)
@@ -1795,7 +1795,7 @@ DebondComparison::DebondStatus DebondComparison::Init(IBridge* pBridge, IStrandG
             CComPtr<IPoint2dCollection> strand_coords;
             pStrandGeometry->GetStrandPositions(pgsPointOfInterest(segmentKey, 0.0), pgsTypes::Straight, &strand_coords);
 
-            CollectionIndexType num_strands;
+            IndexType num_strands;
             strand_coords->get_Count(&num_strands);
 
             for (StrandIndexType istrand = 0; istrand < num_strands; istrand++)
@@ -2333,7 +2333,7 @@ void GirderLongRebarComparison(rptParagraph* pPara, IBroker* pBroker,IEAFDisplay
 
                   (*p_table)(row, iCol++) << (rebarRow.Face == pgsTypes::TopFace ? _T("Top") : _T("Bottom")) << rptNewLine;
                   (*p_table)(row, iCol++) << dim.SetValue(rebarRow.Cover) << rptNewLine;
-                  (*p_table)(row, iCol++) << lrfdRebarPool::GetBarSize(rebarRow.BarSize) << rptNewLine;
+                  (*p_table)(row, iCol++) << WBFL::LRFD::RebarPool::GetBarSize(rebarRow.BarSize) << rptNewLine;
                   (*p_table)(row, iCol++) << rebarRow.NumberOfBars << rptNewLine;
                   (*p_table)(row, iCol++) << dim.SetValue(rebarRow.BarSpacing) << rptNewLine;
 

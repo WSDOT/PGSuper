@@ -84,34 +84,34 @@ void pgsRefinedAnalysisStatusCallback::Execute(CEAFStatusItem* pStatusItem)
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
       pgsTypes::DistributionFactorMethod method;
-      LldfRangeOfApplicabilityAction roaAction;
+      WBFL::LRFD::RangeOfApplicabilityAction roaAction;
       switch(dlg.m_Choice)
       {
       case CRefinedAnalysisOptionsDlg::lldfDirectInput:
          method = pgsTypes::DirectlyInput;
-         roaAction = roaIgnore;
+         roaAction = WBFL::LRFD::RangeOfApplicabilityAction::Ignore;
          break;
 
       case CRefinedAnalysisOptionsDlg::lldfIgnore:
          method = pgsTypes::Calculated;
-         roaAction = roaIgnore;
+         roaAction = WBFL::LRFD::RangeOfApplicabilityAction::Ignore;
          break;
 
       case CRefinedAnalysisOptionsDlg::lldfIgnoreLever:
          method = pgsTypes::Calculated;
-         roaAction =roaIgnoreUseLeverRule;
+         roaAction = WBFL::LRFD::RangeOfApplicabilityAction::IgnoreUseLeverRule;
          break;
 
       case CRefinedAnalysisOptionsDlg::lldfForceLever:
          method = pgsTypes::LeverRule;
-         roaAction = roaIgnore;
+         roaAction = WBFL::LRFD::RangeOfApplicabilityAction::Ignore;
          break;
 
       case CRefinedAnalysisOptionsDlg::lldfDefault:
          {
          GET_IFACE(ILiveLoads,pLiveLoads);
          method = pBridgeDesc->GetDistributionFactorMethod();
-         roaAction = pLiveLoads->GetLldfRangeOfApplicabilityAction();
+         roaAction = pLiveLoads->GetRangeOfApplicabilityAction();
          }
          break;
 
@@ -609,7 +609,7 @@ void pgsLldfWarningStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    pgsTypes::DistributionFactorMethod method = pBridgeDesc->GetDistributionFactorMethod();
-   LldfRangeOfApplicabilityAction roaAction = pLiveLoads->GetLldfRangeOfApplicabilityAction();
+   auto roaAction = pLiveLoads->GetRangeOfApplicabilityAction();
 
    GET_IFACE(IEditByUI,pEdit);
    pEdit->EditLiveLoadDistributionFactors(method,roaAction);

@@ -47,30 +47,6 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-DiaphragmLayoutEntry::DiaphragmLayoutEntry()
-{
-}
-
-DiaphragmLayoutEntry::DiaphragmLayoutEntry(const DiaphragmLayoutEntry& rOther) :
-libLibraryEntry(rOther)
-{
-   MakeCopy(rOther);
-}
-
-DiaphragmLayoutEntry::~DiaphragmLayoutEntry()
-{
-}
-
-//======================== OPERATORS  =======================================
-DiaphragmLayoutEntry& DiaphragmLayoutEntry::operator= (const DiaphragmLayoutEntry& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
 
 //======================== OPERATIONS =======================================
 bool DiaphragmLayoutEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
@@ -202,18 +178,6 @@ bool DiaphragmLayoutEntry::Edit(bool allowEditing,int nPage)
    return false;
 }
 
-
-void DiaphragmLayoutEntry::MakeCopy(const DiaphragmLayoutEntry& rOther)
-{
-   m_DiaphragmLayoutVec = rOther.m_DiaphragmLayoutVec;
-}
-
-void DiaphragmLayoutEntry::MakeAssignment(const DiaphragmLayoutEntry& rOther)
-{
-   libLibraryEntry::MakeAssignment( rOther );
-   MakeCopy( rOther );
-}
-
 //======================== ACCESS     =======================================
 //======================== INQUIRY    =======================================
 
@@ -226,31 +190,3 @@ void DiaphragmLayoutEntry::MakeAssignment(const DiaphragmLayoutEntry& rOther)
 //======================== INQUERY    =======================================
 
 //======================== DEBUG      =======================================
-#if defined _DEBUG
-bool DiaphragmLayoutEntry::AssertValid() const
-{
-   return libLibraryEntry::AssertValid();
-}
-
-void DiaphragmLayoutEntry::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for DiaphragmLayoutEntry")<< WBFL::Debug::endl;
-   libLibraryEntry::Dump( os );
-   for (DiaphragmLayoutVec::const_iterator it = m_DiaphragmLayoutVec.begin(); it!=m_DiaphragmLayoutVec.end(); it++)
-   {
-      os<<_T(" EndOfRange = ")<< (*it).EndOfRange<< WBFL::Debug::endl;
-      os<<_T(" NumberOfDiaphragms = ")<< (*it).NumberOfDiaphragms<< WBFL::Debug::endl;
-   }
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool DiaphragmLayoutEntry::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("DiaphragmLayoutEntry");
-
-   // tests are performed on entire library.
-
-   TESTME_EPILOG("DiaphragmLayoutEntry");
-}
-#endif // _UNITTEST

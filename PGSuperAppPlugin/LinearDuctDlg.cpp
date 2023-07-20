@@ -57,8 +57,8 @@ void DDV_DuctGeometry(CDataExchange* pDX,const CGirderKey& girderKey,CLinearDuct
 
    Float64 Xg = 0;
    Float64 Xg_Last = 0;
-   CollectionIndexType nPoints = ductGeometry.GetPointCount();
-   for ( CollectionIndexType pntIdx = 0; pntIdx < nPoints; pntIdx++ )
+   IndexType nPoints = ductGeometry.GetPointCount();
+   for ( IndexType pntIdx = 0; pntIdx < nPoints; pntIdx++ )
    {
       Float64 location, offset;
       CDuctGeometry::OffsetType offsetType;

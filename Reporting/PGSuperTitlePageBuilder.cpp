@@ -68,9 +68,9 @@ bool DoPrintStatusItem(CEAFStatusItem* pItem, const CGirderKey& girderKey,Segmen
    return false;
 }
 
-bool DoPrintStatusCenter(IEAFStatusCenter* pStatusCenter, CollectionIndexType nItems, const CGirderKey& girderKey,SegmentIndexType nSegments)
+bool DoPrintStatusCenter(IEAFStatusCenter* pStatusCenter, IndexType nItems, const CGirderKey& girderKey,SegmentIndexType nSegments)
 {
-   for ( CollectionIndexType i = 0; i < nItems; i++ )
+   for ( IndexType i = 0; i < nItems; i++ )
    {
       CEAFStatusItem* pItem = pStatusCenter->GetByIndex(i);
 
@@ -445,7 +445,7 @@ rptChapter* CPGSuperTitlePageBuilder::Build(const std::shared_ptr<const WBFL::Re
       (*pTable)(row,0) << _T("Deck Bar Cutoff");
       (*pTable)(row++,1) << _T("End of a reinforcing bar in the deck");
 
-      if ( lrfdVersionMgr::ThirdEdition2004 <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
       {
          (*pTable)(row,0) << _T("CS");
          (*pTable)(row++,1) << _T("Critical Section for Shear");
@@ -484,7 +484,7 @@ rptChapter* CPGSuperTitlePageBuilder::Build(const std::shared_ptr<const WBFL::Re
       GET_IFACE(IBridge,pBridge);
       
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
-      CollectionIndexType nItems = pStatusCenter->Count();
+      IndexType nItems = pStatusCenter->Count();
 
       GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
       GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? pBridge->GetGirderGroupCount()-1 : firstGroupIdx);
@@ -513,7 +513,7 @@ rptChapter* CPGSuperTitlePageBuilder::Build(const std::shared_ptr<const WBFL::Re
 
             row = 1;
             CString strSeverityType[] = { _T("Information"), _T("Warning"), _T("Error") };
-            for ( CollectionIndexType i = 0; i < nItems; i++ )
+            for ( IndexType i = 0; i < nItems; i++ )
             {
                CEAFStatusItem* pItem = pStatusCenter->GetByIndex(i);
                

@@ -31,7 +31,7 @@
 #include <Reporting\CreepCoefficientChapterBuilder.h>
 #include <PgsExt\StrandData.h>
 
-class lrfdLosses;
+class WBFL::LRFD::Losses;
 
 /////////////////////////////////////////////////////////////////////////////
 // CCreepAtDeckPlacementTable

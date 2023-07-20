@@ -328,7 +328,7 @@ bool CConcreteMaterial::operator!=(const CConcreteMaterial& rOther) const
 HRESULT CConcreteMaterial::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    pStrSave->BeginUnit(_T("Concrete"),6.0);
-   pStrSave->put_Property(_T("Type"),             CComVariant( lrfdConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)Type,false).c_str() ));
+   pStrSave->put_Property(_T("Type"),             CComVariant( WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)Type,false).c_str() ));
    pStrSave->put_Property(_T("Fc"),               CComVariant(Fc));
 
    pStrSave->put_Property(_T("UserEc"),           CComVariant(bUserEc));
@@ -435,7 +435,7 @@ HRESULT CConcreteMaterial::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
    var.vt = VT_BSTR;
    pStrLoad->get_Property(_T("Type"),&var);
-   Type = (pgsTypes::ConcreteType)lrfdConcreteUtil::GetTypeFromTypeName(OLE2T(var.bstrVal));
+   Type = (pgsTypes::ConcreteType)WBFL::LRFD::ConcreteUtil::GetTypeFromTypeName(OLE2T(var.bstrVal));
 
    var.vt = VT_R8;
    pStrLoad->get_Property(_T("Fc"),&var);

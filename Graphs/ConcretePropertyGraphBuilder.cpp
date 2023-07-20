@@ -70,20 +70,20 @@ END_MESSAGE_MAP()
 
 CConcretePropertyGraphBuilder::CConcretePropertyGraphBuilder() :
 CEAFAutoCalcGraphBuilder(),
-m_Graph(DUMMY_TOOL,DUMMY_TOOL),
-m_pTimeFormat(0),
-m_pIntervalFormat(0),
-m_pYFormat(0)
+m_Graph(&DUMMY_TOOL,&DUMMY_TOOL),
+m_pTimeFormat(nullptr),
+m_pIntervalFormat(nullptr),
+m_pYFormat(nullptr)
 {
    Init();
 }
 
 CConcretePropertyGraphBuilder::CConcretePropertyGraphBuilder(const CConcretePropertyGraphBuilder& other) :
 CEAFAutoCalcGraphBuilder(other),
-m_Graph(DUMMY_TOOL,DUMMY_TOOL),
-m_pTimeFormat(0),
-m_pIntervalFormat(0),
-m_pYFormat(0)
+m_Graph(&DUMMY_TOOL,&DUMMY_TOOL),
+m_pTimeFormat(nullptr),
+m_pIntervalFormat(nullptr),
+m_pYFormat(nullptr)
 {
    Init();
 }
@@ -192,7 +192,7 @@ int CConcretePropertyGraphBuilder::InitializeGraphController(CWnd* pParent,UINT 
    // x axis
    m_pTimeFormat = new WBFL::Units::ScalarTool(m_Time);
    m_pIntervalFormat = new IntervalTool(m_Interval);
-   m_Graph.SetXAxisValueFormat(*m_pTimeFormat);
+   m_Graph.SetXAxisValueFormat(m_pTimeFormat);
    m_Graph.SetXAxisNumberOfMajorTics(11);
    m_pGraphController->CheckDlgButton(IDC_AGE_LOG,BST_CHECKED);
    m_XAxisType = X_AXIS_AGE_LOG;
@@ -200,7 +200,7 @@ int CConcretePropertyGraphBuilder::InitializeGraphController(CWnd* pParent,UINT 
    // y axis
    const WBFL::Units::StressData& stressUnit = pDisplayUnits->GetStressUnit();
    m_pYFormat = new WBFL::Units::StressTool(stressUnit);
-   m_Graph.SetYAxisValueFormat(*m_pYFormat);
+   m_Graph.SetYAxisValueFormat(m_pYFormat);
    m_Graph.YAxisNiceRange(true);
    m_Graph.SetYAxisNumberOfMinorTics(5);
    m_Graph.SetYAxisNumberOfMajorTics(21);
@@ -274,14 +274,14 @@ void CConcretePropertyGraphBuilder::UpdateXAxis()
       m_Graph.SetXAxisTitle(_T("Time (days)"));
       m_Graph.XAxisNiceRange(true);
       m_Graph.SetXAxisNumberOfMinorTics(10);
-      m_Graph.SetXAxisValueFormat(*m_pTimeFormat);
+      m_Graph.SetXAxisValueFormat(m_pTimeFormat);
    }
    else if ( m_XAxisType == X_AXIS_TIME_LOG )
    {
       m_Graph.SetXAxisScale(WBFL::Graphing::AxisXY::AxisScale::Logarithmic);
       m_Graph.SetXAxisTitle(_T("Time (days)"));
       m_Graph.XAxisNiceRange(true);
-      m_Graph.SetXAxisValueFormat(*m_pTimeFormat);
+      m_Graph.SetXAxisValueFormat(m_pTimeFormat);
    }
    else if ( m_XAxisType == X_AXIS_AGE_LINEAR )
    {
@@ -289,7 +289,7 @@ void CConcretePropertyGraphBuilder::UpdateXAxis()
       m_Graph.SetXAxisTitle(_T("Age (days)"));
       m_Graph.XAxisNiceRange(true);
       m_Graph.SetXAxisNumberOfMinorTics(10);
-      m_Graph.SetXAxisValueFormat(*m_pTimeFormat);
+      m_Graph.SetXAxisValueFormat(m_pTimeFormat);
    }
    else if ( m_XAxisType == X_AXIS_AGE_LOG )
    {
@@ -297,7 +297,7 @@ void CConcretePropertyGraphBuilder::UpdateXAxis()
       m_Graph.SetXAxisTitle(_T("Age (days)"));
       m_Graph.XAxisNiceRange(true);
       m_Graph.SetXAxisNumberOfMinorTics(10);
-      m_Graph.SetXAxisValueFormat(*m_pTimeFormat);
+      m_Graph.SetXAxisValueFormat(m_pTimeFormat);
    }
    else
    {
@@ -305,7 +305,7 @@ void CConcretePropertyGraphBuilder::UpdateXAxis()
       m_Graph.SetXAxisTitle(_T("Interval"));
       m_Graph.XAxisNiceRange(false);
       m_Graph.SetXAxisNumberOfMinorTics(0);
-      m_Graph.SetXAxisValueFormat(*m_pIntervalFormat);
+      m_Graph.SetXAxisValueFormat(m_pIntervalFormat);
    }
 }
 
@@ -320,7 +320,7 @@ void CConcretePropertyGraphBuilder::UpdateYAxis()
       GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
       const WBFL::Units::StressData& stressUnit = pDisplayUnits->GetStressUnit();
       m_pYFormat = new WBFL::Units::StressTool(stressUnit);
-      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      m_Graph.SetYAxisValueFormat(m_pYFormat);
       std::_tstring strYAxisTitle = _T("f'c (") + ((WBFL::Units::StressTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
@@ -330,7 +330,7 @@ void CConcretePropertyGraphBuilder::UpdateYAxis()
       GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
       const WBFL::Units::StressData& stressUnit = pDisplayUnits->GetModEUnit();
       m_pYFormat = new WBFL::Units::StressTool(stressUnit);
-      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      m_Graph.SetYAxisValueFormat(m_pYFormat);
       std::_tstring strYAxisTitle = _T("Ec (") + ((WBFL::Units::StressTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
@@ -338,7 +338,7 @@ void CConcretePropertyGraphBuilder::UpdateYAxis()
    case GRAPH_TYPE_SH:
       {
       m_pYFormat = new WBFL::Units::ScalarTool(m_StrainScalar);
-      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      m_Graph.SetYAxisValueFormat(m_pYFormat);
       std::_tstring strYAxisTitle = _T("Unrestrained Shrinkage Strain (x10^6)");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
@@ -346,7 +346,7 @@ void CConcretePropertyGraphBuilder::UpdateYAxis()
    case GRAPH_TYPE_CR:
       {
       m_pYFormat = new WBFL::Units::ScalarTool(m_CreepScalar);
-      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      m_Graph.SetYAxisValueFormat(m_pYFormat);
       std::_tstring strYAxisTitle = _T("Creep Coefficient");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;

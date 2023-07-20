@@ -474,7 +474,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
 {
    rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
-   *pTitle << _T("Check for Hauling to Bridge Site [") << LrfdCw8th(_T("5.9.4.1"),_T("5.9.2.3.1")) << _T("]")<<rptNewLine;
+   *pTitle << _T("Check for Hauling to Bridge Site [") << WBFL::LRFD::LrfdCw8th(_T("5.9.4.1"),_T("5.9.2.3.1")) << _T("]")<<rptNewLine;
    *pTitle << _T("Hauling Stresses for Girder with KDOT Dynamic Effects")<<rptNewLine;
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -498,7 +498,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
       return;
    }
 
-   if (lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion())
+   if (WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
    {
       *p << color(Red) << _T("KDOT method does not evaluate stability. Stability analysis is required per LRFD 5.5.4.3.") << color(Black) << rptNewLine;
    }
@@ -567,7 +567,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
 
    Float64 t2 = pSpecEntry->GetHaulingTensionStressFactorWithRebar(pgsTypes::CrownSlope);
 
-   bool bLambda = (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() ? true : false);
+   bool bLambda = (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() ? true : false);
 
    Float64 capCompression = pSegmentHaulingSpecCriteria->GetHaulingAllowableGlobalCompressiveConcreteStress(segmentKey);
 
@@ -764,7 +764,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKey
 
    rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
-   *pTitle << _T("Details for Check for Hauling to Bridge Site [") << LrfdCw8th(_T("5.9.4.1"),_T("5.9.2.3.1")) << _T("]")<<rptNewLine;
+   *pTitle << _T("Details for Check for Hauling to Bridge Site [") << WBFL::LRFD::LrfdCw8th(_T("5.9.4.1"),_T("5.9.2.3.1")) << _T("]")<<rptNewLine;
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -894,7 +894,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildRebarTable(IBroker* pBroker,rptChapter
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   std::_tstring tablename(_T("Rebar Requirements for Tension stress limit [") + std::_tstring(LrfdCw8th(_T("C5.9.4.1.2"),_T("C5.9.2.3.1b"))) + _T("] - Hauling"));
+   std::_tstring tablename(_T("Rebar Requirements for Tension stress limit [") + std::_tstring(WBFL::LRFD::LrfdCw8th(_T("C5.9.4.1.2"),_T("C5.9.2.3.1b"))) + _T("] - Hauling"));
 
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(10,tablename);
    *p << pTable << rptNewLine;

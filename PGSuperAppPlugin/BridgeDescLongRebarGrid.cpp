@@ -372,7 +372,7 @@ void CGirderDescLongRebarGrid::SetRowStyle(ROWCOL nRow)
    WBFL::Materials::Rebar::Grade grade;
    pParent->GetRebarMaterial(&type,&grade);
    CString strBarSizeChoiceList;
-   lrfdRebarIter rebarIter(type,grade);
+   WBFL::LRFD::RebarIter rebarIter(type,grade);
    for ( rebarIter.Begin(); rebarIter; rebarIter.Next() )
    {
       const auto* pRebar = rebarIter.GetCurrentRebar();
@@ -386,7 +386,7 @@ void CGirderDescLongRebarGrid::SetRowStyle(ROWCOL nRow)
       .SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
       .SetChoiceList(strBarSizeChoiceList)
       .SetHorizontalAlignment(DT_RIGHT)
-      .SetValue(lrfdRebarPool::GetBarSize(WBFL::Materials::Rebar::Size::bs4).c_str())
+      .SetValue(WBFL::LRFD::RebarPool::GetBarSize(WBFL::Materials::Rebar::Size::bs4).c_str())
       );
 
 	SetStyleRange(CGXRange(nRow, nCol++), CGXStyle()
@@ -665,11 +665,11 @@ void CGirderDescLongRebarGrid::FillGrid(const CLongitudinalRebarData& rebarData)
 	   RemoveRows(1, rows);
    }
 
-   CollectionIndexType size = rebarData.RebarRows.size();
+   IndexType size = rebarData.RebarRows.size();
    if (0 < size)
    {
       // size grid
-      for (CollectionIndexType i=0; i<size; i++)
+      for (IndexType i=0; i<size; i++)
       {
 	      Insertrow();
       }
@@ -728,7 +728,7 @@ void CGirderDescLongRebarGrid::FillGrid(const CLongitudinalRebarData& rebarData)
          Float64 cover = WBFL::Units::ConvertFromSysUnits(rebar.Cover, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
          VERIFY(SetValueRange(CGXRange(nRow, col++), cover));
 
-         tmp.Format(_T("%s"), lrfdRebarPool::GetBarSize(rebar.BarSize).c_str());
+         tmp.Format(_T("%s"), WBFL::LRFD::RebarPool::GetBarSize(rebar.BarSize).c_str());
          VERIFY(SetValueRange(CGXRange(nRow, col++), tmp));
 
          VERIFY(SetValueRange(CGXRange(nRow, col++), (LONG)rebar.NumberOfBars));

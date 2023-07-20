@@ -1083,8 +1083,8 @@ void CGirderModelElevationView::BuildDropTargetDisplayObjects(CPGSDocBase* pDoc,
 
    PierIndexType startPierIdx, endPierIdx;
    CComPtr<IPoint2d> p1, p2;
-   CollectionIndexType nItems = pSupportDisplayList->GetDisplayObjectCount();
-   for ( CollectionIndexType idx = 0; idx < nItems; idx++ )
+   IndexType nItems = pSupportDisplayList->GetDisplayObjectCount();
+   for ( IndexType idx = 0; idx < nItems; idx++ )
    {
       CComPtr<iDisplayObject> pDO;
       pSupportDisplayList->GetDisplayObject(idx,&pDO);
@@ -1274,8 +1274,8 @@ void CGirderModelElevationView::BuildClosureJointDisplayObjects(CPGSDocBase* pDo
 
       Float64 running_segment_length = 0;
 
-      CollectionIndexType nClosures = pGirder->GetClosureJointCount();
-      for ( CollectionIndexType closureIdx = 0; closureIdx < nClosures; closureIdx++ )
+      IndexType nClosures = pGirder->GetClosureJointCount();
+      for ( IndexType closureIdx = 0; closureIdx < nClosures; closureIdx++ )
       {
          // segments and closures share an index
          const CPrecastSegmentData* pSegment = pGirder->GetSegment(closureIdx);
@@ -1754,7 +1754,7 @@ void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSDocBase* pDoc, IBr
          
          // The view is working in Girder Path Coordinates. Need to convert the X values from Girder to Girder Path Cooordinates
 
-         CollectionIndexType nPoints;
+         IndexType nPoints;
          ductPoints->get_Count(&nPoints);
          CComPtr<IPoint2d> from_point;
          ductPoints->get_Item(0,&from_point);
@@ -1764,7 +1764,7 @@ void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSDocBase* pDoc, IBr
          X += group_offset;
          from_point->Move(X,Y);
 
-         for( CollectionIndexType pntIdx = 1; pntIdx < nPoints; pntIdx++ )
+         for( IndexType pntIdx = 1; pntIdx < nPoints; pntIdx++ )
          {
             CComPtr<IPoint2d> to_point;
             ductPoints->get_Item(pntIdx,&to_point);
@@ -1797,7 +1797,7 @@ void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSDocBase* pDoc, IBr
             pSegmentTendonGeometry->GetDuctCenterline(segmentKey, ductIdx, &ductPoints); // this is in Segment Coordinates (measured from face of segment)
 
             // The view is working in Girder Path Coordinates. Need to convert the X values from Segment to Girder Path Cooordinates
-            CollectionIndexType nPoints;
+            IndexType nPoints;
             ductPoints->get_Count(&nPoints);
             CComPtr<IPoint2d> from_point;
             ductPoints->get_Item(0, &from_point);
@@ -1808,7 +1808,7 @@ void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSDocBase* pDoc, IBr
             X += group_offset;
             from_point->Move(X, Y);
 
-            for (CollectionIndexType pntIdx = 1; pntIdx < nPoints; pntIdx++)
+            for (IndexType pntIdx = 1; pntIdx < nPoints; pntIdx++)
             {
                CComPtr<IPoint2d> to_point;
                ductPoints->get_Item(pntIdx, &to_point);
@@ -1926,7 +1926,7 @@ void CGirderModelElevationView::BuildRebarDisplayObjects(CPGSDocBase* pDoc, IBro
                // Currently, we only enter rebars in horizontal rows. If this is not the case,
                // bars at each elevation must be drawn. Since the rebar rows are horizontal
                // we only need to draw one.
-               CollectionIndexType nbars;
+               IndexType nbars;
                rebarPattern->get_Count(&nbars);
                if (0 < nbars)
                {
@@ -1991,12 +1991,12 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSDocBase* pDoc, 
    GET_IFACE2(pBroker,IUserDefinedLoadData,pUserDefinedLoadData);
    GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
 
-   CollectionIndexType nLoads =  pUserDefinedLoadData->GetPointLoadCount();
+   IndexType nLoads =  pUserDefinedLoadData->GetPointLoadCount();
    SpanIndexType nSpans = pBridge->GetSpanCount();
 
    // filter loads and determine magnitude of max load
    Float64 max = 0.0;
-   CollectionIndexType loadIdx;
+   IndexType loadIdx;
    for (loadIdx = 0; loadIdx < nLoads; loadIdx++)
    {
       const CPointLoadData* pLoad = pUserDefinedLoadData->GetPointLoad(loadIdx);
@@ -2128,7 +2128,7 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSDocBase* 
    GET_IFACE2(pBroker,IUserDefinedLoadData,pUserDefinedLoadData);
    GET_IFACE2_NOCHECK(pBroker, IPointOfInterest, pPoi);
 
-   CollectionIndexType nLoads =  pUserDefinedLoadData->GetDistributedLoadCount();
+   IndexType nLoads =  pUserDefinedLoadData->GetDistributedLoadCount();
    SpanIndexType nSpans = pBridge->GetSpanCount();
 
    SpanIndexType displayStartSpanIdx, displayEndSpanIdx;
@@ -2137,7 +2137,7 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSDocBase* 
 
    // filter loads and determine magnitude of max load
    Float64 max = 0.0;
-   CollectionIndexType loadIdx;
+   IndexType loadIdx;
    for (loadIdx = 0; loadIdx < nLoads; loadIdx++ )
    {
       const CDistributedLoadData* pLoad = pUserDefinedLoadData->GetDistributedLoad(loadIdx);
@@ -2272,7 +2272,7 @@ void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSDocBase* pDoc,
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IUserDefinedLoadData,pUserDefinedLoadData);
 
-   CollectionIndexType nLoads =  pUserDefinedLoadData->GetMomentLoadCount();
+   IndexType nLoads =  pUserDefinedLoadData->GetMomentLoadCount();
    SpanIndexType nSpans = pBridge->GetSpanCount();
 
 #if defined _DEBUG
@@ -2412,7 +2412,7 @@ void CGirderModelElevationView::BuildLegendDisplayObjects(CPGSDocBase* pDoc, IBr
 {
    if (casesExist[UserLoads::DC] || casesExist[UserLoads::DW] || casesExist[UserLoads::LL_IM])
    {
-      CollectionIndexType prevNumEntries(INVALID_INDEX);
+      IndexType prevNumEntries(INVALID_INDEX);
       m_Legend.Release();
       m_Legend.CoCreateInstance(CLSID_LegendDisplayObject);
       m_Legend->put_Title(CComBSTR(_T("Legend")));
@@ -2429,7 +2429,7 @@ void CGirderModelElevationView::BuildLegendDisplayObjects(CPGSDocBase* pDoc, IBr
 
       m_Legend->put_Position(point,FALSE,FALSE);
 
-      CollectionIndexType nEntries = 0;
+      IndexType nEntries = 0;
       if (casesExist[UserLoads::DC])
       {
          nEntries++;
@@ -3501,14 +3501,14 @@ void CGirderModelElevationView::OnDestroy()
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
 
-   CollectionIndexType dlcnt = dispMgr->GetDisplayListCount();
-   for (CollectionIndexType idl=0; idl<dlcnt; idl++)
+   IndexType dlcnt = dispMgr->GetDisplayListCount();
+   for (IndexType idl=0; idl<dlcnt; idl++)
    {
       CComPtr<iDisplayList> dlist;
       dispMgr->GetDisplayList(idl, &dlist);
 
-      CollectionIndexType docnt = dlist->GetDisplayObjectCount();
-      for (CollectionIndexType ido=0; ido<docnt; ido++)
+      IndexType docnt = dlist->GetDisplayObjectCount();
+      for (IndexType ido=0; ido<docnt; ido++)
       {
          CComPtr<iDisplayObject> pdo;
          dlist->GetDisplayObject(ido,&pdo);

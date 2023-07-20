@@ -548,7 +548,7 @@ void pgsLRFDTransferLength::ReportDetails(rptChapter* pChapter, IEAFDisplayUnits
 
 void pgsLRFDTransferLength::ReportTransferLengthSpecReference(rptParagraph* pPara) const
 {
-   (*pPara) << _T("AASHTO LRFD BDS ") << LrfdCw8th(_T("5.11.4.1"), _T("5.9.4.3.1")) << rptNewLine;
+   (*pPara) << _T("AASHTO LRFD BDS ") << WBFL::LRFD::LrfdCw8th(_T("5.11.4.1"), _T("5.9.4.3.1")) << rptNewLine;
    (*pPara) << _T("See also \"Guidelines for the use of Epoxy-Coated Strand\", Section 5.5.2, PCI Journal, July-August 1993") << rptNewLine;
 }
 

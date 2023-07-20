@@ -33,8 +33,8 @@
 #include <IFace\Artifact.h>
 #include <IFace\Intervals.h>
 
-#include <Lrfd\Rebar.h>
-#include <Lrfd\RebarPool.h>
+#include <LRFD\Rebar.h>
+#include <LRFD\RebarPool.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -90,7 +90,7 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,const pgsGirderA
    if (IsUHPC)
       strSpecArticles = _T("1.7.2.5, 1.7.2.6, 1.10.3");
    else
-      strSpecArticles = LrfdCw8th(_T("5.8.2.5, 5.8.2.7, 5.10.3.1.2"), _T("5.7.2.5, 5.7.2.6, 5.10.3.1.2"));
+      strSpecArticles = WBFL::LRFD::LrfdCw8th(_T("5.8.2.5, 5.8.2.7, 5.10.3.1.2"), _T("5.7.2.5, 5.7.2.6, 5.10.3.1.2"));
 
    rptRcTable* table = rptStyleManager::CreateDefaultTable(8,_T(" "));
    table->TableLabel() << _T("Stirrup Detailing Check: ") << GetLimitStateString(ls) << _T(" [") << strSpecArticles << _T("]");
@@ -121,7 +121,7 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,const pgsGirderA
 
    // Fill up the table
 
-   lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
+   const auto* pool = WBFL::LRFD::RebarPool::GetInstance();
    ATLASSERT(pool != nullptr);
 
    RowIndexType row = table->GetNumberOfHeaderRows();
@@ -132,8 +132,8 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,const pgsGirderA
       const pgsStirrupCheckArtifact* pStirrupArtifact = pSegmentArtifact->GetStirrupCheckArtifact();
       ATLASSERT(pStirrupArtifact != nullptr);
 
-      CollectionIndexType nArtifacts = pStirrupArtifact->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
-      for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
+      IndexType nArtifacts = pStirrupArtifact->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
+      for ( IndexType idx = 0; idx < nArtifacts; idx++ )
       {
          const pgsStirrupCheckAtPoisArtifact* psArtifact = pStirrupArtifact->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
          if ( psArtifact == nullptr )
@@ -148,7 +148,7 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,const pgsGirderA
          col = 0;
 
          (*table)(row, col++) << location.SetValue( POI_SPAN, poi );
-         (*table)(row, col++) << lrfdRebarPool::GetBarSize(pArtifact->GetBarSize()).c_str();
+         (*table)(row, col++) << WBFL::LRFD::RebarPool::GetBarSize(pArtifact->GetBarSize()).c_str();
 
          Float64 s = pArtifact->GetS();
          if (0 < s)
@@ -211,27 +211,3 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,const pgsGirderA
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CStirrupDetailingCheckTable::AssertValid() const
-{
-   return true;
-}
-
-void CStirrupDetailingCheckTable::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for CStirrupDetailingCheckTable") << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CStirrupDetailingCheckTable::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("CStirrupDetailingCheckTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CStirrupDetailingCheckTable");
-
-   TESTME_EPILOG("CStirrupDetailingCheckTable");
-}
-#endif // _UNITTEST

@@ -406,11 +406,11 @@ CString DumpPoints(IShape* pShape)
    CComPtr<IPoint2dCollection> points;
    pShape->get_PolyPoints(&points);
 
-   CollectionIndexType nPoints;
+   IndexType nPoints;
    points->get_Count(&nPoints);
 
    CString strDump;
-   for ( CollectionIndexType i = 0; i < nPoints; i++ )
+   for ( IndexType i = 0; i < nPoints; i++ )
    {
       CComPtr<IPoint2d> point;
       points->get_Item(i,&point);
@@ -631,7 +631,7 @@ void CBridgeSectionView::UpdateGirderTooltips()
       CString strMsg2;
       strMsg2.Format(_T("\n\nGirder: %s\n%s\nf'ci: %s\nf'c: %s"),
                      pBridgeDesc->GetGirderGroup(segmentKey.groupIndex)->GetGirder(segmentKey.girderIndex)->GetGirderName(),
-                     lrfdConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pMaterial->GetSegmentConcreteType(segmentKey),true).c_str(),
+                     WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pMaterial->GetSegmentConcreteType(segmentKey),true).c_str(),
                      FormatDimension(fci,pDisplayUnits->GetStressUnit()),
                      FormatDimension(fc, pDisplayUnits->GetStressUnit())
                     );
@@ -1324,7 +1324,7 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
                         GetDeckTypeName(deckType),
                         FormatDimension(pDeck->GrossDepth,pDisplayUnits->GetComponentDimUnit()),
                         FormatDimension(pBridgeDesc->GetSlabOffset(),pDisplayUnits->GetComponentDimUnit()),
-                        lrfdConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pDeck->Concrete.Type,true).c_str(),
+                        WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pDeck->Concrete.Type,true).c_str(),
                         FormatDimension(pDeck->Concrete.Fc,pDisplayUnits->GetStressUnit())
                         );
       }
@@ -1333,7 +1333,7 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
          strMsg2.Format(_T("\r\n\nDeck: %s\r\nSlab Thickness: %s\r\nSlab Offset: per girder\r\n%s\r\nf'c: %s"),
                         GetDeckTypeName(deckType),
                         FormatDimension(pDeck->GrossDepth,pDisplayUnits->GetComponentDimUnit()),
-                        lrfdConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pDeck->Concrete.Type,true).c_str(),
+                        WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pDeck->Concrete.Type,true).c_str(),
                         FormatDimension(pDeck->Concrete.Fc,pDisplayUnits->GetStressUnit())
                         );
       }
@@ -1343,7 +1343,7 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
          strMsg2.Format(_T("\r\n\nDeck: %s\r\nSlab Thickness: %s\r\nHaunch Depths Defined by Direct Input\r\n%s\r\nf'c: %s"),
             GetDeckTypeName(deckType),
             FormatDimension(pDeck->GrossDepth,pDisplayUnits->GetComponentDimUnit()),
-            lrfdConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pDeck->Concrete.Type,true).c_str(),
+            WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pDeck->Concrete.Type,true).c_str(),
             FormatDimension(pDeck->Concrete.Fc,pDisplayUnits->GetStressUnit())
          );
       }

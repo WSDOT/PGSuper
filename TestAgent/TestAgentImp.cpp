@@ -826,7 +826,7 @@ bool CTestAgentImp::RunDistFactorTest(std::_tofstream& resultsFile, std::_tofstr
 
    bool bResult1 = pDf->Run1250Tests(spanKey,pgsTypes::StrengthI,pid.c_str(),bridgeId.c_str(),resultsFile,poiFile);
 
-   if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       bResult1 = pDf->Run1250Tests(spanKey,pgsTypes::FatigueI,pid.c_str(),bridgeId.c_str(),resultsFile,poiFile);
    }
@@ -1879,7 +1879,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
 //      resultsFile<<bridgeId<<", "<<pid<<", 50009, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(losses.RefinedLosses.CreepLosses(), WBFL::Units::Measure::MPa)) <<              ", 15, "<<SEGMENT(segmentKey)<<std::endl;
 //      resultsFile<<bridgeId<<", "<<pid<<", 50010, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(losses.RefinedLosses.RelaxationLossesAtXfer(), WBFL::Units::Measure::MPa)) <<   ", 15, "<<SEGMENT(segmentKey)<<std::endl;
 //      resultsFile<<bridgeId<<", "<<pid<<", 50011, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(losses.RefinedLosses.RelaxationLossesAfterXfer(), WBFL::Units::Measure::MPa)) <<", 15, "<<SEGMENT(segmentKey)<<std::endl;
-//      resultsFile<<bridgeId<<", "<<pid<<", 50012, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(losses.RefinedLosses.ElasticShortening().GetFcgp(), WBFL::Units::Measure::MPa)) <<                 ", 15, "<<SEGMENT(segmentKey)<<std::endl;
+//      resultsFile<<bridgeId<<", "<<pid<<", 50012, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(losses.RefinedLosses.GetElasticShortening().GetFcgp(), WBFL::Units::Measure::MPa)) <<                 ", 15, "<<SEGMENT(segmentKey)<<std::endl;
 //      resultsFile<<bridgeId<<", "<<pid<<", 50013, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(losses.RefinedLosses.GetEci(), WBFL::Units::Measure::MPa)) <<                  ", 15, "<<SEGMENT(segmentKey)<<std::endl;
 //
 //      // DUMMY VALUE... Fix Test!!!
@@ -1945,7 +1945,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       pLsForces->GetStress(liveLoadIntervalIdx, pgsTypes::ServiceIII, poi, bat, true, pgsTypes::TopDeck, &min,&max);
       resultsFile<<bridgeId<<", "<<pid<<", 50026, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(min , WBFL::Units::Measure::MPa)) <<", 15, "<<SEGMENT(segmentKey)<<std::endl;
 
-      if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+      if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims )
       {
          pLsForces->GetStress(liveLoadIntervalIdx, pgsTypes::ServiceIA, poi, bat, true, pgsTypes::TopDeck, &min,&max);
          resultsFile<<bridgeId<<", "<<pid<<", 50027, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(min , WBFL::Units::Measure::MPa)) <<", 15, "<<SEGMENT(segmentKey)<<std::endl;
@@ -2027,7 +2027,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       resultsFile<<bridgeId<<", "<<pid<<", 50043, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(scd.Vn , WBFL::Units::Measure::Newton)) <<     ", 15, "<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50044, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(scd.Vc , WBFL::Units::Measure::Newton)) <<     ", 15, "<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50045, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(scd.Vs , WBFL::Units::Measure::Newton)) <<     ", 15, "<<SEGMENT(segmentKey)<<std::endl;
-      if (lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion())
+      if (WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
       {
          resultsFile << bridgeId << ", " << pid << ", 50045a, " << loc << ", " << QUIET(scd.lambda_duct) << ", 15, " << SEGMENT(segmentKey) << std::endl;
       }
@@ -2160,7 +2160,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       }
 
       task.intervalIdx = lastIntervalIdx;
-      task.limitState = (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI);
+      task.limitState = (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI);
       task.stressType = pgsTypes::Compression;
       task.bIncludeLiveLoad = true;
       pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(task, poi.GetID());

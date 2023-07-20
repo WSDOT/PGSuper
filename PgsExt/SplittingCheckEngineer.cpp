@@ -49,7 +49,7 @@ void pgsSplittingCheckEngineer::SetBroker(IBroker* pBroker)
 
 LPCTSTR pgsSplittingCheckEngineer::GetCheckName()
 {
-   if (lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion())
+   if (WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
    {
       return _T("Splitting");
    }

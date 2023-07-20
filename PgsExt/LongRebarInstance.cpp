@@ -139,27 +139,3 @@ void pgsLongRebarInstance::MakeAssignment(const pgsLongRebarInstance& rOther)
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool pgsLongRebarInstance::AssertValid() const
-{
-   return true;
-}
-
-void pgsLongRebarInstance::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << "Dump for pgsLongRebarInstance" << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool pgsLongRebarInstance::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("pgsLongRebarInstance");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for pgsLongRebarInstance");
-
-   TESTME_EPILOG("LongRebarInstance");
-}
-#endif // _UNITTEST

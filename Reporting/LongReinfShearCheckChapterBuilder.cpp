@@ -200,11 +200,11 @@ void CLongReinfShearCheckChapterBuilder::BuildForDesign(rptChapter* pChapter,con
    {
       if (0 < nDucts)
       {
-         if (lrfdVersionMgr::EighthEdition2017 <= lrfdVersionMgr::GetVersion())
+         if (WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017 <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
          {
             *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2017_with_PT.png")) << rptNewLine;
          }
-         else if (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion())
+         else if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
          {
             *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2005_with_PT.png")) << rptNewLine;
          }
@@ -215,11 +215,11 @@ void CLongReinfShearCheckChapterBuilder::BuildForDesign(rptChapter* pChapter,con
       }
       else
       {
-         if (lrfdVersionMgr::EighthEdition2017 <= lrfdVersionMgr::GetVersion())
+         if (WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017 <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
          {
             *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2017.png")) << rptNewLine;
          }
-         else if (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion())
+         else if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
          {
             *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2005.png")) << rptNewLine;
          }
@@ -346,14 +346,14 @@ void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter, co
          }
          else
          {
-            lrfdVersionMgr::Version vers = lrfdVersionMgr::GetVersion();
+            WBFL::LRFD::LRFDVersionMgr::Version vers = WBFL::LRFD::LRFDVersionMgr::GetVersion();
             if (0 < nDucts)
             {
-               if (lrfdVersionMgr::EighthEdition2017 <= vers)
+               if (WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017 <= vers)
                {
                   *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2017_with_PT.png")) << rptNewLine;
                }
-               else if (lrfdVersionMgr::ThirdEditionWith2005Interims <= vers)
+               else if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= vers)
                {
                   *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2005_with_PT.png")) << rptNewLine;
                }
@@ -364,11 +364,11 @@ void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter, co
             }
             else
             {
-               if (lrfdVersionMgr::EighthEdition2017 <= vers)
+               if (WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017 <= vers)
                {
                   *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2017.png")) << rptNewLine;
                }
-               else if (lrfdVersionMgr::ThirdEditionWith2005Interims <= vers)
+               else if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= vers)
                {
                   *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2005.png")) << rptNewLine;
                }
@@ -540,8 +540,8 @@ void create_table1_design(rptChapter* pChapter,IBroker* pBroker,
    {
       const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
       const pgsStirrupCheckArtifact* pStirrupArtifact = pSegmentArtifact->GetStirrupCheckArtifact();
-      CollectionIndexType nArtifacts = pStirrupArtifact->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
-      for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
+      IndexType nArtifacts = pStirrupArtifact->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
+      for ( IndexType idx = 0; idx < nArtifacts; idx++ )
       {
          const pgsStirrupCheckAtPoisArtifact* psArtifact = pStirrupArtifact->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
          if ( psArtifact == nullptr )
@@ -650,7 +650,7 @@ void create_table2_design(rptChapter* pChapter,IBroker* pBroker,
    rptRcTable* table = rptStyleManager::CreateDefaultTable(11,_T("Longitudinal Reinforcement Shear Check Details - Table 2 of 3"));
    *pParagraph << table;
 
-   if (lrfdVersionMgr::SecondEditionWith2000Interims <= lrfdVersionMgr::GetVersion())
+   if (WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
    {
       pParagraph = new rptParagraph(rptStyleManager::GetFootnoteStyle());
       *pChapter << pParagraph;
@@ -668,7 +668,7 @@ void create_table2_design(rptChapter* pChapter,IBroker* pBroker,
    (*table)(0,col++) << COLHDR(_T("V")<<Sub(_T("u")),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    (*table)(0,col++) << _T("Shear") << rptNewLine << Sub2(symbol(phi),_T("v"));
    
-   if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SecondEditionWith2000Interims )
+   if ( pSpecEntry->GetSpecificationType() < WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims )
    {
       (*table)(0,col++) << COLHDR(_T("V")<<Sub(_T("s")),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    }
@@ -690,9 +690,9 @@ void create_table2_design(rptChapter* pChapter,IBroker* pBroker,
    {
       const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
       const pgsStirrupCheckArtifact* pStirrupArtifact = pSegmentArtifact->GetStirrupCheckArtifact();
-      CollectionIndexType nArtifacts = pStirrupArtifact->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
+      IndexType nArtifacts = pStirrupArtifact->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
 
-      for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
+      for ( IndexType idx = 0; idx < nArtifacts; idx++ )
       {
          const pgsStirrupCheckAtPoisArtifact* psArtifact = pStirrupArtifact->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
          if ( psArtifact == nullptr )
@@ -776,9 +776,9 @@ void create_table3_design(rptChapter* pChapter, IBroker* pBroker,
    {
       const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
       const pgsStirrupCheckArtifact* pStirrupArtifact = pSegmentArtifact->GetStirrupCheckArtifact();
-      CollectionIndexType nArtifacts = pStirrupArtifact->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
+      IndexType nArtifacts = pStirrupArtifact->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
 
-      for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
+      for ( IndexType idx = 0; idx < nArtifacts; idx++ )
       {
          const pgsStirrupCheckAtPoisArtifact* psArtifact = pStirrupArtifact->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
          if ( psArtifact == nullptr )
@@ -800,7 +800,7 @@ void create_table3_design(rptChapter* pChapter, IBroker* pBroker,
             }
             else
             {
-               (*table)(row, col++) << (pArtifact->GetEquation() == 1 ? LrfdCw8th(_T("5.8.3.5-1"), _T("5.7.3.5-1")) : LrfdCw8th(_T("5.8.3.5-2"), _T("5.7.3.5-2")));
+               (*table)(row, col++) << (pArtifact->GetEquation() == 1 ? WBFL::LRFD::LrfdCw8th(_T("5.8.3.5-1"), _T("5.7.3.5-1")) : WBFL::LRFD::LrfdCw8th(_T("5.8.3.5-2"), _T("5.7.3.5-2")));
             }
 
             row++;
@@ -1038,7 +1038,7 @@ void create_table2_rating(rptChapter* pChapter,IBroker* pBroker,
 
    *pParagraph << table;
 
-   if (lrfdVersionMgr::SecondEditionWith2000Interims <= lrfdVersionMgr::GetVersion())
+   if (WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
    {
       pParagraph = new rptParagraph(rptStyleManager::GetFootnoteStyle());
       *pChapter << pParagraph;
@@ -1066,7 +1066,7 @@ void create_table2_rating(rptChapter* pChapter,IBroker* pBroker,
    (*table)(0, col++) << COLHDR(_T("V")<<Sub(_T("u")),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    (*table)(0, col++) << _T("Shear") << rptNewLine << Sub2(symbol(phi),_T("v"));
    
-   if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SecondEditionWith2000Interims )
+   if ( pSpecEntry->GetSpecificationType() < WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims )
    {
       (*table)(0, col++) << COLHDR(_T("V")<<Sub(_T("s")),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    }
@@ -1197,7 +1197,7 @@ void create_table3_rating(rptChapter* pChapter,IBroker* pBroker,
          }
          else
          {
-            (*table)(row, col++) << (artifact.GetEquation() == 1 ? LrfdCw8th(_T("5.8.3.5-1"), _T("5.7.3.5-1")) : LrfdCw8th(_T("5.8.3.5-2"), _T("5.7.3.5-2")));
+            (*table)(row, col++) << (artifact.GetEquation() == 1 ? WBFL::LRFD::LrfdCw8th(_T("5.8.3.5-1"), _T("5.7.3.5-1")) : WBFL::LRFD::LrfdCw8th(_T("5.8.3.5-2"), _T("5.7.3.5-2")));
          }
 
          row++;

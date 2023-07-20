@@ -368,7 +368,7 @@ int CDeckEdgeBuilder::BeginSpline(IPath* pPath,IPoint2d* pPoint,ICubicSpline** p
    else
    {
       // get the tangent direction from the path element before the start of the spline
-      CollectionIndexType nPathElements;
+      IndexType nPathElements;
       pPath->get_Count(&nPathElements);
       CComPtr<IPathElement> path_element;
       pPath->get_Item(nPathElements-1,&path_element);
@@ -449,9 +449,9 @@ int CDeckEdgeBuilder::EndParallel(IPath* pPath,Float64 startStation,Float64 endS
    CComPtr<IPath> edgeSubPath;
    element->CreateOffsetPath(-offset,&edgeSubPath);
 
-   CollectionIndexType nPathElements;
+   IndexType nPathElements;
    edgeSubPath->get_Count(&nPathElements);
-   for ( CollectionIndexType i = 0; i < nPathElements; i++ )
+   for ( IndexType i = 0; i < nPathElements; i++ )
    {
       CComPtr<IPathElement> pe;
       edgeSubPath->get_Item(i,&pe);

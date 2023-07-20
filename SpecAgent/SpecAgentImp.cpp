@@ -31,8 +31,8 @@
 #include <PgsExt\SegmentArtifact.h>
 #include <PgsExt\GirderArtifact.h>
 #include <PsgLib\SpecLibraryEntry.h>
-#include <Lrfd\PsStrand.h>
-#include <Lrfd\Rebar.h>
+#include <LRFD\PsStrand.h>
+#include <LRFD\Rebar.h>
 
 #include <IFace\StatusCenter.h>
 #include <IFace\PrestressForce.h>
@@ -278,7 +278,7 @@ std::vector<StressCheckTask> CSpecAgentImp::GetStressCheckTasks(const CSegmentKe
    if (pMaterials->GetSegmentConcreteType(segmentKey) != pgsTypes::PCI_UHPC)
    {
       // fatigue checks are not applicable to PCI_UHPC, put are applicable to all other
-      vStressCheckTasks.emplace_back(lastIntervalIdx, lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI, pgsTypes::Compression);
+      vStressCheckTasks.emplace_back(lastIntervalIdx, WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI, pgsTypes::Compression);
 
       // this is a tension stress check for fatigue in UHPC. See GS 1.5.3
       if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
@@ -469,7 +469,7 @@ Float64 CSpecAgentImp::GetAllowableAtJacking(const CSegmentKey& segmentKey,pgsTy
    GET_IFACE(IMaterials,pMaterial);
    const auto* pStrand = pMaterial->GetStrandMaterial(segmentKey,strandType);
 
-   Float64 fpu = lrfdPsStrand::GetUltimateStrength(pStrand->GetGrade());
+   Float64 fpu = WBFL::LRFD::PsStrand::GetUltimateStrength(pStrand->GetGrade());
 
    const SpecLibraryEntry* pSpec = GetSpec();
    Float64 coeff = pSpec->GetStrandStressCoefficient(CSS_AT_JACKING,pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? LOW_RELAX : STRESS_REL);
@@ -487,7 +487,7 @@ Float64 CSpecAgentImp::GetAllowableBeforeXfer(const CSegmentKey& segmentKey,pgsT
    GET_IFACE(IMaterials,pMaterial);
    const auto* pStrand = pMaterial->GetStrandMaterial(segmentKey,strandType);
 
-   Float64 fpu = lrfdPsStrand::GetUltimateStrength(pStrand->GetGrade());
+   Float64 fpu = WBFL::LRFD::PsStrand::GetUltimateStrength(pStrand->GetGrade());
 
    const SpecLibraryEntry* pSpec = GetSpec();
    Float64 coeff = pSpec->GetStrandStressCoefficient(CSS_BEFORE_TRANSFER,pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? LOW_RELAX : STRESS_REL);
@@ -505,7 +505,7 @@ Float64 CSpecAgentImp::GetAllowableAfterXfer(const CSegmentKey& segmentKey,pgsTy
    GET_IFACE(IMaterials,pMaterial);
    const auto* pStrand = pMaterial->GetStrandMaterial(segmentKey,strandType);
 
-   Float64 fpu = lrfdPsStrand::GetUltimateStrength(pStrand->GetGrade());
+   Float64 fpu = WBFL::LRFD::PsStrand::GetUltimateStrength(pStrand->GetGrade());
 
    const SpecLibraryEntry* pSpec = GetSpec();
    Float64 coeff = pSpec->GetStrandStressCoefficient(CSS_AFTER_TRANSFER,pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? LOW_RELAX : STRESS_REL);
@@ -523,7 +523,7 @@ Float64 CSpecAgentImp::GetAllowableAfterLosses(const CSegmentKey& segmentKey,pgs
    GET_IFACE(IMaterials,pMaterial);
    const auto* pStrand = pMaterial->GetStrandMaterial(segmentKey,strandType);
 
-   Float64 fpy = lrfdPsStrand::GetYieldStrength(pStrand->GetGrade(),pStrand->GetType());
+   Float64 fpy = WBFL::LRFD::PsStrand::GetYieldStrength(pStrand->GetGrade(),pStrand->GetType());
 
    const SpecLibraryEntry* pSpec = GetSpec();
    Float64 coeff = pSpec->GetStrandStressCoefficient(CSS_AFTER_ALL_LOSSES,pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? LOW_RELAX : STRESS_REL);
@@ -556,7 +556,7 @@ Float64 CSpecAgentImp::GetSegmentTendonAllowableAtJacking(const CSegmentKey& seg
    GET_IFACE(IMaterials, pMaterial);
    const auto* pStrand = pMaterial->GetSegmentTendonMaterial(segmentKey);
 
-   Float64 fpu = lrfdPsStrand::GetUltimateStrength(pStrand->GetGrade());
+   Float64 fpu = WBFL::LRFD::PsStrand::GetUltimateStrength(pStrand->GetGrade());
 
    Float64 coeff = GetSegmentTendonAllowableCoefficientAtJacking(segmentKey);
 
@@ -573,7 +573,7 @@ Float64 CSpecAgentImp::GetSegmentTendonAllowablePriorToSeating(const CSegmentKey
    GET_IFACE(IMaterials, pMaterial);
    const auto* pStrand = pMaterial->GetSegmentTendonMaterial(segmentKey);
 
-   Float64 fpy = lrfdPsStrand::GetYieldStrength(pStrand->GetGrade(), pStrand->GetType());
+   Float64 fpy = WBFL::LRFD::PsStrand::GetYieldStrength(pStrand->GetGrade(), pStrand->GetType());
 
    Float64 coeff = GetSegmentTendonAllowableCoefficientPriorToSeating(segmentKey);
 
@@ -585,7 +585,7 @@ Float64 CSpecAgentImp::GetSegmentTendonAllowableAfterAnchorSetAtAnchorage(const 
    GET_IFACE(IMaterials, pMaterial);
    const auto* pStrand = pMaterial->GetSegmentTendonMaterial(segmentKey);
 
-   Float64 fpu = lrfdPsStrand::GetUltimateStrength(pStrand->GetGrade());
+   Float64 fpu = WBFL::LRFD::PsStrand::GetUltimateStrength(pStrand->GetGrade());
 
    Float64 coeff = GetSegmentTendonAllowableCoefficientAfterAnchorSetAtAnchorage(segmentKey);
 
@@ -597,7 +597,7 @@ Float64 CSpecAgentImp::GetSegmentTendonAllowableAfterAnchorSet(const CSegmentKey
    GET_IFACE(IMaterials, pMaterial);
    const auto* pStrand = pMaterial->GetSegmentTendonMaterial(segmentKey);
 
-   Float64 fpu = lrfdPsStrand::GetUltimateStrength(pStrand->GetGrade());
+   Float64 fpu = WBFL::LRFD::PsStrand::GetUltimateStrength(pStrand->GetGrade());
 
    Float64 coeff = GetSegmentTendonAllowableCoefficientAfterAnchorSet(segmentKey);
 
@@ -609,7 +609,7 @@ Float64 CSpecAgentImp::GetSegmentTendonAllowableAfterLosses(const CSegmentKey& s
    GET_IFACE(IMaterials, pMaterial);
    const auto* pStrand = pMaterial->GetSegmentTendonMaterial(segmentKey);
 
-   Float64 fpy = lrfdPsStrand::GetYieldStrength(pStrand->GetGrade(), pStrand->GetType());
+   Float64 fpy = WBFL::LRFD::PsStrand::GetYieldStrength(pStrand->GetGrade(), pStrand->GetType());
 
    Float64 coeff = GetSegmentTendonAllowableCoefficientAfterLosses(segmentKey);
 
@@ -677,7 +677,7 @@ Float64 CSpecAgentImp::GetGirderTendonAllowableAtJacking(const CGirderKey& girde
    GET_IFACE(IMaterials,pMaterial);
    const auto* pStrand = pMaterial->GetGirderTendonMaterial(girderKey);
 
-   Float64 fpu = lrfdPsStrand::GetUltimateStrength(pStrand->GetGrade());
+   Float64 fpu = WBFL::LRFD::PsStrand::GetUltimateStrength(pStrand->GetGrade());
 
    Float64 coeff = GetGirderTendonAllowableCoefficientAtJacking(girderKey);
 
@@ -694,7 +694,7 @@ Float64 CSpecAgentImp::GetGirderTendonAllowablePriorToSeating(const CGirderKey& 
    GET_IFACE(IMaterials,pMaterial);
    const auto* pStrand = pMaterial->GetGirderTendonMaterial(girderKey);
 
-   Float64 fpy = lrfdPsStrand::GetYieldStrength(pStrand->GetGrade(),pStrand->GetType());
+   Float64 fpy = WBFL::LRFD::PsStrand::GetYieldStrength(pStrand->GetGrade(),pStrand->GetType());
 
    Float64 coeff = GetGirderTendonAllowableCoefficientPriorToSeating(girderKey);
 
@@ -706,7 +706,7 @@ Float64 CSpecAgentImp::GetGirderTendonAllowableAfterAnchorSetAtAnchorage(const C
    GET_IFACE(IMaterials,pMaterial);
    const auto* pStrand = pMaterial->GetGirderTendonMaterial(girderKey);
 
-   Float64 fpu = lrfdPsStrand::GetUltimateStrength(pStrand->GetGrade());
+   Float64 fpu = WBFL::LRFD::PsStrand::GetUltimateStrength(pStrand->GetGrade());
 
    Float64 coeff = GetGirderTendonAllowableCoefficientAfterAnchorSetAtAnchorage(girderKey);
 
@@ -718,7 +718,7 @@ Float64 CSpecAgentImp::GetGirderTendonAllowableAfterAnchorSet(const CGirderKey& 
    GET_IFACE(IMaterials,pMaterial);
    const auto* pStrand = pMaterial->GetGirderTendonMaterial(girderKey);
 
-   Float64 fpu = lrfdPsStrand::GetUltimateStrength(pStrand->GetGrade());
+   Float64 fpu = WBFL::LRFD::PsStrand::GetUltimateStrength(pStrand->GetGrade());
 
    Float64 coeff = GetGirderTendonAllowableCoefficientAfterAnchorSet(girderKey);
 
@@ -730,7 +730,7 @@ Float64 CSpecAgentImp::GetGirderTendonAllowableAfterLosses(const CGirderKey& gir
    GET_IFACE(IMaterials,pMaterial);
    const auto* pStrand = pMaterial->GetGirderTendonMaterial(girderKey);
 
-   Float64 fpy = lrfdPsStrand::GetYieldStrength(pStrand->GetGrade(),pStrand->GetType());
+   Float64 fpy = WBFL::LRFD::PsStrand::GetYieldStrength(pStrand->GetGrade(),pStrand->GetType());
 
    Float64 coeff = GetGirderTendonAllowableCoefficientAfterLosses(girderKey);
 
@@ -962,7 +962,7 @@ void CSpecAgentImp::ReportSegmentAllowableTensionStress(const pgsPointOfInterest
       if (bIsStressingInterval)
       {
          (*pPara) << _T("Tension stress limit in areas other than the precompressed tensile zone = ") << tension_coeff.SetValue(t);
-         if (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion())
+         if (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
          {
             (*pPara) << symbol(lambda);
          }
@@ -992,7 +992,7 @@ void CSpecAgentImp::ReportSegmentAllowableTensionStress(const pgsPointOfInterest
             fAllowable = GetSegmentAllowableTensionStress(poi, task, true/*with rebar*/);
 
             (*pPara) << _T("Tension stress limit in areas with sufficient bonded reinforcement = ") << tension_coeff.SetValue(t_with_rebar);
-            if (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion())
+            if (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
             {
                (*pPara) << symbol(lambda);
             }
@@ -1014,7 +1014,7 @@ void CSpecAgentImp::ReportSegmentAllowableTensionStress(const pgsPointOfInterest
       else
       {
          (*pPara) << _T("Tension stress limit in the precompressed tensile zone = ") << tension_coeff.SetValue(t);
-         if (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion())
+         if (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
          {
             (*pPara) << symbol(lambda);
          }
@@ -1102,7 +1102,7 @@ void CSpecAgentImp::ReportClosureJointAllowableTensionStress(const pgsPointOfInt
    GetClosureJointAllowableTensionStressCoefficient(poi, task, false/*without rebar*/, true/*in PTZ*/, &t, &b_t_max, &t_max);
 
    (*pPara) << _T("Tension stress limit in the precompressed tensile zone = ") << tension_coeff.SetValue(t);
-   if (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion())
+   if (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
    {
       (*pPara) << symbol(lambda);
    }
@@ -1132,7 +1132,7 @@ void CSpecAgentImp::ReportClosureJointAllowableTensionStress(const pgsPointOfInt
       fAllowable = GetClosureJointAllowableTensionStress(poi, task, true/*with rebar*/, true/*in PTZ*/);
 
       (*pPara) << _T("Tension stress limit in joints with minimum bonded auxiliary reinforcement in the precompressed tensile zone = ") << tension_coeff.SetValue(t_with_rebar);
-      if (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion())
+      if (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
       {
          (*pPara) << symbol(lambda);
       }
@@ -1144,7 +1144,7 @@ void CSpecAgentImp::ReportClosureJointAllowableTensionStress(const pgsPointOfInt
    GetClosureJointAllowableTensionStressCoefficient(poi, task, false/*without rebar*/, false/*not in PTZ*/, &t, &b_t_max, &t_max);
 
    (*pPara) << _T("Tension stress limit in areas other than the precompressed tensile zone = ") << tension_coeff.SetValue(t);
-   if (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion())
+   if (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
    {
       (*pPara) << symbol(lambda);
    }
@@ -1174,7 +1174,7 @@ void CSpecAgentImp::ReportClosureJointAllowableTensionStress(const pgsPointOfInt
       fAllowable = GetClosureJointAllowableTensionStress(poi, task, true/*with rebar*/, false/*not in PTZ*/);
 
       (*pPara) << _T("Tension stress limit in joints with minimum bonded auxiliary reinforcement in areas other than the precompressed tensile zone = ") << tension_coeff.SetValue(t_with_rebar);
-      if (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion())
+      if (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
       {
          (*pPara) << symbol(lambda);
       }
@@ -2258,8 +2258,8 @@ bool CSpecAgentImp::IsStressCheckApplicable(const CSegmentKey& segmentKey, const
 {
    ATLASSERT(::IsServiceLimitState(task.limitState) || ::IsFatigueLimitState(task.limitState) ); // must be a service limit state
 
-   if ( (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims && task.limitState == pgsTypes::FatigueI) || 
-        (lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion()&& task.limitState == pgsTypes::ServiceIA)
+   if ( (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims && task.limitState == pgsTypes::FatigueI) ||
+        (WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion()&& task.limitState == pgsTypes::ServiceIA)
         )
    {
       // if before LRFD 2009 and Fatigue I 
@@ -2494,7 +2494,7 @@ void CSpecAgentImp::ReportAllowableSegmentPrincipalWebTensionStress(const CSegme
 
       Float64 coefficient = GetAllowablePrincipalWebTensionStressCoefficient();
       *pPara << _T("Tension stress limit = ") << tension_coeff.SetValue(coefficient);
-      if (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion())
+      if (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
       {
          (*pPara) << symbol(lambda);
       }
@@ -2530,7 +2530,7 @@ void CSpecAgentImp::ReportAllowableClosureJointPrincipalWebTensionStress(const C
 
    Float64 coefficient = GetAllowablePrincipalWebTensionStressCoefficient();
    *pPara << _T("Tension stress limit = ") << tension_coeff.SetValue(coefficient);
-   if (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion())
+   if (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
    {
       (*pPara) << symbol(lambda);
    }
@@ -2708,7 +2708,7 @@ Float64 CSpecAgentImp::GetRequiredConcreteStrength(const pgsPointOfInterest& poi
 
                Float64 fc_28 = pMaterials->GetSegmentFc28(segmentKey);
                const auto& pConcrete = pMaterials->GetSegmentConcrete(poi.GetSegmentKey());
-               const lrfdLRFDConcreteBase* pLRFDConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(pConcrete.get());
+               const auto* pLRFDConcrete = dynamic_cast<const WBFL::LRFD::LRFDConcreteBase*>(pConcrete.get());
                Float64 f_fc = pLRFDConcrete->GetFirstCrackingStrength();
 
                GET_IFACE(IIntervals, pIntervals);
@@ -2741,19 +2741,19 @@ Float64 CSpecAgentImp::GetRequiredConcreteStrength(const pgsPointOfInterest& poi
 /////////////////////////////////////////////////////////////////////////////
 // ITransverseReinforcementSpec
 //
-WBFL::Materials::Rebar::Size CSpecAgentImp::GetMinConfinmentBarSize() const
+WBFL::Materials::Rebar::Size CSpecAgentImp::GetMinConfinementBarSize() const
 {
-   return lrfdRebar::GetMinConfinmentBarSize();
+   return WBFL::LRFD::Rebar::GetMinConfinementBarSize();
 }
 
-Float64 CSpecAgentImp::GetMaxConfinmentBarSpacing() const
+Float64 CSpecAgentImp::GetMaxConfinementBarSpacing() const
 {
-   return lrfdRebar::GetMaxConfinmentBarSpacing();
+   return WBFL::LRFD::Rebar::GetMaxConfinementBarSpacing();
 }
 
-Float64 CSpecAgentImp::GetMinConfinmentAvS() const
+Float64 CSpecAgentImp::GetMinConfinementAvS() const
 {
-   return lrfdRebar::GetMinConfinmentAvS();
+   return WBFL::LRFD::Rebar::GetMinConfinementAvS();
 }
 
 void CSpecAgentImp::GetMaxStirrupSpacing(Float64 dv,Float64* pSmax1, Float64* pSmax2) const
@@ -2774,7 +2774,7 @@ Float64 CSpecAgentImp::GetMinStirrupSpacing(Float64 maxAggregateSize, Float64 ba
 
    const SpecLibraryEntry* pSpec = GetSpec();
    Float64 abs_min_spc;
-   if (pSpec->GetSpecificationUnits()==lrfdVersionMgr::SI)
+   if (pSpec->GetSpecificationUnits()==WBFL::LRFD::LRFDVersionMgr::Units::SI)
    {
       abs_min_spc = WBFL::Units::ConvertToSysUnits(25., WBFL::Units::Measure::Millimeter);
    }
@@ -2796,7 +2796,7 @@ Float64 CSpecAgentImp::GetMinTopFlangeThickness() const
    const SpecLibraryEntry* pSpec = GetSpec();
 
    Float64 dim;
-   if (pSpec->GetSpecificationUnits()==lrfdVersionMgr::SI)
+   if (pSpec->GetSpecificationUnits()==WBFL::LRFD::LRFDVersionMgr::Units::SI)
    {
       dim = WBFL::Units::ConvertToSysUnits(50., WBFL::Units::Measure::Millimeter);
    }
@@ -2836,7 +2836,7 @@ Float64 CSpecAgentImp::GetMinWebThickness() const
    Float64 dim;
    if ( bPostTension )
    {
-      if (pSpec->GetSpecificationUnits()==lrfdVersionMgr::SI)
+      if (pSpec->GetSpecificationUnits()==WBFL::LRFD::LRFDVersionMgr::Units::SI)
       {
          dim = WBFL::Units::ConvertToSysUnits(165., WBFL::Units::Measure::Millimeter);
       }
@@ -2847,7 +2847,7 @@ Float64 CSpecAgentImp::GetMinWebThickness() const
    }
    else
    {
-      if (pSpec->GetSpecificationUnits()==lrfdVersionMgr::SI)
+      if (pSpec->GetSpecificationUnits()==WBFL::LRFD::LRFDVersionMgr::Units::SI)
       {
          dim = WBFL::Units::ConvertToSysUnits(125., WBFL::Units::Measure::Millimeter);
       }
@@ -2865,7 +2865,7 @@ Float64 CSpecAgentImp::GetMinBottomFlangeThickness() const
    const SpecLibraryEntry* pSpec = GetSpec();
 
    Float64 dim;
-   if (pSpec->GetSpecificationUnits()==lrfdVersionMgr::SI)
+   if (pSpec->GetSpecificationUnits()==WBFL::LRFD::LRFDVersionMgr::Units::SI)
    {
       dim = WBFL::Units::ConvertToSysUnits(125., WBFL::Units::Measure::Millimeter);
    }
@@ -3957,7 +3957,7 @@ bool CSpecAgentImp::CheckDebondingInWebWidthProjections(const CSegmentKey& segme
 #endif
 bool CSpecAgentImp::IsExteriorStrandBondingRequiredInRow(const CSegmentKey& segmentKey, pgsTypes::MemberEndType endType, RowIndexType rowIdx) const
 {
-   if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::NinthEdition2020)
+   if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020)
    {
       // exterior strands in each row are required to be bonded
       return true;
@@ -4023,8 +4023,8 @@ void CSpecAgentImp::GetFlexuralStrainLimits(WBFL::Materials::PsStrand::Grade gra
 
 void CSpecAgentImp::GetFlexuralStrainLimits(WBFL::Materials::Rebar::Grade rebarGrade,Float64* pecl,Float64* petl) const
 {
-   *pecl = lrfdRebar::GetCompressionControlledStrainLimit(rebarGrade);
-   *petl = lrfdRebar::GetTensionControlledStrainLimit(rebarGrade);
+   *pecl = WBFL::LRFD::Rebar::GetCompressionControlledStrainLimit(rebarGrade);
+   *petl = WBFL::LRFD::Rebar::GetTensionControlledStrainLimit(rebarGrade);
 
 #if defined _DEBUG
    Float64 ecl, etl;
@@ -4077,7 +4077,7 @@ Float64 CSpecAgentImp::GetShearResistanceFactor(const pgsPointOfInterest& poi, p
    const SpecLibraryEntry* pSpec = GetSpec();
 
    // different phi factor for debonding only applies to 8th edition and later
-   if (pSpec->GetSpecificationType() >= lrfdVersionMgr::EighthEdition2017)
+   if (pSpec->GetSpecificationType() >= WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017)
    {
       const CSegmentKey& segkey(poi.GetSegmentKey());
       GET_IFACE(IStrandGeometry, pStrandGeom);
@@ -4144,7 +4144,7 @@ Float64 CSpecAgentImp::GetMaxShearConnectorSpacing(const pgsPointOfInterest& poi
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    Float64 sMax = pSpec->GetMaxInterfaceShearConnectorSpacing();
-   if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       GET_IFACE(ISectionProperties,pSectProp);
       GET_IFACE(IIntervals,pIntervals);

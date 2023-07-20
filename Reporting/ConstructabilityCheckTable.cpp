@@ -1929,27 +1929,3 @@ void CConstructabilityCheckTable::MakeAssignment(const CConstructabilityCheckTab
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CConstructabilityCheckTable::AssertValid() const
-{
-   return true;
-}
-
-void CConstructabilityCheckTable::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for CConstructabilityCheckTable") << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CConstructabilityCheckTable::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("CConstructabilityCheckTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CConstructabilityCheckTable");
-
-   TESTME_EPILOG("CConstructabilityCheckTable");
-}
-#endif // _UNITTEST

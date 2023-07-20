@@ -33,7 +33,7 @@
 #include <EAF\EAFApp.h>
 #include <EAF\EAFDisplayUnits.h>
 
-#include <Lrfd\RebarPool.h>
+#include <LRFD\RebarPool.h>
 #include <IFace\BeamFactory.h>
 
 #include <Plugins\BeamFamilyCLSID.h>
@@ -449,10 +449,10 @@ bool CGirderMainSheet::ExchangeStrandData(CDataExchange* pDX)
       // grab a reference to grid's internal data to save typing
       CGirderGlobalStrandGrid::EntryCollectionType& grid_collection =  m_GirderPermanentStrandPage.m_MainGrid.m_Entries;
 
-      CollectionIndexType g_cnt = grid_collection.size();
+      IndexType g_cnt = grid_collection.size();
       StrandIndexType num_straight=0;
       StrandIndexType num_harped=0;
-      for (CollectionIndexType g_idx=0; g_idx<g_cnt; g_idx++)
+      for (IndexType g_idx=0; g_idx<g_cnt; g_idx++)
       {
          const CGirderGlobalStrandGrid::GlobalStrandGridEntry& entry = grid_collection[g_idx];
 

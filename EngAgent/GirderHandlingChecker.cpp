@@ -108,30 +108,6 @@ pgsGirderHaulingChecker* pgsGirderHandlingChecker::CreateGirderHaulingChecker()
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
 
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool pgsGirderHandlingChecker::AssertValid() const
-{
-   return true;
-}
-
-void pgsGirderHandlingChecker::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << "Dump for pgsGirderHandlingChecker" << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool pgsGirderHandlingChecker::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("pgsGirderHandlingChecker");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for pgsGirderHandlingChecker");
-
-   TESTME_EPILOG("GirderHandlingChecker");
-}
-#endif // _UNITTEST
-
 
 void pgsGirderHandlingChecker::ComputeMoments(IBroker* pBroker, pgsGirderModelFactory* pGirderModelFactory,
                                               const CSegmentKey& segmentKey,

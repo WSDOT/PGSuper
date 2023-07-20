@@ -249,27 +249,3 @@ pgsDesignCodes::OutcomeType pgsGirderLiftingChecker::DesignLifting(const CSegmen
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool pgsGirderLiftingChecker::AssertValid() const
-{
-   return true;
-}
-
-void pgsGirderLiftingChecker::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << "Dump for pgsGirderLiftingChecker" << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool pgsGirderLiftingChecker::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("pgsGirderLiftingChecker");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for pgsGirderLiftingChecker");
-
-   TESTME_EPILOG("GirderHandlingChecker");
-}
-#endif // _UNITTEST

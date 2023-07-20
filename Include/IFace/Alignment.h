@@ -170,11 +170,11 @@ interface IGeometry : IUnknown
    virtual HRESULT PointOnLineSegment(IPoint2d* from,ILineSegment2d* seg,Float64 offset,IPoint2d** point) const = 0;
 
    // Divide
-   virtual HRESULT Arc(IPoint2d* from, IPoint2d* vertex, IPoint2d* to,CollectionIndexType nParts,IPoint2dCollection** points) const = 0;
-   virtual HRESULT BetweenPoints(IPoint2d* from, IPoint2d* to,CollectionIndexType nParts,IPoint2dCollection** points) const = 0;
-   virtual HRESULT LineSegment(ILineSegment2d* seg,CollectionIndexType nParts,IPoint2dCollection** points) const = 0;
-	virtual HRESULT CompoundCurve(ICompoundCurve* curve, CollectionIndexType nParts, IPoint2dCollection** points) const = 0;
-   virtual HRESULT Path(IPath* pPath,CollectionIndexType nParts,Float64 start,Float64 end,IPoint2dCollection** points) const = 0;
+   virtual HRESULT Arc(IPoint2d* from, IPoint2d* vertex, IPoint2d* to,IndexType nParts,IPoint2dCollection** points) const = 0;
+   virtual HRESULT BetweenPoints(IPoint2d* from, IPoint2d* to,IndexType nParts,IPoint2dCollection** points) const = 0;
+   virtual HRESULT LineSegment(ILineSegment2d* seg,IndexType nParts,IPoint2dCollection** points) const = 0;
+	virtual HRESULT CompoundCurve(ICompoundCurve* curve, IndexType nParts, IPoint2dCollection** points) const = 0;
+   virtual HRESULT Path(IPath* pPath,IndexType nParts,Float64 start,Float64 end,IPoint2dCollection** points) const = 0;
 
    // Tangent
    virtual HRESULT External(IPoint2d* center1, Float64 radius1,IPoint2d* center2,Float64 radius2,TangentSignType sign, IPoint2d** t1,IPoint2d** t2) const = 0;

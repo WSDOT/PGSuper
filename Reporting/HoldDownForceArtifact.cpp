@@ -187,27 +187,3 @@ void CHoldDownForceCheck::MakeAssignment(const CHoldDownForceCheck& rOther)
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CHoldDownForceCheck::AssertValid() const
-{
-   return true;
-}
-
-void CHoldDownForceCheck::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for CHoldDownForceCheck") << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CHoldDownForceCheck::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("CHoldDownForceCheck");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CHoldDownForceCheck");
-
-   TESTME_EPILOG("LiveLoadDistributionFactorTable");
-}
-#endif // _UNITTEST

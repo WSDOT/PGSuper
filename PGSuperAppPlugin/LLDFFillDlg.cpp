@@ -66,7 +66,7 @@ void CLLDFFillDlg::DoDataExchange(CDataExchange* pDX)
    int action;
    if ( !pDX->m_bSaveAndValidate )
    {
-      action = GetIntForLldfAction(m_LldfRangeOfApplicabilityAction);
+      action = GetIntForLldfAction(m_RangeOfApplicabilityAction);
    }
 
    DDX_CBIndex(pDX, IDC_ROA_CB, action );
@@ -74,7 +74,7 @@ void CLLDFFillDlg::DoDataExchange(CDataExchange* pDX)
 
    if ( pDX->m_bSaveAndValidate )
    {
-      m_LldfRangeOfApplicabilityAction = GetLldfActionForInt(action);
+      m_RangeOfApplicabilityAction = GetLldfActionForInt(action);
 
       // Only save combo values on way out
       DDX_CBIndex(pDX, IDC_GIRDER_SPAN, m_GIRDER_SPAN_INT);
@@ -413,19 +413,19 @@ pgsTypes::DistributionFactorMethod CLLDFFillDlg::GetDistributionFactorMethod()
    }
 }
 
-LldfRangeOfApplicabilityAction CLLDFFillDlg::GetLldfRangeOfApplicabilityAction()
+WBFL::LRFD::RangeOfApplicabilityAction CLLDFFillDlg::GetRangeOfApplicabilityAction()
 {
    if(m_ROA_INT==0)
    {
-      return roaEnforce;
+      return WBFL::LRFD::RangeOfApplicabilityAction::Enforce;
    }
    else if(m_ROA_INT== 1)
    {
-      return roaIgnore;
+      return WBFL::LRFD::RangeOfApplicabilityAction::Ignore;
    }
    else
    {
-      return roaIgnoreUseLeverRule;
+      return WBFL::LRFD::RangeOfApplicabilityAction::IgnoreUseLeverRule;
    }
 }
 

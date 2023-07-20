@@ -31,7 +31,7 @@ class txnEditLLDF : public CEAFTransaction
 {
 public:
    txnEditLLDF(const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc,
-               LldfRangeOfApplicabilityAction OldROA,LldfRangeOfApplicabilityAction newROA);
+               WBFL::LRFD::RangeOfApplicabilityAction OldROA,WBFL::LRFD::RangeOfApplicabilityAction newROA);
 
    ~txnEditLLDF();
 
@@ -45,7 +45,7 @@ public:
 private:
    // index 0 = old data (before edit), index 1 = new data (after edit)
 	CBridgeDescription2* m_pBridgeDesc[2];
-   LldfRangeOfApplicabilityAction m_ROA[2];
+   WBFL::LRFD::RangeOfApplicabilityAction m_ROA[2];
 
    void DoExecute(int i);
 };

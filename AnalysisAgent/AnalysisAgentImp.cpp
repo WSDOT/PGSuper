@@ -925,13 +925,13 @@ CAnalysisAgentImp::CamberModelData CAnalysisAgentImp::BuildCamberModel(const CSe
       loadingY->get_PointLoads(&pointLoadsY);
 
       LoadIDType ptLoadIDX;
-      pointLoadsX->get_Count((CollectionIndexType*)&ptLoadIDX);
+      pointLoadsX->get_Count((IndexType*)&ptLoadIDX);
 
       LoadIDType distLoadIDX;
-      distLoadsX->get_Count((CollectionIndexType*)&distLoadIDX);
+      distLoadsX->get_Count((IndexType*)&distLoadIDX);
 
       LoadIDType ptLoadIDY;
-      pointLoadsY->get_Count((CollectionIndexType*)&ptLoadIDY);
+      pointLoadsY->get_Count((IndexType*)&ptLoadIDY);
 
       for(const auto& equivLoad : vLoads)
       {
@@ -1034,13 +1034,13 @@ void CAnalysisAgentImp::BuildTempCamberModel(const CSegmentKey& segmentKey,const
    loadingX->get_DistributedLoads(&distLoadsX);
 
    LoadIDType ptLoadIDX;
-   pointLoadsX->get_Count((CollectionIndexType*)&ptLoadIDX);
+   pointLoadsX->get_Count((IndexType*)&ptLoadIDX);
 
    LoadIDType ptLoadIDY;
-   pointLoadsY->get_Count((CollectionIndexType*)&ptLoadIDY);
+   pointLoadsY->get_Count((IndexType*)&ptLoadIDY);
 
    LoadIDType distLoadIDX;
-   distLoadsX->get_Count(((CollectionIndexType*)&distLoadIDX));
+   distLoadsX->get_Count(((IndexType*)&distLoadIDX));
 
    for( const auto& equivLoad : vInstallationLoads)
    {
@@ -1092,15 +1092,15 @@ void CAnalysisAgentImp::BuildTempCamberModel(const CSegmentKey& segmentKey,const
 
    pointLoadsX.Release();
    loadingX->get_PointLoads(&pointLoadsX);
-   pointLoadsX->get_Count((CollectionIndexType*)&ptLoadIDX);
+   pointLoadsX->get_Count((IndexType*)&ptLoadIDX);
 
    pointLoadsY.Release();
    loadingY->get_PointLoads(&pointLoadsY);
-   pointLoadsY->get_Count((CollectionIndexType*)&ptLoadIDY);
+   pointLoadsY->get_Count((IndexType*)&ptLoadIDY);
 
    distLoadsX.Release();
    loadingX->get_DistributedLoads(&distLoadsX);
-   distLoadsX->get_Count((CollectionIndexType*)&distLoadIDX);
+   distLoadsX->get_Count((IndexType*)&distLoadIDX);
 
    for( const auto& equivLoad : vRemovalLoads)
    {
@@ -6656,7 +6656,7 @@ void CAnalysisAgentImp::GetDesignStress(const StressCheckTask& task,const pgsPoi
       Float64 fc_lldf = pConfig->fc ;
       if ( pGirderMaterial->Concrete.bUserEc )
       {
-         fc_lldf = lrfdConcreteUtil::FcFromEc( (WBFL::Materials::ConcreteType)pGirderMaterial->Concrete.Type, pGirderMaterial->Concrete.Ec, pGirderMaterial->Concrete.StrengthDensity );
+         fc_lldf = WBFL::LRFD::ConcreteUtil::FcFromEc( (WBFL::Materials::ConcreteType)pGirderMaterial->Concrete.Type, pGirderMaterial->Concrete.Ec, pGirderMaterial->Concrete.StrengthDensity );
       }
 
       GET_IFACE(ILiveLoadDistributionFactors,pLLDF);
@@ -6830,7 +6830,7 @@ CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(const CSeg
       }
    }
 
-   std::shared_ptr<const lrfdCreepCoefficient> cc = GetGirderCreepModel(segmentKey, pConfig);
+   std::shared_ptr<const WBFL::LRFD::CreepCoefficient> cc = GetGirderCreepModel(segmentKey, pConfig);
    
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(ISpecification, pSpec);
@@ -6840,7 +6840,7 @@ CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(const CSeg
    CREEPCOEFFICIENTDETAILS details;
    details.Method = pSpecEntry->GetCreepMethod();
    ATLASSERT(details.Method == CREEP_LRFD); // only supporting LRFD method... the old WSDOT method is out
-   details.Spec = (pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004) ? CREEP_SPEC_PRE_2005 : CREEP_SPEC_2005;
+   details.Spec = (pSpecEntry->GetSpecificationType() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004) ? CREEP_SPEC_PRE_2005 : CREEP_SPEC_2005;
    details.kl = -99999; // dummy value since this parameter isn't always used
 
    try
@@ -6883,7 +6883,7 @@ CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(const CSeg
        }
 
 
-       std::shared_ptr<const lrfdCreepCoefficient2005> lrfd_cc = std::dynamic_pointer_cast<const lrfdCreepCoefficient2005>(cc);
+       std::shared_ptr<const WBFL::LRFD::CreepCoefficient2005> lrfd_cc = std::dynamic_pointer_cast<const WBFL::LRFD::CreepCoefficient2005>(cc);
        if (lrfd_cc)
        {
            details.K1 = lrfd_cc->GetK1();
@@ -6899,18 +6899,18 @@ CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(const CSeg
        details.H = cc->GetRelHumidity();
        details.kf = cc->GetKf();
        details.VSratio = cc->GetVolume() / cc->GetSurfaceArea();
-       details.CuringMethod = cc->GetCuringMethod();
+       details.CuringMethod = (Uint32)cc->GetCuringMethod();
        details.ktd = cc->GetKtd(t);
 
        details.Ct = cc->GetCreepCoefficient(t, ti);
    }
 #if defined _DEBUG
-   catch (lrfdXCreepCoefficient& ex)
+   catch (WBFL::LRFD::XCreepCoefficient& ex)
 #else
-   catch (lrfdXCreepCoefficient& /*ex*/)
+   catch (WBFL::LRFD::XCreepCoefficient& /*ex*/)
 #endif // _DEBUG
    {
-       ATLASSERT(ex.GetReason() == lrfdXCreepCoefficient::VSRatio);
+       ATLASSERT(ex.GetReasonCode() == WBFL::LRFD::XCreepCoefficient::Reason::VSRatio);
 
        std::_tstring strMsg(_T("V/S Ratio exceeds maximum value per C5.4.2.3.2. Use a different method for estimating creep"));
 
@@ -6931,9 +6931,9 @@ CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(const CSeg
    return details;
 }
 
-std::shared_ptr<const lrfdCreepCoefficient> CAnalysisAgentImp::GetGirderCreepModel(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig) const
+std::shared_ptr<const WBFL::LRFD::CreepCoefficient> CAnalysisAgentImp::GetGirderCreepModel(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig) const
 {
-    std::shared_ptr<lrfdCreepCoefficient> cc;
+    std::shared_ptr<WBFL::LRFD::CreepCoefficient> cc;
     if (pConfig == nullptr)
     {
         auto found = m_GirderCreepModels.find(segmentKey);
@@ -6952,19 +6952,19 @@ std::shared_ptr<const lrfdCreepCoefficient> CAnalysisAgentImp::GetGirderCreepMod
     GET_IFACE(ILibrary, pLib);
     GET_IFACE(ISpecification, pSpec);
     const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-    Uint32 spec = (pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004) ? CREEP_SPEC_PRE_2005 : CREEP_SPEC_2005;
+    Uint32 spec = (pSpecEntry->GetSpecificationType() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004) ? CREEP_SPEC_PRE_2005 : CREEP_SPEC_2005;
 
    if (spec == CREEP_SPEC_PRE_2005)
    {
-      cc = std::make_shared<lrfdCreepCoefficient>();
+      cc = std::make_shared<WBFL::LRFD::CreepCoefficient>();
    }
    else
    {
       GET_IFACE(IMaterials, pMaterials);
-      std::shared_ptr<lrfdCreepCoefficient2005> lrfd_cc;
+      std::shared_ptr<WBFL::LRFD::CreepCoefficient2005> lrfd_cc;
       if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC)
       {
-         std::shared_ptr<lrfdPCIUHPCCreepCoefficient> uhpc_cc = std::make_shared<lrfdPCIUHPCCreepCoefficient>();
+         std::shared_ptr<WBFL::LRFD::PCIUHPCCreepCoefficient> uhpc_cc = std::make_shared<WBFL::LRFD::PCIUHPCCreepCoefficient>();
 
          GET_IFACE(ISegmentData, pSegment);
          bool bPCTTGirder = pSegment->GetSegmentMaterial(segmentKey)->Concrete.bPCTT;
@@ -6974,12 +6974,12 @@ std::shared_ptr<const lrfdCreepCoefficient> CAnalysisAgentImp::GetGirderCreepMod
       }
       else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
       {
-         std::shared_ptr<lrfdUHPCCreepCoefficient> uhpc_cc = std::make_shared<lrfdUHPCCreepCoefficient>();
+         std::shared_ptr<WBFL::LRFD::UHPCCreepCoefficient> uhpc_cc = std::make_shared<WBFL::LRFD::UHPCCreepCoefficient>();
          lrfd_cc = uhpc_cc;
       }
       else
       {
-         lrfd_cc = std::make_shared<lrfdCreepCoefficient2005>();
+         lrfd_cc = std::make_shared<WBFL::LRFD::CreepCoefficient2005>();
       }
 
 
@@ -6992,7 +6992,7 @@ std::shared_ptr<const lrfdCreepCoefficient> CAnalysisAgentImp::GetGirderCreepMod
    GET_IFACE(IEnvironment, pEnvironment);
    GET_IFACE(ISectionProperties, pSectProp);
 
-   cc->SetCuringMethod(pSpecEntry->GetCuringMethod() == CURING_ACCELERATED ? lrfdCreepCoefficient::Accelerated : lrfdCreepCoefficient::Normal);
+   cc->SetCuringMethod(pSpecEntry->GetCuringMethod() == CURING_ACCELERATED ? WBFL::LRFD::CreepCoefficient::CuringMethod::Accelerated : WBFL::LRFD::CreepCoefficient::CuringMethod::Normal);
    cc->SetRelHumidity(pEnvironment->GetRelHumidity());
    Float64 V, S;
    pSectProp->GetSegmentVolumeAndSurfaceArea(segmentKey, &V, &S);
@@ -7012,7 +7012,7 @@ std::shared_ptr<const lrfdCreepCoefficient> CAnalysisAgentImp::GetGirderCreepMod
     return cc;
 }
 
-std::shared_ptr<const lrfdCreepCoefficient2005> CAnalysisAgentImp::GetDeckCreepModel(IndexType deckCastingRegionIdx) const
+std::shared_ptr<const WBFL::LRFD::CreepCoefficient2005> CAnalysisAgentImp::GetDeckCreepModel(IndexType deckCastingRegionIdx) const
 {
     auto found = m_DeckCreepModels.find(deckCastingRegionIdx);
     if (found != m_DeckCreepModels.end())
@@ -7021,10 +7021,10 @@ std::shared_ptr<const lrfdCreepCoefficient2005> CAnalysisAgentImp::GetDeckCreepM
     }
 
     GET_IFACE(IMaterials, pMaterials);
-    std::shared_ptr<lrfdCreepCoefficient2005> lrfd_cc;
+    std::shared_ptr<WBFL::LRFD::CreepCoefficient2005> lrfd_cc;
     ATLASSERT(!IsUHPC(pMaterials->GetDeckConcreteType()));
 
-    lrfd_cc = std::make_shared<lrfdCreepCoefficient2005>();
+    lrfd_cc = std::make_shared<WBFL::LRFD::CreepCoefficient2005>();
     lrfd_cc->SetK1(pMaterials->GetDeckCreepK1());
     lrfd_cc->SetK2(pMaterials->GetDeckCreepK2());
 
@@ -7033,7 +7033,7 @@ std::shared_ptr<const lrfdCreepCoefficient2005> CAnalysisAgentImp::GetDeckCreepM
     GET_IFACE(IEnvironment, pEnvironment);
     GET_IFACE(ISectionProperties, pSectProp);
 
-    lrfd_cc->SetCuringMethod(lrfdCreepCoefficient::Normal);
+    lrfd_cc->SetCuringMethod(WBFL::LRFD::CreepCoefficient::CuringMethod::Normal);
     lrfd_cc->SetRelHumidity(pEnvironment->GetRelHumidity());
 
     Float64 V, S;
@@ -9831,7 +9831,7 @@ Float64 CAnalysisAgentImp::GetContinuityStressLevel(PierIndexType pierIdx,const 
       next_group_gdr_idx = Min(gdrIdx,pBridge->GetGirderCount(aheadGroupIdx)-1);
    }
 
-   CollectionIndexType nPOI = 0;
+   IndexType nPOI = 0;
    pgsPointOfInterest vPOI[2];
 
    GET_IFACE(IIntervals,pIntervals);
@@ -9872,7 +9872,7 @@ Float64 CAnalysisAgentImp::GetContinuityStressLevel(PierIndexType pierIdx,const 
    }
 
    Float64 f[2] = {0,0};
-   for ( CollectionIndexType i = 0; i < nPOI; i++ )
+   for ( IndexType i = 0; i < nPOI; i++ )
    {
       pgsPointOfInterest& poi = vPOI[i];
       ATLASSERT( 0 <= poi.GetID() );

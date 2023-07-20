@@ -427,7 +427,7 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
                (*p_table)(row,col++) << RPT_NA;
             }
 
-            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
             {
                if ( reactionDecider.DoReport(lastIntervalIdx) )
                {
@@ -843,7 +843,7 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
                (*p_table)(row,col++) << RPT_NA;
             }
 
-            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
             {
                if ( reactionDecider.DoReport(lastIntervalIdx) )
                {
@@ -1099,27 +1099,3 @@ void CProductReactionTable::MakeAssignment(const CProductReactionTable& rOther)
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CProductReactionTable::AssertValid() const
-{
-   return true;
-}
-
-void CProductReactionTable::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for CProductReactionTable") << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CProductReactionTable::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("CProductReactionTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CProductReactionTable");
-
-   TESTME_EPILOG("CProductReactionTable");
-}
-#endif // _UNITTEST

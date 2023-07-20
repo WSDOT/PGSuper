@@ -29,7 +29,7 @@
 #include <IFace\Intervals.h>
 #include <IFace\Bridge.h>
 
-#include <Lrfd\ConcreteUtil.h>
+#include <LRFD\ConcreteUtil.h>
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\ClosureJointData.h>
 #include <PgsExt\GirderLabel.h>
@@ -106,11 +106,11 @@ void CConcreteManager::ValidateConcrete() const
       }
       else
       {
-         modE = lrfdConcreteUtil::ModE((WBFL::Materials::ConcreteType)pDeck->Concrete.Type,pDeck->Concrete.Fc,
+         modE = WBFL::LRFD::ConcreteUtil::ModE((WBFL::Materials::ConcreteType)pDeck->Concrete.Type,pDeck->Concrete.Fc,
             pDeck->Concrete.StrengthDensity,
             false /* ignore LRFD range checks */);
 
-         if (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion())
+         if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
          {
             modE *= (pDeck->Concrete.EcK1*pDeck->Concrete.EcK2);
          }
@@ -174,11 +174,11 @@ void CConcreteManager::ValidateConcrete() const
    }
    else
    {
-      modE = lrfdConcreteUtil::ModE((WBFL::Materials::ConcreteType)pLeftRailingSystem->Concrete.Type,pLeftRailingSystem->Concrete.Fc, 
+      modE = WBFL::LRFD::ConcreteUtil::ModE((WBFL::Materials::ConcreteType)pLeftRailingSystem->Concrete.Type,pLeftRailingSystem->Concrete.Fc, 
                                     pLeftRailingSystem->Concrete.StrengthDensity, 
                                     false /* ignore LRFD range checks */ );
 
-      if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
       {
          modE *= pLeftRailingSystem->Concrete.EcK1*pLeftRailingSystem->Concrete.EcK2;
       }
@@ -195,11 +195,11 @@ void CConcreteManager::ValidateConcrete() const
    }
    else
    {
-      modE = lrfdConcreteUtil::ModE((WBFL::Materials::ConcreteType)pRightRailingSystem->Concrete.Type,pRightRailingSystem->Concrete.Fc, 
+      modE = WBFL::LRFD::ConcreteUtil::ModE((WBFL::Materials::ConcreteType)pRightRailingSystem->Concrete.Type,pRightRailingSystem->Concrete.Fc, 
                                     pRightRailingSystem->Concrete.StrengthDensity, 
                                     false /* ignore LRFD range checks */ );
 
-      if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
       {
          modE *= pRightRailingSystem->Concrete.EcK1*pRightRailingSystem->Concrete.EcK2;
       }
@@ -288,11 +288,11 @@ void CConcreteManager::ValidateConcrete() const
       }
       else
       {
-         modE = lrfdConcreteUtil::ModE((WBFL::Materials::ConcreteType)LJConcrete.Type,LJConcrete.Fc,
+         modE = WBFL::LRFD::ConcreteUtil::ModE((WBFL::Materials::ConcreteType)LJConcrete.Type,LJConcrete.Fc,
             LJConcrete.StrengthDensity,
             false /* ignore LRFD range checks */);
 
-         if (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion())
+         if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
          {
             modE *= (LJConcrete.EcK1*LJConcrete.EcK2);
          }
@@ -338,11 +338,11 @@ void CConcreteManager::ValidateConcrete() const
          }
          else
          {
-            modE = lrfdConcreteUtil::ModE( (WBFL::Materials::ConcreteType)concrete.Type, concrete.Fc, 
+            modE = WBFL::LRFD::ConcreteUtil::ModE( (WBFL::Materials::ConcreteType)concrete.Type, concrete.Fc, 
                                            concrete.StrengthDensity, 
                                            false /* ignore LRFD range checks */ );
 
-            if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
             {
                modE *= (concrete.EcK1 * concrete.EcK2);
             }
@@ -363,10 +363,10 @@ void CConcreteManager::ValidateConcrete() const
    GET_IFACE_NOCHECK(IEAFStatusCenter,pStatusCenter);
 
    // per 5.4.2.1 f'c must exceed 28 MPa (4 ksi)
-   bool bSI = lrfdVersionMgr::GetUnits() == lrfdVersionMgr::SI ? true : false;
+   bool bSI = WBFL::LRFD::LRFDVersionMgr::GetUnits() == WBFL::LRFD::LRFDVersionMgr::Units::SI ? true : false;
    Float64 fcMin = bSI ? WBFL::Units::ConvertToSysUnits(28, WBFL::Units::Measure::MPa) : WBFL::Units::ConvertToSysUnits(4, WBFL::Units::Measure::KSI);
 
-   Float64 fcMax = (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::EighthEdition2017 ? 10.0 : 15.0); // KSI... limit went from 10ksi to 15ksi in 8th edition
+   Float64 fcMax = (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017 ? 10.0 : 15.0); // KSI... limit went from 10ksi to 15ksi in 8th edition
    fcMax = WBFL::Units::ConvertToSysUnits(fcMax, WBFL::Units::Measure::KSI);
 
    // check railing system
@@ -814,7 +814,7 @@ void CConcreteManager::ValidateConcreteParameters(std::unique_ptr<WBFL::Material
 
    if (concreteType == pgsTypes::PCI_UHPC)
    {
-      if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::NinthEdition2020)
+      if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020)
       {
          strMsg = _T("The project criteria must be based on AASHTO LRFD 9th Edition 2020 or later when PCI UHPC materials are used.");
          pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(elementType, pgsConcreteStrengthStatusItem::Specification, segmentKey, m_StatusGroupID, m_scidConcreteStrengthError, strMsg.c_str());
@@ -844,11 +844,11 @@ void CConcreteManager::ValidateConcreteParameters(std::unique_ptr<WBFL::Material
       }
 
       Float64 ffc;
-      const auto* pLRFDConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(pConcrete.get());
+      const auto* pLRFDConcrete = dynamic_cast<const WBFL::LRFD::LRFDConcreteBase*>(pConcrete.get());
       ffc = pLRFDConcrete->GetFirstCrackingStrength();
 
       Float64 ffcMin, fpeakMin, frrMin;
-      lrfdConcreteUtil::GetPCIUHPCMinProperties(&fcMin, &ffcMin, &fpeakMin, &frrMin);
+      WBFL::LRFD::ConcreteUtil::GetPCIUHPCMinProperties(&fcMin, &ffcMin, &fpeakMin, &frrMin);
 
       if (ffc < ffcMin)
       {
@@ -863,7 +863,7 @@ void CConcreteManager::ValidateConcreteParameters(std::unique_ptr<WBFL::Material
    }
    else if (concreteType == pgsTypes::UHPC)
    {
-      if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::NinthEdition2020)
+      if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020)
       {
          strMsg = _T("The project criteria must be based on AASHTO LRFD 9th Edition 2020 or later when UHPC materials are used.");
          pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(elementType, pgsConcreteStrengthStatusItem::Specification, segmentKey, m_StatusGroupID, m_scidConcreteStrengthError, strMsg.c_str());
@@ -882,7 +882,7 @@ void CConcreteManager::ValidateConcreteParameters(std::unique_ptr<WBFL::Material
          pStatusCenter->Add(pStatusItem);
       }
 
-      const auto* pLRFDConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(pConcrete.get());
+      const auto* pLRFDConcrete = dynamic_cast<const WBFL::LRFD::LRFDConcreteBase*>(pConcrete.get());
       Float64 ftcr = pLRFDConcrete->GetDesignEffectiveCrackingStrength();
       Float64 ftcr_min = WBFL::Units::ConvertToSysUnits(0.75, WBFL::Units::Measure::KSI);
       if (ftcr < ftcr_min)
@@ -952,12 +952,12 @@ void CConcreteManager::ValidateConcreteParameters(std::unique_ptr<WBFL::Material
 
       Float64 fcMin, fcMax;
       // per 5.4.2.1 f'c must exceed 28 MPa (4 ksi)
-      bool bSI = lrfdVersionMgr::GetUnits() == lrfdVersionMgr::SI ? true : false;
+      bool bSI = WBFL::LRFD::LRFDVersionMgr::GetUnits() == WBFL::LRFD::LRFDVersionMgr::Units::SI ? true : false;
       fcMin = bSI ? WBFL::Units::ConvertToSysUnits(28, WBFL::Units::Measure::MPa) : WBFL::Units::ConvertToSysUnits(4, WBFL::Units::Measure::KSI);
       // the LRFD doesn't say that this specifically applies to closure joints,
       // but we are going to assume that it does.
 
-      fcMax = (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::EighthEdition2017 ? 10.0 : 15.0); // KSI... limit went from 10ksi to 15ksi in 8th edition
+      fcMax = (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017 ? 10.0 : 15.0); // KSI... limit went from 10ksi to 15ksi in 8th edition
       fcMax = WBFL::Units::ConvertToSysUnits(fcMax, WBFL::Units::Measure::KSI);
 
       Float64 max_fci, max_fc;
@@ -1175,21 +1175,21 @@ void CConcreteManager::CreateConcrete(const CConcreteMaterial& concrete,LPCTSTR 
    }
    else
    {
-      modE = lrfdConcreteUtil::ModE( (WBFL::Materials::ConcreteType)concrete.Type,concrete.Fci, 
+      modE = WBFL::LRFD::ConcreteUtil::ModE( (WBFL::Materials::ConcreteType)concrete.Type,concrete.Fci, 
                                      concrete.StrengthDensity, 
                                      false /* ignore LRFD range checks */ );
 
-      if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
       {
          modE *= (concrete.EcK1 * concrete.EcK2);
       }
    }
 
-   Float64 lambda = lrfdConcreteUtil::ComputeConcreteDensityModificationFactor((WBFL::Materials::ConcreteType)concrete.Type,concrete.StrengthDensity,concrete.bHasFct,concrete.Fct,concrete.Fc);
+   Float64 lambda = WBFL::LRFD::ConcreteUtil::ComputeConcreteDensityModificationFactor((WBFL::Materials::ConcreteType)concrete.Type,concrete.StrengthDensity,concrete.bHasFct,concrete.Fct,concrete.Fc);
 
    // get the modulus of rupture.
-   Float64 frShear = lrfdConcreteUtil::ModRupture(concrete.Fci, GetShearFrCoefficient(concrete.Type));
-   Float64 frFlexure = lrfdConcreteUtil::ModRupture(concrete.Fci, GetFlexureFrCoefficient(concrete.Type));
+   Float64 frShear = WBFL::LRFD::ConcreteUtil::ModRupture(concrete.Fci, GetShearFrCoefficient(concrete.Type));
+   Float64 frFlexure = WBFL::LRFD::ConcreteUtil::ModRupture(concrete.Fci, GetFlexureFrCoefficient(concrete.Type));
 
    pReleaseConc->SetName(strName);
    pReleaseConc->SetFc(concrete.Fci);
@@ -1210,19 +1210,19 @@ void CConcreteManager::CreateConcrete(const CConcreteMaterial& concrete,LPCTSTR 
    }
    else
    {
-      modE = lrfdConcreteUtil::ModE( (WBFL::Materials::ConcreteType)concrete.Type,concrete.Fc, 
+      modE = WBFL::LRFD::ConcreteUtil::ModE( (WBFL::Materials::ConcreteType)concrete.Type,concrete.Fc, 
                                      concrete.StrengthDensity, 
                                      false /* ignore LRFD range checks */ );
 
-      if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
       {
          modE *= (concrete.EcK1 * concrete.EcK2);
       }
    }
 
    // get the modulus of rupture.
-   frShear   = lrfdConcreteUtil::ModRupture(concrete.Fc,GetShearFrCoefficient(concrete.Type));
-   frFlexure = (!IsUHPC(concrete.Type) ? lrfdConcreteUtil::ModRupture(concrete.Fc,GetFlexureFrCoefficient(concrete.Type)) : 0);
+   frShear   = WBFL::LRFD::ConcreteUtil::ModRupture(concrete.Fc,GetShearFrCoefficient(concrete.Type));
+   frFlexure = (!IsUHPC(concrete.Type) ? WBFL::LRFD::ConcreteUtil::ModRupture(concrete.Fc,GetFlexureFrCoefficient(concrete.Type)) : 0);
 
    pConcrete->SetName(strName);
    pConcrete->SetFc(concrete.Fc);
@@ -1283,7 +1283,7 @@ Float64 CConcreteManager::GetSegmentWeightDensity(const CSegmentKey& segmentKey)
 Float64 CConcreteManager::GetSegmentEccK1(const CSegmentKey& segmentKey) const
 {
    Float64 K1 = 1.0;
-   if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       GET_IFACE(ISegmentData,pSegmentData);
       const CGirderMaterial* pMaterial = pSegmentData->GetSegmentMaterial(segmentKey);
@@ -1296,7 +1296,7 @@ Float64 CConcreteManager::GetSegmentEccK1(const CSegmentKey& segmentKey) const
 Float64 CConcreteManager::GetSegmentEccK2(const CSegmentKey& segmentKey) const
 {
    Float64 K2 = 1.0;
-   if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       GET_IFACE(ISegmentData,pSegmentData);
       const CGirderMaterial* pMaterial = pSegmentData->GetSegmentMaterial(segmentKey);
@@ -1309,7 +1309,7 @@ Float64 CConcreteManager::GetSegmentEccK2(const CSegmentKey& segmentKey) const
 Float64 CConcreteManager::GetSegmentCreepK1(const CSegmentKey& segmentKey) const
 {
    Float64 K1 = 1.0;
-   if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       GET_IFACE(ISegmentData,pSegmentData);
       const CGirderMaterial* pMaterial = pSegmentData->GetSegmentMaterial(segmentKey);
@@ -1322,7 +1322,7 @@ Float64 CConcreteManager::GetSegmentCreepK1(const CSegmentKey& segmentKey) const
 Float64 CConcreteManager::GetSegmentCreepK2(const CSegmentKey& segmentKey) const
 {
    Float64 K2 = 1.0;
-   if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       GET_IFACE(ISegmentData,pSegmentData);
       const CGirderMaterial* pMaterial = pSegmentData->GetSegmentMaterial(segmentKey);
@@ -1335,7 +1335,7 @@ Float64 CConcreteManager::GetSegmentCreepK2(const CSegmentKey& segmentKey) const
 Float64 CConcreteManager::GetSegmentShrinkageK1(const CSegmentKey& segmentKey) const
 {
    Float64 K1 = 1.0;
-   if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       GET_IFACE(ISegmentData,pSegmentData);
       const CGirderMaterial* pMaterial = pSegmentData->GetSegmentMaterial(segmentKey);
@@ -1348,7 +1348,7 @@ Float64 CConcreteManager::GetSegmentShrinkageK1(const CSegmentKey& segmentKey) c
 Float64 CConcreteManager::GetSegmentShrinkageK2(const CSegmentKey& segmentKey) const
 {
    Float64 K2 = 1.0;
-   if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       GET_IFACE(ISegmentData,pSegmentData);
       const CGirderMaterial* pMaterial = pSegmentData->GetSegmentMaterial(segmentKey);
@@ -1403,7 +1403,7 @@ Float64 CConcreteManager::GetClosureJointWeightDensity(const CSegmentKey& closur
 Float64 CConcreteManager::GetClosureJointEccK1(const CSegmentKey& closureKey) const
 {
    Float64 K1 = 1.0;
-   if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       const CClosureJointData* pClosure = m_pBridgeDesc->GetClosureJoint(closureKey);
       K1 = pClosure->GetConcrete().EcK1;
@@ -1415,7 +1415,7 @@ Float64 CConcreteManager::GetClosureJointEccK1(const CSegmentKey& closureKey) co
 Float64 CConcreteManager::GetClosureJointEccK2(const CSegmentKey& closureKey) const
 {
    Float64 K2 = 1.0;
-   if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       const CClosureJointData* pClosure = m_pBridgeDesc->GetClosureJoint(closureKey);
       K2 = pClosure->GetConcrete().EcK2;
@@ -1427,7 +1427,7 @@ Float64 CConcreteManager::GetClosureJointEccK2(const CSegmentKey& closureKey) co
 Float64 CConcreteManager::GetClosureJointCreepK1(const CSegmentKey& closureKey) const
 {
    Float64 K1 = 1.0;
-   if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       const CClosureJointData* pClosure = m_pBridgeDesc->GetClosureJoint(closureKey);
       K1 = pClosure->GetConcrete().CreepK1;
@@ -1439,7 +1439,7 @@ Float64 CConcreteManager::GetClosureJointCreepK1(const CSegmentKey& closureKey) 
 Float64 CConcreteManager::GetClosureJointCreepK2(const CSegmentKey& closureKey) const
 {
    Float64 K2 = 1.0;
-   if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       const CClosureJointData* pClosure = m_pBridgeDesc->GetClosureJoint(closureKey);
       K2 = pClosure->GetConcrete().CreepK2;
@@ -1451,7 +1451,7 @@ Float64 CConcreteManager::GetClosureJointCreepK2(const CSegmentKey& closureKey) 
 Float64 CConcreteManager::GetClosureJointShrinkageK1(const CSegmentKey& closureKey) const
 {
    Float64 K1 = 1.0;
-   if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       const CClosureJointData* pClosure = m_pBridgeDesc->GetClosureJoint(closureKey);
       K1 = pClosure->GetConcrete().ShrinkageK1;
@@ -1463,7 +1463,7 @@ Float64 CConcreteManager::GetClosureJointShrinkageK1(const CSegmentKey& closureK
 Float64 CConcreteManager::GetClosureJointShrinkageK2(const CSegmentKey& closureKey) const
 {
    Float64 K2 = 1.0;
-   if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       const CClosureJointData* pClosure = m_pBridgeDesc->GetClosureJoint(closureKey);
       K2 = pClosure->GetConcrete().ShrinkageK2;
@@ -1564,7 +1564,7 @@ Float64 CConcreteManager::GetDeckEccK1() const
 {
    ValidateConcrete();
    Float64 K1 = 1.0;
-   if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       K1 = m_DeckEcK1;
    }
@@ -1575,7 +1575,7 @@ Float64 CConcreteManager::GetDeckEccK2() const
 {
    ValidateConcrete();
    Float64 K2 = 1.0;
-   if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       K2 = m_DeckEcK2;
    }
@@ -1586,7 +1586,7 @@ Float64 CConcreteManager::GetDeckCreepK1() const
 {
    ValidateConcrete();
    Float64 K1 = 1.0;
-   if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       K1 = m_DeckCreepK1;
    }
@@ -1597,7 +1597,7 @@ Float64 CConcreteManager::GetDeckCreepK2() const
 {
    ValidateConcrete();
    Float64 K2 = 1.0;
-   if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       K2 = m_DeckCreepK2;
    }
@@ -1608,7 +1608,7 @@ Float64 CConcreteManager::GetDeckShrinkageK1() const
 {
    ValidateConcrete();
    Float64 K1 = 1.0;
-   if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       K1 = m_DeckShrinkageK1;
    }
@@ -1619,7 +1619,7 @@ Float64 CConcreteManager::GetDeckShrinkageK2() const
 {
    ValidateConcrete();
    Float64 K2 = 1.0;
-   if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       K2 = m_DeckShrinkageK2;
    }
@@ -1772,7 +1772,7 @@ Float64 CConcreteManager::GetLongitudinalJointEccK1() const
 {
    ValidateConcrete();
    Float64 K1 = 1.0;
-   if (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion())
+   if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
    {
       K1 = m_LongitudinalJointEcK1;
    }
@@ -1783,7 +1783,7 @@ Float64 CConcreteManager::GetLongitudinalJointEccK2() const
 {
    ValidateConcrete();
    Float64 K2 = 1.0;
-   if (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion())
+   if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
    {
       K2 = m_LongitudinalJointEcK2;
    }
@@ -1794,7 +1794,7 @@ Float64 CConcreteManager::GetLongitudinalJointCreepK1() const
 {
    ValidateConcrete();
    Float64 K1 = 1.0;
-   if (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion())
+   if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
    {
       K1 = m_LongitudinalJointCreepK1;
    }
@@ -1805,7 +1805,7 @@ Float64 CConcreteManager::GetLongitudinalJointCreepK2() const
 {
    ValidateConcrete();
    Float64 K2 = 1.0;
-   if (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion())
+   if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
    {
       K2 = m_LongitudinalJointCreepK2;
    }
@@ -1816,7 +1816,7 @@ Float64 CConcreteManager::GetLongitudinalJointShrinkageK1() const
 {
    ValidateConcrete();
    Float64 K1 = 1.0;
-   if (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion())
+   if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
    {
       K1 = m_LongitudinalJointShrinkageK1;
    }
@@ -1827,7 +1827,7 @@ Float64 CConcreteManager::GetLongitudinalJointShrinkageK2() const
 {
    ValidateConcrete();
    Float64 K2 = 1.0;
-   if (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion())
+   if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
    {
       K2 = m_LongitudinalJointShrinkageK2;
    }
@@ -1851,14 +1851,14 @@ const std::unique_ptr<WBFL::Materials::SimpleConcrete>& CConcreteManager::GetPie
 Float64 CConcreteManager::GetSegmentLambda(const CSegmentKey& segmentKey) const
 {
    ValidateConcrete();
-   const lrfdLRFDConcreteBase* pConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(m_pSegmentConcrete[segmentKey].get());
+   const WBFL::LRFD::LRFDConcreteBase* pConcrete = dynamic_cast<const WBFL::LRFD::LRFDConcreteBase*>(m_pSegmentConcrete[segmentKey].get());
    return (pConcrete ? pConcrete->GetLambda() : 1.0);
 }
 
 Float64 CConcreteManager::GetClosureJointLambda(const CClosureKey& closureKey) const
 {
    ValidateConcrete();
-   const lrfdLRFDConcreteBase* pConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(m_pClosureConcrete[closureKey].get());
+   const WBFL::LRFD::LRFDConcreteBase* pConcrete = dynamic_cast<const WBFL::LRFD::LRFDConcreteBase*>(m_pClosureConcrete[closureKey].get());
    return pConcrete ? pConcrete->GetLambda() : 1.0;
 }
 
@@ -1867,7 +1867,7 @@ Float64 CConcreteManager::GetDeckLambda() const
    auto* pDeckConcrete = m_pvDeckConcrete[0].get(); // use region 0 because the deck material in all casting regions is the same
    if ( pDeckConcrete != nullptr )
    {
-      const lrfdLRFDConcreteBase* pConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(pDeckConcrete);
+      const WBFL::LRFD::LRFDConcreteBase* pConcrete = dynamic_cast<const WBFL::LRFD::LRFDConcreteBase*>(pDeckConcrete);
       return pConcrete ? pConcrete->GetLambda() : 1.0;
    }
    else
@@ -1881,7 +1881,7 @@ Float64 CConcreteManager::GetRailingSystemLambda(pgsTypes::TrafficBarrierOrienta
    ValidateConcrete();
    ValidateRailingSystemConcrete();
 
-   const lrfdLRFDConcreteBase* pConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(m_pRailingConcrete[orientation].get());
+   const WBFL::LRFD::LRFDConcreteBase* pConcrete = dynamic_cast<const WBFL::LRFD::LRFDConcreteBase*>(m_pRailingConcrete[orientation].get());
    return pConcrete ? pConcrete->GetLambda() : 1.0;
 }
 
@@ -1889,7 +1889,7 @@ Float64 CConcreteManager::GetLongitudinalJointLambda() const
 {
    if (m_pLongitudinalJointConcrete.get() != nullptr)
    {
-      const lrfdLRFDConcreteBase* pConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(m_pLongitudinalJointConcrete.get());
+      const WBFL::LRFD::LRFDConcreteBase* pConcrete = dynamic_cast<const WBFL::LRFD::LRFDConcreteBase*>(m_pLongitudinalJointConcrete.get());
       return pConcrete ? pConcrete->GetLambda() : 1.0;
    }
    else
@@ -1900,17 +1900,17 @@ Float64 CConcreteManager::GetLongitudinalJointLambda() const
 
 Float64 CConcreteManager::GetNWCDensityLimit() const
 {
-   return lrfdConcreteUtil::GetNWCDensityLimit();
+   return WBFL::LRFD::ConcreteUtil::GetNWCDensityLimit();
 }
 
 Float64 CConcreteManager::GetLWCDensityLimit() const
 {
-   return lrfdConcreteUtil::GetLWCDensityLimit();
+   return WBFL::LRFD::ConcreteUtil::GetLWCDensityLimit();
 }
 
 Float64 CConcreteManager::GetFlexureModRupture(Float64 fc,pgsTypes::ConcreteType type) const
 {
-   return lrfdConcreteUtil::ModRupture( fc, GetFlexureFrCoefficient(type) );
+   return WBFL::LRFD::ConcreteUtil::ModRupture( fc, GetFlexureFrCoefficient(type) );
 }
 
 Float64 CConcreteManager::GetFlexureFrCoefficient(pgsTypes::ConcreteType type) const
@@ -1939,12 +1939,12 @@ Float64 CConcreteManager::GetClosureJointFlexureFrCoefficient(const CClosureKey&
 
 Float64 CConcreteManager::GetShearModRupture(Float64 fc,pgsTypes::ConcreteType type) const
 {
-   return lrfdConcreteUtil::ModRupture( fc, GetShearFrCoefficient(type) );
+   return WBFL::LRFD::ConcreteUtil::ModRupture( fc, GetShearFrCoefficient(type) );
 }
 
 Float64 CConcreteManager::GetEconc(pgsTypes::ConcreteType type, Float64 fc,Float64 density,Float64 K1,Float64 K2) const
 {
-   return K1*K2*lrfdConcreteUtil::ModE((WBFL::Materials::ConcreteType)type, fc,density, false ); // ignore LRFD limits
+   return K1*K2*WBFL::LRFD::ConcreteUtil::ModE((WBFL::Materials::ConcreteType)type, fc,density, false ); // ignore LRFD limits
 }
 
 bool CConcreteManager::HasUHPC() const
@@ -2184,7 +2184,7 @@ Float64 CConcreteManager::GetDeckConcreteFirstCrackingStrength() const
    }
    else
    {
-      const lrfdLRFDConcreteBase* pConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(m_pvDeckConcrete[castingRegionIdx].get());
+      const WBFL::LRFD::LRFDConcreteBase* pConcrete = dynamic_cast<const WBFL::LRFD::LRFDConcreteBase*>(m_pvDeckConcrete[castingRegionIdx].get());
       return pConcrete->GetFirstCrackingStrength();
    }
 }
@@ -2200,7 +2200,7 @@ Float64 CConcreteManager::GetDeckAutogenousShrinkage() const
    }
    else
    {
-      const lrfdLRFDConcreteBase* pConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(m_pvDeckConcrete[castingRegionIdx].get());
+      const WBFL::LRFD::LRFDConcreteBase* pConcrete = dynamic_cast<const WBFL::LRFD::LRFDConcreteBase*>(m_pvDeckConcrete[castingRegionIdx].get());
       return pConcrete->GetAutogenousShrinkage();
    }
 }
@@ -2282,7 +2282,7 @@ Float64 CConcreteManager::GetSegmentConcreteFirstCrackingStrength(const CSegment
    ValidateSegmentConcrete();
    if (m_pSegmentConcrete[segmentKey]->GetType() == WBFL::Materials::ConcreteType::PCI_UHPC)
    {
-      const lrfdLRFDConcreteBase* pConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(m_pSegmentConcrete[segmentKey].get());
+      const WBFL::LRFD::LRFDConcreteBase* pConcrete = dynamic_cast<const WBFL::LRFD::LRFDConcreteBase*>(m_pSegmentConcrete[segmentKey].get());
       return pConcrete->GetFirstCrackingStrength();
    }
    else
@@ -2298,7 +2298,7 @@ Float64 CConcreteManager::GetSegmentAutogenousShrinkage(const CSegmentKey& segme
    ValidateSegmentConcrete();
    if (m_pSegmentConcrete[segmentKey]->GetType() == WBFL::Materials::ConcreteType::PCI_UHPC)
    {
-      const lrfdLRFDConcreteBase* pConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(m_pSegmentConcrete[segmentKey].get());
+      const WBFL::LRFD::LRFDConcreteBase* pConcrete = dynamic_cast<const WBFL::LRFD::LRFDConcreteBase*>(m_pSegmentConcrete[segmentKey].get());
       return pConcrete->GetAutogenousShrinkage();
    }
    else
@@ -2315,7 +2315,7 @@ Float64 CConcreteManager::GetSegmentConcreteInitialEffectiveCrackingStrength(con
    ValidateSegmentConcrete();
    if (m_pSegmentConcrete[segmentKey]->GetType() == WBFL::Materials::ConcreteType::UHPC)
    {
-      const lrfdLRFDConcreteBase* pConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(m_pSegmentConcrete[segmentKey].get());
+      const WBFL::LRFD::LRFDConcreteBase* pConcrete = dynamic_cast<const WBFL::LRFD::LRFDConcreteBase*>(m_pSegmentConcrete[segmentKey].get());
       return pConcrete->GetInitialEffectiveCrackingStrength();
    }
    else
@@ -2332,7 +2332,7 @@ Float64 CConcreteManager::GetSegmentConcreteDesignEffectiveCrackingStrength(cons
    ValidateSegmentConcrete();
    if (m_pSegmentConcrete[segmentKey]->GetType() == WBFL::Materials::ConcreteType::UHPC)
    {
-      const lrfdLRFDConcreteBase* pConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(m_pSegmentConcrete[segmentKey].get());
+      const WBFL::LRFD::LRFDConcreteBase* pConcrete = dynamic_cast<const WBFL::LRFD::LRFDConcreteBase*>(m_pSegmentConcrete[segmentKey].get());
       return pConcrete->GetDesignEffectiveCrackingStrength();
    }
    else
@@ -2349,7 +2349,7 @@ Float64 CConcreteManager::GetSegmentConcreteCrackLocalizationStrength(const CSeg
    ValidateSegmentConcrete();
    if (m_pSegmentConcrete[segmentKey]->GetType() == WBFL::Materials::ConcreteType::UHPC)
    {
-      const lrfdLRFDConcreteBase* pConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(m_pSegmentConcrete[segmentKey].get());
+      const WBFL::LRFD::LRFDConcreteBase* pConcrete = dynamic_cast<const WBFL::LRFD::LRFDConcreteBase*>(m_pSegmentConcrete[segmentKey].get());
       return pConcrete->GetCrackLocalizationStrength();
    }
    else
@@ -2366,7 +2366,7 @@ Float64 CConcreteManager::GetSegmentConcreteCrackLocalizationStrain(const CSegme
    ValidateSegmentConcrete();
    if (m_pSegmentConcrete[segmentKey]->GetType() == WBFL::Materials::ConcreteType::UHPC)
    {
-      const lrfdLRFDConcreteBase* pConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(m_pSegmentConcrete[segmentKey].get());
+      const WBFL::LRFD::LRFDConcreteBase* pConcrete = dynamic_cast<const WBFL::LRFD::LRFDConcreteBase*>(m_pSegmentConcrete[segmentKey].get());
       return pConcrete->GetCrackLocalizationStrain();
    }
    else
@@ -2383,7 +2383,7 @@ Float64 CConcreteManager::GetSegmentConcreteFiberOrientationReductionFactor(cons
    ValidateSegmentConcrete();
    if (m_pSegmentConcrete[segmentKey]->GetType() == WBFL::Materials::ConcreteType::UHPC)
    {
-      const lrfdLRFDConcreteBase* pConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(m_pSegmentConcrete[segmentKey].get());
+      const WBFL::LRFD::LRFDConcreteBase* pConcrete = dynamic_cast<const WBFL::LRFD::LRFDConcreteBase*>(m_pSegmentConcrete[segmentKey].get());
       return pConcrete->GetFiberOrientationReductionFactor();
    }
    else
@@ -2476,7 +2476,7 @@ Float64 CConcreteManager::GetClosureJointAutogenousShrinkage(const CClosureKey& 
    ValidateSegmentConcrete();
    if (m_pClosureConcrete[closureKey]->GetType() == WBFL::Materials::ConcreteType::PCI_UHPC)
    {
-      const lrfdLRFDConcreteBase* pConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(m_pClosureConcrete[closureKey].get());
+      const WBFL::LRFD::LRFDConcreteBase* pConcrete = dynamic_cast<const WBFL::LRFD::LRFDConcreteBase*>(m_pClosureConcrete[closureKey].get());
       return pConcrete->GetAutogenousShrinkage();
    }
    else
@@ -2627,7 +2627,7 @@ const std::unique_ptr<WBFL::Materials::ConcreteBase>& CConcreteManager::GetLongi
    return m_pLongitudinalJointConcrete;
 }
 
-std::unique_ptr<lrfdLRFDConcrete> CConcreteManager::CreateLRFDConcreteModel(const CConcreteMaterial& concrete,Float64 startTime,Float64 stepTime) const
+std::unique_ptr<WBFL::LRFD::LRFDConcrete> CConcreteManager::CreateLRFDConcreteModel(const CConcreteMaterial& concrete,Float64 startTime,Float64 stepTime) const
 {
    // this concrete model is simple step function. fc and E are constant at f'ci and Eci from t = 0 to
    // just before t = stepTime. From t = stepTime and beyond fc and E are f'c and Ec.
@@ -2646,7 +2646,7 @@ std::unique_ptr<lrfdLRFDConcrete> CConcreteManager::CreateLRFDConcreteModel(cons
    //     +-------+----------------+-------------------------> t = time
    //             t = startTime    t = stepTime
 
-   std::unique_ptr<lrfdLRFDConcrete> pLRFDConcrete(std::make_unique<lrfdLRFDConcrete>());
+   std::unique_ptr<WBFL::LRFD::LRFDConcrete> pLRFDConcrete(std::make_unique<WBFL::LRFD::LRFDConcrete>());
 
    WBFL::Materials::SimpleConcrete initialConcrete, finalConcrete;
    CreateConcrete(concrete,_T(""),&initialConcrete,&finalConcrete);
@@ -2658,7 +2658,7 @@ std::unique_ptr<lrfdLRFDConcrete> CConcreteManager::CreateLRFDConcreteModel(cons
    pLRFDConcrete->SetCreepCorrectionFactors(concrete.CreepK1,concrete.CreepK2);
    pLRFDConcrete->SetShrinkageCorrectionFactors(concrete.ShrinkageK1,concrete.ShrinkageK2);
 
-   Float64 lambda = lrfdConcreteUtil::ComputeConcreteDensityModificationFactor((WBFL::Materials::ConcreteType)concrete.Type,concrete.StrengthDensity,concrete.bHasFct,concrete.Fct,concrete.Fc);
+   Float64 lambda = WBFL::LRFD::ConcreteUtil::ComputeConcreteDensityModificationFactor((WBFL::Materials::ConcreteType)concrete.Type,concrete.StrengthDensity,concrete.bHasFct,concrete.Fct,concrete.Fc);
    pLRFDConcrete->SetLambda(lambda);
 
    if (concrete.Type == pgsTypes::Normal && (stepTime-startTime) < 90)
@@ -2696,9 +2696,9 @@ std::unique_ptr<lrfdLRFDConcrete> CConcreteManager::CreateLRFDConcreteModel(cons
    return pLRFDConcrete;
 }
 
-std::unique_ptr<lrfdLRFDTimeDependentConcrete> CConcreteManager::CreateTimeDependentLRFDConcreteModel(const CConcreteMaterial& concrete,Float64 ageAtInitialLoading) const
+std::unique_ptr<WBFL::LRFD::LRFDTimeDependentConcrete> CConcreteManager::CreateTimeDependentLRFDConcreteModel(const CConcreteMaterial& concrete,Float64 ageAtInitialLoading) const
 {
-   std::unique_ptr<lrfdLRFDTimeDependentConcrete> pConcrete(std::make_unique<lrfdLRFDTimeDependentConcrete>());
+   std::unique_ptr<WBFL::LRFD::LRFDTimeDependentConcrete> pConcrete(std::make_unique<WBFL::LRFD::LRFDTimeDependentConcrete>());
 
    Float64 A,B;
    if ( concrete.bACIUserParameters )
@@ -2708,7 +2708,7 @@ std::unique_ptr<lrfdLRFDTimeDependentConcrete> CConcreteManager::CreateTimeDepen
    }
    else
    {
-      lrfdLRFDTimeDependentConcrete::GetModelParameters((WBFL::Materials::CuringType)concrete.CureMethod,
+      WBFL::LRFD::LRFDTimeDependentConcrete::GetModelParameters((WBFL::Materials::CuringType)concrete.CureMethod,
                                                         (WBFL::Materials::CementType)concrete.ACI209CementType,
                                                        &A,&B);
    }
@@ -2737,7 +2737,7 @@ std::unique_ptr<lrfdLRFDTimeDependentConcrete> CConcreteManager::CreateTimeDepen
    pConcrete->SetShearModulusOfRuptureCoefficient(GetShearFrCoefficient(concrete.Type));
    pConcrete->SetFlexureModulusOfRuptureCoefficient(GetFlexureFrCoefficient(concrete.Type));
 
-   Float64 lambda = lrfdConcreteUtil::ComputeConcreteDensityModificationFactor((WBFL::Materials::ConcreteType)concrete.Type,concrete.StrengthDensity,concrete.bHasFct,concrete.Fct,concrete.Fc);
+   Float64 lambda = WBFL::LRFD::ConcreteUtil::ComputeConcreteDensityModificationFactor((WBFL::Materials::ConcreteType)concrete.Type,concrete.StrengthDensity,concrete.bHasFct,concrete.Fct,concrete.Fc);
    pConcrete->SetLambda(lambda);
 
    // PCI UHPC

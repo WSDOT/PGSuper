@@ -178,7 +178,7 @@ public:
    void UpdateProjectCriteriaIndicator();
    void UpdateAnalysisTypeStatusIndicator();
    void OnLoadsLldf();
-   void OnLoadsLldf(pgsTypes::DistributionFactorMethod method,LldfRangeOfApplicabilityAction roaAction);
+   void OnLoadsLldf(pgsTypes::DistributionFactorMethod method,WBFL::LRFD::RangeOfApplicabilityAction roaAction);
    void OnLiveLoads();
 
    virtual BOOL GetStatusBarMessageString(UINT nID,CString& rMessage) const override;
@@ -257,9 +257,9 @@ public:
    const std::map<IDType, IEditLoadRatingOptionsCallback*>& GetEditLoadRatingOptionsCallbacks();
 
    // ISupportLibraryManager
-   virtual CollectionIndexType GetNumberOfLibraryManagers() const override;
-   virtual libLibraryManager* GetLibraryManager(CollectionIndexType num) override;
-   virtual libLibraryManager* GetTargetLibraryManager() override;
+   virtual IndexType GetNumberOfLibraryManagers() const override;
+   virtual WBFL::Library::LibraryManager* GetLibraryManager(IndexType num) override;
+   virtual WBFL::Library::LibraryManager* GetTargetLibraryManager() override;
 
    bool EditBridgeDescription(int nPage);
    bool EditAlignmentDescription(int nPage);
@@ -279,21 +279,21 @@ public:
    virtual bool EditClosureJointDescription(const CClosureKey& closureKey,int nPage) = 0;
 
    void AddPointLoad(const CPointLoadData& loadData);
-   bool EditPointLoad(CollectionIndexType loadIdx);
+   bool EditPointLoad(IndexType loadIdx);
    bool EditPointLoadByID(LoadIDType loadID);
-   void DeletePointLoad(CollectionIndexType loadIdx);
+   void DeletePointLoad(IndexType loadIdx);
    void DeletePointLoadByID(LoadIDType loadID);
 
    void AddDistributedLoad(const CDistributedLoadData& loadData);
-   bool EditDistributedLoad(CollectionIndexType loadIdx);
+   bool EditDistributedLoad(IndexType loadIdx);
    bool EditDistributedLoadByID(LoadIDType loadID);
-   void DeleteDistributedLoad(CollectionIndexType loadIdx);
+   void DeleteDistributedLoad(IndexType loadIdx);
    void DeleteDistributedLoadByID(LoadIDType loadID);
 
    void AddMomentLoad(const CMomentLoadData& loadData);
-   bool EditMomentLoad(CollectionIndexType loadIdx);
+   bool EditMomentLoad(IndexType loadIdx);
    bool EditMomentLoadByID(LoadIDType loadID);
-   void DeleteMomentLoad(CollectionIndexType loadIdx);
+   void DeleteMomentLoad(IndexType loadIdx);
    void DeleteMomentLoadByID(LoadIDType loadID);
 
    bool EditTimeline();
@@ -463,8 +463,8 @@ protected:
 
    virtual CString GetToolbarSectionName() override;
 
-   virtual void CreateReportView(CollectionIndexType rptIdx,BOOL bPrompt) override;
-   virtual void CreateGraphView(CollectionIndexType graphIdx) override;
+   virtual void CreateReportView(IndexType rptIdx,BOOL bPrompt) override;
+   virtual void CreateGraphView(IndexType graphIdx) override;
 
    virtual void DeleteContents() override;
 

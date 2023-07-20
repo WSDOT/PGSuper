@@ -419,7 +419,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
                (*p_table)(row,col++) << RPT_NA;
             }
 
-            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
             {
                if ( reactionDecider.DoReport(lastIntervalIdx) )
                {
@@ -721,7 +721,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
                (*p_table)(row,col++) << RPT_NA;
             }
 
-            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
             {
                if ( reactionDecider.DoReport(lastIntervalIdx) )
                {
@@ -973,27 +973,3 @@ void CProductRotationTable::MakeAssignment(const CProductRotationTable& rOther)
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CProductRotationTable::AssertValid() const
-{
-   return true;
-}
-
-void CProductRotationTable::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for CProductRotationTable") << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CProductRotationTable::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("CProductRotationTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CProductRotationTable");
-
-   TESTME_EPILOG("CProductRotationTable");
-}
-#endif // _UNITTEST

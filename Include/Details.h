@@ -26,7 +26,7 @@
 #include <PGSuperTypes.h>
 
 #include <PgsExt\ReportPointOfInterest.h>
-#include <Lrfd\Lrfd.h>
+#include <LRFD\Lrfd.h>
 #include <WBFLRCCapacity.h>
 
 struct PIER_DIAPHRAGM_LOAD_DETAILS
@@ -1053,7 +1053,7 @@ struct LOSSDETAILS
 
    // LRFD Method Losses
    // Base class can be casted to derived class to get details. You know who you are!
-   std::shared_ptr<const lrfdLosses> pLosses;
+   std::shared_ptr<const WBFL::LRFD::Losses> pLosses;
 
 
    ///////////////////////////////////////////////////////////////////////////////

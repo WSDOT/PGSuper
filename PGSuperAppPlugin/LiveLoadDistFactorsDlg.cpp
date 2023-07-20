@@ -111,7 +111,7 @@ void CLiveLoadDistFactorsDlg::DoDataExchange(CDataExchange* pDX)
    int action, method;
    if ( !pDX->m_bSaveAndValidate )
    {
-      action = GetIntForLldfAction(m_LldfRangeOfApplicabilityAction);
+      action = GetIntForLldfAction(m_RangeOfApplicabilityAction);
       method = GetIntForDfMethod(m_BridgeDesc.GetDistributionFactorMethod());
    }
 
@@ -122,7 +122,7 @@ void CLiveLoadDistFactorsDlg::DoDataExchange(CDataExchange* pDX)
 
    if ( pDX->m_bSaveAndValidate )
    {
-      m_LldfRangeOfApplicabilityAction = GetLldfActionForInt(action);
+      m_RangeOfApplicabilityAction = GetLldfActionForInt(action);
 
       m_BridgeDesc.SetDistributionFactorMethod(lldf_method);
    }
@@ -300,7 +300,7 @@ void CLiveLoadDistFactorsDlg::DealWithGridStates()
 void CLiveLoadDistFactorsDlg::OnBnClickedLldfFillButton()
 {
    CLLDFFillDlg dlg;
-   dlg.m_LldfRangeOfApplicabilityAction = m_LldfRangeOfApplicabilityAction;
+   dlg.m_RangeOfApplicabilityAction = m_RangeOfApplicabilityAction;
    dlg.m_pBridgeDesc = &m_BridgeDesc;
    if ( dlg.DoModal() == IDOK )
    {
@@ -344,9 +344,9 @@ void CLiveLoadDistFactorsDlg::OnBnClickedLldfFillButton()
 
          // save old method
          pgsTypes::DistributionFactorMethod old_method = pIBridgeDesc->GetLiveLoadDistributionFactorMethod();
-         LldfRangeOfApplicabilityAction action, old_action;
+         WBFL::LRFD::RangeOfApplicabilityAction action, old_action;
          
-         action = dlg.GetLldfRangeOfApplicabilityAction();
+         action = dlg.GetRangeOfApplicabilityAction();
 
          try
          {
@@ -354,8 +354,8 @@ void CLiveLoadDistFactorsDlg::OnBnClickedLldfFillButton()
 
             if (method==pgsTypes::Calculated)
             {
-               old_action = pLiveLoads->GetLldfRangeOfApplicabilityAction();
-               pLiveLoads->SetLldfRangeOfApplicabilityAction(action);
+               old_action = pLiveLoads->GetRangeOfApplicabilityAction();
+               pLiveLoads->SetRangeOfApplicabilityAction(action);
             }
 
             pEvents->FirePendingEvents();
@@ -480,7 +480,7 @@ void CLiveLoadDistFactorsDlg::OnBnClickedLldfFillButton()
          pIBridgeDesc->SetLiveLoadDistributionFactorMethod(old_method);
          if (method==pgsTypes::Calculated)
          {
-            pLiveLoads->SetLldfRangeOfApplicabilityAction(old_action);
+            pLiveLoads->SetRangeOfApplicabilityAction(old_action);
          }
 
          pEvents->FirePendingEvents(); // we really didn't make any changes

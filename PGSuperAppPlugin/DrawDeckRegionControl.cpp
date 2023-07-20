@@ -218,7 +218,7 @@ void CDrawDeckRegionControl::Draw(CDC* pDC, WBFL::Graphing::PointMapper& mapper,
    CComPtr<IPoint2dCollection> polyPoints;
    pShape->get_PolyPoints(&polyPoints);
 
-   CollectionIndexType nPoints;
+   IndexType nPoints;
    polyPoints->get_Count(&nPoints);
 
    IPoint2d** points = new IPoint2d*[nPoints];
@@ -231,7 +231,7 @@ void CDrawDeckRegionControl::Draw(CDC* pDC, WBFL::Graphing::PointMapper& mapper,
    ATLASSERT(nFetched == nPoints);
 
    CPoint* dev_points = new CPoint[nPoints];
-   for ( CollectionIndexType i = 0; i < nPoints; i++ )
+   for ( IndexType i = 0; i < nPoints; i++ )
    {
       LONG dx,dy;
       WBFL::Graphing::Point pnt;

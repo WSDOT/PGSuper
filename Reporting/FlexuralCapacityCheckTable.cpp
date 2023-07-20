@@ -89,7 +89,7 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,const pgsGirderA
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool c_over_de = ( pSpec->GetMomentCapacityMethod() == LRFD_METHOD && pSpecEntry->GetSpecificationType() < lrfdVersionMgr::ThirdEditionWith2006Interims );
+   bool c_over_de = ( pSpec->GetMomentCapacityMethod() == LRFD_METHOD && pSpecEntry->GetSpecificationType() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2006Interims );
    Uint16 nCols = c_over_de ? 9 : 6;
 
    rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols,_T(""));
@@ -104,7 +104,7 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,const pgsGirderA
    std::_tstring strDirection  = (bPositiveMoment ? _T("Positive") : _T("Negative"));
 
    std::_tostringstream os;
-   os << strDirection << _T(" Moment Capacity for ") << strLimitState << _T(" Limit State ") << LrfdCw8th(_T("[5.7]"),_T("[5.6]"));
+   os << strDirection << _T(" Moment Capacity for ") << strLimitState << _T(" Limit State ") << WBFL::LRFD::LrfdCw8th(_T("[5.7]"),_T("[5.6]"));
    p_table->TableLabel() << os.str().c_str();
 
    ColumnIndexType col = 0;
@@ -156,9 +156,9 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,const pgsGirderA
    RowIndexType row = p_table->GetNumberOfHeaderRows();
 
    // report all the artifacts there were created.
-   CollectionIndexType nArtifacts = (bPositiveMoment ? pGirderArtifact->GetPositiveMomentFlexuralCapacityArtifactCount(intervalIdx,ls) : pGirderArtifact->GetNegativeMomentFlexuralCapacityArtifactCount(intervalIdx, ls));
+   IndexType nArtifacts = (bPositiveMoment ? pGirderArtifact->GetPositiveMomentFlexuralCapacityArtifactCount(intervalIdx,ls) : pGirderArtifact->GetNegativeMomentFlexuralCapacityArtifactCount(intervalIdx, ls));
    ATLASSERT(0 < nArtifacts); // why aren't there any capacity artifacts?
-   for (CollectionIndexType artifactIdx = 0; artifactIdx < nArtifacts; artifactIdx++ )
+   for (IndexType artifactIdx = 0; artifactIdx < nArtifacts; artifactIdx++ )
    {
       col = 0;
 
@@ -277,27 +277,3 @@ void CFlexuralCapacityCheckTable::MakeAssignment(const CFlexuralCapacityCheckTab
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CFlexuralCapacityCheckTable::AssertValid() const
-{
-   return true;
-}
-
-void CFlexuralCapacityCheckTable::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for CFlexuralCapacityCheckTable") << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CFlexuralCapacityCheckTable::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("CFlexuralCapacityCheckTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CFlexuralCapacityCheckTable");
-
-   TESTME_EPILOG("CFlexuralCapacityCheckTable");
-}
-#endif // _UNITTEST

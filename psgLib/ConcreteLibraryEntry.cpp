@@ -210,7 +210,7 @@ bool ConcreteLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
    pSave->Property(_T("Name"),this->GetName().c_str());
    
    // added version 4
-   pSave->Property(_T("Type"),lrfdConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)m_Type,false).c_str());
+   pSave->Property(_T("Type"),WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)m_Type,false).c_str());
    pSave->Property(_T("Dw"), m_Dw);
    pSave->Property(_T("Fc"), m_Fc);
    pSave->Property(_T("Ds"), m_Ds);
@@ -306,7 +306,7 @@ bool ConcreteLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
       {
          std::_tstring strType;
          pLoad->Property(_T("Type"),&strType);
-         m_Type = (pgsTypes::ConcreteType)lrfdConcreteUtil::GetTypeFromTypeName(strType.c_str());
+         m_Type = (pgsTypes::ConcreteType)WBFL::LRFD::ConcreteUtil::GetTypeFromTypeName(strType.c_str());
       }
 
       if(!pLoad->Property(_T("Dw"), &m_Dw))
@@ -1273,33 +1273,3 @@ bool ConcreteLibraryEntry::Edit(bool allowEditing,int nPage)
 //======================== INQUERY    =======================================
 
 //======================== DEBUG      =======================================
-#if defined _DEBUG
-bool ConcreteLibraryEntry::AssertValid() const
-{
-   return libLibraryEntry::AssertValid();
-}
-
-void ConcreteLibraryEntry::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for ConcreteLibraryEntry")<< WBFL::Debug::endl;
-   os << _T("   m_Fc =")<< m_Fc << WBFL::Debug::endl;
-   os << _T("   m_Ec =")<< m_Ds << WBFL::Debug::endl;
-   os << _T("   m_D  =")<< m_Dw << WBFL::Debug::endl;
-   os << _T("   m_AggSize ")<< m_AggSize << WBFL::Debug::endl;
-   os << _T("   m_EccK1 ") << m_EccK1 << WBFL::Debug::endl;
-   os << _T("   m_EccK2 ") << m_EccK2 << WBFL::Debug::endl;
-
-   libLibraryEntry::Dump( os );
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool ConcreteLibraryEntry::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("ConcreteLibraryEntry");
-
-   // tests are performed on entire library.
-
-   TESTME_EPILOG("ConcreteMaterial");
-}
-#endif // _UNITTEST

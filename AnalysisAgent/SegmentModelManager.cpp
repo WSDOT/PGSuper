@@ -1728,7 +1728,7 @@ void CSegmentModelManager::GetReaction(const CSegmentKey& segmentKey,IntervalInd
 
       CComPtr<IFem2dJointCollection> joints;
       pModelData->Model->get_Joints(&joints);
-      CollectionIndexType nJoints;
+      IndexType nJoints;
       joints->get_Count(&nJoints);
       rightJntID = nJoints - 1;
 
@@ -2599,7 +2599,7 @@ void CSegmentModelManager::GetReaction(const CSegmentKey& segmentKey,IntervalInd
       CComQIPtr<IFem2dModelResults> results(pModelData->Model);
       CComPtr<IFem2dJointCollection> joints;
       pModelData->Model->get_Joints(&joints);
-      CollectionIndexType nJoints;
+      IndexType nJoints;
       joints->get_Count(&nJoints);
       std::vector<Float64> reactions;
       for ( IndexType jntIdx = 0; jntIdx < nJoints; jntIdx++ )
@@ -2663,7 +2663,7 @@ Float64 CSegmentModelManager::GetReaction(IntervalIndexType intervalIdx,LoadCase
    {
       CComPtr<IFem2dJointCollection> joints;
       pModelData->Model->get_Joints(&joints);
-      CollectionIndexType nJoints;
+      IndexType nJoints;
       joints->get_Count(&nJoints);
       jointID = nJoints-1;
    }
@@ -3021,13 +3021,13 @@ void CSegmentModelManager::ApplyPretensionLoad(CSegmentModelData* pModelData,con
       std::vector<EquivPretensionLoad> vLoads = pProductLoads->GetEquivPretensionLoads(segmentKey, strandType);
 
       LoadIDType ptLoadIDX;
-      pointLoadsX->get_Count((CollectionIndexType*)&ptLoadIDX);
+      pointLoadsX->get_Count((IndexType*)&ptLoadIDX);
 
       LoadIDType ptLoadIDY;
-      pointLoadsY->get_Count((CollectionIndexType*)&ptLoadIDY);
+      pointLoadsY->get_Count((IndexType*)&ptLoadIDY);
 
       LoadIDType distLoadIDX;
-      distLoadsX->get_Count((CollectionIndexType*)&distLoadIDX);
+      distLoadsX->get_Count((IndexType*)&distLoadIDX);
 
       std::vector<EquivPretensionLoad>::iterator iter(vLoads.begin());
       std::vector<EquivPretensionLoad>::iterator iterEnd(vLoads.end());
@@ -3112,10 +3112,10 @@ void CSegmentModelManager::ApplyPostTensionLoad(CSegmentModelData* pModelData, c
    pModelData->Loads.insert(lcidPT);
 
    LoadIDType ptLoadID;
-   pointLoads->get_Count((CollectionIndexType*)&ptLoadID);
+   pointLoads->get_Count((IndexType*)&ptLoadID);
 
    LoadIDType distLoadID;
-   distLoads->get_Count((CollectionIndexType*)&distLoadID);
+   distLoads->get_Count((IndexType*)&distLoadID);
 
    GET_IFACE_NOCHECK(IProductLoads, pProductLoads);
    std::vector<EquivPretensionLoad> vLoads = pProductLoads->GetEquivSegmentPostTensionLoads(segmentKey);

@@ -24,7 +24,7 @@
 #define INCLUDED_DISTRIBUTIONFACTORDETAILSCHAPTERBUILDER_H_
 
 #include <Reporting\ReportingExp.h>
-#include <Lrfd\ILiveLoadDistributionFactor.h>
+#include <LRFD\ILiveLoadDistributionFactor.h>
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 

@@ -64,13 +64,13 @@ void pgsStirrupCheckArtifact::AddStirrupCheckAtPoisArtifact(IntervalIndexType in
    std::sort(vArtifacts.begin(),vArtifacts.end());
 }
 
-CollectionIndexType pgsStirrupCheckArtifact::GetStirrupCheckAtPoisArtifactCount(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
+IndexType pgsStirrupCheckArtifact::GetStirrupCheckAtPoisArtifactCount(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
 {
    const std::vector<pgsStirrupCheckAtPoisArtifact>& vArtifacts(GetStirrupCheckArtifacts(intervalIdx,ls));
    return vArtifacts.size();
 }
 
-const pgsStirrupCheckAtPoisArtifact* pgsStirrupCheckArtifact::GetStirrupCheckAtPoisArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,CollectionIndexType index) const
+const pgsStirrupCheckAtPoisArtifact* pgsStirrupCheckArtifact::GetStirrupCheckAtPoisArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,IndexType index) const
 {
    const std::vector<pgsStirrupCheckAtPoisArtifact>& vArtifacts(GetStirrupCheckArtifacts(intervalIdx,ls));
    return &vArtifacts[index];

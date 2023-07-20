@@ -285,7 +285,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(const std::shared_ptr<const WBF
    {
       live_load_types.push_back(pgsTypes::lltDesign);
 
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
       {
         live_load_types.push_back(pgsTypes::lltFatigue);
       }

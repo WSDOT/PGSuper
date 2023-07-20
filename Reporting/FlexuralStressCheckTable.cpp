@@ -212,22 +212,22 @@ void CFlexuralStressCheckTable::BuildSectionHeading(rptChapter* pChapter, IBroke
    {
       if (bIsStressingInterval)
       {
-         *pPara << _T("For Temporary Stresses before Losses [") << LrfdCw8th(_T("5.9.4.1"), _T("5.9.2.3.1")) << _T("]") << rptNewLine;
+         *pPara << _T("For Temporary Stresses before Losses [") << WBFL::LRFD::LrfdCw8th(_T("5.9.4.1"), _T("5.9.2.3.1")) << _T("]") << rptNewLine;
       }
       else
       {
-         *pPara << _T("Stresses at Service Limit State after Losses [") << LrfdCw8th(_T("5.9.4.2"), _T("5.9.2.3.2")) << _T("]") << rptNewLine;
+         *pPara << _T("Stresses at Service Limit State after Losses [") << WBFL::LRFD::LrfdCw8th(_T("5.9.4.2"), _T("5.9.2.3.2")) << _T("]") << rptNewLine;
       }
 
       if ( task.stressType == pgsTypes::Compression )
       {
          if ( bIsStressingInterval )
          {
-            *pPara << _T("Compression Stresses [") << LrfdCw8th(_T("5.9.4.1.1"),_T("5.9.2.3.1a")) << _T("]") << rptNewLine;
+            *pPara << _T("Compression Stresses [") << WBFL::LRFD::LrfdCw8th(_T("5.9.4.1.1"),_T("5.9.2.3.1a")) << _T("]") << rptNewLine;
          }
          else
          {
-            *pPara << _T("Compression Stresses [") << LrfdCw8th(_T("5.9.4.2.1"),_T("5.9.2.3.2a")) << _T("]") << rptNewLine;
+            *pPara << _T("Compression Stresses [") << WBFL::LRFD::LrfdCw8th(_T("5.9.4.2.1"),_T("5.9.2.3.2a")) << _T("]") << rptNewLine;
          }
       }
    
@@ -235,11 +235,11 @@ void CFlexuralStressCheckTable::BuildSectionHeading(rptChapter* pChapter, IBroke
       {
          if ( bIsStressingInterval )
          {
-            *pPara << _T("Tension Stresses [") << LrfdCw8th(_T("5.9.4.1.2"),_T("5.9.2.3.1b")) << _T("]") << rptNewLine;
+            *pPara << _T("Tension Stresses [") << WBFL::LRFD::LrfdCw8th(_T("5.9.4.1.2"),_T("5.9.2.3.1b")) << _T("]") << rptNewLine;
          }
          else
          {
-            *pPara << _T("Tension Stresses [") << LrfdCw8th(_T("5.9.4.2.2"),_T("5.9.2.3.2b")) << _T("]") << rptNewLine;
+            *pPara << _T("Tension Stresses [") << WBFL::LRFD::LrfdCw8th(_T("5.9.4.2.2"),_T("5.9.2.3.2b")) << _T("]") << rptNewLine;
          }
       }
    }
@@ -514,9 +514,9 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, IBroker* pBroke
    {
       const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(sIdx);
 
-      CollectionIndexType nArtifacts = pSegmentArtifact->GetFlexuralStressArtifactCount(task);
+      IndexType nArtifacts = pSegmentArtifact->GetFlexuralStressArtifactCount(task);
 
-      for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
+      for ( IndexType idx = 0; idx < nArtifacts; idx++ )
       {
          ColumnIndexType col = 0;
 
@@ -662,29 +662,6 @@ void CFlexuralStressCheckTable::MakeAssignment(const CFlexuralStressCheckTable& 
 {
    MakeCopy( rOther );
 }
-
-#if defined _DEBUG
-bool CFlexuralStressCheckTable::AssertValid() const
-{
-   return true;
-}
-
-void CFlexuralStressCheckTable::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for CCombinedMomentsTable") << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CFlexuralStressCheckTable::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("CFlexuralStressCheckTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CFlexuralStressCheckTable");
-
-   TESTME_EPILOG("CFlexuralStressCheckTable");
-}
-#endif // _UNITTEST
 
 void CFlexuralStressCheckTable::BuildAllowGirderStressInformation(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, SegmentIndexType segIdx, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task) const
 {
@@ -854,7 +831,7 @@ void CFlexuralStressCheckTable::BuildAllowDeckStressInformation(rptChapter* pCha
       if ( bIsTendonStressingInterval )
       {
          (*pPara) << _T("Tension stress limit in areas other than the precompressed tensile zone = ") << tension_coeff.SetValue(t);
-         if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
+         if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
          {
             (*pPara) << symbol(lambda);
          }
@@ -875,7 +852,7 @@ void CFlexuralStressCheckTable::BuildAllowDeckStressInformation(rptChapter* pCha
             fAllowable = pAllowable->GetDeckAllowableTensionStress(poi, task,true/*with rebar*/);
 
             (*pPara) << _T("Tension stress limit in areas with sufficient bonded reinforcement = ") << tension_coeff.SetValue(t_with_rebar);
-            if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
             {
                (*pPara) << symbol(lambda);
             }
@@ -886,7 +863,7 @@ void CFlexuralStressCheckTable::BuildAllowDeckStressInformation(rptChapter* pCha
       else
       {
          (*pPara) << _T("Allowable tensile stress in the precompressed tensile zone = ") << tension_coeff.SetValue(t);
-         if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
+         if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
          {
             (*pPara) << symbol(lambda);
          }

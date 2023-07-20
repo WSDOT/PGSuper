@@ -55,7 +55,7 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
-   lrfdElasticShortening::FcgpComputationMethod fcgpMethod = pDetails->pLosses->ElasticShortening().GetFcgpComputationMethod();
+   WBFL::LRFD::ElasticShortening::FcgpComputationMethod fcgpMethod = pDetails->pLosses->GetElasticShortening().GetFcgpComputationMethod();
 
    GET_IFACE2(pBroker,IMaterials,pMaterials);
    Float64 Eci = pMaterials->GetSegmentEc(segmentKey,releaseIntervalIdx);
@@ -65,11 +65,11 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    pParagraph->SetName(_T("Elastic Shortening"));
-   if (fcgpMethod == lrfdElasticShortening::fcgpIterative)
+   if (fcgpMethod == WBFL::LRFD::ElasticShortening::FcgpComputationMethod::Iterative)
    {
-      *pParagraph << pParagraph->GetName() << _T(" - LRFD ") << LrfdCw8th(_T("5.9.5.2.3a"), _T("5.9.3.2.3a")) << rptNewLine;
+      *pParagraph << pParagraph->GetName() << _T(" - LRFD ") << WBFL::LRFD::LrfdCw8th(_T("5.9.5.2.3a"), _T("5.9.3.2.3a")) << rptNewLine;
    }
-   else if (fcgpMethod == lrfdElasticShortening::fcgp07Fpu)
+   else if (fcgpMethod == WBFL::LRFD::ElasticShortening::FcgpComputationMethod::AssumedFpe)
    {
       *pParagraph << pParagraph->GetName() << _T(" [TxDOT Research Report 0-6374-2]") << rptNewLine;
    }
@@ -84,7 +84,7 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
-   if (fcgpMethod == lrfdElasticShortening::fcgp07Fpu)
+   if (fcgpMethod == WBFL::LRFD::ElasticShortening::FcgpComputationMethod::AssumedFpe)
    {
       // For 0.7fpu method, all values are constant along the girder - we don't need a table
       INIT_UV_PROTOTYPE( rptMomentUnitValue, moment,       pDisplayUnits->GetMomentUnit(),          true );
@@ -109,15 +109,15 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
       *pParagraph << Sub2(_T("M"),_T("gm")) << _T(" = ") << moment.SetValue( pDetails->pLosses->GetGdrMoment()) << rptNewLine;
       *pParagraph << Sub2(_T("e"),_T("m")) << _T(" = ") <<ecc.SetValue( pDetails->pLosses->GetEccPermanentRelease().Y()) << rptNewLine;
 
-      Float64 Fpu = lrfdPsStrand::GetUltimateStrength( pDetails->pLosses->GetPermanentStrandGrade() );
+      Float64 Fpu = WBFL::LRFD::PsStrand::GetUltimateStrength( pDetails->pLosses->GetPermanentStrandGrade() );
       Float64 Aps = pDetails->pLosses->GetApsPermanent();
-      Float64 P   = pDetails->pLosses->ElasticShortening().P();
+      Float64 P   = pDetails->pLosses->GetElasticShortening().P();
 
       *pParagraph << Sub2(_T("0.7 f"),_T("pu")) << Sub2(_T(" A"),_T("ps")) << _T(" = 0.7(") 
                   << stress.SetValue(Fpu) << _T(")(") << area.SetValue(Aps) 
                   <<  _T(") = ") << force.SetValue(-P) << rptNewLine << rptNewLine;
 
-      *pParagraph << Sub2(_T("f"),_T("cgp")) << _T(" = ") << stress.SetValue( pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp() ) << rptNewLine << rptNewLine;
+      *pParagraph << Sub2(_T("f"),_T("cgp")) << _T(" = ") << stress.SetValue( pDetails->pLosses->GetElasticShortening().PermanentStrand_Fcgp() ) << rptNewLine << rptNewLine;
       *pParagraph << symbol(DELTA) << Sub2(_T("f"),_T("pES")) << _T(" = ") << stress.SetValue( pDetails->pLosses->PermanentStrand_ElasticShorteningLosses() ) << rptNewLine;
 
       return nullptr;
@@ -284,7 +284,7 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
       (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("End of Girder"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
       (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
    
-      if (fcgpMethod != lrfdElasticShortening::fcgp07Fpu)
+      if (fcgpMethod != WBFL::LRFD::ElasticShortening::FcgpComputationMethod::AssumedFpe)
       {
          (*table)(0,col++) << COLHDR(_T("P"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
       }
@@ -616,9 +616,9 @@ void CElasticShorteningTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const
    ColumnIndexType col = 2;
    RowIndexType rowOffset = GetNumberOfHeaderRows()-1;
 
-   const lrfdElasticShortening& es = pDetails->pLosses->ElasticShortening();
+   const WBFL::LRFD::ElasticShortening& es = pDetails->pLosses->GetElasticShortening();
 
-   if (es.GetFcgpComputationMethod() != lrfdElasticShortening::fcgp07Fpu)
+   if (es.GetFcgpComputationMethod() != WBFL::LRFD::ElasticShortening::FcgpComputationMethod::AssumedFpe)
    {
       (*this)(row+rowOffset,col++) << force.SetValue( -es.P() );
    }

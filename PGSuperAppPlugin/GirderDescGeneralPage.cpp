@@ -663,7 +663,7 @@ void CGirderDescGeneralPage::UpdateEci()
       Float64 Eci;
       if ( m_TimeDependentModel == pgsTypes::tdmAASHTO )
       {
-         lrfdLRFDTimeDependentConcrete concrete;
+         WBFL::LRFD::LRFDTimeDependentConcrete concrete;
          concrete.UserEc28(true);
          concrete.SetEc28(Ec);
          concrete.SetA(pParent->m_pSegment->Material.Concrete.A);
@@ -789,7 +789,7 @@ void CGirderDescGeneralPage::UpdateEc()
       Float64 Ec;
       if ( m_TimeDependentModel == pgsTypes::tdmAASHTO )
       {
-         Ec = lrfdLRFDTimeDependentConcrete::ComputeEc28(Eci,m_AgeAtRelease,pParent->m_pSegment->Material.Concrete.A,pParent->m_pSegment->Material.Concrete.B);
+         Ec = WBFL::LRFD::LRFDTimeDependentConcrete::ComputeEc28(Eci,m_AgeAtRelease,pParent->m_pSegment->Material.Concrete.A,pParent->m_pSegment->Material.Concrete.B);
       }
       else if (m_TimeDependentModel == pgsTypes::tdmACI209 )
       {
@@ -852,7 +852,7 @@ void CGirderDescGeneralPage::UpdateFc()
 
          if ( m_TimeDependentModel == pgsTypes::tdmAASHTO )
          {
-            fc = lrfdLRFDTimeDependentConcrete::ComputeFc28(fci,m_AgeAtRelease,pParent->m_pSegment->Material.Concrete.A,pParent->m_pSegment->Material.Concrete.B);
+            fc = WBFL::LRFD::LRFDTimeDependentConcrete::ComputeFc28(fci,m_AgeAtRelease,pParent->m_pSegment->Material.Concrete.A,pParent->m_pSegment->Material.Concrete.B);
          }
          else if ( m_TimeDependentModel == pgsTypes::tdmACI209 )
          {
@@ -897,7 +897,7 @@ void CGirderDescGeneralPage::UpdateFci()
          Float64 fci;
          if ( m_TimeDependentModel == pgsTypes::tdmAASHTO )
          {
-            lrfdLRFDTimeDependentConcrete concrete;
+            WBFL::LRFD::LRFDTimeDependentConcrete concrete;
             concrete.SetTimeAtCasting(0);
             concrete.SetFc28(fc);
             concrete.SetA(pParent->m_pSegment->Material.Concrete.A);
@@ -1152,7 +1152,7 @@ void CGirderDescGeneralPage::UpdateConcreteParametersToolTip()
 
    CString strTip;
    strTip.Format(_T("%-20s %s\r\n%-20s %s\r\n%-20s %s\r\n%-20s %s"),
-      _T("Type"), lrfdConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pParent->m_pSegment->Material.Concrete.Type,true).c_str(),
+      _T("Type"), WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pParent->m_pSegment->Material.Concrete.Type,true).c_str(),
       _T("Unit Weight"),FormatDimension(pParent->m_pSegment->Material.Concrete.StrengthDensity,density),
       _T("Unit Weight (w/ reinforcement)"),  FormatDimension(pParent->m_pSegment->Material.Concrete.WeightDensity,density),
       _T("Max Aggregate Size"),  FormatDimension(pParent->m_pSegment->Material.Concrete.MaxAggregateSize,aggsize)

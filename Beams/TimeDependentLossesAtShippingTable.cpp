@@ -70,7 +70,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
 
    bool bIgnoreInitialRelaxation = ( loss_method == pgsTypes::WSDOT_REFINED || loss_method == pgsTypes::WSDOT_LUMPSUM ) ? false : true;
 
-   if ((lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::ThirdEdition2004 && loss_method == pgsTypes::AASHTO_REFINED) ||
+   if ((WBFL::LRFD::LRFDVersionMgr::GetVersion() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 && loss_method == pgsTypes::AASHTO_REFINED) ||
         loss_method == pgsTypes::TXDOT_REFINED_2004)
    {
       bIgnoreInitialRelaxation = false;
@@ -255,7 +255,7 @@ void CTimeDependentLossesAtShippingTable::AddRow(rptChapter* pChapter,IBroker* p
    Float64 fpAS = 0;
    if (m_bPCIUHPC)
    {
-      const std::shared_ptr<const lrfdPCIUHPCLosses> pLosses = std::dynamic_pointer_cast<const lrfdPCIUHPCLosses>(pDetails->pLosses);
+      const std::shared_ptr<const WBFL::LRFD::PCIUHPCLosses> pLosses = std::dynamic_pointer_cast<const WBFL::LRFD::PCIUHPCLosses>(pDetails->pLosses);
       ATLASSERT(pLosses.use_count() == pDetails->pLosses.use_count());
       fpAS = pLosses->PermanentStrand_AutogenousShrinkage();
    }
@@ -293,7 +293,7 @@ void CTimeDependentLossesAtShippingTable::AddRow(rptChapter* pChapter,IBroker* p
       fpAS = 0;
       if (m_bPCIUHPC)
       {
-         const std::shared_ptr<const lrfdPCIUHPCLosses> pLosses = std::dynamic_pointer_cast<const lrfdPCIUHPCLosses>(pDetails->pLosses);
+         const std::shared_ptr<const WBFL::LRFD::PCIUHPCLosses> pLosses = std::dynamic_pointer_cast<const WBFL::LRFD::PCIUHPCLosses>(pDetails->pLosses);
          ATLASSERT(pLosses.use_count() == pDetails->pLosses.use_count());
          fpAS = pLosses->TemporaryStrand_AutogenousShrinkage();
       }

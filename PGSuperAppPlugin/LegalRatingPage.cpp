@@ -140,7 +140,7 @@ void CLegalRatingPage::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX,IDC_ALLOWABLE_TENSION,IDC_ALLOWABLE_TENSION_UNIT,m_Data.AllowableTensionCoefficient,pDisplayUnits->GetTensionCoefficientUnit());
 
    CString tag;
-   if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2016Interims )
+   if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims )
    {
       tag = pDisplayUnits->GetUnitMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
    }
@@ -347,7 +347,7 @@ BOOL CLegalRatingPage::OnSetActive()
    Float64 gLL = -1;
 
    bool bAllowUserOverride;
-   if ( pRatingEntry->GetSpecificationVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( pRatingEntry->GetSpecificationVersion() < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
    {
       const CLiveLoadFactorModel& routine = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrLegal_Routine);
       bAllowUserOverride = routine.AllowUserOverride();
@@ -372,7 +372,7 @@ BOOL CLegalRatingPage::OnSetActive()
    }
 
 
-   if ( pRatingEntry->GetSpecificationVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( pRatingEntry->GetSpecificationVersion() < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
    {
       const CLiveLoadFactorModel& special = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrLegal_Special);
       bAllowUserOverride = special.AllowUserOverride();
@@ -396,7 +396,7 @@ BOOL CLegalRatingPage::OnSetActive()
       GetDlgItem(IDC_SERVICE_III_LL_SPECIAL)->EnableWindow(FALSE);
    }
 
-   if (pRatingEntry->GetSpecificationVersion() < lrfrVersionMgr::SecondEditionWith2013Interims)
+   if (pRatingEntry->GetSpecificationVersion() < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims)
    {
       const CLiveLoadFactorModel& emergency = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrLegal_Emergency);
       bAllowUserOverride = emergency.AllowUserOverride();

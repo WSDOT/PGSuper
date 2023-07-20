@@ -29,7 +29,7 @@
 #include <psgLib\StructuredSave.h>
 #include <PsgLib\StructuredLoad.h>
 
-#include <Lrfd\StrandPool.h>
+#include <LRFD\StrandPool.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -291,7 +291,7 @@ HRESULT CGirderData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,
 
       var.vt = VT_BSTR;
       pStrLoad->get_Property(_T("Type"),&var);
-      Material.Concrete.Type = (pgsTypes::ConcreteType)lrfdConcreteUtil::GetTypeFromTypeName(OLE2T(var.bstrVal));
+      Material.Concrete.Type = (pgsTypes::ConcreteType)WBFL::LRFD::ConcreteUtil::GetTypeFromTypeName(OLE2T(var.bstrVal));
 
       var.vt = VT_R8;
       pStrLoad->get_Property(_T("Fci"), &var);

@@ -233,27 +233,3 @@ void CPrestressRotationTable::MakeAssignment(const CPrestressRotationTable& rOth
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CPrestressRotationTable::AssertValid() const
-{
-   return true;
-}
-
-void CPrestressRotationTable::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for CPrestressRotationTable") << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CPrestressRotationTable::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("CPrestressRotationTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CPrestressRotationTable");
-
-   TESTME_EPILOG("CPrestressRotationTable");
-}
-#endif // _UNITTEST

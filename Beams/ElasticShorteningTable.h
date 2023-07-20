@@ -30,7 +30,7 @@
 #include <EAF\EAFDisplayUnits.h>
 
 
-class lrfdLosses;
+class WBFL::LRFD::Losses;
 
 /////////////////////////////////////////////////////////////////////////////
 // CElasticShorteningTable

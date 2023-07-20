@@ -281,7 +281,7 @@ m_pCompatibilityData(nullptr)
 }
 
 GirderLibraryEntry::GirderLibraryEntry(const GirderLibraryEntry& rOther) :
-libLibraryEntry(rOther)
+WBFL::Library::LibraryEntry(rOther)
 {
    m_pCompatibilityData = nullptr;
    if (rOther.m_pCompatibilityData != nullptr)
@@ -289,7 +289,7 @@ libLibraryEntry(rOther)
       m_pCompatibilityData = new pgsCompatibilityData(rOther.m_pCompatibilityData);
    }
    InitCLSIDMap();
-   MakeCopy(rOther);
+   CopyValuesAndAttributes(rOther);
 }
 
 GirderLibraryEntry::~GirderLibraryEntry()
@@ -369,7 +369,7 @@ GirderLibraryEntry& GirderLibraryEntry::operator= (const GirderLibraryEntry& rOt
 {
    if( this != &rOther )
    {
-      MakeAssignment(rOther);
+      CopyValuesAndAttributes(rOther);
    }
 
    return *this;
@@ -1172,7 +1172,7 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
-         lrfdRebarPool::MapOldRebarKey(size,legacy.m_StirrupBarGrade,legacy.m_StirrupBarType,legacy.m_ConfinementBarSize);
+         WBFL::LRFD::RebarPool::MapOldRebarKey(size,legacy.m_StirrupBarGrade,legacy.m_StirrupBarType,legacy.m_ConfinementBarSize);
       }
       else if (version == 18)
       {
@@ -1399,7 +1399,7 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
             {
                WBFL::Materials::Rebar::Grade grade;
                WBFL::Materials::Rebar::Type type;
-               lrfdRebarPool::MapOldRebarKey(size,grade,type,legacy.m_TopFlangeShearBarSize);
+               WBFL::LRFD::RebarPool::MapOldRebarKey(size,grade,type,legacy.m_TopFlangeShearBarSize);
             }
             else
             {
@@ -1835,12 +1835,12 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
             }
 
             // now that we have our strands in pre-version 5.0 temp data structures, let's convert
-            CollectionIndexType end_cnt, hp_cnt;
+            IndexType end_cnt, hp_cnt;
             pEndStrandLocations->get_Count(&end_cnt);
             pHPStrandLocations->get_Count(&hp_cnt);
 
-            CollectionIndexType end_idx=0;
-            for (CollectionIndexType hp_idx=0; hp_idx<hp_cnt; hp_idx++)
+            IndexType end_idx=0;
+            for (IndexType hp_idx=0; hp_idx<hp_cnt; hp_idx++)
             {
                CComPtr<IPoint2d> hp_pnt;
                pHPStrandLocations->get_Item(hp_idx, &hp_pnt);
@@ -2223,7 +2223,7 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 
                WBFL::Materials::Rebar::Grade grade;
                WBFL::Materials::Rebar::Type type;
-               lrfdRebarPool::MapOldRebarKey(size,grade,type,zi.VertBarSize);
+               WBFL::LRFD::RebarPool::MapOldRebarKey(size,grade,type,zi.VertBarSize);
 
 
                if ( version < 11.0 )
@@ -2280,7 +2280,7 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 
                   WBFL::Materials::Rebar::Grade grade;
                   WBFL::Materials::Rebar::Type type;
-                  lrfdRebarPool::MapOldRebarKey(size,grade,type,zi.VertBarSize);
+                  WBFL::LRFD::RebarPool::MapOldRebarKey(size,grade,type,zi.VertBarSize);
                }
                else
                {
@@ -2308,7 +2308,7 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 
                   WBFL::Materials::Rebar::Grade grade;
                   WBFL::Materials::Rebar::Type type;
-                  lrfdRebarPool::MapOldRebarKey(size,grade,type,zi.HorzBarSize);
+                  WBFL::LRFD::RebarPool::MapOldRebarKey(size,grade,type,zi.HorzBarSize);
                }
                else
                {
@@ -2426,7 +2426,7 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 
             WBFL::Materials::Rebar::Grade grade;
             WBFL::Materials::Rebar::Type type;
-            lrfdRebarPool::MapOldRebarKey(barSize,grade,type,li.BarSize);
+            WBFL::LRFD::RebarPool::MapOldRebarKey(barSize,grade,type,li.BarSize);
          }
          else
          {
@@ -4784,8 +4784,10 @@ bool GirderLibraryEntry::Edit(bool allowEditing,int nPage)
    return false;
 }
 
-void GirderLibraryEntry::MakeCopy(const GirderLibraryEntry& rOther)
+void GirderLibraryEntry::CopyValuesAndAttributes(const GirderLibraryEntry& rOther)
 {
+   __super::CopyValuesAndAttributes(rOther);
+
    m_LongitudinalBarType      = rOther.m_LongitudinalBarType;
    m_LongitudinalBarGrade     = rOther.m_LongitudinalBarGrade;
    m_HarpingPointLocation     = rOther.m_HarpingPointLocation;
@@ -4860,12 +4862,6 @@ void GirderLibraryEntry::MakeCopy(const GirderLibraryEntry& rOther)
    m_DragCoefficient = rOther.m_DragCoefficient;
    m_PrecamberLimit = rOther.m_PrecamberLimit;
    m_DoReportBearingElevationsAtGirderEdges = rOther.m_DoReportBearingElevationsAtGirderEdges;
-}
-
-void GirderLibraryEntry::MakeAssignment(const GirderLibraryEntry& rOther)
-{
-   libLibraryEntry::MakeAssignment( rOther );
-   MakeCopy( rOther );
 }
 
 HICON  GirderLibraryEntry::GetIcon() const
@@ -5172,7 +5168,7 @@ bool GirderLibraryEntry::CheckDebondingInWebWidthProjections() const
 
 bool GirderLibraryEntry::IsEqual(IPoint2dCollection* points1,IPoint2dCollection* points2) const
 {
-   CollectionIndexType c1,c2;
+   IndexType c1,c2;
    points1->get_Count(&c1);
    points2->get_Count(&c2);
 
@@ -5181,7 +5177,7 @@ bool GirderLibraryEntry::IsEqual(IPoint2dCollection* points1,IPoint2dCollection*
       return false;
    }
 
-   CollectionIndexType idx;
+   IndexType idx;
    for ( idx = 0; idx < c1; idx++ )
    {
       CComPtr<IPoint2d> p1, p2;

@@ -170,7 +170,7 @@ HRESULT CDeckRebarData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       var.vt = VT_I4;
       pStrLoad->get_Property(_T("TopRebarKey"),&var);
       BarSizeType TopRebarKey = BarSizeType(var.lVal);
-      lrfdRebarPool::MapOldRebarKey(TopRebarKey,TopRebarGrade,TopRebarType,TopRebarSize);
+      WBFL::LRFD::RebarPool::MapOldRebarKey(TopRebarKey,TopRebarGrade,TopRebarType,TopRebarSize);
    }
    else
    {
@@ -201,7 +201,7 @@ HRESULT CDeckRebarData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       var.vt = VT_I4;
       pStrLoad->get_Property(_T("BottomRebarKey"),&var);
       BarSizeType BottomRebarKey = BarSizeType(var.lVal);
-      lrfdRebarPool::MapOldRebarKey(BottomRebarKey,BottomRebarGrade,BottomRebarType,BottomRebarSize);
+      WBFL::LRFD::RebarPool::MapOldRebarKey(BottomRebarKey,BottomRebarGrade,BottomRebarType,BottomRebarSize);
    }
    else
    {
@@ -246,7 +246,7 @@ HRESULT CDeckRebarData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          var.vt = VT_I4;
          pStrLoad->get_Property(_T("RebarKey"),&var);
          BarSizeType RebarKey = BarSizeType(var.lVal);
-         lrfdRebarPool::MapOldRebarKey(RebarKey,rebar.RebarGrade,rebar.RebarType,rebar.RebarSize);
+         WBFL::LRFD::RebarPool::MapOldRebarKey(RebarKey,rebar.RebarGrade,rebar.RebarType,rebar.RebarSize);
       }
       else
       {

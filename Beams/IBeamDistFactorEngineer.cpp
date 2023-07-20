@@ -198,7 +198,7 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
          (*pPara) << _T("Skew reduction for moment distribution factors has been ignored (LRFD 4.6.2.2.2e)") << rptNewLine;
       }
 
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
       {
          pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pPara) << _T("Strength and Service Limit States");
@@ -299,7 +299,7 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
       ////////////////////////////////////////////////////////////////////////////
       // Fatigue limit states
       ////////////////////////////////////////////////////////////////////////////
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
       {
          pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pPara) << _T("Fatigue Limit States");
@@ -376,7 +376,7 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
    } // next span
 }
 
-lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,Float64 fcgdr,IBEAM_LLDFDETAILS* plldf)
+WBFL::LRFD::LiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,Float64 fcgdr,IBEAM_LLDFDETAILS* plldf)
 {
    GET_IFACE(IMaterials,    pMaterials);
    GET_IFACE(ISectionProperties,        pSectProp);
@@ -495,7 +495,7 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
    bool bSkewMoment = pSpecEntry->IgnoreSkewReductionForMoment() ? false : bSkew;
    bool bSkewShear  = bSkew;
 
-   if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       // Starting with LRFD 7th Edition, 2014, skew correction is only applied from
       // the obtuse corner to mid-span of exterior and first interior girders.
@@ -525,12 +525,12 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
       }
    }
 
-   lrfdLldfTypeAEKIJ* pLLDF;
+   WBFL::LRFD::LldfTypeAEKIJ* pLLDF;
    int lldf_method = pSpecEntry->GetLiveLoadDistributionMethod();
    if ( lldf_method == LLDF_LRFD )
    {
       bool bRigidMethod = (0 < nDiaphragms ? true : false); // must have diaphragms for rigid method
-      if (lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion())
+      if (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
       {
          // rigid method only used for steel bridges starting with LRFD 7th Edition, 2014
          // but we can override
@@ -538,7 +538,7 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
       }
 
 
-      pLLDF = new lrfdLldfTypeAEK(plldf->gdrNum,
+      pLLDF = new WBFL::LRFD::LldfTypeAEK(plldf->gdrNum,
                                   plldf->Savg,
                                   plldf->gdrSpacings,
                                   plldf->leftCurbOverhang,
@@ -570,7 +570,7 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
          slab_overhang_threshold = 0.5;
       }
 
-      pLLDF = new lrfdWsdotLldfTypeAEK(plldf->gdrNum,
+      pLLDF = new WBFL::LRFD::WsdotLldfTypeAEK(plldf->gdrNum,
                                        plldf->Savg,
                                        plldf->gdrSpacings,
                                        plldf->leftCurbOverhang,
@@ -592,7 +592,7 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
                                        slab_overhang_threshold);
    }
 
-   pLLDF->SetRangeOfApplicabilityAction( pLiveLoads->GetLldfRangeOfApplicabilityAction() );
+   pLLDF->SetRangeOfApplicabilityAction( pLiveLoads->GetRangeOfApplicabilityAction() );
 
    plldf->Kg = pLLDF->GetKg();
 
@@ -600,7 +600,7 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
 }
 
 
-void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gM1,lrfdILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
+void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
 {
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
@@ -629,7 +629,7 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
          {
             (*pPara) << _T("Note: Using distribution factor for interior girder per TxDOT Bridge Design Manual - LRFD") << rptNewLine;
          }
-         else if (gM1.ControllingMethod & INTERIOR_OVERRIDE)
+         else if (gM1.ControllingMethod & WBFL::LRFD::INTERIOR_OVERRIDE)
          {
             (*pPara) <<  LLDF_INTOVERRIDE_STR << rptNewLine;
          }
@@ -641,7 +641,7 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
       if ( gM1.LeverRuleData.bWasUsed )
       {
          (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
-         if (gM1.ControllingMethod & INTERIOR_OVERRIDE)
+         if (gM1.ControllingMethod & WBFL::LRFD::INTERIOR_OVERRIDE)
          {
             if (df_method == LLDF_WSDOT)
             {
@@ -675,7 +675,7 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
 
          if (gM2.EqnData.bWasUsed)
          {
-            if ( gM2.ControllingMethod & INTERIOR_OVERRIDE )
+            if ( gM2.ControllingMethod & WBFL::LRFD::INTERIOR_OVERRIDE )
             {
                (*pPara) << Bold(_T("2+ Loaded Lanes: Spec Equations")) << rptNewLine;
                if (df_method == LLDF_WSDOT)
@@ -724,7 +724,7 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
          {
             (*pPara) << Bold(_T("2+ Loaded Lanes: Lever Rule")) << rptNewLine;
 
-            if (gM2.ControllingMethod & INTERIOR_OVERRIDE)
+            if (gM2.ControllingMethod & WBFL::LRFD::INTERIOR_OVERRIDE)
             {
                if (df_method == LLDF_WSDOT)
                {
@@ -755,7 +755,7 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
 
       (*pPara) << rptNewLine;
 
-      if ( gM1.ControllingMethod & MOMENT_SKEW_CORRECTION_APPLIED )
+      if ( gM1.ControllingMethod & WBFL::LRFD::MOMENT_SKEW_CORRECTION_APPLIED )
       {
          (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
          Float64 skew_delta_max = WBFL::Units::ConvertToSysUnits( 10.0, WBFL::Units::Measure::Degree );
@@ -831,7 +831,7 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
          (*pPara) << rptNewLine;
       }
 
-      if ( gM1.ControllingMethod & MOMENT_SKEW_CORRECTION_APPLIED )
+      if ( gM1.ControllingMethod & WBFL::LRFD::MOMENT_SKEW_CORRECTION_APPLIED )
       {
          (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
          Float64 skew_delta_max = WBFL::Units::ConvertToSysUnits( 10.0, WBFL::Units::Measure::Degree );
@@ -853,7 +853,7 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
    }
 }
 
-void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gV1,lrfdILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
+void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
 {
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
@@ -882,7 +882,7 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
       if ( gV1.LeverRuleData.bWasUsed )
       {
          (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
-         if (gV1.ControllingMethod & INTERIOR_OVERRIDE)
+         if (gV1.ControllingMethod & WBFL::LRFD::INTERIOR_OVERRIDE)
          {
             if (df_method == LLDF_WSDOT)
             {
@@ -915,9 +915,9 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
 
       if ( 2 <= lldf.Nl )
       {
-         if (gV2.ControllingMethod & E_OVERRIDE)
+         if (gV2.ControllingMethod & WBFL::LRFD::E_OVERRIDE)
          {
-            ATLASSERT(gV2.ControllingMethod & SPEC_EQN);
+            ATLASSERT(gV2.ControllingMethod & WBFL::LRFD::SPEC_EQN);
             (*pPara) << Bold(_T("2+ Loaded Lanes: Spec Equation")) << rptNewLine;
             if (df_method == LLDF_WSDOT)
             {
@@ -927,7 +927,7 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
             {
                (*pPara) << _T("Note: Using distribution factor for interior girder per TxDOT Bridge Design Manual - LRFD") << rptNewLine;
             }
-            else if (gV2.ControllingMethod & INTERIOR_OVERRIDE)
+            else if (gV2.ControllingMethod & WBFL::LRFD::INTERIOR_OVERRIDE)
             {
                (*pPara) << LLDF_INTOVERRIDE_STR << rptNewLine;
             }
@@ -948,7 +948,7 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
          {
             if ( gV2.EqnData.bWasUsed )
             {
-               ATLASSERT( gV2.ControllingMethod & INTERIOR_OVERRIDE);
+               ATLASSERT( gV2.ControllingMethod & WBFL::LRFD::INTERIOR_OVERRIDE);
                (*pPara) << Bold(_T("2+ Loaded Lanes: Spec Equation")) << rptNewLine;
                if (df_method == LLDF_WSDOT)
                {
@@ -980,7 +980,7 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
             {
                (*pPara) << Bold(_T("2+ Loaded Lanes: Lever Rule")) << rptNewLine;
 
-               if (gV2.ControllingMethod & INTERIOR_OVERRIDE)
+               if (gV2.ControllingMethod & WBFL::LRFD::INTERIOR_OVERRIDE)
                {
                   if (df_method == LLDF_WSDOT)
                   {
@@ -1011,7 +1011,7 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
          }
       }
 
-      if ( gV1.ControllingMethod & SHEAR_SKEW_CORRECTION_APPLIED )
+      if ( gV1.ControllingMethod & WBFL::LRFD::SHEAR_SKEW_CORRECTION_APPLIED )
       {
          (*pPara) << rptNewLine;
          (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
@@ -1078,7 +1078,7 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
          (*pPara) << rptNewLine;
       }
 
-      if ( gV1.ControllingMethod & SHEAR_SKEW_CORRECTION_APPLIED )
+      if ( gV1.ControllingMethod & WBFL::LRFD::SHEAR_SKEW_CORRECTION_APPLIED )
       {
          (*pPara) << Bold(_T("Skew Correction")) << rptNewLine << rptRcImage(strImagePath + (bSIUnits ? _T("SkewCorrection_Shear_SI.png") : _T("SkewCorrection_Shear_US.png"))) << rptNewLine;
          (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gV1.SkewCorrectionFactor) << rptNewLine;

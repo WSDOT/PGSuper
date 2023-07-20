@@ -38,7 +38,7 @@
 #include <PgsExt\ConcreteDetailsDlg.h>
 
 #include <System\Tokenizer.h>
-#include <Lrfd\ConcreteUtil.h>
+#include <LRFD\ConcreteUtil.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Project.h>
 
@@ -163,7 +163,7 @@ CString CConcreteDetailsDlg::UpdateEc(pgsTypes::ConcreteType type, const CString
          fc       = WBFL::Units::ConvertToSysUnits(fc,      stress_unit);
          density  = WBFL::Units::ConvertToSysUnits(density, density_unit);
 
-         ec = k1*k2*lrfdConcreteUtil::ModE((WBFL::Materials::ConcreteType)type,fc,density,false);
+         ec = k1*k2*WBFL::LRFD::ConcreteUtil::ModE((WBFL::Materials::ConcreteType)type,fc,density,false);
 
          strEc.Format(_T("%s"),FormatDimension(ec,pDisplayUnits->GetModEUnit(),false));
    }

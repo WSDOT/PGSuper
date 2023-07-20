@@ -161,7 +161,7 @@ HRESULT CShearZoneData::Load(WBFL::System::IStructuredLoad* pStrLoad, bool bConv
 
          WBFL::Materials::Rebar::Grade grade;
          WBFL::Materials::Rebar::Type type;
-         lrfdRebarPool::MapOldRebarKey(key,grade,type,VertBarSize);
+         WBFL::LRFD::RebarPool::MapOldRebarKey(key,grade,type,VertBarSize);
 
          if ( FAILED(pStrLoad->Property(_T("BarSpacing"),&BarSpacing)) )
          {
@@ -218,7 +218,7 @@ HRESULT CShearZoneData::Load(WBFL::System::IStructuredLoad* pStrLoad, bool bConv
          
             WBFL::Materials::Rebar::Grade grade;
             WBFL::Materials::Rebar::Type type;
-            lrfdRebarPool::MapOldRebarKey(key,grade,type,VertBarSize);
+            WBFL::LRFD::RebarPool::MapOldRebarKey(key,grade,type,VertBarSize);
          }
          else
          {
@@ -251,7 +251,7 @@ HRESULT CShearZoneData::Load(WBFL::System::IStructuredLoad* pStrLoad, bool bConv
          
             WBFL::Materials::Rebar::Grade grade;
             WBFL::Materials::Rebar::Type type;
-            lrfdRebarPool::MapOldRebarKey(key,grade,type,legacy_HorzBarSize);
+            WBFL::LRFD::RebarPool::MapOldRebarKey(key,grade,type,legacy_HorzBarSize);
          }
          else if (version < 4)
          {

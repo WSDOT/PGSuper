@@ -60,7 +60,7 @@ LPCTSTR CSplittingCheckDetailsChapterBuilder::GetKey() const
 
 LPCTSTR CSplittingCheckDetailsChapterBuilder::GetName() const
 {
-   if ( lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       return TEXT("Splitting Resistance Details");
    }

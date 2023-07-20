@@ -42,7 +42,7 @@ extern CComModule _Module;
 
 #include <IFace\Tools.h>
 #include <Reporter\Reporter.h>
-#include <Lrfd\Lrfd.h>
+#include <LRFD\Lrfd.h>
 
 #include <WBFLAtlExt.h>
 

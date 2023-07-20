@@ -117,7 +117,7 @@ void CWsdotHaulingDlg::OnCheckHaulingTensMaxSuper()
 void CWsdotHaulingDlg::OnSetActive()
 {
    CSpecMainSheet* pDad = (CSpecMainSheet*)(GetParent()->GetParent());
-   if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= pDad->m_Entry.GetSpecificationType() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= pDad->m_Entry.GetSpecificationType() )
    {
       GetDlgItem(IDC_SLWC_FR_TXT)->SetWindowText(_T("Lightweight concrete"));
       GetDlgItem(IDC_ALWC_FR_TXT)->ShowWindow(SW_HIDE);

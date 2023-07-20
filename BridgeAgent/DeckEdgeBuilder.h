@@ -40,8 +40,8 @@ private:
    CComPtr<ICogoEngine> m_CogoEngine;
    CComPtr<IAlignment> m_Alignment;
    std::vector<CDeckPoint> m_DeckPoints;
-   CollectionIndexType m_DeckPointIdx;
-   CollectionIndexType m_nDeckPoints;
+   IndexType m_DeckPointIdx;
+   IndexType m_nDeckPoints;
 
    CComPtr<IPoint2d> m_LeftLinearTransitionStartPoint;
    CComPtr<IPoint2d> m_RightLinearTransitionStartPoint;

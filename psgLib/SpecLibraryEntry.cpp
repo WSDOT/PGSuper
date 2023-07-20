@@ -62,8 +62,8 @@ CLASS
 //======================== LIFECYCLE  =======================================
 SpecLibraryEntry::SpecLibraryEntry() :
 m_bUseCurrentSpecification(true),
-m_SpecificationType(lrfdVersionMgr::NinthEdition2020),
-m_SpecificationUnits(lrfdVersionMgr::US),
+m_SpecificationType(WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020),
+m_SpecificationUnits(WBFL::LRFD::LRFDVersionMgr::Units::US),
 m_SectionPropertyMode(pgsTypes::spmGross),
 m_DoCheckStrandSlope(true),
 m_DoDesignStrandSlope(true),
@@ -453,27 +453,6 @@ m_bUseImpactForBearingReactions(false)
    m_MaxStirrupSpacing[1] = WBFL::Units::ConvertToSysUnits(12.0,WBFL::Units::Measure::Inch);
 }
 
-SpecLibraryEntry::SpecLibraryEntry(const SpecLibraryEntry& rOther) :
-libLibraryEntry(rOther)
-{
-   MakeCopy(rOther);
-}
-
-SpecLibraryEntry::~SpecLibraryEntry()
-{
-}
-
-//======================== OPERATORS  =======================================
-SpecLibraryEntry& SpecLibraryEntry::operator= (const SpecLibraryEntry& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
 //======================== OPERATIONS =======================================
 bool SpecLibraryEntry::Edit(bool allowEditing,int nPage)
 {
@@ -519,13 +498,13 @@ bool SpecLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
    pSave->Property(_T("Description"), this->GetDescription(false).c_str());
 
    pSave->Property(_T("UseCurrentSpecification"), m_bUseCurrentSpecification); // added in version 77
-   pSave->Property(_T("SpecificationType"),lrfdVersionMgr::GetVersionString(m_SpecificationType,true));
+   pSave->Property(_T("SpecificationType"),WBFL::LRFD::LRFDVersionMgr::GetVersionString(m_SpecificationType,true));
 
-   if (m_SpecificationUnits==lrfdVersionMgr::SI)
+   if (m_SpecificationUnits==WBFL::LRFD::LRFDVersionMgr::Units::SI)
    {
       pSave->Property(_T("SpecificationUnits"), _T("SiUnitsSpec"));
    }
-   else if (m_SpecificationUnits==lrfdVersionMgr::US)
+   else if (m_SpecificationUnits==WBFL::LRFD::LRFDVersionMgr::Units::US)
    {
       pSave->Property(_T("SpecificationUnits"), _T("UsUnitsSpec"));
    }
@@ -1135,7 +1114,7 @@ bool SpecLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
       {
          try
          {
-            m_SpecificationType = lrfdVersionMgr::GetVersion(tmp.c_str());
+            m_SpecificationType = WBFL::LRFD::LRFDVersionMgr::GetVersion(tmp.c_str());
          }
          catch(...)
          {
@@ -1152,11 +1131,11 @@ bool SpecLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
       {
          if (tmp==_T("SiUnitsSpec"))
          {
-            m_SpecificationUnits = lrfdVersionMgr::SI;
+            m_SpecificationUnits = WBFL::LRFD::LRFDVersionMgr::Units::SI;
          }
          else if(tmp==_T("UsUnitsSpec"))
          {
-            m_SpecificationUnits = lrfdVersionMgr::US;
+            m_SpecificationUnits = WBFL::LRFD::LRFDVersionMgr::Units::US;
          }
          else
          {
@@ -1315,7 +1294,7 @@ bool SpecLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 
          m_MaxStirrupSpacing[0] = maxStirrupSpacing;
 
-         if ( m_SpecificationUnits == lrfdVersionMgr::SI )
+         if ( m_SpecificationUnits == WBFL::LRFD::LRFDVersionMgr::Units::SI )
          {
             // default value in SI units is 300mm
             // default value is US units is 12"
@@ -3411,19 +3390,19 @@ bool SpecLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
       {
          switch( m_SpecificationType )
          {
-         case lrfdVersionMgr::FirstEdition1994:
+         case WBFL::LRFD::LRFDVersionMgr::Version::FirstEdition1994:
             m_bCheckStrandStress[CSS_AT_JACKING]       = true;
             m_bCheckStrandStress[CSS_BEFORE_TRANSFER]  = false;
             m_bCheckStrandStress[CSS_AFTER_TRANSFER]   = true;
             m_bCheckStrandStress[CSS_AFTER_ALL_LOSSES] = true;
             break;
 
-         case lrfdVersionMgr::FirstEditionWith1996Interims:
-         case lrfdVersionMgr::FirstEditionWith1997Interims:
-         case lrfdVersionMgr::SecondEdition1998:
-         case lrfdVersionMgr::SecondEditionWith1999Interims:
-         case lrfdVersionMgr::SecondEditionWith2000Interims:
-         case lrfdVersionMgr::SecondEditionWith2001Interims:
+         case WBFL::LRFD::LRFDVersionMgr::Version::FirstEditionWith1996Interims:
+         case WBFL::LRFD::LRFDVersionMgr::Version::FirstEditionWith1997Interims:
+         case WBFL::LRFD::LRFDVersionMgr::Version::SecondEdition1998:
+         case WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith1999Interims:
+         case WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims:
+         case WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2001Interims:
             m_bCheckStrandStress[CSS_AT_JACKING]       = false;
             m_bCheckStrandStress[CSS_BEFORE_TRANSFER]  = true;
             m_bCheckStrandStress[CSS_AFTER_TRANSFER]   = false;
@@ -3974,9 +3953,9 @@ bool SpecLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 
          // MaxInterfaceShearConnectorSpacing wasn't available in this version of the input
          // the default value is 48". Set the value to match the spec
-         if ( m_SpecificationType < lrfdVersionMgr::SeventhEdition2014 )
+         if ( m_SpecificationType < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 )
          {
-            if ( m_SpecificationUnits == lrfdVersionMgr::US )
+            if ( m_SpecificationUnits == WBFL::LRFD::LRFDVersionMgr::Units::US )
             {
                m_MaxInterfaceShearConnectorSpacing = WBFL::Units::ConvertToSysUnits(24.0,WBFL::Units::Measure::Inch);
             }
@@ -4013,13 +3992,13 @@ bool SpecLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 
          // The general method from the 2007 spec becomes the tables method in the 2008 spec
          // make that adjustment here
-         if ( m_SpecificationType < lrfdVersionMgr::FourthEditionWith2008Interims && m_ShearCapacityMethod == pgsTypes::scmBTEquations )
+         if ( m_SpecificationType < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims && m_ShearCapacityMethod == pgsTypes::scmBTEquations )
          {
             m_ShearCapacityMethod = pgsTypes::scmBTTables;
          }
 
          // if this is the 2008 spec, or later and if the shear method is WSDOT 2007, change it to Beta-Theta equations
-         if ( lrfdVersionMgr::FourthEditionWith2008Interims <= m_SpecificationType && m_ShearCapacityMethod == pgsTypes::scmWSDOT2007 )
+         if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims <= m_SpecificationType && m_ShearCapacityMethod == pgsTypes::scmWSDOT2007 )
          {
             m_ShearCapacityMethod = pgsTypes::scmBTEquations;
          }
@@ -4081,9 +4060,9 @@ bool SpecLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
          else
          {
             // prior to 7th Edition 2014 max spacing was 24 inches... 
-            if ( m_SpecificationType < lrfdVersionMgr::SeventhEdition2014 )
+            if ( m_SpecificationType < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 )
             {
-               if ( m_SpecificationUnits == lrfdVersionMgr::US )
+               if ( m_SpecificationUnits == WBFL::LRFD::LRFDVersionMgr::Units::US )
                {
                   m_MaxInterfaceShearConnectorSpacing = WBFL::Units::ConvertToSysUnits(24.0,WBFL::Units::Measure::Inch);
                }
@@ -4129,13 +4108,13 @@ bool SpecLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 
          // The general method from the 2007 spec becomes the tables method in the 2008 spec
          // make that adjustment here
-         if ( m_SpecificationType < lrfdVersionMgr::FourthEditionWith2008Interims && m_ShearCapacityMethod == pgsTypes::scmBTEquations )
+         if ( m_SpecificationType < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims && m_ShearCapacityMethod == pgsTypes::scmBTEquations )
          {
             m_ShearCapacityMethod = pgsTypes::scmBTTables;
          }
 
          // if this is the 2008 spec, or later and if the shear method is WSDOT 2007, change it to Beta-Theta equations
-         if ( lrfdVersionMgr::FourthEditionWith2008Interims <= m_SpecificationType && m_ShearCapacityMethod == pgsTypes::scmWSDOT2007 )
+         if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims <= m_SpecificationType && m_ShearCapacityMethod == pgsTypes::scmWSDOT2007 )
          {
             m_ShearCapacityMethod = pgsTypes::scmBTEquations;
          }
@@ -4283,7 +4262,7 @@ bool SpecLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 
       if ( version < 26 )
       {
-         if ( m_SpecificationUnits == lrfdVersionMgr::SI )
+         if ( m_SpecificationUnits == WBFL::LRFD::LRFDVersionMgr::Units::SI )
          {
             m_PedestrianLoad   = WBFL::Units::ConvertToSysUnits(3.6e-3,WBFL::Units::Measure::MPa);
             m_MinSidewalkWidth = WBFL::Units::ConvertToSysUnits(600.,WBFL::Units::Measure::Millimeter);
@@ -4509,7 +4488,7 @@ bool SpecLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
       {
          // This was the hard-coded default for versions before 5.x
          m_SlabOffsetRoundingMethod = pgsTypes::sormRoundNearest;
-         m_SlabOffsetRoundingTolerance = m_SpecificationUnits == lrfdVersionMgr::US ? WBFL::Units::ConvertToSysUnits(0.25, WBFL::Units::Measure::Inch) : WBFL::Units::ConvertToSysUnits(5.0,WBFL::Units::Measure::Millimeter);
+         m_SlabOffsetRoundingTolerance = m_SpecificationUnits == WBFL::LRFD::LRFDVersionMgr::Units::US ? WBFL::Units::ConvertToSysUnits(0.25, WBFL::Units::Measure::Inch) : WBFL::Units::ConvertToSysUnits(5.0,WBFL::Units::Measure::Millimeter);
       }
 
       // Bearings was added in verison 79
@@ -4595,10 +4574,10 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
    if ( m_bUseCurrentSpecification != rOther.m_bUseCurrentSpecification || m_SpecificationType != rOther.m_SpecificationType )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Basis is different"),lrfdVersionMgr::GetVersionString(m_SpecificationType),lrfdVersionMgr::GetVersionString(rOther.m_SpecificationType)));
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Basis is different"),WBFL::LRFD::LRFDVersionMgr::GetVersionString(m_SpecificationType),WBFL::LRFD::LRFDVersionMgr::GetVersionString(rOther.m_SpecificationType)));
    }
 
-   if ( lrfdVersionMgr::ThirdEditionWith2006Interims < m_SpecificationType && m_SpecificationUnits != rOther.m_SpecificationUnits )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2006Interims < m_SpecificationType && m_SpecificationUnits != rOther.m_SpecificationUnits )
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Specification Units Systems are different"),_T(""),_T("")));
@@ -4942,7 +4921,7 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
 
    if ( !::IsEqual(m_LiftingModulusOfRuptureCoefficient[pgsTypes::Normal], rOther.m_LiftingModulusOfRuptureCoefficient[pgsTypes::Normal]) ||
       !::IsEqual(m_LiftingModulusOfRuptureCoefficient[pgsTypes::SandLightweight], rOther.m_LiftingModulusOfRuptureCoefficient[pgsTypes::SandLightweight]) ||
-      (lrfdVersionMgr::SeventhEditionWith2016Interims <= GetSpecificationType() ? !::IsEqual(m_LiftingModulusOfRuptureCoefficient[pgsTypes::AllLightweight], rOther.m_LiftingModulusOfRuptureCoefficient[pgsTypes::AllLightweight]) : false) )
+      (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= GetSpecificationType() ? !::IsEqual(m_LiftingModulusOfRuptureCoefficient[pgsTypes::AllLightweight], rOther.m_LiftingModulusOfRuptureCoefficient[pgsTypes::AllLightweight]) : false) )
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Modulus of Rupture for Cracking Moment During Lifting are different"),_T(""),_T("")));
@@ -4999,7 +4978,7 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
 
          if ( !::IsEqual(m_HaulingModulusOfRuptureCoefficient[pgsTypes::Normal], rOther.m_HaulingModulusOfRuptureCoefficient[pgsTypes::Normal]) ||
             !::IsEqual(m_HaulingModulusOfRuptureCoefficient[pgsTypes::SandLightweight], rOther.m_HaulingModulusOfRuptureCoefficient[pgsTypes::SandLightweight]) ||
-            (lrfdVersionMgr::SeventhEditionWith2016Interims <= GetSpecificationType() ? !::IsEqual(m_HaulingModulusOfRuptureCoefficient[pgsTypes::AllLightweight], rOther.m_HaulingModulusOfRuptureCoefficient[pgsTypes::AllLightweight]) : false) )
+            (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= GetSpecificationType() ? !::IsEqual(m_HaulingModulusOfRuptureCoefficient[pgsTypes::AllLightweight], rOther.m_HaulingModulusOfRuptureCoefficient[pgsTypes::AllLightweight]) : false) )
          {
             RETURN_ON_DIFFERENCE;
             vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Modulus of Rupture for Cracking Moment During Hauling are different"),_T(""),_T("")));
@@ -5115,14 +5094,14 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
    //
    // Moment Capacity Tab
    //
-   if ( (GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims && m_Bs3LRFDOverReinforcedMomentCapacity != rOther.m_Bs3LRFDOverReinforcedMomentCapacity) ||
+   if ( (GetSpecificationType() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims && m_Bs3LRFDOverReinforcedMomentCapacity != rOther.m_Bs3LRFDOverReinforcedMomentCapacity) ||
         m_bIncludeStrand_NegMoment != rOther.m_bIncludeStrand_NegMoment ||
       m_bConsiderReinforcementStrainLimit != rOther.m_bConsiderReinforcementStrainLimit ||
       m_nMomentCapacitySlices != rOther.m_nMomentCapacitySlices ||
         m_bIncludeRebar_Moment != rOther.m_bIncludeRebar_Moment ||
         !::IsEqual(m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal], rOther.m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal]) ||
         !::IsEqual(m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight], rOther.m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight]) ||
-      (GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2016Interims && !::IsEqual(m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight], rOther.m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight])) )
+      (GetSpecificationType() < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims && !::IsEqual(m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight], rOther.m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight])) )
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Moment Capacity parameters are different"),_T(""),_T("")));
@@ -5132,9 +5111,9 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
    for ( int i = 0; i < pgsTypes::ConcreteTypeCount && bPhiFactors == true; i++ )
    {
       pgsTypes::ConcreteType concreteType = pgsTypes::ConcreteType(i);
-      if ( concreteType == pgsTypes::AllLightweight && lrfdVersionMgr::SeventhEditionWith2016Interims <= GetSpecificationType() )
+      if ( concreteType == pgsTypes::AllLightweight && WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= GetSpecificationType() )
       {
-         // All Lightweight not used after LRFD2016, there is only Lightweight and thos parameters are stored with pgsTypes::SandLightweight
+         // All Lightweight not used after LRFD2016, there is only Lightweight and those parameters are stored with pgsTypes::SandLightweight
          continue;
       }
 
@@ -5170,7 +5149,7 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
       m_bLimitNetTensionStrainToPositiveValues != rOther.m_bLimitNetTensionStrainToPositiveValues ||
       !::IsEqual(m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal], rOther.m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal]) ||
       !::IsEqual(m_ShearModulusOfRuptureCoefficient[pgsTypes::SandLightweight], rOther.m_ShearModulusOfRuptureCoefficient[pgsTypes::SandLightweight]) || 
-      (GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2016Interims && !::IsEqual(m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight], rOther.m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight]))
+      (GetSpecificationType() < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims && !::IsEqual(m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight], rOther.m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight]))
       )
    {
       RETURN_ON_DIFFERENCE;
@@ -5181,7 +5160,7 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
    for ( int i = 0; i < pgsTypes::ConcreteTypeCount && bPhiFactors == true; i++ )
    {
       pgsTypes::ConcreteType concreteType = pgsTypes::ConcreteType(i);
-      if ( concreteType == pgsTypes::AllLightweight && lrfdVersionMgr::SeventhEditionWith2016Interims <= GetSpecificationType() )
+      if ( concreteType == pgsTypes::AllLightweight && WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= GetSpecificationType() )
       {
          // All Lightweight not used after LRFD2016, there is only Lightweight and thos parameters are stored with pgsTypes::SandLightweight
          continue;
@@ -5304,7 +5283,7 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
       }
       else if ( m_LossMethod == LOSSES_TXDOT_REFINED_2004 )
       {
-         if ( GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004 )
+         if ( GetSpecificationType() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 )
          {
             if ( !::IsEqual(m_ShippingLosses, rOther.m_ShippingLosses) ||
                  m_RelaxationLossMethod != rOther.m_RelaxationLossMethod )
@@ -5393,7 +5372,7 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
    for ( int i = 0; i < count && bConcreteLimits == true; i++ )
    {
       pgsTypes::ConcreteType concreteType = pgsTypes::ConcreteType(i);
-      if ( concreteType == pgsTypes::AllLightweight && lrfdVersionMgr::SeventhEditionWith2016Interims <= GetSpecificationType() )
+      if ( concreteType == pgsTypes::AllLightweight && WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= GetSpecificationType() )
       {
          // All Lightweight not used after LRFD2016, there is only Lightweight and those parameters are stored with pgsTypes::SandLightweight
          continue;
@@ -5506,16 +5485,16 @@ bool SpecLibraryEntry::UseCurrentSpecification() const
    return m_bUseCurrentSpecification;
 }
 
-void SpecLibraryEntry::SetSpecificationType(lrfdVersionMgr::Version type)
+void SpecLibraryEntry::SetSpecificationType(WBFL::LRFD::LRFDVersionMgr::Version type)
 {
    m_SpecificationType = type;
 }
 
-lrfdVersionMgr::Version SpecLibraryEntry::GetSpecificationType() const
+WBFL::LRFD::LRFDVersionMgr::Version SpecLibraryEntry::GetSpecificationType() const
 {
    if (m_bUseCurrentSpecification)
    {
-      return (lrfdVersionMgr::Version)((int)lrfdVersionMgr::LastVersion - 1);
+      return WBFL::LRFD::LRFDVersionMgr::GetLatestVersion();
    }
    else
    {
@@ -5523,12 +5502,12 @@ lrfdVersionMgr::Version SpecLibraryEntry::GetSpecificationType() const
    }
 }
 
-void SpecLibraryEntry::SetSpecificationUnits(lrfdVersionMgr::Units units)
+void SpecLibraryEntry::SetSpecificationUnits(WBFL::LRFD::LRFDVersionMgr::Units units)
 {
    m_SpecificationUnits = units;
 }
 
-lrfdVersionMgr::Units SpecLibraryEntry::GetSpecificationUnits() const
+WBFL::LRFD::LRFDVersionMgr::Units SpecLibraryEntry::GetSpecificationUnits() const
 {
    return m_SpecificationUnits;
 }
@@ -5544,9 +5523,9 @@ std::_tstring SpecLibraryEntry::GetDescription(bool bApplySymbolSubstitution) co
    if (bApplySymbolSubstitution)
    {
       std::_tstring description(m_Description);
-      std::_tstring strSubstitute(lrfdVersionMgr::GetCodeString());
+      std::_tstring strSubstitute(WBFL::LRFD::LRFDVersionMgr::GetCodeString());
       strSubstitute += _T(", ");
-      strSubstitute += lrfdVersionMgr::GetVersionString();
+      strSubstitute += WBFL::LRFD::LRFDVersionMgr::GetVersionString();
       boost::replace_all(description,_T("%BDS%"), strSubstitute);
       return description;
    }
@@ -6954,7 +6933,7 @@ Int16 SpecLibraryEntry::GetFcgpComputationMethod() const
 bool SpecLibraryEntry::AreElasticGainsApplicable() const
 {
    bool isapp(false);
-   if (lrfdVersionMgr::ThirdEdition2004 < this->GetSpecificationType())
+   if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 < this->GetSpecificationType())
    {
       int lm = this->GetLossMethod();
       if(LOSSES_AASHTO_REFINED == lm || LOSSES_WSDOT_REFINED  == lm || LOSSES_AASHTO_LUMPSUM == lm )
@@ -6969,7 +6948,7 @@ bool SpecLibraryEntry::AreElasticGainsApplicable() const
 bool SpecLibraryEntry::IsDeckShrinkageApplicable() const
 {
    bool isapp(false);
-   if (lrfdVersionMgr::ThirdEdition2004 < this->GetSpecificationType())
+   if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 < this->GetSpecificationType())
    {
       int lm = this->GetLossMethod();
       if(LOSSES_AASHTO_REFINED == lm || LOSSES_WSDOT_REFINED  == lm )
@@ -7617,7 +7596,7 @@ void SpecLibraryEntry::SetShearResistanceFactor(bool isDebonded, pgsTypes::Concr
 {
    if (isDebonded)
    {
-      ATLASSERT(lrfdVersionMgr::EighthEdition2017 <= GetSpecificationType());
+      ATLASSERT(WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017 <= GetSpecificationType());
       m_PhiShearDebonded[type] = phi;
    }
    else
@@ -7628,7 +7607,7 @@ void SpecLibraryEntry::SetShearResistanceFactor(bool isDebonded, pgsTypes::Concr
 
 Float64 SpecLibraryEntry::GetShearResistanceFactor(bool isDebonded, pgsTypes::ConcreteType type) const
 {
-   if (isDebonded && lrfdVersionMgr::EighthEdition2017 <= GetSpecificationType() )
+   if (isDebonded && WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017 <= GetSpecificationType() )
    {
       return m_PhiShearDebonded[type];
    }
@@ -7887,341 +7866,6 @@ bool SpecLibraryEntry::UseImpactForBearingReactions() const
 //======================== LIFECYCLE  =======================================
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
-void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
-{
-   m_bUseCurrentSpecification = rOther.m_bUseCurrentSpecification;
-   m_SpecificationType          = rOther.m_SpecificationType;
-   m_SpecificationUnits         = rOther.m_SpecificationUnits;
-   m_Description.erase();
-   m_Description                = rOther.m_Description;
-   m_SectionPropertyMode        = rOther.m_SectionPropertyMode;
-   m_DoCheckStrandSlope         = rOther.m_DoCheckStrandSlope;
-   m_DoDesignStrandSlope        = rOther.m_DoDesignStrandSlope;
-   m_MaxSlope05                 = rOther.m_MaxSlope05;
-   m_MaxSlope06                 = rOther.m_MaxSlope06;
-   m_MaxSlope07                 = rOther.m_MaxSlope07;
-   m_DoCheckHoldDown            = rOther.m_DoCheckHoldDown;
-   m_DoDesignHoldDown           = rOther.m_DoDesignHoldDown;
-   m_HoldDownForceType = rOther.m_HoldDownForceType;
-   m_HoldDownForce              = rOther.m_HoldDownForce;
-   m_HoldDownFriction = rOther.m_HoldDownFriction;
-   m_bCheckHandlingWeightLimit = rOther.m_bCheckHandlingWeightLimit;
-   m_HandlingWeightLimit = rOther.m_HandlingWeightLimit;
-   m_StirrupSpacingCoefficient[0] = rOther.m_StirrupSpacingCoefficient[0];
-   m_MaxStirrupSpacing[0]         = rOther.m_MaxStirrupSpacing[0];
-   m_StirrupSpacingCoefficient[1] = rOther.m_StirrupSpacingCoefficient[1];
-   m_MaxStirrupSpacing[1]         = rOther.m_MaxStirrupSpacing[1];
-   m_DoCheckConfinement         = rOther.m_DoCheckConfinement;
-   m_DoDesignConfinement        = rOther.m_DoDesignConfinement;
-   m_DoCheckSplitting           = rOther.m_DoCheckSplitting;
-   m_DoDesignSplitting          = rOther.m_DoDesignSplitting;
-   m_CyLiftingCrackFs           = rOther.m_CyLiftingCrackFs;
-   m_CyLiftingFailFs            = rOther.m_CyLiftingFailFs;
-   m_CyCompStressServ           = rOther.m_CyCompStressServ;
-   m_LiftingCompressionStressCoefficient_GlobalStress        = rOther.m_LiftingCompressionStressCoefficient_GlobalStress;
-   m_LiftingCompressionStressCoefficient_PeakStress = rOther.m_LiftingCompressionStressCoefficient_PeakStress;
-   m_CyTensStressServ           = rOther.m_CyTensStressServ;
-   m_CyDoTensStressServMax      = rOther.m_CyDoTensStressServMax;
-   m_CyTensStressServMax        = rOther.m_CyTensStressServMax;
-   m_CyTensStressLifting        = rOther.m_CyTensStressLifting;
-   m_CyDoTensStressLiftingMax   = rOther.m_CyDoTensStressLiftingMax;
-   m_CyTensStressLiftingMax     = rOther.m_CyTensStressLiftingMax;
-   m_SplittingZoneLengthFactor   = rOther.m_SplittingZoneLengthFactor;
-   m_LiftingUpwardImpact        = rOther.m_LiftingUpwardImpact;
-   m_LiftingDownwardImpact      = rOther.m_LiftingDownwardImpact;
-   m_HaulingUpwardImpact        = rOther.m_HaulingUpwardImpact;
-   m_HaulingDownwardImpact      = rOther.m_HaulingDownwardImpact;
-   m_CuringMethod               = rOther.m_CuringMethod;
-   m_EnableLiftingCheck         = rOther.m_EnableLiftingCheck;
-   m_EnableLiftingDesign        = rOther.m_EnableLiftingDesign;
-   m_PickPointHeight            = rOther.m_PickPointHeight;
-   m_LiftingLoopTolerance       = rOther.m_LiftingLoopTolerance;
-   m_MinCableInclination        = rOther.m_MinCableInclination;
-   m_MaxGirderSweepLifting      = rOther.m_MaxGirderSweepLifting;
-   m_EnableHaulingCheck         = rOther.m_EnableHaulingCheck;
-   m_EnableHaulingDesign        = rOther.m_EnableHaulingDesign;
-   m_HaulingAnalysisMethod      = rOther.m_HaulingAnalysisMethod;
-   m_MaxGirderSweepHauling      = rOther.m_MaxGirderSweepHauling;
-   m_HaulingSweepGrowth = rOther.m_HaulingSweepGrowth;
-   m_HaulingSupportPlacementTolerance = rOther.m_HaulingSupportPlacementTolerance;
-   m_HaulingCamberMultiplier = rOther.m_HaulingCamberMultiplier;
-   m_LiftingCamberMultiplier = rOther.m_LiftingCamberMultiplier;
-
-   m_LiftingWindType = rOther.m_LiftingWindType;
-   m_LiftingWindLoad = rOther.m_LiftingWindLoad;
-   m_HaulingWindType = rOther.m_HaulingWindType;
-   m_HaulingWindLoad = rOther.m_HaulingWindLoad;
-   m_CentrifugalForceType = rOther.m_CentrifugalForceType;
-   m_HaulingSpeed = rOther.m_HaulingSpeed;
-   m_TurningRadius = rOther.m_TurningRadius;
-
-   m_GlobalCompStressHauling          = rOther.m_GlobalCompStressHauling;
-   m_PeakCompStressHauling = rOther.m_PeakCompStressHauling;
-   m_TensStressHauling = rOther.m_TensStressHauling;
-   m_DoTensStressHaulingMax = rOther.m_DoTensStressHaulingMax;
-   m_TensStressHaulingMax = rOther.m_TensStressHaulingMax;
-   m_HaulingCrackFs           = rOther.m_HaulingCrackFs;
-   m_HaulingRollFs            = rOther.m_HaulingRollFs;
-
-   m_HaulingModulusOfRuptureCoefficient = rOther.m_HaulingModulusOfRuptureCoefficient;
-
-   m_LiftingModulusOfRuptureCoefficient = rOther.m_LiftingModulusOfRuptureCoefficient;
-
-   m_CyTensStressServWithRebar  = rOther.m_CyTensStressServWithRebar;
-   m_TensStressLiftingWithRebar = rOther.m_TensStressLiftingWithRebar;
-   m_TensStressHaulingWithRebar = rOther.m_TensStressHaulingWithRebar;
-
-   m_HaulingImpactUsage         = rOther.m_HaulingImpactUsage;
-   m_RoadwayCrownSlope          = rOther.m_RoadwayCrownSlope;
-   m_RoadwaySuperelevation      = rOther.m_RoadwaySuperelevation;
-
-   m_LimitStateConcreteStrength = rOther.m_LimitStateConcreteStrength;
-   m_bUse90DayConcreteStrength = rOther.m_bUse90DayConcreteStrength;
-   m_90DayConcreteStrengthFactor = rOther.m_90DayConcreteStrengthFactor;
-
-   m_TempStrandRemovalCompStress              = rOther.m_TempStrandRemovalCompStress;
-   m_TempStrandRemovalTensStress              = rOther.m_TempStrandRemovalTensStress;
-   m_TempStrandRemovalDoTensStressMax         = rOther.m_TempStrandRemovalDoTensStressMax;
-   m_TempStrandRemovalTensStressMax           = rOther.m_TempStrandRemovalTensStressMax;
-   m_TempStrandRemovalTensStressWithRebar     = rOther.m_TempStrandRemovalTensStressWithRebar;
-
-   m_bCheckTemporaryStresses    = rOther.m_bCheckTemporaryStresses;
-   m_Bs1CompStress              = rOther.m_Bs1CompStress;
-   m_Bs1TensStress              = rOther.m_Bs1TensStress;
-   m_Bs1DoTensStressMax         = rOther.m_Bs1DoTensStressMax;
-   m_Bs1TensStressMax           = rOther.m_Bs1TensStressMax;
-   m_Bs2CompStress              = rOther.m_Bs2CompStress;
-   m_bCheckBs2Tension           = rOther.m_bCheckBs2Tension;
-   m_Bs2TensStress              = rOther.m_Bs2TensStress;
-   m_Bs2DoTensStressMax         = rOther.m_Bs2DoTensStressMax;
-   m_Bs2TensStressMax           = rOther.m_Bs2TensStressMax;
-   m_TrafficBarrierDistributionType = rOther.m_TrafficBarrierDistributionType;
-   m_Bs2MaxGirdersTrafficBarrier= rOther.m_Bs2MaxGirdersTrafficBarrier;
-   m_OverlayLoadDistribution    = rOther.m_OverlayLoadDistribution;
-   m_HaunchLoadComputationType    = rOther.m_HaunchLoadComputationType;
-   m_HaunchLoadCamberTolerance    = rOther.m_HaunchLoadCamberTolerance;
-   m_HaunchLoadCamberFactor     = rOther.m_HaunchLoadCamberFactor;
-   m_HaunchAnalysisSectionPropertiesType = rOther.m_HaunchAnalysisSectionPropertiesType;
-   m_Bs3CompStressServ          = rOther.m_Bs3CompStressServ;
-   m_Bs3CompStressService1A     = rOther.m_Bs3CompStressService1A;
-   m_Bs3TensStressServNc        = rOther.m_Bs3TensStressServNc;
-   m_Bs3DoTensStressServNcMax   = rOther.m_Bs3DoTensStressServNcMax;
-   m_Bs3TensStressServNcMax     = rOther.m_Bs3TensStressServNcMax;
-   m_Bs3TensStressServSc        = rOther.m_Bs3TensStressServSc;
-   m_Bs3DoTensStressServScMax   = rOther.m_Bs3DoTensStressServScMax;
-   m_Bs3TensStressServScMax     = rOther.m_Bs3TensStressServScMax;
-   m_Bs3IgnoreRangeOfApplicability = rOther.m_Bs3IgnoreRangeOfApplicability;
-   m_Bs3LRFDOverReinforcedMomentCapacity = rOther.m_Bs3LRFDOverReinforcedMomentCapacity;
-
-   m_PrincipalTensileStressMethod = rOther.m_PrincipalTensileStressMethod;
-   m_PrincipalTensileStressCoefficient = rOther.m_PrincipalTensileStressCoefficient;
-   m_PrincipalTensileStressTendonNearnessFactor = rOther.m_PrincipalTensileStressTendonNearnessFactor;
-   m_PrincipalTensileStressUngroutedMultiplier = rOther.m_PrincipalTensileStressUngroutedMultiplier;
-   m_PrincipalTensileStressGroutedMultiplier = rOther.m_PrincipalTensileStressGroutedMultiplier;
-
-   m_PrincipalTensileStressFcThreshold = rOther.m_PrincipalTensileStressFcThreshold;
-
-   m_FlexureModulusOfRuptureCoefficient = rOther.m_FlexureModulusOfRuptureCoefficient;
-   m_ShearModulusOfRuptureCoefficient = rOther.m_ShearModulusOfRuptureCoefficient;
-
-   m_CreepMethod                = rOther.m_CreepMethod;
-   m_XferTime                   = rOther.m_XferTime;
-   m_CreepFactor                = rOther.m_CreepFactor;
-   m_CreepDuration1Min          = rOther.m_CreepDuration1Min;
-   m_CreepDuration1Max          = rOther.m_CreepDuration1Max;
-   m_CreepDuration2Min          = rOther.m_CreepDuration2Min;
-   m_CreepDuration2Max          = rOther.m_CreepDuration2Max;
-   m_TotalCreepDuration  = rOther.m_TotalCreepDuration;
-   m_CamberVariability   = rOther.m_CamberVariability;
-
-   m_LossMethod                 = rOther.m_LossMethod;
-   m_TimeDependentModel         = rOther.m_TimeDependentModel;
-   m_FinalLosses                = rOther.m_FinalLosses;
-   m_ShippingLosses             = rOther.m_ShippingLosses;
-   m_BeforeXferLosses           = rOther.m_BeforeXferLosses;
-   m_AfterXferLosses            = rOther.m_AfterXferLosses;
-   m_LiftingLosses              = rOther.m_LiftingLosses;
-   m_ShippingTime               = rOther.m_ShippingTime;
-   m_BeforeTempStrandRemovalLosses = rOther.m_BeforeTempStrandRemovalLosses;
-   m_AfterTempStrandRemovalLosses  = rOther.m_AfterTempStrandRemovalLosses;
-   m_AfterDeckPlacementLosses      = rOther.m_AfterDeckPlacementLosses;
-   m_AfterSIDLLosses               = rOther.m_AfterSIDLLosses;
-
-   m_bUpdatePTParameters = rOther.m_bUpdatePTParameters;
-   m_Dset = rOther.m_Dset;
-   m_WobbleFriction = rOther.m_WobbleFriction;
-   m_FrictionCoefficient = rOther.m_FrictionCoefficient;
-
-   m_SlabElasticGain          = rOther.m_SlabElasticGain;
-   m_SlabPadElasticGain       = rOther.m_SlabPadElasticGain;
-   m_DiaphragmElasticGain     = rOther.m_DiaphragmElasticGain;
-   m_UserDCElasticGainBS1     = rOther.m_UserDCElasticGainBS1;
-   m_UserDWElasticGainBS1     = rOther.m_UserDWElasticGainBS1;
-   m_UserDCElasticGainBS2     = rOther.m_UserDCElasticGainBS2;
-   m_UserDWElasticGainBS2     = rOther.m_UserDWElasticGainBS2;
-   m_RailingSystemElasticGain = rOther.m_RailingSystemElasticGain;
-   m_OverlayElasticGain       = rOther.m_OverlayElasticGain;
-   m_SlabShrinkageElasticGain = rOther.m_SlabShrinkageElasticGain;
-   m_LiveLoadElasticGain      = rOther.m_LiveLoadElasticGain;
-
-   m_LldfMethod                 = rOther.m_LldfMethod;
-   m_bIgnoreSkewReductionForMoment = rOther.m_bIgnoreSkewReductionForMoment;
-   m_bUseRigidMethod = rOther.m_bUseRigidMethod;
-   m_LongReinfShearMethod       = rOther.m_LongReinfShearMethod;
-
-   m_bCheckStrandStress[CSS_AT_JACKING]       = rOther.m_bCheckStrandStress[CSS_AT_JACKING];
-   m_bCheckStrandStress[CSS_BEFORE_TRANSFER]  = rOther.m_bCheckStrandStress[CSS_BEFORE_TRANSFER];
-   m_bCheckStrandStress[CSS_AFTER_TRANSFER]   = rOther.m_bCheckStrandStress[CSS_AFTER_TRANSFER];
-   m_bCheckStrandStress[CSS_AFTER_ALL_LOSSES] = rOther.m_bCheckStrandStress[CSS_AFTER_ALL_LOSSES];
-
-   m_StrandStressCoeff[CSS_AT_JACKING][STRESS_REL]       = rOther.m_StrandStressCoeff[CSS_AT_JACKING][STRESS_REL];
-   m_StrandStressCoeff[CSS_AT_JACKING][LOW_RELAX]        = rOther.m_StrandStressCoeff[CSS_AT_JACKING][LOW_RELAX];
-   m_StrandStressCoeff[CSS_BEFORE_TRANSFER][STRESS_REL]  = rOther.m_StrandStressCoeff[CSS_BEFORE_TRANSFER][STRESS_REL];
-   m_StrandStressCoeff[CSS_BEFORE_TRANSFER][LOW_RELAX]   = rOther.m_StrandStressCoeff[CSS_BEFORE_TRANSFER][LOW_RELAX];
-   m_StrandStressCoeff[CSS_AFTER_TRANSFER][STRESS_REL]   = rOther.m_StrandStressCoeff[CSS_AFTER_TRANSFER][STRESS_REL];
-   m_StrandStressCoeff[CSS_AFTER_TRANSFER][LOW_RELAX]    = rOther.m_StrandStressCoeff[CSS_AFTER_TRANSFER][LOW_RELAX];
-   m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL] = rOther.m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL];
-   m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX]  = rOther.m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX];
-
-   m_bCheckTendonStressAtJacking = rOther.m_bCheckTendonStressAtJacking;
-   m_bCheckTendonStressPriorToSeating = rOther.m_bCheckTendonStressPriorToSeating;
-   m_TendonStressCoeff[CSS_AT_JACKING][STRESS_REL] = rOther.m_TendonStressCoeff[CSS_AT_JACKING][STRESS_REL];
-   m_TendonStressCoeff[CSS_AT_JACKING][LOW_RELAX] = rOther.m_TendonStressCoeff[CSS_AT_JACKING][LOW_RELAX];
-   m_TendonStressCoeff[CSS_PRIOR_TO_SEATING][STRESS_REL] = rOther.m_TendonStressCoeff[CSS_PRIOR_TO_SEATING][STRESS_REL];
-   m_TendonStressCoeff[CSS_PRIOR_TO_SEATING][LOW_RELAX] = rOther.m_TendonStressCoeff[CSS_PRIOR_TO_SEATING][LOW_RELAX];
-   m_TendonStressCoeff[CSS_ANCHORAGES_AFTER_SEATING][STRESS_REL] = rOther.m_TendonStressCoeff[CSS_ANCHORAGES_AFTER_SEATING][STRESS_REL];
-   m_TendonStressCoeff[CSS_ANCHORAGES_AFTER_SEATING][LOW_RELAX] = rOther.m_TendonStressCoeff[CSS_ANCHORAGES_AFTER_SEATING][LOW_RELAX];
-   m_TendonStressCoeff[CSS_ELSEWHERE_AFTER_SEATING][STRESS_REL] = rOther.m_TendonStressCoeff[CSS_ELSEWHERE_AFTER_SEATING][STRESS_REL];
-   m_TendonStressCoeff[CSS_ELSEWHERE_AFTER_SEATING][LOW_RELAX] = rOther.m_TendonStressCoeff[CSS_ELSEWHERE_AFTER_SEATING][LOW_RELAX];
-   m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL] = rOther.m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL];
-   m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX] = rOther.m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX];
-
-   m_bDoEvaluateDeflection = rOther.m_bDoEvaluateDeflection;
-   m_DeflectionLimit       = rOther.m_DeflectionLimit;
-
-   m_bIncludeStrand_NegMoment = rOther.m_bIncludeStrand_NegMoment;
-   m_bConsiderReinforcementStrainLimit = rOther.m_bConsiderReinforcementStrainLimit;
-   m_nMomentCapacitySlices = rOther.m_nMomentCapacitySlices;
-   m_bIncludeRebar_Moment = rOther.m_bIncludeRebar_Moment;
-   m_bIncludeRebar_Shear = rOther.m_bIncludeRebar_Shear;
-
-   m_DoCheckStirrupSpacingCompatibility = rOther.m_DoCheckStirrupSpacingCompatibility;
-   m_bCheckSag = rOther.m_bCheckSag;
-   m_SagCamberType = rOther.m_SagCamberType;
-
-   m_bUpdateLoadFactors = rOther.m_bUpdateLoadFactors;
-   m_DCmin   = rOther.m_DCmin;
-   m_DWmin   = rOther.m_DWmin;
-   m_LLIMmin = rOther.m_LLIMmin;
-   m_DCmax   = rOther.m_DCmax;
-   m_DWmax   = rOther.m_DWmax;
-   m_LLIMmax = rOther.m_LLIMmax;
-
-   m_EnableSlabOffsetCheck = rOther.m_EnableSlabOffsetCheck;
-   m_EnableSlabOffsetDesign = rOther.m_EnableSlabOffsetDesign;
-
-   m_DesignStrandFillType = rOther.m_DesignStrandFillType;
-   m_EffFlangeWidthMethod = rOther.m_EffFlangeWidthMethod;
-
-   m_ShearFlowMethod = rOther.m_ShearFlowMethod;
-   m_MaxInterfaceShearConnectorSpacing = rOther.m_MaxInterfaceShearConnectorSpacing;
-   m_bUseDeckWeightForPc = rOther.m_bUseDeckWeightForPc;
-
-   m_ShearCapacityMethod = rOther.m_ShearCapacityMethod;
-
-   m_bLimitNetTensionStrainToPositiveValues = rOther.m_bLimitNetTensionStrainToPositiveValues;
-
-   m_CuringMethodTimeAdjustmentFactor = rOther.m_CuringMethodTimeAdjustmentFactor;
-
-   m_MinLiftPoint      = rOther.m_MinLiftPoint;
-   m_LiftPointAccuracy = rOther.m_LiftPointAccuracy;
-   m_MinHaulPoint      = rOther.m_MinHaulPoint;
-   m_HaulPointAccuracy = rOther.m_HaulPointAccuracy;
-
-   m_UseMinTruckSupportLocationFactor = rOther.m_UseMinTruckSupportLocationFactor;
-   m_MinTruckSupportLocationFactor = rOther.m_MinTruckSupportLocationFactor;
-   m_OverhangGFactor = rOther.m_OverhangGFactor;
-   m_InteriorGFactor = rOther.m_InteriorGFactor;
-
-   m_PedestrianLoad   = rOther.m_PedestrianLoad;
-   m_MinSidewalkWidth = rOther.m_MinSidewalkWidth;
-
-   m_MaxAngularDeviationBetweenGirders = rOther.m_MaxAngularDeviationBetweenGirders;
-   m_MinGirderStiffnessRatio           = rOther.m_MinGirderStiffnessRatio;
-   m_LLDFGirderSpacingLocation         = rOther.m_LLDFGirderSpacingLocation;
-
-   m_bIncludeDualTandem = rOther.m_bIncludeDualTandem;
-
-   m_LimitDistributionFactorsToLanesBeams = rOther.m_LimitDistributionFactorsToLanesBeams;
-   m_ExteriorLiveLoadDistributionGTAdjacentInteriorRule = rOther.m_ExteriorLiveLoadDistributionGTAdjacentInteriorRule;
-
-   m_PrestressTransferComputationType = rOther.m_PrestressTransferComputationType;
-
-   m_RelaxationLossMethod = rOther.m_RelaxationLossMethod;
-
-   m_FcgpComputationMethod = rOther.m_FcgpComputationMethod;
-
-   m_MaxSlabFc = rOther.m_MaxSlabFc;
-   m_MaxSegmentFci = rOther.m_MaxSegmentFci;
-   m_MaxSegmentFc = rOther.m_MaxSegmentFc;
-   m_MaxClosureFci = rOther.m_MaxClosureFci;
-   m_MaxClosureFc = rOther.m_MaxClosureFc;
-   m_MaxConcreteUnitWeight = rOther.m_MaxConcreteUnitWeight;
-   m_MaxConcreteAggSize = rOther.m_MaxConcreteAggSize;
-
-   m_PhiFlexureTensionPS      = rOther.m_PhiFlexureTensionPS;
-   m_PhiFlexureTensionRC      = rOther.m_PhiFlexureTensionRC;
-   m_PhiFlexureTensionSpliced = rOther.m_PhiFlexureTensionSpliced;
-   m_PhiFlexureCompression    = rOther.m_PhiFlexureCompression;
-   m_PhiShear                 = rOther.m_PhiShear;
-   m_PhiShearDebonded         = rOther.m_PhiShearDebonded;
-
-   m_PhiClosureJointFlexure = rOther.m_PhiClosureJointFlexure;
-   m_PhiClosureJointShear   = rOther.m_PhiClosureJointShear;
-
-   m_bIncludeForNegMoment = rOther.m_bIncludeForNegMoment;
-   m_bAllowStraightStrandExtensions = rOther.m_bAllowStraightStrandExtensions;
-
-   m_ClosureCompStressAtStressing             = rOther.m_ClosureCompStressAtStressing;
-   m_ClosureTensStressPTZAtStressing          = rOther.m_ClosureTensStressPTZAtStressing;
-   m_ClosureTensStressPTZWithRebarAtStressing = rOther.m_ClosureTensStressPTZWithRebarAtStressing;
-   m_ClosureTensStressAtStressing             = rOther.m_ClosureTensStressAtStressing;
-   m_ClosureTensStressWithRebarAtStressing    = rOther.m_ClosureTensStressWithRebarAtStressing;
-   m_ClosureCompStressAtService               = rOther.m_ClosureCompStressAtService;
-   m_ClosureCompStressWithLiveLoadAtService   = rOther.m_ClosureCompStressWithLiveLoadAtService;
-   m_ClosureTensStressPTZAtService            = rOther.m_ClosureTensStressPTZAtService;
-   m_ClosureTensStressPTZWithRebarAtService   = rOther.m_ClosureTensStressPTZWithRebarAtService;
-   m_ClosureTensStressAtService               = rOther.m_ClosureTensStressAtService;
-   m_ClosureTensStressWithRebarAtService      = rOther.m_ClosureTensStressWithRebarAtService;
-   m_ClosureCompStressFatigue                 = rOther.m_ClosureCompStressFatigue;
-
-   m_DuctAreaPushRatio = rOther.m_DuctAreaPushRatio;
-   m_DuctAreaPullRatio = rOther.m_DuctAreaPullRatio;
-   m_DuctDiameterRatio = rOther.m_DuctDiameterRatio;
-
-
-   m_bCheckBottomFlangeClearance = rOther.m_bCheckBottomFlangeClearance;
-   m_Cmin = rOther.m_Cmin;
-
-   m_bCheckGirderInclination = rOther.m_bCheckGirderInclination;
-   m_InclinedGirder_FSmax = rOther.m_InclinedGirder_FSmax;
-
-   m_FinishedElevationTolerance = rOther.m_FinishedElevationTolerance;
-
-   m_SlabOffsetRoundingMethod = rOther.m_SlabOffsetRoundingMethod;
-   m_SlabOffsetRoundingTolerance = rOther.m_SlabOffsetRoundingTolerance;
-
-
-   m_bAlertTaperedSolePlateRequirement = rOther.m_bAlertTaperedSolePlateRequirement;
-   m_TaperedSolePlateInclinationThreshold = rOther.m_TaperedSolePlateInclinationThreshold;
-   m_bUseImpactForBearingReactions = rOther.m_bUseImpactForBearingReactions;
-}
-
-void SpecLibraryEntry::MakeAssignment(const SpecLibraryEntry& rOther)
-{
-   libLibraryEntry::MakeAssignment( rOther );
-   MakeCopy( rOther );
-}
 
 //======================== ACCESS     =======================================
 //======================== INQUIRY    =======================================
@@ -8248,13 +7892,13 @@ void SpecLibraryEntry::DeterminePrincipalStressDuctDeductionMultiplier()
    // The paragraph quoted above has been removed and the following is now the definition of bv
    // "bv = ... for grouted ducts, no modification is necessary. For ungrouted ducts, reduce bv by the diameter of the duct"
 
-   if (m_bUseCurrentSpecification || m_SpecificationType >= lrfdVersionMgr::NinthEdition2020)
+   if (m_bUseCurrentSpecification || m_SpecificationType >= WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020)
    {
       // 9th Edition, 2020 and later
       m_PrincipalTensileStressUngroutedMultiplier = 1.0;
       m_PrincipalTensileStressGroutedMultiplier   = 0.0;
    }
-   else if (m_SpecificationType < lrfdVersionMgr::SecondEditionWith2000Interims)
+   else if (m_SpecificationType < WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims)
    {
       m_PrincipalTensileStressUngroutedMultiplier = 1.0;
       m_PrincipalTensileStressGroutedMultiplier   = 0.5;

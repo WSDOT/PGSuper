@@ -33,7 +33,7 @@
 #include <EAF\EAFApp.h>
 #include <EAF\EAFDocument.h>
 
-#include <Lrfd\Concreteutil.h>
+#include <LRFD\Concreteutil.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -51,10 +51,10 @@ CConcreteEntryGeneralPage::CConcreteEntryGeneralPage(): CPropertyPage(IDD_CONCRE
 	//}}AFX_DATA_INIT
    m_EntryName = _T("");
 
-   m_MinNWCDensity = lrfdConcreteUtil::GetNWCDensityLimit();
-   m_MaxLWCDensity = lrfdConcreteUtil::GetLWCDensityLimit();
+   m_MinNWCDensity = WBFL::LRFD::ConcreteUtil::GetNWCDensityLimit();
+   m_MaxLWCDensity = WBFL::LRFD::ConcreteUtil::GetLWCDensityLimit();
 
-   lrfdConcreteUtil::GetPCIUHPCStrengthRange(&m_MinFcUHPC, &m_MaxFcUHPC);
+   WBFL::LRFD::ConcreteUtil::GetPCIUHPCStrengthRange(&m_MinFcUHPC, &m_MaxFcUHPC);
    // UHPC does not have a prescribed strength range
 }
 

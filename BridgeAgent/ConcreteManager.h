@@ -220,10 +220,10 @@ private:
    std::unique_ptr<WBFL::Materials::ConcreteBase> CreateConcreteModel(LPCTSTR strName,const CConcreteMaterial& concrete,Float64 timeAtCasting,Float64 cureTime,Float64 ageAtInitialLoading,Float64 stepTime) const;
 
    // factory method for LRFD concrete (non time-dependent version)
-   std::unique_ptr<lrfdLRFDConcrete> CreateLRFDConcreteModel(const CConcreteMaterial& concrete,Float64 startTime,Float64 stepTime) const;
+   std::unique_ptr<WBFL::LRFD::LRFDConcrete> CreateLRFDConcreteModel(const CConcreteMaterial& concrete,Float64 startTime,Float64 stepTime) const;
 
    // factory method for LRFD concrete (time-dependent version)
-   std::unique_ptr<lrfdLRFDTimeDependentConcrete> CreateTimeDependentLRFDConcreteModel(const CConcreteMaterial& concrete,Float64 ageAtInitialLoading) const;
+   std::unique_ptr<WBFL::LRFD::LRFDTimeDependentConcrete> CreateTimeDependentLRFDConcreteModel(const CConcreteMaterial& concrete,Float64 ageAtInitialLoading) const;
 
    // factory method for ACI209 concrete model
    std::unique_ptr<WBFL::Materials::ACI209Concrete> CreateACI209Model(const CConcreteMaterial& concrete,Float64 ageAtInitialLoading) const;

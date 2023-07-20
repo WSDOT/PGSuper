@@ -74,27 +74,6 @@ m_VariableAxleIndex(INVALID_INDEX)
    AddAxle(axle);
 }
 
-LiveLoadLibraryEntry::LiveLoadLibraryEntry(const LiveLoadLibraryEntry& rOther) :
-libLibraryEntry(rOther)
-{
-   MakeCopy(rOther);
-}
-
-LiveLoadLibraryEntry::~LiveLoadLibraryEntry()
-{
-}
-
-//======================== OPERATORS  =======================================
-LiveLoadLibraryEntry& LiveLoadLibraryEntry::operator= (const LiveLoadLibraryEntry& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
 //======================== OPERATIONS =======================================
 bool LiveLoadLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
 {
@@ -524,25 +503,6 @@ bool LiveLoadLibraryEntry::Edit(bool allowEditing,int nPage)
    return false;
 }
 
-
-void LiveLoadLibraryEntry::MakeCopy(const LiveLoadLibraryEntry& rOther)
-{
-   m_IsNotional = rOther.m_IsNotional;
-   m_LiveLoadConfigurationType = rOther.m_LiveLoadConfigurationType;
-   m_LiveLoadApplicabilityType = rOther.m_LiveLoadApplicabilityType;
-   m_LaneLoad = rOther.m_LaneLoad;
-   m_LaneLoadSpanLength = rOther.m_LaneLoadSpanLength;
-   m_MaxVariableAxleSpacing = rOther.m_MaxVariableAxleSpacing;
-   m_VariableAxleIndex = rOther.m_VariableAxleIndex;
-   m_Axles = rOther.m_Axles;
-}
-
-void LiveLoadLibraryEntry::MakeAssignment(const LiveLoadLibraryEntry& rOther)
-{
-   libLibraryEntry::MakeAssignment( rOther );
-   MakeCopy( rOther );
-}
-
 HICON  LiveLoadLibraryEntry::GetIcon() const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -560,43 +520,3 @@ HICON  LiveLoadLibraryEntry::GetIcon() const
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool LiveLoadLibraryEntry::AssertValid() const
-{
-   return libLibraryEntry::AssertValid();
-}
-
-void LiveLoadLibraryEntry::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for LiveLoadLibraryEntry ")<< GetName() << WBFL::Debug::endl;
-
-   os << _T("   m_IsNotional                = ")<< m_IsNotional << WBFL::Debug::endl;
-   os << _T("   m_LiveLoadConfigurationType = ")<< m_LiveLoadConfigurationType<< WBFL::Debug::endl;
-   os << _T("   m_LaneLoad                  = ")<< m_LaneLoad<< WBFL::Debug::endl;
-   os << _T("   m_MaxVariableAxleSpacing    = ")<< m_MaxVariableAxleSpacing<< WBFL::Debug::endl;
-   os << _T("   m_VariableAxleIndex         = ")<< m_VariableAxleIndex<< WBFL::Debug::endl;
-
-   AxleIndexType size = m_Axles.size();
-   os << _T("   Number of Axles = ")<<size<< WBFL::Debug::endl;
-   for (AxleIndexType iaxl=0; iaxl<size; iaxl++)
-   {
-      os<<_T("    Axle ")<<iaxl<<_T(" Weight  = ")<<m_Axles[iaxl].Weight<< WBFL::Debug::endl;
-      os<<_T("    Axle ")<<iaxl<<_T(" Spacing = ")<<m_Axles[iaxl].Spacing<< WBFL::Debug::endl;
-   }
-
-   libLibraryEntry::Dump( os );
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool LiveLoadLibraryEntry::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("LiveLoadLibraryEntry");
-
-   // tests are performed on entire library.
-
-   TESTME_EPILOG("LiveLoadLibraryEntry");
-}
-#endif // _UNITTEST

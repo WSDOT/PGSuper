@@ -156,7 +156,7 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::BuildReport(const CGirderKey& girde
       (*pPara) << _T("Number of Girders: N") << Sub(_T("b")) << _T(" = ") << span_lldf.Nb << rptNewLine;
       (*pPara) << _T("Girder Depth: d = ") << xdim2.SetValue(span_lldf.d) << rptNewLine;
 
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
       {
          pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pPara) << _T("Strength and Service Limit States");
@@ -253,7 +253,7 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::BuildReport(const CGirderKey& girde
       ////////////////////////////////////////////////////////////////////////////
       // Fatigue limit states
       ////////////////////////////////////////////////////////////////////////////
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
       {
          pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pPara) << _T("Fatigue Limit States");
@@ -332,7 +332,7 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::BuildReport(const CGirderKey& girde
 }
 
 
-lrfdLiveLoadDistributionFactorBase* CTxDOTSpreadSlabBeamDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,Float64 fcgdr,TXSPREADSLABBEAM_LLDFDETAILS* plldf)
+WBFL::LRFD::LiveLoadDistributionFactorBase* CTxDOTSpreadSlabBeamDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,Float64 fcgdr,TXSPREADSLABBEAM_LLDFDETAILS* plldf)
 {
    GET_IFACE(IGirder, pGdr);
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
@@ -376,8 +376,8 @@ lrfdLiveLoadDistributionFactorBase* CTxDOTSpreadSlabBeamDistFactorEngineer::GetL
    plldf->L = GetEffectiveSpanLength(spanOrPierIdx,gdrIdx,dfType);
    plldf->ts = pBridge->GetStructuralSlabDepth(poi);
 
-   lrfdLiveLoadDistributionFactorBase* pLLDF;
-   pLLDF = new lrfdTxdotLldfSpreadSlab(plldf->gdrNum, // to fix this warning, clean up the WBFL data types
+   WBFL::LRFD::LiveLoadDistributionFactorBase* pLLDF;
+   pLLDF = new WBFL::LRFD::TxdotLldfSpreadSlab(plldf->gdrNum, // to fix this warning, clean up the WBFL data types
                               plldf->Savg,
                               plldf->gdrSpacings,
                               plldf->leftCurbOverhang,
@@ -391,12 +391,12 @@ lrfdLiveLoadDistributionFactorBase* CTxDOTSpreadSlabBeamDistFactorEngineer::GetL
                               plldf->skew2);
 
    GET_IFACE(ILiveLoads,pLiveLoads);
-   pLLDF->SetRangeOfApplicabilityAction( pLiveLoads->GetLldfRangeOfApplicabilityAction() );
+   pLLDF->SetRangeOfApplicabilityAction( pLiveLoads->GetRangeOfApplicabilityAction() );
 
    return pLLDF;
 }
 
-void CTxDOTSpreadSlabBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierIdx, rptParagraph* pPara,TXSPREADSLABBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gM1,lrfdILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
+void CTxDOTSpreadSlabBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierIdx, rptParagraph* pPara,TXSPREADSLABBEAM_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
 {
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
@@ -408,7 +408,7 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierId
 
    if ( lldf.bExteriorGirder )
    {
-      if ( gM1.ControllingMethod & INTERIOR_OVERRIDE )
+      if ( gM1.ControllingMethod & WBFL::LRFD::INTERIOR_OVERRIDE )
       {
          (*pPara) << Bold(_T("1 Loaded Lane: Exterior factor may not be less than that for adjacent interior. See interior details report for computation details.")) << rptNewLine;
          (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << _T("mg") << Super(_T("MI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg) << rptNewLine;
@@ -453,7 +453,7 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierId
 
       if ( lldf.Nl >= 2 )
       {
-         if ( gM2.ControllingMethod & INTERIOR_OVERRIDE )
+         if ( gM2.ControllingMethod & WBFL::LRFD::INTERIOR_OVERRIDE )
          {
             (*pPara) << Bold(_T("2+ Loaded Lanes: Exterior factor may not be less than that for adjacent interior. See interior details report for computation details.")) << rptNewLine;
             (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("2")) << _T(" = ") << _T("mg") << Super(_T("MI")) << Sub(_T("2")) << _T(" = ") << scalar.SetValue(gM2.mg) << rptNewLine;
@@ -497,7 +497,7 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierId
          (*pPara) << rptNewLine;
       }
 
-      if (gM1.ControllingMethod & LANES_DIV_BEAMS &&  gM2.ControllingMethod & LANES_DIV_BEAMS ) 
+      if (gM1.ControllingMethod & WBFL::LRFD::LANES_DIV_BEAMS &&  gM2.ControllingMethod & WBFL::LRFD::LANES_DIV_BEAMS ) 
       {
          if ( lldf.Nl >= 2 )
          {
@@ -559,7 +559,7 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierId
          (*pPara) << rptNewLine;
       }
 
-      if (gM1.ControllingMethod & LANES_DIV_BEAMS &&  gM2.ControllingMethod & LANES_DIV_BEAMS ) 
+      if (gM1.ControllingMethod & WBFL::LRFD::LANES_DIV_BEAMS &&  gM2.ControllingMethod & WBFL::LRFD::LANES_DIV_BEAMS ) 
       {
          if ( lldf.Nl >= 2 )
          {
@@ -573,7 +573,7 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierId
    }
 }
 
-void CTxDOTSpreadSlabBeamDistFactorEngineer::ReportShear(IndexType spanOrPierIdx,rptParagraph* pPara,TXSPREADSLABBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gV1,lrfdILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
+void CTxDOTSpreadSlabBeamDistFactorEngineer::ReportShear(IndexType spanOrPierIdx,rptParagraph* pPara,TXSPREADSLABBEAM_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
 {
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
@@ -585,7 +585,7 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::ReportShear(IndexType spanOrPierIdx
 
    if ( lldf.bExteriorGirder )
    {
-      if ( gV1.ControllingMethod & INTERIOR_OVERRIDE )
+      if ( gV1.ControllingMethod & WBFL::LRFD::INTERIOR_OVERRIDE )
       {
          (*pPara) << Bold(_T("1 Loaded Lane: Exterior factor may not be less than that for adjacent interior. See interior details report for computation details.")) << rptNewLine;
          (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << _T("mg") << Super(_T("VI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg) << rptNewLine;
@@ -630,7 +630,7 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::ReportShear(IndexType spanOrPierIdx
 
       if ( lldf.Nl >= 2 )
       {
-         if ( gV2.ControllingMethod & INTERIOR_OVERRIDE )
+         if ( gV2.ControllingMethod & WBFL::LRFD::INTERIOR_OVERRIDE )
          {
             (*pPara) << Bold(_T("2+ Loaded Lanes: Exterior factor may not be less than that for adjacent interior. See interior details report for computation details.")) << rptNewLine;
             (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("2")) << _T(" = ") << _T("mg") << Super(_T("VI")) << Sub(_T("2")) << _T(" = ") << scalar.SetValue(gV2.mg) << rptNewLine;
@@ -673,7 +673,7 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::ReportShear(IndexType spanOrPierIdx
       }
       (*pPara) << rptNewLine;
 
-      if ( gV1.ControllingMethod & LANES_DIV_BEAMS &&  gV2.ControllingMethod & LANES_DIV_BEAMS )
+      if ( gV1.ControllingMethod & WBFL::LRFD::LANES_DIV_BEAMS &&  gV2.ControllingMethod & WBFL::LRFD::LANES_DIV_BEAMS )
       {
          (*pPara) << _T("Skew Correction not applied to N")<<Sub(_T("l"))<<_T("/N")<<Sub(_T("b"))<<_T(" method")<< rptNewLine;
          if ( lldf.Nl >= 2 )

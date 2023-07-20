@@ -27,7 +27,7 @@
 #include "TxDOTOptionalDesignUtilities.h"
 
 #include <Units\Convert.h>
-#include <Lrfd\StrandPool.h>
+#include <LRFD\StrandPool.h>
 #include <WbflAtlExt.h>
 #include <limits>
 #include <GeomModel/Shape.h>
@@ -143,7 +143,7 @@ HRESULT CTxDOTOptionalDesignGirderData::Save(IStructuredSave* pStrSave,IProgress
 
    pStrSave->put_Property(_T("StrandFillType"),         CComVariant(m_StrandFillType));
 
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+   const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
    const auto* pStrand = pPool->GetStrand(m_Grade, m_Type, m_Coating, m_Size);
    Int64 key=0;
    if (pStrand!=nullptr)
@@ -212,7 +212,7 @@ HRESULT CTxDOTOptionalDesignGirderData::Save(IStructuredSave* pStrSave,IProgress
       pStrSave->EndUnit(); // StraightStrands
 
       pStrSave->BeginUnit(_T("StraightStrandDebonding"),1.0);
-      CollectionIndexType nDebondInfo = m_DirectFilledStraightDebond.size();
+      IndexType nDebondInfo = m_DirectFilledStraightDebond.size();
       pStrSave->put_Property(_T("DebondInfoCount"),CComVariant(nDebondInfo));
       std::vector<CDebondData>::iterator debond_iter;
       for ( debond_iter = m_DirectFilledStraightDebond.begin(); debond_iter != m_DirectFilledStraightDebond.end(); debond_iter++ )
@@ -279,7 +279,7 @@ HRESULT CTxDOTOptionalDesignGirderData::Load(IStructuredLoad* pStrLoad,IProgress
          key |= +WBFL::Materials::PsStrand::Coating::None;
       }
 
-      lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+      const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
       const auto* pStrand = pPool->GetStrand(key);
       if (pStrand!=nullptr)
       {

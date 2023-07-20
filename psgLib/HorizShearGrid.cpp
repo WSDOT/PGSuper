@@ -31,7 +31,7 @@
 #include <EAF\EAFApp.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFUtilities.h>
-#include <Lrfd\RebarPool.h>
+#include <LRFD\RebarPool.h>
 #include <IFace\Tools.h>
 
 #ifdef _DEBUG
@@ -355,7 +355,7 @@ void CHorizShearGrid::SetRowStyle(ROWCOL nRow)
    CAdditionalInterfaceShearBarDlg* pDlg = (CAdditionalInterfaceShearBarDlg*)GetParent();
    ASSERT(pDlg->IsKindOf(RUNTIME_CLASS(CAdditionalInterfaceShearBarDlg)));
    CString strBarSizeChoiceList(_T("None\n"));
-   lrfdRebarIter rebarIter(pDlg->m_RebarType,pDlg->m_RebarGrade,true);
+   WBFL::LRFD::RebarIter rebarIter(pDlg->m_RebarType,pDlg->m_RebarGrade,true);
    for ( rebarIter.Begin(); rebarIter; rebarIter.Next() )
    {
       const auto* pRebar = rebarIter.GetCurrentRebar();
@@ -500,7 +500,7 @@ void CHorizShearGrid::FillGrid(const CShearData2::HorizontalInterfaceZoneVec& rv
          }
 
          CString tmp;
-         tmp.Format(_T("%s"),lrfdRebarPool::GetBarSize((*it).BarSize).c_str());
+         tmp.Format(_T("%s"),WBFL::LRFD::RebarPool::GetBarSize((*it).BarSize).c_str());
          VERIFY(SetValueRange(CGXRange(nRow, 2), tmp));
 
          SetValueRange(CGXRange(nRow, 3), (*it).BarSpacing);

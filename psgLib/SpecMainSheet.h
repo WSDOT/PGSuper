@@ -91,14 +91,7 @@ public:
    CString m_Name;
    CString m_Description;
 
-   lrfdVersionMgr::Version GetSpecVersion();
-
-   // our own function for mapping code reference changes from 2017 LRFD Crosswalk
-   LPCTSTR LrfdCw8th(LPCTSTR oldStr, LPCTSTR newStr)
-   {
-      return (GetSpecVersion() < lrfdVersionMgr::EighthEdition2017) ? oldStr : newStr;
-   }
-
+   WBFL::LRFD::LRFDVersionMgr::Version GetSpecVersion();
 
 // Operations
 public:

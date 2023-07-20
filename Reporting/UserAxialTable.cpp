@@ -185,27 +185,3 @@ void CUserAxialTable::MakeAssignment(const CUserAxialTable& rOther)
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CUserAxialTable::AssertValid() const
-{
-   return true;
-}
-
-void CUserAxialTable::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for CUserAxialTable") << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CUserAxialTable::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("CUserAxialTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CUserAxialTable");
-
-   TESTME_EPILOG("CUserAxialTable");
-}
-#endif // _UNITTEST

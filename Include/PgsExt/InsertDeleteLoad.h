@@ -44,7 +44,7 @@ public:
    virtual bool IsRepeatable() const override;
 
 private:
-   CollectionIndexType m_LoadIdx;
+   IndexType m_LoadIdx;
    CPointLoadData m_LoadData;
    EventIDType m_LoadingEventID;
    CTimelineManager* m_pTimelineMgr;
@@ -102,7 +102,7 @@ public:
    virtual bool IsRepeatable() const override;
 
 private:
-   CollectionIndexType m_LoadIdx;
+   IndexType m_LoadIdx;
    CDistributedLoadData m_LoadData;
    EventIDType m_LoadingEventID;
    CTimelineManager* m_pTimelineMgr;
@@ -160,7 +160,7 @@ public:
    virtual bool IsRepeatable() const override;
 
 private:
-   CollectionIndexType m_LoadIdx;
+   IndexType m_LoadIdx;
    CMomentLoadData m_LoadData;
    EventIDType m_LoadingEventID;
    CTimelineManager* m_pTimelineMgr;

@@ -30,7 +30,7 @@
 #include <EAF\EAFApp.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFUtilities.h>
-#include <Lrfd\RebarPool.h>
+#include <LRFD\RebarPool.h>
 #include <IFace\Tools.h>
 
 #ifdef _DEBUG
@@ -269,7 +269,7 @@ void CShearBarsLegsGrid::SetRowStyle(ROWCOL nRow)
 	GetParam()->EnableUndo(FALSE);
 
    CString strBarSizeChoiceList;
-   lrfdRebarIter rebarIter(WBFL::Materials::Rebar::Type::A615,WBFL::Materials::Rebar::Grade::Grade60,true);
+   WBFL::LRFD::RebarIter rebarIter(WBFL::Materials::Rebar::Type::A615,WBFL::Materials::Rebar::Grade::Grade60,true);
    for ( rebarIter.Begin(); rebarIter; rebarIter.Next() )
    {
       const auto* pRebar = rebarIter.GetCurrentRebar();
@@ -283,7 +283,7 @@ void CShearBarsLegsGrid::SetRowStyle(ROWCOL nRow)
       .SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
       .SetChoiceList(strBarSizeChoiceList)
       .SetHorizontalAlignment(DT_RIGHT)
-      .SetValue(lrfdRebarPool::GetBarSize(WBFL::Materials::Rebar::Size::bs3).c_str())
+      .SetValue(WBFL::LRFD::RebarPool::GetBarSize(WBFL::Materials::Rebar::Size::bs3).c_str())
       );
 
 	SetStyleRange(CGXRange(nRow,2), CGXStyle()
@@ -398,7 +398,7 @@ void CShearBarsLegsGrid::FillGrid(const CShearDesignPage::StirrupSizeBarComboCol
       {
 
          CString tmp;
-         tmp.Format(_T("%s"),lrfdRebarPool::GetBarSize((*it).Size).c_str());
+         tmp.Format(_T("%s"),WBFL::LRFD::RebarPool::GetBarSize((*it).Size).c_str());
          VERIFY(SetValueRange(CGXRange(nRow, 1), tmp));
 
          VERIFY(SetValueRange(CGXRange(nRow, 2), (*it).NLegs));

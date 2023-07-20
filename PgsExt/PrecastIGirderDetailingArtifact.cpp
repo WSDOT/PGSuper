@@ -177,27 +177,3 @@ void pgsPrecastIGirderDetailingArtifact::MakeAssignment(const pgsPrecastIGirderD
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool pgsPrecastIGirderDetailingArtifact::AssertValid() const
-{
-   return true;
-}
-
-void pgsPrecastIGirderDetailingArtifact::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << "Dump for pgsPrecastIGirderDetailingArtifact" << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool pgsPrecastIGirderDetailingArtifact::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("pgsPrecastIGirderDetailingArtifact");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for pgsPrecastIGirderDetailingArtifact");
-
-   TESTME_EPILOG("pgsPrecastIGirderDetailingArtifact");
-}
-#endif // _UNITTEST

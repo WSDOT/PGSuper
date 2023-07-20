@@ -1362,9 +1362,9 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   bool bK1 = (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion());
+   bool bK1 = (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion());
 
-   bool bLambda = (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion());
+   bool bLambda = (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion());
 
    ColumnIndexType nColumns = 10;
    if ( bK1 )
@@ -1409,20 +1409,20 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
    *pPara << Sub2(_T("K"), _T("2")) << _T(" = bounding factor for course of aggregate") << rptNewLine;
    *pPara << symbol(lambda) << _T(" = concrete density modification factor") << rptNewLine;
 
-   if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims)
+   if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims)
    {
       // Ec with square root, no K values
-      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (lrfdVersionMgr::GetUnits() == lrfdVersionMgr::SI ? _T("Ec_2004_SI.png") : _T("Ec_2004_US.png"))) << rptNewLine;
+      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (WBFL::LRFD::LRFDVersionMgr::GetUnits() == WBFL::LRFD::LRFDVersionMgr::Units::SI ? _T("Ec_2004_SI.png") : _T("Ec_2004_US.png"))) << rptNewLine;
    }
-   else if (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() && lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2015Interims)
+   else if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() && WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2015Interims)
    {
       // Ec with square root, with K values
-      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (lrfdVersionMgr::GetUnits() == lrfdVersionMgr::SI ? _T("Ec_2005_SI.png") : _T("Ec_2005_US.png"))) << rptNewLine;
+      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (WBFL::LRFD::LRFDVersionMgr::GetUnits() == WBFL::LRFD::LRFDVersionMgr::Units::SI ? _T("Ec_2005_SI.png") : _T("Ec_2005_US.png"))) << rptNewLine;
    }
    else
    {
       // Ec with 0.33 exponent and K values
-      ATLASSERT(lrfdVersionMgr::GetUnits() == lrfdVersionMgr::US);
+      ATLASSERT(WBFL::LRFD::LRFDVersionMgr::GetUnits() == WBFL::LRFD::LRFDVersionMgr::Units::US);
       *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Ec_2016.png")) << rptNewLine;
    }
 
@@ -1650,12 +1650,12 @@ void write_lrfd_concrete_row(IEAFDisplayUnits* pDisplayUnits, rptRcTable* pTable
    INIT_UV_PROTOTYPE( rptDensityUnitValue, density, pDisplayUnits->GetDensityUnit(),      false );
    INIT_UV_PROTOTYPE( rptStressUnitValue,  modE,    pDisplayUnits->GetModEUnit(),         false );
 
-   bool bK1 = (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion());
-   bool bLambda = (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion());
+   bool bK1 = (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion());
+   bool bLambda = (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion());
 
    ColumnIndexType col = 1;
 
-   (*pTable)(row,col++) << lrfdConcreteUtil::GetTypeName( (WBFL::Materials::ConcreteType)concrete.Type, true );
+   (*pTable)(row,col++) << WBFL::LRFD::ConcreteUtil::GetTypeName( (WBFL::Materials::ConcreteType)concrete.Type, true );
    if ( !concrete.bHasInitial )
    {
       (*pTable)(row,col++) << _T("-");
@@ -1738,7 +1738,7 @@ void write_aci209_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   bool bLambda = bAASHTOParameters && (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion());
+   bool bLambda = bAASHTOParameters && (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion());
 
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(11 + (bAASHTOParameters ? (bLambda ? 7 : 6) : 0),_T("Concrete Properties"));
    pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
@@ -1857,10 +1857,10 @@ void write_aci209_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTabl
    INIT_UV_PROTOTYPE( rptStressUnitValue,  modE,    pDisplayUnits->GetModEUnit(),         false );
    INIT_UV_PROTOTYPE( rptTimeUnitValue,    time,    pDisplayUnits->GetFractionalDaysUnit(),     false );
 
-   bool bLambda = bAASHTOParameters && (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion());
+   bool bLambda = bAASHTOParameters && (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion());
 
    ColumnIndexType col = 1;
-   (*pTable)(row,col++) << lrfdConcreteUtil::GetTypeName( (WBFL::Materials::ConcreteType)concrete.Type, true );
+   (*pTable)(row,col++) << WBFL::LRFD::ConcreteUtil::GetTypeName( (WBFL::Materials::ConcreteType)concrete.Type, true );
    (*pTable)(row,col++) << stress.SetValue( fc28 );
    (*pTable)(row,col++) << modE.SetValue( Ec28 );
 
@@ -2000,7 +2000,7 @@ void write_cebfip_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTabl
    INIT_UV_PROTOTYPE( rptStressUnitValue,  modE,    pDisplayUnits->GetModEUnit(),         false );
 
    ColumnIndexType col = 1;
-   (*pTable)(row,col++) << lrfdConcreteUtil::GetTypeName( (WBFL::Materials::ConcreteType)concrete.Type, true );
+   (*pTable)(row,col++) << WBFL::LRFD::ConcreteUtil::GetTypeName( (WBFL::Materials::ConcreteType)concrete.Type, true );
    (*pTable)(row,col++) << stress.SetValue( fc28 );
    (*pTable)(row,col++) << modE.SetValue( Ec28 );
 
@@ -3821,7 +3821,7 @@ void write_segment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
 
          if ( segIdx < nSegments-1 )
          {
-            CollectionIndexType closureIdx = segIdx;
+            IndexType closureIdx = segIdx;
 
             std::_tostringstream os;
             os << _T("Girder ") << LABEL_GIRDER(gdrIdx) << _T(" Closure Joint ") << LABEL_SEGMENT(closureIdx) <<std::endl;
@@ -4405,7 +4405,7 @@ void write_deck_reinforcing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   *pPara << _T("Reinforcement: ") << lrfdRebarPool::GetMaterialName(deckRebar.TopRebarType,deckRebar.TopRebarGrade).c_str() << rptNewLine;
+   *pPara << _T("Reinforcement: ") << WBFL::LRFD::RebarPool::GetMaterialName(deckRebar.TopRebarType,deckRebar.TopRebarGrade).c_str() << rptNewLine;
    *pPara << _T("Top Mat Cover: ") << cover.SetValue(deckRebar.TopCover) << rptNewLine;
    *pPara << _T("Bottom Mat Cover: ") << cover.SetValue(deckRebar.BottomCover) << rptNewLine;
 
@@ -4422,13 +4422,13 @@ void write_deck_reinforcing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
    (*pTable)(0,3) << COLHDR(_T("Lump Sum"), rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
 
    (*pTable)(1,0) << _T("Top");
-   (*pTable)(1,1) << lrfdRebarPool::GetBarSize(deckRebar.TopRebarSize) << _T(" @ ") << spacing.SetValue( deckRebar.TopSpacing );
+   (*pTable)(1,1) << WBFL::LRFD::RebarPool::GetBarSize(deckRebar.TopRebarSize) << _T(" @ ") << spacing.SetValue( deckRebar.TopSpacing );
 
    (*pTable)(1,2) << _T("AND");
    (*pTable)(1,3) << As.SetValue( deckRebar.TopLumpSum );
 
    (*pTable)(2,0) << _T("Bottom");
-   (*pTable)(2,1) << lrfdRebarPool::GetBarSize(deckRebar.BottomRebarSize) << _T(" @ ") << spacing.SetValue( deckRebar.BottomSpacing );
+   (*pTable)(2,1) << WBFL::LRFD::RebarPool::GetBarSize(deckRebar.BottomRebarSize) << _T(" @ ") << spacing.SetValue( deckRebar.BottomSpacing );
 
    (*pTable)(2,2) << _T("AND");
    (*pTable)(2,3) << As.SetValue( deckRebar.BottomLumpSum );
@@ -4463,7 +4463,7 @@ void write_deck_reinforcing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
          (*pTable)(row,0) << LABEL_PIER(negMomentRebar.PierIdx);
          (*pTable)(row,1) << (negMomentRebar.Mat == CDeckRebarData::TopMat ? _T("Top") : _T("Bottom"));
          (*pTable)(row,2) << As.SetValue(negMomentRebar.LumpSum);
-         (*pTable)(row,3) << lrfdRebarPool::GetBarSize(negMomentRebar.RebarSize);
+         (*pTable)(row,3) << WBFL::LRFD::RebarPool::GetBarSize(negMomentRebar.RebarSize);
          (*pTable)(row,4) << spacing.SetValue(negMomentRebar.Spacing);
          (*pTable)(row,5) << cutoff.SetValue(negMomentRebar.LeftCutoff);
          (*pTable)(row,6) << cutoff.SetValue(negMomentRebar.RightCutoff);

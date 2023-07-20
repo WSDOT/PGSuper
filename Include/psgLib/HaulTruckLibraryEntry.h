@@ -55,15 +55,15 @@ CLASS
    A library entry class for duct definitions.
 *****************************************************************************/
 
-class PSGLIBCLASS HaulTruckLibraryEntry : public libLibraryEntry, public ISupportIcon,
+class PSGLIBCLASS HaulTruckLibraryEntry : public WBFL::Library::LibraryEntry, public ISupportIcon,
        public WBFL::System::SubjectT<HaulTruckLibraryEntryObserver, HaulTruckLibraryEntry>
 {
 public:
    HaulTruckLibraryEntry();
-   HaulTruckLibraryEntry(const HaulTruckLibraryEntry& rOther);
-   virtual ~HaulTruckLibraryEntry();
+   HaulTruckLibraryEntry(const HaulTruckLibraryEntry& rOther) = default;
+   virtual ~HaulTruckLibraryEntry() = default;
 
-   HaulTruckLibraryEntry& operator = (const HaulTruckLibraryEntry& rOther);
+   HaulTruckLibraryEntry& operator=(const HaulTruckLibraryEntry& rOther) = default;
 
    //------------------------------------------------------------------------
    // Edit the entry
@@ -117,8 +117,6 @@ public:
    bool IsEqual(const HaulTruckLibraryEntry& rOther,bool bConsiderName=false) const;
 
 protected:
-   void MakeCopy(const HaulTruckLibraryEntry& rOther);
-   void MakeAssignment(const HaulTruckLibraryEntry& rOther);
 
 private:
    Float64 m_Hbg; // height from roadway to bottom of girder

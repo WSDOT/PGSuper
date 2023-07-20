@@ -42,7 +42,7 @@
 #include <PgsExt\BridgeDescription2.h>
 
 #include <Materials/PsStrand.h>
-#include <Lrfd\RebarPool.h>
+#include <LRFD\RebarPool.h>
 
 
 #ifdef _DEBUG
@@ -397,7 +397,7 @@ void write_debonding(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pD
 
       if (useSpanFraction || useHardDistance)
       {
-         *pPara << _T("Maximum debonded length is the lesser of: The half-girder length minus maximum development length (") << LrfdCw8th(_T("5.11.4.3)"),_T("5.9.4.3.3")) << _T(")");
+         *pPara << _T("Maximum debonded length is the lesser of: The half-girder length minus maximum development length (") << WBFL::LRFD::LrfdCw8th(_T("5.11.4.3)"),_T("5.9.4.3.3")) << _T(")");
 
          if (useSpanFraction)
          {
@@ -868,7 +868,7 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   lrfdRebarPool* pPool = lrfdRebarPool::GetInstance();
+   const auto* pPool = WBFL::LRFD::RebarPool::GetInstance();
 
    const WBFL::Materials::Rebar* pDeckRebar = nullptr;
    if ( pBridgeDesc->GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone )
@@ -890,7 +890,7 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
       RowIndexType row = 0;
 
       (*pTable)(row,0) << _T("Type");
-      (*pTable)(row,1) << lrfdRebarPool::GetMaterialName(pShearRebar->GetType(),pShearRebar->GetGrade()).c_str();
+      (*pTable)(row,1) << WBFL::LRFD::RebarPool::GetMaterialName(pShearRebar->GetType(),pShearRebar->GetGrade()).c_str();
       row++;
 
       (*pTable)(row,0) << RPT_FY;
@@ -909,7 +909,7 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
       RowIndexType row = 0;
 
       (*pTable)(row,0) << _T("Type");
-      (*pTable)(row,1) << lrfdRebarPool::GetMaterialName(pLongRebar->GetType(),pLongRebar->GetGrade()).c_str();
+      (*pTable)(row,1) << WBFL::LRFD::RebarPool::GetMaterialName(pLongRebar->GetType(),pLongRebar->GetGrade()).c_str();
       row++;
 
       (*pTable)(row,0) << RPT_FY;
@@ -928,7 +928,7 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
       RowIndexType row = 0;
 
       (*pTable)(row, 0) << _T("Type");
-      (*pTable)(row, 1) << lrfdRebarPool::GetMaterialName(pDeckRebar->GetType(), pDeckRebar->GetGrade()).c_str();
+      (*pTable)(row, 1) << WBFL::LRFD::RebarPool::GetMaterialName(pDeckRebar->GetType(), pDeckRebar->GetGrade()).c_str();
       row++;
 
       (*pTable)(row, 0) << RPT_FY;

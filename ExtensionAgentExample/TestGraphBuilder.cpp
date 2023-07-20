@@ -106,8 +106,8 @@ void CTestGraphBuilder::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
 
    // first x axis
    const WBFL::Units::ScalarData& scalar = pDisplayUnits->GetScalarFormat();
-   WBFL::Units::PhysicalConverter* pFormat = new WBFL::Units::ScalarTool(scalar);
-   WBFL::Graphing::GraphXY graph(*pFormat,*pFormat);
+   WBFL::Units::ScalarTool scalar_tool(scalar);
+   WBFL::Graphing::GraphXY graph(&scalar_tool,&scalar_tool);
 
    IndexType idx = graph.CreateDataSeries();
    for ( int i = 0; i <= 360; i++ )
@@ -127,8 +127,6 @@ void CTestGraphBuilder::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
    CRect rect = GetView()->GetDrawingRect();
    graph.SetOutputRect(rect);
    graph.Draw(pDC->GetSafeHdc());
-
-   delete pFormat;
 }
 
 /////////////////////////////////////////////////////
@@ -198,8 +196,8 @@ void CTestGraphBuilder2::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
 
    // first x axis
    const WBFL::Units::ScalarData& scalar = pDisplayUnits->GetScalarFormat();
-   WBFL::Units::PhysicalConverter* pFormat = new WBFL::Units::ScalarTool(scalar);
-   WBFL::Graphing::GraphXY graph(*pFormat,*pFormat);
+   WBFL::Units::ScalarTool scalar_tool(scalar);
+   WBFL::Graphing::GraphXY graph(&scalar_tool, &scalar_tool);
 
    IndexType idx = graph.CreateDataSeries();
    for ( int i = 0; i <= 360; i++ )
@@ -220,8 +218,6 @@ void CTestGraphBuilder2::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
    CRect rect = GetView()->GetDrawingRect();
    graph.SetOutputRect(rect);
    graph.Draw(pDC->GetSafeHdc());
-
-   delete pFormat;
 }
 
 /////////////////////////////////////////////////////
@@ -273,8 +269,8 @@ void CTestGraphBuilder3::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
 
    // first x axis
    const WBFL::Units::ScalarData& scalar = pDisplayUnits->GetScalarFormat();
-   WBFL::Units::PhysicalConverter* pFormat = new WBFL::Units::ScalarTool(scalar);
-   WBFL::Graphing::GraphXY graph(*pFormat,*pFormat);
+   WBFL::Units::ScalarTool scalar_tool(scalar);
+   WBFL::Graphing::GraphXY graph(&scalar_tool, &scalar_tool);
 
    IndexType series1 = graph.CreateDataSeries(_T("f(x)=10^x"),    PS_SOLID,1,RED);
    IndexType series2 = graph.CreateDataSeries(_T("f(x)=x"),       PS_SOLID,1,GREEN);
@@ -302,6 +298,4 @@ void CTestGraphBuilder3::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
    CRect rect = GetView()->GetDrawingRect();
    graph.SetOutputRect(rect);
    graph.Draw(pDC->GetSafeHdc());
-
-   delete pFormat;
 }

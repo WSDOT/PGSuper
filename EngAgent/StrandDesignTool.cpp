@@ -222,7 +222,7 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
    }
 
    WBFL::Materials::SimpleConcrete conc(_T("Design Concrete"), ifc, pSegmentMaterial->Concrete.StrengthDensity, 
-                      pSegmentMaterial->Concrete.WeightDensity, lrfdConcreteUtil::ModE((WBFL::Materials::ConcreteType)(pSegmentMaterial->Concrete.Type),ifc,  pSegmentMaterial->Concrete.StrengthDensity, false ),
+                      pSegmentMaterial->Concrete.WeightDensity, WBFL::LRFD::ConcreteUtil::ModE((WBFL::Materials::ConcreteType)(pSegmentMaterial->Concrete.Type),ifc,  pSegmentMaterial->Concrete.StrengthDensity, false ),
                       0.0,0.0); // we don't need the modulus of rupture for shear or flexur. Just use 0.0
    conc.SetMaxAggregateSize(pSegmentMaterial->Concrete.MaxAggregateSize);
    conc.SetFiberLength(pSegmentMaterial->Concrete.FiberLength);
@@ -2050,7 +2050,7 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
          if (task.intervalIdx == releaseIntervalIdx)
          {
             const auto& pConcrete = pMaterials->GetSegmentConcrete(GetSegmentKey());
-            const lrfdLRFDConcreteBase* pLRFDConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(pConcrete.get());
+            const WBFL::LRFD::LRFDConcreteBase* pLRFDConcrete = dynamic_cast<const WBFL::LRFD::LRFDConcreteBase*>(pConcrete.get());
             Float64 f_fc = pLRFDConcrete->GetFirstCrackingStrength();
             Float64 fc = GetConcreteStrength();
             fc_reqd = pow(1.5 * fControl / fc, 2) * fc;

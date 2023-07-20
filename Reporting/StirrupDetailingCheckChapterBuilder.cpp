@@ -130,7 +130,7 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    const pgsGirderArtifact* pGirderArtifact = pIArtifact->GetGirderArtifact(girderKey);
 
-   bool bLambda = (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() ? true : false);
+   bool bLambda = (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() ? true : false);
 
    GET_IFACE2(pBroker,IMaterials,pMaterial);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -312,7 +312,7 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << _T("Details for Minimum Transverse Reinforcement Check - ") << LrfdCw8th(_T("5.8.2.5-1"),_T("5.7.2.5-1"));
+   *pParagraph << _T("Details for Minimum Transverse Reinforcement Check - ") << WBFL::LRFD::LrfdCw8th(_T("5.8.2.5-1"),_T("5.7.2.5-1"));
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
@@ -334,8 +334,8 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
       const pgsStirrupCheckArtifact* pstirrup_artifact = pSegmentArtifact->GetStirrupCheckArtifact();
       ATLASSERT(pstirrup_artifact);
 
-      CollectionIndexType nArtifacts = pstirrup_artifact->GetStirrupCheckAtPoisArtifactCount( intervalIdx,pgsTypes::StrengthI );
-      for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
+      IndexType nArtifacts = pstirrup_artifact->GetStirrupCheckAtPoisArtifactCount( intervalIdx,pgsTypes::StrengthI );
+      for ( IndexType idx = 0; idx < nArtifacts; idx++ )
       {
          // it is ok to use a hard coded StrengthI limit state here because
          // we are only after Bv and Avs Min which are not dependent on loading
@@ -380,7 +380,7 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
       *pParagraph << _T("Strength II");
    }
 
-   *pParagraph <<_T(" - Details for Maximum Transverse Reinforcement Spacing Check - ") << LrfdCw8th(_T("5.8.2.7"),_T("5.7.2.6"))<<rptNewLine;
+   *pParagraph <<_T(" - Details for Maximum Transverse Reinforcement Spacing Check - ") << WBFL::LRFD::LrfdCw8th(_T("5.8.2.7"),_T("5.7.2.6"))<<rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
@@ -398,7 +398,7 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfter1999 = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::SecondEditionWith2000Interims ? true : false );
+   bool bAfter1999 = ( pSpecEntry->GetSpecificationType() >= WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims ? true : false );
 
    Float64 k1,s1,k2,s2;
    pSpecEntry->GetMaxStirrupSpacing(&k1,&s1,&k2,&s2);
@@ -469,8 +469,8 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
       const pgsStirrupCheckArtifact* pstirrup_artifact = pSegmentArtifact->GetStirrupCheckArtifact();
       ATLASSERT(pstirrup_artifact);
 
-      CollectionIndexType nArtifacts = pstirrup_artifact->GetStirrupCheckAtPoisArtifactCount( intervalIdx,pgsTypes::StrengthI );
-      for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
+      IndexType nArtifacts = pstirrup_artifact->GetStirrupCheckAtPoisArtifactCount( intervalIdx,pgsTypes::StrengthI );
+      for ( IndexType idx = 0; idx < nArtifacts; idx++ )
       {
          // it is ok to use a hard coded StrengthI limit state here because
          // we are only after Bv and Avs Min withc are not dependent on loading
@@ -579,8 +579,8 @@ void build_max_spacing_paragraph_uhpc(IBroker* pBroker, rptChapter* pChapter, co
       const pgsStirrupCheckArtifact* pstirrup_artifact = pSegmentArtifact->GetStirrupCheckArtifact();
       ATLASSERT(pstirrup_artifact);
 
-      CollectionIndexType nArtifacts = pstirrup_artifact->GetStirrupCheckAtPoisArtifactCount(intervalIdx, pgsTypes::StrengthI);
-      for (CollectionIndexType idx = 0; idx < nArtifacts; idx++)
+      IndexType nArtifacts = pstirrup_artifact->GetStirrupCheckAtPoisArtifactCount(intervalIdx, pgsTypes::StrengthI);
+      for (IndexType idx = 0; idx < nArtifacts; idx++)
       {
          // it is ok to use a hard coded StrengthI limit state here because
          // we are only after Bv and Avs Min which are not dependent on loading

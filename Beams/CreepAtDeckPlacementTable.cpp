@@ -78,7 +78,7 @@ CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter*
 
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << _T("[")<< LrfdCw8th(_T("5.9.5.4.2b"),_T("5.9.3.4.2b")) <<_T("] Creep of Girder Concrete : ") << symbol(DELTA) << RPT_STRESS(_T("pCR")) << rptNewLine;
+   *pParagraph << _T("[")<< WBFL::LRFD::LrfdCw8th(_T("5.9.5.4.2b"),_T("5.9.3.4.2b")) <<_T("] Creep of Girder Concrete : ") << symbol(DELTA) << RPT_STRESS(_T("pCR")) << rptNewLine;
 
    if (pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned)
    {
@@ -112,7 +112,7 @@ CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter*
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
-   std::shared_ptr<const lrfdRefinedLosses2005> ptl = std::dynamic_pointer_cast<const lrfdRefinedLosses2005>(pDetails->pLosses);
+   std::shared_ptr<const WBFL::LRFD::RefinedLosses2005> ptl = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLosses2005>(pDetails->pLosses);
 
    table->time.ShowUnitTag(true);
    *pParagraph << Sub2(_T("k"), _T("td")) << _T(" = ") << table->scalar.SetValue(ptl->GetGirderCreep()->GetKtd(ptl->GetMaturityAtDeckPlacement())) << rptNewLine;
@@ -148,7 +148,7 @@ CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter*
 void CCreepAtDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
   // Typecast to our known type (eating own doggy food)
-   std::shared_ptr<const lrfdRefinedLosses2005> ptl = std::dynamic_pointer_cast<const lrfdRefinedLosses2005>(pDetails->pLosses);
+   std::shared_ptr<const WBFL::LRFD::RefinedLosses2005> ptl = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLosses2005>(pDetails->pLosses);
    if (!ptl)
    {
       ATLASSERT(false); // made a bad cast? Bail...
@@ -160,13 +160,13 @@ void CCreepAtDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* pBroker,co
 
    if (m_pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPretensioned)
    {
-      (*this)(row+rowOffset, col++) << stress.SetValue(pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp());
+      (*this)(row+rowOffset, col++) << stress.SetValue(pDetails->pLosses->GetElasticShortening().PermanentStrand_Fcgp());
    }
    else
    {
-      (*this)(row+rowOffset, col++) << stress.SetValue(pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp());
+      (*this)(row+rowOffset, col++) << stress.SetValue(pDetails->pLosses->GetElasticShortening().PermanentStrand_Fcgp());
       (*this)(row+rowOffset, col++) << stress.SetValue(ptl->GetDeltaFpp());
-      (*this)(row+rowOffset, col++) << stress.SetValue(pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp() + ptl->GetDeltaFpp());
+      (*this)(row+rowOffset, col++) << stress.SetValue(pDetails->pLosses->GetElasticShortening().PermanentStrand_Fcgp() + ptl->GetDeltaFpp());
    }
 
    (*this)(row+rowOffset, col++) << scalar.SetValue(ptl->GetKid());

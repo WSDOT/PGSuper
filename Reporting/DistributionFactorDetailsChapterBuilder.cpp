@@ -43,8 +43,8 @@ CLASS
 
 
 // free functions
-rptRcTable* BuildDfTable(const lrfdILiveLoadDistributionFactor::DFResult& G1, const lrfdILiveLoadDistributionFactor::DFResult& G2, bool isExterior);
-void FillRow(int row, rptRcTable* pTable, const std::_tstring& rowtit, const lrfdILiveLoadDistributionFactor::DFResult& res, bool isExterior);
+rptRcTable* BuildDfTable(const WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& G1, const WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& G2, bool isExterior);
+void FillRow(int row, rptRcTable* pTable, const std::_tstring& rowtit, const WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& res, bool isExterior);
 
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////

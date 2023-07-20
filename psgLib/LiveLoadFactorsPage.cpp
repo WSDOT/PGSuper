@@ -100,7 +100,7 @@ BOOL CLiveLoadFactorsPage::OnInitDialog()
    idx = pcbLLMethod->AddString(_T("Bilinear"));
    pcbLLMethod->SetItemData(idx,(DWORD_PTR)pgsTypes::gllBilinear);
 
-   if ( pParent->m_RatingDescriptionPage.GetSpecVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( pParent->m_RatingDescriptionPage.GetSpecVersion() < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
    {
       idx = pcbLLMethod->AddString(_T("Bilinear with vehicle weight"));
    }
@@ -278,7 +278,7 @@ void CLiveLoadFactorsPage::OnLiveLoadFactorTypeChanged()
       bgllLower4 = TRUE;
       bgllService4    = TRUE;
 
-      if ( lrfrVersionMgr::SecondEditionWith2013Interims <= pParent->m_RatingDescriptionPage.GetSpecVersion() )
+      if ( WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims <= pParent->m_RatingDescriptionPage.GetSpecVersion() )
       {
          bgllMiddle1Label = TRUE;
          bgllMiddle1 = TRUE;
@@ -334,7 +334,7 @@ void CLiveLoadFactorsPage::OnLiveLoadFactorTypeChanged()
    GetDlgItem(IDC_LF_LOWER3)->ShowWindow(bgllLower3 ? SW_SHOW : SW_HIDE);
    GetDlgItem(IDC_LF_LOWER4)->ShowWindow(bgllLower4 ? SW_SHOW : SW_HIDE);
 
-   if ( lrfrVersionMgr::SecondEditionWith2013Interims <= pParent->m_RatingDescriptionPage.GetSpecVersion() )
+   if ( WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims <= pParent->m_RatingDescriptionPage.GetSpecVersion() )
    {
       GetDlgItem(IDC_LF_MIDDLE1_LABEL)->ShowWindow(bgllMiddle1Label ? SW_SHOW : SW_HIDE);
       GetDlgItem(IDC_LF_MIDDLE2_LABEL)->ShowWindow(bgllMiddle2Label ? SW_SHOW : SW_HIDE);

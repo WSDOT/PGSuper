@@ -152,10 +152,10 @@ void CTrafficBarrierViewDialog::DrawShape(CDC* pDC, WBFL::Graphing::PointMapper&
 
    if ( compshape )
    {
-      CollectionIndexType count;
+      IndexType count;
       compshape->get_Count(&count);
 
-      for ( CollectionIndexType idx = 0; idx < count; idx++ )
+      for ( IndexType idx = 0; idx < count; idx++ )
       {
          CComPtr<ICompositeShapeItem> item;
          compshape->get_Item(idx,&item);
@@ -188,7 +188,7 @@ void CTrafficBarrierViewDialog::DrawShape(CDC* pDC, WBFL::Graphing::PointMapper&
    CComPtr<IPoint2dCollection> polypoints;
    pShape->get_PolyPoints(&polypoints);
 
-   CollectionIndexType nPoints;
+   IndexType nPoints;
    polypoints->get_Count(&nPoints);
 
    IPoint2d** points = new IPoint2d*[nPoints];
@@ -201,7 +201,7 @@ void CTrafficBarrierViewDialog::DrawShape(CDC* pDC, WBFL::Graphing::PointMapper&
    ATLASSERT(nFetched == nPoints);
 
    CPoint* dev_points = new CPoint[nPoints];
-   for ( CollectionIndexType i = 0; i < nPoints; i++ )
+   for ( IndexType i = 0; i < nPoints; i++ )
    {
       long dx,dy;
       WBFL::Graphing::Point point;

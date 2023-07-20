@@ -49,7 +49,7 @@ class CRowType : public CGXAbstractUserAttribute
 {
 public:
    enum RowType { Segment, Closure };
-   CRowType(RowType type,CollectionIndexType idx)
+   CRowType(RowType type,IndexType idx)
    {
       m_Index = idx;
       m_Type = type;
@@ -61,7 +61,7 @@ public:
    }
 
    RowType m_Type;
-   CollectionIndexType m_Index;
+   IndexType m_Index;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -266,7 +266,7 @@ void CGirderGrid::EditSegment(SegmentIndexType segIdx)
    }
 }
 
-void CGirderGrid::EditClosure(CollectionIndexType idx)
+void CGirderGrid::EditClosure(IndexType idx)
 {
    CSplicedGirderGeneralPage* pParentPage = (CSplicedGirderGeneralPage*)GetParent();
    CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)(pParentPage->GetParent());

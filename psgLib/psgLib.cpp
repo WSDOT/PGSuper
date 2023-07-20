@@ -176,9 +176,9 @@ void CPsgLibApp::OnHelp()
    // must have a handler for ID_HELP otherwise CDialog::InitDialog() will hide the help button
 }
 
-std::_tstring PSGLIBFUNC WINAPI psglibGetFirstEntryName(const libILibrary& rlib)
+std::_tstring PSGLIBFUNC WINAPI psglibGetFirstEntryName(const WBFL::Library::ILibrary& rlib)
 {
-   libKeyListType key_list;
+   WBFL::Library::KeyListType key_list;
    rlib.KeyList(key_list);
    ATLASSERT(key_list.size()>0);
    return key_list[0];
@@ -188,15 +188,15 @@ template <class EntryType, class LibType>
 bool do_deal_with_library_conflicts(ConflictList* pList, LibType* pMasterLib, const LibType& projectLib, const std::_tstring& publisher, const std::_tstring& configuration, const std::_tstring& libName, const EntryType& dummy, bool isImported,bool bForceUpdate)
 {
    // loop over entries in project library and check to see if names are the same
-   libKeyListType project_keys;
+   WBFL::Library::KeyListType project_keys;
    projectLib.KeyList(project_keys);
    // create a key list with all names in it for the sole purpose of dealing with 
    // name conflicts with newly added entries
-   libKeyListType master_keys;
+   WBFL::Library::KeyListType master_keys;
    pMasterLib->KeyList(master_keys);
    master_keys.insert(master_keys.end(),project_keys.begin(),project_keys.end());
 
-   for (libKeyListIterator ik=project_keys.begin(); ik!=project_keys.end(); ik++)
+   for (WBFL::Library::KeyListIterator ik=project_keys.begin(); ik!=project_keys.end(); ik++)
    {
       const std::_tstring& name= *ik;
       const EntryType* pproject = 0;
@@ -341,18 +341,18 @@ bool PSGLIBFUNC WINAPI psglibDealWithLibraryConflicts(ConflictList* pList, psgLi
    return true;
 }
 
-bool do_make_saveable_copy(const libILibrary& lib, libILibrary* ptempLib)
+bool do_make_saveable_copy(const WBFL::Library::ILibrary& lib, WBFL::Library::ILibrary* ptempLib)
 {
-   libKeyListType key_list;
+   WBFL::Library::KeyListType key_list;
    lib.KeyList(key_list);
-   for (libKeyListIterator i = key_list.begin(); i!=key_list.end(); i++)
+   for (WBFL::Library::KeyListIterator i = key_list.begin(); i!=key_list.end(); i++)
    {
       LPCTSTR key = i->c_str();
       // only copy entries to temp library if they are not read only, or if 
       // they are referenced
       if (lib.IsEditingEnabled(key) || lib.GetEntryRefCount(key)>0)
       {
-         std::unique_ptr<libLibraryEntry> pent(lib.CreateEntryClone(key));
+         std::unique_ptr<WBFL::Library::LibraryEntry> pent(lib.CreateEntryClone(key));
          if (!ptempLib->AddEntry(*pent, key))
          {
             return false;
@@ -428,7 +428,7 @@ bool PSGLIBFUNC WINAPI psglibMakeSaveableCopy(const psgLibraryManager& libMgr, p
    return true;
 }
 
-void PSGLIBFUNC WINAPI psglibCreateLibNameEnum( std::vector<std::_tstring>* pNames, const libILibrary& prjLib)
+void PSGLIBFUNC WINAPI psglibCreateLibNameEnum( std::vector<std::_tstring>* pNames, const WBFL::Library::ILibrary& prjLib)
 {
    pNames->clear();
 

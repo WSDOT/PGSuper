@@ -264,19 +264,19 @@ BOOL CSpecDesignPage::OnSetActive()
 
    // deal with 2017 crosswalk
    CWnd* pWnd = GetDlgItem(IDC_SSPLITTING);
-   pWnd->SetWindowText(CString(_T("Splitting Resistance (")) + pDad->LrfdCw8th(_T("5.10.10.1"),_T("5.9.4.4.1")) + _T(")"));
+   pWnd->SetWindowText(CString(_T("Splitting Resistance (")) + WBFL::LRFD::LrfdCw8th(_T("5.10.10.1"),_T("5.9.4.4.1")) + _T(")"));
 
    pWnd = GetDlgItem(IDC_SCONFINEMENT);
-   pWnd->SetWindowText(CString(_T("Confinement Reinforcement (")) + pDad->LrfdCw8th(_T("5.10.10.2"),_T("5.9.4.4.2")) + _T(")"));
+   pWnd->SetWindowText(CString(_T("Confinement Reinforcement (")) + WBFL::LRFD::LrfdCw8th(_T("5.10.10.2"),_T("5.9.4.4.2")) + _T(")"));
 
    pWnd = GetDlgItem(IDC_FC1);
-   pWnd->SetWindowText(CString(_T("Use fc at the time of loading (")) + pDad->LrfdCw8th(_T("5.14.1.3.2d and 5.14.1.3.3"),_T("5.12.3.4.2d and 5.12.3.4.3")) + _T(")"));
+   pWnd->SetWindowText(CString(_T("Use fc at the time of loading (")) + WBFL::LRFD::LrfdCw8th(_T("5.14.1.3.2d and 5.14.1.3.3"),_T("5.12.3.4.2d and 5.12.3.4.3")) + _T(")"));
    pWnd->EnableWindow(pDad->m_Entry.GetLossMethod() == pgsTypes::TIME_STEP ? TRUE : FALSE); // only an option for time-step analysis
 
    pWnd = GetDlgItem(IDC_90_DAY_STRENGTH_LABEL);
-   pWnd->SetWindowText(CString(_T("% of f'c for stress combinations after 90 days for slow curing concretes (")) + pDad->LrfdCw8th(_T("5.14.1.2.5"), _T("5.12.3.2.5")) + _T(")"));
+   pWnd->SetWindowText(CString(_T("% of f'c for stress combinations after 90 days for slow curing concretes (")) + WBFL::LRFD::LrfdCw8th(_T("5.14.1.2.5"), _T("5.12.3.2.5")) + _T(")"));
 
-   if (pDad->GetSpecVersion() < lrfdVersionMgr::NinthEdition2020)
+   if (pDad->GetSpecVersion() < WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020)
    {
       pWnd = GetDlgItem(IDC_LIFTING_GROUP);
       pWnd->SetWindowText(_T("Lifting Stability Check/Design Options"));

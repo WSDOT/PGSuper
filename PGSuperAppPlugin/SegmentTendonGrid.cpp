@@ -745,7 +745,7 @@ void CSegmentTendonGrid::UpdateMaxPjack(ROWCOL nRow)
    ASSERT(pParent->IsKindOf(RUNTIME_CLASS(CGirderSegmentTendonsPage)));
    const auto* pStrand = pParent->GetStrand();
 
-   Float64 Pjack = lrfdPsStrand::GetPjackPT(*pStrand, nStrands);
+   Float64 Pjack = WBFL::LRFD::PsStrand::GetPjackPT(*pStrand, nStrands);
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);

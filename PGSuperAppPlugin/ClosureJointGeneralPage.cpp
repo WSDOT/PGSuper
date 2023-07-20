@@ -790,7 +790,7 @@ void CClosureJointGeneralPage::UpdateConcreteParametersToolTip()
 
    CString strTip;
    strTip.Format(_T("%-20s %s\r\n%-20s %s\r\n%-20s %s\r\n%-20s %s"),
-      _T("Type"), lrfdConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pParent->m_ClosureJoint.GetConcrete().Type,true).c_str(),
+      _T("Type"), WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pParent->m_ClosureJoint.GetConcrete().Type,true).c_str(),
       _T("Unit Weight"),FormatDimension(pParent->m_ClosureJoint.GetConcrete().StrengthDensity,density),
       _T("Unit Weight (w/ reinforcement)"),  FormatDimension(pParent->m_ClosureJoint.GetConcrete().WeightDensity,density),
       _T("Max Aggregate Size"),  FormatDimension(pParent->m_ClosureJoint.GetConcrete().MaxAggregateSize,aggsize)

@@ -224,13 +224,13 @@ HRESULT CStressTendonActivity::Load(IStructuredLoad* pStrLoad,IProgress* pProgre
 
       if ( m_bEnabled )
       {
-         CollectionIndexType nTendons;
+         IndexType nTendons;
          var.vt = VT_INDEX;
          hr = pStrLoad->get_Property(_T("Count"),&var);
          nTendons = VARIANT2INDEX(var);
          m_Tendons.clear();
 
-         for ( CollectionIndexType i = 0; i < nTendons; i++ )
+         for ( IndexType i = 0; i < nTendons; i++ )
          {
             pStrLoad->BeginUnit(_T("Tendon"));
             var.vt = VT_ID;

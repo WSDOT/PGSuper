@@ -261,12 +261,12 @@ void CLoadManager::Clear()
    m_MomentLoads.clear();
 }
 
-CollectionIndexType CLoadManager::GetPointLoadCount() const
+IndexType CLoadManager::GetPointLoadCount() const
 {
    return m_PointLoads.size();
 }
 
-CollectionIndexType CLoadManager::AddPointLoad(EventIDType eventID,const CPointLoadData& pld)
+IndexType CLoadManager::AddPointLoad(EventIDType eventID,const CPointLoadData& pld)
 {
    ATLASSERT(eventID != INVALID_ID);
 
@@ -283,7 +283,7 @@ CollectionIndexType CLoadManager::AddPointLoad(EventIDType eventID,const CPointL
    return m_PointLoads.size()-1;
 }
 
-const CPointLoadData* CLoadManager::GetPointLoad(CollectionIndexType idx) const
+const CPointLoadData* CLoadManager::GetPointLoad(IndexType idx) const
 {
    ATLASSERT(0 <= idx && idx < GetPointLoadCount() );
 
@@ -334,7 +334,7 @@ EventIDType CLoadManager::GetPointLoadEventID(LoadIDType loadID) const
    return eventID;
 }
 
-bool CLoadManager::UpdatePointLoad(CollectionIndexType idx, EventIDType eventID,const CPointLoadData& pld,bool* pbMovedGirders,CSpanKey* pPrevKey)
+bool CLoadManager::UpdatePointLoad(IndexType idx, EventIDType eventID,const CPointLoadData& pld,bool* pbMovedGirders,CSpanKey* pPrevKey)
 {
    ATLASSERT(0 <= idx && idx < GetPointLoadCount() );
    return UpdatePointLoadByID(m_PointLoads[idx].m_ID, eventID, pld, pbMovedGirders, pPrevKey);
@@ -374,7 +374,7 @@ bool CLoadManager::UpdatePointLoadByID(LoadIDType loadID, EventIDType eventID, c
    return false;
 }
 
-void CLoadManager::DeletePointLoad(CollectionIndexType idx,CSpanKey* pKey)
+void CLoadManager::DeletePointLoad(IndexType idx,CSpanKey* pKey)
 {
    ATLASSERT(0 <= idx && idx < GetPointLoadCount() );
 
@@ -426,12 +426,12 @@ std::vector<CPointLoadData> CLoadManager::GetPointLoads(const CSpanKey& spanKey)
    return vLoads;
 }
 
-CollectionIndexType CLoadManager::GetDistributedLoadCount() const
+IndexType CLoadManager::GetDistributedLoadCount() const
 {
    return m_DistributedLoads.size();
 }
 
-CollectionIndexType CLoadManager::AddDistributedLoad(EventIDType eventID,const CDistributedLoadData& pld)
+IndexType CLoadManager::AddDistributedLoad(EventIDType eventID,const CDistributedLoadData& pld)
 {
    ATLASSERT(eventID != INVALID_ID);
 
@@ -448,7 +448,7 @@ CollectionIndexType CLoadManager::AddDistributedLoad(EventIDType eventID,const C
    return m_DistributedLoads.size()-1;
 }
 
-const CDistributedLoadData* CLoadManager::GetDistributedLoad(CollectionIndexType idx) const
+const CDistributedLoadData* CLoadManager::GetDistributedLoad(IndexType idx) const
 {
    ATLASSERT(0 <= idx && idx < GetDistributedLoadCount() );
 
@@ -499,7 +499,7 @@ EventIDType CLoadManager::GetDistributedLoadEventID(LoadIDType loadID) const
    return eventID;
 }
 
-bool CLoadManager::UpdateDistributedLoad(CollectionIndexType idx, EventIDType eventID,const CDistributedLoadData& pld,bool* pbMovedGirder,CSpanKey* pPrevKey)
+bool CLoadManager::UpdateDistributedLoad(IndexType idx, EventIDType eventID,const CDistributedLoadData& pld,bool* pbMovedGirder,CSpanKey* pPrevKey)
 {
    ATLASSERT(0 <= idx && idx < GetDistributedLoadCount() );
    return UpdateDistributedLoadByID(m_DistributedLoads[idx].m_ID, eventID, pld, pbMovedGirder, pPrevKey);
@@ -538,7 +538,7 @@ bool CLoadManager::UpdateDistributedLoadByID(LoadIDType loadID, EventIDType even
    return false;
 }
 
-void CLoadManager::DeleteDistributedLoad(CollectionIndexType idx,CSpanKey* pKey)
+void CLoadManager::DeleteDistributedLoad(IndexType idx,CSpanKey* pKey)
 {
    ATLASSERT(0 <= idx && idx < GetDistributedLoadCount() );
 
@@ -590,12 +590,12 @@ std::vector<CDistributedLoadData> CLoadManager::GetDistributedLoads(const CSpanK
    return vLoads;
 }
 
-CollectionIndexType CLoadManager::GetMomentLoadCount() const
+IndexType CLoadManager::GetMomentLoadCount() const
 {
    return m_MomentLoads.size();
 }
 
-CollectionIndexType CLoadManager::AddMomentLoad(EventIDType eventID,const CMomentLoadData& pld)
+IndexType CLoadManager::AddMomentLoad(EventIDType eventID,const CMomentLoadData& pld)
 {
    ATLASSERT(eventID != INVALID_ID);
 
@@ -612,7 +612,7 @@ CollectionIndexType CLoadManager::AddMomentLoad(EventIDType eventID,const CMomen
    return m_MomentLoads.size()-1;
 }
 
-const CMomentLoadData* CLoadManager::GetMomentLoad(CollectionIndexType idx) const
+const CMomentLoadData* CLoadManager::GetMomentLoad(IndexType idx) const
 {
    ATLASSERT(0 <= idx && idx < GetMomentLoadCount() );
 
@@ -663,7 +663,7 @@ CMomentLoadData* CLoadManager::FindMomentLoadByID(LoadIDType loadID)
    return nullptr;
 }
 
-bool CLoadManager::UpdateMomentLoad(CollectionIndexType idx, EventIDType eventID,const CMomentLoadData& pld,bool* pbMovedGirder,CSpanKey* pPrevKey)
+bool CLoadManager::UpdateMomentLoad(IndexType idx, EventIDType eventID,const CMomentLoadData& pld,bool* pbMovedGirder,CSpanKey* pPrevKey)
 {
    ATLASSERT(0 <= idx && idx < GetMomentLoadCount() );
    return UpdateMomentLoadByID(m_MomentLoads[idx].m_ID, eventID, pld, pbMovedGirder, pPrevKey);
@@ -702,7 +702,7 @@ bool CLoadManager::UpdateMomentLoadByID(LoadIDType loadID, EventIDType eventID, 
    return false;
 }
 
-void CLoadManager::DeleteMomentLoad(CollectionIndexType idx,CSpanKey* pKey)
+void CLoadManager::DeleteMomentLoad(IndexType idx,CSpanKey* pKey)
 {
    ATLASSERT(0 <= idx && idx < GetMomentLoadCount() );
 

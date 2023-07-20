@@ -335,10 +335,10 @@ public:
    virtual void SetSegmentEventsByID(const CSegmentKey& segmentKey,EventIDType constructionEventID,EventIDType erectionEventID) override;
    virtual void GetSegmentEventsByIndex(const CSegmentKey& segmentKey,EventIndexType* constructionEventIdx,EventIndexType* erectionEventIdx) const override;
    virtual void GetSegmentEventsByID(const CSegmentKey& segmentKey,EventIDType* constructionEventID,EventIDType* erectionEventID) const override;
-   virtual EventIndexType GetCastClosureJointEventIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx) const override;
-   virtual EventIDType GetCastClosureJointEventID(GroupIndexType grpIdx,CollectionIndexType closureIdx) const override;
-   virtual void SetCastClosureJointEventByIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx,EventIndexType eventIdx) override;
-   virtual void SetCastClosureJointEventByID(GroupIndexType grpIdx,CollectionIndexType closureIdx,EventIDType eventID) override;
+   virtual EventIndexType GetCastClosureJointEventIndex(GroupIndexType grpIdx,IndexType closureIdx) const override;
+   virtual EventIDType GetCastClosureJointEventID(GroupIndexType grpIdx,IndexType closureIdx) const override;
+   virtual void SetCastClosureJointEventByIndex(GroupIndexType grpIdx,IndexType closureIdx,EventIndexType eventIdx) override;
+   virtual void SetCastClosureJointEventByID(GroupIndexType grpIdx,IndexType closureIdx,EventIDType eventID) override;
    virtual EventIndexType GetStressTendonEventIndex(const CGirderKey& girderKey,DuctIndexType ductIdx) const override;
    virtual EventIDType GetStressTendonEventID(const CGirderKey& girderKey,DuctIndexType ductIdx) const override;
    virtual void SetStressTendonEventByIndex(const CGirderKey& girderKey,DuctIndexType ductIdx,EventIndexType eventIdx) override;
@@ -456,7 +456,7 @@ public:
    virtual void GetRequiredSlabOffsetRoundingParameters(pgsTypes::SlabOffsetRoundingMethod* pMethod, Float64* pTolerance) const override;
    virtual void GetTaperedSolePlateRequirements(bool* pbCheckTaperedSolePlate, Float64* pTaperedSolePlateThreshold) const override;
    virtual ISpecification::PrincipalWebStressCheckType GetPrincipalWebStressCheckType(const CSegmentKey& segmentKey) const override;
-   virtual lrfdVersionMgr::Version GetSpecificationType() const override;
+   virtual WBFL::LRFD::LRFDVersionMgr::Version GetSpecificationType() const override;
 
 // IRatingSpecification
 public:
@@ -552,7 +552,7 @@ public:
    virtual LiveLoadLibrary*        GetLiveLoadLibrary() override;
    virtual DuctLibrary*            GetDuctLibrary() override;
    virtual HaulTruckLibrary*       GetHaulTruckLibrary() override;
-   virtual std::vector<libEntryUsageRecord> GetLibraryUsageRecords() const override;
+   virtual std::vector<WBFL::Library::EntryUsageRecord> GetLibraryUsageRecords() const override;
    virtual void GetMasterLibraryInfo(std::_tstring& strServer, std::_tstring& strConfiguration, std::_tstring& strMasterLib, WBFL::System::Time& time) const override;
    virtual RatingLibrary* GetRatingLibrary() override;
    virtual const RatingLibrary* GetRatingLibrary() const override;
@@ -593,39 +593,39 @@ public:
    virtual bool HasUserDC(const CGirderKey& girderKey) const override;
    virtual bool HasUserDW(const CGirderKey& girderKey) const override;
    virtual bool HasUserLLIM(const CGirderKey& girderKey) const override;
-   virtual CollectionIndexType GetPointLoadCount() const override;
-   virtual CollectionIndexType AddPointLoad(EventIDType eventID,const CPointLoadData& pld) override;
-   virtual const CPointLoadData* GetPointLoad(CollectionIndexType idx) const override;
+   virtual IndexType GetPointLoadCount() const override;
+   virtual IndexType AddPointLoad(EventIDType eventID,const CPointLoadData& pld) override;
+   virtual const CPointLoadData* GetPointLoad(IndexType idx) const override;
    virtual const CPointLoadData* FindPointLoad(LoadIDType loadID) const override;
    virtual EventIndexType GetPointLoadEventIndex(LoadIDType loadID) const override;
    virtual EventIDType GetPointLoadEventID(LoadIDType loadID) const override;
-   virtual void UpdatePointLoad(CollectionIndexType idx, EventIDType eventID, const CPointLoadData& pld) override;
+   virtual void UpdatePointLoad(IndexType idx, EventIDType eventID, const CPointLoadData& pld) override;
    virtual void UpdatePointLoadByID(LoadIDType loadID, EventIDType eventID, const CPointLoadData& pld) override;
-   virtual void DeletePointLoad(CollectionIndexType idx) override;
+   virtual void DeletePointLoad(IndexType idx) override;
    virtual void DeletePointLoadByID(LoadIDType loadID) override;
    virtual std::vector<CPointLoadData> GetPointLoads(const CSpanKey& spanKey) const override;
 
-   virtual CollectionIndexType GetDistributedLoadCount() const override;
-   virtual CollectionIndexType AddDistributedLoad(EventIDType eventID,const CDistributedLoadData& pld) override;
-   virtual const CDistributedLoadData* GetDistributedLoad(CollectionIndexType idx) const override;
+   virtual IndexType GetDistributedLoadCount() const override;
+   virtual IndexType AddDistributedLoad(EventIDType eventID,const CDistributedLoadData& pld) override;
+   virtual const CDistributedLoadData* GetDistributedLoad(IndexType idx) const override;
    virtual const CDistributedLoadData* FindDistributedLoad(LoadIDType loadID) const override;
    virtual EventIndexType GetDistributedLoadEventIndex(LoadIDType loadID) const override;
    virtual EventIDType GetDistributedLoadEventID(LoadIDType loadID) const override;
-   virtual void UpdateDistributedLoad(CollectionIndexType idx, EventIDType eventID, const CDistributedLoadData& pld) override;
+   virtual void UpdateDistributedLoad(IndexType idx, EventIDType eventID, const CDistributedLoadData& pld) override;
    virtual void UpdateDistributedLoadByID(LoadIDType loadID, EventIDType eventID, const CDistributedLoadData& pld) override;
-   virtual void DeleteDistributedLoad(CollectionIndexType idx) override;
+   virtual void DeleteDistributedLoad(IndexType idx) override;
    virtual void DeleteDistributedLoadByID(LoadIDType loadID) override;
    virtual std::vector<CDistributedLoadData> GetDistributedLoads(const CSpanKey& spanKey) const override;
 
-   virtual CollectionIndexType GetMomentLoadCount() const override;
-   virtual CollectionIndexType AddMomentLoad(EventIDType eventID,const CMomentLoadData& pld) override;
-   virtual const CMomentLoadData* GetMomentLoad(CollectionIndexType idx) const override;
+   virtual IndexType GetMomentLoadCount() const override;
+   virtual IndexType AddMomentLoad(EventIDType eventID,const CMomentLoadData& pld) override;
+   virtual const CMomentLoadData* GetMomentLoad(IndexType idx) const override;
    virtual const CMomentLoadData* FindMomentLoad(LoadIDType loadID) const override;
    virtual EventIndexType GetMomentLoadEventIndex(LoadIDType loadID) const override;
    virtual EventIDType GetMomentLoadEventID(LoadIDType loadID) const override;
-   virtual void UpdateMomentLoad(CollectionIndexType idx, EventIDType eventID, const CMomentLoadData& pld) override;
+   virtual void UpdateMomentLoad(IndexType idx, EventIDType eventID, const CMomentLoadData& pld) override;
    virtual void UpdateMomentLoadByID(LoadIDType loadID, EventIDType eventID, const CMomentLoadData& pld) override;
-   virtual void DeleteMomentLoad(CollectionIndexType idx) override;
+   virtual void DeleteMomentLoad(IndexType idx) override;
    virtual void DeleteMomentLoadByID(LoadIDType loadID) override;
    virtual std::vector<CMomentLoadData> GetMomentLoads(const CSpanKey& spanKey) const override;
 
@@ -643,8 +643,8 @@ public:
    virtual void SetTruckImpact(pgsTypes::LiveLoadType llType,Float64 impact) override;
    virtual Float64 GetLaneImpact(pgsTypes::LiveLoadType llType) const override;
    virtual void SetLaneImpact(pgsTypes::LiveLoadType llType,Float64 impact) override;
-   virtual void SetLldfRangeOfApplicabilityAction(LldfRangeOfApplicabilityAction action) override;
-   virtual LldfRangeOfApplicabilityAction GetLldfRangeOfApplicabilityAction() const override;
+   virtual void SetRangeOfApplicabilityAction(WBFL::LRFD::RangeOfApplicabilityAction action) override;
+   virtual WBFL::LRFD::RangeOfApplicabilityAction GetRangeOfApplicabilityAction() const override;
    virtual std::_tstring GetLLDFSpecialActionText() const override; // get common string for ignore roa case
    virtual bool IgnoreLLDFRangeOfApplicability() const override; // true if action is to ignore ROA
 
@@ -861,7 +861,7 @@ private:
    std::vector<std::_tstring> m_ReservedLiveLoads; // reserved live load names (names not found in library)
    bool IsReservedLiveLoad(const std::_tstring& strName) const;
 
-   LldfRangeOfApplicabilityAction m_LldfRangeOfApplicabilityAction;
+   WBFL::LRFD::RangeOfApplicabilityAction m_RangeOfApplicabilityAction;
    bool m_bGetIgnoreROAFromLibrary; // if true, we are reading old input... get the Ignore ROA setting from the spec library entry
 
    // Load Modifiers

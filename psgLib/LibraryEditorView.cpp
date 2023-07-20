@@ -153,7 +153,7 @@ void CLibraryEditorView::OnInitialUpdate()
    ASSERT(m_pListView);
    CDocument* pDoc = GetDocument();
    libISupportLibraryManager* pLibMgrDoc = dynamic_cast<libISupportLibraryManager*>(pDoc);
-   CollectionIndexType num_managers = pLibMgrDoc->GetNumberOfLibraryManagers();
+   IndexType num_managers = pLibMgrDoc->GetNumberOfLibraryManagers();
    ASSERT(num_managers);
    if (num_managers==0)
    {
@@ -206,7 +206,7 @@ void CLibraryEditorView::OnInitialUpdate()
    //       list contain the same library types. This may not fit all 
    //       applications of the editor
    int ui=0;
-   libLibraryManager* pMan = pLibMgrDoc->GetLibraryManager(ui);
+   WBFL::Library::LibraryManager* pMan = pLibMgrDoc->GetLibraryManager(ui);
    ASSERT(pMan);
    std::_tstring name = _T("Libraries"); // pMan->GetName();
 
@@ -248,18 +248,18 @@ void CLibraryEditorView::OnInitialUpdate()
 
 
 void CLibraryEditorView::InsertLibraryManager(Uint32 ilib_man, Uint32 ilib_man_sel, 
-                                              int man_num, libLibraryManager* pMan, CTreeCtrl& tree, HTREEITEM hParent, int* lastIcon)
+                                              int man_num, WBFL::Library::LibraryManager* pMan, CTreeCtrl& tree, HTREEITEM hParent, int* lastIcon)
 {
    CEAFApp* papp = EAFGetApp();
-   CollectionIndexType nlibs = pMan->GetLibraryCount();
+   IndexType nlibs = pMan->GetLibraryCount();
    if (nlibs==0) return;
 
    std::_tstring disp_name;
-   for (CollectionIndexType ui=0; ui<nlibs; ui++)
+   for (IndexType ui=0; ui<nlibs; ui++)
    {
       // use same folder icon for all libraries
-      CollectionIndexType ilib = ilib_man;
-      CollectionIndexType isel = ilib_man_sel;
+      IndexType ilib = ilib_man;
+      IndexType isel = ilib_man_sel;
 
       if ( !pMan->IsDepreciated(ui) )
       {

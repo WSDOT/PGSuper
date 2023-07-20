@@ -107,10 +107,10 @@ Float64 GetVertPsComponent(IBroker* pBroker, const pgsPointOfInterest& poi, cons
 }
 
 //-----------------------------------------------------------------------------
-CollectionIndexType LimitStateToShearIndex(pgsTypes::LimitState limitState)
+IndexType LimitStateToShearIndex(pgsTypes::LimitState limitState)
 {
    ATLASSERT(IsStrengthLimitState(limitState));
-   CollectionIndexType idx;
+   IndexType idx;
 
    switch (limitState)
    {
@@ -190,8 +190,8 @@ public:
          pSpec->SetSpecification(m_OriginalSpecEntryName);
 
          SpecLibrary* pLibrary = pLib->GetSpecLibrary();
-         libILibrary::EntryRemoveOutcome outcome = pLibrary->RemoveEntry(m_CloneSpecEntryName.c_str());
-         ATLASSERT(libILibrary::RemOk == outcome);
+         WBFL::Library::ILibrary::EntryRemoveOutcome outcome = pLibrary->RemoveEntry(m_CloneSpecEntryName.c_str());
+         ATLASSERT(WBFL::Library::ILibrary::EntryRemoveOutcome::Ok == outcome);
       }
    }
 
@@ -322,15 +322,15 @@ void CEngAgentImp::ValidateLiveLoadDistributionFactors(const CGirderKey& girderK
          else
          {
             GET_IFACE(ILiveLoads,pLiveLoads);
-            LldfRangeOfApplicabilityAction action = pLiveLoads->GetLldfRangeOfApplicabilityAction();
-            if (action == roaIgnore)
+            WBFL::LRFD::RangeOfApplicabilityAction action = pLiveLoads->GetRangeOfApplicabilityAction();
+            if (action == WBFL::LRFD::RangeOfApplicabilityAction::Ignore)
             {
                GET_IFACE(IEAFStatusCenter,pStatusCenter);
                std::_tstring str(_T("Ranges of Applicability for Live Load Distribution Factor Equations have been ignored."));
                pgsLldfWarningStatusItem* pStatusItem = new pgsLldfWarningStatusItem(m_StatusGroupID,m_scidLldfWarning,str.c_str());
                pStatusCenter->Add(pStatusItem);
             }
-            else if (action == roaIgnoreUseLeverRule)
+            else if (action == WBFL::LRFD::RangeOfApplicabilityAction::IgnoreUseLeverRule)
             {
                GET_IFACE(IEAFStatusCenter,pStatusCenter);
                std::_tstring str(_T("The Lever Rule has been used for all cases where Ranges of Applicability for Live Load Distribution Factor Equations are exceeded. Otherwise, factors are computed using the Equations."));
@@ -439,8 +439,8 @@ void CEngAgentImp::InvalidateShearCapacity()
 {
    LOG(_T("Invalidating shear capacities"));
 #pragma Reminder("UPDATE: this should be done in a worker thread... see BridgeAgent")
-   CollectionIndexType size = sizeof(m_ShearCapacity)/sizeof(ShearCapacityContainer);
-   for (CollectionIndexType idx = 0; idx < size; idx++ )
+   IndexType size = sizeof(m_ShearCapacity)/sizeof(ShearCapacityContainer);
+   for (IndexType idx = 0; idx < size; idx++ )
    {
       m_ShearCapacity[idx].clear();
    }
@@ -450,7 +450,7 @@ void CEngAgentImp::InvalidateShearCapacity()
 
 const SHEARCAPACITYDETAILS* CEngAgentImp::ValidateShearCapacity(pgsTypes::LimitState limitState, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const
 {
-   CollectionIndexType idx = LimitStateToShearIndex(limitState);
+   IndexType idx = LimitStateToShearIndex(limitState);
 
    if ( poi.GetID() != INVALID_ID )
    {
@@ -504,8 +504,8 @@ void CEngAgentImp::InvalidateFpc()
 void CEngAgentImp::InvalidateShearCritSection()
 {
    LOG(_T("Invalidating critical section for shear"));
-   CollectionIndexType size = sizeof(m_CritSectionDetails)/sizeof(std::map<CGirderKey,std::vector<CRITSECTDETAILS>>);
-   for (CollectionIndexType idx = 0; idx < size; idx++ )
+   IndexType size = sizeof(m_CritSectionDetails)/sizeof(std::map<CGirderKey,std::vector<CRITSECTDETAILS>>);
+   for (IndexType idx = 0; idx < size; idx++ )
    {
       m_CritSectionDetails[idx].clear();
    }
@@ -522,7 +522,7 @@ const std::vector<CRITSECTDETAILS>& CEngAgentImp::ValidateShearCritSection(pgsTy
 
    // LRFD 2004 and later, critical section is only a function of dv, which comes from the calculation of Mu,
    // so critical section is not a function of the limit state. We will work with the Strength I limit state
-   if ( lrfdVersionMgr::ThirdEdition2004 <= pSpecEntry->GetSpecificationType() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 <= pSpecEntry->GetSpecificationType() )
    {
       limitState = pgsTypes::StrengthI;
    }
@@ -582,7 +582,7 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bThirdEdition = ( lrfdVersionMgr::ThirdEdition2004 <= pSpecEntry->GetSpecificationType() ? true : false );
+   bool bThirdEdition = ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 <= pSpecEntry->GetSpecificationType() ? true : false );
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
@@ -1378,7 +1378,7 @@ bool CEngAgentImp::LossesIncludeInitialRelaxation() const
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(spec_name.c_str());
 
    GET_IFACE_NOCHECK(ILossParameters, pLossParams); // not used if spec is before 3rd Edition 2004
-   bool bInitialRelaxation = (pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004 ||
+   bool bInitialRelaxation = (pSpecEntry->GetSpecificationType() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 ||
       pLossParams->GetLossMethod() == pgsTypes::WSDOT_REFINED ||
       pLossParams->GetLossMethod() == pgsTypes::TXDOT_REFINED_2004 ||
       pLossParams->GetLossMethod() == pgsTypes::WSDOT_LUMPSUM ||
@@ -2371,7 +2371,7 @@ void CEngAgentImp::CheckCurvatureRequirements(const pgsPointOfInterest& poi) con
 
    GET_IFACE(ILiveLoads,pLiveLoads);
    if ( pLiveLoads->IgnoreLLDFRangeOfApplicability() ||
-        lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() // no longer required with 2005 specs
+        WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() // no longer required with 2005 specs
       ) 
    {
       // this criteria is not applicable because the user has chosen to ignore the range of applicability requirements
@@ -2855,7 +2855,7 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
    *V  = GetShearDistFactor(spanKey,limitState);
 
 
-   if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       // LRFD 7th Edition, 2014 added variable skew correction factor for shear
       Float64 skewFactor = GetSkewCorrectionFactorForShear(spanKey,limitState);
@@ -3157,7 +3157,7 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
       pgsTypes::GirderLocation gl = pGroup->IsInteriorGirder(girderKey.girderIndex) ? pgsTypes::Interior : pgsTypes::Exterior;
 
       ColumnIndexType nCols = 4;
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
       {
          nCols += 3;
       }
@@ -3168,7 +3168,7 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
 
 
       // Set up table headings
-      if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+      if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims )
       {
          table->SetNumberOfHeaderRows(1);
          (*table)(0,0) << _T("");
@@ -3225,7 +3225,7 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
 
          (*table)(row,3) << _T("");
 
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
          {
             (*table)(row,4) << _T("");
 
@@ -3270,7 +3270,7 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
 
             (*table)(row,3) << scalar.SetValue( pSpan->GetLLDFShear(girderKey.girderIndex,pgsTypes::StrengthI) );
 
-            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
             {
                (*table)(row,4) << scalar.SetValue( pSpan->GetLLDFPosMoment(girderKey.girderIndex,pgsTypes::FatigueI) );
                
@@ -3376,7 +3376,7 @@ Float64 CEngAgentImp::GetDeflectionDistFactorEx(const CSpanKey& spanKey,Float64*
 
    GirderIndexType nGirders = pGroup->GetGirderCount();
    Uint32 nLanes = GetNumberOfDesignLanes(spanKey.spanIndex);
-   Float64 mpf = lrfdUtility::GetMultiplePresenceFactor(nLanes);
+   Float64 mpf = WBFL::LRFD::Utility::GetMultiplePresenceFactor(nLanes);
    Float64 gD = mpf*nLanes / nGirders;
 
    *pMPF = mpf;
@@ -3429,7 +3429,7 @@ Uint32 CEngAgentImp::GetNumberOfDesignLanesEx(SpanIndexType spanIdx,Float64* pDi
 
    *pCurbToCurb = curb_to_curb_width;
 
-   return lrfdUtility::GetNumDesignLanes(curb_to_curb_width);
+   return WBFL::LRFD::Utility::GetNumDesignLanes(curb_to_curb_width);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -3720,8 +3720,8 @@ std::vector<SHEARCAPACITYDETAILS> CEngAgentImp::GetShearCapacityDetails(pgsTypes
 
 void CEngAgentImp::ClearDesignCriticalSections() const
 {
-   CollectionIndexType size = sizeof(m_DesignCritSectionDetails)/sizeof(std::map<CGirderKey,std::vector<CRITSECTDETAILS>>);
-   for (CollectionIndexType idx = 0; idx < size; idx++ )
+   IndexType size = sizeof(m_DesignCritSectionDetails)/sizeof(std::map<CGirderKey,std::vector<CRITSECTDETAILS>>);
+   for (IndexType idx = 0; idx < size; idx++ )
    {
       m_DesignCritSectionDetails[idx].clear();
    }

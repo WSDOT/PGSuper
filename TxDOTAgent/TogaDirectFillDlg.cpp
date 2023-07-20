@@ -77,7 +77,7 @@ void CTogaDirectFillDlg::OnBnClickedSelectStrands()
    Float64 maxDebondLength = m_SpanLength/2.0;
 
    std::_tstring spec_name = pSpec->GetSpecification();
-   const libLibraryEntry* pLibEntry = m_pBrokerRetriever->GetSpecLibrary()->GetEntry(spec_name.c_str());
+   const WBFL::Library::LibraryEntry* pLibEntry = m_pBrokerRetriever->GetSpecLibrary()->GetEntry(spec_name.c_str());
    const SpecLibraryEntry* pSpecEntry = dynamic_cast<const SpecLibraryEntry*>(pLibEntry);
 
 
@@ -193,7 +193,7 @@ bool  CTogaDirectFillDlg::UpdateLibraryData()
    if (m_GirderLibraryEntry.GetName().c_str() != m_GirderEntryName)
    {
       // our library entry must be modfied to match current settings
-      const libLibraryEntry* pLibEntry = m_pBrokerRetriever->GetGirderLibrary()->GetEntry(m_GirderEntryName);
+      const WBFL::Library::LibraryEntry* pLibEntry = m_pBrokerRetriever->GetGirderLibrary()->GetEntry(m_GirderEntryName);
       const GirderLibraryEntry* pGdrEntry = dynamic_cast<const GirderLibraryEntry*>(pLibEntry);
 
       if (pGdrEntry == nullptr)

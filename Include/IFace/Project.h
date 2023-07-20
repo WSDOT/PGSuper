@@ -24,7 +24,7 @@
 
 #include <WbflTypes.h>
 #include <psglib\librarymanager.h>
-#include <Lrfd\ILiveLoadDistributionFactor.h>
+#include <LRFD\ILiveLoadDistributionFactor.h>
 
 #include <PgsExt\Keys.h>
 
@@ -71,17 +71,17 @@ interface IDirection;
 // MISCELLANEOUS
 //
 /// integer conversions for LLDF ROA values - so we decouple pgsuper from WBFL changes
-inline long GetIntForLldfAction(LldfRangeOfApplicabilityAction action)
+inline long GetIntForLldfAction(WBFL::LRFD::RangeOfApplicabilityAction action)
 {
-   if (action == roaEnforce)
+   if (action == WBFL::LRFD::RangeOfApplicabilityAction::Enforce)
    {
       return 0;
    }
-   else if (action == roaIgnore)
+   else if (action == WBFL::LRFD::RangeOfApplicabilityAction::Ignore)
    {
       return 1;
    }
-   else if (action == roaIgnoreUseLeverRule)
+   else if (action == WBFL::LRFD::RangeOfApplicabilityAction::IgnoreUseLeverRule)
    {
       return 2;
    }
@@ -92,24 +92,24 @@ inline long GetIntForLldfAction(LldfRangeOfApplicabilityAction action)
    }
 }
 
-inline LldfRangeOfApplicabilityAction GetLldfActionForInt(long iaction)
+inline WBFL::LRFD::RangeOfApplicabilityAction GetLldfActionForInt(long iaction)
 {
    if (iaction == 0)
    {
-      return roaEnforce;
+      return WBFL::LRFD::RangeOfApplicabilityAction::Enforce;
    }
    else if (iaction == 1)
    {
-      return roaIgnore;
+      return WBFL::LRFD::RangeOfApplicabilityAction::Ignore;
    }
    else if (iaction == 2)
    {
-      return roaIgnoreUseLeverRule;
+      return WBFL::LRFD::RangeOfApplicabilityAction::IgnoreUseLeverRule;
    }
    else
    {
       ATLASSERT(false); // something got hosed?
-      return roaEnforce;
+      return WBFL::LRFD::RangeOfApplicabilityAction::Enforce;
    }
 }
 
@@ -561,12 +561,12 @@ interface ISpecification : IUnknown
 
    virtual void GetTaperedSolePlateRequirements(bool* pbCheckTaperedSolePlate, Float64* pTaperedSolePlateThreshold) const = 0;
 
-   // Method and applicabiity for Principal Web stress check are based on several requirements
+   // Method and applicability for Principal Web stress check are based on several requirements
    typedef enum PrincipalWebStressCheckType { pwcNotApplicable, pwcAASHTOMethod, pwcNCHRPMethod, pwcNCHRPTimeStepMethod } PrincipalWebStressCheckType;
 
    virtual PrincipalWebStressCheckType GetPrincipalWebStressCheckType(const CSegmentKey& segmentKey) const = 0;
 
-   virtual lrfdVersionMgr::Version GetSpecificationType() const = 0;
+   virtual WBFL::LRFD::LRFDVersionMgr::Version GetSpecificationType() const = 0;
 };
 
 /*****************************************************************************
@@ -654,7 +654,7 @@ interface ILibrary : IUnknown
    virtual DuctLibrary*            GetDuctLibrary() = 0;
    virtual HaulTruckLibrary*       GetHaulTruckLibrary() = 0;
 
-   virtual std::vector<libEntryUsageRecord> GetLibraryUsageRecords() const = 0;
+   virtual std::vector<WBFL::Library::EntryUsageRecord> GetLibraryUsageRecords() const = 0;
    virtual void GetMasterLibraryInfo(std::_tstring& strServer, std::_tstring& strConfiguration, std::_tstring& strMasterLib,WBFL::System::Time& time) const = 0;
 
    virtual const RatingLibrary* GetRatingLibrary() const = 0;
@@ -804,44 +804,44 @@ interface IUserDefinedLoadData : IUnknown
    virtual bool HasUserLLIM(const CGirderKey& girderKey) const = 0;
 
    // point loads
-   virtual CollectionIndexType GetPointLoadCount() const = 0;
+   virtual IndexType GetPointLoadCount() const = 0;
    // add point load and return current count
-   virtual CollectionIndexType AddPointLoad(EventIDType eventID,const CPointLoadData& pld) = 0;
-   virtual const CPointLoadData* GetPointLoad(CollectionIndexType idx) const = 0;
+   virtual IndexType AddPointLoad(EventIDType eventID,const CPointLoadData& pld) = 0;
+   virtual const CPointLoadData* GetPointLoad(IndexType idx) const = 0;
    virtual const CPointLoadData* FindPointLoad(LoadIDType loadID) const = 0;
    virtual EventIndexType GetPointLoadEventIndex(LoadIDType loadID) const = 0;
    virtual EventIDType GetPointLoadEventID(LoadIDType loadID) const = 0;
-   virtual void UpdatePointLoad(CollectionIndexType idx, EventIDType eventID, const CPointLoadData& pld) = 0;
+   virtual void UpdatePointLoad(IndexType idx, EventIDType eventID, const CPointLoadData& pld) = 0;
    virtual void UpdatePointLoadByID(LoadIDType loadID, EventIDType eventID, const CPointLoadData& pld) = 0;
-   virtual void DeletePointLoad(CollectionIndexType idx) = 0;
+   virtual void DeletePointLoad(IndexType idx) = 0;
    virtual void DeletePointLoadByID(LoadIDType loadID) = 0;
    virtual std::vector<CPointLoadData> GetPointLoads(const CSpanKey& spanKey) const = 0;
 
    // distributed loads
-   virtual CollectionIndexType GetDistributedLoadCount() const = 0;
+   virtual IndexType GetDistributedLoadCount() const = 0;
    // add distributed load and return current count
-   virtual CollectionIndexType AddDistributedLoad(EventIDType eventID,const CDistributedLoadData& pld) = 0;
-   virtual const CDistributedLoadData* GetDistributedLoad(CollectionIndexType idx) const = 0;
+   virtual IndexType AddDistributedLoad(EventIDType eventID,const CDistributedLoadData& pld) = 0;
+   virtual const CDistributedLoadData* GetDistributedLoad(IndexType idx) const = 0;
    virtual const CDistributedLoadData* FindDistributedLoad(LoadIDType loadID) const = 0;
    virtual EventIndexType GetDistributedLoadEventIndex(LoadIDType loadID) const = 0;
    virtual EventIDType GetDistributedLoadEventID(LoadIDType loadID) const = 0;
-   virtual void UpdateDistributedLoad(CollectionIndexType idx, EventIDType eventID, const CDistributedLoadData& pld) = 0;
+   virtual void UpdateDistributedLoad(IndexType idx, EventIDType eventID, const CDistributedLoadData& pld) = 0;
    virtual void UpdateDistributedLoadByID(LoadIDType loadID, EventIDType eventID, const CDistributedLoadData& pld) = 0;
-   virtual void DeleteDistributedLoad(CollectionIndexType idx) = 0;
+   virtual void DeleteDistributedLoad(IndexType idx) = 0;
    virtual void DeleteDistributedLoadByID(LoadIDType loadID) = 0;
    virtual std::vector<CDistributedLoadData> GetDistributedLoads(const CSpanKey& spanKey) const = 0;
 
    // moment loads
-   virtual CollectionIndexType GetMomentLoadCount() const = 0;
+   virtual IndexType GetMomentLoadCount() const = 0;
    // add moment load and return current count
-   virtual CollectionIndexType AddMomentLoad(EventIDType eventID,const CMomentLoadData& pld) = 0;
-   virtual const CMomentLoadData* GetMomentLoad(CollectionIndexType idx) const = 0;
+   virtual IndexType AddMomentLoad(EventIDType eventID,const CMomentLoadData& pld) = 0;
+   virtual const CMomentLoadData* GetMomentLoad(IndexType idx) const = 0;
    virtual const CMomentLoadData* FindMomentLoad(LoadIDType loadID) const = 0;
    virtual EventIndexType GetMomentLoadEventIndex(LoadIDType loadID) const = 0;
    virtual EventIDType GetMomentLoadEventID(LoadIDType loadID) const = 0;
-   virtual void UpdateMomentLoad(CollectionIndexType idx, EventIDType eventID, const CMomentLoadData& pld) = 0;
+   virtual void UpdateMomentLoad(IndexType idx, EventIDType eventID, const CMomentLoadData& pld) = 0;
    virtual void UpdateMomentLoadByID(LoadIDType loadID, EventIDType eventID, const CMomentLoadData& pld) = 0;
-   virtual void DeleteMomentLoad(CollectionIndexType idx) = 0;
+   virtual void DeleteMomentLoad(IndexType idx) = 0;
    virtual void DeleteMomentLoadByID(LoadIDType loadID) = 0;
    virtual std::vector<CMomentLoadData> GetMomentLoads(const CSpanKey& spanKey) const = 0;
 
@@ -999,8 +999,8 @@ interface ILiveLoads : IUnknown
    virtual void SetTruckImpact(pgsTypes::LiveLoadType llType,Float64 impact) = 0;
    virtual Float64 GetLaneImpact(pgsTypes::LiveLoadType llType) const = 0;
    virtual void SetLaneImpact(pgsTypes::LiveLoadType llType,Float64 impact) = 0;
-   virtual void SetLldfRangeOfApplicabilityAction(LldfRangeOfApplicabilityAction action) = 0;
-   virtual LldfRangeOfApplicabilityAction GetLldfRangeOfApplicabilityAction() const = 0;
+   virtual void SetRangeOfApplicabilityAction(WBFL::LRFD::RangeOfApplicabilityAction action) = 0;
+   virtual WBFL::LRFD::RangeOfApplicabilityAction GetRangeOfApplicabilityAction() const = 0;
    virtual std::_tstring GetLLDFSpecialActionText() const = 0; // get common string for ignore roa case
    virtual bool IgnoreLLDFRangeOfApplicability() const = 0; // true if action is to ignore ROA
 };
@@ -1187,10 +1187,10 @@ interface IBridgeDescription : IUnknown
    virtual void GetSegmentEventsByIndex(const CSegmentKey& segmentKey,EventIndexType* constructionEventIdx,EventIndexType* erectionEventIdx) const = 0;
    virtual void GetSegmentEventsByID(const CSegmentKey& segmentKey,EventIDType* constructionEventID,EventIDType* erectionEventID) const = 0;
 
-   virtual EventIndexType GetCastClosureJointEventIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx) const = 0;
-   virtual EventIDType GetCastClosureJointEventID(GroupIndexType grpIdx,CollectionIndexType closureIdx) const = 0;
-   virtual void SetCastClosureJointEventByIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx,EventIndexType eventIdx) = 0;
-   virtual void SetCastClosureJointEventByID(GroupIndexType grpIdx,CollectionIndexType closureIdx,EventIDType eventID) = 0;
+   virtual EventIndexType GetCastClosureJointEventIndex(GroupIndexType grpIdx,IndexType closureIdx) const = 0;
+   virtual EventIDType GetCastClosureJointEventID(GroupIndexType grpIdx,IndexType closureIdx) const = 0;
+   virtual void SetCastClosureJointEventByIndex(GroupIndexType grpIdx,IndexType closureIdx,EventIndexType eventIdx) = 0;
+   virtual void SetCastClosureJointEventByID(GroupIndexType grpIdx,IndexType closureIdx,EventIDType eventID) = 0;
 
    virtual EventIndexType GetStressTendonEventIndex(const CGirderKey& girderKey,DuctIndexType ductIdx) const = 0;
    virtual EventIDType GetStressTendonEventID(const CGirderKey& girderKey,DuctIndexType ductIdx) const = 0;

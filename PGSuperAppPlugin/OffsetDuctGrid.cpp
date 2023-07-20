@@ -160,8 +160,8 @@ COffsetDuctGeometry COffsetDuctGrid::GetData()
 
 void COffsetDuctGrid::SetData(const COffsetDuctGeometry& ductGeometry)
 {
-   CollectionIndexType nPoints = ductGeometry.Points.size();
-   for (CollectionIndexType idx = 0; idx < nPoints; idx++ )
+   IndexType nPoints = ductGeometry.Points.size();
+   for (IndexType idx = 0; idx < nPoints; idx++ )
    {
       COffsetDuctGeometry::Point point = ductGeometry.Points[idx];
 

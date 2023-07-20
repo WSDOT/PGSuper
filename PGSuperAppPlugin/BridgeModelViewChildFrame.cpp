@@ -1080,7 +1080,7 @@ void CBridgeModelViewChildFrame::OnBoundaryCondition(UINT nIDC)
 
          pTxn = std::make_unique<txnEditBoundaryConditions>(pierIdx,oldConnectionType,oldClosureEventIdx,newSegmentConnectionType,newClosureEventIdx);
       }
-      CEAFTxnManager::GetInstance()->Execute(std::move(pTxn));
+      CEAFTxnManager::GetInstance().Execute(std::move(pTxn));
    }
 
    SupportIndexType tsIdx;
@@ -1122,7 +1122,7 @@ void CBridgeModelViewChildFrame::OnBoundaryCondition(UINT nIDC)
       }
 
       std::unique_ptr<txnEditBoundaryConditions> pTxn(std::make_unique<txnEditBoundaryConditions>(tsIdx, supportType, oldConnectionType, oldClosureEventIdx, supportType, newConnectionType, newClosureEventIdx));
-      CEAFTxnManager::GetInstance()->Execute(std::move(pTxn));
+      CEAFTxnManager::GetInstance().Execute(std::move(pTxn));
    }
 }
 
@@ -1243,7 +1243,7 @@ void CBridgeModelViewChildFrame::OnTemporarySupportType(UINT nIDC)
 
          pTxn = std::make_unique<txnEditBoundaryConditions>(tsIdx, oldSupportType, oldConnectionType, oldClosureEventIdx, newSupportType, newConnectionType, newClosureEventIdx);
       }
-      CEAFTxnManager::GetInstance()->Execute(std::move(pTxn));
+      CEAFTxnManager::GetInstance().Execute(std::move(pTxn));
    }
 }
 

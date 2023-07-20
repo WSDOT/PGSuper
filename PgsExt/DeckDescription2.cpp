@@ -267,12 +267,12 @@ HRESULT CDeckDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       var.vt = VT_INDEX;
       pStrLoad->get_Property(_T("DeckEdgePointCount"),&var);
-      CollectionIndexType nPoints = VARIANT2INDEX(var);
+      IndexType nPoints = VARIANT2INDEX(var);
 
       if ( 0 < nPoints )
       {
          pStrLoad->BeginUnit(_T("DeckEdgePoints"));
-         for ( CollectionIndexType i = 0;i < nPoints; i++ )
+         for ( IndexType i = 0;i < nPoints; i++ )
          {
             CDeckPoint point;
             point.Load(pStrLoad,pProgress);

@@ -122,10 +122,10 @@ public:
    // =================================================================================
    // Closure Joints (occuring between segments)
    // =================================================================================
-   CollectionIndexType GetClosureJointCount() const;
-   CClosureJointData* GetClosureJoint(CollectionIndexType idx);
-   const CClosureJointData* GetClosureJoint(CollectionIndexType idx) const;
-   void SetClosureJoint(CollectionIndexType idx,const CClosureJointData& closure);
+   IndexType GetClosureJointCount() const;
+   CClosureJointData* GetClosureJoint(IndexType idx);
+   const CClosureJointData* GetClosureJoint(IndexType idx) const;
+   void SetClosureJoint(IndexType idx,const CClosureJointData& closure);
 
 
    // =================================================================================

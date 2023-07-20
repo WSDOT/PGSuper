@@ -172,26 +172,3 @@ void CConcurrentShearTable::MakeAssignment(const CConcurrentShearTable& rOther)
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
 
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CConcurrentShearTable::AssertValid() const
-{
-   return true;
-}
-
-void CConcurrentShearTable::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for CConcurrentShearTable") << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CConcurrentShearTable::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("CConcurrentShearTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CConcurrentShearTable");
-
-   TESTME_EPILOG("CConcurrentShearTable");
-}
-#endif // _UNITTEST

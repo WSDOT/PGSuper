@@ -75,16 +75,16 @@ public:
    StrandIndexType GetFillCountAtIndex(GridIndexType indexGrid) const; // number of strands filled at index (0,1,2)
    void RemoveFill(GridIndexType indexGrid); // Remove a filled strand
    void AddFill(const CDirectStrandFillInfo& rInfo);
-   const CDirectStrandFillInfo& GetFill(CollectionIndexType fillNo) const;
+   const CDirectStrandFillInfo& GetFill(IndexType fillNo) const;
 
    // stl behaviors
    void clear() {
       m_StrandFill.clear();}
 
-   CollectionIndexType size() const {
+   IndexType size() const {
       return m_StrandFill.size(); }
 
-   void reserve(CollectionIndexType size) {
+   void reserve(IndexType size) {
       m_StrandFill.reserve(size); }
 
    bool operator == (const CDirectStrandFillCollection& rOther) const {

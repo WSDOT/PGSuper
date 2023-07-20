@@ -35,7 +35,7 @@
 #include <IFace\Intervals.h>
 #include <IFace\AnalysisResults.h>
 
-#include <Lrfd\ConcreteUtil.h>
+#include <LRFD\ConcreteUtil.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -87,11 +87,11 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
 
    pPara = new rptParagraph;
    *pChapter << pPara;
-   (*pPara) << _T("AASHTO LRFD BDS ") << LrfdCw8th(_T("5.8.4"), _T("5.7.4")) << rptNewLine;
+   (*pPara) << _T("AASHTO LRFD BDS ") << WBFL::LRFD::LrfdCw8th(_T("5.8.4"), _T("5.7.4")) << rptNewLine;
 
-   std::_tstring strSmaxArticle = LrfdCw8th(_T("5.8.4.2"), _T("5.7.4.5"));
-   std::_tstring strAvfMinArticle = LrfdCw8th(_T("5.8.4.4"), _T("5.7.4.2"));;
-   std::_tstring strVniArticle = LrfdCw8th(_T("5.8.4.1"), _T("5.7.4.1"));
+   std::_tstring strSmaxArticle = WBFL::LRFD::LrfdCw8th(_T("5.8.4.2"), _T("5.7.4.5"));
+   std::_tstring strAvfMinArticle = WBFL::LRFD::LrfdCw8th(_T("5.8.4.4"), _T("5.7.4.2"));;
+   std::_tstring strVniArticle = WBFL::LRFD::LrfdCw8th(_T("5.8.4.1"), _T("5.7.4.1"));
 
    GET_IFACE2(pBroker, IMaterials, pMaterials);
    if (pMaterials->GetSegmentConcreteType(CSegmentKey(girderKey, 0)) == pgsTypes::PCI_UHPC)
@@ -146,7 +146,7 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
    (*table)(1,9) << _T("Status") << rptNewLine << _T("(") << symbol(phi) << Sub2(_T("v"),_T("ni")) << _T("/") << _T("|") << Sub2(_T("v"),_T("ui")) << _T("|)");
 
    // Fill up the table
-   Float64 bvi_max = lrfdConcreteUtil::UpperLimitForBv();
+   Float64 bvi_max = WBFL::LRFD::ConcreteUtil::UpperLimitForBv();
    Float64 minlegs;
    bool do_note=false;
    bool bDidAvsDecreaseAtEnd = false;
@@ -160,8 +160,8 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
       const pgsStirrupCheckArtifact* pStirrupArtifact = pSegmentArtifact->GetStirrupCheckArtifact();
       ATLASSERT(pStirrupArtifact != nullptr);
 
-      CollectionIndexType nArtifacts = pStirrupArtifact->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
-      for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
+      IndexType nArtifacts = pStirrupArtifact->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
+      for ( IndexType idx = 0; idx < nArtifacts; idx++ )
       {
          const pgsStirrupCheckAtPoisArtifact* psArtifact = pStirrupArtifact->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
          if ( psArtifact == nullptr )

@@ -418,11 +418,11 @@ void CDrawBeamTool::DrawSegment(Float64 beamShift, IntervalIndexType intervalIdx
    CComPtr<IPoint2dCollection> points;
    shape->get_PolyPoints(&points); // these points are in girder path coordinates
 
-   CollectionIndexType nPoints;
+   IndexType nPoints;
    points->get_Count(&nPoints);
 
    CPoint* pnts = new CPoint[nPoints];
-   for (CollectionIndexType idx = 0; idx < nPoints; idx++)
+   for (IndexType idx = 0; idx < nPoints; idx++)
    {
       CComPtr<IPoint2d> pnt;
       points->get_Item(idx, &pnt);
@@ -470,11 +470,11 @@ void CDrawBeamTool::DrawClosureJoint(Float64 beamShift, IntervalIndexType interv
    CComPtr<IPoint2dCollection> points;
    shape->get_PolyPoints(&points); // these points are in girder path coordinates
 
-   CollectionIndexType nPoints;
+   IndexType nPoints;
    points->get_Count(&nPoints);
 
    CPoint* pnts = new CPoint[nPoints];
-   for (CollectionIndexType idx = 0; idx < nPoints; idx++)
+   for (IndexType idx = 0; idx < nPoints; idx++)
    {
       CComPtr<IPoint2d> pnt;
       points->get_Item(idx, &pnt);

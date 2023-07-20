@@ -58,7 +58,7 @@ extern CComModule _Module;
 
 // WBFL packages that this agent uses.
 #include <System\System.h>
-#include <Lrfd\Lrfd.h>
+#include <LRFD\Lrfd.h>
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Developer Studio will insert additional declarations immediately before the previous line.

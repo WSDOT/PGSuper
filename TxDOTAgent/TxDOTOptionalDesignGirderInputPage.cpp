@@ -318,7 +318,7 @@ void CTxDOTOptionalDesignGirderInputPage::LoadDialogData()
 
 void CTxDOTOptionalDesignGirderInputPage::SaveDialogData()
 {
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+   const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
 
    // Optional Design
    CTxDOTOptionalDesignGirderData* pOptGirderData = m_pData->GetPrecasterDesignGirderData();
@@ -490,7 +490,7 @@ void CTxDOTOptionalDesignGirderInputPage::InitFillTypeCtrls()
 
 void CTxDOTOptionalDesignGirderInputPage::UpdateStrandSizeList(long StrandSizeListCtrlID, WBFL::Materials::PsStrand::Grade grade,WBFL::Materials::PsStrand::Type type, WBFL::Materials::PsStrand::Coating coating, WBFL::Materials::PsStrand::Size size)
 {
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+   const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
 
    CComboBox* pList = (CComboBox*)GetDlgItem( StrandSizeListCtrlID );
 
@@ -506,7 +506,7 @@ void CTxDOTOptionalDesignGirderInputPage::UpdateStrandSizeList(long StrandSizeLi
    }
 
    pList->ResetContent();
-   lrfdStrandIter iter( grade, type, coating );
+   WBFL::LRFD::StrandIter iter( grade, type, coating );
    int sel_count = 0;  // Keep count of the number of strings added to the combo box
    int new_cur_sel = -1; // This will be in index of the string we want to select.
    for ( iter.Begin(); iter; iter.Next() )

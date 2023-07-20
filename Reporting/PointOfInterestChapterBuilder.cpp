@@ -91,7 +91,7 @@ void CPointOfInterestChapterBuilder::ReportPoi(LPCTSTR strName,PoiAttributeType 
       pPoi->GetPointsOfInterest(CSegmentKey(ALL_GROUPS,gdrIdx,ALL_SEGMENTS),attribute,&vPoi);
    }
 
-   (*pPara) << _T("Number of POI = ") << (CollectionIndexType)vPoi.size() << rptNewLine;
+   (*pPara) << _T("Number of POI = ") << (IndexType)vPoi.size() << rptNewLine;
 
    ColumnIndexType col = 0;
 

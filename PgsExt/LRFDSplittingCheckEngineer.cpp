@@ -337,7 +337,7 @@ Float64 pgsLRFDSplittingCheckEngineer::GetSplittingZoneLength(const CSegmentKey&
 std::_tstring pgsLRFDSplittingCheckEngineer::GetSpecReference() const
 {
    std::_tostringstream os;
-   os << _T("AASHTO LRFD BDS ") << LrfdCw8th(_T("5.10.10.1"), _T("5.9.4.4.1"));
+   os << _T("AASHTO LRFD BDS ") << WBFL::LRFD::LrfdCw8th(_T("5.10.10.1"), _T("5.9.4.4.1"));
    return os.str();
 }
 
@@ -371,7 +371,7 @@ void pgsLRFDSplittingCheckEngineer::ReportDemand(rptParagraph* pPara, IEAFDispla
 
       if (bInitialRelaxation)
       {
-         if (pSpecification->GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004)
+         if (pSpecification->GetSpecificationType() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004)
          {
             (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pR1")) << _T(" - ");
          }
@@ -394,7 +394,7 @@ void pgsLRFDSplittingCheckEngineer::ReportDemand(rptParagraph* pPara, IEAFDispla
 
       if (bInitialRelaxation)
       {
-         if (pSpecification->GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004)
+         if (pSpecification->GetSpecificationType() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004)
          {
             (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pR1")) << _T(" - ");
          }
@@ -421,7 +421,7 @@ void pgsLRFDSplittingCheckEngineer::ReportDemand(rptParagraph* pPara, IEAFDispla
 
       if (bInitialRelaxation)
       {
-         if (pSpecification->GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004)
+         if (pSpecification->GetSpecificationType() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004)
          {
             (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pR1")) << _T(" - ");
          }
@@ -461,7 +461,7 @@ Float64 pgsLRFDSplittingCheckEngineer::GetConcreteCapacity(pgsTypes::MemberEndTy
 
 Float64 pgsLRFDSplittingCheckEngineer::GetMaxSplittingStress(Float64 fy) const
 {
-   return lrfdRebar::GetMaxBurstingStress(fy);
+   return WBFL::LRFD::Rebar::GetMaxBurstingStress(fy);
 }
 
 Float64 pgsLRFDSplittingCheckEngineer::GetSplittingZoneLengthFactor() const
@@ -508,7 +508,7 @@ std::shared_ptr<pgsSplittingCheckArtifact> pgsPCIUHPCSplittingCheckEngineer::Che
    GET_IFACE(IMaterials, pMaterials);
    ATLASSERT(pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC);
 
-   const auto* pConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(pMaterials->GetSegmentConcrete(segmentKey).get());
+   const auto* pConcrete = dynamic_cast<const WBFL::LRFD::LRFDConcreteBase*>(pMaterials->GetSegmentConcrete(segmentKey).get());
    Float64 f_rr = pConcrete->GetPostCrackingTensileStrength();
    pArtifact->SetUHPCDesignTensileStrength(f_rr);
 

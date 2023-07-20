@@ -571,9 +571,9 @@ REACTION CGirderModelManager::GetReaction(IntervalIndexType intervalIdx, pgsType
    }
 
 
-   CollectionIndexType nResults;
+   IndexType nResults;
    results->get_Count(&nResults);
-   for ( CollectionIndexType i = 0; i < nResults; i++ )
+   for ( IndexType i = 0; i < nResults; i++ )
    {
       CComPtr<IResult3D> result;
       results->get_Item(i,&result);
@@ -634,9 +634,9 @@ REACTION CGirderModelManager::GetBearingReaction(IntervalIndexType intervalIdx, 
    }
 
 
-   CollectionIndexType nResults;
+   IndexType nResults;
    results->get_Count(&nResults);
-   for (CollectionIndexType i = 0; i < nResults; i++)
+   for (IndexType i = 0; i < nResults; i++)
    {
       CComPtr<IResult3D> result;
       results->get_Item(i, &result);
@@ -1830,8 +1830,8 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,pgsTypes::Prod
       ar = pModelData->pLoadGroupResponse[bat]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, resultsSummation, &results);
    }
 
-   CollectionIndexType stress_point_index_top = GetStressPointIndex(topLocation);
-   CollectionIndexType stress_point_index_bot = GetStressPointIndex(botLocation);
+   IndexType stress_point_index_top = GetStressPointIndex(topLocation);
+   IndexType stress_point_index_bot = GetStressPointIndex(botLocation);
 
    GET_IFACE(IPointOfInterest,pPoi);
 
@@ -2456,8 +2456,8 @@ void CGirderModelManager::GetLiveLoadStress(IntervalIndexType intervalIdx,pgsTyp
    ar = pModelData->pLiveLoadResponse[bat]->ComputeStresses( m_LBAMPoi, bstrStage, llmt, 
           fetMz, optMinimize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&minResults);
 
-   CollectionIndexType top_stress_point_index = GetStressPointIndex(topLocation);
-   CollectionIndexType bot_stress_point_index = GetStressPointIndex(botLocation);
+   IndexType top_stress_point_index = GetStressPointIndex(topLocation);
+   IndexType bot_stress_point_index = GetStressPointIndex(botLocation);
 
    IndexType idx = 0;
    for(const pgsPointOfInterest& poi : vPoi)
@@ -3108,8 +3108,8 @@ void CGirderModelManager::GetVehicularLiveLoadStress(IntervalIndexType intervalI
    CComPtr<ILBAMModel> lbam_model;
    GetLBAM(pModelData,bat,&lbam_model);
 
-   CollectionIndexType top_stress_point_idx = GetStressPointIndex(topLocation);
-   CollectionIndexType bot_stress_point_idx = GetStressPointIndex(botLocation);
+   IndexType top_stress_point_idx = GetStressPointIndex(topLocation);
+   IndexType bot_stress_point_idx = GetStressPointIndex(botLocation);
 
    GET_IFACE(IPointOfInterest,pPoi);
 
@@ -3224,12 +3224,12 @@ Float64 CGirderModelManager::GetReaction(IntervalIndexType intervalIdx,LoadingCo
    CComPtr<ILoadCase> load_case;
    load_cases->Find(combo_name, &load_case);
 
-   CollectionIndexType nLoadGroups;
+   IndexType nLoadGroups;
    load_case->get_LoadGroupCount(&nLoadGroups);
 
    // Cycle through load cases and sum reactions
    Float64 R = 0;
-   for (CollectionIndexType ldGroupIdx = 0; ldGroupIdx < nLoadGroups; ldGroupIdx++)
+   for (IndexType ldGroupIdx = 0; ldGroupIdx < nLoadGroups; ldGroupIdx++)
    {
       CComBSTR lg_name;
       load_case->GetLoadGroup(ldGroupIdx, &lg_name);
@@ -3694,8 +3694,8 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,LoadingCombina
       ar = pModelData->pLoadCaseResponse[bat]->ComputeStresses(bstrLoadCase, m_LBAMPoi, bstrStage, rsType, &results);
    }
 
-   CollectionIndexType stress_point_index_top = GetStressPointIndex(topLocation);
-   CollectionIndexType stress_point_index_bot = GetStressPointIndex(botLocation);
+   IndexType stress_point_index_top = GetStressPointIndex(topLocation);
+   IndexType stress_point_index_bot = GetStressPointIndex(botLocation);
 
    GET_IFACE(IPointOfInterest,pPoi);
 
@@ -4035,8 +4035,8 @@ void CGirderModelManager::GetCombinedLiveLoadStress(IntervalIndexType intervalId
    ar = pModelData->pLoadComboResponse[bat]->ComputeStresses(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetMz, optMinimize, VARIANT_TRUE, VARIANT_TRUE, VARIANT_FALSE, &minResults);
 
 
-   CollectionIndexType top_stress_point_index = GetStressPointIndex(topLocation);
-   CollectionIndexType bot_stress_point_index = GetStressPointIndex(botLocation);
+   IndexType top_stress_point_index = GetStressPointIndex(topLocation);
+   IndexType bot_stress_point_index = GetStressPointIndex(botLocation);
 
    GET_IFACE(IPointOfInterest,pPoi);
 
@@ -4158,9 +4158,9 @@ void CGirderModelManager::GetReaction(IntervalIndexType intervalIdx,pgsTypes::Li
 
    Float64 FyMax = 0;
    Float64 FyMin = 0;
-   CollectionIndexType nResults;
+   IndexType nResults;
    maxResults->get_Count(&nResults);
-   for ( CollectionIndexType i = 0; i < nResults; i++ )
+   for ( IndexType i = 0; i < nResults; i++ )
    {
       Float64 fyMax;
       maxResults->GetResult(i,&fyMax,nullptr);
@@ -4722,7 +4722,7 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,pgsTypes::Limi
       CComPtr<IStressResult> fLeftMin, fRightMin;
       minResults->GetResult(idx,&fLeftMin,nullptr,&fRightMin,nullptr);
 
-      CollectionIndexType stress_point_index = GetStressPointIndex(stressLocation);
+      IndexType stress_point_index = GetStressPointIndex(stressLocation);
 
       Float64 Xg = pPoi->ConvertPoiToGirderCoordinate(poi);
 
@@ -4853,9 +4853,9 @@ std::vector<Float64> CGirderModelManager::GetSlabDesignMoment(pgsTypes::LimitSta
 
          // Get load factor that was used on DC loads
          Float64 gDC;
-         CollectionIndexType nLoadCases;
+         IndexType nLoadCases;
          min_result_config->get_LoadCaseFactorCount(&nLoadCases);
-         for ( CollectionIndexType loadCaseIdx = 0; loadCaseIdx < nLoadCases; loadCaseIdx++ )
+         for ( IndexType loadCaseIdx = 0; loadCaseIdx < nLoadCases; loadCaseIdx++ )
          {
             Float64 g;
             CComBSTR bstr;
@@ -5484,8 +5484,8 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,LPCTSTR strLoa
       ar = pModelData->pLoadGroupResponse[bat]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, resultsSummation, &results);
    }
 
-   CollectionIndexType stress_point_index_top = GetStressPointIndex(topLocation);
-   CollectionIndexType stress_point_index_bot = GetStressPointIndex(botLocation);
+   IndexType stress_point_index_top = GetStressPointIndex(topLocation);
+   IndexType stress_point_index_bot = GetStressPointIndex(botLocation);
 
    GET_IFACE(IPointOfInterest,pPoi);
 
@@ -5605,9 +5605,9 @@ std::vector<REACTION> CGirderModelManager::GetReaction(const CGirderKey& girderK
       }
 
       REACTION Reaction;
-      CollectionIndexType nResults;
+      IndexType nResults;
       results->get_Count(&nResults);
-      for ( CollectionIndexType i = 0; i < nResults; i++ )
+      for ( IndexType i = 0; i < nResults; i++ )
       {
          CComPtr<IResult3D> result;
          results->get_Item(i,&result);
@@ -5694,9 +5694,9 @@ std::vector<REACTION> CGirderModelManager::GM_GetReaction(const CGirderKey& gird
             ar = pModelData->pLoadGroupResponse[bat]->ComputeReactions(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&results);
          }
 
-         CollectionIndexType nResults;
+         IndexType nResults;
          results->get_Count(&nResults);
-         for ( CollectionIndexType i = 0; i < nResults; i++ )
+         for ( IndexType i = 0; i < nResults; i++ )
          {
             CComPtr<IResult3D> result;
             results->get_Item(i,&result);
@@ -5748,7 +5748,7 @@ std::vector<REACTION> CGirderModelManager::GM_GetReaction(const CGirderKey& gird
    CComPtr<ILoadCase> load_case;
    load_cases->Find(combo_name, &load_case);
 
-   CollectionIndexType nLoadGroups;
+   IndexType nLoadGroups;
    load_case->get_LoadGroupCount(&nLoadGroups);
 
 
@@ -5760,7 +5760,7 @@ std::vector<REACTION> CGirderModelManager::GM_GetReaction(const CGirderKey& gird
 
       // Cycle through load cases and sum reactions
       REACTION R;
-      for (CollectionIndexType ldGroupIdx = 0; ldGroupIdx < nLoadGroups; ldGroupIdx++)
+      for (IndexType ldGroupIdx = 0; ldGroupIdx < nLoadGroups; ldGroupIdx++)
       {
          CComBSTR lg_name;
          load_case->GetLoadGroup(ldGroupIdx, &lg_name);
@@ -5834,7 +5834,7 @@ void CGirderModelManager::GM_GetReaction(const CGirderKey& girderKey,const std::
          ar = pModelData->pLoadComboResponse[bat]->ComputeReactions(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetMz, optMaximize, bIncludeLiveLoad, vbIncludeImpact, VARIANT_FALSE, &MzMaxResults);
          ar = pModelData->pLoadComboResponse[bat]->ComputeReactions(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetMz, optMinimize, bIncludeLiveLoad, vbIncludeImpact, VARIANT_FALSE, &MzMinResults);
 
-         CollectionIndexType nResults;
+         IndexType nResults;
          FxMaxResults->get_Count(&nResults);
 #if defined _DEBUG
          IndexType n;
@@ -5851,7 +5851,7 @@ void CGirderModelManager::GM_GetReaction(const CGirderKey& girderKey,const std::
          MzMinResults->get_Count(&n);
          ATLASSERT(n == nResults);
 #endif
-         for ( CollectionIndexType i = 0; i < nResults; i++ )
+         for ( IndexType i = 0; i < nResults; i++ )
          {
             REACTION reaction;
             FxMaxResults->GetResult(i,&reaction.Fx,nullptr);
@@ -5914,9 +5914,9 @@ void CGirderModelManager::GM_GetVehicularLiveLoadReaction(IntervalIndexType inte
       Float64 Rmax = -DBL_MAX;
       Float64 Rmin = DBL_MAX;
       REACTION maxReaction, minReaction;
-      CollectionIndexType nResults;
+      IndexType nResults;
       maxResults[fetFx]->get_Count(&nResults);
-      for ( CollectionIndexType i = 0; i < nResults; i++ )
+      for ( IndexType i = 0; i < nResults; i++ )
       {
          Float64 rmax;
          CComPtr<ILiveLoadConfiguration> rzMaxConfig;
@@ -6124,9 +6124,9 @@ void CGirderModelManager::GM_GetLiveLoadReaction(IntervalIndexType intervalIdx,p
    REACTION rMin, rMax;
    Float64 Rmax = -DBL_MAX;
    Float64 Rmin = DBL_MAX;
-   CollectionIndexType nResults;
+   IndexType nResults;
    maxResults->get_Count(&nResults);
-   for ( CollectionIndexType i = 0; i < nResults; i++ )
+   for ( IndexType i = 0; i < nResults; i++ )
    {
       Float64 rmax;
       CComPtr<ILiveLoadConfiguration> maxConfig;
@@ -6164,9 +6164,9 @@ void CGirderModelManager::GM_GetLiveLoadReaction(IntervalIndexType intervalIdx,p
             MaxConfig->put_ForceEffect(fetMz);
             response->ComputeReactions( m_LBAMPoi, bstrStage, MaxConfig, &mzResults );
 
-            CollectionIndexType nResults;
+            IndexType nResults;
             fyResults->get_Count(&nResults);
-            for ( CollectionIndexType i = 0; i < nResults; i++ )
+            for ( IndexType i = 0; i < nResults; i++ )
             {
                CComPtr<IResult3D> result;
                fyResults->get_Item(i,&result);
@@ -6192,9 +6192,9 @@ void CGirderModelManager::GM_GetLiveLoadReaction(IntervalIndexType intervalIdx,p
             MaxConfig->put_ForceEffect(fetMz);
             response->ComputeReactions( m_LBAMPoi, bstrStage, MaxConfig, &mzResults );
 
-            CollectionIndexType nResults;
+            IndexType nResults;
             fxResults->get_Count(&nResults);
-            for ( CollectionIndexType i = 0; i < nResults; i++ )
+            for ( IndexType i = 0; i < nResults; i++ )
             {
                CComPtr<IResult3D> result;
                fxResults->get_Item(i,&result);
@@ -6220,9 +6220,9 @@ void CGirderModelManager::GM_GetLiveLoadReaction(IntervalIndexType intervalIdx,p
             MaxConfig->put_ForceEffect(fetFy);
             response->ComputeReactions( m_LBAMPoi, bstrStage, MaxConfig, &fyResults );
 
-            CollectionIndexType nResults;
+            IndexType nResults;
             fxResults->get_Count(&nResults);
-            for ( CollectionIndexType i = 0; i < nResults; i++ )
+            for ( IndexType i = 0; i < nResults; i++ )
             {
                CComPtr<IResult3D> result;
                fxResults->get_Item(i,&result);
@@ -6280,9 +6280,9 @@ void CGirderModelManager::GM_GetLiveLoadReaction(IntervalIndexType intervalIdx,p
             MinConfig->put_ForceEffect(fetMz);
             response->ComputeReactions( m_LBAMPoi, bstrStage, MinConfig, &mzResults );
 
-            CollectionIndexType nResults;
+            IndexType nResults;
             fyResults->get_Count(&nResults);
-            for ( CollectionIndexType i = 0; i < nResults; i++ )
+            for ( IndexType i = 0; i < nResults; i++ )
             {
                CComPtr<IResult3D> result;
                fyResults->get_Item(i,&result);
@@ -6308,9 +6308,9 @@ void CGirderModelManager::GM_GetLiveLoadReaction(IntervalIndexType intervalIdx,p
             MinConfig->put_ForceEffect(fetMz);
             response->ComputeReactions( m_LBAMPoi, bstrStage, MinConfig, &mzResults );
 
-            CollectionIndexType nResults;
+            IndexType nResults;
             fxResults->get_Count(&nResults);
-            for ( CollectionIndexType i = 0; i < nResults; i++ )
+            for ( IndexType i = 0; i < nResults; i++ )
             {
                CComPtr<IResult3D> result;
                fxResults->get_Item(i,&result);
@@ -6336,9 +6336,9 @@ void CGirderModelManager::GM_GetLiveLoadReaction(IntervalIndexType intervalIdx,p
             MinConfig->put_ForceEffect(fetFy);
             response->ComputeReactions( m_LBAMPoi, bstrStage, MinConfig, &fyResults );
 
-            CollectionIndexType nResults;
+            IndexType nResults;
             fxResults->get_Count(&nResults);
-            for ( CollectionIndexType i = 0; i < nResults; i++ )
+            for ( IndexType i = 0; i < nResults; i++ )
             {
                CComPtr<IResult3D> result;
                fxResults->get_Item(i,&result);
@@ -6379,9 +6379,9 @@ void CGirderModelManager::GM_GetLiveLoadReaction(IntervalIndexType intervalIdx,p
          response->ComputeSupportDeflections( m_LBAMPoi, bstrStage, MaxConfig, &results );
 
          Float64 T = 0;
-         CollectionIndexType nResults;
+         IndexType nResults;
          results->get_Count(&nResults);
-         for ( CollectionIndexType i = 0; i < nResults; i++ )
+         for ( IndexType i = 0; i < nResults; i++ )
          {
             CComPtr<IResult3D> result;
             results->get_Item(i,&result);
@@ -6409,9 +6409,9 @@ void CGirderModelManager::GM_GetLiveLoadReaction(IntervalIndexType intervalIdx,p
          response->ComputeSupportDeflections( m_LBAMPoi, bstrStage, MinConfig, &results );
 
          Float64 T = 0;
-         CollectionIndexType nResults;
+         IndexType nResults;
          results->get_Count(&nResults);
-         for ( CollectionIndexType i = 0; i < nResults; i++ )
+         for ( IndexType i = 0; i < nResults; i++ )
          {
             CComPtr<IResult3D> result;
             results->get_Item(i,&result);
@@ -6464,11 +6464,11 @@ void CGirderModelManager::GM_GetCombinedLiveLoadReaction(IntervalIndexType inter
    ar = pModelData->pLoadComboResponse[bat]->ComputeReactions(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetFy, optMaximize, VARIANT_TRUE, vbIncludeImpact, VARIANT_FALSE, &maxResults);
    ar = pModelData->pLoadComboResponse[bat]->ComputeReactions(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetFy, optMinimize, VARIANT_TRUE, vbIncludeImpact, VARIANT_FALSE, &minResults);
 
-   CollectionIndexType nResults;
+   IndexType nResults;
    maxResults->get_Count(&nResults);
    Float64 FyMax = 0;
    Float64 FyMin = 0;
-   for ( CollectionIndexType i = 0; i < nResults; i++ )
+   for ( IndexType i = 0; i < nResults; i++ )
    {
       Float64 fyMax;
       maxResults->GetResult(i,&fyMax,nullptr);
@@ -6833,12 +6833,12 @@ Float64 CGirderModelManager::GetBearingCombinedReaction(IntervalIndexType interv
    CComPtr<ILoadCase> load_case;
    load_cases->Find(combo_name, &load_case);
 
-   CollectionIndexType nLoadGroups;
+   IndexType nLoadGroups;
    load_case->get_LoadGroupCount(&nLoadGroups);
 
    // Cycle through load cases and sum reactions
    Float64 R = 0;
-   for (CollectionIndexType ldGroupIdx = 0; ldGroupIdx < nLoadGroups; ldGroupIdx++)
+   for (IndexType ldGroupIdx = 0; ldGroupIdx < nLoadGroups; ldGroupIdx++)
    {
       CComBSTR lg_name;
       load_case->GetLoadGroup(ldGroupIdx, &lg_name);
@@ -6909,9 +6909,9 @@ void CGirderModelManager::GetBearingLimitStateReaction(IntervalIndexType interva
       load_combos->Find(combo_name, &load_combo);
 
       // First factor load cases
-      CollectionIndexType lc_cnt;
+      IndexType lc_cnt;
       load_combo->get_LoadCaseFactorCount(&lc_cnt);
-      for (CollectionIndexType lc_idx = 0; lc_idx < lc_cnt; lc_idx++)
+      for (IndexType lc_idx = 0; lc_idx < lc_cnt; lc_idx++)
       {
          CComBSTR lc_name;
          Float64 min_factor, max_factor;
@@ -6933,10 +6933,10 @@ void CGirderModelManager::GetBearingLimitStateReaction(IntervalIndexType interva
       {
          Float64 LLIMmin(Float64_Max), LLIMmax(-Float64_Max);
 
-         CollectionIndexType nlls;
+         IndexType nlls;
          load_combo->GetLiveLoadModelCount(&nlls);
 
-         for (CollectionIndexType ills=0; ills<nlls; ills++)
+         for (IndexType ills=0; ills<nlls; ills++)
          {
             LiveLoadModelType llm_type;
             load_combo->GetLiveLoadModel(0, &llm_type);
@@ -7153,11 +7153,11 @@ void CGirderModelManager::BuildLBAM(GirderIndexType gdrLineIdx,bool bContinuousM
       //pModel->put_MomentEquilibriumTolerance(WBFL::Units::ConvertToSysUnits(0.25, WBFL::Units::Measure::KipFeet));
 
       // prepare load modifiers
-      lrfdLoadModifier load_modifier;
+      WBFL::LRFD::LoadModifier load_modifier;
       GET_IFACE(ILoadModifiers,pLoadModifiers);
-      load_modifier.SetDuctilityFactor( (lrfdLoadModifier::Level)pLoadModifiers->GetDuctilityLevel() ,pLoadModifiers->GetDuctilityFactor());
-      load_modifier.SetImportanceFactor((lrfdLoadModifier::Level)pLoadModifiers->GetImportanceLevel(),pLoadModifiers->GetImportanceFactor());
-      load_modifier.SetRedundancyFactor((lrfdLoadModifier::Level)pLoadModifiers->GetRedundancyLevel(),pLoadModifiers->GetRedundancyFactor());
+      load_modifier.SetDuctilityFactor( (WBFL::LRFD::LoadModifier::Level)pLoadModifiers->GetDuctilityLevel() ,pLoadModifiers->GetDuctilityFactor());
+      load_modifier.SetImportanceFactor((WBFL::LRFD::LoadModifier::Level)pLoadModifiers->GetImportanceLevel(),pLoadModifiers->GetImportanceFactor());
+      load_modifier.SetRedundancyFactor((WBFL::LRFD::LoadModifier::Level)pLoadModifiers->GetRedundancyLevel(),pLoadModifiers->GetRedundancyFactor());
 
       CreateLBAMStages(gdrLineIdx,pModel);
       CreateLBAMSpans(gdrLineIdx,bContinuousModel,load_modifier,pModel);
@@ -7231,7 +7231,7 @@ void CGirderModelManager::CreateLBAMStages(GirderIndexType gdr,ILBAMModel* pMode
    }
 }
 
-void CGirderModelManager::CreateLBAMSpans(GirderIndexType gdr,bool bContinuousModel,const lrfdLoadModifier& loadModifier,ILBAMModel* pModel) const
+void CGirderModelManager::CreateLBAMSpans(GirderIndexType gdr,bool bContinuousModel,const WBFL::LRFD::LoadModifier& loadModifier,ILBAMModel* pModel) const
 {
    // This method creates the basic layout for the LBAM
    // It creates the support, span, and temporary support objects
@@ -7297,7 +7297,7 @@ void CGirderModelManager::CreateLBAMSpans(GirderIndexType gdr,bool bContinuousMo
 
          Float64 span_length = pBridge->GetFullSpanLength(spanKey); // span length between CL piers, measured along the centerline of the girder
          objSpan->put_Length(span_length);
-         objSpan->SetLoadModifier(lctStrength, loadModifier.LoadModifier(lrfdTypes::StrengthI, lrfdTypes::Min), loadModifier.LoadModifier(lrfdTypes::StrengthI, lrfdTypes::Max));
+         objSpan->SetLoadModifier(lctStrength, loadModifier.GetLoadModifier(WBFL::LRFD::LimitState::StrengthI, WBFL::LRFD::Optimization::Min), loadModifier.GetLoadModifier(WBFL::LRFD::LimitState::StrengthI, WBFL::LRFD::Optimization::Max));
          spans->Add(objSpan);
 
          // support at right end of the span (left side of pier next pier)
@@ -7378,7 +7378,7 @@ void CGirderModelManager::CreateLBAMSpans(GirderIndexType gdr,bool bContinuousMo
          objTS->put_ID(ID);
          objTS->put_Location(Xspan);
 
-         objTS->SetLoadModifier(lctStrength,loadModifier.LoadModifier(lrfdTypes::StrengthI,lrfdTypes::Min),loadModifier.LoadModifier(lrfdTypes::StrengthI,lrfdTypes::Max));
+         objTS->SetLoadModifier(lctStrength,loadModifier.GetLoadModifier(WBFL::LRFD::LimitState::StrengthI,WBFL::LRFD::Optimization::Min),loadModifier.GetLoadModifier(WBFL::LRFD::LimitState::StrengthI,WBFL::LRFD::Optimization::Max));
 
          objTS->put_BoundaryCondition(bcRoller);
 
@@ -7428,7 +7428,7 @@ void CGirderModelManager::CreateLBAMSpans(GirderIndexType gdr,bool bContinuousMo
          objLeftTS->put_ID(ID);
          objLeftTS->put_Location(Xspan - left_closure_size - left_end_dist);
 
-         objLeftTS->SetLoadModifier(lctStrength,loadModifier.LoadModifier(lrfdTypes::StrengthI,lrfdTypes::Min),loadModifier.LoadModifier(lrfdTypes::StrengthI,lrfdTypes::Max));
+         objLeftTS->SetLoadModifier(lctStrength,loadModifier.GetLoadModifier(WBFL::LRFD::LimitState::StrengthI,WBFL::LRFD::Optimization::Min),loadModifier.GetLoadModifier(WBFL::LRFD::LimitState::StrengthI,WBFL::LRFD::Optimization::Max));
 
          objLeftTS->put_BoundaryCondition(bcRoller);
 
@@ -7449,7 +7449,7 @@ void CGirderModelManager::CreateLBAMSpans(GirderIndexType gdr,bool bContinuousMo
          objRightTS->put_ID(ID);
          objRightTS->put_Location(Xspan + right_closure_size + right_start_dist);
 
-         objRightTS->SetLoadModifier(lctStrength,loadModifier.LoadModifier(lrfdTypes::StrengthI,lrfdTypes::Min),loadModifier.LoadModifier(lrfdTypes::StrengthI,lrfdTypes::Max));
+         objRightTS->SetLoadModifier(lctStrength,loadModifier.GetLoadModifier(WBFL::LRFD::LimitState::StrengthI,WBFL::LRFD::Optimization::Min),loadModifier.GetLoadModifier(WBFL::LRFD::LimitState::StrengthI,WBFL::LRFD::Optimization::Max));
 
          objRightTS->put_BoundaryCondition(bcRoller);
 
@@ -7462,7 +7462,7 @@ void CGirderModelManager::CreateLBAMSpans(GirderIndexType gdr,bool bContinuousMo
    }
 }
 
-void CGirderModelManager::CreateLBAMSupport(GirderIndexType gdrLineIdx,bool bContinuousModel,const lrfdLoadModifier& loadModifier,const CPierData2* pPier,ISupport** ppSupport) const
+void CGirderModelManager::CreateLBAMSupport(GirderIndexType gdrLineIdx,bool bContinuousModel,const WBFL::LRFD::LoadModifier& loadModifier,const CPierData2* pPier,ISupport** ppSupport) const
 {
    CComPtr<ISupport> objSupport;
    objSupport.CoCreateInstance(CLSID_Support);
@@ -7629,12 +7629,12 @@ void CGirderModelManager::CreateLBAMSupport(GirderIndexType gdrLineIdx,bool bCon
       }
    }
 
-   objSupport->SetLoadModifier(lctStrength,loadModifier.LoadModifier(lrfdTypes::StrengthI,lrfdTypes::Min),loadModifier.LoadModifier(lrfdTypes::StrengthI,lrfdTypes::Max));
+   objSupport->SetLoadModifier(lctStrength,loadModifier.GetLoadModifier(WBFL::LRFD::LimitState::StrengthI,WBFL::LRFD::Optimization::Min),loadModifier.GetLoadModifier(WBFL::LRFD::LimitState::StrengthI,WBFL::LRFD::Optimization::Max));
 
    objSupport.CopyTo(ppSupport);
 }
 
-void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bool bContinuousModel,lrfdLoadModifier& loadModifier,ILBAMModel* pModel) const
+void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bool bContinuousModel,WBFL::LRFD::LoadModifier& loadModifier,ILBAMModel* pModel) const
 {
    // This method creates the superstructure members for the LBAM
    // Superstructure member IDs are equal to their index, going left to right along the structure
@@ -8187,7 +8187,7 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
                   objLeftTS->put_ID(backID);
                   objLeftTS->put_Location(location);
 
-                  objLeftTS->SetLoadModifier(lctStrength, loadModifier.LoadModifier(lrfdTypes::StrengthI, lrfdTypes::Min), loadModifier.LoadModifier(lrfdTypes::StrengthI, lrfdTypes::Max));
+                  objLeftTS->SetLoadModifier(lctStrength, loadModifier.GetLoadModifier(WBFL::LRFD::LimitState::StrengthI, WBFL::LRFD::Optimization::Min), loadModifier.GetLoadModifier(WBFL::LRFD::LimitState::StrengthI, WBFL::LRFD::Optimization::Max));
 
                   objLeftTS->put_BoundaryCondition(bcRoller);
 
@@ -8249,7 +8249,7 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
                   objRightTS->put_ID(aheadID);
                   objRightTS->put_Location(location);
 
-                  objRightTS->SetLoadModifier(lctStrength, loadModifier.LoadModifier(lrfdTypes::StrengthI, lrfdTypes::Min), loadModifier.LoadModifier(lrfdTypes::StrengthI, lrfdTypes::Max));
+                  objRightTS->SetLoadModifier(lctStrength, loadModifier.GetLoadModifier(WBFL::LRFD::LimitState::StrengthI, WBFL::LRFD::Optimization::Min), loadModifier.GetLoadModifier(WBFL::LRFD::LimitState::StrengthI, WBFL::LRFD::Optimization::Max));
 
                   objRightTS->put_BoundaryCondition(bcRoller);
 
@@ -9974,7 +9974,7 @@ void CGirderModelManager::AddHL93LiveLoad(ILBAMModel* pModel,ILibrary* pLibrary,
 
    // this is an HL-93 live load, use the LBAM configuration utility
    const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   SpecUnitType units = pSpecEntry->GetSpecificationUnits() == lrfdVersionMgr::US ? suUS : suSI;
+   SpecUnitType units = pSpecEntry->GetSpecificationUnits() == WBFL::LRFD::LRFDVersionMgr::Units::US ? suUS : suSI;
 
    ATLASSERT( llType != pgsTypes::lltPedestrian ); // we don't want to add HL-93 to the pedestrian live load model
    LiveLoadModelType llmt = g_LiveLoadModelType[llType];
@@ -9993,7 +9993,7 @@ void CGirderModelManager::AddFatigueLiveLoad(ILBAMModel* pModel,ILibrary* pLibra
    LiveLoadModelType llmt = g_LiveLoadModelType[llType];
 
    const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   SpecUnitType units = pSpecEntry->GetSpecificationUnits() == lrfdVersionMgr::US ? suUS : suSI;
+   SpecUnitType units = pSpecEntry->GetSpecificationUnits() == WBFL::LRFD::LRFDVersionMgr::Units::US ? suUS : suSI;
 
    m_LBAMUtility->ConfigureFatigueLiveLoad(pModel,llmt,IMtruck,IMlane,units,m_UnitServer);
 }
@@ -10003,7 +10003,7 @@ void CGirderModelManager::AddDeflectionLiveLoad(ILBAMModel* pModel,ILibrary* pLi
    GET_IFACE(ISpecification,pSpec);
 
    const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   SpecUnitType units = pSpecEntry->GetSpecificationUnits() == lrfdVersionMgr::US ? suUS : suSI;
+   SpecUnitType units = pSpecEntry->GetSpecificationUnits() == WBFL::LRFD::LRFDVersionMgr::Units::US ? suUS : suSI;
 
    m_LBAMUtility->ConfigureDeflectionLiveLoad(pModel,lltDeflection,IMtruck,IMlane,units,m_UnitServer);
 }
@@ -13048,9 +13048,9 @@ IndexType CGirderModelManager::GetCfPointsInRange(IDblArray* cfLocs, Float64 spa
    IndexType cf_cnt=0;
 
    // assumption here that the cfLocs are sorted
-   CollectionIndexType siz;
+   IndexType siz;
    cfLocs->get_Count(&siz);
-   for (CollectionIndexType ic = 0; ic < siz; ic++)
+   for (IndexType ic = 0; ic < siz; ic++)
    {
       Float64 cfl;
       cfLocs->get_Item(ic,&cfl);
@@ -13142,7 +13142,7 @@ void CGirderModelManager::ApplyLLDF_PinPin(const CSpanKey& spanKey,IDblArray* cf
    bool bTaperStart = false;
    bool bTaperEnd   = false;
 
-   if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       Float64 skewFactor = pLLDF->GetSkewCorrectionFactorForShear(spanKey,pgsTypes::StrengthI);
       if ( !IsEqual(skewFactor,1.0) )
@@ -13320,7 +13320,7 @@ void CGirderModelManager::ApplyLLDF_PinFix(const CSpanKey& spanKey,IDblArray* cf
    bool bTaperStart = false;
    bool bTaperEnd   = false;
 
-   if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       Float64 skewFactor = pLLDF->GetSkewCorrectionFactorForShear(spanKey,pgsTypes::StrengthI);
       if ( !IsEqual(skewFactor,1.0) )
@@ -13573,7 +13573,7 @@ void CGirderModelManager::ApplyLLDF_FixPin(const CSpanKey& spanKey,IDblArray* cf
    bool bTaperStart = false;
    bool bTaperEnd = false;
 
-   if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       Float64 skewFactor = pLLDF->GetSkewCorrectionFactorForShear(spanKey,pgsTypes::StrengthI);
       if ( !IsEqual(skewFactor,1.0) )
@@ -13812,7 +13812,7 @@ void CGirderModelManager::ApplyLLDF_FixFix(const CSpanKey& spanKey,IDblArray* cf
       bool bTaperStart = false;
       bool bTaperEnd = false;
 
-      if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
       {
          Float64 skewFactor = pLLDF->GetSkewCorrectionFactorForShear(spanKey,pgsTypes::StrengthI);
          if ( !IsEqual(skewFactor,1.0) )
@@ -13949,7 +13949,7 @@ void CGirderModelManager::ApplyLLDF_FixFix(const CSpanKey& spanKey,IDblArray* cf
       bool bTaperStart = false;
       bool bTaperEnd = false;
 
-      if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
       {
          Float64 skewFactor = pLLDF->GetSkewCorrectionFactorForShear(spanKey,pgsTypes::StrengthI);
          if ( !IsEqual(skewFactor,1.0) )
@@ -14170,7 +14170,7 @@ void CGirderModelManager::ApplyLLDF_FixFix(const CSpanKey& spanKey,IDblArray* cf
       bool bTaperStart = false;
       bool bTaperEnd = false;
 
-      if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
       {
          Float64 skewFactor = pLLDF->GetSkewCorrectionFactorForShear(spanKey,pgsTypes::StrengthI);
          if ( !IsEqual(skewFactor,1.0) )
@@ -14445,14 +14445,14 @@ void CGirderModelManager::GetEngine(CGirderModelData* pModelData,bool bContinuou
    CComPtr<IUnkArray> engines;
    pModelData->m_MinModelEnveloper->get_Engines(&engines);
 
-   CollectionIndexType nEngines;
+   IndexType nEngines;
    engines->get_Count(&nEngines);
 
    GET_IFACE(IBridge,pBridge);
    SpanIndexType nSpans = pBridge->GetSpanCount();
 
    CComPtr<IUnknown> unk_engine;
-   CollectionIndexType engineIdx = 0;
+   IndexType engineIdx = 0;
    if ( bContinuous && 1 < nSpans && 1 < nEngines )
    {
       engineIdx = 1;
@@ -17182,7 +17182,7 @@ CGirderModelData* CGirderModelManager::UpdateLBAMPois(const PoiList& vPoi) const
    }
 
 #if defined _DEBUG
-   CollectionIndexType nPOI;
+   IndexType nPOI;
    m_LBAMPoi->get_Count(&nPOI);
    ATLASSERT( nPOI == vPoi.size() );
 #endif
@@ -17645,9 +17645,9 @@ void CGirderModelManager::ConfigureLBAMPoisForReactions(const CGirderKey& girder
    }
 }
 
-CollectionIndexType CGirderModelManager::GetStressPointIndex(pgsTypes::StressLocation loc) const
+IndexType CGirderModelManager::GetStressPointIndex(pgsTypes::StressLocation loc) const
 {
-   return (CollectionIndexType)(loc);
+   return (IndexType)(loc);
 }
 
 CComBSTR CGirderModelManager::GetLoadCaseName(LoadingCombinationType combo) const

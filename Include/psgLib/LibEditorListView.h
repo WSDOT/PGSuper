@@ -118,12 +118,12 @@ private:
 
    // context menu is selected
    //void OnCmenuSelected(UINT id);
-   bool EditEntry(libILibrary* plib, LPCTSTR entryName);
-   void DeleteEntry(libILibrary* plib, LPCTSTR entryName, bool force=false);
-   void DuplicateEntry(libILibrary* plib, LPCTSTR entryName);
+   bool EditEntry(WBFL::Library::ILibrary* plib, LPCTSTR entryName);
+   void DeleteEntry(WBFL::Library::ILibrary* plib, LPCTSTR entryName, bool force=false);
+   void DuplicateEntry(WBFL::Library::ILibrary* plib, LPCTSTR entryName);
    bool DoesEntryExist(const CString& entryName);
-   bool GetSelectedEntry(CString* entryName, libILibrary** pplib)const;
-   int InsertEntryToList(const libLibraryEntry* pentry, const libILibrary* plib, int i);
+   bool GetSelectedEntry(CString* entryName, WBFL::Library::ILibrary** pplib)const;
+   int InsertEntryToList(const WBFL::Library::LibraryEntry* pentry, const WBFL::Library::ILibrary* plib, int i);
 };
 
 /////////////////////////////////////////////////////////////////////////////

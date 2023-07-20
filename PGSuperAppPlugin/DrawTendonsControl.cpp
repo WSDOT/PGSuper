@@ -309,7 +309,7 @@ void CDrawTendonsControl::DrawShape(CDC* pDC, WBFL::Graphing::PointMapper& mappe
 
 void CDrawTendonsControl::Draw(CDC* pDC, WBFL::Graphing::PointMapper& mapper,IPoint2dCollection* pPolyPoints,BOOL bPolygon)
 {
-   CollectionIndexType nPoints;
+   IndexType nPoints;
    pPolyPoints->get_Count(&nPoints);
 
    IPoint2d** points = new IPoint2d*[nPoints];
@@ -322,7 +322,7 @@ void CDrawTendonsControl::Draw(CDC* pDC, WBFL::Graphing::PointMapper& mapper,IPo
    ATLASSERT(nFetched == nPoints);
 
    CPoint* dev_points = new CPoint[nPoints];
-   for ( CollectionIndexType i = 0; i < nPoints; i++ )
+   for ( IndexType i = 0; i < nPoints; i++ )
    {
       LONG dx,dy;
       WBFL::Graphing::Point point;

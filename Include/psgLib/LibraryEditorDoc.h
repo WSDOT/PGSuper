@@ -82,9 +82,9 @@ public:
 	virtual void Dump(CDumpContext& dc) const;
 #endif
 
-   CollectionIndexType GetNumberOfLibraryManagers() const {return 1;}
-   libLibraryManager* GetLibraryManager(CollectionIndexType n){ASSERT(n!=1); return &m_LibraryManager;}
-   libLibraryManager* GetTargetLibraryManager(){return &m_LibraryManager;}
+   IndexType GetNumberOfLibraryManagers() const {return 1;}
+   WBFL::Library::LibraryManager* GetLibraryManager(IndexType n){ASSERT(n!=1); return &m_LibraryManager;}
+   WBFL::Library::LibraryManager* GetTargetLibraryManager(){return &m_LibraryManager;}
    psgLibraryManager* GetLibraryManager(){return &m_LibraryManager;}
 
 public:

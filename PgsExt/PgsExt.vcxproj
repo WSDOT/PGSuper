@@ -351,7 +351,10 @@
     <ClInclude Include="..\Include\PgsExt\CapacityToDemand.h" />
     <ClInclude Include="..\Include\PgsExt\CastDeckActivity.h" />
     <ClInclude Include="..\Include\PgsExt\CastLongitudinalJointActivity.h" />
+    <ClInclude Include="..\Include\PgsExt\Catalog.h" />
+    <ClInclude Include="..\Include\PgsExt\CatalogServer.h" />
     <ClInclude Include="..\Include\PgsExt\CatalogServerAppMixin.h" />
+    <ClInclude Include="..\Include\PgsExt\CatalogServers.h" />
     <ClInclude Include="..\Include\PgsExt\CEBFIPConcretePage.h" />
     <ClInclude Include="..\Include\PgsExt\ClosureJointData.h" />
     <ClInclude Include="..\Include\PgsExt\ColumnData.h" />

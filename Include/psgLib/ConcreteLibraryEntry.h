@@ -85,7 +85,7 @@ LOG
    rdp : 07.20.1998 : Created file
 *****************************************************************************/
 
-class PSGLIBCLASS ConcreteLibraryEntry : public libLibraryEntry, public ISupportIcon,
+class PSGLIBCLASS ConcreteLibraryEntry : public WBFL::Library::LibraryEntry, public ISupportIcon,
    public WBFL::System::SubjectT<ConcreteLibraryEntryObserver, ConcreteLibraryEntry>
 {
 public:
@@ -162,7 +162,7 @@ public:
    bool UserEc() const;
 
    //------------------------------------------------------------------------
-   // SetEc - get density used for strenght calculation
+   // SetEc - get density used for strength calculation
    void SetStrengthDensity(Float64 d);
 
    //------------------------------------------------------------------------
@@ -303,25 +303,6 @@ private:
    // GROUP: OPERATIONS
    // GROUP: ACCESS
    // GROUP: INQUIRY
-
-public:
-   // GROUP: DEBUG
-   #if defined _DEBUG
-   //------------------------------------------------------------------------
-   // Returns true if the object is in a valid state, otherwise returns false.
-   virtual bool AssertValid() const;
-
-   //------------------------------------------------------------------------
-   // Dumps the contents of the object to the given dump context.
-   virtual void Dump(WBFL::Debug::LogContext& os) const;
-   #endif // _DEBUG
-
-   #if defined _UNITTEST
-   //------------------------------------------------------------------------
-   // Runs a self-diagnostic test.  Returns true if the test passed,
-   // otherwise false.
-   static bool TestMe(WBFL::Debug::Log& rlog);
-   #endif // _UNITTEST
 };
 
 // INLINE METHODS

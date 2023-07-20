@@ -61,5 +61,5 @@ protected:
    void OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol);
 
    void EditSegment(SegmentIndexType idx);
-   void EditClosure(CollectionIndexType idx);
+   void EditClosure(IndexType idx);
 };

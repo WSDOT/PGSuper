@@ -297,12 +297,12 @@ void CMomentCapacityChapterBuilder::DrawSection(CImage& image, IndexType girderS
 {
    CComPtr<IGeneralSectionSolution> general_solution;
    solution->get_GeneralSectionSolution(&general_solution);
-   CollectionIndexType nSlices;
+   IndexType nSlices;
    general_solution->get_SliceCount(&nSlices);
 
    // determine the bounding box
    CComPtr<IRect2d> bbox;
-   for ( CollectionIndexType sliceIdx = 0; sliceIdx < nSlices; sliceIdx++ )
+   for ( IndexType sliceIdx = 0; sliceIdx < nSlices; sliceIdx++ )
    {
       CComPtr<IGeneralSectionSlice> slice;
       general_solution->get_Slice(sliceIdx,&slice);
@@ -385,12 +385,12 @@ void CMomentCapacityChapterBuilder::DrawSection(CImage& image, IndexType girderS
    CPen compressionPen(PS_SOLID, 1, COMPRESSION_BORDER_COLOR);
    CBrush compressionBrush(COMPRESSION_FILL_COLOR);
 
-   std::vector<CollectionIndexType> voidIndices;        // contains slice index for void slices
-   std::vector<CollectionIndexType> neutralIndices;     // contains slice index for neutral slices
-   std::vector<CollectionIndexType> tensionIndices;     // contains slice index for tension slices
-   std::vector<CollectionIndexType> compressionIndices; // contains slice index for compression slices
+   std::vector<IndexType> voidIndices;        // contains slice index for void slices
+   std::vector<IndexType> neutralIndices;     // contains slice index for neutral slices
+   std::vector<IndexType> tensionIndices;     // contains slice index for tension slices
+   std::vector<IndexType> compressionIndices; // contains slice index for compression slices
 
-   for ( CollectionIndexType sliceIdx = 0; sliceIdx < nSlices; sliceIdx++ )
+   for ( IndexType sliceIdx = 0; sliceIdx < nSlices; sliceIdx++ )
    {
       CComPtr<IGeneralSectionSlice> slice;
       general_solution->get_Slice(sliceIdx,&slice);
@@ -690,7 +690,7 @@ void CMomentCapacityChapterBuilder::DrawSlice(IShape* pShape,CDC* pDC, WBFL::Gra
    CComPtr<IPoint2dCollection> objPoints;
    pShape->get_PolyPoints(&objPoints);
 
-   CollectionIndexType nPoints;
+   IndexType nPoints;
    objPoints->get_Count(&nPoints);
    if (nPoints < 3)
    {
@@ -714,7 +714,7 @@ void CMomentCapacityChapterBuilder::DrawSlice(IShape* pShape,CDC* pDC, WBFL::Gra
    else
    {
        CPoint* points = new CPoint[nPoints];
-       for (CollectionIndexType pntIdx = 0; pntIdx < nPoints; pntIdx++)
+       for (IndexType pntIdx = 0; pntIdx < nPoints; pntIdx++)
        {
            CComPtr<IPoint2d> point;
            objPoints->get_Item(pntIdx, &point);
@@ -828,9 +828,9 @@ void CMomentCapacityChapterBuilder::ReportSolution(IBroker* pBroker,const TCHAR*
    RowIndexType row = pTable->GetNumberOfHeaderRows();
    Float64 sum_force = 0;
    Float64 sum_moment = 0;
-   CollectionIndexType nSlices;
+   IndexType nSlices;
    general_solution->get_SliceCount(&nSlices);
-   for (CollectionIndexType sliceIdx = 0; sliceIdx < nSlices; sliceIdx++)
+   for (IndexType sliceIdx = 0; sliceIdx < nSlices; sliceIdx++)
    {
       col = 0;
 

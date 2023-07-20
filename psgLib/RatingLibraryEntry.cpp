@@ -2271,7 +2271,7 @@ CString RatingLibraryEntry::GetSpecialPermitType(pgsTypes::SpecialPermitType per
 
 RatingLibraryEntry::RatingLibraryEntry() :
 m_bUseCurrentSpecification(true),
-m_SpecificationVersion(lrfrVersionMgr::SecondEditionWith2016Interims)
+m_SpecificationVersion(WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2016Interims)
 {
    // default for LRFR before 2013
    m_LiveLoadFactorModels[pgsTypes::lrDesign_Inventory].SetLiveLoadFactorType(pgsTypes::gllSingleValue);
@@ -2350,26 +2350,6 @@ m_SpecificationVersion(lrfrVersionMgr::SecondEditionWith2016Interims)
    m_SpecialPermitLiveLoadFactorModels2[pgsTypes::ptMultipleTripWithTraffic].SetLowerLiveLoadFactor(1.40,-1,-1,-1);
 }
 
-RatingLibraryEntry::RatingLibraryEntry(const RatingLibraryEntry& rOther) :
-libLibraryEntry(rOther)
-{
-   MakeCopy(rOther);
-}
-
-RatingLibraryEntry::~RatingLibraryEntry()
-{
-}
-
-RatingLibraryEntry& RatingLibraryEntry::operator= (const RatingLibraryEntry& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
 bool RatingLibraryEntry::Edit(bool allowEditing,int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -2404,12 +2384,12 @@ bool RatingLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
    pSave->Property(_T("Name"), GetName().c_str());
    pSave->Property(_T("Description"), GetDescription(false).c_str());
    pSave->Property(_T("UseCurrentSpecification"), m_bUseCurrentSpecification); // added in version 3
-   pSave->Property(_T("SpecificationVersion"), lrfrVersionMgr::GetVersionString(m_SpecificationVersion,true));
+   pSave->Property(_T("SpecificationVersion"), WBFL::LRFD::LRFRVersionMgr::GetVersionString(m_SpecificationVersion,true));
 
    //pSave->Property(_T("AlwaysRate"), m_bAlwaysRate); // removed in version 4
 
    pSave->BeginUnit(_T("LiveLoadFactors_Design_Inventory"),1.0);
-   if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( m_SpecificationVersion < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
    {
       m_LiveLoadFactorModels[pgsTypes::lrDesign_Inventory].SaveMe(pSave);
    }
@@ -2420,7 +2400,7 @@ bool RatingLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
    pSave->EndUnit();
 
    pSave->BeginUnit(_T("LiveLoadFactors_Design_Operating"),1.0);
-   if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( m_SpecificationVersion < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
    {
       m_LiveLoadFactorModels[pgsTypes::lrDesign_Operating].SaveMe(pSave);
    }
@@ -2431,7 +2411,7 @@ bool RatingLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
    pSave->EndUnit();
 
    pSave->BeginUnit(_T("LiveLoadFactors_Legal_Routine"),1.0);
-   if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( m_SpecificationVersion < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
    {
       m_LiveLoadFactorModels[pgsTypes::lrLegal_Routine].SaveMe(pSave);
    }
@@ -2442,7 +2422,7 @@ bool RatingLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
    pSave->EndUnit();
 
    pSave->BeginUnit(_T("LiveLoadFactors_Legal_Special"),1.0);
-   if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( m_SpecificationVersion < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
    {
       m_LiveLoadFactorModels[pgsTypes::lrLegal_Special].SaveMe(pSave);
    }
@@ -2454,7 +2434,7 @@ bool RatingLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
 
    // Added in version 2.0
    pSave->BeginUnit(_T("LiveLoadFactors_Legal_Emergency"), 1.0);
-   if (m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims)
+   if (m_SpecificationVersion < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims)
    {
       m_LiveLoadFactorModels[pgsTypes::lrLegal_Emergency].SaveMe(pSave);
    }
@@ -2465,7 +2445,7 @@ bool RatingLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
    pSave->EndUnit();
 
    pSave->BeginUnit(_T("LiveLoadFactors_Permit_Routine"),1.0);
-   if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( m_SpecificationVersion < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
    {
       m_LiveLoadFactorModels[pgsTypes::lrPermit_Routine].SaveMe(pSave);
    }
@@ -2476,7 +2456,7 @@ bool RatingLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
    pSave->EndUnit();
 
    pSave->BeginUnit(_T("LiveLoadFactors_Permit_SingleTripWithEscort"),1.0);
-   if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( m_SpecificationVersion < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
    {
       m_SpecialPermitLiveLoadFactorModels[pgsTypes::ptSingleTripWithEscort].SaveMe(pSave);
    }
@@ -2487,7 +2467,7 @@ bool RatingLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
    pSave->EndUnit();
 
    pSave->BeginUnit(_T("LiveLoadFactors_Permit_SingleTripWithTraffic"),1.0);
-   if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( m_SpecificationVersion < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
    {
       m_SpecialPermitLiveLoadFactorModels[pgsTypes::ptSingleTripWithTraffic].SaveMe(pSave);
    }
@@ -2498,7 +2478,7 @@ bool RatingLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
    pSave->EndUnit();
 
    pSave->BeginUnit(_T("LiveLoadFactors_Permit_MultipleTripWithTraffic"),1.0);
-   if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( m_SpecificationVersion < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
    {
       m_SpecialPermitLiveLoadFactorModels[pgsTypes::ptMultipleTripWithTraffic].SaveMe(pSave);
    }
@@ -2562,7 +2542,7 @@ bool RatingLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 
    try
    {
-      m_SpecificationVersion = lrfrVersionMgr::GetVersion(strSpecVersion.c_str());
+      m_SpecificationVersion = WBFL::LRFD::LRFRVersionMgr::GetVersion(strSpecVersion.c_str());
    }
    catch(...)
    {
@@ -2581,7 +2561,7 @@ bool RatingLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
       THROW_LOAD(InvalidFileFormat,pLoad);
    }
 
-   if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( m_SpecificationVersion < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
    {
       if ( !m_LiveLoadFactorModels[pgsTypes::lrDesign_Inventory].LoadMe(pLoad) )
       {
@@ -2607,7 +2587,7 @@ bool RatingLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
       THROW_LOAD(InvalidFileFormat,pLoad);
    }
 
-   if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( m_SpecificationVersion < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
    {
       if ( !m_LiveLoadFactorModels[pgsTypes::lrDesign_Operating].LoadMe(pLoad) )
       {
@@ -2632,7 +2612,7 @@ bool RatingLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
       THROW_LOAD(InvalidFileFormat,pLoad);
    }
 
-   if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( m_SpecificationVersion < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
    {
       if ( !m_LiveLoadFactorModels[pgsTypes::lrLegal_Routine].LoadMe(pLoad) )
       {
@@ -2657,7 +2637,7 @@ bool RatingLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
       THROW_LOAD(InvalidFileFormat,pLoad);
    }
 
-   if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( m_SpecificationVersion < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
    {
       if ( !m_LiveLoadFactorModels[pgsTypes::lrLegal_Special].LoadMe(pLoad) )
       {
@@ -2685,7 +2665,7 @@ bool RatingLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
          THROW_LOAD(InvalidFileFormat, pLoad);
       }
 
-      if (m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims)
+      if (m_SpecificationVersion < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims)
       {
          if (!m_LiveLoadFactorModels[pgsTypes::lrLegal_Emergency].LoadMe(pLoad))
          {
@@ -2711,7 +2691,7 @@ bool RatingLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
       THROW_LOAD(InvalidFileFormat,pLoad);
    }
 
-   if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( m_SpecificationVersion < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
    {
       if ( !m_LiveLoadFactorModels[pgsTypes::lrPermit_Routine].LoadMe(pLoad) )
       {
@@ -2736,7 +2716,7 @@ bool RatingLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
       THROW_LOAD(InvalidFileFormat,pLoad);
    }
 
-   if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( m_SpecificationVersion < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
    {
       if ( !m_SpecialPermitLiveLoadFactorModels[pgsTypes::ptSingleTripWithEscort].LoadMe(pLoad) )
       {
@@ -2761,7 +2741,7 @@ bool RatingLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
       THROW_LOAD(InvalidFileFormat,pLoad);
    }
 
-   if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( m_SpecificationVersion < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
    {
       if ( !m_SpecialPermitLiveLoadFactorModels[pgsTypes::ptSingleTripWithTraffic].LoadMe(pLoad) )
       {
@@ -2786,7 +2766,7 @@ bool RatingLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
       THROW_LOAD(InvalidFileFormat,pLoad);
    }
 
-   if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( m_SpecificationVersion < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
    {
       if ( !m_SpecialPermitLiveLoadFactorModels[pgsTypes::ptMultipleTripWithTraffic].LoadMe(pLoad) )
       {
@@ -2838,10 +2818,10 @@ bool RatingLibraryEntry::Compare(const RatingLibraryEntry& rOther, std::vector<p
    if (m_bUseCurrentSpecification != rOther.m_bUseCurrentSpecification || m_SpecificationVersion != rOther.m_SpecificationVersion)
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Rating Criteria Basis"), lrfrVersionMgr::GetVersionString(m_SpecificationVersion), lrfrVersionMgr::GetVersionString(rOther.m_SpecificationVersion)));
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Rating Criteria Basis"), WBFL::LRFD::LRFRVersionMgr::GetVersionString(m_SpecificationVersion), WBFL::LRFD::LRFRVersionMgr::GetVersionString(rOther.m_SpecificationVersion)));
    }
 
-   if ( lrfrVersionMgr::GetVersion() < lrfrVersionMgr::SecondEditionWith2013Interims)
+   if ( WBFL::LRFD::LRFRVersionMgr::GetVersion() < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims)
    {
       int n = (int)pgsTypes::lrLoadRatingTypeCount;
       for ( int i = 0; i < n; i++ )
@@ -2905,24 +2885,6 @@ bool RatingLibraryEntry::Compare(const RatingLibraryEntry& rOther, std::vector<p
    return vDifferences.size() == 0 ? true : false;
 }
 
-void RatingLibraryEntry::MakeCopy(const RatingLibraryEntry& rOther)
-{
-   m_Description          = rOther.m_Description;
-   m_bUseCurrentSpecification = rOther.m_bUseCurrentSpecification;
-   m_SpecificationVersion = rOther.m_SpecificationVersion;
-
-   m_LiveLoadFactorModels  = rOther.m_LiveLoadFactorModels;
-   m_LiveLoadFactorModels2 = rOther.m_LiveLoadFactorModels2;
-   m_SpecialPermitLiveLoadFactorModels  = rOther.m_SpecialPermitLiveLoadFactorModels;
-   m_SpecialPermitLiveLoadFactorModels2 = rOther.m_SpecialPermitLiveLoadFactorModels2;
-}
-
-void RatingLibraryEntry::MakeAssignment(const RatingLibraryEntry& rOther)
-{
-   libLibraryEntry::MakeAssignment( rOther );
-   MakeCopy( rOther );
-}
-
 void RatingLibraryEntry::SetDescription(LPCTSTR name)
 {
    m_Description.erase();
@@ -2934,9 +2896,9 @@ std::_tstring RatingLibraryEntry::GetDescription(bool bApplySymbolSubstitution) 
    if (bApplySymbolSubstitution)
    {
       std::_tstring description(m_Description);
-      std::_tstring strSubstitute(lrfrVersionMgr::GetCodeString());
+      std::_tstring strSubstitute(WBFL::LRFD::LRFRVersionMgr::GetCodeString());
       strSubstitute += _T(", ");
-      strSubstitute += lrfrVersionMgr::GetVersionString();
+      strSubstitute += WBFL::LRFD::LRFRVersionMgr::GetVersionString();
       boost::replace_all(description, _T("%MBE%"), strSubstitute);
       return description;
    }
@@ -2956,16 +2918,16 @@ bool RatingLibraryEntry::UseCurrentSpecification() const
    return m_bUseCurrentSpecification;
 }
 
-void RatingLibraryEntry::SetSpecificationVersion(lrfrVersionMgr::Version version)
+void RatingLibraryEntry::SetSpecificationVersion(WBFL::LRFD::LRFRVersionMgr::Version version)
 {
    m_SpecificationVersion = version;
 }
 
-lrfrVersionMgr::Version RatingLibraryEntry::GetSpecificationVersion() const
+WBFL::LRFD::LRFRVersionMgr::Version RatingLibraryEntry::GetSpecificationVersion() const
 {
    if (m_bUseCurrentSpecification)
    {
-      return (lrfrVersionMgr::Version)((int)lrfrVersionMgr::LastVersion - 1);
+      return WBFL::LRFD::LRFRVersionMgr::GetLatestVersion();
    }
    else
    {

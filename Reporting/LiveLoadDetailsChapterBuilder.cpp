@@ -134,7 +134,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(const std::shared_ptr<const WB
       }
 
       // Fatigue live loads
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
       {
          pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
          *pChapter << pPara;

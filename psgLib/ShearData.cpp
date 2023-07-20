@@ -27,7 +27,7 @@
 #include <atlbase.h>
 #include <algorithm>
 #include <psgLib\GirderLibraryEntry.h>
-#include <Lrfd\RebarPool.h>
+#include <LRFD\RebarPool.h>
 
 
 #ifdef _DEBUG
@@ -202,7 +202,7 @@ HRESULT CShearData2::Load(WBFL::System::IStructuredLoad* pStrLoad)
          pStrLoad->Property(_T("ConfinementBarSize"), &key );
          WBFL::Materials::Rebar::Grade grade;
          WBFL::Materials::Rebar::Type type;
-         lrfdRebarPool::MapOldRebarKey(key,grade,type,legacy_ConfinementBarSize);
+         WBFL::LRFD::RebarPool::MapOldRebarKey(key,grade,type,legacy_ConfinementBarSize);
       }
       else
       {
@@ -233,7 +233,7 @@ HRESULT CShearData2::Load(WBFL::System::IStructuredLoad* pStrLoad)
          BarSizeType key = bkey;
          WBFL::Materials::Rebar::Grade grade;
          WBFL::Materials::Rebar::Type type;
-         lrfdRebarPool::MapOldRebarKey(key,grade,type,TopFlangeBarSize);
+         WBFL::LRFD::RebarPool::MapOldRebarKey(key,grade,type,TopFlangeBarSize);
       }
       else
       {

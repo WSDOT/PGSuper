@@ -324,9 +324,9 @@ private:
    void BuildModel(GirderIndexType gdrLineIdx,pgsTypes::BridgeAnalysisType bat) const;
    void BuildLBAM(GirderIndexType gdr,bool bContinuousModel,IContraflexureResponse* pContraflexureResponse,IContraflexureResponse* pDeflContraflexureResponse,ILBAMModel* pModel) const;
    void CreateLBAMStages(GirderIndexType gdrLineIdx,ILBAMModel* pModel) const;
-   void CreateLBAMSpans(GirderIndexType gdrLineIdx,bool bContinuousModel,const lrfdLoadModifier& loadModifier,ILBAMModel* pModel) const;
-   void CreateLBAMSupport(GirderIndexType gdrLineIdx,bool bContinuousModel,const lrfdLoadModifier& loadModifier,const CPierData2* pPier,ISupport** ppSupport) const;
-   void CreateLBAMSuperstructureMembers(GirderIndexType gdrLineIdx,bool bContinuousModel,lrfdLoadModifier& loadModifier,ILBAMModel* pModel) const;
+   void CreateLBAMSpans(GirderIndexType gdrLineIdx,bool bContinuousModel,const WBFL::LRFD::LoadModifier& loadModifier,ILBAMModel* pModel) const;
+   void CreateLBAMSupport(GirderIndexType gdrLineIdx,bool bContinuousModel,const WBFL::LRFD::LoadModifier& loadModifier,const CPierData2* pPier,ISupport** ppSupport) const;
+   void CreateLBAMSuperstructureMembers(GirderIndexType gdrLineIdx,bool bContinuousModel,WBFL::LRFD::LoadModifier& loadModifier,ILBAMModel* pModel) const;
    void CreateLBAMSuperstructureMember(Float64 length,const std::vector<SuperstructureMemberData>& vData,ISuperstructureMember** ppMbr) const;
    BoundaryConditionType GetLBAMBoundaryConditions(bool bContinuous,const CPierData2* pPier) const;
    void GetLBAMBoundaryConditions(bool bContinuous,const CTimelineManager* pTimelineMgr,GroupIndexType grpIdx,const CPrecastSegmentData* pSegment,pgsTypes::MemberEndType endType,ISuperstructureMember* pSSMbr) const;
@@ -498,7 +498,7 @@ private:
    bool CreateInitialStrainLoad(ILBAMModel* pModel,const pgsPoiMap& poiMap,IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 e,Float64 r);
    bool CreateInitialStrainLoad(ILBAMModel* pModel,const pgsPoiMap& poiMap,IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 e,Float64 r);
    void ConfigureLBAMPoisForReactions(const CGirderKey& girderKey, SupportIndexType supportIdx, pgsTypes::SupportType supportType) const;
-   CollectionIndexType GetStressPointIndex(pgsTypes::StressLocation loc) const;
+   IndexType GetStressPointIndex(pgsTypes::StressLocation loc) const;
    CComBSTR GetLoadCaseName(LoadingCombinationType combo) const;
    bool GetLoadCaseTypeFromName(const CComBSTR& name, LoadingCombinationType* pCombo) const;
 

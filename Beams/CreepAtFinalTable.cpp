@@ -134,7 +134,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   *pParagraph << _T("[") << LrfdCw8th(_T("5.9.5.4.3b"),_T("5.9.3.4.3b")) << _T("] Creep of Girder Concrete : ") << symbol(DELTA) << RPT_STRESS(_T("pCD")) << rptNewLine;
+   *pParagraph << _T("[") << WBFL::LRFD::LrfdCw8th(_T("5.9.5.4.3b"),_T("5.9.3.4.3b")) << _T("] Creep of Girder Concrete : ") << symbol(DELTA) << RPT_STRESS(_T("pCD")) << rptNewLine;
 
    
    pParagraph = new rptParagraph;
@@ -168,7 +168,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    {
       if (pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned)
       {
-         if (pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007)
+         if (pSpecEntry->GetSpecificationType() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007)
          {
             *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_PT.png")) << rptNewLine;
          }
@@ -179,7 +179,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
       }
       else
       {
-         if (pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007)
+         if (pSpecEntry->GetSpecificationType() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007)
          {
             *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_PS.png")) << rptNewLine;
          }
@@ -191,7 +191,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    }
    else
    {
-      if (pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007)
+      if (pSpecEntry->GetSpecificationType() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007)
       {
          *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD.png")) << rptNewLine;
       }
@@ -218,7 +218,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    (*pParamTable)(0,4) << Sub2(_T("k"),_T("f"));
 
   // Typecast to our known type (eating own doggy food)
-   std::shared_ptr<const lrfdRefinedLosses2005> ptl = std::dynamic_pointer_cast<const lrfdRefinedLosses2005>(pDetails->pLosses);
+   std::shared_ptr<const WBFL::LRFD::RefinedLosses2005> ptl = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLosses2005>(pDetails->pLosses);
    if (!ptl)
    {
       ATLASSERT(false); // made a bad cast? Bail...
@@ -421,7 +421,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
 void CCreepAtFinalTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
   // Typecast to our known type (eating own doggy food)
-   std::shared_ptr<const lrfdRefinedLosses2005> ptl = std::dynamic_pointer_cast<const lrfdRefinedLosses2005>(pDetails->pLosses);
+   std::shared_ptr<const WBFL::LRFD::RefinedLosses2005> ptl = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLosses2005>(pDetails->pLosses);
    if (!ptl)
    {
       ATLASSERT(false); // made a bad cast? Bail...
@@ -481,7 +481,7 @@ void CCreepAtFinalTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsP
    }
 
    (*this)(row+rowOffset, col++) << scalar.SetValue(ptl->GetKdf());
-   (*this)(row+rowOffset, col++) << stress.SetValue(pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp());
+   (*this)(row+rowOffset, col++) << stress.SetValue(pDetails->pLosses->GetElasticShortening().PermanentStrand_Fcgp());
 
    (*this)(row+rowOffset,col++) << stress.SetValue( ptl->CreepLossAfterDeckPlacement() );
 }

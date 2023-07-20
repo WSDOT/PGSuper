@@ -29,7 +29,7 @@
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
 
-class lrfdLosses;
+class WBFL::LRFD::Losses;
 
 /////////////////////////////////////////////////////////////////////////////
 // CChangeOfConcreteStressTable

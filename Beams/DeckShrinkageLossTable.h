@@ -30,7 +30,7 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <Reporting\CreepCoefficientChapterBuilder.h>
 
-class lrfdLosses;
+class WBFL::LRFD::Losses;
 class CGirderData;
 
 /////////////////////////////////////////////////////////////////////////////

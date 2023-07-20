@@ -76,7 +76,7 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(const std::shared_
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
-   *pPara << _T("Minimum amount of bonded reinforcement sufficent to resist the tensile force in the concrete ") << LrfdCw8th(_T("[5.9.4][C5.9.4.1.2]"),_T("[5.9.2.3][C5.9.2.3.1b]")) << rptNewLine;
+   *pPara << _T("Minimum amount of bonded reinforcement sufficent to resist the tensile force in the concrete ") << WBFL::LRFD::LrfdCw8th(_T("[5.9.4][C5.9.4.1.2]"),_T("[5.9.2.3][C5.9.2.3.1b]")) << rptNewLine;
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -300,7 +300,7 @@ rptRcTable* CCastingYardRebarRequirementChapterBuilder::CreateTable(IBroker* pBr
 {
    GET_IFACE2(pBroker, IIntervals, pIntervals);
    CString strTitle;
-   strTitle.Format(_T("Reinforcement required for tension stress limit, Interval %d - %s, [%s]"), LABEL_INTERVAL(intervalIdx), pIntervals->GetDescription(intervalIdx).c_str(), LrfdCw8th(_T("C5.9.4.1.2"), _T("C5.9.2.3.1b")));
+   strTitle.Format(_T("Reinforcement required for tension stress limit, Interval %d - %s, [%s]"), LABEL_INTERVAL(intervalIdx), pIntervals->GetDescription(intervalIdx).c_str(), WBFL::LRFD::LrfdCw8th(_T("C5.9.4.1.2"), _T("C5.9.2.3.1b")));
 
    ColumnIndexType nColumns = (bSimpleTable ? 8 : 19);
    nColumns++; // for tension force details
@@ -418,7 +418,7 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
       CSegmentKey thisSegmentKey(segmentKey.groupIndex,segmentKey.girderIndex,segIdx);
       const pgsSegmentArtifact* pSegmentArtifact = pIArtifact->GetSegmentArtifact(thisSegmentKey);
 
-      CollectionIndexType nArtifacts;
+      IndexType nArtifacts;
       if ( poi.GetID() == INVALID_ID )
       {
          // reporting for all vPoi
@@ -430,7 +430,7 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
          nArtifacts = 1;
       }
 
-      for ( CollectionIndexType artifactIdx = 0; artifactIdx < nArtifacts; artifactIdx++ )
+      for ( IndexType artifactIdx = 0; artifactIdx < nArtifacts; artifactIdx++ )
       {
          const pgsFlexuralStressArtifact* pArtifact;
          if ( poi.GetID() == INVALID_ID )

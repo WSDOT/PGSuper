@@ -416,21 +416,21 @@ void CTxDOTOptionalDesignBridgeInputPage::LoadProjectCriteriaLibraryNames()
    SpecLibrary* pLib = m_pBrokerRetriever->GetSpecLibrary();
 
    // names of project criteria entries
-   libKeyListType keys;
+   WBFL::Library::KeyListType keys;
    pLib->KeyList(keys);
 
    CComboBox* ppcl_ctrl = (CComboBox*)GetDlgItem(IDC_PROJECT_CRITERIA);
    ppcl_ctrl->ResetContent();
 
    // put library entry names into control
-   for (libKeyListIterator it=keys.begin(); it!=keys.end(); it++)
+   for (WBFL::Library::KeyListIterator it=keys.begin(); it!=keys.end(); it++)
    {
       ppcl_ctrl->AddString(it->c_str());
    }
 
    // Check that we have a matching library entry, and warn the user if we do not.
    std::_tstring key(m_SelectedProjectCriteriaLibrary);
-   libKeyListIterator it = std::find(keys.begin(), keys.end(), key);
+   WBFL::Library::KeyListIterator it = std::find(keys.begin(), keys.end(), key);
    if (it==keys.end())
    {
       CProjectCriteriaNotFoundDlg dlg;

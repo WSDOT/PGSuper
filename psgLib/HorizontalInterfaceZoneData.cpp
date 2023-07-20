@@ -22,7 +22,7 @@
 #include "StdAfx.h"
 #include <PsgLib\HorizontalInterfaceZoneData.h>
 #include <Units\Convert.h>
-#include <Lrfd\RebarPool.h>
+#include <LRFD\RebarPool.h>
 #include <StdIo.h>
 #include <StrData.cpp>
 #include <comdef.h> // for _variant_t

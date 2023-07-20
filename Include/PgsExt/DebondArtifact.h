@@ -118,7 +118,7 @@ public:
 
    void AddDebondSection(Float64 location,StrandIndexType nStrandsDebonded,Float64 fraStrandsDebonded);
    void GetDebondSection(SectionIndexType idx,Float64* location,StrandIndexType* nStrandsDebonded,Float64* fraStrandsDebonded) const;
-   CollectionIndexType GetNumDebondSections() const;
+   IndexType GetNumDebondSections() const;
 
    StrandIndexType GetNumDebondedStrands() const;
    void SetNumDebondedStrands(StrandIndexType nStrands);
@@ -164,8 +164,8 @@ public:
    bool PassedDebondingSymmetry() const;
    bool PassedDebondLength() const;
    bool PassedDebondTerminationSectionLocation() const;
-   bool RowPassed(CollectionIndexType rowIndex) const;
-   bool SectionPassed(CollectionIndexType sectionIndex) const;
+   bool RowPassed(IndexType rowIndex) const;
+   bool SectionPassed(IndexType sectionIndex) const;
 
 protected:
 

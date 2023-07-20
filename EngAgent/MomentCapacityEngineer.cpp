@@ -44,7 +44,7 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\DevelopmentLength.h>
 
-#include <Lrfd\ConcreteUtil.h>
+#include <LRFD\ConcreteUtil.h>
 
 #include <algorithm>
 
@@ -370,8 +370,8 @@ Float64 pgsMomentCapacityEngineer::GetCrackingMoment(IntervalIndexType intervalI
    // 
    // We are going to use the correct equation from 2nd Edition 2003 forward.
    // The limiting value was removed in LRFD 6th Edition, 2012
-   bool bAfter2002 = (lrfdVersionMgr::SecondEditionWith2003Interims <= pSpecEntry->GetSpecificationType() ? true : false);
-   bool bBefore2012 = (pSpecEntry->GetSpecificationType() <  lrfdVersionMgr::SixthEdition2012 ? true : false);
+   bool bAfter2002 = (WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2003Interims <= pSpecEntry->GetSpecificationType() ? true : false);
+   bool bBefore2012 = (pSpecEntry->GetSpecificationType() <  WBFL::LRFD::LRFDVersionMgr::Version::SixthEdition2012 ? true : false);
    if (bAfter2002 && bBefore2012)
    {
       Mcr = (bPositiveMoment ? Max(pcmd->Mcr, pcmd->McrLimit) : Min(pcmd->Mcr, pcmd->McrLimit));
@@ -1373,7 +1373,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
    GET_IFACE(ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
-   if (lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::FifthEdition2010)
+   if (WBFL::LRFD::LRFDVersionMgr::GetVersion() <= WBFL::LRFD::LRFDVersionMgr::Version::FifthEdition2010)
    {
       GET_IFACE_NOCHECK(ILongRebarGeometry, pLongRebarGeom);
 
@@ -1465,7 +1465,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
       GET_IFACE(IResistanceFactors, pResistanceFactors);
       Float64 PhiRC, PhiPS, PhiSP, PhiC;
       pResistanceFactors->GetFlexureResistanceFactors(concreteType, &PhiPS, &PhiRC, &PhiSP, &PhiC);
-      if (mcd.Method == LRFD_METHOD && pSpecEntry->GetSpecificationType() < lrfdVersionMgr::ThirdEditionWith2006Interims)
+      if (mcd.Method == LRFD_METHOD && pSpecEntry->GetSpecificationType() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2006Interims)
       {
          if (bIsSplicedGirder)
          {
@@ -1567,7 +1567,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
 
    // deal with over reinforced sections, if applicable
    mcd.bOverReinforced = false;
-   if (mcd.Method == LRFD_METHOD && pSpecEntry->GetSpecificationType() < lrfdVersionMgr::ThirdEditionWith2006Interims)
+   if (mcd.Method == LRFD_METHOD && pSpecEntry->GetSpecificationType() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2006Interims)
    {
       mcd.bOverReinforced = (0.42 < (mcd.c / mcd.de)) ? true : false;
       if (mcd.bOverReinforced)
@@ -1594,14 +1594,14 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
                b = pGdr->GetTopFlangeWidth(poi);
                hf = pGdr->GetMinTopFlangeThickness(poi);
                fc = pMaterial->GetSegmentDesignFc(segmentKey, intervalIdx);
-               Beta1 = lrfdConcreteUtil::Beta1(fc);
+               Beta1 = WBFL::LRFD::ConcreteUtil::Beta1(fc);
             }
             else
             {
                b = pProps->GetEffectiveFlangeWidth(poi);
                hf = pBridge->GetStructuralSlabDepth(poi);
                fc = pMaterial->GetDeckDesignFc(intervalIdx);
-               Beta1 = lrfdConcreteUtil::Beta1(fc);
+               Beta1 = WBFL::LRFD::ConcreteUtil::Beta1(fc);
             }
          }
          else
@@ -1611,7 +1611,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
             b = pGdr->GetBottomWidth(poi);
             bw = pGdr->GetWebWidth(poi);
             fc = pMaterial->GetSegmentDesignFc(segmentKey, intervalIdx);
-            Beta1 = lrfdConcreteUtil::Beta1(fc);
+            Beta1 = WBFL::LRFD::ConcreteUtil::Beta1(fc);
          }
 
          mcd.FcSlab = fc;
@@ -1692,8 +1692,8 @@ void pgsMomentCapacityEngineer::ComputeMinMomentCapacity(IntervalIndexType inter
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfter2002  = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::SecondEditionWith2003Interims ? true : false );
-   bool bBefore2012 = ( pSpecEntry->GetSpecificationType() <  lrfdVersionMgr::SixthEdition2012 ? true : false );
+   bool bAfter2002  = ( pSpecEntry->GetSpecificationType() >= WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2003Interims ? true : false );
+   bool bBefore2012 = ( pSpecEntry->GetSpecificationType() <  WBFL::LRFD::LRFDVersionMgr::Version::SixthEdition2012 ? true : false );
 
    GET_IFACE(IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType bat = pProdForces->GetBridgeAnalysisType(bPositiveMoment ? pgsTypes::Maximize : pgsTypes::Minimize);
@@ -1761,7 +1761,7 @@ void pgsMomentCapacityEngineer::ComputeMinMomentCapacity(IntervalIndexType inter
    }
    Mu = IsZero(Mu) ? 0 : Mu;
 
-   if ( lrfdVersionMgr::SixthEdition2012 <= pSpecEntry->GetSpecificationType() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::SixthEdition2012 <= pSpecEntry->GetSpecificationType() )
    {
       MrMin1 = Mcr;
    }
@@ -1877,7 +1877,7 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType interval
 
 void pgsMomentCapacityEngineer::GetCrackingMomentFactors(bool bPositiveMoment,Float64* pG1,Float64* pG2,Float64* pG3) const
 {
-   if ( lrfdVersionMgr::SixthEdition2012 <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::SixthEdition2012 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       *pG1 = 1.6; // all other concrete structures (not-segmental)
       *pG2 = 1.1; // bonded strand/tendon
@@ -2193,7 +2193,7 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(Float64 g1,Float64 g2,Floa
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfter2002 = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::SecondEditionWith2003Interims ? true : false );
+   bool bAfter2002 = ( pSpecEntry->GetSpecificationType() >= WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2003Interims ? true : false );
    if ( bAfter2002 )
    {
       Float64 McrLimit = Sbc*fr;
@@ -2423,7 +2423,7 @@ void pgsMomentCapacityEngineer::CreateGirderMaterial(IntervalIndexType intervalI
       GET_IFACE(IAllowableConcreteStress,pAllowables);
 
       const auto& pConcrete = pMaterial->GetSegmentConcrete(segmentKey);
-      const auto* pLRFDConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(pConcrete.get());
+      const auto* pLRFDConcrete = dynamic_cast<const WBFL::LRFD::LRFDConcreteBase*>(pConcrete.get());
 
       Float64 k1, k2;
       pLRFDConcrete->GetEcCorrectionFactors(&k1, &k2);
@@ -3603,30 +3603,6 @@ bool pgsMomentCapacityEngineer::IsDiaphragmConfined(const pgsPointOfInterest& po
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
 
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool pgsMomentCapacityEngineer::AssertValid() const
-{
-   return true;
-}
-
-void pgsMomentCapacityEngineer::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for pgsMomentCapacityEngineer") << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool pgsMomentCapacityEngineer::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("pgsMomentCapacityEngineer");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for pgsMomentCapacityEngineer");
-
-   TESTME_EPILOG("MomentCapacityEngineer");
-}
-#endif // _UNITTEST
-
 #if defined _DEBUG_SECTION_DUMP
 void pgsMomentCapacityEngineer::DumpSection(const pgsPointOfInterest& poi,IGeneralSection* section, std::map<StrandIndexType,Float64> ssBondFactors,std::map<StrandIndexType,Float64> hsBondFactors,bool bPositiveMoment) const
 {
@@ -3780,10 +3756,10 @@ void pgsMomentCapacityEngineer::ModelShape(IGeneralSection* pSection, IShape* pS
    CComQIPtr<ICompositeShape> compShape(pShape);
    if (compShape)
    {
-      CollectionIndexType shapeCount;
+      IndexType shapeCount;
       compShape->get_Count(&shapeCount);
 
-      for (CollectionIndexType idx = 0; idx < shapeCount; idx++)
+      for (IndexType idx = 0; idx < shapeCount; idx++)
       {
          CComPtr<ICompositeShapeItem> csItem;
          compShape->get_Item(idx, &csItem);

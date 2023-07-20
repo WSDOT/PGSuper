@@ -37,7 +37,7 @@
 
 #include <PsgLib\SpecLibraryEntry.h>
 
-#include <Lrfd\ConcreteUtil.h>
+#include <LRFD\ConcreteUtil.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -78,7 +78,7 @@ void CInterfaceShearDetails::Build(IBroker* pBroker, rptChapter* pChapter,
    GET_IFACE2(pBroker, ILibrary, pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-   m_bIsSpec2007orNewer = lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType();
+   m_bIsSpec2007orNewer = WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 <= pSpecEntry->GetSpecificationType();
    m_ShearFlowMethod = pSpecEntry->GetShearFlowMethod();
 
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -89,7 +89,7 @@ void CInterfaceShearDetails::Build(IBroker* pBroker, rptChapter* pChapter,
    
    pPara = new rptParagraph;
    *pChapter << pPara;
-   (*pPara) << _T("AASHTO LRFD BDS ") << LrfdCw8th(_T("5.8.4.1"), _T("5.7.4.1")) << rptNewLine;
+   (*pPara) << _T("AASHTO LRFD BDS ") << WBFL::LRFD::LrfdCw8th(_T("5.8.4.1"), _T("5.7.4.1")) << rptNewLine;
 
    GET_IFACE2(pBroker, IMaterials, pMaterials);
    if (pMaterials->GetSegmentConcreteType(CSegmentKey(girderKey, 0)) == pgsTypes::PCI_UHPC)
@@ -179,8 +179,8 @@ void CInterfaceShearDetails::BuildDesign( IBroker* pBroker, rptChapter* pChapter
       const pgsStirrupCheckArtifact* pstirrup_artifact= pSegmentArtifact->GetStirrupCheckArtifact();
       ATLASSERT(pstirrup_artifact);
 
-      CollectionIndexType nArtifacts = pstirrup_artifact->GetStirrupCheckAtPoisArtifactCount(intervalIdx,ls);
-      for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
+      IndexType nArtifacts = pstirrup_artifact->GetStirrupCheckAtPoisArtifactCount(intervalIdx,ls);
+      for ( IndexType idx = 0; idx < nArtifacts; idx++ )
       {
          const pgsStirrupCheckAtPoisArtifact* psArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact( intervalIdx, ls, idx );
 
@@ -218,7 +218,7 @@ void CInterfaceShearDetails::BuildDesign( IBroker* pBroker, rptChapter* pChapter
    // Next Create MinAvfTable
    rptRcTable* min_avf_table = CreateMinAvfTable(pChapter, pBridge, pDisplayUnits,  is_roughened, do_all_stirrups_engage_deck,bIsUHPC);
 
-   Float64 llss = lrfdConcreteUtil::LowerLimitOfShearStrength(is_roughened, do_all_stirrups_engage_deck);
+   Float64 llss = WBFL::LRFD::ConcreteUtil::LowerLimitOfShearStrength(is_roughened, do_all_stirrups_engage_deck);
 
    // Fill up the table
    RowIndexType row = 1;
@@ -229,8 +229,8 @@ void CInterfaceShearDetails::BuildDesign( IBroker* pBroker, rptChapter* pChapter
       const pgsStirrupCheckArtifact* pstirrup_artifact = pSegmentArtifact->GetStirrupCheckArtifact();
       ATLASSERT(pstirrup_artifact);
 
-      CollectionIndexType nArtifacts = pstirrup_artifact->GetStirrupCheckAtPoisArtifactCount(intervalIdx, ls);
-      for (CollectionIndexType idx = 0; idx < nArtifacts; idx++)
+      IndexType nArtifacts = pstirrup_artifact->GetStirrupCheckAtPoisArtifactCount(intervalIdx, ls);
+      for (IndexType idx = 0; idx < nArtifacts; idx++)
       {
          const pgsStirrupCheckAtPoisArtifact* psArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact(intervalIdx, ls, idx);
          if (psArtifact == nullptr)
@@ -327,7 +327,7 @@ void CInterfaceShearDetails::BuildRating(IBroker* pBroker, rptChapter* pChapter,
    // Next Create MinAvfTable
    rptRcTable* min_avf_table = CreateMinAvfTable(pChapter, pBridge, pDisplayUnits, is_roughened, do_all_stirrups_engage_deck, bIsUHPC);
 
-   Float64 llss = lrfdConcreteUtil::LowerLimitOfShearStrength(is_roughened, do_all_stirrups_engage_deck);
+   Float64 llss = WBFL::LRFD::ConcreteUtil::LowerLimitOfShearStrength(is_roughened, do_all_stirrups_engage_deck);
 
    // Fill up the table
    RowIndexType min_avf_row = min_avf_table->GetNumberOfHeaderRows();
@@ -583,7 +583,7 @@ rptRcTable* CInterfaceShearDetails::CreateVniTable(IBroker* pBroker,rptChapter* 
 
       if (pArtifact->WasFyLimited())
       {
-         *pPara << _T(", ") << RPT_FY << _T(" is limited to ") << stress_with_tag.SetValue(fy_max) << _T(" (LRFD ") << LrfdCw8th(_T("5.8.4.1"), _T("5.7.4.2")) << _T(")");
+         *pPara << _T(", ") << RPT_FY << _T(" is limited to ") << stress_with_tag.SetValue(fy_max) << _T(" (LRFD ") << WBFL::LRFD::LrfdCw8th(_T("5.8.4.1"), _T("5.7.4.2")) << _T(")");
       }
 
       *pPara << rptNewLine;
@@ -610,7 +610,7 @@ rptRcTable* CInterfaceShearDetails::CreateVniTable(IBroker* pBroker,rptChapter* 
 
          if (pArtifact->WasFyLimited())
          {
-            *pPara << _T(", ") << RPT_FY << _T(" is limited to ") << stress_with_tag.SetValue(fy_max) << _T(" (LRFD ") << LrfdCw8th(_T("5.8.4.1"), _T("5.7.4.2")) << _T(")");
+            *pPara << _T(", ") << RPT_FY << _T(" is limited to ") << stress_with_tag.SetValue(fy_max) << _T(" (LRFD ") << WBFL::LRFD::LrfdCw8th(_T("5.8.4.1"), _T("5.7.4.2")) << _T(")");
          }
 
          cjIter++;
@@ -724,7 +724,7 @@ rptRcTable* CInterfaceShearDetails::CreateMinAvfTable(rptChapter* pChapter,IBrid
 
    if (!bIsUHPC)
    {
-      Float64 llss = lrfdConcreteUtil::LowerLimitOfShearStrength(bIsRoughened, doAllStirrupsEngageDeck);
+      Float64 llss = WBFL::LRFD::ConcreteUtil::LowerLimitOfShearStrength(bIsRoughened, doAllStirrupsEngageDeck);
       if (0 < llss)
       {
          *pPara << _T("Girder/slab interfaces are intentionally roughened and all primary vertical shear reinforcement is extended across the interface. ")
@@ -773,8 +773,8 @@ rptRcTable* CInterfaceShearDetails::CreateMinAvfTable(rptChapter* pChapter,IBrid
    {
       (*table)(0, col++) << COLHDR(Sub2(_T("v"), _T("ui")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
 
-      std::_tstring strSpecRef1(bIsUHPC ? _T("5.7.4.2-1") : LrfdCw8th(_T("5.8.4.4-1"), _T("5.7.4.2-1")));
-      std::_tstring strSpecRef2(bIsUHPC ? _T("GS 1.7.4.3-4") : LrfdCw8th(_T("5.8.4.1-3"), _T("5.7.4.3-3")));
+      std::_tstring strSpecRef1(bIsUHPC ? _T("5.7.4.2-1") : WBFL::LRFD::LrfdCw8th(_T("5.8.4.4-1"), _T("5.7.4.2-1")));
+      std::_tstring strSpecRef2(bIsUHPC ? _T("GS 1.7.4.3-4") : WBFL::LRFD::LrfdCw8th(_T("5.8.4.1-3"), _T("5.7.4.3-3")));
 
       (*table)(0, col++) << COLHDR(Sub2(_T("a"), _T("vf min")) << rptNewLine << _T("(") << strSpecRef1 << _T(")"), rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit());
       (*table)(0, col++) << COLHDR(Sub2(_T("a"), _T("vf min")) << rptNewLine << _T("(") << strSpecRef2 << _T(")"), rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit());
@@ -793,7 +793,7 @@ rptRcTable* CInterfaceShearDetails::CreateMinAvfTable(rptChapter* pChapter,IBrid
       else
       {
 
-         if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::EighthEdition2017)
+         if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017)
          {
             *pParaEqn << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("AvfMin_US.png")) << rptNewLine;
          }

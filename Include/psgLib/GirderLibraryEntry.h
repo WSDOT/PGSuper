@@ -131,7 +131,7 @@ private:
    CComPtr<IClassFactory> m_ClassFactory;
 };
 
-class PSGLIBCLASS GirderLibraryEntry : public libLibraryEntry, public ISupportIcon,
+class PSGLIBCLASS GirderLibraryEntry : public WBFL::Library::LibraryEntry, public ISupportIcon,
        public WBFL::System::SubjectT<GirderLibraryEntryObserver, GirderLibraryEntry>
 {
 public:
@@ -171,7 +171,7 @@ public:
 
       pgsTypes::FaceType  Face;
       WBFL::Materials::Rebar::Size BarSize;
-      CollectionIndexType NumberOfBars;
+      IndexType NumberOfBars;
       Float64     Cover;
       Float64     BarSpacing;
       bool operator==(const LongSteelInfo& rOther) const
@@ -724,10 +724,7 @@ public:
    pgsCompatibilityData* GetCompatibilityData() const;
 
 protected:
-   void MakeCopy(const GirderLibraryEntry& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const GirderLibraryEntry& rOther);
+   void CopyValuesAndAttributes(const GirderLibraryEntry& rOther);
 
 private:
    // GROUP: DATA MEMBERS

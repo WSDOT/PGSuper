@@ -30,7 +30,7 @@
 #include <EAF\EAFApp.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFUtilities.h>
-#include <Lrfd\RebarPool.h>
+#include <LRFD\RebarPool.h>
 #include <IFace\Tools.h>
 
 #ifdef _DEBUG
@@ -380,7 +380,7 @@ void CShearSteelGrid::SetRowStyle(ROWCOL nRow)
    WBFL::Materials::Rebar::Grade grade;
    pParent->GetRebarMaterial(&type,&grade);
    CString strBarSizeChoiceList(_T("None\n"));
-   lrfdRebarIter rebarIter(type,grade,true);
+   WBFL::LRFD::RebarIter rebarIter(type,grade,true);
    for ( rebarIter.Begin(); rebarIter; rebarIter.Next() )
    {
       const auto* pRebar = rebarIter.GetCurrentRebar();
@@ -562,7 +562,7 @@ void CShearSteelGrid::FillGrid(const CShearData2::ShearZoneVec& vShearZones, boo
          }
 
          CString tmp;
-         tmp.Format(_T("%s"),lrfdRebarPool::GetBarSize(shearZone.VertBarSize).c_str());
+         tmp.Format(_T("%s"),WBFL::LRFD::RebarPool::GetBarSize(shearZone.VertBarSize).c_str());
          VERIFY(SetValueRange(CGXRange(nRow, 2), tmp));
 
          SetValueRange(CGXRange(nRow, 3), shearZone.BarSpacing);
@@ -570,7 +570,7 @@ void CShearSteelGrid::FillGrid(const CShearData2::ShearZoneVec& vShearZones, boo
          VERIFY(SetValueRange(CGXRange(nRow, 4), shearZone.nVertBars));
          VERIFY(SetValueRange(CGXRange(nRow, 5), shearZone.nHorzInterfaceBars));
 
-         tmp.Format(_T("%s"),lrfdRebarPool::GetBarSize(shearZone.ConfinementBarSize).c_str());
+         tmp.Format(_T("%s"),WBFL::LRFD::RebarPool::GetBarSize(shearZone.ConfinementBarSize).c_str());
          VERIFY(SetValueRange(CGXRange(nRow, 6), tmp));
 
          nRow++;

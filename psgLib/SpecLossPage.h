@@ -68,7 +68,7 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
-   lrfdVersionMgr::Version m_SpecVersion;
+   WBFL::LRFD::LRFDVersionMgr::Version m_SpecVersion;
    bool m_IsShippingEnabled;
    void EnableShippingLosses(BOOL bEnable);
    void EnableRefinedShippingTime(BOOL bEnable);

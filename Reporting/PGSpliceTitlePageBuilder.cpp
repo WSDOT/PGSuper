@@ -316,7 +316,7 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(const std::shared_ptr<const WBFL::R
       (*pTable)(row,0) << _T("Deck Bar Cutoff");
       (*pTable)(row++,1) << _T("End of a reinforcing bar in the deck");
 
-      if ( lrfdVersionMgr::ThirdEdition2004 <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
       {
          (*pTable)(row,0) << _T("CS");
          (*pTable)(row++,1) << _T("Critical Section for Shear");
@@ -351,7 +351,7 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(const std::shared_ptr<const WBFL::R
 
    // Status Center Items
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
-   CollectionIndexType nItems = pStatusCenter->Count();
+   IndexType nItems = pStatusCenter->Count();
 
    if ( nItems != 0 )
    {
@@ -374,7 +374,7 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(const std::shared_ptr<const WBFL::R
 
       row = 1;
       CString strSeverityType[] = { _T("Information"), _T("Warning"), _T("Error") };
-      for ( CollectionIndexType i = 0; i < nItems; i++ )
+      for ( IndexType i = 0; i < nItems; i++ )
       {
          CEAFStatusItem* pItem = pStatusCenter->GetByIndex(i);
 

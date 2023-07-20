@@ -347,8 +347,8 @@ public:
    virtual Uint32 GetCreepMethod() const override;
    virtual Float64 GetCreepCoefficient(const CSegmentKey& segmentKey, CreepPeriod creepPeriod, Int16 constructionRate, const GDRCONFIG* pConfig = nullptr) const override;
    virtual CREEPCOEFFICIENTDETAILS GetCreepCoefficientDetails(const CSegmentKey& segmentKey, CreepPeriod creepPeriod, Int16 constructionRate,const GDRCONFIG* pConfig=nullptr) const override;
-   virtual std::shared_ptr<const lrfdCreepCoefficient> GetGirderCreepModel(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig = nullptr) const override;
-   virtual std::shared_ptr<const lrfdCreepCoefficient2005> GetDeckCreepModel(IndexType deckCastingRegionIdx) const override;
+   virtual std::shared_ptr<const WBFL::LRFD::CreepCoefficient> GetGirderCreepModel(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig = nullptr) const override;
+   virtual std::shared_ptr<const WBFL::LRFD::CreepCoefficient2005> GetDeckCreepModel(IndexType deckCastingRegionIdx) const override;
    virtual Float64 GetPrestressDeflection(const pgsPointOfInterest& poi, pgsTypes::PrestressDeflectionDatum datum, const GDRCONFIG* pConfig = nullptr) const override;
    virtual void GetPrestressDeflection(const pgsPointOfInterest& poi, pgsTypes::PrestressDeflectionDatum datum, const GDRCONFIG* pConfig, Float64* pDx,Float64* pDy) const override;
    virtual Float64 GetInitialTempPrestressDeflection(const pgsPointOfInterest& poi, pgsTypes::PrestressDeflectionDatum datum, const GDRCONFIG* pConfig = nullptr) const override;
@@ -498,8 +498,8 @@ private:
 
    // Creep models
    mutable std::map<CSegmentKey,CREEPCOEFFICIENTDETAILS> m_CreepCoefficientDetails[2][6]; // key is span/girder hash, index to array is [Construction Rate][CreepPeriod]
-   mutable std::map<CSegmentKey, std::shared_ptr<lrfdCreepCoefficient>> m_GirderCreepModels; 
-   mutable std::map<IndexType, std::shared_ptr<lrfdCreepCoefficient2005>> m_DeckCreepModels; // key is deck casting region
+   mutable std::map<CSegmentKey, std::shared_ptr<WBFL::LRFD::CreepCoefficient>> m_GirderCreepModels; 
+   mutable std::map<IndexType, std::shared_ptr<WBFL::LRFD::CreepCoefficient2005>> m_DeckCreepModels; // key is deck casting region
 
    // camber models
    struct CamberModelData

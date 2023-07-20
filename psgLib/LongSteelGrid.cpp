@@ -31,7 +31,7 @@
 #include <system\tokenizer.h>
 
 #include <EAF\EAFApp.h>
-#include <Lrfd\RebarPool.h>
+#include <LRFD\RebarPool.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -338,7 +338,7 @@ void CLongSteelGrid::SetRowStyle(ROWCOL nRow)
    WBFL::Materials::Rebar::Grade grade;
    pParent->GetRebarMaterial(&type,&grade);
    CString strBarSizeChoiceList;
-   lrfdRebarIter rebarIter(type,grade);
+   WBFL::LRFD::RebarIter rebarIter(type,grade);
    for ( rebarIter.Begin(); rebarIter; rebarIter.Next() )
    {
       const auto* pRebar = rebarIter.GetCurrentRebar();
@@ -352,7 +352,7 @@ void CLongSteelGrid::SetRowStyle(ROWCOL nRow)
       .SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
       .SetChoiceList(strBarSizeChoiceList)
       .SetHorizontalAlignment(DT_RIGHT)
-      .SetValue(lrfdRebarPool::GetBarSize(WBFL::Materials::Rebar::Size::bs4).c_str())
+      .SetValue(WBFL::LRFD::RebarPool::GetBarSize(WBFL::Materials::Rebar::Size::bs4).c_str())
       );
 
 	this->SetStyleRange(CGXRange(nRow,7), CGXStyle()
@@ -506,11 +506,11 @@ bool CLongSteelGrid::GetRowData(ROWCOL nRow, GirderLibraryEntry::LongSteelInfo* 
 void CLongSteelGrid::FillGrid(const GirderLibraryEntry::LongSteelInfoVec& rvec)
 {
    GetParam()->SetLockReadOnly(FALSE);
-   CollectionIndexType size = rvec.size();
+   IndexType size = rvec.size();
    if (size>0)
    {
       // size grid
-      for (CollectionIndexType i=0; i<size; i++)
+      for (IndexType i=0; i<size; i++)
 	      Insertrow();
 
       // fill grid
@@ -550,7 +550,7 @@ void CLongSteelGrid::FillGrid(const GirderLibraryEntry::LongSteelInfoVec& rvec)
 
          VERIFY(SetValueRange(CGXRange(nRow, 5), (*it).Cover));
 
-         tmp.Format(_T("%s"), lrfdRebarPool::GetBarSize((*it).BarSize).c_str());
+         tmp.Format(_T("%s"), WBFL::LRFD::RebarPool::GetBarSize((*it).BarSize).c_str());
          VERIFY(SetValueRange(CGXRange(nRow, 6), tmp));
 
          VERIFY(SetValueRange(CGXRange(nRow, 7), (LONG)(*it).NumberOfBars));

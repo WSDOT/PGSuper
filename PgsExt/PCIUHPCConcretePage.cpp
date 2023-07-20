@@ -30,7 +30,7 @@
 #include <PgsExt\PCIUHPCConcretePage.h>
 #include <System\Tokenizer.h>
 #include "CopyConcreteEntry.h"
-#include <Lrfd\Lrfd.h>
+#include <LRFD\Lrfd.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 #include <IFace\Bridge.h>

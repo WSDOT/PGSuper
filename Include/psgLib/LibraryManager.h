@@ -53,8 +53,8 @@
 // the available library types
 
 #define DECLARE_LIBRARY(name,entry_type,min_count) \
-   PSGLIBTPL libLibrary<entry_type,min_count>; \
-   typedef libLibrary<entry_type,min_count> name;
+   PSGLIBTPL WBFL::Library::Library<entry_type,min_count>; \
+   using name = WBFL::Library::Library<entry_type,min_count>;
 
 DECLARE_LIBRARY( ConcreteLibrary,        ConcreteLibraryEntry,   0 )
 DECLARE_LIBRARY( ConnectionLibrary,      ConnectionLibraryEntry, 1 )
@@ -79,7 +79,7 @@ public:
 CLASS 
    psgLibraryManager
 
-   PSGuper spefic library manager
+   PSGuper specific library manager
 
 
 DESCRIPTION
@@ -89,7 +89,7 @@ LOG
    rdp : 08.18.1998 : Created file
 *****************************************************************************/
 
-class PSGLIBCLASS psgLibraryManager : public libLibraryManager
+class PSGLIBCLASS psgLibraryManager : public WBFL::Library::LibraryManager
 {
 public:
    // GROUP: LIFECYCLE
@@ -147,16 +147,16 @@ protected:
 
 private:
    // GROUP: DATA MEMBERS
-   CollectionIndexType m_ConcLibIdx;
-   CollectionIndexType m_ConnLibIdx;
-   CollectionIndexType m_GirdLibIdx;
-   CollectionIndexType m_DiapLibIdx;
-   CollectionIndexType m_BarrLibIdx;
-   CollectionIndexType m_SpecLibIdx;
-   CollectionIndexType m_RatingLibIdx;
-   CollectionIndexType m_LiveLibIdx;
-   CollectionIndexType m_DuctLibIdx;
-   CollectionIndexType m_HaulTruckLibIdx;
+   IndexType m_ConcLibIdx;
+   IndexType m_ConnLibIdx;
+   IndexType m_GirdLibIdx;
+   IndexType m_DiapLibIdx;
+   IndexType m_BarrLibIdx;
+   IndexType m_SpecLibIdx;
+   IndexType m_RatingLibIdx;
+   IndexType m_LiveLibIdx;
+   IndexType m_DuctLibIdx;
+   IndexType m_HaulTruckLibIdx;
 
    std::_tstring m_strServer;
    std::_tstring m_strConfiguration;
@@ -172,25 +172,6 @@ private:
    // GROUP: OPERATIONS
    // GROUP: ACCESS
    // GROUP: INQUIRY
-
-public:
-   // GROUP: DEBUG
-   #if defined _DEBUG
-   //------------------------------------------------------------------------
-   // Returns true if the object is in a valid state, otherwise returns false.
-   virtual bool AssertValid() const;
-
-   //------------------------------------------------------------------------
-   // Dumps the contents of the object to the given dump context.
-   virtual void Dump(WBFL::Debug::LogContext& os) const;
-   #endif // _DEBUG
-
-   #if defined UNIT_TEST
-   //------------------------------------------------------------------------
-   // Runs a self-diagnostic test.  Returns true if the test passed,
-   // otherwise false.
-   static bool TestMe(WBFL::Debug::Log& rlog);
-   #endif // UNIT_TEST
 };
 
 // INLINE METHODS

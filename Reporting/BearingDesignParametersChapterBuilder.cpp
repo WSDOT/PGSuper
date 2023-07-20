@@ -152,7 +152,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(const std::shared_ptr<
       }
    }
 
-   if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltFatigue,girderKey);
       j = 0;
@@ -205,7 +205,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(const std::shared_ptr<
       }
    }
 
-   if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltFatigue,girderKey);
       j = 0;

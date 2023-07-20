@@ -126,14 +126,14 @@ void CEffectivePrestressGraphBuilder::UpdateYAxis()
    {
       const WBFL::Units::StressData& stressUnit = pDisplayUnits->GetStressUnit();
       m_pYFormat = new WBFL::Units::StressTool(stressUnit);
-      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      m_Graph.SetYAxisValueFormat(m_pYFormat);
       m_Graph.SetYAxisTitle(std::_tstring(_T("fpe (")+m_pYFormat->UnitTag()+_T(")")).c_str());
    }
    else
    {
       const WBFL::Units::ForceData& forceUnit = pDisplayUnits->GetGeneralForceUnit();
       m_pYFormat = new WBFL::Units::ForceTool(forceUnit);
-      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      m_Graph.SetYAxisValueFormat(m_pYFormat);
       m_Graph.SetYAxisTitle(std::_tstring(_T("Ppe (")+m_pYFormat->UnitTag()+_T(")")).c_str());
    }
 }

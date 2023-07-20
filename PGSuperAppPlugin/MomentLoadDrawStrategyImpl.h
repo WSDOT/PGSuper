@@ -34,7 +34,7 @@ public:
    DECLARE_INTERFACE_MAP()
 
    BEGIN_INTERFACE_PART(Strategy,iMomentLoadDrawStrategy)
-      STDMETHOD_(void,Init)(iPointDisplayObject* pDO, IBroker* pBroker, CMomentLoadData load, CollectionIndexType loadIndex, 
+      STDMETHOD_(void,Init)(iPointDisplayObject* pDO, IBroker* pBroker, CMomentLoadData load, IndexType loadIndex, 
                             Float64 spanLength, Float64 maxMagnitude, COLORREF color);
    END_INTERFACE_PART(Strategy)
 
@@ -81,7 +81,7 @@ private:
    void GetLSymbolSize(iCoordinateMap* pMap, Uint32* pd);
    void GetTSymbolSize(iCoordinateMap* pMap, Uint32* pd);
    CMomentLoadData m_Load;
-   CollectionIndexType m_LoadIndex;
+   IndexType m_LoadIndex;
    IBroker*       m_pBroker;
    COLORREF m_Color;
    Float64  m_MaxMagnitude;

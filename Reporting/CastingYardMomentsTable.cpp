@@ -180,27 +180,3 @@ void CCastingYardMomentsTable::MakeAssignment(const CCastingYardMomentsTable& rO
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CCastingYardMomentsTable::AssertValid() const
-{
-   return true;
-}
-
-void CCastingYardMomentsTable::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for CCastingYardMomentsTable") << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CCastingYardMomentsTable::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("CCastingYardMomentsTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CCastingYardMomentsTable");
-
-   TESTME_EPILOG("CCastingYardMomentsTable");
-}
-#endif // _UNITTEST

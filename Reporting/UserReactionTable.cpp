@@ -204,27 +204,3 @@ void CUserReactionTable::MakeAssignment(const CUserReactionTable& rOther)
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CUserReactionTable::AssertValid() const
-{
-   return true;
-}
-
-void CUserReactionTable::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for CUserReactionTable") << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CUserReactionTable::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("CUserReactionTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CUserReactionTable");
-
-   TESTME_EPILOG("CUserReactionTable");
-}
-#endif // _UNITTEST

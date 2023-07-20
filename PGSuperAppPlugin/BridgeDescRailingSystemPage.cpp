@@ -56,8 +56,8 @@ CBridgeDescRailingSystemPage::CBridgeDescRailingSystemPage() : CPropertyPage(CBr
 	//}}AFX_DATA_INIT
    EAFGetBroker(&m_pBroker);
 
-   m_MinNWCDensity = lrfdConcreteUtil::GetNWCDensityLimit();
-   m_MaxLWCDensity = lrfdConcreteUtil::GetLWCDensityLimit();
+   m_MinNWCDensity = WBFL::LRFD::ConcreteUtil::GetNWCDensityLimit();
+   m_MaxLWCDensity = WBFL::LRFD::ConcreteUtil::GetLWCDensityLimit();
 }
 
 CBridgeDescRailingSystemPage::~CBridgeDescRailingSystemPage()
@@ -877,13 +877,13 @@ CString CBridgeDescRailingSystemPage::UpdateConcreteParametersToolTip(CRailingSy
 
    CString strTip;
    strTip.Format(_T("%-20s %s\r\n%-20s %s\r\n%-20s %s\r\n%-20s %s"),
-      _T("Type"), lrfdConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pRailingSystem->Concrete.Type,true).c_str(),
+      _T("Type"), WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pRailingSystem->Concrete.Type,true).c_str(),
       _T("Unit Weight"),FormatDimension(pRailingSystem->Concrete.StrengthDensity,density),
       _T("Unit Weight (w/ reinforcement)"),  FormatDimension(pRailingSystem->Concrete.WeightDensity,density),
       _T("Max Aggregate Size"),  FormatDimension(pRailingSystem->Concrete.MaxAggregateSize,aggsize)
       );
 
-   //if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+   //if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    //{
    //   // add K1 parameter
    //   CString strK1;
@@ -935,7 +935,7 @@ BOOL CBridgeDescRailingSystemPage::OnKillActive()
 void CBridgeDescRailingSystemPage::SetConcreteTypeLabel(UINT nID,pgsTypes::ConcreteType type)
 {
    CWnd* pWnd = GetDlgItem(nID);
-   pWnd->SetWindowText( lrfdConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)type,true).c_str() );
+   pWnd->SetWindowText( WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)type,true).c_str() );
 }
 
 bool CBridgeDescRailingSystemPage::IsDensityInRange(Float64 density,pgsTypes::ConcreteType type)

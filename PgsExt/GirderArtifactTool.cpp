@@ -39,8 +39,8 @@ static char THIS_FILE[] = __FILE__;
 
 bool FlexureStressFailures(IBroker* pBroker,const CSegmentKey& segmentKey,const StressCheckTask& task,const pgsSegmentArtifact* pArtifact,bool bBeamStresses)
 {
-   CollectionIndexType nArtifacts = pArtifact->GetFlexuralStressArtifactCount(task);
-   for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
+   IndexType nArtifacts = pArtifact->GetFlexuralStressArtifactCount(task);
+   for ( IndexType idx = 0; idx < nArtifacts; idx++ )
    {
       const pgsFlexuralStressArtifact* pFlexure = pArtifact->GetFlexuralStressArtifact( task,idx );
       if ( bBeamStresses )
@@ -111,7 +111,7 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures, const pgsGirde
       {
          if (referToDetailsReport)
          {
-            std::_tstring msg(_T("Strand Stresses [") + std::_tstring(LrfdCw8th(_T("5.9.3"), _T("5.9.2.2"))) + _T("] have been exceeded.  See the Details Report for more information"));
+            std::_tstring msg(_T("Strand Stresses [") + std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.3"), _T("5.9.2.2"))) + _T("] have been exceeded.  See the Details Report for more information"));
             rFailures.emplace_back(msg);
          }
          else
@@ -223,8 +223,8 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures, const pgsGirde
 
 bool MomentCapacityFailures(IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bPositiveMoment)
 {
-   CollectionIndexType nArtifacts = (bPositiveMoment ? pGirderArtifact->GetPositiveMomentFlexuralCapacityArtifactCount(intervalIdx,ls) : pGirderArtifact->GetNegativeMomentFlexuralCapacityArtifactCount(intervalIdx, ls));
-   for ( CollectionIndexType artifactIdx = 0; artifactIdx < nArtifacts; artifactIdx++ )
+   IndexType nArtifacts = (bPositiveMoment ? pGirderArtifact->GetPositiveMomentFlexuralCapacityArtifactCount(intervalIdx,ls) : pGirderArtifact->GetNegativeMomentFlexuralCapacityArtifactCount(intervalIdx, ls));
+   for ( IndexType artifactIdx = 0; artifactIdx < nArtifacts; artifactIdx++ )
    {
       const pgsFlexuralCapacityArtifact* pFlexure = (bPositiveMoment ? 
          pGirderArtifact->GetPositiveMomentFlexuralCapacityArtifact( intervalIdx, ls, artifactIdx ) :
@@ -285,8 +285,8 @@ void ListVerticalShearFailures(IBroker* pBroker,FailureList& rFailures,const pgs
       const pgsSegmentArtifact* pArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
       const pgsStirrupCheckArtifact *pStirrups = pArtifact->GetStirrupCheckArtifact();
 
-      CollectionIndexType nArtifacts = pStirrups->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
-      for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
+      IndexType nArtifacts = pStirrups->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
+      for ( IndexType idx = 0; idx < nArtifacts; idx++ )
       {
          const pgsStirrupCheckAtPoisArtifact* pPoiArtifacts = pStirrups->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
 
@@ -339,8 +339,8 @@ void ListHorizontalShearFailures(IBroker* pBroker,FailureList& rFailures,const p
       const pgsSegmentArtifact* pArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
       const pgsStirrupCheckArtifact *pStirrups = pArtifact->GetStirrupCheckArtifact();
 
-      CollectionIndexType nArtifacts = pStirrups->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
-      for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
+      IndexType nArtifacts = pStirrups->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
+      for ( IndexType idx = 0; idx < nArtifacts; idx++ )
       {
          const pgsStirrupCheckAtPoisArtifact* pPoiArtifacts = pStirrups->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
 
@@ -375,8 +375,8 @@ void ListStirrupDetailingFailures(IBroker* pBroker,FailureList& rFailures,const 
       const pgsSegmentArtifact* pArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
       const pgsStirrupCheckArtifact *pStirrups = pArtifact->GetStirrupCheckArtifact();
 
-      CollectionIndexType nArtifacts = pStirrups->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
-      for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
+      IndexType nArtifacts = pStirrups->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
+      for ( IndexType idx = 0; idx < nArtifacts; idx++ )
       {
          const pgsStirrupCheckAtPoisArtifact* pPoiArtifacts = pStirrups->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
 

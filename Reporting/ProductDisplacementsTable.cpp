@@ -242,7 +242,7 @@ rptRcTable* CProductDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& g
          pForces2->GetLiveLoadDeflection(lastIntervalIdx, pgsTypes::lltDesign, vPoi, maxBAT, true, false, &dummy, &maxDesignLL, &dummyTruck, &maxDesignLLtruck );
          pForces2->GetLiveLoadDeflection(lastIntervalIdx, pgsTypes::lltDesign, vPoi, minBAT, true, false, &minDesignLL, &dummy, &minDesignLLtruck, &dummyTruck );
 
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
          {
             pForces2->GetLiveLoadDeflection(lastIntervalIdx, pgsTypes::lltFatigue, vPoi, maxBAT, true, false, &dummy, &maxFatigueLL, &dummyTruck, &maxFatigueLLtruck );
             pForces2->GetLiveLoadDeflection(lastIntervalIdx, pgsTypes::lltFatigue, vPoi, minBAT, true, false, &minFatigueLL, &dummy, &minFatigueLLtruck, &dummyTruck );
@@ -296,7 +296,7 @@ rptRcTable* CProductDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& g
 
 
       // write out the results
-      CollectionIndexType index = 0;
+      IndexType index = 0;
       for (const pgsPointOfInterest& poi : vPoi)
       {
          ColumnIndexType col = 0;
@@ -443,7 +443,7 @@ rptRcTable* CProductDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& g
 
             col++;
 
-            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
             {
                (*p_table)(row,col) << deflection.SetValue( maxFatigueLL[index] );
 
@@ -703,27 +703,3 @@ void CProductDeflectionsTable::MakeAssignment(const CProductDeflectionsTable& rO
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CProductDeflectionsTable::AssertValid() const
-{
-   return true;
-}
-
-void CProductDeflectionsTable::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for CProductDeflectionsTable") << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CProductDeflectionsTable::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("CProductDeflectionsTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CProductDeflectionsTable");
-
-   TESTME_EPILOG("CProductDeflectionsTable");
-}
-#endif // _UNITTEST

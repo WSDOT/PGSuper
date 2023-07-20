@@ -93,7 +93,7 @@ protected:
    CLibEditorListView* m_pListView;
 private:
 void CLibraryEditorView::InsertLibraryManager(Uint32 ilib_man, Uint32 ilib_man_sel, 
-                                              int man_num, libLibraryManager* pMan, CTreeCtrl& tree, HTREEITEM hParent, int* lastIcon);
+                                              int man_num, WBFL::Library::LibraryManager* pMan, CTreeCtrl& tree, HTREEITEM hParent, int* lastIcon);
 };
 
 /////////////////////////////////////////////////////////////////////////////

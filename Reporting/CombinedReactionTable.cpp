@@ -470,7 +470,7 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
             }
 
             // Fatigue
-            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
             {
                pForces->GetCombinedLiveLoadReaction( liveLoadIntervalIdx, pgsTypes::lltFatigue, reactionLocation, maxBAT, bIncludeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
@@ -590,7 +590,7 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
                                       row, pedCol, min, max, pedMin, pedMax);
             }
 
-            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
             {
                pForces->GetCombinedLiveLoadReaction( liveLoadIntervalIdx, pgsTypes::lltFatigue, reactionLocation, maxBAT, bIncludeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
@@ -686,7 +686,7 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
       int lnum=1;
       *p<< lnum++ << PedestrianFootnote(DesignPedLoad) << rptNewLine;
 
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
       {
          *p << lnum++ << PedestrianFootnote(FatiguePedLoad) << rptNewLine;
       }
@@ -778,7 +778,7 @@ void CCombinedReactionTable::BuildBearingLimitStateTable(IBroker* pBroker, rptCh
             pBearingDesign->GetBearingLimitStateReaction( intervalIdx, reactionLocation, pgsTypes::ServiceI, minBAT, bIncludeImpact, &min, &max );
             (*p_table)(row,col++) << reaction.SetValue( min );
 
-            if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+            if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims )
             {
                pBearingDesign->GetBearingLimitStateReaction( intervalIdx, reactionLocation, pgsTypes::ServiceIA, maxBAT, bIncludeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
@@ -793,7 +793,7 @@ void CCombinedReactionTable::BuildBearingLimitStateTable(IBroker* pBroker, rptCh
             pBearingDesign->GetBearingLimitStateReaction( intervalIdx, reactionLocation, pgsTypes::ServiceIII, minBAT, bIncludeImpact, &min, &max );
             (*p_table)(row,col++) << reaction.SetValue( min );
 
-            if ( lrfdVersionMgr::FourthEditionWith2009Interims  <= lrfdVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims  <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
             {
                pBearingDesign->GetBearingLimitStateReaction( intervalIdx, reactionLocation, pgsTypes::FatigueI, maxBAT, bIncludeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
@@ -903,7 +903,7 @@ void CCombinedReactionTable::BuildBearingLimitStateTable(IBroker* pBroker, rptCh
             pBearingDesign->GetBearingLimitStateReaction( intervalIdx, reactionLocation, pgsTypes::ServiceI, maxBAT, bIncludeImpact, &min, &max );
             (*p_table)(row,col++) << reaction.SetValue( max );
 
-            if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+            if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims )
             {
                pBearingDesign->GetBearingLimitStateReaction( intervalIdx, reactionLocation, pgsTypes::ServiceIA, maxBAT, bIncludeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
@@ -912,7 +912,7 @@ void CCombinedReactionTable::BuildBearingLimitStateTable(IBroker* pBroker, rptCh
             pBearingDesign->GetBearingLimitStateReaction( intervalIdx, reactionLocation, pgsTypes::ServiceIII, maxBAT, bIncludeImpact, &min, &max );
             (*p_table)(row,col++) << reaction.SetValue( max );
 
-            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
             {
                pBearingDesign->GetBearingLimitStateReaction( intervalIdx, reactionLocation, pgsTypes::FatigueI, maxBAT, bIncludeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
@@ -1023,27 +1023,3 @@ void CCombinedReactionTable::MakeAssignment(const CCombinedReactionTable& rOther
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CCombinedReactionTable::AssertValid() const
-{
-   return true;
-}
-
-void CCombinedReactionTable::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for CCombinedReactionTable") << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CCombinedReactionTable::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("CCombinedReactionTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CCombinedReactionTable");
-
-   TESTME_EPILOG("CCombinedReactionTable");
-}
-#endif // _UNITTEST

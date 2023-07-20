@@ -38,7 +38,7 @@
 
 #include <System\SubjectT.h>
 
-#include <Lrfd\VersionMgr.h>
+#include <LRFD\VersionMgr.h>
 
 // LOCAL INCLUDES
 //
@@ -147,7 +147,7 @@ LOG
    rdp : 09.17.1998 : Created file
 *****************************************************************************/
 
-class PSGLIBCLASS SpecLibraryEntry : public libLibraryEntry, public ISupportIcon,
+class PSGLIBCLASS SpecLibraryEntry : public WBFL::Library::LibraryEntry, public ISupportIcon,
        public WBFL::System::SubjectT<SpecLibraryEntryObserver, SpecLibraryEntry>
 {
    // the dialog is our friend.
@@ -155,10 +155,10 @@ class PSGLIBCLASS SpecLibraryEntry : public libLibraryEntry, public ISupportIcon
 public:
 
    SpecLibraryEntry();
-   SpecLibraryEntry(const SpecLibraryEntry& rOther);
-   virtual ~SpecLibraryEntry();
+   SpecLibraryEntry(const SpecLibraryEntry& rOther) = default;
+   virtual ~SpecLibraryEntry() = default;
 
-   SpecLibraryEntry& operator = (const SpecLibraryEntry& rOther);
+   SpecLibraryEntry& operator=(const SpecLibraryEntry& rOther) = default;
 
    //////////////////////////////////////
    // General
@@ -195,12 +195,12 @@ public:
    bool UseCurrentSpecification() const;
 
    // Set/Get specification type we are based on
-   void SetSpecificationType(lrfdVersionMgr::Version type);
-   lrfdVersionMgr::Version GetSpecificationType() const;
+   void SetSpecificationType(WBFL::LRFD::LRFDVersionMgr::Version type);
+   WBFL::LRFD::LRFDVersionMgr::Version GetSpecificationType() const;
 
    // Set/Get specification Units we are based on
-   void SetSpecificationUnits(lrfdVersionMgr::Units Units);
-   lrfdVersionMgr::Units GetSpecificationUnits() const;
+   void SetSpecificationUnits(WBFL::LRFD::LRFDVersionMgr::Units Units);
+   WBFL::LRFD::LRFDVersionMgr::Units GetSpecificationUnits() const;
 
    // Set/Get string to describe specification
    void SetDescription(LPCTSTR name);
@@ -1263,8 +1263,8 @@ private:
 
    // general
    bool m_bUseCurrentSpecification;
-   lrfdVersionMgr::Version m_SpecificationType;
-   lrfdVersionMgr::Units m_SpecificationUnits;
+   WBFL::LRFD::LRFDVersionMgr::Version m_SpecificationType;
+   WBFL::LRFD::LRFDVersionMgr::Units m_SpecificationUnits;
    std::_tstring m_Description;
    pgsTypes::SectionPropertyMode m_SectionPropertyMode;
 

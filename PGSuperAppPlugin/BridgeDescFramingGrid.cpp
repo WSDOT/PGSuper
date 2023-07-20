@@ -57,7 +57,7 @@ class CRowType : public CGXAbstractUserAttribute
 {
 public:
    enum RowType { Span, Pier, TempSupport };
-   CRowType(RowType type,CollectionIndexType idx)
+   CRowType(RowType type,IndexType idx)
    {
       m_Type = type;
       m_Index = idx;
@@ -69,7 +69,7 @@ public:
    }
 
    RowType m_Type;
-   CollectionIndexType m_Index;
+   IndexType m_Index;
 };
 
 GRID_IMPLEMENT_REGISTER(CBridgeDescFramingGrid, CS_DBLCLKS, 0, 0, 0);

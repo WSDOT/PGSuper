@@ -317,7 +317,7 @@ void CSplicedGirderGeneralPage::FillGirderComboBox()
 void CSplicedGirderGeneralPage::FillStrandList(UINT nIDC)
 {
    CComboBox* pList = (CComboBox*)GetDlgItem(nIDC);
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+   const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
 
    // capture the current selection, if any
    int cur_sel = pList->GetCurSel();
@@ -341,7 +341,7 @@ void CSplicedGirderGeneralPage::FillStrandList(UINT nIDC)
       {
          WBFL::Materials::PsStrand::Type type = (j == 0 ? WBFL::Materials::PsStrand::Type::LowRelaxation : WBFL::Materials::PsStrand::Type::StressRelieved);
 
-         lrfdStrandIter iter(grade,type);
+         WBFL::LRFD::StrandIter iter(grade,type);
 
          for ( iter.Begin(); iter; iter.Next() )
          {
@@ -388,7 +388,7 @@ void CSplicedGirderGeneralPage::FillStrandList(UINT nIDC)
 
 void CSplicedGirderGeneralPage::FillStrandList(CComboBox* pList,WBFL::Materials::PsStrand::Grade grade,WBFL::Materials::PsStrand::Type  type)
 {
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+   const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -398,7 +398,7 @@ void CSplicedGirderGeneralPage::FillStrandList(CComboBox* pList,WBFL::Materials:
 
    pList->ResetContent();
 
-   lrfdStrandIter iter( grade, type );
+   WBFL::LRFD::StrandIter iter( grade, type );
    int sel_count = 0;  // Keep count of the number of strings added to the combo box
    for ( iter.Begin(); iter; iter.Next() )
    {
@@ -426,7 +426,7 @@ void CSplicedGirderGeneralPage::FillStrandList(CComboBox* pList,WBFL::Materials:
 const WBFL::Materials::PsStrand* CSplicedGirderGeneralPage::GetStrand()
 {
    CComboBox* pList = (CComboBox*)GetDlgItem( IDC_STRAND );
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+   const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
 
    int cursel = pList->GetCurSel();
    Int64 key = (Int64)pList->GetItemData(cursel);

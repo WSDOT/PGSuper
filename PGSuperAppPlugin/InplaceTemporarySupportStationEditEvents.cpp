@@ -96,5 +96,5 @@ void CInplaceTemporarySupportStationEditEvents::Handle_OnChanged(iDisplayObject*
    }
 
    std::unique_ptr<txnEditTemporarySupportStation> pTxn(std::make_unique<txnEditTemporarySupportStation>(m_TSIdx,old_station,new_station));
-   CEAFTxnManager::GetInstance()->Execute(std::move(pTxn));
+   CEAFTxnManager::GetInstance().Execute(std::move(pTxn));
 }

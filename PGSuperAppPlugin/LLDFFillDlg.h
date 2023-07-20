@@ -63,13 +63,13 @@ public:
    PierGirderList GetPierGirders();
 
    pgsTypes::DistributionFactorMethod GetDistributionFactorMethod();
-   LldfRangeOfApplicabilityAction GetLldfRangeOfApplicabilityAction();
+   WBFL::LRFD::RangeOfApplicabilityAction GetRangeOfApplicabilityAction();
 
 // Dialog Data
 	enum { IDD = IDD_LLDF_FILL };
 
    const CBridgeDescription2* m_pBridgeDesc;
-   LldfRangeOfApplicabilityAction m_LldfRangeOfApplicabilityAction;
+   WBFL::LRFD::RangeOfApplicabilityAction m_RangeOfApplicabilityAction;
 
    GirderIndexType m_MaxNumGirders; // max girders in all spans
 

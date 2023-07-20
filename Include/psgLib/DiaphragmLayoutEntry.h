@@ -94,7 +94,7 @@ LOG
    rdp : 07.20.1998 : Created file
 *****************************************************************************/
 
-class PSGLIBCLASS DiaphragmLayoutEntry : public libLibraryEntry, public ISupportIcon,
+class PSGLIBCLASS DiaphragmLayoutEntry : public WBFL::Library::LibraryEntry, public ISupportIcon,
        public WBFL::System::SubjectT<DiaphragmLayoutEntryObserver, DiaphragmLayoutEntry>
 {
 public:
@@ -114,20 +114,20 @@ public:
 
    //------------------------------------------------------------------------
    // Default constructor
-   DiaphragmLayoutEntry();
+   DiaphragmLayoutEntry() = default;
 
    //------------------------------------------------------------------------
    // Copy constructor
-   DiaphragmLayoutEntry(const DiaphragmLayoutEntry& rOther);
+   DiaphragmLayoutEntry(const DiaphragmLayoutEntry& rOther) = default;
 
    //------------------------------------------------------------------------
    // Destructor
-   virtual ~DiaphragmLayoutEntry();
+   virtual ~DiaphragmLayoutEntry() = default;
 
    // GROUP: OPERATORS
    //------------------------------------------------------------------------
    // Assignment operator
-   DiaphragmLayoutEntry& operator = (const DiaphragmLayoutEntry& rOther);
+   DiaphragmLayoutEntry& operator=(const DiaphragmLayoutEntry& rOther) = default;
 
    // GROUP: OPERATIONS
    //------------------------------------------------------------------------
@@ -168,10 +168,6 @@ protected:
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
-   void MakeCopy(const DiaphragmLayoutEntry& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const DiaphragmLayoutEntry& rOther);
   // GROUP: ACCESS
   // GROUP: INQUIRY
 
@@ -184,25 +180,6 @@ private:
    // GROUP: OPERATIONS
    // GROUP: ACCESS
    // GROUP: INQUIRY
-
-public:
-   // GROUP: DEBUG
-   #if defined _DEBUG
-   //------------------------------------------------------------------------
-   // Returns true if the object is in a valid state, otherwise returns false.
-   virtual bool AssertValid() const;
-
-   //------------------------------------------------------------------------
-   // Dumps the contents of the object to the given dump context.
-   virtual void Dump(WBFL::Debug::LogContext& os) const;
-   #endif // _DEBUG
-
-   #if defined _UNITTEST
-   //------------------------------------------------------------------------
-   // Runs a self-diagnostic test.  Returns true if the test passed,
-   // otherwise false.
-   static bool TestMe(WBFL::Debug::Log& rlog);
-   #endif // _UNITTEST
 };
 
 // INLINE METHODS

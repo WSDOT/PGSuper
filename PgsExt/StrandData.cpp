@@ -22,7 +22,7 @@
 
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\StrandData.h>
-#include <Lrfd\StrandPool.h>
+#include <LRFD\StrandPool.h>
 #include <PsgLib\GirderLibraryEntry.h>
 #include <GenericBridge\Helpers.h>
 
@@ -170,7 +170,7 @@ void CDirectStrandFillCollection::AddFill(const CDirectStrandFillInfo& fillInf)
    m_StrandFill.push_back(fillInf);
 }
 
-const CDirectStrandFillInfo& CDirectStrandFillCollection::GetFill(CollectionIndexType fillNo) const
+const CDirectStrandFillInfo& CDirectStrandFillCollection::GetFill(IndexType fillNo) const
 {
    ATLASSERT(fillNo < m_StrandFill.size());
    return m_StrandFill[fillNo];
@@ -482,7 +482,7 @@ CStrandData::CStrandData()
 {
    for ( int i = 0; i < 3; i++ )
    {
-      m_StrandMaterial[i] = lrfdStrandPool::GetInstance()->GetStrand(WBFL::Materials::PsStrand::Grade::Gr1860,
+      m_StrandMaterial[i] = WBFL::LRFD::StrandPool::GetInstance()->GetStrand(WBFL::Materials::PsStrand::Grade::Gr1860,
                                                                      WBFL::Materials::PsStrand::Type::LowRelaxation,
                                                                      WBFL::Materials::PsStrand::Coating::None, 
                                                                      WBFL::Materials::PsStrand::Size::D1524);
@@ -1184,7 +1184,7 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
       }
       else if ( version < 11 )
       {
-         lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+         const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
 
          var.Clear();
          var.vt = VT_I4;
@@ -1201,7 +1201,7 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
       }
       else
       {
-         lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+         const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
 
          var.Clear();
          var.vt = VT_I4;
@@ -1454,7 +1454,7 @@ HRESULT CStrandData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
    ///////////////// Added with data block version 11
    // version 15... strand pool key began including a value for strand coating type
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+   const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
    Int64 key = pPool->GetStrandKey(m_StrandMaterial[pgsTypes::Straight]);
    pStrSave->put_Property(_T("StraightStrandMaterialKey"),CComVariant(key));
    
@@ -2197,11 +2197,11 @@ void CStrandData::ProcessStrandRowData()
 #if defined _DEBUG
 void CStrandData::AssertValid()
 {
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+   const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
 
    // permanent strands must be the same grade and type
    // which implies strands all have same properties (such as ultimate and yield strands and modulus of elasticity)
-   // this assumption of them being all the same is inherent throught the software
+   // this assumption of them being all the same is inherent throughout the software
    ATLASSERT(pPool->CompareStrands(m_StrandMaterial[pgsTypes::Straight], m_StrandMaterial[pgsTypes::Harped]));
    //ATLASSERT(pPool->CompareStrands(m_StrandMaterial[pgsTypes::Straight], m_StrandMaterial[pgsTypes::Temporary]));
    //ATLASSERT(pPool->CompareStrands(m_StrandMaterial[pgsTypes::Harped], m_StrandMaterial[pgsTypes::Temporary]));

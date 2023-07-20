@@ -101,9 +101,9 @@ public:
    pgsPlantHandlingWeightArtifact* GetPlantHandlingWeightArtifact();
 
    void AddFlexuralStressArtifact(const pgsFlexuralStressArtifact& artifact);
-   CollectionIndexType GetFlexuralStressArtifactCount(const StressCheckTask& task) const;
-   const pgsFlexuralStressArtifact* GetFlexuralStressArtifact(const StressCheckTask& task,CollectionIndexType idx) const;
-   pgsFlexuralStressArtifact* GetFlexuralStressArtifact(const StressCheckTask& task,CollectionIndexType idx);
+   IndexType GetFlexuralStressArtifactCount(const StressCheckTask& task) const;
+   const pgsFlexuralStressArtifact* GetFlexuralStressArtifact(const StressCheckTask& task,IndexType idx) const;
+   pgsFlexuralStressArtifact* GetFlexuralStressArtifact(const StressCheckTask& task,IndexType idx);
    const pgsFlexuralStressArtifact* GetFlexuralStressArtifactAtPoi(const StressCheckTask& task,PoiIDType poiID) const;
 
    pgsStirrupCheckArtifact* GetStirrupCheckArtifact();

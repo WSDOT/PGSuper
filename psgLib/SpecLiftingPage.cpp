@@ -121,7 +121,7 @@ BOOL CSpecLiftingPage::OnSetActive()
    BOOL enableChild = pDad->m_Entry.IsLiftingAnalysisEnabled() ? TRUE : FALSE;
    EnableControls(enableChild);
 
-   if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= pDad->m_Entry.GetSpecificationType() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= pDad->m_Entry.GetSpecificationType() )
    {
       GetDlgItem(IDC_SLWC_FR_TXT)->SetWindowText(_T("Lightweight concrete"));
       GetDlgItem(IDC_ALWC_FR_TXT)->ShowWindow(SW_HIDE);

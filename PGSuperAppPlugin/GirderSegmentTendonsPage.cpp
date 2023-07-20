@@ -184,7 +184,7 @@ void CGirderSegmentTendonsPage::UpdateSectionDepth()
 const WBFL::Materials::PsStrand* CGirderSegmentTendonsPage::GetStrand()
 {
    CComboBox* pList = (CComboBox*)GetDlgItem(IDC_STRAND);
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+   const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
 
    int cursel = pList->GetCurSel();
    Int64 key = (Int64)pList->GetItemData(cursel);
@@ -226,7 +226,7 @@ void CGirderSegmentTendonsPage::UpdateInstallationTimeList()
 void CGirderSegmentTendonsPage::UpdateStrandList(UINT nIDC)
 {
    CComboBox* pList = (CComboBox*)GetDlgItem(nIDC);
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+   const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
 
    // capture the current selection, if any
    int cur_sel = pList->GetCurSel();
@@ -250,7 +250,7 @@ void CGirderSegmentTendonsPage::UpdateStrandList(UINT nIDC)
       {
          WBFL::Materials::PsStrand::Type type = (j == 0 ? WBFL::Materials::PsStrand::Type::LowRelaxation : WBFL::Materials::PsStrand::Type::StressRelieved);
 
-         lrfdStrandIter iter(grade,type,coating);
+         WBFL::LRFD::StrandIter iter(grade,type,coating);
 
          for ( iter.Begin(); iter; iter.Next() )
          {

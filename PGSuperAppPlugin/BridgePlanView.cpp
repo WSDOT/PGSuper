@@ -866,7 +866,7 @@ void CBridgePlanView::UpdateSegmentTooltips()
 
             CString strMsg3;
             strMsg3.Format(_T("\n\n%s\nf'ci: %s\nf'c: %s"),
-               lrfdConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pMaterial->GetSegmentConcreteType(segmentKey), true).c_str(),
+               WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pMaterial->GetSegmentConcreteType(segmentKey), true).c_str(),
                FormatDimension(fci, pDisplayUnits->GetStressUnit()),
                FormatDimension(fc, pDisplayUnits->GetStressUnit())
             );
@@ -1058,7 +1058,7 @@ void CBridgePlanView::UpdateClosureJointTooltips()
 
             CString strMsg2;
             strMsg2.Format(_T("\n\n%s\nf'ci: %s\nf'c: %s\n\nInstallation: Event %d, %s"),
-                           lrfdConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pClosureJoint->GetConcrete().Type,true).c_str(),
+                           WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pClosureJoint->GetConcrete().Type,true).c_str(),
                            FormatDimension(fci,pDisplayUnits->GetStressUnit()),
                            FormatDimension(fc, pDisplayUnits->GetStressUnit()),
                            LABEL_EVENT(eventIdx),

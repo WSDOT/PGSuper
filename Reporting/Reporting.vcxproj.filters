@@ -235,7 +235,7 @@
     <ClCompile Include="LossesChapterBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LRFDCreepCoefficientChapterBuilder.cpp">
+    <ClCompile Include="WBFL::LRFD::CreepCoefficientChapterBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MomentCapacityDetailsChapterBuilder.cpp">
@@ -810,7 +810,7 @@
     <ClInclude Include="..\Include\Reporting\LossesChapterBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Include\Reporting\LRFDCreepCoefficientChapterBuilder.h">
+    <ClInclude Include="..\Include\Reporting\WBFL::LRFD::CreepCoefficientChapterBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Reporting\MomentCapacityDetailsChapterBuilder.h">

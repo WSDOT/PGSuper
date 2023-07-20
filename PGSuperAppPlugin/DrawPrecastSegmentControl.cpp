@@ -223,7 +223,7 @@ void CDrawPrecastSegmentControl::DrawShape(CDC* pDC, WBFL::Graphing::PointMapper
    CComPtr<IPoint2dCollection> polypoints;
    pShape->get_PolyPoints(&polypoints);
 
-   CollectionIndexType nPoints;
+   IndexType nPoints;
    polypoints->get_Count(&nPoints);
 
    IPoint2d** points = new IPoint2d*[nPoints];
@@ -236,7 +236,7 @@ void CDrawPrecastSegmentControl::DrawShape(CDC* pDC, WBFL::Graphing::PointMapper
    ATLASSERT(nFetched == nPoints);
 
    CPoint* dev_points = new CPoint[nPoints];
-   for ( CollectionIndexType i = 0; i < nPoints; i++ )
+   for ( IndexType i = 0; i < nPoints; i++ )
    {
       LONG dx,dy;
       WBFL::Graphing::Point pnt;
@@ -258,7 +258,7 @@ void CDrawPrecastSegmentControl::DrawBottomFlange(CDC* pDC, WBFL::Graphing::Poin
    if ( pPoints == nullptr )
       return;
 
-   CollectionIndexType nPoints;
+   IndexType nPoints;
    pPoints->get_Count(&nPoints);
 
    IPoint2d** points = new IPoint2d*[nPoints];
@@ -271,7 +271,7 @@ void CDrawPrecastSegmentControl::DrawBottomFlange(CDC* pDC, WBFL::Graphing::Poin
    ATLASSERT(nFetched == nPoints);
 
    CPoint* dev_points = new CPoint[nPoints];
-   for ( CollectionIndexType i = 0; i < nPoints; i++ )
+   for ( IndexType i = 0; i < nPoints; i++ )
    {
       LONG dx,dy;
       WBFL::Graphing::Point pnt;

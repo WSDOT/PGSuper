@@ -266,8 +266,8 @@ bool CSplicedGirderData::operator==(const CSplicedGirderData& rOther) const
       }
    }
 
-   CollectionIndexType nSegments = m_Segments.size();
-   for ( CollectionIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+   IndexType nSegments = m_Segments.size();
+   for ( IndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       if ( *m_Segments[segIdx] != *rOther.m_Segments[segIdx] )
       {
@@ -422,12 +422,12 @@ HRESULT CSplicedGirderData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
       pStrSave->put_Property(_T("GirderType"),CComVariant(m_GirderType.c_str()));
    }
 
-   CollectionIndexType nSegments = m_Segments.size();
+   IndexType nSegments = m_Segments.size();
    pStrSave->put_Property(_T("SegmentCount"),CComVariant(nSegments));
 
    m_PTData.Save(pStrSave,pProgress);
 
-   for ( CollectionIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+   for ( IndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       m_Segments[segIdx]->Save(pStrSave,pProgress);
       if ( segIdx < nSegments-1 )
@@ -782,7 +782,7 @@ void CSplicedGirderData::UpdateSegments()
    PGS_ASSERT_VALID;
 }
 
-void CSplicedGirderData::SetClosureJoint(CollectionIndexType idx,const CClosureJointData& closure)
+void CSplicedGirderData::SetClosureJoint(IndexType idx,const CClosureJointData& closure)
 {
    *m_Closures[idx] = closure;
 }
@@ -844,17 +844,17 @@ std::vector<const CPrecastSegmentData*> CSplicedGirderData::GetSegmentsForSpan(S
    return vSegments;
 }
 
-CollectionIndexType CSplicedGirderData::GetClosureJointCount() const
+IndexType CSplicedGirderData::GetClosureJointCount() const
 {
    return m_Closures.size();
 }
 
-CClosureJointData* CSplicedGirderData::GetClosureJoint(CollectionIndexType idx)
+CClosureJointData* CSplicedGirderData::GetClosureJoint(IndexType idx)
 {
    return m_Closures.size() <= idx ? nullptr : m_Closures[idx];
 }
 
-const CClosureJointData* CSplicedGirderData::GetClosureJoint(CollectionIndexType idx) const
+const CClosureJointData* CSplicedGirderData::GetClosureJoint(IndexType idx) const
 {
    return m_Closures.size() <= idx ? nullptr : m_Closures[idx];
 }

@@ -45,7 +45,7 @@
 #include <Math\PiecewiseFunction.h>
 #include <psgLib\SpecLibraryEntry.h>
 #include <MathEx.h>
-#include <Lrfd\Rebar.h>
+#include <LRFD\Rebar.h>
 
 #include "ShearDesignTool.h"
 
@@ -330,7 +330,7 @@ void pgsShearDesignTool::Initialize(IBroker* pBroker, const LongReinfShearChecke
    WBFL::Materials::Rebar::Type barType;
    pMaterials->GetSegmentTransverseRebarMaterial(m_SegmentKey,&barType,&barGrade);
 
-   lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
+   const auto* pool = WBFL::LRFD::RebarPool::GetInstance();
    ATLASSERT(pool != nullptr);
 
    // Shear Design Control items
@@ -776,8 +776,8 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::ValidateVerticalAvsDe
    // Av/s demand details are stored in spec check results
    bool was_strut_tie_reqd = false;
    Float64 FcRequiredForStrutTieStress = 0.0;
-   CollectionIndexType nArtifacts = m_StirrupCheckArtifact.GetStirrupCheckAtPoisArtifactCount(liveLoadIntervalIdx,pgsTypes::StrengthI);
-   for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
+   IndexType nArtifacts = m_StirrupCheckArtifact.GetStirrupCheckAtPoisArtifactCount(liveLoadIntervalIdx,pgsTypes::StrengthI);
+   for ( IndexType idx = 0; idx < nArtifacts; idx++ )
    {
       Float64 avs_val = 0.0;
       bool bStirrupsRequired;
@@ -1078,8 +1078,8 @@ void pgsShearDesignTool::ValidateHorizontalAvsDemand() const
    m_HorizShearAvsDemandAtPois.reserve(numpois);
 
    // Av/s demand details are stored in spec check results
-   CollectionIndexType nArtifacts = m_StirrupCheckArtifact.GetStirrupCheckAtPoisArtifactCount(liveLoadIntervalIdx,pgsTypes::StrengthI);
-   for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
+   IndexType nArtifacts = m_StirrupCheckArtifact.GetStirrupCheckAtPoisArtifactCount(liveLoadIntervalIdx,pgsTypes::StrengthI);
+   for ( IndexType idx = 0; idx < nArtifacts; idx++ )
    {
       Float64 avs_val=0.0;
       const pgsStirrupCheckAtPoisArtifact* pStrI_artf = m_StirrupCheckArtifact.GetStirrupCheckAtPoisArtifact(liveLoadIntervalIdx,pgsTypes::StrengthI,idx);
@@ -1347,7 +1347,7 @@ bool pgsShearDesignTool::LayoutPrimaryStirrupZones() const
 
          // get minimum stirrup spacing requirements (LRFD 5.7.2.5 (pre2017: 5.8.2.5))
          Float64 bv = pGdr->GetShearWidth( poi );
-         Float64 avs_min = (IsUHPC(m_ConcreteType) ? 0.0 /*PCI UHPC SDG E.7.2.2.2 & GS 1.7.2.5 stirrups not required*/ : lrfdRebar::GetAvOverSMin(fc, bv, fy) /* LRFD 5.7.2.5 (pre2017: 5.8.2.5) */);
+         Float64 avs_min = (IsUHPC(m_ConcreteType) ? 0.0 /*PCI UHPC SDG E.7.2.2.2 & GS 1.7.2.5 stirrups not required*/ : WBFL::LRFD::Rebar::GetAvOverSMin(fc, bv, fy) /* LRFD 5.7.2.5 (pre2017: 5.8.2.5) */);
          avs_demand = Max(avs_min,avs_demand); // make sure demand is at least the minimum
 
          if (ipoi == 0)
@@ -1536,7 +1536,7 @@ bool pgsShearDesignTool::ModifyPreExistingStirrupDesign() const
    WBFL::Materials::Rebar::Grade barGrade;
    WBFL::Materials::Rebar::Type barType;
    pMaterial->GetSegmentTransverseRebarMaterial(m_SegmentKey,&barType,&barGrade);
-   lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
+   const auto* pool = WBFL::LRFD::RebarPool::GetInstance();
    ATLASSERT(pool != nullptr);
 
    // Design stirrups from left-right for both symmetrical and non-symmetrical cases
@@ -1568,7 +1568,7 @@ bool pgsShearDesignTool::ModifyPreExistingStirrupDesign() const
    return true;
 }
 
-bool pgsShearDesignTool::DesignPreExistingStirrups(StirrupZoneIter& rIter, Float64 locCSS,  WBFL::Materials::Rebar::Grade barGrade, WBFL::Materials::Rebar::Type barType, lrfdRebarPool* pool) const
+bool pgsShearDesignTool::DesignPreExistingStirrups(StirrupZoneIter& rIter, Float64 locCSS,  WBFL::Materials::Rebar::Grade barGrade, WBFL::Materials::Rebar::Type barType, const WBFL::LRFD::RebarPool* pool) const
 {
    // Loop over shear zones using iterator and increase Av/S if need be
    Float64 S_max_next(Float64_Max); // spacing in first zone not limited by pre-zones
@@ -1808,7 +1808,7 @@ bool pgsShearDesignTool::DetailHorizontalInterfaceShear() const
    WBFL::Materials::Rebar::Type barType;
    pMaterial->GetSegmentTransverseRebarMaterial(m_SegmentKey,&barType,&barGrade);
 
-   lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
+   const auto* pool = WBFL::LRFD::RebarPool::GetInstance();
    ATLASSERT(pool != nullptr);
 
    // Loop over zones and design each. To simplify life, we DO NOT abide by vertical stirrup
@@ -1965,7 +1965,7 @@ bool pgsShearDesignTool::DetailAdditionalSplitting() const
          WBFL::Materials::Rebar::Type barType;
          pMaterial->GetSegmentTransverseRebarMaterial(m_SegmentKey,&barType,&barGrade);
 
-         lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
+         const auto* pool = WBFL::LRFD::RebarPool::GetInstance();
          ATLASSERT(pool != nullptr);
 
          // Determine Av/s required for splitting
@@ -2110,7 +2110,7 @@ bool pgsShearDesignTool::DetailAdditionalConfinement() const
             WBFL::Materials::Rebar::Grade barGrade;
             WBFL::Materials::Rebar::Type barType;
             pMaterial->GetSegmentTransverseRebarMaterial(m_SegmentKey,&barType,&barGrade);
-            lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
+            const auto* pool = WBFL::LRFD::RebarPool::GetInstance();
             ATLASSERT(pool != nullptr);
 
             Float64 max_spac = rConfinementArtifact.GetSMax();
@@ -2237,7 +2237,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
    // results to compute if additional long reinf is needed
    GDRCONFIG config = this->GetSegmentConfiguration(); // current design
 
-   bool b9thEdition(lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion() ? true : false);
+   bool b9thEdition(WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() ? true : false);
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
@@ -2256,7 +2256,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
    // Compute min development length for this bar size
    GET_IFACE(ILongitudinalRebar, pLongRebar);
    const CLongitudinalRebarData* pLRD = pLongRebar->GetSegmentLongitudinalRebarData(m_SegmentKey);
-   const auto* pRebar = lrfdRebarPool::GetInstance()->GetRebar(pLRD->BarType, pLRD->BarGrade, WBFL::Materials::Rebar::Size::bs5); // #5
+   const auto* pRebar = WBFL::LRFD::RebarPool::GetInstance()->GetRebar(pLRD->BarType, pLRD->BarGrade, WBFL::Materials::Rebar::Size::bs5); // #5
    Float64 rbfy = pRebar->GetYieldStrength();
    GET_IFACE(IMaterials, pMaterials);
    if (pMaterials->GetSegmentConcreteType(m_SegmentKey) == pgsTypes::UHPC)
@@ -2275,7 +2275,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
    {
       Float64 density = pMaterials->GetSegmentStrengthDensity(m_SegmentKey);
 
-      REBARDEVLENGTHDETAILS details = lrfdRebar::GetRebarDevelopmentLengthDetails(pRebar->GetSize(),pRebar->GetNominalArea(),pRebar->GetNominalDimension(),pRebar->GetYieldStrength(),(WBFL::Materials::ConcreteType)config.ConcType,m_pArtifact->GetConcreteStrength(),config.bHasFct,config.Fct,density, false, false, true);
+      WBFL::LRFD::REBARDEVLENGTHDETAILS details = WBFL::LRFD::Rebar::GetRebarDevelopmentLengthDetails(pRebar->GetSize(),pRebar->GetNominalArea(),pRebar->GetNominalDimension(),pRebar->GetYieldStrength(),(WBFL::Materials::ConcreteType)config.ConcType,m_pArtifact->GetConcreteStrength(),config.bHasFct,config.Fct,density, false, false, true);
       tensile_development_length = details.ld;
       ATLASSERT(0.0 < tensile_development_length);
    }
@@ -2522,7 +2522,7 @@ Float64 pgsShearDesignTool::GetMinStirrupSpacing(WBFL::Materials::Rebar::Size si
    WBFL::Materials::Rebar::Type barType;
    pMaterial->GetSegmentTransverseRebarMaterial(m_SegmentKey,&barType,&barGrade);
 
-   lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
+   const auto* prp = WBFL::LRFD::RebarPool::GetInstance();
    const auto* pRebar = prp->GetRebar(barType,barGrade,size);
 
    Float64 db = pRebar->GetNominalDimension();
@@ -2571,7 +2571,7 @@ bool pgsShearDesignTool::GetBarSizeSpacingForAvs(Float64 avsDemand, Float64 maxS
    return false;
 }
 
-bool pgsShearDesignTool::GetMinAvailableBarSize(WBFL::Materials::Rebar::Size minSize, WBFL::Materials::Rebar::Grade barGrade, WBFL::Materials::Rebar::Type barType, lrfdRebarPool* pool, WBFL::Materials::Rebar::Size* pSize) const
+bool pgsShearDesignTool::GetMinAvailableBarSize(WBFL::Materials::Rebar::Size minSize, WBFL::Materials::Rebar::Grade barGrade, WBFL::Materials::Rebar::Type barType, const WBFL::LRFD::RebarPool* pool, WBFL::Materials::Rebar::Size* pSize) const
 {
    // This should be made more efficient if it's called frequently
    const auto* pRebar = pool->GetRebar(barType,barGrade, minSize);

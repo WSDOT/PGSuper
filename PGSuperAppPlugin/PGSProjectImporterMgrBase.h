@@ -33,8 +33,8 @@ public:
 
    bool LoadImporters();
    void UnloadImporters();
-   CollectionIndexType GetImporterCount() const;
-   void GetImporter(CollectionIndexType idx,IPGSProjectImporter** ppImporter);
+   IndexType GetImporterCount() const;
+   void GetImporter(IndexType idx,IPGSProjectImporter** ppImporter);
    void GetImporter(const CLSID& clsid,IPGSProjectImporter** ppImporter);
    void AddImporter(const CLSID& clsid,IPGSProjectImporter* pImporter);
    void RemoveImporter(const CLSID& clsid);

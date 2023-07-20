@@ -1361,14 +1361,14 @@ void CTogaGirderModelElevationView::OnDestroy()
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
 
-   CollectionIndexType dlcnt = dispMgr->GetDisplayListCount();
-   for (CollectionIndexType idl=0; idl<dlcnt; idl++)
+   IndexType dlcnt = dispMgr->GetDisplayListCount();
+   for (IndexType idl=0; idl<dlcnt; idl++)
    {
       CComPtr<iDisplayList> dlist;
       dispMgr->GetDisplayList(idl, &dlist);
 
-      CollectionIndexType docnt = dlist->GetDisplayObjectCount();
-      for (CollectionIndexType ido=0; ido<docnt; ido++)
+      IndexType docnt = dlist->GetDisplayObjectCount();
+      for (IndexType ido=0; ido<docnt; ido++)
       {
          CComPtr<iDisplayObject> pdo;
          dlist->GetDisplayObject(ido,&pdo);

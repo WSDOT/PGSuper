@@ -29,7 +29,7 @@
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
 
-class lrfdLosses;
+class WBFL::LRFD::Losses;
 
 /////////////////////////////////////////////////////////////////////////////
 // CPsLossEngineer
@@ -69,7 +69,7 @@ private:
    void LossesByApproxLumpSum(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,LOSSDETAILS* pLosses,bool isWsdot);
    void LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,LOSSDETAILS* pLosses);
    void LossesByRefinedEstimateTxDOT2013(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,LOSSDETAILS* pLosses);
-   lrfdElasticShortening::FcgpComputationMethod LossesByRefinedEstimateTxDOT2013_Compute(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,LOSSDETAILS* pLosses);
+   WBFL::LRFD::ElasticShortening::FcgpComputationMethod LossesByRefinedEstimateTxDOT2013_Compute(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,LOSSDETAILS* pLosses);
 
    void ReportRefinedMethod(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,Uint16 level,LossAgency lossAgency);
    void ReportApproxLumpSumMethod(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,Uint16 level,bool isWsdot);
@@ -85,12 +85,12 @@ private:
    void ReportLocation( rptRcTable* pTable,RowIndexType row,const pgsPointOfInterest& poi,IEAFDisplayUnits* pDisplayUnits);
    void ReportLocation2(rptRcTable* pTable,RowIndexType row,const pgsPointOfInterest& poi,IEAFDisplayUnits* pDisplayUnits);
 
-   void ReportInitialRelaxation(rptChapter* pChapter,bool bTemporaryStrands,const lrfdLosses* pLosses,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
+   void ReportInitialRelaxation(rptChapter* pChapter,bool bTemporaryStrands,const WBFL::LRFD::Losses* pLosses,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
    void ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pChapter,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
    void ReportLumpSumTimeDependentLosses(rptChapter* pChapter,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
 
    void GetLossParameters(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,
-                           lrfdLosses::SectionPropertiesType* pSectionProperties,
+                           WBFL::LRFD::Losses::SectionPropertiesType* pSectionProperties,
                            WBFL::Materials::PsStrand::Grade* pGradePerm,
                            WBFL::Materials::PsStrand::Type* pTypePerm,
                           WBFL::Materials::PsStrand::Coating* pCoatingPerm,
@@ -152,7 +152,7 @@ private:
                            Float64* pEcSlab,
                            Float64* pGirderLength,
                            Float64* pSpanLength,
-                           lrfdLosses::TempStrandUsage* pUsage,
+                           WBFL::LRFD::Losses::TempStrandUsage* pUsage,
                            Float64* pAnchorSet,
                            Float64* pWobble,
                            Float64* pCoeffFriction,

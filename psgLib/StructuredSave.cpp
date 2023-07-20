@@ -207,30 +207,3 @@ void CStructuredSave::PutUnit(LPCTSTR xml)
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CStructuredSave::AssertValid() const
-{
-   if ( m_pStrSave == 0 )
-      return false;
-
-   return true;
-}
-
-void CStructuredSave::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << "Dump for CStructuredSave" << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CStructuredSave::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("CStructuredSave");
-
-   // Nothing to test
-
-   TESTME_EPILOG("CStructuredSave");
-}
-#endif // _UNITTEST

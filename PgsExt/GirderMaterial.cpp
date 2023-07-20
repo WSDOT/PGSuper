@@ -25,7 +25,7 @@
 #include <Units\Convert.h>
 #include <StdIo.h>
 
-#include <Lrfd\StrandPool.h>
+#include <LRFD\StrandPool.h>
 #include <Materials/SimpleConcrete.h>
 
 #ifdef _DEBUG

@@ -361,8 +361,8 @@ void CCopyPierDlg::UpdateReportData()
    std::vector<ICopyPierPropertiesCallback*> callbacks = GetSelectedCopyPierPropertiesCallbacks();
 
    // We know we put at least one of our own chapter builders into the report builder. Find it and set its data
-   CollectionIndexType numchs = pBuilder->GetChapterBuilderCount();
-   for (CollectionIndexType ich = 0; ich < numchs; ich++)
+   IndexType numchs = pBuilder->GetChapterBuilderCount();
+   for (IndexType ich = 0; ich < numchs; ich++)
    {
       std::shared_ptr<WBFL::Reporting::ChapterBuilder> pChb = pBuilder->GetChapterBuilder(ich);
       std::shared_ptr<CCopyPierPropertiesChapterBuilder> pRptCpBuilder = std::dynamic_pointer_cast<CCopyPierPropertiesChapterBuilder,WBFL::Reporting::ChapterBuilder>(pChb);

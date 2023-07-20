@@ -96,22 +96,22 @@ protected:
    struct PIERDETAILS : T
    {
       // Distribution factors for negative moment over pier
-      lrfdILiveLoadDistributionFactor::DFResult gM1;
-      lrfdILiveLoadDistributionFactor::DFResult gM2;
+      WBFL::LRFD::ILiveLoadDistributionFactor::DFResult gM1;
+      WBFL::LRFD::ILiveLoadDistributionFactor::DFResult gM2;
       Float64 gM;
    };
 
    struct SPANDETAILS : T
    {
       // Distribution factors for shear in the span
-      lrfdILiveLoadDistributionFactor::DFResult gV1;
-      lrfdILiveLoadDistributionFactor::DFResult gV2;
+      WBFL::LRFD::ILiveLoadDistributionFactor::DFResult gV1;
+      WBFL::LRFD::ILiveLoadDistributionFactor::DFResult gV2;
       Float64 gV;
       Float64 gVSkewCorrection;
 
       // Distribution factors for positive and negative moment in the span
-      lrfdILiveLoadDistributionFactor::DFResult gM1;
-      lrfdILiveLoadDistributionFactor::DFResult gM2;
+      WBFL::LRFD::ILiveLoadDistributionFactor::DFResult gM1;
+      WBFL::LRFD::ILiveLoadDistributionFactor::DFResult gM2;
       Float64 gM;
       Float64 gMSkewCorrection;
    };
@@ -129,9 +129,9 @@ protected:
    Float64 GetEffectiveSpanLength(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType);
    void GetGirderSpacingAndOverhang(const CSpanKey& spanKey,DFParam dfType,BASE_LLDFDETAILS* pDetails,pgsPointOfInterest* pControllingPoi);
 
-   virtual lrfdLiveLoadDistributionFactorBase* GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,Float64 fcgdr,T* plldf) = 0;
+   virtual WBFL::LRFD::LiveLoadDistributionFactorBase* GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,Float64 fcgdr,T* plldf) = 0;
 
-   void HandleRangeOfApplicabilityError(const lrfdXRangeOfApplicability& e);
+   void HandleRangeOfApplicabilityError(const WBFL::LRFD::XRangeOfApplicability& e);
 
    int LimitStateType(pgsTypes::LimitState ls);
 };
@@ -236,9 +236,9 @@ void CDistFactorEngineerImpl<T>::GetPierDF(PierIndexType pierIdx, GirderIndexTyp
       {
          plldf->gM = adjdet.gM;
          plldf->gM1 = adjdet.gM1;
-         plldf->gM1.ControllingMethod |= INTERIOR_OVERRIDE;
+         plldf->gM1.ControllingMethod |= WBFL::LRFD::INTERIOR_OVERRIDE;
          plldf->gM2 = adjdet.gM2;
-         plldf->gM2.ControllingMethod |= INTERIOR_OVERRIDE;
+         plldf->gM2.ControllingMethod |= WBFL::LRFD::INTERIOR_OVERRIDE;
       }
    }
 
@@ -251,27 +251,27 @@ void CDistFactorEngineerImpl<T>::GetPierDFRaw(PierIndexType pierIdx,GirderIndexT
 {
 
    DFParam dfParam = (pierFace == pgsTypes::Back ? dfPierLeft : dfPierRight);
-   std::unique_ptr<lrfdLiveLoadDistributionFactorBase> pLLDF( GetLLDFParameters(pierIdx,gdrIdx,dfParam,fcgdr,plldf) );
+   std::unique_ptr<WBFL::LRFD::LiveLoadDistributionFactorBase> pLLDF( GetLLDFParameters(pierIdx,gdrIdx,dfParam,fcgdr,plldf) );
 
    // get method used to compute factors, may be lever override
    GET_IFACE(IBridgeDescription,pBridgeDesc);
    pgsTypes::DistributionFactorMethod df_method = pBridgeDesc->GetBridgeDescription()->GetDistributionFactorMethod();
 
-   lrfdILiveLoadDistributionFactor::Location loc;
-   loc =  plldf->bExteriorGirder ? lrfdILiveLoadDistributionFactor::ExtGirder : lrfdILiveLoadDistributionFactor::IntGirder;
+   WBFL::LRFD::ILiveLoadDistributionFactor::Location loc;
+   loc =  plldf->bExteriorGirder ? WBFL::LRFD::ILiveLoadDistributionFactor::Location::ExtGirder : WBFL::LRFD::ILiveLoadDistributionFactor::Location::IntGirder;
 
    try
    {
-      lrfdTypes::LimitState lrfdls = PGSLimitStateToLRFDLimitState(ls);
+      WBFL::LRFD::LimitState lrfdls = PGSLimitStateToLRFDLimitState(ls);
 
       // Negative moment distribution factor
       if (df_method == pgsTypes::Calculated)
       {
-         plldf->gM1 = pLLDF->MomentDFEx(loc, lrfdILiveLoadDistributionFactor::OneLoadedLane, lrfdls);
+         plldf->gM1 = pLLDF->MomentDFEx(loc, WBFL::LRFD::ILiveLoadDistributionFactor::NumLoadedLanes::One, lrfdls);
 
          if ( 2 <= plldf->Nl  && ls != pgsTypes::FatigueI )
          {
-            plldf->gM2 = pLLDF->MomentDFEx(loc, lrfdILiveLoadDistributionFactor::TwoOrMoreLoadedLanes,  lrfdls);
+            plldf->gM2 = pLLDF->MomentDFEx(loc, WBFL::LRFD::ILiveLoadDistributionFactor::NumLoadedLanes::TwoOrMore,  lrfdls);
          }
          else
          {
@@ -280,11 +280,11 @@ void CDistFactorEngineerImpl<T>::GetPierDFRaw(PierIndexType pierIdx,GirderIndexT
       }
       else if (df_method == pgsTypes::LeverRule)
       {
-         plldf->gM1 = pLLDF->DistributeMomentByLeverRule(loc, lrfdILiveLoadDistributionFactor::OneLoadedLane, ls!=pgsTypes::FatigueI);
+         plldf->gM1 = pLLDF->DistributeMomentByLeverRule(loc, WBFL::LRFD::ILiveLoadDistributionFactor::NumLoadedLanes::One, ls!=pgsTypes::FatigueI);
 
          if ( 2 <= plldf->Nl  && ls != pgsTypes::FatigueI )
          {
-            plldf->gM2 = pLLDF->DistributeMomentByLeverRule(loc, lrfdILiveLoadDistributionFactor::TwoOrMoreLoadedLanes, true);
+            plldf->gM2 = pLLDF->DistributeMomentByLeverRule(loc, WBFL::LRFD::ILiveLoadDistributionFactor::NumLoadedLanes::TwoOrMore, true);
          }
          else
          {
@@ -304,14 +304,14 @@ void CDistFactorEngineerImpl<T>::GetPierDFRaw(PierIndexType pierIdx,GirderIndexT
       if (pSpecEntry->LimitDistributionFactorsToLanesBeams())
       {
          // Compare results with lanes/beams and override if needed
-         lrfdILiveLoadDistributionFactor::DFResult glb1 = pLLDF->GetLanesBeamsMethod(1,GirderIndexType(plldf->Nb), ls != pgsTypes::FatigueI);
-         lrfdILiveLoadDistributionFactor::DFResult glb2 = pLLDF->GetLanesBeamsMethod(plldf->Nl,GirderIndexType(plldf->Nb),ls != pgsTypes::FatigueI);
+         WBFL::LRFD::ILiveLoadDistributionFactor::DFResult glb1 = pLLDF->GetLanesBeamsMethod(1,GirderIndexType(plldf->Nb), ls != pgsTypes::FatigueI);
+         WBFL::LRFD::ILiveLoadDistributionFactor::DFResult glb2 = pLLDF->GetLanesBeamsMethod(plldf->Nl,GirderIndexType(plldf->Nb),ls != pgsTypes::FatigueI);
 
          // Moment
          if (plldf->gM1.mg < glb1.mg)
          {
             plldf->gM1.mg = glb1.mg;
-            plldf->gM1.ControllingMethod = LANES_DIV_BEAMS | LANES_BEAMS_OVERRIDE;
+            plldf->gM1.ControllingMethod = WBFL::LRFD::LANES_DIV_BEAMS | WBFL::LRFD::LANES_BEAMS_OVERRIDE;
             plldf->gM1.LanesBeamsData = glb1.LanesBeamsData;
          }
 
@@ -320,7 +320,7 @@ void CDistFactorEngineerImpl<T>::GetPierDFRaw(PierIndexType pierIdx,GirderIndexT
             if (plldf->gM2.mg < glb2.mg)
             {
                plldf->gM2.mg = glb2.mg;
-               plldf->gM2.ControllingMethod = LANES_DIV_BEAMS | LANES_BEAMS_OVERRIDE;
+               plldf->gM2.ControllingMethod = WBFL::LRFD::LANES_DIV_BEAMS | WBFL::LRFD::LANES_BEAMS_OVERRIDE;
                plldf->gM2.LanesBeamsData = glb2.LanesBeamsData;
             }
          }
@@ -329,7 +329,7 @@ void CDistFactorEngineerImpl<T>::GetPierDFRaw(PierIndexType pierIdx,GirderIndexT
       // controlling
       if ( 2 <= plldf->Nl  && ls != pgsTypes::FatigueI )
       {
-         if ( plldf->gM1.ControllingMethod & OVERRIDE_USING_MULTILANE_FACTOR)
+         if ( plldf->gM1.ControllingMethod & WBFL::LRFD::OVERRIDE_USING_MULTILANE_FACTOR)
          {
             // Case where multi-lane factor is always used (e.g., TxDOT U Beams)
             plldf->gM = plldf->gM2.mg;
@@ -344,7 +344,7 @@ void CDistFactorEngineerImpl<T>::GetPierDFRaw(PierIndexType pierIdx,GirderIndexT
          plldf->gM = plldf->gM1.mg;
       }
    }
-   catch( const lrfdXRangeOfApplicability& e)
+   catch( const WBFL::LRFD::XRangeOfApplicability& e)
    {
       HandleRangeOfApplicabilityError(e);
    }
@@ -390,9 +390,9 @@ void CDistFactorEngineerImpl<T>::GetSpanDF(const CSpanKey& spanKey, pgsTypes::Li
       {
          plldf->gM = adjdet.gM;
          plldf->gM1 = adjdet.gM1;
-         plldf->gM1.ControllingMethod |= INTERIOR_OVERRIDE;
+         plldf->gM1.ControllingMethod |= WBFL::LRFD::INTERIOR_OVERRIDE;
          plldf->gM2 = adjdet.gM2;
-         plldf->gM2.ControllingMethod |= INTERIOR_OVERRIDE;
+         plldf->gM2.ControllingMethod |= WBFL::LRFD::INTERIOR_OVERRIDE;
          plldf->gMSkewCorrection = adjdet.gMSkewCorrection;
       }
 
@@ -400,9 +400,9 @@ void CDistFactorEngineerImpl<T>::GetSpanDF(const CSpanKey& spanKey, pgsTypes::Li
       {
          plldf->gV = adjdet.gV;
          plldf->gV1 = adjdet.gV1;
-         plldf->gV1.ControllingMethod |= INTERIOR_OVERRIDE;
+         plldf->gV1.ControllingMethod |= WBFL::LRFD::INTERIOR_OVERRIDE;
          plldf->gV2 = adjdet.gV2;
-         plldf->gV2.ControllingMethod |= INTERIOR_OVERRIDE;
+         plldf->gV2.ControllingMethod |= WBFL::LRFD::INTERIOR_OVERRIDE;
          plldf->gVSkewCorrection = adjdet.gVSkewCorrection;
       }
    }
@@ -418,22 +418,22 @@ void CDistFactorEngineerImpl<T>::GetSpanDFRaw(const CSpanKey& spanKey,pgsTypes::
    GET_IFACE(IBridgeDescription,pBridgeDesc);
    pgsTypes::DistributionFactorMethod df_method = pBridgeDesc->GetBridgeDescription()->GetDistributionFactorMethod();
 
-   std::unique_ptr<lrfdLiveLoadDistributionFactorBase> pLLDF( GetLLDFParameters(spanKey.spanIndex,spanKey.girderIndex,dfSpan,fcgdr,plldf) );
+   std::unique_ptr<WBFL::LRFD::LiveLoadDistributionFactorBase> pLLDF( GetLLDFParameters(spanKey.spanIndex,spanKey.girderIndex,dfSpan,fcgdr,plldf) );
 
-   lrfdILiveLoadDistributionFactor::Location loc;
-   loc =  plldf->bExteriorGirder ? lrfdILiveLoadDistributionFactor::ExtGirder : lrfdILiveLoadDistributionFactor::IntGirder;
+   WBFL::LRFD::ILiveLoadDistributionFactor::Location loc;
+   loc =  plldf->bExteriorGirder ? WBFL::LRFD::ILiveLoadDistributionFactor::Location::ExtGirder : WBFL::LRFD::ILiveLoadDistributionFactor::Location::IntGirder;
 
    try
    {
-      lrfdTypes::LimitState lrfdls = PGSLimitStateToLRFDLimitState(ls);
+      WBFL::LRFD::LimitState lrfdls = PGSLimitStateToLRFDLimitState(ls);
 
       if (df_method == pgsTypes::Calculated)
       {
-         plldf->gM1 = pLLDF->MomentDFEx(loc, lrfdILiveLoadDistributionFactor::OneLoadedLane, lrfdls);
+         plldf->gM1 = pLLDF->MomentDFEx(loc, WBFL::LRFD::ILiveLoadDistributionFactor::NumLoadedLanes::One, lrfdls);
 
          if ( 2 <= plldf->Nl  && ls != pgsTypes::FatigueI)
          {
-            plldf->gM2 = pLLDF->MomentDFEx(loc, lrfdILiveLoadDistributionFactor::TwoOrMoreLoadedLanes, lrfdls);
+            plldf->gM2 = pLLDF->MomentDFEx(loc, WBFL::LRFD::ILiveLoadDistributionFactor::NumLoadedLanes::TwoOrMore, lrfdls);
          }
          else
          {
@@ -441,11 +441,11 @@ void CDistFactorEngineerImpl<T>::GetSpanDFRaw(const CSpanKey& spanKey,pgsTypes::
          }
 
 
-         plldf->gV1 = pLLDF->ShearDFEx(loc, lrfdILiveLoadDistributionFactor::OneLoadedLane, lrfdls);
+         plldf->gV1 = pLLDF->ShearDFEx(loc, WBFL::LRFD::ILiveLoadDistributionFactor::NumLoadedLanes::One, lrfdls);
 
          if ( 2 <= plldf->Nl && ls != pgsTypes::FatigueI)
          {
-            plldf->gV2 = pLLDF->ShearDFEx(loc, lrfdILiveLoadDistributionFactor::TwoOrMoreLoadedLanes, lrfdls);
+            plldf->gV2 = pLLDF->ShearDFEx(loc, WBFL::LRFD::ILiveLoadDistributionFactor::NumLoadedLanes::TwoOrMore, lrfdls);
          }
          else
          {
@@ -454,10 +454,10 @@ void CDistFactorEngineerImpl<T>::GetSpanDFRaw(const CSpanKey& spanKey,pgsTypes::
       }
       else if (df_method == pgsTypes::LeverRule)
       {
-         plldf->gM1 = pLLDF->DistributeMomentByLeverRule(loc, lrfdILiveLoadDistributionFactor::OneLoadedLane, ls != pgsTypes::FatigueI);
+         plldf->gM1 = pLLDF->DistributeMomentByLeverRule(loc, WBFL::LRFD::ILiveLoadDistributionFactor::NumLoadedLanes::One, ls != pgsTypes::FatigueI);
          if ( 2 <= plldf->Nl  && ls != pgsTypes::FatigueI )
          {
-            plldf->gM2 = pLLDF->DistributeMomentByLeverRule(loc, lrfdILiveLoadDistributionFactor::TwoOrMoreLoadedLanes, true);
+            plldf->gM2 = pLLDF->DistributeMomentByLeverRule(loc, WBFL::LRFD::ILiveLoadDistributionFactor::NumLoadedLanes::TwoOrMore, true);
          }
          else
          {
@@ -465,11 +465,11 @@ void CDistFactorEngineerImpl<T>::GetSpanDFRaw(const CSpanKey& spanKey,pgsTypes::
          }
 
 
-         plldf->gV1 = pLLDF->DistributeShearByLeverRule(loc, lrfdILiveLoadDistributionFactor::OneLoadedLane, ls != pgsTypes::FatigueI);
+         plldf->gV1 = pLLDF->DistributeShearByLeverRule(loc, WBFL::LRFD::ILiveLoadDistributionFactor::NumLoadedLanes::One, ls != pgsTypes::FatigueI);
 
          if ( 2 <= plldf->Nl  && ls != pgsTypes::FatigueI )
          {
-            plldf->gV2 = pLLDF->DistributeShearByLeverRule(loc, lrfdILiveLoadDistributionFactor::TwoOrMoreLoadedLanes, true);
+            plldf->gV2 = pLLDF->DistributeShearByLeverRule(loc, WBFL::LRFD::ILiveLoadDistributionFactor::NumLoadedLanes::TwoOrMore, true);
          }
          else
          {
@@ -489,14 +489,14 @@ void CDistFactorEngineerImpl<T>::GetSpanDFRaw(const CSpanKey& spanKey,pgsTypes::
       if (pSpecEntry->LimitDistributionFactorsToLanesBeams())
       {
          // Compare results with lanes/beams and override if needed
-         lrfdILiveLoadDistributionFactor::DFResult glb1 = pLLDF->GetLanesBeamsMethod(1,GirderIndexType(plldf->Nb), ls != pgsTypes::FatigueI);
-         lrfdILiveLoadDistributionFactor::DFResult glb2 = pLLDF->GetLanesBeamsMethod(plldf->Nl,GirderIndexType(plldf->Nb), ls != pgsTypes::FatigueI);
+         WBFL::LRFD::ILiveLoadDistributionFactor::DFResult glb1 = pLLDF->GetLanesBeamsMethod(1,GirderIndexType(plldf->Nb), ls != pgsTypes::FatigueI);
+         WBFL::LRFD::ILiveLoadDistributionFactor::DFResult glb2 = pLLDF->GetLanesBeamsMethod(plldf->Nl,GirderIndexType(plldf->Nb), ls != pgsTypes::FatigueI);
 
          // Moment
          if ( plldf->gM1.mg < glb1.mg)
          {
             plldf->gM1.mg = glb1.mg;
-            plldf->gM1.ControllingMethod = LANES_DIV_BEAMS | LANES_BEAMS_OVERRIDE;
+            plldf->gM1.ControllingMethod = WBFL::LRFD::LANES_DIV_BEAMS | WBFL::LRFD::LANES_BEAMS_OVERRIDE;
             plldf->gM1.LanesBeamsData = glb1.LanesBeamsData;
          }
 
@@ -505,7 +505,7 @@ void CDistFactorEngineerImpl<T>::GetSpanDFRaw(const CSpanKey& spanKey,pgsTypes::
             if (plldf->gM2.mg < glb2.mg)
             {
                plldf->gM2.mg = glb2.mg;
-               plldf->gM2.ControllingMethod = LANES_DIV_BEAMS | LANES_BEAMS_OVERRIDE;
+               plldf->gM2.ControllingMethod = WBFL::LRFD::LANES_DIV_BEAMS | WBFL::LRFD::LANES_BEAMS_OVERRIDE;
                plldf->gM2.LanesBeamsData = glb2.LanesBeamsData;
             }
          }
@@ -514,7 +514,7 @@ void CDistFactorEngineerImpl<T>::GetSpanDFRaw(const CSpanKey& spanKey,pgsTypes::
          if (plldf->gV1.mg < glb1.mg)
          {
             plldf->gV1.mg = glb1.mg;
-            plldf->gV1.ControllingMethod = LANES_DIV_BEAMS | LANES_BEAMS_OVERRIDE;
+            plldf->gV1.ControllingMethod = WBFL::LRFD::LANES_DIV_BEAMS | WBFL::LRFD::LANES_BEAMS_OVERRIDE;
             plldf->gV1.LanesBeamsData = glb1.LanesBeamsData;
          }
 
@@ -523,7 +523,7 @@ void CDistFactorEngineerImpl<T>::GetSpanDFRaw(const CSpanKey& spanKey,pgsTypes::
             if (plldf->gV2.mg < glb2.mg)
             {
                plldf->gV2.mg = glb2.mg;
-               plldf->gV2.ControllingMethod = LANES_DIV_BEAMS | LANES_BEAMS_OVERRIDE;
+               plldf->gV2.ControllingMethod = WBFL::LRFD::LANES_DIV_BEAMS | WBFL::LRFD::LANES_BEAMS_OVERRIDE;
                plldf->gV2.LanesBeamsData = glb2.LanesBeamsData;
             }
          }
@@ -532,7 +532,7 @@ void CDistFactorEngineerImpl<T>::GetSpanDFRaw(const CSpanKey& spanKey,pgsTypes::
       // controlling
       if ( 2 <= plldf->Nl  && ls != pgsTypes::FatigueI )
       {
-         if ( plldf->gM1.ControllingMethod & OVERRIDE_USING_MULTILANE_FACTOR)
+         if ( plldf->gM1.ControllingMethod & WBFL::LRFD::OVERRIDE_USING_MULTILANE_FACTOR)
          {
             // Case where multi-lane factor is always used (e.g., TxDOT U Beams)
             plldf->gM = plldf->gM2.mg;
@@ -556,7 +556,7 @@ void CDistFactorEngineerImpl<T>::GetSpanDFRaw(const CSpanKey& spanKey,pgsTypes::
       plldf->gVSkewCorrection = pLLDF->ShearSkewCorrectionFactor();
 
    }
-   catch( const lrfdXRangeOfApplicability& e)
+   catch( const WBFL::LRFD::XRangeOfApplicability& e)
    {
       HandleRangeOfApplicabilityError(e);
    }
@@ -564,7 +564,7 @@ void CDistFactorEngineerImpl<T>::GetSpanDFRaw(const CSpanKey& spanKey,pgsTypes::
 }
 
 template <class T>
-void CDistFactorEngineerImpl<T>::HandleRangeOfApplicabilityError(const lrfdXRangeOfApplicability& e)
+void CDistFactorEngineerImpl<T>::HandleRangeOfApplicabilityError(const WBFL::LRFD::XRangeOfApplicability& e)
 {
    GET_IFACE(IEAFStatusCenter,     pStatusCenter);
 
@@ -712,7 +712,7 @@ void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(const CSpanKey& spa
    Float64 Xspan = ctrl_station - pier_station;
 
    // Lane info
-   pDetails->wLane = lrfdUtility::GetDesignLaneWidth( pDetails->wCurbToCurb );
+   pDetails->wLane = WBFL::LRFD::Utility::GetDesignLaneWidth( pDetails->wCurbToCurb );
 
    // overhangs
    if(IsOverlayDeck(pBridge->GetDeckType()))
@@ -961,12 +961,12 @@ bool CDistFactorEngineerImpl<T>::Run1250Tests(const CSpanKey& spanKey,pgsTypes::
       if ( gdet.bExteriorGirder )
       {
          // exterior girder
-         lrfdILiveLoadDistributionFactor::DFResult mde1 = gdet.gM1;
-         lrfdILiveLoadDistributionFactor::DFResult mde2 = gdet.gM2;
-         lrfdILiveLoadDistributionFactor::DFResult sde1 = gdet.gV1;
-         lrfdILiveLoadDistributionFactor::DFResult sde2 = gdet.gV2;
-         lrfdILiveLoadDistributionFactor::DFResult dde1 = mde1;  // deflection same as moment
-         lrfdILiveLoadDistributionFactor::DFResult dde2 = mde2;
+         WBFL::LRFD::ILiveLoadDistributionFactor::DFResult mde1 = gdet.gM1;
+         WBFL::LRFD::ILiveLoadDistributionFactor::DFResult mde2 = gdet.gM2;
+         WBFL::LRFD::ILiveLoadDistributionFactor::DFResult sde1 = gdet.gV1;
+         WBFL::LRFD::ILiveLoadDistributionFactor::DFResult sde2 = gdet.gV2;
+         WBFL::LRFD::ILiveLoadDistributionFactor::DFResult dde1 = mde1;  // deflection same as moment
+         WBFL::LRFD::ILiveLoadDistributionFactor::DFResult dde2 = mde2;
 
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12024, 0.0, ")<<mde1.mg<<_T(", 2, ")<<spanKey.girderIndex<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12025, 0.0, ")<<mde2.mg<<_T(", 2, ")<<spanKey.girderIndex<<std::endl;
@@ -978,12 +978,12 @@ bool CDistFactorEngineerImpl<T>::Run1250Tests(const CSpanKey& spanKey,pgsTypes::
       else
       {
          // interior girder
-         lrfdILiveLoadDistributionFactor::DFResult mdi1 = gdet.gM1;
-         lrfdILiveLoadDistributionFactor::DFResult mdi2 = gdet.gM2;
-         lrfdILiveLoadDistributionFactor::DFResult sdi1 = gdet.gV1;
-         lrfdILiveLoadDistributionFactor::DFResult sdi2 = gdet.gV2; 
-         lrfdILiveLoadDistributionFactor::DFResult ddi1 = mdi1;
-         lrfdILiveLoadDistributionFactor::DFResult ddi2 = mdi2;
+         WBFL::LRFD::ILiveLoadDistributionFactor::DFResult mdi1 = gdet.gM1;
+         WBFL::LRFD::ILiveLoadDistributionFactor::DFResult mdi2 = gdet.gM2;
+         WBFL::LRFD::ILiveLoadDistributionFactor::DFResult sdi1 = gdet.gV1;
+         WBFL::LRFD::ILiveLoadDistributionFactor::DFResult sdi2 = gdet.gV2; 
+         WBFL::LRFD::ILiveLoadDistributionFactor::DFResult ddi1 = mdi1;
+         WBFL::LRFD::ILiveLoadDistributionFactor::DFResult ddi2 = mdi2;
 
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12054, 0.0, ")<<mdi1.mg<<_T(", 2, ")<<spanKey.girderIndex<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12055, 0.0, ")<<mdi2.mg<<_T(", 2, ")<<spanKey.girderIndex<<std::endl;

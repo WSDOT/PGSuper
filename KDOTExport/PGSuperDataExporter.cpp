@@ -778,7 +778,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
          // Longitudinal bar rows
          const CLongitudinalRebarData* pRebarData = pLongRebar->GetSegmentLongitudinalRebarData(segmentKey);
          const std::vector<CLongitudinalRebarData::RebarRow>& rebar_rows = pRebarData->RebarRows;
-         CollectionIndexType rowcnt = rebar_rows.size();
+         IndexType rowcnt = rebar_rows.size();
 
          gd.NumberOfLongitudinalRebarRows(rowcnt);
 
@@ -794,7 +794,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
             Float64 startLoc, endLoc;
             bool onGirder = rowData.GetRebarStartEnd(segment_length, &startLoc, &endLoc);
 
-            const auto* pRebar = lrfdRebarPool::GetInstance()->GetRebar(pRebarData->BarType, pRebarData->BarGrade, rowData.BarSize);
+            const auto* pRebar = WBFL::LRFD::RebarPool::GetInstance()->GetRebar(pRebarData->BarType, pRebarData->BarGrade, rowData.BarSize);
             if (pRebar)
             {
                KDOT::RebarRowInstanceType rebarRow;
@@ -860,7 +860,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
             Float64 nStirrups;
             pStirrupGeometry->GetPrimaryVertStirrupBarInfo(segmentKey,iz,&barSize,&nStirrups,&spacing);
 
-            szone.BarSize(lrfdRebarPool::GetBarSize(barSize));
+            szone.BarSize(WBFL::LRFD::RebarPool::GetBarSize(barSize));
 
             dval = WBFL::Units::ConvertFromSysUnits(spacing, WBFL::Units::Measure::Inch);
             szone.BarSpacing(dval);
@@ -871,7 +871,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
             szone.NumLegsExtendedIntoDeck(num_legs);
 
             barSize = pStirrupGeometry->GetPrimaryConfinementBarSize(segmentKey,iz);
-            szone.ConfinementBarSize(lrfdRebarPool::GetBarSize(barSize));
+            szone.ConfinementBarSize(WBFL::LRFD::RebarPool::GetBarSize(barSize));
 
             szones.push_back(szone);
          }

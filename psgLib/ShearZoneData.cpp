@@ -22,7 +22,7 @@
 #include "StdAfx.h"
 #include <PsgLib\ShearZoneData.h>
 #include <Units\Convert.h>
-#include <Lrfd\RebarPool.h>
+#include <LRFD\RebarPool.h>
 #include <StdIo.h>
 #include <StrData.cpp>
 #include <comdef.h> // for _variant_t
@@ -132,7 +132,7 @@ HRESULT CShearZoneData2::Load(WBFL::System::IStructuredLoad* pStrLoad, bool bCon
 
          WBFL::Materials::Rebar::Grade grade;
          WBFL::Materials::Rebar::Type type;
-         lrfdRebarPool::MapOldRebarKey(key,grade,type,VertBarSize);
+         WBFL::LRFD::RebarPool::MapOldRebarKey(key,grade,type,VertBarSize);
 
          if ( FAILED(pStrLoad->Property(_T("BarSpacing"),&BarSpacing)) )
          {
@@ -189,7 +189,7 @@ HRESULT CShearZoneData2::Load(WBFL::System::IStructuredLoad* pStrLoad, bool bCon
          
             WBFL::Materials::Rebar::Grade grade;
             WBFL::Materials::Rebar::Type type;
-            lrfdRebarPool::MapOldRebarKey(key,grade,type,VertBarSize);
+            WBFL::LRFD::RebarPool::MapOldRebarKey(key,grade,type,VertBarSize);
          }
          else
          {
@@ -222,7 +222,7 @@ HRESULT CShearZoneData2::Load(WBFL::System::IStructuredLoad* pStrLoad, bool bCon
          
             WBFL::Materials::Rebar::Grade grade;
             WBFL::Materials::Rebar::Type type;
-            lrfdRebarPool::MapOldRebarKey(key,grade,type,legacy_HorzBarSize);
+            WBFL::LRFD::RebarPool::MapOldRebarKey(key,grade,type,legacy_HorzBarSize);
          }
          else if (version < 4)
          {

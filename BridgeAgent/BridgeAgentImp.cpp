@@ -118,10 +118,10 @@ inline SectionBias GetSectionBias(const pgsPointOfInterest& poi)
 }
 
 //-----------------------------------------------------------------------------
-CollectionIndexType LimitStateToShearIndex(pgsTypes::LimitState limitState)
+IndexType LimitStateToShearIndex(pgsTypes::LimitState limitState)
 {
    ATLASSERT(IsStrengthLimitState(limitState));
-   CollectionIndexType idx;
+   IndexType idx;
 
    switch (limitState)
    {
@@ -305,7 +305,7 @@ void IndexArray2ConfigStrandFillVec(IIndexArray* pArray, ConfigStrandFillVector&
    rVec.clear();
    if (pArray!=nullptr)
    {
-      CollectionIndexType cnt;
+      IndexType cnt;
       pArray->get_Count(&cnt);
       rVec.reserve(cnt);
 
@@ -378,12 +378,12 @@ public:
    {return 1;}
 
    // IIndexArray
-	STDMETHOD(Find)(/*[in]*/CollectionIndexType value, /*[out,retval]*/CollectionIndexType* fndIndex)
+	STDMETHOD(Find)(/*[in]*/IndexType value, /*[out,retval]*/IndexType* fndIndex)
    {
       ATLASSERT(false);
       return E_FAIL;
    }
-	STDMETHOD(ReDim)(/*[in]*/CollectionIndexType size)
+	STDMETHOD(ReDim)(/*[in]*/IndexType size)
    {
       ATLASSERT(false);
       return E_FAIL;
@@ -394,7 +394,7 @@ public:
       ATLASSERT(false);
       return E_FAIL;
    }
-	STDMETHOD(get_Count)(/*[out, retval]*/ CollectionIndexType *pVal)
+	STDMETHOD(get_Count)(/*[out, retval]*/ IndexType *pVal)
    {
 	   *pVal = m_Values.size();
 	   return S_OK;
@@ -404,27 +404,27 @@ public:
       ATLASSERT(false);
       return E_FAIL;
    }
-	STDMETHOD(Reserve)(/*[in]*/CollectionIndexType count)
+	STDMETHOD(Reserve)(/*[in]*/IndexType count)
    {
       ATLASSERT(false);
       return E_FAIL;
    }
-	STDMETHOD(Insert)(/*[in]*/CollectionIndexType relPosition, /*[in]*/CollectionIndexType item)
+	STDMETHOD(Insert)(/*[in]*/IndexType relPosition, /*[in]*/IndexType item)
    {
       ATLASSERT(false);
       return E_FAIL;
    }
-	STDMETHOD(Remove)(/*[in]*/CollectionIndexType relPosition)
+	STDMETHOD(Remove)(/*[in]*/IndexType relPosition)
    {
       ATLASSERT(false);
       return E_FAIL;
    }
-	STDMETHOD(Add)(/*[in]*/CollectionIndexType item)
+	STDMETHOD(Add)(/*[in]*/IndexType item)
    {
       ATLASSERT(false);
       return E_FAIL;
    }
-	STDMETHOD(get_Item)(/*[in]*/CollectionIndexType relPosition, /*[out, retval]*/ CollectionIndexType *pVal)
+	STDMETHOD(get_Item)(/*[in]*/IndexType relPosition, /*[out, retval]*/ IndexType *pVal)
    {
       try
       {
@@ -437,7 +437,7 @@ public:
       }
 	   return S_OK;
    }
-	STDMETHOD(put_Item)(/*[in]*/CollectionIndexType relPosition, /*[in]*/ CollectionIndexType newVal)
+	STDMETHOD(put_Item)(/*[in]*/IndexType relPosition, /*[in]*/ IndexType newVal)
    {
       ATLASSERT(false);
       return E_FAIL;
@@ -452,7 +452,7 @@ public:
       ATLASSERT(false);
       return E_FAIL;
    }
-   STDMETHOD(Assign)(/*[in]*/CollectionIndexType numElements, /*[in]*/CollectionIndexType value)
+   STDMETHOD(Assign)(/*[in]*/IndexType numElements, /*[in]*/IndexType value)
    {
       ATLASSERT(false);
       return E_FAIL;
@@ -838,8 +838,8 @@ void CBridgeAgentImp::Invalidate( Uint16 level )
       InvalidatePointsOfInterest();
       InvalidatePoiLocationCache();
 
-      CollectionIndexType size = sizeof(m_CriticalSectionState) / sizeof(std::set<CGirderKey>);
-      for (CollectionIndexType idx = 0; idx < size; idx++)
+      IndexType size = sizeof(m_CriticalSectionState) / sizeof(std::set<CGirderKey>);
+      for (IndexType idx = 0; idx < size; idx++)
       {
          m_CriticalSectionState[idx].clear();
       }
@@ -1028,8 +1028,8 @@ void CBridgeAgentImp::ValidatePointLoads()
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   CollectionIndexType nLoads = pLoadData->GetPointLoadCount();
-   for(CollectionIndexType loadIdx = 0; loadIdx < nLoads; loadIdx++)
+   IndexType nLoads = pLoadData->GetPointLoadCount();
+   for(IndexType loadIdx = 0; loadIdx < nLoads; loadIdx++)
    {
       const CPointLoadData* pPointLoad = pLoadData->GetPointLoad(loadIdx);
 
@@ -1307,8 +1307,8 @@ void CBridgeAgentImp::ValidateDistributedLoads()
    GET_IFACE_NOCHECK(IEAFStatusCenter,pStatusCenter);
    GET_IFACE( IUserDefinedLoadData, pUdl );
 
-   CollectionIndexType nLoads = pUdl->GetDistributedLoadCount();
-   for(CollectionIndexType loadIdx = 0; loadIdx < nLoads; loadIdx++)
+   IndexType nLoads = pUdl->GetDistributedLoadCount();
+   for(IndexType loadIdx = 0; loadIdx < nLoads; loadIdx++)
    {
       const CDistributedLoadData* pDistLoad = pUdl->GetDistributedLoad(loadIdx);
 
@@ -1569,8 +1569,8 @@ void CBridgeAgentImp::ValidateMomentLoads()
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   CollectionIndexType nLoads = pLoadData->GetMomentLoadCount();
-   for(CollectionIndexType loadIdx = 0; loadIdx < nLoads; loadIdx++)
+   IndexType nLoads = pLoadData->GetMomentLoadCount();
+   for(IndexType loadIdx = 0; loadIdx < nLoads; loadIdx++)
    {
       const CMomentLoadData* pMomentLoad = pLoadData->GetMomentLoad(loadIdx);
 
@@ -4790,7 +4790,7 @@ void CBridgeAgentImp::GetClosureJointSize(const CClosureKey& closureKey,Float64*
 {
    GroupIndexType      grpIdx     = closureKey.groupIndex;
    GirderIndexType     gdrIdx     = closureKey.girderIndex;
-   CollectionIndexType closureIdx = closureKey.segmentIndex;
+   IndexType closureIdx = closureKey.segmentIndex;
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -6024,9 +6024,9 @@ void CBridgeAgentImp::LayoutPoiForSegmentBarCutoffs(const CSegmentKey& segmentKe
    CComPtr<IRebarLayout> rebar_layout;
    girder->get_RebarLayout(&rebar_layout);
 
-   CollectionIndexType nRebarLayoutItems;
+   IndexType nRebarLayoutItems;
    rebar_layout->get_Count(&nRebarLayoutItems);
-   for (CollectionIndexType rebarLayoutItemIdx = 0; rebarLayoutItemIdx < nRebarLayoutItems; rebarLayoutItemIdx++)
+   for (IndexType rebarLayoutItemIdx = 0; rebarLayoutItemIdx < nRebarLayoutItems; rebarLayoutItemIdx++)
    {
       CComPtr<IRebarLayoutItem> rebarLayoutItem;
       rebar_layout->get_Item(rebarLayoutItemIdx, &rebarLayoutItem);
@@ -6065,7 +6065,7 @@ void CBridgeAgentImp::LayoutPoiForSegmentBarCutoffs(const CSegmentKey& segmentKe
       }
 
       // we only create one pattern per layout
-      CollectionIndexType nRebarPatterns;
+      IndexType nRebarPatterns;
       rebarLayoutItem->get_Count(&nRebarPatterns);
       ATLASSERT(nRebarPatterns==1);
       if (0 < nRebarPatterns)
@@ -6079,7 +6079,7 @@ void CBridgeAgentImp::LayoutPoiForSegmentBarCutoffs(const CSegmentKey& segmentKe
          if (rebar)
          {
             // Get development length and add poi only if dev length is shorter than 1/2 rebar length
-            REBARDEVLENGTHDETAILS devDetails = GetSegmentRebarDevelopmentLengthDetails(segmentKey, rebar, concType, fc, hasFct, Fct,false/*not top bar*/, false/*not epoxy coated*/, true/*meets cover requirements*/);
+            WBFL::LRFD::REBARDEVLENGTHDETAILS devDetails = GetSegmentRebarDevelopmentLengthDetails(segmentKey, rebar, concType, fc, hasFct, Fct,false/*not top bar*/, false/*not epoxy coated*/, true/*meets cover requirements*/);
             Float64 ld = devDetails.ld;
             if (ld < barLength/2.0)
             {
@@ -6867,7 +6867,7 @@ void CBridgeAgentImp::GetBearingNormal(Float64 station,IDirection** ppNormal) co
    alignment->GetNormal(CComVariant(station),ppNormal);
 }
 
-CollectionIndexType CBridgeAgentImp::GetCurveCount() const
+IndexType CBridgeAgentImp::GetCurveCount() const
 {
    VALIDATE( COGO_MODEL );
 
@@ -6876,7 +6876,7 @@ CollectionIndexType CBridgeAgentImp::GetCurveCount() const
    return nCurves;
 }
 
-void CBridgeAgentImp::GetCurve(CollectionIndexType idx, ICompoundCurve** ppCurve) const
+void CBridgeAgentImp::GetCurve(IndexType idx, ICompoundCurve** ppCurve) const
 {
    // this is a private method, not accessible through the IAlignment interface
    VALIDATE(BRIDGE);
@@ -6891,7 +6891,7 @@ void CBridgeAgentImp::GetCurve(CollectionIndexType idx, ICompoundCurve** ppCurve
    VERIFY(element.QueryInterface(ppCurve) == S_OK);
 }
 
-void CBridgeAgentImp::GetCurve(CollectionIndexType idx, pgsTypes::PlanCoordinateType pcType,ICompoundCurve** ppCurve) const
+void CBridgeAgentImp::GetCurve(IndexType idx, pgsTypes::PlanCoordinateType pcType,ICompoundCurve** ppCurve) const
 {
    CComPtr<ICompoundCurve> curve;
    GetCurve(idx, &curve);
@@ -6951,7 +6951,7 @@ HCURVESTATIONS CBridgeAgentImp::GetCurveStations(IndexType hcIdx) const
    return stations;
 }
 
-CollectionIndexType CBridgeAgentImp::GetVertCurveCount() const
+IndexType CBridgeAgentImp::GetVertCurveCount() const
 {
    VALIDATE( COGO_MODEL );
 
@@ -6960,7 +6960,7 @@ CollectionIndexType CBridgeAgentImp::GetVertCurveCount() const
    return nCurves;
 }
 
-void CBridgeAgentImp::GetVertCurve(CollectionIndexType idx,IVerticalCurve** ppCurve) const
+void CBridgeAgentImp::GetVertCurve(IndexType idx,IVerticalCurve** ppCurve) const
 {
    VALIDATE(BRIDGE);
    CComPtr<IAlignment> alignment;
@@ -7332,35 +7332,35 @@ HRESULT CBridgeAgentImp::PointOnLineSegment(IPoint2d* from,ILineSegment2d* seg,F
    return project->PointOnLineSegment(from,seg,offset,point);
 }
 
-HRESULT CBridgeAgentImp::Arc(IPoint2d* from, IPoint2d* vertex, IPoint2d* to,CollectionIndexType nParts,IPoint2dCollection** points) const
+HRESULT CBridgeAgentImp::Arc(IPoint2d* from, IPoint2d* vertex, IPoint2d* to,IndexType nParts,IPoint2dCollection** points) const
 {
    CComPtr<IDivide2> divide;
    m_CogoEngine->get_Divide(&divide);
    return divide->Arc(from,vertex,to,nParts,points);
 }
 
-HRESULT CBridgeAgentImp::BetweenPoints(IPoint2d* from, IPoint2d* to,CollectionIndexType nParts,IPoint2dCollection** points) const
+HRESULT CBridgeAgentImp::BetweenPoints(IPoint2d* from, IPoint2d* to,IndexType nParts,IPoint2dCollection** points) const
 {
    CComPtr<IDivide2> divide;
    m_CogoEngine->get_Divide(&divide);
    return divide->BetweenPoints(from,to,nParts,points);
 }
 
-HRESULT CBridgeAgentImp::LineSegment(ILineSegment2d* seg,CollectionIndexType nParts,IPoint2dCollection** points) const
+HRESULT CBridgeAgentImp::LineSegment(ILineSegment2d* seg,IndexType nParts,IPoint2dCollection** points) const
 {
    CComPtr<IDivide2> divide;
    m_CogoEngine->get_Divide(&divide);
    return divide->LineSegment(seg,nParts,points);
 }
 
-HRESULT CBridgeAgentImp::CompoundCurve(ICompoundCurve* curve, CollectionIndexType nParts, IPoint2dCollection** points) const
+HRESULT CBridgeAgentImp::CompoundCurve(ICompoundCurve* curve, IndexType nParts, IPoint2dCollection** points) const
 {
    CComPtr<IDivide2> divide;
    m_CogoEngine->get_Divide(&divide);
    return divide->CompoundCurve(curve,nParts,points);
 }
 
-HRESULT CBridgeAgentImp::Path(IPath* pPath,CollectionIndexType nParts,Float64 start,Float64 end,IPoint2dCollection** points) const
+HRESULT CBridgeAgentImp::Path(IPath* pPath,IndexType nParts,Float64 start,Float64 end,IPoint2dCollection** points) const
 {
    CComPtr<IDivide2> divide;
    m_CogoEngine->get_Divide(&divide);
@@ -11121,7 +11121,7 @@ Float64 CBridgeAgentImp::GetRightOverlayToeOffset(const pgsPointOfInterest& poi)
    return GetRightOverlayToeOffset(Xb);
 }
 
-void CBridgeAgentImp::GetSlabPerimeter(CollectionIndexType nPoints,pgsTypes::PlanCoordinateType pcType,IPoint2dCollection** ppPoints) const
+void CBridgeAgentImp::GetSlabPerimeter(IndexType nPoints,pgsTypes::PlanCoordinateType pcType,IPoint2dCollection** ppPoints) const
 {
    VALIDATE( BRIDGE );
 
@@ -11148,12 +11148,12 @@ void CBridgeAgentImp::GetSlabPerimeter(CollectionIndexType nPoints,pgsTypes::Pla
    }
 }
 
-void CBridgeAgentImp::GetSlabPerimeter(PierIndexType startPierIdx, Float64 Xstart, PierIndexType endPierIdx, Float64 Xend, CollectionIndexType nPoints, pgsTypes::PlanCoordinateType pcType, IPoint2dCollection** ppPoints) const
+void CBridgeAgentImp::GetSlabPerimeter(PierIndexType startPierIdx, Float64 Xstart, PierIndexType endPierIdx, Float64 Xend, IndexType nPoints, pgsTypes::PlanCoordinateType pcType, IPoint2dCollection** ppPoints) const
 {
    GetSlabPerimeter(startPierIdx, Xstart, endPierIdx, Xend, nPoints, pcType, nullptr, ppPoints);
 }
 
-void CBridgeAgentImp::GetSlabPerimeter(PierIndexType startPierIdx, Float64 Xstart, PierIndexType endPierIdx, Float64 Xend, CollectionIndexType nPoints, pgsTypes::PlanCoordinateType pcType, const CCastDeckActivity* pCastDeckActivity, IPoint2dCollection** ppPoints) const
+void CBridgeAgentImp::GetSlabPerimeter(PierIndexType startPierIdx, Float64 Xstart, PierIndexType endPierIdx, Float64 Xend, IndexType nPoints, pgsTypes::PlanCoordinateType pcType, const CCastDeckActivity* pCastDeckActivity, IPoint2dCollection** ppPoints) const
 {
    VALIDATE(BRIDGE);
    ATLASSERT(startPierIdx != INVALID_INDEX && endPierIdx != INVALID_INDEX);
@@ -11195,7 +11195,7 @@ void CBridgeAgentImp::GetSlabPerimeter(PierIndexType startPierIdx, Float64 Xstar
    }
 }
 
-void CBridgeAgentImp::GetSpanPerimeter(SpanIndexType spanIdx, CollectionIndexType nPoints, pgsTypes::PlanCoordinateType pcType, IPoint2dCollection** ppPoints) const
+void CBridgeAgentImp::GetSpanPerimeter(SpanIndexType spanIdx, IndexType nPoints, pgsTypes::PlanCoordinateType pcType, IPoint2dCollection** ppPoints) const
 {
    GetSlabPerimeter(spanIdx, spanIdx, nPoints, pcType, ppPoints);
 }
@@ -11260,7 +11260,7 @@ Float64 CBridgeAgentImp::GetPierStation(PierIndexType pierIdx) const
    return value;
 }
 
-void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx,CollectionIndexType nPoints,pgsTypes::PlanCoordinateType pcType,IPoint2dCollection** points) const
+void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx,IndexType nPoints,pgsTypes::PlanCoordinateType pcType,IPoint2dCollection** points) const
 {
    VALIDATE( BRIDGE );
 
@@ -11402,7 +11402,7 @@ void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType 
       std::set<Float64> deckStations;
       Float64 station = startStation;
 
-      for (CollectionIndexType pntIdx = 0; pntIdx < nPoints; pntIdx++)
+      for (IndexType pntIdx = 0; pntIdx < nPoints; pntIdx++)
       {
          deckStations.insert(station);
          station += stationInc;
@@ -13235,9 +13235,9 @@ Float64 CBridgeAgentImp::GetSegmentEc(const CSegmentKey& segmentKey,IntervalInde
    }
    else
    {
-      E = lrfdConcreteUtil::ModE( (WBFL::Materials::ConcreteType)pMaterial->Concrete.Type, trialFc, pMaterial->Concrete.StrengthDensity, false /*ignore LRFD range checks*/ );
+      E = WBFL::LRFD::ConcreteUtil::ModE( (WBFL::Materials::ConcreteType)pMaterial->Concrete.Type, trialFc, pMaterial->Concrete.StrengthDensity, false /*ignore LRFD range checks*/ );
 
-      if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
       {
          E *= (pMaterial->Concrete.EcK1*pMaterial->Concrete.EcK2);
       }
@@ -13282,9 +13282,9 @@ Float64 CBridgeAgentImp::GetClosureJointEc(const CClosureKey& closureKey,Interva
    }
    else
    {
-      E = lrfdConcreteUtil::ModE( (WBFL::Materials::ConcreteType)concrete.Type, trialFc, concrete.StrengthDensity, false /*ignore LRFD range checks*/ );
+      E = WBFL::LRFD::ConcreteUtil::ModE( (WBFL::Materials::ConcreteType)concrete.Type, trialFc, concrete.StrengthDensity, false /*ignore LRFD range checks*/ );
 
-      if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
       {
          E *= (concrete.EcK1*concrete.EcK2);
       }
@@ -14105,7 +14105,7 @@ void CBridgeAgentImp::GetSegmentLongitudinalRebarProperties(const CSegmentKey& s
    GET_IFACE(ILongitudinalRebar,pLongRebar);
    const CLongitudinalRebarData* pLRD = pLongRebar->GetSegmentLongitudinalRebarData(segmentKey);
 
-   const auto* pRebar = lrfdRebarPool::GetInstance()->GetRebar(pLRD->BarType,pLRD->BarGrade,WBFL::Materials::Rebar::Size::bs3);
+   const auto* pRebar = WBFL::LRFD::RebarPool::GetInstance()->GetRebar(pLRD->BarType,pLRD->BarGrade,WBFL::Materials::Rebar::Size::bs3);
    *pE  = pRebar->GetE();
    *pFy = pRebar->GetYieldStrength();
    *pFu = pRebar->GetUltimateStrength();
@@ -14130,7 +14130,7 @@ void CBridgeAgentImp::GetClosureJointLongitudinalRebarProperties(const CClosureK
    GET_IFACE(ILongitudinalRebar,pLongRebar);
    const CLongitudinalRebarData* pLRD = pLongRebar->GetClosureJointLongitudinalRebarData(closureKey);
 
-   const auto* pRebar = lrfdRebarPool::GetInstance()->GetRebar(pLRD->BarType,pLRD->BarGrade,WBFL::Materials::Rebar::Size::bs3);
+   const auto* pRebar = WBFL::LRFD::RebarPool::GetInstance()->GetRebar(pLRD->BarType,pLRD->BarGrade,WBFL::Materials::Rebar::Size::bs3);
    *pE  = pRebar->GetE();
    *pFy = pRebar->GetYieldStrength();
    *pFu = pRebar->GetUltimateStrength();
@@ -14154,7 +14154,7 @@ void CBridgeAgentImp::GetSegmentTransverseRebarProperties(const CSegmentKey& seg
 {
 	GET_IFACE(IShear,pShear);
 	const CShearData2* pShearData = pShear->GetSegmentShearData(segmentKey);
-   const auto* pRebar = lrfdRebarPool::GetInstance()->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,WBFL::Materials::Rebar::Size::bs3);
+   const auto* pRebar = WBFL::LRFD::RebarPool::GetInstance()->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,WBFL::Materials::Rebar::Size::bs3);
    *pE  = pRebar->GetE();
    *pFy = pRebar->GetYieldStrength();
    *pFu = pRebar->GetUltimateStrength();
@@ -14179,7 +14179,7 @@ void CBridgeAgentImp::GetClosureJointTransverseRebarProperties(const CClosureKey
 {
 	GET_IFACE(IShear,pShear);
 	const CShearData2* pShearData = pShear->GetClosureJointShearData(closureKey);
-   const auto* pRebar = lrfdRebarPool::GetInstance()->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,WBFL::Materials::Rebar::Size::bs3);
+   const auto* pRebar = WBFL::LRFD::RebarPool::GetInstance()->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,WBFL::Materials::Rebar::Size::bs3);
    *pE  = pRebar->GetE();
    *pFy = pRebar->GetYieldStrength();
    *pFu = pRebar->GetUltimateStrength();
@@ -14204,7 +14204,7 @@ void CBridgeAgentImp::GetDeckRebarProperties(Float64* pE,Float64 *pFy,Float64* p
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CDeckDescription2* pDeck = pIBridgeDesc->GetDeckDescription();
-   const auto* pRebar = lrfdRebarPool::GetInstance()->GetRebar(pDeck->DeckRebarData.TopRebarType,pDeck->DeckRebarData.TopRebarGrade,WBFL::Materials::Rebar::Size::bs3);
+   const auto* pRebar = WBFL::LRFD::RebarPool::GetInstance()->GetRebar(pDeck->DeckRebarData.TopRebarType,pDeck->DeckRebarData.TopRebarGrade,WBFL::Materials::Rebar::Size::bs3);
    *pE  = pRebar->GetE();
    *pFy = pRebar->GetYieldStrength();
    *pFu = pRebar->GetUltimateStrength();
@@ -14214,7 +14214,7 @@ std::_tstring CBridgeAgentImp::GetDeckRebarName() const
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CDeckDescription2* pDeck = pIBridgeDesc->GetDeckDescription();
-   return lrfdRebarPool::GetMaterialName(pDeck->DeckRebarData.TopRebarType,pDeck->DeckRebarData.TopRebarGrade);
+   return WBFL::LRFD::RebarPool::GetMaterialName(pDeck->DeckRebarData.TopRebarType,pDeck->DeckRebarData.TopRebarGrade);
 }
 
 void CBridgeAgentImp::GetDeckRebarMaterial(WBFL::Materials::Rebar::Type* pType,WBFL::Materials::Rebar::Grade* pGrade) const
@@ -14353,7 +14353,7 @@ Float64 CBridgeAgentImp::GetDevLengthFactor(const pgsPointOfInterest& poi,IRebar
    CComPtr<IRebar> rebar;
    rebarItem->get_Rebar(&rebar);
 
-   REBARDEVLENGTHDETAILS details = GetSegmentRebarDevelopmentLengthDetails(poi.GetSegmentKey(), rebar, type, fc, isFct, fct, false/*not top bar*/, false/*not epoxy coated*/, true/*meets cover requirements*/);
+   WBFL::LRFD::REBARDEVLENGTHDETAILS details = GetSegmentRebarDevelopmentLengthDetails(poi.GetSegmentKey(), rebar, type, fc, isFct, fct, false/*not top bar*/, false/*not epoxy coated*/, true/*meets cover requirements*/);
 
    // Get distances from section cut to ends of bar
    Float64 start,end;
@@ -14461,12 +14461,12 @@ Float64 CBridgeAgentImp::GetPPRBottomHalf(const pgsPointOfInterest& poi,const GD
    return ppr;
 }
 
-REBARDEVLENGTHDETAILS CBridgeAgentImp::GetSegmentRebarDevelopmentLengthDetails(const CSegmentKey& segmentKey, IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, bool bIsTopBar, bool bEpoxyCoated, bool bMeetsCoverRequirements) const
+WBFL::LRFD::REBARDEVLENGTHDETAILS CBridgeAgentImp::GetSegmentRebarDevelopmentLengthDetails(const CSegmentKey& segmentKey, IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, bool bIsTopBar, bool bEpoxyCoated, bool bMeetsCoverRequirements) const
 {
    return GetRebarDevelopmentLengthDetails(segmentKey, rebar,type, fc, isFct, Fct, bIsTopBar, bEpoxyCoated, bMeetsCoverRequirements);
 }
 
-REBARDEVLENGTHDETAILS CBridgeAgentImp::GetDeckRebarDevelopmentLengthDetails(IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, bool bIsTopBar, bool bEpoxyCoated, bool bMeetsCoverRequirements) const
+WBFL::LRFD::REBARDEVLENGTHDETAILS CBridgeAgentImp::GetDeckRebarDevelopmentLengthDetails(IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, bool bIsTopBar, bool bEpoxyCoated, bool bMeetsCoverRequirements) const
 {
    return GetRebarDevelopmentLengthDetails(CSegmentKey(), rebar,type, fc, isFct, Fct, bIsTopBar, bEpoxyCoated, bMeetsCoverRequirements);
 }
@@ -14499,13 +14499,13 @@ bool CBridgeAgentImp::IsAnchored(const pgsPointOfInterest& poi) const
    return bAnchored;
 }
 
-REBARDEVLENGTHDETAILS CBridgeAgentImp::GetRebarDevelopmentLengthDetails(const CSegmentKey& segmentKey, IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, bool bIsTopBar, bool bEpoxyCoated, bool bMeetsCoverRequirements) const
+WBFL::LRFD::REBARDEVLENGTHDETAILS CBridgeAgentImp::GetRebarDevelopmentLengthDetails(const CSegmentKey& segmentKey, IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, bool bIsTopBar, bool bEpoxyCoated, bool bMeetsCoverRequirements) const
 {
    USES_CONVERSION;
    CComBSTR name;
    rebar->get_Name(&name);
 
-   WBFL::Materials::Rebar::Size size = lrfdRebarPool::GetBarSize(OLE2CT(name));
+   WBFL::Materials::Rebar::Size size = WBFL::LRFD::RebarPool::GetBarSize(OLE2CT(name));
 
    Float64 Ab, db, fy;
    rebar->get_NominalArea(&Ab);
@@ -14523,7 +14523,7 @@ REBARDEVLENGTHDETAILS CBridgeAgentImp::GetRebarDevelopmentLengthDetails(const CS
    }
 
    // density is used to compute lambda factor
-   return lrfdRebar::GetRebarDevelopmentLengthDetails(size, Ab, db, fy, (WBFL::Materials::ConcreteType)type, fc, isFct, Fct, density, bIsTopBar, bEpoxyCoated, bMeetsCoverRequirements);
+   return WBFL::LRFD::Rebar::GetRebarDevelopmentLengthDetails(size, Ab, db, fy, (WBFL::Materials::ConcreteType)type, fc, isFct, Fct, density, bIsTopBar, bEpoxyCoated, bMeetsCoverRequirements);
 }
 
 Float64 CBridgeAgentImp::GetCoverTopMat() const
@@ -15033,7 +15033,7 @@ Float64 CBridgeAgentImp::GetVertStirrupBarNominalDiameter(const pgsPointOfIntere
    WBFL::Materials::Rebar::Size barSize = pShearZoneData->VertBarSize;
    if ( barSize!=WBFL::Materials::Rebar::Size::bsNone && !IsZero(pShearZoneData->BarSpacing) )
    {
-      lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
+      const auto* prp = WBFL::LRFD::RebarPool::GetInstance();
       const auto* pRebar = prp->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,barSize);
 
       return (pRebar ? pRebar->GetNominalDimension() : 0.0);
@@ -15081,7 +15081,7 @@ Float64 CBridgeAgentImp::GetVertStirrupAvs(const pgsPointOfInterest& poi, WBFL::
    WBFL::Materials::Rebar::Size barSize = pShearZoneData->VertBarSize;
    if ( barSize != WBFL::Materials::Rebar::Size::bsNone && !IsZero(pShearZoneData->BarSpacing) )
    {
-      lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
+      const auto* prp = WBFL::LRFD::RebarPool::GetInstance();
       const auto* pBar = prp->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,barSize);
 
       Abar    = pBar->GetNominalArea();
@@ -15245,7 +15245,7 @@ Float64 CBridgeAgentImp::GetPrimaryHorizInterfaceAvs(const pgsPointOfInterest& p
 
    if ( barSize != WBFL::Materials::Rebar::Size::bsNone && !IsZero(pShearZoneData->BarSpacing) && 0.0 < pShearZoneData->nHorzInterfaceBars )
    {
-      lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
+      const auto* prp = WBFL::LRFD::RebarPool::GetInstance();
       const auto* pbar = prp->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,barSize);
 
       Abar    = pbar->GetNominalArea();
@@ -15284,7 +15284,7 @@ Float64 CBridgeAgentImp::GetAdditionalHorizInterfaceAvs(const pgsPointOfInterest
 
       if (barSize != WBFL::Materials::Rebar::Size::bsNone && !IsZero(pHIZoneData->BarSpacing) && 0.0 < pHIZoneData->nBars)
       {
-         lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
+         const auto* prp = WBFL::LRFD::RebarPool::GetInstance();
          const auto* pbar = prp->GetRebar(pShearData->ShearBarType, pShearData->ShearBarGrade, barSize);
 
          Abar = pbar->GetNominalArea();
@@ -15360,7 +15360,7 @@ Float64 CBridgeAgentImp::GetSplittingAv(const CSegmentKey& segmentKey,Float64 st
          if (0.0 < length)
          {
             // We have bars in region. multiply av/s * length
-            lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
+            const auto* prp = WBFL::LRFD::RebarPool::GetInstance();
             const auto* pbar = prp->GetRebar(pShearData->ShearBarType, pShearData->ShearBarGrade, pShearData->SplittingBarSize);
 
             Float64 Abar = pbar->GetNominalArea();
@@ -15439,7 +15439,7 @@ Float64 CBridgeAgentImp::GetPrimarySplittingAv(const CSegmentKey& segmentKey,Flo
       WBFL::Materials::Rebar::Size barSize = shearZoneData.VertBarSize; // splitting is same as vert bars
       if ( barSize != WBFL::Materials::Rebar::Size::bsNone && !IsZero(shearZoneData.BarSpacing) )
       {
-         lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
+         const auto* prp = WBFL::LRFD::RebarPool::GetInstance();
          const auto* pbar = prp->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,barSize);
 
          Float64 Abar   = pbar->GetNominalArea();
@@ -18079,9 +18079,9 @@ std::vector<StrandIndexType> CBridgeAgentImp::GetStrandsInRow(const pgsPointOfIn
    CComPtr<IIndexArray> idxArray;
    strandModel->GetStrandsInRow((StrandType)strandType, poi.GetDistFromStart(), rowIdx, &idxArray);
 
-   CollectionIndexType nItems;
+   IndexType nItems;
    idxArray->get_Count(&nItems);
-   for ( CollectionIndexType i = 0; i < nItems; i++ )
+   for ( IndexType i = 0; i < nItems; i++ )
    {
       StrandIndexType strandIdx;
       idxArray->get_Item(i,&strandIdx);
@@ -18175,7 +18175,7 @@ bool CBridgeAgentImp::IsExteriorWebStrandDebondedInRow(const pgsPointOfInterest&
 
    // LRFD 9th Edition, 5.9.4.3.3 - Item K - multiple-webs and no bottom flange
    WebIndexType nWebs = GetWebCount(segmentKey);
-   ATLASSERT(lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion());
+   ATLASSERT(WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= WBFL::LRFD::LRFDVersionMgr::GetVersion());
    ATLASSERT(1 < nWebs);
    ATLASSERT(0 == GetBottomFlangeCount(segmentKey));
 
@@ -18327,7 +18327,7 @@ SectionIndexType CBridgeAgentImp::GetNumDebondSections(const CSegmentKey& segmen
       return 0;
    }
 
-   CollectionIndexType c1;
+   IndexType c1;
    if ( endType == pgsTypes::metStart )
    {
       arrLeft->get_Count(&c1);
@@ -18387,18 +18387,18 @@ StrandIndexType CBridgeAgentImp::GetNumBondedStrandsAtSection(const CSegmentKey&
 
    // all strands are straight from here on
    StrandIndexType nDebondedStrands = 0;
-   CollectionIndexType nSections;
+   IndexType nSections;
    sectionLocations[endType]->get_Count(&nSections);
    ATLASSERT(sectionIdx < nSections);
 
    // how many strands are debonded at this section and all the ones after it?
-   for (CollectionIndexType idx = sectionIdx; idx < nSections; idx++)
+   for (IndexType idx = sectionIdx; idx < nSections; idx++)
    {
       CComPtr<IIndexArray> strands;
       HRESULT hr = strandModel->GetDebondedStrandsAtSection((EndType)endType, (StrandType)strandType, idx, &strands);
       ATLASSERT(SUCCEEDED(hr));
 
-      CollectionIndexType nDebondedStrandsAtSection;
+      IndexType nDebondedStrandsAtSection;
       strands->get_Count(&nDebondedStrandsAtSection);
 
       nDebondedStrands += nDebondedStrandsAtSection;
@@ -18884,10 +18884,10 @@ std::vector<StrandIndexType> CBridgeAgentImp::GetStrandsInRow(const pgsPointOfIn
       strandGridModel->putref_StrandFill(Harped,oldFill);
    }
 
-   CollectionIndexType nItems;
+   IndexType nItems;
 
    array->get_Count(&nItems);
-   for ( CollectionIndexType i = 0; i < nItems; i++ )
+   for ( IndexType i = 0; i < nItems; i++ )
    {
       StrandIndexType strandIdx;
       array->get_Item(i,&strandIdx);
@@ -18975,7 +18975,7 @@ void CBridgeAgentImp::GetStrandPositionsEx(const pgsPointOfInterest& poi,const P
    }
 
 #ifdef _DEBUG
-   CollectionIndexType np;
+   IndexType np;
    (*ppPoints)->get_Count(&np);
    ATLASSERT(np==rconfig.GetStrandCount(strandType));
 #endif
@@ -19105,10 +19105,10 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetEnd(const CSegmentKey& segme
 
             Float64 cg = 0.0;
 
-            CollectionIndexType nStrands;
+            IndexType nStrands;
             points->get_Count(&nStrands);
             ATLASSERT(CountStrandsInConfigFillVec(rHarpedFillArray) == nStrands);
-            for (CollectionIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
+            for (IndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
             {
                CComPtr<IPoint2d> point;
                points->get_Item(strandIdx, &point);
@@ -19276,10 +19276,10 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetEnd(LPCTSTR strGirderName,pg
 
       Float64 cg=0.0;
 
-      CollectionIndexType nStrands;
+      IndexType nStrands;
       points->get_Count(&nStrands);
       ATLASSERT(CountStrandsInConfigFillVec(rHarpedFillArray) == nStrands);
-      for (CollectionIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
+      for (IndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
       {
          CComPtr<IPoint2d> point;
          points->get_Item(strandIdx,&point);
@@ -19432,10 +19432,10 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetHp(const CSegmentKey& segmen
 
             Float64 cg = 0.0;
 
-            CollectionIndexType nStrands;
+            IndexType nStrands;
             points->get_Count(&nStrands);
             ATLASSERT(CountStrandsInConfigFillVec(rHarpedFillArray) == nStrands);
-            for (CollectionIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
+            for (IndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
             {
                CComPtr<IPoint2d> point;
                points->get_Item(strandIdx, &point);
@@ -19580,10 +19580,10 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetHp(LPCTSTR strGirderName,pgs
 
       Float64 cg=0.0;
 
-      CollectionIndexType nStrands;
+      IndexType nStrands;
       points->get_Count(&nStrands);
       ATLASSERT(CountStrandsInConfigFillVec(rHarpedFillArray) == nStrands);
-      for (CollectionIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
+      for (IndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
       {
          CComPtr<IPoint2d> point;
          points->get_Item(strandIdx,&point);
@@ -20304,7 +20304,7 @@ void CBridgeAgentImp::GetCriticalSections(pgsTypes::LimitState limitState,const 
 
    // LRFD 2004 and later, critical section is only a function of dv, which comes from the calculation of Mu,
    // so critical section is not a function of the limit state. We will work with the Strength I limit state
-   if ( lrfdVersionMgr::ThirdEdition2004 <= pSpecEntry->GetSpecificationType() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 <= pSpecEntry->GetSpecificationType() )
    {
       limitState = pgsTypes::StrengthI;
    }
@@ -21453,7 +21453,7 @@ bool CBridgeAgentImp::IsInCriticalSectionZone(const pgsPointOfInterest& poi,pgsT
 
    // LRFD 2004 and later, critical section is only a function of dv, which comes from the calculation of Mu,
    // so critical section is not a function of the limit state. We will work with the Strength I limit state
-   if ( lrfdVersionMgr::ThirdEdition2004 <= pSpecEntry->GetSpecificationType() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 <= pSpecEntry->GetSpecificationType() )
    {
       csAttribute = POI_CRITSECTSHEAR1;
    }
@@ -25681,7 +25681,7 @@ Float64 CBridgeAgentImp::GetShearWidth(const pgsPointOfInterest& poi) const
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfter2000 = ( lrfdVersionMgr::SecondEditionWith2000Interims <= pSpecEntry->GetSpecificationType() ? true : false );
+   bool bAfter2000 = ( WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims <= pSpecEntry->GetSpecificationType() ? true : false );
 
    // Limits of deduction for ducts is between the tensile and compression resultant
    // (limit is within dv for LRFD before 2000... see below)
@@ -26739,7 +26739,7 @@ void CBridgeAgentImp::GetClosureJointProfile(const CClosureKey& closureKey, ISha
 {
    GroupIndexType      grpIdx = closureKey.groupIndex;
    GirderIndexType     gdrIdx = closureKey.girderIndex;
-   CollectionIndexType closureIdx = closureKey.segmentIndex;
+   IndexType closureIdx = closureKey.segmentIndex;
 
    GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -28812,8 +28812,8 @@ std::unique_ptr<WBFL::Math::CompositeFunction> CBridgeAgentImp::CreateDuctCenter
 
    Float64 x1 = 0;
    Float64 y1 = 0;
-   CollectionIndexType nPoints = geometry.GetPointCount();
-   for ( CollectionIndexType idx = 1; idx < nPoints; idx++ )
+   IndexType nPoints = geometry.GetPointCount();
+   for ( IndexType idx = 1; idx < nPoints; idx++ )
    {
       Float64 distFromPrev;
       Float64 offset;
@@ -28853,8 +28853,8 @@ void CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& girderKey,const CSp
 
    Float64 Xg = 0;
 
-   CollectionIndexType nPoints = geometry.GetPointCount();
-   for ( CollectionIndexType idx = 0; idx < nPoints; idx++ )
+   IndexType nPoints = geometry.GetPointCount();
+   for ( IndexType idx = 0; idx < nPoints; idx++ )
    {
       Float64 location;
       Float64 offset;
@@ -31103,9 +31103,9 @@ void CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& girderKey, const CS
 {
    ATLASSERT(*ppPoints != nullptr); // should contain the points from the duct that this duct offsets from
 
-   CollectionIndexType nPoints;
+   IndexType nPoints;
    (*ppPoints)->get_Count(&nPoints);
-   for ( CollectionIndexType idx = 0; idx < nPoints; idx++ )
+   for ( IndexType idx = 0; idx < nPoints; idx++ )
    {
       CComPtr<IPoint2d> point;
       (*ppPoints)->get_Item(idx,&point);
@@ -31193,8 +31193,8 @@ HRESULT CBridgeAgentImp::OnAnalysisTypeChanged()
 {
    // Remove critical section POIs.
    // They will move when the analysis type changes
-   CollectionIndexType size = sizeof(m_CriticalSectionState) / sizeof(std::set<CGirderKey>);
-   for (CollectionIndexType idx = 0; idx < size; idx++)
+   IndexType size = sizeof(m_CriticalSectionState) / sizeof(std::set<CGirderKey>);
+   for (IndexType idx = 0; idx < size; idx++)
    {
       m_CriticalSectionState[idx].clear();
    }
@@ -33586,7 +33586,7 @@ RebarGrade CBridgeAgentImp::GetRebarGrade(WBFL::Materials::Rebar::Grade grade) c
 #if defined _DEBUG
       if ( matGrade == Grade100 )
       {
-         ATLASSERT(lrfdVersionMgr::SixthEditionWith2013Interims <= lrfdVersionMgr::GetVersion());
+         ATLASSERT(WBFL::LRFD::LRFDVersionMgr::Version::SixthEditionWith2013Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion());
       }
 #endif
 
@@ -33949,7 +33949,7 @@ void CBridgeAgentImp::GetDeckMatData(const pgsPointOfInterest& poi,pgsTypes::Dec
    Float64 Weff = GetEffectiveFlangeWidth(poi);
    Float64 rebarSectionWidth = Weff;
 
-   if ( lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       Float64 Wtrib = GetTributaryFlangeWidth(poi);
       rebarSectionWidth = Min(Weff,Wtrib);
@@ -33981,7 +33981,7 @@ void CBridgeAgentImp::GetDeckMatData(const pgsPointOfInterest& poi,pgsTypes::Dec
       {
          if ( (barType == pgsTypes::drbIndividual || barType == pgsTypes::drbAll) && rebarData.TopRebarSize != WBFL::Materials::Rebar::Size::bsNone )
          {
-            pBar = lrfdRebarPool::GetInstance()->GetRebar( rebarData.TopRebarType, rebarData.TopRebarGrade, rebarData.TopRebarSize );
+            pBar = WBFL::LRFD::RebarPool::GetInstance()->GetRebar( rebarData.TopRebarType, rebarData.TopRebarGrade, rebarData.TopRebarSize );
             Float64 db = pBar->GetNominalDimension();
             Float64 Yb = tSlab - topCover - db/2;
 
@@ -34009,7 +34009,7 @@ void CBridgeAgentImp::GetDeckMatData(const pgsPointOfInterest& poi,pgsTypes::Dec
       {
          if ( (barType == pgsTypes::drbIndividual || barType == pgsTypes::drbAll) && rebarData.BottomRebarSize != WBFL::Materials::Rebar::Size::bsNone )
          {
-            pBar = lrfdRebarPool::GetInstance()->GetRebar( rebarData.BottomRebarType, rebarData.BottomRebarGrade, rebarData.BottomRebarSize );
+            pBar = WBFL::LRFD::RebarPool::GetInstance()->GetRebar( rebarData.BottomRebarType, rebarData.BottomRebarGrade, rebarData.BottomRebarSize );
             Float64 db = pBar->GetNominalDimension();
             Float64 Yb = bottomCover + db/2;
 
@@ -34067,7 +34067,7 @@ void CBridgeAgentImp::GetDeckMatData(const pgsPointOfInterest& poi,pgsTypes::Dec
                if ( (barType == pgsTypes::drbIndividual || barType == pgsTypes::drbAll) && nmRebarData.RebarSize != WBFL::Materials::Rebar::Size::bsNone )
                {
                   // Explicit rebar. Reduce area for development if needed.
-                  pBar = lrfdRebarPool::GetInstance()->GetRebar( nmRebarData.RebarType, nmRebarData.RebarGrade, nmRebarData.RebarSize);
+                  pBar = WBFL::LRFD::RebarPool::GetInstance()->GetRebar( nmRebarData.RebarType, nmRebarData.RebarGrade, nmRebarData.RebarSize);
 
                   IndexType nBars = 0;
                   if (0 < nmRebarData.Spacing)
@@ -34091,8 +34091,8 @@ void CBridgeAgentImp::GetDeckMatData(const pgsPointOfInterest& poi,pgsTypes::Dec
                         barst.erase(sit, barst.size()-1);
                      }
 
-                     WBFL::Materials::Rebar::Size size = lrfdRebarPool::GetBarSize(barst.c_str());
-                     REBARDEVLENGTHDETAILS devdet = lrfdRebar::GetRebarDevelopmentLengthDetails(size, pBar->GetNominalArea(), 
+                     WBFL::Materials::Rebar::Size size = WBFL::LRFD::RebarPool::GetBarSize(barst.c_str());
+                     WBFL::LRFD::REBARDEVLENGTHDETAILS devdet = WBFL::LRFD::Rebar::GetRebarDevelopmentLengthDetails(size, pBar->GetNominalArea(), 
                                                                                        pBar->GetNominalDimension(), pBar->GetYieldStrength(), 
                                                                                        (WBFL::Materials::ConcreteType)pDeck->Concrete.Type, pDeck->Concrete.Fc, 
                                                                                        pDeck->Concrete.bHasFct, pDeck->Concrete.Fct,pDeck->Concrete.StrengthDensity, false, false, true);
@@ -34182,7 +34182,7 @@ void CBridgeAgentImp::GetShapeProperties(pgsTypes::SectionPropertyType sectPropT
 
    // Assuming section is a Composite section
    CComQIPtr<ICompositeSectionEx> cmpsection(section);
-   CollectionIndexType nItems;
+   IndexType nItems;
    cmpsection->get_Count(&nItems);
 
    if ( 0 < nItems )
@@ -34199,7 +34199,7 @@ void CBridgeAgentImp::GetShapeProperties(pgsTypes::SectionPropertyType sectPropT
       csi->put_Efg(Ecgdr);
 
       // change background materials
-      for ( CollectionIndexType i = 1; i < nItems; i++ )
+      for ( IndexType i = 1; i < nItems; i++ )
       {
          csi.Release();
          cmpsection->get_Item(i,&csi);
@@ -35418,9 +35418,9 @@ void CBridgeAgentImp::CreateLinearTendon(const CGirderKey& girderKey, DuctIndexT
 
       CComPtr<ILinearTendonSegment> prevSegment;
 
-      CollectionIndexType nPoints = ductGeometry.GetPointCount();
+      IndexType nPoints = ductGeometry.GetPointCount();
       ATLASSERT( 2 <= nPoints );
-      for ( CollectionIndexType pointIdx = 1; pointIdx < nPoints; pointIdx++ )
+      for ( IndexType pointIdx = 1; pointIdx < nPoints; pointIdx++ )
       {
          Float64 location;
          ductGeometry.GetPoint(pointIdx,&location,&offset,&offsetType);
@@ -35901,7 +35901,7 @@ void CBridgeAgentImp::ComputeHpFill(const GirderLibraryEntry* pGdrEntry,IStrandG
          // we are in business, start alternate fill of hp grid
          CComPtr<IIndexArray> oddHpFill;
          oddHpFill.CoCreateInstance(CLSID_IndexArray);
-         CollectionIndexType fill_size;
+         IndexType fill_size;
          pFill->get_Count(&fill_size);
          oddHpFill->Reserve(fill_size);
 
@@ -35915,7 +35915,7 @@ void CBridgeAgentImp::ComputeHpFill(const GirderLibraryEntry* pGdrEntry,IStrandG
          StrandIndexType running_cnt = (pGdrEntry->IsDifferentHarpedGridAtEndsUsed() ? 2 : 1);
          oddHpFill->Add(running_cnt); 
 
-         for (CollectionIndexType is = 1; is < fill_size; is++)
+         for (IndexType is = 1; is < fill_size; is++)
          {
             if (running_cnt < nStrands)
             {

@@ -93,7 +93,7 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    
-   *pParagraph << _T("[") << LrfdCw8th(_T("5.9.5.4.2b"), _T("5.9.3.4.2b")) << _T("] Creep of Girder Concrete : ") << symbol(DELTA) << RPT_STRESS(_T("pCRH")) << rptNewLine;
+   *pParagraph << _T("[") << WBFL::LRFD::LrfdCw8th(_T("5.9.5.4.2b"), _T("5.9.3.4.2b")) << _T("] Creep of Girder Concrete : ") << symbol(DELTA) << RPT_STRESS(_T("pCRH")) << rptNewLine;
 
    if (pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned)
    {
@@ -128,7 +128,7 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
    *pChapter << pParagraph;
 
   // Typecast to our known type (eating own doggy food)
-   std::shared_ptr<const lrfdRefinedLosses2005> ptl = std::dynamic_pointer_cast<const lrfdRefinedLosses2005>(pDetails->pLosses);
+   std::shared_ptr<const WBFL::LRFD::RefinedLosses2005> ptl = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLosses2005>(pDetails->pLosses);
    if (!ptl)
    {
       ATLASSERT(false); // made a bad cast? Bail...
@@ -207,7 +207,7 @@ void CCreepAtHaulingTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pg
    RowIndexType rowOffset = GetNumberOfHeaderRows()-1;
 
    // Typecast to our known type (eating own doggy food)
-   std::shared_ptr<const lrfdRefinedLosses2005> ptl = std::dynamic_pointer_cast<const lrfdRefinedLosses2005>(pDetails->pLosses);
+   std::shared_ptr<const WBFL::LRFD::RefinedLosses2005> ptl = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLosses2005>(pDetails->pLosses);
    if (!ptl)
    {
       ATLASSERT(false); // made a bad cast? Bail...
@@ -216,13 +216,13 @@ void CCreepAtHaulingTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pg
 
    if (m_pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPretensioned)
    {
-      (*this)(row + rowOffset, col++) << stress.SetValue(pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp());
+      (*this)(row + rowOffset, col++) << stress.SetValue(pDetails->pLosses->GetElasticShortening().PermanentStrand_Fcgp());
    }
    else
    {
-      (*this)(row + rowOffset, col++) << stress.SetValue(pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp());
+      (*this)(row + rowOffset, col++) << stress.SetValue(pDetails->pLosses->GetElasticShortening().PermanentStrand_Fcgp());
       (*this)(row + rowOffset, col++) << stress.SetValue(pDetails->pLosses->GetDeltaFpp());
-      (*this)(row + rowOffset, col++) << stress.SetValue(pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp() + pDetails->pLosses->GetDeltaFpp());
+      (*this)(row + rowOffset, col++) << stress.SetValue(pDetails->pLosses->GetElasticShortening().PermanentStrand_Fcgp() + pDetails->pLosses->GetDeltaFpp());
    }
 
    (*this)(row+rowOffset,col++) << scalar.SetValue(ptl->GetPermanentStrandKih());
@@ -230,7 +230,7 @@ void CCreepAtHaulingTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pg
 
    if ( m_bTemporaryStrands )
    {
-      (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->pLosses->ElasticShortening().TemporaryStrand_Fcgp());
+      (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->pLosses->GetElasticShortening().TemporaryStrand_Fcgp());
       (*this)(row+rowOffset,col++) << scalar.SetValue(ptl->GetTemporaryStrandKih());
       (*this)(row+rowOffset,col++) << stress.SetValue(ptl->TemporaryStrand_CreepLossAtShipping());
    }

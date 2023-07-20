@@ -174,7 +174,7 @@ HRESULT CLongitudinalRebarData::Load(IStructuredLoad* pStrLoad,IProgress* pProgr
 
          WBFL::Materials::Rebar::Grade grade;
          WBFL::Materials::Rebar::Type type;
-         lrfdRebarPool::MapOldRebarKey(key,grade,type,rebar_row.BarSize);
+         WBFL::LRFD::RebarPool::MapOldRebarKey(key,grade,type,rebar_row.BarSize);
       }
       else
       {
@@ -218,7 +218,7 @@ HRESULT CLongitudinalRebarData::Save(IStructuredSave* pStrSave,IProgress* pProgr
    pStrSave->put_Property(_T("BarGrade"),     CComVariant(+BarGrade));
    pStrSave->put_Property(_T("BarType"),      CComVariant(+BarType));
 
-   CollectionIndexType count = RebarRows.size();
+   IndexType count = RebarRows.size();
    pStrSave->put_Property(_T("RebarRowCount"),CComVariant(count));
    std::vector<RebarRow>::iterator iter;
    for ( iter = RebarRows.begin(); iter != RebarRows.end(); iter++ )

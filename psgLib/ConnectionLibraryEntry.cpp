@@ -188,25 +188,8 @@ m_DiaphragmLoadLocation(0.0)
 {
 }
 
-ConnectionLibraryEntry::ConnectionLibraryEntry(const ConnectionLibraryEntry& rOther) :
-libLibraryEntry(rOther)
-{
-   MakeCopy(rOther);
-}
-
 ConnectionLibraryEntry::~ConnectionLibraryEntry()
 {
-}
-
-//======================== OPERATORS  =======================================
-ConnectionLibraryEntry& ConnectionLibraryEntry::operator= (const ConnectionLibraryEntry& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
 }
 
 //======================== OPERATIONS =======================================
@@ -624,26 +607,6 @@ bool ConnectionLibraryEntry::Edit(bool allowEditing,int nPage)
    return false;
 }
 
-
-void ConnectionLibraryEntry::MakeCopy(const ConnectionLibraryEntry& rOther)
-{
-   m_GirderEndDistance     = rOther.m_GirderEndDistance;
-   m_GirderBearingOffset   = rOther.m_GirderBearingOffset;     
-   m_SupportWidth          = rOther.m_SupportWidth;
-   m_DiaphragmHeight       = rOther.m_DiaphragmHeight;       
-   m_DiaphragmWidth        = rOther.m_DiaphragmWidth;
-   m_DiaphragmLoadType     = rOther.m_DiaphragmLoadType;
-   m_DiaphragmLoadLocation = rOther.m_DiaphragmLoadLocation;
-   m_EndDistanceMeasure    = rOther.m_EndDistanceMeasure;
-   m_BearingOffsetMeasure  = rOther.m_BearingOffsetMeasure;
-}
-
-void ConnectionLibraryEntry::MakeAssignment(const ConnectionLibraryEntry& rOther)
-{
-   libLibraryEntry::MakeAssignment( rOther );
-   MakeCopy( rOther );
-}
-
 //======================== ACCESS     =======================================
 //======================== INQUIRY    =======================================
 HICON  ConnectionLibraryEntry::GetIcon() const
@@ -662,33 +625,3 @@ HICON  ConnectionLibraryEntry::GetIcon() const
 //======================== INQUERY    =======================================
 
 //======================== DEBUG      =======================================
-#if defined _DEBUG
-bool ConnectionLibraryEntry::AssertValid() const
-{
-   return libLibraryEntry::AssertValid();
-}
-
-void ConnectionLibraryEntry::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for ConnectionLibraryEntry")<< WBFL::Debug::endl;
-   os << _T("   m_GirderEndDistance     =")<< m_GirderEndDistance << WBFL::Debug::endl;
-   os << _T("   m_GirderBearingOffset   =")<< m_GirderBearingOffset << WBFL::Debug::endl;
-   os << _T("   m_DiaphragmHeight       =")<< m_DiaphragmHeight << WBFL::Debug::endl;
-   os << _T("   m_DiaphragmWidth        =")<< m_DiaphragmWidth << WBFL::Debug::endl;
-   os << _T("   m_DiaphragmLoadType     =")<<m_DiaphragmLoadType     << WBFL::Debug::endl;
-   os << _T("   m_DiaphragmLoadLocation =")<<m_DiaphragmLoadLocation << WBFL::Debug::endl;
-
-   libLibraryEntry::Dump( os );
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool ConnectionLibraryEntry::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("ConnectionLibraryEntry");
-
-   // tests are performed on entire library.
-
-   TESTME_EPILOG("ConnectionLibraryEntry");
-}
-#endif // _UNITTEST

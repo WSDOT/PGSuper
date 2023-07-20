@@ -114,15 +114,15 @@ void CPGSProjectImporterMgrBase::UnloadImporters()
    m_ImporterRecords.clear();
 }
 
-CollectionIndexType CPGSProjectImporterMgrBase::GetImporterCount() const
+IndexType CPGSProjectImporterMgrBase::GetImporterCount() const
 {
    return m_ImporterRecords.size();
 }
 
-void CPGSProjectImporterMgrBase::GetImporter(CollectionIndexType idx,IPGSProjectImporter** ppImporter)
+void CPGSProjectImporterMgrBase::GetImporter(IndexType idx,IPGSProjectImporter** ppImporter)
 {
    std::set<Record>::iterator iter;
-   CollectionIndexType count = 0;
+   IndexType count = 0;
    for ( iter = m_ImporterRecords.begin(); iter != m_ImporterRecords.end(); iter++, count++ )
    {
       if ( count == idx )

@@ -493,7 +493,7 @@ Float64 GetPrimaryAvLeftEnd(const STIRRUPCONFIG& config, WBFL::Materials::Rebar:
 {
    ATLASSERT(rangeLength<gdrLength/2.0); // This function was designed for splitting zone, which should never be too long
 
-   lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
+   const auto* pool = WBFL::LRFD::RebarPool::GetInstance();
    ATLASSERT(pool != nullptr);
 
    Float64 Av=0.0;
@@ -552,7 +552,7 @@ Float64 GetPrimaryAvRightEnd(const STIRRUPCONFIG& config, WBFL::Materials::Rebar
    else
    {
       // Search in reverse from right end
-      lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
+      const auto* pool = WBFL::LRFD::RebarPool::GetInstance();
       ATLASSERT(pool != nullptr);
 
       Float64 endloc=0.0;
@@ -606,7 +606,7 @@ void GetSplittingAvFromStirrupConfig(const STIRRUPCONFIG& config, WBFL::Material
    *pStartAv = 0.0; 
    *pEndAv   = 0.0; 
 
-   lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
+   const auto* pool = WBFL::LRFD::RebarPool::GetInstance();
    ATLASSERT(pool != nullptr);
 
    if (config.SplittingBarSize != WBFL::Materials::Rebar::Size::bsNone)
@@ -645,7 +645,7 @@ void WriteShearDataToStirrupConfig(const CShearData2* pShearData, STIRRUPCONFIG&
    rConfig.bIsRoughenedSurface     = pShearData->bIsRoughenedSurface;
    rConfig.bUsePrimaryForSplitting = pShearData->bUsePrimaryForSplitting;
 
-   lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
+   const auto* prp = WBFL::LRFD::RebarPool::GetInstance();
 
    // Primary zones
    rConfig.ShearZones.clear();

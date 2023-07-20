@@ -14,7 +14,8 @@
 #include <EAF\EAFResources.h>
 #if !defined _NOGRID
 #include "grid\gxresrc.h"
-#endif
+#endif
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -1390,9 +1391,9 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,231,343,50,14
     PUSHBUTTON      "Help",ID_HELP,284,343,50,14
     GROUPBOX        "Select How Live Load Distribution Factors are to be Determined for the Current Project",IDC_STATIC,6,7,328,324
-    LTEXT           "When parameters are outside of the Range Of Applicablity (ROA) requirements: ",IDC_ROA_STATIC,30,37,274,8
+    LTEXT           "When parameters are outside of the Range Of Applicability (ROA) requirements: ",IDC_ROA_STATIC,30,37,274,8
     GROUPBOX        "User Input Factors",IDC_STATIC,25,99,292,227
-    LTEXT           "Distibution factors must be entered for both the main spans and at the piers.",IDC_USER_LLDF_NOTE,37,111,260,12
+    LTEXT           "Distribution factors must be entered for both the main spans and at the piers.",IDC_USER_LLDF_NOTE,37,111,260,12
 END
 
 IDD_BRIDGEDESC_ENVIRONMENTAL DIALOG 0, 0, 249, 141
@@ -2649,7 +2650,7 @@ BEGIN
     DEFPUSHBUTTON   "Fill Input Grid Using Selected Options",IDOK,70,273,137,14
     PUSHBUTTON      "Cancel",IDCANCEL,220,273,50,14
     PUSHBUTTON      "Help",ID_HELP,290,273,50,14
-    LTEXT           "When parameters are outside of the Range Of Applicablity (ROA) requirements: ",IDC_ROA_STATIC,40,38,274,8
+    LTEXT           "When parameters are outside of the Range Of Applicability (ROA) requirements: ",IDC_ROA_STATIC,40,38,274,8
     GROUPBOX        "Select Live Load Distribution Factor Computation Method",IDC_STATIC,7,7,333,123
     LTEXT           "Value",IDC_FILL_STATIC,43,108,18,8
     GROUPBOX        "Select Girder(s) to be Filled",IDC_STATIC,7,139,333,45

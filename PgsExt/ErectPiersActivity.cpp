@@ -248,11 +248,11 @@ HRESULT CSupportActivityBase::Load(IStructuredLoad* pStrLoad,IProgress* pProgres
          hr = pStrLoad->BeginUnit(_T("Piers"));
 
          var.vt = VT_INDEX;
-         CollectionIndexType N;
+         IndexType N;
          hr = pStrLoad->get_Property(_T("Count"),&var);
          N = VARIANT2INDEX(var);
          var.vt = VT_ID;
-         for ( CollectionIndexType i = 0; i < N; i++ )
+         for ( IndexType i = 0; i < N; i++ )
          {
             hr = pStrLoad->get_Property(_T("PierID"),&var);
             m_Piers.insert( VARIANT2ID(var) );
@@ -265,7 +265,7 @@ HRESULT CSupportActivityBase::Load(IStructuredLoad* pStrLoad,IProgress* pProgres
          hr = pStrLoad->get_Property(_T("Count"),&var);
          N = VARIANT2INDEX(var);
          var.vt = VT_ID;
-         for ( CollectionIndexType i = 0; i < N; i++ )
+         for ( IndexType i = 0; i < N; i++ )
          {
             hr = pStrLoad->get_Property(_T("TempSupportID"),&var);
             m_TempSupports.insert(VARIANT2ID(var));

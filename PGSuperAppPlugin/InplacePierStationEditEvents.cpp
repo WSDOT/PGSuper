@@ -84,7 +84,7 @@ void CInplacePierStationEditEvents::Handle_OnChanged(iDisplayObject* pDO)
       if ( !IsEqual(old_station,new_station) )
       {
          std::unique_ptr<txnEditPierStation> pTxn(std::make_unique<txnEditPierStation>(m_PierIdx,old_station,new_station,dlg.m_Option));
-         CEAFTxnManager::GetInstance()->Execute(std::move(pTxn));
+         CEAFTxnManager::GetInstance().Execute(std::move(pTxn));
       }
    }
 }

@@ -35,7 +35,7 @@
 #include <IFace\EditByUI.h>
 #include <IFace\Intervals.h>
 #include <IFace\Allowables.h>
-#include <Lrfd\Rebar.h>
+#include <LRFD\Rebar.h>
 #include <PsgLib\SpecLibraryEntry.h>
 #include <PgsExt\statusitem.h>
 #include <PgsExt\DesignConfigUtil.h>
@@ -109,7 +109,7 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfter1999 = ( lrfdVersionMgr::SecondEditionWith2000Interims <= pSpecEntry->GetSpecificationType() ? true : false );
+   bool bAfter1999 = ( WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims <= pSpecEntry->GetSpecificationType() ? true : false );
 
    pgsTypes::ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
 
@@ -384,29 +384,6 @@ void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const G
    pd->fpc = fpc;
 }
 
-#if defined _DEBUG
-bool pgsShearCapacityEngineer::AssertValid() const
-{
-   return true;
-}
-
-void pgsShearCapacityEngineer::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for pgsShearCapacityEngineer") << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool pgsShearCapacityEngineer::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("pgsShearCapacityEngineer");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for pgsShearCapacityEngineer");
-
-   TESTME_EPILOG("ShearCapacityEngineer");
-}
-#endif // _UNITTEST
-
 bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalIdx, pgsTypes::LimitState limitState, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, SHEARCAPACITYDETAILS* pscd) const
 {
    // The first thing we are going to do is fill in the SHEARCAPACITYDETAILS struct
@@ -423,7 +400,7 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfter1999 = ( lrfdVersionMgr::SecondEditionWith2000Interims <= pSpecEntry->GetSpecificationType() ? true : false );
+   bool bAfter1999 = ( WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims <= pSpecEntry->GetSpecificationType() ? true : false );
 
    pgsTypes::ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
 
@@ -602,7 +579,7 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
    // fy <= 100 ksi
    // See LRFD 5.7.2.5 (pre2017: 5.8.2.5)
    // Also see UHPC GS 1.7.3.4.1
-   if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       fy = min(fy,WBFL::Units::ConvertToSysUnits(100.0,WBFL::Units::Measure::KSI));
    }
@@ -716,7 +693,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfter1999 = ( lrfdVersionMgr::SecondEditionWith2000Interims <= pSpecEntry->GetSpecificationType() ? true : false );
+   bool bAfter1999 = ( WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims <= pSpecEntry->GetSpecificationType() ? true : false );
 
    pgsTypes::ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
 
@@ -1027,7 +1004,7 @@ bool pgsShearCapacityEngineer::ComputeVcc(const pgsPointOfInterest& poi, SHEARCA
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   lrfdShearData data;
+   WBFL::LRFD::ShearData data;
    data.Mu           = pscd->Mu;
    data.Nu           = pscd->Nu;
    data.Vu           = pscd->Vu;
@@ -1089,11 +1066,20 @@ bool pgsShearCapacityEngineer::ComputeVcc(const pgsPointOfInterest& poi, SHEARCA
            shear_capacity_method == pgsTypes::scmBTTables    || 
            shear_capacity_method == pgsTypes::scmWSDOT2007 )
       {
-         lrfdShear::ComputeThetaAndBeta( &data, shear_capacity_method == pgsTypes::scmBTTables ? lrfdShear::Tables : lrfdShear::Equations );
+         // The Beta-Theta equations are introducted in AASHTO LRFD in 4th Edition with 2008 interims. However, WSDOT adopted the equations by
+         // design memo 12-2007 while the 4th Edition (no interims) was in effect. The Shear::ComputeThetaAndBeta will throw an exception
+         // if equations are used before LRFD 4th Ed 2008. To get around this, temporary bump the LRFD spec to 4th 2008.
+         WBFL::LRFD::LRFDAutoVersion av;
+         if (shear_capacity_method == pgsTypes::scmWSDOT2007 && WBFL::LRFD::LRFDVersionMgr::GetVersion() == WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007)
+         {
+            WBFL::LRFD::LRFDVersionMgr::SetVersion(WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims);
+         }
+
+         WBFL::LRFD::Shear::ComputeThetaAndBeta( &data, shear_capacity_method == pgsTypes::scmBTTables ? WBFL::LRFD::Shear::Method::Tables : WBFL::LRFD::Shear::Method::Equations );
       }
       else if ( shear_capacity_method == pgsTypes::scmVciVcw )
       {
-         lrfdShear::ComputeVciVcw( &data );
+         WBFL::LRFD::Shear::ComputeVciVcw( &data );
       }
       else
       {
@@ -1108,16 +1094,16 @@ bool pgsShearCapacityEngineer::ComputeVcc(const pgsPointOfInterest& poi, SHEARCA
 
          bool bEndRegion = InRange(l1,poi.GetDistFromStart(),l2) ? false : true;
 
-         lrfdWsdotShear::ComputeThetaAndBeta( &data, bEndRegion );
+         WBFL::LRFD::WsdotShear::ComputeThetaAndBeta( &data, bEndRegion );
       }
    }
-   catch (lrfdXShear& rxs ) 
+   catch (WBFL::LRFD::XShear& rxs ) 
    {
-      if (rxs.GetReason()==lrfdXShear::vfcOutOfRange)
+      if (rxs.GetReasonCode()==WBFL::LRFD::XShear::Reason::vfcOutOfRange)
       {
          shear_in_range=false;
       }
-      else if (rxs.GetReason()==lrfdXShear::MaxIterExceeded)
+      else if (rxs.GetReasonCode()==WBFL::LRFD::XShear::Reason::MaxIterExceeded)
       {
          GET_IFACE(IEAFStatusCenter,pStatusCenter);
 
@@ -1136,7 +1122,7 @@ bool pgsShearCapacityEngineer::ComputeVcc(const pgsPointOfInterest& poi, SHEARCA
       }
    }
 #if defined _DEBUG
-   catch(lrfdXCodeVersion& /*e*/)
+   catch(WBFL::LRFD::XCodeVersion& /*e*/)
    {
       ATLASSERT(false); // should never get here
       // Vci Vcw should not be used unless LRFD is 2007 or later
@@ -1175,7 +1161,7 @@ bool pgsShearCapacityEngineer::ComputeVcc(const pgsPointOfInterest& poi, SHEARCA
          const WBFL::Units::Force*  pForceUnit  = nullptr;
          Float64 K; // main coefficient in equation 5.7.3.3-3 (pre2017: 5.8.3.3-3)
          Float64 Kfct; // coefficient for fct if LWC
-         if ( lrfdVersionMgr::GetUnits() == lrfdVersionMgr::US )
+         if ( WBFL::LRFD::LRFDVersionMgr::GetUnits() == WBFL::LRFD::LRFDVersionMgr::Units::US )
          {
             pLengthUnit = &WBFL::Units::Measure::Inch;
             pStressUnit = &WBFL::Units::Measure::KSI;
@@ -1215,7 +1201,7 @@ bool pgsShearCapacityEngineer::ComputeVcc(const pgsPointOfInterest& poi, SHEARCA
 
             // 5.7.3.3-3 (pre2017: 5.8.3.3-3)
             Vc = K * data.lambda * Beta * bv * dv;
-            if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2016Interims)
+            if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims)
             {
                switch (pscd->ConcreteType)
                {
@@ -1298,7 +1284,7 @@ bool pgsShearCapacityEngineer::ComputeVuhpc(const pgsPointOfInterest& poi, SHEAR
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    // Gather up the key parameters, put into local variables so the code below is easier to read
-   lrfdUHPCShearData data;
+   WBFL::LRFD::UHPCShearData data;
    data.Mu = pscd->Mu;
    data.Nu = pscd->Nu;
    data.Vu = pscd->Vu;
@@ -1325,7 +1311,7 @@ bool pgsShearCapacityEngineer::ComputeVuhpc(const pgsPointOfInterest& poi, SHEAR
    pscd->FiberStress = ft;
 
    const auto& pConcrete = pMaterial->GetSegmentConcrete(segmentKey);
-   const auto* pLRFDConcrete = dynamic_cast<const lrfdLRFDConcreteBase*>(pConcrete.get());
+   const auto* pLRFDConcrete = dynamic_cast<const WBFL::LRFD::LRFDConcreteBase*>(pConcrete.get());
    data.ftloc = pLRFDConcrete->GetCrackLocalizationStrength();
    data.etloc = pLRFDConcrete->GetCrackLocalizationStrain();
    data.etcr = pLRFDConcrete->GetElasticTensileStrainLimit();
@@ -1340,7 +1326,7 @@ bool pgsShearCapacityEngineer::ComputeVuhpc(const pgsPointOfInterest& poi, SHEAR
    Float64 dv = data.dv_per_1_7_2_8();; // dv is limited for UHPC. GS 1.7.2.8
    pscd->controlling_uhpc_dv = dv;
 
-   if (lrfdUHPCShear::ComputeShearResistanceParameters(&data))
+   if (WBFL::LRFD::UHPCShear::ComputeShearResistanceParameters(&data))
    {
       // compute nominal capacity
       GET_IFACE(IAllowableConcreteStress, pAllowable);
@@ -1388,7 +1374,7 @@ bool pgsShearCapacityEngineer::ComputeVs(const pgsPointOfInterest& poi, SHEARCAP
       else
       {
          Float64 fc, fpc, fct, Kfct, K;
-         if (lrfdVersionMgr::GetUnits() == lrfdVersionMgr::SI )
+         if (WBFL::LRFD::LRFDVersionMgr::GetUnits() == WBFL::LRFD::LRFDVersionMgr::Units::SI )
          {
             fc  = WBFL::Units::ConvertFromSysUnits(pscd->fc,  WBFL::Units::Measure::MPa);
             fpc = WBFL::Units::ConvertFromSysUnits(pscd->fpc, WBFL::Units::Measure::MPa);
@@ -1406,7 +1392,7 @@ bool pgsShearCapacityEngineer::ComputeVs(const pgsPointOfInterest& poi, SHEARCAP
          }
 
          Float64 sqrt_fc;
-         if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
+         if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
          {
             GET_IFACE(IMaterials,pMaterials);
             Float64 lambda = pMaterials->GetSegmentLambda(poi.GetSegmentKey());
@@ -1460,7 +1446,7 @@ bool pgsShearCapacityEngineer::ComputeVs(const pgsPointOfInterest& poi, SHEARCAP
 
    Float64 Vs = (IsZero(S) ? 0 : fy * dv * Av * cot_theta / S );
 
-   if (lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion())
+   if (WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
    {
       // We are assuming that the bridge is open to traffic so all ducts are grouted
 

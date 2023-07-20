@@ -134,8 +134,8 @@ BOOL CSelectPOIDlg::OnInitDialog()
    m_Slider.SetRange(0,(int)(m_vPOI.size()-1)); // the range is number of spaces along slider... 
 
    // initial the slider position to the current poi location
-   CollectionIndexType pos = m_vPOI.size()/2; // default is mid-span
-   CollectionIndexType i = 0;
+   IndexType pos = m_vPOI.size()/2; // default is mid-span
+   IndexType i = 0;
    for(const pgsPointOfInterest& poi : m_vPOI)
    {
       if ( poi.GetID() == m_InitialPOI.GetID() )

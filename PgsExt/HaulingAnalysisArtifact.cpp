@@ -240,14 +240,8 @@ void pgsWsdotHaulingAnalysisArtifact::MakeAssignment(const pgsWsdotHaulingAnalys
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
 //======================== DEBUG      =======================================
 #if defined _DEBUG
-bool pgsWsdotHaulingAnalysisArtifact::AssertValid() const
-{
-   return true;
-}
-
 void pgsWsdotHaulingAnalysisArtifact::Dump(WBFL::Debug::LogContext& os) const
 {
    ATLASSERT(m_pStabilityProblem != nullptr);
@@ -335,15 +329,3 @@ void pgsWsdotHaulingAnalysisArtifact::Dump(WBFL::Debug::LogContext& os) const
    os << _T("=============") << WBFL::Debug::endl;
 }
 #endif // _DEBUG
-
-#if defined _UNITTEST
-bool pgsWsdotHaulingAnalysisArtifact::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("pgsWsdotHaulingAnalysisArtifact");
-
-
-   TESTME_EPILOG("HaulingAnalysisArtifact");
-}
-#endif // _UNITTEST
-
-

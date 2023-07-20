@@ -833,9 +833,9 @@ void CGirderModelSectionView::BuildStrandDisplayObjects(CPGSDocBase* pDoc,IBroke
 
    CComPtr<IPoint2dCollection> points;
    pStrandGeom->GetStrandPositions(poi, pgsTypes::Straight,&points);
-   CollectionIndexType nStrandPoints;
+   IndexType nStrandPoints;
    points->get_Count(&nStrandPoints);
-   CollectionIndexType strandPointIdx;
+   IndexType strandPointIdx;
    for ( strandPointIdx = 0; strandPointIdx < nStrandPoints; strandPointIdx++ )
    {
       CComPtr<IPoint2d> p;

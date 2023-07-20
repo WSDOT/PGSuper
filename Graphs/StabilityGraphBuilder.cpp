@@ -69,9 +69,9 @@ END_MESSAGE_MAP()
 
 CStabilityGraphBuilder::CStabilityGraphBuilder() :
 CEAFAutoCalcGraphBuilder(),
-m_Graph(DUMMY_TOOL,DUMMY_TOOL),
-m_pXFormat(0),
-m_pYFormat(0)
+m_Graph(&DUMMY_TOOL,&DUMMY_TOOL),
+m_pXFormat(nullptr),
+m_pYFormat(nullptr)
 {
    m_pGraphController = new CStabilityGraphController;
    SetName(_T("Girder Stability"));
@@ -81,9 +81,9 @@ m_pYFormat(0)
 
 CStabilityGraphBuilder::CStabilityGraphBuilder(const CStabilityGraphBuilder& other) :
 CEAFAutoCalcGraphBuilder(other),
-m_Graph(DUMMY_TOOL,DUMMY_TOOL),
-m_pXFormat(0),
-m_pYFormat(0)
+m_Graph(&DUMMY_TOOL, &DUMMY_TOOL),
+m_pXFormat(nullptr),
+m_pYFormat(nullptr)
 {
    m_pGraphController = new CStabilityGraphController;
 }
@@ -154,7 +154,7 @@ int CStabilityGraphBuilder::InitializeGraphController(CWnd* pParent,UINT nID)
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::LengthData& lengthUnit = pDisplayUnits->GetSpanLengthUnit();
    m_pXFormat = new WBFL::Units::LengthTool(lengthUnit);
-   m_Graph.SetXAxisValueFormat(*m_pXFormat);
+   m_Graph.SetXAxisValueFormat(m_pXFormat);
    m_Graph.SetXAxisNumberOfMinorTics(0);
    m_Graph.XAxisNiceRange(false);
    m_Graph.SetXAxisNumberOfMajorTics(11);
@@ -162,7 +162,7 @@ int CStabilityGraphBuilder::InitializeGraphController(CWnd* pParent,UINT nID)
    // y axis
    const WBFL::Units::ScalarData& scalarUnit = pDisplayUnits->GetScalarFormat();
    m_pYFormat = new WBFL::Units::ScalarTool(scalarUnit);
-   m_Graph.SetYAxisValueFormat(*m_pYFormat);
+   m_Graph.SetYAxisValueFormat(m_pYFormat);
    m_Graph.YAxisNiceRange(true);
    m_Graph.SetYAxisNumberOfMinorTics(5);
    m_Graph.SetYAxisNumberOfMajorTics(21);
@@ -195,7 +195,7 @@ void CStabilityGraphBuilder::UpdateXAxis()
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::LengthData& lengthUnit = pDisplayUnits->GetSpanLengthUnit();
    m_pXFormat = new WBFL::Units::LengthTool(lengthUnit);
-   m_Graph.SetXAxisValueFormat(*m_pXFormat);
+   m_Graph.SetXAxisValueFormat(m_pXFormat);
 }
 
 void CStabilityGraphBuilder::ShowGrid(bool bShowGrid)

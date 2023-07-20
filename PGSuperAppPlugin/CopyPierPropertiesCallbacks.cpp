@@ -1604,7 +1604,7 @@ void PierMaterialsComparison(rptParagraph* pPara, CComPtr<IBroker> pBroker, Pier
          const CConcreteMaterial* pConcrete = &pierModelData.m_Concrete;
 
          pgsTypes::ConcreteType type = pConcrete->Type;
-         std::_tstring  name = lrfdConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)type, false);
+         std::_tstring  name = WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)type, false);
          (*p_table)(row, iCol++) << name;
 
          (*p_table)(row, iCol++) << stress.SetValue(pConcrete->Fc);

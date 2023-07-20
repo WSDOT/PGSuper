@@ -303,7 +303,7 @@ void CEditLoadsView::OnDeleteLoad()
       }
    }
 
-   CEAFTxnManager::GetInstance()->Execute(std::move(macro));
+   CEAFTxnManager::GetInstance().Execute(std::move(macro));
 }
 
 void CEditLoadsView::OnEditLoad() 
@@ -337,8 +337,8 @@ void CEditLoadsView::InsertData()
 
    // Add Point Loads
    GET_IFACE(IUserDefinedLoadData, pUdl);
-   CollectionIndexType pl_cnt = pUdl->GetPointLoadCount();
-   CollectionIndexType ipl;
+   IndexType pl_cnt = pUdl->GetPointLoadCount();
+   IndexType ipl;
    for (ipl = 0; ipl < pl_cnt; ipl++)
    {
       m_LoadsListCtrl.InsertItem(irow, _T("Point"));
@@ -370,8 +370,8 @@ void CEditLoadsView::InsertData()
    }
 
    // Add Distributed Loads
-   CollectionIndexType dl_cnt = pUdl->GetDistributedLoadCount();
-   for (CollectionIndexType idl = 0; idl < dl_cnt; idl++)
+   IndexType dl_cnt = pUdl->GetDistributedLoadCount();
+   for (IndexType idl = 0; idl < dl_cnt; idl++)
    {
       m_LoadsListCtrl.InsertItem(irow, _T("Distributed"));
 

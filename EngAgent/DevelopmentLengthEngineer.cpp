@@ -268,12 +268,12 @@ pgsLRFDDevelopmentLength::pgsLRFDDevelopmentLength(Float64 db, Float64 fpe, Floa
 
 Float64 pgsLRFDDevelopmentLength::GetDevelopmentLengthFactor() const
 {
-   return lrfdPsStrand::GetDevLengthFactor(m_MbrDepth, m_bDebonded);
+   return WBFL::LRFD::PsStrand::GetDevLengthFactor(m_MbrDepth, m_bDebonded);
 }
 
 Float64 pgsLRFDDevelopmentLength::GetDevelopmentLength() const
 {
-   return lrfdPsStrand::GetDevLength(m_db, m_fps, m_fpe, m_MbrDepth, m_bDebonded);
+   return WBFL::LRFD::PsStrand::GetDevLength(m_db, m_fps, m_fpe, m_MbrDepth, m_bDebonded);
 }
 
 ////////////////////////
@@ -382,7 +382,7 @@ void pgsLRFDDevelopmentLengthReporter::ReportDevelopmentLengthDetails(const CSeg
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
 
-   (*pPara) << _T("AASHTO LRFD BDS ") << LrfdCw8th(_T("5.11.4.1, 5.11.4.2"), _T("5.9.4.3.1, 5.9.4.3.2")) << rptNewLine;
+   (*pPara) << _T("AASHTO LRFD BDS ") << WBFL::LRFD::LrfdCw8th(_T("5.11.4.1, 5.11.4.2"), _T("5.9.4.3.1, 5.9.4.3.2")) << rptNewLine;
    if (IS_US_UNITS(pDisplayUnits))
    {
       (*pPara) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("DevLength_US.png")) << rptNewLine;

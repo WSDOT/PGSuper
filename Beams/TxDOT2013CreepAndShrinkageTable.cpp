@@ -92,7 +92,7 @@ CTxDOT2013CreepAndShrinkageTable* CTxDOT2013CreepAndShrinkageTable::PrepareTable
 void CTxDOT2013CreepAndShrinkageTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    // Typecast to our known type (eating own doggy food)
-   std::shared_ptr<const lrfdRefinedLossesTxDOT2013> ptl = std::dynamic_pointer_cast<const lrfdRefinedLossesTxDOT2013>(pDetails->pLosses);
+   std::shared_ptr<const WBFL::LRFD::RefinedLossesTxDOT2013> ptl = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLossesTxDOT2013>(pDetails->pLosses);
    if (!ptl)
    {
       ATLASSERT(false); // made a bad cast? Bail...
@@ -102,7 +102,7 @@ void CTxDOT2013CreepAndShrinkageTable::AddRow(rptChapter* pChapter,IBroker* pBro
    RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
 
    (*this)(row+rowOffset,1) << stress.SetValue( ptl->ShrinkageLosses() );
-   (*this)(row+rowOffset,2) << stress.SetValue( pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp() );
+   (*this)(row+rowOffset,2) << stress.SetValue( pDetails->pLosses->GetElasticShortening().PermanentStrand_Fcgp() );
    (*this)(row+rowOffset,3) << stress.SetValue( pDetails->pLosses->GetDeltaFcd1(true/*apply elastic gains reduction*/) );
    (*this)(row+rowOffset,4) << stress.SetValue( ptl->CreepLosses() );
 }

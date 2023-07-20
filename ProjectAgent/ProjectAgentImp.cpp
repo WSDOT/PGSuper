@@ -40,7 +40,7 @@
 #include <psgLib\StructuredSave.h>
 #include <psgLib\BeamFamilyManager.h>
 
-#include <Lrfd\StrandPool.h>
+#include <LRFD\StrandPool.h>
 
 #include <IFace\PrestressForce.h>
 #include <IFace\StatusCenter.h>
@@ -234,7 +234,7 @@ CProjectAgentImp::CProjectAgentImp()
    m_bIncludePedestrianLiveLoad = false;
    m_SpecialPermitType = pgsTypes::ptSingleTripWithEscort;
 
-   m_LldfRangeOfApplicabilityAction = roaEnforce;
+   m_RangeOfApplicabilityAction = WBFL::LRFD::RangeOfApplicabilityAction::Enforce;
    m_bGetIgnoreROAFromLibrary = true;
 
    m_bUpdateJackingForce = true;
@@ -3443,7 +3443,7 @@ HRESULT CProjectAgentImp::PrestressingDataProc2(IStructuredSave* pSave,IStructur
          Int64 key = var.lVal;
          key |= +WBFL::Materials::PsStrand::Coating::None;
 
-         lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+         const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
          pStrandMaterial = pPool->GetStrand( key );
          ATLASSERT(pStrandMaterial!=0);
       }
@@ -4638,7 +4638,7 @@ HRESULT CProjectAgentImp::LiveLoadsDataProc(IStructuredSave* pSave,IStructuredLo
 
       // added in version 2
       // changed to enum values in version 3
-      int iaction= GetIntForLldfAction(pObj->m_LldfRangeOfApplicabilityAction);
+      int iaction= GetIntForLldfAction(pObj->m_RangeOfApplicabilityAction);
 
       pSave->put_Property(_T("IngoreLLDFRangeOfApplicability"),CComVariant(iaction));
 
@@ -4667,7 +4667,7 @@ HRESULT CProjectAgentImp::LiveLoadsDataProc(IStructuredSave* pSave,IStructuredLo
             // changed value to enum in Version 3
             var.vt = VT_I4;
             hr = pLoad->get_Property(_T("IngoreLLDFRangeOfApplicability"),&var);
-            pObj->m_LldfRangeOfApplicabilityAction = GetLldfActionForInt(var.intVal);
+            pObj->m_RangeOfApplicabilityAction = GetLldfActionForInt(var.intVal);
             pObj->m_bGetIgnoreROAFromLibrary = false;
          }
          else if ( 2==version )
@@ -4675,7 +4675,7 @@ HRESULT CProjectAgentImp::LiveLoadsDataProc(IStructuredSave* pSave,IStructuredLo
             // value was bool in Version 2
             var.vt = VT_BOOL;
             hr = pLoad->get_Property(_T("IngoreLLDFRangeOfApplicability"),&var);
-            pObj->m_LldfRangeOfApplicabilityAction =(var.boolVal == VARIANT_TRUE ? roaIgnore : roaEnforce);
+            pObj->m_RangeOfApplicabilityAction =(var.boolVal == VARIANT_TRUE ? WBFL::LRFD::RangeOfApplicabilityAction::Ignore : WBFL::LRFD::RangeOfApplicabilityAction::Enforce);
             pObj->m_bGetIgnoreROAFromLibrary = false;
          }
          else
@@ -4925,11 +4925,6 @@ bool CProjectAgentImp::AssertValid() const
 {
    // Check Libraries
    if (m_pLibMgr==0)
-   {
-      return false;
-   }
-
-   if ( !m_pLibMgr->AssertValid() )
    {
       return false;
    }
@@ -5258,7 +5253,7 @@ void CProjectAgentImp::UseGirderLibraryEntries()
                   CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
                   if ( pSegment->Strands.GetStrandMaterial(pgsTypes::Straight) == nullptr )
                   {
-                     pSegment->Strands.SetStrandMaterial(pgsTypes::Straight,lrfdStrandPool::GetInstance()->GetStrand(
+                     pSegment->Strands.SetStrandMaterial(pgsTypes::Straight,WBFL::LRFD::StrandPool::GetInstance()->GetStrand(
                         WBFL::Materials::PsStrand::Grade::Gr1725,
                         WBFL::Materials::PsStrand::Type::StressRelieved,
                         WBFL::Materials::PsStrand::Coating::None,
@@ -5267,7 +5262,7 @@ void CProjectAgentImp::UseGirderLibraryEntries()
 
                   if ( pSegment->Strands.GetStrandMaterial(pgsTypes::Harped) == nullptr )
                   {
-                     pSegment->Strands.SetStrandMaterial(pgsTypes::Harped,lrfdStrandPool::GetInstance()->GetStrand(
+                     pSegment->Strands.SetStrandMaterial(pgsTypes::Harped,WBFL::LRFD::StrandPool::GetInstance()->GetStrand(
                         WBFL::Materials::PsStrand::Grade::Gr1725,
                         WBFL::Materials::PsStrand::Type::StressRelieved,
                         WBFL::Materials::PsStrand::Coating::None,
@@ -5276,7 +5271,7 @@ void CProjectAgentImp::UseGirderLibraryEntries()
 
                   if ( pSegment->Strands.GetStrandMaterial(pgsTypes::Temporary)== nullptr )
                   {
-                     pSegment->Strands.SetStrandMaterial(pgsTypes::Temporary,lrfdStrandPool::GetInstance()->GetStrand(
+                     pSegment->Strands.SetStrandMaterial(pgsTypes::Temporary,WBFL::LRFD::StrandPool::GetInstance()->GetStrand(
                         WBFL::Materials::PsStrand::Grade::Gr1725,
                         WBFL::Materials::PsStrand::Type::StressRelieved,
                         WBFL::Materials::PsStrand::Coating::None,
@@ -5494,7 +5489,7 @@ void CProjectAgentImp::ReleaseDuctLibraryEntries(CPrecastSegmentData* pSegment)
 
 void CProjectAgentImp::UpdateConcreteMaterial()
 {
-   bool bAfter2015 = (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() ? true : false);
+   bool bAfter2015 = (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() ? true : false);
    // starting with LRFD 2016, AllLightweight is not a valid concrete type. Concrete is either Normal weight or lightweight.
    // We are using SandLightweight to mean lightweight so updated the concrete type if needed.
 
@@ -5514,12 +5509,12 @@ void CProjectAgentImp::UpdateConcreteMaterial()
             CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
             if ( !pSegment->Material.Concrete.bUserEci )
             {
-               pSegment->Material.Concrete.Eci = lrfdConcreteUtil::ModE((WBFL::Materials::ConcreteType)(pSegment->Material.Concrete.Type),pSegment->Material.Concrete.Fci,pSegment->Material.Concrete.StrengthDensity,false);
+               pSegment->Material.Concrete.Eci = WBFL::LRFD::ConcreteUtil::ModE((WBFL::Materials::ConcreteType)(pSegment->Material.Concrete.Type),pSegment->Material.Concrete.Fci,pSegment->Material.Concrete.StrengthDensity,false);
             }
 
             if ( !pSegment->Material.Concrete.bUserEc )
             {
-               pSegment->Material.Concrete.Ec = lrfdConcreteUtil::ModE((WBFL::Materials::ConcreteType)(pSegment->Material.Concrete.Type),pSegment->Material.Concrete.Fc,pSegment->Material.Concrete.StrengthDensity,false);
+               pSegment->Material.Concrete.Ec = WBFL::LRFD::ConcreteUtil::ModE((WBFL::Materials::ConcreteType)(pSegment->Material.Concrete.Type),pSegment->Material.Concrete.Fc,pSegment->Material.Concrete.StrengthDensity,false);
             }
 
             if ( bAfter2015 && pSegment->Material.Concrete.Type == pgsTypes::AllLightweight )
@@ -5532,12 +5527,12 @@ void CProjectAgentImp::UpdateConcreteMaterial()
             {
                if ( !pClosureJoint->GetConcrete().bUserEci )
                {
-                  pClosureJoint->GetConcrete().Eci = lrfdConcreteUtil::ModE((WBFL::Materials::ConcreteType)(pClosureJoint->GetConcrete().Type),pClosureJoint->GetConcrete().Fci,pClosureJoint->GetConcrete().StrengthDensity,false);
+                  pClosureJoint->GetConcrete().Eci = WBFL::LRFD::ConcreteUtil::ModE((WBFL::Materials::ConcreteType)(pClosureJoint->GetConcrete().Type),pClosureJoint->GetConcrete().Fci,pClosureJoint->GetConcrete().StrengthDensity,false);
                }
 
                if ( !pClosureJoint->GetConcrete().bUserEc )
                {
-                  pClosureJoint->GetConcrete().Ec = lrfdConcreteUtil::ModE((WBFL::Materials::ConcreteType)(pClosureJoint->GetConcrete().Type), pClosureJoint->GetConcrete().Fc,pClosureJoint->GetConcrete().StrengthDensity,false);
+                  pClosureJoint->GetConcrete().Ec = WBFL::LRFD::ConcreteUtil::ModE((WBFL::Materials::ConcreteType)(pClosureJoint->GetConcrete().Type), pClosureJoint->GetConcrete().Fc,pClosureJoint->GetConcrete().StrengthDensity,false);
                }
 
                if ( bAfter2015 && pClosureJoint->GetConcrete().Type == pgsTypes::AllLightweight )
@@ -5554,12 +5549,12 @@ void CProjectAgentImp::UpdateConcreteMaterial()
    {
       if ( !pDeck->Concrete.bUserEci )
       {
-         pDeck->Concrete.Eci = lrfdConcreteUtil::ModE((WBFL::Materials::ConcreteType)(pDeck->Concrete.Type),pDeck->Concrete.Fci,pDeck->Concrete.StrengthDensity,false);
+         pDeck->Concrete.Eci = WBFL::LRFD::ConcreteUtil::ModE((WBFL::Materials::ConcreteType)(pDeck->Concrete.Type),pDeck->Concrete.Fci,pDeck->Concrete.StrengthDensity,false);
       }
 
       if ( !pDeck->Concrete.bUserEc )
       {
-         pDeck->Concrete.Ec = lrfdConcreteUtil::ModE((WBFL::Materials::ConcreteType)(pDeck->Concrete.Type), pDeck->Concrete.Fc,pDeck->Concrete.StrengthDensity,false);
+         pDeck->Concrete.Ec = WBFL::LRFD::ConcreteUtil::ModE((WBFL::Materials::ConcreteType)(pDeck->Concrete.Type), pDeck->Concrete.Fc,pDeck->Concrete.StrengthDensity,false);
       }
 
       if ( bAfter2015 && pDeck->Concrete.Type == pgsTypes::AllLightweight )
@@ -5629,7 +5624,7 @@ void CProjectAgentImp::UpdateTimeDependentMaterials()
 void CProjectAgentImp::UpdateStrandMaterial()
 {
    // Get the lookup key for the strand material based on the current units
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+   const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
 
    std::map<CSegmentKey,Int64> strandKeys[3]; // map value is strand pool key, array index is strand type
    std::map<CSegmentKey, Int64> segmentTendonKeys;
@@ -5670,8 +5665,8 @@ void CProjectAgentImp::UpdateStrandMaterial()
    }
 
    // change the units
-   lrfdVersionMgr::SetVersion( m_pSpecEntry->GetSpecificationType() );
-   lrfdVersionMgr::SetUnits( m_pSpecEntry->GetSpecificationUnits() );
+   WBFL::LRFD::LRFDVersionMgr::SetVersion( m_pSpecEntry->GetSpecificationType() );
+   WBFL::LRFD::LRFDVersionMgr::SetUnits( m_pSpecEntry->GetSpecificationUnits() );
 
    // Get the new strand material based on the new units
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
@@ -5725,14 +5720,14 @@ void CProjectAgentImp::VerifyRebarGrade()
          {
             CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
 
-            if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SixthEditionWith2013Interims && pSegment->LongitudinalRebarData.BarGrade == WBFL::Materials::Rebar::Grade100 )
+            if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::SixthEditionWith2013Interims && pSegment->LongitudinalRebarData.BarGrade == WBFL::Materials::Rebar::Grade100 )
             {
                CString strMsg;
                strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nLongitudinal reinforcement for Group %d Girder %s Segment %d has been changed to %s"),
-                              lrfdVersionMgr::GetCodeString(),
-                              lrfdVersionMgr::GetVersionString(lrfdVersionMgr::SixthEditionWith2013Interims),
+                              WBFL::LRFD::LRFDVersionMgr::GetCodeString(),
+                              WBFL::LRFD::LRFDVersionMgr::GetVersionString(WBFL::LRFD::LRFDVersionMgr::Version::SixthEditionWith2013Interims),
                               LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx),
-                              lrfdRebarPool::GetMaterialName(WBFL::Materials::Rebar::Type::A615,WBFL::Materials::Rebar::Grade::Grade60).c_str());
+                              WBFL::LRFD::RebarPool::GetMaterialName(WBFL::Materials::Rebar::Type::A615,WBFL::Materials::Rebar::Grade::Grade60).c_str());
                pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pSegment->GetSegmentKey(),pgsRebarStrengthStatusItem::Longitudinal,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
 
                pStatusCenter->Add(pStatusItem);
@@ -5741,14 +5736,14 @@ void CProjectAgentImp::VerifyRebarGrade()
                pSegment->LongitudinalRebarData.BarGrade = WBFL::Materials::Rebar::Grade::Grade60;
             }
 
-            if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SixthEditionWith2013Interims && pSegment->ShearData.ShearBarGrade == WBFL::Materials::Rebar::Grade100 )
+            if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::SixthEditionWith2013Interims && pSegment->ShearData.ShearBarGrade == WBFL::Materials::Rebar::Grade100 )
             {
                CString strMsg;
                strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nTransverse reinforcement for Group %d Girder %s Segment %d has been changed to %s"),
-                              lrfdVersionMgr::GetCodeString(),
-                              lrfdVersionMgr::GetVersionString(lrfdVersionMgr::SixthEditionWith2013Interims),
+                              WBFL::LRFD::LRFDVersionMgr::GetCodeString(),
+                              WBFL::LRFD::LRFDVersionMgr::GetVersionString(WBFL::LRFD::LRFDVersionMgr::Version::SixthEditionWith2013Interims),
                               LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx),
-                              lrfdRebarPool::GetMaterialName(WBFL::Materials::Rebar::Type::A615,WBFL::Materials::Rebar::Grade::Grade60).c_str());
+                              WBFL::LRFD::RebarPool::GetMaterialName(WBFL::Materials::Rebar::Type::A615,WBFL::Materials::Rebar::Grade::Grade60).c_str());
                pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pSegment->GetSegmentKey(),pgsRebarStrengthStatusItem::Transverse,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
 
                pStatusCenter->Add(pStatusItem);
@@ -5760,14 +5755,14 @@ void CProjectAgentImp::VerifyRebarGrade()
             CClosureJointData* pClosure = pSegment->GetClosureJoint(pgsTypes::metEnd);
             if ( pClosure )
             {
-               if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SixthEditionWith2013Interims && pClosure->GetRebar().BarGrade == WBFL::Materials::Rebar::Grade100 )
+               if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::SixthEditionWith2013Interims && pClosure->GetRebar().BarGrade == WBFL::Materials::Rebar::Grade100 )
                {
                   CString strMsg;
                   strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nLongitudinal reinforcement for Group %d Girder %s Closure Joint %d has been changed to %s"),
-                                 lrfdVersionMgr::GetCodeString(),
-                                 lrfdVersionMgr::GetVersionString(lrfdVersionMgr::SixthEditionWith2013Interims),
+                                 WBFL::LRFD::LRFDVersionMgr::GetCodeString(),
+                                 WBFL::LRFD::LRFDVersionMgr::GetVersionString(WBFL::LRFD::LRFDVersionMgr::Version::SixthEditionWith2013Interims),
                                  LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx),
-                                 lrfdRebarPool::GetMaterialName(WBFL::Materials::Rebar::Type::A615,WBFL::Materials::Rebar::Grade::Grade60).c_str());
+                                 WBFL::LRFD::RebarPool::GetMaterialName(WBFL::Materials::Rebar::Type::A615,WBFL::Materials::Rebar::Grade::Grade60).c_str());
                   pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pClosure->GetClosureKey(),pgsRebarStrengthStatusItem::Longitudinal,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
 
                   pStatusCenter->Add(pStatusItem);
@@ -5776,14 +5771,14 @@ void CProjectAgentImp::VerifyRebarGrade()
                   pClosure->GetRebar().BarGrade = WBFL::Materials::Rebar::Grade::Grade60;
                }
 
-               if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SixthEditionWith2013Interims && pClosure->GetStirrups().ShearBarGrade == WBFL::Materials::Rebar::Grade100 )
+               if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::SixthEditionWith2013Interims && pClosure->GetStirrups().ShearBarGrade == WBFL::Materials::Rebar::Grade100 )
                {
                   CString strMsg;
                   strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nTransverse reinforcement for Group %d Girder %s Closure Joint %d has been changed to %s"),
-                                 lrfdVersionMgr::GetCodeString(),
-                                 lrfdVersionMgr::GetVersionString(lrfdVersionMgr::SixthEditionWith2013Interims),
+                                 WBFL::LRFD::LRFDVersionMgr::GetCodeString(),
+                                 WBFL::LRFD::LRFDVersionMgr::GetVersionString(WBFL::LRFD::LRFDVersionMgr::Version::SixthEditionWith2013Interims),
                                  LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx),
-                                 lrfdRebarPool::GetMaterialName(WBFL::Materials::Rebar::Type::A615,WBFL::Materials::Rebar::Grade::Grade60).c_str());
+                                 WBFL::LRFD::RebarPool::GetMaterialName(WBFL::Materials::Rebar::Type::A615,WBFL::Materials::Rebar::Grade::Grade60).c_str());
                   pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pClosure->GetClosureKey(),pgsRebarStrengthStatusItem::Transverse,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
                   pStatusCenter->Add(pStatusItem);
 
@@ -5796,13 +5791,13 @@ void CProjectAgentImp::VerifyRebarGrade()
    } // next group
 
    CDeckDescription2* pDeck = m_BridgeDescription.GetDeckDescription();
-   if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SixthEditionWith2013Interims && pDeck->DeckRebarData.TopRebarGrade == WBFL::Materials::Rebar::Grade100 )
+   if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::SixthEditionWith2013Interims && pDeck->DeckRebarData.TopRebarGrade == WBFL::Materials::Rebar::Grade100 )
    {
       CString strMsg;
       strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nDeck reinforcement has been changed to %s"),
-                     lrfdVersionMgr::GetCodeString(),
-                     lrfdVersionMgr::GetVersionString(lrfdVersionMgr::SixthEditionWith2013Interims,false),
-                     lrfdRebarPool::GetMaterialName(WBFL::Materials::Rebar::Type::A615,WBFL::Materials::Rebar::Grade::Grade60).c_str());
+                     WBFL::LRFD::LRFDVersionMgr::GetCodeString(),
+                     WBFL::LRFD::LRFDVersionMgr::GetVersionString(WBFL::LRFD::LRFDVersionMgr::Version::SixthEditionWith2013Interims,false),
+                     WBFL::LRFD::RebarPool::GetMaterialName(WBFL::Materials::Rebar::Type::A615,WBFL::Materials::Rebar::Grade::Grade60).c_str());
       pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(CSegmentKey(),pgsRebarStrengthStatusItem::Deck,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
 
       pStatusCenter->Add(pStatusItem);
@@ -5901,7 +5896,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
 
    if ( m_bGetIgnoreROAFromLibrary )
    {
-      m_LldfRangeOfApplicabilityAction = pTempSpecEntry->IgnoreRangeOfApplicabilityRequirements() ? roaIgnore : roaEnforce;
+      m_RangeOfApplicabilityAction = pTempSpecEntry->IgnoreRangeOfApplicabilityRequirements() ? WBFL::LRFD::RangeOfApplicabilityAction::Ignore : WBFL::LRFD::RangeOfApplicabilityAction::Enforce;
    }
 
    // get the old haul truck configuration here because we have the library entry
@@ -6080,21 +6075,21 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    ATLASSERT(concLib.GetMinCount() == 0); // did this change???
 
    GirderLibrary& gdrLib = GetGirderLibrary();
-   CollectionIndexType nEntries    = gdrLib.GetCount();
-   CollectionIndexType nMinEntries = gdrLib.GetMinCount();
+   IndexType nEntries    = gdrLib.GetCount();
+   IndexType nMinEntries = gdrLib.GetMinCount();
    if ( nEntries < nMinEntries )
    {
       CString strMsg;
       strMsg.Format(_T("The %s library needs at least %d entries. Default entries have been created."),gdrLib.GetDisplayName().c_str(),nMinEntries);
       AfxMessageBox(strMsg,MB_OK | MB_ICONEXCLAMATION);
-      for ( CollectionIndexType i = 0; i < (nMinEntries-nEntries); i++ )
+      for ( IndexType i = 0; i < (nMinEntries-nEntries); i++ )
       {
          gdrLib.NewEntry(gdrLib.GetUniqueEntryName().c_str());
       }
 
       bUpdateLibraryUsage = true;
 
-      libKeyListType keys;
+      WBFL::Library::KeyListType keys;
       gdrLib.KeyList(keys);
       std::_tstring strGirderName = keys.front();
       if (m_BridgeDescription.UseSameGirderForEntireBridge())
@@ -6125,14 +6120,14 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       CString strMsg;
       strMsg.Format(_T("The %s library needs at least %d entries. Default entries have been created."),tbLib.GetDisplayName().c_str(),nMinEntries);
       AfxMessageBox(strMsg,MB_OK | MB_ICONEXCLAMATION);
-      for ( CollectionIndexType i = 0; i < (nMinEntries-nEntries); i++ )
+      for ( IndexType i = 0; i < (nMinEntries-nEntries); i++ )
       {
          tbLib.NewEntry(tbLib.GetUniqueEntryName().c_str());
       }
 
       bUpdateLibraryUsage = true;
 
-      libKeyListType keys;
+      WBFL::Library::KeyListType keys;
       tbLib.KeyList(keys);
       std::_tstring strBarrierName = keys.front();
       CRailingSystem* pLeftRailing = m_BridgeDescription.GetLeftRailingSystem();
@@ -6158,12 +6153,12 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       CString strMsg;
       strMsg.Format(_T("The %s library needs at least %d entries. Default entries have been created."),pSpecLib->GetDisplayName().c_str(),nMinEntries);
       AfxMessageBox(strMsg,MB_OK | MB_ICONEXCLAMATION);
-      for ( CollectionIndexType i = 0; i < (nMinEntries-nEntries); i++ )
+      for ( IndexType i = 0; i < (nMinEntries-nEntries); i++ )
       {
          pSpecLib->NewEntry(pSpecLib->GetUniqueEntryName().c_str());
       }
 
-      libKeyListType keys;
+      WBFL::Library::KeyListType keys;
       pSpecLib->KeyList(keys);
       std::_tstring strSpecName = keys.front();
       InitSpecification(strSpecName);
@@ -6177,12 +6172,12 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       CString strMsg;
       strMsg.Format(_T("The %s library needs at least %d entries. Default entries have been created."),pRatingLib->GetDisplayName().c_str(),nMinEntries);
       AfxMessageBox(strMsg,MB_OK | MB_ICONEXCLAMATION);
-      for ( CollectionIndexType i = 0; i < (nMinEntries-nEntries); i++ )
+      for ( IndexType i = 0; i < (nMinEntries-nEntries); i++ )
       {
          pRatingLib->NewEntry(pRatingLib->GetUniqueEntryName().c_str());
       }
 
-      libKeyListType keys;
+      WBFL::Library::KeyListType keys;
       pRatingLib->KeyList(keys);
       std::_tstring strSpecName = keys.front();
       InitRatingSpecification(strSpecName);
@@ -6196,7 +6191,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       nMinEntries = pDuctLibrary->GetMinCount();
       if (nEntries < nMinEntries)
       {
-         for (CollectionIndexType i = 0; i < (nMinEntries - nEntries); i++)
+         for (IndexType i = 0; i < (nMinEntries - nEntries); i++)
          {
             pDuctLibrary->NewEntry(pDuctLibrary->GetUniqueEntryName().c_str());
          }
@@ -6211,7 +6206,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
 
          bUpdateLibraryUsage = true;
 
-         libKeyListType keys;
+         WBFL::Library::KeyListType keys;
          pDuctLibrary->KeyList(keys);
          std::_tstring strDuctName = keys.front();
          GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
@@ -6244,7 +6239,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    nMinEntries = pHaulTruckLibrary->GetMinCount();
    if ( nEntries < nMinEntries )
    {
-      for ( CollectionIndexType i = 0; i < (nMinEntries-nEntries); i++ )
+      for ( IndexType i = 0; i < (nMinEntries-nEntries); i++ )
       {
          pHaulTruckLibrary->NewEntry(pHaulTruckLibrary->GetUniqueEntryName().c_str());
       }
@@ -6258,7 +6253,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
 
       bUpdateLibraryUsage = true;
 
-      libKeyListType keys;
+      WBFL::Library::KeyListType keys;
       pHaulTruckLibrary->KeyList(keys);
       std::_tstring strHaulTruckName = keys.front();
       GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
@@ -6289,11 +6284,11 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    }
 
    GirderLibrary& girderLibrary = GetGirderLibrary();
-   libKeyListType keyList;
+   WBFL::Library::KeyListType keyList;
    girderLibrary.KeyList(keyList);
    for (const auto& key : keyList)
    {
-      const libLibraryEntry* pEntry = girderLibrary.GetEntry(key.c_str());
+      const WBFL::Library::LibraryEntry* pEntry = girderLibrary.GetEntry(key.c_str());
       const GirderLibraryEntry* pGirderEntry = (GirderLibraryEntry*)pEntry;
       if (0 < pGirderEntry->GetRefCount())
       {
@@ -7838,19 +7833,19 @@ void CProjectAgentImp::GetSegmentEventsByID(const CSegmentKey& segmentKey,EventI
    *erectionEventID     = GetSegmentErectionEventID(segmentKey);
 }
 
-EventIndexType CProjectAgentImp::GetCastClosureJointEventIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx) const
+EventIndexType CProjectAgentImp::GetCastClosureJointEventIndex(GroupIndexType grpIdx,IndexType closureIdx) const
 {
    const CClosureJointData* pClosure = m_BridgeDescription.GetGirderGroup(grpIdx)->GetGirder(0)->GetClosureJoint(closureIdx);
    return m_BridgeDescription.GetTimelineManager()->GetCastClosureJointEventIndex(pClosure);
 }
 
-EventIDType CProjectAgentImp::GetCastClosureJointEventID(GroupIndexType grpIdx,CollectionIndexType closureIdx) const
+EventIDType CProjectAgentImp::GetCastClosureJointEventID(GroupIndexType grpIdx,IndexType closureIdx) const
 {
    const CClosureJointData* pClosure = m_BridgeDescription.GetGirderGroup(grpIdx)->GetGirder(0)->GetClosureJoint(closureIdx);
    return m_BridgeDescription.GetTimelineManager()->GetCastClosureJointEventID(pClosure);
 }
 
-void CProjectAgentImp::SetCastClosureJointEventByIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx,EventIndexType eventIdx)
+void CProjectAgentImp::SetCastClosureJointEventByIndex(GroupIndexType grpIdx,IndexType closureIdx,EventIndexType eventIdx)
 {
    const CClosureJointData* pClosure = m_BridgeDescription.GetGirderGroup(grpIdx)->GetGirder(0)->GetClosureJoint(closureIdx);
    if ( eventIdx != m_BridgeDescription.GetTimelineManager()->GetCastClosureJointEventIndex(pClosure) )
@@ -7860,7 +7855,7 @@ void CProjectAgentImp::SetCastClosureJointEventByIndex(GroupIndexType grpIdx,Col
    }
 }
 
-void CProjectAgentImp::SetCastClosureJointEventByID(GroupIndexType grpIdx,CollectionIndexType closureIdx,IDType eventID)
+void CProjectAgentImp::SetCastClosureJointEventByID(GroupIndexType grpIdx,IndexType closureIdx,IDType eventID)
 {
    const CClosureJointData* pClosure = m_BridgeDescription.GetGirderGroup(grpIdx)->GetGirder(0)->GetClosureJoint(closureIdx);
    if ( eventID != m_BridgeDescription.GetTimelineManager()->GetCastClosureJointEventID(pClosure) )
@@ -8884,7 +8879,7 @@ void CProjectAgentImp::SetHandlingData(const CSegmentKey& segmentKey,const CHand
 std::_tstring CProjectAgentImp::GetSegmentStirrupMaterial(const CSegmentKey& segmentKey) const
 {
    const CShearData2* pShearData = GetSegmentShearData(segmentKey);
-   return lrfdRebarPool::GetMaterialName(pShearData->ShearBarType,pShearData->ShearBarGrade);
+   return WBFL::LRFD::RebarPool::GetMaterialName(pShearData->ShearBarType,pShearData->ShearBarGrade);
 }
 
 void CProjectAgentImp::GetSegmentStirrupMaterial(const CSegmentKey& segmentKey,WBFL::Materials::Rebar::Type& type,WBFL::Materials::Rebar::Grade& grade) const
@@ -8924,7 +8919,7 @@ void CProjectAgentImp::SetSegmentShearData(const CSegmentKey& segmentKey,const C
 std::_tstring CProjectAgentImp::GetClosureJointStirrupMaterial(const CClosureKey& closureKey) const
 {
    const CShearData2* pShearData = GetClosureJointShearData(closureKey);
-   return lrfdRebarPool::GetMaterialName(pShearData->ShearBarType,pShearData->ShearBarGrade);
+   return WBFL::LRFD::RebarPool::GetMaterialName(pShearData->ShearBarType,pShearData->ShearBarGrade);
 }
 
 void CProjectAgentImp::GetClosureJointStirrupMaterial(const CClosureKey& closureKey,WBFL::Materials::Rebar::Type& type,WBFL::Materials::Rebar::Grade& grade) const
@@ -8974,7 +8969,7 @@ void CProjectAgentImp::SetClosureJointShearData(const CClosureKey& closureKey,co
 std::_tstring CProjectAgentImp::GetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey) const
 {
    const CLongitudinalRebarData* pLRD = GetSegmentLongitudinalRebarData(segmentKey);
-   return lrfdRebarPool::GetMaterialName(pLRD->BarType,pLRD->BarGrade);
+   return WBFL::LRFD::RebarPool::GetMaterialName(pLRD->BarType,pLRD->BarGrade);
 }
 
 void CProjectAgentImp::GetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey,WBFL::Materials::Rebar::Type& type,WBFL::Materials::Rebar::Grade& grade) const
@@ -9014,7 +9009,7 @@ void CProjectAgentImp::SetSegmentLongitudinalRebarData(const CSegmentKey& segmen
 std::_tstring CProjectAgentImp::GetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey) const
 {
    const CLongitudinalRebarData* pLRD = GetClosureJointLongitudinalRebarData(closureKey);
-   return lrfdRebarPool::GetMaterialName(pLRD->BarType,pLRD->BarGrade);
+   return WBFL::LRFD::RebarPool::GetMaterialName(pLRD->BarType,pLRD->BarGrade);
 }
 
 void CProjectAgentImp::GetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,WBFL::Materials::Rebar::Type& type,WBFL::Materials::Rebar::Grade& grade) const
@@ -9393,7 +9388,7 @@ Float64 CProjectAgentImp::GetLiveLoadFactor(pgsTypes::LimitState ls,pgsTypes::Sp
    if ( gLL < 0 && bResolveIfDefault )
    {
       pgsTypes::LoadRatingType ratingType = ::RatingTypeFromLimitState(ls);
-      if ( pRatingEntry->GetSpecificationVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
+      if ( pRatingEntry->GetSpecificationVersion() < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
       {
          CLiveLoadFactorModel model;
          if ( ratingType == pgsTypes::lrPermit_Routine )
@@ -9590,7 +9585,7 @@ Float64 CProjectAgentImp::GetStrengthLiveLoadFactor(pgsTypes::LoadRatingType rat
 
    Float64 gLL = 0;
    const RatingLibraryEntry* pRatingEntry = GetRatingEntry( GetRatingSpecification().c_str() );
-   if ( pRatingEntry->GetSpecificationVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( pRatingEntry->GetSpecificationVersion() < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
    {
       CLiveLoadFactorModel model;
       if ( ratingType == pgsTypes::lrPermit_Special )
@@ -9635,7 +9630,7 @@ Float64 CProjectAgentImp::GetServiceLiveLoadFactor(pgsTypes::LoadRatingType rati
 
    Float64 gLL = 0;
    const RatingLibraryEntry* pRatingEntry = GetRatingEntry( GetRatingSpecification().c_str() );
-   if ( pRatingEntry->GetSpecificationVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( pRatingEntry->GetSpecificationVersion() < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
    {
       CLiveLoadFactorModel model;
       if ( ratingType == pgsTypes::lrPermit_Special )
@@ -9911,7 +9906,7 @@ ISpecification::PrincipalWebStressCheckType CProjectAgentImp::GetPrincipalWebStr
 
 }
 
-lrfdVersionMgr::Version CProjectAgentImp::GetSpecificationType() const
+WBFL::LRFD::LRFDVersionMgr::Version CProjectAgentImp::GetSpecificationType() const
 {
    return m_pSpecEntry->GetSpecificationType();
 }
@@ -10034,14 +10029,14 @@ void CProjectAgentImp::EnumGirderNames( LPCTSTR strGirderFamily, std::vector<std
    const GirderLibrary& prj_lib = m_pLibMgr->GetGirderLibrary();
    pNames->clear();
 
-   libKeyListType keys;
+   WBFL::Library::KeyListType keys;
    prj_lib.KeyList(keys);
 
-   libKeyListType::iterator iter(keys.begin());
-   libKeyListType::iterator iterEnd(keys.end());
+   WBFL::Library::KeyListType::iterator iter(keys.begin());
+   WBFL::Library::KeyListType::iterator iterEnd(keys.end());
    for ( ; iter != iterEnd; iter++ )
    {
-      const libLibraryEntry* pEntry = prj_lib.GetEntry( (*iter).c_str() );
+      const WBFL::Library::LibraryEntry* pEntry = prj_lib.GetEntry( (*iter).c_str() );
       const GirderLibraryEntry* pGirderEntry = (GirderLibraryEntry*)pEntry;
 
       std::_tstring strFamilyName = pGirderEntry->GetGirderFamilyName();
@@ -10157,7 +10152,7 @@ void CProjectAgentImp::SetLibraryManager(psgLibraryManager* pNewLibMgr)
    SpecLibrary* pSpecLib = GetSpecLibrary();
    if ( pSpecLib )
    {
-      libKeyListType keys;
+      WBFL::Library::KeyListType keys;
       pSpecLib->KeyList(keys);
 
       if ( 0 < keys.size() )
@@ -10170,7 +10165,7 @@ void CProjectAgentImp::SetLibraryManager(psgLibraryManager* pNewLibMgr)
    RatingLibrary* pRatingLib = GetRatingLibrary();
    if ( pRatingLib )
    {
-      libKeyListType keys;
+      WBFL::Library::KeyListType keys;
       pRatingLib->KeyList(keys);
 
       if ( 0 < keys.size() )
@@ -10330,7 +10325,7 @@ const RatingLibrary* CProjectAgentImp::GetRatingLibrary() const
    return m_pLibMgr->GetRatingLibrary();
 }
 
-std::vector<libEntryUsageRecord> CProjectAgentImp::GetLibraryUsageRecords() const
+std::vector<WBFL::Library::EntryUsageRecord> CProjectAgentImp::GetLibraryUsageRecords() const
 {
    return m_pLibMgr->GetInUseLibraryEntries();
 }
@@ -10529,19 +10524,19 @@ bool CProjectAgentImp::HasUserLLIM(const CGirderKey& girderKey) const
    return HasUserLoad(girderKey,UserLoads::LL_IM);
 }
 
-CollectionIndexType CProjectAgentImp::GetPointLoadCount() const
+IndexType CProjectAgentImp::GetPointLoadCount() const
 {
    return m_LoadManager.GetPointLoadCount();
 }
 
-CollectionIndexType CProjectAgentImp::AddPointLoad(EventIDType eventID,const CPointLoadData& pld)
+IndexType CProjectAgentImp::AddPointLoad(EventIDType eventID,const CPointLoadData& pld)
 {
-   CollectionIndexType idx = m_LoadManager.AddPointLoad(eventID,pld);
+   IndexType idx = m_LoadManager.AddPointLoad(eventID,pld);
    FireContinuityRelatedSpanChange(pld.m_SpanKey,GCH_LOADING_ADDED);
    return idx;
 }
 
-const CPointLoadData* CProjectAgentImp::GetPointLoad(CollectionIndexType idx) const
+const CPointLoadData* CProjectAgentImp::GetPointLoad(IndexType idx) const
 {
    return m_LoadManager.GetPointLoad(idx);
 }
@@ -10561,7 +10556,7 @@ EventIDType CProjectAgentImp::GetPointLoadEventID(LoadIDType loadID) const
    return m_LoadManager.GetPointLoadEventID(loadID);
 }
 
-void CProjectAgentImp::UpdatePointLoad(CollectionIndexType idx, EventIDType eventID,const CPointLoadData& pld)
+void CProjectAgentImp::UpdatePointLoad(IndexType idx, EventIDType eventID,const CPointLoadData& pld)
 {
    bool bMovedGirders;
    CSpanKey prevKey;
@@ -10593,7 +10588,7 @@ void CProjectAgentImp::UpdatePointLoadByID(LoadIDType loadID, EventIDType eventI
    }
 }
 
-void CProjectAgentImp::DeletePointLoad(CollectionIndexType idx)
+void CProjectAgentImp::DeletePointLoad(IndexType idx)
 {
    CSpanKey key;
    m_LoadManager.DeletePointLoad(idx,&key);
@@ -10612,19 +10607,19 @@ std::vector<CPointLoadData> CProjectAgentImp::GetPointLoads(const CSpanKey& span
    return m_LoadManager.GetPointLoads(spanKey);
 }
 
-CollectionIndexType CProjectAgentImp::GetDistributedLoadCount() const
+IndexType CProjectAgentImp::GetDistributedLoadCount() const
 {
    return m_LoadManager.GetDistributedLoadCount();
 }
 
-CollectionIndexType CProjectAgentImp::AddDistributedLoad(EventIDType eventID,const CDistributedLoadData& pld)
+IndexType CProjectAgentImp::AddDistributedLoad(EventIDType eventID,const CDistributedLoadData& pld)
 {
-   CollectionIndexType idx = m_LoadManager.AddDistributedLoad(eventID,pld);
+   IndexType idx = m_LoadManager.AddDistributedLoad(eventID,pld);
    FireContinuityRelatedSpanChange(pld.m_SpanKey,GCH_LOADING_ADDED);
    return idx;
 }
 
-const CDistributedLoadData* CProjectAgentImp::GetDistributedLoad(CollectionIndexType idx) const
+const CDistributedLoadData* CProjectAgentImp::GetDistributedLoad(IndexType idx) const
 {
    return m_LoadManager.GetDistributedLoad(idx);
 }
@@ -10644,7 +10639,7 @@ EventIDType CProjectAgentImp::GetDistributedLoadEventID(LoadIDType loadID) const
    return m_LoadManager.GetDistributedLoadEventID(loadID);
 }
 
-void CProjectAgentImp::UpdateDistributedLoad(CollectionIndexType idx, EventIDType eventID,const CDistributedLoadData& pld)
+void CProjectAgentImp::UpdateDistributedLoad(IndexType idx, EventIDType eventID,const CDistributedLoadData& pld)
 {
    bool bMovedGirder;
    CSpanKey prevKey;
@@ -10672,7 +10667,7 @@ void CProjectAgentImp::UpdateDistributedLoadByID(LoadIDType loadID, EventIDType 
    }
 }
 
-void CProjectAgentImp::DeleteDistributedLoad(CollectionIndexType idx)
+void CProjectAgentImp::DeleteDistributedLoad(IndexType idx)
 {
    CSpanKey key;
    m_LoadManager.DeleteDistributedLoad(idx, &key);
@@ -10691,19 +10686,19 @@ std::vector<CDistributedLoadData> CProjectAgentImp::GetDistributedLoads(const CS
    return m_LoadManager.GetDistributedLoads(spanKey);
 }
 
-CollectionIndexType CProjectAgentImp::GetMomentLoadCount() const
+IndexType CProjectAgentImp::GetMomentLoadCount() const
 {
    return m_LoadManager.GetMomentLoadCount();
 }
 
-CollectionIndexType CProjectAgentImp::AddMomentLoad(EventIDType eventID,const CMomentLoadData& pld)
+IndexType CProjectAgentImp::AddMomentLoad(EventIDType eventID,const CMomentLoadData& pld)
 {
-   CollectionIndexType idx = m_LoadManager.AddMomentLoad(eventID,pld);
+   IndexType idx = m_LoadManager.AddMomentLoad(eventID,pld);
    FireContinuityRelatedSpanChange(pld.m_SpanKey,GCH_LOADING_ADDED);
    return idx;
 }
 
-const CMomentLoadData* CProjectAgentImp::GetMomentLoad(CollectionIndexType idx) const
+const CMomentLoadData* CProjectAgentImp::GetMomentLoad(IndexType idx) const
 {
    return m_LoadManager.GetMomentLoad(idx);
 }
@@ -10723,7 +10718,7 @@ EventIDType CProjectAgentImp::GetMomentLoadEventID(LoadIDType loadID) const
    return m_LoadManager.GetMomentLoadEventID(loadID);
 }
 
-void CProjectAgentImp::UpdateMomentLoad(CollectionIndexType idx, EventIDType eventID,const CMomentLoadData& pld)
+void CProjectAgentImp::UpdateMomentLoad(IndexType idx, EventIDType eventID,const CMomentLoadData& pld)
 {
    bool bMovedGirder;
    CSpanKey prevKey;
@@ -10751,7 +10746,7 @@ void CProjectAgentImp::UpdateMomentLoadByID(LoadIDType loadID, EventIDType event
    }
 }
 
-void CProjectAgentImp::DeleteMomentLoad(CollectionIndexType idx)
+void CProjectAgentImp::DeleteMomentLoad(IndexType idx)
 {
    CSpanKey key;
    m_LoadManager.DeleteMomentLoad(idx, &key);
@@ -11187,25 +11182,25 @@ bool CProjectAgentImp::IsReservedLiveLoad(const std::_tstring& strName) const
    return false;
 }
 
-void CProjectAgentImp::SetLldfRangeOfApplicabilityAction(LldfRangeOfApplicabilityAction action)
+void CProjectAgentImp::SetRangeOfApplicabilityAction(WBFL::LRFD::RangeOfApplicabilityAction action)
 {
-   if ( m_LldfRangeOfApplicabilityAction != action )
+   if ( m_RangeOfApplicabilityAction != action )
    {
-      m_LldfRangeOfApplicabilityAction = action;
+      m_RangeOfApplicabilityAction = action;
       Fire_LiveLoadChanged();
    }
 }
 
-LldfRangeOfApplicabilityAction CProjectAgentImp::GetLldfRangeOfApplicabilityAction() const
+WBFL::LRFD::RangeOfApplicabilityAction CProjectAgentImp::GetRangeOfApplicabilityAction() const
 {
-   return m_LldfRangeOfApplicabilityAction;
+   return m_RangeOfApplicabilityAction;
 }
 
 bool CProjectAgentImp::IgnoreLLDFRangeOfApplicability() const
 {
    if (m_BridgeDescription.GetDistributionFactorMethod() == pgsTypes::Calculated)
    {
-      return m_LldfRangeOfApplicabilityAction != roaEnforce;
+      return m_RangeOfApplicabilityAction != WBFL::LRFD::RangeOfApplicabilityAction::Enforce;
    }
    else if (m_BridgeDescription.GetDistributionFactorMethod() == pgsTypes::LeverRule)
    {
@@ -11227,11 +11222,11 @@ std::_tstring CProjectAgentImp::GetLLDFSpecialActionText() const
    {
       return std::_tstring(_T("  Note: The project criteria was overriden: All live load distribution factors computed using the Lever Rule."));
    }
-   else if (m_LldfRangeOfApplicabilityAction==roaIgnore)
+   else if (m_RangeOfApplicabilityAction==WBFL::LRFD::RangeOfApplicabilityAction::Ignore)
    {
       return std::_tstring(_T(" Note that range of applicability requirements are ignored. The equations in LRFD 4.6.2.2 are used regardless of their validity."));
    }
-   else if (m_LldfRangeOfApplicabilityAction==roaIgnoreUseLeverRule)
+   else if (m_RangeOfApplicabilityAction==WBFL::LRFD::RangeOfApplicabilityAction::IgnoreUseLeverRule)
    {
       return std::_tstring(_T(" Note that the lever rule used to compute distribution factors if the range of applicability requirements are exceeded."));
    }
@@ -11268,17 +11263,17 @@ std::_tstring CProjectAgentImp::GetLossMethodDescription() const
    case pgsTypes::AASHTO_REFINED: 
    case pgsTypes::AASHTO_REFINED_2005:
       strLossMethod = _T("Refined estimate per AASHTO LRFD ");
-      strLossMethod += std::_tstring(LrfdCw8th(_T("5.9.5.4"), _T("5.9.3.4")));
+      strLossMethod += std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.4"), _T("5.9.3.4")));
       break;
 
    case pgsTypes::AASHTO_LUMPSUM:
       strLossMethod = _T("Approximate lump sum estimate per AASHTO LRFD ");
-      strLossMethod += std::_tstring(LrfdCw8th(_T("5.9.5.3"), _T("5.9.3.3")));
+      strLossMethod += std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.3"), _T("5.9.3.3")));
       break;
 
    case pgsTypes::AASHTO_LUMPSUM_2005:
       strLossMethod = _T("Approximate estimate per AASHTO LRFD ");
-      strLossMethod += std::_tstring(LrfdCw8th(_T("5.9.5.3"), _T("5.9.3.3")));
+      strLossMethod += std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.3"), _T("5.9.3.3")));
       break;
 
    case pgsTypes::GENERAL_LUMPSUM:
@@ -12095,8 +12090,8 @@ void CProjectAgentImp::InitSpecification(const std::_tstring& spec)
                          &m_pSpecEntry,
                          *(m_pLibMgr->GetSpecLibrary()) );
 
-      lrfdVersionMgr::SetVersion( m_pSpecEntry->GetSpecificationType() );
-      lrfdVersionMgr::SetUnits( m_pSpecEntry->GetSpecificationUnits() );
+      WBFL::LRFD::LRFDVersionMgr::SetVersion( m_pSpecEntry->GetSpecificationType() );
+      WBFL::LRFD::LRFDVersionMgr::SetUnits( m_pSpecEntry->GetSpecificationUnits() );
    }
 }
 
@@ -12116,10 +12111,10 @@ void CProjectAgentImp::InitRatingSpecification(const std::_tstring& spec)
                          &m_pRatingEntry,
                          *(m_pLibMgr->GetRatingLibrary()) );
 
-      lrfrVersionMgr::SetVersion( m_pRatingEntry->GetSpecificationVersion() );
+      WBFL::LRFD::LRFRVersionMgr::SetVersion( m_pRatingEntry->GetSpecificationVersion() );
 
       // update live load factors
-      if ( m_pRatingEntry->GetSpecificationVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
+      if ( m_pRatingEntry->GetSpecificationVersion() < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
       {
          const CLiveLoadFactorModel& design_inventory_model = m_pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrDesign_Inventory);
          if ( !design_inventory_model.AllowUserOverride() )

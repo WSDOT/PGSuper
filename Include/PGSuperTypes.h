@@ -1889,32 +1889,32 @@ inline bool IsServiceIIILimitState(pgsTypes::LimitState ls)
 }
 
 #include <LRFD\LrfdTypes.h>
-inline lrfdTypes::LimitState PGSLimitStateToLRFDLimitState(pgsTypes::LimitState ls)
+inline WBFL::LRFD::LimitState PGSLimitStateToLRFDLimitState(pgsTypes::LimitState ls)
 {
-   lrfdTypes::LimitState lrfdLimitState;
+   WBFL::LRFD::LimitState lrfdLimitState;
    if (IsStrengthILimitState(ls))
    {
-      lrfdLimitState = lrfdTypes::StrengthI;
+      lrfdLimitState = WBFL::LRFD::LimitState::StrengthI;
    }
    else if (IsStrengthIILimitState(ls))
    {
-      lrfdLimitState = lrfdTypes::StrengthII;
+      lrfdLimitState = WBFL::LRFD::LimitState::StrengthII;
    }
    else if (IsServiceILimitState(ls))
    {
-      lrfdLimitState = lrfdTypes::ServiceI;
+      lrfdLimitState = WBFL::LRFD::LimitState::ServiceI;
    }
    else if (IsServiceIIILimitState(ls))
    {
-      lrfdLimitState = lrfdTypes::ServiceIII;
+      lrfdLimitState = WBFL::LRFD::LimitState::ServiceIII;
    }
    else if (ls == pgsTypes::ServiceIA)
    {
-      lrfdLimitState = lrfdTypes::ServiceIA;
+      lrfdLimitState = WBFL::LRFD::LimitState::ServiceIA;
    }
    else if (ls == pgsTypes::FatigueI)
    {
-      lrfdLimitState = lrfdTypes::FatigueI;
+      lrfdLimitState = WBFL::LRFD::LimitState::FatigueI;
    }
    else
    {

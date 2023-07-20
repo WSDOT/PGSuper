@@ -85,7 +85,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    }
    else
    {
-      *pTitle << LrfdCw8th(_T("5.8.3.5"), _T("5.7.3.5"));
+      *pTitle << WBFL::LRFD::LrfdCw8th(_T("5.8.3.5"), _T("5.7.3.5"));
    }
    *pTitle << _T("]");
 
@@ -95,7 +95,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
 
-   lrfdVersionMgr::Version vers = lrfdVersionMgr::GetVersion();
+   WBFL::LRFD::LRFDVersionMgr::Version vers = WBFL::LRFD::LRFDVersionMgr::GetVersion();
 
    if (bUHPC)
    {
@@ -105,11 +105,11 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    {
       if (0 < nDucts)
       {
-         if (lrfdVersionMgr::EighthEdition2017 <= vers)
+         if (WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017 <= vers)
          {
             *pBody << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2017_with_PT.png")) << rptNewLine;
          }
-         else if (lrfdVersionMgr::ThirdEditionWith2005Interims <= vers)
+         else if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= vers)
          {
             *pBody << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2005_with_PT.png")) << rptNewLine;
          }
@@ -120,11 +120,11 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
       }
       else
       {
-         if (lrfdVersionMgr::EighthEdition2017 <= vers)
+         if (WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017 <= vers)
          {
             *pBody << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2017.png")) << rptNewLine;
          }
-         else if (lrfdVersionMgr::ThirdEditionWith2005Interims <= vers)
+         else if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= vers)
          {
             *pBody << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2005.png")) << rptNewLine;
          }
@@ -134,13 +134,13 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
          }
       }
 
-      if (lrfdVersionMgr::NinthEdition2020 <= vers)
+      if (WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= vers)
       {
          *pBody << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LRS_ReinforcementLimit.png")) << rptNewLine;
       }
    }
 
-   rptRcTable* table = rptStyleManager::CreateDefaultTable(vers < lrfdVersionMgr::NinthEdition2020 ? 5 : 8,_T(""));
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(vers < WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 ? 5 : 8,_T(""));
    *pBody << table;
 
    ColumnIndexType col = 0;
@@ -150,7 +150,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    (*table)(0, col++)  << _T("Equation");
    (*table)(0, col++)  << _T("Status") << rptNewLine << _T("(C/D)");
    
-   if (lrfdVersionMgr::NinthEdition2020 <= vers)
+   if (WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= vers)
    {
       (*table)(0, col++) << COLHDR(RPT_APS << RPT_FPS, rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
       if (bUHPC)
@@ -176,8 +176,8 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
       const pgsStirrupCheckArtifact* pStirrupArtifact= pSegmentArtifact->GetStirrupCheckArtifact();
       ATLASSERT(pStirrupArtifact);
 
-      CollectionIndexType nArtifacts = pStirrupArtifact->GetStirrupCheckAtPoisArtifactCount(intervalIdx,ls);
-      for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
+      IndexType nArtifacts = pStirrupArtifact->GetStirrupCheckAtPoisArtifactCount(intervalIdx,ls);
+      for ( IndexType idx = 0; idx < nArtifacts; idx++ )
       {
          const pgsStirrupCheckAtPoisArtifact* psArtifact = pStirrupArtifact->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
          if ( psArtifact == nullptr )
@@ -205,7 +205,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
             }
             else
             {
-               (*table)(row, col++) << LrfdCw8th(_T("5.8.3.5-"), _T("5.7.3.5-")) << pArtifact->GetEquation();
+               (*table)(row, col++) << WBFL::LRFD::LrfdCw8th(_T("5.8.3.5-"), _T("5.7.3.5-")) << pArtifact->GetEquation();
             }
 
             bool bPassed = pArtifact->PassedCapacity();
@@ -228,7 +228,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
             (*table)(row, col) << rptNewLine << _T("(") << cap_demand.SetValue(C,D,bPassed) << _T(")");
             col++;
 
-            if (lrfdVersionMgr::NinthEdition2020 <= vers)
+            if (WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= vers)
             {
                (*table)(row, col++) << shear.SetValue(pArtifact->GetPretensionForce());
                (*table)(row, col++) << shear.SetValue(pArtifact->GetRebarForce());
@@ -280,12 +280,12 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
 
-   *pTitle << _T("Longitudinal Reinforcement for Shear Check - ") << GetLimitStateString(ls) << _T(" [") << LrfdCw8th(_T("5.8.3.5"),_T("5.7.3.5")) << _T("]");
+   *pTitle << _T("Longitudinal Reinforcement for Shear Check - ") << GetLimitStateString(ls) << _T(" [") << WBFL::LRFD::LrfdCw8th(_T("5.8.3.5"),_T("5.7.3.5")) << _T("]");
 
    rptParagraph* pBody = new rptParagraph;
    *pChapter << pBody;
 
-   if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       *pBody <<rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2005.png"))<<rptNewLine;
    }
@@ -336,7 +336,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
          (*table)(row,1) << shear.SetValue( C );
          (*table)(row,2) << shear.SetValue( D );
 
-         (*table)(row,3) << LrfdCw8th(_T("5.8.3.5-"),_T("5.7.3.5-")) << artifact.GetEquation();
+         (*table)(row,3) << WBFL::LRFD::LrfdCw8th(_T("5.8.3.5-"),_T("5.7.3.5-")) << artifact.GetEquation();
 
          bool bPassed = artifact.Passed();
          if ( bPassed )

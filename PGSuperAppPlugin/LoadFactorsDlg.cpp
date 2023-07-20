@@ -26,7 +26,7 @@
 #include "stdafx.h"
 #include "PGSuperAppPlugin.h"
 #include "LoadFactorsDlg.h"
-#include <Lrfd\VersionMgr.h>
+#include <LRFD\VersionMgr.h>
 
 #include <IFace\Project.h>
 #include <EAF\EAFDocument.h>
@@ -187,7 +187,7 @@ BOOL CLoadFactorsDlg::OnInitDialog()
 
    // TODO:  Add extra initialization here
    int swServiceIA, swFatigueI;
-   if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       // Fatigue I introduced 4th edition 2009
       // Hide Service IA, Show Fatigue I

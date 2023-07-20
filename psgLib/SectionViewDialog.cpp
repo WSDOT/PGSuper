@@ -287,9 +287,9 @@ void CSectionViewDialog::DrawShape(CDC* pDC, WBFL::Graphing::PointMapper& Mapper
 
 void CSectionViewDialog::DrawShape(CDC* pDC, WBFL::Graphing::PointMapper& mapper,ICompositeShape* pCompositeShape,CBrush& solidBrush,CBrush& voidBrush)
 {
-   CollectionIndexType nShapes;
+   IndexType nShapes;
    pCompositeShape->get_Count(&nShapes);
-   for ( CollectionIndexType idx = 0; idx < nShapes; idx++ )
+   for ( IndexType idx = 0; idx < nShapes; idx++ )
    {
       CComPtr<ICompositeShapeItem> item;
       pCompositeShape->get_Item(idx,&item);
@@ -326,7 +326,7 @@ void CSectionViewDialog::DrawShape(CDC* pDC, WBFL::Graphing::PointMapper& Mapper
    CComPtr<IPoint2dCollection> polypoints;
    pShape->get_PolyPoints(&polypoints);
 
-   CollectionIndexType nPoints;
+   IndexType nPoints;
    polypoints->get_Count(&nPoints);
 
    IPoint2d** points = new IPoint2d*[nPoints];
@@ -339,7 +339,7 @@ void CSectionViewDialog::DrawShape(CDC* pDC, WBFL::Graphing::PointMapper& Mapper
    ATLASSERT(nFetched == nPoints);
 
    CPoint* dev_points = new CPoint[nPoints];
-   for ( CollectionIndexType i = 0; i < nPoints; i++ )
+   for ( IndexType i = 0; i < nPoints; i++ )
    {
       long dx,dy;
       WBFL::Graphing::Point point;

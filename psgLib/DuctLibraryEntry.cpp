@@ -40,35 +40,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-DuctLibraryEntry::DuctLibraryEntry() :
-m_OD(0),
-m_ID(0),
-m_ND(0),
-m_Z(0)
-{
-}
-
-DuctLibraryEntry::DuctLibraryEntry(const DuctLibraryEntry& rOther) :
-libLibraryEntry(rOther)
-{
-   MakeCopy(rOther);
-}
-
-DuctLibraryEntry::~DuctLibraryEntry()
-{
-}
-
-//======================== OPERATORS  =======================================
-DuctLibraryEntry& DuctLibraryEntry::operator= (const DuctLibraryEntry& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
 //======================== OPERATIONS =======================================
 bool DuctLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
 {
@@ -253,18 +224,4 @@ bool DuctLibraryEntry::Edit(bool allowEditing,int nPage)
    }
 
    return false;
-}
-
-void DuctLibraryEntry::MakeCopy(const DuctLibraryEntry& rOther)
-{
-   m_OD = rOther.m_OD;
-   m_ID = rOther.m_ID;
-   m_ND = rOther.m_ND;
-   m_Z  = rOther.m_Z;
-}
-
-void DuctLibraryEntry::MakeAssignment(const DuctLibraryEntry& rOther)
-{
-   libLibraryEntry::MakeAssignment( rOther );
-   MakeCopy( rOther );
 }

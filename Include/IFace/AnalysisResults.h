@@ -738,15 +738,15 @@ interface ICamber : IUnknown
 
    virtual Uint32 GetCreepMethod() const = 0;
 
-   // Returns the creep multiplier used to scale the instantious deflection
+   // Returns the creep multiplier used to scale the instantaneous deflection
    // constructionRate indicates if it is rapid or normal construction
    virtual Float64 GetCreepCoefficient(const CSegmentKey& segmentKey, CreepPeriod creepPeriod, Int16 constructionRate,const GDRCONFIG* pConfig=nullptr) const = 0;
 
    // Returns details of creep coefficient calculations.
    virtual CREEPCOEFFICIENTDETAILS GetCreepCoefficientDetails(const CSegmentKey& segmentKey, CreepPeriod creepPeriod, Int16 constructionRate, const GDRCONFIG* pConfig = nullptr) const = 0;
 
-   virtual std::shared_ptr<const lrfdCreepCoefficient> GetGirderCreepModel(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig = nullptr) const = 0;
-   virtual std::shared_ptr<const lrfdCreepCoefficient2005> GetDeckCreepModel(IndexType deckCastingRegionIdx) const = 0;
+   virtual std::shared_ptr<const WBFL::LRFD::CreepCoefficient> GetGirderCreepModel(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual std::shared_ptr<const WBFL::LRFD::CreepCoefficient2005> GetDeckCreepModel(IndexType deckCastingRegionIdx) const = 0;
     
    // Deflection caused by permanent prestressing alone (Harped and Straight Strands only).
    // Deflections are computed using the concrete properties at release.

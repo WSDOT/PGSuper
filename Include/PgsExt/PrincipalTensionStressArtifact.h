@@ -69,9 +69,9 @@ public:
    pgsPrincipalTensionStressArtifact& operator=(pgsPrincipalTensionStressArtifact& other) = default;
 
    void AddPrincipalTensionStressArtifact(const pgsPrincipalTensionSectionArtifact& artifact);
-   CollectionIndexType GetPrincipalTensionStressArtifactCount() const;
-   const pgsPrincipalTensionSectionArtifact* GetPrincipalTensionStressArtifact(CollectionIndexType idx) const;
-   pgsPrincipalTensionSectionArtifact* GetPrincipalTensionStressArtifact(CollectionIndexType idx);
+   IndexType GetPrincipalTensionStressArtifactCount() const;
+   const pgsPrincipalTensionSectionArtifact* GetPrincipalTensionStressArtifact(IndexType idx) const;
+   pgsPrincipalTensionSectionArtifact* GetPrincipalTensionStressArtifact(IndexType idx);
    const pgsPrincipalTensionSectionArtifact* GetPrincipalTensionStressArtifactAtPoi(PoiIDType poiID) const;
    const std::vector<pgsPrincipalTensionSectionArtifact>* GetPrincipalTensionStressArtifacts() const;
 

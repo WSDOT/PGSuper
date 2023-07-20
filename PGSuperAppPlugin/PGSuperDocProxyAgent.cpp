@@ -409,7 +409,7 @@ void CPGSuperDocProxyAgent::CreateLibraryEditorView()
    pViewReg->CreateView(m_LibraryEditorViewKey);
 }
 
-void CPGSuperDocProxyAgent::CreateReportView(CollectionIndexType rptIdx,BOOL bPromptForSpec)
+void CPGSuperDocProxyAgent::CreateReportView(IndexType rptIdx,BOOL bPromptForSpec)
 {
    CEAFReportViewCreationData data;
    data.m_RptIdx = rptIdx;
@@ -427,7 +427,7 @@ void CPGSuperDocProxyAgent::BuildReportMenu(CEAFMenu* pMenu,bool bQuickReport)
    m_pMyDocument->BuildReportMenu(pMenu,bQuickReport);
 }
 
-void CPGSuperDocProxyAgent::CreateGraphView(CollectionIndexType graphIdx, IEAFViewController** ppViewController)
+void CPGSuperDocProxyAgent::CreateGraphView(IndexType graphIdx, IEAFViewController** ppViewController)
 {
    CEAFGraphViewCreationData data;
    GET_IFACE(IGraphManager,pGraphMgr);
@@ -461,8 +461,8 @@ void CPGSuperDocProxyAgent::CreateGraphView(LPCTSTR lpszGraph, IEAFViewControlle
    IndexType nGraphs = pGraphMgr->GetGraphBuilderCount();
    for (IndexType graphIdx = 0; graphIdx < nGraphs; graphIdx++)
    {
-      auto& pGraphBuilder = pGraphMgr->GetGraphBuilder(graphIdx);
-      if (CString(lpszGraph).Compare(pGraphBuilder->GetName().c_str()) == 0)
+      auto& graphBuilder = pGraphMgr->GetGraphBuilder(graphIdx);
+      if (CString(lpszGraph).Compare(graphBuilder.GetName().c_str()) == 0)
       {
          CreateGraphView(graphIdx, ppViewController);
          return;
@@ -589,7 +589,7 @@ STDMETHODIMP CPGSuperDocProxyAgent::Init2()
 
 STDMETHODIMP CPGSuperDocProxyAgent::Reset()
 {
-   CEAFTxnManager::GetInstance()->Clear();
+   CEAFTxnManager::GetInstance().Clear();
    return S_OK;
 }
 
@@ -1227,12 +1227,12 @@ void CPGSuperDocProxyAgent::EditLiveLoads()
    return m_pMyDocument->OnLiveLoads();
 }
 
-void CPGSuperDocProxyAgent::EditLiveLoadDistributionFactors(pgsTypes::DistributionFactorMethod method,LldfRangeOfApplicabilityAction roaAction)
+void CPGSuperDocProxyAgent::EditLiveLoadDistributionFactors(pgsTypes::DistributionFactorMethod method,WBFL::LRFD::RangeOfApplicabilityAction roaAction)
 {
    return m_pMyDocument->OnLoadsLldf(method,roaAction);
 }
 
-bool CPGSuperDocProxyAgent::EditPointLoad(CollectionIndexType loadIdx)
+bool CPGSuperDocProxyAgent::EditPointLoad(IndexType loadIdx)
 {
    return m_pMyDocument->EditPointLoad(loadIdx);
 }
@@ -1242,7 +1242,7 @@ bool CPGSuperDocProxyAgent::EditPointLoadByID(LoadIDType loadID)
    return m_pMyDocument->EditPointLoadByID(loadID);
 }
 
-bool CPGSuperDocProxyAgent::EditDistributedLoad(CollectionIndexType loadIdx)
+bool CPGSuperDocProxyAgent::EditDistributedLoad(IndexType loadIdx)
 {
    return m_pMyDocument->EditDistributedLoad(loadIdx);
 }
@@ -1252,7 +1252,7 @@ bool CPGSuperDocProxyAgent::EditDistributedLoadByID(LoadIDType loadID)
    return m_pMyDocument->EditDistributedLoadByID(loadID);
 }
 
-bool CPGSuperDocProxyAgent::EditMomentLoad(CollectionIndexType loadIdx)
+bool CPGSuperDocProxyAgent::EditMomentLoad(IndexType loadIdx)
 {
    return m_pMyDocument->EditMomentLoad(loadIdx);
 }
@@ -1307,7 +1307,7 @@ void CPGSuperDocProxyAgent::AddPointLoad(const CPointLoadData& loadData)
    m_pMyDocument->AddPointLoad(loadData);
 }
 
-void CPGSuperDocProxyAgent::DeletePointLoad(CollectionIndexType loadIdx)
+void CPGSuperDocProxyAgent::DeletePointLoad(IndexType loadIdx)
 {
    m_pMyDocument->DeletePointLoad(loadIdx);
 }
@@ -1317,7 +1317,7 @@ void CPGSuperDocProxyAgent::AddDistributedLoad(const CDistributedLoadData& loadD
    m_pMyDocument->AddDistributedLoad(loadData);
 }
 
-void CPGSuperDocProxyAgent::DeleteDistributedLoad(CollectionIndexType loadIdx)
+void CPGSuperDocProxyAgent::DeleteDistributedLoad(IndexType loadIdx)
 {
    m_pMyDocument->DeleteDistributedLoad(loadIdx);
 }
@@ -1327,7 +1327,7 @@ void CPGSuperDocProxyAgent::AddMomentLoad(const CMomentLoadData& loadData)
    m_pMyDocument->AddMomentLoad(loadData);
 }
 
-void CPGSuperDocProxyAgent::DeleteMomentLoad(CollectionIndexType loadIdx)
+void CPGSuperDocProxyAgent::DeleteMomentLoad(IndexType loadIdx)
 {
    m_pMyDocument->DeleteMomentLoad(loadIdx);
 }

@@ -31,7 +31,7 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 txnEditLLDF::txnEditLLDF(const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc,
-                         LldfRangeOfApplicabilityAction oldROA, LldfRangeOfApplicabilityAction newROA)
+                         WBFL::LRFD::RangeOfApplicabilityAction oldROA, WBFL::LRFD::RangeOfApplicabilityAction newROA)
 {
    m_pBridgeDesc[0] = new CBridgeDescription2(oldBridgeDesc);
    m_pBridgeDesc[1] = new CBridgeDescription2(newBridgeDesc);
@@ -90,5 +90,5 @@ void txnEditLLDF::DoExecute(int i)
    pBridgeDesc->SetBridgeDescription( *m_pBridgeDesc[i] );
 
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
-   pLiveLoads->SetLldfRangeOfApplicabilityAction(m_ROA[i]);
+   pLiveLoads->SetRangeOfApplicabilityAction(m_ROA[i]);
 }

@@ -78,11 +78,11 @@ rptRcTable* CShearCheckTable::Build(IBroker* pBroker,const pgsGirderArtifact* pG
 
    if (ls == pgsTypes::StrengthI)
    {
-      table->TableLabel() << _T("Ultimate Shears for Strength I Limit State ") << LrfdCw8th(_T("[5.7]"),_T("[5.8]"));
+      table->TableLabel() << _T("Ultimate Shears for Strength I Limit State ") << WBFL::LRFD::LrfdCw8th(_T("[5.7]"),_T("[5.8]"));
    }
    else
    {
-      table->TableLabel() << _T("Ultimate Shears for Strength II Limit State ") << LrfdCw8th(_T("[5.7]"),_T("[5.8]"));
+      table->TableLabel() << _T("Ultimate Shears for Strength II Limit State ") << WBFL::LRFD::LrfdCw8th(_T("[5.7]"),_T("[5.8]"));
    }
   
    (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
@@ -113,8 +113,8 @@ rptRcTable* CShearCheckTable::Build(IBroker* pBroker,const pgsGirderArtifact* pG
 
       const pgsStirrupCheckArtifact* pStirrupArtifact = pSegmentArtifact->GetStirrupCheckArtifact();
       ATLASSERT(pStirrupArtifact);
-      CollectionIndexType nArtifacts = pStirrupArtifact->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
-      for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
+      IndexType nArtifacts = pStirrupArtifact->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
+      for ( IndexType idx = 0; idx < nArtifacts; idx++ )
       {
          const pgsStirrupCheckAtPoisArtifact* psArtifact = pStirrupArtifact->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
          if ( psArtifact == nullptr )
@@ -209,8 +209,8 @@ void CShearCheckTable::BuildNotes(rptChapter* pChapter,
          ATLASSERT(pStirrupArtifact);
 
          // Cycle through artifacts to see if av/s decreases past CSS - generate a FAIL if so
-         CollectionIndexType nArtifacts = pStirrupArtifact->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
-         for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
+         IndexType nArtifacts = pStirrupArtifact->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
+         for ( IndexType idx = 0; idx < nArtifacts; idx++ )
          {
             const pgsStirrupCheckAtPoisArtifact* psArtifact = pStirrupArtifact->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
             if ( psArtifact == nullptr )
@@ -252,27 +252,3 @@ void CShearCheckTable::BuildNotes(rptChapter* pChapter,
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CShearCheckTable::AssertValid() const
-{
-   return true;
-}
-
-void CShearCheckTable::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for CShearCheckTable") << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CShearCheckTable::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("CShearCheckTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CShearCheckTable");
-
-   TESTME_EPILOG("CShearCheckTable");
-}
-#endif // _UNITTEST

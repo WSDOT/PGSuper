@@ -323,9 +323,9 @@ void CTOGAGirderSelectStrandsDlg::OnPaint()
    CComQIPtr<ICompositeShape> compshape(shape);
    if ( compshape )
    {
-      CollectionIndexType nShapes;
+      IndexType nShapes;
       compshape->get_Count(&nShapes);
-      for ( CollectionIndexType idx = 0; idx < nShapes; idx++ )
+      for ( IndexType idx = 0; idx < nShapes; idx++ )
       {
          CComPtr<ICompositeShapeItem> item;
          compshape->get_Item(idx,&item);
@@ -368,7 +368,7 @@ void CTOGAGirderSelectStrandsDlg::DrawShape(CDC* pDC,IShape* shape, WBFL::Graphi
    CComPtr<IPoint2dCollection> objPoints;
    shape->get_PolyPoints(&objPoints);
 
-   CollectionIndexType nPoints;
+   IndexType nPoints;
    objPoints->get_Count(&nPoints);
 
    CPoint* points = new CPoint[nPoints];

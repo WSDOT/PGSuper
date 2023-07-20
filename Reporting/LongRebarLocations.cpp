@@ -27,7 +27,7 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Project.h>
 
-#include <Lrfd\RebarPool.h>
+#include <LRFD\RebarPool.h>
 
 #include <WBFLGenericBridgeTools.h>
 
@@ -96,7 +96,7 @@ void CLongRebarLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSeg
 
    const std::vector<CLongitudinalRebarData::RebarRow>& rebar_rows = pRebarData->RebarRows;
 
-   CollectionIndexType count = rebar_rows.size();
+   IndexType count = rebar_rows.size();
    if ( count == 0 )
    {
       *pPara<<_T("No Longitudinal Rebar Defined")<<rptNewLine;
@@ -128,7 +128,7 @@ void CLongRebarLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSeg
       Float64 startLoc, endLoc;
       bool onGirder = rowData.GetRebarStartEnd(segment_length, &startLoc, &endLoc);
 
-      const auto* pRebar = lrfdRebarPool::GetInstance()->GetRebar(pRebarData->BarType, pRebarData->BarGrade, rowData.BarSize);
+      const auto* pRebar = WBFL::LRFD::RebarPool::GetInstance()->GetRebar(pRebarData->BarType, pRebarData->BarGrade, rowData.BarSize);
       if (pRebar)
       {
          (*p_table)(row,0) << row;
@@ -185,27 +185,3 @@ void CLongRebarLocations::MakeAssignment(const CLongRebarLocations& rOther)
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CLongRebarLocations::AssertValid() const
-{
-   return true;
-}
-
-void CLongRebarLocations::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for CLongRebarLocations") << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CLongRebarLocations::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("CLongRebarLocations");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CLongRebarLocations");
-
-   TESTME_EPILOG("CLongRebarLocations");
-}
-#endif // _UNITTEST

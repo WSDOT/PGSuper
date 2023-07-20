@@ -137,7 +137,7 @@ void CFinishedElevationGraphBuilder::UpdateYAxis()
    {
       const WBFL::Units::LengthData& lengthUnit = pDisplayUnits->GetComponentDimUnit();
       m_pYFormat = new WBFL::Units::LengthTool(lengthUnit);
-      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      m_Graph.SetYAxisValueFormat(m_pYFormat);
 
       m_Graph.SetYAxisTitle(std::_tstring(_T("Elevation Differential (") + m_pYFormat->UnitTag() + _T(")")).c_str());
    }
@@ -145,7 +145,7 @@ void CFinishedElevationGraphBuilder::UpdateYAxis()
    {
       const WBFL::Units::LengthData& lengthUnit = pDisplayUnits->GetSpanLengthUnit();
       m_pYFormat = new WBFL::Units::LengthTool(lengthUnit);
-      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      m_Graph.SetYAxisValueFormat(m_pYFormat);
 
       m_Graph.SetYAxisTitle(std::_tstring(_T("Elevation (") + m_pYFormat->UnitTag() + _T(")")).c_str());
    }

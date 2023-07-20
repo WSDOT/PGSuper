@@ -104,12 +104,12 @@ void pgsPrincipalTensionStressArtifact::AddPrincipalTensionStressArtifact(const 
    std::sort(std::begin(m_Artifacts), std::end(m_Artifacts), [](const auto& a, const auto& b) {return a.GetPointOfInterest() < b.GetPointOfInterest(); });
 }
 
-CollectionIndexType pgsPrincipalTensionStressArtifact::GetPrincipalTensionStressArtifactCount() const
+IndexType pgsPrincipalTensionStressArtifact::GetPrincipalTensionStressArtifactCount() const
 {
    return m_Artifacts.size();
 }
 
-const pgsPrincipalTensionSectionArtifact* pgsPrincipalTensionStressArtifact::GetPrincipalTensionStressArtifact(CollectionIndexType idx) const
+const pgsPrincipalTensionSectionArtifact* pgsPrincipalTensionStressArtifact::GetPrincipalTensionStressArtifact(IndexType idx) const
 {
    if (m_Artifacts.size() <= idx)
    {
@@ -121,7 +121,7 @@ const pgsPrincipalTensionSectionArtifact* pgsPrincipalTensionStressArtifact::Get
    }
 }
 
-pgsPrincipalTensionSectionArtifact* pgsPrincipalTensionStressArtifact::GetPrincipalTensionStressArtifact(CollectionIndexType idx)
+pgsPrincipalTensionSectionArtifact* pgsPrincipalTensionStressArtifact::GetPrincipalTensionStressArtifact(IndexType idx)
 {
    if (m_Artifacts.size() <= idx)
    {

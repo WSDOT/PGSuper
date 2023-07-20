@@ -100,26 +100,3 @@ void CBrgPointIdMgr::SetId( SpanIndexType spanIdx, Location loc, Int32 id)
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
 
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CBrgPointIdMgr::AssertValid() const
-{
-   return true;
-}
-
-void CBrgPointIdMgr::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << "Dump for CBrgPointIdMgr" << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CBrgPointIdMgr::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("CBrgPointIdMgr");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CBrgPointIdMgr");
-
-   TESTME_EPILOG("BrgPointIdMgr");
-}
-#endif // _UNITTEST

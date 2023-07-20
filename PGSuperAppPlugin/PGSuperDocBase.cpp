@@ -415,18 +415,18 @@ void CPGSDocBase::OnLibMgrChanged(psgLibraryManager* pNewLibMgr)
 }
 
 // libISupportLibraryManager implementation
-CollectionIndexType CPGSDocBase::GetNumberOfLibraryManagers() const
+IndexType CPGSDocBase::GetNumberOfLibraryManagers() const
 {
    return 1;
 }
 
-libLibraryManager* CPGSDocBase::GetLibraryManager(CollectionIndexType num)
+WBFL::Library::LibraryManager* CPGSDocBase::GetLibraryManager(IndexType num)
 {
    PRECONDITION( num == 0 );
    return &m_LibMgr;
 }
 
-libLibraryManager* CPGSDocBase::GetTargetLibraryManager()
+WBFL::Library::LibraryManager* CPGSDocBase::GetTargetLibraryManager()
 {
    return &m_LibMgr;
 }
@@ -956,7 +956,7 @@ void CPGSDocBase::AddPointLoad(const CPointLoadData& loadData)
    }
 }
 
-bool CPGSDocBase::EditPointLoad(CollectionIndexType loadIdx)
+bool CPGSDocBase::EditPointLoad(IndexType loadIdx)
 {
    GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
    const CPointLoadData* pLoadData = pUserDefinedLoads->GetPointLoad(loadIdx);
@@ -993,7 +993,7 @@ bool CPGSDocBase::EditPointLoadByID(LoadIDType loadID)
    return false;
 }
 
-void CPGSDocBase::DeletePointLoad(CollectionIndexType loadIdx)
+void CPGSDocBase::DeletePointLoad(IndexType loadIdx)
 {
    GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
    const CPointLoadData* pLoadData = pUserDefinedLoads->GetPointLoad(loadIdx);
@@ -1023,7 +1023,7 @@ void CPGSDocBase::AddDistributedLoad(const CDistributedLoadData& loadData)
    }
 }
 
-bool CPGSDocBase::EditDistributedLoad(CollectionIndexType loadIdx)
+bool CPGSDocBase::EditDistributedLoad(IndexType loadIdx)
 {
    GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
    const CDistributedLoadData* pLoadData = pUserDefinedLoads->GetDistributedLoad(loadIdx);
@@ -1058,7 +1058,7 @@ bool CPGSDocBase::EditDistributedLoadByID(LoadIDType loadID)
    return false;
 }
 
-void CPGSDocBase::DeleteDistributedLoad(CollectionIndexType loadIdx)
+void CPGSDocBase::DeleteDistributedLoad(IndexType loadIdx)
 {
    GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
    const CDistributedLoadData* pLoadData = pUserDefinedLoads->GetDistributedLoad(loadIdx);
@@ -1088,7 +1088,7 @@ void CPGSDocBase::AddMomentLoad(const CMomentLoadData& loadData)
    }
 }
 
-bool CPGSDocBase::EditMomentLoad(CollectionIndexType loadIdx)
+bool CPGSDocBase::EditMomentLoad(IndexType loadIdx)
 {
    GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
    const CMomentLoadData* pLoadData = pUserDefinedLoads->GetMomentLoad(loadIdx);
@@ -1123,7 +1123,7 @@ bool CPGSDocBase::EditMomentLoadByID(LoadIDType loadID)
    return false;
 }
 
-void CPGSDocBase::DeleteMomentLoad(CollectionIndexType loadIdx)
+void CPGSDocBase::DeleteMomentLoad(IndexType loadIdx)
 {
    GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
    const CMomentLoadData* pLoadData = pUserDefinedLoads->GetMomentLoad(loadIdx);
@@ -1410,12 +1410,12 @@ void CPGSDocBase::ModifyTemplate(LPCTSTR strTemplate)
    //IndexType nLibraries = pLibMgr->GetLibraryCount();
    //for (IndexType i = 0; i < nLibraries; i++)
    //{
-   //   libILibrary* pLibrary = pLibMgr->GetLibrary(i);
-   //   libKeyListType keyList;
+   //   WBFL::Library::ILibrary* pLibrary = pLibMgr->GetLibrary(i);
+   //   WBFL::Library::KeyListType keyList;
    //   pLibrary->KeyList(keyList);
    //   for (const auto& key : keyList)
    //   {
-   //      const libLibraryEntry* pEntry = pLibrary->GetEntry(key.c_str());
+   //      const WBFL::Library::LibraryEntry* pEntry = pLibrary->GetEntry(key.c_str());
    //      if (pEntry->IsEditingEnabled() && pEntry->GetRefCount() == 0)
    //      {
    //         // this is a local entry and it isn't referenced... remove it
@@ -3293,13 +3293,13 @@ bool CPGSDocBase::DoLoadMasterLibrary(const CString& strMasterLibraryFile)
    pICatReg->QueryInterface(IID_ICatInformation,(void**)&pICatInfo);
 
    GirderLibrary& gdrLib = m_LibMgr.GetGirderLibrary();
-   libKeyListType keyList;
+   WBFL::Library::KeyListType keyList;
    gdrLib.KeyList(keyList);
-   CollectionIndexType nEntries = gdrLib.GetCount();
-   for ( CollectionIndexType i = 0; i < nEntries; i++ )
+   IndexType nEntries = gdrLib.GetCount();
+   for ( IndexType i = 0; i < nEntries; i++ )
    {
       std::_tstring strName = keyList[i];
-      const libLibraryEntry* pEntry = gdrLib.GetEntry(strName.c_str());
+      const WBFL::Library::LibraryEntry* pEntry = gdrLib.GetEntry(strName.c_str());
       const GirderLibraryEntry* pGdrEntry = dynamic_cast<const GirderLibraryEntry*>(pEntry);
       CComPtr<IBeamFactory> beamFactory;
       pGdrEntry->GetBeamFactory(&beamFactory);
@@ -3763,12 +3763,12 @@ void CPGSDocBase::OnLoadsLldf()
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    pgsTypes::DistributionFactorMethod method = pBridgeDesc->GetDistributionFactorMethod();
-   LldfRangeOfApplicabilityAction roaAction = pLiveLoads->GetLldfRangeOfApplicabilityAction();
+   WBFL::LRFD::RangeOfApplicabilityAction roaAction = pLiveLoads->GetRangeOfApplicabilityAction();
                   
    OnLoadsLldf(method,roaAction);
 }
 
-void CPGSDocBase::OnLoadsLldf(pgsTypes::DistributionFactorMethod method,LldfRangeOfApplicabilityAction roaAction) 
+void CPGSDocBase::OnLoadsLldf(pgsTypes::DistributionFactorMethod method,WBFL::LRFD::RangeOfApplicabilityAction roaAction) 
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -3778,7 +3778,7 @@ void CPGSDocBase::OnLoadsLldf(pgsTypes::DistributionFactorMethod method,LldfRang
    CLiveLoadDistFactorsDlg dlg;
    dlg.m_BridgeDesc = *pOldBridgeDesc;
    dlg.m_BridgeDesc.SetDistributionFactorMethod(method);
-   dlg.m_LldfRangeOfApplicabilityAction = roaAction;
+   dlg.m_RangeOfApplicabilityAction = roaAction;
    dlg.m_pBroker = m_pBroker;
 
    if ( dlg.DoModal() == IDOK )
@@ -3786,7 +3786,7 @@ void CPGSDocBase::OnLoadsLldf(pgsTypes::DistributionFactorMethod method,LldfRang
       GET_IFACE(ILiveLoads,pLiveLoads);
 
       std::unique_ptr<txnEditLLDF> pTxn(std::make_unique<txnEditLLDF>(*pOldBridgeDesc,dlg.m_BridgeDesc,
-                                          pLiveLoads->GetLldfRangeOfApplicabilityAction(),dlg.m_LldfRangeOfApplicabilityAction));
+                                          pLiveLoads->GetRangeOfApplicabilityAction(),dlg.m_RangeOfApplicabilityAction));
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(std::move(pTxn));
    }
@@ -4006,7 +4006,7 @@ BOOL CPGSDocBase::GetToolTipMessageString(UINT nID, CString& rMessage) const
    return FALSE;
 }
 
-void CPGSDocBase::CreateReportView(CollectionIndexType rptIdx,BOOL bPrompt)
+void CPGSDocBase::CreateReportView(IndexType rptIdx,BOOL bPrompt)
 {
    if ( !bPrompt && m_Selection.Type == CSelection::None)
    {
@@ -4025,7 +4025,7 @@ void CPGSDocBase::CreateReportView(CollectionIndexType rptIdx,BOOL bPrompt)
    // the base class does nothing so we won't bother calling it
 }
 
-void CPGSDocBase::CreateGraphView(CollectionIndexType graphIdx)
+void CPGSDocBase::CreateGraphView(IndexType graphIdx)
 {
    m_pPGSuperDocProxyAgent->CreateGraphView(graphIdx);
 
@@ -5041,7 +5041,7 @@ void CPGSDocBase::OnImportMenu(CCmdUI* pCmdUI)
       pMenu->DeleteMenu(i,MF_BYPOSITION);
    }
 
-   CollectionIndexType nImporters = m_pPluginMgr->GetImporterCount();
+   IndexType nImporters = m_pPluginMgr->GetImporterCount();
    if ( nImporters == 0 )
    {
       pCmdUI->SetText(_T("Custom importers not installed"));
@@ -5050,7 +5050,7 @@ void CPGSDocBase::OnImportMenu(CCmdUI* pCmdUI)
    }
    else
    {
-      CollectionIndexType idx;
+      IndexType idx;
       // clean up the menu
       for ( idx = 0; idx < nImporters; idx++ )
       {
@@ -5098,7 +5098,7 @@ void CPGSDocBase::OnExportMenu(CCmdUI* pCmdUI)
       pMenu->DeleteMenu(i,MF_BYPOSITION);
    }
 
-   CollectionIndexType nExporters = m_pPluginMgr->GetExporterCount();
+   IndexType nExporters = m_pPluginMgr->GetExporterCount();
    if ( nExporters == 0 )
    {
       pCmdUI->SetText(_T("Custom exporters not installed"));
@@ -5107,7 +5107,7 @@ void CPGSDocBase::OnExportMenu(CCmdUI* pCmdUI)
    }
    else
    {
-      CollectionIndexType idx;
+      IndexType idx;
       for ( idx = 0; idx < nExporters; idx++ )
       {
          pMenu->DeleteMenu(pCmdUI->m_nID+(UINT)idx,MF_BYCOMMAND);

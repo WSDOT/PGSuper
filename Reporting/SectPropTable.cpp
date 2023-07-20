@@ -322,27 +322,3 @@ void CSectionPropertiesTable::MakeAssignment(const CSectionPropertiesTable& rOth
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CSectionPropertiesTable::AssertValid() const
-{
-   return true;
-}
-
-void CSectionPropertiesTable::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for CSectionPropertiesTable") << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CSectionPropertiesTable::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("CSectionPropertiesTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CSectionPropertiesTable");
-
-   TESTME_EPILOG("StrandEccTable");
-}
-#endif // _UNITTEST

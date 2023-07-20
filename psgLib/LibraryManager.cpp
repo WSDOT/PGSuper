@@ -101,7 +101,7 @@ bool GirderLibrary::NewEntry(LPCTSTR key)
 
 //======================== LIFECYCLE  =======================================
 psgLibraryManager::psgLibraryManager() :
-libLibraryManager()
+WBFL::Library::LibraryManager()
 {
    std::unique_ptr<ConcreteLibrary>        conc_lib(std::make_unique<ConcreteLibrary>(_T("CONCRETE_LIBRARY"), _T("Concrete Types")));
    std::unique_ptr<ConnectionLibrary>      conn_lib(std::make_unique<ConnectionLibrary>(_T("CONNECTION_LIBRARY"), _T("Connections")));
@@ -155,7 +155,7 @@ psgLibraryManager::~psgLibraryManager()
 
 ConcreteLibrary&        psgLibraryManager::GetConcreteLibrary()
 {
-   libILibrary* pl = GetLibrary(m_ConcLibIdx);
+   WBFL::Library::ILibrary* pl = GetLibrary(m_ConcLibIdx);
    ConcreteLibrary* pc = dynamic_cast<ConcreteLibrary*>(pl);
    ASSERT(pc);
    return *pc;
@@ -163,7 +163,7 @@ ConcreteLibrary&        psgLibraryManager::GetConcreteLibrary()
 
 const ConcreteLibrary&        psgLibraryManager::GetConcreteLibrary() const
 {
-   const libILibrary* pl = GetLibrary(m_ConcLibIdx);
+   const WBFL::Library::ILibrary* pl = GetLibrary(m_ConcLibIdx);
    const ConcreteLibrary* pc = dynamic_cast<const ConcreteLibrary*>(pl);
    ASSERT(pc);
    return *pc;
@@ -171,7 +171,7 @@ const ConcreteLibrary&        psgLibraryManager::GetConcreteLibrary() const
 
 ConnectionLibrary&      psgLibraryManager::GetConnectionLibrary()
 {
-   libILibrary* pl = GetLibrary(m_ConnLibIdx);
+   WBFL::Library::ILibrary* pl = GetLibrary(m_ConnLibIdx);
    ConnectionLibrary* pc = dynamic_cast<ConnectionLibrary*>(pl);
    ASSERT(pc);
    return *pc;
@@ -179,7 +179,7 @@ ConnectionLibrary&      psgLibraryManager::GetConnectionLibrary()
 
 const ConnectionLibrary&      psgLibraryManager::GetConnectionLibrary() const
 {
-   const libILibrary* pl = GetLibrary(m_ConnLibIdx);
+   const WBFL::Library::ILibrary* pl = GetLibrary(m_ConnLibIdx);
    const ConnectionLibrary* pc = dynamic_cast<const ConnectionLibrary*>(pl);
    ASSERT(pc);
    return *pc;
@@ -187,7 +187,7 @@ const ConnectionLibrary&      psgLibraryManager::GetConnectionLibrary() const
 
 GirderLibrary&          psgLibraryManager::GetGirderLibrary()
 {
-   libILibrary* pl = GetLibrary(m_GirdLibIdx);
+   WBFL::Library::ILibrary* pl = GetLibrary(m_GirdLibIdx);
    GirderLibrary* pc = dynamic_cast<GirderLibrary*>(pl);
    ASSERT(pc);
    return *pc;
@@ -195,7 +195,7 @@ GirderLibrary&          psgLibraryManager::GetGirderLibrary()
 
 const GirderLibrary&          psgLibraryManager::GetGirderLibrary() const
 {
-   const libILibrary* pl = GetLibrary(m_GirdLibIdx);
+   const WBFL::Library::ILibrary* pl = GetLibrary(m_GirdLibIdx);
    const GirderLibrary* pc = dynamic_cast<const GirderLibrary*>(pl);
    ASSERT(pc);
    return *pc;
@@ -203,7 +203,7 @@ const GirderLibrary&          psgLibraryManager::GetGirderLibrary() const
 
 DiaphragmLayoutLibrary& psgLibraryManager::GetDiaphragmLayoutLibrary()
 {
-   libILibrary* pl = GetLibrary(m_DiapLibIdx);
+   WBFL::Library::ILibrary* pl = GetLibrary(m_DiapLibIdx);
    DiaphragmLayoutLibrary* pc = dynamic_cast<DiaphragmLayoutLibrary*>(pl);
    ASSERT(pc);
    return *pc;
@@ -211,7 +211,7 @@ DiaphragmLayoutLibrary& psgLibraryManager::GetDiaphragmLayoutLibrary()
 
 const DiaphragmLayoutLibrary& psgLibraryManager::GetDiaphragmLayoutLibrary() const
 {
-   const libILibrary* pl = GetLibrary(m_DiapLibIdx);
+   const WBFL::Library::ILibrary* pl = GetLibrary(m_DiapLibIdx);
    const DiaphragmLayoutLibrary* pc = dynamic_cast<const DiaphragmLayoutLibrary*>(pl);
    ASSERT(pc);
    return *pc;
@@ -219,7 +219,7 @@ const DiaphragmLayoutLibrary& psgLibraryManager::GetDiaphragmLayoutLibrary() con
 
 TrafficBarrierLibrary& psgLibraryManager::GetTrafficBarrierLibrary()
 {
-   libILibrary* pl = GetLibrary(m_BarrLibIdx);
+   WBFL::Library::ILibrary* pl = GetLibrary(m_BarrLibIdx);
    TrafficBarrierLibrary* pc = dynamic_cast<TrafficBarrierLibrary*>(pl);
    ASSERT(pc);
    return *pc;
@@ -227,7 +227,7 @@ TrafficBarrierLibrary& psgLibraryManager::GetTrafficBarrierLibrary()
 
 const TrafficBarrierLibrary& psgLibraryManager::GetTrafficBarrierLibrary() const
 {
-   const libILibrary* pl = GetLibrary(m_BarrLibIdx);
+   const WBFL::Library::ILibrary* pl = GetLibrary(m_BarrLibIdx);
    const TrafficBarrierLibrary* pc = dynamic_cast<const TrafficBarrierLibrary*>(pl);
    ASSERT(pc);
    return *pc;
@@ -235,7 +235,7 @@ const TrafficBarrierLibrary& psgLibraryManager::GetTrafficBarrierLibrary() const
 
 SpecLibrary* psgLibraryManager::GetSpecLibrary()
 {
-   libILibrary* pl = GetLibrary(m_SpecLibIdx);
+   WBFL::Library::ILibrary* pl = GetLibrary(m_SpecLibIdx);
    SpecLibrary* pc = dynamic_cast<SpecLibrary*>(pl);
    ASSERT(pc);
    return pc;
@@ -243,7 +243,7 @@ SpecLibrary* psgLibraryManager::GetSpecLibrary()
 
 const SpecLibrary* psgLibraryManager::GetSpecLibrary() const
 {
-   const libILibrary* pl = GetLibrary(m_SpecLibIdx);
+   const WBFL::Library::ILibrary* pl = GetLibrary(m_SpecLibIdx);
    const SpecLibrary* pc = dynamic_cast<const SpecLibrary*>(pl);
    ASSERT(pc);
    return pc;
@@ -251,7 +251,7 @@ const SpecLibrary* psgLibraryManager::GetSpecLibrary() const
 
 RatingLibrary* psgLibraryManager::GetRatingLibrary()
 {
-   libILibrary* pl = GetLibrary(m_RatingLibIdx);
+   WBFL::Library::ILibrary* pl = GetLibrary(m_RatingLibIdx);
    RatingLibrary* pc = dynamic_cast<RatingLibrary*>(pl);
    ASSERT(pc);
    return pc;
@@ -259,7 +259,7 @@ RatingLibrary* psgLibraryManager::GetRatingLibrary()
 
 const RatingLibrary* psgLibraryManager::GetRatingLibrary() const
 {
-   const libILibrary* pl = GetLibrary(m_RatingLibIdx);
+   const WBFL::Library::ILibrary* pl = GetLibrary(m_RatingLibIdx);
    const RatingLibrary* pc = dynamic_cast<const RatingLibrary*>(pl);
    ASSERT(pc);
    return pc;
@@ -267,7 +267,7 @@ const RatingLibrary* psgLibraryManager::GetRatingLibrary() const
 
 LiveLoadLibrary* psgLibraryManager::GetLiveLoadLibrary()
 {
-   libILibrary* pl = GetLibrary(m_LiveLibIdx);
+   WBFL::Library::ILibrary* pl = GetLibrary(m_LiveLibIdx);
    LiveLoadLibrary* pc = dynamic_cast<LiveLoadLibrary*>(pl);
    ASSERT(pc);
    return pc;
@@ -275,7 +275,7 @@ LiveLoadLibrary* psgLibraryManager::GetLiveLoadLibrary()
 
 const LiveLoadLibrary* psgLibraryManager::GetLiveLoadLibrary() const
 {
-   const libILibrary* pl = GetLibrary(m_LiveLibIdx);
+   const WBFL::Library::ILibrary* pl = GetLibrary(m_LiveLibIdx);
    const LiveLoadLibrary* pc = dynamic_cast<const LiveLoadLibrary*>(pl);
    ASSERT(pc);
    return pc; 
@@ -283,7 +283,7 @@ const LiveLoadLibrary* psgLibraryManager::GetLiveLoadLibrary() const
 
 DuctLibrary* psgLibraryManager::GetDuctLibrary()
 {
-   libILibrary* pl = GetLibrary(m_DuctLibIdx);
+   WBFL::Library::ILibrary* pl = GetLibrary(m_DuctLibIdx);
    DuctLibrary* pc = dynamic_cast<DuctLibrary*>(pl);
    ASSERT(pc);
    return pc;
@@ -291,7 +291,7 @@ DuctLibrary* psgLibraryManager::GetDuctLibrary()
 
 const DuctLibrary* psgLibraryManager::GetDuctLibrary() const
 {
-   const libILibrary* pl = GetLibrary(m_DuctLibIdx);
+   const WBFL::Library::ILibrary* pl = GetLibrary(m_DuctLibIdx);
    const DuctLibrary* pc = dynamic_cast<const DuctLibrary*>(pl);
    ASSERT(pc);
    return pc; 
@@ -299,7 +299,7 @@ const DuctLibrary* psgLibraryManager::GetDuctLibrary() const
 
 HaulTruckLibrary* psgLibraryManager::GetHaulTruckLibrary()
 {
-   libILibrary* pl = GetLibrary(m_HaulTruckLibIdx);
+   WBFL::Library::ILibrary* pl = GetLibrary(m_HaulTruckLibIdx);
    HaulTruckLibrary* pc = dynamic_cast<HaulTruckLibrary*>(pl);
    ASSERT(pc);
    return pc;
@@ -307,7 +307,7 @@ HaulTruckLibrary* psgLibraryManager::GetHaulTruckLibrary()
 
 const HaulTruckLibrary* psgLibraryManager::GetHaulTruckLibrary() const
 {
-   const libILibrary* pl = GetLibrary(m_HaulTruckLibIdx);
+   const WBFL::Library::ILibrary* pl = GetLibrary(m_HaulTruckLibIdx);
    const HaulTruckLibrary* pc = dynamic_cast<const HaulTruckLibrary*>(pl);
    ASSERT(pc);
    return pc; 
@@ -315,7 +315,7 @@ const HaulTruckLibrary* psgLibraryManager::GetHaulTruckLibrary() const
 
 bool psgLibraryManager::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 {
-   bool bResult = libLibraryManager::LoadMe(pLoad);
+   bool bResult = WBFL::Library::LibraryManager::LoadMe(pLoad);
    return bResult;
 }
 
@@ -364,63 +364,3 @@ void psgLibraryManager::GetMasterLibraryInfo(std::_tstring& strServer, std::_tst
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool psgLibraryManager::AssertValid() const
-{
-   return libLibraryManager::AssertValid();
-}
-
-void psgLibraryManager::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for psgLibraryManager")<< WBFL::Debug::endl;
-
-   os << _T(" m_ConcLibIdx = ")<< m_ConcLibIdx << WBFL::Debug::endl;
-   os << _T(" m_ConnLibIdx = ")<< m_ConnLibIdx << WBFL::Debug::endl;
-   os << _T(" m_GirdLibIdx = ")<< m_GirdLibIdx << WBFL::Debug::endl;
-   os << _T(" m_DiapLibIdx = ")<< m_DiapLibIdx << WBFL::Debug::endl;
-   os << _T(" m_BarrLibIdx = ")<< m_BarrLibIdx << WBFL::Debug::endl;
-   os << _T(" m_SpecLibIdx = ")<< m_SpecLibIdx << WBFL::Debug::endl;
-   os << _T(" m_RatingLibIdx = ")<< m_RatingLibIdx << WBFL::Debug::endl;
-
-   libLibraryManager::Dump( os );
-}
-#endif // _DEBUG
-
-#if defined UNIT_TEST
-bool psgLibraryManager::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("psgLibraryManager");
-
-   // Create a library manager to be used through the testing procedure
-   psgLibraryManager libmgr;
-
-   // Test the library specific accessor methods
-   ConcreteLibrary& conc_lib = libmgr.GetConcreteLibrary();
-   const type_info& conc_lib_ti = typeid( conc_lib );
-   TRY_TESTME( std::_tstring( conc_lib_ti.name() ) == std::_tstring(_T("libLibrary<ConcreteLibraryEntry>")) );
-
-   ConnectionLibrary& conn_lib = libmgr.GetConnectionLibrary();
-   const type_info& conn_lib_ti = typeid( conn_lib );
-   TRY_TESTME( std::_tstring( conc_lib_ti.name() ) == std::_tstring(_T("libLibrary<ConnectionLibraryEntry>")) );
-
-   GirderLibrary& gdr_lib = libmgr.GetGirderLibrary();
-   const type_info& gdr_lib_ti = typeid( gdr_lib );
-   TRY_TESTME( std::_tstring( gdr_lib_ti.name() ) == std::_tstring(_T("libLibrary<GirderLibraryEntry>")) );
-
-   DiaphragmLayoutLibrary& diaph_lib = libmgr.GetDiaphragmLayoutLibrary();
-   const type_info& diaph_lib_ti = typeid( diaph_lib );
-   TRY_TESTME( std::_tstring( diaph_lib_ti.name() ) == std::_tstring(_T("libLibrary<DiaphragmLayoutEntry>")) );
-
-   SpecLibrary* spec_lib = libmgr.GetSpecLibrary();
-   const type_info& spec_lib_ti = typeid( *spec_lib );
-   TRY_TESTME( std::_tstring( spec_lib_ti.name() ) == std::_tstring(_T("libLibrary<SpecLibraryEntry>")) );
-
-   RatingLibrary* rating_lib = libmgr.GetRatingLibrary();
-   const type_info& rating_lib_ti = typeid( *rating_lib );
-   TRY_TESTME( std::_tstring( rating_lib_ti.name() ) == std::_tstring(_T("libLibrary<RatingLibraryEntry>")) );
-
-   TESTME_EPILOG("LibraryManager");
-}
-#endif // UNIT_TEST

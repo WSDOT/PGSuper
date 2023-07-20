@@ -185,27 +185,3 @@ void CUserShearTable::MakeAssignment(const CUserShearTable& rOther)
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CUserShearTable::AssertValid() const
-{
-   return true;
-}
-
-void CUserShearTable::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for CUserShearTable") << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CUserShearTable::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("CUserShearTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CUserShearTable");
-
-   TESTME_EPILOG("CUserShearTable");
-}
-#endif // _UNITTEST

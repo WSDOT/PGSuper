@@ -130,7 +130,7 @@ public:
 
    //------------------------------------------------------------------------
    // Returns the number of points of interest.
-   CollectionIndexType GetPointOfInterestCount() const;
+   IndexType GetPointOfInterestCount() const;
 
 private:
    // make these private so we can't have copy or assignment

@@ -506,7 +506,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
    GET_IFACE2(pBroker,IGirder,pGirder);
 #endif
 
-   CollectionIndexType ng = endIdx-startIdx+1;
+   IndexType ng = endIdx-startIdx+1;
    rptRcTable* p_table = rptStyleManager::CreateTableNoHeading(ng+1,_T("TxDOT Girder Schedule"));
 
    *p << p_table;
@@ -766,7 +766,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
 
       (*p_table)(row++,col) << moment.SetValue( Max(pmmcd->Mu,pmmcd->MrMin) );
 
-      if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+      if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims )
       {
          if (bFirst)
             (*p_table)(row,0) << _T("Live Load Distribution Factor for Moment");

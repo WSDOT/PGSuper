@@ -51,27 +51,6 @@ HaulTruckLibraryEntry::HaulTruckLibraryEntry()
    m_MaxWeight = WBFL::Units::ConvertToSysUnits(200,WBFL::Units::Measure::Kip);
 }
 
-HaulTruckLibraryEntry::HaulTruckLibraryEntry(const HaulTruckLibraryEntry& rOther) :
-libLibraryEntry(rOther)
-{
-   MakeCopy(rOther);
-}
-
-HaulTruckLibraryEntry::~HaulTruckLibraryEntry()
-{
-}
-
-//======================== OPERATORS  =======================================
-HaulTruckLibraryEntry& HaulTruckLibraryEntry::operator= (const HaulTruckLibraryEntry& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
 //======================== OPERATIONS =======================================
 bool HaulTruckLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
 {
@@ -311,21 +290,4 @@ bool HaulTruckLibraryEntry::Edit(bool allowEditing,int nPage)
    }
 
    return false;
-}
-
-void HaulTruckLibraryEntry::MakeCopy(const HaulTruckLibraryEntry& rOther)
-{
-   m_Hbg       = rOther.m_Hbg;
-   m_Hrc       = rOther.m_Hrc;
-   m_Wcc       = rOther.m_Wcc;
-   m_Ktheta    = rOther.m_Ktheta;
-   m_Lmax      = rOther.m_Lmax;
-   m_MaxOH     = rOther.m_MaxOH;
-   m_MaxWeight = rOther.m_MaxWeight;
-}
-
-void HaulTruckLibraryEntry::MakeAssignment(const HaulTruckLibraryEntry& rOther)
-{
-   libLibraryEntry::MakeAssignment( rOther );
-   MakeCopy( rOther );
 }

@@ -57,7 +57,7 @@ public:
 
 // Implementation
 public:
-   virtual bool CreateReport(CollectionIndexType rptIdx,BOOL bPromptForSpec) override;
+   virtual bool CreateReport(IndexType rptIdx,BOOL bPromptForSpec) override;
 
 protected:
 	virtual ~CPGSuperReportView();

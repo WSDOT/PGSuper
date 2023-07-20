@@ -315,27 +315,3 @@ void CStrandStressCheckTable::MakeAssignment(const CStrandStressCheckTable& rOth
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CStrandStressCheckTable::AssertValid() const
-{
-   return true;
-}
-
-void CStrandStressCheckTable::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for CStrandStressCheckTable") << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CStrandStressCheckTable::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("CStrandStressCheckTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CStrandStressCheckTable");
-
-   TESTME_EPILOG("CStrandStressCheckTable");
-}
-#endif // _UNITTEST

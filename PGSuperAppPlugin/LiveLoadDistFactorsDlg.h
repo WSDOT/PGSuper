@@ -76,7 +76,7 @@ public:
 	//}}AFX_DATA
 
    CBridgeDescription2 m_BridgeDesc;
-   LldfRangeOfApplicabilityAction m_LldfRangeOfApplicabilityAction;
+   WBFL::LRFD::RangeOfApplicabilityAction m_RangeOfApplicabilityAction;
    IBroker* m_pBroker;
 
 // Overrides

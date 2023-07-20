@@ -210,27 +210,3 @@ void CUserRotationTable::MakeAssignment(const CUserRotationTable& rOther)
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CUserRotationTable::AssertValid() const
-{
-   return true;
-}
-
-void CUserRotationTable::Dump(WBFL::Debug::LogContext& os) const
-{
-   os << _T("Dump for CUserRotationTable") << WBFL::Debug::endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CUserRotationTable::TestMe(WBFL::Debug::Log& rlog)
-{
-   TESTME_PROLOGUE("CUserRotationTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CUserRotationTable");
-
-   TESTME_EPILOG("CUserRotationTable");
-}
-#endif // _UNITTEST
