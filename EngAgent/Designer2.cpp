@@ -810,7 +810,19 @@ const pgsGirderArtifact* pgsDesigner2::Check(const CGirderKey& girderKey) const
       std::vector<StressCheckTask> vStressCheckTasks = pStressCheck->GetStressCheckTasks(segmentKey);
       for (const auto& task : vStressCheckTasks)
       {
-         bool bClosureJoints = (segIdx < nSegments - 1 && pIntervals->GetCompositeClosureJointInterval(segmentKey) <= task.intervalIdx ? true : false);
+         bool bClosureJoints(false);
+         if (nSegments > 1)
+         {
+            // Closure joint is always associated with segment to its left. Last segment must use previous seg to get correct CJ info
+            if (segIdx == nSegments - 1) // last segment
+            {
+               bClosureJoints = pIntervals->GetCompositeClosureJointInterval( CSegmentKey(girderKey,segIdx-1) ) <= task.intervalIdx ? true : false;
+            }
+            else
+            {
+               bClosureJoints = pIntervals->GetCompositeClosureJointInterval(segmentKey) <= task.intervalIdx ? true : false;
+            }
+         }
 
          // POIs to spec check
          PoiList vPoi;

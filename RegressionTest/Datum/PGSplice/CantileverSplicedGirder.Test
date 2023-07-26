@@ -42,6 +42,7 @@ Compression stress check failed for Service I Limit State in Interval 18 Stress 
 Tension stress check failed for Service III Limit State in Interval 30 Load Rating for Segment 2
 Compression stress check failed for Service I Limit State in Interval 21 Cast Deck for Segment 3
 Compression stress check failed for Service I Limit State in Interval 23 Composite deck, Apply User Defined Loads, Install Railing System for Segment 3
+Tension stress check failed for Service III Limit State in Interval 30 Load Rating for Segment 3
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Confinement zone check failed for Segment 1.
 Confinement zone check failed for Segment 2.
