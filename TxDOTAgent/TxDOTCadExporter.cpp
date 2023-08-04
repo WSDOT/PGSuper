@@ -642,6 +642,28 @@ HRESULT CTxDOTCadExporter::ExportHaunchDeflectionData(IBroker* pBroker, const st
          val = ConvertFromSysUnits(delta_slab5, WBFL::Units::Measure::Feet);
          pExporter->WriteFloatToCell(1, _T("B_Val"), rowNum, val);
 
+         // ShearKey deflections
+         // deflections from ShearKey loading
+         Float64 delta_ShearKey2(0),delta_ShearKey3(0),delta_ShearKey5(0),delta_ShearKey7(0),delta_ShearKey8(0);
+         if (castDeckIntervalIdx != INVALID_INDEX)
+         {
+            GET_IFACE2(pBroker,IProductForces,pProductForces);
+            delta_ShearKey2 = pProductForces->GetDeflection(castDeckIntervalIdx,pgsTypes::pftShearKey,poi_2,bat,rtCumulative,false);
+            delta_ShearKey3 = pProductForces->GetDeflection(castDeckIntervalIdx,pgsTypes::pftShearKey,poi_3,bat,rtCumulative,false);
+            delta_ShearKey5 = pProductForces->GetDeflection(castDeckIntervalIdx,pgsTypes::pftShearKey,poi_5,bat,rtCumulative,false);
+            delta_ShearKey7 = pProductForces->GetDeflection(castDeckIntervalIdx,pgsTypes::pftShearKey,poi_7,bat,rtCumulative,false);
+            delta_ShearKey8 = pProductForces->GetDeflection(castDeckIntervalIdx,pgsTypes::pftShearKey,poi_8,bat,rtCumulative,false);
+         }
+
+         // DL Defl Shear Key @ Pt A{ 1 / 4 pt }
+         val = ConvertFromSysUnits((delta_ShearKey2 + delta_ShearKey3) / 2.0,WBFL::Units::Measure::Feet);
+         pExporter->WriteFloatToCell(1,_T("SKA_Val"),rowNum,val);
+
+         // DL Defl Shear Key @ Pt B {1/2 pt} 
+         val = ConvertFromSysUnits(delta_ShearKey5,WBFL::Units::Measure::Feet);
+         pExporter->WriteFloatToCell(1,_T("SKB_Val"),rowNum,val);
+
+
          pProgress->Increment();
 
          rowNum++;
