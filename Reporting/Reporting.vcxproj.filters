@@ -574,7 +574,9 @@
     <ClCompile Include="ReinforcementFatigueCheck.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LRFDCreepCoefficientChapterBuilder.cpp" />
+    <ClCompile Include="LRFDCreepCoefficientChapterBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Reporting\ADimChapterBuilder.h">
