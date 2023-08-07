@@ -41,7 +41,7 @@ class PSGLIBCLASS pgsLibraryEntryDifferenceStringItem : public pgsLibraryEntryDi
 {
 public:
    pgsLibraryEntryDifferenceStringItem(LPCTSTR lpszItem,LPCTSTR lpszOldValue,LPCTSTR lpszNewValue);
-   virtual void GetConflict(CString* pItem,CString* pOldValue,CString* pNewValue) const;
+   virtual void GetConflict(CString* pItem,CString* pOldValue,CString* pNewValue) const override;
 
 protected:
    CString m_OldValue;
@@ -52,7 +52,7 @@ class PSGLIBCLASS pgsLibraryEntryDifferenceIndexItem : public pgsLibraryEntryDif
 {
 public:
    pgsLibraryEntryDifferenceIndexItem(LPCTSTR lpszItem,IndexType oldValue,IndexType newValue);
-   virtual void GetConflict(CString* pItem,CString* pOldValue,CString* pNewValue) const;
+   virtual void GetConflict(CString* pItem,CString* pOldValue,CString* pNewValue) const override;
 
 protected:
    IndexType m_OldValue;
@@ -63,7 +63,7 @@ class PSGLIBCLASS pgsLibraryEntryDifferenceDoubleItem : public pgsLibraryEntryDi
 {
 public:
    pgsLibraryEntryDifferenceDoubleItem(LPCTSTR lpszItem,Float64 oldValue,Float64 newValue);
-   virtual void GetConflict(CString* pItem,CString* pOldValue,CString* pNewValue) const;
+   virtual void GetConflict(CString* pItem,CString* pOldValue,CString* pNewValue) const override;
 
 protected:
    Float64 m_OldValue;
@@ -74,7 +74,7 @@ class PSGLIBCLASS pgsLibraryEntryDifferenceBooleanItem : public pgsLibraryEntryD
 {
 public:
    pgsLibraryEntryDifferenceBooleanItem(LPCTSTR lpszItem,bool oldValue,bool newValue,LPCTSTR strTrue=_T("true"),LPCTSTR strFalse=_T("false"));
-   virtual void GetConflict(CString* pItem,CString* pOldValue,CString* pNewValue) const;
+   virtual void GetConflict(CString* pItem,CString* pOldValue,CString* pNewValue) const override;
 
 protected:
    bool m_OldValue;
@@ -95,7 +95,7 @@ public:
    {
    }
 
-   virtual void GetConflict(CString* pItem,CString* pOldValue,CString* pNewValue) const
+   virtual void GetConflict(CString* pItem,CString* pOldValue,CString* pNewValue) const override
    {
       *pItem = m_Item;
       pOldValue->Format(_T("%s"),::FormatDimension(m_OldValue,m_Unit));
@@ -118,25 +118,25 @@ public:
    {
    }
 
-   virtual void GetConflict(CString* pItem,CString* pOldValue,CString* pNewValue) const
+   virtual void GetConflict(CString* pItem,CString* pOldValue,CString* pNewValue) const override
    {
-      *pItem = m_Item;
-      if ( m_OldValue < 0 )
+      *pItem = this->m_Item;
+      if ( this->m_OldValue < 0 )
       {
          pOldValue->Format(_T("%s"),m_strKeyword);
       }
       else
       {
-         pOldValue->Format(_T("%s"),::FormatDimension(m_OldValue,m_Unit));
+         pOldValue->Format(_T("%s"),::FormatDimension(this->m_OldValue,this->m_Unit));
       }
 
-      if ( m_NewValue < 0 )
+      if ( this->m_NewValue < 0 )
       {
          pNewValue->Format(_T("%s"),m_strKeyword);
       }
       else
       {
-         pNewValue->Format(_T("%s"),::FormatDimension(m_NewValue,m_Unit));
+         pNewValue->Format(_T("%s"),::FormatDimension(this->m_NewValue,this->m_Unit));
       }
    }
 
@@ -146,7 +146,7 @@ protected:
 
 #define DECLARE_UNIT_VALUE_DIFFERENCE_ITEM(u,t) \
    PSGLIBTPL pgsLibraryEntryDifferenceUnitValueItemT<u>; \
-   typedef pgsLibraryEntryDifferenceUnitValueItemT<u> t;
+   using t = pgsLibraryEntryDifferenceUnitValueItemT<u>;
 
 DECLARE_UNIT_VALUE_DIFFERENCE_ITEM(WBFL::Units::LengthData,pgsLibraryEntryDifferenceLengthItem);
 DECLARE_UNIT_VALUE_DIFFERENCE_ITEM(WBFL::Units::ForceData,pgsLibraryEntryDifferenceForceItem);
@@ -157,7 +157,7 @@ DECLARE_UNIT_VALUE_DIFFERENCE_ITEM(WBFL::Units::DensityData,pgsLibraryEntryDiffe
 
 #define DECLARE_UNIT_VALUE_KEYWORD_DIFFERENCE_ITEM(u,t) \
    PSGLIBTPL pgsLibraryEntryDifferenceUnitValueKeywordItemT<u>; \
-   typedef pgsLibraryEntryDifferenceUnitValueKeywordItemT<u> t;
+   using t = pgsLibraryEntryDifferenceUnitValueKeywordItemT<u>;
 
 DECLARE_UNIT_VALUE_KEYWORD_DIFFERENCE_ITEM(WBFL::Units::LengthData,pgsLibraryEntryDifferenceLengthKeywordItem);
 

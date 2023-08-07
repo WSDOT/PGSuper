@@ -29,7 +29,7 @@ class PGSEXTCLASS pgsDevelopmentLength
 {
 public:
    pgsDevelopmentLength() = default;
-   pgsDevelopmentLength::pgsDevelopmentLength(Float64 fpe, Float64 fps) :
+   pgsDevelopmentLength(Float64 fpe, Float64 fps) :
       m_fpe(fpe), m_fps(fps)
    {
    }

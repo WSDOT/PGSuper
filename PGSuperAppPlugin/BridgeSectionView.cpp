@@ -146,7 +146,7 @@ bool CBridgeSectionView::IsDeckSelected()
       return false;
    }
 
-   CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
+   CComPtr<iDisplayObject> pDO = displayObjects.front();
 
    IDType ID = pDO->GetID();
    if ( ID == DECK_ID )
@@ -190,7 +190,7 @@ bool CBridgeSectionView::GetSelectedGirder(CGirderKey* pGirderKey)
       return false;
    }
 
-   CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
+   CComPtr<iDisplayObject> pDO = displayObjects.front();
 
    // girder IDs are positive values
    IDType ID = pDO->GetID();

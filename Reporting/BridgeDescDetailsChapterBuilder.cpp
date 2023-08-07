@@ -755,7 +755,7 @@ void write_traffic_barrier_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
    CComPtr<IEnumPoint2d> enum_points;
    points->get__Enum(&enum_points);
    CComPtr<IPoint2d> point;
-   long i = 1;
+   IndexType i = 1;
    while ( enum_points->Next(1,&point,nullptr) != S_FALSE )
    {
       Float64 x,y;

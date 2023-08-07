@@ -95,7 +95,7 @@ DESCRIPTION
 // {E1CF3EAA-3E85-450a-9A67-D68FF321DC16}
 DEFINE_GUID(IID_IEditByUI, 
 0xe1cf3eaa, 0x3e85, 0x450a, 0x9a, 0x67, 0xd6, 0x8f, 0xf3, 0x21, 0xdc, 0x16);
-interface IEditByUI : IUnknown
+interface __declspec(uuid("{E1CF3EAA-3E85-450a-9A67-D68FF321DC16}")) IEditByUI : IUnknown
 {
    virtual void EditBridgeDescription(int nPage) = 0;
    virtual void EditAlignmentDescription(int nPage) = 0;

@@ -260,7 +260,7 @@ void CTxDOTOptionalDesignDoc::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszP
    default:
       {
          CString log_msg;
-         log_msg.Format(_T("An unknown error occured while opening the file (hr = %d)"),hr);
+         log_msg.Format(_T("An unknown error occurred while opening the file (hr = %d)"),hr);
          pLog->LogMessage( log_msg );
          AfxFormatString1( msg1, IDS_E_READ, lpszPathName );
       }
@@ -270,7 +270,7 @@ void CTxDOTOptionalDesignDoc::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszP
    // things here are very dire - show message box AND throw
    CString msg;
    CString msg2;
-   std::_tstring strLogFileName = pLog->GetName();
+   std::_tstring strLogFileName = (LPCTSTR)pLog->GetName();
    AfxFormatString1( msg2, IDS_E_PROBPERSISTS, CString(strLogFileName.c_str()) );
    AfxFormatString2(msg, IDS_E_FORMAT, msg1, msg2 );
    AfxMessageBox( msg );
@@ -1360,7 +1360,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    }
 
    // Set spec entry 
-   std::_tstring curr_entry = m_ProjectData.GetSelectedProjectCriteriaLibrary();
+   std::_tstring curr_entry = (LPCTSTR)m_ProjectData.GetSelectedProjectCriteriaLibrary();
    pSpec->SetSpecification(curr_entry);
 
    // Now set girders' data

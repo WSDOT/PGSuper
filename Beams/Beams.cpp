@@ -282,23 +282,23 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
 void Register(bool bRegister)
 {
    //////////////////////////////////////////////////////////////
-   // Component categorites for beam factories
+   // Component categories for beam factories
    //////////////////////////////////////////////////////////////
    if ( bRegister )
    {
-      WBFL::System::ComCatMgr::CreateCategory(L"PGSuper Beam Factory CLSID Translator", CATID_BeamFactoryCLSIDTranslator);
+      WBFL::System::ComCatMgr::CreateCategory(CComBSTR("PGSuper Beam Factory CLSID Translator"), CATID_BeamFactoryCLSIDTranslator);
 
-      WBFL::System::ComCatMgr::CreateCategory(L"PGSuper I-Beam Factories",             CATID_WFBeamFactory);
-      WBFL::System::ComCatMgr::CreateCategory(L"PGSuper U-Beam Factories",             CATID_UBeamFactory);
-      WBFL::System::ComCatMgr::CreateCategory(L"PGSuper Deck Bulb Tee Beam Factories", CATID_DeckBulbTeeBeamFactory);
-      WBFL::System::ComCatMgr::CreateCategory(L"PGSuper Double Tee Beam Factories",    CATID_DoubleTeeBeamFactory);
-      WBFL::System::ComCatMgr::CreateCategory(L"PGSuper Ribbed Beam Factories",        CATID_RibbedBeamFactory);
-      WBFL::System::ComCatMgr::CreateCategory(L"PGSuper Slab Beam Factories",          CATID_SlabBeamFactory);
-      WBFL::System::ComCatMgr::CreateCategory(L"PGSuper Box Beam Factories",           CATID_BoxBeamFactory);
-      WBFL::System::ComCatMgr::CreateCategory(L"PGSuper Decked Slab Beam Factories",   CATID_DeckedSlabBeamFactory);
+      WBFL::System::ComCatMgr::CreateCategory(CComBSTR("PGSuper I-Beam Factories"),             CATID_WFBeamFactory);
+      WBFL::System::ComCatMgr::CreateCategory(CComBSTR("PGSuper U-Beam Factories"),             CATID_UBeamFactory);
+      WBFL::System::ComCatMgr::CreateCategory(CComBSTR("PGSuper Deck Bulb Tee Beam Factories"), CATID_DeckBulbTeeBeamFactory);
+      WBFL::System::ComCatMgr::CreateCategory(CComBSTR("PGSuper Double Tee Beam Factories"),    CATID_DoubleTeeBeamFactory);
+      WBFL::System::ComCatMgr::CreateCategory(CComBSTR("PGSuper Ribbed Beam Factories"),        CATID_RibbedBeamFactory);
+      WBFL::System::ComCatMgr::CreateCategory(CComBSTR("PGSuper Slab Beam Factories"),          CATID_SlabBeamFactory);
+      WBFL::System::ComCatMgr::CreateCategory(CComBSTR("PGSuper Box Beam Factories"),           CATID_BoxBeamFactory);
+      WBFL::System::ComCatMgr::CreateCategory(CComBSTR("PGSuper Decked Slab Beam Factories"),   CATID_DeckedSlabBeamFactory);
 
-      WBFL::System::ComCatMgr::CreateCategory(L"PGSplice I-Beam Factories",            CATID_SplicedIBeamFactory);
-      WBFL::System::ComCatMgr::CreateCategory(L"PGSplice U-Beam Factories",            CATID_SplicedUBeamFactory);
+      WBFL::System::ComCatMgr::CreateCategory(CComBSTR("PGSplice I-Beam Factories"),            CATID_SplicedIBeamFactory);
+      WBFL::System::ComCatMgr::CreateCategory(CComBSTR("PGSplice U-Beam Factories"),            CATID_SplicedUBeamFactory);
    }
    else
    {

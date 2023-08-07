@@ -1282,7 +1282,7 @@ void CIniCatalogServer::FetchCatalog(IProgressMonitor* pProgress) const
       // create a progress window
       if (pProgress!=nullptr)
       {
-         CComBSTR str = CString(_T("Reading Library Publishers from: ")) + catalogURL;
+         CComBSTR str(CString(_T("Reading Library Publishers from: ")) + catalogURL);
          pProgress->put_Message(0,str);
       }
 

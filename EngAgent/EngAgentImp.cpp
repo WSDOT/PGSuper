@@ -3638,8 +3638,8 @@ ZoneIndexType CEngAgentImp::GetCriticalSectionZoneIndex(pgsTypes::LimitState lim
    const auto& vCSDetails(ValidateShearCritSection(limitState,poi.GetSegmentKey()));
    Float64 x = poi.GetDistFromStart();
  
-   auto& iter = std::cbegin(vCSDetails);
-   auto& end = std::cend(vCSDetails);
+   auto iter = std::cbegin(vCSDetails);
+   auto end = std::cend(vCSDetails);
    for ( ; iter != end; iter++)
    {
       const auto& csDetails(*iter);

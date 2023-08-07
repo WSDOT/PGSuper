@@ -101,7 +101,7 @@ int _tmain(int argc, _TCHAR* argv[])
          _tprintf(_T("  Executing command: \"%s\"\n"), cmd);
          result = _wsystem(cmd);
 
-         _tprintf(_T("    Result = %d\n"), result);
+         _tprintf(_T("    Result = %d\n"), (int)result);
       }
    }
    else if ( argc == 3 )
@@ -113,7 +113,7 @@ int _tmain(int argc, _TCHAR* argv[])
       }
       else if (argv[2][1]==_T('U')) // unzipping
       {
-         return UnZipPGZ(argv[1],_T(".\\"),true);
+         return UnZipPGZ(argv[1], (TCHAR*)_T(".\\"),true);
       }
    }
    else

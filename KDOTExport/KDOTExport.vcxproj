@@ -148,7 +148,6 @@
       <HeaderFileName />
     </Midl>
     <ClCompile>
-      <AdditionalOptions>/Zm500  %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(ARPDIR)\PGSuper\Include\;$(ARPDIR)\PGSuper\Include\$(Platform);$(ARPDIR)\PGSuper\Include\Plugins;$(ARPDIR)\WBFL\Include;$(ARPDIR)\WBFL\Include\$(Platform);$(ARPDIR)\BridgeLink\Include;%(AdditionalIncludeDirectories);$(ARPDIR)\BridgeLink\Include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>

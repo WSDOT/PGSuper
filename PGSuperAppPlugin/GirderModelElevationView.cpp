@@ -1647,8 +1647,8 @@ void CGirderModelElevationView::BuildSegmentCGDisplayObjects(CPGSDocBase* pDoc, 
             pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT, &vPoi);
             pPoi->GetPointsOfInterest(segmentKey, POI_SECTCHANGE, &vPoi);
             pPoi->SortPoiList(&vPoi); // sorts and removes duplicates
-            auto& iter = vPoi.cbegin();
-            auto& end = vPoi.cend();
+            auto iter = vPoi.cbegin();
+            auto end = vPoi.cend();
 
 
             const pgsPointOfInterest& poi = *iter;
@@ -3447,7 +3447,7 @@ void CGirderModelElevationView::OnGevCtxEditLoad()
    {
       DisplayObjectItem pid = *(selObjs.begin());
 
-      CComQIPtr<iPointDisplayObject, &IID_iPointDisplayObject> pdo(pid.m_T);
+      CComQIPtr<iPointDisplayObject, &IID_iPointDisplayObject> pdo(pid);
       if (pdo!=nullptr)
       {
          CComPtr<iDrawPointStrategy> strategy;
@@ -3477,7 +3477,7 @@ void CGirderModelElevationView::OnGevCtxDeleteLoad()
    {
       DisplayObjectItem pid = *(selObjs.begin());
 
-      CComQIPtr<iPointDisplayObject, &IID_iPointDisplayObject> pdo(pid.m_T);
+      CComQIPtr<iPointDisplayObject, &IID_iPointDisplayObject> pdo(pid);
       if (pdo!=nullptr)
       {
          CComPtr<iDrawPointStrategy> strategy;
@@ -3583,7 +3583,7 @@ BOOL CGirderModelElevationView::OnMouseWheel(UINT nFlags,short zDelta,CPoint pt)
    DisplayObjectContainer selObjs;
    dispMgr->GetSelectedObjects(&selObjs);
 
-   if ( selObjs.size() == 0 || selObjs.front().m_T->GetID() != SECTION_CUT_ID )
+   if ( selObjs.size() == 0 || selObjs.front()->GetID() != SECTION_CUT_ID )
    {
       return FALSE;
    }

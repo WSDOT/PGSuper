@@ -49,7 +49,7 @@ CSpanReportSpecificationBuilder::~CSpanReportSpecificationBuilder(void)
 {
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CSpanReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification>& pOldRptSpec) const
+std::shared_ptr<WBFL::Reporting::ReportSpecification> CSpanReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -122,7 +122,7 @@ CGirderLineReportSpecificationBuilder::~CGirderLineReportSpecificationBuilder(vo
 {
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CGirderLineReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification>& pOldRptSpec) const
+std::shared_ptr<WBFL::Reporting::ReportSpecification> CGirderLineReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -192,7 +192,7 @@ CGirderReportSpecificationBuilder::~CGirderReportSpecificationBuilder(void)
 {
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CGirderReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification>& pOldRptSpec) const
+std::shared_ptr<WBFL::Reporting::ReportSpecification> CGirderReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -304,7 +304,7 @@ CSegmentReportSpecificationBuilder::~CSegmentReportSpecificationBuilder(void)
 {
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CSegmentReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc, std::shared_ptr<WBFL::Reporting::ReportSpecification>& pOldRptSpec) const
+std::shared_ptr<WBFL::Reporting::ReportSpecification> CSegmentReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc, std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -392,7 +392,7 @@ CMultiGirderReportSpecificationBuilder::~CMultiGirderReportSpecificationBuilder(
 {
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiGirderReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification>& pOldRptSpec) const
+std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiGirderReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -553,7 +553,7 @@ CMultiViewSpanGirderReportSpecificationBuilder::~CMultiViewSpanGirderReportSpeci
 {
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiViewSpanGirderReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification>& pOldRptSpec) const
+std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiViewSpanGirderReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
 {
    // First check if we are getting a CGirderReportSpecification. If so, use our bro to take care of this
    std::shared_ptr<CGirderReportSpecification> pGirderRptSpec = std::dynamic_pointer_cast<CGirderReportSpecification,WBFL::Reporting::ReportSpecification>(pOldRptSpec);
@@ -689,7 +689,7 @@ CPointOfInterestReportSpecificationBuilder::~CPointOfInterestReportSpecification
 {
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CPointOfInterestReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification>& pOldRptSpec) const
+std::shared_ptr<WBFL::Reporting::ReportSpecification> CPointOfInterestReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 

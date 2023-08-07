@@ -65,7 +65,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 template<class IteratorType>
 ZoneIndexType GetZoneIndexAtLocation(Float64 location, Float64 girderLength, Float64 startSupportLoc, Float64 endSupportLoc,
-                             bool bSymmetrical, IteratorType& rItBegin, IteratorType& rItEnd, ZoneIndexType collSize)
+                             bool bSymmetrical, IteratorType rItBegin, IteratorType rItEnd, ZoneIndexType collSize)
 {
    if (collSize == 0)
    {

@@ -101,7 +101,7 @@ inline const CString& GetStrandDefinitionType(pgsTypes::StrandDefinitionType str
    }
 }
 
-inline LPTSTR GetDuctMaterialStr(pgsTypes::DuctType dtype)
+inline LPCTSTR GetDuctMaterialStr(pgsTypes::DuctType dtype)
 {
    switch (dtype)
    {
@@ -116,7 +116,7 @@ inline LPTSTR GetDuctMaterialStr(pgsTypes::DuctType dtype)
    return _T("Invalid");
 }
 
-inline LPTSTR GetInstallEventStr(pgsTypes::SegmentPTEventType etype)
+inline LPCTSTR GetInstallEventStr(pgsTypes::SegmentPTEventType etype)
 {
    switch (etype)
    {
@@ -131,7 +131,7 @@ inline LPTSTR GetInstallEventStr(pgsTypes::SegmentPTEventType etype)
    return _T("Invalid");
 }
 
-inline LPTSTR GetJackEndStr(pgsTypes::JackingEndType etype)
+inline LPCTSTR GetJackEndStr(pgsTypes::JackingEndType etype)
 {
    switch (etype)
    {
@@ -146,7 +146,7 @@ inline LPTSTR GetJackEndStr(pgsTypes::JackingEndType etype)
    return _T("Invalid");
 }
    
-inline LPTSTR GetFaceTypeStr(pgsTypes::FaceType ftype)
+inline LPCTSTR GetFaceTypeStr(pgsTypes::FaceType ftype)
 {
    switch (ftype)
    {
@@ -159,7 +159,7 @@ inline LPTSTR GetFaceTypeStr(pgsTypes::FaceType ftype)
    return _T("Invalid");
 }
 
-inline LPTSTR GetRebarLayoutTypeStr(pgsTypes::RebarLayoutType layoutType)
+inline LPCTSTR GetRebarLayoutTypeStr(pgsTypes::RebarLayoutType layoutType)
 {
    switch(layoutType)
    {

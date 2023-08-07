@@ -374,11 +374,11 @@ void CGirderDescDlg::SetDebondTabName()
    bool bCanDebond = pStrandGeometry->CanDebondStrands(m_strGirderName.c_str(),pgsTypes::Straight);
    if ( bCanDebond )
    {
-      ti.pszText = _T("Debonding");
+      ti.pszText = (TCHAR*)_T("Debonding");
    }
    else
    {
-      ti.pszText = _T("Strand Extensions");
+      ti.pszText = (TCHAR*)_T("Strand Extensions");
    }
    
    pTab->SetItem(index,&ti);

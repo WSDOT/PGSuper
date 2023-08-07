@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
 // Copyright © 1999-2023  Washington State Department of Transportation
 //                        Bridge and Structures Office
@@ -27,7 +27,6 @@
 #endif
 
 #define VC_EXTRALEAN
-#define COM_STDMETHOD_CAN_THROW
 
 #define _USE_MULTITHREADING    // When defined, multi-threading is used
 //#define _REDUCE_POI            // When defined, the number of POIs is reduced

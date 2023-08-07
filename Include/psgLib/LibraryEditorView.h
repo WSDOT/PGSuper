@@ -92,7 +92,7 @@ protected:
 	CImageList          m_StateImages;    // images for overlaying state information in entries
    CLibEditorListView* m_pListView;
 private:
-void CLibraryEditorView::InsertLibraryManager(Uint32 ilib_man, Uint32 ilib_man_sel, 
+	void InsertLibraryManager(Uint32 ilib_man, Uint32 ilib_man_sel, 
                                               int man_num, WBFL::Library::LibraryManager* pMan, CTreeCtrl& tree, HTREEITEM hParent, int* lastIcon);
 };
 

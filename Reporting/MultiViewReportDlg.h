@@ -28,7 +28,7 @@ class CMultiViewReportDlg : public CDialog
 	DECLARE_DYNAMIC(CMultiViewReportDlg)
 
 public:
-	CMultiViewReportDlg(IBroker* pBroker,const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification>& pRptSpec,
+	CMultiViewReportDlg(IBroker* pBroker,const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,
                        const CGirderKey& girderKey,
                        UINT nIDTemplate = IDD_MULTIVIEWREPORT,CWnd* pParent = nullptr);
 	virtual ~CMultiViewReportDlg();

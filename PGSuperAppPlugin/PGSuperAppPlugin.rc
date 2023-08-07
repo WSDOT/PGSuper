@@ -5309,7 +5309,7 @@ BEGIN
     IDS_GIRDER_SHEAR        "Trans. Reinforcement"
     IDS_LIVE_LOAD_FACTOR_TOOLTIP 
                             "Enter a live load factor. Leave blank or use the keyword Compute to have the live load factor computed based on the requirements of the Load Rating Criteria.\n\n%1"
-    IDS_E_ONLINERESOURCES   "Sorry, but an error occured while attempting to connect to the Internet"
+    IDS_E_ONLINERESOURCES   "Sorry, but an error occurred while attempting to connect to the Internet"
     IDS_LIVE_LOAD_FACTOR_DISABLED_TOOLTIP 
                             "Live load factors will be determined based on the Load Rating Criteria. The selected Load Rating Criteria does not permit user defined live load factors."
     IDS_CREATE_NEW_EVENT    "Create Event..."
@@ -5331,7 +5331,7 @@ BEGIN
     IDS_CANT_FIND_LIBRARY_FILE 
                             "There is a problem with the software configuration. The master library file could not be found. Please use the next window to update the Libraries and Templates configuration."
     IDS_CORRUPTED_LIBRARY_FILE 
-                            "Errors occured while loading configuration: %1.\nWould you like to use a different configuration?\nYes = Select a configuration\nNo = Proceed without a valid configuration"
+                            "Errors occurred while loading configuration: %1.\nWould you like to use a different configuration?\nYes = Select a configuration\nNo = Proceed without a valid configuration"
     IDS_E_EXCESSIVE_SKEW    "Pier %1 is skewed %2 or more.\nPlease adjust the orientation of Pier %1."
     IDS_E_EXCESSIVE_DELTA_SKEW 
                             "The difference in skew angles between Pier %u and Pier %u is more than %s.\nPlease adjust the orientation of the piers."
@@ -5341,7 +5341,7 @@ END
 STRINGTABLE
 BEGIN
     IDS_E_NOCHAPTERS        "Please select at least one chapter for the report."
-    IDS_E_UPDATE            "The following error occured while updating the views.\n\n%1."
+    IDS_E_UPDATE            "The following error occurred while updating the views.\n\n%1."
 END
 
 STRINGTABLE
@@ -5358,16 +5358,16 @@ BEGIN
     IDS_E_PROBPERSISTS      "Contact your technical support representitive if this problem persists.\n Please include your project file and the log file, %1."
     IDS_E_INVALIDFORMAT     "%1 is not a valid %2 project file."
     IDS_E_FILENOTFOUND      "File %1 was not found"
-    IDS_E_READ              "An error has occured while reading %1"
+    IDS_E_READ              "An error has occurred while reading %1"
     IDS_E_FORMAT            "%1\n\n %2"
 END
 
 STRINGTABLE
 BEGIN
-    IDS_E_WRITE             "An error has occured while writing to %1"
+    IDS_E_WRITE             "An error has occurred while writing to %1"
     IDS_E_UNSAFESAVE        "PGSuper could not make a backup copy of your last successful save. If an error occurs while saving  your bridge model, your PGSuper file may become corrupt and unrecoverable.\n\n Would  you like to proceed?"
-    IDS_E_SAVERECOVER1      "An error occured while restoring your last sucessful save.  It is highly likely that the file %1 is corrupt.  Try saving your project to another locaion.  If this fails, see %2  for manual recovery instructions."
-    IDS_E_SAVERECOVER2      "An error occured while restoring your last sucessful save. The file %1 no longer exists.  Try saving your project again, preferable  to another locaion.  If this fails, see %2 for manual recovery instructions."
+    IDS_E_SAVERECOVER1      "An error occurred while restoring your last sucessful save.  It is highly likely that the file %1 is corrupt.  Try saving your project to another locaion.  If this fails, see %2  for manual recovery instructions."
+    IDS_E_SAVERECOVER2      "An error occurred while restoring your last sucessful save. The file %1 no longer exists.  Try saving your project again, preferable  to another locaion.  If this fails, see %2 for manual recovery instructions."
 END
 
 STRINGTABLE

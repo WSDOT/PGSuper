@@ -461,7 +461,7 @@ void CBridgeDescGeneralPage::Init()
    m_WorkPointLocation = pParent->m_BridgeDesc.GetWorkPointLocation();
 
    int sign = ::Sign(m_RefGirderOffset);
-   LPTSTR strOffset = (sign == 0 ? _T("") : sign < 0 ? _T("L") : _T("R"));
+   auto strOffset = (sign == 0 ? _T("") : sign < 0 ? _T("L") : _T("R"));
    m_strCacheRefGirderOffset.Format(_T("%s %s"),FormatDimension(fabs(m_RefGirderOffset),pDisplayUnits->GetXSectionDimUnit(),false),strOffset);
 
    m_CacheDeckEdgePoints = pParent->m_BridgeDesc.GetDeckDescription()->DeckEdgePoints;

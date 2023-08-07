@@ -303,7 +303,7 @@ HRESULT CBridgeDescription::Load(Float64 version,IStructuredLoad* pStrLoad,IProg
             {
                m_GirderSpacingType = pgsTypes::sbsUniformAdjacent;
             }
-            else if (m_GirderSpacing == pgsTypes::sbsGeneral)
+            else if (m_GirderSpacingType == pgsTypes::sbsGeneral)
             {
                m_GirderSpacingType = pgsTypes::sbsGeneralAdjacent;
             }

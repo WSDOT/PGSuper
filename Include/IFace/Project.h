@@ -153,7 +153,7 @@ DESCRIPTION
 // {FD1DA96A-D57C-11d2-88F9-006097C68A9C}
 DEFINE_GUID(IID_IProjectPropertiesEventSink, 
 0xfd1da96a, 0xd57c, 0x11d2, 0x88, 0xf9, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
-interface IProjectPropertiesEventSink : IUnknown
+interface __declspec(uuid("{FD1DA96A-D57C-11d2-88F9-006097C68A9C}")) IProjectPropertiesEventSink : IUnknown
 {
    virtual HRESULT OnProjectPropertiesChanged() = 0;
 };
@@ -191,7 +191,7 @@ DESCRIPTION
 // {DBA24DC0-2F4D-11d2-8D11-94FA07C10000}
 DEFINE_GUID(IID_IEnvironmentEventSink,
 0xDBA24DC0, 0x2F4D, 0x11d2, 0x8D, 0x11, 0x94, 0xFA, 0x07, 0xC1, 0x00, 0x00);
-interface IEnvironmentEventSink : IUnknown
+interface __declspec(uuid("{DBA24DC0-2F4D-11d2-8D11-94FA07C10000}")) IEnvironmentEventSink : IUnknown
 {
    virtual HRESULT OnExposureConditionChanged() = 0;
    virtual HRESULT OnRelHumidityChanged() = 0;
@@ -581,7 +581,7 @@ DESCRIPTION
 // {B72842B1-5BB1-11d2-8ED7-006097DF3C68}
 DEFINE_GUID(IID_ISpecificationEventSink, 
 0xb72842b1, 0x5bb1, 0x11d2, 0x8e, 0xd7, 0x0, 0x60, 0x97, 0xdf, 0x3c, 0x68);
-interface ISpecificationEventSink : IUnknown
+interface __declspec(uuid("{B72842B1-5BB1-11d2-8ED7-006097DF3C68}")) ISpecificationEventSink : IUnknown
 {
    virtual HRESULT OnSpecificationChanged() = 0;
    virtual HRESULT OnAnalysisTypeChanged() = 0;
@@ -697,7 +697,7 @@ public:
 // {6132E890-719D-11d2-8EF1-006097DF3C68}
 DEFINE_GUID(IID_IBridgeDescriptionEventSink, 
 0x6132e890, 0x719d, 0x11d2, 0x8e, 0xf1, 0x0, 0x60, 0x97, 0xdf, 0x3c, 0x68);
-interface IBridgeDescriptionEventSink : IUnknown
+interface __declspec(uuid("{6132E890-719D-11d2-8EF1-006097DF3C68}")) IBridgeDescriptionEventSink : IUnknown
 {
    virtual HRESULT OnBridgeChanged(CBridgeChangedHint* pHint) = 0;
    virtual HRESULT OnGirderFamilyChanged() = 0;
@@ -748,7 +748,7 @@ DESCRIPTION
 // {2C1A3E71-727E-11d2-8EF2-006097DF3C68}
 DEFINE_GUID(IID_ILoadModifiersEventSink, 
 0x2c1a3e71, 0x727e, 0x11d2, 0x8e, 0xf2, 0x0, 0x60, 0x97, 0xdf, 0x3c, 0x68);
-interface ILoadModifiersEventSink : IUnknown
+interface __declspec(uuid("{2C1A3E71-727E-11d2-8EF2-006097DF3C68}")) ILoadModifiersEventSink : IUnknown
 {
    virtual HRESULT OnLoadModifiersChanged() = 0;
 };
@@ -766,7 +766,7 @@ enum LibConflictResult {RenameEntry, ReplaceEntry};
 // {BCE5B018-2149-11d3-AD79-00105A9AF985}
 DEFINE_GUID(IID_ILibraryConflictEventSink, 
 0xbce5b018, 0x2149, 0x11d3, 0xad, 0x79, 0x0, 0x10, 0x5a, 0x9a, 0xf9, 0x85);
-interface ILibraryConflictEventSink : IUnknown
+interface __declspec(uuid("{BCE5B018-2149-11d3-AD79-00105A9AF985}")) ILibraryConflictEventSink : IUnknown
 {
    virtual HRESULT OnLibraryConflictResolved() = 0;
 };
@@ -922,9 +922,10 @@ INTERFACE
 DESCRIPTION
    Interface to control events in the user interface
 *****************************************************************************/
+// {74A056FD-CCFD-496F-B312-D22E22E6B773}
 DEFINE_GUID(IID_IUIEvents, 
 0x74a056fd, 0xccfd, 0x496f, 0xb3, 0x12, 0xd2, 0x2e, 0x22, 0xe6, 0xb7, 0x73);
-interface IUIEvents : IUnknown
+interface __declspec(uuid("{74A056FD-CCFD-496F-B312-D22E22E6B773}")) IUIEvents : IUnknown
 {
    virtual void HoldEvents(bool bHold=true) = 0;
    virtual void FirePendingEvents() = 0;
@@ -1397,7 +1398,7 @@ DESCRIPTION
 // {E677C320-9E35-4ce2-9FA6-083E99F87742}
 DEFINE_GUID(IID_ILossParametersEventSink, 
 0xe677c320, 0x9e35, 0x4ce2, 0x9f, 0xa6, 0x8, 0x3e, 0x99, 0xf8, 0x77, 0x42);
-interface ILossParametersEventSink : IUnknown
+interface __declspec(uuid("{E677C320-9E35-4ce2-9FA6-083E99F87742}")) ILossParametersEventSink : IUnknown
 {
    virtual HRESULT OnLossParametersChanged() = 0;
 };

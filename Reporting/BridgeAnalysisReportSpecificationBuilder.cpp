@@ -43,7 +43,7 @@ CBridgeAnalysisReportSpecificationBuilder::~CBridgeAnalysisReportSpecificationBu
 {
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CBridgeAnalysisReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification>& pOldRptSpec) const
+std::shared_ptr<WBFL::Reporting::ReportSpecification> CBridgeAnalysisReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 

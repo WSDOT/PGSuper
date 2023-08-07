@@ -1419,7 +1419,7 @@ BOOL CTogaGirderModelElevationView::OnMouseWheel(UINT nFlags,short zDelta,CPoint
    DisplayObjectContainer selObjs;
    dispMgr->GetSelectedObjects(&selObjs);
 
-   if ( selObjs.size() == 0 || selObjs.front().m_T->GetID() != SECTION_CUT_ID )
+   if ( selObjs.size() == 0 || selObjs.front()->GetID() != SECTION_CUT_ID )
       return FALSE;
 
    if ( 0 < zDelta )

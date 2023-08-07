@@ -895,7 +895,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder_Prisma
 
           if ( 1 < count )
           {
-             (*pPara) << rptNewLine << _T("Web ") << long(flangeIdx+1) << rptNewLine;
+             (*pPara) << rptNewLine << _T("Web ") << FlangeIndexType(flangeIdx+1) << rptNewLine;
           }
 
           (*pPara) << Sub2(_T("w"),_T("2")) << _T(" = (12.0)(") << xdim2.SetValue(tSlab) << _T(") + greater of [ ");
@@ -1054,7 +1054,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirderRow(IEf
    {
       if ( 1 < count )
       {
-         (*table)(row,1) << rptNewLine << _T("Top Flange ") << long(flangeIdx + 1) << rptNewLine;
+         (*table)(row,1) << rptNewLine << _T("Top Flange ") << FlangeIndexType(flangeIdx + 1) << rptNewLine;
       }
 
       Float64 tSlab, tWeb, wFlange, lSpacing, rSpacing;
@@ -1416,7 +1416,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
          {
             if ( 1 < count )
             {
-               (*table)(row,col) << rptNewLine << _T("Top Flange ") << long(flangeIdx + 1) << rptNewLine;
+               (*table)(row,col) << rptNewLine << _T("Top Flange ") << FlangeIndexType(flangeIdx + 1) << rptNewLine;
             }
 
             Float64 tSlab, tWeb, wFlange, lSpacing, rSpacing;
@@ -1559,7 +1559,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
 
       if ( 1 < count )
       {
-         (*pPara) << rptNewLine << _T("Top Flange ") << long(flangeIdx + 1) << rptNewLine;
+         (*pPara) << rptNewLine << _T("Top Flange ") << FlangeIndexType(flangeIdx + 1) << rptNewLine;
       }
 
       (*pPara) << Sub2(_T("w"),_T("2")) << _T(" = (12.0)(") << length.SetValue(tSlab) << _T(") + greater of [ ");
@@ -1679,7 +1679,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
       {
          if ( 1 < count )
          {
-            (*table)(row,1) << rptNewLine << _T("Web ") << long(flangeIdx + 1) << rptNewLine;
+            (*table)(row,1) << rptNewLine << _T("Web ") << FlangeIndexType(flangeIdx + 1) << rptNewLine;
          }
 
          Float64 tSlab, tWeb, wFlange, lSpacing, rSpacing;

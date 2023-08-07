@@ -34,7 +34,7 @@ class CLoadRatingSummaryReportDlg : public CDialog
 	DECLARE_DYNAMIC(CLoadRatingSummaryReportDlg)
 
 public:
-	CLoadRatingSummaryReportDlg(IBroker* pBroker,const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification>& pRptSpec,UINT nIDTemplate = IDD_LOADRATINGSUMMARYREPORT,CWnd* pParent = nullptr);   // standard constructor
+	CLoadRatingSummaryReportDlg(IBroker* pBroker,const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate = IDD_LOADRATINGSUMMARYREPORT,CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CLoadRatingSummaryReportDlg();
 
 // Dialog Data

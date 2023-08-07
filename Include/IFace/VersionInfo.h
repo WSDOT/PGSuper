@@ -38,6 +38,7 @@ DESCRIPTION
 // {70DD414A-B493-11d2-88BB-006097C68A9C}
 DEFINE_GUID(IID_IVersionInfo, 
 0x70dd414a, 0xb493, 0x11d2, 0x88, 0xbb, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
+struct __declspec(uuid("{70DD414A-B493-11d2-88BB-006097C68A9C}")) IVersionInfo;
 interface IVersionInfo : IUnknown
 {
    // Returns the version string that should be displayed in reports, etc

@@ -444,7 +444,7 @@ void pgsDesigner2::GetSlabOffsetDetails(const CSegmentKey& segmentKey,const GDRC
 
       // there is an imposed camber and/or top flange thickening. use its shape, excluding natural camber, for the top of the girder
       // create the parabola
-      topFlangeShape = std::make_unique<WBFL::Math::PolynomialFunction>(GenerateParabola(poi_left.GetDistFromStart(), poi_right.GetDistFromStart(), sign*tft));
+      topFlangeShape = std::make_unique<WBFL::Math::PolynomialFunction>(WBFL::Math::GenerateParabola(poi_left.GetDistFromStart(), poi_right.GetDistFromStart(), sign*tft));
    }
    else
    {
@@ -1493,9 +1493,9 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
       LOG(_T("************************************************************"));
    #if defined ENABLE_LOGGING
       WBFL::System::Time endTime;
-      long duration = endTime.Seconds() - startTime.Seconds();
-      long min = duration / 60;
-      long sec = duration - min*60;
+      auto duration = endTime.Seconds() - startTime.Seconds();
+      auto min = duration / 60;
+      auto sec = duration - min*60;
       LOG(_T("Design: ") << min << _T("m:") << sec << _T("s"));
    #endif
 

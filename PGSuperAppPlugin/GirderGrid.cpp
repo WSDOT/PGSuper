@@ -161,7 +161,7 @@ void CGirderGrid::CustomInit()
 	this->GetParam( )->EnableUndo(TRUE);
 }
 
-void CGirderGrid::AddRow(LPCTSTR lpszGirderName,CGXAbstractUserAttribute& rowType)
+void CGirderGrid::AddRow(LPCTSTR lpszGirderName,const CGXAbstractUserAttribute& rowType)
 {
 	ROWCOL nRow = 0;
    nRow = GetRowCount() + 1;

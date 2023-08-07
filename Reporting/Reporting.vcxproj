@@ -77,7 +77,6 @@
       <TargetEnvironment>X64</TargetEnvironment>
     </Midl>
     <ClCompile>
-      <AdditionalOptions>-Zm120 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\Include;;$(ARPDIR)\BridgeLink\Include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>BUILDREPORTINGLIB;xIGNORE_2007_CHANGES;WIN32;_WINDOWS;_DEBUG;_USRDLL;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -90,6 +89,8 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -119,7 +120,6 @@
       <TargetEnvironment>X64</TargetEnvironment>
     </Midl>
     <ClCompile>
-      <AdditionalOptions>-Zm120 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>..\Include;;$(ARPDIR)\BridgeLink\Include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>BUILDREPORTINGLIB;WIN32;_WINDOWS;NDEBUG;_USRDLL;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -132,6 +132,8 @@
       <DebugInformationFormat />
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WholeProgramOptimization>false</WholeProgramOptimization>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>

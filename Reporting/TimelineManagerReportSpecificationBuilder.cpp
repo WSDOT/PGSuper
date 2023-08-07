@@ -39,7 +39,7 @@ CTimelineManagerReportSpecificationBuilder::~CTimelineManagerReportSpecification
 {
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CTimelineManagerReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc, std::shared_ptr<WBFL::Reporting::ReportSpecification>& pOldRptSpec) const
+std::shared_ptr<WBFL::Reporting::ReportSpecification> CTimelineManagerReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc, std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
 {
    // If possible, copy information from old spec. Otherwise header/footer and other info will be lost
    std::shared_ptr<CTimelineManagerReportSpecification> pOldTLMRptSpec(std::dynamic_pointer_cast<CTimelineManagerReportSpecification>(pOldRptSpec));

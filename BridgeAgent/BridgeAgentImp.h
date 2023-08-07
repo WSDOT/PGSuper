@@ -1751,7 +1751,7 @@ private:
    enum BearingElevLocType { batBearings, batGirderEdges };
    std::vector<BearingElevationDetails> GetBearingElevationDetails_Generic(PierIndexType pierIdx,pgsTypes::PierFaceType face, BearingElevLocType locType,GirderIndexType gdrIdx,bool bIgnoreUnrecoverableDeformations) const;
 
-   std::vector<IntermedateDiaphragm> CBridgeAgentImp::GetCastInPlaceDiaphragms(const CSpanKey& spanKey, bool bLocationOnly) const;
+   std::vector<IntermedateDiaphragm> GetCastInPlaceDiaphragms(const CSpanKey& spanKey, bool bLocationOnly) const;
    Float64 GetHalfElevation(Float64 gdrHeight, Float64 deckThickness) const;
 
    void GetSlabPerimeter(PierIndexType startPierIdx, Float64 Xstart, PierIndexType endPierIdx, Float64 Xend, IndexType nPoints, pgsTypes::PlanCoordinateType pcType, const CCastDeckActivity* pActivity, IPoint2dCollection** points) const;

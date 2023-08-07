@@ -39,7 +39,7 @@ CCopyPierPropertiesReportSpecificationBuilder::~CCopyPierPropertiesReportSpecifi
 {
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CCopyPierPropertiesReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc, std::shared_ptr<WBFL::Reporting::ReportSpecification>& pOldRptSpec) const
+std::shared_ptr<WBFL::Reporting::ReportSpecification> CCopyPierPropertiesReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc, std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
 {
    // If possible, copy information from old spec. Otherwise header/footer and other info will be lost
    std::shared_ptr<CCopyPierPropertiesReportSpecification> pOldTLMRptSpec(std::dynamic_pointer_cast<CCopyPierPropertiesReportSpecification>(pOldRptSpec));

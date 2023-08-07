@@ -387,9 +387,9 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
 
    bool bIsAsymmetric = pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing();
 
-   auto& iter(vPoi.cbegin());
-   auto& end(vPoi.cend());
-   auto& xIter(xVals.cbegin());
+   auto iter(vPoi.cbegin());
+   auto end(vPoi.cend());
+   auto xIter(xVals.cbegin());
    for ( ; iter != end; iter++, xIter++ )
    {
       const pgsPointOfInterest& poi(*iter);

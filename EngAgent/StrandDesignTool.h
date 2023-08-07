@@ -753,11 +753,11 @@ private:
    bool m_bCheckMaxFraAtSection;
    Float64 m_MaxPercentDebondSection;
 
-   // maximum debond levels due to physical contrants at any section
+   // maximum debond levels due to physical constraints at any section
    std::vector<DebondLevelType> m_MaxPhysicalDebondLevels;
 
 
-   Float64 pgsStrandDesignTool::ComputePrestressForcePerStrand(const GDRCONFIG& fullyBondedConfig, const StressDemand& demand, const DebondLevel& lvl, IntervalIndexType interval, IPretensionForce* pPrestressForce) const;
+   Float64 ComputePrestressForcePerStrand(const GDRCONFIG& fullyBondedConfig, const StressDemand& demand, const DebondLevel& lvl, IntervalIndexType interval, IPretensionForce* pPrestressForce) const;
    void GetHandlingDesignPointsOfInterest(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang,PoiAttributeType poiReference,PoiAttributeType supportAttribute, std::vector<pgsPointOfInterest>* pvPoi, Uint32 mode) const;
 
 

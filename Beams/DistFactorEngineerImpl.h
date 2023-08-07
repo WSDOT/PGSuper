@@ -27,6 +27,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\StatusCenter.h>
+#include <IFace\DistributionFactors.h>
 #include <PGSuperException.h>
 #include <PgsExt\StatusItem.h>
 #include <PgsExt\BridgeDescription2.h>
@@ -201,8 +202,7 @@ Float64 CDistFactorEngineerImpl<T>::GetShearDF(const CSpanKey& spanKey,pgsTypes:
 template <class T>
 void CDistFactorEngineerImpl<T>::GetPierDF(PierIndexType pierIdx, GirderIndexType gdrIdx, pgsTypes::LimitState ls, pgsTypes::PierFaceType pierFace, Float64 fcgdr, PIERDETAILS* plldf)
 {
-   std::map<PierGirderHashType, PIERDETAILS>::iterator found;
-   found = m_PierLLDF[pierFace][LimitStateType(ls)].find(HashPierGirder(pierIdx, gdrIdx));
+   auto found = m_PierLLDF[pierFace][LimitStateType(ls)].find(HashPierGirder(pierIdx, gdrIdx));
    if (found != m_PierLLDF[pierFace][LimitStateType(ls)].end() && fcgdr == USE_CURRENT_FC)
    {
       *plldf = (*found).second;
@@ -353,8 +353,7 @@ void CDistFactorEngineerImpl<T>::GetPierDFRaw(PierIndexType pierIdx,GirderIndexT
 template <class T>
 void CDistFactorEngineerImpl<T>::GetSpanDF(const CSpanKey& spanKey, pgsTypes::LimitState ls, Float64 fcgdr, SPANDETAILS* plldf)
 {
-   std::map<SpanGirderHashType,SPANDETAILS>::iterator found;
-   found = m_SpanLLDF[LimitStateType(ls)].find(::HashSpanGirder(spanKey.spanIndex,spanKey.girderIndex));
+   auto found = m_SpanLLDF[LimitStateType(ls)].find(::HashSpanGirder(spanKey.spanIndex,spanKey.girderIndex));
    if ( found != m_SpanLLDF[LimitStateType(ls)].end() && fcgdr == USE_CURRENT_FC )
    {
       *plldf = (*found).second;

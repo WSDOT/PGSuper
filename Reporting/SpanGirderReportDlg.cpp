@@ -45,7 +45,7 @@ static char THIS_FILE[] = __FILE__;
 
 IMPLEMENT_DYNAMIC(CSpanGirderReportDlg, CDialog)
 
-CSpanGirderReportDlg::CSpanGirderReportDlg(IBroker* pBroker,const WBFL::Reporting::ReportDescription& rptDesc,Mode mode,std::shared_ptr<WBFL::Reporting::ReportSpecification>& pRptSpec,UINT nIDTemplate,CWnd* pParent)
+CSpanGirderReportDlg::CSpanGirderReportDlg(IBroker* pBroker,const WBFL::Reporting::ReportDescription& rptDesc,Mode mode,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate,CWnd* pParent)
 	: CDialog(nIDTemplate, pParent), m_RptDesc(rptDesc), m_pInitRptSpec(pRptSpec), m_Mode(mode)
 {
    m_pBroker = pBroker;

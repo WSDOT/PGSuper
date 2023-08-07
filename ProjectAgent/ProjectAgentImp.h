@@ -728,7 +728,7 @@ private:
    DECLARE_EAF_AGENT_DATA;
 
    // status items must be managed by span girder
-   void AddSegmentStatusItem(const CSegmentKey& segmentKey, std::_tstring& message);
+   void AddSegmentStatusItem(const CSegmentKey& segmentKey, const std::_tstring& message);
    void RemoveSegmentStatusItems(const CSegmentKey& segmentKey);
 
    // save hash value and vector of status ids
@@ -945,8 +945,8 @@ private:
    static HRESULT DistFactorMethodDataProc2(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
    static HRESULT UserLoadsDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
    static HRESULT LiveLoadsDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
-   static HRESULT SaveLiveLoad(IStructuredSave* pSave,IProgress* pProgress,CProjectAgentImp* pObj,LPTSTR lpszUnitName,pgsTypes::LiveLoadType llType);
-   static HRESULT LoadLiveLoad(IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj,LPTSTR lpszUnitName,pgsTypes::LiveLoadType llType);
+   static HRESULT SaveLiveLoad(IStructuredSave* pSave,IProgress* pProgress,CProjectAgentImp* pObj,LPCTSTR lpszUnitName,pgsTypes::LiveLoadType llType);
+   static HRESULT LoadLiveLoad(IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj,LPCTSTR lpszUnitName,pgsTypes::LiveLoadType llType);
    static HRESULT EffectiveFlangeWidthProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
    static HRESULT LossesProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
 

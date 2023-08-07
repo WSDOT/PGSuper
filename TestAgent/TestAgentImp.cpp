@@ -623,7 +623,7 @@ std::_tstring CTestAgentImp::GetBridgeID()
    else
    {
       GET_IFACE(IEAFDocument,pDocument);
-      std::_tstring strPath = pDocument->GetFilePath();
+      std::_tstring strPath = (LPCTSTR)pDocument->GetFilePath();
 
       // Filename is in the form Regxxx.pgs
       std::_tstring::size_type pos = strPath.find(_T(".pgs"));
@@ -2713,7 +2713,7 @@ bool CTestAgentImp::RunLoadRatingTest(std::_tofstream& resultsFile, std::_tofstr
             continue;
          }
 
-         std::_tstring strRatingType = ::GetLiveLoadTypeName(ratingType);
+         std::_tstring strRatingType = (LPCTSTR)GetLiveLoadTypeName(ratingType);
          std::_tstring strTruckName = pProductLoads->GetLiveLoadName(llType,vehicleIdx);
          resultsFile << strRatingType << _T(", ") << strTruckName << std::endl;
 

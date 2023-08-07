@@ -2395,8 +2395,7 @@ bool CBridgeAgentImp::BuildCogoModel()
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    CComPtr<IAlignment> alignment;
    m_CogoModel->CreateAlignmentByID(CBridgeGeometryModelBuilder::AlignmentID, &alignment);
-   Float64 startStation, endStation;
-   std::tie(startStation,endStation) = ComputeReasonableSurfaceStationRange(pBridgeDesc, alignment_data, alignment);
+   auto [startStation,endStation] = ComputeReasonableSurfaceStationRange(pBridgeDesc, alignment_data, alignment);
 
    if (section_data.RoadwaySectionTemplates.empty())
    {
@@ -3214,7 +3213,7 @@ void CBridgeAgentImp::GetHaunchDepth4ADimInput(const CPrecastSegmentData* pSegme
    }
    else
    {
-      auto parabola(GenerateParabola(0.0,span_length,bulge));
+      auto parabola(WBFL::Math::GenerateParabola(0.0,span_length,bulge));
       Float64 par_start_haunch = parabola.Evaluate(-segment_start_end_dist);
       Float64 par_end_haunch =   parabola.Evaluate(span_length + segment_end_end_dist);
 
@@ -6618,7 +6617,8 @@ STDMETHODIMP CBridgeAgentImp::Init2()
    hr = m_SectCutTool.CoCreateInstance(CLSID_SectionCutTool);
    if ( FAILED(hr) || m_SectCutTool == nullptr )
    {
-      THROW_UNWIND(_T("GenericBridgeTools::SectionPropertyTool not created"),-1);
+      // GenericBridgeTools::SectionPropertyTool not created"
+      return hr;
    }
 
 
@@ -28298,7 +28298,7 @@ std::shared_ptr<WBFL::Math::Function> CBridgeAgentImp::CreateGirderProfile(const
             // from the function to get the profile based on the top of the girder
             // being at zero. That negative cancels out the negative used here and we
             // get the profile we want
-            auto func(GenerateParabola(xStart, xEnd, -pSegment->Precamber, h1));
+            auto func(WBFL::Math::GenerateParabola(xStart, xEnd, -pSegment->Precamber, h1));
             pCompositeFunction->AddFunction(xStart, xEnd, func);
          }
          slopeParabola = 0;
@@ -28426,13 +28426,13 @@ std::shared_ptr<WBFL::Math::Function> CBridgeAgentImp::CreateGirderProfile(const
                if (yParabolaEnd < yParabolaStart)
                {
                   // slope at end is zero
-                  auto func = GenerateParabola2(xParabolaStart, yParabolaStart, xParabolaEnd, yParabolaEnd, 0.0);
+                  auto func = WBFL::Math::GenerateParabola2(xParabolaStart, yParabolaStart, xParabolaEnd, yParabolaEnd, 0.0);
                   pCompositeFunction->AddFunction(xParabolaStart, xParabolaEnd, func);
                }
                else
                {
                   // slope at start is zero
-                  auto func = GenerateParabola1(xParabolaStart, yParabolaStart, xParabolaEnd, yParabolaEnd, slopeParabola);
+                  auto func = WBFL::Math::GenerateParabola1(xParabolaStart, yParabolaStart, xParabolaEnd, yParabolaEnd, slopeParabola);
                   pCompositeFunction->AddFunction(xParabolaStart, xParabolaEnd, func);
                }
 
@@ -28461,11 +28461,11 @@ std::shared_ptr<WBFL::Math::Function> CBridgeAgentImp::CreateGirderProfile(const
             WBFL::Math::PolynomialFunction func_left_parabola;
             if (yParabolaEnd < yParabolaStart)
             {
-               func_left_parabola = GenerateParabola2(xParabolaStart, yParabolaStart, xParabolaEnd, yParabolaEnd, 0.0);
+               func_left_parabola = WBFL::Math::GenerateParabola2(xParabolaStart, yParabolaStart, xParabolaEnd, yParabolaEnd, 0.0);
             }
             else
             {
-               func_left_parabola = GenerateParabola1(xParabolaStart, yParabolaStart, xParabolaEnd, yParabolaEnd, slopeParabola);
+               func_left_parabola = WBFL::Math::GenerateParabola1(xParabolaStart, yParabolaStart, xParabolaEnd, yParabolaEnd, slopeParabola);
             }
 
             pCompositeFunction->AddFunction(xParabolaStart, xParabolaEnd, func_left_parabola);
@@ -28555,11 +28555,11 @@ std::shared_ptr<WBFL::Math::Function> CBridgeAgentImp::CreateGirderProfile(const
                   {
                      slopeParabola = 0;
                   }
-                  func_right_parabola = GenerateParabola2(xParabolaStart, yParabolaStart, xParabolaEnd, yParabolaEnd, slopeParabola);
+                  func_right_parabola = WBFL::Math::GenerateParabola2(xParabolaStart, yParabolaStart, xParabolaEnd, yParabolaEnd, slopeParabola);
                }
                else
                {
-                  func_right_parabola = GenerateParabola1(xParabolaStart, yParabolaStart, xParabolaEnd, yParabolaEnd, slopeParabola);
+                  func_right_parabola = WBFL::Math::GenerateParabola1(xParabolaStart, yParabolaStart, xParabolaEnd, yParabolaEnd, slopeParabola);
                }
 
                pCompositeFunction->AddFunction(xParabolaStart, xParabolaEnd, func_right_parabola);
@@ -30976,7 +30976,7 @@ std::unique_ptr<WBFL::Math::CompositeFunction> CBridgeAgentImp::CreateDuctCenter
    Float64 x2 = x1 + dist;
    Float64 y2 = ConvertDuctOffsetToDuctElevation(girderKey,pGirder,x2,offset,offsetType);
 
-   WBFL::Math::PolynomialFunction leftParabola = GenerateParabola2(x1,y1,x2,y2,0.0);
+   WBFL::Math::PolynomialFunction leftParabola = WBFL::Math::GenerateParabola2(x1,y1,x2,y2,0.0);
    fnCenterline->AddFunction(x1,x2,leftParabola);
 
    x1 = x2; // start next group of parabolas at the low point
@@ -31067,7 +31067,7 @@ std::unique_ptr<WBFL::Math::CompositeFunction> CBridgeAgentImp::CreateDuctCenter
 
    x2 = Lg - dist;
    y2 = ConvertDuctOffsetToDuctElevation(girderKey,pGirder,x2,offset,offsetType);
-   rightParabola = GenerateParabola1(x1,y1,x2,y2,0.0);
+   rightParabola = WBFL::Math::GenerateParabola1(x1,y1,x2,y2,0.0);
    fnCenterline->AddFunction(x1,x2,rightParabola);
 
    return fnCenterline;
@@ -36353,7 +36353,7 @@ void CBridgeAgentImp::ValidateGirderTopChordElevationADimInput(const CGirderKey&
       Float64 startLoc = GetSegmentStartEndDistance(segmentKey);
       Float64 endLoc = segLength - GetSegmentEndEndDistance(segmentKey);
 
-      WBFL::Math::LinearFunction tmpf = GenerateLineFunc2dFromPoints(startLoc, startProfileElevation-slab_offset[pgsTypes::metStart]- overlayDepth, 
+      WBFL::Math::LinearFunction tmpf = WBFL::Math::GenerateLineFunc2dFromPoints(startLoc, startProfileElevation-slab_offset[pgsTypes::metStart]- overlayDepth,
                                                                      endLoc,   endProfileElevation-slab_offset[pgsTypes::metEnd]    - overlayDepth);
       std::array<Float64,2> unadj_elev_ends;
       unadj_elev_ends[pgsTypes::metStart] = tmpf.Evaluate(0.0);
@@ -36484,7 +36484,7 @@ void CBridgeAgentImp::ValidateGirderTopChordElevationDirectHaunchInput(const CGi
       // The function object we are building requires its basis at segment ends, so fix that if not so.
       if (bAtStartBrg || bAtEndBrg)
       {
-         WBFL::Math::LinearFunction tmpf = GenerateLineFunc2dFromPoints(startLoc,elevStart,endLoc,elevEnd);
+         WBFL::Math::LinearFunction tmpf = WBFL::Math::GenerateLineFunc2dFromPoints(startLoc,elevStart,endLoc,elevEnd);
          elevStart = tmpf.Evaluate(0.0);
          elevEnd = tmpf.Evaluate(segLength);
       }

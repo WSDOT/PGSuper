@@ -39,10 +39,10 @@ public:
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
 private:
-   rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildTable(const CString& strLabel, PierIndexType pierIdx, pgsTypes::PierFaceType face, 
+   rptRcTable* BuildTable(const CString& strLabel, PierIndexType pierIdx, pgsTypes::PierFaceType face, 
                            IEAFDisplayUnits* pDisplayUnits, IBridge* pBridge, IBridgeDescription* pIBridgeDesc, GirderIndexType girderIndex) const;
 
-   rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildGirderEdgeTable(const CString& strLabel, PierIndexType pierIdx, pgsTypes::PierFaceType face, 
+   rptRcTable* BuildGirderEdgeTable(const CString& strLabel, PierIndexType pierIdx, pgsTypes::PierFaceType face, 
                            IEAFDisplayUnits* pDisplayUnits, IBridge* pBridge, IBridgeDescription* pIBridgeDesc,GirderIndexType girderIndex) const;
 
    CBearingSeatElevationsChapterBuilderBase();

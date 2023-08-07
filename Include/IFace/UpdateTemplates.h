@@ -50,6 +50,7 @@ DESCRIPTION
 // {979E9DD4-9103-42ce-9601-1913EF69513E}
 DEFINE_GUID(IID_IUpdateTemplates, 
 0x979e9dd4, 0x9103, 0x42ce, 0x96, 0x1, 0x19, 0x13, 0xef, 0x69, 0x51, 0x3e);
+struct __declspec(uuid("{979E9DD4-9103-42ce-9601-1913EF69513E}")) IUpdateTemplates;
 interface IUpdateTemplates : IUnknown
 {
    virtual bool UpdatingTemplates() = 0; // returns true if PGSuper is in the process of automatically updating templates

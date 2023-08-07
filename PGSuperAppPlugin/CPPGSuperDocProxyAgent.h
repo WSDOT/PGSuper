@@ -35,8 +35,8 @@ public:
 		T* pT = (T*)this;
 		pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = m_vec.begin();
-		while (pp < m_vec.end())
+		IUnknown** pp = this->m_vec.begin();
+		while (pp < this->m_vec.end())
 		{
 			if (*pp != nullptr)
 			{

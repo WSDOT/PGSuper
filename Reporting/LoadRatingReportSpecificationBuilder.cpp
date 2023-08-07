@@ -44,7 +44,7 @@ CLoadRatingReportSpecificationBuilder::~CLoadRatingReportSpecificationBuilder(vo
 {
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification>& pOldRptSpec) const
+std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
 {
    GET_IFACE(IRatingSpecification,pRatingSpec);
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) ||
@@ -145,7 +145,7 @@ CLoadRatingSummaryReportSpecificationBuilder::~CLoadRatingSummaryReportSpecifica
 {
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingSummaryReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification>& pOldRptSpec) const
+std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingSummaryReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
 {
    GET_IFACE(IRatingSpecification,pRatingSpec);
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) ||

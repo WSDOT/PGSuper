@@ -517,10 +517,10 @@ rptRcTable* CInterfaceShearDetails::CreateVniTable(IBroker* pBroker,rptChapter* 
 
    ATLASSERT(vSegmentArtifacts.size() - 1 == vClosureArtifacts.size());
 
-   auto& segIter = vSegmentArtifacts.begin();
-   auto& segEnd = vSegmentArtifacts.end();
-   auto& cjIter = vClosureArtifacts.begin();
-   auto& cjEnd = vClosureArtifacts.end();
+   auto segIter = vSegmentArtifacts.begin();
+   auto segEnd = vSegmentArtifacts.end();
+   auto cjIter = vClosureArtifacts.begin();
+   auto cjEnd = vClosureArtifacts.end();
 
    for (; segIter != segEnd; segIter++)
    {

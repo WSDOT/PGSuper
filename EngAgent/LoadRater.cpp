@@ -578,8 +578,8 @@ ZoneIndexType pgsLoadRater::GetCriticalSectionZone(const pgsPointOfInterest& poi
 {
    Float64 Xpoi = poi.GetDistFromStart();
 
-   auto& iter(criticalSections.cbegin());
-   const auto& end(criticalSections.cend());
+   auto iter(criticalSections.cbegin());
+   auto end(criticalSections.cend());
    for (; iter != end; iter++)
    {
       const CRITSECTDETAILS& csDetails(*iter);

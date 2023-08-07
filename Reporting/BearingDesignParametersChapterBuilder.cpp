@@ -135,9 +135,10 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(const std::shared_ptr<
    *p << rptNewLine;
 
    std::vector<std::_tstring> strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltDesign,girderKey);
-   std::vector<std::_tstring>::iterator iter;
-   long j = 0;
-   for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
+   IndexType j = 0;
+   auto iter = strLLNames.begin();
+   auto end = strLLNames.end();
+   for (; iter != end; iter++, j++ )
    {
       *p << _T("(D") << j << _T(") ") << *iter << rptNewLine;
    }

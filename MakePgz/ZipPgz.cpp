@@ -95,10 +95,10 @@ int ZipPGZ(_TCHAR* masterLibraryFile,_TCHAR* templateRoot,_TCHAR* pgzFileName,_T
   }
   else
   {
-     retval = FindInFolder(hz,templateRoot,_T("WorkgroupTemplates"),pgzFileName,lpszTemplateExtension);
+     retval = FindInFolder(hz,templateRoot,(TCHAR*)_T("WorkgroupTemplates"),pgzFileName,lpszTemplateExtension);
      if ( retval != -1 && lpszTemplateExtensionAlt!=nullptr)
      {
-        retval = FindInFolder(hz,templateRoot,_T("WorkgroupTemplates"),pgzFileName,lpszTemplateExtensionAlt);
+        retval = FindInFolder(hz,templateRoot, (TCHAR*)_T("WorkgroupTemplates"),pgzFileName,lpszTemplateExtensionAlt);
      }
   }
 
@@ -149,7 +149,7 @@ int FindTemplateFiles(HZIP hz,_TCHAR* lpszFolderName,_TCHAR* lpszZipFolderName,_
 
 int FindIconFiles(HZIP hz,_TCHAR* lpszFolderName,_TCHAR* lpszZipFolderName,_TCHAR* pgzFileName)
 {
-   return FindFiles(hz,_T("ico"),lpszFolderName,lpszZipFolderName,pgzFileName);
+   return FindFiles(hz, (TCHAR*)_T("ico"),lpszFolderName,lpszZipFolderName,pgzFileName);
 }
 
 int FindFiles(HZIP hz,_TCHAR* lpszExtension,_TCHAR* lpszFolderName,_TCHAR* lpszZipFolderName,_TCHAR* pgzFileName)

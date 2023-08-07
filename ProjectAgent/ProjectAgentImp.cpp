@@ -4751,7 +4751,7 @@ HRESULT CProjectAgentImp::LiveLoadsDataProc(IStructuredSave* pSave,IStructuredLo
    return hr;
 }
 
-HRESULT CProjectAgentImp::SaveLiveLoad(IStructuredSave* pSave,IProgress* pProgress,CProjectAgentImp* pObj,LPTSTR lpszUnitName,pgsTypes::LiveLoadType llType)
+HRESULT CProjectAgentImp::SaveLiveLoad(IStructuredSave* pSave,IProgress* pProgress,CProjectAgentImp* pObj,LPCTSTR lpszUnitName,pgsTypes::LiveLoadType llType)
 {
    // version 2 added m_PedestrianLoadApplicationType
    pSave->BeginUnit(lpszUnitName,2.0);
@@ -4783,7 +4783,7 @@ HRESULT CProjectAgentImp::SaveLiveLoad(IStructuredSave* pSave,IProgress* pProgre
    return S_OK;
 }
 
-HRESULT CProjectAgentImp::LoadLiveLoad(IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj,LPTSTR lpszUnitName,pgsTypes::LiveLoadType llType)
+HRESULT CProjectAgentImp::LoadLiveLoad(IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj,LPCTSTR lpszUnitName,pgsTypes::LiveLoadType llType)
 {
    const LiveLoadLibrary* pLiveLoadLibrary = pObj->m_pLibMgr->GetLiveLoadLibrary();
 
@@ -6631,7 +6631,8 @@ void CProjectAgentImp::ValidateStrands(const CSegmentKey& segmentKey,CPrecastSeg
          {
             std::_tostringstream msg;
             msg << segmentLabel << _T(" specified debonding that is not allowed by the library entry. The invalid debond regions were removed.");
-            AddSegmentStatusItem(segmentKey, msg.str());
+            auto message = msg.str();
+            AddSegmentStatusItem(segmentKey, message);
          }
       }
    }
@@ -8309,7 +8310,7 @@ bool CProjectAgentImp::AreGirdersCompatible(const CBridgeDescription2& bridgeDes
    Float64 Smin, Smax;
    factory->GetAllowableSpacingRange(dimensions, deckType, spacingType, &Smin, &Smax);
 
-   auto& iter = vGirderNames.cbegin();
+   auto iter = vGirderNames.cbegin();
    iter++;
    const auto& end = vGirderNames.cend();
    for (; iter != end; iter++)
@@ -12030,7 +12031,7 @@ void CProjectAgentImp::DealWithGirderLibraryChanges(bool fromLibrary)
    } // grooup loop
 }
 
-void CProjectAgentImp::AddSegmentStatusItem(const CSegmentKey& segmentKey,std::_tstring& message)
+void CProjectAgentImp::AddSegmentStatusItem(const CSegmentKey& segmentKey,const std::_tstring& message)
 {
    // first post message
    GET_IFACE(IEAFStatusCenter,pStatusCenter);

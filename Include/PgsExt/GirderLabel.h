@@ -105,10 +105,10 @@ public:
    static void SetPierLabelSettings(pgsTypes::DisplayEndSupportType displayStartSupportType, pgsTypes::DisplayEndSupportType displayEndSupportType, PierIndexType startingPierNumber);
 
    // utility function to create label independently of static data values
-   static std::_tstring pgsPierLabel::CreatePierLabel(bool bIsAbutment, PierIndexType pierIdx, pgsTypes::DisplayEndSupportType displayStartSupportType, pgsTypes::DisplayEndSupportType displayEndSupportType, PierIndexType startingPierNumber);
+   static std::_tstring CreatePierLabel(bool bIsAbutment, PierIndexType pierIdx, pgsTypes::DisplayEndSupportType displayStartSupportType, pgsTypes::DisplayEndSupportType displayEndSupportType, PierIndexType startingPierNumber);
 
    // create label based on current CBridgeDescription2
-   static std::_tstring pgsPierLabel::CreatePierLabel(const CBridgeDescription2& bridgeDescr, PierIndexType pierIdx);
+   static std::_tstring CreatePierLabel(const CBridgeDescription2& bridgeDescr, PierIndexType pierIdx);
 
 private:
    static pgsTypes::DisplayEndSupportType m_DisplayStartSupportType;

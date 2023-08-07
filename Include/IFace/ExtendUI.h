@@ -85,7 +85,7 @@ interface IEditPierCallback
    virtual CPropertyPage* CreatePropertyPage(IEditPierData* pEditPierData) = 0;
 
    // Called by the framework when stand alone editing is complete. Return a transaction object if you
-   // want the editing the occured on this extension page to be in the transaction queue for undo/redo,
+   // want the editing the occurred on this extension page to be in the transaction queue for undo/redo,
    // otherwise return nullptr
    virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPropertyPage,IEditPierData* pEditPierData) = 0;
 
@@ -162,7 +162,7 @@ interface IEditTemporarySupportCallback
    virtual CPropertyPage* CreatePropertyPage(IEditTemporarySupportData* pEditTemporarySupportData) = 0;
 
    // Called by the framework when stand alone editing is complete. Return a transaction object if you
-   // want the editing the occured on this extension page to be in the transaction queue for undo/redo,
+   // want the editing the occurred on this extension page to be in the transaction queue for undo/redo,
    // otherwise return nullptr
    virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPropertyPage,IEditTemporarySupportData* pEditTemporarySupportData) = 0;
 

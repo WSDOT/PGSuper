@@ -40,7 +40,7 @@ CMyReportSpecificationBuilder::~CMyReportSpecificationBuilder(void)
 {
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CMyReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification>& pRptSpec) const
+std::shared_ptr<WBFL::Reporting::ReportSpecification> CMyReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec) const
 {
    CString strAnswer;
    AfxQuestion(_T("My Report Specification"),_T("Enter some text to put into the report"),_T(""),strAnswer);

@@ -94,7 +94,7 @@ void LiveLoadTableFooter(IBroker* pBroker,rptParagraph* pPara,const CGirderKey& 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    std::vector<std::_tstring> strLLNames;
    std::vector<std::_tstring>::iterator iter;
-   long j;
+   IndexType j = 0;
 
    if ( bDesign )
    {

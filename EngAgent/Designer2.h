@@ -363,7 +363,7 @@ public:
    const WBFL::Stability::LiftingCheckArtifact* CheckLifting(const CSegmentKey& segmentKey) const;
 
    // Creates a hauling analysis artifact
-   const pgsHaulingAnalysisArtifact* pgsDesigner2::CheckHauling(const CSegmentKey& segmentKey) const;
+   const pgsHaulingAnalysisArtifact* CheckHauling(const CSegmentKey& segmentKey) const;
 
    pgsGirderDesignArtifact Design(const CGirderKey& girderKey,const std::vector<arDesignOptions>& DesOptionsColl) const;
 

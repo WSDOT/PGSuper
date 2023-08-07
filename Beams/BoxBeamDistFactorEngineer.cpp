@@ -216,7 +216,7 @@ void CBoxBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChap
       {
          pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pChapter) << pPara;
-         (*pPara) << _T("Distribution Factor for Negative Moment over Pier ") << long(pier1+1) << rptNewLine;
+         (*pPara) << _T("Distribution Factor for Negative Moment over ") << LABEL_PIER(pier1) << rptNewLine;
          pPara = new rptParagraph;
          (*pChapter) << pPara;
 
@@ -256,7 +256,7 @@ void CBoxBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChap
       {
          pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pChapter) << pPara;
-         (*pPara) << _T("Distribution Factor for Negative Moment over Pier ") << long(pier2+1) << rptNewLine;
+         (*pPara) << _T("Distribution Factor for Negative Moment over ") << LABEL_PIER(pier2) << rptNewLine;
          pPara = new rptParagraph;
          (*pChapter) << pPara;
 

@@ -75,9 +75,9 @@ bool CTimelineManager::operator==(const CTimelineManager& rOther) const
       return false;
    }
 
-   auto& myIter(    m_TimelineEvents.cbegin()        );
-   const auto& myEnd(     m_TimelineEvents.cend()          );
-   auto& otherIter( rOther.m_TimelineEvents.cbegin() );
+   auto myIter(    m_TimelineEvents.cbegin()        );
+   auto myEnd(     m_TimelineEvents.cend()          );
+   auto otherIter( rOther.m_TimelineEvents.cbegin() );
    for ( ; myIter != myEnd; myIter++, otherIter++ )
    {
       const auto* pMyEvent = *myIter;
@@ -397,8 +397,8 @@ void CTimelineManager::RemoveEventByIndex(EventIndexType eventIdx)
 
 void CTimelineManager::RemoveEventByID(EventIDType id)
 {
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for ( ; iter != end; iter++ )
    {
       const CTimelineEvent* pTimelineEvent = *iter;
@@ -488,8 +488,8 @@ int CTimelineManager::SetEventByIndex(EventIndexType eventIdx,const CTimelineEve
 
 int CTimelineManager::SetEventByID(EventIDType id,CTimelineEvent* pTimelineEvent,bool bAdjustTimeline)
 {
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for ( ; iter != end; iter++ )
    {
       auto* pTimelineEvent = *iter;
@@ -504,8 +504,8 @@ int CTimelineManager::SetEventByID(EventIDType id,CTimelineEvent* pTimelineEvent
 
 int CTimelineManager::SetEventByID(EventIDType id,const CTimelineEvent& timelineEvent,bool bAdjustTimeline)
 {
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for (; iter != end; iter++)
    {
       auto* pTimelineEvent = *iter;
@@ -555,8 +555,8 @@ int CTimelineManager::AdjustDayByIndex(EventIndexType eventIdx,Float64 day,bool 
 
 int CTimelineManager::AdjustDayByID(EventIDType id,Float64 day,bool bAdjustTimeline)
 {
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for (; iter != end; iter++)
    {
       const auto* pTimelineEvent = *iter;
@@ -582,13 +582,13 @@ void CTimelineManager::SetElapsedTime(EventIndexType eventIdx,Float64 elapsedTim
    Float64 elapsed_time = pNextTimelineEvent->GetDay() - pThisTimelineEvent->GetDay();
    Float64 delta_elapsed_time = elapsedTime - elapsed_time;
 
-   auto& iter(m_TimelineEvents.cbegin()+eventIdx+1);
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin()+eventIdx+1);
+   auto end(m_TimelineEvents.cend());
    for ( ; iter != end; iter++ )
    {
       auto* pTimelineEvent = *iter;
       // NOTE: don't call SetDay(). SetDay() causes the timeline events to be sorted.
-      // The purpose of this method is to just adjust the elasped time between events
+      // The purpose of this method is to just adjust the elapsed time between events
       // keeping the same event order
       pTimelineEvent->m_Day = pTimelineEvent->m_Day + delta_elapsed_time;
    }
@@ -603,8 +603,8 @@ bool CTimelineManager::FindEvent(LPCTSTR description,EventIndexType* pIndex,cons
 {
    PGS_ASSERT_VALID;
 
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for ( ; iter != end; iter++ )
    {
       const auto* pTimelineEvent = *iter;
@@ -625,8 +625,8 @@ EventIndexType CTimelineManager::GetEventIndex(EventIDType ID) const
 {
    PGS_ASSERT_VALID;
 
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for ( ; iter != end; iter++ )
    {
       const auto* pTimelineEvent = *iter;
@@ -831,8 +831,8 @@ const CTimelineEvent* CTimelineManager::GetEventByID(EventIDType id) const
 {
    PGS_ASSERT_VALID;
 
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for ( ; iter != end; iter++ )
    {
       const auto* pTimelineEvent = *iter;
@@ -864,8 +864,8 @@ CTimelineEvent* CTimelineManager::GetEventByID(EventIDType id)
    ATLASSERT(id != INVALID_ID);
    PGS_ASSERT_VALID;
 
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for ( ; iter != end; iter++ )
    {
       const auto* pTimelineEvent = *iter;
@@ -927,8 +927,8 @@ EventIndexType CTimelineManager::GetPierErectionEventIndex(PierIDType pierID) co
 {
    PGS_ASSERT_VALID;
 
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for ( ; iter != end; iter++ )
    {
       const auto* pTimelineEvent = *iter;
@@ -979,8 +979,8 @@ void CTimelineManager::SetPierErectionEventByID(PierIDType pierID,EventIDType ID
 {
    PGS_ASSERT_VALID;
 
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for (; iter != end; iter++)
    {
       const auto* pTimelineEvent = *iter;
@@ -1067,7 +1067,7 @@ bool CTimelineManager::IsSegmentErected(SegmentIDType segmentID,EventIndexType e
 {
    PGS_ASSERT_VALID;
 
-   auto& iter(m_TimelineEvents.cbegin());
+   auto iter(m_TimelineEvents.cbegin());
    const auto& end(m_TimelineEvents.cbegin() + eventIdx + 1);
    for ( ; iter != end; iter++ )
    {
@@ -1216,8 +1216,8 @@ EventIndexType CTimelineManager::GetSegmentConstructionEventIndex(SegmentIDType 
    ATLASSERT(segmentID != INVALID_ID);
    PGS_ASSERT_VALID;
 
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for ( ; iter != end; iter++ )
    {
       const auto* pTimelineEvent = *iter;
@@ -1258,8 +1258,8 @@ void CTimelineManager::SetSegmentConstructionEventByIndex(SegmentIDType segmentI
 
    // If this construction of this segment is currently being modeled, get the construction
    // timing information.
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for ( ; iter != end; iter++ )
    {
       auto* pTimelineEvent = *iter;
@@ -1296,8 +1296,8 @@ void CTimelineManager::SetSegmentConstructionEventByIndex(SegmentIDType segmentI
 void CTimelineManager::SetSegmentConstructionEventByID(SegmentIDType segmentID,EventIDType ID)
 {
    ATLASSERT(segmentID != INVALID_ID);
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for ( ; iter != end; iter++ )
    {
       const auto* pTimelineEvent = *iter;
@@ -1316,8 +1316,8 @@ EventIndexType CTimelineManager::GetSegmentErectionEventIndex(SegmentIDType segm
    ATLASSERT(segmentID != INVALID_ID);
    PGS_ASSERT_VALID;
 
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for ( ; iter != end; iter++ )
    {
       const auto* pTimelineEvent = *iter;
@@ -1371,8 +1371,8 @@ void CTimelineManager::SetSegmentErectionEventByIndex(SegmentIDType segmentID,Ev
 void CTimelineManager::SetSegmentErectionEventByID(SegmentIDType segmentID,EventIDType ID)
 {
    ATLASSERT(segmentID != INVALID_ID);
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for ( ; iter != end; iter++ )
    {
       const auto* pTimelineEvent = *iter;
@@ -1394,8 +1394,8 @@ void CTimelineManager::GetSegmentEvents(SegmentIDType segmentID,EventIndexType* 
    *pConstructEventIdx = INVALID_INDEX;
    *pErectEventIdx    = INVALID_INDEX;
 
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for ( ; iter != end; iter++ )
    {
       const auto* pTimelineEvent = *iter;
@@ -1463,8 +1463,8 @@ EventIndexType CTimelineManager::GetLastSegmentErectionEventIndex() const
 {
    PGS_ASSERT_VALID;
 
-   auto& iter(m_TimelineEvents.crbegin());
-   const auto& end(m_TimelineEvents.crend());
+   auto iter(m_TimelineEvents.crbegin());
+   auto end(m_TimelineEvents.crend());
    for ( ; iter != end; iter++ )
    {
       const auto* pTimelineEvent(*iter);
@@ -1518,8 +1518,8 @@ EventIndexType CTimelineManager::GetCastClosureJointEventIndex(const CClosureJoi
       return INVALID_INDEX;
    }
 
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for ( ; iter != end; iter++ )
    {
       const auto* pTimelineEvent = *iter;
@@ -1641,8 +1641,8 @@ void CTimelineManager::SetCastClosureJointEventByID(const CClosureJointData* pCl
       return;
    }
 
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for ( ; iter != end; iter++ )
    {
       const auto* pTimelineEvent = *iter;
@@ -1661,8 +1661,8 @@ EventIndexType CTimelineManager::GetStressTendonEventIndex(GirderIDType girderID
 {
    PGS_ASSERT_VALID;
 
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for ( ; iter != end; iter++ )
    {
       const auto* pTimelineEvent = *iter;
@@ -1711,8 +1711,8 @@ void CTimelineManager::SetStressTendonEventByIndex(GirderIDType girderID,DuctInd
 
 void CTimelineManager::SetStressTendonEventByID(GirderIDType girderID,DuctIndexType ductIdx,EventIDType ID)
 {
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for ( ; iter != end; iter++ )
    {
       const auto* pTimelineEvent = *iter;
@@ -1731,8 +1731,8 @@ EventIndexType CTimelineManager::GetCastDeckEventIndex() const
 {
    PGS_ASSERT_VALID;
 
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for ( ; iter != end; iter++ )
    {
       const auto* pTimelineEvent = *iter;
@@ -1785,8 +1785,8 @@ int CTimelineManager::SetCastDeckEventByIndex(EventIndexType eventIdx,bool bAdju
 
 int CTimelineManager::SetCastDeckEventByID(EventIDType ID,bool bAdjustTimeline)
 {
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for ( ; iter != end; iter++ )
    {
       const auto* pTimelineEvent = *iter;
@@ -1803,8 +1803,8 @@ EventIndexType CTimelineManager::GetCastLongitudinalJointEventIndex() const
 {
    PGS_ASSERT_VALID;
 
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for (; iter != end; iter++)
    {
       const auto* pTimelineEvent = *iter;
@@ -1873,8 +1873,8 @@ int CTimelineManager::SetCastLongitudinalJointEventByIndex(EventIndexType eventI
 
 int CTimelineManager::SetCastLongitudinalJointEventByID(EventIDType eventID, bool bAdjustTimeline)
 {
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for (; iter != end; iter++)
    {
       const auto* pTimelineEvent = *iter;
@@ -1891,8 +1891,8 @@ EventIndexType CTimelineManager::GetIntermediateDiaphragmsLoadEventIndex() const
 {
    PGS_ASSERT_VALID;
 
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for (; iter != end; iter++)
    {
       const auto* pTimelineEvent = *iter;
@@ -1935,8 +1935,8 @@ void CTimelineManager::SetIntermediateDiaphragmsLoadEventByIndex(EventIndexType 
 
 void CTimelineManager::SetIntermediateDiaphragmsLoadEventByID(EventIDType eventID)
 {
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for (; iter != end; iter++)
    {
       auto* pTimelineEvent = *iter;
@@ -1953,8 +1953,8 @@ EventIndexType CTimelineManager::GetRailingSystemLoadEventIndex() const
 {
    PGS_ASSERT_VALID;
 
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for ( ; iter != end; iter++ )
    {
       const auto* pTimelineEvent = *iter;
@@ -1997,8 +1997,8 @@ void CTimelineManager::SetRailingSystemLoadEventByIndex(EventIndexType eventIdx)
 
 void CTimelineManager::SetRailingSystemLoadEventByID(EventIDType ID)
 {
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for ( ; iter != end; iter++ )
    {
       const auto* pTimelineEvent = *iter;
@@ -2013,8 +2013,8 @@ void CTimelineManager::SetRailingSystemLoadEventByID(EventIDType ID)
 
 EventIndexType CTimelineManager::GetOverlayLoadEventIndex() const
 {
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for ( ; iter != end; iter++ )
    {
       const auto* pTimelineEvent = *iter;
@@ -2059,8 +2059,8 @@ void CTimelineManager::SetOverlayLoadEventByIndex(EventIndexType eventIdx)
 
 void CTimelineManager::SetOverlayLoadEventByID(EventIDType ID)
 {
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for ( ; iter != end; iter++ )
    {
       const auto* pTimelineEvent = *iter;
@@ -2085,8 +2085,8 @@ EventIndexType CTimelineManager::GetLiveLoadEventIndex() const
 {
    PGS_ASSERT_VALID;
 
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for ( ; iter != end; iter++ )
    {
       const auto* pTimelineEvent = *iter;
@@ -2129,8 +2129,8 @@ void CTimelineManager::SetLiveLoadEventByIndex(EventIndexType eventIdx)
 
 void CTimelineManager::SetLiveLoadEventByID(EventIDType ID)
 {
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for ( ; iter != end; iter++ )
    {
       const auto* pTimelineEvent = *iter;
@@ -2148,8 +2148,8 @@ EventIndexType CTimelineManager::GetLoadRatingEventIndex() const
 {
    PGS_ASSERT_VALID;
 
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for ( ; iter != end; iter++ )
    {
       const auto* pTimelineEvent = *iter;
@@ -2193,8 +2193,8 @@ void CTimelineManager::SetLoadRatingEventByIndex(EventIndexType eventIdx)
 
 void CTimelineManager::SetLoadRatingEventByID(EventIDType ID)
 {
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for ( ; iter != end; iter++ )
    {
       const auto* pTimelineEvent = *iter;
@@ -2233,8 +2233,8 @@ void CTimelineManager::SetUserLoadEventByIndex(LoadIDType loadID,EventIndexType 
 
 void CTimelineManager::SetUserLoadEventByID(LoadIDType loadID,EventIDType eventID)
 {
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for ( ; iter != end; iter++ )
    {
       const auto* pTimelineEvent = *iter;
@@ -2250,8 +2250,8 @@ void CTimelineManager::SetUserLoadEventByID(LoadIDType loadID,EventIDType eventI
 
 EventIndexType CTimelineManager::FindUserLoadEventIndex(LoadIDType loadID) const
 {
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for ( ; iter != end; iter++ )
    {
       const auto* pTimelineEvent = *iter;
@@ -2281,8 +2281,8 @@ EventIndexType CTimelineManager::GetPrimaryGeometryControlEventIndex() const
 {
    PGS_ASSERT_VALID;
 
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for (; iter != end; iter++)
    {
       const auto* pTimelineEvent = *iter;
@@ -2299,8 +2299,8 @@ std::vector<EventIndexType> CTimelineManager::GetGeometryControlEventIndices(pgs
    PGS_ASSERT_VALID;
    std::vector<EventIndexType> events;
 
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for (; iter != end; iter++)
    {
       const auto* pTimelineEvent = *iter;
@@ -2371,8 +2371,8 @@ std::vector <EventIDType> CTimelineManager::GetGeometryControlEventIDs(pgsTypes:
 
 void CTimelineManager::SetGeometryControlEventByID(EventIDType ID,pgsTypes::GeometryControlActivityType type)
 {
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for (; iter != end; iter++)
    {
       const auto* pTimelineEvent = *iter;
@@ -3213,14 +3213,14 @@ std::_tstring CTimelineManager::GetErrorMessage(Uint32 errorCode) const
 
    if (WBFL::System::Flags<Uint32>::IsSet(errorCode, TLM_CONSTRUCT_SEGMENTS_ACTIVITY_REQUIRED))
    {
-      os << _T("The timeline does not include activites for constructing the following segments:") << std::endl;
+      os << _T("The timeline does not include activities for constructing the following segments:") << std::endl;
       std::for_each(std::cbegin(m_ConstructSegmentActivityError), std::cend(m_ConstructSegmentActivityError), [&os](const auto& segmentKey) {os << SEGMENT_LABEL(segmentKey) << std::endl; });
       os << std::endl;
    }
 
    if (WBFL::System::Flags<Uint32>::IsSet(errorCode, TLM_ERECT_SEGMENTS_ACTIVITY_REQUIRED))
    {
-      os << _T("The timeline does not include activites for erecting the following segments:") << std::endl;
+      os << _T("The timeline does not include activities for erecting the following segments:") << std::endl;
       std::for_each(std::cbegin(m_ErectSegmentActivityError), std::cend(m_ErectSegmentActivityError), [&os](const auto& segmentKey) {os << SEGMENT_LABEL(segmentKey) << std::endl; });
       os << std::endl;
    }
@@ -3269,7 +3269,7 @@ std::_tstring CTimelineManager::GetErrorMessage(Uint32 errorCode) const
 
    if (WBFL::System::Flags<Uint32>::IsSet(errorCode, TLM_STRESS_TENDONS_ACTIVITY_REQUIRED))
    {
-      os << _T("The timeline does not include activites for stressing the following tendons:") << std::endl;
+      os << _T("The timeline does not include activities for stressing the following tendons:") << std::endl;
       std::for_each(std::cbegin(m_StressTendonsActivityError), std::cend(m_StressTendonsActivityError), [&os](const auto& key) {os << GIRDER_LABEL(key.girderKey) << _T(", Duct ") << LABEL_DUCT(key.ductIdx) << std::endl; });
       os << std::endl;
    }
@@ -3359,8 +3359,8 @@ void CTimelineManager::AssertValid() const
    std::set<SupportIDType> castClosureJoints;
    std::set<CGirderTendonKey> stressTendons;
 
-   auto& iter(m_TimelineEvents.cbegin());
-   const auto& end(m_TimelineEvents.cend());
+   auto iter(m_TimelineEvents.cbegin());
+   auto end(m_TimelineEvents.cend());
    for ( ; iter != end; iter++ )
    {
       const CTimelineEvent* pTimelineEvent = *iter;

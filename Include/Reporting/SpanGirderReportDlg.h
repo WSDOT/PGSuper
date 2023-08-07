@@ -42,7 +42,7 @@ public:
       GroupGirderSegmentAndChapters = 4
    };
    
-   CSpanGirderReportDlg(IBroker* pBroker,const WBFL::Reporting::ReportDescription& rptDesc,Mode mode,std::shared_ptr<WBFL::Reporting::ReportSpecification>& pRptSpec,UINT nIDTemplate = IDD_SPANGIRDERREPORT,CWnd* pParent = nullptr);   // standard constructor
+   CSpanGirderReportDlg(IBroker* pBroker,const WBFL::Reporting::ReportDescription& rptDesc,Mode mode,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate = IDD_SPANGIRDERREPORT,CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CSpanGirderReportDlg();
 
 // Dialog Data

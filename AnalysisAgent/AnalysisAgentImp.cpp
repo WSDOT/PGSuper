@@ -3360,7 +3360,7 @@ std::shared_ptr<WBFL::Math::LinearFunction> CAnalysisAgentImp::GetUnrecoverableD
       }
 
       // Y deflection along segment is linearly interpolated using values at support locations
-      pMathFunction = std::make_shared<WBFL::Math::LinearFunction>(GenerateLineFunc2dFromPoints(XgStart,DyStart,XgEnd,DyEnd));
+      pMathFunction = std::make_shared<WBFL::Math::LinearFunction>(WBFL::Math::GenerateLineFunc2dFromPoints(XgStart,DyStart,XgEnd,DyEnd));
    }
 
    return pMathFunction;
@@ -10844,7 +10844,7 @@ void CAnalysisAgentImp::ValidateElevationDeflectionAdjustment(const CSegmentKey&
       }
 
       // Goal here is to make linear adjustment along segment such that chord will be zero at the SCD locations.
-      WBFL::Math::LinearFunction tmpfun = GenerateLineFunc2dFromPoints(startPoi.GetDistFromStart(),startDefl,endPoi.GetDistFromStart(),endDefl);
+      WBFL::Math::LinearFunction tmpfun = WBFL::Math::GenerateLineFunc2dFromPoints(startPoi.GetDistFromStart(),startDefl,endPoi.GetDistFromStart(),endDefl);
 
       m_ElevationDeflectionAdjustmentFunctions.insert(std::make_pair(segmentKey,tmpfun));
    }
@@ -11866,9 +11866,9 @@ void CAnalysisAgentImp::GetTiltedGirderLateralStresses(const PoiList& vPoi, pgsT
    IntervalIndexType thisSegmentErectionIntervalIdx;
    CSegmentKey lastSegmentKey;
    Float64 girder_orientation = 0;
-   const auto& begin(vPoi.cbegin());
-   auto& iter(vPoi.cbegin());
-   const auto& end(vPoi.cend());
+   auto begin(vPoi.cbegin());
+   auto iter(vPoi.cbegin());
+   auto end(vPoi.cend());
    for (; iter != end; iter++)
    {
       const pgsPointOfInterest& poi(*iter);

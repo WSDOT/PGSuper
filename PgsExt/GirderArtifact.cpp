@@ -501,7 +501,7 @@ void pgsGirderArtifact::AddFlexuralCapacityArtifact(FlexuralCapacityContainer* p
       }
    }
 
-   auto& found = pArtifacts->find(intervalIdx);
+   auto found = pArtifacts->find(intervalIdx);
 
    std::vector<pgsFlexuralCapacityArtifact>& vArtifacts(found->second);
    vArtifacts.push_back(artifact);

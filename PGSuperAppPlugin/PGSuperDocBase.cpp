@@ -2430,7 +2430,7 @@ void CPGSDocBase::OnErrorDeletingBadSave(LPCTSTR lpszPathName,LPCTSTR lpszBackup
    GET_IFACE(IEAFProjectLog,pLog);
 
    pLog->LogMessage(_T(""));
-   pLog->LogMessage(_T("An error occured while recovering your last successful save."));
+   pLog->LogMessage(_T("An error occurred while recovering your last successful save."));
    msg.Format(_T("It is highly likely that the file %s is corrupt."), lpszPathName);
    pLog->LogMessage( msg );
    pLog->LogMessage(_T("To recover from this error,"));
@@ -2440,7 +2440,7 @@ void CPGSDocBase::OnErrorDeletingBadSave(LPCTSTR lpszPathName,LPCTSTR lpszBackup
    pLog->LogMessage( msg );
    pLog->LogMessage(_T(""));
 
-   std::_tstring strLogFileName = pLog->GetName();
+   std::_tstring strLogFileName = (LPCTSTR)pLog->GetName();
 
    AfxFormatString2( msg, IDS_E_SAVERECOVER1, lpszPathName, CString(strLogFileName.c_str()) );
    AfxMessageBox(msg );
@@ -2453,7 +2453,7 @@ void CPGSDocBase::OnErrorRenamingSaveBackup(LPCTSTR lpszPathName,LPCTSTR lpszBac
    GET_IFACE(IEAFProjectLog,pLog);
 
    pLog->LogMessage(_T(""));
-   pLog->LogMessage(_T("An error occured while recovering your last successful save."));
+   pLog->LogMessage(_T("An error occurred while recovering your last successful save."));
    msg.Format(_T("It is highly likely that the file %s no longer exists."), lpszPathName);
    pLog->LogMessage( msg );
    pLog->LogMessage(_T("To recover from this error,"));
@@ -2463,7 +2463,7 @@ void CPGSDocBase::OnErrorRenamingSaveBackup(LPCTSTR lpszPathName,LPCTSTR lpszBac
    pLog->LogMessage( msg );
    pLog->LogMessage(_T(""));
 
-   std::_tstring strLogFileName = pLog->GetName();
+   std::_tstring strLogFileName = (LPCTSTR)pLog->GetName();
 
    AfxFormatString2( msg, IDS_E_SAVERECOVER2, lpszPathName, CString(strLogFileName.c_str()) );
    AfxMessageBox( msg );
@@ -2625,13 +2625,13 @@ void CPGSDocBase::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszPathName )
    GET_IFACE( IEAFProjectLog, pLog );
 
    CString log_msg_header;
-   log_msg_header.Format(_T("The following error occured while opening %s"),lpszPathName );
+   log_msg_header.Format(_T("The following error occurred while opening %s"),lpszPathName );
    pLog->LogMessage( log_msg_header );
 
    if ( hr == STRLOAD_E_USERDEFINED )
    {
-      // a user defined error occured. an error message should have been displayed
-      // at the point where the error occured. 
+      // a user defined error occurred. an error message should have been displayed
+      // at the point where the error occurred. 
       // Do nothing here! return because we are done
       return;
    }
@@ -2673,7 +2673,7 @@ void CPGSDocBase::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszPathName )
    default:
       {
          CString log_msg;
-         log_msg.Format(_T("An unknown error occured while opening the file (hr = %d)"),hr);
+         log_msg.Format(_T("An unknown error occurred while opening the file (hr = %d)"),hr);
          pLog->LogMessage( log_msg );
          AfxFormatString1( msg1, IDS_E_READ, lpszPathName );
       }
@@ -2682,7 +2682,7 @@ void CPGSDocBase::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszPathName )
 
    CString msg;
    CString msg2;
-   std::_tstring strLogFileName = pLog->GetName();
+   std::_tstring strLogFileName = (LPCTSTR)pLog->GetName();
    AfxFormatString1( msg2, IDS_E_PROBPERSISTS, CString(strLogFileName.c_str()) );
    AfxFormatString2(msg, IDS_E_FORMAT, msg1, msg2 );
    AfxMessageBox( msg );
@@ -2697,7 +2697,7 @@ void CPGSDocBase::HandleSaveDocumentError( HRESULT hr, LPCTSTR lpszPathName )
    GET_IFACE( IEAFProjectLog, pLog );
 
    CString log_msg_header;
-   log_msg_header.Format(_T("The following error occured while saving %s"),lpszPathName );
+   log_msg_header.Format(_T("The following error occurred while saving %s"),lpszPathName );
    pLog->LogMessage( log_msg_header );
 
    CPGSuperDocTemplateBase* pTemplate = (CPGSuperDocTemplateBase*)GetDocTemplate();
@@ -2723,7 +2723,7 @@ void CPGSDocBase::HandleSaveDocumentError( HRESULT hr, LPCTSTR lpszPathName )
    default:
       {
          CString log_msg;
-         log_msg.Format(_T("An unknown error occured while closing the file (hr = %d)"),hr);
+         log_msg.Format(_T("An unknown error occurred while closing the file (hr = %d)"),hr);
          pLog->LogMessage( log_msg );
          AfxFormatString1( msg1, IDS_E_WRITE, lpszPathName );
       }
@@ -2732,7 +2732,7 @@ void CPGSDocBase::HandleSaveDocumentError( HRESULT hr, LPCTSTR lpszPathName )
 
    CString msg;
    CString msg2;
-   std::_tstring strLogFileName = pLog->GetName();
+   std::_tstring strLogFileName = (LPCTSTR)pLog->GetName();
    AfxFormatString1( msg2, IDS_E_PROBPERSISTS, CString(strLogFileName.c_str()) );
    AfxFormatString2(msg, IDS_E_FORMAT, msg1, msg2 );
    AfxMessageBox( msg );
@@ -2750,7 +2750,7 @@ void CPGSDocBase::HandleConvertDocumentError( HRESULT hr, LPCTSTR lpszPathName )
    CPGSuperDocTemplateBase* pTemplate = (CPGSuperDocTemplateBase*)GetDocTemplate();
 
    CString log_msg_header;
-   log_msg_header.Format(_T("The following error occured while converting %s"),lpszPathName );
+   log_msg_header.Format(_T("The following error occurred while converting %s"),lpszPathName );
    pLog->LogMessage( log_msg_header );
 
    CString msg1;
@@ -2769,7 +2769,7 @@ void CPGSDocBase::HandleConvertDocumentError( HRESULT hr, LPCTSTR lpszPathName )
    default:
       {
          CString log_msg;
-         log_msg.Format(_T("An unknown error occured while converting the file (hr = %d)"),hr);
+         log_msg.Format(_T("An unknown error occurred while converting the file (hr = %d)"),hr);
          pLog->LogMessage( log_msg );
          AfxFormatString1( msg1, IDS_E_READ, lpszPathName );
       }
@@ -2778,7 +2778,7 @@ void CPGSDocBase::HandleConvertDocumentError( HRESULT hr, LPCTSTR lpszPathName )
 
    CString msg;
    CString msg2;
-   std::_tstring strLogFileName = pLog->GetName();
+   std::_tstring strLogFileName = (LPCTSTR)pLog->GetName();
    AfxFormatString1( msg2, IDS_E_PROBPERSISTS, CString(strLogFileName.c_str()) );
    AfxFormatString2(msg, IDS_E_FORMAT, msg1, msg2 );
    AfxMessageBox( msg );
@@ -3241,7 +3241,7 @@ bool CPGSDocBase::DoLoadMasterLibrary(const CString& strMasterLibraryFile)
          WATCH(_T("Failed to load master library"));
          AfxFormatString1(err_msg, IDS_CORRUPTED_LIBRARY_FILE, strFile);
 
-         // if we are here, an error occured. Issue the message and give
+         // if we are here, an error occurred. Issue the message and give
          // the user a chance to load another library file
 
          if ( AfxMessageBox(err_msg,MB_YESNO|MB_ICONSTOP) == IDYES )

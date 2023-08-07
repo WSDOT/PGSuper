@@ -15428,7 +15428,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
       if (!IsZero(assumed_excess_camber))
       {
          // Create function with parabolic shape
-         camberShape = std::make_unique<WBFL::Math::PolynomialFunction>(GenerateParabola(poi_left_brg.GetDistFromStart(), poi_right_brg.GetDistFromStart(), assumed_excess_camber));
+         camberShape = std::make_unique<WBFL::Math::PolynomialFunction>(WBFL::Math::GenerateParabola(poi_left_brg.GetDistFromStart(), poi_right_brg.GetDistFromStart(), assumed_excess_camber));
       }
       else
       {
@@ -15447,7 +15447,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
       if (!IsZero(top_flange_thickening))
       {
          // Create function with parabolic shape
-         imposedShape = std::make_unique<WBFL::Math::PolynomialFunction>(GenerateParabola(poi_left.GetDistFromStart(), poi_right.GetDistFromStart(), top_flange_thickening));
+         imposedShape = std::make_unique<WBFL::Math::PolynomialFunction>(WBFL::Math::GenerateParabola(poi_left.GetDistFromStart(), poi_right.GetDistFromStart(), top_flange_thickening));
       }
       else
       {
@@ -15479,7 +15479,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
       if ( !IsZero(departure))
       {
          // there is an imposed camber and/or top flange thickening. use its shape, excluding natural camber, for the top of the girder
-         imposedShape = std::make_unique<WBFL::Math::PolynomialFunction>(GenerateParabola(poi_left.GetDistFromStart(), poi_right.GetDistFromStart(), departure));
+         imposedShape = std::make_unique<WBFL::Math::PolynomialFunction>(WBFL::Math::GenerateParabola(poi_left.GetDistFromStart(), poi_right.GetDistFromStart(), departure));
       }
       else
       {

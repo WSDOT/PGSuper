@@ -91,7 +91,6 @@ xcopy /y /d $(ARPDIR)\PGSuper\Images\*.* $(ARPDIR)\BridgeLink\Images
       <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
     </Midl>
     <ClCompile>
-      <AdditionalOptions>/Zm400  %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>..\Include;;$(ARPDIR)\BridgeLink\Include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;_USRDLL;_ATL_NO_UUIDOF;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -103,6 +102,8 @@ xcopy /y /d $(ARPDIR)\PGSuper\Images\*.* $(ARPDIR)\BridgeLink\Images
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WholeProgramOptimization>false</WholeProgramOptimization>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -150,7 +151,6 @@ xcopy /y /d $(ARPDIR)\PGSuper\Images\*.* $(ARPDIR)\BridgeLink\Images
       <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
     </Midl>
     <ClCompile>
-      <AdditionalOptions>/Zm400  %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\Include;;$(ARPDIR)\BridgeLink\Include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_USRDLL;_ATL_NO_UUIDOF;xIGNORE_2007_CHANGES;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -163,6 +163,8 @@ xcopy /y /d $(ARPDIR)\PGSuper\Images\*.* $(ARPDIR)\BridgeLink\Images
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>

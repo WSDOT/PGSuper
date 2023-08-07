@@ -89,7 +89,7 @@ public:
       ;
    }
    // Granddaddy constructor
-   PierDiaphragmData::PierDiaphragmData(PierCBLocType PierType,
+   PierDiaphragmData(PierCBLocType PierType,
                                        Float64 backHeight, Float64 backWidth, ConnectionLibraryEntry::DiaphragmLoadType backLoadType, Float64 backLoadLocation,
                                        Float64 aheadHeight, Float64 aheadWidth, ConnectionLibraryEntry::DiaphragmLoadType aheadLoadType, Float64 aheadLoadLocation);
 
@@ -128,13 +128,13 @@ public:
    std::vector<CColumnData> m_Columns;
 
    // Idealized model
-   PierModelData::PierModelData() :
+   PierModelData() :
       m_PierModelType(pgsTypes::pmtIdealized)
    {
    }
 
    // Constructor for physical piers. Creates a single column
-   PierModelData::PierModelData(const CConcreteMaterial& rConcrete, ColumnIndexType refColumnIdx, Float64 transverseOffset, pgsTypes::OffsetMeasurementType transverseOffsetMeasurement,
+   PierModelData(const CConcreteMaterial& rConcrete, ColumnIndexType refColumnIdx, Float64 transverseOffset, pgsTypes::OffsetMeasurementType transverseOffsetMeasurement,
                                  Float64 leftXBeamHeight, Float64 leftXBeamTaperHeight, Float64 leftXBeamTaperLength, Float64 leftXBeamEndSlopeOffset, Float64 leftXBeamOverhang,
                                  Float64 rightXBeamHeight, Float64 rightXBeamTaperHeight, Float64 rightXBeamTaperLength, Float64 rightXBeamEndSlopeOffset, Float64 rightXBeamOverhang,
                                  Float64 XBeamWidth, CColumnData::ColumnHeightMeasurementType columnHeightType, pgsTypes::ColumnLongitudinalBaseFixityType columnFixity, const CColumnData& rColumnData);

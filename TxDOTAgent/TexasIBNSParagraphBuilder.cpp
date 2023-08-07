@@ -178,12 +178,12 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IBroker* pBroker
          point->get_Y(&curr_y);
 
          (*p_table)(row,0) << ucomp.SetValue(Hg + curr_y);
-         (*p_table)(row,1) << (long)vss.size();
+         (*p_table)(row,1) << (IndexType)vss.size();
 
-         // rest of colums are zeros
+         // rest of columns are zeros
          for (ColumnIndexType icol = 2; icol < num_cols; icol++)
          {
-            (*p_table)(row,icol) << (long)0;
+            (*p_table)(row,icol) << (IndexType)0;
          }
       }
       else

@@ -34,7 +34,7 @@ class CMultiGirderReportDlg : public CDialog
 	DECLARE_DYNAMIC(CMultiGirderReportDlg)
 
 public:
-	CMultiGirderReportDlg(IBroker* pBroker,const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification>& pRptSpec,UINT nIDTemplate = IDD_MULTIGIRDERREPORT,CWnd* pParent = nullptr);   // standard constructor
+	CMultiGirderReportDlg(IBroker* pBroker,const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate = IDD_MULTIGIRDERREPORT,CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CMultiGirderReportDlg();
 
 // Dialog Data

@@ -33,7 +33,7 @@ interface ILoadsViewController;
 // {40E55658-360F-47d8-86DB-0AF21974BA30}
 DEFINE_GUID(IID_IViews, 
 0x40e55658, 0x360f, 0x47d8, 0x86, 0xdb, 0xa, 0xf2, 0x19, 0x74, 0xba, 0x30);
-interface IViews : public IUnknown
+interface __declspec(uuid("{40E55658-360F-47d8-86DB-0AF21974BA30}")) IViews : public IUnknown
 {
    virtual void CreateBridgeModelView(IBridgeModelViewController** ppViewController=nullptr) = 0;
    virtual void CreateGirderView(const CGirderKey& girderKey, IGirderModelViewController** ppViewController = nullptr) = 0;

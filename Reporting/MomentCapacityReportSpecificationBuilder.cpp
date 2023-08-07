@@ -46,7 +46,7 @@ CMomentCapacityReportSpecificationBuilder::~CMomentCapacityReportSpecificationBu
 {
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CMomentCapacityReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification>& pOldRptSpec) const
+std::shared_ptr<WBFL::Reporting::ReportSpecification> CMomentCapacityReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 

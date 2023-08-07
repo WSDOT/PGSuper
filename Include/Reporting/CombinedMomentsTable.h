@@ -26,11 +26,11 @@
 #include <Reporting\ReportingExp.h>
 #include <Reporting\ReportNotes.h>
 #include <IFace\Project.h>
+#include <IFace\RatingSpecification.h>
 
 interface IBroker;
 interface IProductLoads;
 interface IEAFDisplayUnits;
-interface IRatingSpecification;
 interface ILiveLoads;
 interface IIntervals;
 interface IPointOfInterest;

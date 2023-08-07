@@ -157,7 +157,7 @@ BOOL CPsgLibApp::InitInstance()
    // This call will initialize the grid library
 	GXInit();
 
-   WBFL::System::ComCatMgr::CreateCategory(L"PGSLibrary Editor Components",CATID_PGSuperLibraryManagerPlugin);
+   WBFL::System::ComCatMgr::CreateCategory(CComBSTR("PGSLibrary Editor Components"),CATID_PGSuperLibraryManagerPlugin);
 
    return CWinApp::InitInstance();
 }
@@ -176,7 +176,7 @@ void CPsgLibApp::OnHelp()
    // must have a handler for ID_HELP otherwise CDialog::InitDialog() will hide the help button
 }
 
-std::_tstring PSGLIBFUNC WINAPI psglibGetFirstEntryName(const WBFL::Library::ILibrary& rlib)
+std::_tstring psglibGetFirstEntryName(const WBFL::Library::ILibrary& rlib)
 {
    WBFL::Library::KeyListType key_list;
    rlib.KeyList(key_list);
@@ -232,7 +232,7 @@ bool do_deal_with_library_conflicts(ConflictList* pList, LibType* pMasterLib, co
                res = psglibResolveLibraryEntryConflict(publisher,configuration,name,libName,master_keys,isImported,vDifferences,bMustRename,&new_name);
             }
 
-            std::for_each(vDifferences.begin(),vDifferences.end(),pgsDeleteLibraryEntryConflictItem);
+            std::for_each(vDifferences.begin(), vDifferences.end(), [](auto* pItem) {delete pItem; });
             vDifferences.clear();
 
             if (res==Rename)
@@ -278,7 +278,7 @@ bool do_deal_with_library_conflicts(ConflictList* pList, LibType* pMasterLib, co
    return true;
 }
 
-bool PSGLIBFUNC WINAPI psglibDealWithLibraryConflicts(ConflictList* pList, psgLibraryManager* pMasterMgr, const psgLibraryManager& projectMgr, bool isImported, bool bForceUpdate)
+bool psglibDealWithLibraryConflicts(ConflictList* pList, psgLibraryManager* pMasterMgr, const psgLibraryManager& projectMgr, bool isImported, bool bForceUpdate)
 {
    // cycle through project library and see if entry names match master library. If the names
    // match and the entries are the same, no problem. If the entry names match and the entries are
@@ -363,7 +363,7 @@ bool do_make_saveable_copy(const WBFL::Library::ILibrary& lib, WBFL::Library::IL
 }
 
 
-bool PSGLIBFUNC WINAPI psglibMakeSaveableCopy(const psgLibraryManager& libMgr, psgLibraryManager* ptempManager)
+bool psglibMakeSaveableCopy(const psgLibraryManager& libMgr, psgLibraryManager* ptempManager)
 {
    // concrete entries
    if (!do_make_saveable_copy(libMgr.GetConcreteLibrary(), &(ptempManager->GetConcreteLibrary())))
@@ -428,7 +428,7 @@ bool PSGLIBFUNC WINAPI psglibMakeSaveableCopy(const psgLibraryManager& libMgr, p
    return true;
 }
 
-void PSGLIBFUNC WINAPI psglibCreateLibNameEnum( std::vector<std::_tstring>* pNames, const WBFL::Library::ILibrary& prjLib)
+void psglibCreateLibNameEnum( std::vector<std::_tstring>* pNames, const WBFL::Library::ILibrary& prjLib)
 {
    pNames->clear();
 
@@ -436,12 +436,7 @@ void PSGLIBFUNC WINAPI psglibCreateLibNameEnum( std::vector<std::_tstring>* pNam
    prjLib.KeyList( *pNames );
 }
 
-void pgsDeleteLibraryEntryConflictItem(pgsLibraryEntryDifferenceItem* pItem)
-{
-   delete pItem;
-}
-
-LibConflictOutcome PSGLIBFUNC WINAPI psglibResolveLibraryEntryConflict(const std::_tstring& strPublisher, const std::_tstring& strConfiguration, const std::_tstring& entryName, const std::_tstring& libName, const std::vector<std::_tstring>& keylists, bool isImported,const std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences,bool bMustRename,std::_tstring* pNewName)
+LibConflictOutcome psglibResolveLibraryEntryConflict(const std::_tstring& strPublisher, const std::_tstring& strConfiguration, const std::_tstring& entryName, const std::_tstring& libName, const std::vector<std::_tstring>& keylists, bool isImported,const std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences,bool bMustRename,std::_tstring* pNewName)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -471,7 +466,7 @@ LibConflictOutcome PSGLIBFUNC WINAPI psglibResolveLibraryEntryConflict(const std
    return result;
 }
 
-bool PSGLIBFUNC WINAPI psglibImportEntries(IStructuredLoad* pStrLoad,psgLibraryManager* pLibMgr)
+bool psglibImportEntries(IStructuredLoad* pStrLoad,psgLibraryManager* pLibMgr)
 {
    // Load the library data into a temporary library. Then deal with entry
    // conflict resolution.

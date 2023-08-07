@@ -300,7 +300,7 @@ BOOL CTimelineGrid::OnValidateCell(ROWCOL nRow,ROWCOL nCol)
 {
    if ( nCol == 1 )
    {
-      // The day the event occured changed...
+      // The day the event occurred changed...
       // Check to see if this event conflicts with its adjacent events... if so,
       // ask the user if the timeline should be adjusted.
       CEditTimelineDlg* pParent = (CEditTimelineDlg*)GetParent();

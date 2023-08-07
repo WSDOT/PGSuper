@@ -135,7 +135,7 @@ bool CBridgePlanView::IsDeckSelected()
       return false;
    }
 
-   CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
+   CComPtr<iDisplayObject> pDO = displayObjects.front();
 
    DeckDisplayObjectInfo* pInfo = nullptr;
    pDO->GetItemData((void**)&pInfo);
@@ -162,7 +162,7 @@ bool CBridgePlanView::IsAlignmentSelected()
       return false;
    }
 
-   CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
+   CComPtr<iDisplayObject> pDO = displayObjects.front();
 
    if ( pDO->GetID() == ALIGNMENT_ID )
    {
@@ -205,7 +205,7 @@ bool CBridgePlanView::GetSelectedSpan(SpanIndexType* pSpanIdx)
       return false;
    }
 
-   CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
+   CComPtr<iDisplayObject> pDO = displayObjects.front();
 
    SpanDisplayObjectInfo* pInfo;
    pDO->GetItemData((void**)&pInfo);
@@ -234,7 +234,7 @@ bool CBridgePlanView::GetSelectedPier(PierIndexType* pPierIdx)
       return false;
    }
 
-   CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
+   CComPtr<iDisplayObject> pDO = displayObjects.front();
 
    PierDisplayObjectInfo* pInfo;
    pDO->GetItemData((void**)&pInfo);
@@ -300,7 +300,7 @@ bool CBridgePlanView::GetSelectedGirder(CGirderKey* pGirderKey)
       return false;
    }
 
-   CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
+   CComPtr<iDisplayObject> pDO = displayObjects.front();
 
    GirderDisplayObjectInfo* pInfo = nullptr;
    pDO->GetItemData((void**)&pInfo);
@@ -356,7 +356,7 @@ bool CBridgePlanView::GetSelectedSegment(CSegmentKey* pSegmentKey)
       return false;
    }
 
-   CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
+   CComPtr<iDisplayObject> pDO = displayObjects.front();
 
    SegmentDisplayObjectInfo* pInfo = nullptr;
    pDO->GetItemData((void**)&pInfo);
@@ -413,7 +413,7 @@ bool CBridgePlanView::GetSelectedClosureJoint(CSegmentKey* pClosureKey)
       return false;
    }
 
-   CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
+   CComPtr<iDisplayObject> pDO = displayObjects.front();
 
    SegmentDisplayObjectInfo* pInfo = nullptr;
    pDO->GetItemData((void**)&pInfo);
@@ -506,7 +506,7 @@ bool CBridgePlanView::GetSelectedTemporarySupport(SupportIndexType* ptsIdx)
       return false;
    }
 
-   CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
+   CComPtr<iDisplayObject> pDO = displayObjects.front();
 
    TemporarySupportDisplayObjectInfo* pInfo;
    pDO->GetItemData((void**)&pInfo);
@@ -1175,7 +1175,7 @@ void CBridgePlanView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
       bool bSectionCutSelected = false;
       if ( 0 < selObjs.size() )
       {
-         CComPtr<iDisplayObject> pDO = selObjs[0].m_T;
+         CComPtr<iDisplayObject> pDO = selObjs[0];
          if ( pDO->GetID() == SECTION_CUT_ID )
          {
             bSectionCutSelected = true;
@@ -1255,7 +1255,7 @@ BOOL CBridgePlanView::OnMouseWheel(UINT nFlags,short zDelta,CPoint pt)
    bool bLeftRight = true;
    if ( 0 < selObjs.size() )
    {
-      CComPtr<iDisplayObject> pDO = selObjs[0].m_T;
+      CComPtr<iDisplayObject> pDO = selObjs[0];
       CComPtr<iDisplayList> pDispList;
       pDO->GetDisplayList(&pDispList);
       IDType dispListID = pDispList->GetID();

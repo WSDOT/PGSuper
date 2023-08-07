@@ -145,7 +145,7 @@ DESCRIPTION
 // {D100AF07-38DA-4baa-8726-F1EE9A52D037}
 DEFINE_GUID(IID_IRatingSpecificationEventSink, 
 0xd100af07, 0x38da, 0x4baa, 0x87, 0x26, 0xf1, 0xee, 0x9a, 0x52, 0xd0, 0x37);
-interface IRatingSpecificationEventSink : IUnknown
+interface __declspec(uuid("{D100AF07-38DA-4baa-8726-F1EE9A52D037}")) IRatingSpecificationEventSink : IUnknown
 {
    virtual HRESULT OnRatingSpecificationChanged() = 0;
 };

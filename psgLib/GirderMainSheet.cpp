@@ -1053,7 +1053,7 @@ void CGirderMainSheet::SetDebondTabName()
       CTabCtrl* pTab = GetTabControl();
       TC_ITEM ti;
       ti.mask = TCIF_TEXT;
-      ti.pszText = _T("Debonding");
+      ti.pszText = (TCHAR*)_T("Debonding");
       pTab->SetItem(index,&ti);
    }
 }
