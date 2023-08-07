@@ -97,10 +97,6 @@ private:
 
    void SelectRow(ROWCOL nRow);
    BOOL ValidatePoint(CDeckPoint& point,IEAFDisplayUnits* pDisplayUnits);
-
-   // need a station object to convert stations between text and values
-   // create this object once and use it over and over
-   CComPtr<IStation> m_objStation;
 };
 
 

@@ -42,6 +42,7 @@
 
 #include <Units\Measure.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <CoordGeom\Station.h>
 
 #include <PgsExt\ClosureJointData.h>
 
@@ -81,9 +82,6 @@ CBridgeDescFramingGrid::CBridgeDescFramingGrid():
    m_bDoValidate(true)
 {
 //   RegisterClass();
-   HRESULT hr = m_objStation.CoCreateInstance(CLSID_Station);
-   hr = m_objAngle.CoCreateInstance(CLSID_Angle);
-   hr = m_objDirection.CoCreateInstance(CLSID_Direction);
 }
 
 CBridgeDescFramingGrid::~CBridgeDescFramingGrid()
@@ -623,13 +621,10 @@ CPierData2* CBridgeDescFramingGrid::GetPierRowData(ROWCOL nRow)
    // update pier using the data in the grid
 
    // Station
-   CString strStation = GetCellValue(nRow,1);
+   std::_tstring strStation(GetCellValue(nRow, 1));
    UnitModeType unitMode = (UnitModeType)(pDisplayUnits->GetUnitMode());
-   m_objStation->FromString(CComBSTR(strStation),unitMode);
-   Float64 station;
-   m_objStation->get_Value(&station);
-   station = WBFL::Units::ConvertToSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
-   pPier->SetStation(station);
+   WBFL::COGO::Station station(strStation, unitMode == umUS ? WBFL::Units::StationFormats::US : WBFL::Units::StationFormats::SI);
+   pPier->SetStation(station.GetValue());
 
    // Orientation
    CString strOrientation = GetCellValue(nRow,2);
@@ -666,13 +661,10 @@ CTemporarySupportData CBridgeDescFramingGrid::GetTemporarySupportRowData(ROWCOL 
    // update temporary support using the data in the grid
 
    // Station
-   CString strStation = GetCellValue(nRow,1);
+   std::_tstring strStation(GetCellValue(nRow, 1));
    UnitModeType unitMode = (UnitModeType)(pDisplayUnits->GetUnitMode());
-   m_objStation->FromString(CComBSTR(strStation),unitMode);
-   Float64 station;
-   m_objStation->get_Value(&station);
-   station = WBFL::Units::ConvertToSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
-   tsData.SetStation(station);
+   WBFL::COGO::Station station(strStation, unitMode == umUS ? WBFL::Units::StationFormats::US : WBFL::Units::StationFormats::SI);
+   tsData.SetStation(station.GetValue());
 
    // Orientation
    CString strOrientation = GetCellValue(nRow,2);
@@ -766,7 +758,6 @@ void CBridgeDescFramingGrid::FillPierRow(ROWCOL row,const CPierData2* pPierData)
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   CString strStation = FormatStation(pDisplayUnits->GetStationFormat(),pPierData->GetStation());
 
    CBridgeDescFramingPage* pParent = (CBridgeDescFramingPage*)GetParent();
 
@@ -782,11 +773,12 @@ void CBridgeDescFramingGrid::FillPierRow(ROWCOL row,const CPierData2* pPierData)
    );
 
    // station
+   WBFL::COGO::Station station(pPierData->GetStation());
    SetStyleRange(CGXRange(row,col++), CGXStyle()
       .SetHorizontalAlignment(DT_RIGHT)
       .SetReadOnly(FALSE)
       .SetEnabled(TRUE)
-      .SetValue(strStation)
+      .SetValue(station.AsString(pDisplayUnits->GetStationFormat()).c_str())
    );
 
    // orientation
@@ -1266,8 +1258,12 @@ BOOL CBridgeDescFramingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
       EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-      HRESULT hr = m_objStation->FromString( CComBSTR(s), (UnitModeType)(pDisplayUnits->GetUnitMode()));
-      if ( FAILED(hr) )
+      try
+      {
+         std::_tstring strStation(s);
+         WBFL::COGO::Station station(strStation, pDisplayUnits->GetStationFormat());
+      }
+      catch(...)
       {
 			SetWarningText (_T("Invalid Station Value"));
          DisplayWarningText();
@@ -1276,10 +1272,7 @@ BOOL CBridgeDescFramingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 
          return FALSE;
       }
-      else
-      {
-         return TRUE;
-      }
+      return TRUE;
    }
 	else if (nCol==2)
 	{

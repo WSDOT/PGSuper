@@ -26,7 +26,6 @@
 //
 
 #include <PgsExt\BridgeDescription2.h>
-#include <WBFLCogo.h>
 #include <EAF\EAFMacroTxn.h>
 
 /////////////////////////////////////////////////////////////////////////////
@@ -134,10 +133,6 @@ private:
 
    void SaveTemporarySupportTransaction(SupportIndexType tsIdx, std::unique_ptr<CEAFTransaction>&&  pTxn);
    std::map<SupportIndexType, std::vector<std::unique_ptr<CEAFTransaction>>> m_TempSupportTransactions;
-
-   CComPtr<IStation> m_objStation;
-   CComPtr<IAngle> m_objAngle;
-   CComPtr<IDirection> m_objDirection;
 
    bool m_bDoValidate;
 

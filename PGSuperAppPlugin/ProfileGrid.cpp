@@ -28,6 +28,7 @@
 #include "ProfilePage.h"
 
 #include <EAF\EAFDisplayUnits.h>
+#include <CoordGeom/Station.h>
 #include <algorithm>
 
 #ifdef _DEBUG
@@ -242,23 +243,22 @@ void CProfileGrid::SetRowData(ROWCOL nRow,VertCurveData& data)
    GetParam()->EnableUndo(TRUE);
 }
 
-bool CProfileGrid::GetRowData(ROWCOL nRow,Float64* pStation,Float64* pGrade,Float64* pL1,Float64* pL2)
+bool CProfileGrid::GetRowData(ROWCOL nRow, Float64* pStation, Float64* pGrade, Float64* pL1, Float64* pL2)
 {
    CProfilePage* pParent = (CProfilePage*)GetParent();
 
-   GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
-   UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
+   GET_IFACE2(pParent->GetBroker(), IEAFDisplayUnits, pDisplayUnits);
 
-   CString strStation = GetCellValue(nRow,1);
-   CComPtr<IStation> station;
-   station.CoCreateInstance(CLSID_Station);
-   HRESULT hr = station->FromString(CComBSTR(strStation),unit_mode);
-   if ( FAILED(hr) )
+   std::_tstring strStation(GetCellValue(nRow, 1));
+   try
+   {
+      WBFL::COGO::Station station(strStation, pDisplayUnits->GetStationFormat());
+      *pStation = station.GetValue();
+   }
+   catch (...)
+   {
       return false;
-
-   Float64 station_value;
-   station->get_Value(&station_value);
-   *pStation = station_value;
+   }
 
    CString strGrade = GetCellValue(nRow,2);
    *pGrade = _tstof(strGrade)/100;

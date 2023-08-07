@@ -28,6 +28,9 @@
 #include "HorizontalAlignmentPage.h"
 
 #include <EAF\EAFDisplayUnits.h>
+#include <CoordGeom/Station.h>
+#include <CoordGeom/Angle.h>
+#include <CoordGeom/Direction.h>
 #include <algorithm>
 
 #ifdef _DEBUG
@@ -312,52 +315,52 @@ void CHorizontalAlignmentGrid::SetRowData(ROWCOL nRow,CompoundCurveData& data)
 
 bool CHorizontalAlignmentGrid::GetRowData(ROWCOL nRow,Float64* pStation,Float64* pFwdTangent,bool* pbFwdTangent,Float64* pRadius,Float64* pEntrySpiral,Float64* pExitSpiral)
 {
-   HRESULT hr;
-
    CHorizontalAlignmentPage* pParent = (CHorizontalAlignmentPage*)GetParent();
 
    GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
-   UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
-   CString strStation = GetCellValue(nRow,1);
-   CComPtr<IStation> station;
-   station.CoCreateInstance(CLSID_Station);
-   hr = station->FromString(CComBSTR(strStation),unit_mode);
-   if ( FAILED(hr) )
+   try
+   {
+      std::_tstring strStation(GetCellValue(nRow, 1));
+      WBFL::COGO::Station station(strStation, pDisplayUnits->GetStationFormat());
+      *pStation = station.GetValue();
+   }
+   catch (...)
+   {
+      // station string isn't in a valid format
       return false;
-
-   Float64 station_value;
-   station->get_Value(&station_value);
-   *pStation = station_value;
+   }
 
    // assume input is an angle
-   CString strAngle = GetCellValue(nRow,2);
-   CComPtr<IAngle> angle;
-   angle.CoCreateInstance(CLSID_Angle);
-   hr = angle->FromString(CComBSTR(strAngle));
-   if ( SUCCEEDED(hr) )
+   std::_tstring strAngle(GetCellValue(nRow, 2));
+   try
    {
-      angle->get_Value(pFwdTangent);
+      WBFL::COGO::Angle angle(strAngle);
+      *pFwdTangent = angle.GetValue();
       *pbFwdTangent = false;
 
-      if ( ::IsLE(*pFwdTangent,-M_PI) || ::IsGE(M_PI,*pFwdTangent) || ::IsZero(*pFwdTangent) )
+      if (::IsLE(*pFwdTangent, -M_PI) || ::IsGE(M_PI, *pFwdTangent) || ::IsZero(*pFwdTangent))
       {
          // a curve delta has been input... delta must be between -PI and PI (but not exactly +\-PI)
          return false;
       }
    }
-   else
+   catch (...)
    {
       // it isn't an angle so assume it is a direction/bearing
-      CComPtr<IDirection> direction;
-      direction.CoCreateInstance(CLSID_Direction);
-      hr = direction->FromString(CComBSTR(strAngle));
-      if ( FAILED(hr) )
+      try
+      {
+         WBFL::COGO::Direction direction(strAngle);
+         *pFwdTangent = direction.GetValue();
+         *pbFwdTangent = true;
+      }
+      catch (...)
+      {
          return false;
-
-      direction->get_Value(pFwdTangent);
-      *pbFwdTangent = true;
+      }  
    }
+
+
 
    CString strRadius = GetCellValue(nRow,3);
    *pRadius = _tstof(strRadius);

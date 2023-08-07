@@ -30,6 +30,7 @@
 #include "PGSuperDoc.h"
 
 #include <EAF\EAFDisplayUnits.h>
+#include <CoordGeom/Station.h>
 #include <algorithm>
 
 #ifdef _DEBUG
@@ -428,22 +429,18 @@ bool CCrownSlopeGrid::GetRowData(ROWCOL nRow,RoadwaySectionTemplate& data)
    data.SegmentDataVec.clear();
 
    CCrownSlopePage* pParent = (CCrownSlopePage*)GetParent();
+   GET_IFACE2(pParent->GetBroker(), IEAFDisplayUnits, pDisplayUnits);
 
-   GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
-   UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
-
-   CString strStation = GetCellValue(nRow,1);
-   CComPtr<IStation> station;
-   station.CoCreateInstance(CLSID_Station);
-   HRESULT hr = station->FromString(CComBSTR(strStation),unit_mode);
-   if (FAILED(hr))
+   try
+   {
+      std::_tstring strStation(GetCellValue(nRow, 1));
+      WBFL::COGO::Station station(strStation, pDisplayUnits->GetStationFormat());
+      data.Station = station.GetValue();
+   }
+   catch (...)
    {
       return false;
    }
-
-   Float64 station_value;
-   station->get_Value(&station_value);
-   data.Station = station_value;
 
    CString strVal = GetCellValue(nRow,2);
    data.LeftSlope = 0.0;
@@ -587,17 +584,17 @@ BOOL CCrownSlopeGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
    CCrownSlopePage* pParent = (CCrownSlopePage*)GetParent();
 
    GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
-   UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
    Float64 bogus;
 
    if (nCol == 1)
    {
-      CString strStation = GetCellValue(nRow, 1);
-      CComPtr<IStation> station;
-      station.CoCreateInstance(CLSID_Station);
-      HRESULT hr = station->FromString(CComBSTR(strStation), unit_mode);
-      if (FAILED(hr))
+      try
+      {
+         std::_tstring strStation(GetCellValue(nRow, 1));
+         WBFL::COGO::Station station(strStation, pDisplayUnits->GetStationFormat());
+      }
+      catch(...)
       {
          CString msg;
          msg.Format(_T("Invalid station data for template %d"), nRow - 1);

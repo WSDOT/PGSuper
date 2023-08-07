@@ -40,6 +40,8 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\TimelineManager.h>
 
+#include <CoordGeom/Station.h>
+
 #include "SelectItemDlg.h"
 
 #ifdef _DEBUG
@@ -60,9 +62,6 @@ CPierLocationPage::CPierLocationPage() : CPropertyPage(CPierLocationPage::IDD)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
    m_MovePierOption = pgsTypes::MoveBridge;
-
-   HRESULT hr = m_objStation.CoCreateInstance(CLSID_Station);
-   ASSERT(SUCCEEDED(hr));
 }
 
 CPierLocationPage::~CPierLocationPage()
@@ -236,20 +235,15 @@ BOOL CPierLocationPage::IsValidStation(Float64* pStation)
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   UnitModeType unitMode = pDisplayUnits->GetStationFormat().GetUnitOfMeasure() == WBFL::Units::StationFormat::UnitOfMeasure::Feet ? umUS : umSI;
-   const WBFL::Units::Length& displayUnit = (unitMode == umUS ? WBFL::Units::Measure::Feet : WBFL::Units::Measure::Meter);
-
    CWnd* pWnd = GetDlgItem(IDC_STATION);
    CString strStation;
    pWnd->GetWindowText(strStation);
-   HRESULT hr = m_objStation->FromString(CComBSTR(strStation),unitMode);
-   if ( SUCCEEDED(hr) )
+   try
    {
-      m_objStation->get_Value(pStation);
-      *pStation = WBFL::Units::ConvertToSysUnits( *pStation, displayUnit );
-      bResult = TRUE;
+      WBFL::COGO::Station station(std::_tstring(strStation), pDisplayUnits->GetStationFormat());
+      *pStation = station.GetValue();
    }
-   else
+   catch (...)
    {
       bResult = FALSE;
    }

@@ -81,7 +81,6 @@ protected:
 	//}}AFX_MSG
    DECLARE_MESSAGE_MAP()
 
-   CComPtr<IStation> m_objStation;
    Float64 m_FromStation;
    Float64 m_NextPierStation;
    Float64 m_PrevPierStation;
