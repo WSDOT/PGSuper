@@ -3285,7 +3285,7 @@ void CBridgeAgentImp::GetHaunchDepth4BySpanInput(const CPrecastSegmentData* pSeg
          // Use linear interpolation of piecewise linear span locations to determine haunch values across segments
          // Values at span locations can be outside of the bounds of segments - extrapolate those values
          WBFL::Math::PiecewiseFunction pwLinearFunction;
-         pwLinearFunction.SetOutOfRangeBehavior(WBFL::Math::PiecewiseFunction::orbExtrapolate);
+         pwLinearFunction.SetOutOfRangeBehavior(WBFL::Math::PiecewiseFunction::OutOfRangeBehavior::Extrapolate);
 
          Float64 segmentLength = GetSegmentLength(segmentKey);
 
@@ -3331,7 +3331,7 @@ void CBridgeAgentImp::GetHaunchDepth4BySpanInput(const CPrecastSegmentData* pSeg
          const IndexType numSegSegs = numSpanSegs / 3;
 
          WBFL::Math::PiecewiseFunction pwLinearFunction;
-         pwLinearFunction.SetOutOfRangeBehavior(WBFL::Math::PiecewiseFunction::orbExtrapolate);
+         pwLinearFunction.SetOutOfRangeBehavior(WBFL::Math::PiecewiseFunction::OutOfRangeBehavior::Extrapolate);
 
          Float64 segmentLength = GetSegmentLength(segmentKey);
 
