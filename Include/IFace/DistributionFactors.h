@@ -59,9 +59,10 @@ DEFINE_GUID(IID_ILiveLoadDistributionFactors,
 0x61dc0cfa, 0x7b2f, 0x11d2, 0x88, 0x54, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
 interface ILiveLoadDistributionFactors : IUnknown
 {
-   // verifies that certain curvature, stiffness, and parallelness requirements are satisfied
-   // must be called before computing LLDF. An unwind exception is thrown if requires are not satisfied
-   virtual void VerifyDistributionFactorRequirements(const pgsPointOfInterest& poi) const = 0;
+   // Verifies that certain curvature, stiffness, and parallelness requirements are satisfied. Must be called before computing LLDF. 
+   // Returns bridge-wide range of applicability flag (LLDF_BWROA_*). Can be OR'd
+   // If setting is RangeOfApplicabilityAction::Enforce, and ROA is out of range, an unwind exception is thrown.
+   virtual Int32 VerifyDistributionFactorRequirements(const pgsPointOfInterest& poi) const = 0;
 
    // Test if ROA is exceeded. A CXUnwind* will be thrown through this interface if not. 
    virtual void TestRangeOfApplicability(const CSpanKey& spanKey) const = 0;

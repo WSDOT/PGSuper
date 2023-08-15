@@ -1003,7 +1003,6 @@ interface ILiveLoads : IUnknown
    virtual void SetRangeOfApplicabilityAction(WBFL::LRFD::RangeOfApplicabilityAction action) = 0;
    virtual WBFL::LRFD::RangeOfApplicabilityAction GetRangeOfApplicabilityAction() const = 0;
    virtual std::_tstring GetLLDFSpecialActionText() const = 0; // get common string for ignore roa case
-   virtual bool IgnoreLLDFRangeOfApplicability() const = 0; // true if action is to ignore ROA
 };
 
 // {483673C2-9F4E-40ec-9DC2-6B36B0D34498}

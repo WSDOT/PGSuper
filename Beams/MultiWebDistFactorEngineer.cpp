@@ -449,7 +449,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDF
 
    // Throws exception if fails requirement (no need to catch it)
    GET_IFACE(ILiveLoadDistributionFactors, pDistFactors);
-   pDistFactors->VerifyDistributionFactorRequirements(poi);
+   Int32 roaVal = pDistFactors->VerifyDistributionFactorRequirements(poi);
 
    pgsPointOfInterest spPoi(poi); // section properties poi
 
@@ -771,7 +771,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDF
    }
 
    GET_IFACE(ILiveLoads,pLiveLoads);
-   pLLDF->SetRangeOfApplicabilityAction( pLiveLoads->GetRangeOfApplicabilityAction() );
+   pLLDF->SetRangeOfApplicability( pLiveLoads->GetRangeOfApplicabilityAction(), roaVal );
    plldf->bExteriorGirder = pBridge->IsExteriorGirder(segmentKey);
 
    return pLLDF;

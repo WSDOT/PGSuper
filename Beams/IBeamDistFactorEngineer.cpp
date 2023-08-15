@@ -419,7 +419,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFPar
 
    // Throws exception if fails requirement (no need to catch it)
    GET_IFACE(ILiveLoadDistributionFactors, pDistFactors);
-   pDistFactors->VerifyDistributionFactorRequirements(poi);
+   Int32 bridgeWideRoaFlag = pDistFactors->VerifyDistributionFactorRequirements(poi);
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
@@ -592,7 +592,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFPar
                                        slab_overhang_threshold);
    }
 
-   pLLDF->SetRangeOfApplicabilityAction( pLiveLoads->GetRangeOfApplicabilityAction() );
+   pLLDF->SetRangeOfApplicability( pLiveLoads->GetRangeOfApplicabilityAction(), bridgeWideRoaFlag);
 
    plldf->Kg = pLLDF->GetKg();
 

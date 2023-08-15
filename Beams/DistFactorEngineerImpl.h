@@ -249,13 +249,25 @@ void CDistFactorEngineerImpl<T>::GetPierDF(PierIndexType pierIdx, GirderIndexTyp
 template <class T>
 void CDistFactorEngineerImpl<T>::GetPierDFRaw(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace,Float64 fcgdr,PIERDETAILS* plldf)
 {
-
    DFParam dfParam = (pierFace == pgsTypes::Back ? dfPierLeft : dfPierRight);
    std::unique_ptr<WBFL::LRFD::LiveLoadDistributionFactorBase> pLLDF( GetLLDFParameters(pierIdx,gdrIdx,dfParam,fcgdr,plldf) );
 
-   // get method used to compute factors, may be lever override
-   GET_IFACE(IBridgeDescription,pBridgeDesc);
-   pgsTypes::DistributionFactorMethod df_method = pBridgeDesc->GetBridgeDescription()->GetDistributionFactorMethod();
+   // Get method used to compute factors
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   pgsTypes::DistributionFactorMethod df_method = pIBridgeDesc->GetLiveLoadDistributionFactorMethod();
+
+   // See if Bridge-Wide range of applicability rule was breached. We might switch to lever rule for all computations.
+   if (df_method == pgsTypes::Calculated && pLLDF->GetBridgeWideRangeOfApplicabilityIssue() != 0)
+   {
+      GET_IFACE(ILiveLoads,pLiveLoads);
+      WBFL::LRFD::RangeOfApplicabilityAction action = pLiveLoads->GetRangeOfApplicabilityAction();
+      if (action == WBFL::LRFD::RangeOfApplicabilityAction::IgnoreUseLeverRule)
+      {
+         // force the df method to lever rule
+         df_method = pgsTypes::LeverRule;
+      }
+   }
 
    WBFL::LRFD::ILiveLoadDistributionFactor::Location loc;
    loc =  plldf->bExteriorGirder ? WBFL::LRFD::ILiveLoadDistributionFactor::Location::ExtGirder : WBFL::LRFD::ILiveLoadDistributionFactor::Location::IntGirder;
@@ -413,11 +425,24 @@ void CDistFactorEngineerImpl<T>::GetSpanDF(const CSpanKey& spanKey, pgsTypes::Li
 template <class T>
 void CDistFactorEngineerImpl<T>::GetSpanDFRaw(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr,SPANDETAILS* plldf)
 {
-   // get method used to compute factors, may be lever override
-   GET_IFACE(IBridgeDescription,pBridgeDesc);
-   pgsTypes::DistributionFactorMethod df_method = pBridgeDesc->GetBridgeDescription()->GetDistributionFactorMethod();
+   std::unique_ptr<WBFL::LRFD::LiveLoadDistributionFactorBase> pLLDF(GetLLDFParameters(spanKey.spanIndex,spanKey.girderIndex,dfSpan,fcgdr,plldf));
 
-   std::unique_ptr<WBFL::LRFD::LiveLoadDistributionFactorBase> pLLDF( GetLLDFParameters(spanKey.spanIndex,spanKey.girderIndex,dfSpan,fcgdr,plldf) );
+   // Get method used to compute factors
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   pgsTypes::DistributionFactorMethod df_method = pIBridgeDesc->GetLiveLoadDistributionFactorMethod();
+
+   // See if Bridge-Wide range of applicability rule was breached. We might switch to lever rule for all computations.
+   if (df_method == pgsTypes::Calculated && pLLDF->GetBridgeWideRangeOfApplicabilityIssue() != 0)
+   {
+      GET_IFACE(ILiveLoads,pLiveLoads);
+      WBFL::LRFD::RangeOfApplicabilityAction action = pLiveLoads->GetRangeOfApplicabilityAction();
+      if (action == WBFL::LRFD::RangeOfApplicabilityAction::IgnoreUseLeverRule)
+      {
+         // force the df method to lever rule
+         df_method = pgsTypes::LeverRule;
+      }
+   }
 
    WBFL::LRFD::ILiveLoadDistributionFactor::Location loc;
    loc =  plldf->bExteriorGirder ? WBFL::LRFD::ILiveLoadDistributionFactor::Location::ExtGirder : WBFL::LRFD::ILiveLoadDistributionFactor::Location::IntGirder;

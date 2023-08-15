@@ -427,7 +427,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLL
 
    // Throws exception if fails requirement (no need to catch it)
    GET_IFACE(ILiveLoadDistributionFactors, pDistFactors);
-   pDistFactors->VerifyDistributionFactorRequirements(poi);
+   Int32 roaVal = pDistFactors->VerifyDistributionFactorRequirements(poi);
 
    Float64 Height       = pGirderEntry->GetDimension(_T("H"));
    Float64 Width        = pGirderEntry->GetDimension(_T("W"));
@@ -673,7 +673,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLL
    }
 
    GET_IFACE(ILiveLoads,pLiveLoads);
-   pLLDF->SetRangeOfApplicabilityAction( pLiveLoads->GetRangeOfApplicabilityAction() );
+   pLLDF->SetRangeOfApplicability( pLiveLoads->GetRangeOfApplicabilityAction(), roaVal );
 
    plldf->bExteriorGirder = pBridge->IsExteriorGirder(CGirderKey(0,gdrIdx));
 

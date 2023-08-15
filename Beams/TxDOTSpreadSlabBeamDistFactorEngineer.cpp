@@ -370,7 +370,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CTxDOTSpreadSlabBeamDistFactorEngine
 
    // Throws exception if fails requirement (no need to catch it)
    GET_IFACE(ILiveLoadDistributionFactors, pDistFactors);
-   pDistFactors->VerifyDistributionFactorRequirements(poi);
+   Int32 roaVal = pDistFactors->VerifyDistributionFactorRequirements(poi);
 
    plldf->d = pGdr->GetHeight(poi);
    plldf->L = GetEffectiveSpanLength(spanOrPierIdx,gdrIdx,dfType);
@@ -391,7 +391,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CTxDOTSpreadSlabBeamDistFactorEngine
                               plldf->skew2);
 
    GET_IFACE(ILiveLoads,pLiveLoads);
-   pLLDF->SetRangeOfApplicabilityAction( pLiveLoads->GetRangeOfApplicabilityAction() );
+   pLLDF->SetRangeOfApplicability( pLiveLoads->GetRangeOfApplicabilityAction(), roaVal );
 
    return pLLDF;
 }

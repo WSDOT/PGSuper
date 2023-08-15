@@ -646,7 +646,6 @@ public:
    virtual void SetRangeOfApplicabilityAction(WBFL::LRFD::RangeOfApplicabilityAction action) override;
    virtual WBFL::LRFD::RangeOfApplicabilityAction GetRangeOfApplicabilityAction() const override;
    virtual std::_tstring GetLLDFSpecialActionText() const override; // get common string for ignore roa case
-   virtual bool IgnoreLLDFRangeOfApplicability() const override; // true if action is to ignore ROA
 
 // IEvents
 public:

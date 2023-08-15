@@ -300,7 +300,7 @@ public:
 
 // ILiveLoadDistributionFactors
 public:
-   virtual void VerifyDistributionFactorRequirements(const pgsPointOfInterest& poi) const override;
+   virtual Int32 VerifyDistributionFactorRequirements(const pgsPointOfInterest& poi) const override;
    virtual void TestRangeOfApplicability(const CSpanKey& spanKey) const override;
    virtual Float64 GetMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState limitState) const override;
    virtual Float64 GetNegMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState limitState) const override;
@@ -529,9 +529,9 @@ private:
 
    DECLARE_LOGFILE;
 
-   void CheckCurvatureRequirements(const pgsPointOfInterest& poi) const;
-   void CheckGirderStiffnessRequirements(const pgsPointOfInterest& poi) const;
-   void CheckParallelGirderRequirements(const pgsPointOfInterest& poi) const;
+   Int32 CheckCurvatureRequirements(const pgsPointOfInterest& poi) const;
+   Int32 CheckGirderStiffnessRequirements(const pgsPointOfInterest& poi) const;
+   Int32 CheckParallelGirderRequirements(const pgsPointOfInterest& poi) const;
 
    Float64 GetPrestressForcePerStrand(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, bool bIncludeElasticEffects, const GDRCONFIG* pConfig) const;
 };

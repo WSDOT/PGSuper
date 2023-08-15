@@ -2330,11 +2330,13 @@ Float64 CEngAgentImp::GetSegmentTendonVerticalForce(const pgsPointOfInterest& po
 
 /////////////////////////////////////////////////////////////////////////////
 // IArtifact
-void CEngAgentImp::VerifyDistributionFactorRequirements(const pgsPointOfInterest& poi) const
+Int32 CEngAgentImp::VerifyDistributionFactorRequirements(const pgsPointOfInterest& poi) const
 {
-   CheckCurvatureRequirements(poi);
-   CheckGirderStiffnessRequirements(poi);
-   CheckParallelGirderRequirements(poi);
+   Int32 Roa(0);
+   Roa |= CheckCurvatureRequirements(poi);
+   Roa |= CheckGirderStiffnessRequirements(poi);
+   Roa |= CheckParallelGirderRequirements(poi);
+   return Roa;
 }
 
 void CEngAgentImp::TestRangeOfApplicability(const CSpanKey& spanKey) const
@@ -2343,14 +2345,36 @@ void CEngAgentImp::TestRangeOfApplicability(const CSpanKey& spanKey) const
    GetMomentDistFactor(spanKey, pgsTypes::ServiceI);
 }
 
-void CEngAgentImp::CheckCurvatureRequirements(const pgsPointOfInterest& poi) const
+Int32 CEngAgentImp::CheckCurvatureRequirements(const pgsPointOfInterest& poi) const
 {
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   if (pgsTypes::Calculated != pIBridgeDesc->GetBridgeDescription()->GetDistributionFactorMethod())
+   {
+      // ROA only applicable if Calculated
+      return 0;
+   }
+
    //
    // Check the curvature requirements (4.6.1.2.1)
    // throws exception if requirements not met
    //
 
    GET_IFACE(IRoadwayData,pRoadway);
+   const AlignmentData2& alignment_data = pRoadway->GetAlignmentData2();
+   IndexType nCurves = alignment_data.CompoundCurves.size();
+   if (nCurves == 0)
+   {
+      return 0; // no curves
+   }
+
+   if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion()) // no longer required with 2005 specs
+   {
+      // this criteria is not applicable because the user has chosen to ignore the range of applicability requirements
+      // or we are using the LRFD 2005 or later (curvature limits were removed in 2005)
+      return 0;
+   }
+
+   // Ok, there are curves in the alignment
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(IPointOfInterest,pIPoi);
 
@@ -2362,24 +2386,6 @@ void CEngAgentImp::CheckCurvatureRequirements(const pgsPointOfInterest& poi) con
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   const AlignmentData2& alignment_data = pRoadway->GetAlignmentData2();
-   IndexType nCurves = alignment_data.CompoundCurves.size();
-   if ( nCurves == 0 )
-   {
-      return; // no curves
-   }
-
-   GET_IFACE(ILiveLoads,pLiveLoads);
-   if ( pLiveLoads->IgnoreLLDFRangeOfApplicability() ||
-        WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() // no longer required with 2005 specs
-      ) 
-   {
-      // this criteria is not applicable because the user has chosen to ignore the range of applicability requirements
-      // or we are using the LRFD 2005 or later (curvature limits were removed in 2005)
-      return;
-   }
-
-   // Ok, there are curves in the alignment
    // The angle subtended by a span is equal to the change in tangent bearings between the
    // start and end of the span.
    PierIndexType start_pier = PierIndexType(spanKey.spanIndex); // start pier has same id as span
@@ -2436,30 +2442,44 @@ void CEngAgentImp::CheckCurvatureRequirements(const pgsPointOfInterest& poi) con
       bIsOK = ( delta < delta_limit ) ? true : false;
    }
 
-   if ( !bIsOK )
+   if (!bIsOK)
    {
-      std::_tostringstream os;
-      os << _T("Live Load Distribution Factors could not be calculated for the following reason") << std::endl;
-      os << _T("Per 4.6.1.2.1, the limiting central angle for neglecting curvature has been exceeded") << std::endl;
-      os << _T("Computed value = ") << delta << _T(" deg") << std::endl;
-      os << _T("Limiting value = ") << delta_limit << _T(" deg") << std::endl;
-      os << _T("A refined method of analysis is required for this bridge") << std::endl;
+      GET_IFACE(ILiveLoads,pLiveLoads);
+      if (pLiveLoads->GetRangeOfApplicabilityAction() == WBFL::LRFD::RangeOfApplicabilityAction::Enforce)
+      {
+         // We throw
+         std::_tostringstream os;
+         os << _T("Live Load Distribution Factors could not be calculated for the following reason") << std::endl;
+         os << _T("Per 4.6.1.2.1, the limiting central angle for neglecting curvature has been exceeded") << std::endl;
+         os << _T("Computed value = ") << delta << _T(" deg") << std::endl;
+         os << _T("Limiting value = ") << delta_limit << _T(" deg") << std::endl;
+         os << _T("A refined method of analysis is required for this bridge") << std::endl;
 
-      pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_StatusGroupID,m_scidRefinedAnalysis,os.str().c_str());
-      GET_IFACE(IEAFStatusCenter,pStatusCenter);
-      pStatusCenter->Add(pStatusItem);
+         pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_StatusGroupID,m_scidRefinedAnalysis,os.str().c_str());
+         GET_IFACE(IEAFStatusCenter,pStatusCenter);
+         pStatusCenter->Add(pStatusItem);
 
-      os << _T("See Status Center for Details") << std::endl;
-      THROW_UNWIND(os.str().c_str(),XREASON_REFINEDANALYSISREQUIRED);
+         os << _T("See Status Center for Details") << std::endl;
+         THROW_UNWIND(os.str().c_str(),XREASON_REFINEDANALYSISREQUIRED);
+      }
+      else
+      {
+         return WBFL::LRFD::LLDF_BWROA_EXCESSIVE_CURVATURE; // this will allow beams to decide our fate
+      }
+   }
+   else
+   {
+      return 0;
    }
 }
 
-void CEngAgentImp::CheckGirderStiffnessRequirements(const pgsPointOfInterest& poi) const
+Int32 CEngAgentImp::CheckGirderStiffnessRequirements(const pgsPointOfInterest& poi) const
 {
-   GET_IFACE(ILiveLoads,pLiveLoads);
-   if ( pLiveLoads->IgnoreLLDFRangeOfApplicability() )
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   if (pgsTypes::Calculated != pIBridgeDesc->GetBridgeDescription()->GetDistributionFactorMethod())
    {
-      return; // nothing to do here
+      // ROA only applicable if Calculated
+      return 0;
    }
 
    // get difference in stiffness between all girders in this span
@@ -2509,33 +2529,49 @@ void CEngAgentImp::CheckGirderStiffnessRequirements(const pgsPointOfInterest& po
       Imax = Max(Imax,I);
    }
 
+   GET_IFACE_NOCHECK(ILiveLoads,pLiveLoads);
+
    Float64 ratio = Imin/Imax;
    if ( ratio < minStiffnessRatio )
    {
-      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-      std::_tostringstream os;
-      os << _T("Live Load Distribution Factors could not be calculated for the following reason:") << std::endl;
-      os << _T("The girders in Span ") << LABEL_SPAN(spanKey.spanIndex) << _T(" do not have approximately the same stiffness as required by LRFD 4.6.2.2.1.") << std::endl;
-      os << _T("Minimum I = ") << (LPCTSTR)FormatDimension(Imin,pDisplayUnits->GetMomentOfInertiaUnit(),true) << std::endl;
-      os << _T("Maximum I = ") << (LPCTSTR)FormatDimension(Imax,pDisplayUnits->GetMomentOfInertiaUnit(),true) << std::endl;
-      os << _T("Stiffness Ratio (I min / I max) = ") << (LPCTSTR)FormatScalar(ratio,pDisplayUnits->GetScalarFormat()) << std::endl;
-      os << _T("Minimum stiffness ratio permitted by the Project Criteria = ") << (LPCTSTR)FormatScalar(minStiffnessRatio,pDisplayUnits->GetScalarFormat()) << std::endl;
-      os << _T("A refined method of analysis is required for this bridge") << std::endl;
+      if (pLiveLoads->GetRangeOfApplicabilityAction() == WBFL::LRFD::RangeOfApplicabilityAction::Enforce)
+      {
+         // We throw
 
-      pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_StatusGroupID,m_scidRefinedAnalysis,os.str().c_str());
-      pStatusCenter->Add(pStatusItem);
+         GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+         std::_tostringstream os;
+         os << _T("Live Load Distribution Factors could not be calculated for the following reason:") << std::endl;
+         os << _T("The girders in Span ") << LABEL_SPAN(spanKey.spanIndex) << _T(" do not have approximately the same stiffness as required by LRFD 4.6.2.2.1.") << std::endl;
+         os << _T("Minimum I = ") << (LPCTSTR)FormatDimension(Imin,pDisplayUnits->GetMomentOfInertiaUnit(),true) << std::endl;
+         os << _T("Maximum I = ") << (LPCTSTR)FormatDimension(Imax,pDisplayUnits->GetMomentOfInertiaUnit(),true) << std::endl;
+         os << _T("Stiffness Ratio (I min / I max) = ") << (LPCTSTR)FormatScalar(ratio,pDisplayUnits->GetScalarFormat()) << std::endl;
+         os << _T("Minimum stiffness ratio permitted by the Project Criteria = ") << (LPCTSTR)FormatScalar(minStiffnessRatio,pDisplayUnits->GetScalarFormat()) << std::endl;
+         os << _T("A refined method of analysis is required for this bridge") << std::endl;
 
-      os << _T("See Status Center for Details") << std::endl;
-      THROW_UNWIND(os.str().c_str(),XREASON_REFINEDANALYSISREQUIRED);
+         pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_StatusGroupID,m_scidRefinedAnalysis,os.str().c_str());
+         pStatusCenter->Add(pStatusItem);
+
+         os << _T("See Status Center for Details") << std::endl;
+         THROW_UNWIND(os.str().c_str(),XREASON_REFINEDANALYSISREQUIRED);
+      }
+      else
+      {
+         return WBFL::LRFD::LLDF_BWROA_DIFFERENT_STIFFNESS; // this will allow beams to decide our fate
+      }
+   }
+   else
+   {
+      return 0;
    }
 }
 
-void CEngAgentImp::CheckParallelGirderRequirements(const pgsPointOfInterest& poi) const
+Int32 CEngAgentImp::CheckParallelGirderRequirements(const pgsPointOfInterest& poi) const
 {
-   GET_IFACE(ILiveLoads,pLiveLoads);
-   if ( pLiveLoads->IgnoreLLDFRangeOfApplicability() )
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   if (pgsTypes::Calculated != pIBridgeDesc->GetBridgeDescription()->GetDistributionFactorMethod())
    {
-      return; // nothing to do here
+      // ROA only applicable if Calculated
+      return 0;
    }
 
    // get angle between all girders in this span
@@ -2558,6 +2594,9 @@ void CEngAgentImp::CheckParallelGirderRequirements(const pgsPointOfInterest& poi
    GirderIndexType nGirders = pBridge->GetGirderCount(segmentKey.groupIndex);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(segmentKey);
    
+   GET_IFACE(ILiveLoads,pLiveLoads);
+   bool doThrow = pLiveLoads->GetRangeOfApplicabilityAction() == WBFL::LRFD::RangeOfApplicabilityAction::Enforce;
+
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       // direction is measured 0 to 2pi, we want it measured between 0 and +/- pi.
@@ -2591,21 +2630,30 @@ void CEngAgentImp::CheckParallelGirderRequirements(const pgsPointOfInterest& poi
 
       if ( maxAllowableAngle < maxAngularDifference )
       {
-         GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-         std::_tostringstream os;
-         os << _T("Live Load Distribution Factors could not be calculated for the following reason:") << std::endl;
-         os << _T("The girders in this span are not parallel as required by LRFD 4.6.2.2.1.") << std::endl;
-         os << _T("Greatest angular difference between girders in Span ") << LABEL_SPAN(spanKey.spanIndex) << _T(" = ") << (LPCTSTR)FormatDimension(maxAngularDifference,pDisplayUnits->GetAngleUnit(),true) << std::endl;
-         os << _T("Maximum angular difference permitted the Project Criteria = ") << (LPCTSTR)FormatDimension(maxAllowableAngle,pDisplayUnits->GetAngleUnit(),true) << std::endl;
-         os << _T("A refined method of analysis is required for this bridge.") << std::endl;
+         if (doThrow)
+         {
+            GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+            std::_tostringstream os;
+            os << _T("Live Load Distribution Factors could not be calculated for the following reason:") << std::endl;
+            os << _T("The girders in this span are not parallel as required by LRFD 4.6.2.2.1.") << std::endl;
+            os << _T("Greatest angular difference between girders in Span ") << LABEL_SPAN(spanKey.spanIndex) << _T(" = ") << (LPCTSTR)FormatDimension(maxAngularDifference,pDisplayUnits->GetAngleUnit(),true) << std::endl;
+            os << _T("Maximum angular difference permitted the Project Criteria = ") << (LPCTSTR)FormatDimension(maxAllowableAngle,pDisplayUnits->GetAngleUnit(),true) << std::endl;
+            os << _T("A refined method of analysis is required for this bridge.") << std::endl;
 
-         pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_StatusGroupID,m_scidRefinedAnalysis,os.str().c_str());
-         pStatusCenter->Add(pStatusItem);
+            pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_StatusGroupID,m_scidRefinedAnalysis,os.str().c_str());
+            pStatusCenter->Add(pStatusItem);
 
-         os << _T("See Status Center for Details") << std::endl;
-         THROW_UNWIND(os.str().c_str(),XREASON_REFINEDANALYSISREQUIRED);
+            os << _T("See Status Center for Details") << std::endl;
+            THROW_UNWIND(os.str().c_str(),XREASON_REFINEDANALYSISREQUIRED);
+         }
+         else
+         {
+            return WBFL::LRFD::LLDF_BWROA_NOT_PARALLEL; // this will allow beams to decide our fate
+         }
       }
    } // next segment
+
+   return 0;
 }
 
 Float64 CEngAgentImp::GetMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState limitState) const

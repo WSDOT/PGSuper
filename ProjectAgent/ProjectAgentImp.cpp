@@ -11197,22 +11197,6 @@ WBFL::LRFD::RangeOfApplicabilityAction CProjectAgentImp::GetRangeOfApplicability
    return m_RangeOfApplicabilityAction;
 }
 
-bool CProjectAgentImp::IgnoreLLDFRangeOfApplicability() const
-{
-   if (m_BridgeDescription.GetDistributionFactorMethod() == pgsTypes::Calculated)
-   {
-      return m_RangeOfApplicabilityAction != WBFL::LRFD::RangeOfApplicabilityAction::Enforce;
-   }
-   else if (m_BridgeDescription.GetDistributionFactorMethod() == pgsTypes::LeverRule)
-   {
-      return true;
-   }
-   else
-   {
-      return false;
-   }
-}
-
 std::_tstring CProjectAgentImp::GetLLDFSpecialActionText() const
 {
    if (m_BridgeDescription.GetDistributionFactorMethod() == pgsTypes::DirectlyInput)

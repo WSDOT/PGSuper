@@ -430,7 +430,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CVoidedSlab2DistFactorEngineer::GetL
 
    // Throws exception if fails requirement (no need to catch it)
    GET_IFACE(ILiveLoadDistributionFactors, pDistFactors);
-   pDistFactors->VerifyDistributionFactorRequirements(poi);
+   Int32 roaVal = pDistFactors->VerifyDistributionFactorRequirements(poi);
 
    plldf->bExteriorGirder = pBridge->IsExteriorGirder(segmentKey);
 
@@ -751,7 +751,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CVoidedSlab2DistFactorEngineer::GetL
    }
 
    GET_IFACE(ILiveLoads,pLiveLoads);
-   pLLDF->SetRangeOfApplicabilityAction( pLiveLoads->GetRangeOfApplicabilityAction() );
+   pLLDF->SetRangeOfApplicability( pLiveLoads->GetRangeOfApplicabilityAction(), roaVal );
 
    plldf->bExteriorGirder = pBridge->IsExteriorGirder(segmentKey);
 
