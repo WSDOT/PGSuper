@@ -1700,7 +1700,7 @@ bool SpecLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
-         m_LiftingWindType = (pgsTypes::WindType)temp;
+         m_HaulingWindType = (pgsTypes::WindType)temp;
 
          if ( !pLoad->Property(_T("HaulingWindLoad"),&m_HaulingWindLoad) )
          {
