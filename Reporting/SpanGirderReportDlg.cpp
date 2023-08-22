@@ -92,7 +92,18 @@ void CSpanGirderReportDlg::DoDataExchange(CDataExchange* pDX)
             CString strChapter;
             m_ChList.GetText(ch,strChapter);
 
-            m_ChapterList.push_back(std::_tstring(strChapter));
+            // m_ChapterList needs to hold the Key name for the chapter information
+            // but the chapter list box has the display name
+            // Look up the chapter display name to get the chapter key
+            std::vector<WBFL::Reporting::ChapterInfo> chInfos = m_RptDesc.GetChapterInfo();
+            for (const auto& chInfo : chInfos)
+            {
+               if (chInfo.Name == std::_tstring(strChapter))
+               {
+                  m_ChapterList.push_back(chInfo.Key);
+                  break;
+               }
+            }
          }
       }
 
