@@ -502,9 +502,9 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
          task.stressType = ststype[icase];
          task.bIncludeLiveLoad = true;
          IndexType nArtifacts = m_GirderArtifact.GetSegmentArtifact(0)->GetFlexuralStressArtifactCount( task);
-         for ( IndexType idx = 0; idx < nArtifacts; idx++) 
+         for (IndexType idx = 0; idx < nArtifacts; idx++)
          {
-            pFabrStressArtifact = m_GirderArtifact.GetSegmentArtifact(0)->GetFlexuralStressArtifact( task,idx );
+            pFabrStressArtifact = m_GirderArtifact.GetSegmentArtifact(0)->GetFlexuralStressArtifact(task,idx);
             const pgsPointOfInterest& poi(pFabrStressArtifact->GetPointOfInterest());
 
             // factor external stresses
@@ -514,77 +514,35 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
             fTopExt *= m_CtrlCompressiveStressFactor;
             fBotExt *= m_CtrlTensileStressFactor;
 
-            pFabrStressArtifact->SetExternalEffects( pgsTypes::TopGirder,    fTopExt);
-            pFabrStressArtifact->SetExternalEffects( pgsTypes::BottomGirder, fBotExt);
+            pFabrStressArtifact->SetExternalEffects(pgsTypes::TopGirder,fTopExt);
+            pFabrStressArtifact->SetExternalEffects(pgsTypes::BottomGirder,fBotExt);
 
             // recompute demand
             Float64 fTopPs = pFabrStressArtifact->GetPretensionEffects(pgsTypes::TopGirder);
             Float64 fBotPs = pFabrStressArtifact->GetPretensionEffects(pgsTypes::BottomGirder);
 
-            fTop = k*fTopPs + fTopExt;
-            fBot = k*fBotPs + fBotExt;
+            fTop = k * fTopPs + fTopExt;
+            fBot = k * fBotPs + fBotExt;
 
-            pFabrStressArtifact->SetDemand(pgsTypes::TopGirder,   fTop);
+            pFabrStressArtifact->SetDemand(pgsTypes::TopGirder,fTop);
             pFabrStressArtifact->SetDemand(pgsTypes::BottomGirder,fBot);
 
             // Compute and store required concrete strength
-            if ( ststype[icase] == pgsTypes::Compression )
+            bool bIsInPTZ;
+            Float64 fc_reqd;
+
+            // top
+            if (! (intervals[icase] == liveLoadIntervalIdx && ststype[icase] == pgsTypes::Tension)) // don't consider top tension at final
             {
-               Float64 c = pAllowable->GetSegmentAllowableCompressionStressCoefficient(poi,StressCheckTask(intervals[icase],lstates[icase],pgsTypes::Compression));
-               Float64 fc_reqd = (IsZero(c) ? 0 : Min(fTop,fBot)/-c);
-               
-               if ( fc_reqd < 0 ) // the minimum stress is tensile so compression isn't an issue
-                  fc_reqd = 0;
-
-               if ( MinIndex(fTop,fBot) == 0 )
-               {
-                  pFabrStressArtifact->SetRequiredConcreteStrength(ststype[icase], pgsTypes::TopGirder,fc_reqd);
-               }
-               else
-               {
-                  pFabrStressArtifact->SetRequiredConcreteStrength(ststype[icase], pgsTypes::BottomGirder,fc_reqd);
-               }
+               bIsInPTZ = pFabrStressArtifact->IsInPrecompressedTensileZone(pgsTypes::TopGirder);
+               fc_reqd = pAllowable->GetRequiredConcreteStrength(poi,pgsTypes::TopGirder,fTop,task,bIsInPTZ);
+               pFabrStressArtifact->SetRequiredConcreteStrength(ststype[icase],pgsTypes::TopGirder,fc_reqd);
             }
-            else
-            {
-               Float64 t;
-               bool bCheckMax;
-               Float64 fmax;
 
-               pAllowable->GetAllowableTensionStressCoefficient(poi,pgsTypes::TopGirder,StressCheckTask(intervals[icase],lstates[icase],pgsTypes::Tension),false/*without rebar*/,false,&t,&bCheckMax,&fmax);
-
-               // if this is bridge site 3, only look at the bottom stress (stress in the precompressed tensile zone)
-               // otherwise, take the controlling tension
-               Float64 f = (intervals[icase] == liveLoadIntervalIdx ? fBot : Max(fTop,fBot));
-
-               Float64 fc_reqd;
-               if (f>0.0)
-               {
-                  fc_reqd = (IsZero(t) ? 0 : BinarySign(f)*pow(f/t,2));
-               }
-               else
-               {
-                  // the maximum stress is compressive so tension isn't an issue
-                  fc_reqd = 0;
-               }
-
-               if ( bCheckMax &&                  // allowable stress is limited -AND-
-                    (0 < fc_reqd) &&              // there is a concrete strength that might work -AND-
-                    (pow(fmax/t,2) < fc_reqd) )   // that strength will exceed the max limit on allowable
-               {
-                  // too bad... this isn't going to work
-                  fc_reqd = NO_AVAILABLE_CONCRETE_STRENGTH;
-               }
-
-               if ( MaxIndex(fTop,fBot) == 0 )
-               {
-                  pFabrStressArtifact->SetRequiredConcreteStrength(ststype[icase], pgsTypes::TopGirder,fc_reqd);
-               }
-               else
-               {
-                  pFabrStressArtifact->SetRequiredConcreteStrength(ststype[icase], pgsTypes::BottomGirder,fc_reqd);
-               }
-            }
+            // bottom
+            bIsInPTZ = pFabrStressArtifact->IsInPrecompressedTensileZone(pgsTypes::BottomGirder);
+            fc_reqd = pAllowable->GetRequiredConcreteStrength(poi,pgsTypes::BottomGirder,fBot,task,bIsInPTZ);
+            pFabrStressArtifact->SetRequiredConcreteStrength(ststype[icase],pgsTypes::BottomGirder,fc_reqd);
          }
       }
    
