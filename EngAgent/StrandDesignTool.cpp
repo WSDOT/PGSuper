@@ -2031,100 +2031,44 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
 
    ConcStrengthResultType result = ConcSuccess;
 
-#pragma Reminder("UPDATE - Call IAllowableConcreteStress::GetRequiredConcreteStrength instead of having duplicate code here")
-   // IAllowableConcreteStress::GetRequiredConcreteStrength isn't exactly the same as this. It doesn't treat the tension with rebar case
-   // the same. Also, the current return information doesn't tell use if the concrete strength required for tension is for with or without rebar case.
+   GET_IFACE(IAllowableConcreteStress,pAllowStress);
    pgsPointOfInterest dummyPOI(m_SegmentKey,0.0);
    if ( task.stressType == pgsTypes::Compression )
    {
-      GET_IFACE(IAllowableConcreteStress,pAllowStress);
-      Float64 c = -pAllowStress->GetAllowableCompressionStressCoefficient(dummyPOI,pgsTypes::TopGirder,task);
-      fc_reqd = fControl/c;
-      LOG(c << _T("F demand (compression) = ") << WBFL::Units::ConvertFromSysUnits(fControl,WBFL::Units::Measure::KSI) << _T(" KSI") << _T(" --> f'c (req'd unrounded) = ") << WBFL::Units::ConvertFromSysUnits(fc_reqd,WBFL::Units::Measure::KSI) << _T(" KSI"));
+      fc_reqd = pAllowStress->ComputeRequiredConcreteStrength(dummyPOI,pgsTypes::TopGirder,fControl,task,false,false);
+      LOG( _T("F demand (compression) = ") << WBFL::Units::ConvertFromSysUnits(fControl,WBFL::Units::Measure::KSI) << _T(" KSI") << _T(" --> f'c (req'd unrounded) = ") << WBFL::Units::ConvertFromSysUnits(fc_reqd,WBFL::Units::Measure::KSI) << _T(" KSI"));
    }
    else
    {
-      GET_IFACE(IMaterials,pMaterials);
-      if (pMaterials->GetSegmentConcreteType(GetSegmentKey()) == pgsTypes::PCI_UHPC)
+      // tension
+      if (0 < fControl)
       {
-         if (task.intervalIdx == releaseIntervalIdx)
+         // try without rebar
+         fc_reqd = pAllowStress->ComputeRequiredConcreteStrength(dummyPOI,pgsTypes::TopGirder,fControl,task,false/*without reinf*/,false);
+         if ((Float64)NO_AVAILABLE_CONCRETE_STRENGTH == fc_reqd)
          {
-            const auto& pConcrete = pMaterials->GetSegmentConcrete(GetSegmentKey());
-            const WBFL::LRFD::LRFDConcreteBase* pLRFDConcrete = dynamic_cast<const WBFL::LRFD::LRFDConcreteBase*>(pConcrete.get());
-            Float64 f_fc = pLRFDConcrete->GetFirstCrackingStrength();
-            Float64 fc = GetConcreteStrength();
-            fc_reqd = pow(1.5 * fControl / fc, 2) * fc;
-            // stress limit = (2/3)ffc*sqrt(f'ci/fc);
-         }
-         else
-         {
-            fc_reqd = 0; // stress limit = (2/3)(ffc) which is not a function of f'c
-         }
-      }
-      else if (pMaterials->GetSegmentConcreteType(GetSegmentKey()) == pgsTypes::UHPC)
-      {
-         fc_reqd = 0; // stress limit = gamma.u * ft,loc which is not a function of f'c
-      }
-      else
-      {
-         Float64 lambda = pMaterials->GetSegmentLambda(GetSegmentKey());
-
-         fc_reqd = -1;
-         if (0 < fControl)
-         {
-            Float64 t, fmax;
-            bool bfMax;
-
-            GET_IFACE(IAllowableConcreteStress, pAllowStress);
-            pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI, pgsTypes::TopGirder, task, false/*without rebar*/, false, &t, &bfMax, &fmax);
-            if (0 < t)
+            // no luck. try with rebar
+            fc_reqd = pAllowStress->ComputeRequiredConcreteStrength(dummyPOI,pgsTypes::TopGirder,fControl,task,true/*with reinf*/,false);
+            if ((Float64)NO_AVAILABLE_CONCRETE_STRENGTH != fc_reqd)
             {
-               LOG(_T("f allow coeff = ") << WBFL::Units::ConvertFromSysUnits(t, WBFL::Units::Measure::SqrtKSI) << _T("_/f'c = ") << WBFL::Units::ConvertFromSysUnits(fControl, WBFL::Units::Measure::KSI));
-               fc_reqd = pow(fControl / (lambda * t), 2);
-
-               if (bfMax && fmax < fControl)
-               {
-                  // allowable stress is limited to value lower than needed
-                  if (task.intervalIdx == releaseIntervalIdx)
-                  {
-                     // try getting the alternative allowable if rebar is used
-                     bool bCheckMaxAlt;
-                     Float64 fMaxAlt;
-                     Float64 talt;
-
-                     ATLASSERT(task.limitState == pgsTypes::ServiceI && task.stressType == pgsTypes::Tension);
-
-                     pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI, pgsTypes::TopGirder, task, true/*with rebar*/, false/*in other than precompressed tensile zone*/, &talt, &bCheckMaxAlt, &fMaxAlt);
-                     fc_reqd = pow(fControl / (lambda * talt), 2);
-                     result = ConcSuccessWithRebar;
-                     LOG(_T("Min rebar is required to achieve required strength"));
-                  }
-                  else
-                  {
-                     LOG(_T("Required strength is greater than spec defined upper limit of ") << WBFL::Units::ConvertFromSysUnits(fmax, WBFL::Units::Measure::KSI) << _T(", cannot achieve strength"));
-                     fc_reqd = -1;
-                     return ConcFailed;
-                  }
-               }
+                  result = ConcSuccessWithRebar;
+                  LOG(_T("Min rebar is required to achieve required strength"));
             }
             else
             {
-               // stress coeff is zero, no tensile capacity
+               LOG(_T("Required strength is greater than spec defined upper limit. cannot achieve strength"));
                fc_reqd = -1;
-               LOG(_T("WARNING: Have applied tension with zero tension allowed - Should not happen"));
-               //ATLASSERT(false);
                return ConcFailed;
             }
-
-            LOG(_T("F demand (tension) = ") << WBFL::Units::ConvertFromSysUnits(fControl, WBFL::Units::Measure::KSI) << _T(" KSI") << _T(" --> f'c (req'd unrounded) = ") << WBFL::Units::ConvertFromSysUnits(fc_reqd, WBFL::Units::Measure::KSI) << (result == ConcSuccessWithRebar ? _T(" KSI, min rebar required") : _T(" KSI")));
-
          }
-         else
-         {
-            // this is a tension case, but the controlling stress is compressive
-            // the lowest required concrete strength is 0.
-            fc_reqd = 0;
-         }
+
+         LOG(_T("F demand (tension) = ") << WBFL::Units::ConvertFromSysUnits(fControl, WBFL::Units::Measure::KSI) << _T(" KSI") << _T(" --> f'c (req'd unrounded) = ") << WBFL::Units::ConvertFromSysUnits(fc_reqd, WBFL::Units::Measure::KSI) << (result == ConcSuccessWithRebar ? _T(" KSI, min rebar required") : _T(" KSI")));
+      }
+      else
+      {
+         // this is a tension case, but the controlling stress is compressive
+         // the lowest required concrete strength is 0.
+         fc_reqd = 0;
       }
    }
 

@@ -2455,6 +2455,7 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	
             // sets the allowable stress limit in the artifact and computes and stores
             // the required concrete strength to satisfy the stress limit
+#pragma Reminder("Computation of required concrete strength below and later in this function has duplicate logic with IAllowableConcreteStress::ComputeRequiredConcreteStrength(). Much of this was fixed in mantis 1334, but not here due to complexity. Consider consolidating this.")
 	         ComputeConcreteStrength(artifact,topStressLocation,task);
 	         ComputeConcreteStrength(artifact,botStressLocation,task);
 	
@@ -2888,7 +2889,7 @@ void pgsDesigner2::ComputeConcreteStrength(pgsFlexuralStressArtifact& artifact,p
          artifact.SetCapacity(stressLocation, fAllowable);
       }
 
-      Float64 fc_reqd = pAllowable->GetRequiredConcreteStrength(poi, stressLocation, artifact.GetDemand(stressLocation), task, bIsInPTZ);
+      Float64 fc_reqd = pAllowable->ComputeRequiredConcreteStrength(poi, stressLocation, artifact.GetDemand(stressLocation), task, false/*inadequate rebar*/, bIsInPTZ);
       artifact.SetRequiredConcreteStrength(task.stressType, stressLocation, fc_reqd);
    }
 }
@@ -2966,17 +2967,11 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
       artifact.IsInPrecompressedTensileZone(pgsTypes::BottomGirder,bIsInPTZ[pgsTypes::BottomGirder]);
 
       Float64 fAllowableWithoutRebar(0.0), fAllowableWithRebar(0.0);
-      Float64 c(0.0);
-      Float64 t(0.0), talt(0.0);
-      bool bCheckMax(false);
-      Float64 ftmax(0.0);
       if (task.stressType == pgsTypes::Compression)
       {
          // always applicable in compression
          artifact.IsApplicable(pgsTypes::TopGirder,    true);
          artifact.IsApplicable(pgsTypes::BottomGirder, true);
-
-         c = pAllowable->GetSegmentAllowableCompressionStressCoefficient(poi,task);
 
          fAllowableWithoutRebar  = pAllowable->GetSegmentAllowableCompressionStress(poi, task, fci);
          fAllowableWithRebar = fAllowableWithoutRebar;
@@ -2986,12 +2981,6 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
          // tension stress check only applicable in areas other that the precompressed tensile zone
          artifact.IsApplicable(pgsTypes::TopGirder,   !bIsInPTZ[pgsTypes::TopGirder]);
          artifact.IsApplicable(pgsTypes::BottomGirder,!bIsInPTZ[pgsTypes::BottomGirder]);
-
-         pAllowable->GetAllowableTensionStressCoefficient(poi, pgsTypes::TopGirder,task,false/*without rebar*/,false,&t,&bCheckMax,&ftmax);
-
-         bool bDummy;
-         Float64 fDummy;
-         pAllowable->GetAllowableTensionStressCoefficient(poi, pgsTypes::TopGirder,task,true/*with rebar*/,false,&talt,&bDummy,&fDummy);
 
          fAllowableWithoutRebar = pAllowable->GetSegmentAllowableTensionStress(poi, task, fci,false/*without rebar*/);
          fAllowableWithRebar    = pAllowable->GetSegmentAllowableTensionStress(poi, task, fci,true/*with rebar*/);
@@ -3045,20 +3034,16 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
          fAllowable = fAllowableWithoutRebar;
 
          // req'd strength
-         Float64 fc_reqd = (IsZero(c) ? -99999 : Min(fTop,fBot)/-c);
-         
-         if ( fc_reqd < 0 ) // the minimum stress is tensile so compression isn't an issue
-         {
-            fc_reqd = 0;
-         }
+         Float64 fc_reqd_top = pAllowable->ComputeRequiredConcreteStrength(poi,pgsTypes::TopGirder,fTop,task,false/*without reinf*/,bIsInPTZ[pgsTypes::TopGirder]);
+         Float64 fc_reqd_bot = pAllowable->ComputeRequiredConcreteStrength(poi, pgsTypes::BottomGirder, fBot, task, false/*without reinf*/, bIsInPTZ[pgsTypes::BottomGirder]);
 
-         if ( MinIndex(fTop,fBot) == 0 )
+         if (fc_reqd_top > fc_reqd_bot)
          {
-            artifact.SetRequiredConcreteStrength(task.stressType,pgsTypes::TopGirder,fc_reqd);
+            artifact.SetRequiredConcreteStrength(task.stressType,pgsTypes::TopGirder,fc_reqd_top);
          }
          else
          {
-            artifact.SetRequiredConcreteStrength(task.stressType, pgsTypes::BottomGirder,fc_reqd);
+            artifact.SetRequiredConcreteStrength(task.stressType, pgsTypes::BottomGirder,fc_reqd_bot);
          }
       }
       else // tension
@@ -3163,77 +3148,17 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
          }
 
          // Compute required concrete strength
-         // Take the controlling tension
-         Float64 f =  Max(fTop,fBot);
+         // 
+         Float64 fc_reqd_top = pAllowable->ComputeRequiredConcreteStrength(poi,pgsTypes::TopGirder,fTop,task,altTensionRequirements.bIsAdequateRebar,bIsInPTZ[pgsTypes::TopGirder]);
+         Float64 fc_reqd_bot = pAllowable->ComputeRequiredConcreteStrength(poi, pgsTypes::BottomGirder, fTop, task, altTensionRequirements.bIsAdequateRebar, bIsInPTZ[pgsTypes::BottomGirder]);
 
-         Float64 fci_reqd = 0;
-         if (0.0 < f)
+         if (fc_reqd_top > fc_reqd_bot)
          {
-#pragma Reminder("Re-implement this with a general call to the SpecAgent to get required concrete stress")
-            // ALSO SEE StrandDesitnTool.cpp - it basically has the same code and it should be calling the SpecAgent too
-            // We want to call the SpecAgent so there is a single location to get this information.
-            if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC)
-            {
-               ATLASSERT(false); // not designing for UHPC yet
-
-               const auto& pConcrete = pMaterials->GetSegmentConcrete(segmentKey);
-               const WBFL::LRFD::LRFDConcreteBase* pLRFDConcrete = dynamic_cast<const WBFL::LRFD::LRFDConcreteBase*>(pConcrete.get());
-               Float64 f_fc = pLRFDConcrete->GetFirstCrackingStrength();
-               Float64 fc_28 = (pConfig == nullptr ? pMaterials->GetSegmentFc28(segmentKey) : pConfig->fc);
-
-               IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
-
-               // the maximum stress is compressive so tension isn't an issue
-               // or this is UHPC and allowable stress isn't a function of f'c
-               //fc_reqd = 0;
-
-               // the general form of the tension stress limit at release is (2/3)(f_fc)*sqrt(f'ci/f'c)
-               // this can be solved for f'ci or f'c as needed
-               if (haulingIntervalIdx <= task.intervalIdx)
-               {
-                  fci_reqd = 0;
-               }
-               else
-               {
-                  fci_reqd = pow(1.5 * f / f_fc, 2) * fc_28;
-               }
-            }
-            else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
-            {
-               ATLASSERT(false); // not designing for UHPC yet
-               //Float64 gamma_u = pAllowable->GetAllowableUHPCTensionStressLimitCoefficient(segmentKey);
-               //fci_reqd = f / gamma_u;
-               fci_reqd = 0;
-            }
-            else
-            {
-               // Is adequate rebar available to use the higher limit?
-               if (altTensionRequirements.bIsAdequateRebar )
-               {
-                  // We have additional rebar and can go to a higher limit
-                  fci_reqd = pow(f/(lambda*talt),2);
-               }
-               else
-               {
-                  fci_reqd = (IsZero(t) ? 0 : BinarySign(f)*pow(f/(lambda*t),2));
-                  if ( bCheckMax &&                  // allowable stress is limited -AND-
-                       (0 < fci_reqd) &&              // there is a concrete strength that might work -AND-
-                       (pow(ftmax/(lambda*t),2) < fci_reqd) )   // that strength will exceed the max limit on allowable
-                  {
-                     // too bad... this isn't going to work
-                     fci_reqd = NO_AVAILABLE_CONCRETE_STRENGTH;
-                  }
-               }
-            }
-         }
-
-         if ( MaxIndex(fTop,fBot) == 0 )
-         {
-            artifact.SetRequiredConcreteStrength(task.stressType, pgsTypes::TopGirder,fci_reqd);
+            artifact.SetRequiredConcreteStrength(task.stressType,pgsTypes::TopGirder,fc_reqd_top);
          }
          else
          {
-            artifact.SetRequiredConcreteStrength(task.stressType, pgsTypes::BottomGirder,fci_reqd);
+            artifact.SetRequiredConcreteStrength(task.stressType,pgsTypes::BottomGirder,fc_reqd_bot);
          }
       }
 

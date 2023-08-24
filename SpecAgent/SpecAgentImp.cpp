@@ -2627,7 +2627,7 @@ Float64 CSpecAgentImp::GetAllowableUHPCFatigueTensionStressLimitModifier() const
    return 0.95; // GS 1.5.2.3 (may want to make this a parameter in the project criteria or material definition)
 }
 
-Float64 CSpecAgentImp::GetRequiredConcreteStrength(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation, Float64 stressDemand, const StressCheckTask& task, bool bIsInPTZ) const
+Float64 CSpecAgentImp::ComputeRequiredConcreteStrength(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,Float64 stressDemand,const StressCheckTask& task,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone) const
 {
    Float64 fc_reqd = 0;
    if (task.stressType == pgsTypes::Compression)
@@ -2682,7 +2682,7 @@ Float64 CSpecAgentImp::GetRequiredConcreteStrength(const pgsPointOfInterest& poi
             Float64 t;
             bool bCheckMax;
             Float64 fmax;
-            GetAllowableTensionStressCoefficient(poi, stressLocation, task, false/*without rebar*/, bIsInPTZ, &t, &bCheckMax, &fmax);
+            GetAllowableTensionStressCoefficient(poi, stressLocation, task, bWithBondedReinforcement, bInPrecompressedTensileZone, &t, &bCheckMax, &fmax);
 
             // if t is zero the allowable will be zero... demand "f" is > 0 so there
             // isn't a concrete strength that will work.... if t is not zero, compute

@@ -244,7 +244,7 @@ interface IAllowableConcreteStress : IUnknown
    virtual Float64 GetAllowableUHPCTensionStressLimitCoefficient(const CSegmentKey& segmentKey) const = 0;
    virtual Float64 GetAllowableUHPCFatigueTensionStressLimitModifier() const = 0;
 
-   virtual Float64 GetRequiredConcreteStrength(const pgsPointOfInterest& poi, pgsTypes::StressLocation stressLocation, Float64 stressDemand, const StressCheckTask& task, bool bIsInPTZ) const = 0;
+   virtual Float64 ComputeRequiredConcreteStrength(const pgsPointOfInterest& poi, pgsTypes::StressLocation stressLocation, Float64 stressDemand, const StressCheckTask& task,bool bWithBondedReinforcement, bool bInPrecompressedTensileZone) const = 0;
    virtual std::_tstring GetAllowableStressParameterName(pgsTypes::StressType stressType, pgsTypes::ConcreteType concreteType) const = 0;
 };
 
