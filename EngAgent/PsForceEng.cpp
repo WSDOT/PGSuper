@@ -30,6 +30,8 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\LoadFactors.h>
 
+#include <psgLib/StrandStressCriteria.h>
+
 #include <numeric>
 
 #ifdef _DEBUG
@@ -192,19 +194,12 @@ Float64 pgsPsForceEng::GetPjackMax(const CSegmentKey& segmentKey,const WBFL::Mat
 
    GET_IFACE( ILibrary, pLib );
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
+   const auto& strand_stress_criteria = pSpecEntry->GetStrandStressCriteria();
 
    Float64 Pjack = 0.0;
-   if ( pSpecEntry->CheckStrandStress(CSS_AT_JACKING) )
+   if (strand_stress_criteria.CheckStrandStress(StrandStressCriteria::CheckStage::AtJacking) )
    {
-      Float64 coeff;
-      if ( strand.GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation )
-      {
-         coeff = pSpecEntry->GetStrandStressCoefficient(CSS_AT_JACKING,LOW_RELAX);
-      }
-      else
-      {
-         coeff = pSpecEntry->GetStrandStressCoefficient(CSS_AT_JACKING,STRESS_REL);
-      }
+      Float64 coeff = strand_stress_criteria.GetStrandStressCoefficient(StrandStressCriteria::CheckStage::AtJacking, strand.GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? StrandStressCriteria::StrandType::LowRelaxation : StrandStressCriteria::StrandType::StressRelieved);
 
       Float64 fpu;
       Float64 aps;
@@ -218,15 +213,7 @@ Float64 pgsPsForceEng::GetPjackMax(const CSegmentKey& segmentKey,const WBFL::Mat
    }
    else
    {
-      Float64 coeff;
-      if ( strand.GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation )
-      {
-         coeff = pSpecEntry->GetStrandStressCoefficient(CSS_BEFORE_TRANSFER,LOW_RELAX);
-      }
-      else
-      {
-         coeff = pSpecEntry->GetStrandStressCoefficient(CSS_BEFORE_TRANSFER,STRESS_REL);
-      }
+      Float64 coeff = strand_stress_criteria.GetStrandStressCoefficient(StrandStressCriteria::CheckStage::BeforeTransfer, strand.GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? StrandStressCriteria::StrandType::LowRelaxation : StrandStressCriteria::StrandType::StressRelieved);
 
       // fake up some data so losses are computed before transfer
       GET_IFACE(IPointOfInterest,pPoi);
@@ -247,7 +234,7 @@ Float64 pgsPsForceEng::GetPjackMax(const CSegmentKey& segmentKey,const WBFL::Mat
    return Pjack;
 }
 
-Float64 pgsPsForceEng::GetHoldDownForce(const CSegmentKey& segmentKey, bool bTotal, Float64* pSlope, pgsPointOfInterest* pPoi, const GDRCONFIG* pConfig) const
+Float64 pgsPsForceEng::GetHoldDownForce(const CSegmentKey& segmentKey, HoldDownCriteria::Type holdDownForceType, Float64* pSlope, pgsPointOfInterest* pPoi, const GDRCONFIG* pConfig) const
 {
    GET_IFACE(IStrandGeometry, pStrandGeom);
    StrandIndexType Nh = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped, pConfig);
@@ -287,16 +274,17 @@ Float64 pgsPsForceEng::GetHoldDownForce(const CSegmentKey& segmentKey, bool bTot
       }
       for (const pgsPointOfInterest& poi : vPoi)
       {
-         Float64 harped = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,pgsTypes::Start,pgsTypes::tltMinimum,pConfig);
+         Float64 harped = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,pgsTypes::Start,pgsTypes::TransferLengthType::Minimum,pConfig);
 
          // Adjust for slope
          Float64 slope;
-         if (bTotal)
+         if (holdDownForceType == HoldDownCriteria::Type::Total)
          {
             slope = pStrandGeom->GetAvgStrandSlope(poi, pConfig);
          }
          else
          {
+            CHECK(holdDownForceType == HoldDownCriteria::Type::PerStrand);
             harped /= Nh; // per strand force
 
             // maximum hold down force is associated with the maximum strand slope
@@ -328,13 +316,9 @@ Float64 pgsPsForceEng::GetHoldDownForce(const CSegmentKey& segmentKey, bool bTot
       GET_IFACE(ILibrary, pLib);
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
-      bool bCheck, bDesign;
-      int holdDownForceType;
-      Float64 maxHoldDownForce, friction;
-      pSpecEntry->GetHoldDownForce(&bCheck, &bDesign, &holdDownForceType, &maxHoldDownForce, &friction);
-      ATLASSERT(bTotal == (holdDownForceType == HOLD_DOWN_TOTAL));
+      const auto& hold_down_criteria = pSpecEntry->GetHoldDownCriteria();
 
-      F *= (1 + friction);
+      F *= (1 + hold_down_criteria.friction);
 
       if (pSlope)
       {
@@ -457,7 +441,7 @@ Float64 pgsPsForceEng::GetPrestressForceWithLiveLoad(const pgsPointOfInterest& p
    GET_IFACE(IPretensionForce, pPSForce);
    Float64 fpe = GetEffectivePrestressWithLiveLoad(poi,strandType,limitState,vehicleIndex,bIncludeElasticEffects,true/*apply elastic gain reduction*/, pConfig); // this fpj - loss + gain, without adjustment
    // The use of this Prestress force (with live load) is for a stress analysis in a service limit state, for this reason, use the minimum transfer length.
-   Float64 adjust = pPSForce->GetTransferLengthAdjustment(poi, strandType, pgsTypes::tltMinimum, pConfig);
+   Float64 adjust = pPSForce->GetTransferLengthAdjustment(poi, strandType, pgsTypes::TransferLengthType::Minimum, pConfig);
 
    Float64 P = adjust*Aps*fpe;
 
@@ -547,7 +531,7 @@ Float64 pgsPsForceEng::GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsT
 
    // if losses were computed with the time-step method
    // look up change in stress in strands due to creep, shrinkage, and relaxation
-   if ( pDetails->LossMethod == pgsTypes::TIME_STEP )
+   if ( pDetails->LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       if ( intervalIdx == 0 && intervalTime == pgsTypes::Start )
       {
@@ -858,14 +842,14 @@ Float64 pgsPsForceEng::GetInstantaneousEffects(const pgsPointOfInterest& poi,pgs
 
    Float64 gain = 0;
 
-   if ( pDetails->LossMethod == pgsTypes::GENERAL_LUMPSUM )
+   if ( pDetails->LossMethod == PrestressLossCriteria::LossMethodType::GENERAL_LUMPSUM )
    {
       // all changes to effective prestress are included in general lump sum losses
       // since the TimeDependentEffects returns the user input value for loss,
       // we return 0 here.
       return 0;
    }
-   else if ( pDetails->LossMethod == pgsTypes::TIME_STEP )
+   else if ( pDetails->LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       // effective loss = time-dependent loss - elastic effects
       // effective loss is on the strand objects, just look it up
@@ -1220,7 +1204,7 @@ Float64 pgsPsForceEng::GetElasticGainDueToLiveLoad(const pgsPointOfInterest& poi
 
 
    Float64 gain = 0;
-   if (pDetails->LossMethod == pgsTypes::TIME_STEP)
+   if (pDetails->LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP)
    {
 #if defined LUMP_STRANDS
       GET_IFACE(IStrandGeometry, pStrandGeom);
@@ -1246,7 +1230,7 @@ Float64 pgsPsForceEng::GetElasticGainDueToLiveLoad(const pgsPointOfInterest& poi
    else
    {
       Float64 llGain;
-      if (pDetails->LossMethod == pgsTypes::GENERAL_LUMPSUM)
+      if (pDetails->LossMethod == PrestressLossCriteria::LossMethodType::GENERAL_LUMPSUM)
       {
          llGain = 0.0;
       }
@@ -1255,12 +1239,13 @@ Float64 pgsPsForceEng::GetElasticGainDueToLiveLoad(const pgsPointOfInterest& poi
          GET_IFACE(ISpecification, pSpec);
          GET_IFACE(ILibrary, pLibrary);
          const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
-         Float64 K_liveload = pSpecEntry->GetLiveLoadElasticGain();
+         const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
+         Float64 K_liveload = prestress_loss_criteria.LiveLoadElasticGain;
 
-         if ((pDetails->LossMethod == pgsTypes::AASHTO_LUMPSUM_2005 ||
-             pDetails->LossMethod == pgsTypes::AASHTO_REFINED_2005 ||
-             pDetails->LossMethod == pgsTypes::WSDOT_LUMPSUM_2005 ||
-             pDetails->LossMethod == pgsTypes::WSDOT_REFINED_2005)
+         if ((pDetails->LossMethod == PrestressLossCriteria::LossMethodType::AASHTO_LUMPSUM_2005 ||
+             pDetails->LossMethod == PrestressLossCriteria::LossMethodType::AASHTO_REFINED_2005 ||
+             pDetails->LossMethod == PrestressLossCriteria::LossMethodType::WSDOT_LUMPSUM_2005 ||
+             pDetails->LossMethod == PrestressLossCriteria::LossMethodType::WSDOT_REFINED_2005)
              &&
              !bApplyElasticGainReduction)
          {

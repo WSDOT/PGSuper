@@ -73,6 +73,24 @@
 #include "PGSuperCatCom.h"
 #include "XSectionData.h"
 
+
+#include <psgLib/OldHaulTruck.h>
+#include <psgLib/RefactoredSpecLibraryParameters.h>
+#include <psgLib/SpecificationCriteria.h>
+#include <psgLib/CreepCriteria.h>
+#include <psgLib/LimitsCriteria.h>
+#include <psgLib/SlabOffsetCriteria.h>
+#include <psgLib/HaulingCriteria.h>
+#include <psgLib/LiftingCriteria.h>
+#include <psgLib/StrandSlopeCriteria.h>
+#include <psgLib/HarpedStrandDesignCriteria.h>
+#include <psgLib/HaunchCriteria.h>
+#include <psgLib/DeadLoadDistributionCriteria.h>
+#include <psgLib/BearingCriteria.h>
+#include <psgLib/PrincipalTensionStressCriteria.h>
+#include <psgLib/MomentCapacityCriteria.h>
+
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -145,7 +163,7 @@ CProjectAgentImp::CProjectAgentImp()
    m_bGetAnalysisTypeFromLibrary = false;
 
    // Initialize Environment Data
-   m_ExposureCondition = expNormal;
+   m_ExposureCondition = pgsTypes::ExposureCondition::Normal;
    m_RelHumidity = 75.;
 
    // Initialize Alignment Data
@@ -5665,8 +5683,8 @@ void CProjectAgentImp::UpdateStrandMaterial()
    }
 
    // change the units
-   WBFL::LRFD::LRFDVersionMgr::SetVersion( m_pSpecEntry->GetSpecificationType() );
-   WBFL::LRFD::LRFDVersionMgr::SetUnits( m_pSpecEntry->GetSpecificationUnits() );
+   WBFL::LRFD::LRFDVersionMgr::SetVersion( m_pSpecEntry->GetSpecificationCriteria().GetEdition() );
+   WBFL::LRFD::LRFDVersionMgr::SetUnits( m_pSpecEntry->GetSpecificationCriteria().Units );
 
    // Get the new strand material based on the new units
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
@@ -5889,21 +5907,21 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    // if the values for this project are still in the library entry, get them now
    const SpecLibrary* pTempSpecLib = temp_manager.GetSpecLibrary();
    const SpecLibraryEntry* pTempSpecEntry = pTempSpecLib->LookupEntry( m_Spec.c_str() );
-   if ( m_bGetAnalysisTypeFromLibrary )
+   const auto& refactored_spec_library_parameters = pTempSpecEntry->GetRefactoredParameters();
+   if (refactored_spec_library_parameters.HasAnalysisType() )
    {
-      m_AnalysisType = pTempSpecEntry->GetAnalysisType();
+      ATLASSERT(m_bGetAnalysisTypeFromLibrary);
+      m_AnalysisType = refactored_spec_library_parameters.GetAnalysisType();
    }
 
-   if ( m_bGetIgnoreROAFromLibrary )
+   if (refactored_spec_library_parameters.HasLLDFRangeOfApplicabilityAction() )
    {
-      m_RangeOfApplicabilityAction = pTempSpecEntry->IgnoreRangeOfApplicabilityRequirements() ? WBFL::LRFD::RangeOfApplicabilityAction::Ignore : WBFL::LRFD::RangeOfApplicabilityAction::Enforce;
+      ATLASSERT(m_bGetIgnoreROAFromLibrary);
+      m_RangeOfApplicabilityAction = refactored_spec_library_parameters.GetRangeOfApplicabilityAction();
    }
 
-   // get the old haul truck configuration here because we have the library entry
-   // though we aren't going to use it until later
-   // want to release the library entry, so it doesn't have a bad ref count if we leave this method early
-   const COldHaulTruck* pOldHaulTruck = pTempSpecEntry->GetOldHaulTruck();
-
+   // release our lock on the library entry - however this will not delete it so
+   // refactored_spec_library_parameters is still in scope
    pTempSpecEntry->Release();
    pTempSpecEntry = nullptr;
 
@@ -5983,7 +6001,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
 
       m_BridgeDescription.CopyDown(false, false, true, false, false, false, false); // copy the joint spacing down to the individual span/pier level
 
-      if (m_pSpecEntry->GetLossMethod() != LOSSES_TIME_STEP)
+      if (m_pSpecEntry->GetPrestressLossCriteria().LossMethod != PrestressLossCriteria::LossMethodType::TIME_STEP)
       {
          // spacing type is a factor in the timeline... better update it
          CreatePrecastGirderBridgeTimelineEvents();
@@ -6229,9 +6247,9 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       }
    }
 
-   if (pOldHaulTruck)
+   if (refactored_spec_library_parameters.HasOldHaulTruck())
    {
-      UpdateHaulTruck(pOldHaulTruck);
+      UpdateHaulTruck(refactored_spec_library_parameters.GetOldHaulTruck());
    }
 
    HaulTruckLibrary* pHaulTruckLibrary = GetHaulTruckLibrary();
@@ -6403,15 +6421,15 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
 
       // Another change made in version 8 was to have the option to use hanch depths when computing composite section properties. This was
       // only allowed in PGSuper prior to this. Look at the setting in the spec entry and alert the user if haunch is now used in section props.
-      pgsTypes::HaunchAnalysisSectionPropertiesType haunchAnalysisSectionPropertiesType = m_pSpecEntry->GetHaunchAnalysisSectionPropertiesType();
-      if (pgsTypes::hspZeroHaunch  != haunchAnalysisSectionPropertiesType)
+      const auto& haunch_criteria = m_pSpecEntry->GetHaunchCriteria();
+      if (haunch_criteria.HaunchAnalysisSectionPropertiesType != pgsTypes::hspZeroHaunch)
       {
          CString msg;
-         if (pgsTypes::hspConstFilletDepth == haunchAnalysisSectionPropertiesType)
+         if (pgsTypes::hspConstFilletDepth == haunch_criteria.HaunchAnalysisSectionPropertiesType)
          {
             msg = _T("a constant haunch depth equal to the fillet value. ");
          }
-         else if (pgsTypes::hspDetailedDescription == haunchAnalysisSectionPropertiesType)
+         else if (pgsTypes::hspDetailedDescription == haunch_criteria.HaunchAnalysisSectionPropertiesType)
          {
             msg = _T(" explicit haunch depths that are input directly on the Haunch Description dialog. ");
          }
@@ -6849,12 +6867,12 @@ void CProjectAgentImp::SetComments(LPCTSTR comments)
 ////////////////////////////////////////////////////////////////////////
 // IEnviroment
 //
-enumExposureCondition CProjectAgentImp::GetExposureCondition() const
+pgsTypes::ExposureCondition CProjectAgentImp::GetExposureCondition() const
 {
    return m_ExposureCondition;
 }
 
-void CProjectAgentImp::SetExposureCondition(enumExposureCondition newVal)
+void CProjectAgentImp::SetExposureCondition(pgsTypes::ExposureCondition newVal)
 {
    if ( m_ExposureCondition != newVal )
    {
@@ -9738,11 +9756,11 @@ void CProjectAgentImp::SetSpecification(const std::_tstring& spec)
 {
    if ( m_Spec != spec )
    {
-      bool oldSpecTimeStepMethod = m_pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP ? true : false;
+      bool oldSpecTimeStepMethod = m_pSpecEntry->GetPrestressLossCriteria().LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false;
       
       InitSpecification(spec);
       
-      bool newSpecTimeStepMethod = m_pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP ? true : false;
+      bool newSpecTimeStepMethod = m_pSpecEntry->GetPrestressLossCriteria().LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false;
 
       if ( oldSpecTimeStepMethod == false && newSpecTimeStepMethod == true )
       {
@@ -9756,13 +9774,15 @@ void CProjectAgentImp::SetSpecification(const std::_tstring& spec)
 
 void CProjectAgentImp::GetTrafficBarrierDistribution(GirderIndexType* pNGirders,pgsTypes::TrafficBarrierDistribution* pDistType) const
 {
-   *pNGirders = m_pSpecEntry->GetMaxGirdersDistTrafficBarrier();
-   *pDistType = m_pSpecEntry->GetTrafficBarrierDistributionType();
+   const auto& dead_load_distribution_criteria = m_pSpecEntry->GetDeadLoadDistributionCriteria();
+   *pNGirders = dead_load_distribution_criteria.MaxGirdersTrafficBarrier;
+   *pDistType = dead_load_distribution_criteria.TrafficBarrierDistribution;
 }
 
 pgsTypes::OverlayLoadDistributionType CProjectAgentImp::GetOverlayLoadDistributionType() const
 {
-   return m_pSpecEntry->GetOverlayLoadDistributionType();
+   const auto& dead_load_distribution_criteria = m_pSpecEntry->GetDeadLoadDistributionCriteria();
+   return dead_load_distribution_criteria.OverlayDistribution;
 }
 
 pgsTypes::HaunchLoadComputationType CProjectAgentImp::GetHaunchLoadComputationType() const
@@ -9774,20 +9794,23 @@ pgsTypes::HaunchLoadComputationType CProjectAgentImp::GetHaunchLoadComputationTy
    }
    else
    {
-      return m_pSpecEntry->GetHaunchLoadComputationType();
+      const auto& haunch_criteria = m_pSpecEntry->GetHaunchCriteria();
+      return haunch_criteria.HaunchLoadComputationType;
    }
 }
 
 Float64 CProjectAgentImp::GetCamberTolerance() const
 {
-   ATLASSERT( m_pSpecEntry->GetHaunchLoadComputationType()==pgsTypes::hlcDetailedAnalysis);
-   return m_pSpecEntry->GetHaunchLoadCamberTolerance();
+   const auto& haunch_criteria = m_pSpecEntry->GetHaunchCriteria();
+   ATLASSERT(haunch_criteria.HaunchLoadComputationType == pgsTypes::hlcDetailedAnalysis);
+   return haunch_criteria.HaunchLoadCamberTolerance;
 }
 
 Float64 CProjectAgentImp::GetHaunchLoadCamberFactor() const
 {
-   ATLASSERT( m_pSpecEntry->GetHaunchLoadComputationType()==pgsTypes::hlcDetailedAnalysis);
-   return m_pSpecEntry->GetHaunchLoadCamberFactor();
+   const auto& haunch_criteria = m_pSpecEntry->GetHaunchCriteria();
+   ATLASSERT( haunch_criteria.HaunchLoadComputationType == pgsTypes::hlcDetailedAnalysis);
+   return haunch_criteria.HaunchLoadCamberFactor;
 }
 
 bool CProjectAgentImp::IsAssumedExcessCamberInputEnabled(bool considerDeckType) const
@@ -9812,41 +9835,35 @@ bool CProjectAgentImp::IsAssumedExcessCamberInputEnabled(bool considerDeckType) 
 bool CProjectAgentImp::IsAssumedExcessCamberForLoad() const
 {
    GET_IFACE(IBridge,pBridge);
-
-   return pBridge->GetHaunchInputDepthType()==pgsTypes::hidACamber && m_pSpecEntry->GetHaunchLoadComputationType() == pgsTypes::hlcDetailedAnalysis;
+   const auto& haunch_criteria = m_pSpecEntry->GetHaunchCriteria();
+   return pBridge->GetHaunchInputDepthType()==pgsTypes::hidACamber && haunch_criteria.HaunchLoadComputationType == pgsTypes::hlcDetailedAnalysis;
 }
 
 bool CProjectAgentImp::IsAssumedExcessCamberForSectProps() const
 {
    GET_IFACE(IDocumentType, pDocType);
    bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
-
-   return !bIsSplicedGirder && m_pSpecEntry->GetHaunchAnalysisSectionPropertiesType() == pgsTypes::hspDetailedDescription;
-}
-
-void CProjectAgentImp::GetRequiredSlabOffsetRoundingParameters(pgsTypes::SlabOffsetRoundingMethod * pMethod, Float64 * pTolerance) const
-{
-   m_pSpecEntry->GetRequiredSlabOffsetRoundingParameters(pMethod, pTolerance);
+   const auto& haunch_criteria = m_pSpecEntry->GetHaunchCriteria();
+   return !bIsSplicedGirder && haunch_criteria.HaunchAnalysisSectionPropertiesType == pgsTypes::hspDetailedDescription;
 }
 
 void CProjectAgentImp::GetTaperedSolePlateRequirements(bool* pbCheckTaperedSolePlate, Float64* pTaperedSolePlateThreshold) const
 {
-   *pbCheckTaperedSolePlate = m_pSpecEntry->AlertTaperedSolePlateRequirement();
-   *pTaperedSolePlateThreshold = m_pSpecEntry->GetTaperedSolePlateInclinationThreshold();
+   const auto& bearing_criteria = m_pSpecEntry->GetBearingCriteria();
+   *pbCheckTaperedSolePlate = bearing_criteria.bAlertTaperedSolePlateRequirement;
+   *pTaperedSolePlateThreshold = bearing_criteria.TaperedSolePlateInclinationThreshold;
 }
 
 ISpecification::PrincipalWebStressCheckType CProjectAgentImp::GetPrincipalWebStressCheckType(const CSegmentKey& segmentKey) const
 {
-   pgsTypes::PrincipalTensileStressMethod method;
-   Float64 coefficient, ductDiameterFactor, ungroutedMultiplier, groutedMultiplier, principalTensileStressFcThreshold;
-   m_pSpecEntry->GetPrincipalTensileStressInWebsParameters(&method, &coefficient, &ductDiameterFactor, &ungroutedMultiplier, &groutedMultiplier, &principalTensileStressFcThreshold);
+   const auto& principal_tension_stress_criteria = m_pSpecEntry->GetPrincipalTensionStressCriteria();
 
    // spliced girder files always analyze principal web stress
    GET_IFACE(IDocumentType, pDocType);
    bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
    if (bIsSplicedGirder)
    {
-      return method == pgsTypes::ptsmLRFD ? pwcAASHTOMethod : pwcNCHRPTimeStepMethod;
+      return principal_tension_stress_criteria.Method == pgsTypes::ptsmLRFD ? pwcAASHTOMethod : pwcNCHRPTimeStepMethod;
    }
    else
    {
@@ -9880,20 +9897,20 @@ ISpecification::PrincipalWebStressCheckType CProjectAgentImp::GetPrincipalWebStr
          concStrength = pMaterials->GetSegmentFc28(segmentKey);
       }
 
-      if (concStrength < principalTensileStressFcThreshold)
+      if (concStrength < principal_tension_stress_criteria.FcThreshold && principal_tension_stress_criteria.FcThreshold != -1) // -1 means applicable to all
       {
          return ISpecification::pwcNotApplicable;
       }
       else
       {
-         if (method == pgsTypes::ptsmLRFD)
+         if (principal_tension_stress_criteria.Method == pgsTypes::ptsmLRFD)
          {
             return pwcAASHTOMethod;
          }
          else
          {
             GET_IFACE(ILossParameters, pLossParams);
-            if (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP)
+            if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP)
             {
                return pwcNCHRPTimeStepMethod;
             }
@@ -9909,12 +9926,12 @@ ISpecification::PrincipalWebStressCheckType CProjectAgentImp::GetPrincipalWebStr
 
 WBFL::LRFD::LRFDVersionMgr::Version CProjectAgentImp::GetSpecificationType() const
 {
-   return m_pSpecEntry->GetSpecificationType();
+   return m_pSpecEntry->GetSpecificationCriteria().GetEdition();
 }
 
 Uint16 CProjectAgentImp::GetMomentCapacityMethod() const
 {
-   return m_pSpecEntry->GetLRFDOverreinforcedMomentCapacity() == true ? LRFD_METHOD : WSDOT_METHOD;
+   return m_pSpecEntry->GetMomentCapacityCriteria().OverReinforcedMomentCapacity == 0 ? LRFD_METHOD : WSDOT_METHOD;
 }
 
 void CProjectAgentImp::SetAnalysisType(pgsTypes::AnalysisType analysisType)
@@ -9931,12 +9948,17 @@ pgsTypes::AnalysisType CProjectAgentImp::GetAnalysisType() const
    return m_AnalysisType;
 }
 
-bool CProjectAgentImp::IsSlabOffsetDesignEnabled() const
+const SlabOffsetCriteria& CProjectAgentImp::GetSlabOffsetCriteria() const
 {
-   GET_IFACE(ILibrary,pLib);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(m_Spec.c_str());
+   return m_pSpecEntry->GetSlabOffsetCriteria();
+}
 
-   return pSpecEntry->IsSlabOffsetDesignEnabled();
+bool CProjectAgentImp::DesignSlabHaunch() const
+{
+   bool bDesign = GetSlabOffsetCriteria().bDesign &&
+      m_BridgeDescription.GetHaunchInputDepthType() == pgsTypes::hidACamber && // We don't design if direct haunch input
+      IsStructuralDeck(this->m_BridgeDescription.GetDeckDescription()->GetDeckType()) ? true : false;
+   return bDesign;
 }
 
 std::vector<arDesignOptions> CProjectAgentImp::GetDesignOptions(const CGirderKey& girderKey) const
@@ -9948,6 +9970,9 @@ std::vector<arDesignOptions> CProjectAgentImp::GetDesignOptions(const CGirderKey
 
    GET_IFACE(ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(m_Spec.c_str());
+
+   const auto& lifting_criteria = pSpecEntry->GetLiftingCriteria();
+   const auto& harped_strand_design_criteria = pSpecEntry->GetHarpedStrandDesignCriteria();
 
    // For each girder we can have multiple design strategies
    IndexType nStrategies = pGirderEntry->GetNumPrestressDesignStrategies();
@@ -9963,20 +9988,17 @@ std::vector<arDesignOptions> CProjectAgentImp::GetDesignOptions(const CGirderKey
       option.maxFci = fci_max;
       option.maxFc  = fc_max;
 
-      option.doDesignSlabOffset = pSpecEntry->IsSlabOffsetDesignEnabled() ? sodDesignHaunch : sodPreserveHaunch; // option same as in 2.9x versions
-      option.doDesignHauling = pSpecEntry->IsHaulingDesignEnabled();
-      option.doDesignLifting = pSpecEntry->IsLiftingDesignEnabled();
+      option.doDesignSlabOffset = pSpecEntry->GetSlabOffsetCriteria().bDesign ? sodDesignHaunch : sodPreserveHaunch; // option same as in 2.9x versions
+      option.doDesignHauling = pSpecEntry->GetHaulingCriteria().bDesign;
+      option.doDesignLifting = lifting_criteria.bDesign;
 
       if (option.doDesignForFlexure == dtDesignForHarping)
       {
-         bool check, design;
-         int holdDownForceType;
-         Float64 d1, d2, d3, friction;
-         pSpecEntry->GetHoldDownForce(&check, &design, &holdDownForceType, &d1, &friction);
-         option.doDesignHoldDown = design;
+         const auto& hold_down_criteria = pSpecEntry->GetHoldDownCriteria();
+         option.doDesignHoldDown = hold_down_criteria.bDesign;
 
-         pSpecEntry->GetMaxStrandSlope(&check, &design, &d1, &d2, &d3);
-         option.doDesignSlope =  design;
+         const auto& strand_slope_criteria = pSpecEntry->GetStrandSlopeCriteria();
+         option.doDesignSlope =  strand_slope_criteria.bDesign;
       }
       else
       {
@@ -9989,7 +10011,7 @@ std::vector<arDesignOptions> CProjectAgentImp::GetDesignOptions(const CGirderKey
       if (!option.doForceHarpedStrandsStraight)
       {
          // Harping uses spec order (until design algorithm is changed to work for other option)
-         option.doStrandFillType = pSpecEntry->GetDesignStrandFillType();
+         option.doStrandFillType = harped_strand_design_criteria.StrandFillType;
       }
       else if (option.doDesignForFlexure == dtDesignFullyBondedRaised ||
                option.doDesignForFlexure == dtDesignForDebondingRaised)
@@ -10471,7 +10493,7 @@ void CProjectAgentImp::SpecificationChanged(bool bFireEvent)
    UpdateStrandMaterial();
    VerifyRebarGrade();
 
-   if ( m_pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP)
+   if ( m_pSpecEntry->GetPrestressLossCriteria().LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP)
    {
       // analysis type must be continuous if the spec is using the time step loss method
       m_AnalysisType = pgsTypes::Continuous;
@@ -10483,7 +10505,7 @@ void CProjectAgentImp::SpecificationChanged(bool bFireEvent)
       }
    }
 
-   if ( m_pSpecEntry->GetLossMethod() != LOSSES_TIME_STEP )
+   if ( m_pSpecEntry->GetPrestressLossCriteria().LossMethod != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       // the timeline is based on settings in the project criteria for non-time-step loss methods (using the Creep and Camber timing parameters)
       CreatePrecastGirderBridgeTimelineEvents();
@@ -10946,37 +10968,37 @@ void CProjectAgentImp::CancelPendingEvents()
 // ILimits
 Float64 CProjectAgentImp::GetMaxSlabFc(pgsTypes::ConcreteType concType) const
 {
-   return m_pSpecEntry->GetMaxSlabFc(concType);
+   return m_pSpecEntry->GetLimitsCriteria().MaxSlabFc[concType];
 }
 
 Float64 CProjectAgentImp::GetMaxSegmentFci(pgsTypes::ConcreteType concType) const
 {
-   return m_pSpecEntry->GetMaxSegmentFci(concType);
+   return m_pSpecEntry->GetLimitsCriteria().MaxSegmentFci[concType];
 }
 
 Float64 CProjectAgentImp::GetMaxSegmentFc(pgsTypes::ConcreteType concType) const
 {
-   return m_pSpecEntry->GetMaxSegmentFc(concType);
+   return m_pSpecEntry->GetLimitsCriteria().MaxSegmentFc[concType];
 }
 
 Float64 CProjectAgentImp::GetMaxClosureFci(pgsTypes::ConcreteType concType) const
 {
-   return m_pSpecEntry->GetMaxClosureFci(concType);
+   return m_pSpecEntry->GetLimitsCriteria().MaxClosureFci[concType];
 }
 
 Float64 CProjectAgentImp::GetMaxClosureFc(pgsTypes::ConcreteType concType) const
 {
-   return m_pSpecEntry->GetMaxClosureFc(concType);
+   return m_pSpecEntry->GetLimitsCriteria().MaxClosureFc[concType];
 }
 
 Float64 CProjectAgentImp::GetMaxConcreteUnitWeight(pgsTypes::ConcreteType concType) const
 {
-   return m_pSpecEntry->GetMaxConcreteUnitWeight(concType);
+   return m_pSpecEntry->GetLimitsCriteria().MaxConcreteUnitWeight[concType];
 }
 
 Float64 CProjectAgentImp::GetMaxConcreteAggSize(pgsTypes::ConcreteType concType) const
 {
-   return m_pSpecEntry->GetMaxConcreteAggSize(concType);
+   return m_pSpecEntry->GetLimitsCriteria().MaxConcreteAggSize[concType];
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -11242,61 +11264,61 @@ void CProjectAgentImp::IgnoreEffectiveFlangeWidthLimits(bool bIgnore)
 std::_tstring CProjectAgentImp::GetLossMethodDescription() const
 {
    std::_tstring strLossMethod;
-   pgsTypes::LossMethod lossMethod = GetLossMethod();
+   PrestressLossCriteria::LossMethodType lossMethod = GetLossMethod();
    switch (lossMethod)
    {
-   case pgsTypes::AASHTO_REFINED: 
-   case pgsTypes::AASHTO_REFINED_2005:
+   case PrestressLossCriteria::LossMethodType::AASHTO_REFINED:
+   case PrestressLossCriteria::LossMethodType::AASHTO_REFINED_2005:
       strLossMethod = _T("Refined estimate per AASHTO LRFD ");
       strLossMethod += std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.4"), _T("5.9.3.4")));
       break;
 
-   case pgsTypes::AASHTO_LUMPSUM:
+   case PrestressLossCriteria::LossMethodType::AASHTO_LUMPSUM:
       strLossMethod = _T("Approximate lump sum estimate per AASHTO LRFD ");
       strLossMethod += std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.3"), _T("5.9.3.3")));
       break;
 
-   case pgsTypes::AASHTO_LUMPSUM_2005:
+   case PrestressLossCriteria::LossMethodType::AASHTO_LUMPSUM_2005:
       strLossMethod = _T("Approximate estimate per AASHTO LRFD ");
       strLossMethod += std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.3"), _T("5.9.3.3")));
       break;
 
-   case pgsTypes::GENERAL_LUMPSUM:
+   case PrestressLossCriteria::LossMethodType::GENERAL_LUMPSUM:
       strLossMethod = _T("General lump sum");
       break;
 
-   case pgsTypes::WSDOT_LUMPSUM:
+   case PrestressLossCriteria::LossMethodType::WSDOT_LUMPSUM:
       strLossMethod = _T("Approximate lump sum estimate per WSDOT Bridge Design Manual");
       break;
 
-   case pgsTypes::WSDOT_LUMPSUM_2005:
+   case PrestressLossCriteria::LossMethodType::WSDOT_LUMPSUM_2005:
       strLossMethod = _T("Approximate estimate per WSDOT Bridge Design Manual");
       break;
 
-   case pgsTypes::WSDOT_REFINED:
-   case pgsTypes::WSDOT_REFINED_2005:
+   case PrestressLossCriteria::LossMethodType::WSDOT_REFINED:
+   case PrestressLossCriteria::LossMethodType::WSDOT_REFINED_2005:
       strLossMethod = _T("Refined estimate per WSDOT Bridge Design Manual");
       break;
 
-   case pgsTypes::TXDOT_REFINED_2004:
+   case PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2004:
       strLossMethod = _T("Refined estimate per TxDOT Bridge Design Manual");
       break;
 
-   case pgsTypes::TXDOT_REFINED_2013:
+   case PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2013:
       strLossMethod = _T("Refined estimate per TxDOT Research Report 0-6374-2");
       break;
 
-   case pgsTypes::TIME_STEP:
+   case PrestressLossCriteria::LossMethodType::TIME_STEP:
       strLossMethod = _T("Time Step");
       switch (GetTimeDependentModel())
       {
-      case pgsTypes::tdmAASHTO:
+      case PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO:
          strLossMethod += std::_tstring(_T(" (AASHTO LRFD)"));
          break;
-      case pgsTypes::tdmACI209:
+      case PrestressLossCriteria::TimeDependentConcreteModelType::ACI209:
          strLossMethod += std::_tstring(_T(" (ACI 209R-92)"));
          break;
-      case pgsTypes::tdmCEBFIP:
+      case PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP:
          strLossMethod += std::_tstring(_T(" (CEB-FIP 1990)"));
          break;
       default:
@@ -11311,26 +11333,26 @@ std::_tstring CProjectAgentImp::GetLossMethodDescription() const
    return strLossMethod;
 }
 
-pgsTypes::LossMethod CProjectAgentImp::GetLossMethod() const
+PrestressLossCriteria::LossMethodType CProjectAgentImp::GetLossMethod() const
 {
-   pgsTypes::LossMethod loss_method;
+   PrestressLossCriteria::LossMethodType loss_method;
    if ( m_bGeneralLumpSum )
    {
-      loss_method = pgsTypes::GENERAL_LUMPSUM;
+      loss_method = PrestressLossCriteria::LossMethodType::GENERAL_LUMPSUM;
    }
    else
    {
       const SpecLibraryEntry* pSpecEntry = GetSpecEntry(m_Spec.c_str());
-      loss_method = (pgsTypes::LossMethod)pSpecEntry->GetLossMethod();
+      loss_method = pSpecEntry->GetPrestressLossCriteria().LossMethod;
    }
 
    return loss_method;
 }
 
-pgsTypes::TimeDependentModel CProjectAgentImp::GetTimeDependentModel() const
+PrestressLossCriteria::TimeDependentConcreteModelType CProjectAgentImp::GetTimeDependentModel() const
 {
    const SpecLibraryEntry* pSpecEntry = GetSpecEntry(m_Spec.c_str());
-   return (pgsTypes::TimeDependentModel)pSpecEntry->GetTimeDependentModel();
+   return pSpecEntry->GetPrestressLossCriteria().TimeDependentConcreteModel;
 }
 
 void CProjectAgentImp::IgnoreCreepEffects(bool bIgnore)
@@ -11621,7 +11643,7 @@ bool CProjectAgentImp::ResolveLibraryConflicts(const ConflictList& rList)
    const GirderLibrary&  girderLibrary = m_pLibMgr->GetGirderLibrary();
    const DuctLibrary* pDuctLibrary = m_pLibMgr->GetDuctLibrary();
 
-   // only update at bridge level if gider is set for entire bridge
+   // only update at bridge level if girder is set for entire bridge
    if (m_BridgeDescription.UseSameGirderForEntireBridge() &&
        rList.IsConflict(girderLibrary, m_BridgeDescription.GetGirderName(), &new_name))
    {
@@ -11766,44 +11788,44 @@ bool CProjectAgentImp::ResolveLibraryConflicts(const ConflictList& rList)
 
    // now that the spec library entry has been set, see if there are any obsolete
    // values in the library that need to be brought into the project agent
-
-   if ( m_pSpecEntry->UpdateLoadFactors() )
+   const auto& refactored_spec_library_parameters = m_pSpecEntry->GetRefactoredParameters();
+   if (refactored_spec_library_parameters.HasLoadFactors() )
    {
       // recover parameters that are no longer part of the spec library entry
       for ( int i = 0; i < 6; i++ )
       {
          pgsTypes::LimitState ls = (pgsTypes::LimitState)i;
          Float64 min, max;
-         m_pSpecEntry->GetDCLoadFactors(ls, &min, &max);
+         std::tie(min,max) = refactored_spec_library_parameters.GetDCLoadFactors(ls);
          m_LoadFactors.SetDC(ls,min, max);
 
-         m_pSpecEntry->GetDWLoadFactors(ls, &min, &max);
+         std::tie(min,max) = refactored_spec_library_parameters.GetDWLoadFactors(ls);
          m_LoadFactors.SetDW(ls, min, max);
 
-         m_pSpecEntry->GetLLIMLoadFactors(ls, &min, &max);
+         std::tie(min,max) = refactored_spec_library_parameters.GetLLIMLoadFactors(ls);
          m_LoadFactors.SetLLIM(ls, min, max);
       }
    }
 
-   if ( m_pSpecEntry->GetLossMethod() == 3 ) // old general lump sum method
+   if (refactored_spec_library_parameters.HasLumpSumLosses()) // old general lump sum method
    {
       m_bGeneralLumpSum               = true;
-      m_BeforeXferLosses              = m_pSpecEntry->GetBeforeXferLosses();
-      m_AfterXferLosses               = m_pSpecEntry->GetAfterXferLosses();
-      m_LiftingLosses                 = m_pSpecEntry->GetLiftingLosses();
-      m_ShippingLosses                = m_pSpecEntry->GetShippingLosses();
-      m_BeforeTempStrandRemovalLosses = m_pSpecEntry->GetBeforeTempStrandRemovalLosses();
-      m_AfterTempStrandRemovalLosses  = m_pSpecEntry->GetAfterTempStrandRemovalLosses();
-      m_AfterDeckPlacementLosses      = m_pSpecEntry->GetAfterDeckPlacementLosses();
-      m_AfterSIDLLosses               = m_pSpecEntry->GetAfterSIDLLosses();
-      m_FinalLosses                   = m_pSpecEntry->GetFinalLosses();
+      m_BeforeXferLosses              = refactored_spec_library_parameters.GetBeforeXferLosses();
+      m_AfterXferLosses               = refactored_spec_library_parameters.GetAfterXferLosses();
+      m_LiftingLosses                 = refactored_spec_library_parameters.GetLiftingLosses();
+      m_ShippingLosses                = refactored_spec_library_parameters.GetShippingLosses();
+      m_BeforeTempStrandRemovalLosses = refactored_spec_library_parameters.GetBeforeTempStrandRemovalLosses();
+      m_AfterTempStrandRemovalLosses  = refactored_spec_library_parameters.GetAfterTempStrandRemovalLosses();
+      m_AfterDeckPlacementLosses      = refactored_spec_library_parameters.GetAfterDeckPlacementLosses();
+      m_AfterSIDLLosses               = refactored_spec_library_parameters.GetAfterSIDLLosses();
+      m_FinalLosses                   = refactored_spec_library_parameters.GetFinalLosses();
    }
 
-   if ( m_pSpecEntry->UpdatePTParameters() )
+   if (refactored_spec_library_parameters.HasPTParameters() )
    {
-      m_Dset_PT                = m_pSpecEntry->GetAnchorSet();
-      m_WobbleFriction_PT      = m_pSpecEntry->GetWobbleFrictionCoefficient();
-      m_FrictionCoefficient_PT = m_pSpecEntry->GetFrictionCoefficient();
+      m_Dset_PT                = refactored_spec_library_parameters.GetAnchorSet();
+      m_WobbleFriction_PT      = refactored_spec_library_parameters.GetWobbleFrictionCoefficient();
+      m_FrictionCoefficient_PT = refactored_spec_library_parameters.GetFrictionCoefficient();
 
       m_Dset_TTS                = m_Dset_PT;
       m_WobbleFriction_TTS      = m_WobbleFriction_PT;
@@ -11846,7 +11868,7 @@ void CProjectAgentImp::UpdateJackingForce()
       return; // jacking force is up to date
    }
 
-   // this parameter is to prevent a problem with recurssion
+   // this parameter is to prevent a problem with recursion
    // it must be a static data member
    static bool bUpdating = true;
    if ( bUpdating )
@@ -11968,7 +11990,7 @@ void CProjectAgentImp::DealWithGirderLibraryChanges(bool fromLibrary)
             ValidateStrands(segmentKey,pSegment,fromLibrary);
    
             // make sure debond data is consistent with design algorithm
-            Float64 xfer_length = pPrestress->GetTransferLength(segmentKey,pgsTypes::Straight, pgsTypes::tltMinimum); // this is related to debonding so we assume only straight strands are debonded
+            Float64 xfer_length = pPrestress->GetTransferLength(segmentKey,pgsTypes::Straight, pgsTypes::TransferLengthType::Minimum); // this is related to debonding so we assume only straight strands are debonded
             Float64 ndb, minDist;
             bool bMinDist;
             pGdrEntry->GetMinDistanceBetweenDebondSections(&ndb, &bMinDist, &minDist);
@@ -12075,8 +12097,8 @@ void CProjectAgentImp::InitSpecification(const std::_tstring& spec)
                          &m_pSpecEntry,
                          *(m_pLibMgr->GetSpecLibrary()) );
 
-      WBFL::LRFD::LRFDVersionMgr::SetVersion( m_pSpecEntry->GetSpecificationType() );
-      WBFL::LRFD::LRFDVersionMgr::SetUnits( m_pSpecEntry->GetSpecificationUnits() );
+      WBFL::LRFD::LRFDVersionMgr::SetVersion( m_pSpecEntry->GetSpecificationCriteria().GetEdition() );
+      WBFL::LRFD::LRFDVersionMgr::SetUnits( m_pSpecEntry->GetSpecificationCriteria().Units );
    }
 }
 
@@ -12435,12 +12457,13 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
 
    // Casting yard stage... starts at day 0 when strands are stressed
    // The activities in this stage includes prestress release, lifting and storage
+   const auto& creep_criteria = pSpecEntry->GetCreepCriteria();
    std::unique_ptr<CTimelineEvent> pTimelineEvent = std::make_unique<CTimelineEvent>();
    pTimelineEvent->SetDay(0);
    pTimelineEvent->SetDescription(_T("Construct Girders, Erect Piers"));
    pTimelineEvent->GetConstructSegmentsActivity().Enable();
-   pTimelineEvent->GetConstructSegmentsActivity().SetTotalCuringDuration(  WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime(),WBFL::Units::Measure::Day));
-   pTimelineEvent->GetConstructSegmentsActivity().SetRelaxationTime(WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime(),WBFL::Units::Measure::Day));
+   pTimelineEvent->GetConstructSegmentsActivity().SetTotalCuringDuration(  WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime,WBFL::Units::Measure::Day));
+   pTimelineEvent->GetConstructSegmentsActivity().SetRelaxationTime(WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime,WBFL::Units::Measure::Day));
    pTimelineEvent->GetConstructSegmentsActivity().AddSegments(segmentIDs);
 
    // assume piers are erected at the same time girders are being constructed
@@ -12460,7 +12483,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    // are removed all on the same day. Assuming max construction sequence (D120). The actual
    // don't matter unless the user switches to time-step analysis.
    pTimelineEvent = std::make_unique<CTimelineEvent>();
-   Float64 day = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetCreepDuration1Max(),WBFL::Units::Measure::Day);
+   Float64 day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration1Max,WBFL::Units::Measure::Day);
    Float64 maxDay = 28.0;
    day = Max(day,maxDay);
    maxDay += 1.0;
@@ -12478,7 +12501,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    if (IsNonstructuralDeck(deckType))
    {
       // deck is non-composite or there is no deck so creep can continue
-      deck_diaphragm_curing_duration = Min(WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetTotalCreepDuration() - pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day), 28.0);
+      deck_diaphragm_curing_duration = Min(WBFL::Units::ConvertFromSysUnits(creep_criteria.TotalCreepDuration - creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day), 28.0);
    }
 
    if ( IsJointSpacing(m_BridgeDescription.GetGirderSpacingType()) && m_BridgeDescription.HasStructuralLongitudinalJoints() )
@@ -12492,7 +12515,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
       // 2) Joints
       // 3) Deck
       pTimelineEvent = std::make_unique<CTimelineEvent>();
-      day = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day);
+      day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day);
       day = Max(day, maxDay);
       pTimelineEvent->SetDay(day);
       pTimelineEvent->SetDescription(_T("Cast Diaphragms"));
@@ -12502,7 +12525,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
       pTimelineEvent.release();
 
       pTimelineEvent = std::make_unique<CTimelineEvent>();
-      day = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day) + 1.0;
+      day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day) + 1.0;
       day = Max(day, maxDay);
       pTimelineEvent->SetDay(day);
       pTimelineEvent->SetDescription(_T("Cast Longitudinal Joints"));
@@ -12518,7 +12541,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
       if ( deckType != pgsTypes::sdtNone)
       {
          pTimelineEvent = std::make_unique<CTimelineEvent>();
-         day = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day) + 2.0;
+         day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day) + 2.0;
          day = Max(day, maxDay);
          pTimelineEvent->SetDay(day);
 
@@ -12538,7 +12561,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    {
       // Cast deck & diaphragms
       pTimelineEvent = std::make_unique<CTimelineEvent>();
-      day = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day);
+      day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day);
       day = Max(day, maxDay);
       pTimelineEvent->SetDay(day);
       pTimelineEvent->SetDescription(_T("Cast Diaphragms"));
@@ -12552,7 +12575,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
       if (deckType != pgsTypes::sdtNone)
       {
          pTimelineEvent = std::make_unique<CTimelineEvent>();
-         day = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day);
+         day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day);
          day = Max(day, maxDay);
          pTimelineEvent->SetDay(day);
          pTimelineEvent->SetDescription(GetCastDeckEventName(deckType));
@@ -12569,7 +12592,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
 
    // traffic barrier/superimposed dead loads
    pTimelineEvent = std::make_unique<CTimelineEvent>();
-   day = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetCreepDuration2Max(),WBFL::Units::Measure::Day) + deck_diaphragm_curing_duration;
+   day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration2Max,WBFL::Units::Measure::Day) + deck_diaphragm_curing_duration;
    day = Max(day,maxDay);
    pTimelineEvent->SetDay( day ); // deck is continuous
    pTimelineEvent->GetApplyLoadActivity().ApplyRailingSystemLoad();
@@ -12595,7 +12618,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    if ( wearingSurface == pgsTypes::wstFutureOverlay )
    {
       pTimelineEvent = std::make_unique<CTimelineEvent>();
-      day = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day) + deck_diaphragm_curing_duration + 1.0;
+      day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day) + deck_diaphragm_curing_duration + 1.0;
       day = Max(day, maxDay);
       pTimelineEvent->SetDay( day ); 
       pTimelineEvent->SetDescription(_T("Final without Live Load"));
@@ -12607,7 +12630,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
 
    // live load
    pTimelineEvent = std::make_unique<CTimelineEvent>();
-   day = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day) + deck_diaphragm_curing_duration + 1.0;
+   day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day) + deck_diaphragm_curing_duration + 1.0;
    day = Max(day, maxDay);
    pTimelineEvent->SetDay( day );
    pTimelineEvent->SetDescription(_T("Final with Live Load"));

@@ -61,6 +61,10 @@
 #include <PgsExt\GirderLabel.h>
 #include <PgsExt\Helpers.h>
 
+#include <psgLib/CreepCriteria.h>
+#include <psgLib/SlabOffsetCriteria.h>
+
+
 #include <Units\Units.h>
 
 #include <IFace\TestFileExport.h>
@@ -667,9 +671,10 @@ bool CTestAgentImp::RunHaunchTest(std::_tofstream& resultsFile, std::_tofstream&
    GET_IFACE(ISpecification, pSpec );
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
+   const auto& slab_offset_criteria = pSpecEntry->GetSlabOffsetCriteria();
 
    GET_IFACE(IBridge,pBridge);
-   if ( pBridge->GetDeckType() == pgsTypes::sdtNone || !pSpecEntry->IsSlabOffsetCheckEnabled() )
+   if ( pBridge->GetDeckType() == pgsTypes::sdtNone || !slab_offset_criteria.bCheck )
    {
       // No data
       return true;
@@ -1915,9 +1920,9 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
 
       // force and stress in prestressing strands
       resultsFile<<bridgeId<<", "<<pid<<", 50002, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,releaseIntervalIdx,pgsTypes::Start), WBFL::Units::Measure::MPa))    << ", 15, " << SEGMENT(segmentKey) << std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 50003, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(pPrestressForce->GetPrestressForce(    poi,pgsTypes::Permanent,releaseIntervalIdx,pgsTypes::Start, pgsTypes::tltMinimum), WBFL::Units::Measure::Newton)) << ", 15, " << SEGMENT(segmentKey) << std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 50003, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(pPrestressForce->GetPrestressForce(    poi,pgsTypes::Permanent,releaseIntervalIdx,pgsTypes::Start, pgsTypes::TransferLengthType::Minimum), WBFL::Units::Measure::Newton)) << ", 15, " << SEGMENT(segmentKey) << std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50004, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,liveLoadIntervalIdx,pgsTypes::Middle), WBFL::Units::Measure::MPa))    << ", 15, " << SEGMENT(segmentKey) << std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 50005, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(pPrestressForce->GetPrestressForce(    poi,pgsTypes::Permanent,liveLoadIntervalIdx,pgsTypes::Middle, pgsTypes::tltMinimum), WBFL::Units::Measure::Newton)) << ", 15, " << SEGMENT(segmentKey) << std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 50005, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(pPrestressForce->GetPrestressForce(    poi,pgsTypes::Permanent,liveLoadIntervalIdx,pgsTypes::Middle, pgsTypes::TransferLengthType::Minimum), WBFL::Units::Measure::Newton)) << ", 15, " << SEGMENT(segmentKey) << std::endl;
 
       // stresses due to external loads
       // casting yards
@@ -2443,32 +2448,32 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std
       resultsFile<<bridgeId<<", "<<pid<<", 123019, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(ytg+hss, WBFL::Units::Measure::Millimeter)) <<   ", 101, "<<SEGMENT(segmentKey)<<std::endl;
    }
 
-   resultsFile<<bridgeId<<", "<<pid<<", 123020, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(pCamber->GetScreedCamber( pmid, CREEP_MAXTIME ), WBFL::Units::Measure::Millimeter)) <<   ", 101, "<<SEGMENT(segmentKey)<<std::endl;
+   resultsFile<<bridgeId<<", "<<pid<<", 123020, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(pCamber->GetScreedCamber( pmid, pgsTypes::CreepTime::Max ), WBFL::Units::Measure::Millimeter)) <<   ", 101, "<<SEGMENT(segmentKey)<<std::endl;
 
    // get # of days for creep
    GET_IFACE(ISpecification, pSpec );
    GET_IFACE(ILibrary, pLib);
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
+   const auto& creep_criteria = pSpecEntry->GetCreepCriteria();
+   Float64 days =  WBFL::Units::ConvertFromSysUnits(creep_criteria.CreepDuration1Min, WBFL::Units::Measure::Day);
+   resultsFile<<bridgeId<<", "<<pid<<", 123021, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(creep_criteria.CreepDuration1Min, WBFL::Units::Measure::Day)) <<   ", 101, "<<SEGMENT(segmentKey)<<std::endl;
 
-   Float64 days =  WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetCreepDuration1Min(), WBFL::Units::Measure::Day);
-   resultsFile<<bridgeId<<", "<<pid<<", 123021, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetCreepDuration1Min(), WBFL::Units::Measure::Day)) <<   ", 101, "<<SEGMENT(segmentKey)<<std::endl;
-
-   CREEPCOEFFICIENTDETAILS details = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpReleaseToFinal, CREEP_MAXTIME);
+   CREEPCOEFFICIENTDETAILS details = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpReleaseToFinal, pgsTypes::CreepTime::Max);
    resultsFile << bridgeId << ", " << pid << ", 123060," << QUIET(details.Ct) << SEGMENT(segmentKey) << std::endl;
 
-   details = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpReleaseToDeck, CREEP_MAXTIME);
+   details = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpReleaseToDeck, pgsTypes::CreepTime::Max);
    resultsFile << bridgeId << ", " << pid << ", 123061," << QUIET(details.Ct) << SEGMENT(segmentKey) << std::endl;
 
-   details = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpReleaseToDiaphragm, CREEP_MAXTIME);
+   details = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpReleaseToDiaphragm, pgsTypes::CreepTime::Max);
    resultsFile << bridgeId << ", " << pid << ", 123062," << QUIET(details.Ct) << SEGMENT(segmentKey) << std::endl;
 
    if (IsStructuralDeck(pIBridgeDesc->GetDeckDescription()->GetDeckType()))
    {
-       details = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpDiaphragmToDeck, CREEP_MAXTIME);
+       details = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpDiaphragmToDeck, pgsTypes::CreepTime::Max);
        resultsFile << bridgeId << ", " << pid << ", 123063," << QUIET(details.Ct) << SEGMENT(segmentKey) << std::endl;
 
-       details = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpDeckToFinal, CREEP_MAXTIME);
+       details = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpDeckToFinal, pgsTypes::CreepTime::Max);
        resultsFile << bridgeId << ", " << pid << ", 123064," << QUIET(details.Ct) << SEGMENT(segmentKey) << std::endl;
    }
 
@@ -2632,8 +2637,8 @@ bool CTestAgentImp::RunCamberTest(std::_tofstream& resultsFile, std::_tofstream&
    const pgsPointOfInterest& poi_midspan = vPoi.front();
 
    GET_IFACE( ICamber, pCamber );
-   Float64 D40  = pCamber->GetDCamberForGirderSchedule(poi_midspan,CREEP_MINTIME);
-   Float64 D120 = pCamber->GetDCamberForGirderSchedule(poi_midspan,CREEP_MAXTIME);
+   Float64 D40  = pCamber->GetDCamberForGirderSchedule(poi_midspan,pgsTypes::CreepTime::Min);
+   Float64 D120 = pCamber->GetDCamberForGirderSchedule(poi_midspan,pgsTypes::CreepTime::Max);
 
    resultsFile << bridgeId << ", " << pid << ", 125000, " << QUIET(WBFL::Units::ConvertFromSysUnits(D40,  WBFL::Units::Measure::Millimeter)) << ", " << SEGMENT(segmentKey) << std::endl;
    resultsFile << bridgeId << ", " << pid << ", 125001, " << QUIET(WBFL::Units::ConvertFromSysUnits(D120, WBFL::Units::Measure::Millimeter)) << ", " << SEGMENT(segmentKey) << std::endl;
@@ -2649,7 +2654,7 @@ bool CTestAgentImp::RunFabOptimizationTest(std::_tofstream& resultsFile, std::_t
 
    GET_IFACE(ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
    GET_IFACE_NOCHECK(ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
-   if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled() && pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled() && pSegmentHaulingSpecCriteria->GetHaulingAnalysisMethod() == pgsTypes::hmWSDOT)
+   if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled() && pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled() && pSegmentHaulingSpecCriteria->GetHaulingAnalysisMethod() == pgsTypes::HaulingAnalysisMethod::WSDOT)
    {
 	   GET_IFACE(IFabricationOptimization,pFabOp);
 

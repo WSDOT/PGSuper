@@ -160,12 +160,6 @@ BOOL CGirderDescDebondPage::OnSetActive()
    GetDlgItem(IDC_SYMMETRIC_DEBOND)->ShowWindow(bCanDebond ? SW_SHOW : SW_HIDE);
    GetDlgItem(IDC_NUM_DEBONDED)->ShowWindow(bCanDebond ? SW_SHOW : SW_HIDE);
 
-   GET_IFACE2(pBroker,ISpecification,pSpec);
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-   GetDlgItem(IDC_NUM_EXTENDED_LEFT)->ShowWindow(pSpecEntry->AllowStraightStrandExtensions() ? SW_SHOW : SW_HIDE);
-   GetDlgItem(IDC_NUM_EXTENDED_RIGHT)->ShowWindow(pSpecEntry->AllowStraightStrandExtensions() ? SW_SHOW : SW_HIDE);
-
    CString note(_T("- Only filled straight strands are shown in this view."));
 
    if (pParent->m_pSegment->Strands.GetAdjustableStrandType() != pgsTypes::asStraight)

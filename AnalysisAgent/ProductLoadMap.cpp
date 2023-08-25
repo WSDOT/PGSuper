@@ -150,7 +150,7 @@ std::vector<pgsTypes::ProductForceType> CProductLoadMap::GetProductForces(IBroke
       {
       GET_IFACE2(pBroker,ILossParameters,pLossParameters);
       pfTypes.push_back(pgsTypes::pftUserDW);
-      if ( pLossParameters->GetLossMethod() == pgsTypes::TIME_STEP )
+      if ( pLossParameters->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
       {
          pfTypes.push_back(pgsTypes::pftOverlay);
       }
@@ -168,7 +168,7 @@ std::vector<pgsTypes::ProductForceType> CProductLoadMap::GetProductForces(IBroke
       {
       GET_IFACE2(pBroker,ILossParameters,pLossParameters);
       pfTypes.push_back(pgsTypes::pftUserDW);
-      if ( pLossParameters->GetLossMethod() == pgsTypes::TIME_STEP )
+      if ( pLossParameters->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
       {
          pfTypes.push_back(pgsTypes::pftOverlay);
       }
@@ -185,7 +185,7 @@ std::vector<pgsTypes::ProductForceType> CProductLoadMap::GetProductForces(IBroke
    case lcDWf:
       {
       GET_IFACE2(pBroker,ILossParameters,pLossParameters);
-      if ( pLossParameters->GetLossMethod() != pgsTypes::TIME_STEP && bFutureOverlay)
+      if ( pLossParameters->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP && bFutureOverlay)
       {
          pfTypes.push_back(pgsTypes::pftOverlay);
       }

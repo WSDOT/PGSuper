@@ -56,6 +56,10 @@
 #include <PgsExt\StatusItem.h>
 #include <PgsExt\GirderLabel.h>
 
+#include <psgLib/LimitStateConcreteStrengthCriteria.h>
+#include <psgLib/SectionPropertiesCriteria.h>
+#include <psgLib/HaunchCriteria.h>
+
 #include <MathEx.h>
 #include <Math\MathUtils.h>
 #include <Math\PiecewiseFunction.h>
@@ -3496,7 +3500,7 @@ bool CBridgeAgentImp::LayoutDeck(const CBridgeDescription2* pBridgeDesc)
 bool CBridgeAgentImp::AssignDeckMaterial(const CBridgeDescription2* pBridgeDesc, IBridgeDeck* pDeck)
 {
    GET_IFACE(ILossParameters, pLossParams);
-   bool bTimeStepAnalysis = (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false);
+   bool bTimeStepAnalysis = (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false);
 
    CComQIPtr<ICastSlab> castSlab(pDeck);
    CComQIPtr<IPrecastSlab> precastSlab(pDeck);
@@ -5352,7 +5356,7 @@ void CBridgeAgentImp::LayoutPrestressTransferAndDebondPoi(const CSegmentKey& seg
    for (int i = 0; i < 2; i++)
    {
       pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
-      Float64 xfer_length = pPrestress->GetTransferLength(segmentKey, strandType, pgsTypes::tltMinimum);
+      Float64 xfer_length = pPrestress->GetTransferLength(segmentKey, strandType, pgsTypes::TransferLengthType::Minimum);
       // use minimum transfer length for POI_PSXFER sinces this is the critical location for stress calculations
 
       Float64 d1 = xfer_length;
@@ -5384,7 +5388,7 @@ void CBridgeAgentImp::LayoutPrestressTransferAndDebondPoi(const CSegmentKey& seg
    {
       pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
 
-      Float64 xfer_length = pPrestress->GetTransferLength(segmentKey, strandType, pgsTypes::tltMinimum);
+      Float64 xfer_length = pPrestress->GetTransferLength(segmentKey, strandType, pgsTypes::TransferLengthType::Minimum);
 
       const std::vector<CDebondData>& vDebond(pStrands->GetDebonding(strandType));
       std::vector<CDebondData>::const_iterator iter(vDebond.begin());
@@ -13014,9 +13018,11 @@ Float64 CBridgeAgentImp::GetSegmentDesignFc(const CSegmentKey& segmentKey,Interv
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   if ( pSpecEntry->GetLossMethod() == pgsTypes::TIME_STEP )
+   const auto& limit_state_concrete_strength_criteria = pSpecEntry->GetLimitStateConcreteStrengthCriteria();
+
+   if ( pSpecEntry->GetPrestressLossCriteria().LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
-      if ( pSpecEntry->GetLimitStateConcreteStrength() == pgsTypes::lscStrengthAtTimeOfLoading )
+      if (limit_state_concrete_strength_criteria.LimitStateConcreteStrength == pgsTypes::lscStrengthAtTimeOfLoading )
       {
          return GetSegmentFc(segmentKey,intervalIdx);
       }
@@ -13050,15 +13056,14 @@ Float64 CBridgeAgentImp::GetSegmentDesignFc(const CSegmentKey& segmentKey,Interv
             GET_IFACE(ILibrary, pLib);
             GET_IFACE(ISpecification, pSpec);
             const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-            bool bUse90DayStrength;
-            Float64 factor;
-            pSpecEntry->Use90DayStrengthForSlowCuringConcrete(&bUse90DayStrength, &factor);
+            const auto& limit_state_concrete_strength_criteria = pSpecEntry->GetLimitStateConcreteStrengthCriteria();
+
             Float64 age = GetSegmentConcreteAge(segmentKey, intervalIdx, pgsTypes::Middle);
             auto type = GetSegmentConcreteType(segmentKey);
             Float64 f = 1.0;
-            if (type == pgsTypes::Normal && bUse90DayStrength && factor != 1.0 && 90 < age)
+            if (type == pgsTypes::Normal && limit_state_concrete_strength_criteria.bUse90DayConcreteStrength && limit_state_concrete_strength_criteria.SlowCuringConcreteStrengthFactor != 1.0 && 90 < age)
             {
-               f = factor;
+               f = limit_state_concrete_strength_criteria.SlowCuringConcreteStrengthFactor;
             }
                
             return f*pSegment->Material.Concrete.Fc;
@@ -13076,15 +13081,17 @@ Float64 CBridgeAgentImp::GetClosureJointDesignFc(const CSegmentKey& closureKey,I
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   if ( pSpecEntry->GetLossMethod() == pgsTypes::TIME_STEP )
+   const auto& limit_state_concrete_strength_criteria = pSpecEntry->GetLimitStateConcreteStrengthCriteria();
+
+   if ( pSpecEntry->GetPrestressLossCriteria().LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
-      if ( pSpecEntry->GetLimitStateConcreteStrength() == pgsTypes::lscStrengthAtTimeOfLoading )
+      if (limit_state_concrete_strength_criteria.LimitStateConcreteStrength == pgsTypes::lscStrengthAtTimeOfLoading )
       {
          return GetClosureJointFc(closureKey,intervalIdx);
       }
       else
       {
-         // basing allowable stresses and nominatl strength on specified values
+         // basing allowable stresses and nominal strength on specified values
          GET_IFACE(IBridgeDescription,pIBridgeDesc);
          const CClosureJointData* pClosureJoint = pIBridgeDesc->GetClosureJointData(closureKey);
          IntervalIndexType castIntervalIdx      = GetCastClosureJointInterval(closureKey);
@@ -13126,15 +13133,16 @@ Float64 CBridgeAgentImp::GetDeckDesignFc(IntervalIndexType intervalIdx) const
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   if ( pSpecEntry->GetLossMethod() == pgsTypes::TIME_STEP )
+   const auto& limit_state_concrete_strength_criteria = pSpecEntry->GetLimitStateConcreteStrengthCriteria();
+   if ( pSpecEntry->GetPrestressLossCriteria().LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
-      if ( pSpecEntry->GetLimitStateConcreteStrength() == pgsTypes::lscStrengthAtTimeOfLoading )
+      if (limit_state_concrete_strength_criteria.LimitStateConcreteStrength == pgsTypes::lscStrengthAtTimeOfLoading )
       {
          return GetDeckFc(castingRegionIdx, intervalIdx);
       }
       else
       {
-         // basing allowable stresses and nominatl strength on specified values
+         // basing allowable stresses and nominal strength on specified values
          GET_IFACE(IBridgeDescription,pIBridgeDesc);
          const CDeckDescription2* pDeck = pIBridgeDesc->GetDeckDescription();
          // NOTE: this method is only used for Design and design is limited to PGSuper
@@ -13216,7 +13224,7 @@ Float64 CBridgeAgentImp::GetSegmentEc(const CSegmentKey& segmentKey,IntervalInde
    // This function is for computing the modulus of elasticity during design for a trial concrete strength.
    // Design is not available for time-step analysis so this should not get called
    GET_IFACE(ILossParameters,pLossParams);
-   ATLASSERT( pLossParams->GetLossMethod() != pgsTypes::TIME_STEP);
+   ATLASSERT( pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP);
 #endif
 
    GET_IFACE(ISegmentData,pSegmentData);
@@ -13261,7 +13269,7 @@ Float64 CBridgeAgentImp::GetClosureJointEc(const CClosureKey& closureKey,Interva
    // This function is for computing the modulus of elasticity during design for a trial concrete strength.
    // Design is not available for time-step analysis so this should not get called
    GET_IFACE(ILossParameters,pLossParams);
-   ATLASSERT( pLossParams->GetLossMethod() != pgsTypes::TIME_STEP);
+   ATLASSERT( pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP);
 #endif
 
 
@@ -20298,13 +20306,10 @@ const pgsPointOfInterest& CBridgeAgentImp::GetNextPointOfInterest(PoiIDType poiI
 void CBridgeAgentImp::GetCriticalSections(pgsTypes::LimitState limitState,const CGirderKey& girderKey,PoiList* pPoiList) const
 {
    ASSERT_GIRDER_KEY(girderKey);
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
 
    // LRFD 2004 and later, critical section is only a function of dv, which comes from the calculation of Mu,
    // so critical section is not a function of the limit state. We will work with the Strength I limit state
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 <= pSpecEntry->GetSpecificationType() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       limitState = pgsTypes::StrengthI;
    }
@@ -21447,13 +21452,9 @@ bool CBridgeAgentImp::IsInCriticalSectionZone(const pgsPointOfInterest& poi,pgsT
 {
    PoiAttributeType csAttribute;
    
-   GET_IFACE(ILibrary, pLib);
-   GET_IFACE(ISpecification,pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-
    // LRFD 2004 and later, critical section is only a function of dv, which comes from the calculation of Mu,
    // so critical section is not a function of the limit state. We will work with the Strength I limit state
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 <= pSpecEntry->GetSpecificationType() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
    {
       csAttribute = POI_CRITSECTSHEAR1;
    }
@@ -21596,8 +21597,8 @@ pgsTypes::SectionPropertyMode CBridgeAgentImp::GetSectionPropertiesMode() const
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-   pgsTypes::SectionPropertyMode sectPropMode = pSpecEntry->GetSectionPropertyMode();
-   return sectPropMode;
+   const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
+   return section_properties_criteria.SectionPropertyMode;
 }
 
 pgsTypes::HaunchAnalysisSectionPropertiesType CBridgeAgentImp::GetHaunchAnalysisSectionPropertiesType()const 
@@ -21605,7 +21606,8 @@ pgsTypes::HaunchAnalysisSectionPropertiesType CBridgeAgentImp::GetHaunchAnalysis
       GET_IFACE(ILibrary, pLib);
       GET_IFACE(ISpecification, pSpec);
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-      return pSpecEntry->GetHaunchAnalysisSectionPropertiesType();
+      const auto& haunch_criteria = pSpecEntry->GetHaunchCriteria();
+      return haunch_criteria.HaunchAnalysisSectionPropertiesType;
 }
 
 std::vector<WBFL::Geometry::Point2d> CBridgeAgentImp::GetStressPoints(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig) const
@@ -22237,7 +22239,7 @@ Float64 CBridgeAgentImp::GetS(pgsTypes::SectionPropertyType spType,IntervalIndex
       if ( compositeDeckInterval <= intervalIdx && IsCompositeDeck() ) // and the deck is composite with the section
       {
          GET_IFACE(ILossParameters, pLossParams);
-         bool bIsTimeStepAnalysis = (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false);
+         bool bIsTimeStepAnalysis = (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false);
 
          CClosureKey closureKey;
          bool bIsInClosureJoint = IsInClosureJoint(poi, &closureKey);
@@ -22578,7 +22580,7 @@ Float64 CBridgeAgentImp::GetQSlab(IntervalIndexType intervalIdx, const pgsPointO
 
 #if defined _DEBUG
    GET_IFACE(ILossParameters, pLossParams);
-   bool bIsTimeStepAnalysis = (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false);
+   bool bIsTimeStepAnalysis = (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false);
    ATLASSERT(bIsTimeStepAnalysis == false); // this method is for design and we don't do design for time-step analysis
 #endif
 
@@ -22766,8 +22768,9 @@ Float64 CBridgeAgentImp::GetEffectiveFlangeWidth(const pgsPointOfInterest& poi) 
    GET_IFACE(ILibrary,       pLib);
    GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
 
-   if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmLRFD )
+   if ( section_properties_criteria.EffectiveFlangeWidthMethod == pgsTypes::efwmLRFD )
    {
       CComQIPtr<IPGSuperEffectiveFlangeWidthTool> eff_tool(m_EffFlangeWidthTool);
       ATLASSERT(eff_tool);
@@ -23090,10 +23093,11 @@ void CBridgeAgentImp::ReportEffectiveFlangeWidth(const CGirderKey& girderKey,rpt
    GET_IFACE(ILibrary,       pLib);
    GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
 
    CComQIPtr<IPGSuperEffectiveFlangeWidthTool> eff_tool(m_EffFlangeWidthTool);
    ATLASSERT(eff_tool);
-   if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmLRFD )
+   if ( section_properties_criteria.EffectiveFlangeWidthMethod == pgsTypes::efwmLRFD )
    {
       eff_tool->put_UseTributaryWidth(VARIANT_FALSE);
    }
@@ -24913,7 +24917,8 @@ bool CBridgeAgentImp::IsPrismatic(IntervalIndexType intervalIdx,const CSegmentKe
    // assume non-prismatic for all transformed sections
    GET_IFACE(ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-   if ( pSpecEntry->GetSectionPropertyMode() == pgsTypes::spmTransformed )
+   const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
+   if ( section_properties_criteria.SectionPropertyMode == pgsTypes::spmTransformed )
    {
       return false;
    }
@@ -25678,10 +25683,7 @@ Float64 CBridgeAgentImp::GetShearWidth(const pgsPointOfInterest& poi) const
    GET_IFACE(IShearCapacity,pShearCapacity);
    pgsTypes::FaceType tensionSide = pShearCapacity->GetFlexuralTensionSide(pgsTypes::StrengthI,intervalIdx,poi);
 
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfter2000 = ( WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims <= pSpecEntry->GetSpecificationType() ? true : false );
+   bool bAfter2000 = ( WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() ? true : false );
 
    // Limits of deduction for ducts is between the tensile and compression resultant
    // (limit is within dv for LRFD before 2000... see below)
@@ -27422,7 +27424,7 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
    pProblem->SetLiftAngle(pLiftingCriteria->GetLiftingCableMinInclination());
    pProblem->SetSweepTolerance(pLiftingCriteria->GetLiftingSweepTolerance());
    pProblem->SetSweepGrowth(0.0); // no sweep growth at initial lifting
-   pProblem->SetWindLoading((WBFL::Stability::WindType)pLiftingCriteria->GetLiftingWindType(),pLiftingCriteria->GetLiftingWindLoad());
+   pProblem->SetWindLoading((WBFL::Stability::WindLoadType)pLiftingCriteria->GetLiftingWindType(),pLiftingCriteria->GetLiftingWindLoad());
 
    Float64 Loh, Roh;
    if ( bUseConfig )
@@ -27585,7 +27587,7 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
             auto ecc = GetEccentricity(vPrestressIntervals[strandType], poi, strandType, &handlingConfig.GdrConfig);
             Float64 Xps = Xleft - ecc.X();
             Float64 Yps = Ytg - ecc.Y();
-            Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::Start, pgsTypes::tltMinimum, &handlingConfig.GdrConfig);
+            Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::Start, pgsTypes::TransferLengthType::Minimum, &handlingConfig.GdrConfig);
             pProblem->AddFpe(vNames[strandType].c_str(), pAnalysisPoint->GetLocation(), Fpe, Xps, Yps);
          }
       }
@@ -27598,7 +27600,7 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
             auto ecc = GetEccentricity(vPrestressIntervals[strandType], poi, strandType);
             Float64 Xps = Xleft - ecc.X();
             Float64 Yps = Ytg - ecc.Y();
-            Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::Start, pgsTypes::tltMinimum);
+            Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::Start, pgsTypes::TransferLengthType::Minimum);
             pProblem->AddFpe(vNames[strandType].c_str(), pAnalysisPoint->GetLocation(), Fpe, Xps, Yps);
          }
 
@@ -27751,7 +27753,7 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
    pProblem->SetSupportPlacementTolerance(pHaulingCriteria->GetHaulingSupportPlacementTolerance());
    pProblem->SetSweepTolerance(pHaulingCriteria->GetHaulingSweepTolerance());
    pProblem->SetSweepGrowth(pHaulingCriteria->GetHaulingSweepGrowth());
-   pProblem->SetWindLoading((WBFL::Stability::WindType)pHaulingCriteria->GetHaulingWindType(),pHaulingCriteria->GetHaulingWindLoad());
+   pProblem->SetWindLoading((WBFL::Stability::WindLoadType)pHaulingCriteria->GetHaulingWindType(),pHaulingCriteria->GetHaulingWindLoad());
 
    pProblem->SetSupportSlope(pHaulingCriteria->GetNormalCrownSlope());
    pProblem->SetSuperelevation(pHaulingCriteria->GetMaxSuperelevation());
@@ -27867,7 +27869,7 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
 
    Float64 DcreepStart, DXcreepStart, DcreepMS, DXcreepMS, DcreepEnd, DXcreepEnd;
    GET_IFACE(ILossParameters, pLossParams);
-   if (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP)
+   if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP)
    {
       DcreepStart = pProduct->GetDeflection(haulingIntervalIdx, pgsTypes::pftCreep, poiStart, bat, rtCumulative, false);
       DcreepMS = pProduct->GetDeflection(haulingIntervalIdx, pgsTypes::pftCreep, poiMS, bat, rtCumulative, false);
@@ -27896,14 +27898,14 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
    }
    else
    {
-      DcreepStart = pCamber->GetCreepDeflection(poiStart, ICamber::cpReleaseToDiaphragm, CREEP_MAXTIME, pgsTypes::pddStorage, bUseConfig && !handlingConfig.bIgnoreGirderConfig ? &handlingConfig.GdrConfig : nullptr);
-      DXcreepStart = pCamber->GetXCreepDeflection(poiStart, ICamber::cpReleaseToDiaphragm, CREEP_MAXTIME, pgsTypes::pddStorage, bUseConfig && !handlingConfig.bIgnoreGirderConfig ? &handlingConfig.GdrConfig : nullptr);
+      DcreepStart = pCamber->GetCreepDeflection(poiStart, ICamber::cpReleaseToDiaphragm, pgsTypes::CreepTime::Max, pgsTypes::pddStorage, bUseConfig && !handlingConfig.bIgnoreGirderConfig ? &handlingConfig.GdrConfig : nullptr);
+      DXcreepStart = pCamber->GetXCreepDeflection(poiStart, ICamber::cpReleaseToDiaphragm, pgsTypes::CreepTime::Max, pgsTypes::pddStorage, bUseConfig && !handlingConfig.bIgnoreGirderConfig ? &handlingConfig.GdrConfig : nullptr);
 
-      DcreepMS = pCamber->GetCreepDeflection(poiMS, ICamber::cpReleaseToDiaphragm, CREEP_MAXTIME, pgsTypes::pddStorage, bUseConfig && !handlingConfig.bIgnoreGirderConfig ? &handlingConfig.GdrConfig : nullptr);
-      DXcreepMS = pCamber->GetXCreepDeflection(poiMS, ICamber::cpReleaseToDiaphragm, CREEP_MAXTIME, pgsTypes::pddStorage, bUseConfig && !handlingConfig.bIgnoreGirderConfig ? &handlingConfig.GdrConfig : nullptr);
+      DcreepMS = pCamber->GetCreepDeflection(poiMS, ICamber::cpReleaseToDiaphragm, pgsTypes::CreepTime::Max, pgsTypes::pddStorage, bUseConfig && !handlingConfig.bIgnoreGirderConfig ? &handlingConfig.GdrConfig : nullptr);
+      DXcreepMS = pCamber->GetXCreepDeflection(poiMS, ICamber::cpReleaseToDiaphragm, pgsTypes::CreepTime::Max, pgsTypes::pddStorage, bUseConfig && !handlingConfig.bIgnoreGirderConfig ? &handlingConfig.GdrConfig : nullptr);
 
-      DcreepEnd = pCamber->GetCreepDeflection(poiEnd, ICamber::cpReleaseToDiaphragm, CREEP_MAXTIME, pgsTypes::pddStorage, bUseConfig && !handlingConfig.bIgnoreGirderConfig ? &handlingConfig.GdrConfig : nullptr);
-      DXcreepEnd = pCamber->GetXCreepDeflection(poiEnd, ICamber::cpReleaseToDiaphragm, CREEP_MAXTIME, pgsTypes::pddStorage, bUseConfig && !handlingConfig.bIgnoreGirderConfig ? &handlingConfig.GdrConfig : nullptr);
+      DcreepEnd = pCamber->GetCreepDeflection(poiEnd, ICamber::cpReleaseToDiaphragm, pgsTypes::CreepTime::Max, pgsTypes::pddStorage, bUseConfig && !handlingConfig.bIgnoreGirderConfig ? &handlingConfig.GdrConfig : nullptr);
+      DXcreepEnd = pCamber->GetXCreepDeflection(poiEnd, ICamber::cpReleaseToDiaphragm, pgsTypes::CreepTime::Max, pgsTypes::pddStorage, bUseConfig && !handlingConfig.bIgnoreGirderConfig ? &handlingConfig.GdrConfig : nullptr);
    }
 
    Float64 ps_camber = (DgdrMS + DpsMS + DcreepMS) - 0.5*((DgdrStart + DpsStart + DcreepStart) + (DgdrEnd + DpsEnd + DcreepEnd));
@@ -27972,7 +27974,7 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
             auto ecc = GetEccentricity(vPrestressIntervals[strandType], poi, strandType, &handlingConfig.GdrConfig);
             Float64 Xps = Xleft - ecc.X();
             Float64 Yps = Ytg - ecc.Y();
-            Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::Start, pgsTypes::tltMinimum, &handlingConfig.GdrConfig);
+            Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::Start, pgsTypes::TransferLengthType::Minimum, &handlingConfig.GdrConfig);
             pProblem->AddFpe(vNames[strandType].c_str(), pAnalysisPoint->GetLocation(), Fpe, Xps, Yps);
          }
       }
@@ -27985,7 +27987,7 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
             auto ecc = GetEccentricity(vPrestressIntervals[strandType], poi, strandType);
             Float64 Xps = Xleft - ecc.X();
             Float64 Yps = Ytg - ecc.Y();
-            Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::Start, pgsTypes::tltMinimum);
+            Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::Start, pgsTypes::TransferLengthType::Minimum);
             pProblem->AddFpe(vNames[strandType].c_str(), pAnalysisPoint->GetLocation(), Fpe, Xps, Yps);
          }
 
@@ -31252,7 +31254,7 @@ PoiIntervalKey CBridgeAgentImp::GetSectionPropertiesKey(IntervalIndexType interv
    // Section properties are only computed for certain POIs and intervals, reducing the work done.
 
    GET_IFACE(ILossParameters,pLossParams);
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       // no mapping for this case
       return PoiIntervalKey(poi,intervalIdx);
@@ -31281,12 +31283,11 @@ PoiIntervalKey CBridgeAgentImp::GetSectionPropertiesKey(IntervalIndexType interv
          GET_IFACE(ILibrary, pLib);
          GET_IFACE(ISpecification, pSpec);
          const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-         bool bUse90DayStrength;
-         Float64 factor;
-         pSpecEntry->Use90DayStrengthForSlowCuringConcrete(&bUse90DayStrength, &factor);
+         const auto& limit_state_concrete_strength_criteria = pSpecEntry->GetLimitStateConcreteStrengthCriteria();
+
          Float64 age = GetSegmentConcreteAge(segmentKey, intervalIdx, pgsTypes::Middle);
          auto type = GetSegmentConcreteType(segmentKey);
-         if (type == pgsTypes::Normal && bUse90DayStrength && factor != 1.0 && 90 < age)
+         if (type == pgsTypes::Normal && limit_state_concrete_strength_criteria.bUse90DayConcreteStrength && limit_state_concrete_strength_criteria .SlowCuringConcreteStrengthFactor != 1.0 && 90 < age)
          {
             IntervalIndexType nIntervals = GetIntervalCount();
             return PoiIntervalKey(poi, nIntervals-1); // use last interval for properties since they will be the same from day 90 to the end
@@ -31340,7 +31341,7 @@ const CBridgeAgentImp::SectProp& CBridgeAgentImp::GetSectionProperties(IntervalI
    IntervalIndexType compositeIntervalIdx     = GetLastCompositeInterval();
 
    GET_IFACE(ILossParameters,pLossParams);
-   bool bIsTimeStepAnalysis = (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false);
+   bool bIsTimeStepAnalysis = (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false);
 
 
    // figure out where the poi is located and if the concrete is cured enough to make the section act as a structural member
@@ -31368,8 +31369,9 @@ const CBridgeAgentImp::SectProp& CBridgeAgentImp::GetSectionProperties(IntervalI
       GET_IFACE(ILibrary,       pLib);
       GET_IFACE(ISpecification, pSpec);
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+      const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
 
-      if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth )
+      if ( section_properties_criteria.EffectiveFlangeWidthMethod == pgsTypes::efwmTribWidth )
       {
          CComQIPtr<IPGSuperEffectiveFlangeWidthTool> eff_tool(m_EffFlangeWidthTool);
          ATLASSERT(eff_tool);
@@ -35716,7 +35718,7 @@ INCREMENTALRELAXATIONDETAILS CBridgeAgentImp::GetIncrementalRelaxationDetails(Fl
 {
    GET_IFACE(ILossParameters,pLossParameters);
 #if defined _DEBUG
-   ATLASSERT(pLossParameters->GetLossMethod() == pgsTypes::TIME_STEP);
+   ATLASSERT(pLossParameters->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP);
 #endif
 
    INCREMENTALRELAXATIONDETAILS details;
@@ -35735,8 +35737,8 @@ INCREMENTALRELAXATIONDETAILS CBridgeAgentImp::GetIncrementalRelaxationDetails(Fl
    // with the stress in the strand fpi at the beginning of the interval
 
    details.fr = 0;
-   pgsTypes::TimeDependentModel model = pLossParameters->GetTimeDependentModel();
-   if ( model == pgsTypes::tdmACI209 || model == pgsTypes::tdmAASHTO )
+   PrestressLossCriteria::TimeDependentConcreteModelType model = pLossParameters->GetTimeDependentModel();
+   if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 || model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO )
    {
       Float64 initial_stress_ratio = fpi/fpy;
       if ( tStart-tStress < 1./24. )
@@ -35764,7 +35766,7 @@ INCREMENTALRELAXATIONDETAILS CBridgeAgentImp::GetIncrementalRelaxationDetails(Fl
          details.fr = K*fpi*(initial_stress_ratio - 0.55)*(log10(24*(tEnd-tStress)) - log10(24*(tStart-tStress))); // t is in days
       }
    }
-   else if ( model == pgsTypes::tdmCEBFIP )
+   else if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP )
    {
       Float64 initial_stress_ratio = fpi/fpu; // See CEB-FIP Figure 2.3.3
       Float64 p; // relaxation ratio

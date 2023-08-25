@@ -229,14 +229,6 @@ void CGirderDescDebondGrid::CustomInit(bool bSymmetricDebond)
    bool bCanDebond = pStrandGeom->CanDebondStrands(pParent->GetGirderName(),pgsTypes::Straight);
    CanDebond(bCanDebond,bSymmetricDebond);
 
-   GET_IFACE2(pBroker,ISpecification,pSpec);
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-   if ( !pSpecEntry->AllowStraightStrandExtensions() )
-   {
-      VERIFY(HideCols(FIRST_EXTEND_COL,LAST_EXTEND_COL,TRUE));
-   }
-
 	GetParam( )->EnableUndo(TRUE);
 }
 

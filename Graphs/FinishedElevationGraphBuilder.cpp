@@ -47,6 +47,8 @@
 
 #include <MFCTools\MFCTools.h>
 
+#include <psgLib/SlabOffsetCriteria.h>
+
 #include <algorithm>
 
 #ifdef _DEBUG
@@ -377,7 +379,8 @@ void CFinishedElevationGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,Girde
       GET_IFACE(ISpecification,pSpec);
       std::_tstring spec_name = pSpec->GetSpecification();
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(spec_name.c_str());
-      Float64 tolerance = pSpecEntry->GetFinishedElevationTolerance();
+      const auto& slab_offset_criteria = pSpecEntry->GetSlabOffsetCriteria();
+      Float64 tolerance = slab_offset_criteria.FinishedElevationTolerance;
 
       auto xIter(xVals.begin());
       for (auto poi : vPoi)

@@ -31,6 +31,8 @@
 #include <IFace\Project.h>
 #include <EAF\EAFDocument.h>
 
+#include <psgLib/HaunchCriteria.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -69,7 +71,8 @@ void CSpecDlg::DoDataExchange(CDataExchange* pDX)
       GET_IFACE2(pBroker, ILibrary, pLib);
 
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpec.c_str() );
-      if ( (bIsPGSplice && pSpecEntry->GetLossMethod() != LOSSES_TIME_STEP) )
+      const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
+      if ( (bIsPGSplice && prestress_loss_criteria.LossMethod != PrestressLossCriteria::LossMethodType::TIME_STEP) )
       {
          pDX->PrepareCtrl(IDC_SPEC);
          AfxMessageBox(_T("Prestress loss method must be set to time-step in the project criteria for spliced girder analysis.\n\nSelect a different project criteria"));
@@ -77,8 +80,8 @@ void CSpecDlg::DoDataExchange(CDataExchange* pDX)
       }
       else
       {
-         if (pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP && 
-             pgsTypes::hlcZeroCamber != pSpecEntry->GetHaunchLoadComputationType())
+         if (prestress_loss_criteria.LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP &&
+             pgsTypes::hlcZeroCamber != pSpecEntry->GetHaunchCriteria().HaunchLoadComputationType)
          {
             pDX->PrepareCtrl(IDC_SPEC);
             AfxMessageBox(_T("Haunch load computation must be set to assume \"Zero Camber\" when the Time-Step method is used for losses.\n\nSelect a different project criteria"));

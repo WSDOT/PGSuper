@@ -35,6 +35,7 @@
 
 #include <PsgLib\SpecLibraryEntry.h>
 #include <PsgLib\GirderLibraryEntry.h>
+#include <psgLib/CreepCriteria.h>
 
 
 #include <PgsExt\ReportPointOfInterest.h>
@@ -87,6 +88,8 @@
 #include "EffectivePrestressForceTable.h"
 
 #include <algorithm>
+
+#include <psgLib/SpecificationCriteria.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -149,7 +152,7 @@ LOSSDETAILS CPsLossEngineer::ComputeLosses(BeamType beamType,const pgsPointOfInt
 #endif
 
    GET_IFACE(ILossParameters,pLossParameters);
-   pgsTypes::LossMethod loss_method = pLossParameters->GetLossMethod();
+   PrestressLossCriteria::LossMethodType loss_method = pLossParameters->GetLossMethod();
 
    // if the girder is UHPC the loss method must be AASHTO_REFINED, WSDOT_REFINED, or GENERAL_LUMPSUM
    // and the base LRFD specification must beo 9th Edition 2020 or later
@@ -159,7 +162,7 @@ LOSSDETAILS CPsLossEngineer::ComputeLosses(BeamType beamType,const pgsPointOfInt
    if (IsUHPC(concrete_type))
    {
       if (
-         !(loss_method == pgsTypes::AASHTO_REFINED || loss_method == pgsTypes::WSDOT_REFINED || loss_method == pgsTypes::GENERAL_LUMPSUM)
+         !(loss_method == PrestressLossCriteria::LossMethodType::AASHTO_REFINED || loss_method == PrestressLossCriteria::LossMethodType::WSDOT_REFINED || loss_method == PrestressLossCriteria::LossMethodType::GENERAL_LUMPSUM)
          && 
          (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020)
          )
@@ -176,31 +179,31 @@ LOSSDETAILS CPsLossEngineer::ComputeLosses(BeamType beamType,const pgsPointOfInt
 
    switch ( loss_method )
    {
-   case pgsTypes::AASHTO_REFINED:
+   case PrestressLossCriteria::LossMethodType::AASHTO_REFINED:
       LossesByRefinedEstimate(beamType,poi,pConfig,&details,laAASHTO);
       break;
 
-   case pgsTypes::WSDOT_REFINED:
+   case PrestressLossCriteria::LossMethodType::WSDOT_REFINED:
       LossesByRefinedEstimate(beamType,poi, pConfig,&details,laWSDOT);
       break;
 
-   case pgsTypes::TXDOT_REFINED_2004:
+   case PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2004:
       LossesByRefinedEstimate(beamType,poi, pConfig,&details,laTxDOT);
       break;
 
-   case pgsTypes::TXDOT_REFINED_2013:
+   case PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2013:
       LossesByRefinedEstimateTxDOT2013(beamType,poi, pConfig,&details);
       break;
 
-   case pgsTypes::AASHTO_LUMPSUM:
+   case PrestressLossCriteria::LossMethodType::AASHTO_LUMPSUM:
       LossesByApproxLumpSum(beamType,poi, pConfig,&details,false);
       break;
 
-   case pgsTypes::WSDOT_LUMPSUM:
+   case PrestressLossCriteria::LossMethodType::WSDOT_LUMPSUM:
       LossesByApproxLumpSum(beamType,poi, pConfig,&details,true);
       break;
 
-   case pgsTypes::GENERAL_LUMPSUM:
+   case PrestressLossCriteria::LossMethodType::GENERAL_LUMPSUM:
       LossesByGeneralLumpSum(beamType,poi, pConfig,&details);
       break;
 
@@ -225,36 +228,36 @@ LOSSDETAILS CPsLossEngineer::ComputeLossesForDesign(BeamType beamType,const pgsP
 void CPsLossEngineer::BuildReport(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
    GET_IFACE(ILossParameters,pLossParameters);
-   pgsTypes::LossMethod loss_method = pLossParameters->GetLossMethod();
+   PrestressLossCriteria::LossMethodType loss_method = pLossParameters->GetLossMethod();
 
    Uint16 level = 0;
    switch( loss_method )
    {
-   case pgsTypes::AASHTO_REFINED:
+   case PrestressLossCriteria::LossMethodType::AASHTO_REFINED:
       ReportRefinedMethod(beamType,girderKey,pChapter,pDisplayUnits,level,laAASHTO);
       break;
 
-   case pgsTypes::WSDOT_REFINED:
+   case PrestressLossCriteria::LossMethodType::WSDOT_REFINED:
       ReportRefinedMethod(beamType,girderKey,pChapter,pDisplayUnits,level,laWSDOT);
       break;
 
-   case pgsTypes::TXDOT_REFINED_2004:
+   case PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2004:
       ReportRefinedMethod(beamType,girderKey,pChapter,pDisplayUnits,level,laTxDOT);
       break;
 
-   case pgsTypes::AASHTO_LUMPSUM:
+   case PrestressLossCriteria::LossMethodType::AASHTO_LUMPSUM:
       ReportApproxLumpSumMethod(beamType,girderKey,pChapter,pDisplayUnits,level,false);
       break;
 
-   case pgsTypes::WSDOT_LUMPSUM:
+   case PrestressLossCriteria::LossMethodType::WSDOT_LUMPSUM:
       ReportApproxLumpSumMethod(beamType,girderKey,pChapter,pDisplayUnits,level,true);
       break;
 
-   case pgsTypes::GENERAL_LUMPSUM:
+   case PrestressLossCriteria::LossMethodType::GENERAL_LUMPSUM:
       ReportGeneralLumpSumMethod(beamType,girderKey,pChapter,pDisplayUnits,true,level);
       break;
 
-   case pgsTypes::TXDOT_REFINED_2013:
+   case PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2013:
       ReportRefinedMethodTxDOT2013(pChapter,beamType,girderKey,pDisplayUnits,level);
       break;
 
@@ -270,7 +273,7 @@ void CPsLossEngineer::ReportRefinedMethod(BeamType beamType,const CGirderKey& gi
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
-   if ( pSpecEntry->GetSpecificationType() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 ||
+   if ( pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 ||
         lossAgency==laTxDOT)
    {
       ReportRefinedMethodBefore2005(pChapter,beamType,girderKey,pDisplayUnits,level);
@@ -288,7 +291,7 @@ void CPsLossEngineer::ReportApproxLumpSumMethod(BeamType beamType,const CGirderK
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
-   if ( pSpecEntry->GetSpecificationType() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 )
+   if ( pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 )
    {
       ReportApproxMethod(pChapter,beamType,girderKey,pDisplayUnits,level,isWsdot);
    }
@@ -333,7 +336,7 @@ void CPsLossEngineer::LossesByRefinedEstimate(BeamType beamType,const pgsPointOf
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
-   if ( pSpecEntry->GetSpecificationType() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 ||
+   if ( pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 ||
         lossAgency==laTxDOT)
    {
       LossesByRefinedEstimateBefore2005(beamType,poi,pConfig,pLosses);
@@ -346,7 +349,7 @@ void CPsLossEngineer::LossesByRefinedEstimate(BeamType beamType,const pgsPointOf
 
 void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,LOSSDETAILS* pLosses)
 {
-   pLosses->LossMethod = pgsTypes::AASHTO_REFINED;
+   pLosses->LossMethod = PrestressLossCriteria::LossMethodType::AASHTO_REFINED;
 
    WBFL::Materials::PsStrand::Grade gradePerm, gradeTemp;
    WBFL::Materials::PsStrand::Type typePerm, typeTemp;
@@ -421,8 +424,9 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
    GET_IFACE(ILibrary,pLib);
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
+   const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
 
-   Float64 shipping_loss = pSpecEntry->GetShippingLosses();
+   Float64 shipping_loss = prestress_loss_criteria.ShippingLosses;
 
    std::shared_ptr<WBFL::LRFD::RefinedLosses> pLoss(new WBFL::LRFD::RefinedLosses(poi.GetDistFromStart(),
                                 girder_length, spType,
@@ -606,16 +610,17 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
    GET_IFACE( ILibrary,         pLib);
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
+   const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
    if ( lossAgency==laWSDOT )
    {
-      pLosses->LossMethod = pgsTypes::WSDOT_REFINED_2005;
+      pLosses->LossMethod = PrestressLossCriteria::LossMethodType::WSDOT_REFINED_2005;
    }
    else
    {
-      pLosses->LossMethod = pgsTypes::AASHTO_REFINED_2005;
+      pLosses->LossMethod = PrestressLossCriteria::LossMethodType::AASHTO_REFINED_2005;
    }
 
-   WBFL::LRFD::RefinedLosses2005::RelaxationLossMethod relaxationMethod = (WBFL::LRFD::RefinedLosses2005::RelaxationLossMethod)pSpecEntry->GetRelaxationLossMethod();
+   WBFL::LRFD::RefinedLosses2005::RelaxationLossMethod relaxationMethod = prestress_loss_criteria.RelaxationLossMethod;
 
    std::shared_ptr<WBFL::LRFD::RefinedLosses2005> pLoss;
 
@@ -898,7 +903,7 @@ void CPsLossEngineer::LossesByRefinedEstimateTxDOT2013(BeamType beamType,const p
 
 WBFL::LRFD::ElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRefinedEstimateTxDOT2013_Compute(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,LOSSDETAILS* pLosses)
 {
-   pLosses->LossMethod = pgsTypes::TXDOT_REFINED_2013;
+   pLosses->LossMethod = PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2013;
 
    WBFL::LRFD::Losses::SectionPropertiesType spType;
    WBFL::Materials::PsStrand::Grade gradePerm, gradeTemp;
@@ -970,24 +975,24 @@ WBFL::LRFD::ElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRe
    GET_IFACE(ILibrary,pLib);
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
-
-   Float64 shipping_loss = pSpecEntry->GetShippingLosses();
+   const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
+   Float64 shipping_loss = prestress_loss_criteria.ShippingLosses;
 
    // fcgp Computation method - Elastic shortening
-   Int16 fcgp_method = pSpecEntry->GetFcgpComputationMethod();
+   auto fcgp_method = prestress_loss_criteria.FcgpComputationMethod;
 
    WBFL::LRFD::ElasticShortening::FcgpComputationMethod method;
-   if (fcgp_method == FCGP_07FPU)
+   if (fcgp_method == PrestressLossCriteria::FcgpMethodType::Assume07fpu)
    {
       method = WBFL::LRFD::ElasticShortening::FcgpComputationMethod::AssumedFpe;
    }
-   else if (fcgp_method == FCGP_ITERATIVE)
+   else if (fcgp_method == PrestressLossCriteria::FcgpMethodType::Iterative)
    {
       method = WBFL::LRFD::ElasticShortening::FcgpComputationMethod::Iterative;
    }
    else
    {
-      ATLASSERT(fcgp_method == FCGP_HYBRID);
+      ATLASSERT(fcgp_method == PrestressLossCriteria::FcgpMethodType::Hybrid);
 
       // Use 0.7Fpu method to compute Fcgp if: permanent strands are jacked to 0.75*Fpu and,
       // no temp strands exist and, beam is prismatic, and no debonding exists.
@@ -1084,7 +1089,7 @@ WBFL::LRFD::ElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRe
       pLosses->pLosses = std::static_pointer_cast<const WBFL::LRFD::Losses>(pLoss);
       ATLASSERT(pLosses->pLosses!=nullptr);
 
-      if(fcgp_method == FCGP_HYBRID && 
+      if(fcgp_method == PrestressLossCriteria::FcgpMethodType::Hybrid && 
          pLoss->GetElasticShortening().GetFcgpComputationMethod() == WBFL::LRFD::ElasticShortening::FcgpComputationMethod::Iterative)
       {
          // Elastic shortening loss method switches to iterative solution if jacking stress is not
@@ -1231,26 +1236,26 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
    GET_IFACE( ILibrary,         pLib);
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
-
+   const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
    try
    {
-      if ( pSpecEntry->GetSpecificationType() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 )
+      if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 )
       {
          // partial prestressing ratio=1 for wsdot method
          Float64 ppr;
          if (isWsdot)
          {
             ppr = 1.0;
-            pLosses->LossMethod = pgsTypes::WSDOT_LUMPSUM;
+            pLosses->LossMethod = PrestressLossCriteria::LossMethodType::WSDOT_LUMPSUM;
          }
          else
          {
             GET_IFACE(ILongRebarGeometry,pLongRebarGeom);
             ppr = pLongRebarGeom->GetPPRBottomHalf(poi);
-            pLosses->LossMethod = pgsTypes::AASHTO_LUMPSUM;
+            pLosses->LossMethod = PrestressLossCriteria::LossMethodType::AASHTO_LUMPSUM;
          }
 
-         Float64 shipping_loss = pSpecEntry->GetShippingLosses();
+         Float64 shipping_loss = prestress_loss_criteria.ShippingLosses;
 
          GET_IFACE_NOCHECK(IMaterials, pMaterial);
          pgsTypes::ConcreteType concreteType = (pConfig ? pConfig->ConcType : pMaterial->GetSegmentConcreteType(segmentKey));
@@ -1396,11 +1401,11 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
 
          if ( isWsdot )
          {
-            pLosses->LossMethod = pgsTypes::WSDOT_LUMPSUM_2005;
+            pLosses->LossMethod = PrestressLossCriteria::LossMethodType::WSDOT_LUMPSUM_2005;
          }
          else
          {
-            pLosses->LossMethod = pgsTypes::AASHTO_LUMPSUM_2005;
+            pLosses->LossMethod = PrestressLossCriteria::LossMethodType::AASHTO_LUMPSUM_2005;
          }
 
          // Any of the "get" methods on WBFL::LRFD::PsLosses can throw an WBFL::LRFD::XPsLosses::Reason exception if
@@ -1526,7 +1531,7 @@ void CPsLossEngineer::LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfI
                      &girder_length,&span_length,
                      &usage,&anchorSet,&wobble,&coeffFriction,&angleChange);
 
-   pLosses->LossMethod = pgsTypes::GENERAL_LUMPSUM;
+   pLosses->LossMethod = PrestressLossCriteria::LossMethodType::GENERAL_LUMPSUM;
 
    GET_IFACE(ILossParameters,pLossParameters);
 
@@ -2363,7 +2368,8 @@ void CPsLossEngineer::ReportLumpSumMethod(rptChapter* pChapter,CPsLossEngineer::
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << _T("General Lump Sum Estimate Losses") << rptNewLine;
+   pParagraph->SetName(_T("General Lump Sum Estimate Losses"));
+   *pParagraph << pParagraph->GetName() << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
@@ -2545,15 +2551,15 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pCh
    CString strApproxMethod(WBFL::LRFD::LRFDVersionMgr::GetVersion() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 ? _T("Approximate Lump Sum Estimate") : _T("Approximate Estimate"));
    *pParagraph << strApproxMethod << _T(" of Time Dependent Losses at Hauling") << rptNewLine;
 
-   if ( pDetails->LossMethod == pgsTypes::AASHTO_LUMPSUM || pDetails->LossMethod == pgsTypes::WSDOT_LUMPSUM )
+   if ( pDetails->LossMethod == PrestressLossCriteria::LossMethodType::AASHTO_LUMPSUM || pDetails->LossMethod == PrestressLossCriteria::LossMethodType::WSDOT_LUMPSUM )
    {
       // Approximate methods before 2005
       GET_IFACE( ISpecification,   pSpec);
       GET_IFACE( ILibrary,         pLib);
       std::_tstring spec_name = pSpec->GetSpecification();
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
-
-      Float64 shipping_losses = pSpecEntry->GetShippingLosses();
+      const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
+      Float64 shipping_losses = prestress_loss_criteria.ShippingLosses;
 
       pParagraph = new rptParagraph;
       *pChapter << pParagraph;
@@ -2637,7 +2643,7 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLosses(rptChapter* pChapter,cons
    CString strApproxMethod(WBFL::LRFD::LRFDVersionMgr::GetVersion() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 ? _T("Approximate Lump Sum Estimate") : _T("Approximate Estimate"));
    *pParagraph << strApproxMethod << _T(" of Time Dependent Losses") << rptNewLine;
 
-   if ( pDetails->LossMethod == pgsTypes::AASHTO_LUMPSUM || pDetails->LossMethod == pgsTypes::WSDOT_LUMPSUM )
+   if ( pDetails->LossMethod == PrestressLossCriteria::LossMethodType::AASHTO_LUMPSUM || pDetails->LossMethod == PrestressLossCriteria::LossMethodType::WSDOT_LUMPSUM )
    {
       std::_tstring strLossEqnImage[2][5][2][2]; 
       // dim 0... 0 = LRFD, 1 = WSDOT
@@ -2688,7 +2694,7 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLosses(rptChapter* pChapter,cons
       strLossEqnImage[1][+WBFL::LRFD::ApproximateLosses::BeamType::SingleT][0][1]   = _T("ApproxLoss_LRFD_SingleT_LowRelax_US.png");
       strLossEqnImage[1][+WBFL::LRFD::ApproximateLosses::BeamType::SingleT][1][1]   = _T("ApproxLoss_LRFD_SingleT_StressRel_US.png");
 
-      int method = (pDetails->LossMethod == pgsTypes::WSDOT_LUMPSUM) ? 1 : 0;
+      int method = (pDetails->LossMethod == PrestressLossCriteria::LossMethodType::WSDOT_LUMPSUM) ? 1 : 0;
 
       // Typecast to our known type (eating own doggy food)
       std::shared_ptr<const WBFL::LRFD::ApproximateLosses> ptl = std::dynamic_pointer_cast<const WBFL::LRFD::ApproximateLosses>(pDetails->pLosses);
@@ -3089,7 +3095,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
          *pAd  = pSectProp->GetGrossDeckArea( poi );
       }
 
-      // eccentricity of deck... use gross slab depth because sacrifical wearing surface hasn't worn off while early age shrinkage is occuring
+      // eccentricity of deck... use gross slab depth because sacrificial wearing surface hasn't worn off while early age shrinkage is occurring
       if (pConfig)
       {
          *ped = pSectProp->GetY(compositeDeckIntervalIdx, poi, pgsTypes::TopGirder, pConfig->fc) + pBridge->GetGrossSlabDepth(poi) / 2;
@@ -3111,25 +3117,26 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    *pMdlg  = pProdForces->GetMoment( releaseIntervalIdx, pgsTypes::pftGirder, poi, bat, rtCumulative);
 
    const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
+   const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
 
    // effectiveness of deck shrinkage
-   *pKsh = pSpecEntry->GetDeckShrinkageElasticGain();
+   *pKsh = prestress_loss_criteria.SlabShrinkageElasticGain;
 
-   Float64 K_slab    = pSpecEntry->GetSlabElasticGain();
-   Float64 K_slabpad = pSpecEntry->GetSlabPadElasticGain();
-   Float64 K_dia     = pSpecEntry->GetDiaphragmElasticGain();
-   Float64 K_userdc1 = pSpecEntry->GetUserLoadBeforeDeckDCElasticGain();
-   Float64 K_userdw1 = pSpecEntry->GetUserLoadBeforeDeckDWElasticGain();
+   Float64 K_slab    = prestress_loss_criteria.SlabElasticGain;
+   Float64 K_slabpad = prestress_loss_criteria.SlabPadElasticGain;
+   Float64 K_dia     = prestress_loss_criteria.DiaphragmElasticGain;
+   Float64 K_userdc1 = prestress_loss_criteria.UserDCElasticGain_BeforeDeckPlacement;
+   Float64 K_userdw1 = prestress_loss_criteria.UserDWElasticGain_BeforeDeckPlacement;
 
-   Float64 K_railing = pSpecEntry->GetRailingSystemElasticGain();
-   Float64 K_userdc2 = pSpecEntry->GetUserLoadAfterDeckDCElasticGain();
-   Float64 K_userdw2 = pSpecEntry->GetUserLoadAfterDeckDWElasticGain();
-   Float64 K_overlay = pSpecEntry->GetOverlayElasticGain();
+   Float64 K_railing = prestress_loss_criteria.RailingSystemElasticGain;
+   Float64 K_userdc2 = prestress_loss_criteria.UserDCElasticGain_AfterDeckPlacement;
+   Float64 K_userdw2 = prestress_loss_criteria.UserDWElasticGain_AfterDeckPlacement;
+   Float64 K_overlay = prestress_loss_criteria.OverlayElasticGain;
 
    if ( spType == pgsTypes::sptTransformed )
    {
       // effectiveness factors don't apply for transformed properties
-      // elastic gains are computed impliciity and can't be scaled.
+      // elastic gains are computed implicitly and can't be scaled.
       *pKsh     = 1.0;
       K_slab    = 1.0;
       K_slabpad = 1.0;
@@ -3274,11 +3281,11 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    *prh = pEnv->GetRelHumidity();
 
    // get time to prestress transfer
-   std::_tstring spec_name = pSpec->GetSpecification();
-   *pti = pSpecEntry->GetXferTime();
-   *pth = pSpecEntry->GetShippingTime();
-   *ptd = pSpecEntry->GetCreepDuration2Max();
-   *ptf = pSpecEntry->GetTotalCreepDuration();
+   const auto& creep_criteria = pSpecEntry->GetCreepCriteria();
+   *pti = creep_criteria.XferTime;
+   *pth = prestress_loss_criteria.ShippingTime;
+   *ptd = creep_criteria.CreepDuration2Max;
+   *ptf = creep_criteria.TotalCreepDuration;
 
    // Update the data members of the loss calculation object.  It will take care of the rest
    switch (pConfig ? pConfig->PrestressConfig.TempStrandUsage : pStrands->GetTemporaryStrandUsage())
@@ -3311,27 +3318,27 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
 void CPsLossEngineer::ReportFinalLosses(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
    GET_IFACE(ILossParameters,pLossParameters);
-   pgsTypes::LossMethod loss_method = pLossParameters->GetLossMethod();
+   PrestressLossCriteria::LossMethodType loss_method = pLossParameters->GetLossMethod();
 
    Uint16 level = 0;
    switch( loss_method )
    {
-   case pgsTypes::AASHTO_REFINED:
-   case pgsTypes::AASHTO_LUMPSUM:
-   case pgsTypes::TXDOT_REFINED_2013:
+   case PrestressLossCriteria::LossMethodType::AASHTO_REFINED:
+   case PrestressLossCriteria::LossMethodType::AASHTO_LUMPSUM:
+   case PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2013:
       ReportFinalLossesRefinedMethod(pChapter,beamType,girderKey,pDisplayUnits,laAASHTO);
       break;
 
-   case pgsTypes::WSDOT_REFINED:
-   case pgsTypes::WSDOT_LUMPSUM:
+   case PrestressLossCriteria::LossMethodType::WSDOT_REFINED:
+   case PrestressLossCriteria::LossMethodType::WSDOT_LUMPSUM:
       ReportFinalLossesRefinedMethod(pChapter,beamType,girderKey,pDisplayUnits,laWSDOT);
       break;
 
-   case pgsTypes::TXDOT_REFINED_2004:
+   case PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2004:
       ReportFinalLossesRefinedMethod(pChapter,beamType,girderKey,pDisplayUnits,laTxDOT);
       break;
 
-   case pgsTypes::GENERAL_LUMPSUM:
+   case PrestressLossCriteria::LossMethodType::GENERAL_LUMPSUM:
       ReportGeneralLumpSumMethod(beamType,girderKey,pChapter,pDisplayUnits,false,0);
       break;
 
@@ -3348,7 +3355,7 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamTy
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
-   if ( pSpecEntry->GetSpecificationType() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 ||
+   if ( pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 ||
         lossAgency==laTxDOT)
    {
       ReportFinalLossesRefinedMethodBefore2005(pChapter,beamType,girderKey,pDisplayUnits);

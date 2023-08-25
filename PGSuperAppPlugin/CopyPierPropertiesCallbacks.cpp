@@ -1547,15 +1547,16 @@ void PierMaterialsComparison(rptParagraph* pPara, CComPtr<IBroker> pBroker, Pier
    GET_IFACE2(pBroker,ILibrary, pLib );
    GET_IFACE2(pBroker,ISpecification, pSpec );
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
 
    // special considerations for f'ci if time step
-   int loss_method = pSpecEntry->GetLossMethod();
-   bool isTimeStep = loss_method == LOSSES_TIME_STEP;
+   auto loss_method = prestress_loss_criteria.LossMethod;
+   bool isTimeStep = loss_method == PrestressLossCriteria::LossMethodType::TIME_STEP;
 
    PierIndexType nPiers = pBridgeDesc->GetPierCount();
-   if (fromPierIdx > nPiers - 1)
+   if ((nPiers - 1) < fromPierIdx)
    {
-      ATLASSERT(0); // this should never happen
+      ATLASSERT(false); // this should never happen
    }
 
    RowIndexType row = 1;

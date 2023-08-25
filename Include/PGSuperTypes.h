@@ -31,6 +31,12 @@
 #include <vector>
 #include <array>
 
+#if 202002L <= _MSVC_LANG
+#include <ranges>
+#include <utility>
+#include <numeric>
+#endif
+
 #include <PgsExt\Keys.h> // goes with GDRCONFIG
 static long g_Ncopies = 0; // keeps track of the number of times GDRCONFIG is copied
 
@@ -40,40 +46,10 @@ static long g_Ncopies = 0; // keeps track of the number of times GDRCONFIG is co
 #define TOOLTIP_WIDTH 400 // 400 characters
 #define TOOLTIP_DURATION 20000 // 20 seconds
 
-// defines the method used for computing creep coefficients
-#define CREEP_LRFD              0
-#define CREEP_WSDOT             1
-
-#define CREEP_SPEC_PRE_2005     1 // creep based on pre 2005 provisions
-#define CREEP_SPEC_2005         2 // creep based on 2005 interim provisions
-
-// curing method (effects ti for loss and creep calculations)
-#define CURING_NORMAL           0
-#define CURING_ACCELERATED      1
 
 // truck roll stiffness method
 #define ROLLSTIFFNESS_LUMPSUM 0
 #define ROLLSTIFFNESS_PERAXLE 1
-
-// exposure conditions
-#define EXPOSURE_NORMAL 0
-#define EXPOSURE_SEVERE 1
-
-// defines the creep time frame (ie. D40 and D120 for WSDOT)
-#define CREEP_MINTIME           0
-#define CREEP_MAXTIME           1
-
-// method for computing fcgp - the concrete stress at the center of gravity of prestressing tendons at transfer
-// this method is only used for the TxDOT 2013 loss method
-#define FCGP_07FPU              0 // assume stress is 0.7fpu 
-#define FCGP_ITERATIVE          1 // iterate to find value
-#define FCGP_HYBRID             2 // iterate unless initial stress is 0.75fpu, then use 0.7fpu
-
-// methods for distribution factor calculation
-#define LLDF_LRFD               0
-#define LLDF_WSDOT              1
-// #define LLDF_DIRECT_INPUT       2 // Value is stored in project, not library.
-#define LLDF_TXDOT              2 
 
 // analysis or spec check method type
 #define LRFD_METHOD               0
@@ -101,6 +77,68 @@ static long g_Ncopies = 0; // keeps track of the number of times GDRCONFIG is co
 
 typedef struct pgsTypes
 {
+#if 202002L <= _MSVC_LANG
+   /// @brief creates a range enumerator for an enum class
+   /// for (auto e : pgsTypes::enum_range<MyEnum>(MyEnum::FirstValue,MyEnum::LastValue))
+   /// { ... }
+   /// Requires that the enumerated values are sequential
+   template <typename T>
+   static inline constexpr auto enum_range = [](auto f, auto l)
+      {
+         return std::views::iota(std::underlying_type<T>::type(f), std::underlying_type<T>::type(l) + 1) | std::views::transform([](auto e) {return decltype(f)(e); });
+      };
+#endif
+
+   /// @brief Indicates the method used for evaluating longitudinal reinforcement for shear requirements.
+   /// At one time there were both LRFD and WSDOT methods. However, the WSDOT method was rescinded leaving
+   /// only the LRFD method. This enum was retained has a placeholder for possible future alternative methods.
+   enum class LongitudinalReinforcementForShearMethod
+   {
+      LRFD
+   };
+
+   // methods for distribution factor calculation
+   enum class LiveLoadDistributionFactorMethod
+   {
+      LRFD,
+      WSDOT,
+      TxDOT
+   };
+
+   enum class ExposureCondition
+   {
+      Normal,
+      Severe
+   };
+
+
+   // curing method (effects ti for loss and creep calculations)
+   enum class CuringMethod
+   {
+      Normal,
+      Accelerated
+   };
+
+   // defines the method used for computing creep coefficients
+   enum class CreepMethod
+   {
+      LRFD,
+      WSDOT
+   };
+
+   enum class CreepSpecification
+   {
+      LRFDPre2005 = 1, // creep based on pre 2005 provisions
+      LRFD2005 = 2 // creep based on 2005 interim provisions
+   };
+
+   // defines the creep time frame (ie. D40 and D120 for WSDOT)
+   enum class CreepTime
+   {
+      Min,
+      Max
+   };
+
    typedef enum SectionCoordinateType
    {
       scBridge, // Bridge Section Coordinates
@@ -558,9 +596,9 @@ typedef struct pgsTypes
       atcConnectedRelativeDisplacement
    } AdjacentTransverseConnectivity;
 
-   typedef std::vector<SupportedDeckType>    SupportedDeckTypes;
-   typedef std::vector<SupportedBeamSpacing> SupportedBeamSpacings;
-   typedef std::vector<WorkPointLocation> WorkPointLocations;
+   using  SupportedDeckTypes = std::vector<SupportedDeckType>;
+   using  SupportedBeamSpacings = std::vector<SupportedBeamSpacing>;
+   using  WorkPointLocations = std::vector<WorkPointLocation>;
 
    typedef enum RemovePierType
    {
@@ -592,18 +630,20 @@ typedef struct pgsTypes
    {TopFace, BottomFace} FaceType;
 
    // Method for computing prestress transfer length
-   typedef enum PrestressTransferComputationType { ptUsingSpecification=60, // use current spec
-                                                   ptMinuteValue=0          // As close to zero length as we are comfortable
-   } PrestressTransferComputationType;
+   enum class TransferLengthCalculationMethod
+   {
+      Specification, // use the LRFD specifications
+      MinuteValue // Per TxDOT, assume transfer length is a minute value (something as close to zero as possible)
+   };
 
    /// Defines the transfer length type. Transfer length is an uncertain value. The transfer length model
    /// supports a minimum and maximum length value so a short or long transfer length can be used when
    /// it is most critical.
-   typedef enum TransferLengthType
+   enum class TransferLengthType
    {
-      tltMinimum, ///< Short transfer length, typically critical for Service and Fatigue Limit States
-      tltMaximum ///< Long transfer length, typically critical for Strength and Extreme Event Limit States
-   } TransferLengthType;
+      Minimum, ///< Short transfer length, typically critical for Service and Fatigue Limit States
+      Maximum ///< Long transfer length, typically critical for Strength and Extreme Event Limit States
+   };
 
    typedef enum TrafficBarrierOrientation
    {
@@ -690,14 +730,15 @@ typedef struct pgsTypes
    } RebarLayoutType;
 
    // Hauling analysis
-   typedef enum HaulingAnalysisMethod {hmWSDOT, hmKDOT } HaulingAnalysisMethod;
+   enum class HaulingAnalysisMethod {WSDOT, KDOT };
 
-   typedef enum SagCamberType
+   /// @brief Indicate the camber value that is evaluated for sag
+   enum class SagCamber
    {
       UpperBoundCamber,
       AverageCamber,
       LowerBoundCamber
-   } SagCamberType;
+   };
 
    typedef enum CureMethod
    {
@@ -727,29 +768,6 @@ typedef struct pgsTypes
       Middle,
       End
    } IntervalTimeType;
-
-   typedef enum LossMethod
-   {
-      AASHTO_REFINED      = 0,
-      AASHTO_LUMPSUM      = 1,
-      GENERAL_LUMPSUM     = 3,
-      WSDOT_LUMPSUM       = 4, // same as PPR = 1.0 in aashto eqn's
-      AASHTO_LUMPSUM_2005 = 5, // 2005 AASHTO code
-      AASHTO_REFINED_2005 = 6, // 2005 AASHTO code
-      WSDOT_LUMPSUM_2005  = 7, // 2005 AASHTO, WSDOT (includes initial relaxation loss)
-      WSDOT_REFINED_2005  = 8, // 2005 AASHTO, WSDOT (includes initial relaxation loss)
-      WSDOT_REFINED       = 9,
-      TXDOT_REFINED_2004  = 10, // TxDOT's May, 09 decision is to use refined losses from AASHTO 2004
-      TXDOT_REFINED_2013  = 11, // TxDOT's Method based on Report No. FHWA/TX-12/0-6374-2
-      TIME_STEP           = 12  // Losses are computed with a time-step method
-   } LossMethod;
-
-   typedef enum TimeDependentModel
-   {
-      tdmAASHTO, 
-      tdmACI209,
-      tdmCEBFIP
-   } TimeDependentModel;
 
    typedef enum JackingEndType
    {
@@ -838,31 +856,6 @@ typedef struct pgsTypes
       hsSquare,    // Haunch is square (vertical from edge of girder)
       hsFilleted   // Haunch cut at 45 degrees (like WSDOT)
    } HaunchShapeType;
-
-   typedef enum WindType
-   {
-      Speed,
-      Pressure
-   } WindType;
-
-   typedef enum CFType // centrifugal force type
-   {
-      Adverse, // CF is towards the left (increases lateral deflection and roll over)
-      Favorable // CF is towards the right
-   } CFType;
-
-   typedef enum HaulingImpact
-   {
-      NormalCrown, // impact applied only to the normal crown condition
-      MaxSuper,    // impact applied only to the max superelevation condition   
-      Both         // impact applied to both conditions
-   } HaulingImpact;
-
-   typedef enum HaulingSlope
-   {
-      CrownSlope, // hauling at normal crown slope
-      Superelevation // hauling at maximum superelevation
-   } HaulingSlope;
 
    typedef enum SectionBias
    {
@@ -2297,5 +2290,7 @@ inline bool IsUHPC(pgsTypes::ConcreteType type)
 {
    return (type == pgsTypes::PCI_UHPC || type == pgsTypes::UHPC) ? true : false;
 }
+
+inline constexpr auto operator+(pgsTypes::CreepTime a) noexcept { return std::underlying_type<pgsTypes::CreepTime>::type(a); }
 
 #endif // INCLUDED_PGSUPERTYPES_H_

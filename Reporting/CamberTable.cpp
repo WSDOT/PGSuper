@@ -31,6 +31,9 @@
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
 
+#include <psgLib/CreepCriteria.h>
+
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -144,7 +147,7 @@ void CCamberTable::GetPointsOfInterest(IBroker* pBroker,const CSegmentKey& segme
 //======================== DEBUG      =======================================
 void CCamberTable::Build_Deck(IBroker* pBroker, const CSegmentKey& segmentKey,
    bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay, bool bDeckPanels,
-   IEAFDisplayUnits* pDisplayUnits, Int16 constructionRate, const CamberMultipliers& cm,
+   IEAFDisplayUnits* pDisplayUnits, pgsTypes::CreepTime constructionRate, const CamberMultipliers& cm,
    rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const
 {
    GET_IFACE2(pBroker, IBridge, pBridge);
@@ -160,7 +163,7 @@ void CCamberTable::Build_Deck(IBroker* pBroker, const CSegmentKey& segmentKey,
 
 void CCamberTable::Build_NoDeck(IBroker* pBroker, const CSegmentKey& segmentKey,
    bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay,
-   IEAFDisplayUnits* pDisplayUnits, Int16 constructionRate, const CamberMultipliers& cm,
+   IEAFDisplayUnits* pDisplayUnits, pgsTypes::CreepTime constructionRate, const CamberMultipliers& cm,
    rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const
 {
    GET_IFACE2(pBroker, IBridge, pBridge);
@@ -176,7 +179,7 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker, const CSegmentKey& segmentKey,
 
 void CCamberTable::Build_Deck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
    bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint,bool bConstruction, bool bOverlay, bool bDeckPanels,
-   IEAFDisplayUnits* pDisplayUnits, Int16 constructionRate, const CamberMultipliers& cm,
+   IEAFDisplayUnits* pDisplayUnits, pgsTypes::CreepTime constructionRate, const CamberMultipliers& cm,
    rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const
 {
    INIT_UV_PROTOTYPE(rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false);
@@ -339,7 +342,8 @@ void CCamberTable::Build_Deck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
    (*table3)(0, col++) << COLHDR(Sub2(symbol(DELTA), _T("2")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
    (*table3)(0, col++) << COLHDR(Sub2(symbol(DELTA), _T("3")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
 
-   Float64 days = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max());
+   const auto& creep_criteria = pSpecEntry->GetCreepCriteria();
+   Float64 days = creep_criteria.GetCreepDuration2(constructionRate);
    days = WBFL::Units::ConvertFromSysUnits(days, WBFL::Units::Measure::Day);
    std::_tostringstream os;
    os << days;
@@ -571,7 +575,7 @@ void CCamberTable::Build_Deck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
 
 void CCamberTable::Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey,
    bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay, bool bDeckPanels,
-   IEAFDisplayUnits* pDisplayUnits, Int16 constructionRate, const CamberMultipliers& cm,
+   IEAFDisplayUnits* pDisplayUnits, pgsTypes::CreepTime constructionRate, const CamberMultipliers& cm,
    rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const
 {
    INIT_UV_PROTOTYPE(rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false);
@@ -803,7 +807,8 @@ void CCamberTable::Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey
    (*table3)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("2")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
    (*table3)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("3")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
 
-   Float64 days = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max());
+   const auto& creep_criteria = pSpecEntry->GetCreepCriteria();
+   Float64 days = creep_criteria.GetCreepDuration2(constructionRate);
    days = WBFL::Units::ConvertFromSysUnits(days,WBFL::Units::Measure::Day);
    std::_tostringstream os;
    os << days;
@@ -1090,7 +1095,7 @@ void CCamberTable::Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey
 
 void CCamberTable::Build_NoDeck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
    bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay,
-   IEAFDisplayUnits* pDisplayUnits, Int16 constructionRate, const CamberMultipliers& cm,
+   IEAFDisplayUnits* pDisplayUnits, pgsTypes::CreepTime constructionRate, const CamberMultipliers& cm,
    rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const
 {
    INIT_UV_PROTOTYPE(rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false);
@@ -1263,7 +1268,8 @@ void CCamberTable::Build_NoDeck_Y(IBroker* pBroker, const CSegmentKey& segmentKe
    (*table3)(0, col++) << COLHDR(Sub2(symbol(DELTA), _T("2")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
    (*table3)(0, col++) << COLHDR(Sub2(symbol(DELTA), _T("3")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
 
-   Float64 days = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max());
+   const auto& creep_criteria = pSpecEntry->GetCreepCriteria();
+   Float64 days = creep_criteria.GetCreepDuration2(constructionRate);
    days = WBFL::Units::ConvertFromSysUnits(days, WBFL::Units::Measure::Day);
    std::_tostringstream os;
    os << days;
@@ -1501,7 +1507,7 @@ void CCamberTable::Build_NoDeck_Y(IBroker* pBroker, const CSegmentKey& segmentKe
 
 void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKey,
                                             bool bTempStrands, bool bSidewalk, bool bShearKey,bool bLongitudinalJoint,bool bConstruction, bool bOverlay,
-                                            IEAFDisplayUnits* pDisplayUnits,Int16 constructionRate, const CamberMultipliers& cm,
+                                            IEAFDisplayUnits* pDisplayUnits, pgsTypes::CreepTime constructionRate, const CamberMultipliers& cm,
                                             rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const
 {
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -1745,7 +1751,8 @@ void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKe
    (*table3)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("2")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
    (*table3)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("3")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
-   Float64 days = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max());
+   const auto& creep_criteria = pSpecEntry->GetCreepCriteria();
+   Float64 days = creep_criteria.GetCreepDuration2(constructionRate);
    days = WBFL::Units::ConvertFromSysUnits(days,WBFL::Units::Measure::Day);
    std::_tostringstream os;
    os << days;

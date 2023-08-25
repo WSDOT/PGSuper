@@ -87,7 +87,7 @@ rptRcTable* CPrestressRotationTable::Build(IBroker* pBroker,const CGirderKey& gi
    }
 
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
-   bool bTimeStep = (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false);
+   bool bTimeStep = (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false);
    if (bTimeStep)
    {
       nCols += 3;
@@ -192,10 +192,10 @@ rptRcTable* CPrestressRotationTable::Build(IBroker* pBroker,const CGirderKey& gi
       else
       {
          Float64 Dcreep1, Rcreep1;
-         pCamber->GetCreepDeflection(poi, ICamber::cpReleaseToDeck, CREEP_MAXTIME, pgsTypes::pddErected, nullptr, &Dcreep1, &Rcreep1);
+         pCamber->GetCreepDeflection(poi, ICamber::cpReleaseToDeck, pgsTypes::CreepTime::Max, pgsTypes::pddErected, nullptr, &Dcreep1, &Rcreep1);
 
          //Float64 Dcreep2, Rcreep2;
-         //pCamber->GetCreepDeflection(poi, ICamber::cpDiaphragmToDeck, CREEP_MAXTIME, pgsTypes::pddErected, nullptr, &Dcreep2, &Rcreep2);
+         //pCamber->GetCreepDeflection(poi, ICamber::cpDiaphragmToDeck, pgsTypes::CreepTime::Max, pgsTypes::pddErected, nullptr, &Dcreep2, &Rcreep2);
          (*pTable)(row, col++) << rotation.SetValue(Rcreep1 /*+ Rcreep2*/);
       }
 

@@ -2666,28 +2666,7 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
    ShowHideNumStrandControls(newStrandDefinitionType);
 
    // show/hide the Extend Strands tab on the parent dialog
-   if (IsDirectStrandModel(m_CurrStrandDefinitionType))
-   {
-      CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-      pParent->OnGirderTypeChanged(false,false);
-   }
-   else
-   {
-      CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-      
-      // add/remove property pages if needed
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2( pBroker, ILibrary, pLib );
-      GET_IFACE2( pBroker, ISpecification, pSpec);
-      const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(pParent->m_strGirderName.c_str());
-      const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-
-      bool bCanExtendStrands = pSpecEntry->AllowStraightStrandExtensions();
-      bool bCanDebond = pGdrEntry->CanDebondStraightStrands();
-
-      pParent->OnGirderTypeChanged(bCanExtendStrands,bCanDebond);
-   }
+   pParent->OnGirderTypeChanged(IsDirectStrandModel(m_CurrStrandDefinitionType) ? false : true);
 
    if (IsDirectStrandModel(m_CurrStrandDefinitionType))
    {

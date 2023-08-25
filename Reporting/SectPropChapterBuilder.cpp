@@ -342,7 +342,7 @@ rptChapter* CSectPropChapterBuilder::Build(const std::shared_ptr<const WBFL::Rep
          {
             GET_IFACE2(pBroker, ISectionProperties, pSectProp);
             GET_IFACE2(pBroker,ILossParameters,pLossParams);
-            //if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+            //if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
             //{
             //   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
             //   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
@@ -376,7 +376,7 @@ rptChapter* CSectPropChapterBuilder::Build(const std::shared_ptr<const WBFL::Rep
                }
             }
 
-            if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+            if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
             {
                pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
                *pChapter << pPara;

@@ -90,14 +90,14 @@ pgsHaulingAnalysisArtifact* pgsKdotGirderHaulingChecker::CheckHauling(const CSeg
 
    if (pHaulingSpecCriteria->IsHaulingAnalysisEnabled())
    {
-      ATLASSERT(pHaulingSpecCriteria->GetHaulingAnalysisMethod()==pgsTypes::hmKDOT);
+      ATLASSERT(pHaulingSpecCriteria->GetHaulingAnalysisMethod()==pgsTypes::HaulingAnalysisMethod::KDOT);
 
       // Run analysis to get check results
       std::unique_ptr<pgsHaulingAnalysisArtifact> artifact( AnalyzeHauling(segmentKey) );
 
       pgsKdotHaulingAnalysisArtifact* kart = dynamic_cast<pgsKdotHaulingAnalysisArtifact*>(artifact.get()); // eating our own dog food here
 
-      bool didpass = kart->Passed(pgsTypes::CrownSlope);
+      bool didpass = kart->Passed(WBFL::Stability::HaulingSlope::CrownSlope);
 
       // Next run design to get overhang limits
       GET_IFACE(IBridge,pBridge);
@@ -277,7 +277,7 @@ pgsHaulingAnalysisArtifact* pgsKdotGirderHaulingChecker::DesignHauling(const CSe
 
       this->AnalyzeHauling(segmentKey, true, shipping_config, pPOId, &temp_artifact);
 
-      bool passed = temp_artifact.Passed(pgsTypes::CrownSlope);
+      bool passed = temp_artifact.Passed(WBFL::Stability::HaulingSlope::CrownSlope);
 
       if(passed)
       {
@@ -536,7 +536,7 @@ void pgsKdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& segm
       for (int i = 0; i < 3; i++)
       {
          pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
-         P[strandType] = pPrestressForce->GetPrestressForce(poi, strandType, haulSegmentIntervalIdx, pgsTypes::Middle,pgsTypes::tltMinimum, pConfig);
+         P[strandType] = pPrestressForce->GetPrestressForce(poi, strandType, haulSegmentIntervalIdx, pgsTypes::Middle,pgsTypes::TransferLengthType::Minimum, pConfig);
          ecc[strandType] = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poi, strandType, pConfig).Y();
          Aps[strandType] = pStrandGeometry->GetStrandArea(poi, releaseIntervalIdx, strandType, pConfig);
       }

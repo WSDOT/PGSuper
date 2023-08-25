@@ -44,6 +44,8 @@
 
 #include <psgLib\ConnectionLibraryEntry.h>
 
+#include <psgLib/SlabOffsetCriteria.h>
+
 #include <WBFLCogo.h>
 
 #ifdef _DEBUG
@@ -112,8 +114,8 @@ rptChapter* CTexasHaunchChapterBuilder::Build(const std::shared_ptr<const WBFL::
    GET_IFACE2(pBroker,ISpecification, pSpec );
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
-
-   if (!pSpecEntry->IsSlabOffsetCheckEnabled())
+   const auto& slab_offset_criteria = pSpecEntry->GetSlabOffsetCriteria();
+   if (!slab_offset_criteria.bCheck)
    {
       return nullptr;
    }

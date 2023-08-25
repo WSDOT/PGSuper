@@ -952,11 +952,11 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
             // Get cambers at POI
             Float64 DpsRelease  = pProduct->GetDeflection(releaseIntervalIdx,pgsTypes::pftPretension,mpoi,bat,rtCumulative,false);
             Float64 DgdrRelease = pProduct->GetDeflection(releaseIntervalIdx,pgsTypes::pftGirder,mpoi,bat,rtCumulative,false);
-            Float64 Dcreep = pCamber->GetCreepDeflection( mpoi, ICamber::cpReleaseToDeck, CREEP_MAXTIME, pgsTypes::pddErected );
+            Float64 Dcreep = pCamber->GetCreepDeflection( mpoi, ICamber::cpReleaseToDeck, pgsTypes::CreepTime::Max, pgsTypes::pddErected );
 
             Float64 releaseCamber = DpsRelease + DgdrRelease;
             Float64 slabCastingCamber = releaseCamber + Dcreep;
-            Float64 excessCamber = pCamber->GetExcessCamber(mpoi,CREEP_MAXTIME);
+            Float64 excessCamber = pCamber->GetExcessCamber(mpoi,pgsTypes::CreepTime::Max);
 
             Float64 topAtSlabCasting = topOfGirderChord + slabCastingCamber;
             dval = WBFL::Units::ConvertFromSysUnits(topAtSlabCasting, WBFL::Units::Measure::Inch);
@@ -987,7 +987,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
          Float64 haunchVolNoCamber = girderLength * haunchWidth * ((adstart+adend)/2 - tDeck);
 
          // assume that camber makes a parabolic shape along entire length of girder
-         Float64 midSpanExcessCamber = pCamber->GetExcessCamber(mid_poi,CREEP_MAXTIME);
+         Float64 midSpanExcessCamber = pCamber->GetExcessCamber(mid_poi,pgsTypes::CreepTime::Max);
 
          // Area under parabolic segment is 2/3(width)(height) 
          Float64 camberVolume = 2.0/3.0 * haunchWidth * midSpanExcessCamber * girderLength;

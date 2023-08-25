@@ -78,7 +78,7 @@ const std::shared_ptr<pgsDevelopmentLength> pgsDevelopmentLengthEngineer::GetDev
    // The fpe returned from the IPretensionForce interface is the basic value so we compute it here as P/A
    // since P is adjusted for transfer effects
    GET_IFACE(IPretensionForce, pPrestressForce);
-   Float64 Ppe = pPrestressForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::End, pgsTypes::tltMaximum, pConfig);
+   Float64 Ppe = pPrestressForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::End, pgsTypes::TransferLengthType::Maximum, pConfig);
    // NOTE: development length is related to strength limit states so we want to use the maximum transfer length.
 
    GET_IFACE(IStrandGeometry, pStrandGeom);
@@ -118,7 +118,7 @@ const std::shared_ptr<pgsDevelopmentLength> pgsDevelopmentLengthEngineer::GetDev
    else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
    {
       GET_IFACE(IPretensionForce, pPrestress);
-      Float64 lt = pPrestress->GetTransferLength(segmentKey, strandType, pgsTypes::tltMaximum, pConfig);
+      Float64 lt = pPrestress->GetTransferLength(segmentKey, strandType, pgsTypes::TransferLengthType::Maximum, pConfig);
       details = std::make_shared<pgsUHPCDevelopmentLength>(lt, db, fpe, fps);
    }
    else
@@ -192,7 +192,7 @@ Float64 pgsDevelopmentLengthEngineer::GetDevelopmentLengthAdjustment(const pgsPo
    else
    {
       GET_IFACE(IPretensionForce, pPrestressForce);
-      const std::shared_ptr<pgsTransferLength> pXferLength = pPrestressForce->GetTransferLengthDetails(poi.GetSegmentKey(), strandType, pgsTypes::tltMaximum,pConfig);
+      const std::shared_ptr<pgsTransferLength> pXferLength = pPrestressForce->GetTransferLengthDetails(poi.GetSegmentKey(), strandType, pgsTypes::TransferLengthType::Maximum,pConfig);
       const std::shared_ptr<pgsDevelopmentLength> pDevLength = GetDevelopmentLengthDetails(poi, strandType, bDebonded, fps, fpe, pConfig);
       Float64 xfer_length = pXferLength->GetTransferLength();
       Float64 dev_length = pDevLength->GetDevelopmentLength();

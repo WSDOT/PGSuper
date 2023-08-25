@@ -49,6 +49,8 @@
 
 #include "ShearDesignTool.h"
 
+#include <psgLib/ShearCapacityCriteria.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -341,9 +343,8 @@ void pgsShearDesignTool::Initialize(IBroker* pBroker, const LongReinfShearChecke
    const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
 
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-
-   m_bDoDesignForConfinement = pSpecEntry->IsConfinementDesignEnabled();
-   m_bDoDesignForSplitting   = pSpecEntry->IsSplittingDesignEnabled();
+   const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
+   m_EndZoneCriteria = pSpecEntry->GetEndZoneCriteria();
 
    m_BarLegCollection.clear();
 
@@ -381,7 +382,7 @@ void pgsShearDesignTool::Initialize(IBroker* pBroker, const LongReinfShearChecke
 
    m_LongShearCapacityIncreaseMethod = pGirderEntry->GetLongShearCapacityIncreaseMethod();
    m_bIsLongShearCapacityIncreaseMethodProblem = m_LongShearCapacityIncreaseMethod==GirderLibraryEntry::isAddingRebar &&
-                                                 !pSpecEntry->IncludeRebarForShear();
+                                                 !shear_capacity_criteria.bIncludeRebar;
    m_bLongShearCapacityRequiresStirrupTightening = false;
 
    // Compute maximum possible bar spacing for design
@@ -426,7 +427,7 @@ void pgsShearDesignTool::Initialize(IBroker* pBroker, const LongReinfShearChecke
 
 
    // Compute splitting zone lengths if we need them
-   if (m_bDoDesignForSplitting)
+   if (m_EndZoneCriteria.bDesignSplitting)
    {
       GET_IFACE(ISplittingChecks, pSplittingChecks);
       m_StartSplittingZl = pSplittingChecks->GetSplittingZoneLength(m_SegmentKey, pgsTypes::metStart);
@@ -509,12 +510,12 @@ void pgsShearDesignTool::DumpDesignParameters()
 
 bool pgsShearDesignTool::DoDesignForConfinement() const
 {
-   return m_bDoDesignForConfinement;
+   return m_EndZoneCriteria.bDesignConfinement;
 }
 
 bool pgsShearDesignTool::DoDesignForSplitting() const
 {
-   return m_bDoDesignForSplitting;
+   return m_EndZoneCriteria.bDesignSplitting;
 }
 
 bool pgsShearDesignTool::DoDesignFromScratch() const
@@ -669,7 +670,7 @@ void pgsShearDesignTool::ValidatePointsOfInterest(const PoiList& vPois) const
    VERIFY(m_PoiMgr.AddPointOfInterest(poiR4H) != INVALID_ID);
 
    // Add pois at the confinement and splitting locations if needed
-   if (m_bDoDesignForConfinement)
+   if (m_EndZoneCriteria.bDesignConfinement)
    {
       if( m_StartConnectionLength < m_StartConfinementZl )
       {
@@ -684,7 +685,7 @@ void pgsShearDesignTool::ValidatePointsOfInterest(const PoiList& vPois) const
       }
    }
 
-   if (m_bDoDesignForSplitting)
+   if (m_EndZoneCriteria.bDesignSplitting)
    {
       if ( m_StartConnectionLength < m_StartSplittingZl )
       {

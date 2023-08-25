@@ -29,6 +29,8 @@
 #include <LRFD\Lrfd.h>
 #include <WBFLRCCapacity.h>
 
+#include <psgLib/PrestressLossCriteria.h>
+
 struct PIER_DIAPHRAGM_LOAD_DETAILS
 {
    Float64 TribWidth;
@@ -445,15 +447,14 @@ struct CRITSECTDETAILS
 
 struct CREEPCOEFFICIENTDETAILS
 {
-   Uint32 Method;          // a CREEP_xxx constant
-   Uint32 Spec; // spec type... pre 2005 or 2005 and later... CREEP_SPEC_XXXX constant
+   pgsTypes::CreepSpecification Spec; // spec type... pre 2005 or 2005 and later... CREEP_SPEC_XXXX constant
    Float64 Ct; // This is the creep coefficient
 
    Float64 ti; // concrete age at time of loading
    Float64 t;  // amount of time load has been applied to concrete
 
    // The remaining parameters are for LRFD method
-   Uint32 CuringMethod;
+   pgsTypes::CuringMethod CuringMethod;
    Float64 VSratio; // Volume to surface ratio
    Float64 Fc;      // Concrete strength at time of loading
    Float64 H;       // Relative Humidity
@@ -475,7 +476,7 @@ struct CREEPCOEFFICIENTDETAILS
 
 struct INCREMENTALCREEPDETAILS
 {
-   // idealy this should be unique pointers, but I haven't been able to figure
+   // ideally this should be unique pointers, but I haven't been able to figure
    // out all of the details to make this work in a complex data structure
    //std::unique_ptr<WBFL::Materials::ConcreteBaseCreepDetails> pStartDetails;
    //std::unique_ptr<WBFL::Materials::ConcreteBaseCreepDetails> pEndDetails;
@@ -485,7 +486,7 @@ struct INCREMENTALCREEPDETAILS
 
 struct INCREMENTALSHRINKAGEDETAILS
 {
-   // idealy this should be unique pointers, but I haven't been able to figure
+   // ideally this should be unique pointers, but I haven't been able to figure
    // out all of the details to make this work in a complex data structure
    //std::unique_ptr<WBFL::Materials::ConcreteBaseShrinkageDetails> pStartDetails;
    //std::unique_ptr<WBFL::Materials::ConcreteBaseShrinkageDetails> pEndDetails;
@@ -505,7 +506,7 @@ struct INCREMENTALRELAXATIONDETAILS
    Float64 tEnd{ 0 };
    Float64 epoxyFactor{ 1.0 }; // this factor is multiplied to the relaxation.
                         // see PCI "Guidelines for the use of Epoxy-Coated Strand", PCI Journal, July-August 1993
-                        // relaxation is doubled, so this factor is 2.0, for expoxy coated strands
+                        // relaxation is doubled, so this factor is 2.0, for epoxy coated strands
 
 
    // These parameters are for AASHTO and ACI209 models
@@ -860,7 +861,7 @@ struct TIME_STEP_PRINCIPALSTRESSINWEBDETAILS
    Float64 I; // moment of inertia  section
    Float64 fTop; // Stress at top of non-composite girder for computing maximum fpcx
    Float64 fBot; // Stress at bottom of non-composite girder for computing maximum fpcx
-   std::vector<TIME_STEP_PRINCIPALTENSIONWEBSECTIONDETAILS> WebSections; // points along the web height where principal tension is evaluted
+   std::vector<TIME_STEP_PRINCIPALTENSIONWEBSECTIONDETAILS> WebSections; // points along the web height where principal tension is evaluated
 };
 
 // This struct holds the computation details for a specific interval 
@@ -919,7 +920,7 @@ struct TIME_STEP_DETAILS
    // Time step parameters for girder rebar
    std::vector<TIME_STEP_REBAR> GirderRebar;
 
-   // Forces required to totally restrain the cross section for initial strains occuring during this interval
+   // Forces required to totally restrain the cross section for initial strains occurring during this interval
    std::array<Float64,3> Pr, Mr; // index is one of the TIMESTEP_XXX constants
 
    // Initial Strains 
@@ -1043,7 +1044,7 @@ struct LOSSDETAILS
 
    // Method for computing prestress losses... the value of this parameter
    // defines which of the loss details given below are applicable
-   pgsTypes::LossMethod LossMethod;
+   PrestressLossCriteria::LossMethodType LossMethod;
 
    ///////////////////////////////////////////////////////////////////////////////
    // Losses computed by LRFD Approximate or Refined methods or general lump sum

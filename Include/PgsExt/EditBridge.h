@@ -25,12 +25,13 @@
 #include <EAF\EAFTransaction.h>
 #include <PgsExt\BridgeDescription2.h>
 #include <IFace\Project.h>
+#include <array>
 
 class PGSEXTCLASS txnEditBridge : public CEAFTransaction
 {
 public:
    txnEditBridge(const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc,
-      enumExposureCondition oldExposureCondition, enumExposureCondition newExposureCondition,
+      pgsTypes::ExposureCondition oldExposureCondition, pgsTypes::ExposureCondition newExposureCondition,
       Float64 oldRelHumidity, Float64 newRelHumidity
       );
 
@@ -50,7 +51,7 @@ private:
 
    bool m_bBridgeDescOnly;
 
-	CBridgeDescription2 m_BridgeDesc[2];
-   enumExposureCondition m_ExposureCondition[2];
-   Float64 m_RelHumidity[2];
+	std::array<CBridgeDescription2, 2> m_BridgeDesc;
+   std::array<pgsTypes::ExposureCondition, 2> m_ExposureCondition;
+   std::array<Float64, 2> m_RelHumidity;
 };

@@ -33,7 +33,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\PointOfInterest.h>
 #include <PgsExt\PoiMgr.h>
-
+#include <psgLib/StrandSlopeCriteria.h>
 #include "RaisedStraightStrandDesignTool.h"
 
 #include <algorithm>
@@ -681,12 +681,10 @@ private:
    Float64 m_MinimumFinalMzEccentricity; 
 
    // strand slope and hold down
-   bool m_DoDesignForStrandSlope;
-   Float64 m_AllowableStrandSlope;
-   bool m_DoDesignForHoldDownForce;
-   Float64 m_AllowableHoldDownForce;
-   Float64 m_HoldDownFriction;
-   bool m_bTotalHoldDownForce;
+   StrandSlopeCriteria m_StrandSlopeCriteria;
+   Float64 m_StrandSlopeLimit;
+
+   HoldDownCriteria m_HoldDownCriteria;
 
    bool AdjustForStrandSlope();
    bool AdjustForHoldDownForce();

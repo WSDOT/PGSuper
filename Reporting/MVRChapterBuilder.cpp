@@ -56,6 +56,8 @@
 
 #include <psgLib\SpecLibraryEntry.h>
 #include <psgLib\RatingLibraryEntry.h>
+#include <psgLib/LiveLoadDeflectionCriteria.h>
+#include <psgLib/ShearCapacityCriteria.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -345,12 +347,12 @@ rptChapter* CMVRChapterBuilder::Build(const std::shared_ptr<const WBFL::Reportin
          LiveLoadTableFooter(pBroker, p, thisGirderKey, bDesign, bRating);
 
          for (auto intervalIdx : vUserLoadIntervals)
-               {
+         {
             ATLASSERT(pUDL->DoUserLoadsExist(thisGirderKey, intervalIdx));
-                  *p << CUserRotationTable().Build(pBroker, thisGirderKey, analysisType, intervalIdx, pDisplayUnits) << rptNewLine;
-               }
+            *p << CUserRotationTable().Build(pBroker, thisGirderKey, analysisType, intervalIdx, pDisplayUnits) << rptNewLine;
+         }
 
-         if (pSpecEntry->GetDoEvaluateLLDeflection())
+         if (pSpecEntry->GetLiveLoadDeflectionCriteria().bCheck)
          {
             // Optional Live Load Deflections
             p = new rptParagraph;
@@ -374,14 +376,14 @@ rptChapter* CMVRChapterBuilder::Build(const std::shared_ptr<const WBFL::Reportin
    // if we are doing a time-step analysis, we need to report for all intervals from
    // the first prestress release to the end to report all time-dependent effects
    bool bTimeDependentNote = false;
-   if ( pSpecEntry->GetLossMethod() == pgsTypes::TIME_STEP )
+   if ( pSpecEntry->GetPrestressLossCriteria().LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       bTimeDependentNote = true;
       IntervalIndexType firstReleaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(girderKey);
       vIntervals.clear();
       vIntervals.resize(nIntervals-firstReleaseIntervalIdx);
       std::generate(vIntervals.begin(),vIntervals.end(),IncrementValue<IntervalIndexType>(firstReleaseIntervalIdx));
-      // when we go to C++ 11, use the std::itoa algorithm
+#pragma Reminder("When we go to C++ 11, use the std::itoa algorithm")
    }
 
    for (const auto& intervalIdx : vIntervals)
@@ -435,7 +437,7 @@ rptChapter* CMVRChapterBuilder::Build(const std::shared_ptr<const WBFL::Reportin
             CCombinedReactionTable().Build(pBroker,pChapter, girderKey,pDisplayUnits,intervalIdx,analysisType,BearingReactionsTable, bDesign, bRating);
          }
 
-         if ( pSpecEntry->GetShearCapacityMethod() == pgsTypes::scmVciVcw )
+         if ( pSpecEntry->GetShearCapacityCriteria().CapacityMethod == pgsTypes::scmVciVcw )
          {
             p = new rptParagraph(rptStyleManager::GetHeadingStyle());
             *pChapter << p;

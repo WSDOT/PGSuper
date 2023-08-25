@@ -193,6 +193,7 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
    GET_IFACE2(pBroker,ISpecification,pSpec);
    GET_IFACE2(pBroker,ILibrary,pLibrary);
    const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
+   const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
@@ -203,21 +204,21 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
    *pParagraph << rptNewLine;
    if (bHasDeckLoads)
    {
-      *pParagraph << _T("Slab: ") << Sub2(_T("K"), _T("s")) << _T(" = ") << table->scalar.SetValue(pSpecEntry->GetSlabElasticGain()) << rptNewLine;
-      *pParagraph << _T("Haunch: ") << Sub2(_T("K"), _T("h")) << _T(" = ") << table->scalar.SetValue(pSpecEntry->GetSlabPadElasticGain()) << rptNewLine;
+      *pParagraph << _T("Slab: ") << Sub2(_T("K"), _T("s")) << _T(" = ") << table->scalar.SetValue(prestress_loss_criteria.SlabElasticGain) << rptNewLine;
+      *pParagraph << _T("Haunch: ") << Sub2(_T("K"), _T("h")) << _T(" = ") << table->scalar.SetValue(prestress_loss_criteria.SlabPadElasticGain) << rptNewLine;
    }
 
-   *pParagraph << _T("Railing System: ") << Sub2(_T("K"),_T("r")) << _T(" = ") << table->scalar.SetValue(pSpecEntry->GetRailingSystemElasticGain())      << rptNewLine;
+   *pParagraph << _T("Railing System: ") << Sub2(_T("K"),_T("r")) << _T(" = ") << table->scalar.SetValue(prestress_loss_criteria.RailingSystemElasticGain)      << rptNewLine;
 
    if ( bHasOverlay )
    {
-      *pParagraph << _T("Overlay: " )    << Sub2(_T("K"),_T("o")) << _T(" = ") << table->scalar.SetValue(pSpecEntry->GetOverlayElasticGain())   << rptNewLine;
+      *pParagraph << _T("Overlay: " )    << Sub2(_T("K"),_T("o")) << _T(" = ") << table->scalar.SetValue(prestress_loss_criteria.OverlayElasticGain)   << rptNewLine;
    }
 
    if ( bHasUserLoads )
    {
-      *pParagraph << _T("User DC: ") << Sub2(_T("K"),_T("dc")) << _T(" = ") << table->scalar.SetValue(pSpecEntry->GetUserLoadAfterDeckDCElasticGain()) << rptNewLine;
-      *pParagraph << _T("User DW: ") << Sub2(_T("K"),_T("dw")) << _T(" = ") << table->scalar.SetValue(pSpecEntry->GetUserLoadAfterDeckDWElasticGain()) << rptNewLine;
+      *pParagraph << _T("User DC: ") << Sub2(_T("K"),_T("dc")) << _T(" = ") << table->scalar.SetValue(prestress_loss_criteria.UserDCElasticGain_AfterDeckPlacement) << rptNewLine;
+      *pParagraph << _T("User DW: ") << Sub2(_T("K"),_T("dw")) << _T(" = ") << table->scalar.SetValue(prestress_loss_criteria.UserDWElasticGain_AfterDeckPlacement) << rptNewLine;
    }
 
    *pParagraph << table << rptNewLine;

@@ -32,6 +32,8 @@
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\PrecastIGirderDetailingArtifact.h>
 
+#include <psgLib/LimitsCriteria.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -157,8 +159,9 @@ void CGirderDetailingCheck::Build(rptChapter* pChapter,
       GET_IFACE2(pBroker,ILibrary,pLib);
       std::_tstring strSpecName = pSpec->GetSpecification();
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
+      const auto& limits_criteria = pSpecEntry->GetLimitsCriteria();
 
-      if ( pSpecEntry->GetDoCheckStirrupSpacingCompatibility() )
+      if ( limits_criteria.bCheckStirrupSpacingCompatibility )
       {
          // Stirrup Layout Check
          BuildStirrupLayoutCheck(pChapter, pBroker, pGirderArtifact, pDisplayUnits);

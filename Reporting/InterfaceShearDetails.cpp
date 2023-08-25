@@ -36,6 +36,8 @@
 #include <IFace\AnalysisResults.h>
 
 #include <PsgLib\SpecLibraryEntry.h>
+#include <psgLib/SpecificationCriteria.h>
+#include <psgLib/InterfaceShearCriteria.h>
 
 #include <LRFD\ConcreteUtil.h>
 
@@ -78,8 +80,9 @@ void CInterfaceShearDetails::Build(IBroker* pBroker, rptChapter* pChapter,
    GET_IFACE2(pBroker, ILibrary, pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-   m_bIsSpec2007orNewer = WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 <= pSpecEntry->GetSpecificationType();
-   m_ShearFlowMethod = pSpecEntry->GetShearFlowMethod();
+   const auto& interface_shear_criteria = pSpecEntry->GetInterfaceShearCriteria();
+   m_bIsSpec2007orNewer = WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition();
+   m_ShearFlowMethod = interface_shear_criteria.ShearFlowMethod;
 
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;

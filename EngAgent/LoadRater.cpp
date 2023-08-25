@@ -31,6 +31,8 @@
 #include <IFace\PrestressForce.h>
 #include <EAF\EAFDisplayUnits.h>
 
+#include <psgLib/MomentCapacityCriteria.h>
+
 #if defined _USE_MULTITHREADING
 #include <future>
 #endif
@@ -104,7 +106,7 @@ pgsRatingArtifact pgsLoadRater::Rate(const CGirderKey& girderKey,pgsTypes::LoadR
 
       bool bNegativeMoments = pBridge->ProcessNegativeMoments(ALL_SPANS);
 
-      bool bTimeStep = (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false);
+      bool bTimeStep = (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false);
 
       // get the moments for flexure rating
       Moments positive_moments, negative_moments;
@@ -291,7 +293,8 @@ void pgsLoadRater::FlexureRating(const CGirderKey& girderKey, const PoiList& vPo
       GET_IFACE(ISpecification, pSpec);
       GET_IFACE(ILibrary, pLibrary);
       const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
-      yieldingRatingParams.K_liveload = pSpecEntry->GetLiveLoadElasticGain();
+      const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
+      yieldingRatingParams.K_liveload = prestress_loss_criteria.LiveLoadElasticGain;
 
       yieldingRatingParams.analysisType = pSpec->GetAnalysisType();
 
@@ -1525,7 +1528,8 @@ void pgsLoadRater::GetMoments(const CGirderKey& girderKey, pgsTypes::LoadRatingT
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bIncludeNoncompositeMoments = pSpecEntry->IncludeNoncompositeMomentsForNegMomentDesign();
+   const auto& moment_capacity_criteria = pSpecEntry->GetMomentCapacityCriteria();
+   bool bIncludeNoncompositeMoments = moment_capacity_criteria.bIncludeNoncompositeMomentsForNegMomentDesign;
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType constructionLoadIntervalIdx     = pIntervals->GetConstructionLoadInterval();

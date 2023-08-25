@@ -32,6 +32,9 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\Helpers.h>
 
+#include <psgLib/CreepCriteria.h>
+
+
 HRESULT CPGSuperProjectImporter::FinalConstruct()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -352,12 +355,13 @@ void CPGSuperProjectImporter::InitTimelineManager(IBroker* pBroker, CBridgeDescr
 
    // Casting yard stage... starts at day 0 when strands are stressed
    // The activities in this stage includes prestress release, lifting and storage
+   const auto& creep_criteria = pSpecEntry->GetCreepCriteria();
    std::unique_ptr<CTimelineEvent> pTimelineEvent = std::make_unique<CTimelineEvent>();
    pTimelineEvent->SetDay(0);
    pTimelineEvent->SetDescription(_T("Construct Girders, Erect Piers"));
    pTimelineEvent->GetConstructSegmentsActivity().Enable();
-   pTimelineEvent->GetConstructSegmentsActivity().SetTotalCuringDuration(WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime(), WBFL::Units::Measure::Day));
-   pTimelineEvent->GetConstructSegmentsActivity().SetRelaxationTime(WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime(), WBFL::Units::Measure::Day));
+   pTimelineEvent->GetConstructSegmentsActivity().SetTotalCuringDuration(WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime, WBFL::Units::Measure::Day));
+   pTimelineEvent->GetConstructSegmentsActivity().SetRelaxationTime(WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime, WBFL::Units::Measure::Day));
    pTimelineEvent->GetConstructSegmentsActivity().AddSegments(segmentIDs);
 
    // assume piers are erected at the same time girders are being constructed
@@ -377,7 +381,7 @@ void CPGSuperProjectImporter::InitTimelineManager(IBroker* pBroker, CBridgeDescr
    // are removed all on the same day. Assuming max construction sequence (D120). The actual
    // don't matter unless the user switches to time-step analysis.
    pTimelineEvent = std::make_unique<CTimelineEvent>();
-   Float64 day = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration1Max(), WBFL::Units::Measure::Day);
+   Float64 day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration1Max, WBFL::Units::Measure::Day);
    Float64 maxDay = 28.0;
    day = Max(day, maxDay);
    maxDay += 1.0;
@@ -395,7 +399,7 @@ void CPGSuperProjectImporter::InitTimelineManager(IBroker* pBroker, CBridgeDescr
    if (IsNonstructuralDeck(deckType))
    {
       // deck is non-composite or there is no deck so creep can continue
-      deck_diaphragm_curing_duration = Min(WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetTotalCreepDuration() - pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day), 28.0);
+      deck_diaphragm_curing_duration = Min(WBFL::Units::ConvertFromSysUnits(creep_criteria.TotalCreepDuration - creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day), 28.0);
    }
 
    if (IsJointSpacing(bridge.GetGirderSpacingType()) && bridge.HasStructuralLongitudinalJoints())
@@ -409,7 +413,7 @@ void CPGSuperProjectImporter::InitTimelineManager(IBroker* pBroker, CBridgeDescr
       // 2) Joints
       // 3) Deck
       pTimelineEvent = std::make_unique<CTimelineEvent>();
-      day = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day);
+      day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day);
       day = Max(day, maxDay);
       pTimelineEvent->SetDay(day);
       pTimelineEvent->SetDescription(_T("Cast Diaphragms"));
@@ -419,7 +423,7 @@ void CPGSuperProjectImporter::InitTimelineManager(IBroker* pBroker, CBridgeDescr
       pTimelineEvent.release();
 
       pTimelineEvent = std::make_unique<CTimelineEvent>();
-      day = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day) + 1.0;
+      day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day) + 1.0;
       day = Max(day, maxDay);
       pTimelineEvent->SetDay(day);
       pTimelineEvent->SetDescription(_T("Cast Longitudinal Joints"));
@@ -434,7 +438,7 @@ void CPGSuperProjectImporter::InitTimelineManager(IBroker* pBroker, CBridgeDescr
       if (deckType != pgsTypes::sdtNone)
       {
          pTimelineEvent = std::make_unique<CTimelineEvent>();
-         day = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day) + 2.0;
+         day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day) + 2.0;
          day = Max(day, maxDay);
          pTimelineEvent->SetDay(day);
 
@@ -453,7 +457,7 @@ void CPGSuperProjectImporter::InitTimelineManager(IBroker* pBroker, CBridgeDescr
    {
       // Cast deck & diaphragms
       pTimelineEvent = std::make_unique<CTimelineEvent>();
-      day = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day);
+      day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day);
       day = Max(day, maxDay);
       pTimelineEvent->SetDay(day);
       pTimelineEvent->SetDescription(_T("Cast Diaphragms"));
@@ -466,7 +470,7 @@ void CPGSuperProjectImporter::InitTimelineManager(IBroker* pBroker, CBridgeDescr
       if (deckType != pgsTypes::sdtNone)
       {
          pTimelineEvent = std::make_unique<CTimelineEvent>();
-         day = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day);
+         day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day);
          day = Max(day, maxDay);
          pTimelineEvent->SetDay(day);
          pTimelineEvent->SetDescription(GetCastDeckEventName(deckType));
@@ -482,7 +486,7 @@ void CPGSuperProjectImporter::InitTimelineManager(IBroker* pBroker, CBridgeDescr
 
    // traffic barrier/superimposed dead loads
    pTimelineEvent = std::make_unique<CTimelineEvent>();
-   day = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day) + deck_diaphragm_curing_duration;
+   day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day) + deck_diaphragm_curing_duration;
    day = Max(day, maxDay);
    pTimelineEvent->SetDay(day); // deck is continuous
    pTimelineEvent->GetApplyLoadActivity().ApplyRailingSystemLoad();
@@ -507,7 +511,7 @@ void CPGSuperProjectImporter::InitTimelineManager(IBroker* pBroker, CBridgeDescr
    if (wearingSurface == pgsTypes::wstFutureOverlay)
    {
       pTimelineEvent = std::make_unique<CTimelineEvent>();
-      day = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day) + deck_diaphragm_curing_duration + 1.0;
+      day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day) + deck_diaphragm_curing_duration + 1.0;
       day = Max(day, maxDay);
       pTimelineEvent->SetDay(day);
       pTimelineEvent->SetDescription(_T("Final without Live Load"));
@@ -519,7 +523,7 @@ void CPGSuperProjectImporter::InitTimelineManager(IBroker* pBroker, CBridgeDescr
 
    // live load
    pTimelineEvent = std::make_unique<CTimelineEvent>();
-   day = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day) + deck_diaphragm_curing_duration + 1.0;
+   day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day) + deck_diaphragm_curing_duration + 1.0;
    day = Max(day, maxDay);
    pTimelineEvent->SetDay(day);
    pTimelineEvent->SetDescription(_T("Final with Live Load"));

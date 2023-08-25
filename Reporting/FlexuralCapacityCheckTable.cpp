@@ -30,6 +30,8 @@
 #include <PgsExt\CapacityToDemand.h>
 #include <PgsExt\ClosureJointData.h>
 
+#include <psgLib/SpecificationCriteria.h>
+
 #include <IFace\DocumentType.h>
 #include <IFace\Bridge.h>
 #include <IFace\MomentCapacity.h>
@@ -89,7 +91,7 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,const pgsGirderA
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool c_over_de = ( pSpec->GetMomentCapacityMethod() == LRFD_METHOD && pSpecEntry->GetSpecificationType() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2006Interims );
+   bool c_over_de = ( pSpec->GetMomentCapacityMethod() == LRFD_METHOD && pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2006Interims );
    Uint16 nCols = c_over_de ? 9 : 6;
 
    rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols,_T(""));

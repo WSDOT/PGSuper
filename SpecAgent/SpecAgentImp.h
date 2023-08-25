@@ -170,10 +170,10 @@ public:
    virtual Float64 GetAllowableCompressionStressCoefficient(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation, const StressCheckTask& task) const override;
    virtual void GetAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation, const StressCheckTask& task,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) const override;
 
-   virtual std::vector<Float64> CSpecAgentImp::GetGirderAllowableCompressionStress(const PoiList& vPoi, const StressCheckTask& task) const override;
-   virtual std::vector<Float64> CSpecAgentImp::GetDeckAllowableCompressionStress(const PoiList& vPoi, const StressCheckTask& task) const override;
-   virtual std::vector<Float64> CSpecAgentImp::GetGirderAllowableTensionStress(const PoiList& vPoi, const StressCheckTask& task,bool bWithBondededReinforcement,bool bInPrecompressedTensileZone) const override;
-   virtual std::vector<Float64> CSpecAgentImp::GetDeckAllowableTensionStress(const PoiList& vPoi, const StressCheckTask& task,bool bWithBondededReinforcement) const override;
+   virtual std::vector<Float64> GetDeckAllowableCompressionStress(const PoiList& vPoi, const StressCheckTask& task) const override;
+   virtual std::vector<Float64> GetGirderAllowableTensionStress(const PoiList& vPoi, const StressCheckTask& task,bool bWithBondededReinforcement,bool bInPrecompressedTensileZone) const override;
+   virtual std::vector<Float64> GetDeckAllowableTensionStress(const PoiList& vPoi, const StressCheckTask& task,bool bWithBondededReinforcement) const override;
+   virtual std::vector<Float64> GetGirderAllowableCompressionStress(const PoiList& vPoi, const StressCheckTask& task) const override;
 
    virtual Float64 GetSegmentAllowableCompressionStress(const pgsPointOfInterest& poi, const StressCheckTask& task) const override;
    virtual Float64 GetClosureJointAllowableCompressionStress(const pgsPointOfInterest& poi, const StressCheckTask& task) const override;
@@ -272,7 +272,7 @@ public:
    virtual Float64 GetMinimumLiftingPointLocation(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end) const override;
    virtual Float64 GetLiftingPointLocationAccuracy() const override;
    virtual Float64 GetLiftingCamberMultiplier() const override;
-   virtual pgsTypes::WindType GetLiftingWindType() const override;
+   virtual WBFL::Stability::WindLoadType GetLiftingWindType() const override;
    virtual Float64 GetLiftingWindLoad() const override;
    virtual WBFL::Stability::LiftingCriteria GetLiftingStabilityCriteria(const CSegmentKey& segmentKey, const HANDLINGCONFIG* pLiftConfig = nullptr) const override;
 
@@ -283,17 +283,17 @@ public:
    virtual void GetHaulingImpact(Float64* pDownward, Float64* pUpward) const override;
    virtual Float64 GetHaulingCrackingFs() const override;
    virtual Float64 GetHaulingRolloverFs() const override;
-   virtual void GetHaulingAllowableTensileConcreteStressParameters(pgsTypes::HaulingSlope slope,Float64* factor,bool* pbMax,Float64* fmax) const override;
-   virtual Float64 GetHaulingAllowableTensileConcreteStress(const CSegmentKey& segmentKey, pgsTypes::HaulingSlope slope) const override;
+   virtual void GetHaulingAllowableTensileConcreteStressParameters(WBFL::Stability::HaulingSlope slope,Float64* factor,bool* pbMax,Float64* fmax) const override;
+   virtual Float64 GetHaulingAllowableTensileConcreteStress(const CSegmentKey& segmentKey, WBFL::Stability::HaulingSlope slope) const override;
    virtual Float64 GetHaulingAllowableGlobalCompressiveConcreteStress(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetHaulingAllowablePeakCompressiveConcreteStress(const CSegmentKey& segmentKey) const override;
-   virtual Float64 GetHaulingAllowableTensionFactor(pgsTypes::HaulingSlope slope) const override;
+   virtual Float64 GetHaulingAllowableTensionFactor(WBFL::Stability::HaulingSlope slope) const override;
    virtual Float64 GetHaulingAllowableGlobalCompressionFactor() const override;
    virtual Float64 GetHaulingAllowablePeakCompressionFactor() const override;
-   virtual Float64 GetHaulingAllowableTensileConcreteStressEx(const CSegmentKey& segmentKey, pgsTypes::HaulingSlope slope,Float64 fc, bool includeRebar) const override;
+   virtual Float64 GetHaulingAllowableTensileConcreteStressEx(const CSegmentKey& segmentKey, WBFL::Stability::HaulingSlope slope,Float64 fc, bool includeRebar) const override;
    virtual Float64 GetHaulingAllowableGlobalCompressiveConcreteStressEx(const CSegmentKey& segmentKey, Float64 fc) const override;
    virtual Float64 GetHaulingAllowablePeakCompressiveConcreteStressEx(const CSegmentKey& segmentKey, Float64 fc) const override;
-   virtual pgsTypes::HaulingImpact GetHaulingImpactUsage() const override;
+   virtual WBFL::Stability::HaulingImpact GetHaulingImpactUsage() const override;
    virtual Float64 GetNormalCrownSlope() const override;
    virtual Float64 GetMaxSuperelevation() const override;
    virtual Float64 GetHaulingSweepTolerance() const override;
@@ -307,16 +307,16 @@ public:
    virtual Float64 GetAllowableDistanceBetweenSupports(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetAllowableLeadingOverhang(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetMaxGirderWgt(const CSegmentKey& segmentKey) const override;
-   virtual Float64 GetHaulingWithMildRebarAllowableStress(const CSegmentKey& segmentKey, pgsTypes::HaulingSlope slope) const override;
-   virtual Float64 GetHaulingWithMildRebarAllowableStressFactor(pgsTypes::HaulingSlope slope) const override;
+   virtual Float64 GetHaulingWithMildRebarAllowableStress(const CSegmentKey& segmentKey, WBFL::Stability::HaulingSlope slope) const override;
+   virtual Float64 GetHaulingWithMildRebarAllowableStressFactor(WBFL::Stability::HaulingSlope slope) const override;
    virtual Float64 GetHaulingModulusOfRupture(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetHaulingModulusOfRupture(const CSegmentKey& segmentKey,Float64 fci,pgsTypes::ConcreteType concType) const override;
    virtual Float64 GetHaulingModulusOfRuptureFactor(pgsTypes::ConcreteType concType) const override;
    virtual Float64 GetMinimumHaulingSupportLocation(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end) const override;
    virtual Float64 GetHaulingSupportLocationAccuracy() const override;
-   virtual pgsTypes::WindType GetHaulingWindType() const override;
+   virtual WBFL::Stability::WindLoadType GetHaulingWindType() const override;
    virtual Float64 GetHaulingWindLoad() const override;
-   virtual pgsTypes::CFType GetCentrifugalForceType() const override;
+   virtual WBFL::Stability::CFType GetCentrifugalForceType() const override;
    virtual Float64 GetHaulingSpeed() const override;
    virtual Float64 GetTurningRadius() const override;
    virtual WBFL::Stability::HaulingCriteria GetHaulingStabilityCriteria(const CSegmentKey& segmentKey,const HANDLINGCONFIG* pHaulConfig = nullptr) const override;

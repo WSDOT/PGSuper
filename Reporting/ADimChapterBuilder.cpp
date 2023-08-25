@@ -34,6 +34,10 @@
 
 #include <PgsExt\BridgeDescription2.h>
 
+#include <psgLib/SlabOffsetCriteria.h>
+#include <psgLib/CreepCriteria.h>
+
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -74,11 +78,12 @@ rptChapter* CADimChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporti
    GET_IFACE2(pBroker,ISpecification,pSpec);
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(spec_name.c_str());
+   const auto& slab_offset_criteria = pSpecEntry->GetSlabOffsetCriteria();
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    pgsTypes::HaunchInputDepthType haunchInputType = pBridge->GetHaunchInputDepthType();
 
-   if (!pSpecEntry->IsSlabOffsetCheckEnabled())
+   if (!slab_offset_criteria.bCheck)
    {
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
@@ -112,7 +117,7 @@ void CADimChapterBuilder::BuildAdimContent(rptChapter * pChapter,const std::shar
    bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
 
    GET_IFACE2(pBroker,ILossParameters,pLossParams);
-   bool bTimeStepAnalysis = (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP);
+   bool bTimeStepAnalysis = (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    bool bHasElevAdj = pBridge->HasTemporarySupportElevationAdjustments();
@@ -184,7 +189,7 @@ void CADimChapterBuilder::BuildAdimContent(rptChapter * pChapter,const std::shar
    }
    else
    {
-      days = pSpecEntry->GetCreepDuration2Max(); // haunch is always computined using max time for construction
+      days = pSpecEntry->GetCreepCriteria().CreepDuration2Max; // haunch is always computined using max time for construction
       days = WBFL::Units::ConvertFromSysUnits(days, WBFL::Units::Measure::Day);
    }
    std::_tostringstream os;
@@ -381,10 +386,8 @@ void CADimChapterBuilder::BuildAdimContent(rptChapter * pChapter,const std::shar
    *pPara << rptNewLine;
 
    CString strRounding;
-   pgsTypes::SlabOffsetRoundingMethod Method;
-   Float64 Tolerance;
-   pSpecEntry->GetRequiredSlabOffsetRoundingParameters(&Method, &Tolerance);
-   if (pgsTypes::sormRoundNearest == Method)
+   const auto& slab_offset_criteria = pSpecEntry->GetSlabOffsetCriteria();
+   if (slab_offset_criteria.RoundingMethod == pgsTypes::sormRoundNearest)
    {
       strRounding = _T(", rounded to the nearest ");
    }
@@ -397,7 +400,7 @@ void CADimChapterBuilder::BuildAdimContent(rptChapter * pChapter,const std::shar
    if (nSegments == 1)
    {
       *pPara << _T("Required Slab Offset at intersection of centerline bearings and centerline girder: ") << comp.SetValue(vRequiredSlabOffset.front());
-      *pPara << _T(" (") << comp.SetValue(vRequiredSlabOffset.front()) << strRounding << compdim.SetValue(Tolerance) << _T(")") << rptNewLine;
+      *pPara << _T(" (") << comp.SetValue(vRequiredSlabOffset.front()) << strRounding << compdim.SetValue(slab_offset_criteria.SlabOffsetTolerance) << _T(")") << rptNewLine;
       *pPara << _T("Maximum Change in CL Haunch Depth along girder: ") << comp.SetValue(vMaxHaunchDiff.front()) << rptNewLine;
    }
    else
@@ -406,7 +409,7 @@ void CADimChapterBuilder::BuildAdimContent(rptChapter * pChapter,const std::shar
       {
          *pPara << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
          *pPara << _T("Required Slab Offset at intersection of centerline bearings and centerline segment: ") << comp.SetValue(vRequiredSlabOffset[segIdx]);
-         *pPara << _T(" (") << comp.SetValue(vRequiredSlabOffset[segIdx]) << strRounding << compdim.SetValue(Tolerance) << _T(")") << rptNewLine;
+         *pPara << _T(" (") << comp.SetValue(vRequiredSlabOffset[segIdx]) << strRounding << compdim.SetValue(slab_offset_criteria.SlabOffsetTolerance) << _T(")") << rptNewLine;
          *pPara << _T("Maximum Change in CL Haunch Depth along segment: ") << comp.SetValue(vMaxHaunchDiff[segIdx]) << rptNewLine << rptNewLine;
       }
    }
@@ -462,7 +465,8 @@ void CADimChapterBuilder::BuildDirectHaunchElevationContent(rptChapter* pChapter
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pISpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pISpec->GetSpecification().c_str());
-   Float64 tolerance = pSpecEntry->GetFinishedElevationTolerance();
+   const auto& slab_offset_criteria = pSpecEntry->GetSlabOffsetCriteria();
+   Float64 tolerance = slab_offset_criteria.FinishedElevationTolerance;
 
    INIT_UV_PROTOTYPE(rptLengthSectionValue,dim1,pDisplayUnits->GetSpanLengthUnit(),true);
    INIT_UV_PROTOTYPE(rptLengthSectionValue,dim2,pDisplayUnits->GetComponentDimUnit(),true);

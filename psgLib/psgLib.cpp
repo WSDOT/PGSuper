@@ -207,7 +207,7 @@ bool do_deal_with_library_conflicts(ConflictList* pList, LibType* pMasterLib, co
          pproject = projectLib.LookupEntry(name.c_str());
          ATLASSERT(pproject!=0);
 
-         std::vector<pgsLibraryEntryDifferenceItem*> vDifferences;
+         std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>> vDifferences;
          bool bMustRename = false;
          bool bSame = (bForceUpdate ? pmaster->IsEqual(*pproject) : pmaster->Compare(*pproject,vDifferences,bMustRename));
          if (!bSame)
@@ -217,7 +217,7 @@ bool do_deal_with_library_conflicts(ConflictList* pList, LibType* pMasterLib, co
             {
                // the library entry was lazy and didn't specify the exact nature of the conflict.
                // provide something to show in the conflict resolution dialog
-               vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Unspecified conflicts"),_T(""),_T("")));
+               vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Unspecified conflicts"),_T(""),_T("")));
             }
 
             LibConflictOutcome res;
@@ -232,7 +232,6 @@ bool do_deal_with_library_conflicts(ConflictList* pList, LibType* pMasterLib, co
                res = psglibResolveLibraryEntryConflict(publisher,configuration,name,libName,master_keys,isImported,vDifferences,bMustRename,&new_name);
             }
 
-            std::for_each(vDifferences.begin(), vDifferences.end(), [](auto* pItem) {delete pItem; });
             vDifferences.clear();
 
             if (res==Rename)
@@ -436,7 +435,7 @@ void psglibCreateLibNameEnum( std::vector<std::_tstring>* pNames, const WBFL::Li
    prjLib.KeyList( *pNames );
 }
 
-LibConflictOutcome psglibResolveLibraryEntryConflict(const std::_tstring& strPublisher, const std::_tstring& strConfiguration, const std::_tstring& entryName, const std::_tstring& libName, const std::vector<std::_tstring>& keylists, bool isImported,const std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences,bool bMustRename,std::_tstring* pNewName)
+LibConflictOutcome psglibResolveLibraryEntryConflict(const std::_tstring& strPublisher, const std::_tstring& strConfiguration, const std::_tstring& entryName, const std::_tstring& libName, const std::vector<std::_tstring>& keylists, bool isImported,const std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences,bool bMustRename,std::_tstring* pNewName)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 

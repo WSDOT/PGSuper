@@ -701,7 +701,7 @@ int Test_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& girde
       pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
 
    	/* 18. ESTIMATED CAMBER IMMEDIATELY BEFORE SLAB CASTING (MAX) */
-      value = pCamber->GetDCamberForGirderSchedule( pmid,CREEP_MAXTIME);
+      value = pCamber->GetDCamberForGirderSchedule( pmid,pgsTypes::CreepTime::Max);
       value = IsZero(value) ? 0 : value;
 
       Float64 initialCamber = WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::Inch );

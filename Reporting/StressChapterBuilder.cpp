@@ -229,7 +229,7 @@ rptChapter* CStressChapterBuilder::Build(const std::shared_ptr<const WBFL::Repor
       // if we are doing a time-step analysis, we need to report for all intervals from
       // the first prestress release to the end to report all time-dependent effects
       bool bTimeDependentNote = false;
-      if ( pSpecEntry->GetLossMethod() == pgsTypes::TIME_STEP )
+      if ( pSpecEntry->GetPrestressLossCriteria().LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP )
       {
          bTimeDependentNote = true;
          IntervalIndexType firstReleaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(thisGirderKey);

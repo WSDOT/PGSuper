@@ -26,7 +26,6 @@ Pretensioned Strand Options
 
 Item | Description
 ----|------------
-Allow Extended Straight Strands | If checked, straight strands can be extended from the precast element
 Compute the transfer length of prestressing strands using the following method: | Select a method for computing prestress transfer length. Options are per LRFD specifications and "Zero Length". See discussion below.
 
 Transfer length is defined as "the length over which the pretensioning force is transferred to the concrete by bond and friction in a pretensioned member". LRFD 5.9.4.3.1 (*pre-2017: 5.11.4.1*) defines the transfer length as 60 strand diameters. PGSuper accounts for reduced prestress forces in the transfer zone using linear interpolation as described in the Specifications.

@@ -94,7 +94,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<const WB
    pTSDRptSpec->GetBroker(&pBroker);
 
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
-   if ( pLossParams->GetLossMethod() != pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       *pPara << color(Red) << _T("Time Step analysis results not available.") << color(Black) << rptNewLine;
       return pChapter;
@@ -2235,8 +2235,8 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
 
    ColumnIndexType nColumns = 7; // This Interval (i), Previous Intervals (j), tj, tb, te, ..., Y(ib,jm), Y(ie,jm)
 
-   pgsTypes::TimeDependentModel model = pLossParams->GetTimeDependentModel();
-   if ( model == pgsTypes::tdmAASHTO )
+   PrestressLossCriteria::TimeDependentConcreteModelType model = pLossParams->GetTimeDependentModel();
+   if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO )
    {
       if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims )
       {
@@ -2254,12 +2254,12 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
          (*pPara) << rptRcImage(strImagePath + _T("AASHTO_Creep_2005.png")) << rptNewLine;
       }
    }
-   else if ( model == pgsTypes::tdmACI209 )
+   else if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
    {
       nColumns += 6;
       (*pPara) << rptRcImage(strImagePath + _T("ACI209_Creep.png")) << rptNewLine;
    }
-   else if ( model == pgsTypes::tdmCEBFIP )
+   else if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP )
    {
       nColumns += 8;
       (*pPara) << rptRcImage(strImagePath + _T("CEBFIP1990_Creep.png")) << rptNewLine;
@@ -2271,17 +2271,17 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
 
    (*pPara) << Sub2(_T("t"),_T("b")) << _T(" = age of concrete at beginning of interval") << rptNewLine;
    (*pPara) << Sub2(_T("t"),_T("e")) << _T(" = age of concrete at end of interval") << rptNewLine;
-   if ( model == pgsTypes::tdmAASHTO )
+   if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO )
    {
       (*pPara) << Sub2(_T("t"),_T("i")) << _T(" = age of concrete at the middle of loading interval") << rptNewLine;
       (*pPara) << _T("H = ") << pEnv->GetRelHumidity() << _T(" %") << rptNewLine;
    }
-   else if ( model == pgsTypes::tdmACI209 )
+   else if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
    {
       (*pPara) << Sub2(_T("t"),_T("la")) << _T(" = age of concrete at the middle of loading interval") << rptNewLine;
       (*pPara) << _T("RH = ") << pEnv->GetRelHumidity() << _T(" %") << rptNewLine;
    }
-   else if ( model == pgsTypes::tdmCEBFIP )
+   else if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP )
    {
       (*pPara) << Sub2(_T("t"),_T("o")) << _T(" = age of concrete at the middle of loading interval") << rptNewLine;
       (*pPara) << _T("RH = ") << pEnv->GetRelHumidity() << _T(" %") << rptNewLine;
@@ -2325,7 +2325,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
       }
       *pPara << _T("V/S = ") << vs.SetValue(V/S) << rptNewLine;
       
-      if ( model == pgsTypes::tdmACI209 )
+      if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
       {
          if ( i == 0 )
          {
@@ -2346,11 +2346,11 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
 
       {
          ColumnIndexType nCol = nColumns;
-         if (model == pgsTypes::tdmAASHTO)
+         if (model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO)
             nCol -= 4;
-         else if (model == pgsTypes::tdmACI209)
+         else if (model == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209)
             nCol -= 5;
-         else if (model == pgsTypes::tdmCEBFIP)
+         else if (model == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP)
             nCol -= 4;
          else
             ATLASSERT(false);
@@ -2364,7 +2364,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
          (*pTable)(rowIdx, colIdx++) << _T("Interval");
          (*pTable)(rowIdx, colIdx++) << Sub2(_T("t"), _T("e")) << rptNewLine << _T("(day)");
 
-         if (model == pgsTypes::tdmAASHTO)
+         if (model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO)
          {
             (*pTable)(rowIdx, colIdx++) << Sub2(_T("t"), _T("i")) << rptNewLine << _T("(day)");
             if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims)
@@ -2391,7 +2391,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
                (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("td")) << _T("(") << Sub2(_T("t"), _T("e")) << _T(" - ") << Sub2(_T("t"), _T("i")) << _T(")");
             }
          }
-         else if (model == pgsTypes::tdmACI209)
+         else if (model == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209)
          {
             (*pTable)(rowIdx, colIdx++) << Sub2(_T("t"), _T("la")) << rptNewLine << _T("(day)");
             (*pTable)(rowIdx, colIdx++) << Sub2(symbol(gamma), _T("t")) << _T("(") << Sub2(_T("t"), _T("m")) << _T(")");
@@ -2399,7 +2399,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
             (*pTable)(rowIdx, colIdx++) << Sub2(symbol(gamma), symbol(lambda));
             (*pTable)(rowIdx, colIdx++) << Sub2(symbol(gamma), _T("vs"));
          }
-         else if (model == pgsTypes::tdmCEBFIP)
+         else if (model == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP)
          {
             (*pTable)(rowIdx, colIdx++) << Sub2(_T("t"), _T("o")) << rptNewLine << _T("(day)");
             (*pTable)(rowIdx, colIdx++) << COLHDR(_T("h"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
@@ -2415,7 +2415,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
             ATLASSERT(false);
          }
 
-         if (model == pgsTypes::tdmAASHTO)
+         if (model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO)
          {
             if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims)
             {
@@ -2426,11 +2426,11 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
                (*pTable)(rowIdx, colIdx++) << CREEP_te_ti_ti;
             }
          }
-         else if (model == pgsTypes::tdmACI209)
+         else if (model == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209)
          {
             (*pTable)(rowIdx, colIdx++) << CREEP_te_tla;
          }
-         else if (model == pgsTypes::tdmCEBFIP)
+         else if (model == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP)
          {
             (*pTable)(rowIdx, colIdx++) << CREEP_te_to;
          }
@@ -2507,7 +2507,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
 
             (*pTable)(rowIdx, colIdx++) << pCreep->age_at_loading;
 
-            if (model == pgsTypes::tdmAASHTO)
+            if (model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO)
             {
                auto pDetails = std::dynamic_pointer_cast<const WBFL::LRFD::LRFDTimeDependentConcreteCreepDetails>(pCreep);
                if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims)
@@ -2533,7 +2533,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
                   (*pTable)(rowIdx, colIdx++) << pDetails->ktd;
                }
             }
-            else if (model == pgsTypes::tdmACI209)
+            else if (model == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209)
             {
                auto pDetails = std::dynamic_pointer_cast<const WBFL::Materials::ACI209ConcreteCreepDetails>(pCreep);
                (*pTable)(rowIdx, colIdx++) << pDetails->time_factor;
@@ -2541,7 +2541,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
                (*pTable)(rowIdx, colIdx++) << pDetails->humidity_factor;
                (*pTable)(rowIdx, colIdx++) << pDetails->vs_factor;
             }
-            else if (model == pgsTypes::tdmCEBFIP)
+            else if (model == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP)
             {
                auto pDetails = std::dynamic_pointer_cast<const WBFL::Materials::CEBFIPConcreteCreepDetails>(pCreep);
                (*pTable)(rowIdx, colIdx++) << ecc.SetValue(pDetails->h);
@@ -2576,7 +2576,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
          (*pTable)(rowIdx, colIdx++) << Sub2(_T("t"), _T("e")) << rptNewLine << _T("(day)");
          (*pTable)(rowIdx, colIdx++) << _T("Loading") << rptNewLine << _T("Interval");
 
-         if (model == pgsTypes::tdmAASHTO)
+         if (model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO)
          {
             (*pTable)(rowIdx, colIdx++) << Sub2(_T("t"), _T("i")) << rptNewLine << _T("(day)");
             if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims)
@@ -2605,7 +2605,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
                (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("td")) << _T("(") << Sub2(_T("t"), _T("e")) << _T(" - ") << Sub2(_T("t"), _T("i")) << _T(")");
             }
          }
-         else if (model == pgsTypes::tdmACI209)
+         else if (model == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209)
          {
             (*pTable)(rowIdx, colIdx++) << Sub2(_T("t"), _T("la")) << rptNewLine << _T("(day)");
             (*pTable)(rowIdx, colIdx++) << Sub2(symbol(gamma), _T("t")) << _T("(") << Sub2(_T("t"), _T("b")) << _T(")");
@@ -2615,7 +2615,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
             (*pTable)(rowIdx, colIdx++) << Sub2(symbol(gamma), symbol(lambda));
             (*pTable)(rowIdx, colIdx++) << Sub2(symbol(gamma), _T("vs"));
          }
-         else if (model == pgsTypes::tdmCEBFIP)
+         else if (model == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP)
          {
             (*pTable)(rowIdx, colIdx++) << Sub2(_T("t"), _T("o")) << rptNewLine << _T("(day)");
             (*pTable)(rowIdx, colIdx++) << COLHDR(_T("h"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
@@ -2632,7 +2632,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
             ATLASSERT(false);
          }
 
-         if (model == pgsTypes::tdmAASHTO)
+         if (model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO)
          {
             if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims)
             {
@@ -2645,12 +2645,12 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
                (*pTable)(rowIdx, colIdx++) << CREEP_te_ti_ti;
             }
          }
-         else if (model == pgsTypes::tdmACI209)
+         else if (model == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209)
          {
             (*pTable)(rowIdx, colIdx++) << CREEP_tb_tla;
             (*pTable)(rowIdx, colIdx++) << CREEP_te_tla;
          }
-         else if (model == pgsTypes::tdmCEBFIP)
+         else if (model == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP)
          {
             (*pTable)(rowIdx, colIdx++) << CREEP_tb_to;
             (*pTable)(rowIdx, colIdx++) << CREEP_te_to;
@@ -2742,7 +2742,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
                (*pTable)(rowIdx, colIdx++) << LABEL_INTERVAL(prevIntervalIdx);
                (*pTable)(rowIdx, colIdx++) << pConcrete->Creep[prevIntervalIdx].pStartDetails->age_at_loading;
 
-               if (model == pgsTypes::tdmAASHTO)
+               if (model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO)
                {
                   const std::shared_ptr<WBFL::LRFD::LRFDTimeDependentConcreteCreepDetails> pStartDetails = std::dynamic_pointer_cast<WBFL::LRFD::LRFDTimeDependentConcreteCreepDetails>(pConcrete->Creep[prevIntervalIdx].pStartDetails);
                   const std::shared_ptr<WBFL::LRFD::LRFDTimeDependentConcreteCreepDetails> pEndDetails   = std::dynamic_pointer_cast<WBFL::LRFD::LRFDTimeDependentConcreteCreepDetails>(pConcrete->Creep[prevIntervalIdx].pEndDetails);
@@ -2772,7 +2772,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
                      (*pTable)(rowIdx, colIdx++) << pEndDetails->ktd;
                   }
                }
-               else if (model == pgsTypes::tdmACI209)
+               else if (model == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209)
                {
                   const std::shared_ptr<WBFL::Materials::ACI209ConcreteCreepDetails> pStartDetails = std::dynamic_pointer_cast<WBFL::Materials::ACI209ConcreteCreepDetails>(pConcrete->Creep[prevIntervalIdx].pStartDetails);
                   const std::shared_ptr<WBFL::Materials::ACI209ConcreteCreepDetails> pEndDetails   = std::dynamic_pointer_cast<WBFL::Materials::ACI209ConcreteCreepDetails>(pConcrete->Creep[prevIntervalIdx].pEndDetails);
@@ -2783,7 +2783,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
                   (*pTable)(rowIdx, colIdx++) << pStartDetails->humidity_factor;
                   (*pTable)(rowIdx, colIdx++) << pStartDetails->vs_factor;
                }
-               else if (model == pgsTypes::tdmCEBFIP)
+               else if (model == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP)
                {
                   const std::shared_ptr<WBFL::Materials::CEBFIPConcreteCreepDetails> pStartDetails = std::dynamic_pointer_cast<WBFL::Materials::CEBFIPConcreteCreepDetails>(pConcrete->Creep[prevIntervalIdx].pStartDetails);
                   const std::shared_ptr<WBFL::Materials::CEBFIPConcreteCreepDetails> pEndDetails   = std::dynamic_pointer_cast<WBFL::Materials::CEBFIPConcreteCreepDetails>(pConcrete->Creep[prevIntervalIdx].pEndDetails);
@@ -2853,8 +2853,8 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
 
    ColumnIndexType nColumns = 6; // Interval, tb, te, ..... , esh(tb), esh(te), Desh
 
-   pgsTypes::TimeDependentModel model = pLossParams->GetTimeDependentModel();
-   if ( model == pgsTypes::tdmAASHTO )
+   PrestressLossCriteria::TimeDependentConcreteModelType model = pLossParams->GetTimeDependentModel();
+   if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO )
    {
       if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims )
       {
@@ -2872,12 +2872,12 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
          (*pPara) << rptRcImage(strImagePath + _T("AASHTO_Shrinkage_2005.png")) << rptNewLine;
       }
    }
-   else if ( model == pgsTypes::tdmACI209 )
+   else if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
    {
       nColumns += 6;
       (*pPara) << rptRcImage(strImagePath + _T("ACI209_Shrinkage.png")) << rptNewLine;
    }
-   else if ( model == pgsTypes::tdmCEBFIP )
+   else if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP )
    {
       nColumns += 8;
       (*pPara) << rptRcImage(strImagePath + _T("CEBFIP1990_Shrinkage.png")) << rptNewLine;
@@ -2889,15 +2889,15 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
 
    (*pPara) << Sub2(_T("t"),_T("b")) << _T(" = Duration of shrinkage to the beginning of the interval") << rptNewLine;
    (*pPara) << Sub2(_T("t"),_T("e")) << _T(" = Duration of shrinkage to the end of the interval") << rptNewLine;
-   if ( model == pgsTypes::tdmAASHTO )
+   if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO )
    {
       (*pPara) << _T("H = ") << pEnv->GetRelHumidity() << _T(" %") << rptNewLine;
    }
-   else if ( model == pgsTypes::tdmACI209 )
+   else if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
    {
       (*pPara) << _T("RH = ") << pEnv->GetRelHumidity() << _T(" %") << rptNewLine;
    }
-   else if ( model == pgsTypes::tdmCEBFIP )
+   else if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP )
    {
       (*pPara) << _T("RH = ") << pEnv->GetRelHumidity() << _T(" %") << rptNewLine;
    }
@@ -2940,7 +2940,7 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
       }
       *pPara << _T("V/S = ") << vs.SetValue(V/S) << rptNewLine;
       
-      if ( (model == pgsTypes::tdmAASHTO && WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims) || model == pgsTypes::tdmACI209 )
+      if ( (model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO && WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims) || model == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
       {
          if ( i == 0 )
          {
@@ -2959,7 +2959,7 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
          }
       }
 
-      if ( model == pgsTypes::tdmAASHTO && WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+      if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO && WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
       {
          if ( i == 0 )
          {
@@ -2982,7 +2982,7 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
             (*pPara) << RPT_FCI << _T(" = ") << stress.SetValue(fci) << rptNewLine;
          }
       }
-      else if ( model == pgsTypes::tdmCEBFIP )
+      else if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP )
       {
          if ( i == 0 )
          {
@@ -3010,7 +3010,7 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
       (*pTable)(rowIdx,colIdx++) << Sub2(_T("t"),_T("b")) << rptNewLine << _T("(day)");
       (*pTable)(rowIdx,colIdx++) << Sub2(_T("t"),_T("e")) << rptNewLine << _T("(day)");
 
-      if ( model == pgsTypes::tdmAASHTO )
+      if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO )
       {
          if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims )
          {
@@ -3035,7 +3035,7 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
             (*pTable)(rowIdx,colIdx++) << Sub2(_T("k"),_T("td")) << _T("(") << Sub2(_T("t"),_T("e")) << _T(")");
          }
       }
-      else if ( model == pgsTypes::tdmACI209 )
+      else if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
       {
          (*pTable)(rowIdx,colIdx++) << _T("f");
          (*pTable)(rowIdx,colIdx++) << Sub2(symbol(gamma),_T("t")) << _T("(") << Sub2(_T("t"),_T("b")) << _T(")");
@@ -3044,7 +3044,7 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
          (*pTable)(rowIdx,colIdx++) << Sub2(symbol(gamma),_T("cp"));
          (*pTable)(rowIdx,colIdx++) << Sub2(symbol(gamma),_T("vs"));
       }
-      else if ( model == pgsTypes::tdmCEBFIP )
+      else if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP )
       {
          (*pTable)(rowIdx,colIdx++) << COLHDR(_T("h"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
          (*pTable)(rowIdx,colIdx++) << Sub2(symbol(beta),_T("sc"));
@@ -3101,7 +3101,7 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
          (*pTable)(rowIdx,colIdx++) << pConcrete->Shrinkage.pStartDetails->shrinkage_duration;
          (*pTable)(rowIdx,colIdx++) << pConcrete->Shrinkage.pEndDetails->shrinkage_duration;
 
-         if ( model == pgsTypes::tdmAASHTO )
+         if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO )
          {
             const std::shared_ptr<WBFL::LRFD::LRFDTimeDependentConcreteShrinkageDetails> pStartDetails = std::dynamic_pointer_cast<WBFL::LRFD::LRFDTimeDependentConcreteShrinkageDetails>(pConcrete->Shrinkage.pStartDetails);
             const std::shared_ptr<WBFL::LRFD::LRFDTimeDependentConcreteShrinkageDetails> pEndDetails   = std::dynamic_pointer_cast<WBFL::LRFD::LRFDTimeDependentConcreteShrinkageDetails>(pConcrete->Shrinkage.pEndDetails);
@@ -3128,7 +3128,7 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
                (*pTable)(rowIdx,colIdx++) << pEndDetails->ktd;
             }
          }
-         else if ( model == pgsTypes::tdmACI209 )
+         else if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
          {
             const std::shared_ptr<WBFL::Materials::ACI209ConcreteShrinkageDetails> pStartDetails = std::dynamic_pointer_cast<WBFL::Materials::ACI209ConcreteShrinkageDetails>(pConcrete->Shrinkage.pStartDetails);
             const std::shared_ptr<WBFL::Materials::ACI209ConcreteShrinkageDetails> pEndDetails   = std::dynamic_pointer_cast<WBFL::Materials::ACI209ConcreteShrinkageDetails>(pConcrete->Shrinkage.pEndDetails);
@@ -3139,7 +3139,7 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
             (*pTable)(rowIdx,colIdx++) << pStartDetails->curing_factor;
             (*pTable)(rowIdx,colIdx++) << pStartDetails->vs_factor;
          }
-         else if ( model == pgsTypes::tdmCEBFIP )
+         else if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP )
          {
             const std::shared_ptr<WBFL::Materials::CEBFIPConcreteShrinkageDetails> pStartDetails = std::dynamic_pointer_cast<WBFL::Materials::CEBFIPConcreteShrinkageDetails>(pConcrete->Shrinkage.pStartDetails);
             const std::shared_ptr<WBFL::Materials::CEBFIPConcreteShrinkageDetails> pEndDetails   = std::dynamic_pointer_cast<WBFL::Materials::CEBFIPConcreteShrinkageDetails>(pConcrete->Shrinkage.pEndDetails);
@@ -3200,12 +3200,12 @@ void CTimeStepDetailsChapterBuilder::ReportStrandRelaxationDetails(rptChapter* p
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   pgsTypes::TimeDependentModel model = pLossParams->GetTimeDependentModel();
+   PrestressLossCriteria::TimeDependentConcreteModelType model = pLossParams->GetTimeDependentModel();
    const auto* pPermanentStrand = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Straight); // ok to use straight since we are just getting material properties, not strand size
    const auto* pTemporaryStrand = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Temporary);
    if ( pPermanentStrand == pTemporaryStrand )
    {
-      if ( model == pgsTypes::tdmAASHTO || model == pgsTypes::tdmACI209 )
+      if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO || model == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
       {
          if (pPermanentStrand->GetType() == WBFL::Materials::PsStrand::Type::StressRelieved )
          {
@@ -3231,7 +3231,7 @@ void CTimeStepDetailsChapterBuilder::ReportStrandRelaxationDetails(rptChapter* p
    else
    {
       *pPara << _T("Straight and Harped Strands") << rptNewLine;
-      if ( model == pgsTypes::tdmAASHTO || model == pgsTypes::tdmACI209 )
+      if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO || model == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
       {
          if (pPermanentStrand->GetType() == WBFL::Materials::PsStrand::Type::StressRelieved )
          {
@@ -3256,7 +3256,7 @@ void CTimeStepDetailsChapterBuilder::ReportStrandRelaxationDetails(rptChapter* p
 
       *pPara << rptNewLine;
       *pPara << _T("Temporary Strands") << rptNewLine;
-      if ( model == pgsTypes::tdmAASHTO || model == pgsTypes::tdmACI209 )
+      if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO || model == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
       {
          if (pTemporaryStrand->GetType() == WBFL::Materials::PsStrand::Type::StressRelieved )
          {
@@ -3285,13 +3285,13 @@ void CTimeStepDetailsChapterBuilder::ReportStrandRelaxationDetails(rptChapter* p
    (*pPara) << Sub2(_T("t"),_T("e")) << _T(" = time from stressing to the end of the interval") << rptNewLine;
 
    ColumnIndexType nColumns = 2;
-   if ( model == pgsTypes::tdmAASHTO || model == pgsTypes::tdmACI209 )
+   if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO || model == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
    {
       nColumns += 6;
    }
    else
    {
-      ATLASSERT(model == pgsTypes::tdmCEBFIP);
+      ATLASSERT(model == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP);
       nColumns += 8;
    }
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nColumns);
@@ -3302,7 +3302,7 @@ void CTimeStepDetailsChapterBuilder::ReportStrandRelaxationDetails(rptChapter* p
 
    (*pTable)(rowIdx,colIdx++) << _T("Interval");
    (*pTable)(rowIdx,colIdx++) << _T("Strand");
-   if ( model == pgsTypes::tdmAASHTO || model == pgsTypes::tdmACI209 )
+   if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO || model == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
    {
       (*pTable)(rowIdx,colIdx++) << COLHDR(RPT_FPE,rptStressUnitTag,pDisplayUnits->GetStressUnit());
       (*pTable)(rowIdx,colIdx++) << COLHDR(RPT_FPY,rptStressUnitTag,pDisplayUnits->GetStressUnit());
@@ -3312,7 +3312,7 @@ void CTimeStepDetailsChapterBuilder::ReportStrandRelaxationDetails(rptChapter* p
    }
    else
    {
-      ATLASSERT(model == pgsTypes::tdmCEBFIP);
+      ATLASSERT(model == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP);
       (*pTable)(rowIdx,colIdx++) << symbol(rho);
       (*pTable)(rowIdx,colIdx++) << _T("k");
       (*pTable)(rowIdx,colIdx++) << COLHDR(RPT_FPE,rptStressUnitTag,pDisplayUnits->GetStressUnit());
@@ -3346,7 +3346,7 @@ void CTimeStepDetailsChapterBuilder::ReportStrandRelaxationDetails(rptChapter* p
          pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
          (*pTable)(rowIdx,colIdx++) << strStrandType[strandType];
 
-         if ( model == pgsTypes::tdmAASHTO || model == pgsTypes::tdmACI209 )
+         if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO || model == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
          {
             (*pTable)(rowIdx,colIdx++) << stress.SetValue(tsDetails.Strands[strandType].Relaxation.fpi);
             (*pTable)(rowIdx,colIdx++) << stress.SetValue(tsDetails.Strands[strandType].Relaxation.fpy);
@@ -3356,7 +3356,7 @@ void CTimeStepDetailsChapterBuilder::ReportStrandRelaxationDetails(rptChapter* p
          }
          else
          {
-            ATLASSERT(model == pgsTypes::tdmCEBFIP);
+            ATLASSERT(model == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP);
             (*pTable)(rowIdx,colIdx++) << tsDetails.Strands[strandType].Relaxation.p;
             (*pTable)(rowIdx,colIdx++) << tsDetails.Strands[strandType].Relaxation.k;
             (*pTable)(rowIdx,colIdx++) << stress.SetValue(tsDetails.Strands[strandType].Relaxation.fpi);
@@ -3395,9 +3395,9 @@ void CTimeStepDetailsChapterBuilder::ReportSegmentTendonRelaxationDetails(rptCha
    pPara = new rptParagraph;
    (*pChapter) << pPara;
 
-   pgsTypes::TimeDependentModel model = pLossParams->GetTimeDependentModel();
+   PrestressLossCriteria::TimeDependentConcreteModelType model = pLossParams->GetTimeDependentModel();
    const auto* pTendon = pMaterials->GetSegmentTendonMaterial(segmentKey);
-   if (model == pgsTypes::tdmAASHTO || model == pgsTypes::tdmACI209)
+   if (model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO || model == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209)
    {
       if (pTendon->GetType() == WBFL::Materials::PsStrand::Type::StressRelieved)
       {
@@ -3424,13 +3424,13 @@ void CTimeStepDetailsChapterBuilder::ReportSegmentTendonRelaxationDetails(rptCha
    (*pPara) << Sub2(_T("t"), _T("e")) << _T(" = time from stressing to the end of the interval") << rptNewLine;
 
    ColumnIndexType nColumns = 2;
-   if (model == pgsTypes::tdmAASHTO || model == pgsTypes::tdmACI209)
+   if (model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO || model == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209)
    {
       nColumns += 6;
    }
    else
    {
-      ATLASSERT(model == pgsTypes::tdmCEBFIP);
+      ATLASSERT(model == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP);
       nColumns += 8;
    }
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nColumns);
@@ -3441,7 +3441,7 @@ void CTimeStepDetailsChapterBuilder::ReportSegmentTendonRelaxationDetails(rptCha
 
    (*pTable)(rowIdx, colIdx++) << _T("Interval");
    (*pTable)(rowIdx, colIdx++) << _T("Tendon");
-   if (model == pgsTypes::tdmAASHTO || model == pgsTypes::tdmACI209)
+   if (model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO || model == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209)
    {
       (*pTable)(rowIdx, colIdx++) << COLHDR(RPT_FPE, rptStressUnitTag, pDisplayUnits->GetStressUnit());
       (*pTable)(rowIdx, colIdx++) << COLHDR(RPT_FPY, rptStressUnitTag, pDisplayUnits->GetStressUnit());
@@ -3451,7 +3451,7 @@ void CTimeStepDetailsChapterBuilder::ReportSegmentTendonRelaxationDetails(rptCha
    }
    else
    {
-      ATLASSERT(model == pgsTypes::tdmCEBFIP);
+      ATLASSERT(model == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP);
       (*pTable)(rowIdx, colIdx++) << symbol(rho);
       (*pTable)(rowIdx, colIdx++) << _T("k");
       (*pTable)(rowIdx, colIdx++) << COLHDR(RPT_FPE, rptStressUnitTag, pDisplayUnits->GetStressUnit());
@@ -3484,7 +3484,7 @@ void CTimeStepDetailsChapterBuilder::ReportSegmentTendonRelaxationDetails(rptCha
          colIdx = 1;
          (*pTable)(rowIdx, colIdx++) << LABEL_DUCT(tendonIdx);
 
-         if (model == pgsTypes::tdmAASHTO || model == pgsTypes::tdmACI209)
+         if (model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO || model == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209)
          {
             (*pTable)(rowIdx, colIdx++) << stress.SetValue(tsDetails.SegmentTendons[tendonIdx].Relaxation.fpi);
             (*pTable)(rowIdx, colIdx++) << stress.SetValue(tsDetails.SegmentTendons[tendonIdx].Relaxation.fpy);
@@ -3494,7 +3494,7 @@ void CTimeStepDetailsChapterBuilder::ReportSegmentTendonRelaxationDetails(rptCha
          }
          else
          {
-            ATLASSERT(model == pgsTypes::tdmCEBFIP);
+            ATLASSERT(model == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP);
             (*pTable)(rowIdx, colIdx++) << tsDetails.SegmentTendons[tendonIdx].Relaxation.p;
             (*pTable)(rowIdx, colIdx++) << tsDetails.SegmentTendons[tendonIdx].Relaxation.k;
             (*pTable)(rowIdx, colIdx++) << stress.SetValue(tsDetails.SegmentTendons[tendonIdx].Relaxation.fpi);
@@ -3533,9 +3533,9 @@ void CTimeStepDetailsChapterBuilder::ReportGirderTendonRelaxationDetails(rptChap
    pPara = new rptParagraph;
    (*pChapter) << pPara;
 
-   pgsTypes::TimeDependentModel model = pLossParams->GetTimeDependentModel();
+   PrestressLossCriteria::TimeDependentConcreteModelType model = pLossParams->GetTimeDependentModel();
    const auto* pTendon = pMaterials->GetGirderTendonMaterial(segmentKey);
-   if ( model == pgsTypes::tdmAASHTO || model == pgsTypes::tdmACI209 )
+   if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO || model == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
    {
       if (pTendon->GetType() == WBFL::Materials::PsStrand::Type::StressRelieved )
       {
@@ -3562,13 +3562,13 @@ void CTimeStepDetailsChapterBuilder::ReportGirderTendonRelaxationDetails(rptChap
    (*pPara) << Sub2(_T("t"),_T("e")) << _T(" = time from stressing to the end of the interval") << rptNewLine;
 
    ColumnIndexType nColumns = 2;
-   if ( model == pgsTypes::tdmAASHTO || model == pgsTypes::tdmACI209 )
+   if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO || model == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
    {
       nColumns += 6;
    }
    else
    {
-      ATLASSERT(model == pgsTypes::tdmCEBFIP);
+      ATLASSERT(model == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP);
       nColumns += 8;
    }
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nColumns);
@@ -3579,7 +3579,7 @@ void CTimeStepDetailsChapterBuilder::ReportGirderTendonRelaxationDetails(rptChap
 
    (*pTable)(rowIdx,colIdx++) << _T("Interval");
    (*pTable)(rowIdx,colIdx++) << _T("Tendon");
-   if ( model == pgsTypes::tdmAASHTO || model == pgsTypes::tdmACI209 )
+   if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO || model == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
    {
       (*pTable)(rowIdx,colIdx++) << COLHDR(RPT_FPE,rptStressUnitTag,pDisplayUnits->GetStressUnit());
       (*pTable)(rowIdx,colIdx++) << COLHDR(RPT_FPY,rptStressUnitTag,pDisplayUnits->GetStressUnit());
@@ -3589,7 +3589,7 @@ void CTimeStepDetailsChapterBuilder::ReportGirderTendonRelaxationDetails(rptChap
    }
    else
    {
-      ATLASSERT(model == pgsTypes::tdmCEBFIP);
+      ATLASSERT(model == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP);
       (*pTable)(rowIdx,colIdx++) << symbol(rho);
       (*pTable)(rowIdx,colIdx++) << _T("k");
       (*pTable)(rowIdx,colIdx++) << COLHDR(RPT_FPE,rptStressUnitTag,pDisplayUnits->GetStressUnit());
@@ -3622,7 +3622,7 @@ void CTimeStepDetailsChapterBuilder::ReportGirderTendonRelaxationDetails(rptChap
          colIdx = 1;
          (*pTable)(rowIdx,colIdx++) << LABEL_DUCT(tendonIdx);
 
-         if ( model == pgsTypes::tdmAASHTO || model == pgsTypes::tdmACI209 )
+         if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO || model == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
          {
             (*pTable)(rowIdx,colIdx++) << stress.SetValue(tsDetails.GirderTendons[tendonIdx].Relaxation.fpi);
             (*pTable)(rowIdx,colIdx++) << stress.SetValue(tsDetails.GirderTendons[tendonIdx].Relaxation.fpy);
@@ -3632,7 +3632,7 @@ void CTimeStepDetailsChapterBuilder::ReportGirderTendonRelaxationDetails(rptChap
          }
          else
          {
-            ATLASSERT(model == pgsTypes::tdmCEBFIP);
+            ATLASSERT(model == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP);
             (*pTable)(rowIdx,colIdx++) << tsDetails.GirderTendons[tendonIdx].Relaxation.p;
             (*pTable)(rowIdx,colIdx++) << tsDetails.GirderTendons[tendonIdx].Relaxation.k;
             (*pTable)(rowIdx,colIdx++) << stress.SetValue(tsDetails.GirderTendons[tendonIdx].Relaxation.fpi);

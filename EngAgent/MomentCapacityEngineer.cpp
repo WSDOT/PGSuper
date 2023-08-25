@@ -44,6 +44,10 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\DevelopmentLength.h>
 
+#include <psgLib/SpecificationCriteria.h>
+#include <psgLib/MomentCapacityCriteria.h>
+#include <psgLib/LimitStateConcreteStrengthCriteria.h>
+
 #include <LRFD\ConcreteUtil.h>
 
 #include <algorithm>
@@ -370,8 +374,8 @@ Float64 pgsMomentCapacityEngineer::GetCrackingMoment(IntervalIndexType intervalI
    // 
    // We are going to use the correct equation from 2nd Edition 2003 forward.
    // The limiting value was removed in LRFD 6th Edition, 2012
-   bool bAfter2002 = (WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2003Interims <= pSpecEntry->GetSpecificationType() ? true : false);
-   bool bBefore2012 = (pSpecEntry->GetSpecificationType() <  WBFL::LRFD::LRFDVersionMgr::Version::SixthEdition2012 ? true : false);
+   bool bAfter2002 = (WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2003Interims <= pSpecEntry->GetSpecificationCriteria().GetEdition() ? true : false);
+   bool bBefore2012 = (pSpecEntry->GetSpecificationCriteria().GetEdition() <  WBFL::LRFD::LRFDVersionMgr::Version::SixthEdition2012 ? true : false);
    if (bAfter2002 && bBefore2012)
    {
       Mcr = (bPositiveMoment ? Max(pcmd->Mcr, pcmd->McrLimit) : Min(pcmd->Mcr, pcmd->McrLimit));
@@ -602,7 +606,8 @@ std::vector<Float64> pgsMomentCapacityEngineer::GetStrandInitialStrain(IntervalI
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-   bool bIncludeStrandsWithNegativeMoment = pSpecEntry->IncludeStrandForNegativeMoment();
+   const auto& moment_capacity_criteria = pSpecEntry->GetMomentCapacityCriteria();
+   bool bIncludeStrandsWithNegativeMoment = moment_capacity_criteria.bIncludeStrandForNegMoment;
 
    Float64 Eps = pStrand->GetE();
    std::vector<Float64> eps_initial; // initial strain in the prestressing strands (strain at effective prestress)
@@ -621,7 +626,7 @@ std::vector<Float64> pgsMomentCapacityEngineer::GetStrandInitialStrain(IntervalI
          StrandIndexType nStrands = pStrandGeometry->GetStrandCount(segmentKey, strandType, pConfig);
          for (StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
          {
-            Float64 transfer_length_factor = pPrestressForce->GetTransferLengthAdjustment(poi, strandType, pgsTypes::tltMaximum, strandIdx, pConfig);
+            Float64 transfer_length_factor = pPrestressForce->GetTransferLengthAdjustment(poi, strandType, pgsTypes::TransferLengthType::Maximum, strandIdx, pConfig);
             eps_initial.push_back(transfer_length_factor * fpe / Eps);
          }
       }
@@ -827,8 +832,8 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
       GET_IFACE(ILibrary, pLib);
       GET_IFACE(ISpecification, pSpec);
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-
-      IndexType nSlices = pSpecEntry->GetSliceCountForMomentCapacity();
+      const auto& moment_capacity_criteria = pSpecEntry->GetMomentCapacityCriteria();
+      IndexType nSlices = moment_capacity_criteria.nMomentCapacitySlices;
 
       m_MomentCapacitySolver->putref_Section(mcd.Section);
       m_MomentCapacitySolver->put_Slices((long)nSlices);
@@ -1015,7 +1020,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
             // strain limit of reinforcement was exceeded
             WATCHX(MomCap, 0, _T("Exceeded material strain limit"));
 
-            bool bConsiderReinforcementStrainLimits = pSpecEntry->ConsiderReinforcementStrainLimitForMomentCapacity();
+            bool bConsiderReinforcementStrainLimits = moment_capacity_criteria.bConsiderReinforcementStrainLimit;
             if (bConsiderReinforcementStrainLimits)
             {
                // based on the project criteria, we need to re-evaluate using the strain limit of the reinforcement
@@ -1465,7 +1470,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
       GET_IFACE(IResistanceFactors, pResistanceFactors);
       Float64 PhiRC, PhiPS, PhiSP, PhiC;
       pResistanceFactors->GetFlexureResistanceFactors(concreteType, &PhiPS, &PhiRC, &PhiSP, &PhiC);
-      if (mcd.Method == LRFD_METHOD && pSpecEntry->GetSpecificationType() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2006Interims)
+      if (mcd.Method == LRFD_METHOD && pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2006Interims)
       {
          if (bIsSplicedGirder)
          {
@@ -1567,7 +1572,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
 
    // deal with over reinforced sections, if applicable
    mcd.bOverReinforced = false;
-   if (mcd.Method == LRFD_METHOD && pSpecEntry->GetSpecificationType() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2006Interims)
+   if (mcd.Method == LRFD_METHOD && pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2006Interims)
    {
       mcd.bOverReinforced = (0.42 < (mcd.c / mcd.de)) ? true : false;
       if (mcd.bOverReinforced)
@@ -1692,8 +1697,8 @@ void pgsMomentCapacityEngineer::ComputeMinMomentCapacity(IntervalIndexType inter
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfter2002  = ( pSpecEntry->GetSpecificationType() >= WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2003Interims ? true : false );
-   bool bBefore2012 = ( pSpecEntry->GetSpecificationType() <  WBFL::LRFD::LRFDVersionMgr::Version::SixthEdition2012 ? true : false );
+   bool bAfter2002  = ( pSpecEntry->GetSpecificationCriteria().GetEdition() >= WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2003Interims ? true : false );
+   bool bBefore2012 = ( pSpecEntry->GetSpecificationCriteria().GetEdition() <  WBFL::LRFD::LRFDVersionMgr::Version::SixthEdition2012 ? true : false );
 
    GET_IFACE(IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType bat = pProdForces->GetBridgeAnalysisType(bPositiveMoment ? pgsTypes::Maximize : pgsTypes::Minimize);
@@ -1761,7 +1766,7 @@ void pgsMomentCapacityEngineer::ComputeMinMomentCapacity(IntervalIndexType inter
    }
    Mu = IsZero(Mu) ? 0 : Mu;
 
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::SixthEdition2012 <= pSpecEntry->GetSpecificationType() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::SixthEdition2012 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
    {
       MrMin1 = Mcr;
    }
@@ -1809,7 +1814,7 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType interval
    pgsTypes::StressLocation stressLocation = (bPositiveMoment ? pgsTypes::BottomGirder : (IsStructuralDeck(deckType) ? pgsTypes::TopDeck : pgsTypes::TopGirder));
 
    // Compute stress due to prestressing
-   Float64 Pps = pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End, pgsTypes::tltMaximum);
+   Float64 Pps = pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End, pgsTypes::TransferLengthType::Maximum);
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
@@ -2155,24 +2160,22 @@ void pgsMomentCapacityEngineer::GetSectionProperties(IntervalIndexType intervalI
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-   bool bUse90DayStrength;
-   Float64 factor;
-   pSpecEntry->Use90DayStrengthForSlowCuringConcrete(&bUse90DayStrength, &factor);
+   const auto& limit_state_concrete_strength_criteria = pSpecEntry->GetLimitStateConcreteStrengthCriteria();
 
    // Get the section moduli
    if ( bPositiveMoment )
    {
       GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType idx = pIntervals->GetLastNoncompositeInterval();
-      Sb = pSectProp->GetS(idx, poi, pgsTypes::BottomGirder, bUse90DayStrength ? config.fc28 : config.fc);
-      Sbc = pSectProp->GetS(intervalIdx, poi, pgsTypes::BottomGirder, bUse90DayStrength ? config.fc28 : config.fc);
+      Sb = pSectProp->GetS(idx, poi, pgsTypes::BottomGirder, limit_state_concrete_strength_criteria.bUse90DayConcreteStrength ? config.fc28 : config.fc);
+      Sbc = pSectProp->GetS(intervalIdx, poi, pgsTypes::BottomGirder, limit_state_concrete_strength_criteria.bUse90DayConcreteStrength ? config.fc28 : config.fc);
    }
    else
    {
       GET_IFACE(IBridge, pBridge);
       pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
       pgsTypes::StressLocation stressLocation = (IsStructuralDeck(deckType) ? pgsTypes::TopDeck : pgsTypes::TopGirder);
-      Sbc = pSectProp->GetS(intervalIdx, poi, stressLocation, bUse90DayStrength ? config.fc28 : config.fc);
+      Sbc = pSectProp->GetS(intervalIdx, poi, stressLocation, limit_state_concrete_strength_criteria.bUse90DayConcreteStrength ? config.fc28 : config.fc);
       Sb  = Sbc;
    }
 
@@ -2193,7 +2196,7 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(Float64 g1,Float64 g2,Floa
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfter2002 = ( pSpecEntry->GetSpecificationType() >= WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2003Interims ? true : false );
+   bool bAfter2002 = ( pSpecEntry->GetSpecificationCriteria().GetEdition() >= WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2003Interims ? true : false );
    if ( bAfter2002 )
    {
       Float64 McrLimit = Sbc*fr;
@@ -2369,12 +2372,7 @@ void pgsMomentCapacityEngineer::CreateGirderMaterial(IntervalIndexType intervalI
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-
-   // 90 day strength isn't applicable to strength limit states (only stress limit states, LRFD 5.12.3.2.5)
-   // so use 28day properties
-   bool bUse90DayStrength;
-   Float64 factor;
-   pSpecEntry->Use90DayStrengthForSlowCuringConcrete(&bUse90DayStrength, &factor);
+   const auto& limit_state_concrete_strength_criteria = pSpecEntry->GetLimitStateConcreteStrengthCriteria();
 
    GET_IFACE(IPointOfInterest, pPoi);
 
@@ -2445,14 +2443,14 @@ void pgsMomentCapacityEngineer::CreateGirderMaterial(IntervalIndexType intervalI
       matGirder.CoCreateInstance(CLSID_UnconfinedConcrete);
       if (pConfig)
       {
-         matGirder->put_fc(bUse90DayStrength ? pConfig->fc28 /*if 90 day strength option is enabled, force fc to the 28 day value*/ : pConfig->fc);
+         matGirder->put_fc(limit_state_concrete_strength_criteria.bUse90DayConcreteStrength ? pConfig->fc28 /*if 90 day strength option is enabled, force fc to the 28 day value*/ : pConfig->fc);
       }
       else
       {
          if (bIsInClosure)
          {
             // poi is in a closure joint
-            if (bUse90DayStrength)
+            if (limit_state_concrete_strength_criteria.bUse90DayConcreteStrength)
             {
                matGirder->put_fc(pMaterial->GetClosureJointFc28(closureKey));
             }
@@ -2463,7 +2461,7 @@ void pgsMomentCapacityEngineer::CreateGirderMaterial(IntervalIndexType intervalI
          }
          else if (bIsOnSegment)
          {
-            if (bUse90DayStrength)
+            if (limit_state_concrete_strength_criteria.bUse90DayConcreteStrength)
             {
                matGirder->put_fc(pMaterial->GetSegmentFc28(segmentKey));
             }
@@ -2480,7 +2478,7 @@ void pgsMomentCapacityEngineer::CreateGirderMaterial(IntervalIndexType intervalI
             // LRFD 5.12.3.3.10 (5.14.1.4.10) says if the diaphragm is confined by the girders, the girder strength can be used.
             if (IsDiaphragmConfined(poi))
             {
-               if (bUse90DayStrength)
+               if (limit_state_concrete_strength_criteria.bUse90DayConcreteStrength)
                {
                   matGirder->put_fc(pMaterial->GetSegmentFc28(segmentKey));
                }
@@ -2492,7 +2490,7 @@ void pgsMomentCapacityEngineer::CreateGirderMaterial(IntervalIndexType intervalI
             else
             {
                // assume deck concrete is used for the diaphragm.
-               if (bUse90DayStrength)
+               if (limit_state_concrete_strength_criteria.bUse90DayConcreteStrength)
                {
                   matGirder->put_fc(pMaterial->GetDeckFc28());
                }
@@ -2646,8 +2644,9 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-   bool bIncludeRebar = pSpecEntry->IncludeRebarForMoment(); // only include rebar if permitted by the project criteria... 
-   bool bIncludeStrandsWithNegativeMoment = pSpecEntry->IncludeStrandForNegativeMoment();
+   const auto& moment_capacity_criteria = pSpecEntry->GetMomentCapacityCriteria();
+   bool bIncludeRebar = moment_capacity_criteria.bIncludeRebar; // only include rebar if permitted by the project criteria... 
+   bool bIncludeStrandsWithNegativeMoment = moment_capacity_criteria.bIncludeStrandForNegMoment;
 
 
    //
@@ -3058,7 +3057,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
            // Retain this behavior and extend it to pgsTypes::hspFillet
            Float64 top_girder_to_top_slab = pBridge->GetTopSlabToTopGirderChordDistance(poi); // does not account for camber
            GET_IFACE(ICamber, pCamber);
-           Float64 excess_camber = pCamber->GetExcessCamber(poi, CREEP_MAXTIME, pConfig);
+           Float64 excess_camber = pCamber->GetExcessCamber(poi, pgsTypes::CreepTime::Max, pConfig);
            haunch_depth = top_girder_to_top_slab - Dslab - excess_camber;
         }
         else
@@ -3703,7 +3702,7 @@ pgsMomentCapacityEngineer::pgsBondTool::pgsBondTool(IBroker* pBroker,const pgsPo
 
 Float64 pgsMomentCapacityEngineer::pgsBondTool::GetTransferLengthFactor(StrandIndexType strandIdx, pgsTypes::StrandType strandType) const
 {
-   return m_pPrestressForce->GetTransferLengthAdjustment(m_Poi, strandType, pgsTypes::tltMaximum, strandIdx, m_pConfig);
+   return m_pPrestressForce->GetTransferLengthAdjustment(m_Poi, strandType, pgsTypes::TransferLengthType::Maximum, strandIdx, m_pConfig);
 }
 
 Float64 pgsMomentCapacityEngineer::pgsBondTool::GetDevelopmentLengthFactor(StrandIndexType strandIdx,pgsTypes::StrandType strandType) const

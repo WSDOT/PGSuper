@@ -30,6 +30,7 @@
 #endif
 
 #include <Details.h>
+#include <PsgLib/HoldDownCriteria.h>
 
 // PROJECT INCLUDES
 //
@@ -88,7 +89,7 @@ interface IPretensionForce : IUnknown
 
    // Returns the governing hold down force based on the average harped strand slope. The slope associated with
    // the hold down force is returned through the pSlope parameter. The poi where the max hold down force occurs is returned through pPoi
-   virtual Float64 GetHoldDownForce(const CSegmentKey& segmentKey,bool bTotalForce=true,Float64* pSlope=nullptr,pgsPointOfInterest* pPoi=nullptr,const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual Float64 GetHoldDownForce(const CSegmentKey& segmentKey,HoldDownCriteria::Type holdDownForceType=HoldDownCriteria::Type::Total,Float64* pSlope=nullptr,pgsPointOfInterest* pPoi=nullptr,const GDRCONFIG* pConfig = nullptr) const = 0;
 
    virtual Float64 GetHorizHarpedStrandForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig = nullptr) const = 0;
 

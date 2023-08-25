@@ -45,6 +45,8 @@
 
 #include <psgLib\ConnectionLibraryEntry.h>
 
+#include <psgLib/PrestressedElementCriteria.h>
+
 #include <WBFLCogo.h>
 
 #ifdef _DEBUG
@@ -285,8 +287,8 @@ static void design_data(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOption
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-
-   Float64 allow_stf = pSpecEntry->GetAtReleaseCompressionStressFactor();
+   const auto& prestressed_element_criteria = pSpecEntry->GetPrestressedElementCriteria();
+   Float64 allow_stf = prestressed_element_criteria.CompressionStressCoefficient_BeforeLosses;
    (*p_table)(row,0) << _T("Allowable Compressive Stress Factor at Release");
    (*p_table)(row++,1) << allow_stf << RPT_FCI;
 

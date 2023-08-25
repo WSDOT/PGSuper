@@ -31,6 +31,8 @@
 #include <PGSuperTypes.h>
 #include <IFace\Project.h>
 
+#include <psgLib/SlabOffsetCriteria.h>
+
 // LOCAL INCLUDES
 //
 
@@ -43,28 +45,7 @@
 // Function to perform rounding of required slab offset depending on spec method. Returns rounded value
 inline Float64 RoundSlabOffsetValue(ISpecification* pSpec, Float64 rawValue)
 {
-   pgsTypes::SlabOffsetRoundingMethod method;
-   Float64 tolerance;
-   pSpec->GetRequiredSlabOffsetRoundingParameters(&method, &tolerance);
-
-   // Round slab offset using specified method and tolerance
-   Float64 slab_offset_round = rawValue;
-   if (!::IsZero(tolerance))
-   {
-      if (pgsTypes::sormRoundNearest == method)
-      {
-         slab_offset_round = RoundOff(rawValue, tolerance);
-      }
-      else if (pgsTypes::sormRoundUp == method)
-      {
-         slab_offset_round = CeilOff(rawValue, tolerance);
-      }
-      else
-      {
-         ATLASSERT(0); // new method??
-      }
-   }
-
-   return slab_offset_round;
+   const auto& slab_offset_criteria = pSpec->GetSlabOffsetCriteria();
+   return slab_offset_criteria.RoundSlabOffset(rawValue);
 }
 

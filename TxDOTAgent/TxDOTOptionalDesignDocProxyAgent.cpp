@@ -444,7 +444,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
 
       // Camber from original model
       GET_IFACE2(pBroker,ICamber,pCamber);
-      m_MaximumCamber = pCamber->GetDCamberForGirderScheduleUnfactored(orig_ms_poi,CREEP_MAXTIME);
+      m_MaximumCamber = pCamber->GetDCamberForGirderScheduleUnfactored(orig_ms_poi,pgsTypes::CreepTime::Max);
 
       // Now we need results from fabricator model
       // =========================================
@@ -630,7 +630,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
       }
 
       // Get camber from fabricator model
-      m_FabricatorMaximumCamber = pCamber->GetDCamberForGirderScheduleUnfactored(fabr_ms_poi,CREEP_MAXTIME);
+      m_FabricatorMaximumCamber = pCamber->GetDCamberForGirderScheduleUnfactored(fabr_ms_poi,pgsTypes::CreepTime::Max);
 
       // Shear 
       CheckShear(pIPoi);

@@ -841,7 +841,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
       ATLASSERT(IsEqual(C,vC[i]));
 #if defined _DEBUG
       Float64 _d_, _c_;
-      pCamber->GetExcessCamberEx(poi, CREEP_MAXTIME, &_d_, &_c_);
+      pCamber->GetExcessCamberEx(poi, pgsTypes::CreepTime::Max, &_d_, &_c_);
       ATLASSERT(IsEqual(_c_, -C));
 #endif
 

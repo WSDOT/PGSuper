@@ -26,10 +26,9 @@
 #include <System\IStructuredSave.h>
 #include <System\IStructuredLoad.h>
 #include <System\XStructuredLoad.h>
+#include <psgLib/LibraryEntryDifferenceItem.h>
 
 #include "resource.h"
-//#include <psgLib\DiaphragmLayoutDlg.h>
-
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -114,12 +113,12 @@ bool DiaphragmLayoutEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 
 bool DiaphragmLayoutEntry::IsEqual(const DiaphragmLayoutEntry& rOther,bool bConsiderName) const
 {
-   std::vector<pgsLibraryEntryDifferenceItem*> vDifferences;
+   std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>> vDifferences;
    bool bMustRename;
    return Compare(rOther,vDifferences,bMustRename,true,bConsiderName);
 }
 
-bool DiaphragmLayoutEntry::Compare(const DiaphragmLayoutEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
+bool DiaphragmLayoutEntry::Compare(const DiaphragmLayoutEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
 {
 
    bMustRename = false;

@@ -79,7 +79,7 @@ pgsGirderHaulingChecker* pgsGirderHandlingChecker::CreateGirderHaulingChecker()
 
    pgsTypes::HaulingAnalysisMethod method = pSpec->GetHaulingAnalysisMethod();
 
-   if (method==pgsTypes::hmWSDOT)
+   if (method==pgsTypes::HaulingAnalysisMethod::WSDOT)
    {
       return new pgsWsdotGirderHaulingChecker(m_pBroker, m_StatusGroupID);
    }

@@ -541,7 +541,7 @@ void ListVariousFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirder
       const pgsHaulingAnalysisArtifact* pHauling = pArtifact->GetHaulingAnalysisArtifact();
       if (pHauling != nullptr)
       {
-         if (!pHauling->Passed(pgsTypes::CrownSlope) || !pHauling->Passed(pgsTypes::Superelevation))
+         if (!pHauling->Passed(WBFL::Stability::HaulingSlope::CrownSlope) || !pHauling->Passed(WBFL::Stability::HaulingSlope::Superelevation))
          {
             std::_tostringstream os;
             if (1 < nSegments)

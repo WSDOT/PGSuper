@@ -31,7 +31,8 @@
 #include <IFace\RatingSpecification.h>
 
 
-#include <PsgLib\LiveLoadLibraryEntry.h>
+#include <psgLib/LiveLoadLibraryEntry.h>
+#include <psgLib/LiveLoadCriteria.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -436,7 +437,8 @@ void CLiveLoadDetailsChapterBuilder::ReportLiveLoad(IBroker* pBroker, std::_tstr
 
          GET_IFACE2(pBroker,ISpecification,pSpec);
          const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
-         *pPara << _T("A pedestrian load of ") << pressure.SetValue(pSpecEntry->GetPedestrianLiveLoad()) << _T(" is applied to sidewalks wider than ") << sw.SetValue(pSpecEntry->GetMinSidewalkWidth()) << _T(" and considered simultaneously with the vehicular design live load.") << rptNewLine;
+         const auto& live_load_criteria = pSpecEntry->GetLiveLoadCriteria();
+         *pPara << _T("A pedestrian load of ") << pressure.SetValue(live_load_criteria.PedestrianLoad) << _T(" is applied to sidewalks wider than ") << sw.SetValue(live_load_criteria.MinSidewalkWidth) << _T(" and considered simultaneously with the vehicular design live load.") << rptNewLine;
       }
       else if ( load_name == _T("AASHTO Legal Loads") )
       {

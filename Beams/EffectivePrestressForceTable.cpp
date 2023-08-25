@@ -142,14 +142,14 @@ void CEffectivePrestressForceTable::AddRow(rptChapter* pChapter,IBroker* pBroker
 
    // From UHPC GS commentary, 1.9.4.3.1, the minimum transfer length is typically critical for service and fatigue limit states,
    // for this reason, we report the minimum in this table.
-   std::array<Float64, 2> adj{ pPrestressForce->GetTransferLengthAdjustment(poi,pgsTypes::Straight,pgsTypes::tltMinimum),  
-                               pPrestressForce->GetTransferLengthAdjustment(poi,pgsTypes::Harped,pgsTypes::tltMinimum) };
+   std::array<Float64, 2> adj{ pPrestressForce->GetTransferLengthAdjustment(poi,pgsTypes::Straight,pgsTypes::TransferLengthType::Minimum),  
+                               pPrestressForce->GetTransferLengthAdjustment(poi,pgsTypes::Harped,pgsTypes::TransferLengthType::Minimum) };
 
    GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
    std::array<Float64, 2> Aps{ pStrandGeom->GetStrandArea(poi,m_LiveLoadIntervalIdx,pgsTypes::Straight), pStrandGeom->GetStrandArea(poi,m_LiveLoadIntervalIdx,pgsTypes::Harped) };
 
-   Float64 Ppe = pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, m_LiveLoadIntervalIdx, pgsTypes::End, true/*include elastic effects*/, pgsTypes::tltMinimum);
-   ATLASSERT(IsEqual(Ppe, pPrestressForce->GetPrestressForce(poi, pgsTypes::Straight, m_LiveLoadIntervalIdx, pgsTypes::End, true/*include elastic effects*/, pgsTypes::tltMinimum) + pPrestressForce->GetPrestressForce(poi, pgsTypes::Harped, m_LiveLoadIntervalIdx, pgsTypes::End, true/*include elastic effects*/, pgsTypes::tltMinimum)));
+   Float64 Ppe = pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, m_LiveLoadIntervalIdx, pgsTypes::End, true/*include elastic effects*/, pgsTypes::TransferLengthType::Minimum);
+   ATLASSERT(IsEqual(Ppe, pPrestressForce->GetPrestressForce(poi, pgsTypes::Straight, m_LiveLoadIntervalIdx, pgsTypes::End, true/*include elastic effects*/, pgsTypes::TransferLengthType::Minimum) + pPrestressForce->GetPrestressForce(poi, pgsTypes::Harped, m_LiveLoadIntervalIdx, pgsTypes::End, true/*include elastic effects*/, pgsTypes::TransferLengthType::Minimum)));
 
    std::array<pgsTypes::LimitState, 3> vLimitStates{ pgsTypes::ServiceI, pgsTypes::ServiceIII, WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI };
    std::array<Float64, 3> fpe_with_liveload;

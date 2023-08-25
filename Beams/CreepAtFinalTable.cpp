@@ -27,6 +27,7 @@
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
 #include <PsgLib\SpecLibraryEntry.h>
+#include <psgLib/SpecificationCriteria.h>
 
 #include <PgsExt\GirderMaterial.h>
 
@@ -168,7 +169,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    {
       if (pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned)
       {
-         if (pSpecEntry->GetSpecificationType() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007)
+         if (pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007)
          {
             *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_PT.png")) << rptNewLine;
          }
@@ -179,7 +180,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
       }
       else
       {
-         if (pSpecEntry->GetSpecificationType() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007)
+         if (pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007)
          {
             *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_PS.png")) << rptNewLine;
          }
@@ -191,7 +192,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    }
    else
    {
-      if (pSpecEntry->GetSpecificationType() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007)
+      if (pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007)
       {
          *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD.png")) << rptNewLine;
       }

@@ -315,7 +315,7 @@ void CStressHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& poi)
    GET_IFACE_NOCHECK(ICombinedForces,pCombinedForces);
 
    GET_IFACE(ILossParameters,pLossParams);
-   bool bTimeStep = (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false);
+   bool bTimeStep = (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false);
 
    pgsTypes::LimitState limitState = GetLimitState();
    GET_IFACE(ILoadFactors,pLoadFactors);

@@ -34,6 +34,8 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\DocumentType.h>
 
+#include <psgLib/SpecificationCriteria.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -92,7 +94,7 @@ rptChapter* CCritSectionChapterBuilder::Build(const std::shared_ptr<const WBFL::
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfterThirdEdition = ( pSpecEntry->GetSpecificationType() >= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 ? true : false );
+   bool bAfterThirdEdition = ( pSpecEntry->GetSpecificationCriteria().GetEdition() >= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 ? true : false );
 
    GET_IFACE2_NOCHECK(pBroker,ILimitStateForces,pLimitStateForces); // not used if bDesign = false
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -192,7 +194,7 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfterThirdEdition = ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 <= pSpecEntry->GetSpecificationType() ? true : false );
+   bool bAfterThirdEdition = ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 <= pSpecEntry->GetSpecificationCriteria().GetEdition() ? true : false );
 
    GET_IFACE2(pBroker,IShearCapacity,pShearCapacity);
    const std::vector<CRITSECTDETAILS>& vcsDetails(pShearCapacity->GetCriticalSectionDetails(limitState,girderKey));

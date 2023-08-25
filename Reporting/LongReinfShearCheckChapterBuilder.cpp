@@ -30,6 +30,7 @@
 #include <PgsExt\RatingArtifact.h>
 
 #include <PsgLib\SpecLibraryEntry.h>
+#include <psgLib/SpecificationCriteria.h>
 
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
@@ -668,7 +669,7 @@ void create_table2_design(rptChapter* pChapter,IBroker* pBroker,
    (*table)(0,col++) << COLHDR(_T("V")<<Sub(_T("u")),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    (*table)(0,col++) << _T("Shear") << rptNewLine << Sub2(symbol(phi),_T("v"));
    
-   if ( pSpecEntry->GetSpecificationType() < WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims )
+   if ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims )
    {
       (*table)(0,col++) << COLHDR(_T("V")<<Sub(_T("s")),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    }
@@ -1066,7 +1067,7 @@ void create_table2_rating(rptChapter* pChapter,IBroker* pBroker,
    (*table)(0, col++) << COLHDR(_T("V")<<Sub(_T("u")),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    (*table)(0, col++) << _T("Shear") << rptNewLine << Sub2(symbol(phi),_T("v"));
    
-   if ( pSpecEntry->GetSpecificationType() < WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims )
+   if ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims )
    {
       (*table)(0, col++) << COLHDR(_T("V")<<Sub(_T("s")),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    }

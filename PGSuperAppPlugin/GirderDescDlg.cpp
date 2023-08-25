@@ -100,7 +100,7 @@ void CGirderDescDlg::Init(const CBridgeDescription2* pBridgeDesc,const CSegmentK
    m_Shear.m_psp.dwFlags     |= PSP_HASHELP;
    m_LongRebar.m_psp.dwFlags |= PSP_HASHELP;
    m_Lifting.m_psp.dwFlags   |= PSP_HASHELP;
-   m_Debond.m_psp.dwFlags    |= PSP_HASHELP;
+   m_StrandExtensionandDebond.m_psp.dwFlags    |= PSP_HASHELP;
 
    AddPage( &m_General );
    AddPage( &m_Prestress );
@@ -125,18 +125,7 @@ void CGirderDescDlg::Init(const CBridgeDescription2* pBridgeDesc,const CSegmentK
 
    m_TimelineMgr = *(pBridgeDesc->GetTimelineManager());
 
-   if( IsGridBasedStrandModel(m_pSegment->Strands.GetStrandDefinitionType()))
-   {
-      GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
-      GET_IFACE2(pBroker, ISpecification, pSpec);
-      GET_IFACE2(pBroker, ILibrary, pLib);
-      const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-      AddAdditionalPropertyPages(pSpecEntry->AllowStraightStrandExtensions(), pStrandGeom->CanDebondStrands(m_SegmentKey, pgsTypes::Straight));
-   }
-   else
-   {
-      AddAdditionalPropertyPages(false, false);
-   }
+   AddAdditionalPropertyPages(IsGridBasedStrandModel(m_pSegment->Strands.GetStrandDefinitionType()) ? true : false);
 
    m_SpanGdrDetailsBearingsPage.m_psp.dwFlags |= PSP_HASHELP;
    AddPage(&m_SpanGdrDetailsBearingsPage);
@@ -267,7 +256,7 @@ void CGirderDescDlg::InitialzePages()
       m_General.m_SlabOffsetOrHaunch[pgsTypes::metEnd] = pGirder->GetSegment(m_SegmentKey.segmentIndex)->GetSlabOffset(pgsTypes::metEnd);
 
       GET_IFACE2(pBroker,ISpecification,pSpec);
-   m_bCanAssumedExcessCamberInputBeEnabled = pSpec->IsAssumedExcessCamberInputEnabled();
+      m_bCanAssumedExcessCamberInputBeEnabled = pSpec->IsAssumedExcessCamberInputEnabled();
       m_General.m_AssumedExcessCamber = m_bCanAssumedExcessCamberInputBeEnabled ? pIBridgeDesc->GetAssumedExcessCamber(m_SegmentKey.groupIndex,m_SegmentKey.girderIndex) : 0.0;
    }
    else
@@ -359,7 +348,7 @@ BOOL CGirderDescDlg::OnInitDialog()
 
 void CGirderDescDlg::SetDebondTabName()
 {
-   int index = GetPageIndex(&m_Debond);
+   int index = GetPageIndex(&m_StrandExtensionandDebond);
    if ( index < 0 )
       return; // not using the debond tab
 
@@ -481,11 +470,11 @@ ConfigStrandFillVector CGirderDescDlg::ComputeStrandFillVector(pgsTypes::StrandT
    }
 }
 
-void CGirderDescDlg::AddAdditionalPropertyPages(bool bAllowExtendedStrands,bool bIsDebonding)
+void CGirderDescDlg::AddAdditionalPropertyPages(bool bGridBasedStrandInput)
 {
-   if ( bAllowExtendedStrands || bIsDebonding )
+   if (bGridBasedStrandInput)
    {
-      AddPage( &m_Debond );
+      AddPage(&m_StrandExtensionandDebond);
    }
 
    AddPage( &m_LongRebar );
@@ -493,7 +482,7 @@ void CGirderDescDlg::AddAdditionalPropertyPages(bool bAllowExtendedStrands,bool 
    AddPage( &m_Lifting );
 }
 
-void CGirderDescDlg::OnGirderTypeChanged(bool bAllowExtendedStrands,bool bIsDebonding)
+void CGirderDescDlg::OnGirderTypeChanged(bool bGridBasedStrandInput)
 {
    // Remove all but the first two pages
    int nps = GetPageCount();
@@ -502,7 +491,7 @@ void CGirderDescDlg::OnGirderTypeChanged(bool bAllowExtendedStrands,bool bIsDebo
       RemovePage(ip);
    }
 
-   AddAdditionalPropertyPages(bAllowExtendedStrands,bIsDebonding);
+   AddAdditionalPropertyPages(bGridBasedStrandInput);
    SetDebondTabName();
 
    std::vector<std::pair<IEditGirderCallback*,CPropertyPage*>>::iterator iter(m_ExtensionPages.begin());

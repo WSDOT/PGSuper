@@ -56,6 +56,7 @@
 class CStructuredLoad;
 class ConflictList;
 class CBridgeChangedHint;
+class COldHaulTruck;
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -194,8 +195,8 @@ public:
 
 // IEnvironment
 public:
-   virtual enumExposureCondition GetExposureCondition() const override;
-	virtual void SetExposureCondition(enumExposureCondition newVal) override;
+   virtual pgsTypes::ExposureCondition GetExposureCondition() const override;
+	virtual void SetExposureCondition(pgsTypes::ExposureCondition newVal) override;
 	virtual Float64 GetRelHumidity() const override;
 	virtual void SetRelHumidity(Float64 newVal) override;
 
@@ -445,7 +446,8 @@ public:
    virtual void SetAnalysisType(pgsTypes::AnalysisType analysisType) override;
    virtual pgsTypes::AnalysisType GetAnalysisType() const override;
    virtual std::vector<arDesignOptions> GetDesignOptions(const CGirderKey& girderKey) const override;
-   virtual bool IsSlabOffsetDesignEnabled() const override;
+   virtual const SlabOffsetCriteria& GetSlabOffsetCriteria() const override;
+   virtual bool DesignSlabHaunch() const override;
    virtual pgsTypes::OverlayLoadDistributionType GetOverlayLoadDistributionType() const override;
    virtual pgsTypes::HaunchLoadComputationType GetHaunchLoadComputationType() const override;
    virtual Float64 GetCamberTolerance() const override;
@@ -453,7 +455,6 @@ public:
    virtual bool IsAssumedExcessCamberInputEnabled(bool considerDeckType=true) const override;
    virtual bool IsAssumedExcessCamberForLoad() const override; 
    virtual bool IsAssumedExcessCamberForSectProps() const override; 
-   virtual void GetRequiredSlabOffsetRoundingParameters(pgsTypes::SlabOffsetRoundingMethod* pMethod, Float64* pTolerance) const override;
    virtual void GetTaperedSolePlateRequirements(bool* pbCheckTaperedSolePlate, Float64* pTaperedSolePlateThreshold) const override;
    virtual ISpecification::PrincipalWebStressCheckType GetPrincipalWebStressCheckType(const CSegmentKey& segmentKey) const override;
    virtual WBFL::LRFD::LRFDVersionMgr::Version GetSpecificationType() const override;
@@ -681,8 +682,8 @@ public:
 // ILossParameters
 public:
    virtual std::_tstring GetLossMethodDescription() const override;
-   virtual pgsTypes::LossMethod GetLossMethod() const override;
-   virtual pgsTypes::TimeDependentModel GetTimeDependentModel() const override;
+   virtual PrestressLossCriteria::LossMethodType GetLossMethod() const override;
+   virtual PrestressLossCriteria::TimeDependentConcreteModelType GetTimeDependentModel() const override;
    virtual void IgnoreCreepEffects(bool bIgnore) override;
    virtual bool IgnoreCreepEffects() const override;
    virtual void IgnoreShrinkageEffects(bool bIgnore) override;
@@ -764,7 +765,7 @@ private:
    Float64 m_SystemFactorShear;
    // NOTE: the next group of arrays (m_gDC, m_gDW, etc) are larger than they need to be.
    // This is because of a bug in earlier versions of PGSuper. In those version, data was
-   // stored beyond the end of the array. The size of the array has been incresed so that
+   // stored beyond the end of the array. The size of the array has been increased so that
    // this error wont occur.
    std::array<Float64, pgsTypes::LimitStateCount> m_gDC;
    std::array<Float64, pgsTypes::LimitStateCount> m_gDW;
@@ -805,7 +806,7 @@ private:
    Float64 m_AllowableYieldStressCoefficient; // fr <= xfy for Service I permit rating
 
    // Environment Data
-   enumExposureCondition m_ExposureCondition;
+   pgsTypes::ExposureCondition m_ExposureCondition;
    Float64 m_RelHumidity;
 
    // Alignment Data

@@ -83,7 +83,7 @@ BOOL CStabilityGraphController::OnInitDialog()
    pcbStage->SetCurSel(0);
 
    GET_IFACE(ISegmentHaulingSpecCriteria,pSpec);
-   if ( pSpec->GetHaulingAnalysisMethod() == pgsTypes::hmKDOT )
+   if ( pSpec->GetHaulingAnalysisMethod() == pgsTypes::HaulingAnalysisMethod::KDOT )
    {
       // Transportation stability graph isn't applicable for KDOT mode
       // so disable and hide the mode selector

@@ -28,6 +28,7 @@
 #include "SpecMomentPage.h"
 #include "SpecMainSheet.h"
 #include <EAF\EAFDocument.h>
+#include <psgLib/SpecificationCriteria.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -94,7 +95,7 @@ BOOL CSpecMomentPage::OnSetActive()
    // move windows based on current spec here
    CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
    CWnd* wndMoment = GetDlgItem(IDC_MOMENT);
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims < pDad->m_Entry.GetSpecificationType() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims < pDad->m_Entry.GetSpecificationCriteria().GetEdition())
    {
       wndMoment->ShowWindow(SW_HIDE);
    }
@@ -103,7 +104,7 @@ BOOL CSpecMomentPage::OnSetActive()
       wndMoment->ShowWindow(SW_SHOW);
    }
 
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= pDad->m_Entry.GetSpecificationType() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= pDad->m_Entry.GetSpecificationCriteria().GetEdition())
    {
       GetDlgItem(IDC_SLWC_FR_TXT)->SetWindowText(_T("Lightweight concrete"));
       GetDlgItem(IDC_ALWC_FR_TXT)->ShowWindow(SW_HIDE);

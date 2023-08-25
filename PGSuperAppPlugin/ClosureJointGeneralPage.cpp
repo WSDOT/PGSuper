@@ -3,26 +3,20 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "PGSuperAppPlugin.h"
 #include "ClosureJointGeneralPage.h"
 #include "ClosureJointDlg.h"
 #include "TimelineEventDlg.h"
-
-
-#include "PGSuperUnits.h"
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 
 #include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\SplicedGirderData.h>
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 
 #include <System\Tokenizer.h>
-#include <Materials/Materials.h>
 
 #include <PgsExt\ConcreteDetailsDlg.h>
 
@@ -122,8 +116,9 @@ BOOL CClosureJointGeneralPage::OnInitDialog()
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
-   m_LossMethod = pSpecEntry->GetLossMethod();
-   m_TimeDependentModel = pSpecEntry->GetTimeDependentModel();
+   const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
+   m_LossMethod = prestress_loss_criteria.LossMethod;
+   m_TimeDependentModel = prestress_loss_criteria.TimeDependentConcreteModel;
 
    CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
 
@@ -486,7 +481,7 @@ void CClosureJointGeneralPage::UpdateEci()
       CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
 
       Float64 Eci;
-      if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
+      if ( m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO || m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
       {
          WBFL::Materials::ACI209Concrete concrete;
          concrete.UserEc28(true);
@@ -500,7 +495,7 @@ void CClosureJointGeneralPage::UpdateEci()
       }
       else
       {
-         ATLASSERT(m_TimeDependentModel == TDM_CEBFIP);
+         ATLASSERT(m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP);
          WBFL::Materials::CEBFIPConcrete concrete;
          concrete.UserEc28(true);
          concrete.SetEc28(Ec);
@@ -585,13 +580,13 @@ void CClosureJointGeneralPage::UpdateEc()
       CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
 
       Float64 Ec;
-      if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
+      if ( m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO || m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
       {
          Ec = WBFL::Materials::ACI209Concrete::ComputeEc28(Eci,m_AgeAtContinuity,pParent->m_ClosureJoint.GetConcrete().A,pParent->m_ClosureJoint.GetConcrete().B);
       }
       else
       {
-         ATLASSERT( m_TimeDependentModel == TDM_CEBFIP );
+         ATLASSERT( m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP );
          Ec = WBFL::Materials::CEBFIPConcrete::ComputeEc28(Eci,m_AgeAtContinuity,pParent->m_ClosureJoint.GetConcrete().S);
       }
 
@@ -641,13 +636,13 @@ void CClosureJointGeneralPage::UpdateFc()
       CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
       Float64 fc;
 
-      if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
+      if ( m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO || m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
       {
          fc = WBFL::Materials::ACI209Concrete::ComputeFc28(fci,m_AgeAtContinuity,pParent->m_ClosureJoint.GetConcrete().A,pParent->m_ClosureJoint.GetConcrete().B);
       }
       else
       {
-         ATLASSERT(m_TimeDependentModel == TDM_CEBFIP);
+         ATLASSERT(m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP);
          fc = WBFL::Materials::CEBFIPConcrete::ComputeFc28(fci,m_AgeAtContinuity,pParent->m_ClosureJoint.GetConcrete().S);
       }
 
@@ -678,7 +673,7 @@ void CClosureJointGeneralPage::UpdateFci()
       CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
 
       Float64 fci;
-      if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
+      if ( m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO || m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
       {
          WBFL::Materials::ACI209Concrete concrete;
          concrete.SetTimeAtCasting(0);
@@ -689,7 +684,7 @@ void CClosureJointGeneralPage::UpdateFci()
       }
       else
       {
-         ATLASSERT(m_TimeDependentModel == TDM_CEBFIP);
+         ATLASSERT(m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP);
          WBFL::Materials::CEBFIPConcrete concrete;
          concrete.SetTimeAtCasting(0);
          concrete.SetFc28(fc);

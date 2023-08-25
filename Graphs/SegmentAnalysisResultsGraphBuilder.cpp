@@ -326,7 +326,8 @@ void CSegmentAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CSegmentK
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP )
+   const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
+   if ( prestress_loss_criteria.LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       m_pGraphDefinitions->AddGraphDefinition(CSegmentAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftCreep),      pgsTypes::pftCreep,      vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION) );
       m_pGraphDefinitions->AddGraphDefinition(CSegmentAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftShrinkage),  pgsTypes::pftShrinkage,  vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION) );
@@ -342,7 +343,7 @@ void CSegmentAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CSegmentK
    // Combined Results
    m_pGraphDefinitions->AddGraphDefinition(CSegmentAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetLoadCombinationName(lcDC), lcDC, vAllIntervals,  ACTIONS_ALL | ACTIONS_X_DEFLECTION) );
 
-   if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP )
+   if ( prestress_loss_criteria.LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       m_pGraphDefinitions->AddGraphDefinition(CSegmentAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetLoadCombinationName(lcCR), lcCR, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION) );
       m_pGraphDefinitions->AddGraphDefinition(CSegmentAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetLoadCombinationName(lcSH), lcSH, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION) );

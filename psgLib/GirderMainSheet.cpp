@@ -959,7 +959,7 @@ void CGirderMainSheet::UploadShearDesignData(CDataExchange* pDX)
    m_ShearDesignPage.m_bExtendDeckBars = m_Entry.GetExtendBarsIntoDeck();
    m_ShearDesignPage.m_bBarsProvideConfinement = m_Entry.GetBarsActAsConfinement();
 
-   m_ShearDesignPage.m_LongReinfShearMethod = m_Entry.GetLongShearCapacityIncreaseMethod();
+   m_ShearDesignPage.m_LongitudinalReinforcementForShearMethod = m_Entry.GetLongShearCapacityIncreaseMethod();
 
    m_ShearDesignPage.m_InterfaceShearWidthReduction = m_Entry.GetInterfaceShearWidthReduction();
 }
@@ -990,7 +990,7 @@ void CGirderMainSheet::DownloadShearDesignData(CDataExchange* pDX)
    m_Entry.SetExtendBarsIntoDeck( B2b(m_ShearDesignPage.m_bExtendDeckBars) );
    m_Entry.SetBarsActAsConfinement( B2b(m_ShearDesignPage.m_bBarsProvideConfinement) );
 
-   m_Entry.SetLongShearCapacityIncreaseMethod( (GirderLibraryEntry::LongShearCapacityIncreaseMethod)(m_ShearDesignPage.m_LongReinfShearMethod) );
+   m_Entry.SetLongShearCapacityIncreaseMethod( (GirderLibraryEntry::LongShearCapacityIncreaseMethod)(m_ShearDesignPage.m_LongitudinalReinforcementForShearMethod) );
 
    m_Entry.SetInterfaceShearWidthReduction(m_ShearDesignPage.m_InterfaceShearWidthReduction);
 }

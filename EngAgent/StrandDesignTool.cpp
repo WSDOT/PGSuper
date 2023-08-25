@@ -90,12 +90,6 @@ LOGFILE(lf),
 m_pArtifact(nullptr),
 m_pBroker(nullptr),
 m_StatusGroupID(INVALID_ID),
-m_DoDesignForStrandSlope(false),
-m_AllowableStrandSlope(0.0),
-m_DoDesignForHoldDownForce(false),
-m_AllowableHoldDownForce(0.0),
-m_HoldDownFriction(0.0),
-m_bTotalHoldDownForce(true),
 m_MinimumFinalMzEccentricity(Float64_Max),
 m_HarpedRatio(DefaultHarpedRatio),
 m_MinPermanentStrands(0),
@@ -335,9 +329,9 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
    m_SegmentLength         = pBridge->GetSegmentLength(m_SegmentKey);
    m_SpanLength            = pBridge->GetSegmentSpanLength(m_SegmentKey);
    m_StartConnectionLength = pBridge->GetSegmentStartEndDistance(m_SegmentKey);
-   m_XFerLength[pgsTypes::Straight]  = pPrestressForce->GetTransferLength(m_SegmentKey,pgsTypes::Straight,pgsTypes::tltMinimum);
-   m_XFerLength[pgsTypes::Harped]    = pPrestressForce->GetTransferLength(m_SegmentKey,pgsTypes::Harped, pgsTypes::tltMinimum);
-   m_XFerLength[pgsTypes::Temporary] = pPrestressForce->GetTransferLength(m_SegmentKey,pgsTypes::Temporary, pgsTypes::tltMinimum);
+   m_XFerLength[pgsTypes::Straight]  = pPrestressForce->GetTransferLength(m_SegmentKey,pgsTypes::Straight,pgsTypes::TransferLengthType::Minimum);
+   m_XFerLength[pgsTypes::Harped]    = pPrestressForce->GetTransferLength(m_SegmentKey,pgsTypes::Harped, pgsTypes::TransferLengthType::Minimum);
+   m_XFerLength[pgsTypes::Temporary] = pPrestressForce->GetTransferLength(m_SegmentKey,pgsTypes::Temporary, pgsTypes::TransferLengthType::Minimum);
 
    // harped offsets, hold-down and max strand slopes
    InitHarpedPhysicalBounds(pSegmentData->GetStrandMaterial(m_SegmentKey,pgsTypes::Harped));
@@ -1197,7 +1191,7 @@ bool pgsStrandDesignTool::ResetHarpedStrandConfiguration()
          m_bConfigDirty = true; // cache is dirty
       }
 
-      if (m_DoDesignForStrandSlope)
+      if (m_StrandSlopeCriteria.bDesign)
       {
          if ( !AdjustForStrandSlope() )
          {
@@ -1205,7 +1199,7 @@ bool pgsStrandDesignTool::ResetHarpedStrandConfiguration()
          }
       }
 
-      if (m_DoDesignForHoldDownForce)
+      if (m_HoldDownCriteria.bDesign)
       {
          if ( !AdjustForHoldDownForce() )
          {
@@ -1343,7 +1337,7 @@ void pgsStrandDesignTool::ComputeMinStrands()
 bool pgsStrandDesignTool::AdjustForStrandSlope()
 {
    ATLASSERT(!m_pRaisedStraightStrandDesignTool);
-   ATLASSERT(m_DoDesignForStrandSlope); // should not be calling this
+   ATLASSERT(m_StrandSlopeCriteria.bDesign); // should not be calling this
 
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
@@ -1374,11 +1368,11 @@ bool pgsStrandDesignTool::AdjustForStrandSlope()
 
 
       LOG(_T("Design for Maximum Strand Slope at ") << (pgsTypes::metStart ? _T("start") : _T("end")) << _T(" of girder"));
-      LOG(_T("Maximum Strand Slope 1 : ") << m_AllowableStrandSlope);
+      LOG(_T("Maximum Strand Slope 1 : ") << m_StrandSlopeLimit);
       LOG(_T("Actual  Strand Slope 1 : ") << slope);
 
       Float64 adj = 0.0;
-      if ( slope < m_AllowableStrandSlope)
+      if ( slope < m_StrandSlopeLimit)
       {
          LOG(_T("Strand slope needs adjusting"));
          LOG(_T("Current Start offset = ")<< WBFL::Units::ConvertFromSysUnits(config.PrestressConfig.EndOffset[pgsTypes::metStart],WBFL::Units::Measure::Inch) << _T(" in"));
@@ -1386,7 +1380,7 @@ bool pgsStrandDesignTool::AdjustForStrandSlope()
          LOG(_T("Current HP2  offset = ")<< WBFL::Units::ConvertFromSysUnits(config.PrestressConfig.HpOffset[pgsTypes::metEnd],WBFL::Units::Measure::Inch) << _T(" in"));
          LOG(_T("Current End  offset = ")<< WBFL::Units::ConvertFromSysUnits(config.PrestressConfig.EndOffset[pgsTypes::metEnd],WBFL::Units::Measure::Inch) << _T(" in"));
 
-         if ( !AdjustStrandsForSlope(m_AllowableStrandSlope, slope, endType, config.PrestressConfig.GetStrandCount(pgsTypes::Harped), pStrandGeom))
+         if ( !AdjustStrandsForSlope(m_StrandSlopeLimit, slope, endType, config.PrestressConfig.GetStrandCount(pgsTypes::Harped), pStrandGeom))
          {
             LOG(_T("** DESIGN FAILED ** We cannot adjust Strands to design for allowable strand slope"));
             m_pArtifact->SetOutcome(pgsSegmentDesignArtifact::StrandSlopeOutOfRange);
@@ -1408,7 +1402,7 @@ bool pgsStrandDesignTool::AdjustForHoldDownForce()
 {
    LOG(_T("Design for Maximum Hold Down Force"));
 
-   ATLASSERT(m_DoDesignForHoldDownForce); // should not be calling this
+   ATLASSERT(m_HoldDownCriteria.bDesign); // should not be calling this
 
    StrandIndexType Nh = m_pArtifact->GetNumHarpedStrands();
    if (Nh == 0)
@@ -1426,13 +1420,13 @@ bool pgsStrandDesignTool::AdjustForHoldDownForce()
    GET_IFACE(IPretensionForce,pPrestressForce);
    pgsPointOfInterest poi; // poi where max hold down force occurs
    Float64 slope; // slope associated with max hold down force
-   Float64 maxHFT = pPrestressForce->GetHoldDownForce(m_SegmentKey, m_bTotalHoldDownForce, &slope, &poi, &config);
+   Float64 maxHFT = pPrestressForce->GetHoldDownForce(m_SegmentKey, m_HoldDownCriteria.type, &slope, &poi, &config);
 
    GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType strandStressingIntervalIdx = pIntervals->GetStressStrandInterval(m_SegmentKey);
-   Float64 Ph = pPrestressForce->GetPrestressForce(poi, pgsTypes::Harped, strandStressingIntervalIdx, pgsTypes::Start, pgsTypes::tltMinimum, &config);
-   Float64 strand_force = Ph * (1 + m_HoldDownFriction);
-   if (!m_bTotalHoldDownForce)
+   Float64 Ph = pPrestressForce->GetPrestressForce(poi, pgsTypes::Harped, strandStressingIntervalIdx, pgsTypes::Start, pgsTypes::TransferLengthType::Minimum, &config);
+   Float64 strand_force = Ph * (1 + m_HoldDownCriteria.friction);
+   if (m_HoldDownCriteria.type == HoldDownCriteria::Type::PerStrand)
    {
       strand_force /= Nh;
    }
@@ -1442,7 +1436,7 @@ bool pgsStrandDesignTool::AdjustForHoldDownForce()
    // are all consistent
    GET_IFACE(IStrandGeometry, pStrandGeometry);
    Float64 _slope;
-   if (m_bTotalHoldDownForce)
+   if (m_HoldDownCriteria.type == HoldDownCriteria::Type::Total)
    {
       _slope = pStrandGeometry->GetAvgStrandSlope(poi, &config);
    }
@@ -1458,17 +1452,17 @@ bool pgsStrandDesignTool::AdjustForHoldDownForce()
    LOG(_T("P Harp = ") << WBFL::Units::ConvertFromSysUnits(strand_force, WBFL::Units::Measure::Kip) << _T(" kip"));
    LOG(_T("Current slope = 1 : ") << slope);
    LOG(_T("Actual  HD = ") << WBFL::Units::ConvertFromSysUnits(maxHFT, WBFL::Units::Measure::Kip) << _T(" kip"));
-   LOG(_T("Maximum HD = ") << WBFL::Units::ConvertFromSysUnits(m_AllowableHoldDownForce,WBFL::Units::Measure::Kip) << _T(" kip"));
+   LOG(_T("Maximum HD = ") << WBFL::Units::ConvertFromSysUnits(m_HoldDownCriteria.force_limit,WBFL::Units::Measure::Kip) << _T(" kip"));
 
    Float64 adj = 0.0;
-   if ( m_AllowableHoldDownForce < maxHFT )
+   if ( m_HoldDownCriteria.force_limit < maxHFT )
    {
       LOG(_T("Hold down force exceeds max, strands need adjustment"));
 
       pgsTypes::MemberEndType endType = (poi.GetDistFromStart() < Ls / 2 ? pgsTypes::metStart : pgsTypes::metEnd);
 
       // slope required for allowable hold down
-      Float64 sl_reqd = sqrt( (strand_force*strand_force)/(m_AllowableHoldDownForce*m_AllowableHoldDownForce)-1.0 );
+      Float64 sl_reqd = sqrt( (strand_force*strand_force)/(m_HoldDownCriteria.force_limit * m_HoldDownCriteria.force_limit)-1.0 );
       if (endType == pgsTypes::metStart)
       {
          sl_reqd *= -1;
@@ -1495,7 +1489,7 @@ bool pgsStrandDesignTool::AdjustForHoldDownForce()
       LOG(_T("** Adjusted HP1   offset = ")<< WBFL::Units::ConvertFromSysUnits(GetHarpStrandOffsetHp(pgsTypes::metStart) ,WBFL::Units::Measure::Inch) << _T(" in"));
       LOG(_T("** Adjusted HP2   offset = ")<< WBFL::Units::ConvertFromSysUnits(GetHarpStrandOffsetHp(pgsTypes::metEnd) ,WBFL::Units::Measure::Inch) << _T(" in"));
       LOG(_T("** Adjusted End   offset = ")<< WBFL::Units::ConvertFromSysUnits(GetHarpStrandOffsetEnd(pgsTypes::metEnd) ,WBFL::Units::Measure::Inch) << _T(" in"));
-      if (m_bTotalHoldDownForce)
+      if (m_HoldDownCriteria.type == HoldDownCriteria::Type::Total)
       {
          LOG(_T("New avg slope is 1 : ") << pStrandGeom->GetAvgStrandSlope(poi, &GetSegmentConfiguration()));
       }
@@ -2459,7 +2453,7 @@ bool pgsStrandDesignTool::KeepHarpedStrandsInBounds()
          m_bConfigDirty = true; // cache is dirty
       }
 
-      if (m_DoDesignForStrandSlope)
+      if (m_StrandSlopeCriteria.bDesign)
       {
          if ( !AdjustForStrandSlope() )
          {
@@ -2467,7 +2461,7 @@ bool pgsStrandDesignTool::KeepHarpedStrandsInBounds()
          }
       }
 
-      if (m_DoDesignForHoldDownForce)
+      if (m_HoldDownCriteria.bDesign)
       {
          if ( !AdjustForHoldDownForce() )
          {
@@ -3538,8 +3532,8 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
       const PoiAttributeType attrib_xfer = POI_PSXFER;
 
       // want longest transfer length
-      Float64 xfer_length = Max(pPrestress->GetTransferLength(m_SegmentKey, pgsTypes::Straight, pgsTypes::tltMinimum), 
-                                pPrestress->GetTransferLength(m_SegmentKey, pgsTypes::Harped, pgsTypes::tltMinimum));
+      Float64 xfer_length = Max(pPrestress->GetTransferLength(m_SegmentKey, pgsTypes::Straight, pgsTypes::TransferLengthType::Minimum), 
+                                pPrestress->GetTransferLength(m_SegmentKey, pgsTypes::Harped, pgsTypes::TransferLengthType::Minimum));
 
       Float64 start_conn = pBridge->GetSegmentStartEndDistance(m_SegmentKey);
       if (xfer_length < start_conn)
@@ -3595,7 +3589,7 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
       for (int i = 0; i < 2; i++)
       {
          pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
-         Float64 xfer_length = pPrestress->GetTransferLength(m_SegmentKey, strandType, pgsTypes::tltMinimum);
+         Float64 xfer_length = pPrestress->GetTransferLength(m_SegmentKey, strandType, pgsTypes::TransferLengthType::Minimum);
          pgsPointOfInterest lxfer(m_SegmentKey, xfer_length, attrib_xfer);
          AddPOI(lxfer, start_supp, end_supp);
 
@@ -3615,7 +3609,7 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
       
          Int16 nincs = (Int16)floor((leftEnd + 1.0e-05)/db_incr); // we know both locs are equidistant from ends
 
-         Float64 xfer_length = pPrestress->GetTransferLength(m_SegmentKey, pgsTypes::Straight, pgsTypes::tltMinimum);
+         Float64 xfer_length = pPrestress->GetTransferLength(m_SegmentKey, pgsTypes::Straight, pgsTypes::TransferLengthType::Minimum);
 
          Float64 ldb_loc=0.0;
          Float64 rdb_loc=m_SegmentLength;
@@ -3789,7 +3783,7 @@ void pgsStrandDesignTool::InitHarpedPhysicalBounds(const WBFL::Materials::PsStra
    m_pArtifact->SetHarpStrandOffsetHp(pgsTypes::metEnd,0.00);
    m_pArtifact->SetHarpStrandOffsetEnd(pgsTypes::metEnd,0.00);
 
-   // intialize data for strand slope and hold down checks
+   // initialize data for strand slope and hold down checks
    GET_IFACE(IStrandGeometry,pStrandGeom);
    // no use if there are no harped strands
    StrandIndexType nh_max = pStrandGeom->GetMaxStrands(m_SegmentKey,pgsTypes::Harped);
@@ -3798,29 +3792,13 @@ void pgsStrandDesignTool::InitHarpedPhysicalBounds(const WBFL::Materials::PsStra
    GET_IFACE(ISpecification,pSpec);
 
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   m_StrandSlopeCriteria = pSpecEntry->GetStrandSlopeCriteria();
+   m_StrandSlopeCriteria.bDesign = m_StrandSlopeCriteria.bDesign && 0 < nh_max;  // only design if (1) design option is set and (2) there is a possibility of harped strands
 
-   bool bCheck,bDesign;
-   Float64 s50, s60, s70;
-   pSpecEntry->GetMaxStrandSlope(&bCheck,&bDesign,&s50,&s60,&s70);
-
-   m_DoDesignForStrandSlope = bDesign && (0 < nh_max ? true : false);
-
-   if ( m_DoDesignForStrandSlope )
+   if ( m_StrandSlopeCriteria.bDesign )
    {
-      if ( pstrand->GetSize() == WBFL::Materials::PsStrand::Size::D1778  )
-      {
-         m_AllowableStrandSlope = s70;
-      }
-      else if ( pstrand->GetSize() == WBFL::Materials::PsStrand::Size::D1524 )
-      {
-         m_AllowableStrandSlope = s60;
-      }
-      else
-      {
-         m_AllowableStrandSlope = s50;
-      }
-
-      LOG(_T("We will be designing for an allowable strand slope of 1:") << m_AllowableStrandSlope);
+      m_StrandSlopeLimit = m_StrandSlopeCriteria.GetStrandSlopeLimit(pstrand->GetSize());
+      LOG(_T("We will be designing for an allowable strand slope of 1:") << m_StrandSlopeLimit);
    }
    else
    {
@@ -3828,15 +3806,12 @@ void pgsStrandDesignTool::InitHarpedPhysicalBounds(const WBFL::Materials::PsStra
    }
 
    // hold down
-   int holdDownForceType;
-   pSpecEntry->GetHoldDownForce(&bCheck,&bDesign,&holdDownForceType,&m_AllowableHoldDownForce,&m_HoldDownFriction);
-   m_bTotalHoldDownForce = (holdDownForceType == HOLD_DOWN_TOTAL);
+   m_HoldDownCriteria = pSpecEntry->GetHoldDownCriteria();
+   m_HoldDownCriteria.bDesign = m_HoldDownCriteria.bDesign && 0 < nh_max; // only design if (1) design option is set and (2) there is a possibility of harped strands
 
-   m_DoDesignForHoldDownForce = bDesign && nh_max>0;
-
-   if (m_DoDesignForHoldDownForce)
+   if (m_HoldDownCriteria.bDesign)
    {
-      LOG(_T("We will be designing for harped strand hold down allowable: ") << WBFL::Units::ConvertFromSysUnits(m_AllowableHoldDownForce,WBFL::Units::Measure::Kip) << _T(" kips"));
+      LOG(_T("We will be designing for harped strand hold down allowable: ") << WBFL::Units::ConvertFromSysUnits(m_HoldDownCriteria.force_limit,WBFL::Units::Measure::Kip) << _T(" kips"));
    }
    else
    {

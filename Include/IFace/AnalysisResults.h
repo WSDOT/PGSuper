@@ -736,14 +736,12 @@ interface ICamber : IUnknown
       leDeck        // deck is cast and superimposed dead loads are applied
    };
 
-   virtual Uint32 GetCreepMethod() const = 0;
-
    // Returns the creep multiplier used to scale the instantaneous deflection
    // constructionRate indicates if it is rapid or normal construction
-   virtual Float64 GetCreepCoefficient(const CSegmentKey& segmentKey, CreepPeriod creepPeriod, Int16 constructionRate,const GDRCONFIG* pConfig=nullptr) const = 0;
+   virtual Float64 GetCreepCoefficient(const CSegmentKey& segmentKey, CreepPeriod creepPeriod, pgsTypes::CreepTime constructionRate,const GDRCONFIG* pConfig=nullptr) const = 0;
 
    // Returns details of creep coefficient calculations.
-   virtual CREEPCOEFFICIENTDETAILS GetCreepCoefficientDetails(const CSegmentKey& segmentKey, CreepPeriod creepPeriod, Int16 constructionRate, const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual CREEPCOEFFICIENTDETAILS GetCreepCoefficientDetails(const CSegmentKey& segmentKey, CreepPeriod creepPeriod, pgsTypes::CreepTime constructionRate, const GDRCONFIG* pConfig = nullptr) const = 0;
 
    virtual std::shared_ptr<const WBFL::LRFD::CreepCoefficient> GetGirderCreepModel(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig = nullptr) const = 0;
    virtual std::shared_ptr<const WBFL::LRFD::CreepCoefficient2005> GetDeckCreepModel(IndexType deckCastingRegionIdx) const = 0;
@@ -774,11 +772,11 @@ interface ICamber : IUnknown
    virtual Float64 GetInitialCamber(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig = nullptr) const = 0;
 
    // Returns the deflection due to creep at the end of a creep period
-   virtual Float64 GetCreepDeflection(const pgsPointOfInterest& poi, CreepPeriod creepPeriod, Int16 constructionRate,pgsTypes::PrestressDeflectionDatum datum, const GDRCONFIG* pConfig=nullptr) const = 0;
-   virtual void GetCreepDeflection(const pgsPointOfInterest& poi, CreepPeriod creepPeriod, Int16 constructionRate, pgsTypes::PrestressDeflectionDatum datum, const GDRCONFIG* pConfig,Float64* pDcreep,Float64* pRcreep) const = 0;
+   virtual Float64 GetCreepDeflection(const pgsPointOfInterest& poi, CreepPeriod creepPeriod, pgsTypes::CreepTime constructionRate,pgsTypes::PrestressDeflectionDatum datum, const GDRCONFIG* pConfig=nullptr) const = 0;
+   virtual void GetCreepDeflection(const pgsPointOfInterest& poi, CreepPeriod creepPeriod, pgsTypes::CreepTime constructionRate, pgsTypes::PrestressDeflectionDatum datum, const GDRCONFIG* pConfig,Float64* pDcreep,Float64* pRcreep) const = 0;
 
    // Returns the lateral deflection due to creep at the end of a creep period
-   virtual Float64 GetXCreepDeflection(const pgsPointOfInterest& poi, CreepPeriod creepPeriod, Int16 constructionRate, pgsTypes::PrestressDeflectionDatum datum, const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual Float64 GetXCreepDeflection(const pgsPointOfInterest& poi, CreepPeriod creepPeriod, pgsTypes::CreepTime constructionRate, pgsTypes::PrestressDeflectionDatum datum, const GDRCONFIG* pConfig = nullptr) const = 0;
 
    // Returns the amount the girder deflects when the deck is
    // cast.  Deflections are computed using 28day concrete properties.
@@ -813,24 +811,24 @@ interface ICamber : IUnknown
    virtual Float64 GetSlabBarrierOverlayDeflection(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig=nullptr) const = 0;
 
    // This is the negative value of the amount the girder will deflect after the slab is placed (if there is no slab, after the diaphragms are cast)
-   virtual Float64 GetScreedCamber(const pgsPointOfInterest& poi, Int16 time, const GDRCONFIG* pConfig=nullptr) const = 0;
-   virtual Float64 GetScreedCamberUnfactored(const pgsPointOfInterest& poi, Int16 time, const GDRCONFIG* pConfig=nullptr) const = 0;
+   virtual Float64 GetScreedCamber(const pgsPointOfInterest& poi, pgsTypes::CreepTime time, const GDRCONFIG* pConfig=nullptr) const = 0;
+   virtual Float64 GetScreedCamberUnfactored(const pgsPointOfInterest& poi, pgsTypes::CreepTime time, const GDRCONFIG* pConfig=nullptr) const = 0;
 
    // This is the camber that remains in the girder after the slab pour
    // It is equal to the Total camber less the screed camber.
-   virtual Float64 GetExcessCamber(const pgsPointOfInterest& poi,Int16 time, const GDRCONFIG* pConfig=nullptr) const = 0;
-   virtual Float64 GetExcessCamberEx(const pgsPointOfInterest& poi, Int16 time, Float64* pDy, Float64* pCy,const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual Float64 GetExcessCamber(const pgsPointOfInterest& poi, pgsTypes::CreepTime time, const GDRCONFIG* pConfig=nullptr) const = 0;
+   virtual Float64 GetExcessCamberEx(const pgsPointOfInterest& poi, pgsTypes::CreepTime time, Float64* pDy, Float64* pCy,const GDRCONFIG* pConfig = nullptr) const = 0;
 
    // This is the rotation in the girder that renames after the slab pour
    // It is equal to the rotation due to total camber, less the rotation for screed camber
-   virtual Float64 GetExcessCamberRotation(const pgsPointOfInterest& poi,Int16 time, const GDRCONFIG* pConfig=nullptr) const = 0;
+   virtual Float64 GetExcessCamberRotation(const pgsPointOfInterest& poi, pgsTypes::CreepTime time, const GDRCONFIG* pConfig=nullptr) const = 0;
 
    // This is the camber in the girder, just prior to slab casting.
-   virtual Float64 GetDCamberForGirderSchedule(const pgsPointOfInterest& poi,Int16 time, const GDRCONFIG* pConfig=nullptr) const = 0;
-   virtual Float64 GetDCamberForGirderScheduleUnfactored(const pgsPointOfInterest& poi,Int16 time, const GDRCONFIG* pConfig=nullptr) const = 0;
+   virtual Float64 GetDCamberForGirderSchedule(const pgsPointOfInterest& poi,pgsTypes::CreepTime time, const GDRCONFIG* pConfig=nullptr) const = 0;
+   virtual Float64 GetDCamberForGirderScheduleUnfactored(const pgsPointOfInterest& poi, pgsTypes::CreepTime time, const GDRCONFIG* pConfig=nullptr) const = 0;
 
-   virtual void GetDCamberForGirderScheduleEx(const pgsPointOfInterest& poi, Int16 time, Float64* pUpperBound,Float64* pAvg,Float64* pLowerBound,const GDRCONFIG* pConfig = nullptr) const = 0;
-   virtual void GetDCamberForGirderScheduleUnfactoredEx(const pgsPointOfInterest& poi, Int16 time, Float64* pUpperBound, Float64* pAvg, Float64* pLowerBound, const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual void GetDCamberForGirderScheduleEx(const pgsPointOfInterest& poi, pgsTypes::CreepTime time, Float64* pUpperBound,Float64* pAvg,Float64* pLowerBound,const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual void GetDCamberForGirderScheduleUnfactoredEx(const pgsPointOfInterest& poi, pgsTypes::CreepTime time, Float64* pUpperBound, Float64* pAvg, Float64* pLowerBound, const GDRCONFIG* pConfig = nullptr) const = 0;
 
    // This is the factor that the min timing camber is multiplied by the compute the lower bound camber
    virtual Float64 GetLowerBoundCamberVariabilityFactor()const = 0;

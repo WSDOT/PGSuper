@@ -31,6 +31,7 @@
 #include <PGSuperException.h>
 #include <PgsExt\StatusItem.h>
 #include <PgsExt\BridgeDescription2.h>
+#include <psgLib/LiveLoadDistributionCriteria.h>
 #include <Beams\Interfaces.h>
 #include <map>
 #include <numeric>
@@ -42,7 +43,7 @@ enum DfSide {dfLeft, dfRight};
 // Details common for all beam types
 struct BASE_LLDFDETAILS
 {
-   Int16 Method;
+   pgsTypes::LiveLoadDistributionFactorMethod Method;
    Float64 ControllingLocation; // for girder spacing and overhang, measured from left end of girder
 
    GirderIndexType gdrNum;
@@ -220,11 +221,12 @@ void CDistFactorEngineerImpl<T>::GetPierDF(PierIndexType pierIdx, GirderIndexTyp
    GET_IFACE(ISpecification, pSpec);
    GET_IFACE(ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 
    // Go ahead and get raw calculated details for this girder. We will modify if needed in next section
    GetPierDFRaw(pierIdx, gdrIdx, ls, pierFace, fcgdr, plldf);
 
-   if (bExteriorGirder && nGirders>2  && pSpecEntry->GetExteriorLiveLoadDistributionGTAdjacentInteriorRule())
+   if (bExteriorGirder && 2 < nGirders && live_load_distribution_criteria.bExteriorBeamLiveLoadDistributionGTInteriorBeam)
    {
       // Exterior-interior rule applies. Compute factors for adjacent interior beam
       GirderIndexType adjGdrIndex = gdrIdx == 0 ? 1 : nGirders - 2;
@@ -232,7 +234,7 @@ void CDistFactorEngineerImpl<T>::GetPierDF(PierIndexType pierIdx, GirderIndexTyp
       PIERDETAILS adjdet;
       GetPierDFRaw(pierIdx, adjGdrIndex, ls, pierFace, fcgdr, &adjdet);
 
-      if (adjdet.gM > plldf->gM+TOLERANCE)
+      if ((plldf->gM+TOLERANCE) < adjdet.gM)
       {
          plldf->gM = adjdet.gM;
          plldf->gM1 = adjdet.gM1;
@@ -312,8 +314,8 @@ void CDistFactorEngineerImpl<T>::GetPierDFRaw(PierIndexType pierIdx,GirderIndexT
       GET_IFACE(ISpecification, pSpec);
       GET_IFACE(ILibrary, pLib);
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-
-      if (pSpecEntry->LimitDistributionFactorsToLanesBeams())
+      const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
+      if (live_load_distribution_criteria.bLimitDistributionFactorsToLanesBeams)
       {
          // Compare results with lanes/beams and override if needed
          WBFL::LRFD::ILiveLoadDistributionFactor::DFResult glb1 = pLLDF->GetLanesBeamsMethod(1,GirderIndexType(plldf->Nb), ls != pgsTypes::FatigueI);
@@ -383,11 +385,12 @@ void CDistFactorEngineerImpl<T>::GetSpanDF(const CSpanKey& spanKey, pgsTypes::Li
    GET_IFACE(ISpecification, pSpec);
    GET_IFACE(ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 
    // Go ahead and get raw calculated details for this girder. We will modify if needed in next section
    GetSpanDFRaw(spanKey, ls, fcgdr,  plldf);
 
-   if (bExteriorGirder && nGirders>2  && pSpecEntry->GetExteriorLiveLoadDistributionGTAdjacentInteriorRule())
+   if (bExteriorGirder && 2 < nGirders && live_load_distribution_criteria.bExteriorBeamLiveLoadDistributionGTInteriorBeam)
    {
       // Exterior-interior rule applies. Compute factors for adjacent interior beam
       GirderIndexType adjIndex = spanKey.girderIndex == 0 ? 1 : nGirders - 2;
@@ -397,7 +400,7 @@ void CDistFactorEngineerImpl<T>::GetSpanDF(const CSpanKey& spanKey, pgsTypes::Li
       GetSpanDFRaw(adjSpanKey, ls, fcgdr,  &adjdet);
 
       // moment and shear are treated separately
-      if (adjdet.gM > plldf->gM+TOLERANCE)
+      if ((plldf->gM+TOLERANCE) < adjdet.gM)
       {
          plldf->gM = adjdet.gM;
          plldf->gM1 = adjdet.gM1;
@@ -407,7 +410,7 @@ void CDistFactorEngineerImpl<T>::GetSpanDF(const CSpanKey& spanKey, pgsTypes::Li
          plldf->gMSkewCorrection = adjdet.gMSkewCorrection;
       }
 
-      if (adjdet.gV > plldf->gV+TOLERANCE)
+      if ((plldf->gV+TOLERANCE) < adjdet.gV)
       {
          plldf->gV = adjdet.gV;
          plldf->gV1 = adjdet.gV1;
@@ -509,8 +512,8 @@ void CDistFactorEngineerImpl<T>::GetSpanDFRaw(const CSpanKey& spanKey,pgsTypes::
       GET_IFACE(ISpecification, pSpec);
       GET_IFACE(ILibrary, pLib);
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-
-      if (pSpecEntry->LimitDistributionFactorsToLanesBeams())
+      const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
+      if (live_load_distribution_criteria.bLimitDistributionFactorsToLanesBeams)
       {
          // Compare results with lanes/beams and override if needed
          WBFL::LRFD::ILiveLoadDistributionFactor::DFResult glb1 = pLLDF->GetLanesBeamsMethod(1,GirderIndexType(plldf->Nb), ls != pgsTypes::FatigueI);
@@ -676,7 +679,8 @@ void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(const CSpanKey& spa
    pDetails->Side = (spanKey.girderIndex <= pDetails->Nb/2) ? dfLeft : dfRight; // center goes left
 
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   pDetails->Method = pSpecEntry->GetLiveLoadDistributionMethod();
+   const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
+   pDetails->Method = live_load_distribution_criteria.LldfMethod;
 
    Float64 dist_to_section_along_cl_span, curb_to_curb;
    Uint32 Nl = pLLDF->GetNumberOfDesignLanesEx(spanKey.spanIndex,&dist_to_section_along_cl_span,&curb_to_curb);
@@ -686,7 +690,7 @@ void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(const CSpanKey& spa
    // Get sampling locations for values.
    Float64 span_length = pBridge->GetSpanLength(spanKey);
 
-   Float64 span_fraction_for_girder_spacing = pSpecEntry->GetLLDFGirderSpacingLocation();
+   Float64 span_fraction_for_girder_spacing = live_load_distribution_criteria.GirderSpacingLocation;
    Float64 loc1 = span_fraction_for_girder_spacing*span_length;
    Float64 loc2 = (1-span_fraction_for_girder_spacing)*span_length;
 

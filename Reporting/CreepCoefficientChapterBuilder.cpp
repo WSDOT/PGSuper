@@ -63,7 +63,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build(const std::shared_ptr<const W
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
 
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       rptParagraph* pPara = new rptParagraph;
       (*pChapter) << pPara;

@@ -38,6 +38,11 @@
 #include <PgsExt\HoldDownForceArtifact.h>
 #include <PgsExt\BridgeDescription2.h>
 
+#include <psgLib/BottomFlangeClearanceCriteria.h>
+#include <psgLib/SlabOffsetCriteria.h>
+#include <psgLib/CreepCriteria.h>
+#include <psgLib/LimitsCriteria.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -867,7 +872,7 @@ void CConstructabilityCheckTable::BuildHaunchGeometryComplianceCheck(rptChapter*
 void CConstructabilityCheckTable::BuildCamberCheck(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey, IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,ILossParameters,pLossParams);
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       BuildTimeStepCamberCheck(pChapter,pBroker,girderKey,pDisplayUnits);
    }
@@ -1086,7 +1091,8 @@ void CConstructabilityCheckTable::BuildBottomFlangeClearanceCheck(rptChapter* pC
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(spec_name.c_str());
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    pgsTypes::SupportedBeamSpacing spacingType = pIBridgeDesc->GetGirderSpacingType();
-   if (pSpecEntry->CheckBottomFlangeClearance() && ::IsJointSpacing(spacingType))
+   const auto& bottom_flange_clearance_criteria = pSpecEntry->GetBottomFlangeClearanceCriteria();
+   if (bottom_flange_clearance_criteria.bCheck && ::IsJointSpacing(spacingType))
    {
       rptParagraph* pTitle = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pTitle;
@@ -1317,7 +1323,8 @@ void CConstructabilityCheckTable::BuildFinishedElevationCheck(rptChapter* pChapt
       GET_IFACE2(pBroker,ILibrary, pLib);
       GET_IFACE2(pBroker,ISpecification, pISpec);
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pISpec->GetSpecification().c_str());
-      Float64 tolerance = pSpecEntry->GetFinishedElevationTolerance();
+      const auto& slab_offset_criteria = pSpecEntry->GetSlabOffsetCriteria();
+      Float64 tolerance = slab_offset_criteria.FinishedElevationTolerance;
 
       INIT_UV_PROTOTYPE(rptLengthSectionValue, dim1, pDisplayUnits->GetSpanLengthUnit(), true);
       INIT_UV_PROTOTYPE(rptLengthSectionValue, dim2, pDisplayUnits->GetComponentDimUnit(), true);
@@ -1472,8 +1479,11 @@ void CConstructabilityCheckTable::BuildRegularCamberCheck(rptChapter* pChapter,I
    GET_IFACE2( pBroker, ISpecification, pSpec );
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
-   Float64 min_days =  WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Min(), WBFL::Units::Measure::Day);
-   Float64 max_days =  WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day);
+   const auto& creep_criteria = pSpecEntry->GetCreepCriteria();
+   const auto& limits_criteria = pSpecEntry->GetLimitsCriteria();
+
+   Float64 min_days =  WBFL::Units::ConvertFromSysUnits(creep_criteria.CreepDuration2Min, WBFL::Units::Measure::Day);
+   Float64 max_days =  WBFL::Units::ConvertFromSysUnits(creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day);
 
    rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
@@ -1514,21 +1524,21 @@ void CConstructabilityCheckTable::BuildRegularCamberCheck(rptChapter* pChapter,I
       Float64 C;
       if (IsNonstructuralDeck(deckType))
       {
-         C = pCamber->GetExcessCamber(poiMidSpan, CREEP_MAXTIME);
+         C = pCamber->GetExcessCamber(poiMidSpan, pgsTypes::CreepTime::Max);
          (*pTable)(row, 0) << _T("Final camber, ") << Sub2(_T("C"),_T("F"));
          (*pTable)(row++, 1) << dim.SetValue(C);
       }
       else
       {
-         C = pCamber->GetScreedCamber(poiMidSpan, CREEP_MAXTIME);
+         C = pCamber->GetScreedCamber(poiMidSpan, pgsTypes::CreepTime::Max);
          (*pTable)(row, 0) << _T("Screed Camber, C at mid-span");
          (*pTable)(row++, 1) << dim.SetValue(C);
       }
 
       Float64 Dmax_UpperBound, Dmax_Average, Dmax_LowerBound;
       Float64 Dmin_UpperBound, Dmin_Average, Dmin_LowerBound;
-      pCamber->GetDCamberForGirderScheduleEx(poiMidSpan, CREEP_MAXTIME, &Dmax_UpperBound, &Dmax_Average, &Dmax_LowerBound);
-      pCamber->GetDCamberForGirderScheduleEx(poiMidSpan, CREEP_MINTIME, &Dmin_UpperBound, &Dmin_Average, &Dmin_LowerBound);
+      pCamber->GetDCamberForGirderScheduleEx(poiMidSpan, pgsTypes::CreepTime::Max, &Dmax_UpperBound, &Dmax_Average, &Dmax_LowerBound);
+      pCamber->GetDCamberForGirderScheduleEx(poiMidSpan, pgsTypes::CreepTime::Min, &Dmin_UpperBound, &Dmin_Average, &Dmin_LowerBound);
    
       Float64 Cfactor = pCamber->GetLowerBoundCamberVariabilityFactor();
    
@@ -1675,7 +1685,7 @@ void CConstructabilityCheckTable::BuildRegularCamberCheck(rptChapter* pChapter,I
          }
       }
    
-      if ( pSpecEntry->CheckGirderSag() )
+      if (limits_criteria.bCheckSag )
       {
          if (IsNonstructuralDeck(deckType))
          {
@@ -1691,17 +1701,17 @@ void CConstructabilityCheckTable::BuildRegularCamberCheck(rptChapter* pChapter,I
             std::_tstring camberType;
             Float64 D = 0;
 
-            switch (pSpecEntry->GetSagCamberType())
+            switch (limits_criteria.SagCamber)
             {
-            case pgsTypes::LowerBoundCamber:
+            case pgsTypes::SagCamber::LowerBoundCamber:
                D = Dmin_LowerBound;
                camberType = _T("lower bound");
                break;
-            case pgsTypes::AverageCamber:
+            case pgsTypes::SagCamber::AverageCamber:
                D = Dmin_Average;
                camberType = _T("average");
                break;
-            case pgsTypes::UpperBoundCamber:
+            case pgsTypes::SagCamber::UpperBoundCamber:
                D = Dmin_UpperBound;
                camberType = _T("upper bound");
                break;
@@ -1722,7 +1732,7 @@ void CConstructabilityCheckTable::BuildRegularCamberCheck(rptChapter* pChapter,I
                *p << color(Red) << _T("WARNING: Screed camber (C) is nearly equal to the ") << camberType.c_str() << _T(" camber at time of deck casting, D. The girder may end up with a sag.") << color(Black) << rptNewLine;
             }
 
-            if (Dmin_LowerBound < C && pSpecEntry->GetSagCamberType() != pgsTypes::LowerBoundCamber)
+            if (Dmin_LowerBound < C && limits_criteria.SagCamber != pgsTypes::SagCamber::LowerBoundCamber)
             {
                rptParagraph* p = new rptParagraph;
                *pChapter << p;
@@ -1744,6 +1754,7 @@ void CConstructabilityCheckTable::BuildTimeStepCamberCheck(rptChapter* pChapter,
 
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
+   const auto& limits_criteria = pSpecEntry->GetLimitsCriteria();
 
    IntervalIndexType firstCastDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
    Float64 deckCastingTime = pIntervals->GetTime(firstCastDeckIntervalIdx,pgsTypes::Start);
@@ -1805,7 +1816,7 @@ void CConstructabilityCheckTable::BuildTimeStepCamberCheck(rptChapter* pChapter,
          (*pTable)(row, 0) << LABEL_SEGMENT(segIdx);
 
          GET_IFACE2(pBroker, ICamber, pCamber);
-         Float64 C = pCamber->GetScreedCamber(poiMidSpan, CREEP_MAXTIME);
+         Float64 C = pCamber->GetScreedCamber(poiMidSpan, pgsTypes::CreepTime::Max);
          (*pTable)(row, 1) << _T("Screed Camber, C at mid-segment");
          (*pTable)(row++, 2) << dim.SetValue(C);
 
@@ -1823,7 +1834,7 @@ void CConstructabilityCheckTable::BuildTimeStepCamberCheck(rptChapter* pChapter,
             (*pTable)(row++, 2) << dim.SetValue(Dmin);
          }
 
-         if (pSpecEntry->CheckGirderSag() && IsStructuralDeck(deckType))
+         if (limits_criteria.bCheckSag && IsStructuralDeck(deckType))
          {
             std::_tstring camberType;
 
@@ -1860,7 +1871,7 @@ void CConstructabilityCheckTable::BuildTimeStepCamberCheck(rptChapter* pChapter,
          (*pTable)(row, 0) << LABEL_SPAN(spanIdx);
 
          GET_IFACE2(pBroker, ICamber, pCamber);
-         Float64 C = pCamber->GetScreedCamber(poiMidSpan, CREEP_MAXTIME);
+         Float64 C = pCamber->GetScreedCamber(poiMidSpan, pgsTypes::CreepTime::Max);
          (*pTable)(row, 1) << _T("Screed Camber, C at mid-span");
          (*pTable)(row++, 2) << dim.SetValue(C);
 
@@ -1878,7 +1889,7 @@ void CConstructabilityCheckTable::BuildTimeStepCamberCheck(rptChapter* pChapter,
             (*pTable)(row++, 2) << dim.SetValue(Dmin);
          }
 
-         if (pSpecEntry->CheckGirderSag() && IsStructuralDeck(deckType))
+         if (limits_criteria.bCheckSag && IsStructuralDeck(deckType))
          {
             std::_tstring camberType;
 

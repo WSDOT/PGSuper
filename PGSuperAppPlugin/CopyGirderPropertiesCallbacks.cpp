@@ -1272,7 +1272,7 @@ void GirderHandlingComparison(rptParagraph* pPara, IBroker* pBroker,IEAFDisplayU
    {
       nCols -= 2;
    }
-   else if ( pSegmentHaulingSpecCriteria->GetHaulingAnalysisMethod() == pgsTypes::hmWSDOT )
+   else if ( pSegmentHaulingSpecCriteria->GetHaulingAnalysisMethod() == pgsTypes::HaulingAnalysisMethod::WSDOT )
    {
       nCols++;
    }
@@ -1302,7 +1302,7 @@ void GirderHandlingComparison(rptParagraph* pPara, IBroker* pBroker,IEAFDisplayU
    {
       (*p_table)(0, col++) << COLHDR(_T("Trailing") << rptNewLine << _T("Truck") << rptNewLine << _T("Support") << rptNewLine << _T("Location"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
       (*p_table)(0, col++) << COLHDR(_T("Leading") << rptNewLine << _T("Truck") << rptNewLine << _T("Support") << rptNewLine << _T("Location"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-      if (pSegmentHaulingSpecCriteria->GetHaulingAnalysisMethod() == pgsTypes::hmWSDOT)
+      if (pSegmentHaulingSpecCriteria->GetHaulingAnalysisMethod() == pgsTypes::HaulingAnalysisMethod::WSDOT)
       {
          (*p_table)(0, col++) << _T("Haul Truck");
       }
@@ -1400,7 +1400,7 @@ void GirderHandlingComparison(rptParagraph* pPara, IBroker* pBroker,IEAFDisplayU
             {
                (*p_table)(row, col++) << loc.SetValue(pHandlingData->TrailingSupportPoint);
                (*p_table)(row, col++) << loc.SetValue(pHandlingData->LeadingSupportPoint);
-               if (pSegmentHaulingSpecCriteria->GetHaulingAnalysisMethod() == pgsTypes::hmWSDOT)
+               if (pSegmentHaulingSpecCriteria->GetHaulingAnalysisMethod() == pgsTypes::HaulingAnalysisMethod::WSDOT)
                {
                   (*p_table)(row, col++) << pHandlingData->HaulTruckName;
                }
@@ -1439,10 +1439,11 @@ void GirderMaterialsComparison(rptParagraph* pPara, CComPtr<IBroker> pBroker, co
    GET_IFACE2(pBroker,ILibrary, pLib );
    GET_IFACE2(pBroker,ISpecification, pSpec );
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
 
    // special considerations for f'ci if time step
-   int loss_method = pSpecEntry->GetLossMethod();
-   bool isTimeStep = loss_method == LOSSES_TIME_STEP;
+   auto loss_method = prestress_loss_criteria.LossMethod;
+   bool isTimeStep = loss_method == PrestressLossCriteria::LossMethodType::TIME_STEP;
 
    RowIndexType row = 1;
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();

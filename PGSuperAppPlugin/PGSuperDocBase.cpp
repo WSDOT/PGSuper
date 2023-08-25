@@ -475,12 +475,12 @@ bool CPGSDocBase::EditBridgeDescription(int nPage)
    GET_IFACE(IEnvironment, pEnvironment );
 
    const CBridgeDescription2* pOldBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   enumExposureCondition oldExposureCondition = pEnvironment->GetExposureCondition();
+   auto oldExposureCondition = pEnvironment->GetExposureCondition();
    Float64 oldRelHumidity = pEnvironment->GetRelHumidity();
 
    CBridgeDescDlg dlg(*pOldBridgeDesc);
 
-   dlg.m_EnvironmentalPage.m_Exposure    = oldExposureCondition == expNormal ? 0 : 1;
+   dlg.m_EnvironmentalPage.m_Exposure    = oldExposureCondition == pgsTypes::ExposureCondition::Normal ? 0 : 1;
    dlg.m_EnvironmentalPage.m_RelHumidity = oldRelHumidity;
 
    dlg.SetActivePage(nPage);
@@ -489,7 +489,7 @@ bool CPGSDocBase::EditBridgeDescription(int nPage)
    {
 
       std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc,      dlg.GetBridgeDescription(),
-                                              oldExposureCondition, dlg.m_EnvironmentalPage.m_Exposure == 0 ? expNormal : expSevere,
+                                              oldExposureCondition, dlg.m_EnvironmentalPage.m_Exposure == 0 ? pgsTypes::ExposureCondition::Normal : pgsTypes::ExposureCondition::Severe,
                                               oldRelHumidity,       dlg.m_EnvironmentalPage.m_RelHumidity));
 
 
@@ -613,7 +613,7 @@ bool CPGSDocBase::DoEditBearing()
    if ( dlg.DoModal() == IDOK )
    {
       GET_IFACE(IEnvironment, pEnvironment );
-      enumExposureCondition oldExposureCondition = pEnvironment->GetExposureCondition();
+      auto oldExposureCondition = pEnvironment->GetExposureCondition();
       Float64 oldRelHumidity = pEnvironment->GetRelHumidity();
       CBridgeDescription2 newBridgeDesc = *pOldBridgeDesc;
 
@@ -654,7 +654,7 @@ bool CPGSDocBase::DoEditHaunch()
       if (dlg.DoModal() == IDOK)
       {
          GET_IFACE(IEnvironment,pEnvironment);
-         enumExposureCondition oldExposureCondition = pEnvironment->GetExposureCondition();
+         auto oldExposureCondition = pEnvironment->GetExposureCondition();
          Float64 oldRelHumidity = pEnvironment->GetRelHumidity();
 
          std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc,dlg.m_BridgeDesc,
@@ -1152,7 +1152,7 @@ bool CPGSDocBase::EditTimeline()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    GET_IFACE(ILossParameters, pLossParams);
-   if (pLossParams->GetLossMethod() != pgsTypes::TIME_STEP)
+   if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
    {
       CString strText(_T("The construction sequence timeline is automatically generated using the parameters in the Project Criteria found in the Creep and Camber tab."));
       UIHint(strText, UIHINT_TIMELINE_IS_READONLY);
@@ -1243,7 +1243,8 @@ bool CPGSDocBase::SelectProjectCriteria()
          pgsTypes::AnalysisType newAnalysisType = analysisType;
          pgsTypes::WearingSurfaceType wearingSurfaceType = pBridge->GetWearingSurfaceType();
          pgsTypes::WearingSurfaceType newWearingSurfaceType = wearingSurfaceType;
-         if (pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP)
+
+         if (pSpecEntry->GetPrestressLossCriteria().LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP)
          {
             if (analysisType != pgsTypes::Continuous)
             {
@@ -1268,7 +1269,7 @@ bool CPGSDocBase::SelectProjectCriteria()
          }
 
 
-         if (pCurrentSpecEntry->GetLossMethod() == LOSSES_TIME_STEP && pSpecEntry->GetLossMethod() != LOSSES_TIME_STEP)
+         if (pCurrentSpecEntry->GetPrestressLossCriteria().LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP && pSpecEntry->GetPrestressLossCriteria().LossMethod != PrestressLossCriteria::LossMethodType::TIME_STEP)
          {
             // switching from time-step to regular loss method... the timeline will be reset
 #if defined _DEBUG
@@ -2790,8 +2791,8 @@ void CPGSDocBase::OnProjectEnvironment()
 
    GET_IFACE( IEnvironment, pEnvironment );
 
-   enumExposureCondition ec = pEnvironment->GetExposureCondition();
-   int expCond = ( ec == expNormal ? 0 : 1 );
+   auto ec = pEnvironment->GetExposureCondition();
+   int expCond = ( ec == pgsTypes::ExposureCondition::Normal ? 0 : 1 );
    
    Float64 relHumidity = pEnvironment->GetRelHumidity();
 
@@ -2803,7 +2804,7 @@ void CPGSDocBase::OnProjectEnvironment()
    {
       if ( expCond != dlg.m_Exposure || relHumidity != dlg.m_RelHumidity )
       {
-         std::unique_ptr<txnEditEnvironment> pTxn(std::make_unique<txnEditEnvironment>(ec,dlg.m_Exposure == 0 ? expNormal : expSevere,relHumidity,dlg.m_RelHumidity));
+         std::unique_ptr<txnEditEnvironment> pTxn(std::make_unique<txnEditEnvironment>(ec,dlg.m_Exposure == 0 ? pgsTypes::ExposureCondition::Normal : pgsTypes::ExposureCondition::Severe,relHumidity,dlg.m_RelHumidity));
          GET_IFACE(IEAFTransactions,pTransactions);
          pTransactions->Execute(std::move(pTxn));
       }

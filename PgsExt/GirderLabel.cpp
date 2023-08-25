@@ -393,13 +393,13 @@ CString ConcreteDescription(const CConcreteMaterial& concrete)
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,ILossParameters,pLossParameters);
-   pgsTypes::LossMethod loss_method = pLossParameters->GetLossMethod();
+   PrestressLossCriteria::LossMethodType loss_method = pLossParameters->GetLossMethod();
 
    CString strLabel;
-   if ( pLossParameters->GetLossMethod() == pgsTypes::TIME_STEP )
+   if ( pLossParameters->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
-      if ( pLossParameters->GetTimeDependentModel() == pgsTypes::tdmAASHTO || 
-           pLossParameters->GetTimeDependentModel() == pgsTypes::tdmACI209 )
+      if ( pLossParameters->GetTimeDependentModel() == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO || 
+           pLossParameters->GetTimeDependentModel() == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
       {
          if ( concrete.bACIUserParameters )
          {

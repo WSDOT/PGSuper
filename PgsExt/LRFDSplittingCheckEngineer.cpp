@@ -25,6 +25,8 @@
 #include <PgsExt\StrandData.h>
 #include <PgsExt\DesignConfigUtil.h>
 
+#include <psgLib/EndZoneCriteria.h>
+
 #include <IFace\Project.h> // for ISpecification
 #include <IFace\Bridge.h>
 #include <IFace\SplittingChecks.h>
@@ -325,7 +327,8 @@ Float64 pgsLRFDSplittingCheckEngineer::GetSplittingZoneLength(const CSegmentKey&
    GET_IFACE(ISpecification, pSpec);
 
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-   Float64 n = pSpecEntry->GetSplittingZoneLengthFactor();
+   const auto& end_zone_criteria = pSpecEntry->GetEndZoneCriteria();
+   Float64 n = end_zone_criteria.SplittingZoneLengthFactor;
 
    std::array<pgsPointOfInterest, 2> poi = GetPointsOfInterest(segmentKey);
 
@@ -470,7 +473,7 @@ Float64 pgsLRFDSplittingCheckEngineer::GetSplittingZoneLengthFactor() const
    GET_IFACE(ISpecification, pSpec);
 
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-   return pSpecEntry->GetSplittingZoneLengthFactor();
+   return pSpecEntry->GetEndZoneCriteria().SplittingZoneLengthFactor;
 }
 
 std::array<pgsPointOfInterest, 2> pgsLRFDSplittingCheckEngineer::GetPointsOfInterest(const CSegmentKey& segmentKey) const
@@ -537,7 +540,7 @@ std::shared_ptr<pgsSplittingCheckArtifact> pgsPCIUHPCSplittingCheckEngineer::Che
       Float64 Ppo = Ps / 0.04;
 
       Float64 h = pArtifact->GetH(endType);
-      pgsTypes::TransferLengthType xferType = pgsTypes::tltMinimum; // using minimum so the splitting force is applied over the shorter distance, even thought this is a strength check
+      pgsTypes::TransferLengthType xferType = pgsTypes::TransferLengthType::Minimum; // using minimum so the splitting force is applied over the shorter distance, even thought this is a strength check
       // also, it doesn't really matter since PCI UHPC only has one transfer length
       Float64 lt = Max(pPrestress->GetTransferLength(segmentKey, pgsTypes::Straight, xferType), pPrestress->GetTransferLength(segmentKey, pgsTypes::Harped,xferType));
       pArtifact->SetTransferLength(endType, lt);

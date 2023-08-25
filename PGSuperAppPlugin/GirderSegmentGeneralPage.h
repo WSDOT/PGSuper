@@ -22,7 +22,8 @@
 
 #pragma once
 
-#include <PgsExt\PrecastSegmentData.h>
+#include "resource.h"
+#include <psgLib/PrestressLossCriteria.h>
 #include "DrawPrecastSegmentControl.h"
 #include <MfcTools\WideDropDownComboBox.h>
 
@@ -110,8 +111,8 @@ protected:
    int m_PrevErectionEventIdx; // capture the erection stage when the combo box drops down so we can restore the value if CreateEvent fails
    DECLARE_MESSAGE_MAP()
 
-   int m_LossMethod;
-   int m_TimeDependentModel;
+   PrestressLossCriteria::LossMethodType m_LossMethod;
+   PrestressLossCriteria::TimeDependentConcreteModelType m_TimeDependentModel;
    Float64 m_AgeAtRelease;
 
    CEdit m_ctrlStartHaunch;

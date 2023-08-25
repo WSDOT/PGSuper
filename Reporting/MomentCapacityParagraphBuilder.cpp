@@ -151,7 +151,7 @@ rptParagraph* CMomentCapacityParagraphBuilder::Build(const std::shared_ptr<const
       MOMENTCAPACITYDETAILS mcd;
       pMomentCap->GetMomentCapacityDetails(liveLoadIntervalIdx,poi,true,&mcd);
 
-      if ( mcd.Method == LRFD_METHOD && pSpecEntry->GetSpecificationType() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims )
+      if ( mcd.Method == LRFD_METHOD && pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims )
       {
          // over/under reinforced sections where part of AASHTO through the 2005 edition
          if ( pCompositeCap->IsOverReinforced() )
@@ -195,7 +195,7 @@ rptParagraph* CMomentCapacityParagraphBuilder::Build(const std::shared_ptr<const
       }
 
 
-      if ( pSpecEntry->GetSpecificationType() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims )
+      if ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims )
       {
          if ( pCompositeCap->IsOverReinforced() )
          {

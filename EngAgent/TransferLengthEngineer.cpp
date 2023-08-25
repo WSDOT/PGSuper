@@ -27,6 +27,8 @@
 #include <PgsExt\StrandData.h>
 #include <PgsExt\PrecastSegmentData.h>
 
+#include <psgLib/TransferLengthCriteria.h>
+
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
 #include <IFace\Bridge.h>
@@ -65,20 +67,19 @@ std::shared_ptr<pgsTransferLength> pgsTransferLengthEngineer::GetTransferLengthD
 {
    if (pConfig == nullptr)
    {
-      auto found = (xferType == pgsTypes::tltMinimum ? m_MinCache[strandType].find(segmentKey) : m_MaxCache[strandType].find(segmentKey));
-      if (found != (xferType == pgsTypes::tltMinimum ? m_MinCache[strandType].end() : m_MaxCache[strandType].end())) return found->second;
+      auto found = (xferType == pgsTypes::TransferLengthType::Minimum ? m_MinCache[strandType].find(segmentKey) : m_MaxCache[strandType].find(segmentKey));
+      if (found != (xferType == pgsTypes::TransferLengthType::Minimum ? m_MinCache[strandType].end() : m_MaxCache[strandType].end())) return found->second;
    }
 
    GET_IFACE(ISpecification, pSpec);
    std::_tstring spec_name = pSpec->GetSpecification();
    GET_IFACE(ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(spec_name.c_str());
+   const auto& transfer_length_criteria = pSpecEntry->GetTransferLengthCriteria();
 
    std::shared_ptr<pgsTransferLength> pTransferLength;
 
-   auto prestressTransferComputationType = pSpecEntry->GetPrestressTransferComputationType();
-
-   if (prestressTransferComputationType == pgsTypes::ptMinuteValue)
+   if (transfer_length_criteria.CalculationMethod == pgsTypes::TransferLengthCalculationMethod::MinuteValue)
    {
       // Model zero prestress transfer length. 0.1 inches seems to give
       // good designs and spec checks. This does not happen if the value is reduced to 0.0;
@@ -88,7 +89,7 @@ std::shared_ptr<pgsTransferLength> pgsTransferLengthEngineer::GetTransferLengthD
    }
    else
    {
-      ATLASSERT(prestressTransferComputationType == pgsTypes::ptUsingSpecification);
+      ATLASSERT(transfer_length_criteria.CalculationMethod == pgsTypes::TransferLengthCalculationMethod::Specification);
 
       GET_IFACE(ISegmentData, pSegmentData);
       const auto* pStrand = pSegmentData->GetStrandMaterial(segmentKey, strandType);
@@ -111,7 +112,7 @@ std::shared_ptr<pgsTransferLength> pgsTransferLengthEngineer::GetTransferLengthD
 
    if (pConfig == nullptr)
    {
-      xferType == pgsTypes::tltMinimum ? m_MinCache[strandType].insert(std::make_pair(segmentKey, pTransferLength)) : m_MaxCache[strandType].insert(std::make_pair(segmentKey, pTransferLength));
+      xferType == pgsTypes::TransferLengthType::Minimum ? m_MinCache[strandType].insert(std::make_pair(segmentKey, pTransferLength)) : m_MaxCache[strandType].insert(std::make_pair(segmentKey, pTransferLength));
    }
    return pTransferLength;
 }
@@ -656,6 +657,6 @@ void pgsUHPCTransferLength::ReportTransferLengthSpecReference(rptParagraph* pPar
 
 Float64 pgsUHPCTransferLength::GetTransferLengthFactor() const
 {
-   Float64 xi = m_XferType == pgsTypes::tltMinimum ? 0.75 : 1.0;
+   Float64 xi = m_XferType == pgsTypes::TransferLengthType::Minimum ? 0.75 : 1.0;
    return xi;
 }

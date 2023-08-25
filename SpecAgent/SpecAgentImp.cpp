@@ -51,6 +51,20 @@
 
 #include <EAF\EAFDisplayUnits.h>
 
+#include <psgLib/StrandStressCriteria.h>
+#include <psgLib/TendonStressCriteria.h>
+#include <psgLib/LiftingCriteria.h>
+#include <psgLib/HaulingCriteria.h>
+#include <psgLib/PrestressedElementCriteria.h>
+#include <psgLib/ClosureJointCriteria.h>
+#include <psgLib/PrincipalTensionStressCriteria.h>
+#include <psgLib/ShearCapacityCriteria.h>
+#include <psgLib/SpecificationCriteria.h>
+#include <psgLib/EndZoneCriteria.h>
+#include <psgLib/MomentCapacityCriteria.h>
+#include <psgLib/InterfaceShearCriteria.h>
+#include <psgLib/DuctSizeCriteria.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -438,25 +452,29 @@ std::vector<IntervalIndexType> CSpecAgentImp::GetStressCheckIntervals(const CGir
 bool CSpecAgentImp::CheckStressAtJacking() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->CheckStrandStress(CSS_AT_JACKING);
+   const auto& strand_stress_criteria = pSpec->GetStrandStressCriteria();
+   return strand_stress_criteria.CheckStrandStress(StrandStressCriteria::CheckStage::AtJacking);
 }
 
 bool CSpecAgentImp::CheckStressBeforeXfer() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->CheckStrandStress(CSS_BEFORE_TRANSFER);
+   const auto& strand_stress_criteria = pSpec->GetStrandStressCriteria();
+   return strand_stress_criteria.CheckStrandStress(StrandStressCriteria::CheckStage::BeforeTransfer);
 }
 
 bool CSpecAgentImp::CheckStressAfterXfer() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->CheckStrandStress(CSS_AFTER_TRANSFER);
+   const auto& strand_stress_criteria = pSpec->GetStrandStressCriteria();
+   return strand_stress_criteria.CheckStrandStress(StrandStressCriteria::CheckStage::AfterTransfer);
 }
 
 bool CSpecAgentImp::CheckStressAfterLosses() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->CheckStrandStress(CSS_AFTER_ALL_LOSSES);
+   const auto& strand_stress_criteria = pSpec->GetStrandStressCriteria();
+   return strand_stress_criteria.CheckStrandStress(StrandStressCriteria::CheckStage::AfterAllLosses);
 }
 
 Float64 CSpecAgentImp::GetAllowableAtJacking(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) const
@@ -472,7 +490,8 @@ Float64 CSpecAgentImp::GetAllowableAtJacking(const CSegmentKey& segmentKey,pgsTy
    Float64 fpu = WBFL::LRFD::PsStrand::GetUltimateStrength(pStrand->GetGrade());
 
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 coeff = pSpec->GetStrandStressCoefficient(CSS_AT_JACKING,pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   const auto& strand_stress_criteria = pSpec->GetStrandStressCriteria();
+   Float64 coeff = strand_stress_criteria.GetStrandStressCoefficient(StrandStressCriteria::CheckStage::AtJacking,pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? StrandStressCriteria::StrandType::LowRelaxation : StrandStressCriteria::StrandType::StressRelieved);
 
    return coeff*fpu;
 }
@@ -490,7 +509,8 @@ Float64 CSpecAgentImp::GetAllowableBeforeXfer(const CSegmentKey& segmentKey,pgsT
    Float64 fpu = WBFL::LRFD::PsStrand::GetUltimateStrength(pStrand->GetGrade());
 
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 coeff = pSpec->GetStrandStressCoefficient(CSS_BEFORE_TRANSFER,pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   const auto& strand_stress_criteria = pSpec->GetStrandStressCriteria();
+   Float64 coeff = strand_stress_criteria.GetStrandStressCoefficient(StrandStressCriteria::CheckStage::BeforeTransfer,pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? StrandStressCriteria::StrandType::LowRelaxation : StrandStressCriteria::StrandType::StressRelieved);
 
    return coeff*fpu;
 }
@@ -508,7 +528,8 @@ Float64 CSpecAgentImp::GetAllowableAfterXfer(const CSegmentKey& segmentKey,pgsTy
    Float64 fpu = WBFL::LRFD::PsStrand::GetUltimateStrength(pStrand->GetGrade());
 
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 coeff = pSpec->GetStrandStressCoefficient(CSS_AFTER_TRANSFER,pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   const auto& strand_stress_criteria = pSpec->GetStrandStressCriteria();
+   Float64 coeff = strand_stress_criteria.GetStrandStressCoefficient(StrandStressCriteria::CheckStage::AfterTransfer,pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? StrandStressCriteria::StrandType::LowRelaxation : StrandStressCriteria::StrandType::StressRelieved);
 
    return coeff*fpu;
 }
@@ -526,7 +547,8 @@ Float64 CSpecAgentImp::GetAllowableAfterLosses(const CSegmentKey& segmentKey,pgs
    Float64 fpy = WBFL::LRFD::PsStrand::GetYieldStrength(pStrand->GetGrade(),pStrand->GetType());
 
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 coeff = pSpec->GetStrandStressCoefficient(CSS_AFTER_ALL_LOSSES,pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   const auto& strand_stress_criteria = pSpec->GetStrandStressCriteria();
+   Float64 coeff = strand_stress_criteria.GetStrandStressCoefficient(StrandStressCriteria::CheckStage::AfterAllLosses,pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? StrandStressCriteria::StrandType::LowRelaxation : StrandStressCriteria::StrandType::StressRelieved);
 
    return coeff*fpy;
 }
@@ -537,13 +559,15 @@ Float64 CSpecAgentImp::GetAllowableAfterLosses(const CSegmentKey& segmentKey,pgs
 bool CSpecAgentImp::CheckTendonStressAtJacking() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->CheckTendonStressAtJacking();
+   const auto& tendon_stress_criteria = pSpec->GetTendonStressCriteria();
+   return tendon_stress_criteria.bCheckAtJacking;
 }
 
 bool CSpecAgentImp::CheckTendonStressPriorToSeating() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->CheckTendonStressPriorToSeating();
+   const auto& tendon_stress_criteria = pSpec->GetTendonStressCriteria();
+   return tendon_stress_criteria.bCheckPriorToSeating;
 }
 
 Float64 CSpecAgentImp::GetSegmentTendonAllowableAtJacking(const CSegmentKey& segmentKey) const
@@ -622,7 +646,8 @@ Float64 CSpecAgentImp::GetSegmentTendonAllowableCoefficientAtJacking(const CSegm
    const auto* pStrand = pMaterial->GetSegmentTendonMaterial(segmentKey);
 
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_AT_JACKING, pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   const auto& tendon_stress_criteria = pSpec->GetTendonStressCriteria();
+   auto coeff = tendon_stress_criteria.GetTendonStressCoefficient(TendonStressCriteria::CheckStage::AtJacking, pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? TendonStressCriteria::StrandType::LowRelaxation : TendonStressCriteria::StrandType::StressRelieved);
    return coeff;
 }
 
@@ -632,7 +657,8 @@ Float64 CSpecAgentImp::GetSegmentTendonAllowableCoefficientPriorToSeating(const 
    const auto* pStrand = pMaterial->GetSegmentTendonMaterial(segmentKey);
 
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_PRIOR_TO_SEATING, pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   const auto& tendon_stress_criteria = pSpec->GetTendonStressCriteria();
+   auto coeff = tendon_stress_criteria.GetTendonStressCoefficient(TendonStressCriteria::CheckStage::PriorToSeating, pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? TendonStressCriteria::StrandType::LowRelaxation : TendonStressCriteria::StrandType::StressRelieved);
    return coeff;
 }
 
@@ -642,7 +668,8 @@ Float64 CSpecAgentImp::GetSegmentTendonAllowableCoefficientAfterAnchorSetAtAncho
    const auto* pStrand = pMaterial->GetSegmentTendonMaterial(segmentKey);
 
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_ANCHORAGES_AFTER_SEATING, pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   const auto& tendon_stress_criteria = pSpec->GetTendonStressCriteria();
+   auto coeff = tendon_stress_criteria.GetTendonStressCoefficient(TendonStressCriteria::CheckStage::AtAnchoragesAfterSeating, pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? TendonStressCriteria::StrandType::LowRelaxation : TendonStressCriteria::StrandType::StressRelieved);
    return coeff;
 }
 
@@ -652,7 +679,8 @@ Float64 CSpecAgentImp::GetSegmentTendonAllowableCoefficientAfterAnchorSet(const 
    const auto* pStrand = pMaterial->GetSegmentTendonMaterial(segmentKey);
 
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_ELSEWHERE_AFTER_SEATING, pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   const auto& tendon_stress_criteria = pSpec->GetTendonStressCriteria();
+   auto coeff = tendon_stress_criteria.GetTendonStressCoefficient(TendonStressCriteria::CheckStage::ElsewhereAfterSeating, pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? TendonStressCriteria::StrandType::LowRelaxation : TendonStressCriteria::StrandType::StressRelieved);
    return coeff;
 }
 
@@ -662,8 +690,8 @@ Float64 CSpecAgentImp::GetSegmentTendonAllowableCoefficientAfterLosses(const CSe
    const auto* pStrand = pMaterial->GetSegmentTendonMaterial(segmentKey);
 
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_AFTER_ALL_LOSSES, pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? LOW_RELAX : STRESS_REL);
-
+   const auto& tendon_stress_criteria = pSpec->GetTendonStressCriteria();
+   auto coeff = tendon_stress_criteria.GetTendonStressCoefficient(TendonStressCriteria::CheckStage::AfterAllLosses, pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? TendonStressCriteria::StrandType::LowRelaxation : TendonStressCriteria::StrandType::StressRelieved);
    return coeff;
 }
 
@@ -743,7 +771,8 @@ Float64 CSpecAgentImp::GetGirderTendonAllowableCoefficientAtJacking(const CGirde
    const auto* pStrand = pMaterial->GetGirderTendonMaterial(girderKey);
 
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_AT_JACKING,pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   const auto& tendon_stress_criteria = pSpec->GetTendonStressCriteria();
+   auto coeff = tendon_stress_criteria.GetTendonStressCoefficient(TendonStressCriteria::CheckStage::AtJacking, pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? TendonStressCriteria::StrandType::LowRelaxation : TendonStressCriteria::StrandType::StressRelieved);
    return coeff;
 }
 
@@ -753,7 +782,8 @@ Float64 CSpecAgentImp::GetGirderTendonAllowableCoefficientPriorToSeating(const C
    const auto* pStrand = pMaterial->GetGirderTendonMaterial(girderKey);
 
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_PRIOR_TO_SEATING,pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   const auto& tendon_stress_criteria = pSpec->GetTendonStressCriteria();
+   auto coeff = tendon_stress_criteria.GetTendonStressCoefficient(TendonStressCriteria::CheckStage::PriorToSeating, pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? TendonStressCriteria::StrandType::LowRelaxation : TendonStressCriteria::StrandType::StressRelieved);
    return coeff;
 }
 
@@ -763,7 +793,8 @@ Float64 CSpecAgentImp::GetGirderTendonAllowableCoefficientAfterAnchorSetAtAnchor
    const auto* pStrand = pMaterial->GetGirderTendonMaterial(girderKey);
 
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_ANCHORAGES_AFTER_SEATING,pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   const auto& tendon_stress_criteria = pSpec->GetTendonStressCriteria();
+   auto coeff = tendon_stress_criteria.GetTendonStressCoefficient(TendonStressCriteria::CheckStage::AtAnchoragesAfterSeating, pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? TendonStressCriteria::StrandType::LowRelaxation : TendonStressCriteria::StrandType::StressRelieved);
    return coeff;
 }
 
@@ -773,7 +804,8 @@ Float64 CSpecAgentImp::GetGirderTendonAllowableCoefficientAfterAnchorSet(const C
    const auto* pStrand = pMaterial->GetGirderTendonMaterial(girderKey);
 
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_ELSEWHERE_AFTER_SEATING,pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? LOW_RELAX : STRESS_REL);
+   const auto& tendon_stress_criteria = pSpec->GetTendonStressCriteria();
+   auto coeff = tendon_stress_criteria.GetTendonStressCoefficient(TendonStressCriteria::CheckStage::ElsewhereAfterSeating, pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? TendonStressCriteria::StrandType::LowRelaxation : TendonStressCriteria::StrandType::StressRelieved);
    return coeff;
 }
 
@@ -783,8 +815,8 @@ Float64 CSpecAgentImp::GetGirderTendonAllowableCoefficientAfterLosses(const CGir
    const auto* pStrand = pMaterial->GetGirderTendonMaterial(girderKey);
 
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 coeff = pSpec->GetTendonStressCoefficient(CSS_AFTER_ALL_LOSSES,pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? LOW_RELAX : STRESS_REL);
-
+   const auto& tendon_stress_criteria = pSpec->GetTendonStressCriteria();
+   auto coeff = tendon_stress_criteria.GetTendonStressCoefficient(TendonStressCriteria::CheckStage::AfterAllLosses, pStrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? TendonStressCriteria::StrandType::LowRelaxation : TendonStressCriteria::StrandType::StressRelieved);
    return coeff;
 }
 
@@ -1658,8 +1690,8 @@ Float64 CSpecAgentImp::GetDeckAllowableTensionStress(const pgsPointOfInterest& p
 Float64 CSpecAgentImp::GetLiftingWithMildRebarAllowableStressFactor() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 x = pSpec->GetLiftingTensionStressFactorWithRebar();
-   return x;
+   const auto& lifting_criteria = pSpec->GetLiftingCriteria();
+   return lifting_criteria.TensionStressLimitWithReinforcement.Coefficient;
 }
 
 Float64 CSpecAgentImp::GetLiftingWithMildRebarAllowableStress(const CSegmentKey& segmentKey) const
@@ -1677,14 +1709,14 @@ Float64 CSpecAgentImp::GetLiftingWithMildRebarAllowableStress(const CSegmentKey&
    return x*lambda*sqrt(fci);
 }
 
-Float64 CSpecAgentImp::GetHaulingWithMildRebarAllowableStressFactor(pgsTypes::HaulingSlope slope) const
+Float64 CSpecAgentImp::GetHaulingWithMildRebarAllowableStressFactor(WBFL::Stability::HaulingSlope slope) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 x = pSpec->GetHaulingTensionStressFactorWithRebar(slope);
-   return x;
+   const auto& hauling_criteria = pSpec->GetHaulingCriteria();
+   return hauling_criteria.WSDOT.TensionStressLimitWithReinforcement[+slope].Coefficient;
 }
 
-Float64 CSpecAgentImp::GetHaulingWithMildRebarAllowableStress(const CSegmentKey& segmentKey, pgsTypes::HaulingSlope slope) const
+Float64 CSpecAgentImp::GetHaulingWithMildRebarAllowableStress(const CSegmentKey& segmentKey, WBFL::Stability::HaulingSlope slope) const
 {
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
@@ -1715,7 +1747,7 @@ Float64 CSpecAgentImp::GetHaulingModulusOfRupture(const CSegmentKey& segmentKey,
    if (IsUHPC(concType))
    {
       // for UHPC, the allowable tensile stress is the modulus of rupture
-      return GetHaulingAllowableTensileConcreteStress(segmentKey,pgsTypes::CrownSlope);
+      return GetHaulingAllowableTensileConcreteStress(segmentKey, WBFL::Stability::HaulingSlope::CrownSlope);
    }
    else
    {
@@ -1731,7 +1763,8 @@ Float64 CSpecAgentImp::GetHaulingModulusOfRupture(const CSegmentKey& segmentKey,
 Float64 CSpecAgentImp::GetHaulingModulusOfRuptureFactor(pgsTypes::ConcreteType concType) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetHaulingModulusOfRuptureFactor(concType);
+   const auto& hauling_criteria = pSpec->GetHaulingCriteria();
+   return hauling_criteria.WSDOT.ModulusOfRuptureCoefficient[concType];
 }
 
 Float64 CSpecAgentImp::GetSegmentAllowableCompressionStressCoefficient(const pgsPointOfInterest& poi,const StressCheckTask& task) const
@@ -1739,6 +1772,8 @@ Float64 CSpecAgentImp::GetSegmentAllowableCompressionStressCoefficient(const pgs
    ATLASSERT(task.stressType == pgsTypes::Compression);
 
    const SpecLibraryEntry* pSpec = GetSpec();
+   const auto& prestressed_element_criteria = pSpec->GetPrestressedElementCriteria();
+
    Float64 x = -99999;
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
@@ -1760,23 +1795,26 @@ Float64 CSpecAgentImp::GetSegmentAllowableCompressionStressCoefficient(const pgs
    {
       ATLASSERT( task.limitState == pgsTypes::ServiceI );
       ATLASSERT(false); // this assert is to get your attention... there are two compression limits for lifting, you are only getting one of them here. Is that what you want?
-      x = pSpec->GetLiftingCompressionGlobalStressFactor();
+      const auto& lifting_criteria = pSpec->GetLiftingCriteria();
+      x = lifting_criteria.CompressionStressCoefficient_GlobalStress;
    }
    else if ( storageIntervalIdx <= task.intervalIdx && task.intervalIdx < haulIntervalIdx )
    {
       ATLASSERT( task.limitState == pgsTypes::ServiceI );
-      x = pSpec->GetAtReleaseCompressionStressFactor();
+      x = prestressed_element_criteria.CompressionStressCoefficient_BeforeLosses;
    }
    else if ( task.intervalIdx == haulIntervalIdx )
    {
       ATLASSERT( task.limitState == pgsTypes::ServiceI );
       ATLASSERT(false); // this assert is to get your attention... there are two compression limits for hauling, you are only getting one of them here. Is that what you want?
-      x = pSpec->GetHaulingCompressionGlobalStressFactor();
+      const auto& hauling_criteria = pSpec->GetHaulingCriteria();
+      x = hauling_criteria.AnalysisMethod == pgsTypes::HaulingAnalysisMethod::WSDOT ? hauling_criteria.WSDOT.CompressionStressCoefficient_GlobalStress : hauling_criteria.KDOT.CompressionStressLimitCoefficient;
    }
    else if ( task.intervalIdx == tempStrandRemovalIdx )
    {
       ATLASSERT( task.limitState == pgsTypes::ServiceI );
-      x = pSpec->GetTempStrandRemovalCompressionStressFactor();
+      ATLASSERT(prestressed_element_criteria.bCheckTemporaryStresses);
+      x = prestressed_element_criteria.CompressionStressCoefficient_TemporaryStrandRemoval;
    }
    else
    {
@@ -1787,7 +1825,7 @@ Float64 CSpecAgentImp::GetSegmentAllowableCompressionStressCoefficient(const pgs
       {
          // stressing interval
          ATLASSERT( task.limitState == pgsTypes::ServiceI );
-         x = pSpec->GetAtReleaseCompressionStressFactor();
+         x = prestressed_element_criteria.CompressionStressCoefficient_BeforeLosses;
       }
       else
       {
@@ -1799,12 +1837,13 @@ Float64 CSpecAgentImp::GetSegmentAllowableCompressionStressCoefficient(const pgs
                // before the deck is composite (this is for temporary loading conditions)
                // this is basically the wet slab on girder case
                ATLASSERT( task.limitState == pgsTypes::ServiceI );
-               x = pSpec->GetErectionCompressionStressFactor();
+               ATLASSERT(prestressed_element_criteria.bCheckTemporaryStresses);
+               x = prestressed_element_criteria.CompressionStressCoefficient_AfterDeckPlacement;
             }
             else
             {
                ATLASSERT(task.limitState == pgsTypes::ServiceI);
-               x = pSpec->GetFinalWithoutLiveLoadCompressionStressFactor();
+               x = prestressed_element_criteria.CompressionStressCoefficient_PermanentLoadsOnly_AfterLosses;
             }
          }
          else
@@ -1814,12 +1853,12 @@ Float64 CSpecAgentImp::GetSegmentAllowableCompressionStressCoefficient(const pgs
             ATLASSERT( (task.limitState == pgsTypes::ServiceI) || (task.limitState == pgsTypes::ServiceIA) || (task.limitState == pgsTypes::FatigueI));
             if (task.bIncludeLiveLoad)
             {
-               x = (task.limitState == pgsTypes::ServiceI ? pSpec->GetFinalWithLiveLoadCompressionStressFactor() : pSpec->GetFatigueCompressionStressFactor());
+               x = (task.limitState == pgsTypes::ServiceI ? prestressed_element_criteria.CompressionStressCoefficient_AllLoads_AfterLosses : prestressed_element_criteria.CompressionStressCoefficient_Fatigue);
             }
             else
             {
                ATLASSERT(task.limitState == pgsTypes::ServiceI);
-               x = pSpec->GetFinalWithoutLiveLoadCompressionStressFactor();
+               x = prestressed_element_criteria.CompressionStressCoefficient_PermanentLoadsOnly_AfterLosses;
             }
          }
       }
@@ -1834,6 +1873,7 @@ Float64 CSpecAgentImp::GetClosureJointAllowableCompressionStressCoefficient(cons
    ATLASSERT(task.stressType == pgsTypes::Compression);
 
    const SpecLibraryEntry* pSpec = GetSpec();
+   const auto& closure_joint_criteria = pSpec->GetClosureJointCriteria();
    Float64 x = -99999;
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
@@ -1846,7 +1886,7 @@ Float64 CSpecAgentImp::GetClosureJointAllowableCompressionStressCoefficient(cons
    if ( bIsTendonStressingInterval )
    {
       // stressing interval
-      x = pSpec->GetAtStressingCompressingStressFactor();
+      x = closure_joint_criteria.CompressionStressCoefficient_BeforeLosses; // 5.12.3.4.2d
    }
    else
    {
@@ -1854,7 +1894,7 @@ Float64 CSpecAgentImp::GetClosureJointAllowableCompressionStressCoefficient(cons
       if ( task.intervalIdx < liveLoadIntervalIdx )
       {
          // Effective Prestress + Permanent Loads
-         x = pSpec->GetAtServiceCompressingStressFactor();
+         x = closure_joint_criteria.CompressionStressCoefficient_PermanentLoadsOnly_AfterLosses;
       }
       else
       {
@@ -1863,17 +1903,17 @@ Float64 CSpecAgentImp::GetClosureJointAllowableCompressionStressCoefficient(cons
          {
             if (task.limitState == pgsTypes::ServiceIA || task.limitState == pgsTypes::FatigueI)
             {
-               x = pSpec->GetClosureFatigueCompressionStressFactor();
+               x = closure_joint_criteria.CompressionStressCoefficient_Fatigue;
             }
             else
             {
-               x = pSpec->GetAtServiceWithLiveLoadCompressingStressFactor();
+               x = closure_joint_criteria.CompressionStressCoefficient_AllLoads_AfterLosses;
             }
          }
          else
          {
             ATLASSERT(task.limitState == pgsTypes::ServiceI);
-            x = pSpec->GetFinalWithoutLiveLoadCompressionStressFactor();
+            x = closure_joint_criteria.CompressionStressCoefficient_PermanentLoadsOnly_AfterLosses;
          }
       }
    }
@@ -1886,6 +1926,8 @@ Float64 CSpecAgentImp::GetDeckAllowableCompressionStressCoefficient(const pgsPoi
    ATLASSERT(task.stressType == pgsTypes::Compression);
 
    const SpecLibraryEntry* pSpec = GetSpec();
+   const auto& prestressed_element_criteria = pSpec->GetPrestressedElementCriteria();
+
    Float64 x = -99999;
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
@@ -1908,7 +1950,7 @@ Float64 CSpecAgentImp::GetDeckAllowableCompressionStressCoefficient(const pgsPoi
    {
       // stressing interval
       ATLASSERT( task.limitState == pgsTypes::ServiceI );
-      x = pSpec->GetAtReleaseCompressionStressFactor();
+      x = prestressed_element_criteria.CompressionStressCoefficient_BeforeLosses;
    }
    else
    {
@@ -1920,14 +1962,14 @@ Float64 CSpecAgentImp::GetDeckAllowableCompressionStressCoefficient(const pgsPoi
          if ( task.intervalIdx < compositeDeckIntervalIdx )
          {
             ATLASSERT( task.limitState == pgsTypes::ServiceI );
-            x = pSpec->GetErectionCompressionStressFactor();
+            x = prestressed_element_criteria.CompressionStressCoefficient_AfterDeckPlacement;
          }
          else
          {
             // the deck is now composite so this is the Effective Prestress + Permanent Loads case
             // (basically the case when the railing system has been installed, but no live load)
             ATLASSERT( task.limitState == pgsTypes::ServiceI );
-            x = pSpec->GetFinalWithoutLiveLoadCompressionStressFactor();
+            x = prestressed_element_criteria.CompressionStressCoefficient_PermanentLoadsOnly_AfterLosses;
          }
       }
       else
@@ -1935,7 +1977,7 @@ Float64 CSpecAgentImp::GetDeckAllowableCompressionStressCoefficient(const pgsPoi
          // live load is on the structure so this is the "at service limit states" "after all losses"
          // case
          ATLASSERT( (task.limitState == pgsTypes::ServiceI) || (task.limitState == pgsTypes::ServiceIA) || (task.limitState == pgsTypes::FatigueI));
-         x = (task.limitState == pgsTypes::ServiceI ? pSpec->GetFinalWithLiveLoadCompressionStressFactor() : pSpec->GetFatigueCompressionStressFactor());
+         x = (task.limitState == pgsTypes::ServiceI ? prestressed_element_criteria.CompressionStressCoefficient_AllLoads_AfterLosses : prestressed_element_criteria.CompressionStressCoefficient_Fatigue);
       }
    }
 
@@ -1947,9 +1989,8 @@ void CSpecAgentImp::GetSegmentAllowableTensionStressCoefficient(const pgsPointOf
    ATLASSERT(task.stressType == pgsTypes::Tension);
 
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 x = -99999;
-   bool bCheckMax = false;
-   Float64 fmax = -99999;
+   const auto& prestress_element_criteria = pSpec->GetPrestressedElementCriteria();
+   TensionStressLimit tension_stress_limit;
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -1974,14 +2015,14 @@ void CSpecAgentImp::GetSegmentAllowableTensionStressCoefficient(const pgsPointOf
    if ( task.intervalIdx == liftingIntervalIdx )
    {
       ATLASSERT( task.limitState == pgsTypes::ServiceI );
+      const auto& lifting_criteria = pSpec->GetLiftingCriteria();
       if ( bWithBondedReinforcement )
       {
-         x = pSpec->GetLiftingTensionStressFactorWithRebar();
+         tension_stress_limit = lifting_criteria.TensionStressLimitWithReinforcement;
       }
       else
       {
-         x = pSpec->GetLiftingTensionStressFactor();
-         pSpec->GetLiftingMaximumTensionStress(&bCheckMax,&fmax);
+         tension_stress_limit = lifting_criteria.TensionStressLimitWithoutReinforcement;
       }
    }
    else if ( storageIntervalIdx <= task.intervalIdx && task.intervalIdx < haulingIntervalIdx )
@@ -1989,12 +2030,11 @@ void CSpecAgentImp::GetSegmentAllowableTensionStressCoefficient(const pgsPointOf
       ATLASSERT( task.limitState == pgsTypes::ServiceI );
       if ( bWithBondedReinforcement )
       {
-         x = pSpec->GetAtReleaseTensionStressFactorWithRebar();
+         tension_stress_limit = prestress_element_criteria.TensionStressLimit_WithReinforcement_BeforeLosses;
       }
       else
       {
-         x = pSpec->GetAtReleaseTensionStressFactor();
-         pSpec->GetAtReleaseMaximumTensionStress(&bCheckMax,&fmax);
+         tension_stress_limit = prestress_element_criteria.TensionStressLimit_OtherAreas_WithoutReinforcement_BeforeLosses;
       }
    }
    else if ( task.intervalIdx == haulingIntervalIdx )
@@ -2018,12 +2058,11 @@ void CSpecAgentImp::GetSegmentAllowableTensionStressCoefficient(const pgsPointOf
       ATLASSERT( task.limitState == pgsTypes::ServiceI );
       if ( bWithBondedReinforcement )
       {
-         x = pSpec->GetTempStrandRemovalTensionStressFactorWithRebar();
+         tension_stress_limit = prestress_element_criteria.TensionStressLimit_WithReinforcement_TemporaryStrandRemoval;
       }
       else
       {
-         x = pSpec->GetTempStrandRemovalTensionStressFactor();
-         pSpec->GetTempStrandRemovalMaximumTensionStress(&bCheckMax,&fmax);
+         tension_stress_limit = prestress_element_criteria.TensionStressLimit_WithoutReinforcement_TemporaryStrandRemoval;
       }
    }
    else
@@ -2035,12 +2074,11 @@ void CSpecAgentImp::GetSegmentAllowableTensionStressCoefficient(const pgsPointOf
          ATLASSERT( task.limitState == pgsTypes::ServiceI );
          if ( bWithBondedReinforcement )
          {
-            x = pSpec->GetAtReleaseTensionStressFactorWithRebar();
+            tension_stress_limit = prestress_element_criteria.TensionStressLimit_WithReinforcement_BeforeLosses;
          }
          else
          {
-            x = pSpec->GetAtReleaseTensionStressFactor();
-            pSpec->GetAtReleaseMaximumTensionStress(&bCheckMax,&fmax);
+            tension_stress_limit = prestress_element_criteria.TensionStressLimit_OtherAreas_WithoutReinforcement_BeforeLosses;
          }
       }
       else
@@ -2050,8 +2088,7 @@ void CSpecAgentImp::GetSegmentAllowableTensionStressCoefficient(const pgsPointOf
          {
             // this is a PGSuper only stress limit (immediately after deck placement)
             ATLASSERT( task.limitState == pgsTypes::ServiceI );
-            x = pSpec->GetErectionTensionStressFactor();
-            pSpec->GetErectionMaximumTensionStress(&bCheckMax,&fmax);
+            tension_stress_limit = prestress_element_criteria.TensionStressLimit_AfterDeckPlacement;
          }
          else 
          {
@@ -2073,8 +2110,7 @@ void CSpecAgentImp::GetSegmentAllowableTensionStressCoefficient(const pgsPointOf
             {
                if (task.limitState == pgsTypes::ServiceI && CheckFinalDeadLoadTensionStress())
                {
-                  x = pSpec->GetFinalTensionPermanentLoadsStressFactor();
-                  pSpec->GetFinalTensionPermanentLoadStressFactor(&bCheckMax, &fmax);
+                  tension_stress_limit = prestress_element_criteria.TensionStressLimit_ServiceI_PermanentLoadsOnly_AfterLosses;
                }
                else
                {
@@ -2082,22 +2118,23 @@ void CSpecAgentImp::GetSegmentAllowableTensionStressCoefficient(const pgsPointOf
                   ATLASSERT((pDocType->IsPGSpliceDocument() && task.limitState == pgsTypes::ServiceI) || task.limitState == pgsTypes::ServiceIII);
 #endif
                   GET_IFACE(IEnvironment, pEnv);
-                  int exposureCondition = pEnv->GetExposureCondition() == expNormal ? EXPOSURE_NORMAL : EXPOSURE_SEVERE;
-                  x = pSpec->GetFinalTensionStressFactor(exposureCondition);
-                  pSpec->GetFinalTensionStressFactor(exposureCondition, &bCheckMax, &fmax);
+                  auto exposureCondition = pEnv->GetExposureCondition();
+                  tension_stress_limit = (exposureCondition == pgsTypes::ExposureCondition::Normal ? 
+                     prestress_element_criteria.TensionStressLimit_ServiceIII_InPTZ_ModerateCorrosionConditions_AfterLosses : 
+                     prestress_element_criteria.TensionStressLimit_ServiceIII_InPTZ_SevereCorrosionConditions_AfterLosses);
                }
             }
             else
             {
                ATLASSERT(task.limitState == pgsTypes::ServiceI);
                GET_IFACE(IEnvironment, pEnv);
-               int exposureCondition = pEnv->GetExposureCondition() == expNormal ? EXPOSURE_NORMAL : EXPOSURE_SEVERE;
-               x = pSpec->GetFinalTensionStressFactor(exposureCondition);
-               pSpec->GetFinalTensionStressFactor(exposureCondition, &bCheckMax, &fmax);
-               if (IsZero(x) && CheckFinalDeadLoadTensionStress() && pDocType->IsPGSpliceDocument())
+               auto exposureCondition = pEnv->GetExposureCondition();
+               tension_stress_limit = (exposureCondition == pgsTypes::ExposureCondition::Normal ?
+                  prestress_element_criteria.TensionStressLimit_ServiceIII_InPTZ_ModerateCorrosionConditions_AfterLosses :
+                  prestress_element_criteria.TensionStressLimit_ServiceIII_InPTZ_SevereCorrosionConditions_AfterLosses);
+               if (IsZero(tension_stress_limit.Coefficient) && CheckFinalDeadLoadTensionStress() && pDocType->IsPGSpliceDocument())
                {
-                  x = pSpec->GetFinalTensionPermanentLoadsStressFactor();
-                  pSpec->GetFinalTensionPermanentLoadStressFactor(&bCheckMax, &fmax);
+                  tension_stress_limit = prestress_element_criteria.TensionStressLimit_ServiceI_PermanentLoadsOnly_AfterLosses;
                }
             }
          }
@@ -2105,9 +2142,9 @@ void CSpecAgentImp::GetSegmentAllowableTensionStressCoefficient(const pgsPointOf
    }// end if,else-if 
 
 
-   *pCoeff    = x;
-   *pbMax     = bCheckMax;
-   *pMaxValue = fmax;
+   *pCoeff = tension_stress_limit.Coefficient;
+   *pbMax = tension_stress_limit.bHasMaxValue;
+   *pMaxValue = tension_stress_limit.MaxValue;
 }
 
 void CSpecAgentImp::GetClosureJointAllowableTensionStressCoefficient(const pgsPointOfInterest& poi, const StressCheckTask& task,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) const
@@ -2115,9 +2152,9 @@ void CSpecAgentImp::GetClosureJointAllowableTensionStressCoefficient(const pgsPo
    ATLASSERT(task.stressType == pgsTypes::Tension);
    
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 x = -99999;
-   bool bCheckMax = false;
-   Float64 fmax = -99999;
+   const auto& closure_joint_criteria = pSpec->GetClosureJointCriteria();
+
+   TensionStressLimit tension_stress_limit;
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -2127,8 +2164,8 @@ void CSpecAgentImp::GetClosureJointAllowableTensionStressCoefficient(const pgsPo
    bool bIsTendonStressingInterval = pIntervals->IsGirderTendonStressingInterval(segmentKey,task.intervalIdx);
 
    // closure joints have allowables for both "in the precompressed tensile zone" and "in areas other than
-   // the precompressed tensile zone" (See Table 5.9.2.3.1b-1 and 5.9.2.3.2b-1 (pre2017: 5.9.4.1.2-1 and -5.9.4.2.2-1)) for both during stressing
-   // and non-stressing intervals
+   // the precompressed tensile zone" (See Table 5.9.2.3.1b-1 and 5.9.2.3.2b-1 (pre2017: 5.9.4.1.2-1 and -5.9.4.2.2-1)) for both during stressing (before losses)
+   // and non-stressing intervals (after losses)
 
    if ( bIsTendonStressingInterval )
    {
@@ -2137,22 +2174,22 @@ void CSpecAgentImp::GetClosureJointAllowableTensionStressCoefficient(const pgsPo
       {
          if ( bWithBondedReinforcement )
          {
-            x = pSpec->GetAtStressingPrecompressedTensileZoneTensionStressFactorWithRebar();
+            tension_stress_limit = closure_joint_criteria.TensionStressLimit_InPTZ_WithReinforcement_BeforeLosses;
          }
          else
          {
-            x = pSpec->GetAtStressingPrecompressedTensileZoneTensionStressFactor();
+            tension_stress_limit = closure_joint_criteria.TensionStressLimit_InPTZ_WithoutReinforcement_BeforeLosses;
          }
       }
       else
       {
          if ( bWithBondedReinforcement )
          {
-            x = pSpec->GetAtStressingOtherLocationTensionStressFactorWithRebar();
+            tension_stress_limit = closure_joint_criteria.TensionStressLimit_OtherAreas_WithReinforcement_BeforeLosses;
          }
          else
          {
-            x = pSpec->GetAtStressingOtherLocationTensionStressFactor();
+            tension_stress_limit = closure_joint_criteria.TensionStressLimit_OtherAreas_WithoutReinforcement_BeforeLosses;
          }
       }
    }
@@ -2163,29 +2200,29 @@ void CSpecAgentImp::GetClosureJointAllowableTensionStressCoefficient(const pgsPo
       {
          if ( bWithBondedReinforcement )
          {
-            x = pSpec->GetAtServicePrecompressedTensileZoneTensionStressFactorWithRebar();
+            tension_stress_limit = closure_joint_criteria.TensionStressLimit_InPTZ_WithReinforcement_AfterLosses;
          }
          else
          {
-            x = pSpec->GetAtServicePrecompressedTensileZoneTensionStressFactor();
+            tension_stress_limit = closure_joint_criteria.TensionStressLimit_InPTZ_WithoutReinforcement_AfterLosses;
          }
       }
       else
       {
          if ( bWithBondedReinforcement )
          {
-            x = pSpec->GetAtServiceOtherLocationTensionStressFactorWithRebar();
+            tension_stress_limit = closure_joint_criteria.TensionStressLimit_OtherAreas_WithReinforcement_AfterLosses;
          }
          else
          {
-            x = pSpec->GetAtServiceOtherLocationTensionStressFactor();
+            tension_stress_limit = closure_joint_criteria.TensionStressLimit_OtherAreas_WithoutReinforcement_AfterLosses;
          }
       }
    }
 
-   *pCoeff    = x;
-   *pbMax     = bCheckMax;
-   *pMaxValue = fmax;
+   *pCoeff = tension_stress_limit.Coefficient;
+   *pbMax = tension_stress_limit.bHasMaxValue;
+   *pMaxValue = tension_stress_limit.MaxValue;
 }
 
 void CSpecAgentImp::GetDeckAllowableTensionStressCoefficient(const pgsPointOfInterest& poi, const StressCheckTask& task,bool bWithBondedReinforcement,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) const
@@ -2193,10 +2230,9 @@ void CSpecAgentImp::GetDeckAllowableTensionStressCoefficient(const pgsPointOfInt
    ATLASSERT(task.stressType == pgsTypes::Tension);
 
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 x = -99999;
-   bool bCheckMax = false;
-   Float64 fmax = -99999;
-
+   const auto& prestress_element_criteria = pSpec->GetPrestressedElementCriteria();
+   TensionStressLimit tension_stress_limit;
+   
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    ATLASSERT(IsStressCheckApplicable(segmentKey,task));
@@ -2218,26 +2254,26 @@ void CSpecAgentImp::GetDeckAllowableTensionStressCoefficient(const pgsPointOfInt
       ATLASSERT( task.limitState == pgsTypes::ServiceI );
       if ( bWithBondedReinforcement )
       {
-         x = pSpec->GetAtReleaseTensionStressFactorWithRebar();
+         tension_stress_limit = prestress_element_criteria.TensionStressLimit_WithReinforcement_BeforeLosses;
       }
       else
       {
-         x = pSpec->GetAtReleaseTensionStressFactor();
-         pSpec->GetAtReleaseMaximumTensionStress(&bCheckMax,&fmax);
+         tension_stress_limit = prestress_element_criteria.TensionStressLimit_OtherAreas_WithoutReinforcement_BeforeLosses;
       }
    }
    else
    {
       // if this is a non-stressing interval, use allowables from Table 5.9.2.3.2b-1 (pre2017: 5.9.4.2.2-1)
       GET_IFACE(IEnvironment,pEnv);
-      int exposureCondition = pEnv->GetExposureCondition() == expNormal ? EXPOSURE_NORMAL : EXPOSURE_SEVERE;
-      x = pSpec->GetFinalTensionStressFactor(exposureCondition);
-      pSpec->GetFinalTensionStressFactor(exposureCondition,&bCheckMax,&fmax);
+      auto exposureCondition = pEnv->GetExposureCondition();
+      tension_stress_limit = (exposureCondition == pgsTypes::ExposureCondition::Normal ?
+         prestress_element_criteria.TensionStressLimit_ServiceIII_InPTZ_ModerateCorrosionConditions_AfterLosses :
+         prestress_element_criteria.TensionStressLimit_ServiceIII_InPTZ_SevereCorrosionConditions_AfterLosses);
    }
 
-   *pCoeff    = x;
-   *pbMax     = bCheckMax;
-   *pMaxValue = fmax;
+   *pCoeff = tension_stress_limit.Coefficient;
+   *pbMax = tension_stress_limit.bHasMaxValue;
+   *pMaxValue = tension_stress_limit.MaxValue;
 }
 
 bool CSpecAgentImp::IsStressCheckApplicable(const CGirderKey& girderKey, const StressCheckTask& task) const
@@ -2425,14 +2461,16 @@ bool CSpecAgentImp::CheckTemporaryStresses() const
    else
    {
       const SpecLibraryEntry* pSpec = GetSpec();
-      return pSpec->CheckTemporaryStresses();
+      const auto& prestressed_element_criteria = pSpec->GetPrestressedElementCriteria();
+      return prestressed_element_criteria.bCheckTemporaryStresses;
    }
 }
 
 bool CSpecAgentImp::CheckFinalDeadLoadTensionStress() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->CheckFinalTensionPermanentLoadStresses();
+   const auto& prestressed_element_criteria = pSpec->GetPrestressedElementCriteria();
+   return prestressed_element_criteria.bCheckFinalServiceITension;
 }
 
 Float64 CSpecAgentImp::GetAllowableSegmentPrincipalWebTensionStress(const CSegmentKey& segmentKey) const
@@ -2553,20 +2591,17 @@ Float64 CSpecAgentImp::GetAllowablePrincipalWebTensionStress(const pgsPointOfInt
 
 Float64 CSpecAgentImp::GetAllowablePrincipalWebTensionStressCoefficient() const
 {
-   const SpecLibraryEntry* pSpec = GetSpec();
-   pgsTypes::PrincipalTensileStressMethod method;
-   Float64 tensionCoefficient, ductDiameterFactor, ungroutedMultiplier, groutedMultimplier, principalTensileStressFcThreshold;
-   pSpec->GetPrincipalTensileStressInWebsParameters(&method, &tensionCoefficient,&ductDiameterFactor,&ungroutedMultiplier, &groutedMultimplier,&principalTensileStressFcThreshold);
-   return tensionCoefficient;
+   const SpecLibraryEntry* pSpecEntry = GetSpec();
+   const auto& principal_tension_stress_criteria = pSpecEntry->GetPrincipalTensionStressCriteria();
+   return principal_tension_stress_criteria.Coefficient;
 }
 
 Float64 CSpecAgentImp::GetPrincipalTensileStressFcThreshold() const
 {
-   const SpecLibraryEntry* pSpec = GetSpec();
-   pgsTypes::PrincipalTensileStressMethod method;
-   Float64 tensionCoefficient, ductDiameterFactor, ungroutedMultiplier, groutedMultimplier, principalTensileStressFcThreshold;
-   pSpec->GetPrincipalTensileStressInWebsParameters(&method, &tensionCoefficient,&ductDiameterFactor,&ungroutedMultiplier, &groutedMultimplier,&principalTensileStressFcThreshold);
-   return principalTensileStressFcThreshold;
+   const SpecLibraryEntry* pSpecEntry = GetSpec();
+   const auto& principal_tension_stress_criteria = pSpecEntry->GetPrincipalTensionStressCriteria();
+   // -1 means all f'cs, so return the minimum f'c of 0.0
+   return (principal_tension_stress_criteria.FcThreshold == -1 ? 0.0 : principal_tension_stress_criteria.FcThreshold);
 }
 
 Float64 CSpecAgentImp::GetPrincipalTensileStressRequiredConcreteStrength(const pgsPointOfInterest& poi, Float64 stress) const
@@ -2758,23 +2793,30 @@ Float64 CSpecAgentImp::GetMinConfinementAvS() const
 
 void CSpecAgentImp::GetMaxStirrupSpacing(Float64 dv,Float64* pSmax1, Float64* pSmax2) const
 {
-   Float64 k1,k2,s1,s2;
    const SpecLibraryEntry* pSpec = GetSpec();
-   pSpec->GetMaxStirrupSpacing(&k1,&s1,&k2,&s2);
+   const auto& shear_capacity_criteria = pSpec->GetShearCapacityCriteria();
+
+   Float64 k1 = shear_capacity_criteria.StirrupSpacingCoefficient[0];
+   Float64 k2 = shear_capacity_criteria.StirrupSpacingCoefficient[1];
+   Float64 s1 = shear_capacity_criteria.MaxStirrupSpacing[0];
+   Float64 s2 = shear_capacity_criteria.MaxStirrupSpacing[1];
+
    *pSmax1 = min(k1*dv,s1); // LRFD equation 5.7.2.6-1 (pre2017: 5.8.2.7-1)
    *pSmax2 = min(k2*dv,s2); // LRFD equation 5.7.2.6-2 (pre2017: 5.8.2.7-2) 
 }
 
 Float64 CSpecAgentImp::GetMinStirrupSpacing(Float64 maxAggregateSize, Float64 barDiameter) const
 {
-   ATLASSERT(maxAggregateSize>0.0);
-   ATLASSERT(barDiameter>0.0);
+   PRECONDITION(0.0 < maxAggregateSize);
+   PRECONDITION(0.0 < barDiameter);
 
    Float64 min_spc = Max(1.33*maxAggregateSize, barDiameter);
 
    const SpecLibraryEntry* pSpec = GetSpec();
+   const auto& specification_criteria = pSpec->GetSpecificationCriteria();
+
    Float64 abs_min_spc;
-   if (pSpec->GetSpecificationUnits()==WBFL::LRFD::LRFDVersionMgr::Units::SI)
+   if (specification_criteria.Units == WBFL::LRFD::LRFDVersionMgr::Units::SI)
    {
       abs_min_spc = WBFL::Units::ConvertToSysUnits(25., WBFL::Units::Measure::Millimeter);
    }
@@ -2794,9 +2836,10 @@ Float64 CSpecAgentImp::GetMinStirrupSpacing(Float64 maxAggregateSize, Float64 ba
 Float64 CSpecAgentImp::GetMinTopFlangeThickness() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
+   const auto& specification_criteria = pSpec->GetSpecificationCriteria();
 
    Float64 dim;
-   if (pSpec->GetSpecificationUnits()==WBFL::LRFD::LRFDVersionMgr::Units::SI)
+   if (specification_criteria.Units == WBFL::LRFD::LRFDVersionMgr::Units::SI)
    {
       dim = WBFL::Units::ConvertToSysUnits(50., WBFL::Units::Measure::Millimeter);
    }
@@ -2811,6 +2854,7 @@ Float64 CSpecAgentImp::GetMinTopFlangeThickness() const
 Float64 CSpecAgentImp::GetMinWebThickness() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
+   const auto& specification_criteria = pSpec->GetSpecificationCriteria();
 
    bool bPostTension = false;
    GET_IFACE(IBridge,pBridge);
@@ -2836,7 +2880,7 @@ Float64 CSpecAgentImp::GetMinWebThickness() const
    Float64 dim;
    if ( bPostTension )
    {
-      if (pSpec->GetSpecificationUnits()==WBFL::LRFD::LRFDVersionMgr::Units::SI)
+      if (specification_criteria.Units == WBFL::LRFD::LRFDVersionMgr::Units::SI)
       {
          dim = WBFL::Units::ConvertToSysUnits(165., WBFL::Units::Measure::Millimeter);
       }
@@ -2847,7 +2891,7 @@ Float64 CSpecAgentImp::GetMinWebThickness() const
    }
    else
    {
-      if (pSpec->GetSpecificationUnits()==WBFL::LRFD::LRFDVersionMgr::Units::SI)
+      if (specification_criteria.Units == WBFL::LRFD::LRFDVersionMgr::Units::SI)
       {
          dim = WBFL::Units::ConvertToSysUnits(125., WBFL::Units::Measure::Millimeter);
       }
@@ -2863,9 +2907,10 @@ Float64 CSpecAgentImp::GetMinWebThickness() const
 Float64 CSpecAgentImp::GetMinBottomFlangeThickness() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
+   const auto& specification_criteria = pSpec->GetSpecificationCriteria();
 
    Float64 dim;
-   if (pSpec->GetSpecificationUnits()==WBFL::LRFD::LRFDVersionMgr::Units::SI)
+   if (specification_criteria.Units == WBFL::LRFD::LRFDVersionMgr::Units::SI)
    {
       dim = WBFL::Units::ConvertToSysUnits(125., WBFL::Units::Measure::Millimeter);
    }
@@ -2890,7 +2935,8 @@ std::shared_ptr<pgsSplittingCheckArtifact> CSpecAgentImp::CheckSplitting(const C
    GET_IFACE(ISpecification, pSpec);
    GET_IFACE(ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-   if (pSpecEntry->IsSplittingCheckEnabled())
+   const auto& end_zone_criteria = pSpecEntry->GetEndZoneCriteria();
+   if(end_zone_criteria.bCheckSplitting)
    {
       const pgsSplittingCheckEngineer& engineer = GetSplittingCheckEngineer(segmentKey);
       return engineer.Check(segmentKey, pConfig);
@@ -2993,33 +3039,40 @@ void CSpecAgentImp::ReportSplittingCheckDetails(IBroker* pBroker, const pgsGirde
 bool CSpecAgentImp::IsLiftingAnalysisEnabled() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->IsLiftingAnalysisEnabled();
+   const auto& lifting_criteria = pSpec->GetLiftingCriteria();
+   return lifting_criteria.bCheck;
 }
 
 void  CSpecAgentImp::GetLiftingImpact(Float64* pDownward, Float64* pUpward) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   *pDownward = pSpec->GetLiftingDownwardImpactFactor();
-   *pUpward   = pSpec->GetLiftingUpwardImpactFactor();
+   const auto& lifting_criteria = pSpec->GetLiftingCriteria();
+   *pDownward = lifting_criteria.ImpactDown;
+   *pUpward = lifting_criteria.ImpactUp;
 }
 
 Float64 CSpecAgentImp::GetLiftingCrackingFs() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetCrackingFOSLifting();
+   const auto& lifting_criteria = pSpec->GetLiftingCriteria();
+   return lifting_criteria.FsCracking;
 }
 
 Float64 CSpecAgentImp::GetLiftingFailureFs() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetLiftingFailureFOS();
+   const auto& lifting_criteria = pSpec->GetLiftingCriteria();
+   return lifting_criteria.FsFailure;
 }
 
 void CSpecAgentImp::GetLiftingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    *factor = GetLiftingAllowableTensionFactor();
-   pSpec->GetLiftingMaximumTensionStress(pbMax,fmax);
+   const auto& lifting_criteria = pSpec->GetLiftingCriteria();
+   *factor = lifting_criteria.TensionStressLimitWithoutReinforcement.Coefficient;
+   *pbMax = lifting_criteria.TensionStressLimitWithoutReinforcement.bHasMaxValue;
+   *fmax = lifting_criteria.TensionStressLimitWithoutReinforcement.MaxValue;
 }
 
 Float64 CSpecAgentImp::GetLiftingAllowableTensileConcreteStress(const CSegmentKey& segmentKey) const
@@ -3034,9 +3087,8 @@ Float64 CSpecAgentImp::GetLiftingAllowableTensileConcreteStress(const CSegmentKe
 Float64 CSpecAgentImp::GetLiftingAllowableTensionFactor() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-
-   Float64 factor = pSpec->GetLiftingTensionStressFactor();
-   return factor;
+   const auto& lifting_criteria = pSpec->GetLiftingCriteria();
+   return lifting_criteria.TensionStressLimitWithoutReinforcement.Coefficient;
 }
 
 Float64 CSpecAgentImp::GetLiftingAllowableGlobalCompressiveConcreteStress(const CSegmentKey& segmentKey) const
@@ -3072,17 +3124,15 @@ Float64 CSpecAgentImp::GetLiftingAllowablePeakCompressiveConcreteStress(const CS
 Float64 CSpecAgentImp::GetLiftingAllowableGlobalCompressionFactor() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-
-   Float64 factor = pSpec->GetLiftingCompressionGlobalStressFactor();
-   return -factor;
+   const auto& lifting_criteria = pSpec->GetLiftingCriteria();
+   return -lifting_criteria.CompressionStressCoefficient_GlobalStress; // negative because compression is < 0
 }
 
 Float64 CSpecAgentImp::GetLiftingAllowablePeakCompressionFactor() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-
-   Float64 factor = pSpec->GetLiftingCompressionPeakStressFactor();
-   return -factor;
+   const auto& lifting_criteria = pSpec->GetLiftingCriteria();
+   return -lifting_criteria.CompressionStressCoefficient_PeakStress; // negative because compression is < 0
 }
 
 Float64 CSpecAgentImp::GetLiftingAllowableTensileConcreteStressEx(const CSegmentKey& segmentKey,Float64 fci, bool withMinRebar) const
@@ -3155,29 +3205,29 @@ Float64 CSpecAgentImp::GetLiftingAllowablePeakCompressiveConcreteStressEx(const 
 Float64 CSpecAgentImp::GetHeightOfPickPointAboveGirderTop() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-
-   return pSpec->GetPickPointHeight();
+   const auto& lifting_criteria = pSpec->GetLiftingCriteria();
+   return lifting_criteria.PickPointHeight;
 }
 
 Float64 CSpecAgentImp::GetLiftingLoopPlacementTolerance() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-
-   return pSpec->GetLiftingLoopTolerance();
+   const auto& lifting_criteria = pSpec->GetLiftingCriteria();
+   return lifting_criteria.LiftingLoopTolerance;
 }
 
 Float64 CSpecAgentImp::GetLiftingCableMinInclination() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-
-   return pSpec->GetMinCableInclination();
+   const auto& lifting_criteria = pSpec->GetLiftingCriteria();
+   return lifting_criteria.MinCableInclination;
 }
 
 Float64 CSpecAgentImp::GetLiftingSweepTolerance() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-
-   return pSpec->GetLiftingMaximumGirderSweepTolerance();
+   const auto& lifting_criteria = pSpec->GetLiftingCriteria();
+   return lifting_criteria.SweepTolerance;
 }
 
 Float64 CSpecAgentImp::GetLiftingModulusOfRupture(const CSegmentKey& segmentKey) const
@@ -3212,13 +3262,15 @@ Float64 CSpecAgentImp::GetLiftingModulusOfRupture(const CSegmentKey& segmentKey,
 Float64 CSpecAgentImp::GetLiftingModulusOfRuptureFactor(pgsTypes::ConcreteType concType) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetLiftingModulusOfRuptureFactor(concType);
+   const auto& lifting_criteria = pSpec->GetLiftingCriteria();
+   return lifting_criteria.ModulusOfRuptureCoefficient[concType];
 }
 
 Float64 CSpecAgentImp::GetMinimumLiftingPointLocation(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 min_lift_point = pSpec->GetMininumLiftingPointLocation();
+   const auto& lifting_criteria = pSpec->GetLiftingCriteria();
+   Float64 min_lift_point = lifting_criteria.MinPickPoint;
 
    // if less than zero, then use H from the end of the girder
    if ( min_lift_point < 0 )
@@ -3253,7 +3305,8 @@ Float64 CSpecAgentImp::GetMinimumLiftingPointLocation(const CSegmentKey& segment
 Float64 CSpecAgentImp::GetLiftingPointLocationAccuracy() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetLiftingPointLocationAccuracy();
+   const auto& lifting_criteria = pSpec->GetLiftingCriteria();
+   return lifting_criteria.PickPointAccuracy;
 }
 
 WBFL::Stability::LiftingCriteria CSpecAgentImp::GetLiftingStabilityCriteria(const CSegmentKey& segmentKey,const HANDLINGCONFIG* pLiftConfig) const
@@ -3325,19 +3378,22 @@ WBFL::Stability::LiftingCriteria CSpecAgentImp::GetLiftingStabilityCriteria(cons
 Float64 CSpecAgentImp::GetLiftingCamberMultiplier() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetLiftingCamberMultiplier();
+   const auto& lifting_criteria = pSpec->GetLiftingCriteria();
+   return lifting_criteria.CamberMultiplier;
 }
 
-pgsTypes::WindType CSpecAgentImp::GetLiftingWindType() const
+WBFL::Stability::WindLoadType CSpecAgentImp::GetLiftingWindType() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetLiftingWindType();
+   const auto& lifting_criteria = pSpec->GetLiftingCriteria();
+   return lifting_criteria.WindLoadType;
 }
 
 Float64 CSpecAgentImp::GetLiftingWindLoad() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetLiftingWindLoad();
+   const auto& lifting_criteria = pSpec->GetLiftingCriteria();
+   return lifting_criteria.WindLoad;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -3345,42 +3401,50 @@ Float64 CSpecAgentImp::GetLiftingWindLoad() const
 bool CSpecAgentImp::IsHaulingAnalysisEnabled() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->IsHaulingAnalysisEnabled();
+   const auto& hauling_criteria = pSpec->GetHaulingCriteria();
+   return hauling_criteria.bCheck;
 }
 
 pgsTypes::HaulingAnalysisMethod CSpecAgentImp::GetHaulingAnalysisMethod() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetHaulingAnalysisMethod();
+   const auto& hauling_criteria = pSpec->GetHaulingCriteria();
+   return hauling_criteria.AnalysisMethod;
 }
 
 void CSpecAgentImp::GetHaulingImpact(Float64* pDownward, Float64* pUpward) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   *pDownward = pSpec->GetHaulingDownwardImpactFactor();
-   *pUpward   = pSpec->GetHaulingUpwardImpactFactor();
+   const auto& hauling_criteria = pSpec->GetHaulingCriteria();
+   *pUpward = hauling_criteria.WSDOT.ImpactUp;
+   *pDownward = hauling_criteria.WSDOT.ImpactDown;
 }
 
 Float64 CSpecAgentImp::GetHaulingCrackingFs() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetHaulingCrackingFOS();
+   const auto& hauling_criteria = pSpec->GetHaulingCriteria();
+   return hauling_criteria.WSDOT.FsCracking;
 }
 
 Float64 CSpecAgentImp::GetHaulingRolloverFs() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetHaulingFailureFOS();
+   const auto& hauling_criteria = pSpec->GetHaulingCriteria();
+   return hauling_criteria.WSDOT.FsFailure;
 }
 
-void CSpecAgentImp::GetHaulingAllowableTensileConcreteStressParameters(pgsTypes::HaulingSlope slope, Float64* factor,bool* pbMax,Float64* fmax) const
+void CSpecAgentImp::GetHaulingAllowableTensileConcreteStressParameters(WBFL::Stability::HaulingSlope slope, Float64* factor,bool* pbMax,Float64* fmax) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   *factor = GetHaulingAllowableTensionFactor(slope);
-   pSpec->GetHaulingMaximumTensionStress(slope,pbMax,fmax);
+   const auto& hauling_criteria = pSpec->GetHaulingCriteria();
+   CHECK(hauling_criteria.AnalysisMethod == pgsTypes::HaulingAnalysisMethod::WSDOT);
+   *factor = hauling_criteria.WSDOT.TensionStressLimitWithoutReinforcement[+slope].Coefficient;
+   *pbMax = hauling_criteria.WSDOT.TensionStressLimitWithoutReinforcement[+slope].bHasMaxValue;
+   *fmax = hauling_criteria.WSDOT.TensionStressLimitWithoutReinforcement[+slope].MaxValue;
 }
 
-Float64 CSpecAgentImp::GetHaulingAllowableTensileConcreteStress(const CSegmentKey& segmentKey, pgsTypes::HaulingSlope slope) const
+Float64 CSpecAgentImp::GetHaulingAllowableTensileConcreteStress(const CSegmentKey& segmentKey, WBFL::Stability::HaulingSlope slope) const
 {
    GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
@@ -3419,28 +3483,32 @@ Float64 CSpecAgentImp::GetHaulingAllowablePeakCompressiveConcreteStress(const CS
    return allowable;
 }
 
-Float64 CSpecAgentImp::GetHaulingAllowableTensionFactor(pgsTypes::HaulingSlope slope) const
+Float64 CSpecAgentImp::GetHaulingAllowableTensionFactor(WBFL::Stability::HaulingSlope slope) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 factor = pSpec->GetHaulingTensionStressFactor(slope);
-   return factor;
+   const auto& hauling_criteria = pSpec->GetHaulingCriteria();
+   CHECK(hauling_criteria.AnalysisMethod == pgsTypes::HaulingAnalysisMethod::WSDOT);
+   return hauling_criteria.WSDOT.TensionStressLimitWithReinforcement[+slope].Coefficient;
 }
 
 Float64 CSpecAgentImp::GetHaulingAllowableGlobalCompressionFactor() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 factor = pSpec->GetHaulingCompressionGlobalStressFactor();
+   const auto& hauling_criteria = pSpec->GetHaulingCriteria();
+   Float64 factor = (hauling_criteria.AnalysisMethod == pgsTypes::HaulingAnalysisMethod::WSDOT) ? hauling_criteria.WSDOT.CompressionStressCoefficient_GlobalStress : hauling_criteria.KDOT.CompressionStressLimitCoefficient;
    return -factor;
 }
 
 Float64 CSpecAgentImp::GetHaulingAllowablePeakCompressionFactor() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 factor = pSpec->GetHaulingCompressionPeakStressFactor();
+   const auto& hauling_criteria = pSpec->GetHaulingCriteria();
+   CHECK(hauling_criteria.AnalysisMethod == pgsTypes::HaulingAnalysisMethod::WSDOT);
+   Float64 factor = hauling_criteria.WSDOT.CompressionStressCoefficient_PeakStress;
    return -factor;
 }
 
-Float64 CSpecAgentImp::GetHaulingAllowableTensileConcreteStressEx(const CSegmentKey& segmentKey, pgsTypes::HaulingSlope slope, Float64 fc, bool includeRebar) const
+Float64 CSpecAgentImp::GetHaulingAllowableTensileConcreteStressEx(const CSegmentKey& segmentKey, WBFL::Stability::HaulingSlope slope, Float64 fc, bool includeRebar) const
 {
    Float64 f = 0;
    GET_IFACE(IMaterials, pMaterials);
@@ -3500,46 +3568,60 @@ Float64 CSpecAgentImp::GetHaulingAllowablePeakCompressiveConcreteStressEx(const 
    return x*fc;
 }
 
-pgsTypes::HaulingImpact CSpecAgentImp::GetHaulingImpactUsage() const
+WBFL::Stability::HaulingImpact CSpecAgentImp::GetHaulingImpactUsage() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetHaulingImpactUsage();
+   const auto& hauling_criteria = pSpec->GetHaulingCriteria();
+   CHECK(hauling_criteria.AnalysisMethod == pgsTypes::HaulingAnalysisMethod::WSDOT);
+   return hauling_criteria.WSDOT.ImpactUsage;
 }
 
 Float64 CSpecAgentImp::GetNormalCrownSlope() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetRoadwayCrownSlope();
+   const auto& hauling_criteria = pSpec->GetHaulingCriteria();
+   CHECK(hauling_criteria.AnalysisMethod == pgsTypes::HaulingAnalysisMethod::WSDOT);
+   return hauling_criteria.WSDOT.RoadwayCrownSlope;
 }
 
 Float64 CSpecAgentImp::GetMaxSuperelevation() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetRoadwaySuperelevation();
+   const auto& hauling_criteria = pSpec->GetHaulingCriteria();
+   CHECK(hauling_criteria.AnalysisMethod == pgsTypes::HaulingAnalysisMethod::WSDOT);
+   return hauling_criteria.WSDOT.RoadwaySuperelevation;
 }
 
 Float64 CSpecAgentImp::GetHaulingSweepTolerance() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetHaulingMaximumGirderSweepTolerance();
+   const auto& hauling_criteria = pSpec->GetHaulingCriteria();
+   CHECK(hauling_criteria.AnalysisMethod == pgsTypes::HaulingAnalysisMethod::WSDOT);
+   return hauling_criteria.WSDOT.SweepTolerance;
 }
 
 Float64 CSpecAgentImp::GetHaulingSweepGrowth() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetHaulingSweepGrowth();
+   const auto& hauling_criteria = pSpec->GetHaulingCriteria();
+   CHECK(hauling_criteria.AnalysisMethod == pgsTypes::HaulingAnalysisMethod::WSDOT);
+   return hauling_criteria.WSDOT.SweepGrowth;
 }
 
 Float64 CSpecAgentImp::GetHaulingSupportPlacementTolerance() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetHaulingSupportPlacementTolerance();
+   const auto& hauling_criteria = pSpec->GetHaulingCriteria();
+   CHECK(hauling_criteria.AnalysisMethod == pgsTypes::HaulingAnalysisMethod::WSDOT);
+   return hauling_criteria.WSDOT.SupportPlacementTolerance;
 }
 
 Float64 CSpecAgentImp::GetHaulingCamberMultiplier() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetHaulingCamberMultiplier();
+   const auto& hauling_criteria = pSpec->GetHaulingCriteria();
+   CHECK(hauling_criteria.AnalysisMethod == pgsTypes::HaulingAnalysisMethod::WSDOT);
+   return hauling_criteria.WSDOT.CamberMultiplier;
 }
 
 Float64 CSpecAgentImp::GetRollStiffness(const CSegmentKey& segmentKey) const
@@ -3601,7 +3683,9 @@ Float64 CSpecAgentImp::GetMaxGirderWgt(const CSegmentKey& segmentKey) const
 Float64 CSpecAgentImp::GetMinimumHaulingSupportLocation(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 min_pick_point = pSpec->GetMininumTruckSupportLocation();
+   const auto& hauling_criteria = pSpec->GetHaulingCriteria();
+   
+   Float64 min_pick_point = hauling_criteria.MinBunkPoint;
 
    // if less than zero, then use H from the end of the girder
    if ( min_pick_point < 0 )
@@ -3636,37 +3720,48 @@ Float64 CSpecAgentImp::GetMinimumHaulingSupportLocation(const CSegmentKey& segme
 Float64 CSpecAgentImp::GetHaulingSupportLocationAccuracy() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetTruckSupportLocationAccuracy();
+   const auto& hauling_criteria = pSpec->GetHaulingCriteria();
+   return hauling_criteria.BunkPointAccuracy;
 }
 
-pgsTypes::WindType CSpecAgentImp::GetHaulingWindType() const
+WBFL::Stability::WindLoadType CSpecAgentImp::GetHaulingWindType() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetHaulingWindType();
+   const auto& hauling_criteria = pSpec->GetHaulingCriteria();
+   CHECK(hauling_criteria.AnalysisMethod == pgsTypes::HaulingAnalysisMethod::WSDOT);
+   return hauling_criteria.WSDOT.WindLoadType;
 }
 
 Float64 CSpecAgentImp::GetHaulingWindLoad() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetHaulingWindLoad();
+   const auto& hauling_criteria = pSpec->GetHaulingCriteria();
+   CHECK(hauling_criteria.AnalysisMethod == pgsTypes::HaulingAnalysisMethod::WSDOT);
+   return hauling_criteria.WSDOT.WindLoad;
 }
 
-pgsTypes::CFType CSpecAgentImp::GetCentrifugalForceType() const
+WBFL::Stability::CFType CSpecAgentImp::GetCentrifugalForceType() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetCentrifugalForceType();
+   const auto& hauling_criteria = pSpec->GetHaulingCriteria();
+   CHECK(hauling_criteria.AnalysisMethod == pgsTypes::HaulingAnalysisMethod::WSDOT);
+   return hauling_criteria.WSDOT.CentrifugalForceType;
 }
 
 Float64 CSpecAgentImp::GetHaulingSpeed() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetHaulingSpeed();
+   const auto& hauling_criteria = pSpec->GetHaulingCriteria();
+   CHECK(hauling_criteria.AnalysisMethod == pgsTypes::HaulingAnalysisMethod::WSDOT);
+   return hauling_criteria.WSDOT.HaulingSpeed;
 }
 
 Float64 CSpecAgentImp::GetTurningRadius() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetTurningRadius();
+   const auto& hauling_criteria = pSpec->GetHaulingCriteria();
+   CHECK(hauling_criteria.AnalysisMethod == pgsTypes::HaulingAnalysisMethod::WSDOT);
+   return hauling_criteria.WSDOT.TurningRadius;
 }
 
 
@@ -3709,8 +3804,8 @@ WBFL::Stability::HaulingCriteria CSpecAgentImp::GetHaulingStabilityCriteria(cons
    {
       auto pTensionStressLimit(std::make_shared<WBFL::Stability::PCIUHPCHaulingTensionStressLimit>(WBFL::Stability::PCIUHPCHaulingTensionStressLimit()));
 
-      pTensionStressLimit->AllowableTension[+WBFL::Stability::HaulingSlope::CrownSlope] = GetHaulingAllowableTensileConcreteStress(segmentKey, pgsTypes::CrownSlope);
-      pTensionStressLimit->AllowableTension[+WBFL::Stability::HaulingSlope::Superelevation] = GetHaulingAllowableTensileConcreteStress(segmentKey, pgsTypes::Superelevation);
+      pTensionStressLimit->AllowableTension[+WBFL::Stability::HaulingSlope::CrownSlope] = GetHaulingAllowableTensileConcreteStress(segmentKey, WBFL::Stability::HaulingSlope::CrownSlope);
+      pTensionStressLimit->AllowableTension[+WBFL::Stability::HaulingSlope::Superelevation] = GetHaulingAllowableTensileConcreteStress(segmentKey, WBFL::Stability::HaulingSlope::Superelevation);
 
       pTensionStressLimit->fc28 = pMaterials->GetSegmentFc28(segmentKey);
       pTensionStressLimit->ffc = pMaterials->GetSegmentConcreteFirstCrackingStrength(segmentKey);
@@ -3721,8 +3816,8 @@ WBFL::Stability::HaulingCriteria CSpecAgentImp::GetHaulingStabilityCriteria(cons
    {
       auto pTensionStressLimit(std::make_shared<WBFL::Stability::UHPCHaulingTensionStressLimit>(WBFL::Stability::UHPCHaulingTensionStressLimit()));
 
-      pTensionStressLimit->AllowableTension[+WBFL::Stability::HaulingSlope::CrownSlope] = GetHaulingAllowableTensileConcreteStress(segmentKey, pgsTypes::CrownSlope);
-      pTensionStressLimit->AllowableTension[+WBFL::Stability::HaulingSlope::Superelevation] = GetHaulingAllowableTensileConcreteStress(segmentKey, pgsTypes::Superelevation);
+      pTensionStressLimit->AllowableTension[+WBFL::Stability::HaulingSlope::CrownSlope] = GetHaulingAllowableTensileConcreteStress(segmentKey, WBFL::Stability::HaulingSlope::CrownSlope);
+      pTensionStressLimit->AllowableTension[+WBFL::Stability::HaulingSlope::Superelevation] = GetHaulingAllowableTensileConcreteStress(segmentKey, WBFL::Stability::HaulingSlope::Superelevation);
 
       pTensionStressLimit->gamma_u = GetAllowableUHPCTensionStressLimitCoefficient(segmentKey);
       pTensionStressLimit->ft_cr = pMaterials->GetSegmentConcreteDesignEffectiveCrackingStrength(segmentKey);
@@ -3737,19 +3832,19 @@ WBFL::Stability::HaulingCriteria CSpecAgentImp::GetHaulingStabilityCriteria(cons
 
       for (int i = 0; i < 2; i++)
       {
-         pgsTypes::HaulingSlope slope = (pgsTypes::HaulingSlope)i;
-         GetHaulingAllowableTensileConcreteStressParameters(slope,&pTensionStressLimit->TensionCoefficient[slope], &pTensionStressLimit->bMaxTension[slope], &pTensionStressLimit->MaxTension[slope]);
-         pTensionStressLimit->bWithRebarLimit[slope] = true;
-         pTensionStressLimit->TensionCoefficientWithRebar[slope] = GetHaulingWithMildRebarAllowableStressFactor(slope);
+         WBFL::Stability::HaulingSlope slope = (WBFL::Stability::HaulingSlope)i;
+         GetHaulingAllowableTensileConcreteStressParameters(slope,&pTensionStressLimit->TensionCoefficient[+slope], &pTensionStressLimit->bMaxTension[+slope], &pTensionStressLimit->MaxTension[+slope]);
+         pTensionStressLimit->bWithRebarLimit[+slope] = true;
+         pTensionStressLimit->TensionCoefficientWithRebar[+slope] = GetHaulingWithMildRebarAllowableStressFactor(slope);
          if (pHaulConfig && !pHaulConfig->bIgnoreGirderConfig)
          {
-            pTensionStressLimit->AllowableTension[slope] = GetHaulingAllowableTensileConcreteStressEx(segmentKey, slope, pHaulConfig->GdrConfig.fc, false);
-            pTensionStressLimit->AllowableTensionWithRebar[slope] = GetHaulingAllowableTensileConcreteStressEx(segmentKey, slope, pHaulConfig->GdrConfig.fc, true);
+            pTensionStressLimit->AllowableTension[+slope] = GetHaulingAllowableTensileConcreteStressEx(segmentKey, slope, pHaulConfig->GdrConfig.fc, false);
+            pTensionStressLimit->AllowableTensionWithRebar[+slope] = GetHaulingAllowableTensileConcreteStressEx(segmentKey, slope, pHaulConfig->GdrConfig.fc, true);
          }
          else
          {
-            pTensionStressLimit->AllowableTension[slope] = GetHaulingAllowableTensileConcreteStress(segmentKey, slope);
-            pTensionStressLimit->AllowableTensionWithRebar[slope] = GetHaulingWithMildRebarAllowableStress(segmentKey, slope);
+            pTensionStressLimit->AllowableTension[+slope] = GetHaulingAllowableTensileConcreteStress(segmentKey, slope);
+            pTensionStressLimit->AllowableTensionWithRebar[+slope] = GetHaulingWithMildRebarAllowableStress(segmentKey, slope);
          }
       }
 
@@ -3764,7 +3859,7 @@ WBFL::Stability::HaulingCriteria CSpecAgentImp::GetHaulingStabilityCriteria(cons
 // Spec criteria for KDOT analyses
 Float64 CSpecAgentImp::GetKdotHaulingAllowableTensileConcreteStress(const CSegmentKey& segmentKey) const
 {
-   return GetHaulingAllowableTensileConcreteStress(segmentKey,pgsTypes::CrownSlope);
+   return GetHaulingAllowableTensileConcreteStress(segmentKey, WBFL::Stability::HaulingSlope::CrownSlope);
 }
 
 Float64 CSpecAgentImp::GetKdotHaulingAllowableCompressiveConcreteStress(const CSegmentKey& segmentKey) const
@@ -3774,7 +3869,7 @@ Float64 CSpecAgentImp::GetKdotHaulingAllowableCompressiveConcreteStress(const CS
 
 Float64 CSpecAgentImp::GetKdotHaulingAllowableTensionFactor() const
 {
-   return GetHaulingAllowableTensionFactor(pgsTypes::CrownSlope);
+   return GetHaulingAllowableTensionFactor(WBFL::Stability::HaulingSlope::CrownSlope);
 }
 
 Float64 CSpecAgentImp::GetKdotHaulingAllowableCompressionFactor() const
@@ -3784,22 +3879,22 @@ Float64 CSpecAgentImp::GetKdotHaulingAllowableCompressionFactor() const
 
 Float64 CSpecAgentImp::GetKdotHaulingWithMildRebarAllowableStress(const CSegmentKey& segmentKey) const
 {
-   return GetHaulingWithMildRebarAllowableStress(segmentKey,pgsTypes::CrownSlope);
+   return GetHaulingWithMildRebarAllowableStress(segmentKey, WBFL::Stability::HaulingSlope::CrownSlope);
 }
 
 Float64 CSpecAgentImp::GetKdotHaulingWithMildRebarAllowableStressFactor() const
 {
-   return GetHaulingWithMildRebarAllowableStressFactor(pgsTypes::CrownSlope);
+   return GetHaulingWithMildRebarAllowableStressFactor(WBFL::Stability::HaulingSlope::CrownSlope);
 }
 
 void CSpecAgentImp::GetKdotHaulingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax) const
 {
-   GetHaulingAllowableTensileConcreteStressParameters(pgsTypes::CrownSlope, factor, pbMax, fmax);
+   GetHaulingAllowableTensileConcreteStressParameters(WBFL::Stability::HaulingSlope::CrownSlope, factor, pbMax, fmax);
 }
 
 Float64 CSpecAgentImp::GetKdotHaulingAllowableTensileConcreteStressEx(const CSegmentKey& segmentKey,Float64 fc, bool includeRebar) const
 {
-   return GetHaulingAllowableTensileConcreteStressEx(segmentKey, pgsTypes::CrownSlope, fc, includeRebar);
+   return GetHaulingAllowableTensileConcreteStressEx(segmentKey, WBFL::Stability::HaulingSlope::CrownSlope, fc, includeRebar);
 }
 
 Float64 CSpecAgentImp::GetKdotHaulingAllowableCompressiveConcreteStressEx(const CSegmentKey& segmentKey,Float64 fc) const
@@ -3810,23 +3905,28 @@ Float64 CSpecAgentImp::GetKdotHaulingAllowableCompressiveConcreteStressEx(const 
 void CSpecAgentImp::GetMinimumHaulingSupportLocation(Float64* pHardDistance, bool* pUseFactoredLength, Float64* pLengthFactor) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   *pHardDistance = pSpec->GetMininumTruckSupportLocation();
-   *pUseFactoredLength = pSpec->GetUseMinTruckSupportLocationFactor();
-   *pLengthFactor = pSpec->GetMinTruckSupportLocationFactor();
+   const auto& hauling_criteria = pSpec->GetHaulingCriteria();
+
+   *pHardDistance = hauling_criteria.MinBunkPoint;
+   *pUseFactoredLength = hauling_criteria.bUseMinBunkPointLimit;
+   *pLengthFactor = hauling_criteria.MinBunkPointLimitFactor;
 }
 
 Float64 CSpecAgentImp::GetHaulingDesignLocationAccuracy() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetTruckSupportLocationAccuracy();
+   const auto& hauling_criteria = pSpec->GetHaulingCriteria();
+   return hauling_criteria.BunkPointAccuracy;
 }
 
 void CSpecAgentImp::GetHaulingGFactors(Float64* pOverhangFactor, Float64* pInteriorFactor) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
+   const auto& hauling_criteria = pSpec->GetHaulingCriteria();
+   CHECK(hauling_criteria.AnalysisMethod == pgsTypes::HaulingAnalysisMethod::KDOT);
 
-   *pOverhangFactor = pSpec->GetOverhangGFactor();
-   *pInteriorFactor = pSpec->GetInteriorGFactor();
+   *pOverhangFactor = hauling_criteria.KDOT.OverhangGFactor;
+   *pInteriorFactor = hauling_criteria.KDOT.InteriorGFactor;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -3914,7 +4014,7 @@ Float64 CSpecAgentImp::GetMinDistanceBetweenDebondSections(const CSegmentKey& se
    {
       // LRFD 5.9.4.3.3, Restriction C, replaced with GS 1.9.4.3.3
       GET_IFACE(IPretensionForce, pPrestress);
-      return pPrestress->GetTransferLength(segmentKey, pgsTypes::Straight, pgsTypes::tltMinimum);
+      return pPrestress->GetTransferLength(segmentKey, pgsTypes::Straight, pgsTypes::TransferLengthType::Minimum);
    }
    else
    {
@@ -4012,7 +4112,8 @@ bool CSpecAgentImp::IsExteriorStrandBondingRequiredInRow(const CSegmentKey& segm
 void CSpecAgentImp::GetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64* phiTensionPS,Float64* phiTensionRC,Float64* phiTensionSpliced,Float64* phiCompression) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   pSpec->GetFlexureResistanceFactors(type,phiTensionPS,phiTensionRC,phiTensionSpliced,phiCompression);
+   const auto& moment_capacity_criteria = pSpec->GetMomentCapacityCriteria();
+   moment_capacity_criteria.GetResistanceFactors(type,phiTensionPS,phiTensionRC,phiTensionSpliced,phiCompression);
 }
 
 void CSpecAgentImp::GetFlexuralStrainLimits(WBFL::Materials::PsStrand::Grade grade,WBFL::Materials::PsStrand::Type type,Float64* pecl,Float64* petl) const
@@ -4066,7 +4167,8 @@ void CSpecAgentImp::GetFlexuralStrainLimits(WBFL::Materials::Rebar::Grade rebarG
 Float64 CSpecAgentImp::GetShearResistanceFactor(bool isDebonded, pgsTypes::ConcreteType type) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetShearResistanceFactor(isDebonded, type);
+   const auto& shear_capacity_criteria = pSpec->GetShearCapacityCriteria();
+   return shear_capacity_criteria.GetResistanceFactor(type, isDebonded, WBFL::LRFD::LRFDVersionMgr::GetVersion());
 }
 
 Float64 CSpecAgentImp::GetShearResistanceFactor(const pgsPointOfInterest& poi, pgsTypes::ConcreteType type) const
@@ -4074,10 +4176,8 @@ Float64 CSpecAgentImp::GetShearResistanceFactor(const pgsPointOfInterest& poi, p
    // Test to see if poi is in a debonded region
    bool is_debond = false;
 
-   const SpecLibraryEntry* pSpec = GetSpec();
-
    // different phi factor for debonding only applies to 8th edition and later
-   if (pSpec->GetSpecificationType() >= WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017)
+   if (WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017 <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
    {
       const CSegmentKey& segkey(poi.GetSegmentKey());
       GET_IFACE(IStrandGeometry, pStrandGeom);
@@ -4112,19 +4212,21 @@ Float64 CSpecAgentImp::GetShearResistanceFactor(const pgsPointOfInterest& poi, p
       }
    }
 
-   return pSpec->GetShearResistanceFactor(is_debond, type);
+   return GetShearResistanceFactor(is_debond, type);
 }
 
 Float64 CSpecAgentImp::GetClosureJointFlexureResistanceFactor(pgsTypes::ConcreteType type) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetClosureJointFlexureResistanceFactor(type);
+   const auto& moment_capacity_criteria = pSpec->GetMomentCapacityCriteria();
+   return moment_capacity_criteria.GetClosureJointResistanceFactor(type);
 }
 
 Float64 CSpecAgentImp::GetClosureJointShearResistanceFactor(pgsTypes::ConcreteType type) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetClosureJointShearResistanceFactor(type);
+   const auto& shear_capacity_criteria = pSpec->GetShearCapacityCriteria();
+   return shear_capacity_criteria.GetClosureJointResistanceFactor(type);
 }
 
 Float64 CSpecAgentImp::GetDuctilityCurvatureRatioLimit() const
@@ -4137,13 +4239,15 @@ Float64 CSpecAgentImp::GetDuctilityCurvatureRatioLimit() const
 pgsTypes::ShearFlowMethod CSpecAgentImp::GetShearFlowMethod() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetShearFlowMethod();
+   const auto& interface_shear_criteria = pSpec->GetInterfaceShearCriteria();
+   return interface_shear_criteria.ShearFlowMethod;
 }
 
 Float64 CSpecAgentImp::GetMaxShearConnectorSpacing(const pgsPointOfInterest& poi) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 sMax = pSpec->GetMaxInterfaceShearConnectorSpacing();
+   const auto& interface_shear_criteria = pSpec->GetInterfaceShearCriteria();
+   Float64 sMax = interface_shear_criteria.MaxInterfaceShearConnectorSpacing;
    if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
    {
       GET_IFACE(ISectionProperties,pSectProp);
@@ -4186,7 +4290,8 @@ Float64 CSpecAgentImp::GetSegmentTendonDuctSizeLimit(const CSegmentKey& segmentK
 {
    // LRFD 5.4.6.2
    const SpecLibraryEntry* pSpecEntry = GetSpec();
-   return pSpecEntry->GetDuctDiameterRatio();
+   const auto& duct_size_criteria = pSpecEntry->GetDuctSizeCriteria();
+   return duct_size_criteria.DuctDiameterRatio;
 }
 
 Float64 CSpecAgentImp::GetGirderTendonRadiusOfCurvatureLimit(const CGirderKey& girderKey) const
@@ -4207,16 +4312,16 @@ Float64 CSpecAgentImp::GetGirderTendonDuctSizeLimit(const CGirderKey& girderKey)
 {
    // LRFD 5.4.6.2
    const SpecLibraryEntry* pSpecEntry = GetSpec();
-   return pSpecEntry->GetDuctDiameterRatio();
+   const auto& duct_size_criteria = pSpecEntry->GetDuctSizeCriteria();
+   return duct_size_criteria.DuctDiameterRatio;
 }
 
 Float64 CSpecAgentImp::GetTendonAreaLimit(pgsTypes::StrandInstallationType installationType) const
 {
    // LRFD 5.4.6.2
    const SpecLibraryEntry* pSpecEntry = GetSpec();
-   Float64 pushRatio, pullRatio;
-   pSpecEntry->GetDuctAreaRatio(&pushRatio, &pullRatio);
-   return (installationType == pgsTypes::sitPush ? pushRatio : pullRatio);
+   const auto& duct_size_criteria = pSpecEntry->GetDuctSizeCriteria();
+   return (installationType == pgsTypes::sitPush ? duct_size_criteria.DuctAreaPushRatio : duct_size_criteria.DuctAreaPullRatio);
 }
 
 Float64 CSpecAgentImp::GetSegmentDuctDeductionFactor(const CSegmentKey& segmentKey, IntervalIndexType intervalIdx) const
@@ -4306,19 +4411,16 @@ Float64 CSpecAgentImp::GetDuctDeductFactor(IntervalIndexType intervalIdx, Interv
    Float64 deduct_factor;
 
    // Get principal web stress parameters
-   const SpecLibraryEntry* pSpec = GetSpec();
-
-   pgsTypes::PrincipalTensileStressMethod method;
-   Float64 coefficient, principalTensileStressFcThreshold, ductDiameterNearnessFactor, ungroutedDiameterMultiplier, groutedDiameterMultiplier;
-   pSpec->GetPrincipalTensileStressInWebsParameters(&method, &coefficient,&ductDiameterNearnessFactor,&ungroutedDiameterMultiplier, &groutedDiameterMultiplier, &principalTensileStressFcThreshold);
+   const SpecLibraryEntry* pSpecEntry = GetSpec();
+   const auto& principal_tension_stress_criteria = pSpecEntry->GetPrincipalTensionStressCriteria();
 
    if (intervalIdx < groutDuctIntervalIdx)
    {
-      deduct_factor = ungroutedDiameterMultiplier;
+      deduct_factor = principal_tension_stress_criteria.UngroutedMultiplier;
    }
    else
    {
-      deduct_factor = groutedDiameterMultiplier;
+      deduct_factor = principal_tension_stress_criteria.GroutedMultiplier;
    }
 
    return deduct_factor;

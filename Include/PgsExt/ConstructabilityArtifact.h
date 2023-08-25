@@ -119,7 +119,7 @@ public:
    SlabOffsetStatusType SlabOffsetStatus() const;
    bool SlabOffsetPassed() const;
 
-   // Check for mininum required fillet defined in girder library
+   // Check for Minimum required fillet defined in girder library
    void SetRequiredMinimumFillet(Float64 reqd);
    Float64 GetRequiredMinimumFillet() const;
    void SetProvidedFillet(Float64 provided);

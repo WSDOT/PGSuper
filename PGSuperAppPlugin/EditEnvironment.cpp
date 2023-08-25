@@ -30,7 +30,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-txnEditEnvironment::txnEditEnvironment(enumExposureCondition oldExposureCondition, enumExposureCondition newExposureCondition,
+txnEditEnvironment::txnEditEnvironment(pgsTypes::ExposureCondition oldExposureCondition, pgsTypes::ExposureCondition newExposureCondition,
                                        Float64 oldRelHumidity, Float64 newRelHumidity)
 {
    m_ExposureCondition[0] = oldExposureCondition;

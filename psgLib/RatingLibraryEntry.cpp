@@ -32,6 +32,8 @@
 
 #include <boost\algorithm\string\replace.hpp>
 
+#include <EAF/EAFDisplayUnits.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -2797,12 +2799,12 @@ bool RatingLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 
 bool RatingLibraryEntry::IsEqual(const RatingLibraryEntry& rOther,bool bConsiderName) const
 {
-   std::vector<pgsLibraryEntryDifferenceItem*> vDifferences;
+   std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>> vDifferences;
    bool bMustRename;
    return Compare(rOther,vDifferences,bMustRename,true,bConsiderName);
 }
 
-bool RatingLibraryEntry::Compare(const RatingLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
+bool RatingLibraryEntry::Compare(const RatingLibraryEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
 {
    CEAFApp* pApp = EAFGetApp();
    const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
@@ -2812,13 +2814,13 @@ bool RatingLibraryEntry::Compare(const RatingLibraryEntry& rOther, std::vector<p
    if ( m_Description != rOther.m_Description )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Description"),m_Description.c_str(),rOther.m_Description.c_str()));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Description"),m_Description.c_str(),rOther.m_Description.c_str()));
    }
 
    if (m_bUseCurrentSpecification != rOther.m_bUseCurrentSpecification || m_SpecificationVersion != rOther.m_SpecificationVersion)
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Rating Criteria Basis"), WBFL::LRFD::LRFRVersionMgr::GetVersionString(m_SpecificationVersion), WBFL::LRFD::LRFRVersionMgr::GetVersionString(rOther.m_SpecificationVersion)));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Rating Criteria Basis"), WBFL::LRFD::LRFRVersionMgr::GetVersionString(m_SpecificationVersion), WBFL::LRFD::LRFRVersionMgr::GetVersionString(rOther.m_SpecificationVersion)));
    }
 
    if ( WBFL::LRFD::LRFRVersionMgr::GetVersion() < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims)
@@ -2832,7 +2834,7 @@ bool RatingLibraryEntry::Compare(const RatingLibraryEntry& rOther, std::vector<p
             RETURN_ON_DIFFERENCE;
             CString str;
             str.Format(_T("Live Load Factors are different for %s"),RatingLibraryEntry::GetLoadRatingType(ratingType));
-            vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(str,_T(""),_T("")));
+            vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(str,_T(""),_T("")));
          }
       }
 
@@ -2844,7 +2846,7 @@ bool RatingLibraryEntry::Compare(const RatingLibraryEntry& rOther, std::vector<p
             RETURN_ON_DIFFERENCE;
             CString str;
             str.Format(_T("Live Load Factors are different for %s"),RatingLibraryEntry::GetSpecialPermitType(permitType));
-            vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(str,_T(""),_T("")));
+            vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(str,_T(""),_T("")));
          }
       }
    }
@@ -2859,7 +2861,7 @@ bool RatingLibraryEntry::Compare(const RatingLibraryEntry& rOther, std::vector<p
             RETURN_ON_DIFFERENCE;
             CString str;
             str.Format(_T("Live Load Factors are different for %s"),RatingLibraryEntry::GetLoadRatingType(ratingType));
-            vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(str,_T(""),_T("")));
+            vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(str,_T(""),_T("")));
          }
       }
 
@@ -2871,7 +2873,7 @@ bool RatingLibraryEntry::Compare(const RatingLibraryEntry& rOther, std::vector<p
             RETURN_ON_DIFFERENCE;
             CString str;
             str.Format(_T("Live Load Factors are different for %s"),RatingLibraryEntry::GetSpecialPermitType(permitType));
-            vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(str,_T(""),_T("")));
+            vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(str,_T(""),_T("")));
          }
       }
    }
@@ -2879,7 +2881,7 @@ bool RatingLibraryEntry::Compare(const RatingLibraryEntry& rOther, std::vector<p
    if (considerName &&  GetName() != rOther.GetName() )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
    }
 
    return vDifferences.size() == 0 ? true : false;
@@ -2977,4 +2979,164 @@ void RatingLibraryEntry::SetLiveLoadFactorModel2(pgsTypes::SpecialPermitType per
 const CLiveLoadFactorModel2& RatingLibraryEntry::GetLiveLoadFactorModel2(pgsTypes::SpecialPermitType permitType) const
 {
    return m_SpecialPermitLiveLoadFactorModels2[permitType];
+}
+
+void write_load_factors(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits, LPCTSTR lpszName, const CLiveLoadFactorModel& model);
+
+void RatingLibraryEntry::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+{
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+   *pChapter << pPara;
+
+   *pPara << _T("Load Rating Criteria") << rptNewLine;
+
+   pPara = new rptParagraph;
+   *pChapter << pPara;
+
+   *pPara << Bold(_T("Name: ")) << GetName() << rptNewLine;
+   *pPara << Bold(_T("Description: ")) << GetDescription() << rptNewLine;
+   *pPara << Bold(_T("Based on:  ")) << WBFL::LRFD::LRFRVersionMgr::GetCodeString() << _T(", ") << WBFL::LRFD::LRFRVersionMgr::GetVersionString();
+
+
+   pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+   *pChapter << pPara;
+   *pPara << _T("Live Load Factors for Load Rating") << rptNewLine;
+
+   write_load_factors(pChapter, pDisplayUnits, _T("Design - Inventory"), GetLiveLoadFactorModel(pgsTypes::lrDesign_Inventory));
+   write_load_factors(pChapter, pDisplayUnits, _T("Design - Operating"), GetLiveLoadFactorModel(pgsTypes::lrDesign_Operating));
+   write_load_factors(pChapter, pDisplayUnits, _T("Legal - Routine"), GetLiveLoadFactorModel(pgsTypes::lrLegal_Routine));
+   write_load_factors(pChapter, pDisplayUnits, _T("Legal - Special"), GetLiveLoadFactorModel(pgsTypes::lrLegal_Special));
+   write_load_factors(pChapter, pDisplayUnits, _T("Permit - Routine"), GetLiveLoadFactorModel(pgsTypes::lrPermit_Routine));
+   write_load_factors(pChapter, pDisplayUnits, _T("Permit - Special - Single Trip, escorted"), GetLiveLoadFactorModel(pgsTypes::ptSingleTripWithEscort));
+   write_load_factors(pChapter, pDisplayUnits, _T("Permit - Special - Single Trip, mixed with traffic"), GetLiveLoadFactorModel(pgsTypes::ptSingleTripWithTraffic));
+   write_load_factors(pChapter, pDisplayUnits, _T("Permit - Special - Multiple Trip, mixed with traffic"), GetLiveLoadFactorModel(pgsTypes::ptMultipleTripWithTraffic));
+}
+
+void write_load_factors(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits, LPCTSTR lpszName, const CLiveLoadFactorModel& model)
+{
+   INIT_UV_PROTOTYPE(rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), true);
+
+   rptRcScalar scalar;
+   scalar.SetFormat(WBFL::System::NumericFormatTool::Format::Fixed);
+   scalar.SetWidth(6);
+   scalar.SetPrecision(2);
+   scalar.SetTolerance(1.0e-6);
+
+   std::_tstring strModel;
+   pgsTypes::LiveLoadFactorType llfType = model.GetLiveLoadFactorType();
+   switch (llfType)
+   {
+   case pgsTypes::gllSingleValue:
+      strModel = _T("Single Value");
+      break;
+
+   case pgsTypes::gllStepped:
+      strModel = _T("Stepped");
+      break;
+
+   case pgsTypes::gllLinear:
+      strModel = _T("Linear");
+      break;
+
+   case pgsTypes::gllBilinear:
+      strModel = _T("Bilinear");
+      break;
+
+   case pgsTypes::gllBilinearWithWeight:
+      strModel = _T("Bilinear with Vehicle Weight");
+      break;
+
+   }
+
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+   *pChapter << pPara;
+   *pPara << lpszName << rptNewLine;
+
+   pPara = new rptParagraph;
+   *pChapter << pPara;
+   *pPara << _T("Live Load Factor Model: ") << strModel << rptNewLine;
+
+   Int16 adtt1, adtt2, adtt3, adtt4;
+   model.GetADTT(&adtt1, &adtt2, &adtt3, &adtt4);
+
+   Float64 g1, g2, g3, g4;
+   model.GetLowerLiveLoadFactor(&g1, &g2, &g3, &g4);
+
+   if (llfType == pgsTypes::gllSingleValue)
+   {
+      *pPara << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(g1) << rptNewLine;
+   }
+   else if (llfType == pgsTypes::gllStepped)
+   {
+      *pPara << _T("ADTT < ") << adtt1 << _T(" ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(g1) << rptNewLine;
+      *pPara << _T("Otherwise ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(g2) << rptNewLine;
+      *pPara << _T("ADTT = Unknown ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(g4) << rptNewLine;
+   }
+   else if (llfType == pgsTypes::gllLinear)
+   {
+      *pPara << _T("ADTT < ") << adtt1 << _T(" ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(g1) << rptNewLine;
+      *pPara << _T("ADTT > ") << adtt2 << _T(" ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(g2) << rptNewLine;
+      *pPara << _T("ADTT = Unknown ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(g4) << rptNewLine;
+
+      *pPara << rptNewLine;
+      if (model.GetLiveLoadFactorModifier() == pgsTypes::gllmRoundUp)
+      {
+         *pPara << _T("Load factors are rounded up") << rptNewLine;
+      }
+      else
+      {
+         *pPara << _T("Load factors are linearly interpolated") << rptNewLine;
+      }
+   }
+   else if (llfType == pgsTypes::gllBilinear)
+   {
+      *pPara << _T("ADTT < ") << adtt1 << _T(" ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(g1) << rptNewLine;
+      *pPara << _T("ADTT = ") << adtt2 << _T(" ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(g2) << rptNewLine;
+      *pPara << _T("ADTT > ") << adtt3 << _T(" ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(g3) << rptNewLine;
+      *pPara << _T("ADTT = Unknown ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(g4) << rptNewLine;
+
+      *pPara << rptNewLine;
+      if (model.GetLiveLoadFactorModifier() == pgsTypes::gllmRoundUp)
+      {
+         *pPara << _T("Load factors are rounded up") << rptNewLine;
+      }
+      else
+      {
+         *pPara << _T("Load factors are linearly interpolated") << rptNewLine;
+      }
+   }
+   else if (llfType == pgsTypes::gllBilinearWithWeight)
+   {
+      Float64 Wlower, Wupper;
+      model.GetVehicleWeight(&Wlower, &Wupper);
+      *pPara << _T("For vehicle weight up to ") << force.SetValue(Wlower) << rptNewLine;
+      *pPara << _T("ADTT < ") << adtt1 << _T(" ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(g1) << rptNewLine;
+      *pPara << _T("ADTT = ") << adtt2 << _T(" ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(g2) << rptNewLine;
+      *pPara << _T("ADTT > ") << adtt3 << _T(" ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(g3) << rptNewLine;
+      *pPara << _T("ADTT = Unknown ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(g4) << rptNewLine;
+
+      *pPara << rptNewLine;
+
+      Float64 ga, gb, gc, gd;
+      model.GetUpperLiveLoadFactor(&ga, &gb, &gc, &gd);
+      *pPara << _T("For vehicle weight of ") << force.SetValue(Wupper) << _T(" or more") << rptNewLine;
+      *pPara << _T("ADTT < ") << adtt1 << _T(" ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(ga) << rptNewLine;
+      *pPara << _T("ADTT = ") << adtt2 << _T(" ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(gb) << rptNewLine;
+      *pPara << _T("ADTT > ") << adtt3 << _T(" ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(gc) << rptNewLine;
+      *pPara << _T("ADTT = Unknown ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(gd) << rptNewLine;
+
+      *pPara << rptNewLine;
+      if (model.GetLiveLoadFactorModifier() == pgsTypes::gllmRoundUp)
+      {
+         *pPara << _T("Load factors are rounded up") << rptNewLine;
+      }
+      else
+      {
+         *pPara << _T("Load factors are linearly interpolated") << rptNewLine;
+      }
+   }
+   else
+   {
+      ATLASSERT(false); // is there a new model???
+   }
 }

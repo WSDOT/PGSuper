@@ -68,7 +68,7 @@ rptChapter* CInternalForceChapterBuilder::Build(const std::shared_ptr<const WBFL
 
 #if defined _DEBUG
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
-   ATLASSERT( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP );
+   ATLASSERT( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP );
 #endif 
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);

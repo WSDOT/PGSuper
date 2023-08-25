@@ -28,6 +28,7 @@
 #include "SpecShearPage.h"
 #include "SpecMainSheet.h"
 #include <EAF\EAFDocument.h>
+#include <psgLib/SpecificationCriteria.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -96,7 +97,7 @@ BOOL CSpecShearPage::OnSetActive()
    FillShearMethodList();
 
    CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= pDad->m_Entry.GetSpecificationType() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= pDad->m_Entry.GetSpecificationCriteria().GetEdition())
    {
       GetDlgItem(IDC_SLWC_FR_LABEL)->SetWindowText(_T("Lightweight concrete"));
       GetDlgItem(IDC_ALWC_FR_LABEL)->ShowWindow(SW_HIDE);
@@ -112,7 +113,7 @@ BOOL CSpecShearPage::OnSetActive()
    }
 
    // phi factors for deboned sections
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017 <= pDad->m_Entry.GetSpecificationType() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017 <= pDad->m_Entry.GetSpecificationCriteria().GetEdition())
    {
       GetDlgItem(IDC_STATIC_PHI_DEBOND)->ShowWindow(SW_SHOW);
       GetDlgItem(IDC_NWC_PHI_DEBOND)->ShowWindow(SW_SHOW);

@@ -76,7 +76,7 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(const std::shared_
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
-   *pPara << _T("Minimum amount of bonded reinforcement sufficent to resist the tensile force in the concrete ") << WBFL::LRFD::LrfdCw8th(_T("[5.9.4][C5.9.4.1.2]"),_T("[5.9.2.3][C5.9.2.3.1b]")) << rptNewLine;
+   *pPara << _T("Minimum amount of bonded reinforcement sufficient to resist the tensile force in the concrete ") << WBFL::LRFD::LrfdCw8th(_T("[5.9.4][C5.9.4.1.2]"),_T("[5.9.2.3][C5.9.2.3.1b]")) << rptNewLine;
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 

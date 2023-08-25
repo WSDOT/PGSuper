@@ -34,6 +34,10 @@
 #include <PgsExt\ClosureJointData.h>
 #include <PgsExt\GirderLabel.h>
 
+#include <psgLib/MomentCapacityCriteria.h>
+#include <psgLib/ShearCapacityCriteria.h>
+#include <psgLib/LimitStateConcreteStrengthCriteria.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -1111,24 +1115,24 @@ bool CConcreteManager::IsConcreteDensityInRange(Float64 density,pgsTypes::Concre
 std::unique_ptr<WBFL::Materials::ConcreteBase> CConcreteManager::CreateConcreteModel(LPCTSTR strName,const CConcreteMaterial& concrete,Float64 timeAtCasting,Float64 cureTime,Float64 ageAtInitialLoading,Float64 stepTime) const
 {
    GET_IFACE(ILossParameters,pLossParameters);
-   pgsTypes::LossMethod loss_method = pLossParameters->GetLossMethod();
+   PrestressLossCriteria::LossMethodType loss_method = pLossParameters->GetLossMethod();
 
    GET_IFACE(IEnvironment,pEnvironment);
    Float64 rh = pEnvironment->GetRelHumidity();
 
    std::unique_ptr<WBFL::Materials::ConcreteBase> pConcrete;
-   if ( loss_method == pgsTypes::TIME_STEP )
+   if ( loss_method == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       // for time step loss method, create concrete model based on time-dependent model type
       switch( pLossParameters->GetTimeDependentModel() )
       {
-      case pgsTypes::tdmAASHTO:
+      case PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO:
          pConcrete = CreateTimeDependentLRFDConcreteModel(concrete,ageAtInitialLoading);
          break;
-      case pgsTypes::tdmACI209:
+      case PrestressLossCriteria::TimeDependentConcreteModelType::ACI209:
          pConcrete = CreateACI209Model(concrete,ageAtInitialLoading);
          break;
-      case pgsTypes::tdmCEBFIP:
+      case PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP:
          pConcrete = CreateCEBFIPModel(concrete,ageAtInitialLoading);
          break;
       default:
@@ -1921,8 +1925,8 @@ Float64 CConcreteManager::GetFlexureFrCoefficient(pgsTypes::ConcreteType type) c
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-
-   return pSpecEntry->GetFlexureModulusOfRuptureCoefficient(type);
+   const auto& moment_capacity_criteria = pSpecEntry->GetMomentCapacityCriteria();
+   return moment_capacity_criteria.GetModulusOfRuptureCoefficient(type);
 }
 
 Float64 CConcreteManager::GetSegmentFlexureFrCoefficient(const CSegmentKey& segmentKey) const
@@ -2014,8 +2018,8 @@ Float64 CConcreteManager::GetShearFrCoefficient(pgsTypes::ConcreteType type) con
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-
-   return pSpecEntry->GetShearModulusOfRuptureCoefficient(type);
+   const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
+   return shear_capacity_criteria.ModulusOfRuptureCoefficient[type];
 }
 
 Float64 CConcreteManager::GetSegmentShearFrCoefficient(const CSegmentKey& segmentKey) const
@@ -2666,13 +2670,11 @@ std::unique_ptr<WBFL::LRFD::LRFDConcrete> CConcreteManager::CreateLRFDConcreteMo
       GET_IFACE(ILibrary, pLib);
       GET_IFACE(ISpecification, pSpec);
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-      bool bUse;
-      Float64 factor;
-      pSpecEntry->Use90DayStrengthForSlowCuringConcrete(&bUse, &factor);
-      if (bUse && factor != 1.0)
+      const auto& limit_state_concrete_strength_criteria = pSpecEntry->GetLimitStateConcreteStrengthCriteria();
+      if (limit_state_concrete_strength_criteria.bUse90DayConcreteStrength && limit_state_concrete_strength_criteria.SlowCuringConcreteStrengthFactor != 1.0)
       {
          CConcreteMaterial concrete90(concrete);
-         concrete90.Fc *= factor;
+         concrete90.Fc *= limit_state_concrete_strength_criteria.SlowCuringConcreteStrengthFactor;
          WBFL::Materials::SimpleConcrete initialConcrete, finalConcrete90;
          CreateConcrete(concrete90, _T(""), &initialConcrete, &finalConcrete90);
          pLRFDConcrete->Use90DayStrength(finalConcrete90);

@@ -56,9 +56,9 @@ public:
 
    // GROUP: OPERATIONS
    virtual bool Passed(bool bIgnoreConfigurationLimits=false) const = 0;
-   virtual bool Passed(pgsTypes::HaulingSlope slope) const = 0;
-   virtual bool PassedStressCheck(pgsTypes::HaulingSlope slope) const = 0;
-   virtual void GetRequiredConcreteStrength(pgsTypes::HaulingSlope slope,Float64 *pfcCompression,Float64 *pfcTension,Float64* pfcTensionWithRebar) const = 0;
+   virtual bool Passed(WBFL::Stability::HaulingSlope slope) const = 0;
+   virtual bool PassedStressCheck(WBFL::Stability::HaulingSlope slope) const = 0;
+   virtual void GetRequiredConcreteStrength(WBFL::Stability::HaulingSlope slope,Float64 *pfcCompression,Float64 *pfcTension,Float64* pfcTensionWithRebar) const = 0;
 
    virtual void BuildHaulingCheckReport(const CSegmentKey& segmentKey, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const = 0;
    virtual void BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const = 0;
@@ -112,9 +112,9 @@ public:
    // GROUP: OPERATIONS
    // virtual functions
    virtual bool Passed(bool bIgnoreConfigurationLimits = false) const override;
-   virtual bool Passed(pgsTypes::HaulingSlope slope) const override;
-   virtual bool PassedStressCheck(pgsTypes::HaulingSlope slope) const override;
-   virtual void GetRequiredConcreteStrength(pgsTypes::HaulingSlope slope,Float64 *pfcCompression,Float64 *pfcTension, Float64* pfcTensionWithRebar) const override;
+   virtual bool Passed(WBFL::Stability::HaulingSlope slope) const override;
+   virtual bool PassedStressCheck(WBFL::Stability::HaulingSlope slope) const override;
+   virtual void GetRequiredConcreteStrength(WBFL::Stability::HaulingSlope slope,Float64 *pfcCompression,Float64 *pfcTension, Float64* pfcTensionWithRebar) const override;
 
    virtual void BuildHaulingCheckReport(const CSegmentKey& segmentKey,rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const override;
    virtual void BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const override;
@@ -123,9 +123,9 @@ public:
 
    virtual void Write1250Data(const CSegmentKey& segmentKey,std::_tofstream& resultsFile, std::_tofstream& poiFile,IBroker* pBroker, const std::_tstring& pid, const std::_tstring& bridgeId) const override;
 
-   Float64 GetMinFsForCracking(pgsTypes::HaulingSlope slope) const;
-   Float64 GetFsRollover(pgsTypes::HaulingSlope slope) const;
-   Float64 GetFsFailure(pgsTypes::HaulingSlope slope) const;
+   Float64 GetMinFsForCracking(WBFL::Stability::HaulingSlope slope) const;
+   Float64 GetFsRollover(WBFL::Stability::HaulingSlope slope) const;
+   Float64 GetFsFailure(WBFL::Stability::HaulingSlope slope) const;
 
    void SetHaulingCheckArtifact(const WBFL::Stability::HaulingCheckArtifact& haulingArtifact);
    const WBFL::Stability::HaulingCheckArtifact& GetHaulingCheckArtifact() const;

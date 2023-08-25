@@ -28,6 +28,7 @@
 #include "SpecGirderStressPage.h"
 #include "SpecMainSheet.h"
 #include <EAF\EAFDocument.h>
+#include <psgLib/SpecificationCriteria.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -103,7 +104,7 @@ BOOL CSpecGirderStressPage::OnSetActive()
    CWnd* pWnd = GetDlgItem(IDC_FATIGUE_LABEL);
    CWnd* pGrp = GetDlgItem(IDC_FATIGUE_GROUP);
    CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
-   if ( pDad->m_Entry.GetSpecificationType() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims )
+   if ( pDad->m_Entry.GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims)
    {
       pGrp->SetWindowText(_T("Stress limit at Fatigue Limit State (LRFD 5.9.4.2.1)"));
       pWnd->SetWindowText(_T("Service IA (Live Load Plus One-Half of Permanent Loads)"));
@@ -120,7 +121,7 @@ BOOL CSpecGirderStressPage::OnSetActive()
    GetDlgItem(IDC_GPERM)->SetWindowText(CString(_T("Stress Limits at Service Limit State after Losses (LRFD ")) + WBFL::LRFD::LrfdCw8th(_T("5.9.4.2"),_T("5.9.2.3.2")) + _T(")"));
 
    // This was not in the LRFD before 8th Edition 2017
-   int nShow = (pDad->m_Entry.GetSpecificationType() < WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017 ? SW_HIDE : SW_SHOW);
+   int nShow = (pDad->m_Entry.GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017 ? SW_HIDE : SW_SHOW);
    GetDlgItem(IDC_PRINCIPAL_TENSION_GROUP)->ShowWindow(nShow);
    GetDlgItem(IDC_PRINCIPAL_TENSION_LABEL)->ShowWindow(nShow);
    GetDlgItem(IDC_PRINCIPAL_TENSION)->ShowWindow(nShow);

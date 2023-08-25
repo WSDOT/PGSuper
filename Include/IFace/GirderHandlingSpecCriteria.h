@@ -110,7 +110,7 @@ interface ISegmentLiftingSpecCriteria : IUnknown
    // Factor to modify basic camber
    virtual Float64 GetLiftingCamberMultiplier() const = 0;
 
-   virtual pgsTypes::WindType GetLiftingWindType() const = 0;
+   virtual WBFL::Stability::WindLoadType GetLiftingWindType() const = 0;
    virtual Float64 GetLiftingWindLoad() const = 0;
 
    virtual WBFL::Stability::LiftingCriteria GetLiftingStabilityCriteria(const CSegmentKey& segmentKey, const HANDLINGCONFIG* pLiftConfig = nullptr) const = 0;
@@ -143,16 +143,16 @@ interface ISegmentHaulingSpecCriteria : IUnknown
    virtual Float64 GetHaulingRolloverFs() const = 0;
 
    // Allowable concrete stresses
-   virtual Float64 GetHaulingAllowableTensileConcreteStress(const CSegmentKey& segmentKey, pgsTypes::HaulingSlope slope) const = 0;
+   virtual Float64 GetHaulingAllowableTensileConcreteStress(const CSegmentKey& segmentKey, WBFL::Stability::HaulingSlope slope) const = 0;
    virtual Float64 GetHaulingAllowableGlobalCompressiveConcreteStress(const CSegmentKey& segmentKey) const = 0;
    virtual Float64 GetHaulingAllowablePeakCompressiveConcreteStress(const CSegmentKey& segmentKey) const = 0;
-   virtual Float64 GetHaulingAllowableTensionFactor(pgsTypes::HaulingSlope slope) const = 0;
+   virtual Float64 GetHaulingAllowableTensionFactor(WBFL::Stability::HaulingSlope slope) const = 0;
    virtual Float64 GetHaulingAllowableGlobalCompressionFactor() const = 0;
    virtual Float64 GetHaulingAllowablePeakCompressionFactor() const = 0;
-   virtual Float64 GetHaulingWithMildRebarAllowableStress(const CSegmentKey& segmentKey, pgsTypes::HaulingSlope slope) const = 0;
-   virtual Float64 GetHaulingWithMildRebarAllowableStressFactor(pgsTypes::HaulingSlope slope) const = 0;
-   virtual void GetHaulingAllowableTensileConcreteStressParameters(pgsTypes::HaulingSlope slope,Float64* factor,bool* pbMax,Float64* fmax) const = 0;
-   virtual Float64 GetHaulingAllowableTensileConcreteStressEx(const CSegmentKey& segmentKey,pgsTypes::HaulingSlope slope,Float64 fc, bool includeRebar) const = 0;
+   virtual Float64 GetHaulingWithMildRebarAllowableStress(const CSegmentKey& segmentKey, WBFL::Stability::HaulingSlope slope) const = 0;
+   virtual Float64 GetHaulingWithMildRebarAllowableStressFactor(WBFL::Stability::HaulingSlope slope) const = 0;
+   virtual void GetHaulingAllowableTensileConcreteStressParameters(WBFL::Stability::HaulingSlope slope,Float64* factor,bool* pbMax,Float64* fmax) const = 0;
+   virtual Float64 GetHaulingAllowableTensileConcreteStressEx(const CSegmentKey& segmentKey,WBFL::Stability::HaulingSlope slope,Float64 fc, bool includeRebar) const = 0;
    virtual Float64 GetHaulingAllowableGlobalCompressiveConcreteStressEx(const CSegmentKey& segmentKey, Float64 fc) const = 0;
    virtual Float64 GetHaulingAllowablePeakCompressiveConcreteStressEx(const CSegmentKey& segmentKey, Float64 fc) const = 0;
 
@@ -166,7 +166,7 @@ interface ISegmentHaulingSpecCriteria : IUnknown
    virtual Float64 GetHeightOfTruckRollCenterAboveRoadway(const CSegmentKey& segmentKey) const = 0;
    virtual Float64 GetAxleWidth(const CSegmentKey& segmentKey) const = 0;
 
-   virtual pgsTypes::HaulingImpact GetHaulingImpactUsage() const = 0;
+   virtual WBFL::Stability::HaulingImpact GetHaulingImpactUsage() const = 0;
    virtual Float64 GetNormalCrownSlope() const = 0;
    // Max expected roadway superelevation - slope
    virtual Float64 GetMaxSuperelevation() const = 0;
@@ -188,9 +188,9 @@ interface ISegmentHaulingSpecCriteria : IUnknown
    virtual Float64 GetMinimumHaulingSupportLocation(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end) const = 0;
    virtual Float64 GetHaulingSupportLocationAccuracy() const = 0;
 
-   virtual pgsTypes::WindType GetHaulingWindType() const = 0;
+   virtual WBFL::Stability::WindLoadType GetHaulingWindType() const = 0;
    virtual Float64 GetHaulingWindLoad() const = 0;
-   virtual pgsTypes::CFType GetCentrifugalForceType() const = 0;
+   virtual WBFL::Stability::CFType GetCentrifugalForceType() const = 0;
    virtual Float64 GetHaulingSpeed() const = 0;
    virtual Float64 GetTurningRadius() const = 0;
 

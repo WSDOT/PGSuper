@@ -25,11 +25,12 @@
 
 #include <EAF\EAFTransaction.h>
 #include <IFace\Project.h>
+#include <array>
 
 class txnEditEnvironment : public CEAFTransaction
 {
 public:
-   txnEditEnvironment(enumExposureCondition oldExposureCondition, enumExposureCondition newExposureCondition,
+   txnEditEnvironment(pgsTypes::ExposureCondition oldExposureCondition, pgsTypes::ExposureCondition newExposureCondition,
                       Float64 oldRelHumidity, Float64 newRelHumidity );
 
    ~txnEditEnvironment();
@@ -44,8 +45,8 @@ public:
 private:
    void Execute(int i);
 
-   enumExposureCondition m_ExposureCondition[2];
-   Float64 m_RelHumidity[2];
+   std::array<pgsTypes::ExposureCondition, 2> m_ExposureCondition;
+   std::array<Float64, 2> m_RelHumidity;
 };
 
 #endif // INCLUDED_EDITENVIRONMENTTXN_H_
