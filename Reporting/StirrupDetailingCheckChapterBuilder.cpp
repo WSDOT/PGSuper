@@ -42,15 +42,15 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirderKey& girderKey,
-                                      IntervalIndexType intervalIdx,
+                                      IntervalIndexType intervalIdx, bool doIncludeSpanAndGirderForPois,
                                       IEAFDisplayUnits* pDisplayUnits);
 
 void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirderKey& girderKey,
-                                          IntervalIndexType intervalIdx, pgsTypes::LimitState ls,
+                                          IntervalIndexType intervalIdx, pgsTypes::LimitState ls,bool doIncludeSpanAndGirderForPois,
                                           IEAFDisplayUnits* pDisplayUnits);
 
 void build_max_spacing_paragraph_uhpc(IBroker* pBroker, rptChapter* pChapter, const CGirderKey& girderKey,
-   IntervalIndexType intervalIdx, pgsTypes::LimitState ls,
+   IntervalIndexType intervalIdx, pgsTypes::LimitState ls,bool doIncludeSpanAndGirderForPois,
    IEAFDisplayUnits* pDisplayUnits);
 
 /****************************************************************************
@@ -84,23 +84,27 @@ rptChapter* CStirrupDetailingCheckChapterBuilder::Build(const std::shared_ptr<co
    GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
 
-   build_min_avs_paragraph(pBroker,pChapter,girderKey,intervalIdx,pDisplayUnits);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   bool bIncludeSpanAndGirderForPois = nSegments > 1;
+
+   build_min_avs_paragraph(pBroker,pChapter,girderKey,intervalIdx, bIncludeSpanAndGirderForPois, pDisplayUnits);
 
    GET_IFACE2(pBroker, IMaterials, pMaterials);
    if (pMaterials->GetSegmentConcreteType(CSegmentKey(girderKey, 0)) == pgsTypes::UHPC)
    {
-      build_max_spacing_paragraph_uhpc(pBroker, pChapter, girderKey, intervalIdx, pgsTypes::StrengthI, pDisplayUnits);
+      build_max_spacing_paragraph_uhpc(pBroker, pChapter, girderKey, intervalIdx, pgsTypes::StrengthI, bIncludeSpanAndGirderForPois, pDisplayUnits);
       if (bPermit)
       {
-         build_max_spacing_paragraph_uhpc(pBroker, pChapter, girderKey, intervalIdx, pgsTypes::StrengthII, pDisplayUnits);
+         build_max_spacing_paragraph_uhpc(pBroker, pChapter, girderKey, intervalIdx, pgsTypes::StrengthII,bIncludeSpanAndGirderForPois, pDisplayUnits);
       }
    }
    else
    {
-      build_max_spacing_paragraph(pBroker, pChapter, girderKey, intervalIdx, pgsTypes::StrengthI, pDisplayUnits);
+      build_max_spacing_paragraph(pBroker, pChapter, girderKey, intervalIdx, pgsTypes::StrengthI,bIncludeSpanAndGirderForPois, pDisplayUnits);
       if (bPermit)
       {
-         build_max_spacing_paragraph(pBroker, pChapter, girderKey, intervalIdx, pgsTypes::StrengthII, pDisplayUnits);
+         build_max_spacing_paragraph(pBroker, pChapter, girderKey, intervalIdx, pgsTypes::StrengthII,bIncludeSpanAndGirderForPois,pDisplayUnits);
       }
    }
 
@@ -113,7 +117,7 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CStirrupDetailingCheckChapterBu
 }
 
 void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirderKey& girderKey,
-                                      IntervalIndexType intervalIdx, 
+                                      IntervalIndexType intervalIdx,bool bIncludeSpanAndGirderForPois,
                                       IEAFDisplayUnits* pDisplayUnits)
 {
    rptParagraph* pParagraph;
@@ -123,6 +127,7 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
    INIT_UV_PROTOTYPE( rptAreaPerLengthValue, avs,      pDisplayUnits->GetAvOverSUnit(),  false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,     pDisplayUnits->GetComponentDimUnit(),  false );
 
+   location.IncludeSpanAndGirder(bIncludeSpanAndGirderForPois);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
@@ -363,7 +368,7 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
 }
 
 void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirderKey& girderKey,
-                                    IntervalIndexType intervalIdx, pgsTypes::LimitState ls,
+                                    IntervalIndexType intervalIdx, pgsTypes::LimitState ls, bool bIncludeSpanAndGirderForPois,
                                     IEAFDisplayUnits* pDisplayUnits)
 {
    // Spacing check 5.7.2.6 (pre2017: 5.8.2.7)
@@ -392,8 +397,7 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,     pDisplayUnits->GetComponentDimUnit(),  false );
    INIT_UV_PROTOTYPE( rptForceSectionValue,  shear,    pDisplayUnits->GetShearUnit(),        false );
 
-//   location.IncludeSpanAndGirder(span == ALL_SPANS);
-
+   location.IncludeSpanAndGirder(bIncludeSpanAndGirderForPois);
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
@@ -517,7 +521,7 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
 
 
 void build_max_spacing_paragraph_uhpc(IBroker* pBroker, rptChapter* pChapter, const CGirderKey& girderKey,
-   IntervalIndexType intervalIdx, pgsTypes::LimitState ls,
+   IntervalIndexType intervalIdx, pgsTypes::LimitState ls, bool bIncludeSpanAndGirderForPois,
    IEAFDisplayUnits* pDisplayUnits)
 {
    // Spacing check 5.7.2.6 (pre2017: 5.8.2.7)
@@ -543,6 +547,8 @@ void build_max_spacing_paragraph_uhpc(IBroker* pBroker, rptChapter* pChapter, co
    INIT_UV_PROTOTYPE(rptAngleUnitValue, angle, pDisplayUnits->GetAngleUnit(), false);
    INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false);
    INIT_UV_PROTOTYPE(rptForceSectionValue, shear, pDisplayUnits->GetShearUnit(), false);
+
+   location.IncludeSpanAndGirder(bIncludeSpanAndGirderForPois);
 
    Float64 Smax = WBFL::Units::ConvertToSysUnits(24.0,WBFL::Units::Measure::Inch); // maximum spacing = 24.0 in GS 1.7.2.6
    dim.ShowUnitTag(true);

@@ -199,6 +199,8 @@ void write_bar_spacing_table(IBroker* pBroker,
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
+bool CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois = false;
+
 //======================== LIFECYCLE  =======================================
 CShearCapacityDetailsChapterBuilder::CShearCapacityDetailsChapterBuilder(bool bDesign,bool bRating,bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
@@ -270,6 +272,11 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(const std::shared_ptr<con
          // report where we are if more than one girder in report
          *pPara << pgsGirderLabel::GetGirderLabel(thisGirderKey) << rptNewLine;
       }
+
+      // Determine wheter we need to print span and girder information for POI locations. Store in a static so we only need to compute once.
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
+
+      m_IncludeSpanAndGirderForPois = nSegments > 1;
 
       bool bPermit = pLimitStateForces->IsStrengthIIApplicable(thisGirderKey);
 
@@ -504,7 +511,7 @@ void write_shear_dimensions_table(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,      pDisplayUnits->GetComponentDimUnit(), false );
 
-   //location.IncludeSpanAndGirder(span == ALL_SPANS);
+   location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
@@ -679,7 +686,7 @@ void write_shear_stress_table(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,      pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDisplayUnits->GetStressUnit(),       false );
 
-   //location.IncludeSpanAndGirder(span == ALL_SPANS);
+   location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
 
    RowIndexType row = table->GetNumberOfHeaderRows();
    GET_IFACE2(pBroker,IShearCapacity,pShearCap);
@@ -839,7 +846,7 @@ void write_fpc_table(IBroker* pBroker,
       INIT_UV_PROTOTYPE( rptLength4UnitValue, inertia,  pDisplayUnits->GetMomentOfInertiaUnit(), false );
       INIT_UV_PROTOTYPE( rptMomentUnitValue,  moment,   pDisplayUnits->GetMomentUnit(),          false );
 
-      //location.IncludeSpanAndGirder(span == ALL_SPANS);
+      location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
 
       RowIndexType row = table->GetNumberOfHeaderRows();
 
@@ -941,7 +948,7 @@ void write_fpce_table(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptMomentUnitValue,   moment,         pDisplayUnits->GetMomentUnit(),             false );
    INIT_UV_PROTOTYPE( rptSqrtPressureValue, fr_coefficient, pDisplayUnits->GetTensionCoefficientUnit(), false );
 
-   //location.IncludeSpanAndGirder(span == ALL_SPANS);
+   location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
@@ -972,7 +979,6 @@ void write_fpce_table(IBroker* pBroker,
       (*table)(row,4) << sect_mod.SetValue( scd.McrDetails.Sbc );
       (*table)(row,5) << moment.SetValue( scd.McrDetails.Mdnc);
       (*table)(row,6) << moment.SetValue( scd.McrDetails.Mcr );
-
 
       row++;
    }
@@ -1223,7 +1229,7 @@ void write_fpo_table(IBroker* pBroker,
          INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,   pDisplayUnits->GetStressUnit(),    false );
          INIT_UV_PROTOTYPE( rptStressUnitValue,  mod_e,    pDisplayUnits->GetModEUnit(),      false );
 
-         //location.IncludeSpanAndGirder(span == ALL_SPANS);
+         location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
 
          GET_IFACE2(pBroker,IBridge,pBridge);
          Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
@@ -1383,7 +1389,7 @@ void write_Fe_table(IBroker* pBroker,
       INIT_UV_PROTOTYPE( rptStressUnitValue,  mod_e,    pDisplayUnits->GetModEUnit(),            false );
       INIT_UV_PROTOTYPE( rptAreaUnitValue,    area,     pDisplayUnits->GetAreaUnit(),            false );
 
-      //location.IncludeSpanAndGirder(span == ALL_SPANS);
+      location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
 
       INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
@@ -1724,15 +1730,15 @@ void write_ex_table(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptLength2UnitValue, area, pDisplayUnits->GetAreaUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, mod_e, pDisplayUnits->GetModEUnit(), false );
 
-   //location.IncludeSpanAndGirder(span == ALL_SPANS);
+   location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
+
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
 
    rptRcScalar scalar;
    scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Automatic );
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
-
-   GET_IFACE2(pBroker, IBridge, pBridge);
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
 
    bool print_footnote1 = false;
    bool print_footnote2 = false;
@@ -1949,14 +1955,14 @@ void write_es_table(IBroker* pBroker,
    INIT_UV_PROTOTYPE(rptStressUnitValue, mod_e, pDisplayUnits->GetModEUnit(), false);
    INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
 
-   //location.IncludeSpanAndGirder(span == ALL_SPANS);
+   location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
 
    rptRcScalar scalar;
    scalar.SetFormat(WBFL::System::NumericFormatTool::Format::Automatic);
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
 
    bool print_footnote1 = false;
@@ -2155,7 +2161,7 @@ void write_btsummary_table(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptAngleUnitValue, angle, pDisplayUnits->GetAngleUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  xdim,    pDisplayUnits->GetComponentDimUnit(),    false );
 
-   //location.IncludeSpanAndGirder(span == ALL_SPANS);
+   location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
 
    rptRcScalar scalar;
    scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Automatic );
@@ -2326,14 +2332,14 @@ void write_theta_fv_table(IBroker* pBroker,
    INIT_UV_PROTOTYPE(rptAngleUnitValue, angle, pDisplayUnits->GetAngleUnit(), false);
    INIT_UV_PROTOTYPE(rptLengthUnitValue, xdim, pDisplayUnits->GetComponentDimUnit(), false);
 
-   //location.IncludeSpanAndGirder(span == ALL_SPANS);
+   location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
 
    rptRcScalar scalar;
    scalar.SetFormat(WBFL::System::NumericFormatTool::Format::Automatic);
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
 
    RowIndexType row = table->GetNumberOfHeaderRows();
@@ -2454,10 +2460,9 @@ void write_Vs_table(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptAngleUnitValue, angle, pDisplayUnits->GetAngleUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, avs, pDisplayUnits->GetAvOverSUnit(), false );
-
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-//   location.IncludeSpanAndGirder(span == ALL_SPANS);
+   location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
@@ -2655,14 +2660,12 @@ void write_Vc_table(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
 
-   //location.IncludeSpanAndGirder(span == ALL_SPANS);
+   location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
 
    rptRcScalar scalar;
    scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Automatic );
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
-
-   GET_IFACE2(pBroker,IBridge,pBridge);
 
    bool print_footnote=false;
    RowIndexType row = table->GetNumberOfHeaderRows();
@@ -2679,6 +2682,7 @@ void write_Vc_table(IBroker* pBroker,
 
       const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
+      GET_IFACE2(pBroker,IBridge,pBridge);
       Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
       pgsTypes::ConcreteType concType = pMaterial->GetSegmentConcreteType(segmentKey);
@@ -2808,7 +2812,7 @@ void write_Vuhpc_table(IBroker* pBroker,
    (*table)(0, colIdx++) << COLHDR(symbol(theta), rptAngleUnitTag, pDisplayUnits->GetAngleUnit());
    (*table)(0, colIdx++) << COLHDR(Sub2(_T("V"), _T("UHPC")), rptForceUnitTag, pDisplayUnits->GetShearUnit());
 
-   //location.IncludeSpanAndGirder(span == ALL_SPANS);
+   location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
@@ -2916,12 +2920,11 @@ void write_Vcf_table(IBroker* pBroker,
    INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
    INIT_UV_PROTOTYPE(rptAngleUnitValue, angle, pDisplayUnits->GetAngleUnit(), false);
 
-   //location.IncludeSpanAndGirder(span == ALL_SPANS);
-
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
 
    bool print_footnote = false;
    RowIndexType row = table->GetNumberOfHeaderRows();
+   GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker, IShearCapacity, pShearCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
@@ -3067,8 +3070,6 @@ void write_Vci_table(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), false );
 
-   //location.IncludeSpanAndGirder(span == ALL_SPANS);
-
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
 
@@ -3211,7 +3212,7 @@ void write_Vcw_table(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
 
-//   location.IncludeSpanAndGirder(span == ALL_SPANS);
+   location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
@@ -3351,7 +3352,7 @@ void write_theta_table(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptAngleUnitValue, angle, pDisplayUnits->GetAngleUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
 
-//   location.IncludeSpanAndGirder(span == ALL_SPANS);
+   location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
 
    rptRcScalar scalar;
    scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Automatic );
@@ -3465,7 +3466,7 @@ void write_Vn_table(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,      pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDisplayUnits->GetStressUnit(),       false );
 
-//   location.IncludeSpanAndGirder(span == ALL_SPANS);
+   location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
 
    rptRcScalar scalar;
    scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Automatic );
@@ -3715,7 +3716,7 @@ void write_Avs_table(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptAngleUnitValue,  angle,    pDisplayUnits->GetAngleUnit(),        false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, avs,      pDisplayUnits->GetAvOverSUnit(),      false );
 
-//   location.IncludeSpanAndGirder(span == ALL_SPANS);
+   location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
@@ -3864,7 +3865,7 @@ void write_bar_spacing_table(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptLengthUnitValue, spacing,  pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, avs,      pDisplayUnits->GetAvOverSUnit(),      false );
 
-   //location.IncludeSpanAndGirder(span == ALL_SPANS);
+   location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
 
    const auto* pRebarPool = WBFL::LRFD::RebarPool::GetInstance();
 

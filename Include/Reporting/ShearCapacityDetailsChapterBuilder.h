@@ -61,6 +61,10 @@ public:
    //------------------------------------------------------------------------
    virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 
+   //------------------------------------------------------------------------
+   // Use static to determine how POI's are to be printed. This will save many, many duplicate calls for this information
+   static bool m_IncludeSpanAndGirderForPois;
+
    // GROUP: ACCESS
    // GROUP: INQUIRY
 
