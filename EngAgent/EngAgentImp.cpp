@@ -4020,27 +4020,22 @@ bool CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
    GET_IFACE(IAllowableConcreteStress,pAllowStress);
    pgsPointOfInterest dummyPOI(segmentKey,0.0);
    Float64 c = -pAllowStress->GetAllowableCompressionStressCoefficient(dummyPOI,pgsTypes::TopGirder,StressCheckTask(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression));
-   Float64 t, fmax;
-   bool bfMax;
-   pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,StressCheckTask(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension),false/*without rebar*/,false,&t,&bfMax,&fmax);
+   auto tension_stress_limit = pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,StressCheckTask(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension),false/*without rebar*/,false);
 
    Float64 fc_reqd_compression = min_stress_WithoutTTS/c;
    Float64 fc_reqd_tension = 0;
    if ( 0 < max_stress_WithoutTTS )
    {
-      if (0 < t)
+      if (0 < tension_stress_limit.Coefficient)
       {
-         fc_reqd_tension = pow(max_stress_WithoutTTS/t,2);
+         fc_reqd_tension = pow(max_stress_WithoutTTS/tension_stress_limit.Coefficient,2);
 
-         if ( bfMax && fmax < max_stress_WithoutTTS) 
+         if ( tension_stress_limit.bHasMaxValue && tension_stress_limit.MaxValue < max_stress_WithoutTTS) 
          {
             // allowable stress is limited to value lower than needed
             // look at the with rebar case
-            bool bCheckMaxAlt;
-            Float64 fMaxAlt;
-            Float64 talt;
-            pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,StressCheckTask(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension),true/*with rebar*/,false/*in other than precompressed tensile zone*/,&talt,&bCheckMaxAlt,&fMaxAlt);
-            fc_reqd_tension = pow(max_stress_WithoutTTS/talt,2);
+            auto alt_tension_stress_limit = pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,StressCheckTask(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension),true/*with rebar*/,false/*in other than precompressed tensile zone*/);
+            fc_reqd_tension = pow(max_stress_WithoutTTS/alt_tension_stress_limit.Coefficient,2);
          }
       }
    }

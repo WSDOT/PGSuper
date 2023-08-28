@@ -113,9 +113,9 @@ void PrestressedElementCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* 
    *pChapter << pPara;
 
    *pPara << _T("- Compressive stress : ") << CompressionStressCoefficient_BeforeLosses << RPT_FCI << rptNewLine;
-   *pPara << _T("- Tension stress in areas other than the precompressed tensile zone and without bonded reinforcement : "); TensionStressLimit_WithReinforcement_BeforeLosses.Report(pPara, pDisplayUnits); *pPara << rptNewLine;
+   *pPara << _T("- Tension stress in areas other than the precompressed tensile zone and without bonded reinforcement : "); TensionStressLimit_WithReinforcement_BeforeLosses.Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fci); *pPara << rptNewLine;
    *pPara << _T("- Tension stress in areas with bonded reinforcement (reinforcing bars or prestress steel sufficient to resist the tensile force in the concrete computed assuming an uncracked section, where reinforcement is proportioned using a stress of 0.5") << RPT_FY << _T(", not to exceed 30.0 ksi : ");
-   TensionStressLimit_OtherAreas_WithoutReinforcement_BeforeLosses.Report(pPara, pDisplayUnits); *pPara << rptNewLine;
+   TensionStressLimit_OtherAreas_WithoutReinforcement_BeforeLosses.Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fci); *pPara << rptNewLine;
 
    pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
    *pChapter << pPara;
@@ -127,12 +127,12 @@ void PrestressedElementCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* 
    *pPara << _T(" - Compressive stress due to the sum of effective prestress and permanent loads : ") << CompressionStressCoefficient_PermanentLoadsOnly_AfterLosses << RPT_FC << rptNewLine;
    *pPara << _T(" - Compressive stress due to the sum of effective prestress, permanent loads, and transient loads : ") << CompressionStressCoefficient_AllLoads_AfterLosses << RPT_FC << rptNewLine;
    *pPara << _T(" - Tension in the Precompressed Tensile Zone, Assuming Uncracked Sections") << rptNewLine;
-   *pPara << _T("   * For components with bonded prestressing tendons or reinforcement that are subjected to not worse than moderate corrosion conditions : "); TensionStressLimit_ServiceIII_InPTZ_ModerateCorrosionConditions_AfterLosses.Report(pPara, pDisplayUnits); *pPara << rptNewLine;
-   *pPara << _T("   * For components with bonded prestressing tendons or reinforcement that are subjected to severe corrosive conditions : "); TensionStressLimit_ServiceIII_InPTZ_SevereCorrosionConditions_AfterLosses.Report(pPara, pDisplayUnits); *pPara << rptNewLine;
+   *pPara << _T("   * For components with bonded prestressing tendons or reinforcement that are subjected to not worse than moderate corrosion conditions : "); TensionStressLimit_ServiceIII_InPTZ_ModerateCorrosionConditions_AfterLosses.Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fc); *pPara << rptNewLine;
+   *pPara << _T("   * For components with bonded prestressing tendons or reinforcement that are subjected to severe corrosive conditions : "); TensionStressLimit_ServiceIII_InPTZ_SevereCorrosionConditions_AfterLosses.Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fc); *pPara << rptNewLine;
 
    if (bCheckFinalServiceITension)
    {
-      *pPara << _T(" - (Optional) Tension due to the sum of effective prestress and permanent loads : "); TensionStressLimit_ServiceI_PermanentLoadsOnly_AfterLosses.Report(pPara, pDisplayUnits); *pPara << rptNewLine;
+      *pPara << _T(" - (Optional) Tension due to the sum of effective prestress and permanent loads : "); TensionStressLimit_ServiceI_PermanentLoadsOnly_AfterLosses.Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fc); *pPara << rptNewLine;
    }
 
    if (bCheckTemporaryStresses)
@@ -147,12 +147,12 @@ void PrestressedElementCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* 
       *pPara << _T("Stress Limits immediately after Temporary Strand Removal") << rptNewLine;
       *pPara << _T("Compression Stress : ") << CompressionStressCoefficient_TemporaryStrandRemoval << RPT_FC << rptNewLine;
       *pPara << _T("Tension Stress") << rptNewLine;
-      *pPara << _T("- In areas other than the precompressed tensile zone : "); TensionStressLimit_WithoutReinforcement_TemporaryStrandRemoval.Report(pPara, pDisplayUnits); *pPara << rptNewLine;
-      *pPara << _T("- In areas with sufficient bonded reinforcement : "); TensionStressLimit_WithReinforcement_TemporaryStrandRemoval.Report(pPara, pDisplayUnits); *pPara << rptNewLine;
+      *pPara << _T("- In areas other than the precompressed tensile zone : "); TensionStressLimit_WithoutReinforcement_TemporaryStrandRemoval.Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fc); *pPara << rptNewLine;
+      *pPara << _T("- In areas with sufficient bonded reinforcement : "); TensionStressLimit_WithReinforcement_TemporaryStrandRemoval.Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fc); *pPara << rptNewLine;
       *pPara << rptNewLine;
       *pPara << _T("Stress Limits immediately after Deck Placement") << rptNewLine;
       *pPara << _T("Compression Stress : ") << CompressionStressCoefficient_AfterDeckPlacement << RPT_FC << rptNewLine;
-      *pPara << _T("Tension Stress : "); TensionStressLimit_AfterDeckPlacement.Report(pPara, pDisplayUnits); *pPara << rptNewLine;
+      *pPara << _T("Tension Stress : "); TensionStressLimit_AfterDeckPlacement.Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fc); *pPara << rptNewLine;
    }
 
 

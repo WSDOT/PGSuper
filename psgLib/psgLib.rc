@@ -1660,7 +1660,7 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "Prestressed Elements"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Stress Limits for Temporary Stresses before Losses (LRFD 5.9.4.1)",IDC_GTEMP,7,7,597,77
+    GROUPBOX        "Stress Limits for Temporary Stresses before Losses (LRFD 5.9.4.1, 5.12.3.4.3)",IDC_GTEMP,7,7,597,77
     LTEXT           "Compressive Stress",IDC_STATIC,15,22,68,8
     EDITTEXT        IDC_RELEASE_COMPRESSION,86,20,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "f'ci",IDC_STATIC,129,22,19,8
@@ -1675,22 +1675,22 @@ BEGIN
     LTEXT           "In areas with sufficient bonded reinforcement",IDC_STATIC,22,68,147,8
     EDITTEXT        IDC_RELEASE_TENSION_WITH_REBAR,176,66,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "sqrt(f'ci (MPa))",IDC_RELEASE_TENSION_WITH_REBAR_UNIT,221,68,79,8
-    GROUPBOX        "Stress Limits at Service Limit State after Losses (LRFD 5.9.4.2)",IDC_GPERM,7,87,597,120
+    GROUPBOX        "Stress Limits at Service Limit State after Losses (LRFD 5.9.4.2, 5.12.3.4.3)",IDC_GPERM,7,87,597,120
     LTEXT           "Compressive Stress (Effective Prestress + Permanent Loads)",IDC_STATIC,15,104,204,8
     EDITTEXT        IDC_SERVICE_COMPRESSION,274,100,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "f'c",IDC_STATIC,318,103,8,8
     LTEXT           "Compressive Stress (Effective Prestress + Permanent Loads + Transient Loads)",IDC_STATIC,15,119,260,8
     EDITTEXT        IDC_SERVICE_COMPRESSION_WITH_LIVELOAD,274,116,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "f'c",IDC_STATIC,318,119,13,8
-    CONTROL         "Tensile Stress (Service I) (Effective Prestress + Permanent Loads = Final Stress without Live Load)",IDC_CHECK_SERVICE_I_TENSION,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,135,332,10
+    CONTROL         "Tensile Stress (Effective Prestress + Permanent Loads)",IDC_CHECK_SERVICE_I_TENSION,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,135,193,10
     EDITTEXT        IDC_SERVICE_I_TENSION,28,146,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_I_TENSION_UNIT,72,149,79,8
     CONTROL         "But not greater than ",IDC_CHECK_SERVICE_I_TENSION_MAX,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,157,149,78,10
     EDITTEXT        IDC_SERVICE_I_TENSION_MAX,239,146,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "MPa",IDC_SERVICE_I_TENSION_MAX_UNIT,283,149,20,8
-    LTEXT           "Tensile Stress (Service III) (Effective Prestress + Permanent Loads + Transient Loads)",IDC_STATIC,15,164,278,8
+    LTEXT           "Tensile Stress (Effective Prestress + Permanent Loads + Transient Loads)",IDC_STATIC,15,164,238,8
     LTEXT           "Not worse than moderate corrosion conditions",IDC_STATIC,22,177,148,8
     EDITTEXT        IDC_SERVICE_III_TENSION,176,174,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_III_TENSION_UNIT,221,177,79,8

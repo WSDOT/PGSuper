@@ -88,16 +88,16 @@ void ClosureJointCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDispl
    *pPara << _T("Tensile stress") << rptNewLine;
    *pPara << _T("- Longitudinal Stresses through Joints in the Precompressed Tensile Zone") << rptNewLine;
    *pPara << _T("  * Joints with minimum bonded auxiliary reinforcement through the joints, which is sufficient to carry the calculated tensile force at a stress of 0.5") << RPT_FY << _T("; with internal tendons or external tendons :");
-   TensionStressLimit_InPTZ_WithReinforcement_BeforeLosses.Report(pPara, pDisplayUnits); *pPara << rptNewLine;
+   TensionStressLimit_InPTZ_WithReinforcement_BeforeLosses.Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fci); *pPara << rptNewLine;
    
    *pPara << _T("  * Joints without the minimum bonded auxiliary reinforcement through the joints : ");
-   TensionStressLimit_InPTZ_WithoutReinforcement_BeforeLosses.Report(pPara, pDisplayUnits); *pPara << rptNewLine;
+   TensionStressLimit_InPTZ_WithoutReinforcement_BeforeLosses.Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fci); *pPara << rptNewLine;
 
    *pPara << _T("- Stresses in Other Areas") << rptNewLine;
    *pPara << _T("  * For areas without bonded nonprestressed reinforcement : ");
-   TensionStressLimit_OtherAreas_WithoutReinforcement_BeforeLosses.Report(pPara, pDisplayUnits); *pPara << rptNewLine;
+   TensionStressLimit_OtherAreas_WithoutReinforcement_BeforeLosses.Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fci); *pPara << rptNewLine;
    *pPara << _T("  * In areas with bonded reinforcement (reinforcing bars or prestressing steel) sufficient to resist the tensile force in the concrete computed assuming an uncracked section, where reinforcement is proportioned using a stress of 0.5") << RPT_FY << _T(", not to exceed 30.0 ksi : ");
-   TensionStressLimit_OtherAreas_WithReinforcement_BeforeLosses.Report(pPara, pDisplayUnits); *pPara << rptNewLine;
+   TensionStressLimit_OtherAreas_WithReinforcement_BeforeLosses.Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fci); *pPara << rptNewLine;
 
    pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
    *pChapter << pPara;
@@ -110,14 +110,14 @@ void ClosureJointCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDispl
    *pPara << _T("Tension stress") << rptNewLine;
    *pPara << _T("- Longitudinal Stresses through Joints in the Precompressed Tensile Zone") << rptNewLine;
    *pPara << _T("  * Joints with minimum bonded auxiliary reinforcement through the joints, which is sufficient to carry the calculated tensile force at a stress of 0.5") << RPT_FY << _T("; with internal tendons or external tendons :");
-   TensionStressLimit_InPTZ_WithReinforcement_AfterLosses.Report(pPara, pDisplayUnits); *pPara << rptNewLine;
+   TensionStressLimit_InPTZ_WithReinforcement_AfterLosses.Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fc); *pPara << rptNewLine;
    *pPara << _T("  * Joints without the minimum bonded auxiliary reinforcement through the joints : ");
-   TensionStressLimit_InPTZ_WithoutReinforcement_AfterLosses.Report(pPara, pDisplayUnits); *pPara << rptNewLine;
+   TensionStressLimit_InPTZ_WithoutReinforcement_AfterLosses.Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fc); *pPara << rptNewLine;
    *pPara << _T("- Stresses in Other Areas") << rptNewLine;
    *pPara << _T("  * For areas without bonded nonprestressed reinforcement : ");
-   TensionStressLimit_OtherAreas_WithoutReinforcement_AfterLosses.Report(pPara, pDisplayUnits); *pPara << rptNewLine;
+   TensionStressLimit_OtherAreas_WithoutReinforcement_AfterLosses.Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fc); *pPara << rptNewLine;
    *pPara << _T("  * In areas with bonded reinforcement (reinforcing bars or prestressing steel) sufficient to resist the tensile force in the concrete computed assuming an uncracked section, where reinforcement is proportioned using a stress of 0.5") << RPT_FY << _T(", not to exceed 30.0 ksi : ");
-   TensionStressLimit_OtherAreas_WithReinforcement_AfterLosses.Report(pPara, pDisplayUnits); *pPara << rptNewLine;
+   TensionStressLimit_OtherAreas_WithReinforcement_AfterLosses.Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fc); *pPara << rptNewLine;
 
    pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
    *pChapter << pPara;

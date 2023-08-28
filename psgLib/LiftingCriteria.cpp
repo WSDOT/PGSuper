@@ -184,9 +184,9 @@ void LiftingCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUni
    *pPara << rptNewLine;
 
    *pPara << _T("Tension Stress Limits") << rptNewLine;
-   *pPara << _T("Without Reinforcement - "); TensionStressLimitWithoutReinforcement.Report(pPara, pDisplayUnits);
+   *pPara << _T("Without Reinforcement - "); TensionStressLimitWithoutReinforcement.Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fci);
    *pPara << rptNewLine;
-   *pPara << _T("With Reinforcement - "); TensionStressLimitWithReinforcement.Report(pPara, pDisplayUnits);
+   *pPara << _T("With Reinforcement - "); TensionStressLimitWithReinforcement.Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fci);
 }
 
 void LiftingCriteria::Save(WBFL::System::IStructuredSave* pSave) const

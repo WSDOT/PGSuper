@@ -95,8 +95,8 @@ void KDOTHaulingCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDispla
 
    *pPara << _T("Concrete Stress Limits - Hauling") << rptNewLine;
    *pPara << _T("- Compressive Stress = ") << CompressionStressLimitCoefficient << RPT_FC << rptNewLine;
-   *pPara << _T("- Tensile Stress (w/o mild rebar) = "); TensionStressLimitWithoutReinforcement.Report(pPara, pDisplayUnits); *pPara << rptNewLine;
-   *pPara << _T("- Tensile Stress (w/  mild rebar) = "); TensionStressLimitWithReinforcement.Report(pPara, pDisplayUnits); *pPara << rptNewLine;
+   *pPara << _T("- Tensile Stress (w/o mild rebar) = "); TensionStressLimitWithoutReinforcement.Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fc); *pPara << rptNewLine;
+   *pPara << _T("- Tensile Stress (w/  mild rebar) = "); TensionStressLimitWithReinforcement.Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fc); *pPara << rptNewLine;
 }
 
 void WSDOTHaulingCriteria::Save(WBFL::System::IStructuredSave* pSave) const
@@ -274,14 +274,14 @@ void WSDOTHaulingCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDispl
    *pPara << _T("Concrete Stress Limits - Hauling - Normal Crown Slope") << rptNewLine;
    *pPara << _T("- Compressive Stress (General) = ") << CompressionStressCoefficient_GlobalStress << RPT_FC << rptNewLine;
    *pPara << _T("- Compressive Stress (With lateral bending) = ") << CompressionStressCoefficient_PeakStress << RPT_FC << rptNewLine;
-   *pPara << _T("- Tensile Stress (w/o mild rebar) = "); TensionStressLimitWithoutReinforcement[+WBFL::Stability::HaulingSlope::CrownSlope].Report(pPara, pDisplayUnits); *pPara << rptNewLine;
-   *pPara << _T("- Tensile Stress (w/  mild rebar) = "); TensionStressLimitWithReinforcement[+WBFL::Stability::HaulingSlope::CrownSlope].Report(pPara, pDisplayUnits); *pPara << rptNewLine;
+   *pPara << _T("- Tensile Stress (w/o mild rebar) = "); TensionStressLimitWithoutReinforcement[+WBFL::Stability::HaulingSlope::CrownSlope].Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fc); *pPara << rptNewLine;
+   *pPara << _T("- Tensile Stress (w/  mild rebar) = "); TensionStressLimitWithReinforcement[+WBFL::Stability::HaulingSlope::CrownSlope].Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fc); *pPara << rptNewLine;
 
    *pPara << _T(" Concrete Stress Limits - Hauling - Maximum Superelevation") << rptNewLine;
    *pPara << _T("- Compressive Stress (General) = ") << CompressionStressCoefficient_GlobalStress << RPT_FC << rptNewLine;
    *pPara << _T("- Compressive Stress (With lateral bending) = ") << CompressionStressCoefficient_PeakStress << RPT_FC << rptNewLine;
-   *pPara << _T("- Tensile Stress (w/o mild rebar) = "); TensionStressLimitWithoutReinforcement[+WBFL::Stability::HaulingSlope::Superelevation].Report(pPara, pDisplayUnits); *pPara << rptNewLine;
-   *pPara << _T("- Tensile Stress (w/  mild rebar) = "); TensionStressLimitWithReinforcement[+WBFL::Stability::HaulingSlope::Superelevation].Report(pPara, pDisplayUnits); *pPara << rptNewLine;
+   *pPara << _T("- Tensile Stress (w/o mild rebar) = "); TensionStressLimitWithoutReinforcement[+WBFL::Stability::HaulingSlope::Superelevation].Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fc); *pPara << rptNewLine;
+   *pPara << _T("- Tensile Stress (w/  mild rebar) = "); TensionStressLimitWithReinforcement[+WBFL::Stability::HaulingSlope::Superelevation].Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fc); *pPara << rptNewLine;
 }
 
 bool WSDOTHaulingCriteria::Compare(const WSDOTHaulingCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const

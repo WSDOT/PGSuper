@@ -547,20 +547,16 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
             }
             else
             {
-               Float64 t;
-               bool bCheckMax;
-               Float64 fmax;
-
-               pAllowable->GetAllowableTensionStressCoefficient(poi,pgsTypes::TopGirder,StressCheckTask(intervals[icase],lstates[icase],pgsTypes::Tension),false/*without rebar*/,false,&t,&bCheckMax,&fmax);
+               auto tension_stress_limit = pAllowable->GetAllowableTensionStressCoefficient(poi,pgsTypes::TopGirder,StressCheckTask(intervals[icase],lstates[icase],pgsTypes::Tension),false/*without rebar*/,false);
 
                // if this is bridge site 3, only look at the bottom stress (stress in the precompressed tensile zone)
                // otherwise, take the controlling tension
                Float64 f = (intervals[icase] == liveLoadIntervalIdx ? fBot : Max(fTop,fBot));
 
                Float64 fc_reqd;
-               if (f>0.0)
+               if (0.0 < f)
                {
-                  fc_reqd = (IsZero(t) ? 0 : BinarySign(f)*pow(f/t,2));
+                  fc_reqd = (IsZero(tension_stress_limit.Coefficient) ? 0 : BinarySign(f)*pow(f/tension_stress_limit.Coefficient,2));
                }
                else
                {
@@ -568,9 +564,9 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
                   fc_reqd = 0;
                }
 
-               if ( bCheckMax &&                  // allowable stress is limited -AND-
+               if ( tension_stress_limit.bHasMaxValue &&                  // allowable stress is limited -AND-
                     (0 < fc_reqd) &&              // there is a concrete strength that might work -AND-
-                    (pow(fmax/t,2) < fc_reqd) )   // that strength will exceed the max limit on allowable
+                    (pow(tension_stress_limit.MaxValue/tension_stress_limit.Coefficient,2) < fc_reqd) )   // that strength will exceed the max limit on allowable
                {
                   // too bad... this isn't going to work
                   fc_reqd = NO_AVAILABLE_CONCRETE_STRENGTH;

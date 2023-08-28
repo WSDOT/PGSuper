@@ -2823,11 +2823,9 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	            //
 	
 	            // parameters for tension with rebar
-	            std::array<Float64,2> talt;
-	            std::array<bool,2> bCheckMax;
-	            std::array<Float64,2> fmax;
-	            pAllowable->GetAllowableTensionStressCoefficient(poi,topStressLocation,task,true/*with rebar*/, bIsInPTZ[TOP],&talt[TOP],&bCheckMax[TOP],&fmax[TOP]);
-	            pAllowable->GetAllowableTensionStressCoefficient(poi,botStressLocation,task,true/*with rebar*/, bIsInPTZ[BOT],&talt[BOT],&bCheckMax[BOT],&fmax[BOT]);
+               std::array<TensionStressLimit, 2> tension_stress_limit;
+	            tension_stress_limit[TOP] = pAllowable->GetAllowableTensionStressCoefficient(poi,topStressLocation,task,true/*with rebar*/, bIsInPTZ[TOP]);
+               tension_stress_limit[BOT] = pAllowable->GetAllowableTensionStressCoefficient(poi,botStressLocation,task,true/*with rebar*/, bIsInPTZ[BOT]);
 	
 	            Float64 f;
 	            IndexType face;
@@ -2863,8 +2861,8 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	               // don't change anything because the "without rebar" case governs and it
 	               // is done
 	               Float64 fc_reqd;
-	               ATLASSERT(bCheckMax[face] == false); // alternate stress doesn't use limiting value
-	               fc_reqd = pow(f/(lambda*talt[face]),2);
+	               ATLASSERT(tension_stress_limit[face].bHasMaxValue == false); // alternate stress doesn't use limiting value
+	               fc_reqd = pow(f/(lambda*tension_stress_limit[face].Coefficient),2);
 	               artifact.SetRequiredConcreteStrength(pgsTypes::Tension,face == TOP ? topStressLocation : botStressLocation,fc_reqd);
 	            }
 	         } // if is tension
@@ -2976,9 +2974,7 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
 
       Float64 fAllowableWithoutRebar(0.0), fAllowableWithRebar(0.0);
       Float64 c(0.0);
-      Float64 t(0.0), talt(0.0);
-      bool bCheckMax(false);
-      Float64 ftmax(0.0);
+      TensionStressLimit tension_stress_limit_without_rebar, tension_stress_limit_with_rebar;
       if (task.stressType == pgsTypes::Compression)
       {
          // always applicable in compression
@@ -2996,11 +2992,8 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
          artifact.IsApplicable(pgsTypes::TopGirder,   !bIsInPTZ[pgsTypes::TopGirder]);
          artifact.IsApplicable(pgsTypes::BottomGirder,!bIsInPTZ[pgsTypes::BottomGirder]);
 
-         pAllowable->GetAllowableTensionStressCoefficient(poi, pgsTypes::TopGirder,task,false/*without rebar*/,false,&t,&bCheckMax,&ftmax);
-
-         bool bDummy;
-         Float64 fDummy;
-         pAllowable->GetAllowableTensionStressCoefficient(poi, pgsTypes::TopGirder,task,true/*with rebar*/,false,&talt,&bDummy,&fDummy);
+         tension_stress_limit_without_rebar = pAllowable->GetAllowableTensionStressCoefficient(poi, pgsTypes::TopGirder,task,false/*without rebar*/,false);
+         tension_stress_limit_with_rebar = pAllowable->GetAllowableTensionStressCoefficient(poi, pgsTypes::TopGirder,task,true/*with rebar*/,false);
 
          fAllowableWithoutRebar = pAllowable->GetSegmentAllowableTensionStress(poi, task, fci,false/*without rebar*/);
          fAllowableWithRebar    = pAllowable->GetSegmentAllowableTensionStress(poi, task, fci,true/*with rebar*/);
@@ -3220,14 +3213,14 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
                if (altTensionRequirements.bIsAdequateRebar )
                {
                   // We have additional rebar and can go to a higher limit
-                  fci_reqd = pow(f/(lambda*talt),2);
+                  fci_reqd = pow(f/(lambda*tension_stress_limit_with_rebar.Coefficient),2);
                }
                else
                {
-                  fci_reqd = (IsZero(t) ? 0 : BinarySign(f)*pow(f/(lambda*t),2));
-                  if ( bCheckMax &&                  // allowable stress is limited -AND-
+                  fci_reqd = (IsZero(tension_stress_limit_without_rebar.Coefficient) ? 0 : BinarySign(f)*pow(f/(lambda* tension_stress_limit_without_rebar.Coefficient),2));
+                  if (tension_stress_limit_without_rebar.bHasMaxValue &&                  // allowable stress is limited -AND-
                        (0 < fci_reqd) &&              // there is a concrete strength that might work -AND-
-                       (pow(ftmax/(lambda*t),2) < fci_reqd) )   // that strength will exceed the max limit on allowable
+                       (pow(tension_stress_limit_without_rebar.MaxValue/(lambda* tension_stress_limit_without_rebar.Coefficient),2) < fci_reqd) )   // that strength will exceed the max limit on allowable
                   {
                      // too bad... this isn't going to work
                      fci_reqd = NO_AVAILABLE_CONCRETE_STRENGTH;

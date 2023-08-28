@@ -37,12 +37,20 @@ bool TensionStressLimit::operator==(const TensionStressLimit& other) const
    return true;
 }
 
-void TensionStressLimit::Report(rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits) const
+void TensionStressLimit::Report(rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits,ConcreteSymbol concrete) const
 {
    INIT_UV_PROTOTYPE(rptSqrtPressureValue, tension_coefficient, pDisplayUnits->GetTensionCoefficientUnit(), false);
    INIT_UV_PROTOTYPE(rptStressUnitValue, tension, pDisplayUnits->GetStressUnit(), true);
 
-   *pPara << tension_coefficient.SetValue(Coefficient) << RPT_SQRT_FC;
+   *pPara << tension_coefficient.SetValue(Coefficient);
+
+   if (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+   {
+      (*pPara) << symbol(lambda);
+   }
+
+   if (concrete == ConcreteSymbol::fci) *pPara << RPT_SQRT_FCI; else *pPara << RPT_SQRT_FC;
+
    if (bHasMaxValue) *pPara << _T(" ") << symbol(LTE) << _T(" ") << tension.SetValue(MaxValue);
 }
 
@@ -64,4 +72,14 @@ void TensionStressLimit::Load(LPCTSTR strUnitName, WBFL::System::IStructuredLoad
    if (!pLoad->Property(_T("bHasMaxValue"), &bHasMaxValue)) THROW_LOAD(InvalidFileFormat, pLoad);
    if (!pLoad->Property(_T("MaxValue"), &MaxValue)) THROW_LOAD(InvalidFileFormat, pLoad);
    if (!pLoad->EndUnit()) THROW_LOAD(InvalidFileFormat, pLoad);
+}
+
+Float64 TensionStressLimit::GetStressLimit(Float64 lambda, Float64 fc) const
+{
+   Float64 f = lambda * Coefficient * sqrt(fc);
+   if (bHasMaxValue)
+   {
+      f = Min(f, MaxValue);
+   }
+   return f;
 }

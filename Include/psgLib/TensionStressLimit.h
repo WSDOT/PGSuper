@@ -37,9 +37,12 @@ struct PSGLIBCLASS TensionStressLimit
 
    bool operator==(const TensionStressLimit& other) const;
 
-   void Report(rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits) const;
+   enum class ConcreteSymbol {fci,fc};
+   void Report(rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits, ConcreteSymbol concrete) const;
 
    void Save(LPCTSTR strUnitName,WBFL::System::IStructuredSave* pSave) const;
    void Load(LPCTSTR strUnitName, WBFL::System::IStructuredLoad* pLoad);
+
+   Float64 GetStressLimit(Float64 lambda, Float64 fc) const;
 };
 

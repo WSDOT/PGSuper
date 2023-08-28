@@ -2066,36 +2066,29 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
          fc_reqd = -1;
          if (0 < fControl)
          {
-            Float64 t, fmax;
-            bool bfMax;
-
             GET_IFACE(IAllowableConcreteStress, pAllowStress);
-            pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI, pgsTypes::TopGirder, task, false/*without rebar*/, false, &t, &bfMax, &fmax);
-            if (0 < t)
+            auto tension_stress_limit = pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI, pgsTypes::TopGirder, task, false/*without rebar*/, false);
+            if (0 < tension_stress_limit.Coefficient)
             {
-               LOG(_T("f allow coeff = ") << WBFL::Units::ConvertFromSysUnits(t, WBFL::Units::Measure::SqrtKSI) << _T("_/f'c = ") << WBFL::Units::ConvertFromSysUnits(fControl, WBFL::Units::Measure::KSI));
-               fc_reqd = pow(fControl / (lambda * t), 2);
+               LOG(_T("f allow coeff = ") << WBFL::Units::ConvertFromSysUnits(tension_stress_limit.Coefficient, WBFL::Units::Measure::SqrtKSI) << _T("_/f'c = ") << WBFL::Units::ConvertFromSysUnits(fControl, WBFL::Units::Measure::KSI));
+               fc_reqd = pow(fControl / (lambda * tension_stress_limit.Coefficient), 2);
 
-               if (bfMax && fmax < fControl)
+               if (tension_stress_limit.bHasMaxValue && tension_stress_limit.MaxValue < fControl)
                {
                   // allowable stress is limited to value lower than needed
                   if (task.intervalIdx == releaseIntervalIdx)
                   {
                      // try getting the alternative allowable if rebar is used
-                     bool bCheckMaxAlt;
-                     Float64 fMaxAlt;
-                     Float64 talt;
-
                      ATLASSERT(task.limitState == pgsTypes::ServiceI && task.stressType == pgsTypes::Tension);
 
-                     pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI, pgsTypes::TopGirder, task, true/*with rebar*/, false/*in other than precompressed tensile zone*/, &talt, &bCheckMaxAlt, &fMaxAlt);
-                     fc_reqd = pow(fControl / (lambda * talt), 2);
+                     auto alt_tension_stress_limit = pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI, pgsTypes::TopGirder, task, true/*with rebar*/, false/*in other than precompressed tensile zone*/);
+                     fc_reqd = pow(fControl / (lambda * alt_tension_stress_limit.Coefficient), 2);
                      result = ConcSuccessWithRebar;
                      LOG(_T("Min rebar is required to achieve required strength"));
                   }
                   else
                   {
-                     LOG(_T("Required strength is greater than spec defined upper limit of ") << WBFL::Units::ConvertFromSysUnits(fmax, WBFL::Units::Measure::KSI) << _T(", cannot achieve strength"));
+                     LOG(_T("Required strength is greater than spec defined upper limit of ") << WBFL::Units::ConvertFromSysUnits(tension_stress_limit.MaxValue, WBFL::Units::Measure::KSI) << _T(", cannot achieve strength"));
                      fc_reqd = -1;
                      return ConcFailed;
                   }

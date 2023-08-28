@@ -26,6 +26,8 @@
 #include <PgsExt\Keys.h>
 #include <PgsExt\PointOfInterest.h>
 
+#include <psgLib/TensionStressLimit.h>
+
 interface IEAFDisplayUnits;
 class pgsSegmentArtifact;
 
@@ -162,7 +164,7 @@ interface IAllowableConcreteStress : IUnknown
    virtual Float64 GetAllowableTensionStress(pgsTypes::LoadRatingType ratingType,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation) const = 0;
 
    virtual Float64 GetAllowableCompressionStressCoefficient(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation, const StressCheckTask& task) const = 0;
-   virtual void GetAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation, const StressCheckTask& task,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) const = 0;
+   virtual TensionStressLimit GetAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation, const StressCheckTask& task,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone) const = 0;
 
    // Returns the allowable Compression stress at the specified locations along the girder
    virtual std::vector<Float64> GetGirderAllowableCompressionStress(const PoiList& vPoi, const StressCheckTask& task) const = 0;
@@ -208,9 +210,9 @@ interface IAllowableConcreteStress : IUnknown
    virtual Float64 GetClosureJointAllowableCompressionStressCoefficient(const pgsPointOfInterest& poi, const StressCheckTask& task) const = 0;
    virtual Float64 GetDeckAllowableCompressionStressCoefficient(const pgsPointOfInterest& poi, const StressCheckTask& task) const = 0;
 
-   virtual void GetSegmentAllowableTensionStressCoefficient(const pgsPointOfInterest& poi, const StressCheckTask& task,bool bWithBondedReinforcement,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) const = 0;
-   virtual void GetClosureJointAllowableTensionStressCoefficient(const pgsPointOfInterest& poi, const StressCheckTask& task,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) const = 0;
-   virtual void GetDeckAllowableTensionStressCoefficient(const pgsPointOfInterest& poi, const StressCheckTask& task,bool bWithBondedReinforcement,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) const = 0;
+   virtual TensionStressLimit GetSegmentAllowableTensionStressCoefficient(const pgsPointOfInterest& poi, const StressCheckTask& task,bool bWithBondedReinforcement) const = 0;
+   virtual TensionStressLimit GetClosureJointAllowableTensionStressCoefficient(const pgsPointOfInterest& poi, const StressCheckTask& task,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone) const = 0;
+   virtual TensionStressLimit GetDeckAllowableTensionStressCoefficient(const pgsPointOfInterest& poi, const StressCheckTask& task,bool bWithBondedReinforcement) const = 0;
 
    // Returns true if the stress check is applicable to this interval, limit state, and stress type
    virtual bool IsStressCheckApplicable(const CSegmentKey& segmentKey, const StressCheckTask& task) const = 0;

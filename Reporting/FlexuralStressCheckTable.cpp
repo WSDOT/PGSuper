@@ -823,56 +823,29 @@ void CFlexuralStressCheckTable::BuildAllowDeckStressInformation(rptChapter* pCha
       // NOTE: don't need to worry about segment tendons here... we are checking deck stresses and segment tendons are stress
       // at the fabrication plant so they don't effect the deck
 
-      Float64 t;            // tension coefficient
-      Float64 t_max;        // maximum allowable tension
-      bool b_t_max;         // true if max allowable tension is applicable
-      pAllowable->GetDeckAllowableTensionStressCoefficient(poi, task,false/*without rebar*/,&t,&b_t_max,&t_max);
+      auto tension_stress_limit = pAllowable->GetDeckAllowableTensionStressCoefficient(poi, task,false/*without rebar*/);
 
       if ( bIsTendonStressingInterval )
       {
-         (*pPara) << _T("Tension stress limit in areas other than the precompressed tensile zone = ") << tension_coeff.SetValue(t);
-         if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
-         {
-            (*pPara) << symbol(lambda);
-         }
-         (*pPara) << symbol(ROOT) << RPT_FC;
-
-         if ( b_t_max )
-         {
-            *pPara << _T(" but not more than ") << stress_u.SetValue(t_max);
-         }
-
+         (*pPara) << _T("Tension stress limit in areas other than the precompressed tensile zone = ");
+         tension_stress_limit.Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fc);
          Float64 fAllowable = pAllowable->GetDeckAllowableTensionStress(poi, task,false/*without rebar*/);
          *pPara  << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
 
          if ( pGirderArtifact->WasDeckWithRebarAllowableStressUsed(task) )
          {
-            Float64 t_with_rebar; // allowable tension when sufficient rebar is used
-            pAllowable->GetDeckAllowableTensionStressCoefficient(poi, task,true/*with rebar*/,&t_with_rebar,&b_t_max,&t_max);
+            tension_stress_limit = pAllowable->GetDeckAllowableTensionStressCoefficient(poi, task,true/*with rebar*/);
             fAllowable = pAllowable->GetDeckAllowableTensionStress(poi, task,true/*with rebar*/);
 
-            (*pPara) << _T("Tension stress limit in areas with sufficient bonded reinforcement = ") << tension_coeff.SetValue(t_with_rebar);
-            if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
-            {
-               (*pPara) << symbol(lambda);
-            }
-            (*pPara) << symbol(ROOT) << RPT_FC << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
-
+            (*pPara) << _T("Tension stress limit in areas with sufficient bonded reinforcement = ");
+            tension_stress_limit.Report(pPara,pDisplayUnits,TensionStressLimit::ConcreteSymbol::fc);
+            (*pPara) << rptNewLine;
          }
       }
       else
       {
-         (*pPara) << _T("Allowable tensile stress in the precompressed tensile zone = ") << tension_coeff.SetValue(t);
-         if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
-         {
-            (*pPara) << symbol(lambda);
-         }
-         (*pPara) << symbol(ROOT) << RPT_FC;
-
-         if ( b_t_max )
-         {
-            *pPara << _T(" but not more than ") << stress_u.SetValue(t_max);
-         }
+         (*pPara) << _T("Allowable tensile stress in the precompressed tensile zone = ");
+         tension_stress_limit.Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fc);
 
          Float64 fAllowable = pAllowable->GetDeckAllowableTensionStress(poi, task,false/*without rebar*/);
          *pPara  << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
