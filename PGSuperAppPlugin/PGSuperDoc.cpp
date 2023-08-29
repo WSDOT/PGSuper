@@ -184,12 +184,8 @@ bool CPGSuperDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,int
    const CSplicedGirderData*  pGirder     = pGroup->GetGirder(segmentKey.girderIndex);
    const CPrecastSegmentData* pSegment    = pGirder->GetSegment(segmentKey.segmentIndex);
 
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-
    // resequence page if no debonding
-   bool bExtraPage = pSegment->Strands.IsSymmetricDebond() || pSpecEntry->AllowStraightStrandExtensions();
+   bool bExtraPage = pSegment->Strands.IsSymmetricDebond();
    if (EGD_DEBONDING <= nPage  && !bExtraPage)
    {
       nPage--;
@@ -302,8 +298,7 @@ bool CPGSuperDoc::EditClosureJointDescription(const CClosureKey& closureKey,int 
 void CPGSuperDoc::OnUpdateProjectDesignGirderDirectPreserveHaunch(CCmdUI* pCmdUI)
 {
    GET_IFACE(ISpecification,pSpecification);
-   GET_IFACE_NOCHECK(IBridge,pBridge); // short circuit evaluation may cause this interface to be unused
-   bool bDesignSlabOffset = pSpecification->IsSlabOffsetDesignEnabled() && pBridge->GetDeckType() != pgsTypes::sdtNone;
+   bool bDesignSlabOffset = pSpecification->DesignSlabHaunch();
    pCmdUI->Enable( bDesignSlabOffset );
 }
 
@@ -365,7 +360,7 @@ void CPGSuperDoc::DesignGirder(bool bPrompt, arSlabOffsetDesignType designSlabOf
 
    GET_IFACE_NOCHECK(IBridge, pBridge);
    GET_IFACE(ILossParameters, pLossParams);
-   if (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP)
+   if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP)
    {
       AfxMessageBox(_T("Prestress losses are computed by the time-step method. Girder design is not available for this prestress loss method."), MB_OK);
       return;
@@ -564,7 +559,7 @@ bool CPGSuperDoc::DoDesignHaunch(const CGirderKey& girderKey)
       if (dlg.ModifyBridgeDescription(newBridgeDescr))
       {
          GET_IFACE(IEnvironment,pEnvironment);
-         enumExposureCondition oldExposureCondition = pEnvironment->GetExposureCondition();
+         auto oldExposureCondition = pEnvironment->GetExposureCondition();
          Float64 oldRelHumidity = pEnvironment->GetRelHumidity();
 
          std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc,newBridgeDescr,

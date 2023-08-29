@@ -294,7 +294,7 @@ bool CStabilityGraphBuilder::UpdateNow()
    else
    {
       GET_IFACE(ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
-      if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled() && pSegmentHaulingSpecCriteria->GetHaulingAnalysisMethod() == pgsTypes::hmWSDOT)
+      if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled() && pSegmentHaulingSpecCriteria->GetHaulingAnalysisMethod() == pgsTypes::HaulingAnalysisMethod::WSDOT)
       {
          CString strTitle;
          strTitle.Format(_T("Effect of support location during hauling to bridge site - %s"),m_PrintSubtitle.c_str());
@@ -319,9 +319,9 @@ bool CStabilityGraphBuilder::UpdateNow()
             const pgsWsdotHaulingAnalysisArtifact* pArtifact = dynamic_cast<const pgsWsdotHaulingAnalysisArtifact*>(artifact_base);
             if ( pArtifact )
             {
-               Float64 FScr = Min(pArtifact->GetMinFsForCracking(pgsTypes::CrownSlope),pArtifact->GetMinFsForCracking(pgsTypes::Superelevation));
-               Float64 FSf  = Min(pArtifact->GetFsFailure(pgsTypes::CrownSlope),pArtifact->GetFsFailure(pgsTypes::Superelevation));
-               Float64 FSro = Min(pArtifact->GetFsRollover(pgsTypes::CrownSlope), pArtifact->GetFsRollover(pgsTypes::Superelevation));
+               Float64 FScr = Min(pArtifact->GetMinFsForCracking(WBFL::Stability::HaulingSlope::CrownSlope),pArtifact->GetMinFsForCracking(WBFL::Stability::HaulingSlope::Superelevation));
+               Float64 FSf  = Min(pArtifact->GetFsFailure(WBFL::Stability::HaulingSlope::CrownSlope),pArtifact->GetFsFailure(WBFL::Stability::HaulingSlope::Superelevation));
+               Float64 FSro = Min(pArtifact->GetFsRollover(WBFL::Stability::HaulingSlope::CrownSlope), pArtifact->GetFsRollover(WBFL::Stability::HaulingSlope::Superelevation));
 
                AddGraphPoint(seriesFS1,loc,FScr);
                AddGraphPoint(seriesFS2,loc,FSf );

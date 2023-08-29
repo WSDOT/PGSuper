@@ -88,7 +88,7 @@ BOOL CPostTensioningPage::OnInitDialog()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,ILossParameters,pLossParameters);
-   if ( pLossParameters->GetLossMethod() == pgsTypes::TIME_STEP )
+   if ( pLossParameters->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       m_ctrlDescription.SetWindowText(_T("These parameters are used for determining initial losses in post-tensioned tendons and temporary strands"));
       bShow = TRUE;

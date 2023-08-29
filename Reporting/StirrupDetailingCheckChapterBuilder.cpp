@@ -35,6 +35,9 @@
 #include <IFace\Intervals.h>
 #include <IFace\AnalysisResults.h>
 
+#include <psgLib/ShearCapacityCriteria.h>
+
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -402,10 +405,14 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfter1999 = ( pSpecEntry->GetSpecificationType() >= WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims ? true : false );
+   const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
 
-   Float64 k1,s1,k2,s2;
-   pSpecEntry->GetMaxStirrupSpacing(&k1,&s1,&k2,&s2);
+   bool bAfter1999 = (WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() ? true : false );
+
+   Float64 k1 = shear_capacity_criteria.StirrupSpacingCoefficient[0];
+   Float64 k2 = shear_capacity_criteria.StirrupSpacingCoefficient[1];
+   Float64 s1 = shear_capacity_criteria.MaxStirrupSpacing[0];
+   Float64 s2 = shear_capacity_criteria.MaxStirrupSpacing[1];
 
    rptRcTable* petable = rptStyleManager::CreateDefaultTable(2);
    if (bAfter1999)

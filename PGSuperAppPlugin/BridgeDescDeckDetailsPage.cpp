@@ -451,8 +451,8 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,ILossParameters,pLossParams);
-   pgsTypes::LossMethod lossMethod = pLossParams->GetLossMethod();
-   if (lossMethod != pgsTypes::TIME_STEP)
+   PrestressLossCriteria::LossMethodType lossMethod = pLossParams->GetLossMethod();
+   if (lossMethod != PrestressLossCriteria::LossMethodType::TIME_STEP)
    {
       GetDlgItem(IDC_DECK_EVENT)->EnableWindow(FALSE);
       GetDlgItem(IDC_DECK_EVENT_DETAILS)->EnableWindow(FALSE);
@@ -501,7 +501,7 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
    idx = pCB->AddString(_T("Overlay"));
    pCB->SetItemData(idx,(DWORD)pgsTypes::wstOverlay);
 
-   if (lossMethod != pgsTypes::TIME_STEP)
+   if (lossMethod != PrestressLossCriteria::LossMethodType::TIME_STEP)
    {
       idx = pCB->AddString(_T("Future Overlay"));
       pCB->SetItemData(idx,(DWORD)pgsTypes::wstFutureOverlay);
@@ -724,7 +724,7 @@ void CBridgeDescDeckDetailsPage::OnWearingSurfaceTypeChanged()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,ILossParameters,pLossParams);
-   pgsTypes::LossMethod lossMethod = pLossParams->GetLossMethod();
+   PrestressLossCriteria::LossMethodType lossMethod = pLossParams->GetLossMethod();
 
    CTimelineManager* pTimelineMgr = pParent->m_BridgeDesc.GetTimelineManager();
 
@@ -742,7 +742,7 @@ void CBridgeDescDeckDetailsPage::OnWearingSurfaceTypeChanged()
    }
    else if ( ws == pgsTypes::wstFutureOverlay )
    {
-      ATLASSERT(lossMethod != pgsTypes::TIME_STEP); // future overlay only used for PGSuper... should not get here if PGSplice
+      ATLASSERT(lossMethod != PrestressLossCriteria::LossMethodType::TIME_STEP); // future overlay only used for PGSuper... should not get here if PGSplice
       bSacDepth               = TRUE;
       bOverlayEvent           = FALSE;
       bOverlayLabel           = TRUE;
@@ -754,13 +754,13 @@ void CBridgeDescDeckDetailsPage::OnWearingSurfaceTypeChanged()
    }
    else
    {
-      bSacDepth               = (lossMethod == pgsTypes::TIME_STEP ? TRUE : FALSE); // For time step analysis sacrifical depth applies until overlay is applied. For other loss methods, sacrifical depth doesn't apply for overlays
-      bOverlayEvent           = (lossMethod == pgsTypes::TIME_STEP ? TRUE : FALSE);
+      bSacDepth               = (lossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP ? TRUE : FALSE); // For time step analysis sacrifical depth applies until overlay is applied. For other loss methods, sacrifical depth doesn't apply for overlays
+      bOverlayEvent           = (lossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP ? TRUE : FALSE);
       bOverlayLabel           = TRUE;
       bOverlayWeight          = (iOption == IDC_OLAY_WEIGHT_LABEL ? TRUE : FALSE);
       bOverlayDepthAndDensity = (iOption == IDC_OLAY_DEPTH_LABEL  ? TRUE : FALSE);
 
-      if ( lossMethod != pgsTypes::TIME_STEP )
+      if ( lossMethod != PrestressLossCriteria::LossMethodType::TIME_STEP )
       {
          // create a loading event in the timeline for the overlay load... only do this for non-timestep analysis
          // The user has to explicitly select the event for the overlay load event for time-step analysis

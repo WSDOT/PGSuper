@@ -28,6 +28,7 @@
 #include "SpecDescrPage.h"
 #include "SpecMainSheet.h"
 #include <EAF\EAFDocument.h>
+#include <psgLib/ShearCapacityCriteria.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -148,11 +149,12 @@ void CSpecDescrPage::OnSpecificationChanged()
 
    if (WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017 <= version)
    {
-      pgsTypes::ShearCapacityMethod method = pParent->m_Entry.GetShearCapacityMethod();
-      if (method==pgsTypes::scmVciVcw)
+      auto shear_capacity_criteria = pParent->m_Entry.GetShearCapacityCriteria();
+      if (shear_capacity_criteria.CapacityMethod == pgsTypes::scmVciVcw)
       {
          ::AfxMessageBox(_T("The Vci/Vcw method is currently selected for computing shear capacity, and this method was removed from the LRFD Bridge Design Specifications in the 8th Edition, 2017. The shear capacity method will be changed to compute in accordance with the General Method per LRFD 5.7.3.5.\nVisit the Shear Capacity tab for more options."), MB_OK|MB_ICONWARNING);
-         pParent->m_Entry.SetShearCapacityMethod(pgsTypes::scmBTEquations);
+         shear_capacity_criteria.CapacityMethod = pgsTypes::scmBTEquations;
+         pParent->m_Entry.SetShearCapacityCriteria(shear_capacity_criteria);
       }
    }
 }

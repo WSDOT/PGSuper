@@ -31,6 +31,8 @@
 
 #include <PgsExt\GirderArtifact.h>
 
+#include <psgLib/PrincipalTensionStressCriteria.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -82,7 +84,7 @@ rptChapter* CPrincipalTensionStressDetailsChapterBuilder::Build(const std::share
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bTimeStepMethod = pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP;
+   bool bTimeStepMethod = pSpecEntry->GetPrestressLossCriteria().LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP;
 
    // This report does not apply to the time step method
    if (false) //bTimeStepMethod)
@@ -169,14 +171,12 @@ rptChapter* CPrincipalTensionStressDetailsChapterBuilder::Build(const std::share
    DuctIndexType nGirderDucts = pGirderTendonGeom->GetDuctCount(girderKey);
    DuctIndexType nSegmentDucts = 0; // will add to this as we loop over segments
 
-   pgsTypes::PrincipalTensileStressMethod method;
-   Float64 coefficient, ductDiameterFactor,  ungroutedMultiplier, groutedMultiplier, principalTensileStressFcThreshold;
-   pSpecEntry->GetPrincipalTensileStressInWebsParameters(&method, &coefficient,&ductDiameterFactor,&ungroutedMultiplier,&groutedMultiplier, &principalTensileStressFcThreshold);
+   const auto& principal_tension_stress_criteria = pSpecEntry->GetPrincipalTensionStressCriteria();
 
    *pPara << _T("Y = elevation in web where principal stress is computed, measured downwards from top centerline of non-composite girder.") << rptNewLine;
    *pPara << RPT_STRESS(_T("top")) << _T(" and ") << RPT_STRESS(_T("bot")) << _T(" Service III stress including effective prestress.") << rptNewLine;
    *pPara << rptRcImage(strImagePath + _T("fpcx.png")) << rptNewLine;
-   if (method == pgsTypes::ptsmLRFD)
+   if (principal_tension_stress_criteria.Method == pgsTypes::ptsmLRFD)
    {
       *pPara << rptRcImage(strImagePath + _T("ShearStress_LRFD.png")) << rptNewLine;
    }
@@ -188,7 +188,7 @@ rptChapter* CPrincipalTensionStressDetailsChapterBuilder::Build(const std::share
 
    // set up the table
    ColumnIndexType nCols = 14;
-   if (method == pgsTypes::ptsmNCHRP)
+   if (principal_tension_stress_criteria.Method == pgsTypes::ptsmNCHRP)
    {
       nCols += 3;
    }
@@ -200,7 +200,7 @@ rptChapter* CPrincipalTensionStressDetailsChapterBuilder::Build(const std::share
    (*pTable)(0, col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*pTable)(0, col++) << COLHDR(Sub2(_T("V"), _T("p")), rptForceUnitTag, pDisplayUnits->GetShearUnit());
 
-   if (method == pgsTypes::ptsmLRFD)
+   if (principal_tension_stress_criteria.Method == pgsTypes::ptsmLRFD)
    {
       (*pTable)(0, col++) << COLHDR(Sub2(_T("I"), _T("g")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
    }
@@ -215,7 +215,7 @@ rptChapter* CPrincipalTensionStressDetailsChapterBuilder::Build(const std::share
    (*pTable)(0, col++) << COLHDR(RPT_STRESS(_T("top")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
    (*pTable)(0, col++) << COLHDR(RPT_STRESS(_T("bot")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
    (*pTable)(0, col++) << COLHDR(RPT_STRESS(_T("pcx")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-   if (method == pgsTypes::ptsmLRFD)
+   if (principal_tension_stress_criteria.Method == pgsTypes::ptsmLRFD)
    {
       (*pTable)(0, col++) << COLHDR(Sub2(_T("V"), _T("u")), rptForceUnitTag, pDisplayUnits->GetShearUnit());
       (*pTable)(0, col++) << COLHDR(Sub2(_T("Q"), _T("g")), rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit());
@@ -253,7 +253,7 @@ rptChapter* CPrincipalTensionStressDetailsChapterBuilder::Build(const std::share
 
          (*pTable)(row, col++) << location.SetValue(POI_SPAN, poi);
          (*pTable)(row, col++) << shear.SetValue(pDetails->Vp);
-         if (method == pgsTypes::ptsmLRFD)
+         if (principal_tension_stress_criteria.Method == pgsTypes::ptsmLRFD)
          {
             (*pTable)(row, col++) << l4.SetValue(pDetails->Ic);
          }
@@ -282,7 +282,7 @@ rptChapter* CPrincipalTensionStressDetailsChapterBuilder::Build(const std::share
             (*pTable)(row, c++) << stress.SetValue(webSection.fBot) << rptNewLine;
             (*pTable)(row, c++) << stress.SetValue(webSection.fpcx) << rptNewLine;
 
-            if (method == pgsTypes::ptsmLRFD)
+            if (principal_tension_stress_criteria.Method == pgsTypes::ptsmLRFD)
             {
                (*pTable)(row, c++) << shear.SetValue(webSection.Vu) << rptNewLine;
                (*pTable)(row, c++) << l3.SetValue(webSection.Qc) << rptNewLine;

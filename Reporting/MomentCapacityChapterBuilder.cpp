@@ -37,6 +37,8 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\GirderLabel.h>
 
+#include <psgLib/MomentCapacityCriteria.h>
+
 #include <PGSuperColors.h>
 
 #include <algorithm>
@@ -98,7 +100,8 @@ rptChapter* CMomentCapacityChapterBuilder::Build(const std::shared_ptr<const WBF
    GET_IFACE2(pBroker, ILibrary, pLib);
    GET_IFACE2(pBroker, ISpecification, pSpecification);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpecification->GetSpecification().c_str());
-   bool bConsiderReinforcementStrainLimits = pSpecEntry->ConsiderReinforcementStrainLimitForMomentCapacity();
+   const auto& moment_capacity_criteria = pSpecEntry->GetMomentCapacityCriteria();
+   bool bConsiderReinforcementStrainLimits = moment_capacity_criteria.bConsiderReinforcementStrainLimit;
 
    GET_IFACE2(pBroker, IMomentCapacity, pMomentCapacity);
    const MOMENTCAPACITYDETAILS* pmcd = pMomentCapacity->GetMomentCapacityDetails(intervalIdx,poi,bPositiveMoment);

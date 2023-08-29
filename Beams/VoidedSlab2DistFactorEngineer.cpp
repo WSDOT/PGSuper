@@ -156,7 +156,8 @@ void CVoidedSlab2DistFactorEngineer::BuildReport(const CGirderKey& girderKey,rpt
       GET_IFACE(ISpecification, pSpec);
       GET_IFACE(ILibrary, pLibrary);
       const auto* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
-      if (pSpecEntry->IgnoreSkewReductionForMoment())
+      const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
+      if (live_load_distribution_criteria.bIgnoreSkewReductionForMoment)
       {
          (*pPara) << _T("Skew reduction for moment distribution factors has been ignored (LRFD 4.6.2.2.2e)") << rptNewLine;
       }
@@ -637,7 +638,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CVoidedSlab2DistFactorEngineer::GetL
    }
 
    // WSDOT deviation doesn't apply to this type of cross section because it isn't slab on girder construction
-   if (plldf->Method == LLDF_TXDOT)
+   if (plldf->Method == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
    {
          pLLDF = new WBFL::LRFD::TxdotVoidedSlab(plldf->gdrNum,
                                          plldf->Savg,
@@ -663,8 +664,9 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CVoidedSlab2DistFactorEngineer::GetL
       GET_IFACE(ISpecification, pSpec);
       GET_IFACE(ILibrary, pLibrary);
       const auto* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
+      const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
       bool bSkew = !(IsZero(plldf->skew1) && IsZero(plldf->skew2));
-      bool bSkewMoment = pSpecEntry->IgnoreSkewReductionForMoment() ? false : bSkew;
+      bool bSkewMoment = live_load_distribution_criteria.bIgnoreSkewReductionForMoment ? false : bSkew;
       bool bSkewShear = bSkew;
 
       if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
@@ -790,7 +792,7 @@ void CVoidedSlab2DistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB
          {
 
             (*pPara) << Bold(_T("1 Loaded Lane: Equation")) << rptNewLine;
-            if (lldf.Method == LLDF_TXDOT && !(gM1.ControllingMethod & WBFL::LRFD::LEVER_RULE))
+            if (lldf.Method == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT && !(gM1.ControllingMethod & WBFL::LRFD::LEVER_RULE))
             {
                (*pPara) << _T("For TxDOT Method, Use ") << _T("mg") << Super(_T("MI")) << Sub(_T("1")) << _T(". And,do not apply skew correction factor.") << rptNewLine;
 
@@ -857,7 +859,7 @@ void CVoidedSlab2DistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB
 
             if (gM2.EqnData.bWasUsed)
             {
-               if (lldf.Method == LLDF_TXDOT && !(gM2.ControllingMethod & WBFL::LRFD::LEVER_RULE))
+               if (lldf.Method == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT && !(gM2.ControllingMethod & WBFL::LRFD::LEVER_RULE))
                {
                   (*pPara) << Bold(_T("2+ Loaded Lanes: Equation Method")) << rptNewLine;
                   (*pPara) << _T("Same as for 1 Loaded Lane") << rptNewLine;
@@ -901,7 +903,7 @@ void CVoidedSlab2DistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB
          if (gM1.ControllingMethod & WBFL::LRFD::MOMENT_SKEW_CORRECTION_APPLIED)
          {
             (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
-            if (lldf.Method != LLDF_TXDOT)
+            if (lldf.Method != pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
             {
                Float64 skew_delta_max = WBFL::Units::ConvertToSysUnits(10.0, WBFL::Units::Measure::Degree);
                if (fabs(lldf.skew1 - lldf.skew2) < skew_delta_max)
@@ -933,7 +935,7 @@ void CVoidedSlab2DistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB
       if (gM1.EqnData.bWasUsed)
       {
          (*pPara) << Bold(_T("1 Loaded Lane: Equation")) << rptNewLine;
-         if (lldf.Method == LLDF_TXDOT && !(gM1.ControllingMethod & WBFL::LRFD::LEVER_RULE))
+         if (lldf.Method == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT && !(gM1.ControllingMethod & WBFL::LRFD::LEVER_RULE))
          {
             (*pPara) << _T("For TxDOT Method, do not apply skew correction factor.")<< rptNewLine;
 
@@ -985,7 +987,7 @@ void CVoidedSlab2DistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB
 
          if (gM2.EqnData.bWasUsed)
          {
-            if (lldf.Method == LLDF_TXDOT && !(gM2.ControllingMethod & WBFL::LRFD::LEVER_RULE))
+            if (lldf.Method == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT && !(gM2.ControllingMethod & WBFL::LRFD::LEVER_RULE))
             {
                (*pPara) << rptNewLine;
 
@@ -1030,7 +1032,7 @@ void CVoidedSlab2DistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB
       if ( gM1.ControllingMethod & WBFL::LRFD::MOMENT_SKEW_CORRECTION_APPLIED )
       {
          (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
-         if(lldf.Method != LLDF_TXDOT)
+         if(lldf.Method != pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
          {
             Float64 skew_delta_max = WBFL::Units::ConvertToSysUnits( 10.0, WBFL::Units::Measure::Degree );
             if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
@@ -1083,7 +1085,7 @@ void CVoidedSlab2DistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_
          {
 
             (*pPara) << Bold(_T("1 Loaded Lane: Equation")) << rptNewLine;
-            if (lldf.Method == LLDF_TXDOT)
+            if (lldf.Method == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
             {
                (*pPara) << _T("For TxDOT Method, Use ") << _T("mg") << Super(_T("MI")) << Sub(_T("1")) << _T(". And,do not apply skew correction factor.") << rptNewLine;
 
@@ -1143,7 +1145,7 @@ void CVoidedSlab2DistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_
          {
             if (gV1.EqnData.bWasUsed)
             {
-               if (lldf.Method == LLDF_TXDOT)
+               if (lldf.Method == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
                {
                   (*pPara) << Bold(_T("2+ Loaded Lane")) << rptNewLine;
                   (*pPara) << _T("Same as for 1 Loaded Lane") << rptNewLine;
@@ -1183,7 +1185,7 @@ void CVoidedSlab2DistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_
          if ( gV1.ControllingMethod & WBFL::LRFD::SHEAR_SKEW_CORRECTION_APPLIED )
          {
             (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
-            if(lldf.Method != LLDF_TXDOT)
+            if(lldf.Method != pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
             {
                (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("SkewCorrection_Shear_TypeF_SI.png") : _T("SkewCorrection_Shear_TypeF_US.png"))) << rptNewLine;
             }
@@ -1209,7 +1211,7 @@ void CVoidedSlab2DistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_
       if ( gV1.EqnData.bWasUsed )
       {
          (*pPara) << Bold(_T("1 Loaded Lane: Equation")) << rptNewLine;
-         if( lldf.Method==LLDF_TXDOT )
+         if( lldf.Method== pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
          {
             (*pPara) << _T("For TxDOT Method, Use ")<<_T("mg") << Super(_T("MI")) << Sub(_T("1"))<<_T(". And,do not apply shear correction factor.")<< rptNewLine;
 
@@ -1255,7 +1257,7 @@ void CVoidedSlab2DistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_
          if ( gV2.EqnData.bWasUsed )
          {
             (*pPara) << Bold(_T("2+ Loaded Lane: Equation")) << rptNewLine;
-            if( lldf.Method==LLDF_TXDOT )
+            if( lldf.Method== pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
             {
                (*pPara) << Bold(_T("2+ Loaded Lane")) << rptNewLine;
                (*pPara) << _T("Same as for 1 Loaded Lane") << rptNewLine;
@@ -1314,15 +1316,16 @@ std::_tstring CVoidedSlab2DistFactorEngineer::GetComputationDescription(const CG
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 
-   Int16 lldfMethod = pSpecEntry->GetLiveLoadDistributionMethod();
+   auto lldfMethod = live_load_distribution_criteria.LldfMethod;
 
    std::_tstring descr;
-   if ( lldfMethod == LLDF_TXDOT )
+   if ( lldfMethod == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
    {
       descr += std::_tstring(_T("TxDOT per TxDOT Bridge Design Manual - LRFD"));
    }
-   else if ( lldfMethod == LLDF_LRFD || lldfMethod == LLDF_WSDOT  )
+   else if ( lldfMethod == pgsTypes::LiveLoadDistributionFactorMethod::LRFD || lldfMethod == pgsTypes::LiveLoadDistributionFactorMethod::WSDOT)
    {
       if (decktype == pgsTypes::sdtCompositeCIP || decktype == pgsTypes::sdtCompositeOverlay)
       {

@@ -48,6 +48,13 @@
 #include <PsgLib\SpecLibraryEntry.h>
 #include <PsgLib\GirderLibraryEntry.h>
 
+#include <psgLib/SectionPropertiesCriteria.h>
+#include <psgLib/SlabOffsetCriteria.h>
+#include <psgLib/HaunchCriteria.h>
+#include <psgLib/LiveLoadDistributionCriteria.h>
+#include <psgLib/ShearCapacityCriteria.h>
+#include <psgLib/SpecificationCriteria.h>
+
 #include <Units\Convert.h>
 
 #ifdef _DEBUG
@@ -154,12 +161,16 @@ public:
          // Designer does not handle transformed section properties well - set to gross
          if (m_bOverTransf)
          {
-            clone.SetSectionPropertyMode(pgsTypes::spmGross);
+            auto section_properties_criteria = clone.GetSectionPropertiesCriteria();
+            section_properties_criteria.SectionPropertyMode = pgsTypes::spmGross;
+            clone.SetSectionPropertiesCriteria(section_properties_criteria);
          }
 
          if (m_bOverHaunch)
          {
-            clone.SetHaunchAnalysisSectionPropertiesType(pgsTypes::hspConstFilletDepth);
+            auto haunch_criteria = clone.GetHaunchCriteria();
+            haunch_criteria.HaunchAnalysisSectionPropertiesType = pgsTypes::hspConstFilletDepth;
+            clone.SetHaunchCriteria(haunch_criteria);
          }
 
          // We've made changes to clone, now add it to library
@@ -522,7 +533,7 @@ const std::vector<CRITSECTDETAILS>& CEngAgentImp::ValidateShearCritSection(pgsTy
 
    // LRFD 2004 and later, critical section is only a function of dv, which comes from the calculation of Mu,
    // so critical section is not a function of the limit state. We will work with the Strength I limit state
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 <= pSpecEntry->GetSpecificationType() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
    {
       limitState = pgsTypes::StrengthI;
    }
@@ -582,7 +593,7 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bThirdEdition = ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 <= pSpecEntry->GetSpecificationType() ? true : false );
+   bool bThirdEdition = ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 <= pSpecEntry->GetSpecificationCriteria().GetEdition() ? true : false );
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
@@ -1119,7 +1130,7 @@ Float64 CEngAgentImp::GetElasticShortening(const pgsPointOfInterest& poi,pgsType
    ATLASSERT(pDetails != 0);
 
    Float64 val;
-   if ( pDetails->LossMethod == pgsTypes::TIME_STEP )
+   if ( pDetails->LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(poi.GetSegmentKey());
@@ -1350,8 +1361,8 @@ bool CEngAgentImp::AreElasticGainsApplicable() const
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-
-   return pSpecEntry->AreElasticGainsApplicable();
+   const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
+   return prestress_loss_criteria.AreElasticGainsApplicable(WBFL::LRFD::LRFDVersionMgr::GetVersion());
 }
 
 bool CEngAgentImp::IsDeckShrinkageApplicable() const
@@ -1366,23 +1377,18 @@ bool CEngAgentImp::IsDeckShrinkageApplicable() const
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-
-   return pSpecEntry->IsDeckShrinkageApplicable();
+   const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
+   return prestress_loss_criteria.IsDeckShrinkageApplicable(WBFL::LRFD::LRFDVersionMgr::GetVersion());
 }
 
 bool CEngAgentImp::LossesIncludeInitialRelaxation() const
 {
-   GET_IFACE(ILibrary, pLib);
-   GET_IFACE(ISpecification, pSpec);
-   std::_tstring spec_name = pSpec->GetSpecification();
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(spec_name.c_str());
-
    GET_IFACE_NOCHECK(ILossParameters, pLossParams); // not used if spec is before 3rd Edition 2004
-   bool bInitialRelaxation = (pSpecEntry->GetSpecificationType() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 ||
-      pLossParams->GetLossMethod() == pgsTypes::WSDOT_REFINED ||
-      pLossParams->GetLossMethod() == pgsTypes::TXDOT_REFINED_2004 ||
-      pLossParams->GetLossMethod() == pgsTypes::WSDOT_LUMPSUM ||
-      pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false);
+   bool bInitialRelaxation = (WBFL::LRFD::LRFDVersionMgr::GetVersion() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 ||
+      pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::WSDOT_REFINED ||
+      pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2004 ||
+      pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::WSDOT_LUMPSUM ||
+      pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false);
 
    return bInitialRelaxation;
 }
@@ -1459,15 +1465,15 @@ Float64 CEngAgentImp::GetDevelopmentLengthAdjustment(const pgsPointOfInterest& p
 }
 
 //-----------------------------------------------------------------------------
-Float64 CEngAgentImp::GetHoldDownForce(const CSegmentKey& segmentKey,bool bTotal,Float64* pSlope,pgsPointOfInterest* pPoi,const GDRCONFIG* pConfig) const
+Float64 CEngAgentImp::GetHoldDownForce(const CSegmentKey& segmentKey, HoldDownCriteria::Type holdDownForceType,Float64* pSlope,pgsPointOfInterest* pPoi,const GDRCONFIG* pConfig) const
 {
-   return m_PsForceEngineer.GetHoldDownForce(segmentKey,bTotal,pSlope,pPoi,pConfig);
+   return m_PsForceEngineer.GetHoldDownForce(segmentKey,holdDownForceType,pSlope,pPoi,pConfig);
 }
 
 Float64 CEngAgentImp::GetHorizHarpedStrandForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig) const
 {
    Float64 cos = GetHorizPsComponent(m_pBroker,poi,pConfig);
-   Float64 P = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,intervalTime,pgsTypes::tltMaximum,pConfig);
+   Float64 P = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,intervalTime,pgsTypes::TransferLengthType::Maximum,pConfig);
    Float64 Hp = fabs(cos*P); // this should always be positive
    return Hp;
 }
@@ -1475,7 +1481,7 @@ Float64 CEngAgentImp::GetHorizHarpedStrandForce(const pgsPointOfInterest& poi,In
 Float64 CEngAgentImp::GetVertHarpedStrandForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig) const
 {
    Float64 sin = GetVertPsComponent(m_pBroker,poi);
-   Float64 P = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,intervalTime,pgsTypes::tltMaximum,pConfig);
+   Float64 P = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,intervalTime,pgsTypes::TransferLengthType::Maximum,pConfig);
    Float64 Vp = sin*P;
 
    // determine sign of Vp. If Vp has the opposite sign as the shear due to the externally applied
@@ -1565,11 +1571,11 @@ Float64 CEngAgentImp::GetPrestressForcePerStrand(const pgsPointOfInterest& poi,p
    Float64 Ps;
    if (pConfig)
    {
-      Ps = GetPrestressForce(poi, strandType, intervalIdx, intervalTime,pgsTypes::tltMinimum, pConfig);
+      Ps = GetPrestressForce(poi, strandType, intervalIdx, intervalTime,pgsTypes::TransferLengthType::Minimum, pConfig);
    }
    else
    {
-      Ps = GetPrestressForce(poi, strandType, intervalIdx, intervalTime, bIncludeElasticEffects,pgsTypes::tltMinimum);
+      Ps = GetPrestressForce(poi, strandType, intervalIdx, intervalTime, bIncludeElasticEffects,pgsTypes::TransferLengthType::Minimum);
    }
 
    StrandIndexType nStrands = pStrandGeom->GetStrandCount(segmentKey,strandType,pConfig);
@@ -2490,7 +2496,8 @@ Int32 CEngAgentImp::CheckGirderStiffnessRequirements(const pgsPointOfInterest& p
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   Float64 minStiffnessRatio = pSpecEntry->GetMinGirderStiffnessRatio();
+   const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
+   Float64 minStiffnessRatio = live_load_distribution_criteria.MinGirderStiffnessRatio;
 
    GET_IFACE(IPointOfInterest,pPoi);
    CSpanKey spanKey;
@@ -2582,7 +2589,8 @@ Int32 CEngAgentImp::CheckParallelGirderRequirements(const pgsPointOfInterest& po
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   Float64 maxAllowableAngle = pSpecEntry->GetMaxAngularDeviationBetweenGirders();
+   const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
+   Float64 maxAllowableAngle = live_load_distribution_criteria.MaxAngularDeviationBetweenGirders;
 
    GET_IFACE(IPointOfInterest,pPoi);
    CSpanKey spanKey;
@@ -3446,6 +3454,7 @@ Uint32 CEngAgentImp::GetNumberOfDesignLanesEx(SpanIndexType spanIdx,Float64* pDi
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 
    GET_IFACE(IBridge,pBridge);
    PierIndexType prev_pier_idx = spanIdx;
@@ -3455,7 +3464,7 @@ Uint32 CEngAgentImp::GetNumberOfDesignLanesEx(SpanIndexType spanIdx,Float64* pDi
 
    Float64 span_length = pBridge->GetSpanLength(spanIdx);
 
-   Float64 span_fraction_for_girder_spacing = pSpecEntry->GetLLDFGirderSpacingLocation();
+   Float64 span_fraction_for_girder_spacing = live_load_distribution_criteria.GirderSpacingLocation;
    Float64 loc1 = span_fraction_for_girder_spacing*span_length;
    Float64 loc2 = (1.0-span_fraction_for_girder_spacing)*span_length;
 
@@ -3621,9 +3630,9 @@ void CEngAgentImp::GetShearCapacityDetails(pgsTypes::LimitState limitState, Inte
    GET_IFACE(ISpecification, pSpec);
    GET_IFACE(ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   pgsTypes::ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
+   const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
 
-   if ( shear_capacity_method == pgsTypes::scmBTEquations || shear_capacity_method == pgsTypes::scmWSDOT2007 )
+   if (shear_capacity_criteria.CapacityMethod == pgsTypes::scmBTEquations || shear_capacity_criteria.CapacityMethod == pgsTypes::scmWSDOT2007 )
    {
       ZoneIndexType csZoneIdx = GetCriticalSectionZoneIndex(limitState,poi);
       if ( csZoneIdx != INVALID_INDEX )
@@ -3831,7 +3840,7 @@ Float64 CEngAgentImp::GetSectionGirderOrientationEffect(const pgsPointOfInterest
 bool CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentKey,FABRICATIONOPTIMIZATIONDETAILS* pDetails) const
 {
    GET_IFACE(ILossParameters, pLossParams);
-   if (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP)
+   if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP)
    {
       // not doing this for time-step analysis
       return false;
@@ -4011,27 +4020,22 @@ bool CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
    GET_IFACE(IAllowableConcreteStress,pAllowStress);
    pgsPointOfInterest dummyPOI(segmentKey,0.0);
    Float64 c = -pAllowStress->GetAllowableCompressionStressCoefficient(dummyPOI,pgsTypes::TopGirder,StressCheckTask(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression));
-   Float64 t, fmax;
-   bool bfMax;
-   pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,StressCheckTask(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension),false/*without rebar*/,false,&t,&bfMax,&fmax);
+   auto tension_stress_limit = pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,StressCheckTask(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension),false/*without rebar*/,false);
 
    Float64 fc_reqd_compression = min_stress_WithoutTTS/c;
    Float64 fc_reqd_tension = 0;
    if ( 0 < max_stress_WithoutTTS )
    {
-      if (0 < t)
+      if (0 < tension_stress_limit.Coefficient)
       {
-         fc_reqd_tension = pow(max_stress_WithoutTTS/t,2);
+         fc_reqd_tension = pow(max_stress_WithoutTTS/tension_stress_limit.Coefficient,2);
 
-         if ( bfMax && fmax < max_stress_WithoutTTS) 
+         if ( tension_stress_limit.bHasMaxValue && tension_stress_limit.MaxValue < max_stress_WithoutTTS) 
          {
             // allowable stress is limited to value lower than needed
             // look at the with rebar case
-            bool bCheckMaxAlt;
-            Float64 fMaxAlt;
-            Float64 talt;
-            pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,StressCheckTask(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension),true/*with rebar*/,false/*in other than precompressed tensile zone*/,&talt,&bCheckMaxAlt,&fMaxAlt);
-            fc_reqd_tension = pow(max_stress_WithoutTTS/talt,2);
+            auto alt_tension_stress_limit = pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,StressCheckTask(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension),true/*with rebar*/,false/*in other than precompressed tensile zone*/);
+            fc_reqd_tension = pow(max_stress_WithoutTTS/alt_tension_stress_limit.Coefficient,2);
          }
       }
    }
@@ -4110,9 +4114,9 @@ bool CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
    
       Float64 fc;
       Float64 fc_tens1, fc_comp1, fc_tens_wrebar1;
-      hauling_artifact2->GetRequiredConcreteStrength(pgsTypes::CrownSlope, &fc_comp1, &fc_tens1, &fc_tens_wrebar1);
+      hauling_artifact2->GetRequiredConcreteStrength(WBFL::Stability::HaulingSlope::CrownSlope, &fc_comp1, &fc_tens1, &fc_tens_wrebar1);
       Float64 fc_tens2, fc_comp2, fc_tens_wrebar2;
-      hauling_artifact2->GetRequiredConcreteStrength(pgsTypes::Superelevation, &fc_comp2, &fc_tens2, &fc_tens_wrebar2);
+      hauling_artifact2->GetRequiredConcreteStrength(WBFL::Stability::HaulingSlope::Superelevation, &fc_comp2, &fc_tens2, &fc_tens_wrebar2);
 
       Float64 fc_tens = Max(fc_tens1, fc_tens2);
       Float64 fc_comp = Max(fc_comp1, fc_comp2);
@@ -4178,9 +4182,9 @@ bool CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
 
       Float64 fc;
       Float64 fc_tens1, fc_comp1, fc_tens_wrebar1;
-      hauling_artifact2->GetRequiredConcreteStrength(pgsTypes::CrownSlope, &fc_comp1, &fc_tens1, &fc_tens_wrebar1);
+      hauling_artifact2->GetRequiredConcreteStrength(WBFL::Stability::HaulingSlope::CrownSlope, &fc_comp1, &fc_tens1, &fc_tens_wrebar1);
       Float64 fc_tens2, fc_comp2, fc_tens_wrebar2;
-      hauling_artifact2->GetRequiredConcreteStrength(pgsTypes::Superelevation, &fc_comp2, &fc_tens2, &fc_tens_wrebar2);
+      hauling_artifact2->GetRequiredConcreteStrength(WBFL::Stability::HaulingSlope::Superelevation, &fc_comp2, &fc_tens2, &fc_tens_wrebar2);
 
       Float64 fc_tens = Max(fc_tens1, fc_tens2);
       Float64 fc_comp = Max(fc_comp1, fc_comp2);
@@ -4190,8 +4194,8 @@ bool CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       fc = Max(fc_tens, fc_comp, fc_tens_wrebar);
 
       // check factors of safety
-      Float64 FScr = Min(hauling_artifact2->GetMinFsForCracking(pgsTypes::CrownSlope),hauling_artifact2->GetMinFsForCracking(pgsTypes::Superelevation));
-      Float64 FSr  = Min(hauling_artifact2->GetFsRollover(pgsTypes::CrownSlope),hauling_artifact2->GetFsRollover(pgsTypes::Superelevation));
+      Float64 FScr = Min(hauling_artifact2->GetMinFsForCracking(WBFL::Stability::HaulingSlope::CrownSlope),hauling_artifact2->GetMinFsForCracking(WBFL::Stability::HaulingSlope::Superelevation));
+      Float64 FSr  = Min(hauling_artifact2->GetFsRollover(WBFL::Stability::HaulingSlope::CrownSlope),hauling_artifact2->GetFsRollover(WBFL::Stability::HaulingSlope::Superelevation));
 
       bool bFS = ( FSrMin <= FSr && FScrMin <= FScr );
 

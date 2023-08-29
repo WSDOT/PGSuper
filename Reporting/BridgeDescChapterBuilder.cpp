@@ -36,6 +36,7 @@
 #include <PsgLib\GirderLibraryEntry.h>
 #include <PsgLib\TrafficBarrierEntry.h>
 
+#include <psgLib/LimitStateConcreteStrengthCriteria.h>
 
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\PierData2.h>
@@ -1332,21 +1333,20 @@ void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rpt
    GET_IFACE2(pBroker,ILibrary, pLib );
    GET_IFACE2(pBroker,ISpecification, pSpec );
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-
-   int loss_method = pSpecEntry->GetLossMethod();
-   if ( loss_method == LOSSES_TIME_STEP )
+   const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
+   if (prestress_loss_criteria.LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
-      switch( pSpecEntry->GetTimeDependentModel() )
+      switch( prestress_loss_criteria.TimeDependentConcreteModel )
       {
-      case TDM_AASHTO:
+      case PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO:
          write_aci209_concrete_details(pBroker,pDisplayUnits,pChapter,girderKeys,level,true/*AASHTO parameters*/);
          break;
 
-      case TDM_ACI209:
+      case PrestressLossCriteria::TimeDependentConcreteModelType::ACI209:
          write_aci209_concrete_details(pBroker,pDisplayUnits,pChapter,girderKeys,level,false/*AASHTO parameters*/);
          break;
 
-      case TDM_CEBFIP:
+      case PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP:
          write_cebfip_concrete_details(pBroker,pDisplayUnits,pChapter,girderKeys,level);
          break;
       }
@@ -1379,11 +1379,9 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
    GET_IFACE2(pBroker,ILibrary, pLib);
    GET_IFACE2(pBroker,ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-   bool bUse90dayStrength;
-   Float64 factor;
-   pSpecEntry->Use90DayStrengthForSlowCuringConcrete(&bUse90dayStrength, &factor);
+   const auto& limit_state_concrete_strength_criteria = pSpecEntry->GetLimitStateConcreteStrengthCriteria();
 
-   if (bUse90dayStrength)
+   if (limit_state_concrete_strength_criteria.bUse90DayConcreteStrength)
    {
       nColumns += 2;
    }
@@ -1441,7 +1439,7 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
    (*pTable)(row, col++) << COLHDR(RPT_ECI, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*pTable)(row, col++) << COLHDR(RPT_FC,  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*pTable)(row, col++) << COLHDR(RPT_EC,  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   if (bUse90dayStrength)
+   if (limit_state_concrete_strength_criteria.bUse90DayConcreteStrength)
    {
       (*pTable)(row, col++) << COLHDR(RPT_FC << Sub(_T("90")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
       (*pTable)(row, col++) << COLHDR(RPT_EC << Sub(_T("90")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
@@ -1518,7 +1516,7 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
          Float64 Ec  = pMaterials->GetSegmentEc28(thisSegmentKey);
 
          Float64 fc90(-99999), Ec90(-99999);
-         if (bUse90dayStrength)
+         if (limit_state_concrete_strength_criteria.bUse90DayConcreteStrength)
          {
             IntervalIndexType finalIntervalIdx = pIntervals->GetIntervalCount() - 1;
             fc90 = pMaterials->GetSegmentFc(thisSegmentKey, finalIntervalIdx);
@@ -1529,7 +1527,7 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
 
          (*pTable)(row, 0) << pgsGirderLabel::GetGirderLabel(thisGirderKey);
 
-         write_lrfd_concrete_row(pDisplayUnits,pTable,fci,fc,Eci,Ec,bUse90dayStrength,bUse90dayStrength,fc90,Ec90,lambda,pSegment->Material.Concrete,row);
+         write_lrfd_concrete_row(pDisplayUnits,pTable,fci,fc,Eci,Ec, limit_state_concrete_strength_criteria.bUse90DayConcreteStrength, limit_state_concrete_strength_criteria.bUse90DayConcreteStrength,fc90,Ec90,lambda,pSegment->Material.Concrete,row);
          row++;
 
          const CClosureJointData* pClosure = pSegment->GetClosureJoint(pgsTypes::metEnd);
@@ -1549,7 +1547,7 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
       Float64 lambda = pMaterials->GetDeckLambda();
 
       (*pTable)(row,0) << _T("Deck");
-      write_lrfd_concrete_row(pDisplayUnits,pTable,-1.0,fc,-1.0,Ec,bUse90dayStrength,lambda,pDeck->Concrete,row);
+      write_lrfd_concrete_row(pDisplayUnits,pTable,-1.0,fc,-1.0,Ec, limit_state_concrete_strength_criteria.bUse90DayConcreteStrength,lambda,pDeck->Concrete,row);
       row++;
    }
 
@@ -1560,7 +1558,7 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
       Float64 lambda = pMaterials->GetLongitudinalJointLambda();
 
       (*pTable)(row, 0) << _T("Longitudinal Joint");
-      write_lrfd_concrete_row(pDisplayUnits, pTable, -1.0, fc, -1.0, Ec, bUse90dayStrength, lambda, pBridgeDesc->GetLongitudinalJointMaterial(), row);
+      write_lrfd_concrete_row(pDisplayUnits, pTable, -1.0, fc, -1.0, Ec, limit_state_concrete_strength_criteria.bUse90DayConcreteStrength, lambda, pBridgeDesc->GetLongitudinalJointMaterial(), row);
       row++;
    }
 

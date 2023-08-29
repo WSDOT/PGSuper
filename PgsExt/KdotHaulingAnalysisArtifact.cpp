@@ -33,6 +33,8 @@
 #include <Reporting\ReportNotes.h>
 #include <EAF\EAFDisplayUnits.h>
 
+#include <psgLib/HaulingCriteria.h>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -351,15 +353,15 @@ pgsKdotHaulingAnalysisArtifact& pgsKdotHaulingAnalysisArtifact::operator= (const
 //======================== OPERATIONS =======================================
 bool pgsKdotHaulingAnalysisArtifact::Passed(bool bIgnoreConfigurationLimits) const
 {
-   return Passed(pgsTypes::CrownSlope);
+   return Passed(WBFL::Stability::HaulingSlope::CrownSlope);
 }
 
-bool pgsKdotHaulingAnalysisArtifact::Passed(pgsTypes::HaulingSlope slope) const
+bool pgsKdotHaulingAnalysisArtifact::Passed(WBFL::Stability::HaulingSlope slope) const
 {
    return PassedStressCheck(slope);
 }
 
-bool pgsKdotHaulingAnalysisArtifact::PassedStressCheck(pgsTypes::HaulingSlope slope) const
+bool pgsKdotHaulingAnalysisArtifact::PassedStressCheck(WBFL::Stability::HaulingSlope slope) const
 {
    std::map<pgsPointOfInterest,pgsKdotHaulingStressAnalysisArtifact>::const_iterator iter(m_HaulingStressAnalysisArtifacts.begin());
    std::map<pgsPointOfInterest,pgsKdotHaulingStressAnalysisArtifact>::const_iterator iterEnd(m_HaulingStressAnalysisArtifacts.end());
@@ -376,7 +378,7 @@ bool pgsKdotHaulingAnalysisArtifact::PassedStressCheck(pgsTypes::HaulingSlope sl
    return true;
 }
 
-void pgsKdotHaulingAnalysisArtifact::GetRequiredConcreteStrength(pgsTypes::HaulingSlope slope, Float64* pfciComp, Float64* pfciTensNoRebar, Float64* pfciTensWithRebar) const
+void pgsKdotHaulingAnalysisArtifact::GetRequiredConcreteStrength(WBFL::Stability::HaulingSlope slope, Float64* pfciComp, Float64* pfciTensNoRebar, Float64* pfciTensWithRebar) const
 {
    Float64 maxFciComp = -Float64_Max;
    Float64 maxFciTensnobar = -Float64_Max;
@@ -508,7 +510,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
    Float64 min_oh = Min(loh, toh);
 
    *p <<_T("The current hauling bunk point location is ")<<slen_u.SetValue(min_oh)<<_T(" - ");
-   if(this->Passed(pgsTypes::CrownSlope))
+   if(this->Passed(WBFL::Stability::HaulingSlope::CrownSlope))
    {
       *p << RPT_PASS <<rptNewLine<<rptNewLine;
    }
@@ -555,17 +557,19 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
    GET_IFACE2(pBroker, ILibrary,       pLib );
    std::_tstring specName = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( specName.c_str() );
+   const auto& hauling_criteria = pSpecEntry->GetHaulingCriteria();
 
    Float64 c; // compression coefficient
    Float64 t; // tension coefficient
    Float64 t_max; // maximum allowable tension
    bool b_t_max; // true if max allowable tension is applicable
 
-   c = pSpecEntry->GetHaulingCompressionGlobalStressFactor();
-   t = pSpecEntry->GetHaulingTensionStressFactor(pgsTypes::CrownSlope);
-   pSpecEntry->GetHaulingMaximumTensionStress(pgsTypes::CrownSlope, &b_t_max,&t_max);
+   c = hauling_criteria.KDOT.CompressionStressLimitCoefficient;
+   t = hauling_criteria.KDOT.TensionStressLimitWithoutReinforcement.Coefficient;
+   b_t_max = hauling_criteria.KDOT.TensionStressLimitWithoutReinforcement.bHasMaxValue;
+   t_max = hauling_criteria.KDOT.TensionStressLimitWithoutReinforcement.MaxValue;
 
-   Float64 t2 = pSpecEntry->GetHaulingTensionStressFactorWithRebar(pgsTypes::CrownSlope);
+   Float64 t2 = hauling_criteria.KDOT.TensionStressLimitWithReinforcement.Coefficient;
 
    bool bLambda = (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() ? true : false);
 
@@ -584,8 +588,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
    {
       *p << _T(" but not more than: ") << stress.SetValue(t_max);
    }
-   *p << _T(" = ") << stress.SetValue(pSegmentHaulingSpecCriteria->GetHaulingAllowableTensileConcreteStress(segmentKey, pgsTypes::CrownSlope))<< _T(" ") <<
-      stress.GetUnitTag()<< rptNewLine;
+   *p << _T(" = ") << stress.SetValue(pSegmentHaulingSpecCriteria->GetHaulingAllowableTensileConcreteStress(segmentKey,WBFL::Stability::HaulingSlope::CrownSlope))<< _T(" ") << stress.GetUnitTag()<< rptNewLine;
 
    *p <<_T("Maximum allowable concrete tensile stress = ") << tension_coeff.SetValue(t2);
    if ( bLambda )
@@ -593,11 +596,11 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
       *p << symbol(lambda);
    }
    *p << symbol(ROOT) << RPT_FC
-      << _T(" = ") << stress.SetValue(pSegmentHaulingSpecCriteria->GetHaulingWithMildRebarAllowableStress(segmentKey, pgsTypes::CrownSlope)) << _T(" ") << stress.GetUnitTag()
+      << _T(" = ") << stress.SetValue(pSegmentHaulingSpecCriteria->GetHaulingWithMildRebarAllowableStress(segmentKey, WBFL::Stability::HaulingSlope::CrownSlope)) << _T(" ") << stress.GetUnitTag()
       << _T(" if bonded reinforcement sufficient to resist the tensile force in the concrete is provided.") << rptNewLine;
 
    Float64 fc_reqd_comp, fc_reqd_tens, fc_reqd_tens_wrebar;
-   GetRequiredConcreteStrength(pgsTypes::CrownSlope, &fc_reqd_comp, &fc_reqd_tens, &fc_reqd_tens_wrebar);
+   GetRequiredConcreteStrength(WBFL::Stability::HaulingSlope::CrownSlope, &fc_reqd_comp, &fc_reqd_tens, &fc_reqd_tens_wrebar);
 
    *p << RPT_FC << _T(" required for Compressive stress = ");
    if ( 0 < fc_reqd_comp )

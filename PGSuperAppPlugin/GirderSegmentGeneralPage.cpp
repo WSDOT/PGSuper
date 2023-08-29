@@ -24,12 +24,9 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
 
 #include "GirderSegmentGeneralPage.h"
 #include "GirderSegmentDlg.h"
-#include "SelectItemDlg.h"
-#include "Utilities.h"
 
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Project.h>
@@ -39,7 +36,6 @@
 #include <PgsExt\ConcreteDetailsDlg.h>
 
 #include <System\Tokenizer.h>
-#include <Materials/Materials.h>
 
 #include "TimelineEventDlg.h"
 
@@ -254,8 +250,9 @@ BOOL CGirderSegmentGeneralPage::OnInitDialog()
    std::_tstring strSpecName = pSpec->GetSpecification();
    GET_IFACE2(pBroker, ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(strSpecName.c_str());
-   m_LossMethod = pSpecEntry->GetLossMethod();
-   m_TimeDependentModel = pSpecEntry->GetTimeDependentModel();
+   const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
+   m_LossMethod = prestress_loss_criteria.LossMethod;
+   m_TimeDependentModel = prestress_loss_criteria.TimeDependentConcreteModel;
 
    m_ctrlDrawSegment.SubclassDlgItem(IDC_DRAW_SEGMENT, this);
    m_ctrlDrawSegment.CustomInit(this);
@@ -522,7 +519,7 @@ void CGirderSegmentGeneralPage::UpdateEci()
       CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
 
       Float64 Eci;
-      if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
+      if ( m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO || m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
       {
          WBFL::Materials::ACI209Concrete concrete;
          concrete.UserEc28(true);
@@ -536,7 +533,7 @@ void CGirderSegmentGeneralPage::UpdateEci()
       }
       else
       {
-         ATLASSERT(m_TimeDependentModel == TDM_CEBFIP);
+         ATLASSERT(m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP);
          WBFL::Materials::CEBFIPConcrete concrete;
          concrete.UserEc28(true);
          concrete.SetEc28(Ec);
@@ -623,13 +620,13 @@ void CGirderSegmentGeneralPage::UpdateEc()
       CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
 
       Float64 Ec;
-      if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
+      if ( m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO || m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
       {
          Ec = WBFL::Materials::ACI209Concrete::ComputeEc28(Eci,m_AgeAtRelease,pSegment->Material.Concrete.A,pSegment->Material.Concrete.B);
       }
       else
       {
-         ATLASSERT( m_TimeDependentModel == TDM_CEBFIP );
+         ATLASSERT( m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP );
          Ec = WBFL::Materials::CEBFIPConcrete::ComputeEc28(Eci,m_AgeAtRelease,pSegment->Material.Concrete.S);
       }
 
@@ -681,13 +678,13 @@ void CGirderSegmentGeneralPage::UpdateFc()
       CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
       Float64 fc;
 
-      if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
+      if ( m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO || m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
       {
          fc = WBFL::Materials::ACI209Concrete::ComputeFc28(fci,m_AgeAtRelease,pSegment->Material.Concrete.A,pSegment->Material.Concrete.B);
       }
       else
       {
-         ATLASSERT(m_TimeDependentModel == TDM_CEBFIP);
+         ATLASSERT(m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP);
          fc = WBFL::Materials::CEBFIPConcrete::ComputeFc28(fci,m_AgeAtRelease,pSegment->Material.Concrete.S);
       }
 
@@ -719,7 +716,7 @@ void CGirderSegmentGeneralPage::UpdateFci()
       CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
 
       Float64 fci;
-      if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
+      if ( m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO || m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
       {
          WBFL::Materials::ACI209Concrete concrete;
          concrete.SetTimeAtCasting(0);
@@ -730,7 +727,7 @@ void CGirderSegmentGeneralPage::UpdateFci()
       }
       else
       {
-         ATLASSERT(m_TimeDependentModel == TDM_CEBFIP);
+         ATLASSERT(m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP);
          WBFL::Materials::CEBFIPConcrete concrete;
          concrete.SetTimeAtCasting(0);
          concrete.SetFc28(fc);

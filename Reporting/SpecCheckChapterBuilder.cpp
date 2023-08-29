@@ -62,6 +62,9 @@
 
 #include <PgsExt\GirderArtifact.h>
 
+#include <psgLib/EndZoneCriteria.h>
+#include <psgLib/SlabOffsetCriteria.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -391,13 +394,14 @@ rptChapter* CSpecCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
    // Principle tension stress in webs
    CPrincipalTensionStressCheckTable().Build(pChapter, pBroker, pGirderArtifact, pDisplayUnits);
 
-   if (pSpecEntry->IsSplittingCheckEnabled())
+   const auto& end_zone_criteria = pSpecEntry->GetEndZoneCriteria();
+   if (end_zone_criteria.bCheckSplitting)
    {
       // Splitting Zone check
       write_splitting_zone_check(pBroker,pGirderArtifact,pChapter);
    }
 
-   if (pSpecEntry->IsConfinementCheckEnabled())
+   if (end_zone_criteria.bCheckConfinement)
    {
       // confinement check
       write_confinement_check(pBroker,pDisplayUnits,pGirderArtifact,pChapter);
@@ -410,7 +414,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
    GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
    if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled() || WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
    {
-      // starting with 9th edition, stability checks are manditory so always report the outcome
+      // starting with 9th edition, stability checks are mandatory so always report the outcome
       p = new rptParagraph;
       p->SetName(_T("Lifting"));
       *pChapter << p;
@@ -422,7 +426,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
    GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
    if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled() || WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
    {
-      // starting with 9th edition, stability checks are manditory so always report the outcome
+      // starting with 9th edition, stability checks are mandatory so always report the outcome
       p = new rptParagraph;
       p->SetName(_T("Hauling"));
       *pChapter << p;
@@ -464,6 +468,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
    // Bottom Flange Clearance Check
    CConstructabilityCheckTable().BuildBottomFlangeClearanceCheck(pChapter,pBroker,girderList,pDisplayUnits);
 
+   const auto& slab_offset_criteria = pSpecEntry->GetSlabOffsetCriteria();
    if (pBridge->GetDeckType() == pgsTypes::sdtNone)
    {
       p = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -471,16 +476,16 @@ rptChapter* CSpecCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
       *p << rptNewLine << _T("Finished Elevation Checks") << rptNewLine;
       *pChapter << p;
 
-      if (!pSpecEntry->IsSlabOffsetCheckEnabled())
+      if (slab_offset_criteria.bCheck)
+      {
+         // Finished Elevation Check
+         CConstructabilityCheckTable().BuildFinishedElevationCheck(pChapter, pBroker, girderList, pDisplayUnits);
+      }
+      else
       {
          p = new rptParagraph;
          *p << color(Red) << Bold(_T("Note: Finished elevations specification Checks are Disabled in the Project Criteria.")) << color(Black) << rptNewLine;
          *pChapter << p;
-      }
-      else
-      {
-      // Finished Elevation Check
-         CConstructabilityCheckTable().BuildFinishedElevationCheck(pChapter,pBroker,girderList,pDisplayUnits);
       }
    }
    else if (pBridge->GetHaunchInputDepthType() != pgsTypes::hidACamber) // direct haunch input
@@ -490,25 +495,25 @@ rptChapter* CSpecCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
       *p << rptNewLine << _T("Finished Elevation and Haunch Checks") << rptNewLine;
       *pChapter << p;
 
-      if (!pSpecEntry->IsSlabOffsetCheckEnabled())
+      if (slab_offset_criteria.bCheck)
+      {
+         // Finished Elevation Check
+         CConstructabilityCheckTable().BuildFinishedElevationCheck(pChapter, pBroker, girderList, pDisplayUnits);
+
+         // Minimum Haunch Check
+         CConstructabilityCheckTable().BuildMinimumHaunchCheck(pChapter, pBroker, girderList, pDisplayUnits);
+
+         // Min Haunch at bearing centerlines check
+         CConstructabilityCheckTable().BuildMinimumHaunchCLCheck(pChapter, pBroker, girderList, pDisplayUnits);
+
+         // Fillet Check
+         CConstructabilityCheckTable().BuildMinimumFilletCheck(pChapter, pBroker, girderList, pDisplayUnits);
+      }
+      else
       {
          p = new rptParagraph;
          *p << color(Red) << Bold(_T("Note: Finished elevations specification Checks are Disabled in the Project Criteria.")) << color(Black) << rptNewLine;
          *pChapter << p;
-      }
-      else
-      {
-         // Finished Elevation Check
-         CConstructabilityCheckTable().BuildFinishedElevationCheck(pChapter,pBroker,girderList,pDisplayUnits);
-
-         // Minimum Haunch Check
-         CConstructabilityCheckTable().BuildMinimumHaunchCheck(pChapter,pBroker,girderList,pDisplayUnits);
-
-         // Min Haunch at bearing centerlines check
-         CConstructabilityCheckTable().BuildMinimumHaunchCLCheck(pChapter,pBroker,girderList,pDisplayUnits);
-
-         // Fillet Check
-         CConstructabilityCheckTable().BuildMinimumFilletCheck(pChapter,pBroker,girderList,pDisplayUnits);
       }
    }
    else
@@ -518,7 +523,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
       *p << rptNewLine << _T("Haunch Geometry Checks") << rptNewLine;
       *pChapter << p;
 
-      if (!pSpecEntry->IsSlabOffsetCheckEnabled())
+      if (!slab_offset_criteria.bCheck)
       {
          p = new rptParagraph;
          *p << color(Red) << Bold(_T("Note: Specification Checks for Haunch Geometry are Disabled in the Project Criteria. All Status values will be reported as N/A.")) << color(Black) << rptNewLine;

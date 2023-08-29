@@ -590,12 +590,12 @@ bool pgsSegmentArtifact::Passed() const
 
    if (m_pHaulingAnalysisArtifact != nullptr)
    {
-      if (!m_pHaulingAnalysisArtifact->Passed(pgsTypes::CrownSlope))
+      if (!m_pHaulingAnalysisArtifact->Passed(WBFL::Stability::HaulingSlope::CrownSlope))
       {
          return false;
       }
 
-      if (!m_pHaulingAnalysisArtifact->Passed(pgsTypes::Superelevation))
+      if (!m_pHaulingAnalysisArtifact->Passed(WBFL::Stability::HaulingSlope::Superelevation))
       {
          return false;
       }
@@ -863,11 +863,11 @@ Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength() const
    if (m_pHaulingAnalysisArtifact != nullptr)
    {
        Float64 fc_reqd_hauling_comp1, fc_reqd_hauling_tens1, fc_reqd_hauling_tens_wbar1;
-       m_pHaulingAnalysisArtifact->GetRequiredConcreteStrength(pgsTypes::CrownSlope, &fc_reqd_hauling_comp1, &fc_reqd_hauling_tens1, &fc_reqd_hauling_tens_wbar1);
+       m_pHaulingAnalysisArtifact->GetRequiredConcreteStrength(WBFL::Stability::HaulingSlope::CrownSlope, &fc_reqd_hauling_comp1, &fc_reqd_hauling_tens1, &fc_reqd_hauling_tens_wbar1);
        Float64 fc_reqd_hauling_1 = Max(fc_reqd_hauling_comp1, fc_reqd_hauling_tens1, fc_reqd_hauling_tens_wbar1);
 
        Float64 fc_reqd_hauling_comp2, fc_reqd_hauling_tens2, fc_reqd_hauling_tens_wbar2;
-       m_pHaulingAnalysisArtifact->GetRequiredConcreteStrength(pgsTypes::Superelevation, &fc_reqd_hauling_comp2, &fc_reqd_hauling_tens2, &fc_reqd_hauling_tens_wbar2);
+       m_pHaulingAnalysisArtifact->GetRequiredConcreteStrength(WBFL::Stability::HaulingSlope::Superelevation, &fc_reqd_hauling_comp2, &fc_reqd_hauling_tens2, &fc_reqd_hauling_tens_wbar2);
        Float64 fc_reqd_hauling_2 = Max(fc_reqd_hauling_comp2, fc_reqd_hauling_tens2, fc_reqd_hauling_tens_wbar2);
 
        Float64 fc_reqd_hauling = Max(fc_reqd_hauling_1,fc_reqd_hauling_2);

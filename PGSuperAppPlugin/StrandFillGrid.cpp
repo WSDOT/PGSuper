@@ -234,7 +234,6 @@ void CStrandFillGrid::CustomInit(CGirderSelectStrandsPage* pParent, const Girder
    SymmetricDebond(m_pParent->m_bSymmetricDebond);
 
    HideCols(DEBOND_CHECK_COL,LAST_DEBOND_COL,(m_pParent->m_bCanDebondStrands ? FALSE : TRUE));
-   HideCols(FIRST_EXTEND_COL,LAST_EXTEND_COL,(m_pParent->m_bCanExtendStrands ? FALSE : TRUE));
 
    // make text fit correctly in header row
 	ResizeRowHeightsToFit(CGXRange(0,0,0,num_cols));
@@ -848,8 +847,7 @@ void CStrandFillGrid::OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol)
                );
          }
 
-         // If strands are extendable, enable the check boxes
-         if ( userData.strandType==pgsTypes::Straight && m_pParent->m_bCanExtendStrands )
+         if ( userData.strandType==pgsTypes::Straight )
          {
             SetStyleRange(CGXRange(nRow,FIRST_EXTEND_COL,nRow,LAST_EXTEND_COL),CGXStyle()
                .SetValue(_T("0")) 
@@ -919,17 +917,14 @@ void CStrandFillGrid::OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol)
                .SetTextColor(::GetSysColor(COLOR_GRAYTEXT))
                );
 
-         if ( m_pParent->m_bCanExtendStrands )
-         {
-            // Strands can be extended so the check boxes have to be enabled
-            SetStyleRange(CGXRange(nRow,FIRST_EXTEND_COL,nRow,LAST_EXTEND_COL), CGXStyle()
-			         .SetValue(_T("0"))
-                  .SetReadOnly(FALSE)
-                  .SetEnabled(TRUE)
-                  .SetInterior(::GetSysColor(COLOR_WINDOW))
-                  .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
-                  );
-         }
+         // Strands can be extended so the check boxes have to be enabled
+         SetStyleRange(CGXRange(nRow,FIRST_EXTEND_COL,nRow,LAST_EXTEND_COL), CGXStyle()
+			      .SetValue(_T("0"))
+               .SetReadOnly(FALSE)
+               .SetEnabled(TRUE)
+               .SetInterior(::GetSysColor(COLOR_WINDOW))
+               .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
+               );
       }
 
       GetParam()->SetLockReadOnly(TRUE);

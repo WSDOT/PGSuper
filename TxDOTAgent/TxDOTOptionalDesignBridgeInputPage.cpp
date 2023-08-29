@@ -33,6 +33,8 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 
+#include <psgLib/PrestressedElementCriteria.h>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -455,10 +457,11 @@ void CTxDOTOptionalDesignBridgeInputPage::OnCbnSelchangeProjectCriteria()
       ppcl_ctrl->GetLBText(idx, libname);
 
       SpecLibrary* pLib = m_pBrokerRetriever->GetSpecLibrary();
-      const SpecLibraryEntry* pEntry = (const SpecLibraryEntry*)pLib->GetEntry(libname);
-      if (pEntry!=nullptr)
+      const SpecLibraryEntry* pSpecEntry = (const SpecLibraryEntry*)pLib->GetEntry(libname);
+      if (pSpecEntry !=nullptr)
       {
-         Float64 factor = pEntry->GetAtReleaseCompressionStressFactor();
+         const auto& prestress_element_criteria = pSpecEntry->GetPrestressedElementCriteria();
+         Float64 factor = prestress_element_criteria.CompressionStressCoefficient_BeforeLosses;
          CString msg;
          msg.Format(_T("(Allowable compression stress factor at release = %.2f)"),factor);
 

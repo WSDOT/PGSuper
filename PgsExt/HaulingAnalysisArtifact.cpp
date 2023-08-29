@@ -81,12 +81,12 @@ bool pgsWsdotHaulingAnalysisArtifact::Passed(bool bIgnoreConfirationLimits) cons
    return m_HaulingArtifact.Passed(bIgnoreConfirationLimits);
 }
 
-bool pgsWsdotHaulingAnalysisArtifact::Passed(pgsTypes::HaulingSlope slope) const
+bool pgsWsdotHaulingAnalysisArtifact::Passed(WBFL::Stability::HaulingSlope slope) const
 {
    return m_HaulingArtifact.Passed((WBFL::Stability::HaulingSlope)slope);
 }
 
-bool pgsWsdotHaulingAnalysisArtifact::PassedStressCheck(pgsTypes::HaulingSlope slope) const
+bool pgsWsdotHaulingAnalysisArtifact::PassedStressCheck(WBFL::Stability::HaulingSlope slope) const
 {
    return m_HaulingArtifact.PassedStressCheck((WBFL::Stability::HaulingSlope)slope);
 }
@@ -177,22 +177,22 @@ void pgsWsdotHaulingAnalysisArtifact::Write1250Data(const CSegmentKey& segmentKe
 
 //======================== ACCESS     =======================================
 
-Float64 pgsWsdotHaulingAnalysisArtifact::GetMinFsForCracking(pgsTypes::HaulingSlope slope) const
+Float64 pgsWsdotHaulingAnalysisArtifact::GetMinFsForCracking(WBFL::Stability::HaulingSlope slope) const
 {
    return m_HaulingArtifact.GetHaulingResults().MinFScr[+slope];
 }
 
-Float64 pgsWsdotHaulingAnalysisArtifact::GetFsRollover(pgsTypes::HaulingSlope slope) const
+Float64 pgsWsdotHaulingAnalysisArtifact::GetFsRollover(WBFL::Stability::HaulingSlope slope) const
 {
    return m_HaulingArtifact.GetHaulingResults().MinFsRollover[+slope];
 }
 
-Float64 pgsWsdotHaulingAnalysisArtifact::GetFsFailure(pgsTypes::HaulingSlope slope) const
+Float64 pgsWsdotHaulingAnalysisArtifact::GetFsFailure(WBFL::Stability::HaulingSlope slope) const
 {
    return m_HaulingArtifact.GetHaulingResults().MinFsFailure[+slope];
 }
 
-void pgsWsdotHaulingAnalysisArtifact::GetRequiredConcreteStrength(pgsTypes::HaulingSlope slope,Float64 *pfciComp,Float64 *pfcTension, Float64* pfcTensionWithRebar) const
+void pgsWsdotHaulingAnalysisArtifact::GetRequiredConcreteStrength(WBFL::Stability::HaulingSlope slope,Float64 *pfciComp,Float64 *pfcTension, Float64* pfcTensionWithRebar) const
 {
    *pfciComp = m_HaulingArtifact.RequiredFcCompression((WBFL::Stability::HaulingSlope)slope);
    *pfcTension = m_HaulingArtifact.RequiredFcTensionWithoutRebar((WBFL::Stability::HaulingSlope)slope);

@@ -57,7 +57,7 @@ rptRcTable(NumColumns,0)
 CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,bool bTemporaryStrands,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    GET_IFACE2(pBroker,ILossParameters,pLossParameters);
-   pgsTypes::LossMethod loss_method = pLossParameters->GetLossMethod();
+   PrestressLossCriteria::LossMethodType loss_method = pLossParameters->GetLossMethod();
 
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
@@ -68,10 +68,10 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   bool bIgnoreInitialRelaxation = ( loss_method == pgsTypes::WSDOT_REFINED || loss_method == pgsTypes::WSDOT_LUMPSUM ) ? false : true;
+   bool bIgnoreInitialRelaxation = ( loss_method == PrestressLossCriteria::LossMethodType::WSDOT_REFINED || loss_method == PrestressLossCriteria::LossMethodType::WSDOT_LUMPSUM ) ? false : true;
 
-   if ((WBFL::LRFD::LRFDVersionMgr::GetVersion() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 && loss_method == pgsTypes::AASHTO_REFINED) ||
-        loss_method == pgsTypes::TXDOT_REFINED_2004)
+   if ((WBFL::LRFD::LRFDVersionMgr::GetVersion() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 && loss_method == PrestressLossCriteria::LossMethodType::AASHTO_REFINED) ||
+        loss_method == PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2004)
    {
       bIgnoreInitialRelaxation = false;
    }
@@ -117,14 +117,14 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
    // first equation
    if ( bTemporaryStrands )
    {
-      if ( loss_method == pgsTypes::WSDOT_REFINED || loss_method == pgsTypes::AASHTO_REFINED || loss_method == pgsTypes::TXDOT_REFINED_2004 )
+      if ( loss_method == PrestressLossCriteria::LossMethodType::WSDOT_REFINED || loss_method == PrestressLossCriteria::LossMethodType::AASHTO_REFINED || loss_method == PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2004 )
       {
          *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pLTH")) << _T(" = ") << symbol(DELTA) << RPT_STRESS(_T("pSRH")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pCRH")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pR1H")) << rptNewLine;
       }
    }
    else
    {
-      if ( loss_method == pgsTypes::WSDOT_REFINED || loss_method == pgsTypes::AASHTO_REFINED || loss_method == pgsTypes::TXDOT_REFINED_2004 )
+      if ( loss_method == PrestressLossCriteria::LossMethodType::WSDOT_REFINED || loss_method == PrestressLossCriteria::LossMethodType::AASHTO_REFINED || loss_method == PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2004 )
       {
          *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pLTH")) << _T(" = ") << symbol(DELTA) << RPT_STRESS(_T("pSRH")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pCRH")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pR1H")) << rptNewLine;
       }

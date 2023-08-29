@@ -158,7 +158,7 @@ public:
          return S_OK;
       }
 
-      if (pT->m_pSpecEntry->GetLossMethod() != LOSSES_TIME_STEP)
+      if (pT->m_pSpecEntry->GetPrestressLossCriteria().LossMethod != PrestressLossCriteria::LossMethodType::TIME_STEP)
       {
          pT->CreatePrecastGirderBridgeTimelineEvents();
       }

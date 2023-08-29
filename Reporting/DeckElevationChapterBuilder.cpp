@@ -31,6 +31,8 @@
 
 #include <PgsExt\BridgeDescription2.h>
 
+#include <psgLib/SlabOffsetCriteria.h>
+
 
 #include <WBFLCogo.h>
 
@@ -270,7 +272,8 @@ void CDeckElevationChapterBuilder::BuildNoDeckElevationContent(rptChapter * pCha
    GET_IFACE2(pBroker,ILibrary, pLib);
    GET_IFACE2(pBroker, ISpecification, pISpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pISpec->GetSpecification().c_str());
-   Float64 tolerance = pSpecEntry->GetFinishedElevationTolerance();
+   const auto& slab_offset_criteria = pSpecEntry->GetSlabOffsetCriteria();
+   Float64 tolerance = slab_offset_criteria.FinishedElevationTolerance;
    
    INIT_UV_PROTOTYPE(rptLengthSectionValue, dim1, pDisplayUnits->GetSpanLengthUnit(), true);
    INIT_UV_PROTOTYPE(rptLengthSectionValue, dim2, pDisplayUnits->GetComponentDimUnit(), true);

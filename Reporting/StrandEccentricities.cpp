@@ -74,7 +74,7 @@ void CStrandEccentricities::Build(rptChapter* pChapter,IBroker* pBroker,const CS
    *p << _T("Strand Eccentricity") << rptNewLine;
 
    //GET_IFACE2( pBroker, ILossParameters, pLossParams);
-   //pgsTypes::LossMethod lossMethod = pLossParams->GetLossMethod();
+   //PrestressLossCriteria::LossMethodType lossMethod = pLossParams->GetLossMethod();
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -90,7 +90,7 @@ void CStrandEccentricities::Build(rptChapter* pChapter,IBroker* pBroker,const CS
       {
          CSegmentKey thisSegmentKey(thisGirderKey,segIdx);
 
-         //if ( lossMethod == pgsTypes::TIME_STEP )
+         //if ( lossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP )
          //{
          //   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
          //   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();

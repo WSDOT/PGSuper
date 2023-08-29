@@ -212,12 +212,6 @@ BOOL CGirderSelectStrandsPage::OnInitDialog()
       pBut->ShowWindow(SW_HIDE);
    }
 
-   if ( !m_bCanExtendStrands )
-   {
-      GetDlgItem(IDC_EXTENDED_LEFT)->ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_EXTENDED_RIGHT)->ShowWindow(SW_HIDE);
-   }
-
    OnNumStrandsChanged();
 
    // Collect data for dialog resizing
@@ -297,7 +291,6 @@ void CGirderSelectStrandsPage::InitializeData(const CSegmentKey& segmentKey, CSt
    m_HgHp[pgsTypes::metStart]  = HgHp1;
    m_HgHp[pgsTypes::metEnd]    = HgHp2;
 
-   m_bCanExtendStrands = pSpecEntry->AllowStraightStrandExtensions();
    m_ExtendedStrands[pgsTypes::metStart] = m_pStrands->GetExtendedStrands(pgsTypes::Straight,pgsTypes::metStart);
    m_ExtendedStrands[pgsTypes::metEnd]   = m_pStrands->GetExtendedStrands(pgsTypes::Straight,pgsTypes::metEnd);
 
@@ -953,14 +946,11 @@ void CGirderSelectStrandsPage::UpdateStrandInfo()
    msg.Format(_T("Temporary (T)=%d"), nTemporary);
    GetDlgItem(IDC_TEMPORARY)->SetWindowText(msg);
 
-   if ( this->m_bCanExtendStrands )
-   {
-      msg.Format(_T("Extended Left=%d"),nExtendedLeft);
-      GetDlgItem(IDC_EXTENDED_LEFT)->SetWindowText(msg);
+   msg.Format(_T("Extended Left=%d"),nExtendedLeft);
+   GetDlgItem(IDC_EXTENDED_LEFT)->SetWindowText(msg);
 
-      msg.Format(_T("Extended Right=%d"),nExtendedRight);
-      GetDlgItem(IDC_EXTENDED_RIGHT)->SetWindowText(msg);
-   }
+   msg.Format(_T("Extended Right=%d"),nExtendedRight);
+   GetDlgItem(IDC_EXTENDED_RIGHT)->SetWindowText(msg);
 }
 
 void CGirderSelectStrandsPage::UpdatePicture()

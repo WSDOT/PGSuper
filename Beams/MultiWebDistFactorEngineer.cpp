@@ -163,14 +163,15 @@ void CMultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptCha
       GET_IFACE(ISpecification, pSpec);
       GET_IFACE(ILibrary, pLibrary);
       const auto* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
-      if (pSpecEntry->IgnoreSkewReductionForMoment())
+      const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
+      if (live_load_distribution_criteria.bIgnoreSkewReductionForMoment)
       {
          (*pPara) << _T("Skew reduction for moment distribution factors has been ignored (LRFD 4.6.2.2.2e)") << rptNewLine;
       }
 
       if (pBridgeDesc->GetDistributionFactorMethod() != pgsTypes::LeverRule)
       {
-         if(span_lldf.Method==LLDF_TXDOT || !span_lldf.connectedAsUnit)
+         if(span_lldf.Method== pgsTypes::LiveLoadDistributionFactorMethod::TxDOT || !span_lldf.connectedAsUnit)
          {
             if (spMode == pgsTypes::spmTransformed)
             {
@@ -181,7 +182,7 @@ void CMultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptCha
             (*pPara) << _T("Possion Ratio: ") << symbol(mu) << _T(" = ") << span_lldf.PossionRatio << rptNewLine << rptNewLine;
          }
 
-         if(span_lldf.Method == LLDF_TXDOT)
+         if(span_lldf.Method == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
          {
            (*pPara) << _T("For TxDOT Method, for all distribution factor types, always use AASHTO Type (j) connected only enough to prevent relative vertical displacement, regardless of input. Use 4.6.2.2.2b-1, with TxDOT modifications (K=")<< GetTxDOTKfactor() <<_T(", g not to exceed S/10). Effects of skew will be ignored.") << rptNewLine;
            (*pPara) << rptRcImage(strImagePath + _T("LLDF_Type_HIJ_TxDOT.png")) << rptNewLine;
@@ -661,7 +662,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDF
 
    WBFL::LRFD::LiveLoadDistributionFactorBase* pLLDF;
 
-   if(plldf->Method == LLDF_TXDOT)
+   if(plldf->Method == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
    {
       // TxDOT K factor depends on beam type
       Float64 K = this->GetTxDOTKfactor();
@@ -797,7 +798,7 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
    if ( lldf.bExteriorGirder )
    {
       // Distribution factor for exterior girder
-      if (lldf.Method == LLDF_TXDOT && !(gM1.ControllingMethod & WBFL::LRFD::LEVER_RULE || gM1.ControllingMethod & WBFL::LRFD::LANES_DIV_BEAMS))
+      if (lldf.Method == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT && !(gM1.ControllingMethod & WBFL::LRFD::LEVER_RULE || gM1.ControllingMethod & WBFL::LRFD::LANES_DIV_BEAMS))
       {
          std::_tstring msg(!(gM1.ControllingMethod & WBFL::LRFD::SPECIAL_OVERRIDE)?_T("Spec Equation, same as for interior single lane."):_T("Controlled by S/10.0"));
 
@@ -925,7 +926,7 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
    else
    {
       // Distribution factor for interior girder
-      if (lldf.Method == LLDF_TXDOT && !(gM1.ControllingMethod & WBFL::LRFD::LEVER_RULE || gM1.ControllingMethod & WBFL::LRFD::LANES_DIV_BEAMS))
+      if (lldf.Method == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT && !(gM1.ControllingMethod & WBFL::LRFD::LEVER_RULE || gM1.ControllingMethod & WBFL::LRFD::LANES_DIV_BEAMS))
       {
          std::_tstring msg(!(gM1.ControllingMethod & WBFL::LRFD::SPECIAL_OVERRIDE)?_T("Spec Equation"):_T("Controlled by S/10.0"));
 
@@ -1107,12 +1108,13 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 
-   Int16 df_method = pSpecEntry->GetLiveLoadDistributionMethod();
+   auto df_method = live_load_distribution_criteria.LldfMethod;
 
    if ( lldf.bExteriorGirder )
    {
-      if (lldf.Method == LLDF_TXDOT && !(gV1.ControllingMethod & WBFL::LRFD::LEVER_RULE || gV1.ControllingMethod & WBFL::LRFD::LANES_DIV_BEAMS))
+      if (lldf.Method == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT && !(gV1.ControllingMethod & WBFL::LRFD::LEVER_RULE || gV1.ControllingMethod & WBFL::LRFD::LANES_DIV_BEAMS))
       {
          std::_tstring msg(!(gV1.ControllingMethod & WBFL::LRFD::SPECIAL_OVERRIDE)?_T("Spec Equation, same as for interior single lane moment."):_T("Controlled by S/10.0"));
 
@@ -1237,7 +1239,7 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
    else
    {
       // Distribution factor for interior girder
-      if (lldf.Method == LLDF_TXDOT && !(gV1.ControllingMethod & WBFL::LRFD::LEVER_RULE || gV1.ControllingMethod & WBFL::LRFD::LANES_DIV_BEAMS))
+      if (lldf.Method == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT && !(gV1.ControllingMethod & WBFL::LRFD::LEVER_RULE || gV1.ControllingMethod & WBFL::LRFD::LANES_DIV_BEAMS))
       {
          std::_tstring msg(!(gV1.ControllingMethod & WBFL::LRFD::SPECIAL_OVERRIDE)?_T("Spec Equation, same as for interior single lane moment."):_T("Controlled by S/10.0"));
 
@@ -1341,18 +1343,19 @@ std::_tstring CMultiWebDistFactorEngineer::GetComputationDescription(const CGird
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 
-   Int16 lldfMethod = pSpecEntry->GetLiveLoadDistributionMethod();
+   auto lldfMethod = live_load_distribution_criteria.LldfMethod;
 
    std::_tostringstream osdescr;
 
-   if ( lldfMethod == LLDF_TXDOT )
+   if ( lldfMethod == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
    {
       osdescr <<_T("TxDOT modifications per TxDOT Bridge Design Manual - LRFD");
    }
-   else if ( lldfMethod == LLDF_WSDOT || lldfMethod == LLDF_LRFD )
+   else if ( lldfMethod == pgsTypes::LiveLoadDistributionFactorMethod::WSDOT || lldfMethod == pgsTypes::LiveLoadDistributionFactorMethod::LRFD)
    {
-      if (lldfMethod == LLDF_WSDOT)
+      if (lldfMethod == pgsTypes::LiveLoadDistributionFactorMethod::WSDOT)
       {
          osdescr << _T("WSDOT Method per Bridge Design Manual Section 3.9.3A. Using type (i,j) cross section ");
       }

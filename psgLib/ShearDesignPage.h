@@ -87,7 +87,7 @@ public:
    BOOL m_bExtendDeckBars;
    BOOL m_bBarsProvideConfinement;
 
-   int m_LongReinfShearMethod;
+   int m_LongitudinalReinforcementForShearMethod;
 
    Float64 m_InterfaceShearWidthReduction;
 

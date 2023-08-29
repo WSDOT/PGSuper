@@ -31,6 +31,7 @@
 
 #include "resource.h"
 #include <MfcTools\WideDropDownComboBox.h>
+#include <psgLib/PrestressLossCriteria.h>
 
 class CGirderDescDlg;
 
@@ -131,8 +132,8 @@ protected:
    CString m_strUserEc;
    CString m_strUserEci;
 
-   pgsTypes::LossMethod m_LossMethod;
-   pgsTypes::TimeDependentModel m_TimeDependentModel;
+   PrestressLossCriteria::LossMethodType m_LossMethod;
+   PrestressLossCriteria::TimeDependentConcreteModelType m_TimeDependentModel;
    Float64 m_AgeAtRelease;
 
    int m_GirderNameIdx; // combo box index of current girder name just before it is changed

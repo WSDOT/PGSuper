@@ -29,6 +29,7 @@
 
 #include <EAF\EAFApp.h>
 #include <EAF\EAFDocument.h>
+#include <psgLib/PrestressLossCriteria.h>
 
 #include "SpecMainSheet.h"
 
@@ -271,7 +272,7 @@ BOOL CSpecDesignPage::OnSetActive()
 
    pWnd = GetDlgItem(IDC_FC1);
    pWnd->SetWindowText(CString(_T("Use fc at the time of loading (")) + WBFL::LRFD::LrfdCw8th(_T("5.14.1.3.2d and 5.14.1.3.3"),_T("5.12.3.4.2d and 5.12.3.4.3")) + _T(")"));
-   pWnd->EnableWindow(pDad->m_Entry.GetLossMethod() == pgsTypes::TIME_STEP ? TRUE : FALSE); // only an option for time-step analysis
+   pWnd->EnableWindow(pDad->m_Entry.GetPrestressLossCriteria().LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP ? TRUE : FALSE); // only an option for time-step analysis
 
    pWnd = GetDlgItem(IDC_90_DAY_STRENGTH_LABEL);
    pWnd->SetWindowText(CString(_T("% of f'c for stress combinations after 90 days for slow curing concretes (")) + WBFL::LRFD::LrfdCw8th(_T("5.14.1.2.5"), _T("5.12.3.2.5")) + _T(")"));

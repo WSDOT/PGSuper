@@ -196,18 +196,17 @@ void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter, const std::sha
    CamberMultipliers cm = pCamber->GetCamberMultipliers(segmentKey);
 
    Float64 precamber = pCamber->GetPrecamber(segmentKey);
-
-   for ( Int16 i = CREEP_MINTIME; i <= CREEP_MAXTIME; i++ )
+   for (const auto i : pgsTypes::enum_range<pgsTypes::CreepTime>(pgsTypes::CreepTime::Min,pgsTypes::CreepTime::Max))
    {
       pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pPara;
 
-      *pPara << (i == CREEP_MINTIME ? _T("Minimum Timing") : _T("Maximum Timing")) << rptNewLine;
+      *pPara << (i == pgsTypes::CreepTime::Min ? _T("Minimum Timing") : _T("Maximum Timing")) << rptNewLine;
 
       pPara = new rptParagraph;
       *pChapter << pPara;
 
-      CREEPCOEFFICIENTDETAILS details[3];
+      std::array<CREEPCOEFFICIENTDETAILS, 3> details;
       details[0] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDiaphragm,i);
       details[1] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDiaphragmToDeck,i);
       details[2] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDeck,i);
@@ -397,27 +396,27 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter, const std::s
    
    Float64 precamber = pCamber->GetPrecamber(segmentKey);
 
-   for (Int16 i = CREEP_MINTIME; i <= CREEP_MAXTIME; i++)
+   for (auto creep_time : pgsTypes::enum_range<pgsTypes::CreepTime>(pgsTypes::CreepTime::Min,pgsTypes::CreepTime::Max))
    {
       pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pPara;
 
-      *pPara << (i == CREEP_MINTIME ? _T("Minimum Timing") : _T("Maximum Timing")) << rptNewLine;
+      *pPara << (creep_time == pgsTypes::CreepTime::Min ? _T("Minimum Timing") : _T("Maximum Timing")) << rptNewLine;
 
       pPara = new rptParagraph;
       *pChapter << pPara;
 
       std::array<CREEPCOEFFICIENTDETAILS, 6> details;
-      details[0] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpReleaseToDiaphragm, i);
-      details[1] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpReleaseToDeck, i);
-      details[2] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpReleaseToFinal, i);
-      details[3] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpDiaphragmToDeck, i);
-      details[4] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpDiaphragmToFinal, i);
-      details[5] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpDeckToFinal, i);
+      details[0] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpReleaseToDiaphragm, creep_time);
+      details[1] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpReleaseToDeck, creep_time);
+      details[2] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpReleaseToFinal, creep_time);
+      details[3] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpDiaphragmToDeck, creep_time);
+      details[4] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpDiaphragmToFinal, creep_time);
+      details[5] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpDeckToFinal, creep_time);
 
       CCamberTable tbl;
       rptRcTable* pTable1, * pTable2, * pTable3;
-      tbl.Build_NoDeck(pBroker, segmentKey, bTempStrands, bSidewalk, bShearKey, bLongitudinalJoint, bConstruction, bOverlay, pDisplayUnits, i, cm, &pTable1, &pTable2, &pTable3);
+      tbl.Build_NoDeck(pBroker, segmentKey, bTempStrands, bSidewalk, bShearKey, bLongitudinalJoint, bConstruction, bOverlay, pDisplayUnits, creep_time, cm, &pTable1, &pTable2, &pTable3);
       *pPara << pTable1 << rptNewLine;
 
       // footnotes to release and storage tables

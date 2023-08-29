@@ -479,7 +479,7 @@ void CEffectivePrestressGraphBuilder::UpdatePretensionGraphData(GroupIndexType g
                                     // release so there isn't any elastic shortening effect, only initial relaxation
          }
 
-         Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, time, true/*include elastic effects*/, pgsTypes::tltMinimum);
+         Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, time, true/*include elastic effects*/, pgsTypes::TransferLengthType::Minimum);
          if (bStresses)
          {
             Fpe = pPSForce->GetEffectivePrestress(poi, strandType, intervalIdx, time);
@@ -493,7 +493,7 @@ void CEffectivePrestressGraphBuilder::UpdatePretensionGraphData(GroupIndexType g
          {
             // if this is at release, also plot at the end of the interval so we capture the
             // elastic shortening that occurs during this interval
-            Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::End, pgsTypes::tltMinimum);
+            Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::End, pgsTypes::TransferLengthType::Minimum);
             if (bStresses)
             {
                Fpe = pPSForce->GetEffectivePrestress(poi, strandType, intervalIdx, pgsTypes::End);

@@ -222,7 +222,7 @@ void CGirderDescGeneralPage::ExchangeConcreteData(CDataExchange* pDX)
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-   if ( m_LossMethod == pgsTypes::TIME_STEP )
+   if ( m_LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       int value;
       if ( !pDX->m_bSaveAndValidate )
@@ -305,7 +305,7 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
    m_LossMethod = pLossParams->GetLossMethod();
    m_TimeDependentModel = pLossParams->GetTimeDependentModel();
 
-   if ( m_LossMethod != pgsTypes::TIME_STEP )
+   if ( m_LossMethod != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       GetDlgItem(IDC_CONSTRUCTION_EVENT)->EnableWindow(FALSE);
       GetDlgItem(IDC_ERECTION_EVENT)->EnableWindow(FALSE);
@@ -442,7 +442,7 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
    DDX_CBItemData(&dx,IDC_CONSTRUCTION_EVENT,constructionEventID);
    DDX_CBItemData(&dx,IDC_ERECTION_EVENT,erectionEventID);
 
-   if ( m_LossMethod == pgsTypes::TIME_STEP )
+   if ( m_LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       SegmentIDType segmentID = pParent->m_pSegment->GetID();
       ATLASSERT(segmentID != INVALID_ID);
@@ -485,7 +485,7 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
    OnUserEci();
    OnUserEc();
 
-   if ( m_LossMethod == pgsTypes::TIME_STEP )
+   if ( m_LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       if ( pParent->m_pSegment->Material.Concrete.bBasePropertiesOnInitialValues )
       {
@@ -566,7 +566,7 @@ void CGirderDescGeneralPage::OnHelp()
 void CGirderDescGeneralPage::OnChangeFci() 
 {
    UpdateEci();
-   if ( m_LossMethod == pgsTypes::TIME_STEP )
+   if ( m_LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       UpdateFc();
       UpdateEc();
@@ -576,7 +576,7 @@ void CGirderDescGeneralPage::OnChangeFci()
 void CGirderDescGeneralPage::OnChangeGirderFc() 
 {
    UpdateEc();
-   if ( m_LossMethod == pgsTypes::TIME_STEP )
+   if ( m_LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       UpdateFci();
       UpdateEci();
@@ -585,7 +585,7 @@ void CGirderDescGeneralPage::OnChangeGirderFc()
 
 void CGirderDescGeneralPage::OnChangeEc() 
 {
-   if ( m_LossMethod == pgsTypes::TIME_STEP && m_ctrlEcCheck.GetCheck() == TRUE)
+   if ( m_LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP && m_ctrlEcCheck.GetCheck() == TRUE)
    {
       UpdateEci();
    }
@@ -593,7 +593,7 @@ void CGirderDescGeneralPage::OnChangeEc()
 
 void CGirderDescGeneralPage::OnChangeEci() 
 {
-   if ( m_LossMethod == pgsTypes::TIME_STEP && m_ctrlEciCheck.GetCheck() == TRUE)
+   if ( m_LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP && m_ctrlEciCheck.GetCheck() == TRUE)
    {
       UpdateEc();
    }
@@ -602,7 +602,7 @@ void CGirderDescGeneralPage::OnChangeEci()
 void CGirderDescGeneralPage::UpdateEci()
 {
    int method = 0;
-   if ( m_LossMethod == pgsTypes::TIME_STEP )
+   if ( m_LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       int nIDC = GetCheckedRadioButton(IDC_FC1,IDC_FC2);
       ATLASSERT(nIDC != 0); // 0 means nothing is selected
@@ -661,7 +661,7 @@ void CGirderDescGeneralPage::UpdateEci()
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
       Float64 Eci;
-      if ( m_TimeDependentModel == pgsTypes::tdmAASHTO )
+      if ( m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO )
       {
          WBFL::LRFD::LRFDTimeDependentConcrete concrete;
          concrete.UserEc28(true);
@@ -673,7 +673,7 @@ void CGirderDescGeneralPage::UpdateEci()
          concrete.SetStrengthDensity(pParent->m_pSegment->Material.Concrete.StrengthDensity);
          Eci = concrete.GetEc(m_AgeAtRelease);
       }
-      else if ( m_TimeDependentModel == pgsTypes::tdmACI209 )
+      else if ( m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
       {
          WBFL::Materials::ACI209Concrete concrete;
          concrete.UserEc28(true);
@@ -687,7 +687,7 @@ void CGirderDescGeneralPage::UpdateEci()
       }
       else
       {
-         ATLASSERT(m_TimeDependentModel == pgsTypes::tdmCEBFIP);
+         ATLASSERT(m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP);
          WBFL::Materials::CEBFIPConcrete concrete;
          concrete.UserEc28(true);
          concrete.SetEc28(Ec);
@@ -727,7 +727,7 @@ void CGirderDescGeneralPage::UpdateEci()
 void CGirderDescGeneralPage::UpdateEc()
 {
    int method = 0;
-   if ( m_LossMethod == pgsTypes::TIME_STEP )
+   if ( m_LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       int nIDC = GetCheckedRadioButton(IDC_FC1,IDC_FC2);
       ATLASSERT(nIDC != 0); // 0 means nothing is selected
@@ -787,17 +787,17 @@ void CGirderDescGeneralPage::UpdateEc()
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
       Float64 Ec;
-      if ( m_TimeDependentModel == pgsTypes::tdmAASHTO )
+      if ( m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO )
       {
          Ec = WBFL::LRFD::LRFDTimeDependentConcrete::ComputeEc28(Eci,m_AgeAtRelease,pParent->m_pSegment->Material.Concrete.A,pParent->m_pSegment->Material.Concrete.B);
       }
-      else if (m_TimeDependentModel == pgsTypes::tdmACI209 )
+      else if (m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
       {
          Ec = WBFL::Materials::ACI209Concrete::ComputeEc28(Eci,m_AgeAtRelease,pParent->m_pSegment->Material.Concrete.A,pParent->m_pSegment->Material.Concrete.B);
       }
       else
       {
-         ATLASSERT( m_TimeDependentModel == pgsTypes::tdmCEBFIP );
+         ATLASSERT( m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP );
          Ec = WBFL::Materials::CEBFIPConcrete::ComputeEc28(Eci,m_AgeAtRelease,pParent->m_pSegment->Material.Concrete.S);
       }
 
@@ -828,7 +828,7 @@ void CGirderDescGeneralPage::UpdateEc()
 
 void CGirderDescGeneralPage::UpdateFc()
 {
-   if ( m_LossMethod == pgsTypes::TIME_STEP )
+   if ( m_LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       int nIDC = GetCheckedRadioButton(IDC_FC1,IDC_FC2);
       ATLASSERT(nIDC != 0); // 0 means nothing is selected
@@ -850,17 +850,17 @@ void CGirderDescGeneralPage::UpdateFc()
          CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
          Float64 fc;
 
-         if ( m_TimeDependentModel == pgsTypes::tdmAASHTO )
+         if ( m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO )
          {
             fc = WBFL::LRFD::LRFDTimeDependentConcrete::ComputeFc28(fci,m_AgeAtRelease,pParent->m_pSegment->Material.Concrete.A,pParent->m_pSegment->Material.Concrete.B);
          }
-         else if ( m_TimeDependentModel == pgsTypes::tdmACI209 )
+         else if ( m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
          {
             fc = WBFL::Materials::ACI209Concrete::ComputeFc28(fci,m_AgeAtRelease,pParent->m_pSegment->Material.Concrete.A,pParent->m_pSegment->Material.Concrete.B);
          }
          else
          {
-            ATLASSERT(m_TimeDependentModel == pgsTypes::tdmCEBFIP);
+            ATLASSERT(m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP);
             fc = WBFL::Materials::CEBFIPConcrete::ComputeFc28(fci,m_AgeAtRelease,pParent->m_pSegment->Material.Concrete.S);
          }
 
@@ -873,7 +873,7 @@ void CGirderDescGeneralPage::UpdateFc()
 
 void CGirderDescGeneralPage::UpdateFci()
 {
-   if ( m_LossMethod == pgsTypes::TIME_STEP )
+   if ( m_LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       int nIDC = GetCheckedRadioButton(IDC_FC1,IDC_FC2);
       ATLASSERT(nIDC != 0); // 0 means nothing is selected
@@ -895,7 +895,7 @@ void CGirderDescGeneralPage::UpdateFci()
          CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
          Float64 fci;
-         if ( m_TimeDependentModel == pgsTypes::tdmAASHTO )
+         if ( m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO )
          {
             WBFL::LRFD::LRFDTimeDependentConcrete concrete;
             concrete.SetTimeAtCasting(0);
@@ -904,7 +904,7 @@ void CGirderDescGeneralPage::UpdateFci()
             concrete.SetBeta(pParent->m_pSegment->Material.Concrete.B);
             fci = concrete.GetFc(m_AgeAtRelease);
          }
-         else if ( m_TimeDependentModel == pgsTypes::tdmACI209 )
+         else if ( m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
          {
             WBFL::Materials::ACI209Concrete concrete;
             concrete.SetTimeAtCasting(0);
@@ -915,7 +915,7 @@ void CGirderDescGeneralPage::UpdateFci()
          }
          else
          {
-            ATLASSERT(m_TimeDependentModel == pgsTypes::tdmCEBFIP);
+            ATLASSERT(m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP);
             WBFL::Materials::CEBFIPConcrete concrete;
             concrete.SetTimeAtCasting(0);
             concrete.SetFc28(fc);
@@ -1063,7 +1063,7 @@ void CGirderDescGeneralPage::OnMoreConcreteProperties()
 
 void CGirderDescGeneralPage::UpdateConcreteControls(bool bSkipEcCheckBoxes)
 {
-   if ( m_LossMethod == pgsTypes::TIME_STEP )
+   if ( m_LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       int nIDC = GetCheckedRadioButton(IDC_FC1,IDC_FC2);
       ATLASSERT(nIDC != 0); // 0 means nothing is selected
@@ -1297,14 +1297,7 @@ void CGirderDescGeneralPage::OnChangeGirderName()
    pParent->m_LongRebar.m_CurGrdName = newName;
    pParent->m_LongRebar.RestoreToLibraryDefaults(&(pParent->m_pSegment->LongitudinalRebarData));
 
-   // add/remove property pages if needed
-   GET_IFACE2( pBroker, ISpecification, pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-
-   bool bCanExtendStrands = pSpecEntry->AllowStraightStrandExtensions();
-   bool bCanDebond = pGdrEntry->CanDebondStraightStrands();
-
-   pParent->OnGirderTypeChanged(bCanExtendStrands,bCanDebond);
+   pParent->OnGirderTypeChanged(true);
 }
 
 void CGirderDescGeneralPage::OnConcreteStrength()

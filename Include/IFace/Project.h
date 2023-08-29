@@ -24,6 +24,7 @@
 
 #include <WbflTypes.h>
 #include <psglib\librarymanager.h>
+#include <psgLib/PrestressLossCriteria.h>
 #include <LRFD\ILiveLoadDistributionFactor.h>
 
 #include <PgsExt\Keys.h>
@@ -170,11 +171,10 @@ DESCRIPTION
 // {880AE100-2F4C-11d2-8D11-94FA07C10000}
 DEFINE_GUID(IID_IEnvironment,
 0x880AE100, 0x2F4C, 0x11d2, 0x8D, 0x11, 0x94, 0xFA, 0x07, 0xC1, 0x00, 0x00);
-typedef enum enumExposureCondition { expNormal, expSevere } enumExposureCondition;
 interface IEnvironment : IUnknown
 {
-   virtual enumExposureCondition GetExposureCondition() const = 0;
-	virtual void SetExposureCondition(enumExposureCondition newVal) = 0;
+   virtual pgsTypes::ExposureCondition GetExposureCondition() const = 0;
+	virtual void SetExposureCondition(pgsTypes::ExposureCondition newVal) = 0;
 	virtual Float64 GetRelHumidity() const = 0;
 	virtual void SetRelHumidity(Float64 newVal) = 0;
 };
@@ -183,10 +183,10 @@ interface IEnvironment : IUnknown
 INTERFACE
    IEnvironmentEventSink
 
-   Callback interface for enviroment events
+   Callback interface for environment events
 
 DESCRIPTION
-   Callback interface for enviroment events
+   Callback interface for environment events
 *****************************************************************************/
 // {DBA24DC0-2F4D-11d2-8D11-94FA07C10000}
 DEFINE_GUID(IID_IEnvironmentEventSink,
@@ -538,7 +538,8 @@ interface ISpecification : IUnknown
 
    virtual std::vector<arDesignOptions> GetDesignOptions(const CGirderKey& girderKey) const = 0;
 
-   virtual bool IsSlabOffsetDesignEnabled() const = 0; // global setting from library
+   virtual const SlabOffsetCriteria& GetSlabOffsetCriteria() const = 0;
+   virtual bool DesignSlabHaunch() const = 0;
 
    virtual pgsTypes::OverlayLoadDistributionType GetOverlayLoadDistributionType() const = 0;
 
@@ -555,9 +556,6 @@ interface ISpecification : IUnknown
    virtual bool IsAssumedExcessCamberInputEnabled(bool considerDeckType=true) const = 0; // Depends on library and deck type
    virtual bool IsAssumedExcessCamberForLoad() const = 0; 
    virtual bool IsAssumedExcessCamberForSectProps() const = 0; 
-
-   // Rounding method for required slab offset value
-   virtual void GetRequiredSlabOffsetRoundingParameters(pgsTypes::SlabOffsetRoundingMethod* pMethod, Float64* pTolerance) const = 0;
 
    virtual void GetTaperedSolePlateRequirements(bool* pbCheckTaperedSolePlate, Float64* pTaperedSolePlateThreshold) const = 0;
 
@@ -1312,10 +1310,10 @@ interface ILossParameters : IUnknown
    virtual std::_tstring GetLossMethodDescription() const = 0;
 
    // Returns the method for computing prestress losses
-   virtual pgsTypes::LossMethod GetLossMethod() const = 0;
+   virtual PrestressLossCriteria::LossMethodType GetLossMethod() const = 0;
 
    // Returns the time-dependent model type
-   virtual pgsTypes::TimeDependentModel GetTimeDependentModel() const = 0;
+   virtual PrestressLossCriteria::TimeDependentConcreteModelType GetTimeDependentModel() const = 0;
 
    // Indicates if time dependent effects are ignored during time-step analysis.
    // This setting only applies to time-step analysis. If ignored, the time-step

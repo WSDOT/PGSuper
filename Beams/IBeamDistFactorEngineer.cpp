@@ -193,7 +193,8 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
       GET_IFACE(ISpecification, pSpec);
       GET_IFACE(ILibrary, pLibrary);
       const auto* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
-      if (pSpecEntry->IgnoreSkewReductionForMoment())
+      const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
+      if (live_load_distribution_criteria.bIgnoreSkewReductionForMoment)
       {
          (*pPara) << _T("Skew reduction for moment distribution factors has been ignored (LRFD 4.6.2.2.2e)") << rptNewLine;
       }
@@ -390,6 +391,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFPar
    ATLASSERT( pBridgeDesc->GetDistributionFactorMethod() != pgsTypes::DirectlyInput );
 
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 
    // Determine span/pier index... This is the index of a pier and the next span.
    // If this is the last pier, span index is for the last span
@@ -492,7 +494,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFPar
    std::vector<IntermedateDiaphragm>::size_type nDiaphragms = diaphragms.size();
 
    bool bSkew = !( IsZero(plldf->skew1) && IsZero(plldf->skew2) ); 
-   bool bSkewMoment = pSpecEntry->IgnoreSkewReductionForMoment() ? false : bSkew;
+   bool bSkewMoment = live_load_distribution_criteria.bIgnoreSkewReductionForMoment ? false : bSkew;
    bool bSkewShear  = bSkew;
 
    if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
@@ -526,15 +528,15 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFPar
    }
 
    WBFL::LRFD::LldfTypeAEKIJ* pLLDF;
-   int lldf_method = pSpecEntry->GetLiveLoadDistributionMethod();
-   if ( lldf_method == LLDF_LRFD )
+   auto lldf_method = live_load_distribution_criteria.LldfMethod;
+   if ( lldf_method == pgsTypes::LiveLoadDistributionFactorMethod::LRFD)
    {
       bool bRigidMethod = (0 < nDiaphragms ? true : false); // must have diaphragms for rigid method
       if (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
       {
          // rigid method only used for steel bridges starting with LRFD 7th Edition, 2014
          // but we can override
-         bRigidMethod &= pSpecEntry->UseRigidMethod();
+         bRigidMethod &= live_load_distribution_criteria.bUseRigidMethod;
       }
 
 
@@ -560,13 +562,13 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFPar
    {
       // Note that WSDOT and TxDOT methods are identical except for slab overhang threshold
       Float64 slab_overhang_threshold;
-      if (lldf_method==LLDF_WSDOT)
+      if (lldf_method== pgsTypes::LiveLoadDistributionFactorMethod::WSDOT)
       {
          slab_overhang_threshold = 0.4;
       }
       else 
       {
-         ATLASSERT(lldf_method==LLDF_TXDOT);
+         ATLASSERT(lldf_method== pgsTypes::LiveLoadDistributionFactorMethod::TxDOT);
          slab_overhang_threshold = 0.5;
       }
 
@@ -609,8 +611,9 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 
-   Int16 df_method = pSpecEntry->GetLiveLoadDistributionMethod();
+   auto df_method = live_load_distribution_criteria.LldfMethod;
 
    if ( lldf.bExteriorGirder )
    {
@@ -618,14 +621,14 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
       {
          // The only way spec equations are used is if we are using WSDOT spec's, and/or
          // the slab overhang is <= half the girder spacing
-         ATLASSERT(df_method==LLDF_WSDOT || df_method==LLDF_TXDOT);
+         ATLASSERT(df_method== pgsTypes::LiveLoadDistributionFactorMethod::WSDOT || df_method== pgsTypes::LiveLoadDistributionFactorMethod::TxDOT);
 
          (*pPara) << Bold(_T("1 Loaded Lane: Spec Equations")) << rptNewLine;
-         if (df_method == LLDF_WSDOT)
+         if (df_method == pgsTypes::LiveLoadDistributionFactorMethod::WSDOT)
          {
             (*pPara) << _T("Note: Using distribution factor for interior girder per WSDOT BDM 3.9.3A.") << rptNewLine;
          }
-         else if (df_method == LLDF_TXDOT)
+         else if (df_method == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
          {
             (*pPara) << _T("Note: Using distribution factor for interior girder per TxDOT Bridge Design Manual - LRFD") << rptNewLine;
          }
@@ -643,7 +646,7 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
          (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
          if (gM1.ControllingMethod & WBFL::LRFD::INTERIOR_OVERRIDE)
          {
-            if (df_method == LLDF_WSDOT)
+            if (df_method == pgsTypes::LiveLoadDistributionFactorMethod::WSDOT)
             {
                (*pPara) << _T("Note: Using distribution factor for interior girder per WSDOT BDM 3.9.3A.") << rptNewLine;
             }
@@ -678,11 +681,11 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
             if ( gM2.ControllingMethod & WBFL::LRFD::INTERIOR_OVERRIDE )
             {
                (*pPara) << Bold(_T("2+ Loaded Lanes: Spec Equations")) << rptNewLine;
-               if (df_method == LLDF_WSDOT)
+               if (df_method == pgsTypes::LiveLoadDistributionFactorMethod::WSDOT)
                {
                   (*pPara) << _T("Note: Using distribution factor for interior girder per WSDOT BDM 3.9.3A.") << rptNewLine;
                }
-               else if (df_method == LLDF_TXDOT)
+               else if (df_method == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
                {
                   (*pPara) << _T("Note: Using distribution factor for interior girder per TxDOT Bridge Design Manual - LRFD") << rptNewLine;
                }
@@ -697,11 +700,11 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
             else
             {
                (*pPara) << Bold(_T("2+ Loaded Lanes: Spec Equations")) << rptNewLine;
-               if (df_method == LLDF_WSDOT)
+               if (df_method == pgsTypes::LiveLoadDistributionFactorMethod::WSDOT)
                {
                   (*pPara) << _T("Note: Using distribution factor for interior girder per WSDOT BDM 3.9.3A.") << rptNewLine;
                }
-               else if (df_method == LLDF_TXDOT)
+               else if (df_method == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
                {
                   (*pPara) << _T("Note: Using distribution factor for interior girder per TxDOT Bridge Design Manual - LRFD") << rptNewLine;
                }
@@ -710,7 +713,7 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
                (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_MI_Type_K_SI.png") : _T("mg_2_MI_Type_K_US.png"))) << rptNewLine;
                (*pPara) << _T("mg") << Super(_T("MI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.EqnData.mg) << rptNewLine;
 
-               if (df_method == LLDF_WSDOT || df_method == LLDF_TXDOT)
+               if (df_method == pgsTypes::LiveLoadDistributionFactorMethod::WSDOT || df_method == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
                {
                   (*pPara) << _T("e ") << symbol(GTE) << _T(" 1.0") << rptNewLine;
                }
@@ -726,7 +729,7 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
 
             if (gM2.ControllingMethod & WBFL::LRFD::INTERIOR_OVERRIDE)
             {
-               if (df_method == LLDF_WSDOT)
+               if (df_method == pgsTypes::LiveLoadDistributionFactorMethod::WSDOT)
                {
                   (*pPara) << _T("Note: Using distribution factor for interior girder per WSDOT BDM 3.9.3A.") << rptNewLine;
                }
@@ -862,8 +865,9 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 
-   Int16 df_method = pSpecEntry->GetLiveLoadDistributionMethod();
+   auto df_method = live_load_distribution_criteria.LldfMethod;
 
    if ( lldf.bExteriorGirder )
    {
@@ -871,7 +875,7 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
       {
          // The only way spec equations are used is if we are using WSDOT spec's, and
          // the slab overhang is <= half the girder spacing
-         ATLASSERT(df_method==LLDF_WSDOT || df_method == LLDF_TXDOT);
+         ATLASSERT(df_method== pgsTypes::LiveLoadDistributionFactorMethod::WSDOT || df_method == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT);
 
          (*pPara) << Bold(_T("1 Loaded Lane: Spec Equations")) << rptNewLine;
          REPORT_LLDF_INTOVERRIDE(gV1);
@@ -884,7 +888,7 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
          (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
          if (gV1.ControllingMethod & WBFL::LRFD::INTERIOR_OVERRIDE)
          {
-            if (df_method == LLDF_WSDOT)
+            if (df_method == pgsTypes::LiveLoadDistributionFactorMethod::WSDOT)
             {
                (*pPara) << _T("Note: Using distribution factor for interior girder per WSDOT BDM 3.9.3A.") << rptNewLine;
             }
@@ -919,11 +923,11 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
          {
             ATLASSERT(gV2.ControllingMethod & WBFL::LRFD::SPEC_EQN);
             (*pPara) << Bold(_T("2+ Loaded Lanes: Spec Equation")) << rptNewLine;
-            if (df_method == LLDF_WSDOT)
+            if (df_method == pgsTypes::LiveLoadDistributionFactorMethod::WSDOT)
             {
                (*pPara) << _T("Note: Using distribution factor for interior girder per WSDOT BDM 3.9.3A.") << rptNewLine;
             }
-            else if (df_method == LLDF_TXDOT)
+            else if (df_method == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
             {
                (*pPara) << _T("Note: Using distribution factor for interior girder per TxDOT Bridge Design Manual - LRFD") << rptNewLine;
             }
@@ -936,7 +940,7 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
             (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_VI_Type_K_SI.png") : _T("mg_2_VI_Type_K_US.png"))) << rptNewLine;
             (*pPara) << _T("mg") << Super(_T("VI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.EqnData.mg) << rptNewLine;
 
-            if (df_method == LLDF_WSDOT || df_method == LLDF_TXDOT)
+            if (df_method == pgsTypes::LiveLoadDistributionFactorMethod::WSDOT || df_method == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
             {
                (*pPara) << _T("e ") << symbol(GTE) << _T(" 1.0") << rptNewLine;
             }
@@ -950,11 +954,11 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
             {
                ATLASSERT( gV2.ControllingMethod & WBFL::LRFD::INTERIOR_OVERRIDE);
                (*pPara) << Bold(_T("2+ Loaded Lanes: Spec Equation")) << rptNewLine;
-               if (df_method == LLDF_WSDOT)
+               if (df_method == pgsTypes::LiveLoadDistributionFactorMethod::WSDOT)
                {
                   (*pPara) << _T("Note: Using distribution factor for interior girder per WSDOT BDM 3.9.3A.") << rptNewLine;
                }
-               else if (df_method == LLDF_TXDOT)
+               else if (df_method == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
                {
                   (*pPara) << _T("Note: Using distribution factor for interior girder per TxDOT Bridge Design Manual - LRFD") << rptNewLine;
                }
@@ -967,7 +971,7 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
                (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_VI_Type_K_SI.png") : _T("mg_2_VI_Type_K_US.png"))) << rptNewLine;
                (*pPara) << _T("mg") << Super(_T("VI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.EqnData.mg) << rptNewLine;
                
-               if (df_method == LLDF_WSDOT || df_method == LLDF_TXDOT)
+               if (df_method == pgsTypes::LiveLoadDistributionFactorMethod::WSDOT || df_method == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
                {
                   (*pPara) << _T("e ") << symbol(GTE) << _T(" 1.0") << rptNewLine;
                }
@@ -982,7 +986,7 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
 
                if (gV2.ControllingMethod & WBFL::LRFD::INTERIOR_OVERRIDE)
                {
-                  if (df_method == LLDF_WSDOT)
+                  if (df_method == pgsTypes::LiveLoadDistributionFactorMethod::WSDOT)
                   {
                      (*pPara) << _T("Note: Using distribution factor for interior girder per WSDOT BDM 3.9.3A.") << rptNewLine;
                   }
@@ -1099,21 +1103,22 @@ std::_tstring CIBeamDistFactorEngineer::GetComputationDescription(const CGirderK
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 
-   Int16 lldfMethod = pSpecEntry->GetLiveLoadDistributionMethod();
+   auto lldfMethod = live_load_distribution_criteria.LldfMethod;
 
    std::_tstring descr(_T("Type (k) cross section. With "));
 
 
-   if ( lldfMethod == LLDF_WSDOT )
+   if ( lldfMethod == pgsTypes::LiveLoadDistributionFactorMethod::WSDOT)
    {
       descr += std::_tstring(_T("WSDOT Method per Bridge Design Manual Section 3.9.3A."));
    }
-   else if ( lldfMethod == LLDF_TXDOT )
+   else if ( lldfMethod == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
    {
       descr += std::_tstring(_T("TxDOT Method per per TxDOT Bridge Design Manual - LRFD"));
    }
-   else if ( lldfMethod == LLDF_LRFD )
+   else if ( lldfMethod == pgsTypes::LiveLoadDistributionFactorMethod::LRFD)
    {
       descr += std::_tstring(_T("AASHTO LRFD Method per Article 4.6.2.2"));
    }

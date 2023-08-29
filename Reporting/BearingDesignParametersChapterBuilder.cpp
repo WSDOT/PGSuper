@@ -449,7 +449,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(const std::shared_ptr<
          poi = pPoi->GetPierPointOfInterest(girderKey,pierIdx);
       }
 
-      Float64 slope2 = pCamber->GetExcessCamberRotation(poi,CREEP_MAXTIME);
+      Float64 slope2 = pCamber->GetExcessCamberRotation(poi,pgsTypes::CreepTime::Max);
       (*pTable)(row,col++) << scalar.SetValue(slope2);
 
       const CBearingData2* pbd = pIBridgeDesc->GetBearingData(pierIdx, pierFace, girderKey.girderIndex);

@@ -68,7 +68,7 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
 {
    GET_IFACE2(pBroker, ILossParameters, pLossParameters);
 
-   pgsTypes::LossMethod loss_method = pLossParameters->GetLossMethod();
+   PrestressLossCriteria::LossMethodType loss_method = pLossParameters->GetLossMethod();
 
    GET_IFACE2(pBroker, ISegmentData, pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
@@ -143,7 +143,7 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
    *pParagraph << _T("Effective prestress listed is not adjusted to account for the gradual buildup of the strand force over the transfer length (5.9.4.3.1)") << rptNewLine;
-   if (  loss_method == pgsTypes::AASHTO_REFINED || loss_method == pgsTypes::WSDOT_REFINED  )
+   if (  loss_method == PrestressLossCriteria::LossMethodType::AASHTO_REFINED || loss_method == PrestressLossCriteria::LossMethodType::WSDOT_REFINED  )
    {
       // delta fpT
       *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pT")) << _T(" = ");
@@ -297,7 +297,8 @@ void CEffectivePrestressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
    GET_IFACE2(pBroker, ISpecification, pSpec);
    GET_IFACE2(pBroker, ILibrary, pLibrary);
    const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
-   Float64 K_liveload = pSpecEntry->GetLiveLoadElasticGain();
+   const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
+   Float64 K_liveload = prestress_loss_criteria.LiveLoadElasticGain;
 
    Float64 M_Design = K_liveload*MmaxDesign;
    Float64 M_Fatigue = K_liveload*MmaxFatigue;

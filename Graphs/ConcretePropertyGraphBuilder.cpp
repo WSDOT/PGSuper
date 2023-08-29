@@ -442,7 +442,7 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
    Float64 releaseTime = pIntervals->GetTime(releaseIntervalIdx,pgsTypes::Start);
    GET_IFACE(ILossParameters,pLossParams);
-   bool bIsTimeStep = pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false;
+   bool bIsTimeStep = pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false;
 
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    IntervalIndexType startIntervalIdx = 0;

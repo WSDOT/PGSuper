@@ -89,7 +89,6 @@ private:
    Float64 m_HgEnd[2];
    Float64 m_HgHp[2];
 
-   bool m_bCanExtendStrands; // can strands be extended
    std::vector<StrandIndexType> m_ExtendedStrands[2]; // index is pgsTypes::MemberEndType
 
    bool m_bCanDebondStrands; // are there any debondable strands in this girder?

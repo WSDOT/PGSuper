@@ -26,6 +26,7 @@
 #include "stdafx.h"
 #include <psgLib\psglib.h>
 #include "SpecMainSheet.h"
+#include "SpecLibraryEntryImpl.h"
 #include <MfcTools\CustomDDX.h>
 
 #include <Units\Convert.h>
@@ -119,12 +120,12 @@ void CSpecMainSheet::Init()
 void CSpecMainSheet::ExchangeDescriptionData(CDataExchange* pDX)
 {
    // specification type
-   DDX_CBItemData(pDX,IDC_SPECIFICATION,m_Entry.m_SpecificationType);
-   DDX_Check_Bool(pDX, IDC_USE_CURRENT_VERSION, m_Entry.m_bUseCurrentSpecification);
+   DDX_CBItemData(pDX,IDC_SPECIFICATION,m_Entry.m_pImpl->m_SpecificationCriteria.Edition);
+   DDX_Check_Bool(pDX, IDC_USE_CURRENT_VERSION, m_Entry.m_pImpl->m_SpecificationCriteria.bUseCurrentSpecification);
 
    // Section Properties
-   DDX_RadioEnum(pDX,IDC_GROSS,m_Entry.m_SectionPropertyMode);
-   DDX_CBEnum(pDX,IDC_EFF_FLANGE_WIDTH,m_Entry.m_EffFlangeWidthMethod);
+   DDX_RadioEnum(pDX,IDC_GROSS,m_Entry.m_pImpl->m_SectionPropertiesCriteria.SectionPropertyMode);
+   DDX_CBEnum(pDX,IDC_EFF_FLANGE_WIDTH,m_Entry.m_pImpl->m_SectionPropertiesCriteria.EffectiveFlangeWidthMethod);
 
    if (pDX->m_bSaveAndValidate)
    {
@@ -137,17 +138,17 @@ void CSpecMainSheet::ExchangeDescriptionData(CDataExchange* pDX)
       m_Entry.SetName(m_Name);
 
 	   DDX_Text(pDX, IDC_EDIT_DESCRIPTION, m_Description);
-      m_Entry.SetDescription(m_Description);
+      m_Entry.m_pImpl->m_SpecificationCriteria.Description = m_Description;
 
 
       // specification units
       int chk = m_SpecDescrPage.GetCheckedRadioButton( IDC_SPEC_UNITS_SI,IDC_SPEC_UNITS_US);
       if (chk==IDC_SPEC_UNITS_SI)
-         m_Entry.SetSpecificationUnits(WBFL::LRFD::LRFDVersionMgr::Units::SI);
+         m_Entry.m_pImpl->m_SpecificationCriteria.Units = WBFL::LRFD::LRFDVersionMgr::Units::SI;
       else if (chk==IDC_SPEC_UNITS_US)
-         m_Entry.SetSpecificationUnits(WBFL::LRFD::LRFDVersionMgr::Units::US);
+         m_Entry.m_pImpl->m_SpecificationCriteria.Units = WBFL::LRFD::LRFDVersionMgr::Units::US;
       else
-         ASSERT(0);
+         ASSERT(false); // should never get here
    }
    else
    {
@@ -155,11 +156,11 @@ void CSpecMainSheet::ExchangeDescriptionData(CDataExchange* pDX)
       m_Name = m_Entry.GetName().c_str();
 	   DDX_Text(pDX, IDC_NAME, m_Name);
 
-      m_Description = m_Entry.GetDescription(false).c_str();
+      m_Description = m_Entry.m_pImpl->m_SpecificationCriteria.Description.c_str();
 	   DDX_Text(pDX, IDC_EDIT_DESCRIPTION, m_Description);
 
       // spec units
-      WBFL::LRFD::LRFDVersionMgr::Units Units = m_Entry.GetSpecificationUnits();
+      WBFL::LRFD::LRFDVersionMgr::Units Units = m_Entry.m_pImpl->m_SpecificationCriteria.Units;
       int unit;
       if (Units == WBFL::LRFD::LRFDVersionMgr::Units::SI)
          unit = IDC_SPEC_UNITS_SI;
@@ -183,12 +184,11 @@ void CSpecMainSheet::ExchangeDeadLoadsData(CDataExchange* pDX)
    const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    // railing system distribution
-   DDX_CBItemData(pDX,IDC_DIST_TRAFFIC_BARRIER_BASIS,m_Entry.m_TrafficBarrierDistributionType);
-	DDX_Text(pDX, IDC_DIST_TRAFFIC_BARRIER, m_Entry.m_Bs2MaxGirdersTrafficBarrier);
+   DDX_CBEnum(pDX,IDC_DIST_TRAFFIC_BARRIER_BASIS,m_Entry.m_pImpl->m_DeadLoadDistributionCriteria.TrafficBarrierDistribution);
+	DDX_Text(pDX, IDC_DIST_TRAFFIC_BARRIER, m_Entry.m_pImpl->m_DeadLoadDistributionCriteria.MaxGirdersTrafficBarrier);
 
    // overlay load distribution
-   DDX_CBEnum(pDX, IDC_OVERLAY_DISTR,m_Entry.m_OverlayLoadDistribution);
-
+   DDX_CBEnum(pDX, IDC_OVERLAY_DISTR,m_Entry.m_pImpl->m_DeadLoadDistributionCriteria.OverlayDistribution);
 }
 
 void CSpecMainSheet::ExchangeLiveLoadsData(CDataExchange* pDX)
@@ -196,29 +196,29 @@ void CSpecMainSheet::ExchangeLiveLoadsData(CDataExchange* pDX)
    CEAFApp* pApp = EAFGetApp();
    const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
-   DDX_Check_Bool(pDX, IDC_DUAL_TANDEM, m_Entry.m_bIncludeDualTandem);
+   DDX_Check_Bool(pDX, IDC_DUAL_TANDEM, m_Entry.m_pImpl->m_LiveLoadCriteria.bIncludeDualTandem);
 
    // pedestrian live loads
-   DDX_UnitValueAndTag(pDX, IDC_PED_LIVE_LOAD, IDC_PED_LIVE_LOAD_UNIT, m_Entry.m_PedestrianLoad, pDisplayUnits->SmallStress);
-   DDV_UnitValueZeroOrMore(pDX, IDC_PED_LIVE_LOAD, m_Entry.m_PedestrianLoad, pDisplayUnits->SpanLength);
-   DDX_UnitValueAndTag(pDX, IDC_MIN_SIDEWALK_WIDTH, IDC_MIN_SIDEWALK_WIDTH_UNIT, m_Entry.m_MinSidewalkWidth, pDisplayUnits->SpanLength);
-   DDV_UnitValueZeroOrMore(pDX, IDC_MIN_SIDEWALK_WIDTH, m_Entry.m_MinSidewalkWidth, pDisplayUnits->SpanLength);
+   DDX_UnitValueAndTag(pDX, IDC_PED_LIVE_LOAD, IDC_PED_LIVE_LOAD_UNIT, m_Entry.m_pImpl->m_LiveLoadCriteria.PedestrianLoad, pDisplayUnits->SmallStress);
+   DDV_UnitValueZeroOrMore(pDX, IDC_PED_LIVE_LOAD, m_Entry.m_pImpl->m_LiveLoadCriteria.PedestrianLoad, pDisplayUnits->SmallStress);
+   DDX_UnitValueAndTag(pDX, IDC_MIN_SIDEWALK_WIDTH, IDC_MIN_SIDEWALK_WIDTH_UNIT, m_Entry.m_pImpl->m_LiveLoadCriteria.MinSidewalkWidth, pDisplayUnits->SpanLength);
+   DDV_UnitValueZeroOrMore(pDX, IDC_MIN_SIDEWALK_WIDTH, m_Entry.m_pImpl->m_LiveLoadCriteria.MinSidewalkWidth, pDisplayUnits->SpanLength);
 
    // live load distribution
-   DDX_CBIndex(pDX, IDC_LLDF, m_Entry.m_LldfMethod);
-   DDX_Check_Bool(pDX, IDC_IGNORE_SKEW_REDUCTION, m_Entry.m_bIgnoreSkewReductionForMoment);
+   DDX_CBEnum(pDX, IDC_LLDF, m_Entry.m_pImpl->m_LiveLoadDistributionCriteria.LldfMethod);
+   DDX_Check_Bool(pDX, IDC_IGNORE_SKEW_REDUCTION, m_Entry.m_pImpl->m_LiveLoadDistributionCriteria.bIgnoreSkewReductionForMoment);
 
-   DDX_UnitValueAndTag(pDX, IDC_MAXGIRDERANGLE, IDC_MAXGIRDERANGLE_UNIT, m_Entry.m_MaxAngularDeviationBetweenGirders, pDisplayUnits->Angle);
-   DDX_Text(pDX, IDC_GIRDERSTIFFNESSRATIO, m_Entry.m_MinGirderStiffnessRatio);
-   DDV_MinMaxDouble(pDX, m_Entry.m_MinGirderStiffnessRatio, 0.0, 1.0);
+   DDX_UnitValueAndTag(pDX, IDC_MAXGIRDERANGLE, IDC_MAXGIRDERANGLE_UNIT, m_Entry.m_pImpl->m_LiveLoadDistributionCriteria.MaxAngularDeviationBetweenGirders, pDisplayUnits->Angle);
+   DDX_Text(pDX, IDC_GIRDERSTIFFNESSRATIO, m_Entry.m_pImpl->m_LiveLoadDistributionCriteria.MinGirderStiffnessRatio);
+   DDV_MinMaxDouble(pDX, m_Entry.m_pImpl->m_LiveLoadDistributionCriteria.MinGirderStiffnessRatio, 0.0, 1.0);
 
-   DDX_Text(pDX, IDC_GIRDER_SPACING_LOCATION, m_Entry.m_LLDFGirderSpacingLocation);
-   DDV_MinMaxDouble(pDX, m_Entry.m_LLDFGirderSpacingLocation, 0.0, 1.0);
+   DDX_Text(pDX, IDC_GIRDER_SPACING_LOCATION, m_Entry.m_pImpl->m_LiveLoadDistributionCriteria.GirderSpacingLocation);
+   DDV_MinMaxDouble(pDX, m_Entry.m_pImpl->m_LiveLoadDistributionCriteria.GirderSpacingLocation, 0.0, 1.0);
 
-   DDX_Check_Bool(pDX, IDC_LANESBEAMS, m_Entry.m_LimitDistributionFactorsToLanesBeams);
-   DDX_Check_Bool(pDX, IDC_EXT_ADJACENT_LLDF_RULE, m_Entry.m_ExteriorLiveLoadDistributionGTAdjacentInteriorRule);
+   DDX_Check_Bool(pDX, IDC_LANESBEAMS, m_Entry.m_pImpl->m_LiveLoadDistributionCriteria.bLimitDistributionFactorsToLanesBeams);
+   DDX_Check_Bool(pDX, IDC_EXT_ADJACENT_LLDF_RULE, m_Entry.m_pImpl->m_LiveLoadDistributionCriteria.bExteriorBeamLiveLoadDistributionGTInteriorBeam);
 
-   DDX_Check_Bool(pDX, IDC_RIGID_METHOD, m_Entry.m_bUseRigidMethod);
+   DDX_Check_Bool(pDX, IDC_RIGID_METHOD, m_Entry.m_pImpl->m_LiveLoadDistributionCriteria.bUseRigidMethod);
 }
 
 void CSpecMainSheet::ExchangeGirderData(CDataExchange* pDX)
@@ -236,117 +236,119 @@ void CSpecMainSheet::ExchangeGirderData(CDataExchange* pDX)
    }
 
    // Allowable concrete stress at prestress release
-	DDX_Text(pDX, IDC_RELEASE_COMPRESSION, m_Entry.m_CyCompStressServ);
-   DDV_GreaterThanZero(pDX, IDC_RELEASE_COMPRESSION, m_Entry.m_CyCompStressServ);
+	DDX_Text(pDX, IDC_RELEASE_COMPRESSION, m_Entry.m_pImpl->m_PrestressedElementCriteria.CompressionStressCoefficient_BeforeLosses);
+   DDV_GreaterThanZero(pDX, IDC_RELEASE_COMPRESSION, m_Entry.m_pImpl->m_PrestressedElementCriteria.CompressionStressCoefficient_BeforeLosses);
 
-   DDX_UnitValueAndTag(pDX, IDC_RELEASE_TENSION, IDC_RELEASE_TENSION_UNIT, m_Entry.m_CyTensStressServ, pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_RELEASE_TENSION, IDC_RELEASE_TENSION_UNIT, m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_OtherAreas_WithoutReinforcement_BeforeLosses.Coefficient, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_RELEASE_TENSION_UNIT,fciTag);
-   DDV_UnitValueZeroOrMore(pDX, IDC_RELEASE_TENSION_UNIT,m_Entry.m_CyTensStressServ, pDisplayUnits->SqrtPressure);
-   DDX_Check_Bool(pDX, IDC_CHECK_RELEASE_TENSION_MAX, m_Entry.m_CyDoTensStressServMax);
-   DDX_UnitValueAndTag(pDX, IDC_RELEASE_TENSION_MAX, IDC_RELEASE_TENSION_MAX_UNIT, m_Entry.m_CyTensStressServMax, pDisplayUnits->Stress );
-   if (m_Entry.m_CyDoTensStressServMax)
+   DDV_UnitValueZeroOrMore(pDX, IDC_RELEASE_TENSION_UNIT,m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_OtherAreas_WithoutReinforcement_BeforeLosses.Coefficient, pDisplayUnits->SqrtPressure);
+   DDX_Check_Bool(pDX, IDC_CHECK_RELEASE_TENSION_MAX, m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_OtherAreas_WithoutReinforcement_BeforeLosses.bHasMaxValue);
+   DDX_UnitValueAndTag(pDX, IDC_RELEASE_TENSION_MAX, IDC_RELEASE_TENSION_MAX_UNIT, m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_OtherAreas_WithoutReinforcement_BeforeLosses.MaxValue, pDisplayUnits->Stress );
+   if (m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_OtherAreas_WithoutReinforcement_BeforeLosses.bHasMaxValue)
    {
-      DDV_UnitValueGreaterThanZero(pDX, IDC_RELEASE_TENSION_MAX,m_Entry.m_CyTensStressServMax, pDisplayUnits->Stress );
+      DDV_UnitValueGreaterThanZero(pDX, IDC_RELEASE_TENSION_MAX,m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_OtherAreas_WithoutReinforcement_BeforeLosses.MaxValue, pDisplayUnits->Stress );
    }
 
-   DDX_UnitValueAndTag(pDX, IDC_RELEASE_TENSION_WITH_REBAR, IDC_SERVICE_III_TENSION_UNIT, m_Entry.m_CyTensStressServWithRebar, pDisplayUnits->SqrtPressure);
+   DDX_UnitValueAndTag(pDX, IDC_RELEASE_TENSION_WITH_REBAR, IDC_SERVICE_III_TENSION_UNIT, m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_WithReinforcement_BeforeLosses.Coefficient, pDisplayUnits->SqrtPressure);
    DDX_Text(pDX,IDC_RELEASE_TENSION_WITH_REBAR_UNIT,fciTag);
-   DDV_UnitValueZeroOrMore(pDX, IDC_RELEASE_TENSION_WITH_REBAR,m_Entry.m_CyTensStressServWithRebar, pDisplayUnits->SqrtPressure );
+   DDV_UnitValueZeroOrMore(pDX, IDC_RELEASE_TENSION_WITH_REBAR,m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_WithReinforcement_BeforeLosses.Coefficient, pDisplayUnits->SqrtPressure );
 
-   if (pDX->m_bSaveAndValidate && m_Entry.m_CyTensStressServWithRebar < m_Entry.m_CyTensStressServ)
+   if (pDX->m_bSaveAndValidate && m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_WithReinforcement_BeforeLosses.Coefficient < m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_OtherAreas_WithoutReinforcement_BeforeLosses.Coefficient)
    {
-      AfxMessageBox(_T("Allowable tensile stress with bonded reinforcement must be greater than or equal to that without"),MB_OK | MB_ICONWARNING);
+      AfxMessageBox(_T("Stress limits for Temporary Stresses before Losses (LRFD 5.9.4.1): Tensile stress limit with bonded reinforcement must be greater than or equal to than without"),MB_OK | MB_ICONWARNING);
       pDX->Fail();
    }
+
    // Allowable concrete stress at service limit states
-	DDX_Text(pDX, IDC_SERVICE_COMPRESSION, m_Entry.m_Bs2CompStress);
-   DDV_GreaterThanZero(pDX, IDC_SERVICE_COMPRESSION, m_Entry.m_Bs2CompStress);
+	DDX_Text(pDX, IDC_SERVICE_COMPRESSION, m_Entry.m_pImpl->m_PrestressedElementCriteria.CompressionStressCoefficient_PermanentLoadsOnly_AfterLosses);
+   DDV_GreaterThanZero(pDX, IDC_SERVICE_COMPRESSION, m_Entry.m_pImpl->m_PrestressedElementCriteria.CompressionStressCoefficient_PermanentLoadsOnly_AfterLosses);
 
-	DDX_Text(pDX, IDC_SERVICE_COMPRESSION_WITH_LIVELOAD, m_Entry.m_Bs3CompStressServ);
-   DDV_GreaterThanZero(pDX, IDC_SERVICE_COMPRESSION_WITH_LIVELOAD, m_Entry.m_Bs3CompStressServ);
+	DDX_Text(pDX, IDC_SERVICE_COMPRESSION_WITH_LIVELOAD, m_Entry.m_pImpl->m_PrestressedElementCriteria.CompressionStressCoefficient_AllLoads_AfterLosses);
+   DDV_GreaterThanZero(pDX, IDC_SERVICE_COMPRESSION_WITH_LIVELOAD, m_Entry.m_pImpl->m_PrestressedElementCriteria.CompressionStressCoefficient_AllLoads_AfterLosses);
 
 
-   DDX_Check_Bool(pDX, IDC_CHECK_SERVICE_I_TENSION, m_Entry.m_bCheckBs2Tension );
-   DDX_UnitValueAndTag(pDX, IDC_SERVICE_I_TENSION, IDC_SERVICE_I_TENSION_UNIT, m_Entry.m_Bs2TensStress, pDisplayUnits->SqrtPressure );
+   DDX_Check_Bool(pDX, IDC_CHECK_SERVICE_I_TENSION, m_Entry.m_pImpl->m_PrestressedElementCriteria.bCheckFinalServiceITension);
+   DDX_UnitValueAndTag(pDX, IDC_SERVICE_I_TENSION, IDC_SERVICE_I_TENSION_UNIT, m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_ServiceI_PermanentLoadsOnly_AfterLosses.Coefficient, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_SERVICE_I_TENSION_UNIT,fcTag);
-   DDV_UnitValueZeroOrMore(pDX, IDC_SERVICE_I_TENSION,m_Entry.m_Bs2TensStress, pDisplayUnits->SqrtPressure );
-   DDX_Check_Bool(pDX, IDC_CHECK_SERVICE_I_TENSION_MAX, m_Entry.m_Bs2DoTensStressMax);
-   DDX_UnitValueAndTag(pDX, IDC_SERVICE_I_TENSION_MAX, IDC_SERVICE_I_TENSION_MAX_UNIT, m_Entry.m_Bs2TensStressMax, pDisplayUnits->Stress );
-   if (m_Entry.m_Bs2DoTensStressMax)
+   DDV_UnitValueZeroOrMore(pDX, IDC_SERVICE_I_TENSION,m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_ServiceI_PermanentLoadsOnly_AfterLosses.Coefficient, pDisplayUnits->SqrtPressure );
+   DDX_Check_Bool(pDX, IDC_CHECK_SERVICE_I_TENSION_MAX, m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_ServiceI_PermanentLoadsOnly_AfterLosses.bHasMaxValue);
+   DDX_UnitValueAndTag(pDX, IDC_SERVICE_I_TENSION_MAX, IDC_SERVICE_I_TENSION_MAX_UNIT, m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_ServiceI_PermanentLoadsOnly_AfterLosses.MaxValue, pDisplayUnits->Stress );
+   if (m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_ServiceI_PermanentLoadsOnly_AfterLosses.bHasMaxValue)
    {
-      DDV_UnitValueGreaterThanZero(pDX, IDC_SERVICE_I_TENSION_MAX,m_Entry.m_Bs2TensStressMax, pDisplayUnits->Stress );
+      DDV_UnitValueGreaterThanZero(pDX, IDC_SERVICE_I_TENSION_MAX,m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_ServiceI_PermanentLoadsOnly_AfterLosses.MaxValue, pDisplayUnits->Stress );
    }
 
 
-   DDX_UnitValueAndTag(pDX, IDC_SERVICE_III_TENSION, IDC_SERVICE_III_TENSION_UNIT, m_Entry.m_Bs3TensStressServNc, pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_SERVICE_III_TENSION, IDC_SERVICE_III_TENSION_UNIT, m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_ServiceIII_InPTZ_ModerateCorrosionConditions_AfterLosses.Coefficient, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_SERVICE_III_TENSION_UNIT,fcTag);
-   DDV_UnitValueZeroOrMore(pDX, IDC_SERVICE_III_TENSION,m_Entry.m_Bs3TensStressServNc, pDisplayUnits->SqrtPressure );
-   DDX_Check_Bool(pDX, IDC_CHECK_SERVICE_III_TENSION_MAX, m_Entry.m_Bs3DoTensStressServNcMax);
-   DDX_UnitValueAndTag(pDX, IDC_SERVICE_III_TENSION_MAX, IDC_SERVICE_III_TENSION_MAX_UNIT, m_Entry.m_Bs3TensStressServNcMax, pDisplayUnits->Stress );
-   if (m_Entry.m_Bs3DoTensStressServNcMax)
+   DDV_UnitValueZeroOrMore(pDX, IDC_SERVICE_III_TENSION,m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_ServiceIII_InPTZ_ModerateCorrosionConditions_AfterLosses.Coefficient, pDisplayUnits->SqrtPressure );
+   DDX_Check_Bool(pDX, IDC_CHECK_SERVICE_III_TENSION_MAX, m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_ServiceIII_InPTZ_ModerateCorrosionConditions_AfterLosses.bHasMaxValue);
+   DDX_UnitValueAndTag(pDX, IDC_SERVICE_III_TENSION_MAX, IDC_SERVICE_III_TENSION_MAX_UNIT, m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_ServiceIII_InPTZ_ModerateCorrosionConditions_AfterLosses.MaxValue, pDisplayUnits->Stress );
+   if (m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_ServiceIII_InPTZ_ModerateCorrosionConditions_AfterLosses.bHasMaxValue)
    {
-      DDV_UnitValueGreaterThanZero(pDX, IDC_SERVICE_III_TENSION_MAX,m_Entry.m_Bs3TensStressServNcMax, pDisplayUnits->Stress );
+      DDV_UnitValueGreaterThanZero(pDX, IDC_SERVICE_III_TENSION_MAX,m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_ServiceIII_InPTZ_ModerateCorrosionConditions_AfterLosses.MaxValue, pDisplayUnits->Stress );
    }
 
-   DDX_UnitValueAndTag(pDX, IDC_SEVERE_SERVICE_III_TENSION, IDC_SEVERE_SERVICE_III_TENSION_UNIT, m_Entry.m_Bs3TensStressServSc, pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_SEVERE_SERVICE_III_TENSION, IDC_SEVERE_SERVICE_III_TENSION_UNIT, m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_ServiceIII_InPTZ_SevereCorrosionConditions_AfterLosses.Coefficient, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_SEVERE_SERVICE_III_TENSION_UNIT,fcTag);
-   DDV_UnitValueZeroOrMore(pDX, IDC_SEVERE_SERVICE_III_TENSION,m_Entry.m_Bs3TensStressServSc, pDisplayUnits->SqrtPressure );
-   DDX_Check_Bool(pDX, IDC_CHECK_SEVERE_SERVICE_III_TENSION_MAX, m_Entry.m_Bs3DoTensStressServScMax);
-   DDX_UnitValueAndTag(pDX, IDC_SEVERE_SERVICE_III_TENSION_MAX, IDC_SEVERE_SERVICE_III_TENSION_MAX_UNIT, m_Entry.m_Bs3TensStressServScMax, pDisplayUnits->Stress );
-   if (m_Entry.m_Bs3DoTensStressServScMax)
+   DDV_UnitValueZeroOrMore(pDX, IDC_SEVERE_SERVICE_III_TENSION,m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_ServiceIII_InPTZ_SevereCorrosionConditions_AfterLosses.Coefficient, pDisplayUnits->SqrtPressure );
+   DDX_Check_Bool(pDX, IDC_CHECK_SEVERE_SERVICE_III_TENSION_MAX, m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_ServiceIII_InPTZ_SevereCorrosionConditions_AfterLosses.bHasMaxValue);
+   DDX_UnitValueAndTag(pDX, IDC_SEVERE_SERVICE_III_TENSION_MAX, IDC_SEVERE_SERVICE_III_TENSION_MAX_UNIT, m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_ServiceIII_InPTZ_SevereCorrosionConditions_AfterLosses.MaxValue, pDisplayUnits->Stress );
+   if (m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_ServiceIII_InPTZ_SevereCorrosionConditions_AfterLosses.bHasMaxValue)
    {
-      DDV_UnitValueGreaterThanZero(pDX, IDC_SEVERE_SERVICE_III_TENSION_MAX,m_Entry.m_Bs3TensStressServScMax, pDisplayUnits->Stress );
+      DDV_UnitValueGreaterThanZero(pDX, IDC_SEVERE_SERVICE_III_TENSION_MAX,m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_ServiceIII_InPTZ_SevereCorrosionConditions_AfterLosses.MaxValue, pDisplayUnits->Stress );
    }
 
    // Allowable concrete stress at fatigue limit state
-   DDX_Text(pDX, IDC_FATIGUE_COMPRESSION, m_Entry.m_Bs3CompStressService1A);
-   DDV_GreaterThanZero(pDX, IDC_FATIGUE_COMPRESSION, m_Entry.m_Bs3CompStressService1A);
+   DDX_Text(pDX, IDC_FATIGUE_COMPRESSION, m_Entry.m_pImpl->m_PrestressedElementCriteria.CompressionStressCoefficient_Fatigue);
+   DDV_GreaterThanZero(pDX, IDC_FATIGUE_COMPRESSION, m_Entry.m_pImpl->m_PrestressedElementCriteria.CompressionStressCoefficient_Fatigue);
 
    // Temporary Loading Condition (PGSuper only)
-   DDX_Check_Bool(pDX,IDC_CHECK_TEMPORARY_STRESSES,m_Entry.m_bCheckTemporaryStresses);
+   DDX_Check_Bool(pDX,IDC_CHECK_TEMPORARY_STRESSES,m_Entry.m_pImpl->m_PrestressedElementCriteria.bCheckTemporaryStresses);
 
    // Allowable concrete stress after Temporary Strand Removal
-	DDX_Text(pDX, IDC_TS_REMOVAL_COMPRESSION, m_Entry.m_TempStrandRemovalCompStress);
-   DDV_GreaterThanZero(pDX, IDC_TS_REMOVAL_COMPRESSION, m_Entry.m_TempStrandRemovalCompStress);
+	DDX_Text(pDX, IDC_TS_REMOVAL_COMPRESSION, m_Entry.m_pImpl->m_PrestressedElementCriteria.CompressionStressCoefficient_TemporaryStrandRemoval);
+   DDV_GreaterThanZero(pDX, IDC_TS_REMOVAL_COMPRESSION, m_Entry.m_pImpl->m_PrestressedElementCriteria.CompressionStressCoefficient_TemporaryStrandRemoval);
 
-   DDX_UnitValueAndTag(pDX, IDC_TS_REMOVAL_TENSION, IDC_TS_REMOVAL_TENSION_UNIT, m_Entry.m_TempStrandRemovalTensStress, pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_TS_REMOVAL_TENSION, IDC_TS_REMOVAL_TENSION_UNIT, m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_WithoutReinforcement_TemporaryStrandRemoval.Coefficient, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_TS_REMOVAL_TENSION_UNIT,fcTag);
-   DDV_UnitValueZeroOrMore(pDX,IDC_TS_REMOVAL_TENSION, m_Entry.m_TempStrandRemovalTensStress, pDisplayUnits->SqrtPressure );
-   DDX_Check_Bool(pDX, IDC_CHECK_TS_REMOVAL_TENSION_MAX, m_Entry.m_TempStrandRemovalDoTensStressMax);
-   DDX_UnitValueAndTag(pDX, IDC_TS_REMOVAL_TENSION_MAX, IDC_TS_REMOVAL_TENSION_MAX_UNIT, m_Entry.m_TempStrandRemovalTensStressMax, pDisplayUnits->Stress );
-   if (m_Entry.m_TempStrandRemovalDoTensStressMax)
+   DDV_UnitValueZeroOrMore(pDX,IDC_TS_REMOVAL_TENSION, m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_WithoutReinforcement_TemporaryStrandRemoval.Coefficient, pDisplayUnits->SqrtPressure );
+   DDX_Check_Bool(pDX, IDC_CHECK_TS_REMOVAL_TENSION_MAX, m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_WithoutReinforcement_TemporaryStrandRemoval.bHasMaxValue);
+   DDX_UnitValueAndTag(pDX, IDC_TS_REMOVAL_TENSION_MAX, IDC_TS_REMOVAL_TENSION_MAX_UNIT, m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_WithoutReinforcement_TemporaryStrandRemoval.MaxValue, pDisplayUnits->Stress );
+   if (m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_WithoutReinforcement_TemporaryStrandRemoval.bHasMaxValue)
    {
-      DDV_UnitValueGreaterThanZero(pDX, IDC_TS_REMOVAL_TENSION_MAX,m_Entry.m_TempStrandRemovalTensStressMax, pDisplayUnits->Stress );
+      DDV_UnitValueGreaterThanZero(pDX, IDC_TS_REMOVAL_TENSION_MAX,m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_WithoutReinforcement_TemporaryStrandRemoval.MaxValue, pDisplayUnits->Stress );
    }
 
-   DDX_UnitValueAndTag(pDX, IDC_TS_TENSION_WITH_REBAR, IDC_TS_TENSION_WITH_REBAR_UNIT, m_Entry.m_TempStrandRemovalTensStressWithRebar, pDisplayUnits->SqrtPressure);
+   DDX_UnitValueAndTag(pDX, IDC_TS_TENSION_WITH_REBAR, IDC_TS_TENSION_WITH_REBAR_UNIT, m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_WithReinforcement_TemporaryStrandRemoval.Coefficient, pDisplayUnits->SqrtPressure);
    DDX_Text(pDX,IDC_TS_TENSION_WITH_REBAR_UNIT,fcTag);
+   DDV_UnitValueZeroOrMore(pDX, IDC_TS_TENSION_WITH_REBAR, m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_WithReinforcement_TemporaryStrandRemoval.Coefficient, pDisplayUnits->SqrtPressure);
 
    // Allowable concrete stress after deck placement
-	DDX_Text(pDX, IDC_AFTER_DECK_COMPRESSION, m_Entry.m_Bs1CompStress);
-   DDV_GreaterThanZero(pDX, IDC_AFTER_DECK_COMPRESSION, m_Entry.m_Bs1CompStress);
+	DDX_Text(pDX, IDC_AFTER_DECK_COMPRESSION, m_Entry.m_pImpl->m_PrestressedElementCriteria.CompressionStressCoefficient_AfterDeckPlacement);
+   DDV_GreaterThanZero(pDX, IDC_AFTER_DECK_COMPRESSION, m_Entry.m_pImpl->m_PrestressedElementCriteria.CompressionStressCoefficient_AfterDeckPlacement);
 
-   DDX_UnitValueAndTag(pDX, IDC_AFTER_DECK_TENSION, IDC_AFTER_DECK_TENSION_UNIT, m_Entry.m_Bs1TensStress, pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_AFTER_DECK_TENSION, IDC_AFTER_DECK_TENSION_UNIT, m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_AfterDeckPlacement.Coefficient, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_AFTER_DECK_TENSION_UNIT,fcTag);
-   DDV_UnitValueZeroOrMore(pDX, IDC_AFTER_DECK_TENSION,m_Entry.m_Bs1TensStress, pDisplayUnits->SqrtPressure );
-   DDX_Check_Bool(pDX, IDC_CHECK_AFTER_DECK_TENSION_MAX, m_Entry.m_Bs1DoTensStressMax);
-   DDX_UnitValueAndTag(pDX, IDC_AFTER_DECK_TENSION_MAX, IDC_AFTER_DECK_TENSION_MAX_UNIT, m_Entry.m_Bs1TensStressMax, pDisplayUnits->Stress );
-   if (m_Entry.m_Bs1DoTensStressMax)
+   DDV_UnitValueZeroOrMore(pDX, IDC_AFTER_DECK_TENSION,m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_AfterDeckPlacement.Coefficient, pDisplayUnits->SqrtPressure );
+   DDX_Check_Bool(pDX, IDC_CHECK_AFTER_DECK_TENSION_MAX, m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_AfterDeckPlacement.bHasMaxValue);
+   DDX_UnitValueAndTag(pDX, IDC_AFTER_DECK_TENSION_MAX, IDC_AFTER_DECK_TENSION_MAX_UNIT, m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_AfterDeckPlacement.MaxValue, pDisplayUnits->Stress );
+   if (m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_AfterDeckPlacement.bHasMaxValue)
    {
-      DDV_UnitValueGreaterThanZero(pDX, IDC_AFTER_DECK_TENSION_MAX,m_Entry.m_Bs1TensStressMax, pDisplayUnits->Stress );
+      DDV_UnitValueGreaterThanZero(pDX, IDC_AFTER_DECK_TENSION_MAX,m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_AfterDeckPlacement.MaxValue, pDisplayUnits->Stress );
    }
 
    // Principal Tension Stress in Webs
-   DDX_UnitValueAndTag(pDX, IDC_PRINCIPAL_TENSION, IDC_PRINCIPAL_TENSION_UNIT, m_Entry.m_PrincipalTensileStressCoefficient, pDisplayUnits->SqrtPressure);
+   DDX_UnitValueAndTag(pDX, IDC_PRINCIPAL_TENSION, IDC_PRINCIPAL_TENSION_UNIT, m_Entry.m_pImpl->m_PrincipalTensionStressCriteria.Coefficient, pDisplayUnits->SqrtPressure);
    DDX_Text(pDX, IDC_PRINCIPAL_TENSION_UNIT, fcTag);
-   DDX_CBEnum(pDX, IDC_PRINCIPAL_TENSION_METHOD, m_Entry.m_PrincipalTensileStressMethod);
-   DDX_Text(pDX, IDC_TENDON_NEARNESS_FACTOR, m_Entry.m_PrincipalTensileStressTendonNearnessFactor);
-   DDX_Text(pDX, IDC_UNGROUTED_MULTIPLIER, m_Entry.m_PrincipalTensileStressUngroutedMultiplier);
-   DDX_Text(pDX, IDC_GROUTED_MULTIPLIER, m_Entry.m_PrincipalTensileStressGroutedMultiplier);
+   DDX_CBEnum(pDX, IDC_PRINCIPAL_TENSION_METHOD, m_Entry.m_pImpl->m_PrincipalTensionStressCriteria.Method);
+   DDX_Text(pDX, IDC_TENDON_NEARNESS_FACTOR, m_Entry.m_pImpl->m_PrincipalTensionStressCriteria.TendonNearnessFactor);
+   DDX_Text(pDX, IDC_UNGROUTED_MULTIPLIER, m_Entry.m_pImpl->m_PrincipalTensionStressCriteria.UngroutedMultiplier);
+   DDX_Text(pDX, IDC_GROUTED_MULTIPLIER, m_Entry.m_pImpl->m_PrincipalTensionStressCriteria.GroutedMultiplier);
 
 
-   DDX_KeywordUnitValueAndTag(pDX, IDC_PRINCIPAL_FC_THRESHOLD, IDC_PRINCIPAL_FC_THRESHOLD_UNIT, _T("All"), m_Entry.m_PrincipalTensileStressFcThreshold, pDisplayUnits->Stress );
-   if (pDX->m_bSaveAndValidate && m_Entry.m_PrincipalTensileStressFcThreshold < 0.0 && m_Entry.m_PrincipalTensileStressFcThreshold != -1.0)
+   DDX_KeywordUnitValueAndTag(pDX, IDC_PRINCIPAL_FC_THRESHOLD, IDC_PRINCIPAL_FC_THRESHOLD_UNIT, _T("All"), m_Entry.m_pImpl->m_PrincipalTensionStressCriteria.FcThreshold, pDisplayUnits->Stress );
+   if (pDX->m_bSaveAndValidate && m_Entry.m_pImpl->m_PrincipalTensionStressCriteria.FcThreshold < 0.0 && m_Entry.m_pImpl->m_PrincipalTensionStressCriteria.FcThreshold != -1.0)
    {
       AfxMessageBox(_T("f'c threshold value must be zero or greater or keyword \"All\""));
       pDX->PrepareCtrl(IDC_PRINCIPAL_FC_THRESHOLD);
@@ -359,10 +361,10 @@ void CSpecMainSheet::ExchangeLiftingData(CDataExchange* pDX)
    CEAFApp* pApp = EAFGetApp();
    const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
-	DDX_Text(pDX, IDC_FS_CY_CRACK, m_Entry.m_CyLiftingCrackFs);
-   DDV_NonNegativeDouble(pDX, IDC_FS_CY_CRACK, m_Entry.m_CyLiftingCrackFs);
-	DDX_Text(pDX, IDC_FS_CY_FAIL, m_Entry.m_CyLiftingFailFs);
-   DDV_NonNegativeDouble(pDX, IDC_FS_CY_FAIL, m_Entry.m_CyLiftingFailFs);
+	DDX_Text(pDX, IDC_FS_CY_CRACK, m_Entry.m_pImpl->m_LiftingCriteria.FsCracking);
+   DDV_NonNegativeDouble(pDX, IDC_FS_CY_CRACK, m_Entry.m_pImpl->m_LiftingCriteria.FsCracking);
+	DDX_Text(pDX, IDC_FS_CY_FAIL, m_Entry.m_pImpl->m_LiftingCriteria.FsFailure);
+   DDV_NonNegativeDouble(pDX, IDC_FS_CY_FAIL, m_Entry.m_pImpl->m_LiftingCriteria.FsFailure);
 
    CString tag;
    if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims )
@@ -374,23 +376,23 @@ void CSpecMainSheet::ExchangeLiftingData(CDataExchange* pDX)
       tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("(lambda)sqrt(f'ci (MPa))") : _T("(lambda)sqrt(f'ci (KSI))");
    }
 
-   DDX_UnitValueAndTag(pDX, IDC_FR, IDC_FR_UNIT, m_Entry.m_LiftingModulusOfRuptureCoefficient[pgsTypes::Normal], pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_FR, IDC_FR_UNIT, m_Entry.m_pImpl->m_LiftingCriteria.ModulusOfRuptureCoefficient[pgsTypes::Normal], pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_FR_UNIT,tag);
 
-   DDX_UnitValueAndTag(pDX, IDC_ALWC_FR, IDC_ALWC_FR_UNIT, m_Entry.m_LiftingModulusOfRuptureCoefficient[pgsTypes::AllLightweight], pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_ALWC_FR, IDC_ALWC_FR_UNIT, m_Entry.m_pImpl->m_LiftingCriteria.ModulusOfRuptureCoefficient[pgsTypes::AllLightweight], pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_ALWC_FR_UNIT,tag);
 
-   DDX_UnitValueAndTag(pDX, IDC_SLWC_FR, IDC_SLWC_FR_UNIT, m_Entry.m_LiftingModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_SLWC_FR, IDC_SLWC_FR_UNIT, m_Entry.m_pImpl->m_LiftingCriteria.ModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_SLWC_FR_UNIT,tag);
 
-   DDX_UnitValueAndTag(pDX, IDC_PICK_POINT_HEIGHT, IDC_PICK_POINT_HEIGHT_UNITS, m_Entry.m_PickPointHeight, pDisplayUnits->ComponentDim);
-   DDV_UnitValueZeroOrMore(pDX, IDC_PICK_POINT_HEIGHT,m_Entry.m_PickPointHeight, pDisplayUnits->ComponentDim );
-   DDX_UnitValueAndTag(pDX, IDC_LIFTING_LOOP_TOLERANCE, IDC_LIFTING_LOOP_TOLERANCE_UNITS, m_Entry.m_LiftingLoopTolerance, pDisplayUnits->ComponentDim );
-   DDV_UnitValueZeroOrMore(pDX, IDC_LIFTING_LOOP_TOLERANCE,m_Entry.m_LiftingLoopTolerance, pDisplayUnits->ComponentDim );
-   DDX_UnitValueAndTag(pDX, IDC_MIN_CABLE_ANGLE, IDC_MIN_CABLE_ANGLE_UNITS, m_Entry.m_MinCableInclination, pDisplayUnits->Angle);
-   DDV_UnitValueRange(pDX, IDC_MIN_CABLE_ANGLE,m_Entry.m_MinCableInclination, 0.0, 90., pDisplayUnits->Angle );
+   DDX_UnitValueAndTag(pDX, IDC_PICK_POINT_HEIGHT, IDC_PICK_POINT_HEIGHT_UNITS, m_Entry.m_pImpl->m_LiftingCriteria.PickPointHeight, pDisplayUnits->ComponentDim);
+   DDV_UnitValueZeroOrMore(pDX, IDC_PICK_POINT_HEIGHT,m_Entry.m_pImpl->m_LiftingCriteria.PickPointHeight, pDisplayUnits->ComponentDim );
+   DDX_UnitValueAndTag(pDX, IDC_LIFTING_LOOP_TOLERANCE, IDC_LIFTING_LOOP_TOLERANCE_UNITS, m_Entry.m_pImpl->m_LiftingCriteria.LiftingLoopTolerance, pDisplayUnits->ComponentDim );
+   DDV_UnitValueZeroOrMore(pDX, IDC_LIFTING_LOOP_TOLERANCE,m_Entry.m_pImpl->m_LiftingCriteria.LiftingLoopTolerance, pDisplayUnits->ComponentDim );
+   DDX_UnitValueAndTag(pDX, IDC_MIN_CABLE_ANGLE, IDC_MIN_CABLE_ANGLE_UNITS, m_Entry.m_pImpl->m_LiftingCriteria.MinCableInclination, pDisplayUnits->Angle);
+   DDV_UnitValueRange(pDX, IDC_MIN_CABLE_ANGLE,m_Entry.m_pImpl->m_LiftingCriteria.MinCableInclination, 0.0, 90., pDisplayUnits->Angle );
 
-   Float64 sweepTolerance = m_Entry.m_MaxGirderSweepLifting;
+   Float64 sweepTolerance = m_Entry.m_pImpl->m_LiftingCriteria.SweepTolerance;
    if ( pApp->GetUnitsMode() == eafTypes::umSI )
    {
       sweepTolerance *= 1000;
@@ -421,55 +423,55 @@ void CSpecMainSheet::ExchangeLiftingData(CDataExchange* pDX)
       }
    }
    DDV_NonNegativeDouble(pDX, IDC_GIRDER_SWEEP_TOL, sweepTolerance);
-   m_Entry.m_MaxGirderSweepLifting = sweepTolerance;
+   m_Entry.m_pImpl->m_LiftingCriteria.SweepTolerance = sweepTolerance;
 
-   DDX_Text(pDX, IDC_LIFTING_GLOBAL_COMPRESSION, m_Entry.m_LiftingCompressionStressCoefficient_GlobalStress);
-   DDV_GreaterThanZero(pDX, IDC_LIFTING_GLOBAL_COMPRESSION, m_Entry.m_LiftingCompressionStressCoefficient_GlobalStress);
-   DDX_Text(pDX, IDC_LIFTING_PEAK_COMPRESSION, m_Entry.m_LiftingCompressionStressCoefficient_PeakStress);
-   DDV_GreaterThanZero(pDX, IDC_LIFTING_PEAK_COMPRESSION, m_Entry.m_LiftingCompressionStressCoefficient_PeakStress);
+   DDX_Text(pDX, IDC_LIFTING_GLOBAL_COMPRESSION, m_Entry.m_pImpl->m_LiftingCriteria.CompressionStressCoefficient_GlobalStress);
+   DDV_GreaterThanZero(pDX, IDC_LIFTING_GLOBAL_COMPRESSION, m_Entry.m_pImpl->m_LiftingCriteria.CompressionStressCoefficient_GlobalStress);
+   DDX_Text(pDX, IDC_LIFTING_PEAK_COMPRESSION, m_Entry.m_pImpl->m_LiftingCriteria.CompressionStressCoefficient_PeakStress);
+   DDV_GreaterThanZero(pDX, IDC_LIFTING_PEAK_COMPRESSION, m_Entry.m_pImpl->m_LiftingCriteria.CompressionStressCoefficient_PeakStress);
 
-   DDX_UnitValueAndTag(pDX, IDC_LIFTING_TENSION, IDC_LIFTING_TENSION_UNIT, m_Entry.m_CyTensStressLifting, pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_LIFTING_TENSION, IDC_LIFTING_TENSION_UNIT, m_Entry.m_pImpl->m_LiftingCriteria.TensionStressLimitWithoutReinforcement.Coefficient, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_LIFTING_TENSION_UNIT,tag);
-   DDV_UnitValueZeroOrMore(pDX, IDC_LIFTING_TENSION_UNIT,m_Entry.m_CyTensStressLifting, pDisplayUnits->SqrtPressure );
-   DDX_Check_Bool(pDX, IDC_CHECK_LIFTING_TENSION_MAX, m_Entry.m_CyDoTensStressLiftingMax);
-   DDX_UnitValueAndTag(pDX, IDC_LIFTING_TENSION_MAX, IDC_LIFTING_TENSION_MAX_UNIT, m_Entry.m_CyTensStressLiftingMax, pDisplayUnits->Stress );
-   if (m_Entry.m_CyDoTensStressLiftingMax)
+   DDV_UnitValueZeroOrMore(pDX, IDC_LIFTING_TENSION_UNIT,m_Entry.m_pImpl->m_LiftingCriteria.TensionStressLimitWithoutReinforcement.Coefficient, pDisplayUnits->SqrtPressure );
+   DDX_Check_Bool(pDX, IDC_CHECK_LIFTING_TENSION_MAX, m_Entry.m_pImpl->m_LiftingCriteria.TensionStressLimitWithoutReinforcement.bHasMaxValue);
+   DDX_UnitValueAndTag(pDX, IDC_LIFTING_TENSION_MAX, IDC_LIFTING_TENSION_MAX_UNIT, m_Entry.m_pImpl->m_LiftingCriteria.TensionStressLimitWithoutReinforcement.MaxValue, pDisplayUnits->Stress );
+   if (m_Entry.m_pImpl->m_LiftingCriteria.TensionStressLimitWithoutReinforcement.bHasMaxValue)
    {
-      DDV_UnitValueGreaterThanZero(pDX, IDC_LIFTING_TENSION_MAX,m_Entry.m_CyTensStressLiftingMax, pDisplayUnits->Stress );
+      DDV_UnitValueGreaterThanZero(pDX, IDC_LIFTING_TENSION_MAX,m_Entry.m_pImpl->m_LiftingCriteria.TensionStressLimitWithoutReinforcement.MaxValue, pDisplayUnits->Stress );
    }
 
-   DDX_UnitValueAndTag(pDX, IDC_LIFTING_TENSION_WITH_REBAR, IDC_LIFTING_TENSION_WITH_REBAR_UNIT, m_Entry.m_TensStressLiftingWithRebar, pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_LIFTING_TENSION_WITH_REBAR, IDC_LIFTING_TENSION_WITH_REBAR_UNIT, m_Entry.m_pImpl->m_LiftingCriteria.TensionStressLimitWithReinforcement.Coefficient, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_LIFTING_TENSION_WITH_REBAR_UNIT,tag);
-   DDV_UnitValueZeroOrMore(pDX, IDC_LIFTING_TENSION_WITH_REBAR_UNIT,m_Entry.m_TensStressLiftingWithRebar, pDisplayUnits->SqrtPressure );
+   DDV_UnitValueZeroOrMore(pDX, IDC_LIFTING_TENSION_WITH_REBAR_UNIT,m_Entry.m_pImpl->m_LiftingCriteria.TensionStressLimitWithReinforcement.Coefficient, pDisplayUnits->SqrtPressure );
 
-   if (pDX->m_bSaveAndValidate && m_Entry.m_TensStressLiftingWithRebar < m_Entry.m_CyTensStressLifting)
+   if (pDX->m_bSaveAndValidate && m_Entry.m_pImpl->m_LiftingCriteria.TensionStressLimitWithReinforcement.Coefficient < m_Entry.m_pImpl->m_LiftingCriteria.TensionStressLimitWithoutReinforcement.Coefficient)
    {
       AfxMessageBox(_T("Allowable tensile stress with bonded reinforcement must be greater than or equal to that without"),MB_OK | MB_ICONWARNING);
       pDX->Fail();
    }
 
-   DDX_Percentage(pDX, IDC_IMPACT_UPWARD_LIFTING, m_Entry.m_LiftingUpwardImpact);
-   DDV_MinMaxDouble(pDX, m_Entry.m_LiftingUpwardImpact, 0.0, 1.0);
-	DDX_Percentage(pDX, IDC_IMPACT_DOWNWARD_LIFTING, m_Entry.m_LiftingDownwardImpact);
-   DDV_MinMaxDouble(pDX, m_Entry.m_LiftingDownwardImpact, 0.0, 1.0);
+   DDX_Percentage(pDX, IDC_IMPACT_UPWARD_LIFTING, m_Entry.m_pImpl->m_LiftingCriteria.ImpactUp);
+   DDV_MinMaxDouble(pDX, m_Entry.m_pImpl->m_LiftingCriteria.ImpactUp, 0.0, 1.0);
+	DDX_Percentage(pDX, IDC_IMPACT_DOWNWARD_LIFTING, m_Entry.m_pImpl->m_LiftingCriteria.ImpactDown);
+   DDV_MinMaxDouble(pDX, m_Entry.m_pImpl->m_LiftingCriteria.ImpactDown, 0.0, 1.0);
 
-   DDX_Text(pDX, IDC_CAMBER_MULTIPLIER, m_Entry.m_LiftingCamberMultiplier);
+   DDX_Text(pDX, IDC_CAMBER_MULTIPLIER, m_Entry.m_pImpl->m_LiftingCriteria.CamberMultiplier);
 
-   DDX_CBItemData(pDX,IDC_WIND_TYPE,m_Entry.m_LiftingWindType);
-   if ( m_Entry.m_LiftingWindType == pgsTypes::Pressure )
+   DDX_CBItemData(pDX,IDC_WIND_TYPE,m_Entry.m_pImpl->m_LiftingCriteria.WindLoadType);
+   if ( m_Entry.m_pImpl->m_LiftingCriteria.WindLoadType == WBFL::Stability::WindLoadType::Pressure )
    {
-      DDX_UnitValueAndTag(pDX,IDC_WIND_LOAD,IDC_WIND_LOAD_UNIT,m_Entry.m_LiftingWindLoad,pDisplayUnits->WindPressure);
+      DDX_UnitValueAndTag(pDX,IDC_WIND_LOAD,IDC_WIND_LOAD_UNIT,m_Entry.m_pImpl->m_LiftingCriteria.WindLoad,pDisplayUnits->WindPressure);
    }
    else
    {
-      DDX_UnitValueAndTag(pDX,IDC_WIND_LOAD,IDC_WIND_LOAD_UNIT,m_Entry.m_LiftingWindLoad,pDisplayUnits->Velocity);
+      DDX_UnitValueAndTag(pDX,IDC_WIND_LOAD,IDC_WIND_LOAD_UNIT,m_Entry.m_pImpl->m_LiftingCriteria.WindLoad,pDisplayUnits->Velocity);
    }
-   DDV_NonNegativeDouble(pDX, IDC_WIND_LOAD, m_Entry.m_LiftingWindLoad);
+   DDV_NonNegativeDouble(pDX, IDC_WIND_LOAD, m_Entry.m_pImpl->m_LiftingCriteria.WindLoad);
 }
 
 bool CSpecMainSheet::IsHaulingEnabled() const
 {
-   return m_Entry.m_EnableHaulingCheck;
+   return m_Entry.m_pImpl->m_HaulingCriteria.bCheck;
 }
 
 void CSpecMainSheet::ExchangeWsdotHaulingData(CDataExchange* pDX)
@@ -480,21 +482,21 @@ void CSpecMainSheet::ExchangeWsdotHaulingData(CDataExchange* pDX)
 
    if (pDX->m_bSaveAndValidate)
    {
-      ATLASSERT(m_SpecHaulingErectionPage.m_HaulingAnalysisMethod==pgsTypes::hmWSDOT);
-      m_Entry.m_HaulingAnalysisMethod = pgsTypes::hmWSDOT;
+      ATLASSERT(m_SpecHaulingErectionPage.m_HaulingAnalysisMethod==pgsTypes::HaulingAnalysisMethod::WSDOT);
+      m_Entry.m_pImpl->m_HaulingCriteria.AnalysisMethod = pgsTypes::HaulingAnalysisMethod::WSDOT;
    }
 
-	DDX_Text(pDX, IDC_HE_HAULING_FS_CRACK, m_Entry.m_HaulingCrackFs);
-   DDV_NonNegativeDouble(pDX, IDC_HE_HAULING_FS_CRACK, m_Entry.m_HaulingCrackFs);
+	DDX_Text(pDX, IDC_HE_HAULING_FS_CRACK, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.FsCracking);
+   DDV_NonNegativeDouble(pDX, IDC_HE_HAULING_FS_CRACK, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.FsCracking);
 
-   DDX_Text(pDX, IDC_HE_HAULING_FS_ROLLOVER, m_Entry.m_HaulingRollFs);
-   DDV_NonNegativeDouble(pDX, IDC_HE_HAULING_FS_ROLLOVER, m_Entry.m_HaulingRollFs);
+   DDX_Text(pDX, IDC_HE_HAULING_FS_ROLLOVER, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.FsFailure);
+   DDV_NonNegativeDouble(pDX, IDC_HE_HAULING_FS_ROLLOVER, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.FsFailure);
 
-   DDX_Text(pDX, IDC_HAULING_GLOBAL_COMPRESSION, m_Entry.m_GlobalCompStressHauling);
-   DDV_GreaterThanZero(pDX, IDC_HAULING_GLOBAL_COMPRESSION, m_Entry.m_GlobalCompStressHauling);
+   DDX_Text(pDX, IDC_HAULING_GLOBAL_COMPRESSION, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.CompressionStressCoefficient_GlobalStress);
+   DDV_GreaterThanZero(pDX, IDC_HAULING_GLOBAL_COMPRESSION, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.CompressionStressCoefficient_GlobalStress);
 
-   DDX_Text(pDX, IDC_HAULING_PEAK_COMPRESSION, m_Entry.m_PeakCompStressHauling);
-   DDV_GreaterThanZero(pDX, IDC_HAULING_PEAK_COMPRESSION, m_Entry.m_PeakCompStressHauling);
+   DDX_Text(pDX, IDC_HAULING_PEAK_COMPRESSION, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.CompressionStressCoefficient_PeakStress);
+   DDV_GreaterThanZero(pDX, IDC_HAULING_PEAK_COMPRESSION, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.CompressionStressCoefficient_PeakStress);
 
    CString tag;
    if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims )
@@ -506,31 +508,31 @@ void CSpecMainSheet::ExchangeWsdotHaulingData(CDataExchange* pDX)
       tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("(lambda)sqrt(f'c (MPa))") : _T("(lambda)sqrt(f'c (KSI))");
    }
 
-   DDX_UnitValueAndTag(pDX, IDC_FR, IDC_FR_UNIT, m_Entry.m_HaulingModulusOfRuptureCoefficient[pgsTypes::Normal], pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_FR, IDC_FR_UNIT, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.ModulusOfRuptureCoefficient[pgsTypes::Normal], pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_FR_UNIT,tag);
 
-   DDX_UnitValueAndTag(pDX, IDC_ALWC_FR, IDC_ALWC_FR_UNIT, m_Entry.m_HaulingModulusOfRuptureCoefficient[pgsTypes::AllLightweight], pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_ALWC_FR, IDC_ALWC_FR_UNIT, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.ModulusOfRuptureCoefficient[pgsTypes::AllLightweight], pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_ALWC_FR_UNIT,tag);
 
-   DDX_UnitValueAndTag(pDX, IDC_SLWC_FR, IDC_SLWC_FR_UNIT, m_Entry.m_HaulingModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_SLWC_FR, IDC_SLWC_FR_UNIT, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.ModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_SLWC_FR_UNIT,tag);
 
 
-   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION_CROWN, IDC_HAULING_TENSION_CROWN_UNIT, m_Entry.m_TensStressHauling[pgsTypes::CrownSlope], pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION_CROWN, IDC_HAULING_TENSION_CROWN_UNIT, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.TensionStressLimitWithoutReinforcement[+WBFL::Stability::HaulingSlope::CrownSlope].Coefficient, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_HAULING_TENSION_CROWN_UNIT,tag);
-   DDV_UnitValueZeroOrMore(pDX, IDC_HAULING_TENSION_CROWN_UNIT,m_Entry.m_TensStressHauling[pgsTypes::CrownSlope], pDisplayUnits->SqrtPressure );
-   DDX_Check_Bool(pDX, IDC_CHECK_HAULING_TENSION_MAX_CROWN, m_Entry.m_DoTensStressHaulingMax[pgsTypes::CrownSlope]);
-   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION_MAX_CROWN, IDC_HAULING_TENSION_MAX_UNIT_CROWN, m_Entry.m_TensStressHaulingMax[pgsTypes::CrownSlope], pDisplayUnits->Stress );
-   if (m_Entry.m_DoTensStressHaulingMax[pgsTypes::CrownSlope])
+   DDV_UnitValueZeroOrMore(pDX, IDC_HAULING_TENSION_CROWN_UNIT, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.TensionStressLimitWithoutReinforcement[+WBFL::Stability::HaulingSlope::CrownSlope].Coefficient, pDisplayUnits->SqrtPressure );
+   DDX_Check_Bool(pDX, IDC_CHECK_HAULING_TENSION_MAX_CROWN, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.TensionStressLimitWithoutReinforcement[+WBFL::Stability::HaulingSlope::CrownSlope].bHasMaxValue);
+   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION_MAX_CROWN, IDC_HAULING_TENSION_MAX_UNIT_CROWN, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.TensionStressLimitWithoutReinforcement[+WBFL::Stability::HaulingSlope::CrownSlope].MaxValue, pDisplayUnits->Stress );
+   if (m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.TensionStressLimitWithoutReinforcement[+WBFL::Stability::HaulingSlope::CrownSlope].bHasMaxValue)
    {
-      DDV_UnitValueGreaterThanZero(pDX, IDC_HAULING_TENSION_MAX_CROWN,m_Entry.m_TensStressHaulingMax[pgsTypes::CrownSlope], pDisplayUnits->Stress );
+      DDV_UnitValueGreaterThanZero(pDX, IDC_HAULING_TENSION_MAX_CROWN, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.TensionStressLimitWithoutReinforcement[+WBFL::Stability::HaulingSlope::CrownSlope].MaxValue, pDisplayUnits->Stress );
    }
 
-   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION_WITH_REBAR_CROWN, IDC_HAULING_TENSION_WITH_REBAR_UNIT_CROWN, m_Entry.m_TensStressHaulingWithRebar[pgsTypes::CrownSlope], pDisplayUnits->SqrtPressure  );
+   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION_WITH_REBAR_CROWN, IDC_HAULING_TENSION_WITH_REBAR_UNIT_CROWN, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.TensionStressLimitWithReinforcement[+WBFL::Stability::HaulingSlope::CrownSlope].Coefficient, pDisplayUnits->SqrtPressure  );
    DDX_Text(pDX,IDC_HAULING_TENSION_WITH_REBAR_UNIT_CROWN,tag);
-   DDV_UnitValueZeroOrMore(pDX, IDC_HAULING_TENSION_WITH_REBAR_CROWN,m_Entry.m_TensStressHaulingWithRebar[pgsTypes::CrownSlope], pDisplayUnits->SqrtPressure );
+   DDV_UnitValueZeroOrMore(pDX, IDC_HAULING_TENSION_WITH_REBAR_CROWN, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.TensionStressLimitWithReinforcement[+WBFL::Stability::HaulingSlope::CrownSlope].Coefficient, pDisplayUnits->SqrtPressure );
 
-   if (pDX->m_bSaveAndValidate && m_Entry.m_TensStressHaulingWithRebar[pgsTypes::CrownSlope] < m_Entry.m_TensStressHauling[pgsTypes::CrownSlope])
+   if (pDX->m_bSaveAndValidate && m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.TensionStressLimitWithReinforcement[+WBFL::Stability::HaulingSlope::CrownSlope].Coefficient < m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.TensionStressLimitWithoutReinforcement[+WBFL::Stability::HaulingSlope::CrownSlope].Coefficient)
    {
       AfxMessageBox(_T("Allowable tensile stress with bonded reinforcement for the normal crown case must be greater than or equal to that without"),MB_OK | MB_ICONWARNING);
       pDX->Fail();
@@ -538,44 +540,44 @@ void CSpecMainSheet::ExchangeWsdotHaulingData(CDataExchange* pDX)
 
 
    
-   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION_SUPER, IDC_HAULING_TENSION_SUPER_UNIT, m_Entry.m_TensStressHauling[pgsTypes::Superelevation], pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION_SUPER, IDC_HAULING_TENSION_SUPER_UNIT, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.TensionStressLimitWithoutReinforcement[+WBFL::Stability::HaulingSlope::Superelevation].Coefficient, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_HAULING_TENSION_SUPER_UNIT,tag);
-   DDV_UnitValueZeroOrMore(pDX, IDC_HAULING_TENSION_SUPER_UNIT,m_Entry.m_TensStressHauling[pgsTypes::Superelevation], pDisplayUnits->SqrtPressure );
-   DDX_Check_Bool(pDX, IDC_CHECK_HAULING_TENSION_MAX_SUPER, m_Entry.m_DoTensStressHaulingMax[pgsTypes::Superelevation]);
-   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION_MAX_SUPER, IDC_HAULING_TENSION_MAX_UNIT_SUPER, m_Entry.m_TensStressHaulingMax[pgsTypes::Superelevation], pDisplayUnits->Stress );
-   if (m_Entry.m_DoTensStressHaulingMax[pgsTypes::Superelevation])
+   DDV_UnitValueZeroOrMore(pDX, IDC_HAULING_TENSION_SUPER_UNIT, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.TensionStressLimitWithoutReinforcement[+WBFL::Stability::HaulingSlope::Superelevation].Coefficient, pDisplayUnits->SqrtPressure );
+   DDX_Check_Bool(pDX, IDC_CHECK_HAULING_TENSION_MAX_SUPER, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.TensionStressLimitWithoutReinforcement[+WBFL::Stability::HaulingSlope::Superelevation].bHasMaxValue);
+   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION_MAX_SUPER, IDC_HAULING_TENSION_MAX_UNIT_SUPER, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.TensionStressLimitWithoutReinforcement[+WBFL::Stability::HaulingSlope::Superelevation].MaxValue, pDisplayUnits->Stress );
+   if (m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.TensionStressLimitWithoutReinforcement[+WBFL::Stability::HaulingSlope::Superelevation].bHasMaxValue)
    {
-      DDV_UnitValueGreaterThanZero(pDX, IDC_HAULING_TENSION_MAX_SUPER,m_Entry.m_TensStressHaulingMax[pgsTypes::Superelevation], pDisplayUnits->Stress );
+      DDV_UnitValueGreaterThanZero(pDX, IDC_HAULING_TENSION_MAX_SUPER, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.TensionStressLimitWithoutReinforcement[+WBFL::Stability::HaulingSlope::Superelevation].MaxValue, pDisplayUnits->Stress );
    }
 
-   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION_WITH_REBAR_SUPER, IDC_HAULING_TENSION_WITH_REBAR_UNIT_SUPER, m_Entry.m_TensStressHaulingWithRebar[pgsTypes::Superelevation], pDisplayUnits->SqrtPressure  );
+   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION_WITH_REBAR_SUPER, IDC_HAULING_TENSION_WITH_REBAR_UNIT_SUPER, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.TensionStressLimitWithReinforcement[+WBFL::Stability::HaulingSlope::Superelevation].Coefficient, pDisplayUnits->SqrtPressure  );
    DDX_Text(pDX,IDC_HAULING_TENSION_WITH_REBAR_UNIT_SUPER,tag);
-   DDV_UnitValueZeroOrMore(pDX, IDC_HAULING_TENSION_WITH_REBAR_SUPER,m_Entry.m_TensStressHaulingWithRebar[pgsTypes::Superelevation], pDisplayUnits->SqrtPressure );
+   DDV_UnitValueZeroOrMore(pDX, IDC_HAULING_TENSION_WITH_REBAR_SUPER, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.TensionStressLimitWithReinforcement[+WBFL::Stability::HaulingSlope::Superelevation].Coefficient, pDisplayUnits->SqrtPressure );
 
-   if (pDX->m_bSaveAndValidate && m_Entry.m_TensStressHaulingWithRebar[pgsTypes::Superelevation] < m_Entry.m_TensStressHauling[pgsTypes::Superelevation])
+   if (pDX->m_bSaveAndValidate && m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.TensionStressLimitWithReinforcement[+WBFL::Stability::HaulingSlope::Superelevation].Coefficient < m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.TensionStressLimitWithoutReinforcement[+WBFL::Stability::HaulingSlope::Superelevation].Coefficient)
    {
       AfxMessageBox(_T("Allowable tensile stress with bonded reinforcement for the max. superelevation case must be greater than or equal to that without"),MB_OK | MB_ICONWARNING);
       pDX->Fail();
    }
 
    // Haul Criteria
-	DDX_Percentage(pDX, IDC_IMPACT_UPWARD_HAULING, m_Entry.m_HaulingUpwardImpact);
-   DDV_MinMaxDouble(pDX, m_Entry.m_HaulingUpwardImpact, 0.0, 1.0);
+	DDX_Percentage(pDX, IDC_IMPACT_UPWARD_HAULING, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.ImpactUp);
+   DDV_MinMaxDouble(pDX, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.ImpactUp, 0.0, 1.0);
 
-   DDX_Percentage(pDX, IDC_IMPACT_DOWNWARD_HAULING, m_Entry.m_HaulingDownwardImpact);
-   DDV_MinMaxDouble(pDX, m_Entry.m_HaulingDownwardImpact, 0.0, 1.0);
+   DDX_Percentage(pDX, IDC_IMPACT_DOWNWARD_HAULING, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.ImpactDown);
+   DDV_MinMaxDouble(pDX, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.ImpactDown, 0.0, 1.0);
 
-   DDX_CBItemData(pDX, IDC_IMPACT_USAGE, m_Entry.m_HaulingImpactUsage);
+   DDX_CBItemData(pDX, IDC_IMPACT_USAGE, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.ImpactUsage); // don't use DDX_CBEnum since the combo list is in a different order than the enum
 
    CString slope_unit(pApp->GetUnitsMode() == eafTypes::umSI ? _T("m/m") : _T("ft/ft"));
 
-   DDX_Text(pDX, IDC_CROWN_SLOPE, m_Entry.m_RoadwayCrownSlope);
+   DDX_Text(pDX, IDC_CROWN_SLOPE, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.RoadwayCrownSlope);
    DDX_Text(pDX, IDC_CROWN_SLOPE_UNIT, slope_unit);
 
-   DDX_Text(pDX, IDC_HE_ROADWAY_SUPERELEVATION, m_Entry.m_RoadwaySuperelevation);
+   DDX_Text(pDX, IDC_HE_ROADWAY_SUPERELEVATION, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.RoadwaySuperelevation);
    DDX_Text(pDX, IDC_HE_ROADWAY_SUPERELEVATION_UNIT, slope_unit);
 
-   Float64 sweepTolerance = m_Entry.m_MaxGirderSweepHauling;
+   Float64 sweepTolerance = m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.SweepTolerance;
    if ( pApp->GetUnitsMode() == eafTypes::umSI )
    {
       sweepTolerance *= 1000;
@@ -606,33 +608,33 @@ void CSpecMainSheet::ExchangeWsdotHaulingData(CDataExchange* pDX)
       }
    }
    DDV_NonNegativeDouble(pDX, IDC_GIRDER_SWEEP_TOL, sweepTolerance);
-   m_Entry.m_MaxGirderSweepHauling = sweepTolerance;
+   m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.SweepTolerance = sweepTolerance;
 
-   DDX_UnitValueAndTag(pDX, IDC_SWEEP_GROWTH, IDC_SWEEP_GROWTH_UNIT, m_Entry.m_HaulingSweepGrowth, pDisplayUnits->ComponentDim);
+   DDX_UnitValueAndTag(pDX, IDC_SWEEP_GROWTH, IDC_SWEEP_GROWTH_UNIT, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.SweepGrowth, pDisplayUnits->ComponentDim);
 
-   DDX_UnitValueAndTag(pDX, IDC_SUPPORT_PLACEMENT_TOLERANCE, IDC_SUPPORT_PLACEMENT_TOLERANCE_UNITS, m_Entry.m_HaulingSupportPlacementTolerance, pDisplayUnits->ComponentDim );
-   DDV_UnitValueGreaterThanZero(pDX, IDC_SUPPORT_PLACEMENT_TOLERANCE,m_Entry.m_HaulingSupportPlacementTolerance, pDisplayUnits->ComponentDim );
+   DDX_UnitValueAndTag(pDX, IDC_SUPPORT_PLACEMENT_TOLERANCE, IDC_SUPPORT_PLACEMENT_TOLERANCE_UNITS, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.SupportPlacementTolerance, pDisplayUnits->ComponentDim );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_SUPPORT_PLACEMENT_TOLERANCE,m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.SupportPlacementTolerance, pDisplayUnits->ComponentDim );
 
-   DDX_Text(pDX, IDC_CAMBER_MULTIPLIER, m_Entry.m_HaulingCamberMultiplier);
+   DDX_Text(pDX, IDC_CAMBER_MULTIPLIER, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.CamberMultiplier);
 
 
-   DDX_CBItemData(pDX,IDC_WIND_TYPE,m_Entry.m_HaulingWindType);
-   if ( m_Entry.m_HaulingWindType == pgsTypes::Pressure )
+   DDX_CBItemData(pDX,IDC_WIND_TYPE,m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.WindLoadType); // Don't use DDX_CBEnum because the settings in the list are not in the same order as the enum
+   if ( m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.WindLoadType == WBFL::Stability::WindLoadType::Pressure )
    {
-      DDX_UnitValueAndTag(pDX,IDC_WIND_LOAD,IDC_WIND_LOAD_UNIT,m_Entry.m_HaulingWindLoad,pDisplayUnits->WindPressure);
+      DDX_UnitValueAndTag(pDX,IDC_WIND_LOAD,IDC_WIND_LOAD_UNIT,m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.WindLoad,pDisplayUnits->WindPressure);
    }
    else
    {
-      DDX_UnitValueAndTag(pDX,IDC_WIND_LOAD,IDC_WIND_LOAD_UNIT,m_Entry.m_HaulingWindLoad,pDisplayUnits->Velocity);
+      DDX_UnitValueAndTag(pDX,IDC_WIND_LOAD,IDC_WIND_LOAD_UNIT,m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.WindLoad,pDisplayUnits->Velocity);
    }
-   DDV_NonNegativeDouble(pDX, IDC_WIND_LOAD, m_Entry.m_HaulingWindLoad);
+   DDV_NonNegativeDouble(pDX, IDC_WIND_LOAD, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.WindLoad);
 
-   DDX_CBItemData(pDX,IDC_CF_TYPE,m_Entry.m_CentrifugalForceType);
-   DDX_UnitValueAndTag(pDX,IDC_HAUL_SPEED,IDC_HAUL_SPEED_UNIT,m_Entry.m_HaulingSpeed,pDisplayUnits->Velocity);
-   DDV_NonNegativeDouble(pDX, IDC_WIND_LOAD, m_Entry.m_HaulingSpeed);
+   DDX_CBItemData(pDX,IDC_CF_TYPE,m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.CentrifugalForceType); // Don't use DDX_CBEnum because the settings in the list are not in the same order as the enum
+   DDX_UnitValueAndTag(pDX,IDC_HAUL_SPEED,IDC_HAUL_SPEED_UNIT,m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.HaulingSpeed,pDisplayUnits->Velocity);
+   DDV_NonNegativeDouble(pDX, IDC_WIND_LOAD, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.HaulingSpeed);
 
-   DDX_UnitValueAndTag(pDX,IDC_RADIUS,IDC_RADIUS_UNIT,m_Entry.m_TurningRadius,pDisplayUnits->SpanLength);
-   DDV_UnitValueGreaterThanZero(pDX, IDC_RADIUS,m_Entry.m_TurningRadius, pDisplayUnits->SpanLength );
+   DDX_UnitValueAndTag(pDX,IDC_RADIUS,IDC_RADIUS_UNIT,m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.TurningRadius,pDisplayUnits->SpanLength);
+   DDV_UnitValueGreaterThanZero(pDX, IDC_RADIUS,m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.TurningRadius, pDisplayUnits->SpanLength );
 }
 
 void CSpecMainSheet::ExchangeKdotHaulingData(CDataExchange* pDX)
@@ -642,12 +644,12 @@ void CSpecMainSheet::ExchangeKdotHaulingData(CDataExchange* pDX)
 
    if (pDX->m_bSaveAndValidate)
    {
-      ATLASSERT(m_SpecHaulingErectionPage.m_HaulingAnalysisMethod==pgsTypes::hmKDOT);
-      m_Entry.m_HaulingAnalysisMethod = pgsTypes::hmKDOT;
+      ATLASSERT(m_SpecHaulingErectionPage.m_HaulingAnalysisMethod==pgsTypes::HaulingAnalysisMethod::KDOT);
+      m_Entry.m_pImpl->m_HaulingCriteria.AnalysisMethod = pgsTypes::HaulingAnalysisMethod::KDOT;
    }
 
-	DDX_Text(pDX, IDC_HAULING_COMPRESSION, m_Entry.m_GlobalCompStressHauling);
-   DDV_GreaterThanZero(pDX, IDC_HAULING_COMPRESSION, m_Entry.m_GlobalCompStressHauling);
+	DDX_Text(pDX, IDC_HAULING_COMPRESSION, m_Entry.m_pImpl->m_HaulingCriteria.KDOT.CompressionStressLimitCoefficient);
+   DDV_GreaterThanZero(pDX, IDC_HAULING_COMPRESSION, m_Entry.m_pImpl->m_HaulingCriteria.KDOT.CompressionStressLimitCoefficient);
 
    CString tag;
    if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims )
@@ -660,30 +662,30 @@ void CSpecMainSheet::ExchangeKdotHaulingData(CDataExchange* pDX)
    }
 
    // Use the normal crown values for KDOT
-   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION, IDC_HAULING_TENSION_UNIT, m_Entry.m_TensStressHauling[pgsTypes::CrownSlope], pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION, IDC_HAULING_TENSION_UNIT, m_Entry.m_pImpl->m_HaulingCriteria.KDOT.TensionStressLimitWithoutReinforcement.Coefficient, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_HAULING_TENSION_UNIT,tag);
-   DDV_UnitValueZeroOrMore(pDX, IDC_HAULING_TENSION_UNIT,m_Entry.m_TensStressHauling[pgsTypes::CrownSlope], pDisplayUnits->SqrtPressure );
-   DDX_Check_Bool(pDX, IDC_CHECK_HAULING_TENSION_MAX, m_Entry.m_DoTensStressHaulingMax[pgsTypes::CrownSlope]);
-   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION_MAX, IDC_HAULING_TENSION_MAX_UNIT, m_Entry.m_TensStressHaulingMax[pgsTypes::CrownSlope], pDisplayUnits->Stress );
-   if (m_Entry.m_DoTensStressHaulingMax[pgsTypes::CrownSlope])
+   DDV_UnitValueZeroOrMore(pDX, IDC_HAULING_TENSION_UNIT, m_Entry.m_pImpl->m_HaulingCriteria.KDOT.TensionStressLimitWithoutReinforcement.Coefficient, pDisplayUnits->SqrtPressure );
+   DDX_Check_Bool(pDX, IDC_CHECK_HAULING_TENSION_MAX, m_Entry.m_pImpl->m_HaulingCriteria.KDOT.TensionStressLimitWithoutReinforcement.bHasMaxValue);
+   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION_MAX, IDC_HAULING_TENSION_MAX_UNIT, m_Entry.m_pImpl->m_HaulingCriteria.KDOT.TensionStressLimitWithoutReinforcement.MaxValue, pDisplayUnits->Stress );
+   if (m_Entry.m_pImpl->m_HaulingCriteria.KDOT.TensionStressLimitWithoutReinforcement.bHasMaxValue)
    {
-      DDV_UnitValueGreaterThanZero(pDX, IDC_HAULING_TENSION_MAX,m_Entry.m_TensStressHaulingMax[pgsTypes::CrownSlope], pDisplayUnits->Stress );
+      DDV_UnitValueGreaterThanZero(pDX, IDC_HAULING_TENSION_MAX, m_Entry.m_pImpl->m_HaulingCriteria.KDOT.TensionStressLimitWithoutReinforcement.MaxValue, pDisplayUnits->Stress );
    }
 
-   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION_WITH_REBAR, IDC_HAULING_TENSION_WITH_REBAR_UNIT, m_Entry.m_TensStressHaulingWithRebar[pgsTypes::CrownSlope], pDisplayUnits->SqrtPressure  );
+   DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION_WITH_REBAR, IDC_HAULING_TENSION_WITH_REBAR_UNIT, m_Entry.m_pImpl->m_HaulingCriteria.KDOT.TensionStressLimitWithReinforcement.Coefficient, pDisplayUnits->SqrtPressure  );
    DDX_Text(pDX,IDC_HAULING_TENSION_WITH_REBAR_UNIT,tag);
-   DDV_UnitValueZeroOrMore(pDX, IDC_HAULING_TENSION_WITH_REBAR,m_Entry.m_TensStressHaulingWithRebar[pgsTypes::CrownSlope], pDisplayUnits->SqrtPressure );
+   DDV_UnitValueZeroOrMore(pDX, IDC_HAULING_TENSION_WITH_REBAR, m_Entry.m_pImpl->m_HaulingCriteria.KDOT.TensionStressLimitWithReinforcement.Coefficient, pDisplayUnits->SqrtPressure );
 
-   if (pDX->m_bSaveAndValidate && m_Entry.m_TensStressHaulingWithRebar[pgsTypes::CrownSlope] < m_Entry.m_TensStressHauling[pgsTypes::CrownSlope])
+   if (pDX->m_bSaveAndValidate && m_Entry.m_pImpl->m_HaulingCriteria.KDOT.TensionStressLimitWithReinforcement.Coefficient < m_Entry.m_pImpl->m_HaulingCriteria.KDOT.TensionStressLimitWithoutReinforcement.Coefficient)
    {
       AfxMessageBox(_T("Allowable tensile stress with bonded reinforcement must be greater than or equal to that without"),MB_OK | MB_ICONWARNING);
       pDX->Fail();
    }
 
-	DDX_Text(pDX, IDC_G_OVERHANG, m_Entry.m_OverhangGFactor);
-   DDV_MinMaxDouble(pDX, m_Entry.m_OverhangGFactor, 1.0, 100.0);
-	DDX_Text(pDX, IDC_G_INTERIOR, m_Entry.m_InteriorGFactor);
-   DDV_MinMaxDouble(pDX, m_Entry.m_InteriorGFactor, 1.0, 100.0);
+	DDX_Text(pDX, IDC_G_OVERHANG, m_Entry.m_pImpl->m_HaulingCriteria.KDOT.OverhangGFactor);
+   DDV_MinMaxDouble(pDX, m_Entry.m_pImpl->m_HaulingCriteria.KDOT.OverhangGFactor, 1.0, 100.0);
+	DDX_Text(pDX, IDC_G_INTERIOR, m_Entry.m_pImpl->m_HaulingCriteria.KDOT.InteriorGFactor);
+   DDV_MinMaxDouble(pDX, m_Entry.m_pImpl->m_HaulingCriteria.KDOT.InteriorGFactor, 1.0, 100.0);
 }
 
 
@@ -692,14 +694,14 @@ void CSpecMainSheet::ExchangeMomentCapacityData(CDataExchange* pDX)
    CEAFApp* pApp = EAFGetApp();
    const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
-   DDX_CBIndex(pDX, IDC_MOMENT, m_Entry.m_Bs3LRFDOverReinforcedMomentCapacity );
-   DDX_CBItemData(pDX, IDC_NEG_MOMENT, m_Entry.m_bIncludeForNegMoment);
-   DDX_Check_Bool(pDX, IDC_INCLUDE_STRAND_FOR_NEG_MOMENT, m_Entry.m_bIncludeStrand_NegMoment);
-   DDX_Check_Bool(pDX, IDC_INCLUDE_REBAR_MOMENT, m_Entry.m_bIncludeRebar_Moment );
-   DDX_Check_Bool(pDX, IDC_CONSIDER_REINFORCEMENT_STRAIN_LIMITS, m_Entry.m_bConsiderReinforcementStrainLimit);
+   DDX_CBIndex(pDX, IDC_MOMENT, m_Entry.m_pImpl->m_MomentCapacityCriteria.OverReinforcedMomentCapacity );
+   DDX_CBItemData(pDX, IDC_NEG_MOMENT, m_Entry.m_pImpl->m_MomentCapacityCriteria.bIncludeNoncompositeMomentsForNegMomentDesign);
+   DDX_Check_Bool(pDX, IDC_INCLUDE_STRAND_FOR_NEG_MOMENT, m_Entry.m_pImpl->m_MomentCapacityCriteria.bIncludeStrandForNegMoment);
+   DDX_Check_Bool(pDX, IDC_INCLUDE_REBAR_MOMENT, m_Entry.m_pImpl->m_MomentCapacityCriteria.bIncludeRebar );
+   DDX_Check_Bool(pDX, IDC_CONSIDER_REINFORCEMENT_STRAIN_LIMITS, m_Entry.m_pImpl->m_MomentCapacityCriteria.bConsiderReinforcementStrainLimit);
 
-   DDX_Text(pDX, IDC_SLICE_COUNT, m_Entry.m_nMomentCapacitySlices);
-   DDV_MinMaxULongLong(pDX, m_Entry.m_nMomentCapacitySlices, 10, 100);
+   DDX_Text(pDX, IDC_SLICE_COUNT, m_Entry.m_pImpl->m_MomentCapacityCriteria.nMomentCapacitySlices);
+   DDV_MinMaxULongLong(pDX, m_Entry.m_pImpl->m_MomentCapacityCriteria.nMomentCapacitySlices, 10, 100);
 
    CString tag;
    if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims )
@@ -711,88 +713,88 @@ void CSpecMainSheet::ExchangeMomentCapacityData(CDataExchange* pDX)
       tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("(lambda)sqrt(f'c (MPa))") : _T("(lambda)sqrt(f'c (KSI))");
    }
 
-   DDX_UnitValueAndTag(pDX, IDC_FR,      IDC_FR_LABEL,      m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal],          pDisplayUnits->SqrtPressure );
-   DDX_UnitValueAndTag(pDX, IDC_ALWC_FR, IDC_ALWC_FR_LABEL, m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight],  pDisplayUnits->SqrtPressure );
-   DDX_UnitValueAndTag(pDX, IDC_SLWC_FR, IDC_SLWC_FR_LABEL, m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_FR,      IDC_FR_LABEL,      m_Entry.m_pImpl->m_MomentCapacityCriteria.ModulusOfRuptureCoefficient[pgsTypes::Normal],          pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_ALWC_FR, IDC_ALWC_FR_LABEL, m_Entry.m_pImpl->m_MomentCapacityCriteria.ModulusOfRuptureCoefficient[pgsTypes::AllLightweight],  pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_SLWC_FR, IDC_SLWC_FR_LABEL, m_Entry.m_pImpl->m_MomentCapacityCriteria.ModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
 
    DDX_Text(pDX, IDC_FR_UNIT,     tag);
    DDX_Text(pDX, IDC_ALWC_FR_UNIT,tag);
    DDX_Text(pDX, IDC_SLWC_FR_UNIT,tag);
 
-   DDV_UnitValueZeroOrMore(pDX, IDC_FR,      m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal],          pDisplayUnits->SqrtPressure );
-   DDV_UnitValueZeroOrMore(pDX, IDC_ALWC_FR, m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight],  pDisplayUnits->SqrtPressure );
-   DDV_UnitValueZeroOrMore(pDX, IDC_SLWC_FR, m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
+   DDV_UnitValueZeroOrMore(pDX, IDC_FR,      m_Entry.m_pImpl->m_MomentCapacityCriteria.ModulusOfRuptureCoefficient[pgsTypes::Normal],          pDisplayUnits->SqrtPressure );
+   DDV_UnitValueZeroOrMore(pDX, IDC_ALWC_FR, m_Entry.m_pImpl->m_MomentCapacityCriteria.ModulusOfRuptureCoefficient[pgsTypes::AllLightweight],  pDisplayUnits->SqrtPressure );
+   DDV_UnitValueZeroOrMore(pDX, IDC_SLWC_FR, m_Entry.m_pImpl->m_MomentCapacityCriteria.ModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
 
    // NOTE: this looks goofy, but it is correct. There is only one LWC entry for both all and sand lightweight
    // but it is easier to have 3 sets of values so the application is consistent.
-   DDX_Text(pDX,IDC_NWC_PHI_TENSION_RC,      m_Entry.m_PhiFlexureTensionRC[pgsTypes::Normal]);
-   DDX_Text(pDX,IDC_NWC_PHI_TENSION_PS,      m_Entry.m_PhiFlexureTensionPS[pgsTypes::Normal]);
-   DDX_Text(pDX,IDC_NWC_PHI_TENSION_SPLICED, m_Entry.m_PhiFlexureTensionSpliced[pgsTypes::Normal]);
-   DDX_Text(pDX,IDC_NWC_PHI_COMPRESSION,     m_Entry.m_PhiFlexureCompression[pgsTypes::Normal]);
+   DDX_Text(pDX,IDC_NWC_PHI_TENSION_RC,      m_Entry.m_pImpl->m_MomentCapacityCriteria.PhiTensionRC[pgsTypes::Normal]);
+   DDX_Text(pDX,IDC_NWC_PHI_TENSION_PS,      m_Entry.m_pImpl->m_MomentCapacityCriteria.PhiTensionPS[pgsTypes::Normal]);
+   DDX_Text(pDX,IDC_NWC_PHI_TENSION_SPLICED, m_Entry.m_pImpl->m_MomentCapacityCriteria.PhiTensionSpliced[pgsTypes::Normal]);
+   DDX_Text(pDX,IDC_NWC_PHI_COMPRESSION,     m_Entry.m_pImpl->m_MomentCapacityCriteria.PhiCompression[pgsTypes::Normal]);
 
-   DDX_Text(pDX,IDC_LWC_PHI_TENSION_RC,      m_Entry.m_PhiFlexureTensionRC[pgsTypes::AllLightweight]);
-   DDX_Text(pDX,IDC_LWC_PHI_TENSION_PS,      m_Entry.m_PhiFlexureTensionPS[pgsTypes::AllLightweight]);
-   DDX_Text(pDX,IDC_LWC_PHI_TENSION_SPLICED, m_Entry.m_PhiFlexureTensionSpliced[pgsTypes::AllLightweight]);
-   DDX_Text(pDX,IDC_LWC_PHI_COMPRESSION,     m_Entry.m_PhiFlexureCompression[pgsTypes::AllLightweight]);
+   DDX_Text(pDX,IDC_LWC_PHI_TENSION_RC,      m_Entry.m_pImpl->m_MomentCapacityCriteria.PhiTensionRC[pgsTypes::AllLightweight]);
+   DDX_Text(pDX,IDC_LWC_PHI_TENSION_PS,      m_Entry.m_pImpl->m_MomentCapacityCriteria.PhiTensionPS[pgsTypes::AllLightweight]);
+   DDX_Text(pDX,IDC_LWC_PHI_TENSION_SPLICED, m_Entry.m_pImpl->m_MomentCapacityCriteria.PhiTensionSpliced[pgsTypes::AllLightweight]);
+   DDX_Text(pDX,IDC_LWC_PHI_COMPRESSION,     m_Entry.m_pImpl->m_MomentCapacityCriteria.PhiCompression[pgsTypes::AllLightweight]);
 
-   DDX_Text(pDX,IDC_LWC_PHI_TENSION_RC,      m_Entry.m_PhiFlexureTensionRC[pgsTypes::SandLightweight]);
-   DDX_Text(pDX,IDC_LWC_PHI_TENSION_PS,      m_Entry.m_PhiFlexureTensionPS[pgsTypes::SandLightweight]);
-   DDX_Text(pDX,IDC_LWC_PHI_TENSION_SPLICED, m_Entry.m_PhiFlexureTensionSpliced[pgsTypes::SandLightweight]);
-   DDX_Text(pDX,IDC_LWC_PHI_COMPRESSION,     m_Entry.m_PhiFlexureCompression[pgsTypes::SandLightweight]);
+   DDX_Text(pDX,IDC_LWC_PHI_TENSION_RC,      m_Entry.m_pImpl->m_MomentCapacityCriteria.PhiTensionRC[pgsTypes::SandLightweight]);
+   DDX_Text(pDX,IDC_LWC_PHI_TENSION_PS,      m_Entry.m_pImpl->m_MomentCapacityCriteria.PhiTensionPS[pgsTypes::SandLightweight]);
+   DDX_Text(pDX,IDC_LWC_PHI_TENSION_SPLICED, m_Entry.m_pImpl->m_MomentCapacityCriteria.PhiTensionSpliced[pgsTypes::SandLightweight]);
+   DDX_Text(pDX,IDC_LWC_PHI_COMPRESSION,     m_Entry.m_pImpl->m_MomentCapacityCriteria.PhiCompression[pgsTypes::SandLightweight]);
 
-   DDX_Text(pDX, IDC_UHPC_PHI_TENSION_RC,      m_Entry.m_PhiFlexureTensionRC[pgsTypes::PCI_UHPC]);
-   DDX_Text(pDX, IDC_UHPC_PHI_TENSION_PS,      m_Entry.m_PhiFlexureTensionPS[pgsTypes::PCI_UHPC]);
-   DDX_Text(pDX, IDC_UHPC_PHI_TENSION_SPLICED, m_Entry.m_PhiFlexureTensionSpliced[pgsTypes::PCI_UHPC]);
-   DDX_Text(pDX, IDC_UHPC_PHI_COMPRESSION,     m_Entry.m_PhiFlexureCompression[pgsTypes::PCI_UHPC]);
+   DDX_Text(pDX, IDC_UHPC_PHI_TENSION_RC,      m_Entry.m_pImpl->m_MomentCapacityCriteria.PhiTensionRC[pgsTypes::PCI_UHPC]);
+   DDX_Text(pDX, IDC_UHPC_PHI_TENSION_PS,      m_Entry.m_pImpl->m_MomentCapacityCriteria.PhiTensionPS[pgsTypes::PCI_UHPC]);
+   DDX_Text(pDX, IDC_UHPC_PHI_TENSION_SPLICED, m_Entry.m_pImpl->m_MomentCapacityCriteria.PhiTensionSpliced[pgsTypes::PCI_UHPC]);
+   DDX_Text(pDX, IDC_UHPC_PHI_COMPRESSION,     m_Entry.m_pImpl->m_MomentCapacityCriteria.PhiCompression[pgsTypes::PCI_UHPC]);
 
-   DDX_Text(pDX, IDC_NWC_JOINT_PHI,           m_Entry.m_PhiClosureJointFlexure[pgsTypes::Normal]);
-   DDX_Text(pDX, IDC_LWC_JOINT_PHI,           m_Entry.m_PhiClosureJointFlexure[pgsTypes::AllLightweight]);
-   DDX_Text(pDX, IDC_LWC_JOINT_PHI,           m_Entry.m_PhiClosureJointFlexure[pgsTypes::SandLightweight]);
-   DDX_Text(pDX, IDC_UHPC_JOINT_PHI,          m_Entry.m_PhiClosureJointFlexure[pgsTypes::PCI_UHPC]);
+   DDX_Text(pDX, IDC_NWC_JOINT_PHI,           m_Entry.m_pImpl->m_MomentCapacityCriteria.PhiClosureJoint[pgsTypes::Normal]);
+   DDX_Text(pDX, IDC_LWC_JOINT_PHI,           m_Entry.m_pImpl->m_MomentCapacityCriteria.PhiClosureJoint[pgsTypes::AllLightweight]);
+   DDX_Text(pDX, IDC_LWC_JOINT_PHI,           m_Entry.m_pImpl->m_MomentCapacityCriteria.PhiClosureJoint[pgsTypes::SandLightweight]);
+   DDX_Text(pDX, IDC_UHPC_JOINT_PHI,          m_Entry.m_pImpl->m_MomentCapacityCriteria.PhiClosureJoint[pgsTypes::PCI_UHPC]);
 }
 
 void CSpecMainSheet::CheckShearCapacityMethod()
 {
    // makes sure the shear capacity method is consistent with the specification version that is selected
    if ( GetSpecVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 &&  // if we are before 4th Edition
-        m_Entry.m_ShearCapacityMethod == pgsTypes::scmVciVcw ) // Vci/Vcw is not a valid option
+        m_Entry.m_pImpl->m_ShearCapacityCriteria.CapacityMethod == pgsTypes::scmVciVcw ) // Vci/Vcw is not a valid option
    {
       // force to the general method
       if ( GetSpecVersion() <= WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 )
       {
-         m_Entry.m_ShearCapacityMethod = pgsTypes::scmBTTables;
+         m_Entry.m_pImpl->m_ShearCapacityCriteria.CapacityMethod = pgsTypes::scmBTTables;
       }
       else
       {
-         m_Entry.m_ShearCapacityMethod = pgsTypes::scmBTEquations;
+         m_Entry.m_pImpl->m_ShearCapacityCriteria.CapacityMethod = pgsTypes::scmBTEquations;
       }
    }
 
    // The general method from the 2007 spec becomes the tables method in the 2008 spec
    // make that adjustment here
-   if ( GetSpecVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims && m_Entry.m_ShearCapacityMethod == pgsTypes::scmBTEquations )
+   if ( GetSpecVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims && m_Entry.m_pImpl->m_ShearCapacityCriteria.CapacityMethod == pgsTypes::scmBTEquations )
    {
-      m_Entry.m_ShearCapacityMethod = pgsTypes::scmBTTables;
+      m_Entry.m_pImpl->m_ShearCapacityCriteria.CapacityMethod = pgsTypes::scmBTTables;
    }
 
    if ( GetSpecVersion() < WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims &&  // if we are before 2nd Edition + 2000
-        m_Entry.m_ShearCapacityMethod == pgsTypes::scmWSDOT2001 ) // WSDOT 2001 is not a valid option
+        m_Entry.m_pImpl->m_ShearCapacityCriteria.CapacityMethod == pgsTypes::scmWSDOT2001 ) // WSDOT 2001 is not a valid option
    {
       // force to the general method
       if ( GetSpecVersion() <= WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 )
       {
-         m_Entry.m_ShearCapacityMethod = pgsTypes::scmBTTables;
+         m_Entry.m_pImpl->m_ShearCapacityCriteria.CapacityMethod = pgsTypes::scmBTTables;
       }
       else
       {
-         m_Entry.m_ShearCapacityMethod = pgsTypes::scmBTEquations;
+         m_Entry.m_pImpl->m_ShearCapacityCriteria.CapacityMethod = pgsTypes::scmBTEquations;
       }
    }
 
    if ( GetSpecVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 &&  // if we are before 4th Edition
-        m_Entry.m_ShearCapacityMethod == pgsTypes::scmWSDOT2007 ) // WSDOT 2007 is not a valid option
+        m_Entry.m_pImpl->m_ShearCapacityCriteria.CapacityMethod == pgsTypes::scmWSDOT2007 ) // WSDOT 2007 is not a valid option
    {
-      m_Entry.m_ShearCapacityMethod = pgsTypes::scmWSDOT2001; // force to WSDOT 2001
+      m_Entry.m_pImpl->m_ShearCapacityCriteria.CapacityMethod = pgsTypes::scmWSDOT2001; // force to WSDOT 2001
    }
 }
 
@@ -801,16 +803,16 @@ void CSpecMainSheet::ExchangeShearCapacityData(CDataExchange* pDX)
    CEAFApp* pApp = EAFGetApp();
    const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
-   DDX_Check_Bool(pDX, IDC_LIMIT_STRAIN, m_Entry.m_bLimitNetTensionStrainToPositiveValues);
+   DDX_Check_Bool(pDX, IDC_LIMIT_STRAIN, m_Entry.m_pImpl->m_ShearCapacityCriteria.bLimitNetTensionStrainToPositiveValues);
 
-   DDX_CBIndex(pDX, IDC_LRSH, m_Entry.m_LongReinfShearMethod); 
-   DDX_Check_Bool(pDX, IDC_INCLUDE_REBAR_SHEAR, m_Entry.m_bIncludeRebar_Shear );
-   DDX_Check_Bool(pDX, IDC_USE_DECK_FOR_PC, m_Entry.m_bUseDeckWeightForPc);
+   DDX_CBEnum(pDX, IDC_LRSH, m_Entry.m_pImpl->m_ShearCapacityCriteria.LongitudinalReinforcementForShearMethod);
+   DDX_Check_Bool(pDX, IDC_INCLUDE_REBAR_SHEAR, m_Entry.m_pImpl->m_ShearCapacityCriteria.bIncludeRebar );
+   DDX_Check_Bool(pDX, IDC_USE_DECK_FOR_PC, m_Entry.m_pImpl->m_InterfaceShearCriteria.bUseDeckWeightForPc);
 
-   DDX_CBEnum(pDX,IDC_SHEAR_FLOW_METHOD,m_Entry.m_ShearFlowMethod);
+   DDX_CBEnum(pDX,IDC_SHEAR_FLOW_METHOD,m_Entry.m_pImpl->m_InterfaceShearCriteria.ShearFlowMethod);
 
    // we have to use item data here because the enum constants are out of order
-   DDX_CBItemData(pDX, IDC_SHEAR_CAPACITY, m_Entry.m_ShearCapacityMethod );
+   DDX_CBItemData(pDX, IDC_SHEAR_CAPACITY, m_Entry.m_pImpl->m_ShearCapacityCriteria.CapacityMethod );
 
    // Not every shear method is available with every spec. The user could have set the method
    // then changed the spec. We have keep the data valid
@@ -830,50 +832,50 @@ void CSpecMainSheet::ExchangeShearCapacityData(CDataExchange* pDX)
       tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("(lambda)sqrt(f'c (MPa))") : _T("(lambda)sqrt(f'c (KSI))");
    }
 
-   DDX_UnitValueAndTag(pDX, IDC_FR,      IDC_FR_LABEL,      m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal],          pDisplayUnits->SqrtPressure );
-   DDX_UnitValueAndTag(pDX, IDC_ALWC_FR, IDC_FR_LABEL_ALWC, m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight],  pDisplayUnits->SqrtPressure );
-   DDX_UnitValueAndTag(pDX, IDC_SLWC_FR, IDC_FR_LABEL_SLWC, m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_FR,      IDC_FR_LABEL,      m_Entry.m_pImpl->m_ShearCapacityCriteria.ModulusOfRuptureCoefficient[pgsTypes::Normal],          pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_ALWC_FR, IDC_FR_LABEL_ALWC, m_Entry.m_pImpl->m_ShearCapacityCriteria.ModulusOfRuptureCoefficient[pgsTypes::AllLightweight],  pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_SLWC_FR, IDC_FR_LABEL_SLWC, m_Entry.m_pImpl->m_ShearCapacityCriteria.ModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
 
    DDX_Text(pDX, IDC_FR_UNIT,      tag);
    DDX_Text(pDX, IDC_ALWC_FR_UNIT, tag);
    DDX_Text(pDX, IDC_SLWC_FR_UNIT, tag);
 
-   DDV_UnitValueZeroOrMore(pDX, IDC_FR ,     m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal],          pDisplayUnits->SqrtPressure );
-   DDV_UnitValueZeroOrMore(pDX, IDC_SLWC_FR, m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
-   DDV_UnitValueZeroOrMore(pDX, IDC_ALWC_FR, m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight],  pDisplayUnits->SqrtPressure );
+   DDV_UnitValueZeroOrMore(pDX, IDC_FR ,     m_Entry.m_pImpl->m_ShearCapacityCriteria.ModulusOfRuptureCoefficient[pgsTypes::Normal],          pDisplayUnits->SqrtPressure );
+   DDV_UnitValueZeroOrMore(pDX, IDC_SLWC_FR, m_Entry.m_pImpl->m_ShearCapacityCriteria.ModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
+   DDV_UnitValueZeroOrMore(pDX, IDC_ALWC_FR, m_Entry.m_pImpl->m_ShearCapacityCriteria.ModulusOfRuptureCoefficient[pgsTypes::AllLightweight],  pDisplayUnits->SqrtPressure );
 
-   DDX_Text(pDX,IDC_NWC_PHI,m_Entry.m_PhiShear[pgsTypes::Normal]);
-   DDX_Text(pDX,IDC_LWC_PHI,m_Entry.m_PhiShear[pgsTypes::SandLightweight]);
-   DDX_Text(pDX, IDC_LWC_PHI, m_Entry.m_PhiShear[pgsTypes::AllLightweight]);
-   DDX_Text(pDX, IDC_UHPC_PHI, m_Entry.m_PhiShear[pgsTypes::PCI_UHPC]);
+   DDX_Text(pDX,IDC_NWC_PHI,m_Entry.m_pImpl->m_ShearCapacityCriteria.Phi[pgsTypes::Normal]);
+   DDX_Text(pDX, IDC_LWC_PHI, m_Entry.m_pImpl->m_ShearCapacityCriteria.Phi[pgsTypes::SandLightweight]);
+   DDX_Text(pDX, IDC_LWC_PHI, m_Entry.m_pImpl->m_ShearCapacityCriteria.Phi[pgsTypes::AllLightweight]);
+   DDX_Text(pDX, IDC_UHPC_PHI, m_Entry.m_pImpl->m_ShearCapacityCriteria.Phi[pgsTypes::PCI_UHPC]);
 
-   DDX_Text(pDX,IDC_NWC_PHI_DEBOND,m_Entry.m_PhiShearDebonded[pgsTypes::Normal]);
-   DDX_Text(pDX,IDC_LWC_PHI_DEBOND,m_Entry.m_PhiShearDebonded[pgsTypes::SandLightweight]);
-   DDX_Text(pDX, IDC_LWC_PHI_DEBOND, m_Entry.m_PhiShearDebonded[pgsTypes::AllLightweight]);
-   DDX_Text(pDX, IDC_UHPC_PHI_DEBOND, m_Entry.m_PhiShearDebonded[pgsTypes::PCI_UHPC]);
+   DDX_Text(pDX,IDC_NWC_PHI_DEBOND,m_Entry.m_pImpl->m_ShearCapacityCriteria.PhiDebonded[pgsTypes::Normal]);
+   DDX_Text(pDX, IDC_LWC_PHI_DEBOND, m_Entry.m_pImpl->m_ShearCapacityCriteria.PhiDebonded[pgsTypes::SandLightweight]);
+   DDX_Text(pDX, IDC_LWC_PHI_DEBOND, m_Entry.m_pImpl->m_ShearCapacityCriteria.PhiDebonded[pgsTypes::AllLightweight]);
+   DDX_Text(pDX, IDC_UHPC_PHI_DEBOND, m_Entry.m_pImpl->m_ShearCapacityCriteria.PhiDebonded[pgsTypes::PCI_UHPC]);
 
-   DDX_Text(pDX,IDC_NWC_JOINT_PHI,  m_Entry.m_PhiClosureJointShear[pgsTypes::Normal]);
-   DDX_Text(pDX,IDC_LWC_JOINT_PHI,  m_Entry.m_PhiClosureJointShear[pgsTypes::AllLightweight]);
-   DDX_Text(pDX, IDC_LWC_JOINT_PHI, m_Entry.m_PhiClosureJointShear[pgsTypes::SandLightweight]);
-   DDX_Text(pDX, IDC_UHPC_JOINT_PHI, m_Entry.m_PhiClosureJointShear[pgsTypes::PCI_UHPC]);
+   DDX_Text(pDX,IDC_NWC_JOINT_PHI,  m_Entry.m_pImpl->m_ShearCapacityCriteria.PhiClosureJoint[pgsTypes::Normal]);
+   DDX_Text(pDX, IDC_LWC_JOINT_PHI, m_Entry.m_pImpl->m_ShearCapacityCriteria.PhiClosureJoint[pgsTypes::AllLightweight]);
+   DDX_Text(pDX, IDC_LWC_JOINT_PHI, m_Entry.m_pImpl->m_ShearCapacityCriteria.PhiClosureJoint[pgsTypes::SandLightweight]);
+   DDX_Text(pDX, IDC_UHPC_JOINT_PHI, m_Entry.m_pImpl->m_ShearCapacityCriteria.PhiClosureJoint[pgsTypes::PCI_UHPC]);
 
    if (pDX->m_bSaveAndValidate)
    {
       // these values share a single control
-      m_Entry.m_PhiShear[pgsTypes::UHPC] = m_Entry.m_PhiShear[pgsTypes::PCI_UHPC];
-      m_Entry.m_PhiShearDebonded[pgsTypes::UHPC] = m_Entry.m_PhiShearDebonded[pgsTypes::PCI_UHPC];
-      m_Entry.m_PhiClosureJointShear[pgsTypes::UHPC] = m_Entry.m_PhiClosureJointShear[pgsTypes::PCI_UHPC];
+      m_Entry.m_pImpl->m_ShearCapacityCriteria.Phi[pgsTypes::UHPC] = m_Entry.m_pImpl->m_ShearCapacityCriteria.Phi[pgsTypes::PCI_UHPC];
+      m_Entry.m_pImpl->m_ShearCapacityCriteria.PhiDebonded[pgsTypes::UHPC] = m_Entry.m_pImpl->m_ShearCapacityCriteria.PhiDebonded[pgsTypes::PCI_UHPC];
+      m_Entry.m_pImpl->m_ShearCapacityCriteria.PhiClosureJoint[pgsTypes::UHPC] = m_Entry.m_pImpl->m_ShearCapacityCriteria.PhiClosureJoint[pgsTypes::PCI_UHPC];
    }
 
-   DDX_UnitValueAndTag(pDX, IDC_SMAX, IDC_SMAX_UNIT, m_Entry.m_MaxInterfaceShearConnectorSpacing, pDisplayUnits->ComponentDim );
+   DDX_UnitValueAndTag(pDX, IDC_SMAX, IDC_SMAX_UNIT, m_Entry.m_pImpl->m_InterfaceShearCriteria.MaxInterfaceShearConnectorSpacing, pDisplayUnits->ComponentDim );
 
-   DDX_Text(pDX, IDC_SPACING_COEFFICIENT_1, m_Entry.m_StirrupSpacingCoefficient[0]);
-   DDX_UnitValueAndTag(pDX, IDC_MAX_SPACING_1, IDC_MAX_SPACING_1_UNIT, m_Entry.m_MaxStirrupSpacing[0], pDisplayUnits->ComponentDim );
-   DDX_Text(pDX, IDC_SPACING_COEFFICIENT_2, m_Entry.m_StirrupSpacingCoefficient[1]);
-   DDX_UnitValueAndTag(pDX, IDC_MAX_SPACING_2, IDC_MAX_SPACING_2_UNIT, m_Entry.m_MaxStirrupSpacing[1], pDisplayUnits->ComponentDim );
+   DDX_Text(pDX, IDC_SPACING_COEFFICIENT_1, m_Entry.m_pImpl->m_ShearCapacityCriteria.StirrupSpacingCoefficient[0]);
+   DDX_UnitValueAndTag(pDX, IDC_MAX_SPACING_1, IDC_MAX_SPACING_1_UNIT, m_Entry.m_pImpl->m_ShearCapacityCriteria.MaxStirrupSpacing[0], pDisplayUnits->ComponentDim );
+   DDX_Text(pDX, IDC_SPACING_COEFFICIENT_2, m_Entry.m_pImpl->m_ShearCapacityCriteria.StirrupSpacingCoefficient[1]);
+   DDX_UnitValueAndTag(pDX, IDC_MAX_SPACING_2, IDC_MAX_SPACING_2_UNIT, m_Entry.m_pImpl->m_ShearCapacityCriteria.MaxStirrupSpacing[1], pDisplayUnits->ComponentDim );
 
-   DDV_UnitValueGreaterThanZero(pDX, IDC_MAX_SPACING_1, m_Entry.m_MaxStirrupSpacing[0], pDisplayUnits->ComponentDim );
-   DDV_UnitValueGreaterThanZero(pDX, IDC_MAX_SPACING_2, m_Entry.m_MaxStirrupSpacing[1], pDisplayUnits->ComponentDim );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_MAX_SPACING_1, m_Entry.m_pImpl->m_ShearCapacityCriteria.MaxStirrupSpacing[0], pDisplayUnits->ComponentDim );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_MAX_SPACING_2, m_Entry.m_pImpl->m_ShearCapacityCriteria.MaxStirrupSpacing[1], pDisplayUnits->ComponentDim );
 }
 
 void CSpecMainSheet::ExchangeCreepData(CDataExchange* pDX)
@@ -882,31 +884,31 @@ void CSpecMainSheet::ExchangeCreepData(CDataExchange* pDX)
    CEAFApp* pApp = EAFGetApp();
    const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
-   DDX_UnitValueAndTag(pDX, IDC_XFER_TIME, IDC_XFER_TIME_TAG, m_Entry.m_XferTime, pDisplayUnits->Time );
-   DDV_UnitValueGreaterThanZero(pDX, IDC_XFER_TIME,m_Entry.m_XferTime, pDisplayUnits->Time );
+   DDX_UnitValueAndTag(pDX, IDC_XFER_TIME, IDC_XFER_TIME_TAG, m_Entry.m_pImpl->m_CreepCriteria.XferTime, pDisplayUnits->Time );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_XFER_TIME,m_Entry.m_pImpl->m_CreepCriteria.XferTime, pDisplayUnits->Time );
 
-   DDX_UnitValueAndTag(pDX, IDC_CREEP_DURATION1_MIN, IDC_CREEP_DURATION1_TAG, m_Entry.m_CreepDuration1Min, pDisplayUnits->Time2 );
-   DDV_UnitValueGreaterThanZero(pDX, IDC_CREEP_DURATION1_MIN,m_Entry.m_CreepDuration1Min, pDisplayUnits->Time2 );
+   DDX_UnitValueAndTag(pDX, IDC_CREEP_DURATION1_MIN, IDC_CREEP_DURATION1_TAG, m_Entry.m_pImpl->m_CreepCriteria.CreepDuration1Min, pDisplayUnits->Time2 );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_CREEP_DURATION1_MIN,m_Entry.m_pImpl->m_CreepCriteria.CreepDuration1Min, pDisplayUnits->Time2 );
 
-   DDX_UnitValueAndTag(pDX, IDC_CREEP_DURATION1_MAX, IDC_CREEP_DURATION1_TAG, m_Entry.m_CreepDuration1Max, pDisplayUnits->Time2 );
-   DDV_UnitValueLimitOrMore(pDX, IDC_CREEP_DURATION1_MAX,m_Entry.m_CreepDuration1Max, m_Entry.m_CreepDuration1Min, pDisplayUnits->Time2 );
+   DDX_UnitValueAndTag(pDX, IDC_CREEP_DURATION1_MAX, IDC_CREEP_DURATION1_TAG, m_Entry.m_pImpl->m_CreepCriteria.CreepDuration1Max, pDisplayUnits->Time2 );
+   DDV_UnitValueLimitOrMore(pDX, IDC_CREEP_DURATION1_MAX,m_Entry.m_pImpl->m_CreepCriteria.CreepDuration1Max, m_Entry.m_pImpl->m_CreepCriteria.CreepDuration1Min, pDisplayUnits->Time2 );
 
-   DDX_UnitValueAndTag(pDX, IDC_CREEP_DURATION2_MIN, IDC_CREEP_DURATION2_TAG, m_Entry.m_CreepDuration2Min, pDisplayUnits->Time2 );
-   DDV_UnitValueGreaterThanLimit(pDX, IDC_CREEP_DURATION2_MIN,m_Entry.m_CreepDuration2Min, m_Entry.m_XferTime, pDisplayUnits->Time2 );
+   DDX_UnitValueAndTag(pDX, IDC_CREEP_DURATION2_MIN, IDC_CREEP_DURATION2_TAG, m_Entry.m_pImpl->m_CreepCriteria.CreepDuration2Min, pDisplayUnits->Time2 );
+   DDV_UnitValueGreaterThanLimit(pDX, IDC_CREEP_DURATION2_MIN,m_Entry.m_pImpl->m_CreepCriteria.CreepDuration2Min, m_Entry.m_pImpl->m_CreepCriteria.XferTime, pDisplayUnits->Time2 );
 
-   DDX_UnitValueAndTag(pDX, IDC_CREEP_DURATION2_MAX, IDC_CREEP_DURATION2_TAG, m_Entry.m_CreepDuration2Max, pDisplayUnits->Time2 );
-   DDV_UnitValueLimitOrMore(pDX, IDC_CREEP_DURATION2_MAX,m_Entry.m_CreepDuration2Max, m_Entry.m_CreepDuration2Min, pDisplayUnits->Time2 );
+   DDX_UnitValueAndTag(pDX, IDC_CREEP_DURATION2_MAX, IDC_CREEP_DURATION2_TAG, m_Entry.m_pImpl->m_CreepCriteria.CreepDuration2Max, pDisplayUnits->Time2 );
+   DDV_UnitValueLimitOrMore(pDX, IDC_CREEP_DURATION2_MAX,m_Entry.m_pImpl->m_CreepCriteria.CreepDuration2Max, m_Entry.m_pImpl->m_CreepCriteria.CreepDuration2Min, pDisplayUnits->Time2 );
 
    if ( pDX->m_bSaveAndValidate )
    {
-      if ( m_Entry.m_CreepDuration2Min < m_Entry.m_CreepDuration1Min )
+      if ( m_Entry.m_pImpl->m_CreepCriteria.CreepDuration2Min < m_Entry.m_pImpl->m_CreepCriteria.CreepDuration1Min )
       {
          pDX->PrepareEditCtrl(IDC_CREEP_DURATION2_MIN);
          AfxMessageBox(_T("The time from prestress transfer to deck casting must be greater than the time from prestress transfer to temporary strand removal/diaphragm casting."));
          pDX->Fail();
       }
 
-      if ( m_Entry.m_CreepDuration2Max < m_Entry.m_CreepDuration1Max )
+      if ( m_Entry.m_pImpl->m_CreepCriteria.CreepDuration2Max < m_Entry.m_pImpl->m_CreepCriteria.CreepDuration1Max )
       {
          pDX->PrepareEditCtrl(IDC_CREEP_DURATION2_MAX);
          AfxMessageBox(_T("The time from prestress transfer to deck casting must be greater than the time from prestress transfer to temporary strand removal/diaphragm casting."));
@@ -914,35 +916,35 @@ void CSpecMainSheet::ExchangeCreepData(CDataExchange* pDX)
       }
    }
 
-   DDX_UnitValueAndTag(pDX, IDC_NC_CREEP, IDC_NC_CREEP_TAG, m_Entry.m_TotalCreepDuration, pDisplayUnits->Time2 );
-   DDV_UnitValueLimitOrMore(pDX, IDC_NC_CREEP,m_Entry.m_TotalCreepDuration, m_Entry.m_CreepDuration2Min, pDisplayUnits->Time2 );
+   DDX_UnitValueAndTag(pDX, IDC_NC_CREEP, IDC_NC_CREEP_TAG, m_Entry.m_pImpl->m_CreepCriteria.TotalCreepDuration, pDisplayUnits->Time2 );
+   DDV_UnitValueLimitOrMore(pDX, IDC_NC_CREEP,m_Entry.m_pImpl->m_CreepCriteria.TotalCreepDuration, m_Entry.m_pImpl->m_CreepCriteria.CreepDuration2Min, pDisplayUnits->Time2 );
 
-   DDX_Radio(pDX,IDC_CURING_METHOD,m_Entry.m_CuringMethod);
+   DDX_RadioEnum(pDX,IDC_CURING_METHOD,m_Entry.m_pImpl->m_CreepCriteria.CuringMethod);
 
-   DDX_Text(pDX,IDC_CURING_TIME_FACTOR,m_Entry.m_CuringMethodTimeAdjustmentFactor);
-   DDV_MinMaxDouble(pDX,m_Entry.m_CuringMethodTimeAdjustmentFactor,1,999);
+   DDX_Text(pDX,IDC_CURING_TIME_FACTOR,m_Entry.m_pImpl->m_CreepCriteria.CuringMethodTimeAdjustmentFactor);
+   DDV_MinMaxDouble(pDX,m_Entry.m_pImpl->m_CreepCriteria.CuringMethodTimeAdjustmentFactor,1,999);
 
-   DDX_Percentage(pDX,IDC_CAMBER_VARIABILITY, m_Entry.m_CamberVariability);
+   DDX_Percentage(pDX,IDC_CAMBER_VARIABILITY, m_Entry.m_pImpl->m_CreepCriteria.CamberVariability);
    if ( pDX->m_bSaveAndValidate )
    {
-      Float64 val = m_Entry.m_CamberVariability * 100.0;
+      Float64 val = m_Entry.m_pImpl->m_CreepCriteria.CamberVariability * 100.0;
       DDV_Range( pDX, mfcDDV::LE,mfcDDV::GE,val,0.0,100.0);
    }
 
    // computation of haunch load
-   DDX_CBEnum(pDX, IDC_HAUNCH_COMP_CB,m_Entry.m_HaunchLoadComputationType);
-   DDX_UnitValueAndTag(pDX, IDC_HAUNCH_TOLER, IDC_HAUNCH_TOLER_UNIT, m_Entry.m_HaunchLoadCamberTolerance, pDisplayUnits->ComponentDim);
-   DDV_UnitValueGreaterThanZero(pDX, IDC_HAUNCH_TOLER,m_Entry.m_HaunchLoadCamberTolerance, pDisplayUnits->ComponentDim );
+   DDX_CBEnum(pDX, IDC_HAUNCH_COMP_CB,m_Entry.m_pImpl->m_HaunchCriteria.HaunchLoadComputationType);
+   DDX_UnitValueAndTag(pDX, IDC_HAUNCH_TOLER, IDC_HAUNCH_TOLER_UNIT, m_Entry.m_pImpl->m_HaunchCriteria.HaunchLoadCamberTolerance, pDisplayUnits->ComponentDim);
+   DDV_UnitValueGreaterThanZero(pDX, IDC_HAUNCH_TOLER,m_Entry.m_pImpl->m_HaunchCriteria.HaunchLoadCamberTolerance, pDisplayUnits->ComponentDim );
 
-   DDX_Percentage(pDX, IDC_HAUNCH_FACTOR, m_Entry.m_HaunchLoadCamberFactor);
+   DDX_Percentage(pDX, IDC_HAUNCH_FACTOR, m_Entry.m_pImpl->m_HaunchCriteria.HaunchLoadCamberFactor);
    if (pDX->m_bSaveAndValidate)
    {
-      if (0.0 >= m_Entry.m_HaunchLoadCamberFactor)
+      if (0.0 >= m_Entry.m_pImpl->m_HaunchCriteria.HaunchLoadCamberFactor)
       {
          ::AfxMessageBox(_T("Haunch load camber factor must be greater than zero. If you want zero camber, select the flat girder (zero camber) option"));
          pDX->Fail();
       }
-      else if (1.0 < m_Entry.m_HaunchLoadCamberFactor)
+      else if (1.0 < m_Entry.m_pImpl->m_HaunchCriteria.HaunchLoadCamberFactor)
       {
          ::AfxMessageBox(_T("Haunch load camber factor must be less than or equal to 100%"));
          pDX->Fail();
@@ -950,7 +952,7 @@ void CSpecMainSheet::ExchangeCreepData(CDataExchange* pDX)
    }   
 
    // computation of haunch composite section properties
-   DDX_CBEnum(pDX, IDC_HAUNCH_COMP_PROPS_CB,m_Entry.m_HaunchAnalysisSectionPropertiesType);
+   DDX_CBEnum(pDX, IDC_HAUNCH_COMP_PROPS_CB,m_Entry.m_pImpl->m_HaunchCriteria.HaunchAnalysisSectionPropertiesType);
 }
 
 void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
@@ -958,35 +960,37 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
    CEAFApp* pApp = EAFGetApp();
    const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
-   DDX_UnitValueAndTag(pDX, IDC_SHIPPING_TIME, IDC_SHIPPING_TIME_TAG, m_Entry.m_ShippingTime, pDisplayUnits->Time2);
+   DDX_UnitValueAndTag(pDX, IDC_SHIPPING_TIME, IDC_SHIPPING_TIME_TAG, m_Entry.m_pImpl->m_PrestressLossCriteria.ShippingTime, pDisplayUnits->Time2);
 
-   DDX_Percentage(pDX,IDC_EG_SLAB,m_Entry.m_SlabElasticGain);
-   DDX_Percentage(pDX,IDC_EG_SLABPAD,m_Entry.m_SlabPadElasticGain);
-   DDX_Percentage(pDX,IDC_EG_DIAPHRAGM,m_Entry.m_DiaphragmElasticGain);
-   DDX_Percentage(pDX,IDC_EG_DC_BS2,m_Entry.m_UserDCElasticGainBS1);
-   DDX_Percentage(pDX,IDC_EG_DW_BS2,m_Entry.m_UserDWElasticGainBS1);
-   DDX_Percentage(pDX,IDC_EG_DC_BS3,m_Entry.m_UserDCElasticGainBS2);
-   DDX_Percentage(pDX,IDC_EG_DW_BS3,m_Entry.m_UserDWElasticGainBS2);
-   DDX_Percentage(pDX,IDC_EG_RAILING,m_Entry.m_RailingSystemElasticGain);
-   DDX_Percentage(pDX,IDC_EG_OVERLAY,m_Entry.m_OverlayElasticGain);
-   DDX_Percentage(pDX,IDC_EG_SHRINKAGE,m_Entry.m_SlabShrinkageElasticGain);
-   DDX_Percentage(pDX,IDC_EG_LIVELOAD,m_Entry.m_LiveLoadElasticGain);
+   DDX_Percentage(pDX,IDC_EG_SLAB,m_Entry.m_pImpl->m_PrestressLossCriteria.SlabElasticGain);
+   DDX_Percentage(pDX,IDC_EG_SLABPAD,m_Entry.m_pImpl->m_PrestressLossCriteria.SlabPadElasticGain);
+   DDX_Percentage(pDX,IDC_EG_DIAPHRAGM,m_Entry.m_pImpl->m_PrestressLossCriteria.DiaphragmElasticGain);
+   DDX_Percentage(pDX,IDC_EG_DC_BS2,m_Entry.m_pImpl->m_PrestressLossCriteria.UserDCElasticGain_BeforeDeckPlacement);
+   DDX_Percentage(pDX,IDC_EG_DW_BS2,m_Entry.m_pImpl->m_PrestressLossCriteria.UserDWElasticGain_BeforeDeckPlacement);
+   DDX_Percentage(pDX,IDC_EG_DC_BS3,m_Entry.m_pImpl->m_PrestressLossCriteria.UserDCElasticGain_AfterDeckPlacement);
+   DDX_Percentage(pDX,IDC_EG_DW_BS3,m_Entry.m_pImpl->m_PrestressLossCriteria.UserDWElasticGain_AfterDeckPlacement);
+   DDX_Percentage(pDX,IDC_EG_RAILING,m_Entry.m_pImpl->m_PrestressLossCriteria.RailingSystemElasticGain);
+   DDX_Percentage(pDX,IDC_EG_OVERLAY,m_Entry.m_pImpl->m_PrestressLossCriteria.OverlayElasticGain);
+   DDX_Percentage(pDX,IDC_EG_SHRINKAGE,m_Entry.m_pImpl->m_PrestressLossCriteria.SlabShrinkageElasticGain);
+   DDX_Percentage(pDX,IDC_EG_LIVELOAD,m_Entry.m_pImpl->m_PrestressLossCriteria.LiveLoadElasticGain);
 
-   DDX_CBEnum(pDX,IDC_RELAXATION_LOSS_METHOD,m_Entry.m_RelaxationLossMethod);
-   DDX_CBEnum(pDX,IDC_FCPG_COMBO,m_Entry.m_FcgpComputationMethod);
+   DDX_CBEnum(pDX,IDC_RELAXATION_LOSS_METHOD,m_Entry.m_pImpl->m_PrestressLossCriteria.RelaxationLossMethod);
+   DDX_CBEnum(pDX,IDC_FCPG_COMBO,m_Entry.m_pImpl->m_PrestressLossCriteria.FcgpComputationMethod);
 
    // have to map loss method to comb box ordering in dialog
-   int map[] = {LOSSES_AASHTO_REFINED,
-                LOSSES_WSDOT_REFINED,
-                LOSSES_TXDOT_REFINED_2004,
-                LOSSES_TXDOT_REFINED_2013,
-                LOSSES_AASHTO_LUMPSUM,
-                LOSSES_WSDOT_LUMPSUM,
-                LOSSES_TIME_STEP};
+   PrestressLossCriteria::LossMethodType map[] ={
+      PrestressLossCriteria::LossMethodType::AASHTO_REFINED,
+      PrestressLossCriteria::LossMethodType::WSDOT_REFINED,
+      PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2004,
+      PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2013,
+      PrestressLossCriteria::LossMethodType::AASHTO_LUMPSUM,
+      PrestressLossCriteria::LossMethodType::WSDOT_LUMPSUM,
+      PrestressLossCriteria::LossMethodType::TIME_STEP
+   };
 
    int map_size = sizeof(map)/sizeof(int);
 
-   DDX_CBItemData(pDX,IDC_TIME_DEPENDENT_MODEL,m_Entry.m_TimeDependentModel);
+   DDX_CBItemData(pDX,IDC_TIME_DEPENDENT_MODEL,m_Entry.m_pImpl->m_PrestressLossCriteria.TimeDependentConcreteModel);
 
    if ( pDX->m_bSaveAndValidate )
    {
@@ -994,7 +998,7 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
       int rad_ord;
       DDX_CBIndex(pDX,IDC_LOSS_METHOD,rad_ord);
       ATLASSERT(0 <= rad_ord && rad_ord < map_size);
-      m_Entry.m_LossMethod = map[rad_ord];
+      m_Entry.m_pImpl->m_PrestressLossCriteria.LossMethod = map[rad_ord];
 
       CComPtr<IBroker> pBroker;
       EAFGetBroker(&pBroker);
@@ -1002,7 +1006,7 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
       {
          CComPtr<IDocumentType> pDocType;
          pBroker->GetInterface(IID_IDocumentType,(IUnknown**)&pDocType);
-         if ( pDocType->IsPGSpliceDocument() && m_Entry.m_LossMethod != LOSSES_TIME_STEP && 0 <  m_Entry.GetRefCount() )
+         if ( pDocType->IsPGSpliceDocument() && m_Entry.m_pImpl->m_PrestressLossCriteria.LossMethod != PrestressLossCriteria::LossMethodType::TIME_STEP && 0 <  m_Entry.GetRefCount() )
          {
             AfxMessageBox(_T("Time-step method must be selected for spliced girder bridges"));
             pDX->PrepareCtrl(IDC_LOSS_METHOD);
@@ -1010,12 +1014,12 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
          }
       }
 
-      if (m_Entry.m_SectionPropertyMode == pgsTypes::spmGross && m_Entry.m_LossMethod == LOSSES_TIME_STEP )
+      if (m_Entry.m_pImpl->m_SectionPropertiesCriteria.SectionPropertyMode == pgsTypes::spmGross && m_Entry.m_pImpl->m_PrestressLossCriteria.LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP )
       {
          int result = AfxMessageBox(_T("Time-step method can only be used with transformed section properties.\n\nWould you like to change the section properties to transformed?"),MB_YESNO);
          if (result == IDYES )
          {
-            m_Entry.m_SectionPropertyMode = pgsTypes::spmTransformed;
+            m_Entry.m_pImpl->m_SectionPropertiesCriteria.SectionPropertyMode = pgsTypes::spmTransformed;
          }
          else
          {
@@ -1024,15 +1028,15 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
          }
       }
 
-      if ( m_Entry.m_LossMethod == LOSSES_AASHTO_REFINED || m_Entry.m_LossMethod == LOSSES_WSDOT_REFINED || 
-           m_Entry.m_LossMethod == LOSSES_AASHTO_LUMPSUM || m_Entry.m_LossMethod == LOSSES_WSDOT_LUMPSUM ||
-           m_Entry.m_LossMethod == LOSSES_TXDOT_REFINED_2004 || m_Entry.m_LossMethod == LOSSES_TXDOT_REFINED_2013)
+      if ( m_Entry.m_pImpl->m_PrestressLossCriteria.LossMethod == PrestressLossCriteria::LossMethodType::AASHTO_REFINED || m_Entry.m_pImpl->m_PrestressLossCriteria.LossMethod == PrestressLossCriteria::LossMethodType::WSDOT_REFINED ||
+         m_Entry.m_pImpl->m_PrestressLossCriteria.LossMethod == PrestressLossCriteria::LossMethodType::AASHTO_LUMPSUM || m_Entry.m_pImpl->m_PrestressLossCriteria.LossMethod == PrestressLossCriteria::LossMethodType::WSDOT_LUMPSUM ||
+         m_Entry.m_pImpl->m_PrestressLossCriteria.LossMethod == PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2004 || m_Entry.m_pImpl->m_PrestressLossCriteria.LossMethod == PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2013)
       {
          DDX_CBIndex(pDX,IDC_SHIPPING_LOSS_METHOD,rad_ord);
          if( rad_ord == 0 )
          {
             // Lump sum shipping loss
-      	   DDX_UnitValueAndTag(pDX, IDC_SHIPPING, IDC_SHIPPING_TAG, m_Entry.m_ShippingLosses, pDisplayUnits->Stress);
+      	   DDX_UnitValueAndTag(pDX, IDC_SHIPPING, IDC_SHIPPING_TAG, m_Entry.m_pImpl->m_PrestressLossCriteria.ShippingLosses, pDisplayUnits->Stress);
          }
          else
          {
@@ -1040,12 +1044,12 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
             Float64 value;
             DDX_Text(pDX,IDC_SHIPPING,value);
             value /= -100.0;
-            m_Entry.m_ShippingLosses = value;
+            m_Entry.m_pImpl->m_PrestressLossCriteria.ShippingLosses = value;
          }
       }
       else
       {
-         m_Entry.m_ShippingLosses = 0;
+         m_Entry.m_pImpl->m_PrestressLossCriteria.ShippingLosses = 0;
       }
    }
    else
@@ -1053,7 +1057,7 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
       // Data is going into the dialog
       // check buttons - map to loss method
       int idx=0;
-      while(m_Entry.m_LossMethod != map[idx])
+      while(m_Entry.m_pImpl->m_PrestressLossCriteria.LossMethod != map[idx])
       {
          ATLASSERT(idx<map_size);
          if (map_size < idx)
@@ -1067,10 +1071,10 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
       DDX_CBIndex(pDX,IDC_LOSS_METHOD,idx);
 
       Float64 dummy = 0;
-      if ( m_Entry.m_ShippingLosses < 0 )
+      if ( m_Entry.m_pImpl->m_PrestressLossCriteria.ShippingLosses < 0 )
       {
          /// Shipping losses are fractional
-         Float64 value = m_Entry.m_ShippingLosses * -100.0;
+         Float64 value = m_Entry.m_pImpl->m_PrestressLossCriteria.ShippingLosses * -100.0;
          DDX_Text(pDX,IDC_SHIPPING,value);
 
          CString strTag(_T("%"));
@@ -1081,7 +1085,7 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
       }
       else
       {
-   	   DDX_UnitValueAndTag(pDX, IDC_SHIPPING,  IDC_SHIPPING_TAG,  m_Entry.m_ShippingLosses, pDisplayUnits->Stress);
+   	   DDX_UnitValueAndTag(pDX, IDC_SHIPPING,  IDC_SHIPPING_TAG,  m_Entry.m_pImpl->m_PrestressLossCriteria.ShippingLosses, pDisplayUnits->Stress);
 
          idx = 0;
          DDX_CBIndex(pDX,IDC_SHIPPING_LOSS_METHOD,idx);
@@ -1092,78 +1096,71 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
 void CSpecMainSheet::ExchangeStrandData(CDataExchange* pDX)
 {
    // Strand Data
-   DDX_Check_Bool(pDX, IDC_CHECK_PS_AT_JACKING, m_Entry.m_bCheckStrandStress[CSS_AT_JACKING]);
- 	DDX_Text(pDX, IDC_PS_AT_JACKING_SR, m_Entry.m_StrandStressCoeff[CSS_AT_JACKING][STRESS_REL]);
-   DDV_GreaterThanZero(pDX, IDC_PS_AT_JACKING_SR, m_Entry.m_StrandStressCoeff[CSS_AT_JACKING][STRESS_REL]);
- 	DDX_Text(pDX, IDC_PS_AT_JACKING_LR, m_Entry.m_StrandStressCoeff[CSS_AT_JACKING][LOW_RELAX]);
-   DDV_GreaterThanZero(pDX, IDC_PS_AT_JACKING_LR, m_Entry.m_StrandStressCoeff[CSS_AT_JACKING][LOW_RELAX]);
+   DDX_Check_Bool(pDX, IDC_CHECK_PS_AT_JACKING, m_Entry.m_pImpl->m_StrandStressCriteria.bCheckStrandStress[+StrandStressCriteria::CheckStage::AtJacking]);
+ 	DDX_Text(pDX, IDC_PS_AT_JACKING_SR, m_Entry.m_pImpl->m_StrandStressCriteria.StrandStressCoeff[+StrandStressCriteria::CheckStage::AtJacking][+StrandStressCriteria::StrandType::StressRelieved]);
+   DDV_GreaterThanZero(pDX, IDC_PS_AT_JACKING_SR, m_Entry.m_pImpl->m_StrandStressCriteria.StrandStressCoeff[+StrandStressCriteria::CheckStage::AtJacking][+StrandStressCriteria::StrandType::StressRelieved]);
+ 	DDX_Text(pDX, IDC_PS_AT_JACKING_LR, m_Entry.m_pImpl->m_StrandStressCriteria.StrandStressCoeff[+StrandStressCriteria::CheckStage::AtJacking][+StrandStressCriteria::StrandType::LowRelaxation]);
+   DDV_GreaterThanZero(pDX, IDC_PS_AT_JACKING_LR, m_Entry.m_pImpl->m_StrandStressCriteria.StrandStressCoeff[+StrandStressCriteria::CheckStage::AtJacking][+StrandStressCriteria::StrandType::LowRelaxation]);
 
-   DDX_Check_Bool(pDX, IDC_CHECK_PS_BEFORE_TRANSFER, m_Entry.m_bCheckStrandStress[CSS_BEFORE_TRANSFER]);
- 	DDX_Text(pDX, IDC_PS_BEFORE_TRANSFER_SR, m_Entry.m_StrandStressCoeff[CSS_BEFORE_TRANSFER][STRESS_REL]);
-   DDV_GreaterThanZero(pDX, IDC_PS_BEFORE_TRANSFER_SR, m_Entry.m_StrandStressCoeff[CSS_BEFORE_TRANSFER][STRESS_REL]);
- 	DDX_Text(pDX, IDC_PS_BEFORE_TRANSFER_LR, m_Entry.m_StrandStressCoeff[CSS_BEFORE_TRANSFER][LOW_RELAX]);
-   DDV_GreaterThanZero(pDX, IDC_PS_BEFORE_TRANSFER_LR, m_Entry.m_StrandStressCoeff[CSS_BEFORE_TRANSFER][LOW_RELAX]);
+   DDX_Check_Bool(pDX, IDC_CHECK_PS_BEFORE_TRANSFER, m_Entry.m_pImpl->m_StrandStressCriteria.bCheckStrandStress[+StrandStressCriteria::CheckStage::BeforeTransfer]);
+ 	DDX_Text(pDX, IDC_PS_BEFORE_TRANSFER_SR, m_Entry.m_pImpl->m_StrandStressCriteria.StrandStressCoeff[+StrandStressCriteria::CheckStage::BeforeTransfer][+StrandStressCriteria::StrandType::StressRelieved]);
+   DDV_GreaterThanZero(pDX, IDC_PS_BEFORE_TRANSFER_SR, m_Entry.m_pImpl->m_StrandStressCriteria.StrandStressCoeff[+StrandStressCriteria::CheckStage::BeforeTransfer][+StrandStressCriteria::StrandType::StressRelieved]);
+ 	DDX_Text(pDX, IDC_PS_BEFORE_TRANSFER_LR, m_Entry.m_pImpl->m_StrandStressCriteria.StrandStressCoeff[+StrandStressCriteria::CheckStage::BeforeTransfer][+StrandStressCriteria::StrandType::LowRelaxation]);
+   DDV_GreaterThanZero(pDX, IDC_PS_BEFORE_TRANSFER_LR, m_Entry.m_pImpl->m_StrandStressCriteria.StrandStressCoeff[+StrandStressCriteria::CheckStage::BeforeTransfer][+StrandStressCriteria::StrandType::LowRelaxation]);
 
-   DDX_Check_Bool(pDX, IDC_CHECK_PS_AFTER_TRANSFER, m_Entry.m_bCheckStrandStress[CSS_AFTER_TRANSFER]);
- 	DDX_Text(pDX, IDC_PS_AFTER_TRANSFER_SR, m_Entry.m_StrandStressCoeff[CSS_AFTER_TRANSFER][STRESS_REL]);
-   DDV_GreaterThanZero(pDX, IDC_PS_AFTER_TRANSFER_SR, m_Entry.m_StrandStressCoeff[CSS_AFTER_TRANSFER][STRESS_REL]);
- 	DDX_Text(pDX, IDC_PS_AFTER_TRANSFER_LR, m_Entry.m_StrandStressCoeff[CSS_AFTER_TRANSFER][LOW_RELAX]);
-   DDV_GreaterThanZero(pDX, IDC_PS_AFTER_TRANSFER_LR, m_Entry.m_StrandStressCoeff[CSS_AFTER_TRANSFER][LOW_RELAX]);
+   DDX_Check_Bool(pDX, IDC_CHECK_PS_AFTER_TRANSFER, m_Entry.m_pImpl->m_StrandStressCriteria.bCheckStrandStress[+StrandStressCriteria::CheckStage::AfterTransfer]);
+ 	DDX_Text(pDX, IDC_PS_AFTER_TRANSFER_SR, m_Entry.m_pImpl->m_StrandStressCriteria.StrandStressCoeff[+StrandStressCriteria::CheckStage::AfterTransfer][+StrandStressCriteria::StrandType::StressRelieved]);
+   DDV_GreaterThanZero(pDX, IDC_PS_AFTER_TRANSFER_SR, m_Entry.m_pImpl->m_StrandStressCriteria.StrandStressCoeff[+StrandStressCriteria::CheckStage::AfterTransfer][+StrandStressCriteria::StrandType::StressRelieved]);
+ 	DDX_Text(pDX, IDC_PS_AFTER_TRANSFER_LR, m_Entry.m_pImpl->m_StrandStressCriteria.StrandStressCoeff[+StrandStressCriteria::CheckStage::AfterTransfer][+StrandStressCriteria::StrandType::LowRelaxation]);
+   DDV_GreaterThanZero(pDX, IDC_PS_AFTER_TRANSFER_LR, m_Entry.m_pImpl->m_StrandStressCriteria.StrandStressCoeff[+StrandStressCriteria::CheckStage::AfterTransfer][+StrandStressCriteria::StrandType::LowRelaxation]);
 
-   m_Entry.m_bCheckStrandStress[CSS_AFTER_ALL_LOSSES] = true;
- 	DDX_Text(pDX, IDC_PS_AFTER_ALL_LOSSES_SR, m_Entry.m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL]);
-   DDV_GreaterThanZero(pDX, IDC_PS_AFTER_ALL_LOSSES_SR, m_Entry.m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL]);
- 	DDX_Text(pDX, IDC_PS_AFTER_ALL_LOSSES_LR, m_Entry.m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX]);
-   DDV_GreaterThanZero(pDX, IDC_PS_AFTER_ALL_LOSSES_LR, m_Entry.m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX]);
+   m_Entry.m_pImpl->m_StrandStressCriteria.bCheckStrandStress[+StrandStressCriteria::CheckStage::AfterAllLosses] = true;
+ 	DDX_Text(pDX, IDC_PS_AFTER_ALL_LOSSES_SR, m_Entry.m_pImpl->m_StrandStressCriteria.StrandStressCoeff[+StrandStressCriteria::CheckStage::AfterAllLosses][+StrandStressCriteria::StrandType::StressRelieved]);
+   DDV_GreaterThanZero(pDX, IDC_PS_AFTER_ALL_LOSSES_SR, m_Entry.m_pImpl->m_StrandStressCriteria.StrandStressCoeff[+StrandStressCriteria::CheckStage::AfterAllLosses][+StrandStressCriteria::StrandType::StressRelieved]);
+ 	DDX_Text(pDX, IDC_PS_AFTER_ALL_LOSSES_LR, m_Entry.m_pImpl->m_StrandStressCriteria.StrandStressCoeff[+StrandStressCriteria::CheckStage::AfterAllLosses][+StrandStressCriteria::StrandType::LowRelaxation]);
+   DDV_GreaterThanZero(pDX, IDC_PS_AFTER_ALL_LOSSES_LR, m_Entry.m_pImpl->m_StrandStressCriteria.StrandStressCoeff[+StrandStressCriteria::CheckStage::AfterAllLosses][+StrandStressCriteria::StrandType::LowRelaxation]);
 
    // Tendon Data
-   DDX_Check_Bool(pDX, IDC_CHECK_PT_AT_JACKING, m_Entry.m_bCheckTendonStressAtJacking);
-   DDX_Text(pDX,IDC_PT_AT_JACKING_SR,m_Entry.m_TendonStressCoeff[CSS_AT_JACKING][STRESS_REL]);
-   DDV_GreaterThanZero(pDX, IDC_PT_AT_JACKING_SR, m_Entry.m_TendonStressCoeff[CSS_AT_JACKING][STRESS_REL]);
-   DDX_Text(pDX,IDC_PT_AT_JACKING_LR,m_Entry.m_TendonStressCoeff[CSS_AT_JACKING][LOW_RELAX]);
-   DDV_GreaterThanZero(pDX, IDC_PT_AT_JACKING_LR, m_Entry.m_TendonStressCoeff[CSS_AT_JACKING][LOW_RELAX]);
+   DDX_Check_Bool(pDX, IDC_CHECK_PT_AT_JACKING, m_Entry.m_pImpl->m_TendonStressCriteria.bCheckAtJacking);
+   DDX_Text(pDX,IDC_PT_AT_JACKING_SR,m_Entry.m_pImpl->m_TendonStressCriteria.TendonStressCoeff[+TendonStressCriteria::CheckStage::AtJacking][+TendonStressCriteria::StrandType::StressRelieved]);
+   DDV_GreaterThanZero(pDX, IDC_PT_AT_JACKING_SR, m_Entry.m_pImpl->m_TendonStressCriteria.TendonStressCoeff[+TendonStressCriteria::CheckStage::AtJacking][+TendonStressCriteria::StrandType::StressRelieved]);
+   DDX_Text(pDX,IDC_PT_AT_JACKING_LR,m_Entry.m_pImpl->m_TendonStressCriteria.TendonStressCoeff[+TendonStressCriteria::CheckStage::AtJacking][+TendonStressCriteria::StrandType::LowRelaxation]);
+   DDV_GreaterThanZero(pDX, IDC_PT_AT_JACKING_LR, m_Entry.m_pImpl->m_TendonStressCriteria.TendonStressCoeff[+TendonStressCriteria::CheckStage::AtJacking][+TendonStressCriteria::StrandType::LowRelaxation]);
 
-   DDX_Check_Bool(pDX, IDC_CHECK_PT_BEFORE_TRANSFER, m_Entry.m_bCheckTendonStressPriorToSeating);
-   DDX_Text(pDX,IDC_PT_BEFORE_TRANSFER_SR,m_Entry.m_TendonStressCoeff[CSS_PRIOR_TO_SEATING][STRESS_REL]);
-   DDV_GreaterThanZero(pDX, IDC_PT_BEFORE_TRANSFER_SR, m_Entry.m_TendonStressCoeff[CSS_PRIOR_TO_SEATING][STRESS_REL]);
-   DDX_Text(pDX,IDC_PT_BEFORE_TRANSFER_LR,m_Entry.m_TendonStressCoeff[CSS_PRIOR_TO_SEATING][LOW_RELAX]);
-   DDV_GreaterThanZero(pDX, IDC_PT_BEFORE_TRANSFER_LR, m_Entry.m_TendonStressCoeff[CSS_PRIOR_TO_SEATING][LOW_RELAX]);
+   DDX_Check_Bool(pDX, IDC_CHECK_PT_BEFORE_TRANSFER, m_Entry.m_pImpl->m_TendonStressCriteria.bCheckPriorToSeating);
+   DDX_Text(pDX,IDC_PT_BEFORE_TRANSFER_SR,m_Entry.m_pImpl->m_TendonStressCriteria.TendonStressCoeff[+TendonStressCriteria::CheckStage::PriorToSeating][+TendonStressCriteria::StrandType::StressRelieved]);
+   DDV_GreaterThanZero(pDX, IDC_PT_BEFORE_TRANSFER_SR, m_Entry.m_pImpl->m_TendonStressCriteria.TendonStressCoeff[+TendonStressCriteria::CheckStage::PriorToSeating][+TendonStressCriteria::StrandType::StressRelieved]);
+   DDX_Text(pDX,IDC_PT_BEFORE_TRANSFER_LR,m_Entry.m_pImpl->m_TendonStressCriteria.TendonStressCoeff[+TendonStressCriteria::CheckStage::PriorToSeating][+TendonStressCriteria::StrandType::LowRelaxation]);
+   DDV_GreaterThanZero(pDX, IDC_PT_BEFORE_TRANSFER_LR, m_Entry.m_pImpl->m_TendonStressCriteria.TendonStressCoeff[+TendonStressCriteria::CheckStage::PriorToSeating][+TendonStressCriteria::StrandType::LowRelaxation]);
 
-   DDX_Text(pDX,IDC_PT_ANCHORAGE_AFTER_ANCHORSET_SR,m_Entry.m_TendonStressCoeff[CSS_ANCHORAGES_AFTER_SEATING][STRESS_REL]);
-   DDV_GreaterThanZero(pDX, IDC_PT_ANCHORAGE_AFTER_ANCHORSET_SR, m_Entry.m_TendonStressCoeff[CSS_ANCHORAGES_AFTER_SEATING][STRESS_REL]);
-   DDX_Text(pDX,IDC_PT_ANCHORAGE_AFTER_ANCHORSET_LR,m_Entry.m_TendonStressCoeff[CSS_ANCHORAGES_AFTER_SEATING][LOW_RELAX]);
-   DDV_GreaterThanZero(pDX, IDC_PT_ANCHORAGE_AFTER_ANCHORSET_LR, m_Entry.m_TendonStressCoeff[CSS_ANCHORAGES_AFTER_SEATING][LOW_RELAX]);
+   DDX_Text(pDX,IDC_PT_ANCHORAGE_AFTER_ANCHORSET_SR,m_Entry.m_pImpl->m_TendonStressCriteria.TendonStressCoeff[+TendonStressCriteria::CheckStage::AtAnchoragesAfterSeating][+TendonStressCriteria::StrandType::StressRelieved]);
+   DDV_GreaterThanZero(pDX, IDC_PT_ANCHORAGE_AFTER_ANCHORSET_SR, m_Entry.m_pImpl->m_TendonStressCriteria.TendonStressCoeff[+TendonStressCriteria::CheckStage::AtAnchoragesAfterSeating][+TendonStressCriteria::StrandType::StressRelieved]);
+   DDX_Text(pDX,IDC_PT_ANCHORAGE_AFTER_ANCHORSET_LR,m_Entry.m_pImpl->m_TendonStressCriteria.TendonStressCoeff[+TendonStressCriteria::CheckStage::AtAnchoragesAfterSeating][+TendonStressCriteria::StrandType::LowRelaxation]);
+   DDV_GreaterThanZero(pDX, IDC_PT_ANCHORAGE_AFTER_ANCHORSET_LR, m_Entry.m_pImpl->m_TendonStressCriteria.TendonStressCoeff[+TendonStressCriteria::CheckStage::AtAnchoragesAfterSeating][+TendonStressCriteria::StrandType::LowRelaxation]);
 
-   DDX_Text(pDX,IDC_PT_ELSEWHERE_AFTER_ANCHORSET_SR,m_Entry.m_TendonStressCoeff[CSS_ELSEWHERE_AFTER_SEATING][STRESS_REL]);
-   DDV_GreaterThanZero(pDX, IDC_PT_ELSEWHERE_AFTER_ANCHORSET_SR, m_Entry.m_TendonStressCoeff[CSS_ELSEWHERE_AFTER_SEATING][STRESS_REL]);
-   DDX_Text(pDX,IDC_PT_ELSEWHERE_AFTER_ANCHORSET_LR,m_Entry.m_TendonStressCoeff[CSS_ELSEWHERE_AFTER_SEATING][LOW_RELAX]);
-   DDV_GreaterThanZero(pDX, IDC_PT_ELSEWHERE_AFTER_ANCHORSET_LR, m_Entry.m_TendonStressCoeff[CSS_ELSEWHERE_AFTER_SEATING][LOW_RELAX]);
+   DDX_Text(pDX,IDC_PT_ELSEWHERE_AFTER_ANCHORSET_SR,m_Entry.m_pImpl->m_TendonStressCriteria.TendonStressCoeff[+TendonStressCriteria::CheckStage::ElsewhereAfterSeating][+TendonStressCriteria::StrandType::StressRelieved]);
+   DDV_GreaterThanZero(pDX, IDC_PT_ELSEWHERE_AFTER_ANCHORSET_SR, m_Entry.m_pImpl->m_TendonStressCriteria.TendonStressCoeff[+TendonStressCriteria::CheckStage::ElsewhereAfterSeating][+TendonStressCriteria::StrandType::StressRelieved]);
+   DDX_Text(pDX,IDC_PT_ELSEWHERE_AFTER_ANCHORSET_LR,m_Entry.m_pImpl->m_TendonStressCriteria.TendonStressCoeff[+TendonStressCriteria::CheckStage::ElsewhereAfterSeating][+TendonStressCriteria::StrandType::LowRelaxation]);
+   DDV_GreaterThanZero(pDX, IDC_PT_ELSEWHERE_AFTER_ANCHORSET_LR, m_Entry.m_pImpl->m_TendonStressCriteria.TendonStressCoeff[+TendonStressCriteria::CheckStage::ElsewhereAfterSeating][+TendonStressCriteria::StrandType::LowRelaxation]);
 
-   DDX_Text(pDX,IDC_PT_AFTER_ALL_LOSSES_SR,m_Entry.m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL]);
-   DDV_GreaterThanZero(pDX, IDC_PT_AFTER_ALL_LOSSES_SR, m_Entry.m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL]);
-   DDX_Text(pDX,IDC_PT_AFTER_ALL_LOSSES_LR,m_Entry.m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX]);
-   DDV_GreaterThanZero(pDX, IDC_PT_AFTER_ALL_LOSSES_LR, m_Entry.m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX]);
+   DDX_Text(pDX,IDC_PT_AFTER_ALL_LOSSES_SR,m_Entry.m_pImpl->m_TendonStressCriteria.TendonStressCoeff[+TendonStressCriteria::CheckStage::AfterAllLosses][+TendonStressCriteria::StrandType::StressRelieved]);
+   DDV_GreaterThanZero(pDX, IDC_PT_AFTER_ALL_LOSSES_SR, m_Entry.m_pImpl->m_TendonStressCriteria.TendonStressCoeff[+TendonStressCriteria::CheckStage::AfterAllLosses][+TendonStressCriteria::StrandType::StressRelieved]);
+   DDX_Text(pDX,IDC_PT_AFTER_ALL_LOSSES_LR,m_Entry.m_pImpl->m_TendonStressCriteria.TendonStressCoeff[+TendonStressCriteria::CheckStage::AfterAllLosses][+TendonStressCriteria::StrandType::LowRelaxation]);
+   DDV_GreaterThanZero(pDX, IDC_PT_AFTER_ALL_LOSSES_LR, m_Entry.m_pImpl->m_TendonStressCriteria.TendonStressCoeff[+TendonStressCriteria::CheckStage::AfterAllLosses][+TendonStressCriteria::StrandType::LowRelaxation]);
 
    // Pretension Strand Options
-   DDX_Check_Bool(pDX,IDC_STRAND_EXTENSIONS,m_Entry.m_bAllowStraightStrandExtensions);
-
-   int value = (int)(m_Entry.m_PrestressTransferComputationType == pgsTypes::ptMinuteValue ? 1 : 0);
-   DDX_CBIndex(pDX,IDC_COMBO_TRANSFER,value);
-   if ( pDX->m_bSaveAndValidate )
-   {
-      m_Entry.m_PrestressTransferComputationType = (value==1) ? pgsTypes::ptMinuteValue : pgsTypes::ptUsingSpecification;
-   }
+   DDX_CBEnum(pDX,IDC_COMBO_TRANSFER, m_Entry.m_pImpl->m_TransferLengthCriteria.CalculationMethod);
 
    // Duct Size
-   DDX_Text(pDX,IDC_PUSH_METHOD, m_Entry.m_DuctAreaPushRatio);
-   DDX_Text(pDX,IDC_PULL_METHOD, m_Entry.m_DuctAreaPullRatio);
-   DDX_Text(pDX,IDC_DUCT_SIZE_RATIO, m_Entry.m_DuctDiameterRatio);
+   DDX_Text(pDX,IDC_PUSH_METHOD, m_Entry.m_pImpl->m_DuctSizeCriteria.DuctAreaPushRatio);
+   DDX_Text(pDX,IDC_PULL_METHOD, m_Entry.m_pImpl->m_DuctSizeCriteria.DuctAreaPullRatio);
+   DDX_Text(pDX,IDC_DUCT_SIZE_RATIO, m_Entry.m_pImpl->m_DuctSizeCriteria.DuctDiameterRatio);
 
    if (pDX->m_bSaveAndValidate)
    {
-      if (WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= m_Entry.m_SpecificationType)
+      if (WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= m_Entry.m_pImpl->m_SpecificationCriteria.GetEdition())
       {
-         if (0.70 < m_Entry.m_DuctDiameterRatio)
+         if (0.70 < m_Entry.m_pImpl->m_DuctSizeCriteria.DuctDiameterRatio)
          {
             // if the ratio is more than 0.7, lambda_duct becomes negative
             pDX->PrepareEditCtrl(IDC_DUCT_SIZE_RATIO);
@@ -1173,7 +1170,7 @@ void CSpecMainSheet::ExchangeStrandData(CDataExchange* pDX)
       }
       else
       {
-         if ( !(m_Entry.m_DuctDiameterRatio < 1.0) )
+         if ( !(m_Entry.m_pImpl->m_DuctSizeCriteria.DuctDiameterRatio < 1.0) )
          {
             // duct diameter can't be greater than web
             pDX->PrepareEditCtrl(IDC_DUCT_SIZE_RATIO);
@@ -1189,54 +1186,54 @@ void CSpecMainSheet::ExchangeLimitsData(CDataExchange* pDX)
    CEAFApp* pApp = EAFGetApp();
    const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
-   DDX_UnitValueAndTag(pDX, IDC_NWC_FC_SLAB,     IDC_NWC_FC_SLAB_UNIT,     m_Entry.m_MaxSlabFc[pgsTypes::Normal],             pDisplayUnits->Stress);
-   DDX_UnitValueAndTag(pDX, IDC_NWC_GIRDER_FCI,  IDC_NWC_GIRDER_FCI_UNIT,  m_Entry.m_MaxSegmentFci[pgsTypes::Normal],          pDisplayUnits->Stress);
-   DDX_UnitValueAndTag(pDX, IDC_NWC_GIRDER_FC,   IDC_NWC_GIRDER_FC_UNIT,   m_Entry.m_MaxSegmentFc[pgsTypes::Normal],           pDisplayUnits->Stress);
-   DDX_UnitValueAndTag(pDX, IDC_NWC_CLOSURE_FCI, IDC_NWC_CLOSURE_FCI_UNIT, m_Entry.m_MaxClosureFci[pgsTypes::Normal],          pDisplayUnits->Stress);
-   DDX_UnitValueAndTag(pDX, IDC_NWC_CLOSURE_FC,  IDC_NWC_CLOSURE_FC_UNIT,  m_Entry.m_MaxClosureFc[pgsTypes::Normal],           pDisplayUnits->Stress);
-   DDX_UnitValueAndTag(pDX, IDC_NWC_UNIT_WEIGHT, IDC_NWC_UNIT_WEIGHT_UNIT, m_Entry.m_MaxConcreteUnitWeight[pgsTypes::Normal], pDisplayUnits->Density);
-   DDX_UnitValueAndTag(pDX, IDC_NWC_AGG_SIZE,    IDC_NWC_AGG_SIZE_UNIT,    m_Entry.m_MaxConcreteAggSize[pgsTypes::Normal],    pDisplayUnits->ComponentDim);
+   DDX_UnitValueAndTag(pDX, IDC_NWC_FC_SLAB,     IDC_NWC_FC_SLAB_UNIT,     m_Entry.m_pImpl->m_LimitsCriteria.MaxSlabFc[pgsTypes::Normal],             pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_NWC_GIRDER_FCI,  IDC_NWC_GIRDER_FCI_UNIT,  m_Entry.m_pImpl->m_LimitsCriteria.MaxSegmentFci[pgsTypes::Normal],          pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_NWC_GIRDER_FC,   IDC_NWC_GIRDER_FC_UNIT,   m_Entry.m_pImpl->m_LimitsCriteria.MaxSegmentFc[pgsTypes::Normal],           pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_NWC_CLOSURE_FCI, IDC_NWC_CLOSURE_FCI_UNIT, m_Entry.m_pImpl->m_LimitsCriteria.MaxClosureFci[pgsTypes::Normal],          pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_NWC_CLOSURE_FC,  IDC_NWC_CLOSURE_FC_UNIT,  m_Entry.m_pImpl->m_LimitsCriteria.MaxClosureFc[pgsTypes::Normal],           pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_NWC_UNIT_WEIGHT, IDC_NWC_UNIT_WEIGHT_UNIT, m_Entry.m_pImpl->m_LimitsCriteria.MaxConcreteUnitWeight[pgsTypes::Normal], pDisplayUnits->Density);
+   DDX_UnitValueAndTag(pDX, IDC_NWC_AGG_SIZE,    IDC_NWC_AGG_SIZE_UNIT,    m_Entry.m_pImpl->m_LimitsCriteria.MaxConcreteAggSize[pgsTypes::Normal],    pDisplayUnits->ComponentDim);
 
-   DDX_UnitValueAndTag(pDX, IDC_LWC_FC_SLAB,     IDC_LWC_FC_SLAB_UNIT,     m_Entry.m_MaxSlabFc[pgsTypes::SandLightweight],             pDisplayUnits->Stress);
-   DDX_UnitValueAndTag(pDX, IDC_LWC_GIRDER_FCI,  IDC_LWC_GIRDER_FCI_UNIT,  m_Entry.m_MaxSegmentFci[pgsTypes::SandLightweight],          pDisplayUnits->Stress);
-   DDX_UnitValueAndTag(pDX, IDC_LWC_GIRDER_FC,   IDC_LWC_GIRDER_FC_UNIT,   m_Entry.m_MaxSegmentFc[pgsTypes::SandLightweight],           pDisplayUnits->Stress);
-   DDX_UnitValueAndTag(pDX, IDC_LWC_CLOSURE_FCI, IDC_LWC_CLOSURE_FCI_UNIT, m_Entry.m_MaxClosureFci[pgsTypes::SandLightweight],          pDisplayUnits->Stress);
-   DDX_UnitValueAndTag(pDX, IDC_LWC_CLOSURE_FC,  IDC_LWC_CLOSURE_FC_UNIT,  m_Entry.m_MaxClosureFc[pgsTypes::SandLightweight],           pDisplayUnits->Stress);
-   DDX_UnitValueAndTag(pDX, IDC_LWC_UNIT_WEIGHT, IDC_LWC_UNIT_WEIGHT_UNIT, m_Entry.m_MaxConcreteUnitWeight[pgsTypes::SandLightweight], pDisplayUnits->Density);
-   DDX_UnitValueAndTag(pDX, IDC_LWC_AGG_SIZE,    IDC_LWC_AGG_SIZE_UNIT,    m_Entry.m_MaxConcreteAggSize[pgsTypes::SandLightweight],    pDisplayUnits->ComponentDim);
+   DDX_UnitValueAndTag(pDX, IDC_LWC_FC_SLAB,     IDC_LWC_FC_SLAB_UNIT,     m_Entry.m_pImpl->m_LimitsCriteria.MaxSlabFc[pgsTypes::SandLightweight],             pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_LWC_GIRDER_FCI,  IDC_LWC_GIRDER_FCI_UNIT,  m_Entry.m_pImpl->m_LimitsCriteria.MaxSegmentFci[pgsTypes::SandLightweight],          pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_LWC_GIRDER_FC,   IDC_LWC_GIRDER_FC_UNIT,   m_Entry.m_pImpl->m_LimitsCriteria.MaxSegmentFc[pgsTypes::SandLightweight],           pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_LWC_CLOSURE_FCI, IDC_LWC_CLOSURE_FCI_UNIT, m_Entry.m_pImpl->m_LimitsCriteria.MaxClosureFci[pgsTypes::SandLightweight],          pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_LWC_CLOSURE_FC,  IDC_LWC_CLOSURE_FC_UNIT,  m_Entry.m_pImpl->m_LimitsCriteria.MaxClosureFc[pgsTypes::SandLightweight],           pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_LWC_UNIT_WEIGHT, IDC_LWC_UNIT_WEIGHT_UNIT, m_Entry.m_pImpl->m_LimitsCriteria.MaxConcreteUnitWeight[pgsTypes::SandLightweight], pDisplayUnits->Density);
+   DDX_UnitValueAndTag(pDX, IDC_LWC_AGG_SIZE,    IDC_LWC_AGG_SIZE_UNIT,    m_Entry.m_pImpl->m_LimitsCriteria.MaxConcreteAggSize[pgsTypes::SandLightweight],    pDisplayUnits->ComponentDim);
 
-   DDX_UnitValueAndTag(pDX, IDC_LWC_FC_SLAB,     IDC_LWC_FC_SLAB_UNIT,     m_Entry.m_MaxSlabFc[pgsTypes::AllLightweight],             pDisplayUnits->Stress);
-   DDX_UnitValueAndTag(pDX, IDC_LWC_GIRDER_FCI,  IDC_LWC_GIRDER_FCI_UNIT,  m_Entry.m_MaxSegmentFci[pgsTypes::AllLightweight],          pDisplayUnits->Stress);
-   DDX_UnitValueAndTag(pDX, IDC_LWC_GIRDER_FC,   IDC_LWC_GIRDER_FC_UNIT,   m_Entry.m_MaxSegmentFc[pgsTypes::AllLightweight],           pDisplayUnits->Stress);
-   DDX_UnitValueAndTag(pDX, IDC_LWC_CLOSURE_FCI, IDC_LWC_CLOSURE_FCI_UNIT, m_Entry.m_MaxClosureFci[pgsTypes::AllLightweight],          pDisplayUnits->Stress);
-   DDX_UnitValueAndTag(pDX, IDC_LWC_CLOSURE_FC,  IDC_LWC_CLOSURE_FC_UNIT,  m_Entry.m_MaxClosureFc[pgsTypes::AllLightweight],           pDisplayUnits->Stress);
-   DDX_UnitValueAndTag(pDX, IDC_LWC_UNIT_WEIGHT, IDC_LWC_UNIT_WEIGHT_UNIT, m_Entry.m_MaxConcreteUnitWeight[pgsTypes::AllLightweight], pDisplayUnits->Density);
-   DDX_UnitValueAndTag(pDX, IDC_LWC_AGG_SIZE,    IDC_LWC_AGG_SIZE_UNIT,    m_Entry.m_MaxConcreteAggSize[pgsTypes::AllLightweight],    pDisplayUnits->ComponentDim);
+   DDX_UnitValueAndTag(pDX, IDC_LWC_FC_SLAB,     IDC_LWC_FC_SLAB_UNIT,     m_Entry.m_pImpl->m_LimitsCriteria.MaxSlabFc[pgsTypes::AllLightweight],             pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_LWC_GIRDER_FCI,  IDC_LWC_GIRDER_FCI_UNIT,  m_Entry.m_pImpl->m_LimitsCriteria.MaxSegmentFci[pgsTypes::AllLightweight],          pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_LWC_GIRDER_FC,   IDC_LWC_GIRDER_FC_UNIT,   m_Entry.m_pImpl->m_LimitsCriteria.MaxSegmentFc[pgsTypes::AllLightweight],           pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_LWC_CLOSURE_FCI, IDC_LWC_CLOSURE_FCI_UNIT, m_Entry.m_pImpl->m_LimitsCriteria.MaxClosureFci[pgsTypes::AllLightweight],          pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_LWC_CLOSURE_FC,  IDC_LWC_CLOSURE_FC_UNIT,  m_Entry.m_pImpl->m_LimitsCriteria.MaxClosureFc[pgsTypes::AllLightweight],           pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_LWC_UNIT_WEIGHT, IDC_LWC_UNIT_WEIGHT_UNIT, m_Entry.m_pImpl->m_LimitsCriteria.MaxConcreteUnitWeight[pgsTypes::AllLightweight], pDisplayUnits->Density);
+   DDX_UnitValueAndTag(pDX, IDC_LWC_AGG_SIZE,    IDC_LWC_AGG_SIZE_UNIT,    m_Entry.m_pImpl->m_LimitsCriteria.MaxConcreteAggSize[pgsTypes::AllLightweight],    pDisplayUnits->ComponentDim);
 
    // UHPC doesn't really have well established normal "maximum" values yet.
-   //DDX_UnitValueAndTag(pDX, IDC_UHPC_FC_SLAB, IDC_UHPC_FC_SLAB_UNIT, m_Entry.m_MaxSlabFc[pgsTypes::PCI_UHPC], pDisplayUnits->Stress);
-   //DDX_UnitValueAndTag(pDX, IDC_UHPC_GIRDER_FCI, IDC_UHPC_GIRDER_FCI_UNIT, m_Entry.m_MaxSegmentFci[pgsTypes::PCI_UHPC], pDisplayUnits->Stress);
-   //DDX_UnitValueAndTag(pDX, IDC_UHPC_GIRDER_FC, IDC_UHPC_GIRDER_FC_UNIT, m_Entry.m_MaxSegmentFc[pgsTypes::PCI_UHPC], pDisplayUnits->Stress);
-   //DDX_UnitValueAndTag(pDX, IDC_UHPC_CLOSURE_FCI, IDC_UHPC_CLOSURE_FCI_UNIT, m_Entry.m_MaxClosureFci[pgsTypes::PCI_UHPC], pDisplayUnits->Stress);
-   //DDX_UnitValueAndTag(pDX, IDC_UHPC_CLOSURE_FC, IDC_UHPC_CLOSURE_FC_UNIT, m_Entry.m_MaxClosureFc[pgsTypes::PCI_UHPC], pDisplayUnits->Stress);
-   //DDX_UnitValueAndTag(pDX, IDC_UHPC_UNIT_WEIGHT, IDC_UHPC_UNIT_WEIGHT_UNIT, m_Entry.m_MaxConcreteUnitWeight[pgsTypes::PCI_UHPC], pDisplayUnits->Density);
-   //DDX_UnitValueAndTag(pDX, IDC_UHPC_AGG_SIZE, IDC_UHPC_AGG_SIZE_UNIT, m_Entry.m_MaxConcreteAggSize[pgsTypes::PCI_UHPC], pDisplayUnits->ComponentDim);
+   //DDX_UnitValueAndTag(pDX, IDC_UHPC_FC_SLAB, IDC_UHPC_FC_SLAB_UNIT, m_Entry.m_pImpl->m_MaxSlabFc[pgsTypes::PCI_UHPC], pDisplayUnits->Stress);
+   //DDX_UnitValueAndTag(pDX, IDC_UHPC_GIRDER_FCI, IDC_UHPC_GIRDER_FCI_UNIT, m_Entry.m_pImpl->m_MaxSegmentFci[pgsTypes::PCI_UHPC], pDisplayUnits->Stress);
+   //DDX_UnitValueAndTag(pDX, IDC_UHPC_GIRDER_FC, IDC_UHPC_GIRDER_FC_UNIT, m_Entry.m_pImpl->m_MaxSegmentFc[pgsTypes::PCI_UHPC], pDisplayUnits->Stress);
+   //DDX_UnitValueAndTag(pDX, IDC_UHPC_CLOSURE_FCI, IDC_UHPC_CLOSURE_FCI_UNIT, m_Entry.m_pImpl->m_MaxClosureFci[pgsTypes::PCI_UHPC], pDisplayUnits->Stress);
+   //DDX_UnitValueAndTag(pDX, IDC_UHPC_CLOSURE_FC, IDC_UHPC_CLOSURE_FC_UNIT, m_Entry.m_pImpl->m_MaxClosureFc[pgsTypes::PCI_UHPC], pDisplayUnits->Stress);
+   //DDX_UnitValueAndTag(pDX, IDC_UHPC_UNIT_WEIGHT, IDC_UHPC_UNIT_WEIGHT_UNIT, m_Entry.m_pImpl->m_MaxConcreteUnitWeight[pgsTypes::PCI_UHPC], pDisplayUnits->Density);
+   //DDX_UnitValueAndTag(pDX, IDC_UHPC_AGG_SIZE, IDC_UHPC_AGG_SIZE_UNIT, m_Entry.m_pImpl->m_MaxConcreteAggSize[pgsTypes::PCI_UHPC], pDisplayUnits->ComponentDim);
 
    //if (pDX->m_bSaveAndValidate)
    //{
    //   // these share the same UI so make them identical
-   //   m_Entry.m_MaxSlabFc[pgsTypes::UHPC]  = m_Entry.m_MaxSlabFc[pgsTypes::PCI_UHPC];
-   //   m_Entry.m_MaxSegmentFci[pgsTypes::UHPC] = m_Entry.m_MaxSegmentFci[pgsTypes::PCI_UHPC];
-   //   m_Entry.m_MaxSegmentFc[pgsTypes::UHPC] = m_Entry.m_MaxSegmentFc[pgsTypes::PCI_UHPC];
-   //   m_Entry.m_MaxClosureFci[pgsTypes::UHPC] = m_Entry.m_MaxClosureFci[pgsTypes::PCI_UHPC];
-   //   m_Entry.m_MaxClosureFc[pgsTypes::UHPC] = m_Entry.m_MaxClosureFc[pgsTypes::PCI_UHPC];
-   //   m_Entry.m_MaxConcreteUnitWeight[pgsTypes::UHPC] = m_Entry.m_MaxConcreteUnitWeight[pgsTypes::PCI_UHPC];
-   //   m_Entry.m_MaxConcreteAggSize[pgsTypes::UHPC] = m_Entry.m_MaxConcreteAggSize[pgsTypes::PCI_UHPC];
+   //   m_Entry.m_pImpl->m_MaxSlabFc[pgsTypes::UHPC]  = m_Entry.m_pImpl->m_MaxSlabFc[pgsTypes::PCI_UHPC];
+   //   m_Entry.m_pImpl->m_MaxSegmentFci[pgsTypes::UHPC] = m_Entry.m_pImpl->m_MaxSegmentFci[pgsTypes::PCI_UHPC];
+   //   m_Entry.m_pImpl->m_MaxSegmentFc[pgsTypes::UHPC] = m_Entry.m_pImpl->m_MaxSegmentFc[pgsTypes::PCI_UHPC];
+   //   m_Entry.m_pImpl->m_MaxClosureFci[pgsTypes::UHPC] = m_Entry.m_pImpl->m_MaxClosureFci[pgsTypes::PCI_UHPC];
+   //   m_Entry.m_pImpl->m_MaxClosureFc[pgsTypes::UHPC] = m_Entry.m_pImpl->m_MaxClosureFc[pgsTypes::PCI_UHPC];
+   //   m_Entry.m_pImpl->m_MaxConcreteUnitWeight[pgsTypes::UHPC] = m_Entry.m_pImpl->m_MaxConcreteUnitWeight[pgsTypes::PCI_UHPC];
+   //   m_Entry.m_pImpl->m_MaxConcreteAggSize[pgsTypes::UHPC] = m_Entry.m_pImpl->m_MaxConcreteAggSize[pgsTypes::PCI_UHPC];
    //}
 
-   DDX_Check_Bool(pDX, IDC_CHECK_STIRRUP_COMPATIBILITY, m_Entry.m_DoCheckStirrupSpacingCompatibility);
-   DDX_Check_Bool(pDX, IDC_CHECK_GIRDER_SAG, m_Entry.m_bCheckSag);
-   DDX_CBEnum(pDX, IDC_SAG_OPTIONS, m_Entry.m_SagCamberType);
+   DDX_Check_Bool(pDX, IDC_CHECK_STIRRUP_COMPATIBILITY, m_Entry.m_pImpl->m_LimitsCriteria.bCheckStirrupSpacingCompatibility);
+   DDX_Check_Bool(pDX, IDC_CHECK_GIRDER_SAG, m_Entry.m_pImpl->m_LimitsCriteria.bCheckSag);
+   DDX_CBEnum(pDX, IDC_SAG_OPTIONS, m_Entry.m_pImpl->m_LimitsCriteria.SagCamber);
 }
 
 void CSpecMainSheet::ExchangeClosureData(CDataExchange* pDX)
@@ -1253,49 +1250,49 @@ void CSpecMainSheet::ExchangeClosureData(CDataExchange* pDX)
       tagAfterLosses  = _T("(lambda)") + tagAfterLosses;
    }
 
-   DDX_Text(pDX,IDC_RELEASE_COMPRESSION,m_Entry.m_ClosureCompStressAtStressing);
-   DDV_GreaterThanZero(pDX, IDC_RELEASE_COMPRESSION,m_Entry.m_ClosureCompStressAtStressing);
+   DDX_Text(pDX,IDC_RELEASE_COMPRESSION,m_Entry.m_pImpl->m_ClosureJointCriteria.CompressionStressCoefficient_BeforeLosses);
+   DDV_GreaterThanZero(pDX, IDC_RELEASE_COMPRESSION,m_Entry.m_pImpl->m_ClosureJointCriteria.CompressionStressCoefficient_BeforeLosses);
 
-   DDX_UnitValueAndTag(pDX, IDC_RELEASE_PTZ_TENSION, IDC_RELEASE_PTZ_TENSION_UNIT, m_Entry.m_ClosureTensStressPTZAtStressing, pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_RELEASE_PTZ_TENSION, IDC_RELEASE_PTZ_TENSION_UNIT, m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_InPTZ_WithoutReinforcement_BeforeLosses.Coefficient, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_RELEASE_PTZ_TENSION_UNIT,tagBeforeLosses);
-   DDV_UnitValueZeroOrMore(pDX, IDC_RELEASE_PTZ_TENSION_UNIT,m_Entry.m_ClosureTensStressPTZAtStressing, pDisplayUnits->SqrtPressure);
+   DDV_UnitValueZeroOrMore(pDX, IDC_RELEASE_PTZ_TENSION_UNIT,m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_InPTZ_WithoutReinforcement_BeforeLosses.Coefficient, pDisplayUnits->SqrtPressure);
 
-   DDX_UnitValueAndTag(pDX, IDC_RELEASE_PTZ_TENSION_WITH_REBAR, IDC_RELEASE_PTZ_TENSION_WITH_REBAR_UNIT, m_Entry.m_ClosureTensStressPTZWithRebarAtStressing, pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_RELEASE_PTZ_TENSION_WITH_REBAR, IDC_RELEASE_PTZ_TENSION_WITH_REBAR_UNIT, m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_InPTZ_WithReinforcement_BeforeLosses.Coefficient, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_RELEASE_PTZ_TENSION_WITH_REBAR_UNIT,tagBeforeLosses);
-   DDV_UnitValueZeroOrMore(pDX, IDC_RELEASE_PTZ_TENSION_WITH_REBAR_UNIT,m_Entry.m_ClosureTensStressPTZWithRebarAtStressing, pDisplayUnits->SqrtPressure);
+   DDV_UnitValueZeroOrMore(pDX, IDC_RELEASE_PTZ_TENSION_WITH_REBAR_UNIT,m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_InPTZ_WithReinforcement_BeforeLosses.Coefficient, pDisplayUnits->SqrtPressure);
 
-   DDX_UnitValueAndTag(pDX, IDC_RELEASE_TENSION, IDC_RELEASE_TENSION_UNIT, m_Entry.m_ClosureTensStressAtStressing, pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_RELEASE_TENSION, IDC_RELEASE_TENSION_UNIT, m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_OtherAreas_WithoutReinforcement_BeforeLosses.Coefficient, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_RELEASE_TENSION_UNIT,tagBeforeLosses);
-   DDV_UnitValueZeroOrMore(pDX, IDC_RELEASE_TENSION_UNIT,m_Entry.m_ClosureTensStressAtStressing, pDisplayUnits->SqrtPressure);
+   DDV_UnitValueZeroOrMore(pDX, IDC_RELEASE_TENSION_UNIT,m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_OtherAreas_WithoutReinforcement_BeforeLosses.Coefficient, pDisplayUnits->SqrtPressure);
 
-   DDX_UnitValueAndTag(pDX, IDC_RELEASE_TENSION_WITH_REBAR, IDC_RELEASE_TENSION_WITH_REBAR_UNIT, m_Entry.m_ClosureTensStressWithRebarAtStressing, pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_RELEASE_TENSION_WITH_REBAR, IDC_RELEASE_TENSION_WITH_REBAR_UNIT, m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_OtherAreas_WithReinforcement_BeforeLosses.Coefficient, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_RELEASE_TENSION_WITH_REBAR_UNIT,tagBeforeLosses);
-   DDV_UnitValueZeroOrMore(pDX, IDC_RELEASE_TENSION_WITH_REBAR_UNIT,m_Entry.m_ClosureTensStressWithRebarAtStressing, pDisplayUnits->SqrtPressure);
+   DDV_UnitValueZeroOrMore(pDX, IDC_RELEASE_TENSION_WITH_REBAR_UNIT,m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_OtherAreas_WithReinforcement_BeforeLosses.Coefficient, pDisplayUnits->SqrtPressure);
 
-   DDX_Text(pDX,IDC_SERVICE_COMPRESSION,m_Entry.m_ClosureCompStressAtService);
-   DDV_GreaterThanZero(pDX, IDC_SERVICE_COMPRESSION,m_Entry.m_ClosureCompStressAtService);
+   DDX_Text(pDX,IDC_SERVICE_COMPRESSION,m_Entry.m_pImpl->m_ClosureJointCriteria.CompressionStressCoefficient_PermanentLoadsOnly_AfterLosses);
+   DDV_GreaterThanZero(pDX, IDC_SERVICE_COMPRESSION,m_Entry.m_pImpl->m_ClosureJointCriteria.CompressionStressCoefficient_PermanentLoadsOnly_AfterLosses);
 
-   DDX_Text(pDX,IDC_SERVICE_COMPRESSION_WITH_LIVELOAD,m_Entry.m_ClosureCompStressWithLiveLoadAtService);
-   DDV_GreaterThanZero(pDX, IDC_SERVICE_COMPRESSION_WITH_LIVELOAD,m_Entry.m_ClosureCompStressWithLiveLoadAtService);
+   DDX_Text(pDX,IDC_SERVICE_COMPRESSION_WITH_LIVELOAD,m_Entry.m_pImpl->m_ClosureJointCriteria.CompressionStressCoefficient_AllLoads_AfterLosses);
+   DDV_GreaterThanZero(pDX, IDC_SERVICE_COMPRESSION_WITH_LIVELOAD,m_Entry.m_pImpl->m_ClosureJointCriteria.CompressionStressCoefficient_AllLoads_AfterLosses);
 
-   DDX_UnitValueAndTag(pDX, IDC_SERVICE_PTZ_TENSION, IDC_SERVICE_PTZ_TENSION_UNIT, m_Entry.m_ClosureTensStressPTZAtService, pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_SERVICE_PTZ_TENSION, IDC_SERVICE_PTZ_TENSION_UNIT, m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_InPTZ_WithoutReinforcement_AfterLosses.Coefficient, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_SERVICE_PTZ_TENSION_UNIT,tagAfterLosses);
-   DDV_UnitValueZeroOrMore(pDX, IDC_SERVICE_PTZ_TENSION_UNIT,m_Entry.m_ClosureTensStressPTZAtService, pDisplayUnits->SqrtPressure);
+   DDV_UnitValueZeroOrMore(pDX, IDC_SERVICE_PTZ_TENSION_UNIT,m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_InPTZ_WithoutReinforcement_AfterLosses.Coefficient, pDisplayUnits->SqrtPressure);
 
-   DDX_UnitValueAndTag(pDX, IDC_SERVICE_PTZ_TENSION_WITH_REBAR, IDC_SERVICE_PTZ_TENSION_WITH_REBAR_UNIT, m_Entry.m_ClosureTensStressPTZWithRebarAtService, pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_SERVICE_PTZ_TENSION_WITH_REBAR, IDC_SERVICE_PTZ_TENSION_WITH_REBAR_UNIT, m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_InPTZ_WithReinforcement_AfterLosses.Coefficient, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_SERVICE_PTZ_TENSION_WITH_REBAR_UNIT,tagAfterLosses);
-   DDV_UnitValueZeroOrMore(pDX, IDC_SERVICE_PTZ_TENSION_WITH_REBAR_UNIT,m_Entry.m_ClosureTensStressPTZWithRebarAtService, pDisplayUnits->SqrtPressure);
+   DDV_UnitValueZeroOrMore(pDX, IDC_SERVICE_PTZ_TENSION_WITH_REBAR_UNIT,m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_InPTZ_WithReinforcement_AfterLosses.Coefficient, pDisplayUnits->SqrtPressure);
 
-   DDX_UnitValueAndTag(pDX, IDC_SERVICE_III_TENSION, IDC_SERVICE_III_TENSION_UNIT, m_Entry.m_ClosureTensStressAtService, pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_SERVICE_III_TENSION, IDC_SERVICE_III_TENSION_UNIT, m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_OtherAreas_WithoutReinforcement_AfterLosses.Coefficient, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_SERVICE_III_TENSION_UNIT,tagAfterLosses);
-   DDV_UnitValueZeroOrMore(pDX, IDC_SERVICE_III_TENSION_UNIT,m_Entry.m_ClosureTensStressAtService, pDisplayUnits->SqrtPressure);
+   DDV_UnitValueZeroOrMore(pDX, IDC_SERVICE_III_TENSION_UNIT,m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_OtherAreas_WithoutReinforcement_AfterLosses.Coefficient, pDisplayUnits->SqrtPressure);
 
-   DDX_UnitValueAndTag(pDX, IDC_SERVICE_III_TENSION_WITH_REBAR, IDC_SERVICE_III_TENSION_WITH_REBAR_UNIT, m_Entry.m_ClosureTensStressWithRebarAtService, pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_SERVICE_III_TENSION_WITH_REBAR, IDC_SERVICE_III_TENSION_WITH_REBAR_UNIT, m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_OtherAreas_WithReinforcement_AfterLosses.Coefficient, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_SERVICE_III_TENSION_WITH_REBAR_UNIT,tagAfterLosses);
-   DDV_UnitValueZeroOrMore(pDX, IDC_SERVICE_III_TENSION_WITH_REBAR_UNIT,m_Entry.m_ClosureTensStressWithRebarAtService, pDisplayUnits->SqrtPressure);
+   DDV_UnitValueZeroOrMore(pDX, IDC_SERVICE_III_TENSION_WITH_REBAR_UNIT,m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_OtherAreas_WithReinforcement_AfterLosses.Coefficient, pDisplayUnits->SqrtPressure);
 
-   DDX_Text(pDX,IDC_FATIGUE_COMPRESSION,m_Entry.m_ClosureCompStressFatigue);
-   DDV_GreaterThanZero(pDX, IDC_FATIGUE_COMPRESSION,m_Entry.m_ClosureCompStressFatigue);
+   DDX_Text(pDX,IDC_FATIGUE_COMPRESSION,m_Entry.m_pImpl->m_ClosureJointCriteria.CompressionStressCoefficient_Fatigue);
+   DDV_GreaterThanZero(pDX, IDC_FATIGUE_COMPRESSION,m_Entry.m_pImpl->m_ClosureJointCriteria.CompressionStressCoefficient_Fatigue);
 }
 
 void CSpecMainSheet::ExchangeDesignData(CDataExchange* pDX)
@@ -1304,120 +1301,118 @@ void CSpecMainSheet::ExchangeDesignData(CDataExchange* pDX)
    const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    // Harped Strand Hold Down Force
-	DDX_Check_Bool(pDX, IDC_CHECK_HD,  m_Entry.m_DoCheckHoldDown);
-	DDX_Check_Bool(pDX, IDC_DESIGN_HD, m_Entry.m_DoDesignHoldDown);
+	DDX_Check_Bool(pDX, IDC_CHECK_HD,  m_Entry.m_pImpl->m_HoldDownCriteria.bCheck);
+	DDX_Check_Bool(pDX, IDC_DESIGN_HD, m_Entry.m_pImpl->m_HoldDownCriteria.bDesign);
 
-   DDX_CBIndex(pDX, IDC_HOLD_DOWN_FORCE_TYPE, m_Entry.m_HoldDownForceType);
+   DDX_CBEnum(pDX, IDC_HOLD_DOWN_FORCE_TYPE, m_Entry.m_pImpl->m_HoldDownCriteria.type);
 
-   DDX_UnitValueAndTag(pDX, IDC_HOLD_DOWN_FORCE, IDC_HOLD_DOWN_FORCE_UNITS, m_Entry.m_HoldDownForce, pDisplayUnits->GeneralForce );
-   if (m_Entry.m_DoCheckHoldDown)
+   DDX_UnitValueAndTag(pDX, IDC_HOLD_DOWN_FORCE, IDC_HOLD_DOWN_FORCE_UNITS, m_Entry.m_pImpl->m_HoldDownCriteria.force_limit, pDisplayUnits->GeneralForce );
+   if (m_Entry.m_pImpl->m_HoldDownCriteria.bCheck)
    {
-      DDV_UnitValueGreaterThanZero(pDX, IDC_HOLD_DOWN_FORCE,m_Entry.m_HoldDownForce, pDisplayUnits->GeneralForce );
+      DDV_UnitValueGreaterThanZero(pDX, IDC_HOLD_DOWN_FORCE,m_Entry.m_pImpl->m_HoldDownCriteria.force_limit, pDisplayUnits->GeneralForce );
    }
-   DDX_Percentage(pDX, IDC_FRICTION, m_Entry.m_HoldDownFriction);
+   DDX_Percentage(pDX, IDC_FRICTION, m_Entry.m_pImpl->m_HoldDownCriteria.friction);
 
    // Harped Strand Slope
-	DDX_Check_Bool(pDX, IDC_CHECK_SLOPE,  m_Entry.m_DoCheckStrandSlope);
-	DDX_Check_Bool(pDX, IDC_DESIGN_SLOPE, m_Entry.m_DoDesignStrandSlope);
+	DDX_Check_Bool(pDX, IDC_CHECK_SLOPE,  m_Entry.m_pImpl->m_StrandSlopeCriteria.bCheck);
+	DDX_Check_Bool(pDX, IDC_DESIGN_SLOPE, m_Entry.m_pImpl->m_StrandSlopeCriteria.bDesign);
 
-	DDX_Text(pDX, IDC_STRAND_SLOPE_05, m_Entry.m_MaxSlope05);
-   if (m_Entry.m_DoCheckStrandSlope)
+	DDX_Text(pDX, IDC_STRAND_SLOPE_05, m_Entry.m_pImpl->m_StrandSlopeCriteria.MaxSlope05);
+   if (m_Entry.m_pImpl->m_StrandSlopeCriteria.bCheck)
    {
-      DDV_NonNegativeDouble(pDX, IDC_STRAND_SLOPE_05, m_Entry.m_MaxSlope05);
+      DDV_NonNegativeDouble(pDX, IDC_STRAND_SLOPE_05, m_Entry.m_pImpl->m_StrandSlopeCriteria.MaxSlope05);
    }
 
-	DDX_Text(pDX, IDC_STRAND_SLOPE_06, m_Entry.m_MaxSlope06);
-   if (m_Entry.m_DoCheckStrandSlope)
+	DDX_Text(pDX, IDC_STRAND_SLOPE_06, m_Entry.m_pImpl->m_StrandSlopeCriteria.MaxSlope06);
+   if (m_Entry.m_pImpl->m_StrandSlopeCriteria.bCheck)
    {
-      DDV_NonNegativeDouble(pDX, IDC_STRAND_SLOPE_06, m_Entry.m_MaxSlope06);
+      DDV_NonNegativeDouble(pDX, IDC_STRAND_SLOPE_06, m_Entry.m_pImpl->m_StrandSlopeCriteria.MaxSlope06);
    }
 
-	DDX_Text(pDX, IDC_STRAND_SLOPE_07, m_Entry.m_MaxSlope07);
-   if (m_Entry.m_DoCheckStrandSlope)
+	DDX_Text(pDX, IDC_STRAND_SLOPE_07, m_Entry.m_pImpl->m_StrandSlopeCriteria.MaxSlope07);
+   if (m_Entry.m_pImpl->m_StrandSlopeCriteria.bCheck)
    {
-      DDV_NonNegativeDouble(pDX, IDC_STRAND_SLOPE_07, m_Entry.m_MaxSlope07);
+      DDV_NonNegativeDouble(pDX, IDC_STRAND_SLOPE_07, m_Entry.m_pImpl->m_StrandSlopeCriteria.MaxSlope07);
    }
    
    // Handling Weight
-   DDX_Check_Bool(pDX, IDC_CHECK_HANDLING_WEIGHT, m_Entry.m_bCheckHandlingWeightLimit);
-   DDX_UnitValueAndTag(pDX, IDC_HANDLING_WEIGHT, IDC_HANDLING_WEIGHT_UNIT, m_Entry.m_HandlingWeightLimit, pDisplayUnits->GeneralForce);
-   if (m_Entry.m_bCheckHandlingWeightLimit)
+   DDX_Check_Bool(pDX, IDC_CHECK_HANDLING_WEIGHT, m_Entry.m_pImpl->m_PlantHandlingCriteria.bCheck);
+   DDX_UnitValueAndTag(pDX, IDC_HANDLING_WEIGHT, IDC_HANDLING_WEIGHT_UNIT, m_Entry.m_pImpl->m_PlantHandlingCriteria.WeightLimit, pDisplayUnits->GeneralForce);
+   if (m_Entry.m_pImpl->m_PlantHandlingCriteria.bCheck)
    {
-      DDV_UnitValueGreaterThanZero(pDX, IDC_HANDLING_WEIGHT, m_Entry.m_HandlingWeightLimit, pDisplayUnits->GeneralForce);
+      DDV_UnitValueGreaterThanZero(pDX, IDC_HANDLING_WEIGHT, m_Entry.m_pImpl->m_PlantHandlingCriteria.WeightLimit, pDisplayUnits->GeneralForce);
    }
 
-   // Splitting Resistance
-	DDX_Check_Bool(pDX, IDC_CHECK_SPLITTING,  m_Entry.m_DoCheckSplitting);
-	DDX_Check_Bool(pDX, IDC_DESIGN_SPLITTING, m_Entry.m_DoDesignSplitting);
-	DDX_Text(pDX, IDC_N, m_Entry.m_SplittingZoneLengthFactor);
-   DDV_GreaterThanZero(pDX, IDC_N, m_Entry.m_SplittingZoneLengthFactor);
-
-   // Confinement Reinforcement
-	DDX_Check_Bool(pDX, IDC_CHECK_CONFINEMENT,  m_Entry.m_DoCheckConfinement);
-	DDX_Check_Bool(pDX, IDC_DESIGN_CONFINEMENT, m_Entry.m_DoDesignConfinement);
+   // Splitting and Confinement
+	DDX_Check_Bool(pDX, IDC_CHECK_SPLITTING,  m_Entry.m_pImpl->m_EndZoneCriteria.bCheckSplitting);
+	DDX_Check_Bool(pDX, IDC_DESIGN_SPLITTING, m_Entry.m_pImpl->m_EndZoneCriteria.bDesignSplitting);
+	DDX_Text(pDX, IDC_N, m_Entry.m_pImpl->m_EndZoneCriteria.SplittingZoneLengthFactor);
+   DDV_GreaterThanZero(pDX, IDC_N, m_Entry.m_pImpl->m_EndZoneCriteria.SplittingZoneLengthFactor);
+	DDX_Check_Bool(pDX, IDC_CHECK_CONFINEMENT,  m_Entry.m_pImpl->m_EndZoneCriteria.bCheckConfinement);
+	DDX_Check_Bool(pDX, IDC_DESIGN_CONFINEMENT, m_Entry.m_pImpl->m_EndZoneCriteria.bDesignConfinement);
 
    // Lifting
-	DDX_Check_Bool(pDX, IDC_CHECK_LIFTING,  m_Entry.m_EnableLiftingCheck);
-	DDX_Check_Bool(pDX, IDC_DESIGN_LIFTING, m_Entry.m_EnableLiftingDesign);
+	DDX_Check_Bool(pDX, IDC_CHECK_LIFTING,  m_Entry.m_pImpl->m_LiftingCriteria.bCheck);
+	DDX_Check_Bool(pDX, IDC_DESIGN_LIFTING, m_Entry.m_pImpl->m_LiftingCriteria.bDesign);
  
-   DDX_KeywordUnitValueAndTag(pDX,IDC_MIN_LIFTING_POINT,IDC_MIN_LIFTING_POINT_UNIT,_T("H"),m_Entry.m_MinLiftPoint, pDisplayUnits->SpanLength);
+   DDX_KeywordUnitValueAndTag(pDX,IDC_MIN_LIFTING_POINT,IDC_MIN_LIFTING_POINT_UNIT,_T("H"),m_Entry.m_pImpl->m_LiftingCriteria.MinPickPoint, pDisplayUnits->SpanLength);
 
-   DDX_UnitValueAndTag(pDX, IDC_LIFTING_POINT_LOCATION_ACCURACY,IDC_LIFTING_POINT_LOCATION_ACCURACY_UNIT,m_Entry.m_LiftPointAccuracy, pDisplayUnits->SpanLength );
-   DDV_UnitValueGreaterThanZero(pDX, IDC_LIFTING_POINT_LOCATION_ACCURACY,m_Entry.m_LiftPointAccuracy, pDisplayUnits->SpanLength );
+   DDX_UnitValueAndTag(pDX, IDC_LIFTING_POINT_LOCATION_ACCURACY,IDC_LIFTING_POINT_LOCATION_ACCURACY_UNIT,m_Entry.m_pImpl->m_LiftingCriteria.PickPointAccuracy, pDisplayUnits->SpanLength );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_LIFTING_POINT_LOCATION_ACCURACY,m_Entry.m_pImpl->m_LiftingCriteria.PickPointAccuracy, pDisplayUnits->SpanLength );
 
    // Hauling
-   DDX_Check_Bool(pDX, IDC_CHECK_HAULING, m_Entry.m_EnableHaulingCheck);
-	DDX_Check_Bool(pDX, IDC_DESIGN_HAULING, m_Entry.m_EnableHaulingDesign);
+   DDX_Check_Bool(pDX, IDC_CHECK_HAULING, m_Entry.m_pImpl->m_HaulingCriteria.bCheck);
+	DDX_Check_Bool(pDX, IDC_DESIGN_HAULING, m_Entry.m_pImpl->m_HaulingCriteria.bDesign);
 
-   DDX_KeywordUnitValueAndTag(pDX,IDC_MIN_TRUCK_SUPPORT,IDC_MIN_TRUCK_SUPPORT_UNIT,_T("H"),m_Entry.m_MinHaulPoint, pDisplayUnits->SpanLength);
-   DDX_UnitValueAndTag(pDX, IDC_TRUCK_SUPPORT_LOCATION_ACCURACY,IDC_TRUCK_SUPPORT_LOCATION_ACCURACY_UNIT,m_Entry.m_HaulPointAccuracy, pDisplayUnits->SpanLength );
-   DDV_UnitValueGreaterThanZero(pDX, IDC_TRUCK_SUPPORT_LOCATION_ACCURACY,m_Entry.m_HaulPointAccuracy, pDisplayUnits->SpanLength );
+   DDX_KeywordUnitValueAndTag(pDX,IDC_MIN_TRUCK_SUPPORT,IDC_MIN_TRUCK_SUPPORT_UNIT,_T("H"),m_Entry.m_pImpl->m_HaulingCriteria.MinBunkPoint, pDisplayUnits->SpanLength);
+   DDX_UnitValueAndTag(pDX, IDC_TRUCK_SUPPORT_LOCATION_ACCURACY,IDC_TRUCK_SUPPORT_LOCATION_ACCURACY_UNIT,m_Entry.m_pImpl->m_HaulingCriteria.BunkPointAccuracy, pDisplayUnits->SpanLength );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_TRUCK_SUPPORT_LOCATION_ACCURACY,m_Entry.m_pImpl->m_HaulingCriteria.BunkPointAccuracy, pDisplayUnits->SpanLength );
 
-   DDX_Check_Bool(pDX, IDC_IS_SUPPORT_LESS_THAN, m_Entry.m_UseMinTruckSupportLocationFactor);
-	DDX_Text(pDX, IDC_SUPPORT_LESS_THAN, m_Entry.m_MinTruckSupportLocationFactor);
-   DDV_MinMaxDouble(pDX, m_Entry.m_MinTruckSupportLocationFactor, 0.0, 0.4);
+   DDX_Check_Bool(pDX, IDC_IS_SUPPORT_LESS_THAN, m_Entry.m_pImpl->m_HaulingCriteria.bUseMinBunkPointLimit);
+	DDX_Text(pDX, IDC_SUPPORT_LESS_THAN, m_Entry.m_pImpl->m_HaulingCriteria.MinBunkPointLimitFactor);
+   DDV_MinMaxDouble(pDX, m_Entry.m_pImpl->m_HaulingCriteria.MinBunkPointLimitFactor, 0.0, 0.4);
 
    // Slab Offset
-	DDX_Check_Bool(pDX, IDC_CHECK_A, m_Entry.m_EnableSlabOffsetCheck);
-	DDX_Check_Bool(pDX, IDC_DESIGN_A, m_Entry.m_EnableSlabOffsetDesign);
-   DDX_CBEnum(pDX,IDC_A_ROUNDING_CB,m_Entry.m_SlabOffsetRoundingMethod);
-   DDX_UnitValueAndTag(pDX, IDC_A_ROUNDING_EDIT,IDC_A_ROUNDING_UNIT,m_Entry.m_SlabOffsetRoundingTolerance, pDisplayUnits->ComponentDim );
-   DDV_UnitValueZeroOrMore(pDX, IDC_A_ROUNDING_EDIT,m_Entry.m_SlabOffsetRoundingTolerance, pDisplayUnits->ComponentDim );
+	DDX_Check_Bool(pDX, IDC_CHECK_A, m_Entry.m_pImpl->m_SlabOffsetCriteria.bCheck);
+	DDX_Check_Bool(pDX, IDC_DESIGN_A, m_Entry.m_pImpl->m_SlabOffsetCriteria.bDesign);
+   DDX_CBEnum(pDX,IDC_A_ROUNDING_CB,m_Entry.m_pImpl->m_SlabOffsetCriteria.RoundingMethod);
+   DDX_UnitValueAndTag(pDX, IDC_A_ROUNDING_EDIT,IDC_A_ROUNDING_UNIT,m_Entry.m_pImpl->m_SlabOffsetCriteria.SlabOffsetTolerance, pDisplayUnits->ComponentDim );
+   DDV_UnitValueZeroOrMore(pDX, IDC_A_ROUNDING_EDIT,m_Entry.m_pImpl->m_SlabOffsetCriteria.SlabOffsetTolerance, pDisplayUnits->ComponentDim );
 
    // Live Load Deflections
-   DDX_Check_Bool(pDX, IDC_LL_DEFLECTION, m_Entry.m_bDoEvaluateDeflection );
- 	DDX_Text(pDX, IDC_DEFLECTION_LIMIT, m_Entry.m_DeflectionLimit);
-   DDV_GreaterThanZero(pDX, IDC_DEFLECTION_LIMIT, m_Entry.m_DeflectionLimit);
+   DDX_Check_Bool(pDX, IDC_LL_DEFLECTION, m_Entry.m_pImpl->m_LiveLoadDeflectionCriteria.bCheck);
+ 	DDX_Text(pDX, IDC_DEFLECTION_LIMIT, m_Entry.m_pImpl->m_LiveLoadDeflectionCriteria.DeflectionLimit);
+   DDV_GreaterThanZero(pDX, IDC_DEFLECTION_LIMIT, m_Entry.m_pImpl->m_LiveLoadDeflectionCriteria.DeflectionLimit);
 
    // Bottom Flange Clearance
-   DDX_Check_Bool(pDX,IDC_CHECK_BOTTOM_FLANGE_CLEARANCE,m_Entry.m_bCheckBottomFlangeClearance);
-   DDX_UnitValueAndTag(pDX,IDC_CLEARANCE,IDC_CLEARANCE_UNIT,m_Entry.m_Cmin,pDisplayUnits->SpanLength);
-   DDV_UnitValueZeroOrMore(pDX,IDC_CLEARANCE,m_Entry.m_Cmin,pDisplayUnits->SpanLength);
+   DDX_Check_Bool(pDX,IDC_CHECK_BOTTOM_FLANGE_CLEARANCE,m_Entry.m_pImpl->m_BottomFlangeClearanceCriteria.bCheck);
+   DDX_UnitValueAndTag(pDX,IDC_CLEARANCE,IDC_CLEARANCE_UNIT,m_Entry.m_pImpl->m_BottomFlangeClearanceCriteria.MinClearance,pDisplayUnits->SpanLength);
+   DDV_UnitValueZeroOrMore(pDX,IDC_CLEARANCE,m_Entry.m_pImpl->m_BottomFlangeClearanceCriteria.MinClearance,pDisplayUnits->SpanLength);
 
    // Girder Inclination
-   DDX_Check_Bool(pDX, IDC_CHECK_INCLINDED_GIRDER, m_Entry.m_bCheckGirderInclination);
-   DDX_Text(pDX, IDC_INCLINDED_GIRDER_FS, m_Entry.m_InclinedGirder_FSmax);
+   DDX_Check_Bool(pDX, IDC_CHECK_INCLINDED_GIRDER, m_Entry.m_pImpl->m_GirderInclinationCriteria.bCheck);
+   DDX_Text(pDX, IDC_INCLINDED_GIRDER_FS, m_Entry.m_pImpl->m_GirderInclinationCriteria.FS);
 
    // Strand Fill
-   int value = (int)m_Entry.m_DesignStrandFillType;
+   int value = (int)m_Entry.m_pImpl->m_HarpedStrandDesignCriteria.StrandFillType;
    DDX_Radio(pDX,IDC_RADIO_FILL_PERMANENT,value);
    if ( pDX->m_bSaveAndValidate )
    {
-      m_Entry.m_DesignStrandFillType = (arDesignStrandFillType)value;
+      m_Entry.m_pImpl->m_HarpedStrandDesignCriteria.StrandFillType = (arDesignStrandFillType)value;
    }
 
-   value = (int)m_Entry.m_LimitStateConcreteStrength;
+   value = (int)m_Entry.m_pImpl->m_LimitStateConcreteStrengthCriteria.LimitStateConcreteStrength;
    DDX_Radio(pDX,IDC_FC1,value);
    if ( pDX->m_bSaveAndValidate )
    {
-      m_Entry.m_LimitStateConcreteStrength = (pgsTypes::LimitStateConcreteStrength)value;
+      m_Entry.m_pImpl->m_LimitStateConcreteStrengthCriteria.LimitStateConcreteStrength = (pgsTypes::LimitStateConcreteStrength)value;
    }
 
-   DDX_Check_Bool(pDX, IDC_USE_90_DAY_STRENGTH, m_Entry.m_bUse90DayConcreteStrength);
-   DDX_Percentage(pDX, IDC_90_DAY_STRENGTH_FACTOR, m_Entry.m_90DayConcreteStrengthFactor);
+   DDX_Check_Bool(pDX, IDC_USE_90_DAY_STRENGTH, m_Entry.m_pImpl->m_LimitStateConcreteStrengthCriteria.bUse90DayConcreteStrength);
+   DDX_Percentage(pDX, IDC_90_DAY_STRENGTH_FACTOR, m_Entry.m_pImpl->m_LimitStateConcreteStrengthCriteria.SlowCuringConcreteStrengthFactor);
    if (pDX->m_bSaveAndValidate)
    {
-      if (m_Entry.m_90DayConcreteStrengthFactor < 1.0)
+      if (m_Entry.m_pImpl->m_LimitStateConcreteStrengthCriteria.SlowCuringConcreteStrengthFactor < 1.0)
       {
          pDX->PrepareEditCtrl(IDC_90_DAY_STRENGTH_FACTOR);
          AfxMessageBox(_T("Factor for 90 day concrete strength must be at least 100%"));
@@ -1426,16 +1421,16 @@ void CSpecMainSheet::ExchangeDesignData(CDataExchange* pDX)
    }
 
    // Roadway elevations
-   DDX_UnitValueAndTag(pDX, IDC_ELEVATION_TOLERANCE, IDC_ELEVATION_TOLERANCE_UNIT, m_Entry.m_FinishedElevationTolerance, pDisplayUnits->ComponentDim);
-   DDV_UnitValueZeroOrMore(pDX, IDC_ELEVATION_TOLERANCE, m_Entry.m_FinishedElevationTolerance, pDisplayUnits->ComponentDim);
+   DDX_UnitValueAndTag(pDX, IDC_ELEVATION_TOLERANCE, IDC_ELEVATION_TOLERANCE_UNIT, m_Entry.m_pImpl->m_SlabOffsetCriteria.FinishedElevationTolerance, pDisplayUnits->ComponentDim);
+   DDV_UnitValueZeroOrMore(pDX, IDC_ELEVATION_TOLERANCE, m_Entry.m_pImpl->m_SlabOffsetCriteria.FinishedElevationTolerance, pDisplayUnits->ComponentDim);
 }
 
 void CSpecMainSheet::ExchangeBearingsData(CDataExchange* pDX)
 {
-   DDX_Check_Bool(pDX, IDC_TAPERED_SOLE_PLATE_REQUIRED, m_Entry.m_bAlertTaperedSolePlateRequirement);
-   DDX_Text(pDX, IDC_TAPERED_SOLE_PLATE_THRESHOLD, m_Entry.m_TaperedSolePlateInclinationThreshold);
-   DDV_LimitOrMore(pDX, IDC_TAPERED_SOLE_PLATE_THRESHOLD, m_Entry.m_TaperedSolePlateInclinationThreshold, 0.0);
-   DDX_Check_Bool(pDX, IDC_BEARING_REACTION_IMPACT, m_Entry.m_bUseImpactForBearingReactions);
+   DDX_Check_Bool(pDX, IDC_TAPERED_SOLE_PLATE_REQUIRED, m_Entry.m_pImpl->m_BearingCriteria.bAlertTaperedSolePlateRequirement);
+   DDX_Text(pDX, IDC_TAPERED_SOLE_PLATE_THRESHOLD, m_Entry.m_pImpl->m_BearingCriteria.TaperedSolePlateInclinationThreshold);
+   DDV_LimitOrMore(pDX, IDC_TAPERED_SOLE_PLATE_THRESHOLD, m_Entry.m_pImpl->m_BearingCriteria.TaperedSolePlateInclinationThreshold, 0.0);
+   DDX_Check_Bool(pDX, IDC_BEARING_REACTION_IMPACT, m_Entry.m_pImpl->m_BearingCriteria.bUseImpactForBearingReactions);
 }
 
 BOOL CSpecMainSheet::OnInitDialog() 

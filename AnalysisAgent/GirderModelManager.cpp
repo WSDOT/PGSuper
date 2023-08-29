@@ -50,6 +50,11 @@
 
 #include <pgsExt\AnalysisResult.h>
 
+#include <psgLib/LiveLoadCriteria.h>
+#include <psgLib/MomentCapacityCriteria.h>
+#include <psgLib/LimitStateConcreteStrengthCriteria.h>
+#include <psgLib/SpecificationCriteria.h>
+
 #include <iterator>
 #include <algorithm>
 #include <numeric>
@@ -354,8 +359,8 @@ bool CGirderModelManager::HasPedestrianLoad() const
    GET_IFACE(ILibrary,pLibrary);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry( pSpec->GetSpecification().c_str() );
-
-   Float64 minWidth = pSpecEntry->GetMinSidewalkWidth();
+   const auto& live_load_criteria = pSpecEntry->GetLiveLoadCriteria();
+   Float64 minWidth = live_load_criteria.MinSidewalkWidth;
 
    Float64 leftWidth(0), rightWidth(0);
    if (pBarriers->HasSidewalk(pgsTypes::tboLeft))
@@ -1439,7 +1444,7 @@ void CGirderModelManager::GetDeckShrinkageStresses(const pgsPointOfInterest& poi
          // if one of the stress locations is for the deck, then we need to adjust the properties with the modular ratio
          // note that St and Sb are already adjusted, but Area is not
          GET_IFACE(ILossParameters, pLossParams);
-         bool bIsTimeStepAnalysis = (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false);
+         bool bIsTimeStepAnalysis = (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false);
 
          GET_IFACE(IMaterials, pMaterials);
          Float64 Eg = (bIsTimeStepAnalysis ? pMaterials->GetSegmentAgeAdjustedEc(poi.GetSegmentKey(), compositeIntervalIdx) : pMaterials->GetSegmentEc(poi.GetSegmentKey(), compositeIntervalIdx));
@@ -4806,7 +4811,8 @@ std::vector<Float64> CGirderModelManager::GetSlabDesignMoment(pgsTypes::LimitSta
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bExcludeNoncompositeMoments = !pSpecEntry->IncludeNoncompositeMomentsForNegMomentDesign();
+   const auto& moment_capacity_criteria = pSpecEntry->GetMomentCapacityCriteria();
+   bool bExcludeNoncompositeMoments = !moment_capacity_criteria.bIncludeNoncompositeMomentsForNegMomentDesign;
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType constructionIntervalIdx = pIntervals->GetConstructionLoadInterval();
@@ -4884,7 +4890,7 @@ std::vector<Float64> CGirderModelManager::GetSlabDesignMoment(pgsTypes::LimitSta
       idx++;
    }
 
-   if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP )
+   if ( pSpecEntry->GetPrestressLossCriteria().LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       GET_IFACE(ICombinedForces2,pForces);
 
@@ -7650,7 +7656,7 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
    GET_IFACE(IMaterials,pMaterial);
 
    GET_IFACE(ILossParameters, pLossParams);
-   bool bTimeStepAnalysis = (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false);
+   bool bTimeStepAnalysis = (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false);
 
    // Use one LBAM superstructure member for each segment in a girder
    // Use two LBAM superstructure members at intermediate piers between girder groups
@@ -7725,10 +7731,7 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
          GET_IFACE(ILibrary, pLib);
          GET_IFACE(ISpecification, pSpec);
          const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-         bool bUse90DayStrengthFactor;
-         Float64 concrete_strength_factor;
-         pSpecEntry->Use90DayStrengthForSlowCuringConcrete(&bUse90DayStrengthFactor, &concrete_strength_factor);
-
+         const auto& limit_state_concrete_strength_criteria = pSpecEntry->GetLimitStateConcreteStrengthCriteria();
 
          // The vector of superstructure member data contains stiffness properties by stage.
          // This should be segment data between section changes, for each stage.
@@ -7744,7 +7747,7 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
 
             // young's modulus in this interval
             Float64 Ec;
-            if (bUse90DayStrengthFactor && !IsEqual(concrete_strength_factor,1.0))
+            if (limit_state_concrete_strength_criteria.bUse90DayConcreteStrength && !IsEqual(limit_state_concrete_strength_criteria.SlowCuringConcreteStrengthFactor,1.0))
             {
                // the 115% increase in concrete strength (LRFD 5.12.3.2.5) only applies to stresses
                // if the increase is enabled, use the 28 day modulus for all time after 90 days
@@ -9506,15 +9509,16 @@ Float64 CGirderModelManager::GetPedestrianLoadPerSidewalk(pgsTypes::TrafficBarri
       GET_IFACE(ILibrary,pLibrary);
       GET_IFACE(ISpecification,pSpec);
       const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry( pSpec->GetSpecification().c_str() );
+      const auto& live_load_criteria = pSpecEntry->GetLiveLoadCriteria();
 
-      Float64 Wmin = pSpecEntry->GetMinSidewalkWidth();
+      Float64 Wmin = live_load_criteria.MinSidewalkWidth;
 
       if ( swWidth <= Wmin )
       {
          return 0.0; // not min sidewalk, no pedestrian load
       }
 
-      Float64 w = pSpecEntry->GetPedestrianLiveLoad();
+      Float64 w = live_load_criteria.PedestrianLoad;
       Float64 W  = w*swWidth;
 
       return W;
@@ -9974,7 +9978,8 @@ void CGirderModelManager::AddHL93LiveLoad(ILBAMModel* pModel,ILibrary* pLibrary,
 
    // this is an HL-93 live load, use the LBAM configuration utility
    const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   SpecUnitType units = pSpecEntry->GetSpecificationUnits() == WBFL::LRFD::LRFDVersionMgr::Units::US ? suUS : suSI;
+   SpecUnitType units = pSpecEntry->GetSpecificationCriteria().Units == WBFL::LRFD::LRFDVersionMgr::Units::US ? suUS : suSI;
+   const auto& live_load_criteria = pSpecEntry->GetLiveLoadCriteria();
 
    ATLASSERT( llType != pgsTypes::lltPedestrian ); // we don't want to add HL-93 to the pedestrian live load model
    LiveLoadModelType llmt = g_LiveLoadModelType[llType];
@@ -9982,7 +9987,7 @@ void CGirderModelManager::AddHL93LiveLoad(ILBAMModel* pModel,ILibrary* pLibrary,
    GET_IFACE(IBridge,pBridge);
    SpanIndexType nSpans = pBridge->GetSpanCount();
    VARIANT_BOOL bUseDualTruckTrains = (1 < nSpans ? VARIANT_TRUE : VARIANT_FALSE); // always use dual truck trains if more than one span (needed for reactions at intermediate piers)
-   VARIANT_BOOL bIncludeDualTandem = (nSpans == 1 ? VARIANT_FALSE : (pSpecEntry->IncludeDualTandem() ? VARIANT_TRUE : VARIANT_FALSE));
+   VARIANT_BOOL bIncludeDualTandem = (nSpans == 1 ? VARIANT_FALSE : (live_load_criteria.bIncludeDualTandem ? VARIANT_TRUE : VARIANT_FALSE));
    m_LBAMUtility->ConfigureDesignLiveLoad(pModel,llmt,IMtruck,IMlane,bUseDualTruckTrains, bIncludeDualTandem,units,m_UnitServer);
 }
 
@@ -9993,7 +9998,7 @@ void CGirderModelManager::AddFatigueLiveLoad(ILBAMModel* pModel,ILibrary* pLibra
    LiveLoadModelType llmt = g_LiveLoadModelType[llType];
 
    const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   SpecUnitType units = pSpecEntry->GetSpecificationUnits() == WBFL::LRFD::LRFDVersionMgr::Units::US ? suUS : suSI;
+   SpecUnitType units = pSpecEntry->GetSpecificationCriteria().Units == WBFL::LRFD::LRFDVersionMgr::Units::US ? suUS : suSI;
 
    m_LBAMUtility->ConfigureFatigueLiveLoad(pModel,llmt,IMtruck,IMlane,units,m_UnitServer);
 }
@@ -10003,7 +10008,7 @@ void CGirderModelManager::AddDeflectionLiveLoad(ILBAMModel* pModel,ILibrary* pLi
    GET_IFACE(ISpecification,pSpec);
 
    const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   SpecUnitType units = pSpecEntry->GetSpecificationUnits() == WBFL::LRFD::LRFDVersionMgr::Units::US ? suUS : suSI;
+   SpecUnitType units = pSpecEntry->GetSpecificationCriteria().Units == WBFL::LRFD::LRFDVersionMgr::Units::US ? suUS : suSI;
 
    m_LBAMUtility->ConfigureDeflectionLiveLoad(pModel,lltDeflection,IMtruck,IMlane,units,m_UnitServer);
 }
@@ -10774,7 +10779,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel) const
    const CLoadFactors* pLoadFactors = pLF->GetLoadFactors();
 
    GET_IFACE( ILossParameters, pLossParams);
-   bool bTimeStepAnalysis = (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false);
+   bool bTimeStepAnalysis = (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false);
 
    // Have multiple options for applying pedestrian loads for different limit states
    GET_IFACE(ILiveLoads,pLiveLoads);
@@ -12748,7 +12753,7 @@ IntervalIndexType CGirderModelManager::GetIntervalFromLBAMStageName(const pgsPoi
    // Need to match intervals used when setting up the LBAM model
    // we use section properties for release for the first interval(which is erection)
    GET_IFACE(ILossParameters, pLossParams);
-   if (pLossParams->GetLossMethod() != pgsTypes::TIME_STEP)
+   if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
    {
       GET_IFACE(IIntervals, pIntervals);
       const auto& segmentKey(poi.GetSegmentKey());
@@ -17772,12 +17777,12 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPoint
    std::array<Float64, 3> P{ 0,0,0 };
    if ( intervalIdx < liveLoadIntervalIdx )
    {
-      P[pgsTypes::Straight] = pPsForce->GetPrestressForce(poi, pgsTypes::Straight, intervalIdx, timeType, bIncludeElasticEffects, pgsTypes::tltMinimum);
-      P[pgsTypes::Harped] = pPsForce->GetPrestressForce(poi, pgsTypes::Harped, intervalIdx, timeType, bIncludeElasticEffects, pgsTypes::tltMinimum);
+      P[pgsTypes::Straight] = pPsForce->GetPrestressForce(poi, pgsTypes::Straight, intervalIdx, timeType, bIncludeElasticEffects, pgsTypes::TransferLengthType::Minimum);
+      P[pgsTypes::Harped] = pPsForce->GetPrestressForce(poi, pgsTypes::Harped, intervalIdx, timeType, bIncludeElasticEffects, pgsTypes::TransferLengthType::Minimum);
 
       if ( bIncTempStrands )
       {
-         P[pgsTypes::Temporary] = pPsForce->GetPrestressForce(poi, pgsTypes::Temporary, intervalIdx, timeType, bIncludeElasticEffects, pgsTypes::tltMinimum);
+         P[pgsTypes::Temporary] = pPsForce->GetPrestressForce(poi, pgsTypes::Temporary, intervalIdx, timeType, bIncludeElasticEffects, pgsTypes::TransferLengthType::Minimum);
       }
    }
    else
@@ -17789,8 +17794,8 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPoint
       }
       else
       {
-         P[pgsTypes::Straight] = pPsForce->GetPrestressForce(poi, pgsTypes::Straight, intervalIdx, timeType, bIncludeElasticEffects, pgsTypes::tltMinimum);
-         P[pgsTypes::Harped]   = pPsForce->GetPrestressForce(poi, pgsTypes::Harped, intervalIdx, timeType, bIncludeElasticEffects, pgsTypes::tltMinimum);
+         P[pgsTypes::Straight] = pPsForce->GetPrestressForce(poi, pgsTypes::Straight, intervalIdx, timeType, bIncludeElasticEffects, pgsTypes::TransferLengthType::Minimum);
+         P[pgsTypes::Harped]   = pPsForce->GetPrestressForce(poi, pgsTypes::Harped, intervalIdx, timeType, bIncludeElasticEffects, pgsTypes::TransferLengthType::Minimum);
       }
 
       if ( bIncTempStrands )
@@ -18286,7 +18291,7 @@ void CGirderModelManager::VerifyAnalysisType() const
 {
    // Verifies that the analysis type is NOT time step
    GET_IFACE( ILossParameters, pLossParams);
-   ATLASSERT( pLossParams->GetLossMethod() != pgsTypes::TIME_STEP );
+   ATLASSERT( pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP );
 }
 #endif
 

@@ -114,12 +114,12 @@ bool DuctLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 
 bool DuctLibraryEntry::IsEqual(const DuctLibraryEntry& rOther,bool bConsiderName) const
 {
-   std::vector<pgsLibraryEntryDifferenceItem*> vDifferences;
+   std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>> vDifferences;
    bool bMustRename;
    return Compare(rOther,vDifferences,bMustRename,true,bConsiderName);
 }
 
-bool DuctLibraryEntry::Compare(const DuctLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
+bool DuctLibraryEntry::Compare(const DuctLibraryEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
 {
    CEAFApp* pApp = EAFGetApp();
    const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
@@ -129,31 +129,31 @@ bool DuctLibraryEntry::Compare(const DuctLibraryEntry& rOther, std::vector<pgsLi
    if ( !::IsEqual(m_OD,rOther.m_OD) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(_T("OD"),m_OD,rOther.m_OD,pDisplayUnits->ComponentDim));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceLengthItem>(_T("OD"),m_OD,rOther.m_OD,pDisplayUnits->ComponentDim));
    }
 
    if (!::IsEqual(m_ID, rOther.m_ID))
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(_T("ID"), m_ID, rOther.m_ID, pDisplayUnits->ComponentDim));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceLengthItem>(_T("ID"), m_ID, rOther.m_ID, pDisplayUnits->ComponentDim));
    }
 
    if (!::IsEqual(m_ND, rOther.m_ND))
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(_T("Nominal Diameter"), m_ND, rOther.m_ND, pDisplayUnits->ComponentDim));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceLengthItem>(_T("Nominal Diameter"), m_ND, rOther.m_ND, pDisplayUnits->ComponentDim));
    }
 
    if ( !::IsEqual(m_Z,rOther.m_Z) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(_T("Z"),m_Z,rOther.m_Z,pDisplayUnits->ComponentDim));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceLengthItem>(_T("Z"),m_Z,rOther.m_Z,pDisplayUnits->ComponentDim));
    }
 
    if (considerName &&  GetName() != rOther.GetName() )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
    }
 
    return vDifferences.size() == 0 ? true : false;

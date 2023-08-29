@@ -34,6 +34,9 @@ CLASS
 #include <PgsExt\GirderArtifactTool.h>
 #include <PgsExt\BridgeDescription2.h>
 
+#include <psgLib/LimitsCriteria.h>
+
+
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Artifact.h>
@@ -230,16 +233,17 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroke
    GET_IFACE2(pBroker,ILibrary,pLib);
    std::_tstring strSpecName = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
+   const auto& limits_criteria = pSpecEntry->GetLimitsCriteria();
 
    GET_IFACE2_NOCHECK(pBroker,IStirrupGeometry,pStirrupGeom);
-   if ( pSpecEntry->GetDoCheckStirrupSpacingCompatibility() && !pStirrupGeom->AreStirrupZoneLengthsCombatible(girderKey) )
+   if ( limits_criteria.bCheckStirrupSpacingCompatibility && !pStirrupGeom->AreStirrupZoneLengthsCombatible(girderKey) )
    {
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
       *pPara << color(Red) << Bold(_T("WARNING: Stirrup zone lengths are not compatible with stirrup spacings. Refer to the Stirrup Layout Geometry Check for more information.")) << color(Black) << rptNewLine;
    }
 
-   if ( pSpecEntry->CheckGirderSag() )
+   if ( limits_criteria.bCheckSag )
    {
       // Negative camber is not technically a spec check, but a warning
       GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
@@ -257,26 +261,26 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroke
          ATLASSERT(vPoi.size()==1);
          const pgsPointOfInterest& poiMidSpan(vPoi.front());
    
-         Float64 C = pCamber->GetScreedCamber( poiMidSpan, CREEP_MINTIME );
+         Float64 C = pCamber->GetScreedCamber( poiMidSpan, pgsTypes::CreepTime::Min );
    
          std::_tstring camberType;
          Float64 Dupper, Davg, Dlower;
-         pCamber->GetDCamberForGirderScheduleEx(poiMidSpan, CREEP_MINTIME, &Dupper, &Davg, &Dlower);
+         pCamber->GetDCamberForGirderScheduleEx(poiMidSpan, pgsTypes::CreepTime::Min, &Dupper, &Davg, &Dlower);
 
          Float64 D = 999999; // initialize to obvious bogus value
-         switch(pSpecEntry->GetSagCamberType())
+         switch(limits_criteria.SagCamber)
          {
-         case pgsTypes::LowerBoundCamber:
+         case pgsTypes::SagCamber::LowerBoundCamber:
             D = Dlower;
             camberType = _T("lower bound");
             break;
 
-         case pgsTypes::AverageCamber:
+         case pgsTypes::SagCamber::AverageCamber:
             D = Davg;
             camberType = _T("average");
             break;
 
-         case pgsTypes::UpperBoundCamber:
+         case pgsTypes::SagCamber::UpperBoundCamber:
             D = Dupper;
             camberType = _T("upper bound");
             break;
@@ -300,7 +304,7 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroke
             *pPara << color(Red) << _T("WARNING: Screed Camber is nearly equal to the ") << camberType.c_str() << _T(" camber at time of deck casting. The girder may end up with a sag.") << color(Black) << rptNewLine;
          }
 
-         Float64 excess_camber = pCamber->GetExcessCamber(poiMidSpan,CREEP_MAXTIME);
+         Float64 excess_camber = pCamber->GetExcessCamber(poiMidSpan,pgsTypes::CreepTime::Max);
          if ( excess_camber < 0.0 )
          {
             rptParagraph* pPara = new rptParagraph;

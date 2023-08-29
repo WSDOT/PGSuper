@@ -61,7 +61,7 @@ rptChapter* CShrinkageStrainChapterBuilder::Build(const std::shared_ptr<const WB
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
 
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
-   ATLASSERT( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP );
+   ATLASSERT( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP );
 
    rptParagraph* pPara = new rptParagraph;
    (*pChapter) << pPara;

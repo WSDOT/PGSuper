@@ -24,6 +24,7 @@
 #include <Reporting\LibraryUsageTable.h>
 
 #include <IFace\Project.h>
+#include <psgLib/SpecificationCriteria.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -75,7 +76,7 @@ rptRcTable* CLibraryUsageTable::Build(IBroker* pBroker) const
       if (record.LibName == _T("Project Criteria"))
       {
          const SpecLibraryEntry* pEntry = pLibrary->GetSpecEntry(record.EntryName.c_str());
-         (*table)(row, 1) << _T(" based on") << rptNewLine << WBFL::LRFD::LRFDVersionMgr::GetCodeString() << _T(", ") << WBFL::LRFD::LRFDVersionMgr::GetVersionString(pEntry->GetSpecificationType());
+         (*table)(row, 1) << _T(" based on") << rptNewLine << WBFL::LRFD::LRFDVersionMgr::GetCodeString() << _T(", ") << WBFL::LRFD::LRFDVersionMgr::GetVersionString(pEntry->GetSpecificationCriteria().GetEdition());
       }
       else if (record.LibName == _T("Load Rating Criteria"))
       {

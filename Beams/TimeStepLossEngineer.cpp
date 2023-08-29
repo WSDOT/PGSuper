@@ -38,6 +38,9 @@
 #include <PgsExt\StatusItem.h>
 #include <PGSuperException.h>
 
+#include <psgLib/PrincipalTensionStressCriteria.h>
+
+
 #include <WBFLGenericBridgeTools.h>
 
 #include <Details.h>
@@ -92,7 +95,7 @@ void CTimeStepLossEngineer::SetBroker(IBroker* pBroker,StatusGroupIDType statusG
 const LOSSDETAILS* CTimeStepLossEngineer::GetLosses(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx)
 {
    GET_IFACE(ILossParameters,pLossParameters);
-   if ( pLossParameters->GetLossMethod() != pgsTypes::TIME_STEP )
+   if ( pLossParameters->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       std::_tstring msg(_T("Prestress losses cannot be computed. Use Project Criteria that specifies the time-step method for prestress loss calculations."));
       
@@ -592,10 +595,8 @@ void CTimeStepLossEngineer::ComputeLosses(GirderIndexType girderLineIdx,Interval
          GET_IFACE(ILibrary, pLib);
          std::_tstring specName = pSpec->GetSpecification();
          const auto* pSpecEntry = pLib->GetSpecEntry(specName.c_str());
-
-         pgsTypes::PrincipalTensileStressMethod method;
-         Float64 coefficient, principalTensileStressFcThreshold, ungroutedDiameterMultiplier, groutedDiameterMultiplier;
-         pSpecEntry->GetPrincipalTensileStressInWebsParameters(&method, &coefficient, &m_DuctDiameterNearnessFactor, &ungroutedDiameterMultiplier, &groutedDiameterMultiplier, &principalTensileStressFcThreshold);
+         const auto& principal_tension_stress_criteria = pSpecEntry->GetPrincipalTensionStressCriteria();
+         m_DuctDiameterNearnessFactor = principal_tension_stress_criteria.TendonNearnessFactor;
       }
 
       m_StrandTypes.clear();
@@ -684,7 +685,7 @@ void CTimeStepLossEngineer::ComputeFrictionLosses(const CGirderKey& girderKey,LO
       pLossDetails->GirderFrictionLossDetails.reserve(nDucts);
 #if defined _DEBUG
       ATLASSERT(pLossDetails->POI == poi);
-      ATLASSERT(pLossDetails->LossMethod == pgsTypes::TIME_STEP);
+      ATLASSERT(pLossDetails->LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP);
 #endif
 
       bool bIsOnGirder = m_pPoi->IsOnGirder(poi);
@@ -855,7 +856,7 @@ void CTimeStepLossEngineer::ComputeFrictionLosses(const CPrecastSegmentData* pSe
       const pgsPointOfInterest& poi(*iter);
 
       LOSSDETAILS* pLossDetails = &(pLosses->SectionLosses[poi]);
-      pLossDetails->LossMethod = pgsTypes::TIME_STEP;
+      pLossDetails->LossMethod = PrestressLossCriteria::LossMethodType::TIME_STEP;
 #if defined _DEBUG
       pLossDetails->POI = poi;
 #endif
@@ -1728,7 +1729,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
                if (intervalIdx == releaseIntervalIdx)
                {
                   // accounts for lack of development and location of debonding
-                  Float64 xfer_factor = m_pPSForce->GetTransferLengthAdjustment(poi, strandType, pgsTypes::tltMinimum);
+                  Float64 xfer_factor = m_pPSForce->GetTransferLengthAdjustment(poi, strandType, pgsTypes::TransferLengthType::Minimum);
 
                   // xfer_factor reduces the nominal strand force (force based on all strands)
                   // to the actual force by making adjustments for lack of full development

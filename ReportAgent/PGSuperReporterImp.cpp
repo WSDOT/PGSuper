@@ -45,6 +45,8 @@
 
 #include <IReportManager.h>
 
+#include <psgLib/PrincipalTensionStressCriteria.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -217,7 +219,7 @@ HRESULT CPGSuperReporterImp::OnSpecificationChanged()
    GET_IFACE(IReportManager,pRptMgr);
    GET_IFACE( ILossParameters, pLossParams);
 
-   bool bTimeStep = pLossParams->GetLossMethod() == pgsTypes::TIME_STEP;
+   bool bTimeStep = pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP;
    bool bHidden = true;
    if ( bTimeStep )
    {
@@ -245,11 +247,8 @@ HRESULT CPGSuperReporterImp::OnSpecificationChanged()
       GET_IFACE(ILibrary, pLib);
       GET_IFACE(ISpecification, pSpec);
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-
-      pgsTypes::PrincipalTensileStressMethod method;
-      Float64 coefficient, ductDiameterFactor, ungroutedMultiplier, groutedMultiplier, principalTensileStressFcThreshold;
-      pSpecEntry->GetPrincipalTensileStressInWebsParameters(&method, &coefficient, &ductDiameterFactor, &ungroutedMultiplier, &groutedMultiplier, &principalTensileStressFcThreshold);
-      if (method == pgsTypes::ptsmNCHRP)
+      const auto& principal_tension_stress_criteria = pSpecEntry->GetPrincipalTensionStressCriteria();
+      if (principal_tension_stress_criteria.Method == pgsTypes::ptsmNCHRP)
       {
          bIsTimeStepPrincStress = true;
       }
@@ -267,7 +266,7 @@ HRESULT CPGSuperReporterImp::OnSpecificationChanged()
    
    // Update details report to contain a couple of extra chapters
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder = pRptMgr->GetReportBuilder(_T("Details Report"));
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       auto pChBuilder = pRptBuilder->GetChapterBuilder(TEXT("Shrinkage Strain Details"));
       if (pChBuilder == nullptr)

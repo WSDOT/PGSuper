@@ -35,6 +35,8 @@
 #include <IFace\Project.h>
 #include <PgsExt\LoadFactors.h>
 
+#include <psgLib/PrincipalTensionStressCriteria.h>
+
 /////////// Misc
 
 inline IndexType HashPOIInterval(PoiIDType poiid, IntervalIndexType interval)
@@ -407,10 +409,7 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
    GET_IFACE(ILibrary, pLib);
    std::_tstring specName = pSpec->GetSpecification();
    const auto* pSpecEntry = pLib->GetSpecEntry(specName.c_str());
-
-   pgsTypes::PrincipalTensileStressMethod method;
-   Float64 coefficient, ductDiameterFactor, ungroutedMultiplier, groutedMultiplier,principalTensileStressFcThreshold;
-   pSpecEntry->GetPrincipalTensileStressInWebsParameters(&method, &coefficient,&ductDiameterFactor,&ungroutedMultiplier,&groutedMultiplier,&principalTensileStressFcThreshold);
+   const auto& principal_tension_stress_criteria = pSpecEntry->GetPrincipalTensionStressCriteria();
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
@@ -490,7 +489,7 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
       // stress in the bottom of the girder for the minimum moment which is the minimum (compressive) stress.
 
       // if the web section is below the composite girder centroid, we want the maximum (tensile) stress near the bottom of the girder. This occurs with positive (maximum) moment.
-      // The corresponding stress at the top of the girder for the maximum moment is the minimum (compressive) stression.
+      // The corresponding stress at the top of the girder for the maximum moment is the minimum (compressive) stress.
 
       bool bWebSectionAboveCentroid = ::IsLE(-Ytc, YwebSection) ? true : false; // -Ytc because YwebSection is in girder section coordinates (Y=0 at top, negative is downwards)
       auto bat = pProductForces->GetBridgeAnalysisType(bWebSectionAboveCentroid ? pgsTypes::Minimize /*want minimum, or negative moments*/ : pgsTypes::Maximize /*want maximum, or positive moment*/);
@@ -498,8 +497,8 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
       pLSForces->GetStress(intervalIdx, limitState, poi, bat, true/*include prestress*/, pgsTypes::TopGirder, &fMin[pgsTypes::TopGirder], &fMax[pgsTypes::TopGirder]);
       pLSForces->GetStress(intervalIdx, limitState, poi, bat, true/*include prestress*/, pgsTypes::BottomGirder, &fMin[pgsTypes::BottomGirder], &fMax[pgsTypes::BottomGirder]);
 
-      // we are seeking the maximum principal tensile stress so we want the maximum axial stress. At the extremeties of the section, it is typically easy to know
-      // which case governings, however at the centroids, it can get a little more tricky. we will compute them both to determine which controls
+      // we are seeking the maximum principal tensile stress so we want the maximum axial stress. At the extremities of the section, it is typically easy to know
+      // which case governing, however at the centroids, it can get a little more tricky. we will compute them both to determine which controls
       Float64 fpcx1 = fMax[pgsTypes::TopGirder] - (fMin[pgsTypes::BottomGirder] - fMax[pgsTypes::TopGirder])*YwebSection / details.Hg;
       Float64 fpcx2 = fMin[pgsTypes::TopGirder] - (fMax[pgsTypes::BottomGirder] - fMin[pgsTypes::TopGirder])*YwebSection / details.Hg;
 
@@ -534,6 +533,7 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
             Float64 Yduct;
             pntDuct->get_Y(&Yduct);
 
+            Float64 ductDiameterFactor = principal_tension_stress_criteria.TendonNearnessFactor;
             if (::InRange(Yduct - ductDiameterFactor*OD, YwebSection, Yduct + ductDiameterFactor*OD))
             {
                // the duct is near. compute the deduction for this duct
@@ -558,6 +558,7 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
             Float64 Yduct;
             pntDuct->get_Y(&Yduct);
 
+            Float64 ductDiameterFactor = principal_tension_stress_criteria.TendonNearnessFactor;
             if (::InRange(Yduct - ductDiameterFactor*OD, YwebSection, Yduct + ductDiameterFactor*OD))
             {
                // the duct is near. compute the deduction for this duct
@@ -580,7 +581,7 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
       auto maxBat = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
       auto minBat = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
       Float64 Vnc, Vc;
-      if (method == pgsTypes::ptsmLRFD)
+      if (principal_tension_stress_criteria.Method == pgsTypes::ptsmLRFD)
       {
          WBFL::System::SectionValue dummy, Vmin, Vmax;
          pLSForces->GetShear(intervalIdx, limitState, poi, maxBat, &dummy, &Vmax);
@@ -601,7 +602,7 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
 
       Float64 Qc, Qnc;
       Float64 t, f_max;
-      if (method == pgsTypes::ptsmLRFD)
+      if (principal_tension_stress_criteria.Method == pgsTypes::ptsmLRFD)
       {
          Qnc = 0;
          Qc = pSectProps->GetQ(spType, intervalIdx, poi, YwebSection);

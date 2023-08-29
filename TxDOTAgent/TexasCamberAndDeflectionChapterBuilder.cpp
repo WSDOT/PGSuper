@@ -42,6 +42,9 @@
 
 #include <psgLib\ConnectionLibraryEntry.h>
 
+#include <psgLib/LiveLoadDeflectionCriteria.h>
+#include <psgLib/CreepCriteria.h>
+
 #include <WBFLCogo.h>
 
 #ifdef _DEBUG
@@ -193,7 +196,9 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
-   bool do_defl = pSpecEntry->GetDoEvaluateLLDeflection();
+   const auto& creep_criteria = pSpecEntry->GetCreepCriteria();
+
+   bool do_defl = pSpecEntry->GetLiveLoadDeflectionCriteria().bCheck;
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
    // See if any girders in our list have a sidewalk load
@@ -283,7 +288,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
       pProductForces->GetDeflLiveLoadDeflection(IProductForces::DeflectionLiveLoadEnvelope, poi, bat, &delta_oll, &temp );
 
       // get # of days for creep
-      Float64 max_days = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day);
+      Float64 max_days = WBFL::Units::ConvertFromSysUnits(creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day);
 
       // Populate the table
       RowIndexType row = 0;
@@ -309,7 +314,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
          if (bFirst)
             (*pTable)(row,0) << _T("Unfactored Design Camber");
 
-      Float64 Du = pCamber->GetDCamberForGirderScheduleUnfactored( poi,CREEP_MAXTIME);
+      Float64 Du = pCamber->GetDCamberForGirderScheduleUnfactored( poi,pgsTypes::CreepTime::Max);
       if ( Du < 0 )
          {
             if (isSingleGirder)
@@ -331,7 +336,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
          if (bFirst)
             (*pTable)(row,0) << _T("Factored Design Camber, ")<<Sub2(symbol(DELTA),_T("4"))<<Super(_T("**"));
 
-      Float64 Df = pCamber->GetDCamberForGirderSchedule( poi,CREEP_MAXTIME);
+      Float64 Df = pCamber->GetDCamberForGirderSchedule( poi,pgsTypes::CreepTime::Max);
       if ( Df < 0 )
          {
             if (isSingleGirder)
@@ -465,15 +470,15 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
          (*pTable)(row, 0) << _T("Screed Camber, C") << Super(_T("**"));
 
       if (isSingleGirder)
-         (*pTable)(row,1) << disp.SetValue( pCamber->GetScreedCamber(poi,CREEP_MAXTIME) );
+         (*pTable)(row,1) << disp.SetValue( pCamber->GetScreedCamber(poi,pgsTypes::CreepTime::Max) );
 
-      (*pTable)(row,col) << dispft.SetValue( pCamber->GetScreedCamber(poi,CREEP_MAXTIME) );
+      (*pTable)(row,col) << dispft.SetValue( pCamber->GetScreedCamber(poi,pgsTypes::CreepTime::Max) );
       row++;
 
       if (bFirst)
          (*pTable)(row,0) << _T("Computed Excess Camber, ") << Sub2(symbol(DELTA), _T("4")) << _T(" - C");
 
-      Float64 excess_camber = pCamber->GetExcessCamber(poi,CREEP_MAXTIME);
+      Float64 excess_camber = pCamber->GetExcessCamber(poi,pgsTypes::CreepTime::Max);
       if ( excess_camber < 0 )
       {
          if (isSingleGirder)
@@ -519,8 +524,8 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
    *p<<_T("* Deflection due to haunch weight is not included in this value") << rptNewLine;
    *p<<_T("** Refer to the Camber Details tables in the Details report for more information") << rptNewLine;
 
-   Float64 min_days = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Min(), WBFL::Units::Measure::Day);
-   Float64 max_days = WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day);
+   Float64 min_days = WBFL::Units::ConvertFromSysUnits(creep_criteria.CreepDuration2Min, WBFL::Units::Measure::Day);
+   Float64 max_days = WBFL::Units::ConvertFromSysUnits(creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day);
    if (max_days != min_days)
    {
       *p<<color(Red) << _T("Warning: Camber min and max timings in project criteria are different. Values for max timing are shown only.") << color(Black) << rptNewLine;
@@ -541,11 +546,3 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
       *p<< _T(" indicating a potential sag in the beam.") << color(Black) << rptNewLine;
    }
 }
-
-
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

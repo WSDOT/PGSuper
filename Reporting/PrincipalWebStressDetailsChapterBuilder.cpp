@@ -34,6 +34,8 @@
 
 #include <WBFLGenericBridgeTools.h>
 
+#include <psgLib/PrincipalTensionStressCriteria.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -79,7 +81,7 @@ rptChapter* CPrincipalWebStressDetailsChapterBuilder::Build(const std::shared_pt
 
    // check if method is correct. Either bail out here should have been checked before this, but...
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
-   if ( pLossParams->GetLossMethod() != pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       *pPara << color(Red) << _T("Time Step Principal Web Stress analysis results not available when time step losses not used.") << color(Black) << rptNewLine;
       return pChapter;
@@ -89,11 +91,8 @@ rptChapter* CPrincipalWebStressDetailsChapterBuilder::Build(const std::shared_pt
       GET_IFACE2(pBroker,ILibrary, pLib);
       GET_IFACE2(pBroker,ISpecification, pSpec);
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-
-      pgsTypes::PrincipalTensileStressMethod method;
-      Float64 coefficient, ductDiameterFactor, ungroutedMultiplier, groutedMultiplier, principalTensileStressFcThreshold;
-      pSpecEntry->GetPrincipalTensileStressInWebsParameters(&method, &coefficient, &ductDiameterFactor, &ungroutedMultiplier, &groutedMultiplier, &principalTensileStressFcThreshold);
-      if (method != pgsTypes::ptsmNCHRP)
+      const auto& principal_tension_stress_criteria = pSpecEntry->GetPrincipalTensionStressCriteria();
+      if (principal_tension_stress_criteria.Method != pgsTypes::ptsmNCHRP)
       {
          *pPara << color(Red) << _T("Time Step Principal Web Stress analysis results not available when NCHRP method not used.") << color(Black) << rptNewLine;
          return pChapter;

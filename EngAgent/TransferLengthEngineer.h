@@ -132,13 +132,13 @@ public:
    virtual void ReportDetails(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const override;
 
 protected:
-   virtual std::_tstring GetTransferLengthType(pgsTypes::TransferLengthType xferLengthType) const override { return xferLengthType == pgsTypes::tltMinimum ? _T("Minimum Transfer Length") : _T("Maximum Transfer Length"); }
+   virtual std::_tstring GetTransferLengthType(pgsTypes::TransferLengthType xferLengthType) const override { return xferLengthType == pgsTypes::TransferLengthType::Minimum ? _T("Minimum Transfer Length") : _T("Maximum Transfer Length"); }
 
    void ReportTransferLengthSpecReference(rptParagraph* pPara) const override;
 
 private:
    Float64 m_db{0.0};
-   pgsTypes::TransferLengthType m_XferType{ pgsTypes::tltMinimum };
+   pgsTypes::TransferLengthType m_XferType{ pgsTypes::TransferLengthType::Minimum };
 
    Float64 GetTransferLengthFactor() const;
 };

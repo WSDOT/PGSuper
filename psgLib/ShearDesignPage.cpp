@@ -53,7 +53,7 @@ CShearDesignPage::CShearDesignPage()
 	: CPropertyPage(CShearDesignPage::IDD)
    , m_bExtendDeckBars(FALSE)
    , m_bBarsProvideConfinement(FALSE)
-   , m_LongReinfShearMethod(0)
+   , m_LongitudinalReinforcementForShearMethod(0)
 {
    m_pGrid = std::make_unique<CShearBarsLegsGrid>();
 }
@@ -125,7 +125,7 @@ void CShearDesignPage::DoDataExchange(CDataExchange* pDX)
    DDX_Check(pDX, IDC_EXTEND_DECK_BARS, m_bExtendDeckBars);
    DDX_Check(pDX, IDC_BARS_PROVIDE_CONFINEMENT, m_bBarsProvideConfinement);
 
-   DDX_CBIndex(pDX, IDC_LONG_REINF_SHEAR_METHOD, m_LongReinfShearMethod);
+   DDX_CBIndex(pDX, IDC_LONG_REINF_SHEAR_METHOD, m_LongitudinalReinforcementForShearMethod);
 
    DDX_UnitValueAndTag(pDX, IDC_INTERFACE_SHEAR_WIDTH_REDUCTION, IDC_INTERFACE_SHEAR_WIDTH_REDUCTION_UNIT, m_InterfaceShearWidthReduction, pDisplayUnits->ComponentDim);
 

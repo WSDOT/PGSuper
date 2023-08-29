@@ -32,7 +32,7 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 txnEditBridge::txnEditBridge(const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc,
-                             enumExposureCondition oldExposureCondition, enumExposureCondition newExposureCondition,
+   pgsTypes::ExposureCondition oldExposureCondition, pgsTypes::ExposureCondition newExposureCondition,
                              Float64 oldRelHumidity, Float64 newRelHumidity)
 {
    m_bBridgeDescOnly = false;

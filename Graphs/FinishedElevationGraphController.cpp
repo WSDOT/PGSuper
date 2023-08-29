@@ -343,7 +343,7 @@ IntervalIndexType CFinishedElevationGraphController::GetFirstInterval()
    GET_IFACE_NOCHECK(IBridge,pBridge);
    GET_IFACE(IIntervals,pIntervals);
    GET_IFACE(ILossParameters,pLossParams);
-   if (pLossParams->GetLossMethod() != pgsTypes::TIME_STEP || pBridge->GetHaunchInputDepthType() == pgsTypes::hidACamber)
+   if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP || pBridge->GetHaunchInputDepthType() == pgsTypes::hidACamber)
    {
       // We can only compute camber at the GCE.
       return pIntervals->GetGeometryControlInterval();
@@ -359,7 +359,7 @@ IntervalIndexType CFinishedElevationGraphController::GetLastInterval()
    GET_IFACE_NOCHECK(IBridge,pBridge);
    GET_IFACE(IIntervals,pIntervals);
    GET_IFACE(ILossParameters,pLossParams);
-   if (pLossParams->GetLossMethod() != pgsTypes::TIME_STEP || pBridge->GetHaunchInputDepthType() == pgsTypes::hidACamber)
+   if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP || pBridge->GetHaunchInputDepthType() == pgsTypes::hidACamber)
    {
       // We can only compute camber at the GCE.
       return pIntervals->GetGeometryControlInterval();

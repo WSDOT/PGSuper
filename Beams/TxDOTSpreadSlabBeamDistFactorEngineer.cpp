@@ -62,7 +62,8 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::BuildReport(const CGirderKey& girde
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   Int16 lldfMethod = pSpecEntry->GetLiveLoadDistributionMethod();
+   const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
+   auto lldfMethod = live_load_distribution_criteria.LldfMethod;
 
    bool bSIUnits = IS_SI_UNITS(pDisplayUnits);
 
@@ -405,6 +406,7 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierId
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 
    if ( lldf.bExteriorGirder )
    {
@@ -426,7 +428,7 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierId
          {
             (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
             Float64 factor = 1.0;
-            if (pSpecEntry->GetLiveLoadDistributionMethod() == LLDF_TXDOT)
+            if (live_load_distribution_criteria.LldfMethod == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
             {
                (*pPara) <<_T("  For TxDOT method, do not apply multiple presence factor and multiply lever rule result by 0.9")<< rptNewLine;
                factor = 0.9;
@@ -472,7 +474,7 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierId
             {
                (*pPara) << Bold(_T("2+ Loaded Lanes: Lever Rule")) << rptNewLine;
                Float64 factor = 1.0;
-               if (pSpecEntry->GetLiveLoadDistributionMethod() == LLDF_TXDOT)
+               if (live_load_distribution_criteria.LldfMethod == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
                {
                   (*pPara) << _T("  For TxDOT method, multiply lever rule result by 0.9")<< rptNewLine;
                   factor = 0.9;
@@ -582,6 +584,7 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::ReportShear(IndexType spanOrPierIdx
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 
    if ( lldf.bExteriorGirder )
    {
@@ -603,7 +606,7 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::ReportShear(IndexType spanOrPierIdx
          {
             (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
             Float64 factor = 1.0;
-            if (pSpecEntry->GetLiveLoadDistributionMethod() == LLDF_TXDOT)
+            if (live_load_distribution_criteria.LldfMethod == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
             {
                (*pPara) << _T("  For TxDOT method, do not apply multiple presence factor and multiply lever rule result by 0.9") << rptNewLine;
                factor = 0.9;
@@ -648,7 +651,7 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::ReportShear(IndexType spanOrPierIdx
             {
                (*pPara) << Bold(_T("2+ Loaded Lanes: Lever Rule")) << rptNewLine;
                Float64 factor = 1.0;
-               if (pSpecEntry->GetLiveLoadDistributionMethod() == LLDF_TXDOT)
+               if (live_load_distribution_criteria.LldfMethod == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
                {
                   (*pPara) << _T("  For TxDOT method, multiply lever rule result by 0.9") << rptNewLine;
                   factor = 0.9;
@@ -751,15 +754,6 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::ReportShear(IndexType spanOrPierIdx
 
 std::_tstring CTxDOTSpreadSlabBeamDistFactorEngineer::GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect)
 {
-   GET_IFACE(ILibrary, pLib);
-   GET_IFACE(ISpecification, pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-
-   Int16 lldfMethod = pSpecEntry->GetLiveLoadDistributionMethod();
-
-   std::_tstring descr;
-
-   descr = _T("TxDOT Spread Slab Beam cross section. LLDF's are computed per the TxDOT Bridge Design Manual - LRFD");
-
+   std::_tstring descr(_T("TxDOT Spread Slab Beam cross section. LLDF's are computed per the TxDOT Bridge Design Manual - LRFD"));
    return descr;
 }

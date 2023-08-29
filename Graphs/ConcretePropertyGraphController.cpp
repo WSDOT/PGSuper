@@ -120,7 +120,7 @@ BOOL CConcretePropertyGraphController::OnInitDialog()
    }
 
    GET_IFACE(ILossParameters,pLossParams);
-   if ( pLossParams->GetLossMethod() != pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       GetDlgItem(IDC_SH)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_CR)->ShowWindow(SW_HIDE);

@@ -91,7 +91,7 @@ rptRcTable* CStrandEccTable::Build_Y(IBroker* pBroker, const CSegmentKey& segmen
    pgsTypes::SectionPropertyType spType = (spMode == pgsTypes::spmGross ? pgsTypes::sptGrossNoncomposite : pgsTypes::sptNetGirder);
 
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
-   if (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP)
+   if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP)
    {
       // need eccentricity based on complete transformed section for time-step analysis
       spType = pgsTypes::sptTransformed;
@@ -266,7 +266,7 @@ rptRcTable* CStrandEccTable::Build_XY(IBroker* pBroker, const CSegmentKey& segme
    pgsTypes::SectionPropertyType spType = (spMode == pgsTypes::spmGross ? pgsTypes::sptGrossNoncomposite : pgsTypes::sptNetGirder);
 
    GET_IFACE2(pBroker,ILossParameters,pLossParams);
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       // need eccentricity based on complete transformed section for time-step analysis
       spType = pgsTypes::sptTransformed;

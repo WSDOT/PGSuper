@@ -181,12 +181,12 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(const std::shared_ptr<const W
          {
             // UHPC has a two level transfer length model
             // In the future regular LRFD may have this as well
-            pPSForce->ReportTransferLengthDetails(segmentKey, pgsTypes::tltMinimum, pChapter);
-            pPSForce->ReportTransferLengthDetails(segmentKey, pgsTypes::tltMaximum, pChapter);
+            pPSForce->ReportTransferLengthDetails(segmentKey, pgsTypes::TransferLengthType::Minimum, pChapter);
+            pPSForce->ReportTransferLengthDetails(segmentKey, pgsTypes::TransferLengthType::Maximum, pChapter);
          }
          else
          {
-            pPSForce->ReportTransferLengthDetails(segmentKey, pgsTypes::tltMaximum, pChapter);
+            pPSForce->ReportTransferLengthDetails(segmentKey, pgsTypes::TransferLengthType::Maximum, pChapter);
          }
          pPSForce->ReportDevelopmentLengthDetails(segmentKey, pChapter);
 

@@ -588,10 +588,8 @@ BEGIN
     LTEXT           "fpy",IDC_STATIC,337,247,22,8
     LTEXT           "After all losses",IDC_STATIC,206,222,46,8
     GROUPBOX        "Pretensioned Strand Options",IDC_STATIC,7,264,395,54
-    LTEXT           "Compute the transfer length of prestressing strands using the following method:",IDC_STATIC,20,287,247,10
-    COMBOBOX        IDC_COMBO_TRANSFER,20,299,230,39,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Allow Extended Straight Strands",IDC_STRAND_EXTENSIONS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,275,117,10
+    LTEXT           "Compute the transfer length of prestressing strands using the following method:",IDC_STATIC,20,281,247,10
+    COMBOBOX        IDC_COMBO_TRANSFER,20,293,230,39,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "Size of Ducts (LRFD 5.4.6.2)",IDC_STATIC,7,320,395,80
     LTEXT           "Minimum ratio of inside area of duct to net area of prestressing steel",IDC_STATIC,16,332,212,8
     EDITTEXT        IDC_PUSH_METHOD,31,344,30,14,ES_RIGHT | ES_AUTOHSCROLL
@@ -1241,65 +1239,65 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,350,371,10
 END
 
-IDD_SPEC_MOMENT DIALOGEX 0, 0, 379, 368
+IDD_SPEC_MOMENT DIALOGEX 0, 0, 379, 364
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Moment Capacity"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "Moment Capacity",IDC_STATIC,7,7,341,149
+    GROUPBOX        "Moment Capacity",IDC_STATIC,7,7,341,133
     COMBOBOX        IDC_MOMENT,15,18,210,41,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Include pretensioned strand in negative moment capacity calculations",IDC_INCLUDE_STRAND_FOR_NEG_MOMENT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,33,235,10
     CONTROL         "Include girder longitudinal mild reinforcement in capacity calculations",IDC_INCLUDE_REBAR_MOMENT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,44,230,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,36,230,10
     CONTROL         "Consider reinforcement strain limits in capacity analysis",IDC_CONSIDER_REINFORCEMENT_STRAIN_LIMITS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,56,186,10
-    LTEXT           "Number of ""slices"" for strain compatibility analysis",IDC_STATIC,17,70,155,8
-    EDITTEXT        IDC_SLICE_COUNT,173,67,40,14,ES_AUTOHSCROLL
-    LTEXT           "Modulus of rupture for cracking moment (LRFD 5.4.2.6, 5.7.3.3.2)",IDC_FR_HEADING,17,81,206,8
-    LTEXT           "Normal weight concrete",IDC_NWC_FR_TXT,36,96,76,8
-    EDITTEXT        IDC_FR,122,92,32,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c)",IDC_FR_UNIT,158,95,130,8
-    LTEXT           "MPa",IDC_FR_LABEL,304,97,31,8,NOT WS_VISIBLE
-    LTEXT           "All lightweight concrete",IDC_ALWC_FR_TXT,36,113,74,8
-    EDITTEXT        IDC_ALWC_FR,122,110,32,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c)",IDC_ALWC_FR_UNIT,158,113,130,8
-    LTEXT           "MPa",IDC_ALWC_FR_LABEL,304,114,31,8,NOT WS_VISIBLE
-    LTEXT           "Sand lightweight concrete",IDC_SLWC_FR_TXT,36,130,83,8
-    EDITTEXT        IDC_SLWC_FR,122,127,32,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c)",IDC_SLWC_FR_UNIT,158,130,130,8
-    LTEXT           "MPa",IDC_SLWC_FR_LABEL,304,132,31,8,NOT WS_VISIBLE
-    GROUPBOX        "Resistance Factor (LRFD 5.5.4.2)",IDC_PHI_GROUP,7,158,341,154
-    GROUPBOX        "Conventional Construction",IDC_STATIC,12,167,327,93
-    LTEXT           "Normal weight concrete",IDC_PHI_NWC_HEADER,110,181,76,8
-    LTEXT           "Lightweight concrete",IDC_PHI_LWC_HEADER,196,181,67,8
-    LTEXT           "PCI UHPC",IDC_PHI_LWC_HEADER3,287,181,34,8
-    LTEXT           "Tension-controlled (Reinforced)",IDC_NWC_PHI_TENSION_RC_LABEL,19,196,100,8
-    LTEXT           "Tension-controlled (Prestressed)",IDC_NWC_PHI_TENSION_PS_LABEL,19,212,102,8
-    LTEXT           "Tension-controlled (Spliced)",IDC_NWC_PHI_TENSION_SPLICED_LABEL,19,228,88,8
-    LTEXT           "Compression-controlled",IDC_NWC_PHI_COMPRESSION_LABEL,19,243,74,8
-    EDITTEXT        IDC_NWC_PHI_TENSION_RC,133,192,23,14,ES_RIGHT | ES_AUTOHSCROLL
-    EDITTEXT        IDC_NWC_PHI_TENSION_PS,133,208,23,14,ES_RIGHT | ES_AUTOHSCROLL
-    EDITTEXT        IDC_NWC_PHI_TENSION_SPLICED,133,223,23,14,ES_RIGHT | ES_AUTOHSCROLL
-    EDITTEXT        IDC_NWC_PHI_COMPRESSION,133,239,23,14,ES_RIGHT | ES_AUTOHSCROLL
-    EDITTEXT        IDC_LWC_PHI_TENSION_RC,216,192,23,14,ES_RIGHT | ES_AUTOHSCROLL
-    EDITTEXT        IDC_LWC_PHI_TENSION_PS,216,208,23,14,ES_RIGHT | ES_AUTOHSCROLL
-    EDITTEXT        IDC_LWC_PHI_TENSION_SPLICED,216,223,23,14,ES_RIGHT | ES_AUTOHSCROLL
-    EDITTEXT        IDC_LWC_PHI_COMPRESSION,216,238,23,14,ES_RIGHT | ES_AUTOHSCROLL
-    EDITTEXT        IDC_UHPC_PHI_TENSION_RC,293,192,23,14,ES_RIGHT | ES_AUTOHSCROLL
-    EDITTEXT        IDC_UHPC_PHI_TENSION_PS,293,208,23,14,ES_RIGHT | ES_AUTOHSCROLL
-    EDITTEXT        IDC_UHPC_PHI_TENSION_SPLICED,293,223,23,14,ES_RIGHT | ES_AUTOHSCROLL
-    EDITTEXT        IDC_UHPC_PHI_COMPRESSION,293,238,23,14,ES_RIGHT | ES_AUTOHSCROLL
-    GROUPBOX        "Closure Joint (LRFD 5.14.1.3.2d, 5.5.4.2)",IDC_SCLOSURE,12,265,327,40
-    LTEXT           "Fully Bonded Tendons",IDC_STATIC,21,288,72,8
-    LTEXT           "Normal weight concrete",IDC_PHI_NWC_HEADER2,110,276,76,8
-    EDITTEXT        IDC_NWC_JOINT_PHI,133,286,23,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Lightweight concrete",IDC_PHI_LWC_HEADER2,196,276,67,8
-    EDITTEXT        IDC_LWC_JOINT_PHI,216,286,23,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "PCI UHPC",IDC_PHI_LWC_HEADER4,289,276,34,8,NOT WS_VISIBLE
-    EDITTEXT        IDC_UHPC_JOINT_PHI,293,284,23,14,ES_RIGHT | ES_AUTOHSCROLL | NOT WS_VISIBLE
-    GROUPBOX        "Negative Moment Capacity",IDC_STATIC,7,316,341,40
-    COMBOBOX        IDC_NEG_MOMENT,15,332,321,56,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,48,186,10
+    LTEXT           "Number of ""slices"" for strain compatibility analysis",IDC_STATIC,17,62,155,8
+    EDITTEXT        IDC_SLICE_COUNT,173,59,40,14,ES_AUTOHSCROLL
+    LTEXT           "Modulus of rupture for cracking moment (LRFD 5.4.2.6, 5.7.3.3.2)",IDC_FR_HEADING,17,73,206,8
+    LTEXT           "Normal weight concrete",IDC_NWC_FR_TXT,36,88,76,8
+    EDITTEXT        IDC_FR,122,84,32,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'c)",IDC_FR_UNIT,158,87,130,8
+    LTEXT           "MPa",IDC_FR_LABEL,304,89,31,8,NOT WS_VISIBLE
+    LTEXT           "All lightweight concrete",IDC_ALWC_FR_TXT,36,105,74,8
+    EDITTEXT        IDC_ALWC_FR,122,102,32,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'c)",IDC_ALWC_FR_UNIT,158,105,130,8
+    LTEXT           "MPa",IDC_ALWC_FR_LABEL,304,106,31,8,NOT WS_VISIBLE
+    LTEXT           "Sand lightweight concrete",IDC_SLWC_FR_TXT,36,122,83,8
+    EDITTEXT        IDC_SLWC_FR,122,119,32,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'c)",IDC_SLWC_FR_UNIT,158,122,130,8
+    LTEXT           "MPa",IDC_SLWC_FR_LABEL,304,124,31,8,NOT WS_VISIBLE
+    GROUPBOX        "Resistance Factor (LRFD 5.5.4.2)",IDC_PHI_GROUP,7,146,341,154
+    GROUPBOX        "Conventional Construction",IDC_STATIC,12,155,327,93
+    LTEXT           "Normal weight concrete",IDC_PHI_NWC_HEADER,110,169,76,8
+    LTEXT           "Lightweight concrete",IDC_PHI_LWC_HEADER,196,169,67,8
+    LTEXT           "PCI UHPC",IDC_PHI_LWC_HEADER3,287,169,34,8
+    LTEXT           "Tension-controlled (Reinforced)",IDC_NWC_PHI_TENSION_RC_LABEL,19,184,100,8
+    EDITTEXT        IDC_NWC_PHI_TENSION_RC,133,180,23,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_LWC_PHI_TENSION_RC,216,180,23,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_UHPC_PHI_TENSION_RC,293,180,23,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Tension-controlled (Prestressed)",IDC_NWC_PHI_TENSION_PS_LABEL,19,200,102,8
+    EDITTEXT        IDC_NWC_PHI_TENSION_PS,133,196,23,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_LWC_PHI_TENSION_PS,216,196,23,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_UHPC_PHI_TENSION_PS,293,196,23,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Tension-controlled (Spliced)",IDC_NWC_PHI_TENSION_SPLICED_LABEL,19,216,88,8
+    EDITTEXT        IDC_NWC_PHI_TENSION_SPLICED,133,211,23,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_LWC_PHI_TENSION_SPLICED,216,211,23,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_UHPC_PHI_TENSION_SPLICED,293,211,23,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Compression-controlled",IDC_NWC_PHI_COMPRESSION_LABEL,19,231,74,8
+    EDITTEXT        IDC_NWC_PHI_COMPRESSION,133,227,23,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_LWC_PHI_COMPRESSION,216,226,23,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_UHPC_PHI_COMPRESSION,293,226,23,14,ES_RIGHT | ES_AUTOHSCROLL
+    GROUPBOX        "Closure Joint (LRFD 5.14.1.3.2d, 5.5.4.2)",IDC_SCLOSURE,12,253,327,40
+    LTEXT           "Normal weight concrete",IDC_PHI_NWC_HEADER2,110,264,76,8
+    LTEXT           "Lightweight concrete",IDC_PHI_LWC_HEADER2,196,264,67,8
+    LTEXT           "PCI UHPC",IDC_PHI_LWC_HEADER4,289,264,34,8,NOT WS_VISIBLE
+    LTEXT           "Fully Bonded Tendons",IDC_STATIC,21,276,72,8
+    EDITTEXT        IDC_NWC_JOINT_PHI,133,274,23,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_LWC_JOINT_PHI,216,274,23,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_UHPC_JOINT_PHI,293,272,23,14,ES_RIGHT | ES_AUTOHSCROLL | NOT WS_VISIBLE
+    GROUPBOX        "Negative Moment Capacity",IDC_STATIC,7,304,341,53
+    CONTROL         "Include pretensioned strand in negative moment capacity calculations",IDC_INCLUDE_STRAND_FOR_NEG_MOMENT,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,338,235,10
+    COMBOBOX        IDC_NEG_MOMENT,15,320,321,56,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_LIVE_LOAD_ENTRY DIALOGEX 0, 0, 355, 291
@@ -1662,7 +1660,7 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "Prestressed Elements"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Stress Limits for Temporary Stresses before Losses (LRFD 5.9.4.1)",IDC_GTEMP,7,7,597,77
+    GROUPBOX        "Stress Limits for Temporary Stresses before Losses (LRFD 5.9.4.1, 5.12.3.4.3)",IDC_GTEMP,7,7,597,77
     LTEXT           "Compressive Stress",IDC_STATIC,15,22,68,8
     EDITTEXT        IDC_RELEASE_COMPRESSION,86,20,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "f'ci",IDC_STATIC,129,22,19,8
@@ -1677,22 +1675,22 @@ BEGIN
     LTEXT           "In areas with sufficient bonded reinforcement",IDC_STATIC,22,68,147,8
     EDITTEXT        IDC_RELEASE_TENSION_WITH_REBAR,176,66,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "sqrt(f'ci (MPa))",IDC_RELEASE_TENSION_WITH_REBAR_UNIT,221,68,79,8
-    GROUPBOX        "Stress Limits at Service Limit State after Losses (LRFD 5.9.4.2)",IDC_GPERM,7,87,597,120
+    GROUPBOX        "Stress Limits at Service Limit State after Losses (LRFD 5.9.4.2, 5.12.3.4.3)",IDC_GPERM,7,87,597,120
     LTEXT           "Compressive Stress (Effective Prestress + Permanent Loads)",IDC_STATIC,15,104,204,8
     EDITTEXT        IDC_SERVICE_COMPRESSION,274,100,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "f'c",IDC_STATIC,318,103,8,8
     LTEXT           "Compressive Stress (Effective Prestress + Permanent Loads + Transient Loads)",IDC_STATIC,15,119,260,8
     EDITTEXT        IDC_SERVICE_COMPRESSION_WITH_LIVELOAD,274,116,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "f'c",IDC_STATIC,318,119,13,8
-    CONTROL         "Tensile Stress (Service I) (Effective Prestress + Permanent Loads = Final Stress without Live Load)",IDC_CHECK_SERVICE_I_TENSION,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,135,332,10
+    CONTROL         "Tensile Stress (Effective Prestress + Permanent Loads)",IDC_CHECK_SERVICE_I_TENSION,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,135,193,10
     EDITTEXT        IDC_SERVICE_I_TENSION,28,146,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_I_TENSION_UNIT,72,149,79,8
     CONTROL         "But not greater than ",IDC_CHECK_SERVICE_I_TENSION_MAX,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,157,149,78,10
     EDITTEXT        IDC_SERVICE_I_TENSION_MAX,239,146,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "MPa",IDC_SERVICE_I_TENSION_MAX_UNIT,283,149,20,8
-    LTEXT           "Tensile Stress (Service III) (Effective Prestress + Permanent Loads + Transient Loads)",IDC_STATIC,15,164,278,8
+    LTEXT           "Tensile Stress (Effective Prestress + Permanent Loads + Transient Loads)",IDC_STATIC,15,164,238,8
     LTEXT           "Not worse than moderate corrosion conditions",IDC_STATIC,22,177,148,8
     EDITTEXT        IDC_SERVICE_III_TENSION,176,174,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_III_TENSION_UNIT,221,177,79,8
@@ -1936,7 +1934,7 @@ BEGIN
     LTEXT           "Factors",IDC_STATIC_MULT10,26,187,24,8
     LTEXT           "User1 and User2 are deflections from user-defined loads applied to the non-composite and composite girder sections, respectively",IDC_STATIC_MULT11,17,204,406,8
     LTEXT           "Creep",IDC_STATIC_MULT7,107,167,41,11
-    LTEXT           "(The Minimum Fillet value is only for spread-spaced girders, and is not applicable to adjacently spaced girders. The mininum fillet for adjacently spaced girders is always 0.0)",IDC_STATIC,127,28,290,18
+    LTEXT           "(The Minimum Fillet value is only for spread-spaced girders, and is not applicable to adjacently spaced girders. The Minimum fillet for adjacently spaced girders is always 0.0)",IDC_STATIC,127,28,290,18
     GROUPBOX        "Precamber",IDC_STATIC,7,225,429,61
     LTEXT           "Static",IDC_PRECAMBER_LIMIT_NOTE,19,237,293,8
     LTEXT           "L/",IDC_PRECAMBER_LIMIT_LABEL,17,251,8,8
@@ -2276,7 +2274,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 372
         TOPMARGIN, 7
-        BOTTOMMARGIN, 361
+        BOTTOMMARGIN, 357
     END
 
     IDD_LIVE_LOAD_ENTRY, DIALOG

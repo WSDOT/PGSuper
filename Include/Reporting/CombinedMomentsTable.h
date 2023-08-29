@@ -629,7 +629,8 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,IBroker*
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bTimeStepMethod = pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP;
+   const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
+   bool bTimeStepMethod = prestress_loss_criteria.LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP;
 
    RowIndexType nHeaderRows = 0;
    ColumnIndexType nCols = 0;

@@ -45,6 +45,10 @@
 
 #include <PgsExt\BridgeDescription2.h>
 
+#include <psgLib/SectionPropertiesCriteria.h>
+#include <psgLib/SpecificationCriteria.h>
+
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -763,7 +767,10 @@ std::_tstring CSplicedNUBeamFactory::GetInteriorGirderEffectiveFlangeWidthImage(
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
+   const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
+   const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
+   if (section_properties_criteria.EffectiveFlangeWidthMethod == pgsTypes::efwmTribWidth ||
+      WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims <= specification_criteria.GetEdition())
    {
       return _T("IBeam_Effective_Flange_Width_Interior_Girder_2008.gif");
    }
@@ -778,7 +785,10 @@ std::_tstring CSplicedNUBeamFactory::GetExteriorGirderEffectiveFlangeWidthImage(
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
+   const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
+   const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
+   if (section_properties_criteria.EffectiveFlangeWidthMethod == pgsTypes::efwmTribWidth ||
+      WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims <= specification_criteria.GetEdition())
    {
       return _T("IBeam_Effective_Flange_Width_Exterior_Girder_2008.gif");
    }

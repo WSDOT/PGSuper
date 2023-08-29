@@ -101,13 +101,13 @@ void CConcreteDetailsDlg::Init()
    CComPtr<ILossParameters> pLossParameters;
    HRESULT hr = pBroker->GetInterface(IID_ILossParameters,(IUnknown**)&pLossParameters);
    
-   pgsTypes::LossMethod loss_method = pgsTypes::AASHTO_REFINED_2005;
+   PrestressLossCriteria::LossMethodType loss_method = PrestressLossCriteria::LossMethodType::AASHTO_REFINED_2005;
    if ( SUCCEEDED(hr) )
    {
       loss_method = pLossParameters->GetLossMethod();
    }
 
-   if ( loss_method != pgsTypes::TIME_STEP )
+   if ( loss_method != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       AddPage( &m_AASHTO );
 
@@ -121,16 +121,16 @@ void CConcreteDetailsDlg::Init()
    {
       switch( pLossParameters->GetTimeDependentModel() )
       {
-      case pgsTypes::tdmAASHTO:
+      case PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO:
          AddPage( &m_AASHTO );
          AddPage( &m_ACI );
          break;
 
-      case pgsTypes::tdmACI209:
+      case PrestressLossCriteria::TimeDependentConcreteModelType::ACI209:
          AddPage( &m_ACI );
          break;
 
-      case pgsTypes::tdmCEBFIP:
+      case PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP:
          AddPage( &m_CEBFIP );
          break;
 

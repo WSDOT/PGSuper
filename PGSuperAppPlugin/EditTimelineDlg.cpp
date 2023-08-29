@@ -89,7 +89,7 @@ BOOL CEditTimelineDlg::OnInitDialog()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,ILossParameters,pLossParams);
-   BOOL bReadOnly = (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? FALSE : TRUE);
+   BOOL bReadOnly = (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? FALSE : TRUE);
 
    m_Grid.SubclassDlgItem(IDC_GRID, this);
    m_Grid.CustomInit(bReadOnly);

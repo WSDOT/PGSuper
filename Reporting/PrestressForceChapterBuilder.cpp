@@ -154,11 +154,11 @@ rptChapter* CPrestressForceChapterBuilder::Build(const std::shared_ptr<const WBF
                break;
 
             case pgsTypes::ttsPTBeforeShipping:
-               *pPara << _T("Temporary Strands post-tensioned immedately before shipping") << rptNewLine;
+               *pPara << _T("Temporary Strands post-tensioned immediately before shipping") << rptNewLine;
                break;
 
             case pgsTypes::ttsPTAfterLifting:
-               *pPara << _T("Temporary Strands post-tensioned immedately after lifting") << rptNewLine;
+               *pPara << _T("Temporary Strands post-tensioned immediately after lifting") << rptNewLine;
                break;
 
             case pgsTypes::ttsPTBeforeLifting:

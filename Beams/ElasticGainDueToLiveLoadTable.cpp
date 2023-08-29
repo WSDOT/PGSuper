@@ -105,8 +105,9 @@ CElasticGainDueToLiveLoadTable* CElasticGainDueToLiveLoadTable::PrepareTable(rpt
    GET_IFACE2(pBroker,ISpecification,pSpec);
    GET_IFACE2(pBroker,ILibrary,pLibrary);
    const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
+   const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
 
-   table->m_Kliveload = pSpecEntry->GetLiveLoadElasticGain();
+   table->m_Kliveload = prestress_loss_criteria.LiveLoadElasticGain;
    if (spMode == pgsTypes::spmGross)
    {
       *pParagraph << Sub2(_T("K"), _T("llim")) << _T(" = ") << table->scalar.SetValue(table->m_Kliveload) << rptNewLine;

@@ -331,7 +331,7 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
 
          LOG_EXECUTION_TIME(AnalyzeHauling(segmentKey,true,shipping_config,pPOId,artifact.get()));
 
-         Float64 FSr = Min(artifact->GetFsRollover(pgsTypes::CrownSlope),artifact->GetFsRollover(pgsTypes::Superelevation));
+         Float64 FSr = Min(artifact->GetFsRollover(WBFL::Stability::HaulingSlope::CrownSlope),artifact->GetFsRollover(WBFL::Stability::HaulingSlope::Superelevation));
          LOG(_T("FSr = ") << FSr);
 
          Float64 fra = (stepSize == bigStep ? 0.990 : 0.995);
@@ -385,7 +385,7 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
    LOG(_T("Check FS cracking"));
    Float64 FScrMin = pCriteria->GetHaulingCrackingFs();
    LOG(_T("Allowable FS cracking FScrMin = ") << FScrMin);
-   Float64 FScr = Min(artifact->GetMinFsForCracking(pgsTypes::CrownSlope), artifact->GetMinFsForCracking(pgsTypes::Superelevation));
+   Float64 FScr = Min(artifact->GetMinFsForCracking(WBFL::Stability::HaulingSlope::CrownSlope), artifact->GetMinFsForCracking(WBFL::Stability::HaulingSlope::Superelevation));
    LOG(_T("FScr = ") << FScr);
    if (FScrMin <= FScr)
    {

@@ -36,7 +36,11 @@
 #include <IFace\Intervals.h>
 #include <IFace\Allowables.h>
 #include <LRFD\Rebar.h>
+
 #include <PsgLib\SpecLibraryEntry.h>
+#include <psgLib/ShearCapacityCriteria.h>
+#include <psgLib/LimitStateConcreteStrengthCriteria.h>
+
 #include <PgsExt\statusitem.h>
 #include <PgsExt\DesignConfigUtil.h>
 #include <PgsExt\GirderLabel.h>
@@ -109,9 +113,8 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfter1999 = ( WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims <= pSpecEntry->GetSpecificationType() ? true : false );
-
-   pgsTypes::ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
+   const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
+   bool bAfter1999 = ( WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() ? true : false );
 
    // some lrfd-related values
    GET_IFACE_NOCHECK(IMaterials,pMaterial);
@@ -203,7 +206,7 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
 
       // final capacity
       // 5.7.3.3-1 (pre2017: 5.8.3.3-1)
-      pscd->Vn1 = pscd->Vc + pscd->Vs  + (shear_capacity_method == pgsTypes::scmVciVcw ? 0 : pscd->Vp);
+      pscd->Vn1 = pscd->Vc + pscd->Vs  + (shear_capacity_criteria.CapacityMethod == pgsTypes::scmVciVcw ? 0 : pscd->Vp);
    }
    else
    {
@@ -213,7 +216,7 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
 
    // Max crushing capacity - 5.7.3.3-2 (pre2017: 5.8.3.3-2)
    Float64 dv = pscd->ConcreteType == pgsTypes::UHPC ? pscd->controlling_uhpc_dv : pscd->dv;
-   pscd->Vn2 = 0.25 * pscd->fc * pscd->bv * dv + (shear_capacity_method == pgsTypes::scmVciVcw ? 0 : pscd->Vp);
+   pscd->Vn2 = 0.25 * pscd->fc * pscd->bv * dv + (shear_capacity_criteria.CapacityMethod == pgsTypes::scmVciVcw ? 0 : pscd->Vp);
 
    if (pscd->ShearInRange)
    {
@@ -246,14 +249,14 @@ void pgsShearCapacityEngineer::EvaluateStirrupRequirements(SHEARCAPACITYDETAILS*
       GET_IFACE(ILibrary, pLib);
       GET_IFACE(ISpecification, pSpec);
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-      pgsTypes::ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
+      const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
 
       // 5.7.2.3-1 (pre2017: 5.8.2.4-1)
       // transverse reinforcement required?
       
       // Vu limit = 0.5*phi*(Vc + Vp)
 
-      pscd->VuLimit = 0.5 * pscd->Phi * (pscd->Vc + (shear_capacity_method == pgsTypes::scmVciVcw ? 0 : pscd->Vp));
+      pscd->VuLimit = 0.5 * pscd->Phi * (pscd->Vc + (shear_capacity_criteria.CapacityMethod == pgsTypes::scmVciVcw ? 0 : pscd->Vp));
       pscd->bStirrupsReqd = (pscd->VuLimit < pscd->Vu);
    }
 }
@@ -303,7 +306,7 @@ void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const G
    eps = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Permanent, pConfig).Y();
 
    Pps = pPsForce->GetHorizHarpedStrandForce(poi, finalIntervalIdx, pgsTypes::End, pConfig)
-      + pPsForce->GetPrestressForce(poi, pgsTypes::Straight, finalIntervalIdx, pgsTypes::End,pgsTypes::tltMaximum, pConfig);
+      + pPsForce->GetPrestressForce(poi, pgsTypes::Straight, finalIntervalIdx, pgsTypes::End,pgsTypes::TransferLengthType::Maximum, pConfig);
 
    GET_IFACE_NOCHECK(IPosttensionForce,pPTForce); // only used if there are tendons
 
@@ -397,12 +400,8 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
    GET_IFACE(IGirder,pGdr);
    GET_IFACE(ISectionProperties,pSectProp);
 
-   GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfter1999 = ( WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims <= pSpecEntry->GetSpecificationType() ? true : false );
-
-   pgsTypes::ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
+   pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
    // Applied forces
 
@@ -411,7 +410,6 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
    WBFL::System::SectionValue Vi_min, Vi_max; // shear that is concurrent with Mmin and Mmax
    WBFL::System::SectionValue Vd_min, Vd_max;
 
-   pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
    if ( analysisType == pgsTypes::Envelope )
    {
@@ -517,11 +515,9 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
       GET_IFACE(ILibrary, pLib);
       GET_IFACE(ISpecification, pSpec);
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-      bool bUse90DayStrength;
-      Float64 factor;
-      pSpecEntry->Use90DayStrengthForSlowCuringConcrete(&bUse90DayStrength, &factor);
+      const auto& limit_state_concrete_strength_criteria = pSpecEntry->GetLimitStateConcreteStrengthCriteria();
 
-      if (bUse90DayStrength)
+      if (limit_state_concrete_strength_criteria.bUse90DayConcreteStrength)
       {
          // 90 day strength isn't applicable to strength limit states (only stress limit states, LRFD 5.12.3.2.4)
          // so use 28day properties
@@ -693,9 +689,8 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfter1999 = ( WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims <= pSpecEntry->GetSpecificationType() ? true : false );
-
-   pgsTypes::ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
+   const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
+   bool bAfter1999 = ( WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() ? true : false );
 
    Float64 struct_slab_h = pBridge->GetStructuralSlabDepth(poi);
 
@@ -710,11 +705,11 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
    Float64 Mu = pscd->Mu;
    Float64 MuSign = BinarySign(Mu);
 
-   if ( bAfter1999 && shear_capacity_method != pgsTypes::scmVciVcw )
+   if ( bAfter1999 && shear_capacity_criteria.CapacityMethod != pgsTypes::scmVciVcw )
    {
       // MuMin for Beta Theta equation (or WSDOT 2007) = |Vu - Vp|*dv
       // otherwise it is Vu*dv
-      Float64 MuMin = (shear_capacity_method == pgsTypes::scmBTEquations || shear_capacity_method == pgsTypes::scmWSDOT2007) ?
+      Float64 MuMin = (shear_capacity_criteria.CapacityMethod == pgsTypes::scmBTEquations || shear_capacity_criteria.CapacityMethod == pgsTypes::scmWSDOT2007) ?
          fabs(pscd->Vu - pscd->Vp)*pscd->dv : pscd->Vu*pscd->dv;
 
       if ( Mu < MuMin )
@@ -986,7 +981,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
       pscd->dv_uhpc = dv_uhpc;
    }
 
-   pscd->bLimitNetTensionStrainToPositiveValues = pSpecEntry->LimitNetTensionStrainToPositiveValues();
+   pscd->bLimitNetTensionStrainToPositiveValues = shear_capacity_criteria.bLimitNetTensionStrainToPositiveValues;
    pscd->bIgnoreMiniumStirrupRequirementForBeta = (pscd->ConcreteType == pgsTypes::PCI_UHPC); // we want to use the beta equation in all cases (this is a PCI UHPC only requirement)
    return true;
 }
@@ -1047,43 +1042,43 @@ bool pgsShearCapacityEngineer::ComputeVcc(const pgsPointOfInterest& poi, SHEARCA
    GET_IFACE(ISpecification, pSpec);
    GET_IFACE(ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   auto shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
 
 
    bool shear_in_range = true; // assume calc will be successful
-   pgsTypes::ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
 
    ATLASSERT(pscd->ConcreteType != pgsTypes::UHPC); // for UHPC, call ComputeVuhpc
    if(pscd->ConcreteType == pgsTypes::PCI_UHPC)
    {
       // PCI UHPC only uses beta-theta equations
-      shear_capacity_method = pgsTypes::scmBTEquations;
+      shear_capacity_criteria.CapacityMethod = pgsTypes::scmBTEquations;
    }
 
    try
    {
-      pscd->Method = shear_capacity_method;
-      if ( shear_capacity_method == pgsTypes::scmBTEquations || 
-           shear_capacity_method == pgsTypes::scmBTTables    || 
-           shear_capacity_method == pgsTypes::scmWSDOT2007 )
+      pscd->Method = shear_capacity_criteria.CapacityMethod;
+      if ( shear_capacity_criteria.CapacityMethod == pgsTypes::scmBTEquations || 
+           shear_capacity_criteria.CapacityMethod == pgsTypes::scmBTTables    || 
+           shear_capacity_criteria.CapacityMethod == pgsTypes::scmWSDOT2007 )
       {
          // The Beta-Theta equations are introducted in AASHTO LRFD in 4th Edition with 2008 interims. However, WSDOT adopted the equations by
          // design memo 12-2007 while the 4th Edition (no interims) was in effect. The Shear::ComputeThetaAndBeta will throw an exception
          // if equations are used before LRFD 4th Ed 2008. To get around this, temporary bump the LRFD spec to 4th 2008.
          WBFL::LRFD::LRFDAutoVersion av;
-         if (shear_capacity_method == pgsTypes::scmWSDOT2007 && WBFL::LRFD::LRFDVersionMgr::GetVersion() == WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007)
+         if (shear_capacity_criteria.CapacityMethod == pgsTypes::scmWSDOT2007 && WBFL::LRFD::LRFDVersionMgr::GetVersion() == WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007)
          {
             WBFL::LRFD::LRFDVersionMgr::SetVersion(WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims);
          }
 
-         WBFL::LRFD::Shear::ComputeThetaAndBeta( &data, shear_capacity_method == pgsTypes::scmBTTables ? WBFL::LRFD::Shear::Method::Tables : WBFL::LRFD::Shear::Method::Equations );
+         WBFL::LRFD::Shear::ComputeThetaAndBeta( &data, shear_capacity_criteria.CapacityMethod == pgsTypes::scmBTTables ? WBFL::LRFD::Shear::Method::Tables : WBFL::LRFD::Shear::Method::Equations );
       }
-      else if ( shear_capacity_method == pgsTypes::scmVciVcw )
+      else if (shear_capacity_criteria.CapacityMethod == pgsTypes::scmVciVcw )
       {
          WBFL::LRFD::Shear::ComputeVciVcw( &data );
       }
       else
       {
-         ATLASSERT(shear_capacity_method == pgsTypes::scmWSDOT2001);
+         ATLASSERT(shear_capacity_criteria.CapacityMethod == pgsTypes::scmWSDOT2001);
 
          GET_IFACE(IPointOfInterest,pPOI);
          PoiList vPOI;
@@ -1129,10 +1124,10 @@ bool pgsShearCapacityEngineer::ComputeVcc(const pgsPointOfInterest& poi, SHEARCA
    }
 #endif // _DEBUG
 
-   if ( shear_capacity_method == pgsTypes::scmBTEquations || 
-        shear_capacity_method == pgsTypes::scmWSDOT2001   || 
-        shear_capacity_method == pgsTypes::scmWSDOT2007   || 
-        shear_capacity_method == pgsTypes::scmBTTables )
+   if (shear_capacity_criteria.CapacityMethod == pgsTypes::scmBTEquations ||
+      shear_capacity_criteria.CapacityMethod == pgsTypes::scmWSDOT2001   ||
+      shear_capacity_criteria.CapacityMethod == pgsTypes::scmWSDOT2007   ||
+      shear_capacity_criteria.CapacityMethod == pgsTypes::scmBTTables )
    {
       if (shear_in_range)
       {
@@ -1264,7 +1259,7 @@ bool pgsShearCapacityEngineer::ComputeVcc(const pgsPointOfInterest& poi, SHEARCA
    }
    else
    {
-      ATLASSERT(shear_capacity_method == pgsTypes::scmVciVcw);
+      ATLASSERT(shear_capacity_criteria.CapacityMethod == pgsTypes::scmVciVcw);
 
       pscd->ShearInRange = true;
       pscd->Vci = data.Vci;
@@ -1360,12 +1355,10 @@ bool pgsShearCapacityEngineer::ComputeVs(const pgsPointOfInterest& poi, SHEARCAP
    GET_IFACE(ISpecification, pSpec);
    GET_IFACE(ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-
-
-   pgsTypes::ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
+   const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
 
    Float64 cot_theta;
-   if ( shear_capacity_method == pgsTypes::scmVciVcw )
+   if (shear_capacity_criteria.CapacityMethod == pgsTypes::scmVciVcw )
    {
       if ( IsLE(pscd->Vci,pscd->Vcw) )
       {
@@ -1512,12 +1505,11 @@ void pgsShearCapacityEngineer::ComputeVsReqd(const pgsPointOfInterest& poi, SHEA
    GET_IFACE(ISpecification, pSpec);
    GET_IFACE(ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-
-   pgsTypes::ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
+   const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
 
    Float64 Vu = pscd->Vu;
    Float64 Vc = pscd->Vc;
-   Float64 Vp = (shear_capacity_method == pgsTypes::scmVciVcw ? 0 : pscd->Vp);
+   Float64 Vp = (shear_capacity_criteria.CapacityMethod == pgsTypes::scmVciVcw ? 0 : pscd->Vp);
    Float64 Phi = pscd->Phi;
 
    Float64 VsReqd = Max(Vu / Phi - Vc - Vp, 0.0); // based on strength, compute force required to be carried by stirrups

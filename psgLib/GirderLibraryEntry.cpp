@@ -3100,12 +3100,12 @@ void GirderLibraryEntry::LoadIBeamDimensions(WBFL::System::IStructuredLoad* pLoa
 
 bool GirderLibraryEntry::IsEqual(const GirderLibraryEntry& rOther,bool bConsiderName) const
 {
-   std::vector<pgsLibraryEntryDifferenceItem*> vDifferences;
+   std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>> vDifferences;
    bool bMustRename;
    return Compare(rOther,vDifferences,bMustRename,true,bConsiderName);
 }
 
-bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName,bool bCompareSeedValues) const
+bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName,bool bCompareSeedValues) const
 {
    CEAFApp* pApp = EAFGetApp();
    const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
@@ -3118,7 +3118,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
    if (!const_cast<CComPtr<IBeamFactory>*>(&m_pBeamFactory)->IsEqualObject(rOther.m_pBeamFactory))
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Girder are different type."), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Girder are different type."), _T(""), _T("")));
       bMustRename = true;
    }
 
@@ -3132,7 +3132,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
        )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Girder dimensions are different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Girder dimensions are different"),_T(""),_T("")));
    }
 
    //
@@ -3143,53 +3143,53 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
       if ( m_AdjustableStrandType != rOther.m_AdjustableStrandType )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Adjustable Strand Type"),GetAdjustableStrandType(m_AdjustableStrandType),GetAdjustableStrandType(rOther.m_AdjustableStrandType)));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Adjustable Strand Type"),GetAdjustableStrandType(m_AdjustableStrandType),GetAdjustableStrandType(rOther.m_AdjustableStrandType)));
       }
 
       if ( m_bOddNumberOfHarpedStrands != rOther.m_bOddNumberOfHarpedStrands )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceBooleanItem(_T("Coerce Odd Number of Harped Strands"),m_bOddNumberOfHarpedStrands,rOther.m_bOddNumberOfHarpedStrands,_T("Checked"),_T("Unchecked")));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceBooleanItem>(_T("Coerce Odd Number of Harped Strands"),m_bOddNumberOfHarpedStrands,rOther.m_bOddNumberOfHarpedStrands,_T("Checked"),_T("Unchecked")));
       }
 
       if ( m_bUseDifferentHarpedGridAtEnds != rOther.m_bUseDifferentHarpedGridAtEnds )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceBooleanItem(_T("Use Different Harped Strand Locations at Girder Ends"),m_bUseDifferentHarpedGridAtEnds,rOther.m_bUseDifferentHarpedGridAtEnds,_T("Checked"),_T("Unchecked")));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceBooleanItem>(_T("Use Different Harped Strand Locations at Girder Ends"),m_bUseDifferentHarpedGridAtEnds,rOther.m_bUseDifferentHarpedGridAtEnds,_T("Checked"),_T("Unchecked")));
       }
 
       if ( m_StraightStrands != rOther.m_StraightStrands )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Straight Strands Positions are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Straight Strands Positions are different"),_T(""),_T("")));
       }
       if ( m_HarpedStrands != rOther.m_HarpedStrands  )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Harped Strands Positions are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Harped Strands Positions are different"),_T(""),_T("")));
       }
       if ( m_PermanentStrands != rOther.m_PermanentStrands )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Permanent Strands Positions are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Permanent Strands Positions are different"),_T(""),_T("")));
       }
 
       if ( m_HPAdjustment != rOther.m_HPAdjustment )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Harped strand adjustment at harping points are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Harped strand adjustment at harping points are different"),_T(""),_T("")));
       }
 
       if ( m_EndAdjustment != rOther.m_EndAdjustment )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Harped strand adjustment at girder ends are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Harped strand adjustment at girder ends are different"),_T(""),_T("")));
       }
 
       if ( m_StraightAdjustment != rOther.m_StraightAdjustment )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Adjustable straight strand adjustment are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Adjustable straight strand adjustment are different"),_T(""),_T("")));
       }
    }
 
@@ -3201,7 +3201,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
       if ( m_TemporaryStrands != rOther.m_TemporaryStrands )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Temporary Strands Positions are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Temporary Strands Positions are different"),_T(""),_T("")));
       }
    }
 
@@ -3226,7 +3226,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
       )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Debonding Strand Limits are different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Debonding Strand Limits are different"),_T(""),_T("")));
    }
 
    if ( !bSplicedGirder )
@@ -3234,7 +3234,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
       if ( m_PrestressDesignStrategies != rOther.m_PrestressDesignStrategies )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Prestress Design Stratigies are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Prestress Design Stratigies are different"),_T(""),_T("")));
       }
    }
 
@@ -3257,7 +3257,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
          )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Shear Design Parameters are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Shear Design Parameters are different"),_T(""),_T("")));
       }
    }
 
@@ -3272,7 +3272,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
            m_HarpPointMeasure != rOther.m_HarpPointMeasure )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Harping Point locations are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Harping Point locations are different"),_T(""),_T("")));
       }
    }
 
@@ -3286,7 +3286,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
            m_LongSteelInfo != rOther.m_LongSteelInfo )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Long. Reinforcement seed values are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Long. Reinforcement seed values are different"),_T(""),_T("")));
       }
    }
 
@@ -3298,7 +3298,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
       if (m_ShearData != rOther.m_ShearData)
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Transv. Reinforcement seed values are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Transv. Reinforcement seed values are different"),_T(""),_T("")));
       }
    }
 
@@ -3311,7 +3311,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
         )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Haunch Design Parameters are different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Haunch Design Parameters are different"),_T(""),_T("")));
    }
 
    if ( !bSplicedGirder )
@@ -3319,26 +3319,26 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
       if ( m_CamberMultipliers != rOther.m_CamberMultipliers )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Camber Multipliers are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Camber Multipliers are different"),_T(""),_T("")));
       }
    }
 
    if ( !::IsEqual(m_DragCoefficient,rOther.m_DragCoefficient) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Drag Coefficients are different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Drag Coefficients are different"),_T(""),_T("")));
    }
 
    if (!::IsEqual(m_PrecamberLimit, rOther.m_PrecamberLimit))
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Precamber limits are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Precamber limits are different"), _T(""), _T("")));
    }
 
    if (m_DoReportBearingElevationsAtGirderEdges != rOther.m_DoReportBearingElevationsAtGirderEdges)
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Options to Report Bearing Elevations at Girder Edges are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Options to Report Bearing Elevations at Girder Edges are different"), _T(""), _T("")));
    }
 
    //
@@ -3347,13 +3347,13 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
    if ( m_DiaphragmLayoutRules != rOther.m_DiaphragmLayoutRules )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Diaphragm Layout Rules are different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Diaphragm Layout Rules are different"),_T(""),_T("")));
    }
 
    if (considerName &&  GetName() != rOther.GetName() )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
    }
 
    return vDifferences.size() == 0 ? true : false;

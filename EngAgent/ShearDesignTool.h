@@ -31,6 +31,7 @@
 #include <IFace\PointOfInterest.h>
 #include <PgsExt\PgsExt.h>
 #include <psgLib\GirderLibraryEntry.h>
+#include <psgLib/EndZoneCriteria.h>
 
 // LOCAL INCLUDES
 //
@@ -256,8 +257,8 @@ private:
 
    bool m_bIsCurrentStirrupLayoutSymmetrical;
 
-   bool m_bDoDesignForConfinement;
-   bool m_bDoDesignForSplitting;
+   EndZoneCriteria m_EndZoneCriteria;
+
    bool m_bDoDesignFromScratch;
 
    pgsTypes::ConcreteType m_ConcreteType;

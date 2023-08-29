@@ -469,9 +469,9 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
       }
    
       GET_IFACE2(pBroker,ILossParameters,pLossParameters);
-      pgsTypes::LossMethod loss_method = pLossParameters->GetLossMethod();
+      PrestressLossCriteria::LossMethodType loss_method = pLossParameters->GetLossMethod();
    
-      if ( loss_method == pgsTypes::WSDOT_REFINED || loss_method == pgsTypes::WSDOT_LUMPSUM )
+      if ( loss_method == PrestressLossCriteria::LossMethodType::WSDOT_REFINED || loss_method == PrestressLossCriteria::LossMethodType::WSDOT_LUMPSUM )
       {
          pParagraph = new rptParagraph(rptStyleManager::GetFootnoteStyle());
          *pChapter << pParagraph;

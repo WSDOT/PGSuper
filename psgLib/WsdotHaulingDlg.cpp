@@ -28,8 +28,9 @@
 #include "WsdotHaulingDlg.h"
 #include "SpecHaulingErectionPage.h"
 #include "SpecMainSheet.h"
-
+#include <Stability/StabilityTypes.h>
 #include <EAF\EAFApp.h>
+#include <psgLib/SpecificationCriteria.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -54,17 +55,17 @@ CWsdotHaulingDlg::~CWsdotHaulingDlg()
 BOOL CWsdotHaulingDlg::OnInitDialog()
 {
    CComboBox* pcbWind = (CComboBox*)GetDlgItem(IDC_WIND_TYPE);
-   pcbWind->SetItemData(pcbWind->AddString(_T("Pressure")),(DWORD_PTR)pgsTypes::Pressure);
-   pcbWind->SetItemData(pcbWind->AddString(_T("Speed")),   (DWORD_PTR)pgsTypes::Speed);
+   pcbWind->SetItemData(pcbWind->AddString(_T("Pressure")),(DWORD_PTR)WBFL::Stability::WindLoadType::Pressure);
+   pcbWind->SetItemData(pcbWind->AddString(_T("Speed")),   (DWORD_PTR)WBFL::Stability::WindLoadType::Speed);
 
    CComboBox* pcbCF = (CComboBox*)GetDlgItem(IDC_CF_TYPE);
-   pcbCF->SetItemData(pcbCF->AddString(_T("Adverse")),  (DWORD_PTR)pgsTypes::Adverse);
-   pcbCF->SetItemData(pcbCF->AddString(_T("Favorable")),(DWORD_PTR)pgsTypes::Favorable);
+   pcbCF->SetItemData(pcbCF->AddString(_T("Adverse")),  (DWORD_PTR)WBFL::Stability::CFType::Adverse);
+   pcbCF->SetItemData(pcbCF->AddString(_T("Favorable")),(DWORD_PTR)WBFL::Stability::CFType::Favorable);
 
    CComboBox* pcbImpactUsage = (CComboBox*)GetDlgItem(IDC_IMPACT_USAGE);
-   pcbImpactUsage->SetItemData(pcbImpactUsage->AddString(_T("Normal Crown Slope and Max. Superelevation Cases")),(DWORD_PTR)pgsTypes::Both);
-   pcbImpactUsage->SetItemData(pcbImpactUsage->AddString(_T("Normal Crown Slope Case Only")),(DWORD_PTR)pgsTypes::NormalCrown);
-   pcbImpactUsage->SetItemData(pcbImpactUsage->AddString(_T("Max. Superelevation Case Only")),(DWORD_PTR)pgsTypes::MaxSuper);
+   pcbImpactUsage->SetItemData(pcbImpactUsage->AddString(_T("Normal Crown Slope and Max. Superelevation Cases")),(DWORD_PTR)WBFL::Stability::HaulingImpact::Both);
+   pcbImpactUsage->SetItemData(pcbImpactUsage->AddString(_T("Normal Crown Slope Case Only")),(DWORD_PTR)WBFL::Stability::HaulingImpact::NormalCrown);
+   pcbImpactUsage->SetItemData(pcbImpactUsage->AddString(_T("Max. Superelevation Case Only")),(DWORD_PTR)WBFL::Stability::HaulingImpact::MaxSuper);
 
    CDialog::OnInitDialog();
 
@@ -117,7 +118,7 @@ void CWsdotHaulingDlg::OnCheckHaulingTensMaxSuper()
 void CWsdotHaulingDlg::OnSetActive()
 {
    CSpecMainSheet* pDad = (CSpecMainSheet*)(GetParent()->GetParent());
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= pDad->m_Entry.GetSpecificationType() )
+   if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= pDad->m_Entry.GetSpecificationCriteria().GetEdition())
    {
       GetDlgItem(IDC_SLWC_FR_TXT)->SetWindowText(_T("Lightweight concrete"));
       GetDlgItem(IDC_ALWC_FR_TXT)->ShowWindow(SW_HIDE);
@@ -141,11 +142,11 @@ void CWsdotHaulingDlg::OnCbnSelchangeWindType()
    // TODO: Add your control notification handler code here
    CComboBox* pcbWindType = (CComboBox*)GetDlgItem(IDC_WIND_TYPE);
    int curSel = pcbWindType->GetCurSel();
-   pgsTypes::WindType windType = (pgsTypes::WindType)pcbWindType->GetItemData(curSel);
+   WBFL::Stability::WindLoadType windType = (WBFL::Stability::WindLoadType)pcbWindType->GetItemData(curSel);
    CDataExchange dx(this,false);
    CEAFApp* pApp = EAFGetApp();
    const WBFL::Units::IndirectMeasure* pDispUnits = pApp->GetDisplayUnits();
-   if ( windType == pgsTypes::Speed )
+   if ( windType == WBFL::Stability::WindLoadType::Speed )
    {
       DDX_Tag(&dx,IDC_WIND_LOAD_UNIT,pDispUnits->Velocity);
    }

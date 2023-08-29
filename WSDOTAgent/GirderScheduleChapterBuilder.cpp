@@ -37,6 +37,8 @@
 #include <IFace\GirderHandling.h>
 #include <PgsExt\GirderArtifact.h>
 #include <psgLib\SpecLibraryEntry.h>
+#include <psgLib/CreepCriteria.h>
+#include <psgLib/LimitsCriteria.h>
 
 #include <psgLib\ConnectionLibraryEntry.h>
 
@@ -199,8 +201,11 @@ rptChapter* CGirderScheduleChapterBuilder::Build(const std::shared_ptr<const WBF
    GET_IFACE2( pBroker, ISpecification, pSpec );
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
-   Float64 min_days =  WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Min(), WBFL::Units::Measure::Day);
-   Float64 max_days =  WBFL::Units::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(), WBFL::Units::Measure::Day);
+   const auto& creep_criteria = pSpecEntry->GetCreepCriteria();
+   const auto& limits_criteria = pSpecEntry->GetLimitsCriteria();
+
+   Float64 min_days =  WBFL::Units::ConvertFromSysUnits(creep_criteria.CreepDuration2Min, WBFL::Units::Measure::Day);
+   Float64 max_days =  WBFL::Units::ConvertFromSysUnits(creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day);
 
    GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
    PoiList pmid;
@@ -509,7 +514,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(const std::shared_ptr<const WBF
    Float64 C;
    if (IsNonstructuralDeck(deckType))
    {
-      C = pCamber->GetExcessCamber(poiMidSpan, CREEP_MAXTIME);
+      C = pCamber->GetExcessCamber(poiMidSpan, pgsTypes::CreepTime::Max);
    }
    else
    {
@@ -527,7 +532,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(const std::shared_ptr<const WBF
          (*pTable)(row, 1) << gdim.SetValue(pSegment->GetSlabOffset(pgsTypes::metEnd));
       }
 
-      C = pCamber->GetScreedCamber(poiMidSpan, CREEP_MAXTIME);
+      C = pCamber->GetScreedCamber(poiMidSpan, pgsTypes::CreepTime::Max);
       (*pTable)(++row, 0) << _T("Screed Camber, C at mid-span");
       (*pTable)(row, 1) << gdim.SetValue(C);
    }
@@ -535,8 +540,8 @@ rptChapter* CGirderScheduleChapterBuilder::Build(const std::shared_ptr<const WBF
    // get # of days for creep
    Float64 Dmax_UpperBound, Dmax_Average, Dmax_LowerBound;
    Float64 Dmin_UpperBound, Dmin_Average, Dmin_LowerBound;
-   pCamber->GetDCamberForGirderScheduleEx(poiMidSpan, CREEP_MAXTIME, &Dmax_UpperBound, &Dmax_Average, &Dmax_LowerBound);
-   pCamber->GetDCamberForGirderScheduleEx(poiMidSpan, CREEP_MINTIME, &Dmin_UpperBound, &Dmin_Average, &Dmin_LowerBound);
+   pCamber->GetDCamberForGirderScheduleEx(poiMidSpan, pgsTypes::CreepTime::Max, &Dmax_UpperBound, &Dmax_Average, &Dmax_LowerBound);
+   pCamber->GetDCamberForGirderScheduleEx(poiMidSpan, pgsTypes::CreepTime::Min, &Dmin_UpperBound, &Dmin_Average, &Dmin_LowerBound);
 
 
    (*pTable)(++row,0) << _T("Lower bound @ ")<< min_days<<_T(" days");
@@ -687,7 +692,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(const std::shared_ptr<const WBF
    }
 
 
-   if ( pSpecEntry->CheckGirderSag() )
+   if (limits_criteria.bCheckSag )
    {
       if (IsNonstructuralDeck(deckType))
       {
@@ -703,17 +708,17 @@ rptChapter* CGirderScheduleChapterBuilder::Build(const std::shared_ptr<const WBF
          std::_tstring camberType;
          Float64 D = 0;
 
-         switch (pSpecEntry->GetSagCamberType())
+         switch (limits_criteria.SagCamber)
          {
-         case pgsTypes::LowerBoundCamber:
+         case pgsTypes::SagCamber::LowerBoundCamber:
             D = Dmin_LowerBound;
             camberType = _T("lower bound");
             break;
-         case pgsTypes::AverageCamber:
+         case pgsTypes::SagCamber::AverageCamber:
             D = Dmin_Average;
             camberType = _T("average");
             break;
-         case pgsTypes::UpperBoundCamber:
+         case pgsTypes::SagCamber::UpperBoundCamber:
             D = Dmin_UpperBound;
             camberType = _T("upper bound");
             break;
@@ -734,7 +739,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(const std::shared_ptr<const WBF
             *p << color(Red) << _T("WARNING: Screed camber (C) is nearly equal to the ") << camberType.c_str() << _T(" camber at time of deck casting, D. The girder may end up with a sag.") << color(Black) << rptNewLine;
          }
 
-         if (Dmin_LowerBound < C && pSpecEntry->GetSagCamberType() != pgsTypes::LowerBoundCamber)
+         if (Dmin_LowerBound < C && limits_criteria.SagCamber != pgsTypes::SagCamber::LowerBoundCamber)
          {
             rptParagraph* p = new rptParagraph;
             *pChapter << p;

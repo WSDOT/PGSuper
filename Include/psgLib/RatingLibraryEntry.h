@@ -36,6 +36,9 @@ class RatingLibraryEntry;
 class RatingLibraryEntryObserver;
 PSGLIBTPL WBFL::System::SubjectT<RatingLibraryEntryObserver, RatingLibraryEntry>;
 
+class rptChapter;
+interface IEAFDisplayUnits;
+
 // Live Load, Load Factor Model before LRFR2013
 class PSGLIBCLASS CLiveLoadFactorModel
 {
@@ -146,11 +149,11 @@ public:
    bool LoadMe(WBFL::System::IStructuredLoad* pLoad);
 
 private:
-   Float64 m_PWRlower, m_PWRupper; // permit weight ratiot boundaries
+   Float64 m_PWRlower, m_PWRupper; // permit weight ratio boundaries
    std::array<Int16, 4> m_ADTT; // index, 0=lower,1=middle,2=upper,3=unknown
    std::array<Float64, 4> m_gLL_Lower;  // associated with lower value of PWR
    std::array<Float64, 4> m_gLL_Middle; // for PWR between lower and upper PWR, not used unless m_LoadFactorType is gllBilinearWithWeight
-   std::array<Float64, 4> m_gLL_Upper;  // associated with uper value of PWR, not used unless m_LoadFactorType is gllBilinearWithWeight
+   std::array<Float64, 4> m_gLL_Upper;  // associated with upper value of PWR, not used unless m_LoadFactorType is gllBilinearWithWeight
    std::array<Float64, 4> m_gLL_Service;
    pgsTypes::LiveLoadFactorType m_LiveLoadFactorType;
    pgsTypes::LiveLoadFactorModifier m_LiveLoadFactorModifier;
@@ -236,7 +239,7 @@ public:
 
    // Compares this library entry with rOther. Returns true if the entries are the same.
    // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items
-   bool Compare(const RatingLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference=false,bool considerName=false) const;
+   bool Compare(const RatingLibraryEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference=false,bool considerName=false) const;
 
    bool IsEqual(const RatingLibraryEntry& rOther,bool bConsiderName=false) const;
 
@@ -268,6 +271,9 @@ public:
    // For use with LRFR2013 and later
    void SetLiveLoadFactorModel2(pgsTypes::SpecialPermitType permitType,const CLiveLoadFactorModel2& model);
    const CLiveLoadFactorModel2& GetLiveLoadFactorModel2(pgsTypes::SpecialPermitType permitType) const;
+
+
+   void Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const;
 
 protected:
    //------------------------------------------------------------------------

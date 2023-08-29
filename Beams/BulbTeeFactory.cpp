@@ -44,6 +44,9 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\GirderLabel.h>
 
+#include <psgLib/SectionPropertiesCriteria.h>
+#include <psgLib/SpecificationCriteria.h>
+
 #include <IFace\StatusCenter.h>
 #include <PgsExt\StatusItem.h>
 
@@ -308,7 +311,7 @@ void CBulbTeeFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType status
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
    CComPtr<IMaterial> material;
    CComPtr<IMaterial> jointMaterial;
-   if (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP)
+   if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP)
    {
       CComPtr<IAgeAdjustedMaterial> aaMaterial;
       BuildAgeAdjustedGirderMaterialModel(pBroker, pSegment, pSSMbrSegment, &aaMaterial);
@@ -423,7 +426,7 @@ void CBulbTeeFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusItemIDType
 void CBulbTeeFactory::CreatePsLossEngineer(IBroker* pBroker,StatusItemIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
 {
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       CComObject<CTimeStepLossEngineer>* pEngineer;
       CComObject<CTimeStepLossEngineer>::CreateInstance(&pEngineer);
@@ -928,7 +931,10 @@ std::_tstring CBulbTeeFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroke
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
+   const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
+   const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
+   if (section_properties_criteria.EffectiveFlangeWidthMethod == pgsTypes::efwmTribWidth ||
+      WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims <= specification_criteria.GetEdition())
    {
       return _T("BulbTee_Effective_Flange_Width_Exterior_Girder_2008.gif");
    }

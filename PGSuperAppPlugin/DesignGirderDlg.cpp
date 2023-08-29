@@ -121,17 +121,15 @@ END_MESSAGE_MAP()
 BOOL CDesignGirderDlg::OnInitDialog() 
 {
    // set up default design options
-   GET_IFACE(IBridge, pBridge);
    GET_IFACE(ISpecification, pSpec);
-   m_bEnableHaunchDesign = pSpec->IsSlabOffsetDesignEnabled() && 
-                           pBridge->GetHaunchInputDepthType() == pgsTypes::hidACamber && // We don't design if direct haunch input
-                           IsStructuralDeck(pBridge->GetDeckType()) ? TRUE : FALSE;
+   m_bEnableHaunchDesign = pSpec->DesignSlabHaunch();
 
    // Load up the combo boxes with span and girder information
 
    CComboBox* pSpanBox = (CComboBox*)GetDlgItem( IDC_SPAN );
    CComboBox* pGdrBox  = (CComboBox*)GetDlgItem( IDC_GIRDER );
 
+   GET_IFACE(IBridge, pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {

@@ -39,6 +39,10 @@
 
 #include <System\AutoVariable.h>
 
+#include <psgLib/SpecificationCriteria.h>
+#include <psgLib/MomentCapacityCriteria.h>
+
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -260,9 +264,10 @@ void write_moment_data_table(IBroker* pBroker,
    GET_IFACE2(pBroker, ILibrary, pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-   bool bConsiderReinforcementStrainLimits = pSpecEntry->ConsiderReinforcementStrainLimitForMomentCapacity();
+   const auto& moment_capacity_criteria = pSpecEntry->GetMomentCapacityCriteria();
+   bool bConsiderReinforcementStrainLimits = moment_capacity_criteria.bConsiderReinforcementStrainLimit;
 
-   bool bAfter2005 = (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2006Interims <= pSpecEntry->GetSpecificationType() ? true : false);
+   bool bAfter2005 = (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2006Interims <= pSpecEntry->GetSpecificationCriteria().GetEdition() ? true : false);
 
    CComPtr<IBeamFactory> pFactory;
    pGdrEntry->GetBeamFactory(&pFactory);
