@@ -2204,7 +2204,7 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	                     // other that the precompressed tensile zone
 	                     artifact.IsApplicable( topStressLocation, !bIsInPTZ[TOP] );
 	                     artifact.IsApplicable( botStressLocation, !bIsInPTZ[BOT] );
-	                  }
+                     }
 	                  else if ( bCheckTemporaryStresses )
 	                  {
 	                     if ( bIsStressingInterval )

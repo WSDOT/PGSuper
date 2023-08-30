@@ -38,6 +38,7 @@
 #include <IFace\Intervals.h>
 #include <IFace\Allowables.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace/DocumentType.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -171,11 +172,15 @@ void CFlexuralStressCheckTable::BuildSectionHeading(rptChapter* pChapter, IBroke
    INIT_UV_PROTOTYPE( rptAreaUnitValue, area, pDisplayUnits->GetAreaUnit(), true);
 
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
+   CSegmentKey segmentKey(girderKey, segIdx == ALL_SEGMENTS ? 0 : segIdx);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(CSegmentKey(girderKey,segIdx == ALL_SEGMENTS ? 0 : segIdx));
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-   bool bIsStressingInterval = pIntervals->IsStressingInterval(girderKey,task.intervalIdx);
+   IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
+   IntervalIndexType haulIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
+
+   bool bIsStressingInterval = pIntervals->IsStressingInterval(girderKey, task.intervalIdx);
 
    std::_tstring strLimitState = GetLimitStateString(task.limitState);
    std::_tstring strStress = (task.stressType == pgsTypes::Tension ? _T("Tension") : _T("Compression"));
@@ -202,6 +207,8 @@ void CFlexuralStressCheckTable::BuildSectionHeading(rptChapter* pChapter, IBroke
    rptParagraph* pPara = new rptParagraph( rptStyleManager::GetSubheadingStyle() );
    *pChapter << pPara;
 
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
+
    if (task.limitState == pgsTypes::FatigueI && task.stressType == pgsTypes::Tension)
    {
       // use a different title for this special case of Fatigue I and Tension - this is an UHPC check
@@ -210,38 +217,51 @@ void CFlexuralStressCheckTable::BuildSectionHeading(rptChapter* pChapter, IBroke
    }
    else
    {
-      if (bIsStressingInterval)
+      // The storage interval represents a change in loading conditions because supports move relative to release.
+      // Per LRFD 5.12.3.4.3 for spliced girder segments the concrete stress limits for after losses in
+      // LRFD 5.9.2.3.2. However this doesn't may any sense. At release the BeforeLosses case applies and
+      // a short time later the AfterLosses case applies, and the stress limit goes from 0.65f'ci to 0.45f'ci.
+      // For this reason we use the "Before Losses" case for storage
+
+      if (bIsStressingInterval || (storageIntervalIdx <= task.intervalIdx && task.intervalIdx < haulIntervalIdx) )
       {
-         *pPara << _T("For Temporary Stresses before Losses [") << WBFL::LRFD::LrfdCw8th(_T("5.9.4.1"), _T("5.9.2.3.1")) << _T("]") << rptNewLine;
+         *pPara << _T("For Temporary Stresses before Losses (LRFD ") << WBFL::LRFD::LrfdCw8th(_T("5.9.4.1"), _T("5.9.2.3.1")) << _T(")") << rptNewLine;
       }
       else
       {
-         *pPara << _T("Stresses at Service Limit State after Losses [") << WBFL::LRFD::LrfdCw8th(_T("5.9.4.2"), _T("5.9.2.3.2")) << _T("]") << rptNewLine;
+         *pPara << _T("Stresses at Service Limit State after Losses (LRFD ") << WBFL::LRFD::LrfdCw8th(_T("5.9.4.2"), _T("5.9.2.3.2")) << _T(")") << rptNewLine;
       }
 
       if ( task.stressType == pgsTypes::Compression )
       {
          if ( bIsStressingInterval )
          {
-            *pPara << _T("Compression Stresses [") << WBFL::LRFD::LrfdCw8th(_T("5.9.4.1.1"),_T("5.9.2.3.1a")) << _T("]") << rptNewLine;
+            *pPara << _T("Compression Stresses (LRFD ") << WBFL::LRFD::LrfdCw8th(_T("5.9.4.1.1"), _T("5.9.2.3.1a"));
          }
          else
          {
-            *pPara << _T("Compression Stresses [") << WBFL::LRFD::LrfdCw8th(_T("5.9.4.2.1"),_T("5.9.2.3.2a")) << _T("]") << rptNewLine;
+            *pPara << _T("Compression Stresses (LRFD ") << WBFL::LRFD::LrfdCw8th(_T("5.9.4.2.1"), _T("5.9.2.3.2a"));
          }
       }
-   
+
       if ( task.stressType == pgsTypes::Tension )
       {
          if ( bIsStressingInterval )
          {
-            *pPara << _T("Tension Stresses [") << WBFL::LRFD::LrfdCw8th(_T("5.9.4.1.2"),_T("5.9.2.3.1b")) << _T("]") << rptNewLine;
+            *pPara << _T("Tension Stresses (LRFD ") << WBFL::LRFD::LrfdCw8th(_T("5.9.4.1.2"),_T("5.9.2.3.1b"));
          }
          else
          {
-            *pPara << _T("Tension Stresses [") << WBFL::LRFD::LrfdCw8th(_T("5.9.4.2.2"),_T("5.9.2.3.2b")) << _T("]") << rptNewLine;
+            *pPara << _T("Tension Stresses (LRFD ") << WBFL::LRFD::LrfdCw8th(_T("5.9.4.2.2"),_T("5.9.2.3.2b"));
          }
       }
+
+      if (pDocType->IsPGSpliceDocument())
+      {
+         *pPara << _T(", ") << WBFL::LRFD::LrfdCw8th(_T("5.12.3.4.2d"), _T("5.14.1.3.2d")) << _T(", ") << WBFL::LRFD::LrfdCw8th(_T("5.12.3.4.3"), _T("5.14.1.3.3"));
+      }
+
+      *pPara << _T(")") << rptNewLine;
    }
 }
 
