@@ -39,11 +39,11 @@ bool SpecificationCriteria::Compare(const SpecificationCriteria& other, const Sp
    if (bUseCurrentSpecification != other.bUseCurrentSpecification || Edition != other.Edition)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Basis is different"), WBFL::LRFD::LRFDVersionMgr::GetVersionString(Edition), WBFL::LRFD::LRFDVersionMgr::GetVersionString(other.Edition)));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Basis is different"), WBFL::LRFD::BDSManager::GetEditionAsString(Edition), WBFL::LRFD::BDSManager::GetEditionAsString(other.Edition)));
       if (bReturnOnFirstDifference) return false;
    }
 
-   if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2006Interims < Edition && Units != other.Units)
+   if (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2006Interims < Edition && Units != other.Units)
    {
       bSame = false;
       vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Specification Units Systems are different"), _T(""), _T("")));
@@ -59,9 +59,9 @@ void SpecificationCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisp
    *pChapter << pPara;
 
    *pPara << Bold(_T("Description: ")) << GetDescription() << rptNewLine;
-   *pPara << Bold(_T("Based on: ")) << WBFL::LRFD::LRFDVersionMgr::GetCodeString() << _T(", ") << WBFL::LRFD::LRFDVersionMgr::GetVersionString();
+   *pPara << Bold(_T("Based on: ")) << WBFL::LRFD::BDSManager::GetSpecificationName() << _T(", ") << WBFL::LRFD::BDSManager::GetEditionAsString();
 
-   if (Units == WBFL::LRFD::LRFDVersionMgr::Units::SI)
+   if (Units == WBFL::LRFD::BDSManager::Units::SI)
    {
       *pPara << _T(" - SI Units") << rptNewLine;
    }
@@ -78,13 +78,13 @@ void SpecificationCriteria::Save(WBFL::System::IStructuredSave* pSave) const
    pSave->Property(_T("Description"), Description.c_str());
 
    pSave->Property(_T("UseCurrentSpecification"), bUseCurrentSpecification);
-   pSave->Property(_T("Edition"), WBFL::LRFD::LRFDVersionMgr::GetVersionString(Edition, true));
+   pSave->Property(_T("Edition"), WBFL::LRFD::BDSManager::GetEditionAsString(Edition, true));
 
-   if (Units == WBFL::LRFD::LRFDVersionMgr::Units::SI)
+   if (Units == WBFL::LRFD::BDSManager::Units::SI)
    {
       pSave->Property(_T("SpecificationUnits"), _T("SI"));
    }
-   else if (Units == WBFL::LRFD::LRFDVersionMgr::Units::US)
+   else if (Units == WBFL::LRFD::BDSManager::Units::US)
    {
       pSave->Property(_T("SpecificationUnits"), _T("US"));
    }
@@ -111,7 +111,7 @@ void SpecificationCriteria::Load(WBFL::System::IStructuredLoad* pLoad)
    {
       try
       {
-         Edition = WBFL::LRFD::LRFDVersionMgr::GetVersion(tmp.c_str());
+         Edition = WBFL::LRFD::BDSManager::GetEdition(tmp.c_str());
       }
       catch (...)
       {
@@ -128,11 +128,11 @@ void SpecificationCriteria::Load(WBFL::System::IStructuredLoad* pLoad)
    {
       if (tmp == _T("SI"))
       {
-         Units = WBFL::LRFD::LRFDVersionMgr::Units::SI;
+         Units = WBFL::LRFD::BDSManager::Units::SI;
       }
       else if (tmp == _T("US"))
       {
-         Units = WBFL::LRFD::LRFDVersionMgr::Units::US;
+         Units = WBFL::LRFD::BDSManager::Units::US;
       }
       else
       {
@@ -153,9 +153,9 @@ std::_tstring SpecificationCriteria::GetDescription(bool bApplySymbolSubstitutio
    if (bApplySymbolSubstitution)
    {
       std::_tstring description(Description);
-      std::_tstring strSubstitute(WBFL::LRFD::LRFDVersionMgr::GetCodeString());
+      std::_tstring strSubstitute(WBFL::LRFD::BDSManager::GetSpecificationName());
       strSubstitute += _T(", ");
-      strSubstitute += WBFL::LRFD::LRFDVersionMgr::GetVersionString();
+      strSubstitute += WBFL::LRFD::BDSManager::GetEditionAsString();
       boost::replace_all(description, _T("%BDS%"), strSubstitute);
       return description;
    }
@@ -165,11 +165,11 @@ std::_tstring SpecificationCriteria::GetDescription(bool bApplySymbolSubstitutio
    }
 }
 
-WBFL::LRFD::LRFDVersionMgr::Version SpecificationCriteria::GetEdition() const
+WBFL::LRFD::BDSManager::Edition SpecificationCriteria::GetEdition() const
 {
    if (bUseCurrentSpecification)
    {
-      return WBFL::LRFD::LRFDVersionMgr::GetLatestVersion();
+      return WBFL::LRFD::BDSManager::GetLatestEdition();
    }
    else
    {

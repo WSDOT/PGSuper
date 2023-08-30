@@ -179,7 +179,7 @@ void CRatingDialog::ExchangeLoadFactorData(CDataExchange* pDX,pgsTypes::LoadRati
    ATLASSERT(ratingType != pgsTypes::lrPermit_Special);
    if ( pDX->m_bSaveAndValidate )
    {
-      if ( m_RatingDescriptionPage.GetSpecVersion() < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
+      if ( m_RatingDescriptionPage.GetSpecVersion() < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
       {
          CLiveLoadFactorModel model1;
          ExchangeLoadFactorData(pDX,&model1);
@@ -194,7 +194,7 @@ void CRatingDialog::ExchangeLoadFactorData(CDataExchange* pDX,pgsTypes::LoadRati
    }
    else
    {
-      if ( m_RatingDescriptionPage.GetSpecVersion() < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
+      if ( m_RatingDescriptionPage.GetSpecVersion() < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
       {
          CLiveLoadFactorModel model1 = m_Entry.GetLiveLoadFactorModel(ratingType);
          ExchangeLoadFactorData(pDX,&model1);
@@ -211,7 +211,7 @@ void CRatingDialog::ExchangeLoadFactorData(CDataExchange* pDX,pgsTypes::SpecialP
 {
    if ( pDX->m_bSaveAndValidate )
    {
-      if ( m_RatingDescriptionPage.GetSpecVersion() < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
+      if ( m_RatingDescriptionPage.GetSpecVersion() < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
       {
          CLiveLoadFactorModel model;
          ExchangeLoadFactorData(pDX,&model);
@@ -226,7 +226,7 @@ void CRatingDialog::ExchangeLoadFactorData(CDataExchange* pDX,pgsTypes::SpecialP
    }
    else
    {
-      if ( m_RatingDescriptionPage.GetSpecVersion() < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
+      if ( m_RatingDescriptionPage.GetSpecVersion() < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
       {
          CLiveLoadFactorModel model = m_Entry.GetLiveLoadFactorModel(permitType);
          ExchangeLoadFactorData(pDX,&model);
@@ -529,7 +529,7 @@ void CRatingDialog::UpdatePageLayout()
    UpdatePageLayout(m_RatingDescriptionPage.GetSpecVersion());
 }
 
-void CRatingDialog::UpdatePageLayout(WBFL::LRFD::LRFRVersionMgr::Version version)
+void CRatingDialog::UpdatePageLayout(WBFL::LRFD::MBEManager::Edition version)
 {
    for ( int i = 0; i < 5; i++ )
    {
@@ -549,7 +549,7 @@ void CRatingDialog::UpdatePageLayout(WBFL::LRFD::LRFRVersionMgr::Version version
          RemovePage(m_PermitLiveLoadFactorsPage2[i]);
    }
 
-   if ( version < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
+   if ( version < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
    {
       for ( int i = 0; i < 5; i++ )
       {

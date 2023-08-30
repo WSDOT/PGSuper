@@ -206,7 +206,7 @@ void CVoidedSlab2DistFactorEngineer::BuildReport(const CGirderKey& girderKey,rpt
          }
       }
 
-      if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pPara) << _T("Strength and Service Limit States");
@@ -306,7 +306,7 @@ void CVoidedSlab2DistFactorEngineer::BuildReport(const CGirderKey& girderKey,rpt
       ////////////////////////////////////////////////////////////////////////////
       // Fatigue limit states
       ////////////////////////////////////////////////////////////////////////////
-      if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pPara) << _T("Fatigue Limit States");
@@ -669,7 +669,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CVoidedSlab2DistFactorEngineer::GetL
       bool bSkewMoment = live_load_distribution_criteria.bIgnoreSkewReductionForMoment ? false : bSkew;
       bool bSkewShear = bSkew;
 
-      if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::SeventhEdition2014 <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          // Starting with LRFD 7th Edition, 2014, skew correction is only applied from
          // the obtuse corner to mid-span of exterior and first interior girders.
@@ -700,7 +700,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CVoidedSlab2DistFactorEngineer::GetL
       }
 
       if ( pDeck->TransverseConnectivity == pgsTypes::atcConnectedAsUnit || 
-           WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 <= WBFL::LRFD::LRFDVersionMgr::GetVersion()  // sufficiently connected as unit was removed in LRFD 7th Edition 2014
+           WBFL::LRFD::BDSManager::Edition::SeventhEdition2014 <= WBFL::LRFD::BDSManager::GetEdition()  // sufficiently connected as unit was removed in LRFD 7th Edition 2014
          )
       {
          pLLDF = new WBFL::LRFD::LldfTypeF(plldf->gdrNum,
@@ -810,7 +810,7 @@ void CVoidedSlab2DistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB
             {
                (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_ME_Type_G_SI.png") : _T("mg_1_ME_Type_G_US.png"))) << rptNewLine;
 
-               if (lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit || WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+               if (lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit || WBFL::LRFD::BDSManager::Edition::SeventhEdition2014 <= WBFL::LRFD::BDSManager::GetEdition())
                {
                   (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_F_SI.png") : _T("mg_1_MI_Type_F_US.png"))) << rptNewLine;
                }
@@ -870,7 +870,7 @@ void CVoidedSlab2DistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB
                   (*pPara) << Bold(_T("2+ Loaded Lane")) << rptNewLine;
                   (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_ME_Type_G_SI.png") : _T("mg_2_ME_Type_G_US.png"))) << rptNewLine;
 
-                  if (lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit || WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+                  if (lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit || WBFL::LRFD::BDSManager::Edition::SeventhEdition2014 <= WBFL::LRFD::BDSManager::GetEdition())
                   {
                      (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_MI_Type_F_SI.png") : _T("mg_2_MI_Type_F_US.png"))) << rptNewLine;
                   }
@@ -950,7 +950,7 @@ void CVoidedSlab2DistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB
          }
          else
          {
-            if ( lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit || WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+            if ( lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit || WBFL::LRFD::BDSManager::Edition::SeventhEdition2014 <= WBFL::LRFD::BDSManager::GetEdition() )
             {
                (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_F_SI.png") : _T("mg_1_MI_Type_F_US.png"))) << rptNewLine;
             }
@@ -1001,7 +1001,7 @@ void CVoidedSlab2DistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB
 
                (*pPara) << Bold(_T("2+ Loaded Lanes")) << rptNewLine;
 
-               if ( lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit || WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+               if ( lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit || WBFL::LRFD::BDSManager::Edition::SeventhEdition2014 <= WBFL::LRFD::BDSManager::GetEdition() )
                {
                   (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_MI_Type_F_SI.png") : _T("mg_2_MI_Type_F_US.png"))) << rptNewLine;
                }

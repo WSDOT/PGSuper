@@ -2238,7 +2238,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
    // results to compute if additional long reinf is needed
    GDRCONFIG config = this->GetSegmentConfiguration(); // current design
 
-   bool b9thEdition(WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() ? true : false);
+   bool b9thEdition(WBFL::LRFD::BDSManager::Edition::NinthEdition2020 <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();

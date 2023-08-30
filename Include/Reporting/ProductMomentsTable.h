@@ -290,7 +290,7 @@ RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_tab
       (*p_table)(1,col++) << COLHDR(_T("Max"),   M, unitT );
       (*p_table)(1,col++) << COLHDR(_T("Min"),   M, unitT );
 
-      if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          p_table->SetColumnSpan(0,col,2);
          (*p_table)(0,col) << _T("* Fatigue Live Load");

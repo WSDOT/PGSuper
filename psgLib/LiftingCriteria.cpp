@@ -72,7 +72,7 @@ bool LiftingCriteria::Compare(const LiftingCriteria& other, const SpecLibraryEnt
       or
       !::IsEqual(ModulusOfRuptureCoefficient[pgsTypes::SandLightweight], other.ModulusOfRuptureCoefficient[pgsTypes::SandLightweight])
       or
-      (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= impl.GetSpecificationCriteria().GetEdition() ? !::IsEqual(ModulusOfRuptureCoefficient[pgsTypes::AllLightweight], other.ModulusOfRuptureCoefficient[pgsTypes::AllLightweight]) : false)
+      (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= impl.GetSpecificationCriteria().GetEdition() ? !::IsEqual(ModulusOfRuptureCoefficient[pgsTypes::AllLightweight], other.ModulusOfRuptureCoefficient[pgsTypes::AllLightweight]) : false)
       )
    {
       bSame = false;
@@ -164,7 +164,7 @@ void LiftingCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUni
    *pPara << rptNewLine;
     
    *pPara << _T("Modulus of rupture") << rptNewLine;
-   if (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+   if (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition())
    {
       *pPara << _T("- Normal weight concrete: ") << tension_coefficient.SetValue(ModulusOfRuptureCoefficient[pgsTypes::Normal]) << symbol(lambda) << RPT_SQRT_FC << rptNewLine;
       *pPara << _T("- Lightweight concrete: ") << tension_coefficient.SetValue(ModulusOfRuptureCoefficient[pgsTypes::SandLightweight]) << symbol(lambda) << RPT_SQRT_FC << rptNewLine;

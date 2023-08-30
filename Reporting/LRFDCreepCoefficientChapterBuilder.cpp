@@ -216,7 +216,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(const s
             }
             else
             {
-               if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
+               if ( WBFL::LRFD::BDSManager::Edition::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
                {
                   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LRFDCreepEqn2007.png")) << rptNewLine;
                }
@@ -227,11 +227,11 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(const s
 
                *pPara << Bold(_T("for which:")) << rptNewLine;
                
-               if ( pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims )
+               if ( pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims )
                {
                   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KvsEqn-SI.png") : _T("KvsEqn-US.png")) ) << rptNewLine;
                }
-               else if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2006Interims == pSpecEntry->GetSpecificationCriteria().GetEdition())
+               else if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2006Interims == pSpecEntry->GetSpecificationCriteria().GetEdition())
                {
                   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KvsEqn2006-SI.png") : _T("KvsEqn2006-US.png")) ) << rptNewLine;
                }
@@ -242,7 +242,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(const s
 
                *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("KhcEqn.png") ) << rptNewLine;
                *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KfEqn2005-SI.png") : _T("KfEqn2005-US.png")) ) << rptNewLine;
-               if ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2015Interims )
+               if ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2015Interims )
                {
                   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KtdEqn-SI.png") : _T("KtdEqn-US.png")) ) << rptNewLine;
                }
@@ -257,7 +257,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(const s
                *pPara << _T("V/S = ") << length.SetValue(details.VSratio) << _T(", ");
                *pPara << Sub2(_T("K"),_T("1")) << _T(" = ") << details.K1 << _T(", ");
                *pPara << Sub2(_T("K"),_T("2")) << _T(" = ") << details.K2 << rptNewLine;
-               if ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 )
+               if ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEdition2007 )
                {
                   *pPara << _T("In determining the maturity of concrete at initial load, t") << Sub(_T("i"))
                          << _T(", 1 day of accelerated curing may be taken as equal to ") << creep_criteria.CuringMethodTimeAdjustmentFactor << _T(" days of normal curing.") << rptNewLine;
@@ -291,7 +291,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(const s
             *pPara << rptNewLine;
             *pPara << Bold(item.second) << rptNewLine;
             *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
-            if (pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007)
+            if (pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEdition2007)
             {
                *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << _T(", ");
             }
@@ -301,7 +301,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(const s
             }
             *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
 
-            if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
+            if ( WBFL::LRFD::BDSManager::Edition::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
             {
                *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << _T(", ");
             }
@@ -415,7 +415,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(const std::shared_p
             }
             else
             {
-               if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
+               if ( WBFL::LRFD::BDSManager::Edition::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
                {
                   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LRFDCreepEqn2007.png")) << rptNewLine;
                }
@@ -425,11 +425,11 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(const std::shared_p
                }
                *pPara << Bold(_T("for which:")) << rptNewLine;
 
-               if ( pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims )
+               if ( pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims )
                {
                   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KvsEqn-SI.png") : _T("KvsEqn-US.png")) ) << rptNewLine;
                }
-               else if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2006Interims == pSpecEntry->GetSpecificationCriteria().GetEdition())
+               else if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2006Interims == pSpecEntry->GetSpecificationCriteria().GetEdition())
                {
                   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KvsEqn2006-SI.png") : _T("KvsEqn2006-US.png")) ) << rptNewLine;
                }
@@ -440,7 +440,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(const std::shared_p
 
                *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("KhcEqn.png") ) << rptNewLine;
                *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KfEqn2005-SI.png") : _T("KfEqn2005-US.png")) ) << rptNewLine;
-               if ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2015Interims )
+               if ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2015Interims )
                {
                   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KtdEqn-SI.png") : _T("KtdEqn-US.png")) ) << rptNewLine;
                }
@@ -456,7 +456,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(const std::shared_p
                *pPara << Sub2(_T("K"),_T("1")) << _T(" = ") << details.K1 << _T(", ");
                *pPara << Sub2(_T("K"),_T("2")) << _T(" = ") << details.K2 << rptNewLine;
 
-               if ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 )
+               if ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEdition2007 )
                {
                  *pPara << _T("In determining the maturity of concrete at initial load, t") << Sub(_T("i"))
                         << _T(", 1 day of accelerated curing may be taken as equal to ") << creep_criteria.CuringMethodTimeAdjustmentFactor << _T(" days of normal curing.") << rptNewLine;
@@ -489,7 +489,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(const std::shared_p
             *pPara << rptNewLine;
             *pPara << Bold(item.second) << rptNewLine;
             *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
-            if (pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007)
+            if (pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEdition2007)
             {
                *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << _T(", ");
             }
@@ -499,7 +499,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(const std::shared_p
             }
             *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
 
-            if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
+            if ( WBFL::LRFD::BDSManager::Edition::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
             {
                *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << _T(", ");
             }
@@ -615,7 +615,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(cons
         }
         else
         {
-            if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
+            if ( WBFL::LRFD::BDSManager::Edition::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
             {
                *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LRFDCreepEqn2007.png")) << rptNewLine;
             }
@@ -625,11 +625,11 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(cons
             }
             *pPara << Bold(_T("for which:")) << rptNewLine;
             
-            if ( pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims )
+            if ( pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims )
             {
                *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KvsEqn-SI.png") : _T("KvsEqn-US.png")) ) << rptNewLine;
             }
-            else if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2006Interims == pSpecEntry->GetSpecificationCriteria().GetEdition())
+            else if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2006Interims == pSpecEntry->GetSpecificationCriteria().GetEdition())
             {
                *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KvsEqn2006-SI.png") : _T("KvsEqn2006-US.png")) ) << rptNewLine;
             }
@@ -640,7 +640,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(cons
 
            *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("KhcEqn.png") ) << rptNewLine;
            *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KfEqn2005-SI.png") : _T("KfEqn2005-US.png")) ) << rptNewLine;
-            if ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2015Interims )
+            if ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2015Interims )
             {
                *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KtdEqn-SI.png") : _T("KtdEqn-US.png")) ) << rptNewLine;
             }
@@ -656,7 +656,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(cons
            *pPara << Sub2(_T("K"),_T("1")) << _T(" = ") << details.K1 << _T(", ");
            *pPara << Sub2(_T("K"),_T("2")) << _T(" = ") << details.K2 << rptNewLine;
 
-           if ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 )
+           if ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEdition2007 )
            {
               *pPara << _T("In determining the maturity of concrete at initial load, t") << Sub(_T("i"))
                      << _T(", 1 day of accelerated curing may be taken as equal to ") << creep_criteria.CuringMethodTimeAdjustmentFactor << _T(" days of normal curing.") << rptNewLine;
@@ -735,7 +735,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(cons
          *pPara << rptNewLine;
          *pPara << Bold(_T("Prestress release until temporary strand removal and diaphragm casting")) <<rptNewLine;
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
-         if (pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007)
+         if (pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEdition2007)
          {
             *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << _T(", ");
          }
@@ -745,7 +745,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(cons
          }
          *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
 
-         if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
          {
             *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << _T(", ");
          }
@@ -775,7 +775,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(cons
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << _T(", ");
          *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
 
-         if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
          {
             *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << _T(", ");
          }
@@ -806,7 +806,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(cons
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << _T(", ");
          *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
 
-         if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
          {
             *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << _T(", ");
          }
@@ -837,7 +837,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(cons
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << _T(", ");
          *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
 
-         if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
          {
             *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << _T(", ");
          }
@@ -868,7 +868,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(cons
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << _T(", ");
          *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
 
-         if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
          {
             *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << _T(", ");
          }
@@ -899,7 +899,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(cons
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << _T(", ");
          *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
 
-         if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
          {
             *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << _T(", ");
          }

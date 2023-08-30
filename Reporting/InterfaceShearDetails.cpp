@@ -81,7 +81,7 @@ void CInterfaceShearDetails::Build(IBroker* pBroker, rptChapter* pChapter,
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
    const auto& interface_shear_criteria = pSpecEntry->GetInterfaceShearCriteria();
-   m_bIsSpec2007orNewer = WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition();
+   m_bIsSpec2007orNewer = WBFL::LRFD::BDSManager::Edition::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition();
    m_ShearFlowMethod = interface_shear_criteria.ShearFlowMethod;
 
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -796,7 +796,7 @@ rptRcTable* CInterfaceShearDetails::CreateMinAvfTable(rptChapter* pChapter,IBrid
       else
       {
 
-         if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017)
+         if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::EighthEdition2017)
          {
             *pParaEqn << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("AvfMin_US.png")) << rptNewLine;
          }

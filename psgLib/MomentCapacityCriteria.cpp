@@ -78,14 +78,14 @@ MomentCapacityCriteria::MomentCapacityCriteria()
 bool MomentCapacityCriteria::Compare(const MomentCapacityCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
-   if ((impl.GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims &&  OverReinforcedMomentCapacity != other.OverReinforcedMomentCapacity) ||
+   if ((impl.GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims &&  OverReinforcedMomentCapacity != other.OverReinforcedMomentCapacity) ||
       bIncludeStrandForNegMoment != other.bIncludeStrandForNegMoment ||
       bConsiderReinforcementStrainLimit != other.bConsiderReinforcementStrainLimit ||
       nMomentCapacitySlices != other.nMomentCapacitySlices ||
       bIncludeRebar != other.bIncludeRebar ||
       !::IsEqual(ModulusOfRuptureCoefficient[pgsTypes::Normal], other.ModulusOfRuptureCoefficient[pgsTypes::Normal]) ||
       !::IsEqual(ModulusOfRuptureCoefficient[pgsTypes::SandLightweight], other.ModulusOfRuptureCoefficient[pgsTypes::SandLightweight]) ||
-      (impl.GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims && !::IsEqual(ModulusOfRuptureCoefficient[pgsTypes::AllLightweight], other.ModulusOfRuptureCoefficient[pgsTypes::AllLightweight])))
+      (impl.GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims && !::IsEqual(ModulusOfRuptureCoefficient[pgsTypes::AllLightweight], other.ModulusOfRuptureCoefficient[pgsTypes::AllLightweight])))
    {
       bSame = false;
       vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Moment Capacity parameters are different"), _T(""), _T("")));
@@ -96,7 +96,7 @@ bool MomentCapacityCriteria::Compare(const MomentCapacityCriteria& other, const 
    for (int i = 0; i < pgsTypes::ConcreteTypeCount && bPhiFactors == true; i++)
    {
       pgsTypes::ConcreteType concreteType = pgsTypes::ConcreteType(i);
-      if (concreteType == pgsTypes::AllLightweight && WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= impl.GetSpecificationCriteria().GetEdition() )
+      if (concreteType == pgsTypes::AllLightweight && WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= impl.GetSpecificationCriteria().GetEdition() )
       {
          // All Lightweight not used after LRFD2016, there is only Lightweight and those parameters are stored with pgsTypes::SandLightweight
          continue;
@@ -139,7 +139,7 @@ void MomentCapacityCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDis
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   if (WBFL::LRFD::LRFDVersionMgr::GetVersion() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims)
+   if (WBFL::LRFD::BDSManager::GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims)
    {
       if (OverReinforcedMomentCapacity == 0)
       {
@@ -162,7 +162,7 @@ void MomentCapacityCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDis
    *pPara << rptNewLine;
 
    *pPara << _T("Modulus of rupture for cracking moment (LRFD 5.4.2.6, 5.6.3.3)") << rptNewLine;
-   if (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+   if (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition())
    {
       *pPara << _T("Normal weight concrete: ") << tension_coefficient.SetValue(ModulusOfRuptureCoefficient[pgsTypes::Normal]) << symbol(lambda) << RPT_SQRT_FC << rptNewLine;
       *pPara << _T("Lightweight concrete: ") << tension_coefficient.SetValue(ModulusOfRuptureCoefficient[pgsTypes::SandLightweight]) << symbol(lambda) << RPT_SQRT_FC << rptNewLine;

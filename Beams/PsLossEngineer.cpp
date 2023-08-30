@@ -164,7 +164,7 @@ LOSSDETAILS CPsLossEngineer::ComputeLosses(BeamType beamType,const pgsPointOfInt
       if (
          !(loss_method == PrestressLossCriteria::LossMethodType::AASHTO_REFINED || loss_method == PrestressLossCriteria::LossMethodType::WSDOT_REFINED || loss_method == PrestressLossCriteria::LossMethodType::GENERAL_LUMPSUM)
          && 
-         (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020)
+         (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::NinthEdition2020)
          )
       {
          GET_IFACE(IEAFStatusCenter, pStatusCenter);
@@ -273,7 +273,7 @@ void CPsLossEngineer::ReportRefinedMethod(BeamType beamType,const CGirderKey& gi
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
-   if ( pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 ||
+   if ( pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 ||
         lossAgency==laTxDOT)
    {
       ReportRefinedMethodBefore2005(pChapter,beamType,girderKey,pDisplayUnits,level);
@@ -291,7 +291,7 @@ void CPsLossEngineer::ReportApproxLumpSumMethod(BeamType beamType,const CGirderK
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
-   if ( pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 )
+   if ( pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 )
    {
       ReportApproxMethod(pChapter,beamType,girderKey,pDisplayUnits,level,isWsdot);
    }
@@ -336,7 +336,7 @@ void CPsLossEngineer::LossesByRefinedEstimate(BeamType beamType,const pgsPointOf
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
-   if ( pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 ||
+   if ( pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 ||
         lossAgency==laTxDOT)
    {
       LossesByRefinedEstimateBefore2005(beamType,poi,pConfig,pLosses);
@@ -503,7 +503,7 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
       if ( e.GetReasonCode() == WBFL::LRFD::XPsLosses::Reason::fpjOutOfRange )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
-         if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims )
+         if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims )
          {
             msg += _T("Prestress losses could not be computed because the prestress jacking stress fpj does not exceed 0.5fpu (see Article 5.9.5.4.4b)\nAdjust the prestress jacking forces");
          }
@@ -841,7 +841,7 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
       if ( e.GetReasonCode() == WBFL::LRFD::XPsLosses::Reason::fpjOutOfRange )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
-         if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims )
+         if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims )
          {
             msg += _T("Prestress losses could not be computed because the prestress jacking stress fpj does not exceed 0.5fpu (see Article 5.9.5.4.4b)\nAdjust the prestress jacking forces");
          }
@@ -1111,7 +1111,7 @@ WBFL::LRFD::ElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRe
       if ( e.GetReasonCode() == WBFL::LRFD::XPsLosses::Reason::fpjOutOfRange )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
-         if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims )
+         if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims )
          {
             msg += _T("Prestress losses could not be computed because the prestress jacking stress fpj does not exceed 0.5fpu (see Article 5.9.5.4.4b)\nAdjust the prestress jacking forces");
          }
@@ -1239,7 +1239,7 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
    const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
    try
    {
-      if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 )
+      if ( WBFL::LRFD::BDSManager::GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 )
       {
          // partial prestressing ratio=1 for wsdot method
          Float64 ppr;
@@ -1333,7 +1333,7 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
          // LRFD 5th Edition, 2010, C5.9.5.3 ( or >= 2017, C5.9.3.3)
          // The approximate estimates of time-dependent prestress losses given in Eq 5.9.3.3-1 are intended for sections with composite decks only
          GET_IFACE_NOCHECK(IBridge,pBridge);
-         if ( WBFL::LRFD::LRFDVersionMgr::Version::FifthEdition2010 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() && !pBridge->IsCompositeDeck() )
+         if ( WBFL::LRFD::BDSManager::Edition::FifthEdition2010 <= WBFL::LRFD::BDSManager::GetEdition() && !pBridge->IsCompositeDeck() )
          {
             GET_IFACE(IEAFStatusCenter,pStatusCenter);
             std::_tstring msg(_T("The approximate estimates of time-dependent prestress losses given in Eq ") + std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.3-1"),_T("5.9.3.3-1"))) + _T(" are intended for sections with composite decks only."));
@@ -1428,7 +1428,7 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
       if ( e.GetReasonCode() == WBFL::LRFD::XPsLosses::Reason::fpjOutOfRange )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
-         if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims )
+         if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims )
          {
             msg += _T("Prestress losses could not be computed because the prestress jacking stress fpj does not exceed 0.5fpu (see Article 5.9.5.4.4b)\nAdjust the prestress jacking forces");
          }
@@ -2548,7 +2548,7 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pCh
    // Lump Sum Loss at time of shipping
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-   CString strApproxMethod(WBFL::LRFD::LRFDVersionMgr::GetVersion() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 ? _T("Approximate Lump Sum Estimate") : _T("Approximate Estimate"));
+   CString strApproxMethod(WBFL::LRFD::BDSManager::GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 ? _T("Approximate Lump Sum Estimate") : _T("Approximate Estimate"));
    *pParagraph << strApproxMethod << _T(" of Time Dependent Losses at Hauling") << rptNewLine;
 
    if ( pDetails->LossMethod == PrestressLossCriteria::LossMethodType::AASHTO_LUMPSUM || pDetails->LossMethod == PrestressLossCriteria::LossMethodType::WSDOT_LUMPSUM )
@@ -2640,7 +2640,7 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLosses(rptChapter* pChapter,cons
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   CString strApproxMethod(WBFL::LRFD::LRFDVersionMgr::GetVersion() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 ? _T("Approximate Lump Sum Estimate") : _T("Approximate Estimate"));
+   CString strApproxMethod(WBFL::LRFD::BDSManager::GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 ? _T("Approximate Lump Sum Estimate") : _T("Approximate Estimate"));
    *pParagraph << strApproxMethod << _T(" of Time Dependent Losses") << rptNewLine;
 
    if ( pDetails->LossMethod == PrestressLossCriteria::LossMethodType::AASHTO_LUMPSUM || pDetails->LossMethod == PrestressLossCriteria::LossMethodType::WSDOT_LUMPSUM )
@@ -3355,7 +3355,7 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamTy
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
-   if ( pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 ||
+   if ( pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 ||
         lossAgency==laTxDOT)
    {
       ReportFinalLossesRefinedMethodBefore2005(pChapter,beamType,girderKey,pDisplayUnits);

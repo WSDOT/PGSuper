@@ -42,8 +42,8 @@ static char THIS_FILE[] = __FILE__;
 // Some utility functions
 rptRcTable* CreateDevelopmentTable(IEAFDisplayUnits* pDisplayUnits)
 {
-   bool is_2015 = WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2015Interims == WBFL::LRFD::LRFDVersionMgr::GetVersion();
-   bool is_2016 = WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion();
+   bool is_2015 = WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2015Interims == WBFL::LRFD::BDSManager::GetEdition();
+   bool is_2016 = WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition();
 
    ColumnIndexType nColumns = 8;
    if ( is_2015 || is_2016 )
@@ -79,8 +79,8 @@ rptRcTable* CreateDevelopmentTable(IEAFDisplayUnits* pDisplayUnits)
 void WriteRowToDevelopmentTable(rptRcTable* pTable, RowIndexType row, CComBSTR barname, const WBFL::LRFD::REBARDEVLENGTHDETAILS& devDetails,
                                        rptAreaUnitValue& area, rptLengthUnitValue& length, rptStressUnitValue& stress, rptRcScalar& scalar)
 {
-   bool is_2015 = WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2015Interims == WBFL::LRFD::LRFDVersionMgr::GetVersion();
-   bool is_2016 = WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion();
+   bool is_2015 = WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2015Interims == WBFL::LRFD::BDSManager::GetEdition();
+   bool is_2016 = WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition();
 
    ColumnIndexType col=0;
    (*pTable)(row,col++) << barname;
@@ -234,11 +234,11 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(const std::shared_ptr<const W
             }
             else
             {
-               if (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+               if (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition())
                {
                   (*pParagraph) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalRebarDevelopment_2016.png")) << rptNewLine;
                }
-               else if (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2015Interims == WBFL::LRFD::LRFDVersionMgr::GetVersion())
+               else if (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2015Interims == WBFL::LRFD::BDSManager::GetEdition())
                {
                   (*pParagraph) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalRebarDevelopment_2015.png")) << rptNewLine;
                }

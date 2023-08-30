@@ -134,7 +134,7 @@ rptChapter* CPierReactionChapterBuilder::Build(const std::shared_ptr<const WBFL:
    nCols++; // add one for Type column
    nCols++; // add one for Reaction column
    nCols += 4; // min/max for design live load reactions
-   if (WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+   if (WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition())
    {
       nCols += 4; // min/max for fatigue live load reactions
    }
@@ -373,7 +373,7 @@ rptChapter* CPierReactionChapterBuilder::Build(const std::shared_ptr<const WBFL:
    (*p_design_table)(1, col + 1) << _T("Min");
    col += 2;
 
-   if (WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+   if (WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition())
    {
       p_design_table->SetColumnSpan(0, col, 2);
       (*p_design_table)(0, col) << _T("* Fatigue Live Load") << rptNewLine << _T("Optimize Fx");
@@ -675,7 +675,7 @@ rptChapter* CPierReactionChapterBuilder::Build(const std::shared_ptr<const WBFL:
          pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltDesign, vPiers, girderKey, batSS, true, fetPrimary, &vMinLLReactionsSimpleSpan[fetPrimary], &vMaxLLReactionsSimpleSpan[fetPrimary], &vMinLLVehicleSimpleSpan[fetPrimary], &vMaxLLVehicleSimpleSpan[fetPrimary]);
          pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltDesign, vPiers, girderKey, batCS, true, fetPrimary, &vMinLLReactionsContinuousSpan[fetPrimary], &vMaxLLReactionsContinuousSpan[fetPrimary], &vMinLLVehicleContinuousSpan[fetPrimary], &vMaxLLVehicleContinuousSpan[fetPrimary]);
 
-         if (WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+         if (WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition())
          {
             pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltFatigue, vPiers, girderKey, batSS, true, fetPrimary, &vMinFatigueReactionsSimpleSpan[fetPrimary], &vMaxFatigueReactionsSimpleSpan[fetPrimary], &vMinFatigueVehicleSimpleSpan[fetPrimary], &vMaxFatigueVehicleSimpleSpan[fetPrimary]);
             pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltFatigue, vPiers, girderKey, batCS, true, fetPrimary, &vMinFatigueReactionsContinuousSpan[fetPrimary], &vMaxFatigueReactionsContinuousSpan[fetPrimary], &vMinFatigueVehicleContinuousSpan[fetPrimary], &vMaxFatigueVehicleContinuousSpan[fetPrimary]);
@@ -710,7 +710,7 @@ rptChapter* CPierReactionChapterBuilder::Build(const std::shared_ptr<const WBFL:
          pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltDesign, vPiers, girderKey, batMax, true, fetPrimary, &vMinLLReactionsSimpleSpan[fetPrimary], &vMaxLLReactionsSimpleSpan[fetPrimary], &vMinLLVehicleSimpleSpan[fetPrimary], &vMaxLLVehicleSimpleSpan[fetPrimary]);
          pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltDesign, vPiers, girderKey, batMin, true, fetPrimary, &vMinLLReactionsContinuousSpan[fetPrimary], &vMaxLLReactionsContinuousSpan[fetPrimary], &vMinLLVehicleContinuousSpan[fetPrimary], &vMaxLLVehicleContinuousSpan[fetPrimary]);
 
-         if (WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+         if (WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition())
          {
             pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltFatigue, vPiers, girderKey, batMax, true, fetPrimary, &vMinFatigueReactionsSimpleSpan[fetPrimary], &vMaxFatigueReactionsSimpleSpan[fetPrimary], &vMinFatigueVehicleSimpleSpan[fetPrimary], &vMaxFatigueVehicleSimpleSpan[fetPrimary]);
             pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltFatigue, vPiers, girderKey, batMin, true, fetPrimary, &vMinFatigueReactionsContinuousSpan[fetPrimary], &vMaxFatigueReactionsContinuousSpan[fetPrimary], &vMinFatigueVehicleContinuousSpan[fetPrimary], &vMaxFatigueVehicleContinuousSpan[fetPrimary]);
@@ -1152,7 +1152,7 @@ rptChapter* CPierReactionChapterBuilder::Build(const std::shared_ptr<const WBFL:
          (*p_design_table)(row+2,col+colOffset) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << minLLVehicle << _T(")");
          col++;
 
-         if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
          {
             colOffset += 4;
 

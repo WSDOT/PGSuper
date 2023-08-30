@@ -136,7 +136,7 @@ void CPermitRatingPage::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX,IDC_ALLOWABLE_TENSION,IDC_ALLOWABLE_TENSION_UNIT,m_Data.AllowableTensionCoefficient,pDisplayUnits->GetTensionCoefficientUnit());
 
    CString tag;
-   if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims )
+   if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims )
    {
       tag = pDisplayUnits->GetUnitMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
    }
@@ -349,7 +349,7 @@ void CPermitRatingPage::OnPermitTypeChanged()
    const RatingLibraryEntry* pRatingEntry = pLib->GetRatingEntry( pParent->m_GeneralPage.m_Data.CriteriaName.c_str() );
 
    bool bAllowUserOverride;
-   if ( pRatingEntry->GetSpecificationVersion() < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
+   if ( pRatingEntry->GetSpecificationVersion() < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
    {
       const CLiveLoadFactorModel& permit = pRatingEntry->GetLiveLoadFactorModel(permitType);
       bAllowUserOverride = permit.AllowUserOverride();
@@ -384,7 +384,7 @@ BOOL CPermitRatingPage::OnSetActive()
    Float64 gLL = -1;
 
    bool bAllowUserOverride;
-   if ( pRatingEntry->GetSpecificationVersion() < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
+   if ( pRatingEntry->GetSpecificationVersion() < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
    {
       const CLiveLoadFactorModel& permit = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrPermit_Routine);
       bAllowUserOverride = permit.AllowUserOverride();

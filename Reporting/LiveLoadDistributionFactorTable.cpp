@@ -91,7 +91,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
    *pChapter << pBody;
 
    ColumnIndexType nCols = 4;
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       nCols += 3; // for fatigue limit state LLDF
    }
@@ -106,7 +106,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
    }
 
    ColumnIndexType col = 0;
-   if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims )
+   if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims )
    {
       pTable->SetNumberOfHeaderRows(1);
       (*pTable)(0, col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION,   rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
@@ -164,7 +164,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
       }
       (*pTable)(row, col++) << df.SetValue(V);
 
-      if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          pDistFact->GetDistributionFactors(poi,pgsTypes::FatigueI,&pM,&nM,&V);
          (*pTable)(row, col++) << df.SetValue(pM);
@@ -185,7 +185,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
    }
 
    nCols = 2;
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       nCols++;
    }

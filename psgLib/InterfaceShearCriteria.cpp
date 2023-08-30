@@ -62,7 +62,7 @@ void InterfaceShearCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDis
    }
 
    *pPara << _T("Maximum spacing of interface shear connectors (LRFD ") << WBFL::LRFD::LrfdCw8th(_T("5.8.4.2"), _T("5.7.4.5")) << _T("): ") << dim.SetValue(MaxInterfaceShearConnectorSpacing);
-   if (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+   if (WBFL::LRFD::BDSManager::Edition::SeventhEdition2014 <= WBFL::LRFD::BDSManager::GetEdition())
    {
       *pPara << _T(", or the depth of the member.");
    }

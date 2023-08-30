@@ -267,7 +267,7 @@ void write_moment_data_table(IBroker* pBroker,
    const auto& moment_capacity_criteria = pSpecEntry->GetMomentCapacityCriteria();
    bool bConsiderReinforcementStrainLimits = moment_capacity_criteria.bConsiderReinforcementStrainLimit;
 
-   bool bAfter2005 = (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2006Interims <= pSpecEntry->GetSpecificationCriteria().GetEdition() ? true : false);
+   bool bAfter2005 = (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2006Interims <= pSpecEntry->GetSpecificationCriteria().GetEdition() ? true : false);
 
    CComPtr<IBeamFactory> pFactory;
    pGdrEntry->GetBeamFactory(&pFactory);
@@ -315,7 +315,7 @@ void write_moment_data_table(IBroker* pBroker,
    if (bPositiveMoment || 0 < nGirderTendons || 0 < nMaxSegmentTendons)
    {
       nColumns = 12;
-      if (WBFL::LRFD::LRFDVersionMgr::GetVersion() <= WBFL::LRFD::LRFDVersionMgr::Version::FifthEdition2010)
+      if (WBFL::LRFD::BDSManager::GetEdition() <= WBFL::LRFD::BDSManager::Edition::FifthEdition2010)
       {
          nColumns++; // for PPR
       }
@@ -330,7 +330,7 @@ void write_moment_data_table(IBroker* pBroker,
       nColumns += 2; // curvatures
    }
 
-   if (WBFL::LRFD::LRFDVersionMgr::Version::SixthEdition2012 <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+   if (WBFL::LRFD::BDSManager::Edition::SixthEdition2012 <= WBFL::LRFD::BDSManager::GetEdition())
    {
       nColumns++; // for epsilon_t
    }
@@ -412,7 +412,7 @@ void write_moment_data_table(IBroker* pBroker,
       (*table)(0, col++) << COLHDR(Sub2(symbol(psi), _T("sl")), rptPerLengthUnitTag, pDisplayUnits->GetCurvatureUnit());
    }
 
-   if (WBFL::LRFD::LRFDVersionMgr::Version::SixthEdition2012 <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+   if (WBFL::LRFD::BDSManager::Edition::SixthEdition2012 <= WBFL::LRFD::BDSManager::GetEdition())
    {
       (*table)(0, col++) << Sub2(symbol(epsilon), _T("t")) << _T(" x 1000");
    }
@@ -431,7 +431,7 @@ void write_moment_data_table(IBroker* pBroker,
          (*table)(0,col++) << COLHDR(_T("Girder Tendons") << rptNewLine << RPT_STRESS(_T("pt,avg")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       }
 
-      if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() <= WBFL::LRFD::LRFDVersionMgr::Version::FifthEdition2010 )
+      if ( WBFL::LRFD::BDSManager::GetEdition() <= WBFL::LRFD::BDSManager::Edition::FifthEdition2010 )
       {
          (*table)(0,col++) << _T("PPR");
       }
@@ -534,7 +534,7 @@ void write_moment_data_table(IBroker* pBroker,
          (*table)(row, col++) << _T("");
       }
 
-      if (WBFL::LRFD::LRFDVersionMgr::Version::SixthEdition2012 <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+      if (WBFL::LRFD::BDSManager::Edition::SixthEdition2012 <= WBFL::LRFD::BDSManager::GetEdition())
       {
          (*table)(row, col++) << strain.SetValue(pmcd->et * 1000.0);
       }
@@ -553,7 +553,7 @@ void write_moment_data_table(IBroker* pBroker,
             (*table)(row,col++) << stress.SetValue( pmcd->fpt_avg_girder );
          }
 
-         if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() <= WBFL::LRFD::LRFDVersionMgr::Version::FifthEdition2010 )
+         if ( WBFL::LRFD::BDSManager::GetEdition() <= WBFL::LRFD::BDSManager::Edition::FifthEdition2010 )
          {
             (*table)(row,col++) << scalar.SetValue( pmcd->PPR );
          }
@@ -606,7 +606,7 @@ void write_moment_data_table(IBroker* pBroker,
       GET_IFACE2(pBroker, IResistanceFactors, pResistanceFactors);
       *pPara << Sub2(symbol(mu), _T("l")) << _T(" = ") << pResistanceFactors->GetDuctilityCurvatureRatioLimit() << _T(" GS 1.6.2") << rptNewLine;
    }
-   else if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() <= WBFL::LRFD::LRFDVersionMgr::Version::FifthEdition2010 )
+   else if ( WBFL::LRFD::BDSManager::GetEdition() <= WBFL::LRFD::BDSManager::Edition::FifthEdition2010 )
    {
       if ( pSpec->GetMomentCapacityMethod() == WSDOT_METHOD || bAfter2005 )
       {
@@ -647,8 +647,8 @@ void write_crack_moment_data_table(IBroker* pBroker,
                                    const CString& strStageName,
                                  bool bPositiveMoment)
 {
-   bool bAfter2002  = ( WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2002Interims < WBFL::LRFD::LRFDVersionMgr::GetVersion()     ? true : false );
-   bool bBefore2012 = ( WBFL::LRFD::LRFDVersionMgr::GetVersion()                  < WBFL::LRFD::LRFDVersionMgr::Version::SixthEdition2012 ? true : false );
+   bool bAfter2002  = ( WBFL::LRFD::BDSManager::Edition::SecondEditionWith2002Interims < WBFL::LRFD::BDSManager::GetEdition()     ? true : false );
+   bool bBefore2012 = ( WBFL::LRFD::BDSManager::GetEdition()                  < WBFL::LRFD::BDSManager::Edition::SixthEdition2012 ? true : false );
 
    // Setup the table
    rptParagraph* pParagraph;
@@ -662,7 +662,7 @@ void write_crack_moment_data_table(IBroker* pBroker,
    *pChapter << pPara;
 
    ColumnIndexType nColumns = bAfter2002 ? 8 : 7;
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::SixthEdition2012 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::SixthEdition2012 <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       nColumns--; // No Scfr column for LRFD 6th, 2012 and later
    }
@@ -729,7 +729,7 @@ void write_crack_moment_data_table(IBroker* pBroker,
       if ( bFirstPoi )
       {
          bFirstPoi = false;
-         if ( WBFL::LRFD::LRFDVersionMgr::Version::SixthEdition2012 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+         if ( WBFL::LRFD::BDSManager::Edition::SixthEdition2012 <= WBFL::LRFD::BDSManager::GetEdition() )
          {
             *pPara << rptNewLine;
             *pPara << _T("Flexural cracking variability factor, ") << Sub2(symbol(gamma),_T("1")) << _T(" = ") << scalar.SetValue(pcmd->g1) << rptNewLine;
@@ -778,7 +778,7 @@ void write_crack_moment_data_table(IBroker* pBroker,
    }
 
    GET_IFACE2(pBroker,IMaterials,pMaterial);
-   bool bLambda = (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() ? true : false);
+   bool bLambda = (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -847,7 +847,7 @@ void write_min_moment_data_table(IBroker* pBroker,
                                  const CString& strStageName,
                                  bool bPositiveMoment)
 {
-   bool bBefore2012 = ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::SixthEdition2012 ? true : false );
+   bool bBefore2012 = ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SixthEdition2012 ? true : false );
 
    // Setup the table
    rptParagraph* pParagraph;

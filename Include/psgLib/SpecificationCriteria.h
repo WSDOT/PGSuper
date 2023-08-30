@@ -24,7 +24,7 @@
 
 
 #include "psgLibLib.h"
-#include <LRFD\VersionMgr.h>
+#include <Lrfd/BDSManager.h>
 
 class rptChapter;
 interface IEAFDisplayUnits;
@@ -34,8 +34,8 @@ class SpecLibraryEntryImpl;
 struct PSGLIBCLASS SpecificationCriteria
 {
    bool bUseCurrentSpecification = true;
-   WBFL::LRFD::LRFDVersionMgr::Version Edition = WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020;
-   WBFL::LRFD::LRFDVersionMgr::Units Units = WBFL::LRFD::LRFDVersionMgr::Units::US;
+   WBFL::LRFD::BDSManager::Edition Edition = WBFL::LRFD::BDSManager::Edition::NinthEdition2020;
+   WBFL::LRFD::BDSManager::Units Units = WBFL::LRFD::BDSManager::Units::US;
    std::_tstring Description;
 
    bool Compare(const SpecificationCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
@@ -51,5 +51,5 @@ struct PSGLIBCLASS SpecificationCriteria
    std::_tstring GetDescription(bool bApplySymbolSubstitution = true) const;
 
    /// @brief Returns the specification edition
-   WBFL::LRFD::LRFDVersionMgr::Version GetEdition() const;
+   WBFL::LRFD::BDSManager::Edition GetEdition() const;
 };

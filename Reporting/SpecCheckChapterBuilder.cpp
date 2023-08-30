@@ -412,7 +412,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
 
    // Lifting
    GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
-   if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled() || WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+   if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled() || WBFL::LRFD::BDSManager::Edition::NinthEdition2020 <= WBFL::LRFD::BDSManager::GetEdition())
    {
       // starting with 9th edition, stability checks are mandatory so always report the outcome
       p = new rptParagraph;
@@ -424,7 +424,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
 
    // Hauling
    GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
-   if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled() || WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+   if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled() || WBFL::LRFD::BDSManager::Edition::NinthEdition2020 <= WBFL::LRFD::BDSManager::GetEdition())
    {
       // starting with 9th edition, stability checks are mandatory so always report the outcome
       p = new rptParagraph;

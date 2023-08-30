@@ -79,7 +79,7 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
    const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
 
-   ATLASSERT(prestress_loss_criteria.IsDeckShrinkageApplicable(WBFL::LRFD::LRFDVersionMgr::GetVersion())); // Should be vetted by caller
+   ATLASSERT(prestress_loss_criteria.IsDeckShrinkageApplicable(WBFL::LRFD::BDSManager::GetEdition())); // Should be vetted by caller
 
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
@@ -117,7 +117,7 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
       *pParagraph << rptRcImage(strImagePath + _T("Delta_FpSS_Transformed.png")) << rptNewLine;
    }
 
-   if (pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2006Interims)
+   if (pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2006Interims)
    {
       *pParagraph << rptRcImage(strImagePath + _T("DeckCreepShrinkage.png")) << rptNewLine;
    }
@@ -126,7 +126,7 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
       *pParagraph << rptRcImage(strImagePath + _T("DeckCreepShrinkage_2007.png")) << rptNewLine;
    }
 
-   if (pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims)
+   if (pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims)
    {
       if (IS_SI_UNITS(pDisplayUnits))
       {
@@ -137,7 +137,7 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
          *pParagraph << rptRcImage(strImagePath + _T("KvsEqn-US.png")) << rptNewLine;
       }
    }
-   else if (pSpecEntry->GetSpecificationCriteria().GetEdition() == WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2006Interims)
+   else if (pSpecEntry->GetSpecificationCriteria().GetEdition() == WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2006Interims)
    {
       if (IS_SI_UNITS(pDisplayUnits))
       {
@@ -164,12 +164,12 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
 
    if (IS_SI_UNITS(pDisplayUnits))
    {
-      ATLASSERT(pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2015Interims);
+      ATLASSERT(pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2015Interims);
       *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_Deck_SI.png")) << rptNewLine;
    }
    else
    {
-      if (pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2015Interims)
+      if (pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2015Interims)
       {
          *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_Deck_US.png")) << rptNewLine;
       }
@@ -215,7 +215,7 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
    (*pParamTable)(row, col++) << COLHDR(Sub2(_T("E"), _T("c deck")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
    (*pParamTable)(row,col++) << COLHDR(_T("V/S") << rptNewLine << _T("deck"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
+   if ( WBFL::LRFD::BDSManager::Edition::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
    {
      (*pParamTable)(row, col++) << Sub2(_T("k"),_T("s")) << rptNewLine << _T("deck");
    }
@@ -289,7 +289,7 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
    (*pParamTable)(row, col++) << COLHDR( Sub2(_T("E"),_T("c")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*pParamTable)(row, col++) << COLHDR(_T("V/S"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
 
-   if (WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition())
+   if (WBFL::LRFD::BDSManager::Edition::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition())
    {
       (*pParamTable)(row, col++) << Sub2(_T("k"), _T("s"));
    }
@@ -382,7 +382,7 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
    }
 
    table->m_bIsUHPC = bIsUHPC;
-   table->m_Sign =  ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 ) ? 1 : -1;
+   table->m_Sign =  ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEdition2007 ) ? 1 : -1;
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    table->compositeIntervalIdx = pIntervals->GetFirstCompositeDeckInterval();

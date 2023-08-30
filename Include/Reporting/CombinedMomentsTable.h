@@ -229,7 +229,7 @@ RowIndexType CreateLimitStateTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,
          (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
          (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
 
-         if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims )
+         if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims )
          {
             pTable->SetColumnSpan(ls_title_row,ls_title_col,2);
            (*pTable)(ls_title_row,ls_title_col++) << GetLimitStateString(pgsTypes::ServiceIA);
@@ -246,7 +246,7 @@ RowIndexType CreateLimitStateTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,
          (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
          (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
 
-         if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
          {
             pTable->SetColumnSpan(ls_title_row,ls_title_col,2);
            (*pTable)(ls_title_row,ls_title_col++) << GetLimitStateString(pgsTypes::FatigueI);
@@ -435,7 +435,7 @@ RowIndexType CreateLimitStateTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,
          pTable->SetRowSpan(ls_title_row,ls_title_col,2);
          (*pTable)(ls_title_row,ls_title_col++) << COLHDR(GetLimitStateString(pgsTypes::ServiceI), M, unitT );
 
-         if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims )
+         if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims )
          {
             pTable->SetRowSpan(ls_title_row,ls_title_col,2);
             (*pTable)(ls_title_row,ls_title_col++) << COLHDR(GetLimitStateString(pgsTypes::ServiceIA), M, unitT );
@@ -444,7 +444,7 @@ RowIndexType CreateLimitStateTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,
          pTable->SetRowSpan(ls_title_row,ls_title_col,2);
          (*pTable)(ls_title_row,ls_title_col++) << COLHDR(GetLimitStateString(pgsTypes::ServiceIII), M, unitT );
 
-         if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
          {
             pTable->SetRowSpan(ls_title_row,ls_title_col,2);
             (*pTable)(ls_title_row,ls_title_col++) << COLHDR(GetLimitStateString(pgsTypes::FatigueI), M, unitT );
@@ -825,7 +825,7 @@ RowIndexType CreateCombinedLiveLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
       nCols += 2; // Design LL+IM
       nVhls++;
 
-      if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          nCols += 2; // fatigue
          nVhls++;
@@ -919,7 +919,7 @@ RowIndexType CreateCombinedLiveLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
          (*pTable)(2, col++) << COLHDR(_T("Max"),       M, unitT );
          (*pTable)(2, col++) << COLHDR(_T("Min"),       M, unitT );
 
-         if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
          {
             pTable->SetColumnSpan(1, col, 2);
             (*pTable)(1,col) << _T("* Fatigue");
@@ -945,7 +945,7 @@ RowIndexType CreateCombinedLiveLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
          (*pTable)(2,col++) << COLHDR(_T("Max"),       M, unitT );
          (*pTable)(2,col++) << COLHDR(_T("Min"),       M, unitT );
 
-         if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
          {
             pTable->SetColumnSpan(1, col, 2);
             (*pTable)(1,col) << _T("* Fatigue")<<Super(lcnt++);
@@ -970,7 +970,7 @@ RowIndexType CreateCombinedLiveLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
          (*pTable)(2,col++) << COLHDR(_T("Max"),       M, unitT );
          (*pTable)(2,col++) << COLHDR(_T("Min"),       M, unitT );
 
-         if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
          {
             pTable->SetColumnSpan(1,col,2);
             (*pTable)(1,col) << (includeImpact ? _T("* LL+IM Fatigue") : _T("* LL Fatigue"));

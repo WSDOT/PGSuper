@@ -132,7 +132,7 @@ void WriteSpanTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,
    *pChapter << pBody;
 
    ColumnIndexType nCols = 4;
-   if (WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+   if (WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition())
    {
       nCols += 3; // for fatigue limit state LLDF
    }
@@ -144,7 +144,7 @@ void WriteSpanTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,
    *pBody << pTable;
 
    (*pTable)(0,0) << _T("");
-   if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims )
+   if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims )
    {
       pTable->SetNumberOfHeaderRows(1);
       (*pTable)(0,1) << _T("+M");
@@ -222,7 +222,7 @@ void WriteSpanTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,
       }
 
 
-      if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          pDistFact->GetDistributionFactors(poi_start,pgsTypes::FatigueI,&pM,&nm,&VStart);
          nM.Left() = nm;
@@ -276,7 +276,7 @@ void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pierIdx,
    *pChapter << pBody;
 
    ColumnIndexType nCols = 2;
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
       nCols += 2; // for fatigue limit state LLDF
 
    
@@ -287,7 +287,7 @@ void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pierIdx,
    *pBody << pTable;
 
    (*pTable)(0,0) << _T("");
-   if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims )
+   if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims )
    {
       pTable->SetNumberOfHeaderRows(1);
       (*pTable)(0,1) << _T("-M");
@@ -341,7 +341,7 @@ void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pierIdx,
          (*pTable)(row,1) << _T("------");
       }
 
-      if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          if ( bNegMoments )
          {

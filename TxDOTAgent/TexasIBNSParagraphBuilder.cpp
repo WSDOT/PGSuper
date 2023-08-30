@@ -766,7 +766,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
 
       (*p_table)(row++,col) << moment.SetValue( Max(pmmcd->Mu,pmmcd->MrMin) );
 
-      if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims )
+      if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims )
       {
          if (bFirst)
             (*p_table)(row,0) << _T("Live Load Distribution Factor for Moment");

@@ -75,9 +75,9 @@ void CPrincipalTensionStressCheckTable::Build(rptChapter* pChapter, IBroker* pBr
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
    // check applicability
-   if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017)
+   if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::EighthEdition2017)
    {
-      *pPara << _T("Principal tensile stresses in webs are not limited for the ") << WBFL::LRFD::LRFDVersionMgr::GetCodeString() << _T(", ") << WBFL::LRFD::LRFDVersionMgr::GetVersionString() << rptNewLine;
+      *pPara << _T("Principal tensile stresses in webs are not limited for the ") << WBFL::LRFD::BDSManager::GetSpecificationName() << _T(", ") << WBFL::LRFD::BDSManager::GetEditionAsString() << rptNewLine;
       return;
    }
 
@@ -104,7 +104,7 @@ void CPrincipalTensionStressCheckTable::Build(rptChapter* pChapter, IBroker* pBr
 
          if (pArtifact->GetApplicability() == pgsPrincipalTensionStressArtifact::Specification)
          {
-            *pPara << _T("Principal tensile stresses in webs are not limited for the ") << WBFL::LRFD::LRFDVersionMgr::GetCodeString() << _T(", ") << WBFL::LRFD::LRFDVersionMgr::GetVersionString() << rptNewLine;
+            *pPara << _T("Principal tensile stresses in webs are not limited for the ") << WBFL::LRFD::BDSManager::GetSpecificationName() << _T(", ") << WBFL::LRFD::BDSManager::GetEditionAsString() << rptNewLine;
          }
          else if (pArtifact->GetApplicability() == pgsPrincipalTensionStressArtifact::ConcreteStrength)
          {

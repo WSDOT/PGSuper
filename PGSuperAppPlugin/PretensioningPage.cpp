@@ -112,7 +112,7 @@ BOOL CPretensioningPage::OnInitDialog()
       strMethod = _T("Losses calculated in accordance with TxDOT Bridge Research Report 0-6374-2, June, 2013");
       break;
    case PrestressLossCriteria::LossMethodType::AASHTO_LUMPSUM:
-      strMethod = _T("Losses calculated in accordance with AASHTO LRFD ") + CString(WBFL::LRFD::LrfdCw8th(_T("5.9.5.3"), _T("5.9.3.3"))) + (WBFL::LRFD::LRFDVersionMgr::GetVersion() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 ? CString(_T(" Approximate Lump Sum Estimate")) : CString(_T(" Approximate Estimate")));
+      strMethod = _T("Losses calculated in accordance with AASHTO LRFD ") + CString(WBFL::LRFD::LrfdCw8th(_T("5.9.5.3"), _T("5.9.3.3"))) + (WBFL::LRFD::BDSManager::GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 ? CString(_T(" Approximate Lump Sum Estimate")) : CString(_T(" Approximate Estimate")));
       break;
    case PrestressLossCriteria::LossMethodType::AASHTO_LUMPSUM_2005:
       strMethod = _T("Losses calculated in accordance with AASHTO LRFD ") + CString(WBFL::LRFD::LrfdCw8th(_T("5.9.5.3"),_T("5.9.3.3"))) + CString(_T(" Approximate Estimate"));

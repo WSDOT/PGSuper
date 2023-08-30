@@ -87,7 +87,7 @@ BOOL CSpecLiveLoadsPage::OnInitDialog()
 BOOL CSpecLiveLoadsPage::OnSetActive()
 {
    CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
-   int nCmdShow = (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 <= pDad->m_Entry.GetSpecificationCriteria().GetEdition()) ? SW_SHOW : SW_HIDE;
+   int nCmdShow = (WBFL::LRFD::BDSManager::Edition::SeventhEdition2014 <= pDad->m_Entry.GetSpecificationCriteria().GetEdition()) ? SW_SHOW : SW_HIDE;
    GetDlgItem(IDC_RIGID_METHOD)->ShowWindow(nCmdShow);
    return CPropertyPage::OnSetActive();
 }

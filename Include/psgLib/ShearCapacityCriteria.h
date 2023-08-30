@@ -58,6 +58,6 @@ struct PSGLIBCLASS ShearCapacityCriteria
    void Save(WBFL::System::IStructuredSave* pSave) const;
    void Load(WBFL::System::IStructuredLoad* pLoad);
 
-   Float64 GetResistanceFactor(pgsTypes::ConcreteType concreteType, bool bIsDebonded, WBFL::LRFD::LRFDVersionMgr::Version edition) const;
+   Float64 GetResistanceFactor(pgsTypes::ConcreteType concreteType, bool bIsDebonded, WBFL::LRFD::BDSManager::Edition edition) const;
    Float64 GetClosureJointResistanceFactor(pgsTypes::ConcreteType concreteType) const;
 };

@@ -44,7 +44,7 @@ void TensionStressLimit::Report(rptParagraph* pPara, IEAFDisplayUnits* pDisplayU
 
    *pPara << tension_coefficient.SetValue(Coefficient);
 
-   if (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+   if (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition())
    {
       (*pPara) << symbol(lambda);
    }

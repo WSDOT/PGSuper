@@ -1362,9 +1362,9 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   bool bK1 = (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion());
+   bool bK1 = (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition());
 
-   bool bLambda = (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion());
+   bool bLambda = (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition());
 
    ColumnIndexType nColumns = 10;
    if ( bK1 )
@@ -1407,20 +1407,20 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
    *pPara << Sub2(_T("K"), _T("2")) << _T(" = bounding factor for course of aggregate") << rptNewLine;
    *pPara << symbol(lambda) << _T(" = concrete density modification factor") << rptNewLine;
 
-   if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims)
+   if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims)
    {
       // Ec with square root, no K values
-      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (WBFL::LRFD::LRFDVersionMgr::GetUnits() == WBFL::LRFD::LRFDVersionMgr::Units::SI ? _T("Ec_2004_SI.png") : _T("Ec_2004_US.png"))) << rptNewLine;
+      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (WBFL::LRFD::BDSManager::GetUnits() == WBFL::LRFD::BDSManager::Units::SI ? _T("Ec_2004_SI.png") : _T("Ec_2004_US.png"))) << rptNewLine;
    }
-   else if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() && WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2015Interims)
+   else if (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() && WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2015Interims)
    {
       // Ec with square root, with K values
-      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (WBFL::LRFD::LRFDVersionMgr::GetUnits() == WBFL::LRFD::LRFDVersionMgr::Units::SI ? _T("Ec_2005_SI.png") : _T("Ec_2005_US.png"))) << rptNewLine;
+      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (WBFL::LRFD::BDSManager::GetUnits() == WBFL::LRFD::BDSManager::Units::SI ? _T("Ec_2005_SI.png") : _T("Ec_2005_US.png"))) << rptNewLine;
    }
    else
    {
       // Ec with 0.33 exponent and K values
-      ATLASSERT(WBFL::LRFD::LRFDVersionMgr::GetUnits() == WBFL::LRFD::LRFDVersionMgr::Units::US);
+      ATLASSERT(WBFL::LRFD::BDSManager::GetUnits() == WBFL::LRFD::BDSManager::Units::US);
       *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Ec_2016.png")) << rptNewLine;
    }
 
@@ -1648,8 +1648,8 @@ void write_lrfd_concrete_row(IEAFDisplayUnits* pDisplayUnits, rptRcTable* pTable
    INIT_UV_PROTOTYPE( rptDensityUnitValue, density, pDisplayUnits->GetDensityUnit(),      false );
    INIT_UV_PROTOTYPE( rptStressUnitValue,  modE,    pDisplayUnits->GetModEUnit(),         false );
 
-   bool bK1 = (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion());
-   bool bLambda = (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion());
+   bool bK1 = (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition());
+   bool bLambda = (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition());
 
    ColumnIndexType col = 1;
 
@@ -1736,7 +1736,7 @@ void write_aci209_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   bool bLambda = bAASHTOParameters && (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion());
+   bool bLambda = bAASHTOParameters && (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition());
 
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(11 + (bAASHTOParameters ? (bLambda ? 7 : 6) : 0),_T("Concrete Properties"));
    pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
@@ -1855,7 +1855,7 @@ void write_aci209_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTabl
    INIT_UV_PROTOTYPE( rptStressUnitValue,  modE,    pDisplayUnits->GetModEUnit(),         false );
    INIT_UV_PROTOTYPE( rptTimeUnitValue,    time,    pDisplayUnits->GetFractionalDaysUnit(),     false );
 
-   bool bLambda = bAASHTOParameters && (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion());
+   bool bLambda = bAASHTOParameters && (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition());
 
    ColumnIndexType col = 1;
    (*pTable)(row,col++) << WBFL::LRFD::ConcreteUtil::GetTypeName( (WBFL::Materials::ConcreteType)concrete.Type, true );

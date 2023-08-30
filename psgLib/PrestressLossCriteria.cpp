@@ -82,7 +82,7 @@ bool PrestressLossCriteria::Compare(const PrestressLossCriteria& other, const Sp
       }
       else if (LossMethod == LossMethodType::TXDOT_REFINED_2004)
       {
-         if (impl.GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004)
+         if (impl.GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004)
          {
             if (!::IsEqual(ShippingLosses, other.ShippingLosses) ||
                RelaxationLossMethod != other.RelaxationLossMethod)
@@ -190,12 +190,12 @@ void PrestressLossCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisp
    case LossMethodType::AASHTO_REFINED:
       *pPara << _T("Losses calculated in accordance with AASHTO LRFD ") << WBFL::LRFD::LrfdCw8th(_T("5.9.5.4"), _T("5.9.3.4")) << _T(" Refined Estimate") << rptNewLine;
       *pPara << _T("Relaxation Loss Method = ") << relaxation_method[+RelaxationLossMethod] << rptNewLine;
-      bReportElasticGainParameters = (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() ? true : false);
+      bReportElasticGainParameters = (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
       break;
    case LossMethodType::WSDOT_REFINED:
       *pPara << _T("Losses calculated in accordance with AASHTO LRFD ") << WBFL::LRFD::LrfdCw8th(_T("5.9.5.4"), _T("5.9.3.4")) << _T(" Refined Estimate and WSDOT Bridge Design") << rptNewLine;
       *pPara << _T("Relaxation Loss Method = ") << relaxation_method[+RelaxationLossMethod] << rptNewLine;
-      bReportElasticGainParameters = (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() ? true : false);
+      bReportElasticGainParameters = (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
       break;
    case LossMethodType::TXDOT_REFINED_2004:
       *pPara << _T("Losses calculated in accordance with AASHTO LRFD ") << WBFL::LRFD::LrfdCw8th(_T("5.9.5.4"), _T("5.9.3.4")) << _T(" Refined Estimate and TxDOT Bridge Design") << rptNewLine;
@@ -204,7 +204,7 @@ void PrestressLossCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisp
       *pPara << _T("Losses calculated accordance with TxDOT Bridge Research Report 0-6374-2, June, 2013") << rptNewLine;
       break;
    case LossMethodType::AASHTO_LUMPSUM:
-      bReportElasticGainParameters = (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() ? true : false);
+      bReportElasticGainParameters = (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
       *pPara << _T("Losses calculated in accordance with AASHTO LRFD ") << WBFL::LRFD::LrfdCw8th(_T("5.9.5.3"), _T("5.9.3.3")) << (bReportElasticGainParameters ? _T(" Approximate Estimate") : _T(" Approximate Lump Sum Estimate")) << rptNewLine;
       break;
    case LossMethodType::AASHTO_LUMPSUM_2005:
@@ -236,7 +236,7 @@ void PrestressLossCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisp
       ATLASSERT(false); // Should never get here
    }
 
-   if (LossMethod != LossMethodType::TXDOT_REFINED_2013 && WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+   if (LossMethod != LossMethodType::TXDOT_REFINED_2013 && WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition())
    {
       *pPara << _T("Assumed time at shipping = ") << time.SetValue(ShippingTime) << rptNewLine;
    }
@@ -265,7 +265,7 @@ void PrestressLossCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisp
       *pPara << _T("User DC (After Deck Placement) = ") << UserDCElasticGain_AfterDeckPlacement * 100.0 << _T("%") << rptNewLine;
       *pPara << _T("User DW (After Deck Placement) = ") << UserDWElasticGain_AfterDeckPlacement * 100.0 << _T("%") << rptNewLine;
 
-      if (IsDeckShrinkageApplicable(WBFL::LRFD::LRFDVersionMgr::GetVersion()))
+      if (IsDeckShrinkageApplicable(WBFL::LRFD::BDSManager::GetEdition()))
       {
          *pPara << _T("Deck Shrinkage = ") << SlabShrinkageElasticGain * 100.0 << _T("%") << rptNewLine;
       }
@@ -333,10 +333,10 @@ void PrestressLossCriteria::Load(WBFL::System::IStructuredLoad* pLoad)
    if (!pLoad->EndUnit()) THROW_LOAD(InvalidFileFormat, pLoad); // PrestressLossCriteria
 }
 
-bool PrestressLossCriteria::AreElasticGainsApplicable(WBFL::LRFD::LRFDVersionMgr::Version edition) const
+bool PrestressLossCriteria::AreElasticGainsApplicable(WBFL::LRFD::BDSManager::Edition edition) const
 {
    bool bIsApplicable = false;
-   if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 < edition)
+   if (WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 < edition)
    {
       if (LossMethod == LossMethodType::AASHTO_REFINED|| LossMethod == LossMethodType::WSDOT_REFINED || LossMethod == LossMethodType::AASHTO_LUMPSUM )
       {
@@ -347,10 +347,10 @@ bool PrestressLossCriteria::AreElasticGainsApplicable(WBFL::LRFD::LRFDVersionMgr
    return bIsApplicable;
 }
 
-bool PrestressLossCriteria::IsDeckShrinkageApplicable(WBFL::LRFD::LRFDVersionMgr::Version edition) const
+bool PrestressLossCriteria::IsDeckShrinkageApplicable(WBFL::LRFD::BDSManager::Edition edition) const
 {
    bool bIsApplicable = false;
-   if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 < edition)
+   if (WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 < edition)
    {
       if (LossMethod == LossMethodType::AASHTO_REFINED || LossMethod == LossMethodType::WSDOT_REFINED)
       {

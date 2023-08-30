@@ -114,7 +114,7 @@ void CConcreteManager::ValidateConcrete() const
             pDeck->Concrete.StrengthDensity,
             false /* ignore LRFD range checks */);
 
-         if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+         if (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition())
          {
             modE *= (pDeck->Concrete.EcK1*pDeck->Concrete.EcK2);
          }
@@ -182,7 +182,7 @@ void CConcreteManager::ValidateConcrete() const
                                     pLeftRailingSystem->Concrete.StrengthDensity, 
                                     false /* ignore LRFD range checks */ );
 
-      if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          modE *= pLeftRailingSystem->Concrete.EcK1*pLeftRailingSystem->Concrete.EcK2;
       }
@@ -203,7 +203,7 @@ void CConcreteManager::ValidateConcrete() const
                                     pRightRailingSystem->Concrete.StrengthDensity, 
                                     false /* ignore LRFD range checks */ );
 
-      if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          modE *= pRightRailingSystem->Concrete.EcK1*pRightRailingSystem->Concrete.EcK2;
       }
@@ -296,7 +296,7 @@ void CConcreteManager::ValidateConcrete() const
             LJConcrete.StrengthDensity,
             false /* ignore LRFD range checks */);
 
-         if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+         if (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition())
          {
             modE *= (LJConcrete.EcK1*LJConcrete.EcK2);
          }
@@ -346,7 +346,7 @@ void CConcreteManager::ValidateConcrete() const
                                            concrete.StrengthDensity, 
                                            false /* ignore LRFD range checks */ );
 
-            if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
             {
                modE *= (concrete.EcK1 * concrete.EcK2);
             }
@@ -367,10 +367,10 @@ void CConcreteManager::ValidateConcrete() const
    GET_IFACE_NOCHECK(IEAFStatusCenter,pStatusCenter);
 
    // per 5.4.2.1 f'c must exceed 28 MPa (4 ksi)
-   bool bSI = WBFL::LRFD::LRFDVersionMgr::GetUnits() == WBFL::LRFD::LRFDVersionMgr::Units::SI ? true : false;
+   bool bSI = WBFL::LRFD::BDSManager::GetUnits() == WBFL::LRFD::BDSManager::Units::SI ? true : false;
    Float64 fcMin = bSI ? WBFL::Units::ConvertToSysUnits(28, WBFL::Units::Measure::MPa) : WBFL::Units::ConvertToSysUnits(4, WBFL::Units::Measure::KSI);
 
-   Float64 fcMax = (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017 ? 10.0 : 15.0); // KSI... limit went from 10ksi to 15ksi in 8th edition
+   Float64 fcMax = (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::EighthEdition2017 ? 10.0 : 15.0); // KSI... limit went from 10ksi to 15ksi in 8th edition
    fcMax = WBFL::Units::ConvertToSysUnits(fcMax, WBFL::Units::Measure::KSI);
 
    // check railing system
@@ -818,7 +818,7 @@ void CConcreteManager::ValidateConcreteParameters(std::unique_ptr<WBFL::Material
 
    if (concreteType == pgsTypes::PCI_UHPC)
    {
-      if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020)
+      if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::NinthEdition2020)
       {
          strMsg = _T("The project criteria must be based on AASHTO LRFD 9th Edition 2020 or later when PCI UHPC materials are used.");
          pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(elementType, pgsConcreteStrengthStatusItem::Specification, segmentKey, m_StatusGroupID, m_scidConcreteStrengthError, strMsg.c_str());
@@ -867,7 +867,7 @@ void CConcreteManager::ValidateConcreteParameters(std::unique_ptr<WBFL::Material
    }
    else if (concreteType == pgsTypes::UHPC)
    {
-      if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020)
+      if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::NinthEdition2020)
       {
          strMsg = _T("The project criteria must be based on AASHTO LRFD 9th Edition 2020 or later when UHPC materials are used.");
          pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(elementType, pgsConcreteStrengthStatusItem::Specification, segmentKey, m_StatusGroupID, m_scidConcreteStrengthError, strMsg.c_str());
@@ -956,12 +956,12 @@ void CConcreteManager::ValidateConcreteParameters(std::unique_ptr<WBFL::Material
 
       Float64 fcMin, fcMax;
       // per 5.4.2.1 f'c must exceed 28 MPa (4 ksi)
-      bool bSI = WBFL::LRFD::LRFDVersionMgr::GetUnits() == WBFL::LRFD::LRFDVersionMgr::Units::SI ? true : false;
+      bool bSI = WBFL::LRFD::BDSManager::GetUnits() == WBFL::LRFD::BDSManager::Units::SI ? true : false;
       fcMin = bSI ? WBFL::Units::ConvertToSysUnits(28, WBFL::Units::Measure::MPa) : WBFL::Units::ConvertToSysUnits(4, WBFL::Units::Measure::KSI);
       // the LRFD doesn't say that this specifically applies to closure joints,
       // but we are going to assume that it does.
 
-      fcMax = (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017 ? 10.0 : 15.0); // KSI... limit went from 10ksi to 15ksi in 8th edition
+      fcMax = (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::EighthEdition2017 ? 10.0 : 15.0); // KSI... limit went from 10ksi to 15ksi in 8th edition
       fcMax = WBFL::Units::ConvertToSysUnits(fcMax, WBFL::Units::Measure::KSI);
 
       Float64 max_fci, max_fc;
@@ -1183,7 +1183,7 @@ void CConcreteManager::CreateConcrete(const CConcreteMaterial& concrete,LPCTSTR 
                                      concrete.StrengthDensity, 
                                      false /* ignore LRFD range checks */ );
 
-      if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          modE *= (concrete.EcK1 * concrete.EcK2);
       }
@@ -1218,7 +1218,7 @@ void CConcreteManager::CreateConcrete(const CConcreteMaterial& concrete,LPCTSTR 
                                      concrete.StrengthDensity, 
                                      false /* ignore LRFD range checks */ );
 
-      if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          modE *= (concrete.EcK1 * concrete.EcK2);
       }
@@ -1287,7 +1287,7 @@ Float64 CConcreteManager::GetSegmentWeightDensity(const CSegmentKey& segmentKey)
 Float64 CConcreteManager::GetSegmentEccK1(const CSegmentKey& segmentKey) const
 {
    Float64 K1 = 1.0;
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       GET_IFACE(ISegmentData,pSegmentData);
       const CGirderMaterial* pMaterial = pSegmentData->GetSegmentMaterial(segmentKey);
@@ -1300,7 +1300,7 @@ Float64 CConcreteManager::GetSegmentEccK1(const CSegmentKey& segmentKey) const
 Float64 CConcreteManager::GetSegmentEccK2(const CSegmentKey& segmentKey) const
 {
    Float64 K2 = 1.0;
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       GET_IFACE(ISegmentData,pSegmentData);
       const CGirderMaterial* pMaterial = pSegmentData->GetSegmentMaterial(segmentKey);
@@ -1313,7 +1313,7 @@ Float64 CConcreteManager::GetSegmentEccK2(const CSegmentKey& segmentKey) const
 Float64 CConcreteManager::GetSegmentCreepK1(const CSegmentKey& segmentKey) const
 {
    Float64 K1 = 1.0;
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       GET_IFACE(ISegmentData,pSegmentData);
       const CGirderMaterial* pMaterial = pSegmentData->GetSegmentMaterial(segmentKey);
@@ -1326,7 +1326,7 @@ Float64 CConcreteManager::GetSegmentCreepK1(const CSegmentKey& segmentKey) const
 Float64 CConcreteManager::GetSegmentCreepK2(const CSegmentKey& segmentKey) const
 {
    Float64 K2 = 1.0;
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       GET_IFACE(ISegmentData,pSegmentData);
       const CGirderMaterial* pMaterial = pSegmentData->GetSegmentMaterial(segmentKey);
@@ -1339,7 +1339,7 @@ Float64 CConcreteManager::GetSegmentCreepK2(const CSegmentKey& segmentKey) const
 Float64 CConcreteManager::GetSegmentShrinkageK1(const CSegmentKey& segmentKey) const
 {
    Float64 K1 = 1.0;
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       GET_IFACE(ISegmentData,pSegmentData);
       const CGirderMaterial* pMaterial = pSegmentData->GetSegmentMaterial(segmentKey);
@@ -1352,7 +1352,7 @@ Float64 CConcreteManager::GetSegmentShrinkageK1(const CSegmentKey& segmentKey) c
 Float64 CConcreteManager::GetSegmentShrinkageK2(const CSegmentKey& segmentKey) const
 {
    Float64 K2 = 1.0;
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       GET_IFACE(ISegmentData,pSegmentData);
       const CGirderMaterial* pMaterial = pSegmentData->GetSegmentMaterial(segmentKey);
@@ -1407,7 +1407,7 @@ Float64 CConcreteManager::GetClosureJointWeightDensity(const CSegmentKey& closur
 Float64 CConcreteManager::GetClosureJointEccK1(const CSegmentKey& closureKey) const
 {
    Float64 K1 = 1.0;
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       const CClosureJointData* pClosure = m_pBridgeDesc->GetClosureJoint(closureKey);
       K1 = pClosure->GetConcrete().EcK1;
@@ -1419,7 +1419,7 @@ Float64 CConcreteManager::GetClosureJointEccK1(const CSegmentKey& closureKey) co
 Float64 CConcreteManager::GetClosureJointEccK2(const CSegmentKey& closureKey) const
 {
    Float64 K2 = 1.0;
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       const CClosureJointData* pClosure = m_pBridgeDesc->GetClosureJoint(closureKey);
       K2 = pClosure->GetConcrete().EcK2;
@@ -1431,7 +1431,7 @@ Float64 CConcreteManager::GetClosureJointEccK2(const CSegmentKey& closureKey) co
 Float64 CConcreteManager::GetClosureJointCreepK1(const CSegmentKey& closureKey) const
 {
    Float64 K1 = 1.0;
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       const CClosureJointData* pClosure = m_pBridgeDesc->GetClosureJoint(closureKey);
       K1 = pClosure->GetConcrete().CreepK1;
@@ -1443,7 +1443,7 @@ Float64 CConcreteManager::GetClosureJointCreepK1(const CSegmentKey& closureKey) 
 Float64 CConcreteManager::GetClosureJointCreepK2(const CSegmentKey& closureKey) const
 {
    Float64 K2 = 1.0;
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       const CClosureJointData* pClosure = m_pBridgeDesc->GetClosureJoint(closureKey);
       K2 = pClosure->GetConcrete().CreepK2;
@@ -1455,7 +1455,7 @@ Float64 CConcreteManager::GetClosureJointCreepK2(const CSegmentKey& closureKey) 
 Float64 CConcreteManager::GetClosureJointShrinkageK1(const CSegmentKey& closureKey) const
 {
    Float64 K1 = 1.0;
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       const CClosureJointData* pClosure = m_pBridgeDesc->GetClosureJoint(closureKey);
       K1 = pClosure->GetConcrete().ShrinkageK1;
@@ -1467,7 +1467,7 @@ Float64 CConcreteManager::GetClosureJointShrinkageK1(const CSegmentKey& closureK
 Float64 CConcreteManager::GetClosureJointShrinkageK2(const CSegmentKey& closureKey) const
 {
    Float64 K2 = 1.0;
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       const CClosureJointData* pClosure = m_pBridgeDesc->GetClosureJoint(closureKey);
       K2 = pClosure->GetConcrete().ShrinkageK2;
@@ -1568,7 +1568,7 @@ Float64 CConcreteManager::GetDeckEccK1() const
 {
    ValidateConcrete();
    Float64 K1 = 1.0;
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       K1 = m_DeckEcK1;
    }
@@ -1579,7 +1579,7 @@ Float64 CConcreteManager::GetDeckEccK2() const
 {
    ValidateConcrete();
    Float64 K2 = 1.0;
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       K2 = m_DeckEcK2;
    }
@@ -1590,7 +1590,7 @@ Float64 CConcreteManager::GetDeckCreepK1() const
 {
    ValidateConcrete();
    Float64 K1 = 1.0;
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       K1 = m_DeckCreepK1;
    }
@@ -1601,7 +1601,7 @@ Float64 CConcreteManager::GetDeckCreepK2() const
 {
    ValidateConcrete();
    Float64 K2 = 1.0;
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       K2 = m_DeckCreepK2;
    }
@@ -1612,7 +1612,7 @@ Float64 CConcreteManager::GetDeckShrinkageK1() const
 {
    ValidateConcrete();
    Float64 K1 = 1.0;
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       K1 = m_DeckShrinkageK1;
    }
@@ -1623,7 +1623,7 @@ Float64 CConcreteManager::GetDeckShrinkageK2() const
 {
    ValidateConcrete();
    Float64 K2 = 1.0;
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       K2 = m_DeckShrinkageK2;
    }
@@ -1776,7 +1776,7 @@ Float64 CConcreteManager::GetLongitudinalJointEccK1() const
 {
    ValidateConcrete();
    Float64 K1 = 1.0;
-   if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+   if (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition())
    {
       K1 = m_LongitudinalJointEcK1;
    }
@@ -1787,7 +1787,7 @@ Float64 CConcreteManager::GetLongitudinalJointEccK2() const
 {
    ValidateConcrete();
    Float64 K2 = 1.0;
-   if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+   if (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition())
    {
       K2 = m_LongitudinalJointEcK2;
    }
@@ -1798,7 +1798,7 @@ Float64 CConcreteManager::GetLongitudinalJointCreepK1() const
 {
    ValidateConcrete();
    Float64 K1 = 1.0;
-   if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+   if (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition())
    {
       K1 = m_LongitudinalJointCreepK1;
    }
@@ -1809,7 +1809,7 @@ Float64 CConcreteManager::GetLongitudinalJointCreepK2() const
 {
    ValidateConcrete();
    Float64 K2 = 1.0;
-   if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+   if (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition())
    {
       K2 = m_LongitudinalJointCreepK2;
    }
@@ -1820,7 +1820,7 @@ Float64 CConcreteManager::GetLongitudinalJointShrinkageK1() const
 {
    ValidateConcrete();
    Float64 K1 = 1.0;
-   if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+   if (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition())
    {
       K1 = m_LongitudinalJointShrinkageK1;
    }
@@ -1831,7 +1831,7 @@ Float64 CConcreteManager::GetLongitudinalJointShrinkageK2() const
 {
    ValidateConcrete();
    Float64 K2 = 1.0;
-   if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+   if (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition())
    {
       K2 = m_LongitudinalJointShrinkageK2;
    }

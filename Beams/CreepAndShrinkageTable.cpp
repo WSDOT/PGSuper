@@ -62,7 +62,7 @@ CCreepAndShrinkageTable* CCreepAndShrinkageTable::PrepareTable(rptChapter* pChap
 
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-   ATLASSERT(WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017); // code reference below is invalid
+   ATLASSERT(WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::EighthEdition2017); // code reference below is invalid
    *pParagraph << _T("Losses Due to Creep and Shrinkage [5.9.5.4.2, 5.9.5.4.3]") << rptNewLine;
 
    pParagraph = new rptParagraph;

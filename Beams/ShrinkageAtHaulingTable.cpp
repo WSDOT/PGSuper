@@ -190,7 +190,7 @@ CShrinkageAtHaulingTable* CShrinkageAtHaulingTable::PrepareTable(rptChapter* pCh
    {
       *pParagraph << rptRcImage(strImagePath + _T("CreepShrinkageAtHauling.png")) << rptNewLine;
 
-      if ( pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims )
+      if ( pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims )
       {
          if (IS_SI_UNITS(pDisplayUnits))
          {
@@ -201,7 +201,7 @@ CShrinkageAtHaulingTable* CShrinkageAtHaulingTable::PrepareTable(rptChapter* pCh
             *pParagraph << rptRcImage(strImagePath + _T("KvsEqn-US.png")) << rptNewLine;
          }
       }
-      else if ( pSpecEntry->GetSpecificationCriteria().GetEdition() == WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2006Interims )
+      else if ( pSpecEntry->GetSpecificationCriteria().GetEdition() == WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2006Interims )
       {
          if (IS_SI_UNITS(pDisplayUnits))
          {
@@ -227,12 +227,12 @@ CShrinkageAtHaulingTable* CShrinkageAtHaulingTable::PrepareTable(rptChapter* pCh
       *pParagraph << rptRcImage(strImagePath + _T("HumidityFactor.png")) << rptNewLine;
       if ( IS_SI_UNITS(pDisplayUnits) )
       {
-         ATLASSERT( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2015Interims );
+         ATLASSERT( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2015Interims );
          *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_SI.png")) << rptNewLine;
       }
       else
       {
-         if ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2015Interims )
+         if ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2015Interims )
          {
             *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_US.png")) << rptNewLine;
          }
@@ -313,7 +313,7 @@ CShrinkageAtHaulingTable* CShrinkageAtHaulingTable::PrepareTable(rptChapter* pCh
    paraTable = rptStyleManager::CreateDefaultTable(pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC ? 7 : 6,_T(""));
    *pParagraph << paraTable << rptNewLine;
 
-   if (WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition())
+   if (WBFL::LRFD::BDSManager::Edition::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition())
    {
       (*paraTable)(0, 0) << Sub2(_T("k"), _T("s"));
    }

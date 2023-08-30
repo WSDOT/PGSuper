@@ -201,11 +201,11 @@ void CLongReinfShearCheckChapterBuilder::BuildForDesign(rptChapter* pChapter,con
    {
       if (0 < nDucts)
       {
-         if (WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017 <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+         if (WBFL::LRFD::BDSManager::Edition::EighthEdition2017 <= WBFL::LRFD::BDSManager::GetEdition())
          {
             *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2017_with_PT.png")) << rptNewLine;
          }
-         else if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+         else if (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition())
          {
             *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2005_with_PT.png")) << rptNewLine;
          }
@@ -216,11 +216,11 @@ void CLongReinfShearCheckChapterBuilder::BuildForDesign(rptChapter* pChapter,con
       }
       else
       {
-         if (WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017 <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+         if (WBFL::LRFD::BDSManager::Edition::EighthEdition2017 <= WBFL::LRFD::BDSManager::GetEdition())
          {
             *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2017.png")) << rptNewLine;
          }
-         else if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+         else if (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition())
          {
             *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2005.png")) << rptNewLine;
          }
@@ -347,14 +347,14 @@ void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter, co
          }
          else
          {
-            WBFL::LRFD::LRFDVersionMgr::Version vers = WBFL::LRFD::LRFDVersionMgr::GetVersion();
+            WBFL::LRFD::BDSManager::Edition vers = WBFL::LRFD::BDSManager::GetEdition();
             if (0 < nDucts)
             {
-               if (WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017 <= vers)
+               if (WBFL::LRFD::BDSManager::Edition::EighthEdition2017 <= vers)
                {
                   *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2017_with_PT.png")) << rptNewLine;
                }
-               else if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= vers)
+               else if (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= vers)
                {
                   *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2005_with_PT.png")) << rptNewLine;
                }
@@ -365,11 +365,11 @@ void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter, co
             }
             else
             {
-               if (WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017 <= vers)
+               if (WBFL::LRFD::BDSManager::Edition::EighthEdition2017 <= vers)
                {
                   *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2017.png")) << rptNewLine;
                }
-               else if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= vers)
+               else if (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= vers)
                {
                   *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2005.png")) << rptNewLine;
                }
@@ -651,7 +651,7 @@ void create_table2_design(rptChapter* pChapter,IBroker* pBroker,
    rptRcTable* table = rptStyleManager::CreateDefaultTable(11,_T("Longitudinal Reinforcement Shear Check Details - Table 2 of 3"));
    *pParagraph << table;
 
-   if (WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+   if (WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims <= WBFL::LRFD::BDSManager::GetEdition())
    {
       pParagraph = new rptParagraph(rptStyleManager::GetFootnoteStyle());
       *pChapter << pParagraph;
@@ -669,7 +669,7 @@ void create_table2_design(rptChapter* pChapter,IBroker* pBroker,
    (*table)(0,col++) << COLHDR(_T("V")<<Sub(_T("u")),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    (*table)(0,col++) << _T("Shear") << rptNewLine << Sub2(symbol(phi),_T("v"));
    
-   if ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims )
+   if ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims )
    {
       (*table)(0,col++) << COLHDR(_T("V")<<Sub(_T("s")),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    }
@@ -1039,7 +1039,7 @@ void create_table2_rating(rptChapter* pChapter,IBroker* pBroker,
 
    *pParagraph << table;
 
-   if (WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+   if (WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims <= WBFL::LRFD::BDSManager::GetEdition())
    {
       pParagraph = new rptParagraph(rptStyleManager::GetFootnoteStyle());
       *pChapter << pParagraph;
@@ -1067,7 +1067,7 @@ void create_table2_rating(rptChapter* pChapter,IBroker* pBroker,
    (*table)(0, col++) << COLHDR(_T("V")<<Sub(_T("u")),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    (*table)(0, col++) << _T("Shear") << rptNewLine << Sub2(symbol(phi),_T("v"));
    
-   if ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims )
+   if ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims )
    {
       (*table)(0, col++) << COLHDR(_T("V")<<Sub(_T("s")),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    }

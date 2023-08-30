@@ -9978,7 +9978,7 @@ void CGirderModelManager::AddHL93LiveLoad(ILBAMModel* pModel,ILibrary* pLibrary,
 
    // this is an HL-93 live load, use the LBAM configuration utility
    const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   SpecUnitType units = pSpecEntry->GetSpecificationCriteria().Units == WBFL::LRFD::LRFDVersionMgr::Units::US ? suUS : suSI;
+   SpecUnitType units = pSpecEntry->GetSpecificationCriteria().Units == WBFL::LRFD::BDSManager::Units::US ? suUS : suSI;
    const auto& live_load_criteria = pSpecEntry->GetLiveLoadCriteria();
 
    ATLASSERT( llType != pgsTypes::lltPedestrian ); // we don't want to add HL-93 to the pedestrian live load model
@@ -9998,7 +9998,7 @@ void CGirderModelManager::AddFatigueLiveLoad(ILBAMModel* pModel,ILibrary* pLibra
    LiveLoadModelType llmt = g_LiveLoadModelType[llType];
 
    const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   SpecUnitType units = pSpecEntry->GetSpecificationCriteria().Units == WBFL::LRFD::LRFDVersionMgr::Units::US ? suUS : suSI;
+   SpecUnitType units = pSpecEntry->GetSpecificationCriteria().Units == WBFL::LRFD::BDSManager::Units::US ? suUS : suSI;
 
    m_LBAMUtility->ConfigureFatigueLiveLoad(pModel,llmt,IMtruck,IMlane,units,m_UnitServer);
 }
@@ -10008,7 +10008,7 @@ void CGirderModelManager::AddDeflectionLiveLoad(ILBAMModel* pModel,ILibrary* pLi
    GET_IFACE(ISpecification,pSpec);
 
    const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   SpecUnitType units = pSpecEntry->GetSpecificationCriteria().Units == WBFL::LRFD::LRFDVersionMgr::Units::US ? suUS : suSI;
+   SpecUnitType units = pSpecEntry->GetSpecificationCriteria().Units == WBFL::LRFD::BDSManager::Units::US ? suUS : suSI;
 
    m_LBAMUtility->ConfigureDeflectionLiveLoad(pModel,lltDeflection,IMtruck,IMlane,units,m_UnitServer);
 }
@@ -13147,7 +13147,7 @@ void CGirderModelManager::ApplyLLDF_PinPin(const CSpanKey& spanKey,IDblArray* cf
    bool bTaperStart = false;
    bool bTaperEnd   = false;
 
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::SeventhEdition2014 <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       Float64 skewFactor = pLLDF->GetSkewCorrectionFactorForShear(spanKey,pgsTypes::StrengthI);
       if ( !IsEqual(skewFactor,1.0) )
@@ -13325,7 +13325,7 @@ void CGirderModelManager::ApplyLLDF_PinFix(const CSpanKey& spanKey,IDblArray* cf
    bool bTaperStart = false;
    bool bTaperEnd   = false;
 
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::SeventhEdition2014 <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       Float64 skewFactor = pLLDF->GetSkewCorrectionFactorForShear(spanKey,pgsTypes::StrengthI);
       if ( !IsEqual(skewFactor,1.0) )
@@ -13578,7 +13578,7 @@ void CGirderModelManager::ApplyLLDF_FixPin(const CSpanKey& spanKey,IDblArray* cf
    bool bTaperStart = false;
    bool bTaperEnd = false;
 
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::SeventhEdition2014 <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       Float64 skewFactor = pLLDF->GetSkewCorrectionFactorForShear(spanKey,pgsTypes::StrengthI);
       if ( !IsEqual(skewFactor,1.0) )
@@ -13817,7 +13817,7 @@ void CGirderModelManager::ApplyLLDF_FixFix(const CSpanKey& spanKey,IDblArray* cf
       bool bTaperStart = false;
       bool bTaperEnd = false;
 
-      if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::SeventhEdition2014 <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          Float64 skewFactor = pLLDF->GetSkewCorrectionFactorForShear(spanKey,pgsTypes::StrengthI);
          if ( !IsEqual(skewFactor,1.0) )
@@ -13954,7 +13954,7 @@ void CGirderModelManager::ApplyLLDF_FixFix(const CSpanKey& spanKey,IDblArray* cf
       bool bTaperStart = false;
       bool bTaperEnd = false;
 
-      if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::SeventhEdition2014 <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          Float64 skewFactor = pLLDF->GetSkewCorrectionFactorForShear(spanKey,pgsTypes::StrengthI);
          if ( !IsEqual(skewFactor,1.0) )
@@ -14175,7 +14175,7 @@ void CGirderModelManager::ApplyLLDF_FixFix(const CSpanKey& spanKey,IDblArray* cf
       bool bTaperStart = false;
       bool bTaperEnd = false;
 
-      if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::SeventhEdition2014 <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          Float64 skewFactor = pLLDF->GetSkewCorrectionFactorForShear(spanKey,pgsTypes::StrengthI);
          if ( !IsEqual(skewFactor,1.0) )

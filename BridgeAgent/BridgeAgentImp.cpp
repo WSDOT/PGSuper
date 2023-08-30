@@ -13245,7 +13245,7 @@ Float64 CBridgeAgentImp::GetSegmentEc(const CSegmentKey& segmentKey,IntervalInde
    {
       E = WBFL::LRFD::ConcreteUtil::ModE( (WBFL::Materials::ConcreteType)pMaterial->Concrete.Type, trialFc, pMaterial->Concrete.StrengthDensity, false /*ignore LRFD range checks*/ );
 
-      if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          E *= (pMaterial->Concrete.EcK1*pMaterial->Concrete.EcK2);
       }
@@ -13292,7 +13292,7 @@ Float64 CBridgeAgentImp::GetClosureJointEc(const CClosureKey& closureKey,Interva
    {
       E = WBFL::LRFD::ConcreteUtil::ModE( (WBFL::Materials::ConcreteType)concrete.Type, trialFc, concrete.StrengthDensity, false /*ignore LRFD range checks*/ );
 
-      if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          E *= (concrete.EcK1*concrete.EcK2);
       }
@@ -18183,7 +18183,7 @@ bool CBridgeAgentImp::IsExteriorWebStrandDebondedInRow(const pgsPointOfInterest&
 
    // LRFD 9th Edition, 5.9.4.3.3 - Item K - multiple-webs and no bottom flange
    WebIndexType nWebs = GetWebCount(segmentKey);
-   ATLASSERT(WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= WBFL::LRFD::LRFDVersionMgr::GetVersion());
+   ATLASSERT(WBFL::LRFD::BDSManager::Edition::NinthEdition2020 <= WBFL::LRFD::BDSManager::GetEdition());
    ATLASSERT(1 < nWebs);
    ATLASSERT(0 == GetBottomFlangeCount(segmentKey));
 
@@ -20309,7 +20309,7 @@ void CBridgeAgentImp::GetCriticalSections(pgsTypes::LimitState limitState,const 
 
    // LRFD 2004 and later, critical section is only a function of dv, which comes from the calculation of Mu,
    // so critical section is not a function of the limit state. We will work with the Strength I limit state
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       limitState = pgsTypes::StrengthI;
    }
@@ -21454,7 +21454,7 @@ bool CBridgeAgentImp::IsInCriticalSectionZone(const pgsPointOfInterest& poi,pgsT
    
    // LRFD 2004 and later, critical section is only a function of dv, which comes from the calculation of Mu,
    // so critical section is not a function of the limit state. We will work with the Strength I limit state
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+   if ( WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 <= WBFL::LRFD::BDSManager::GetEdition())
    {
       csAttribute = POI_CRITSECTSHEAR1;
    }
@@ -25683,7 +25683,7 @@ Float64 CBridgeAgentImp::GetShearWidth(const pgsPointOfInterest& poi) const
    GET_IFACE(IShearCapacity,pShearCapacity);
    pgsTypes::FaceType tensionSide = pShearCapacity->GetFlexuralTensionSide(pgsTypes::StrengthI,intervalIdx,poi);
 
-   bool bAfter2000 = ( WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() ? true : false );
+   bool bAfter2000 = ( WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false );
 
    // Limits of deduction for ducts is between the tensile and compression resultant
    // (limit is within dv for LRFD before 2000... see below)
@@ -33588,7 +33588,7 @@ RebarGrade CBridgeAgentImp::GetRebarGrade(WBFL::Materials::Rebar::Grade grade) c
 #if defined _DEBUG
       if ( matGrade == Grade100 )
       {
-         ATLASSERT(WBFL::LRFD::LRFDVersionMgr::Version::SixthEditionWith2013Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion());
+         ATLASSERT(WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims <= WBFL::LRFD::BDSManager::GetEdition());
       }
 #endif
 
@@ -33951,7 +33951,7 @@ void CBridgeAgentImp::GetDeckMatData(const pgsPointOfInterest& poi,pgsTypes::Dec
    Float64 Weff = GetEffectiveFlangeWidth(poi);
    Float64 rebarSectionWidth = Weff;
 
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       Float64 Wtrib = GetTributaryFlangeWidth(poi);
       rebarSectionWidth = Min(Weff,Wtrib);

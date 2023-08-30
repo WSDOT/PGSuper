@@ -134,7 +134,7 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(const std::shared_ptr<cons
       rptParagraph* pTitle = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pTitle;
       *pTitle << _T("Details for Check for Hauling to Bridge Site");
-      if (WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+      if (WBFL::LRFD::BDSManager::Edition::NinthEdition2020 <= WBFL::LRFD::BDSManager::GetEdition())
       {
          *pTitle << _T(" [5.5.4.3]");
       }

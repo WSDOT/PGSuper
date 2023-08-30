@@ -169,7 +169,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    {
       if (pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned)
       {
-         if (pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007)
+         if (pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEdition2007)
          {
             *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_PT.png")) << rptNewLine;
          }
@@ -180,7 +180,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
       }
       else
       {
-         if (pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007)
+         if (pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEdition2007)
          {
             *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_PS.png")) << rptNewLine;
          }
@@ -192,7 +192,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    }
    else
    {
-      if (pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007)
+      if (pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEdition2007)
       {
          *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD.png")) << rptNewLine;
       }

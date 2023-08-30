@@ -1090,7 +1090,7 @@ std::_tstring pgsPointOfInterest::GetAttributes(PoiAttributeType reference,bool 
       nAttributes++;
    }
    
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       if ( HasAttribute(POI_CRITSECTSHEAR1) || HasAttribute(POI_CRITSECTSHEAR2) )
       {

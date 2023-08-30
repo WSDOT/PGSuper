@@ -498,7 +498,7 @@ void CCombinedShearTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
          pForces2->GetCombinedLiveLoadShear( liveLoadInteravlIdx, pgsTypes::lltDesign, vPoi, maxBAT, true, &dummy, &maxDesignLL );
          pForces2->GetCombinedLiveLoadShear( liveLoadInteravlIdx, pgsTypes::lltDesign, vPoi, minBAT, true, &minDesignLL, &dummy );
 
-         if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
          {
             pForces2->GetCombinedLiveLoadShear( liveLoadInteravlIdx, pgsTypes::lltFatigue, vPoi, maxBAT, true, &dummy, &maxFatigueLL );
             pForces2->GetCombinedLiveLoadShear( liveLoadInteravlIdx, pgsTypes::lltFatigue, vPoi, minBAT, true, &minFatigueLL, &dummy );
@@ -573,7 +573,7 @@ void CCombinedShearTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
             (*p_table)(row,col++) << shear.SetValue( maxDesignLL[index] );
             (*p_table)(row,col++) << shear.SetValue( minDesignLL[index] );
          
-            if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
             {
                (*p_table)(row,col++) << shear.SetValue( maxFatigueLL[index] );
                (*p_table)(row,col++) << shear.SetValue( minFatigueLL[index] );
@@ -647,7 +647,7 @@ void CCombinedShearTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
 
          SumPedAndLiveLoad(DesignPedLoad, minDesignLL, maxDesignLL, minPedestrianLL, maxPedestrianLL);
 
-         if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
          {
             SumPedAndLiveLoad(FatiguePedLoad, minFatigueLL, maxFatigueLL, minPedestrianLL, maxPedestrianLL);
          }
@@ -667,7 +667,7 @@ void CCombinedShearTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
             (*p_table)(row2,col++) << shear.SetValue( maxDesignLL[index] );
             (*p_table)(row2,col++) << shear.SetValue( minDesignLL[index] );
 
-            if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
             {
                (*p_table)(row2,col++) << shear.SetValue( maxFatigueLL[index] );
                (*p_table)(row2,col++) << shear.SetValue( minFatigueLL[index] );
@@ -688,7 +688,7 @@ void CCombinedShearTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
             int lnum=1;
             *pNote<< lnum++ << PedestrianFootnote(DesignPedLoad) << rptNewLine;
 
-            if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
             {
                *pNote << lnum++ << PedestrianFootnote(FatiguePedLoad) << rptNewLine;
             }
@@ -784,7 +784,7 @@ void CCombinedShearTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
          pLsForces2->GetShear( intervalIdx, pgsTypes::ServiceI, vPoi, maxBAT, &dummy, &maxServiceI );
          pLsForces2->GetShear( intervalIdx, pgsTypes::ServiceI, vPoi, minBAT, &minServiceI, &dummy );
 
-         if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims )
+         if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims )
          {
             pLsForces2->GetShear( intervalIdx, pgsTypes::ServiceIA, vPoi, maxBAT, &dummy, &maxServiceIA );
             pLsForces2->GetShear( intervalIdx, pgsTypes::ServiceIA, vPoi, minBAT, &minServiceIA, &dummy );
@@ -881,7 +881,7 @@ void CCombinedShearTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
                (*p_table2)(row2,col++) << shear.SetValue( maxServiceI[index] );
                (*p_table2)(row2,col++) << shear.SetValue( minServiceI[index] );
 
-               if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims )
+               if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims )
                {
                   (*p_table2)(row2,col++) << shear.SetValue( maxServiceIA[index] );
                   (*p_table2)(row2,col++) << shear.SetValue( minServiceIA[index] );
@@ -890,7 +890,7 @@ void CCombinedShearTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
                (*p_table2)(row2,col++) << shear.SetValue( maxServiceIII[index] );
                (*p_table2)(row2,col++) << shear.SetValue( minServiceIII[index] );
 
-               if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+               if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
                {
                   (*p_table2)(row2,col++) << shear.SetValue( maxFatigueI[index] );
                   (*p_table2)(row2,col++) << shear.SetValue( minFatigueI[index] );
@@ -961,12 +961,12 @@ void CCombinedShearTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
             {
                (*p_table2)(row2,col++) << shear.SetValue( maxServiceI[index] );
 
-               if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims )
+               if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims )
                   (*p_table2)(row2,col++) << shear.SetValue( maxServiceIA[index] );
 
                (*p_table2)(row2,col++) << shear.SetValue( maxServiceIII[index] );
 
-               if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+               if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
                   (*p_table2)(row2,col++) << shear.SetValue( maxFatigueI[index] );
 
                (*p_table2)(row2,col++) << shear.SetValue( maxStrengthI[index] );

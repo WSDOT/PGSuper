@@ -377,7 +377,7 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(const std::shared_ptr<con
             {
                write_Vc_table(pBroker, pDisplayUnits, vPoi, pChapter, intervalIdx, stage_name, ls);
             }
-            write_Vs_table(pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls, WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= WBFL::LRFD::LRFDVersionMgr::GetVersion()/*include duct adjustment*/,false/*UHPC*/);
+            write_Vs_table(pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls, WBFL::LRFD::BDSManager::Edition::NinthEdition2020 <= WBFL::LRFD::BDSManager::GetEdition()/*include duct adjustment*/,false/*UHPC*/);
          }
          else if (shear_capacity_criteria.CapacityMethod == pgsTypes::scmBTEquations || shear_capacity_criteria.CapacityMethod == pgsTypes::scmWSDOT2007 )
          {
@@ -393,7 +393,7 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(const std::shared_ptr<con
             {
                write_Vc_table(pBroker, pDisplayUnits, vPoi, pChapter, intervalIdx, stage_name, ls);
             }
-            write_Vs_table(pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls,WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= WBFL::LRFD::LRFDVersionMgr::GetVersion()/*include duct adjustment*/,false/*UHPC*/);
+            write_Vs_table(pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls,WBFL::LRFD::BDSManager::Edition::NinthEdition2020 <= WBFL::LRFD::BDSManager::GetEdition()/*include duct adjustment*/,false/*UHPC*/);
          }
          else if (shear_capacity_criteria.CapacityMethod == pgsTypes::scmVciVcw )
          {
@@ -562,39 +562,39 @@ void write_shear_stress_table(IBroker* pBroker,
    *pChapter << pParagraph;
 
    std::_tstring strEquation;
-   switch( WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   switch( WBFL::LRFD::BDSManager::GetEdition() )
    {
-      case WBFL::LRFD::LRFDVersionMgr::Version::FirstEdition1994:
-      case WBFL::LRFD::LRFDVersionMgr::Version::FirstEditionWith1996Interims:
-      case WBFL::LRFD::LRFDVersionMgr::Version::FirstEditionWith1997Interims:
-      case WBFL::LRFD::LRFDVersionMgr::Version::SecondEdition1998:
-      case WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith1999Interims:
+      case WBFL::LRFD::BDSManager::Edition::FirstEdition1994:
+      case WBFL::LRFD::BDSManager::Edition::FirstEditionWith1996Interims:
+      case WBFL::LRFD::BDSManager::Edition::FirstEditionWith1997Interims:
+      case WBFL::LRFD::BDSManager::Edition::SecondEdition1998:
+      case WBFL::LRFD::BDSManager::Edition::SecondEditionWith1999Interims:
          strEquation = std::_tstring(_T(" [Eqn ")) + WBFL::LRFD::LrfdCw8th(_T("5.8.3.4.2-1"),_T("5.7.3.4.2-1")) + _T("]");
          break;
 
-      case WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims:
-      case WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2001Interims:
-      case WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2002Interims:
-      case WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2003Interims:
-      case WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004:
+      case WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims:
+      case WBFL::LRFD::BDSManager::Edition::SecondEditionWith2001Interims:
+      case WBFL::LRFD::BDSManager::Edition::SecondEditionWith2002Interims:
+      case WBFL::LRFD::BDSManager::Edition::SecondEditionWith2003Interims:
+      case WBFL::LRFD::BDSManager::Edition::ThirdEdition2004:
          strEquation = std::_tstring(_T(" [Eqn ")) + WBFL::LRFD::LrfdCw8th(_T("5.8.2.9-1"),_T("5.7.2.8-1")) + _T("]");
          break;
 
-      case WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims:
-      case WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2006Interims:
+      case WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims:
+      case WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2006Interims:
          strEquation = std::_tstring(_T(" [Eqn ")) + WBFL::LRFD::LrfdCw8th(_T("5.8.2.4-1"),_T("5.7.2.3-1")) + _T("]");
          break;
 
-      case WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007:
-      case WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims:
-      case WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims:
+      case WBFL::LRFD::BDSManager::Edition::FourthEdition2007:
+      case WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims:
+      case WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims:
       default:
          strEquation =  std::_tstring(_T(" [Eqn ")) + WBFL::LRFD::LrfdCw8th(_T("5.8.2.9-1"),_T("5.7.2.8-1")) + _T("]");
          break;
    }
 
    *pParagraph << Italic(_T("v")) << strEquation << rptNewLine;
-   if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims )
+   if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims )
    {
       *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("vu.png")) << rptNewLine;
    }
@@ -745,7 +745,7 @@ void write_fpc_table(IBroker* pBroker,
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
-   bool bAfter1999 = (WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() ? true : false );
+   bool bAfter1999 = (WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false );
 
    if ( bAfter1999 && (shear_capacity_criteria.CapacityMethod == pgsTypes::scmBTTables || shear_capacity_criteria.CapacityMethod == pgsTypes::scmWSDOT2001 ))
    {
@@ -989,7 +989,7 @@ void write_fpce_table(IBroker* pBroker,
    *pChapter << pParagraph;
 
    GET_IFACE2(pBroker,IMaterials,pMaterial);
-   bool bLambda = (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() ? true : false);
+   bool bLambda = (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
 
    std::set<CSegmentKey>::iterator iter(segmentKeys.begin());
    std::set<CSegmentKey>::iterator endIter(segmentKeys.end());
@@ -1039,7 +1039,7 @@ void write_fpo_table(IBroker* pBroker,
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfter1999 = ( pSpecEntry->GetSpecificationCriteria().GetEdition() >= WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims ? true : false );
+   bool bAfter1999 = ( pSpecEntry->GetSpecificationCriteria().GetEdition() >= WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims ? true : false );
 
    rptParagraph* pParagraph;
 
@@ -1312,7 +1312,7 @@ void write_Fe_table(IBroker* pBroker,
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims <= pSpecEntry->GetSpecificationCriteria().GetEdition())
+   if ( WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims <= pSpecEntry->GetSpecificationCriteria().GetEdition())
    {
       return; // This is not applicable 2000 and later
    }
@@ -1486,13 +1486,13 @@ void write_ex_table(IBroker* pBroker,
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
 
-   auto specType = WBFL::LRFD::LRFDVersionMgr::GetVersion();
-   bool bAfter1999 = ( WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims  <= specType ? true : false );
-   bool bAfter2003 = ( WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2002Interims  <= specType ? true : false );
-   bool bAfter2004 = ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims   <= specType ? true : false );
-   bool bAfter2007 = ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims  <= specType ? true : false );
-   bool bAfter2009 = ( WBFL::LRFD::LRFDVersionMgr::Version::FifthEdition2010               <= specType ? true : false );
-   bool bAfter2016 = ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= specType ? true : false );
+   auto specType = WBFL::LRFD::BDSManager::GetEdition();
+   bool bAfter1999 = ( WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims  <= specType ? true : false );
+   bool bAfter2003 = ( WBFL::LRFD::BDSManager::Edition::SecondEditionWith2002Interims  <= specType ? true : false );
+   bool bAfter2004 = ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims   <= specType ? true : false );
+   bool bAfter2007 = ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims  <= specType ? true : false );
+   bool bAfter2009 = ( WBFL::LRFD::BDSManager::Edition::FifthEdition2010               <= specType ? true : false );
+   bool bAfter2016 = ( WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= specType ? true : false );
 
 
    CGirderKey girderKey(vPoi.front().get().GetSegmentKey());
@@ -2038,10 +2038,10 @@ void write_btsummary_table(IBroker* pBroker,
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
 
-   bool bAfter1999 = (WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() ? true : false );
+   bool bAfter1999 = (WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false );
 
    // if this after 2007 spec then shear capacity method should not equal pgsTypes::scmWSDOT2007
-   bool bAfter2007 = (WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() ? true : false );
+   bool bAfter2007 = (WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false );
    ATLASSERT( bAfter2007 ? shear_capacity_criteria.CapacityMethod != pgsTypes::scmWSDOT2007 : true );
 
    rptParagraph* pParagraph;
@@ -2129,7 +2129,7 @@ void write_btsummary_table(IBroker* pBroker,
 
       if(shear_capacity_criteria.CapacityMethod == pgsTypes::scmBTTables)
       {
-         if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() <= WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 )
+         if ( WBFL::LRFD::BDSManager::GetEdition() <= WBFL::LRFD::BDSManager::Edition::FourthEdition2007 )
          {
             (*table)(0,col++) << _T("Table") << rptNewLine << _T("5.8.3.4.2-");
          }
@@ -2563,7 +2563,7 @@ void write_Vc_table(IBroker* pBroker,
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
-   bool bLambda = (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() ? true : false);
+   bool bLambda = (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
 
    GET_IFACE2(pBroker,IMaterials,pMaterial);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
@@ -2867,7 +2867,7 @@ void write_Vcf_table(IBroker* pBroker,
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
-   bool bLambda = (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() ? true : false);
+   bool bLambda = (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
 
    GET_IFACE2(pBroker, IMaterials, pMaterial);
    GET_IFACE2(pBroker, IPointOfInterest, pPoi);
@@ -2975,7 +2975,7 @@ void write_Vci_table(IBroker* pBroker,
 
    *pParagraph << GetLimitStateString(ls) << _T(" - ");
 
-   bool bLambda = (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() ? true : false);
+   bool bLambda = (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
 
    *pParagraph << _T("Shear Resistance Provided by Concrete when inclined cracking results from combined shear and moment") << rptNewLine;
    GET_IFACE2(pBroker,IMaterials,pMaterial);
@@ -3120,7 +3120,7 @@ void write_Vcw_table(IBroker* pBroker,
 
    *pParagraph << _T("Shear Resistance Provided by Concrete when inclined cracking results from excessive principal tension in the web.") << rptNewLine;
 
-   bool bLambda = (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() ? true : false);
+   bool bLambda = (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
 
    GET_IFACE2(pBroker,IMaterials,pMaterial);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
@@ -3261,7 +3261,7 @@ void write_theta_table(IBroker* pBroker,
 
    *pParagraph << _T("Angle of inclination of diagonal compressive stress [LRFD 5.8.3.3 and 5.8.3.4.3]") << rptNewLine;
 
-   bool bLambda = (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() ? true : false);
+   bool bLambda = (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
 
    GET_IFACE2(pBroker,IMaterials,pMaterial);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);

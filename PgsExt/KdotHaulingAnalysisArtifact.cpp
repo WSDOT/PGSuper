@@ -500,7 +500,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
       return;
    }
 
-   if (WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+   if (WBFL::LRFD::BDSManager::Edition::NinthEdition2020 <= WBFL::LRFD::BDSManager::GetEdition())
    {
       *p << color(Red) << _T("KDOT method does not evaluate stability. Stability analysis is required per LRFD 5.5.4.3.") << color(Black) << rptNewLine;
    }
@@ -571,7 +571,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
 
    Float64 t2 = hauling_criteria.KDOT.TensionStressLimitWithReinforcement.Coefficient;
 
-   bool bLambda = (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() ? true : false);
+   bool bLambda = (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
 
    Float64 capCompression = pSegmentHaulingSpecCriteria->GetHaulingAllowableGlobalCompressiveConcreteStress(segmentKey);
 

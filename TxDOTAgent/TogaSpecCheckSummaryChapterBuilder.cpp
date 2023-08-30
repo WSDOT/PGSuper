@@ -44,7 +44,7 @@ CLASS
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 
-#include <LRFD\VersionMgr.h>
+#include <Lrfd/BDSManager.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

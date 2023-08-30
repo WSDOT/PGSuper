@@ -144,9 +144,9 @@ void CSpecMainSheet::ExchangeDescriptionData(CDataExchange* pDX)
       // specification units
       int chk = m_SpecDescrPage.GetCheckedRadioButton( IDC_SPEC_UNITS_SI,IDC_SPEC_UNITS_US);
       if (chk==IDC_SPEC_UNITS_SI)
-         m_Entry.m_pImpl->m_SpecificationCriteria.Units = WBFL::LRFD::LRFDVersionMgr::Units::SI;
+         m_Entry.m_pImpl->m_SpecificationCriteria.Units = WBFL::LRFD::BDSManager::Units::SI;
       else if (chk==IDC_SPEC_UNITS_US)
-         m_Entry.m_pImpl->m_SpecificationCriteria.Units = WBFL::LRFD::LRFDVersionMgr::Units::US;
+         m_Entry.m_pImpl->m_SpecificationCriteria.Units = WBFL::LRFD::BDSManager::Units::US;
       else
          ASSERT(false); // should never get here
    }
@@ -160,11 +160,11 @@ void CSpecMainSheet::ExchangeDescriptionData(CDataExchange* pDX)
 	   DDX_Text(pDX, IDC_EDIT_DESCRIPTION, m_Description);
 
       // spec units
-      WBFL::LRFD::LRFDVersionMgr::Units Units = m_Entry.m_pImpl->m_SpecificationCriteria.Units;
+      WBFL::LRFD::BDSManager::Units Units = m_Entry.m_pImpl->m_SpecificationCriteria.Units;
       int unit;
-      if (Units == WBFL::LRFD::LRFDVersionMgr::Units::SI)
+      if (Units == WBFL::LRFD::BDSManager::Units::SI)
          unit = IDC_SPEC_UNITS_SI;
-      else if (Units == WBFL::LRFD::LRFDVersionMgr::Units::US)
+      else if (Units == WBFL::LRFD::BDSManager::Units::US)
          unit = IDC_SPEC_UNITS_US;
       else
          ASSERT(0);
@@ -229,7 +229,7 @@ void CSpecMainSheet::ExchangeGirderData(CDataExchange* pDX)
    CString fciTag = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'ci (MPa))") : _T("sqrt(f'ci (KSI))"));
    CString fcTag  = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))")  : _T("sqrt(f'c (KSI))"));
 
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       fciTag = _T("(lambda)") + fciTag;
       fcTag  = _T("(lambda)") + fcTag;
@@ -367,7 +367,7 @@ void CSpecMainSheet::ExchangeLiftingData(CDataExchange* pDX)
    DDV_NonNegativeDouble(pDX, IDC_FS_CY_FAIL, m_Entry.m_pImpl->m_LiftingCriteria.FsFailure);
 
    CString tag;
-   if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims )
+   if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims )
    {
       tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'ci (MPa))") : _T("sqrt(f'ci (KSI))");
    }
@@ -499,7 +499,7 @@ void CSpecMainSheet::ExchangeWsdotHaulingData(CDataExchange* pDX)
    DDV_GreaterThanZero(pDX, IDC_HAULING_PEAK_COMPRESSION, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.CompressionStressCoefficient_PeakStress);
 
    CString tag;
-   if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims )
+   if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims )
    {
       tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
    }
@@ -652,7 +652,7 @@ void CSpecMainSheet::ExchangeKdotHaulingData(CDataExchange* pDX)
    DDV_GreaterThanZero(pDX, IDC_HAULING_COMPRESSION, m_Entry.m_pImpl->m_HaulingCriteria.KDOT.CompressionStressLimitCoefficient);
 
    CString tag;
-   if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims )
+   if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims )
    {
       tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
    }
@@ -704,7 +704,7 @@ void CSpecMainSheet::ExchangeMomentCapacityData(CDataExchange* pDX)
    DDV_MinMaxULongLong(pDX, m_Entry.m_pImpl->m_MomentCapacityCriteria.nMomentCapacitySlices, 10, 100);
 
    CString tag;
-   if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims )
+   if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims )
    {
       tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
    }
@@ -756,11 +756,11 @@ void CSpecMainSheet::ExchangeMomentCapacityData(CDataExchange* pDX)
 void CSpecMainSheet::CheckShearCapacityMethod()
 {
    // makes sure the shear capacity method is consistent with the specification version that is selected
-   if ( GetSpecVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 &&  // if we are before 4th Edition
+   if ( GetSpecVersion() < WBFL::LRFD::BDSManager::Edition::FourthEdition2007 &&  // if we are before 4th Edition
         m_Entry.m_pImpl->m_ShearCapacityCriteria.CapacityMethod == pgsTypes::scmVciVcw ) // Vci/Vcw is not a valid option
    {
       // force to the general method
-      if ( GetSpecVersion() <= WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 )
+      if ( GetSpecVersion() <= WBFL::LRFD::BDSManager::Edition::FourthEdition2007 )
       {
          m_Entry.m_pImpl->m_ShearCapacityCriteria.CapacityMethod = pgsTypes::scmBTTables;
       }
@@ -772,16 +772,16 @@ void CSpecMainSheet::CheckShearCapacityMethod()
 
    // The general method from the 2007 spec becomes the tables method in the 2008 spec
    // make that adjustment here
-   if ( GetSpecVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims && m_Entry.m_pImpl->m_ShearCapacityCriteria.CapacityMethod == pgsTypes::scmBTEquations )
+   if ( GetSpecVersion() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims && m_Entry.m_pImpl->m_ShearCapacityCriteria.CapacityMethod == pgsTypes::scmBTEquations )
    {
       m_Entry.m_pImpl->m_ShearCapacityCriteria.CapacityMethod = pgsTypes::scmBTTables;
    }
 
-   if ( GetSpecVersion() < WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims &&  // if we are before 2nd Edition + 2000
+   if ( GetSpecVersion() < WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims &&  // if we are before 2nd Edition + 2000
         m_Entry.m_pImpl->m_ShearCapacityCriteria.CapacityMethod == pgsTypes::scmWSDOT2001 ) // WSDOT 2001 is not a valid option
    {
       // force to the general method
-      if ( GetSpecVersion() <= WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 )
+      if ( GetSpecVersion() <= WBFL::LRFD::BDSManager::Edition::FourthEdition2007 )
       {
          m_Entry.m_pImpl->m_ShearCapacityCriteria.CapacityMethod = pgsTypes::scmBTTables;
       }
@@ -791,7 +791,7 @@ void CSpecMainSheet::CheckShearCapacityMethod()
       }
    }
 
-   if ( GetSpecVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 &&  // if we are before 4th Edition
+   if ( GetSpecVersion() < WBFL::LRFD::BDSManager::Edition::FourthEdition2007 &&  // if we are before 4th Edition
         m_Entry.m_pImpl->m_ShearCapacityCriteria.CapacityMethod == pgsTypes::scmWSDOT2007 ) // WSDOT 2007 is not a valid option
    {
       m_Entry.m_pImpl->m_ShearCapacityCriteria.CapacityMethod = pgsTypes::scmWSDOT2001; // force to WSDOT 2001
@@ -823,7 +823,7 @@ void CSpecMainSheet::ExchangeShearCapacityData(CDataExchange* pDX)
    }
 
    CString tag;
-   if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims )
+   if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims )
    {
       tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
    }
@@ -1158,7 +1158,7 @@ void CSpecMainSheet::ExchangeStrandData(CDataExchange* pDX)
 
    if (pDX->m_bSaveAndValidate)
    {
-      if (WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= m_Entry.m_pImpl->m_SpecificationCriteria.GetEdition())
+      if (WBFL::LRFD::BDSManager::Edition::NinthEdition2020 <= m_Entry.m_pImpl->m_SpecificationCriteria.GetEdition())
       {
          if (0.70 < m_Entry.m_pImpl->m_DuctSizeCriteria.DuctDiameterRatio)
          {
@@ -1244,7 +1244,7 @@ void CSpecMainSheet::ExchangeClosureData(CDataExchange* pDX)
    CString tagBeforeLosses = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'ci (MPa))") : _T("sqrt(f'ci (KSI))"));
    CString tagAfterLosses  = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))"));
 
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       tagBeforeLosses = _T("(lambda)") + tagBeforeLosses;
       tagAfterLosses  = _T("(lambda)") + tagAfterLosses;
@@ -1457,7 +1457,7 @@ BOOL CSpecMainSheet::OnInitDialog()
 	return bResult;
 }
 
-WBFL::LRFD::LRFDVersionMgr::Version CSpecMainSheet::GetSpecVersion()
+WBFL::LRFD::BDSManager::Edition CSpecMainSheet::GetSpecVersion()
 {
    return m_SpecDescrPage.GetSpecVersion();
 }

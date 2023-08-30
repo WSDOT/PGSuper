@@ -52,7 +52,7 @@ CElasticGainDueToLiveLoadTable* CElasticGainDueToLiveLoadTable::PrepareTable(rpt
 {
    // Create and configure the table
    ColumnIndexType numColumns = 8;
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+   if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition())
    {
       numColumns += 3;
    }
@@ -120,7 +120,7 @@ CElasticGainDueToLiveLoadTable* CElasticGainDueToLiveLoadTable::PrepareTable(rpt
 
    ColumnIndexType col = 0;
    (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-   if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims)
+   if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims)
    {
       (*table)(0, col++) << COLHDR(Sub2(_T("M"), _T("llim")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
    }
@@ -145,7 +145,7 @@ CElasticGainDueToLiveLoadTable* CElasticGainDueToLiveLoadTable::PrepareTable(rpt
       (*table)(0,col++) << COLHDR(Sub2(_T("Y"),_T("bgt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    }
 
-   if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims)
+   if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims)
    {
       (*table)(0, col++) << COLHDR(symbol(DELTA) << italic(ON) << Sub2(_T("f'''"), _T("cd")) << italic(OFF), rptStressUnitTag, pDisplayUnits->GetStressUnit());
       (*table)(0, col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLL")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
@@ -174,7 +174,7 @@ void CElasticGainDueToLiveLoadTable::AddRow(rptChapter* pChapter, IBroker* pBrok
       Float64 Mmin;
       pProductForces->GetLiveLoadMoment(m_LiveLoadIntervalIdx, pgsTypes::lltDesign, poi, m_BAT, true/*include impact*/, true/*include LLDF*/, &Mmin, &MmaxDesign);
 
-      if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims)
+      if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims)
       {
          MmaxFatigue = MmaxDesign;
       }
@@ -188,7 +188,7 @@ void CElasticGainDueToLiveLoadTable::AddRow(rptChapter* pChapter, IBroker* pBrok
    Float64 M_Design  = m_Kliveload*MmaxDesign;
    Float64 M_Fatigue = m_Kliveload*MmaxFatigue;
 
-   if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims)
+   if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims)
    {
       (*this)(row+rowOffset, col++) << moment.SetValue(M_Design);
    }
@@ -208,7 +208,7 @@ void CElasticGainDueToLiveLoadTable::AddRow(rptChapter* pChapter, IBroker* pBrok
    (*this)(row+rowOffset,col++) << cg.SetValue( Ybc );
    (*this)(row+rowOffset,col++) << cg.SetValue( Ybg );
 
-   if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims)
+   if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims)
    {
       (*this)(row+rowOffset, col++) << stress.SetValue(pDetails->pLosses->GetDeltaFcdLL(M_Design));
       (*this)(row+rowOffset, col++) << stress.SetValue(pDetails->pLosses->ElasticGainDueToLiveLoad(M_Design));

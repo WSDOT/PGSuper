@@ -86,7 +86,7 @@ BOOL CSpecClosurePage::OnSetActive()
    CWnd* pWnd = GetDlgItem(IDC_FATIGUE_LABEL);
    CWnd* pGrp = GetDlgItem(IDC_FATIGUE_GROUP);
    CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
-   if (pDad->m_Entry.GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims)
+   if (pDad->m_Entry.GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims)
    {
       pGrp->SetWindowText(_T("Stress limit at Fatigue Limit State (LRFD 5.9.4.2.1)"));
       pWnd->SetWindowText(_T("Service IA (Live Load Plus One-Half of Permanent Loads)"));

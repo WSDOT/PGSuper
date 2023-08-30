@@ -564,7 +564,7 @@ interface ISpecification : IUnknown
 
    virtual PrincipalWebStressCheckType GetPrincipalWebStressCheckType(const CSegmentKey& segmentKey) const = 0;
 
-   virtual WBFL::LRFD::LRFDVersionMgr::Version GetSpecificationType() const = 0;
+   virtual WBFL::LRFD::BDSManager::Edition GetSpecificationType() const = 0;
 };
 
 /*****************************************************************************

@@ -138,7 +138,7 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    const pgsGirderArtifact* pGirderArtifact = pIArtifact->GetGirderArtifact(girderKey);
 
-   bool bLambda = (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() ? true : false);
+   bool bLambda = (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
 
    GET_IFACE2(pBroker,IMaterials,pMaterial);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -407,7 +407,7 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
 
-   bool bAfter1999 = (WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() ? true : false );
+   bool bAfter1999 = (WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false );
 
    Float64 k1 = shear_capacity_criteria.StirrupSpacingCoefficient[0];
    Float64 k2 = shear_capacity_criteria.StirrupSpacingCoefficient[1];

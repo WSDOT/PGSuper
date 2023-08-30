@@ -64,7 +64,7 @@ void EndZoneCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUni
 
    if (bCheckSplitting)
    {
-      if (WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+      if (WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= WBFL::LRFD::BDSManager::GetEdition())
       {
          *pPara << _T("Splitting zone length: h/") << SplittingZoneLengthFactor << _T(" (LRFD ") << WBFL::LRFD::LrfdCw8th(_T("5.10.10.1"), _T("5.9.4.4.1")) << _T(")") << rptNewLine;
       }
@@ -75,7 +75,7 @@ void EndZoneCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUni
    }
    else
    {
-      if (WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+      if (WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= WBFL::LRFD::BDSManager::GetEdition())
       {
          *pPara << _T("Splitting checks (LRFD ") << WBFL::LRFD::LrfdCw8th(_T("5.10.10.1"), _T("5.9.4.4.1")) << _T(") are disabled.") << rptNewLine;
       }

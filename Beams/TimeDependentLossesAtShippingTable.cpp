@@ -70,7 +70,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
 
    bool bIgnoreInitialRelaxation = ( loss_method == PrestressLossCriteria::LossMethodType::WSDOT_REFINED || loss_method == PrestressLossCriteria::LossMethodType::WSDOT_LUMPSUM ) ? false : true;
 
-   if ((WBFL::LRFD::LRFDVersionMgr::GetVersion() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 && loss_method == PrestressLossCriteria::LossMethodType::AASHTO_REFINED) ||
+   if ((WBFL::LRFD::BDSManager::GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 && loss_method == PrestressLossCriteria::LossMethodType::AASHTO_REFINED) ||
         loss_method == PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2004)
    {
       bIgnoreInitialRelaxation = false;

@@ -332,7 +332,7 @@ BOOL CPierLayoutPage::OnInitDialog()
 void CPierLayoutPage::UpdateConcreteTypeLabel()
 {
    CString strLabel;
-   if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims )
+   if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims )
    {  
       switch( m_pPier->GetConcrete().Type )
       {

@@ -86,16 +86,16 @@ void CSpecLossPage::OnLossMethodChanged()
 
    if ( 0 <= method && method < 6 )
    {
-      EnableShippingLosses(m_SpecVersion <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 || method == 3 ? TRUE : FALSE);
-      EnableRefinedShippingTime(WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 < m_SpecVersion && (method == 0 || method == 1 || method == 2) ? TRUE : FALSE);
-      EnableApproximateShippingTime(WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 < m_SpecVersion && (method == 4 || method == 6) ? TRUE : FALSE);
+      EnableShippingLosses(m_SpecVersion <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 || method == 3 ? TRUE : FALSE);
+      EnableRefinedShippingTime(WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 < m_SpecVersion && (method == 0 || method == 1 || method == 2) ? TRUE : FALSE);
+      EnableApproximateShippingTime(WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 < m_SpecVersion && (method == 4 || method == 6) ? TRUE : FALSE);
       EnableTxDOT2013(method==3);
       EnableTimeDependentModel(FALSE);
 
       CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
       if ( pDad->m_Entry.GetSectionPropertiesCriteria().SectionPropertyMode == pgsTypes::spmGross)
       {
-         BOOL bEnable = WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 < m_SpecVersion && (method == 0 || method == 1 || method == 4) ? TRUE : FALSE;
+         BOOL bEnable = WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 < m_SpecVersion && (method == 0 || method == 1 || method == 4) ? TRUE : FALSE;
          BOOL bEnableShrk = bEnable && method != 4 ? TRUE : FALSE;
          EnableElasticGains(bEnable, bEnableShrk);
       }
@@ -231,7 +231,7 @@ void CSpecLossPage::EnableElasticGains(BOOL bEnable, BOOL bEnableDeckShrinkage)
 
 void CSpecLossPage::InitComboBoxes()
 {
-   CString strApproxMethod(m_SpecVersion <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 ? _T("Approximate Lump Sum Estimate") : _T("Approximate Estimate"));
+   CString strApproxMethod(m_SpecVersion <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 ? _T("Approximate Lump Sum Estimate") : _T("Approximate Estimate"));
    CComboBox* pBox = (CComboBox*)GetDlgItem(IDC_LOSS_METHOD);
    int curSel = pBox->GetCurSel();
    pBox->ResetContent();

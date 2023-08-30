@@ -85,7 +85,7 @@ bool ShearCapacityCriteria::Compare(const ShearCapacityCriteria& other, const Sp
    for (int i = 0; i < pgsTypes::ConcreteTypeCount && bPhiFactors == true; i++)
    {
       pgsTypes::ConcreteType concreteType = pgsTypes::ConcreteType(i);
-      if (concreteType == pgsTypes::AllLightweight && WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= impl.GetSpecificationCriteria().GetEdition())
+      if (concreteType == pgsTypes::AllLightweight && WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= impl.GetSpecificationCriteria().GetEdition())
       {
          // All Lightweight not used after LRFD2016, there is only Lightweight and those parameters are stored with pgsTypes::SandLightweight
          continue;
@@ -172,7 +172,7 @@ void ShearCapacityCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisp
       ATLASSERT(false); // should never get here
    }
 
-   bool bAfter1999 = WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() ? true : false;
+   bool bAfter1999 = WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false;
    std::_tstring strFcCoefficient(bAfter1999 ? _T("0.125") : _T("0.1"));
    Float64 k1 = StirrupSpacingCoefficient[0];
    Float64 k2 = StirrupSpacingCoefficient[1];
@@ -308,10 +308,10 @@ void ShearCapacityCriteria::Load(WBFL::System::IStructuredLoad* pLoad)
    if (!pLoad->EndUnit()) THROW_LOAD(InvalidFileFormat, pLoad);
 }
 
-Float64 ShearCapacityCriteria::GetResistanceFactor(pgsTypes::ConcreteType concreteType, bool bIsDebonded, WBFL::LRFD::LRFDVersionMgr::Version edition) const
+Float64 ShearCapacityCriteria::GetResistanceFactor(pgsTypes::ConcreteType concreteType, bool bIsDebonded, WBFL::LRFD::BDSManager::Edition edition) const
 {
    Float64 phi = -99999;
-   if (bIsDebonded && WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017 <= edition)
+   if (bIsDebonded && WBFL::LRFD::BDSManager::Edition::EighthEdition2017 <= edition)
       phi = PhiDebonded[concreteType];
    else
       phi = Phi[concreteType];

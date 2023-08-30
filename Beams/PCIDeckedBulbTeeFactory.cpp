@@ -928,7 +928,7 @@ std::_tstring CPCIDeckedBulbTeeFactory::GetExteriorGirderEffectiveFlangeWidthIma
    const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
    const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
    if (section_properties_criteria.EffectiveFlangeWidthMethod == pgsTypes::efwmTribWidth ||
-      WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims <= specification_criteria.GetEdition())
+      WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= specification_criteria.GetEdition())
    {
       return _T("BulbTee_Effective_Flange_Width_Exterior_Girder_2008.gif");
    }

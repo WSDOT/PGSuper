@@ -741,13 +741,13 @@ void SpecLibraryEntryImpl::DeterminePrincipalStressDuctDeductionMultiplier()
    // "bv = ... for grouted ducts, no modification is necessary. For ungrouted ducts, reduce bv by the diameter of the duct"
 
    auto edition = m_SpecificationCriteria.GetEdition();
-   if (WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= edition)
+   if (WBFL::LRFD::BDSManager::Edition::NinthEdition2020 <= edition)
    {
       // 9th Edition, 2020 and later
       m_PrincipalTensionStressCriteria.UngroutedMultiplier = 1.0;
       m_PrincipalTensionStressCriteria.GroutedMultiplier = 0.0;
    }
-   else if (edition < WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims)
+   else if (edition < WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims)
    {
       m_PrincipalTensionStressCriteria.UngroutedMultiplier = 1.0;
       m_PrincipalTensionStressCriteria.GroutedMultiplier = 0.5;
@@ -813,7 +813,7 @@ bool SpecLibraryEntryImpl::LegacyLoadMe(WBFL::Library::LibraryEntry* pParent, WB
    {
       try
       {
-         m_SpecificationCriteria.Edition = WBFL::LRFD::LRFDVersionMgr::GetVersion(tmp.c_str());
+         m_SpecificationCriteria.Edition = WBFL::LRFD::BDSManager::GetEdition(tmp.c_str());
       }
       catch (...)
       {
@@ -830,11 +830,11 @@ bool SpecLibraryEntryImpl::LegacyLoadMe(WBFL::Library::LibraryEntry* pParent, WB
    {
       if (tmp == _T("SiUnitsSpec"))
       {
-         m_SpecificationCriteria.Units = WBFL::LRFD::LRFDVersionMgr::Units::SI;
+         m_SpecificationCriteria.Units = WBFL::LRFD::BDSManager::Units::SI;
       }
       else if (tmp == _T("UsUnitsSpec"))
       {
-         m_SpecificationCriteria.Units = WBFL::LRFD::LRFDVersionMgr::Units::US;
+         m_SpecificationCriteria.Units = WBFL::LRFD::BDSManager::Units::US;
       }
       else
       {
@@ -995,7 +995,7 @@ bool SpecLibraryEntryImpl::LegacyLoadMe(WBFL::Library::LibraryEntry* pParent, WB
 
       m_ShearCapacityCriteria.MaxStirrupSpacing[0] = maxStirrupSpacing;
 
-      if (m_SpecificationCriteria.Units == WBFL::LRFD::LRFDVersionMgr::Units::SI)
+      if (m_SpecificationCriteria.Units == WBFL::LRFD::BDSManager::Units::SI)
       {
          // default value in SI units is 300mm
          // default value is US units is 12"
@@ -3089,19 +3089,19 @@ bool SpecLibraryEntryImpl::LegacyLoadMe(WBFL::Library::LibraryEntry* pParent, WB
    {
       switch (m_SpecificationCriteria.Edition)
       {
-      case WBFL::LRFD::LRFDVersionMgr::Version::FirstEdition1994:
+      case WBFL::LRFD::BDSManager::Edition::FirstEdition1994:
          m_StrandStressCriteria.bCheckStrandStress[+StrandStressCriteria::CheckStage::AtJacking] = true;
          m_StrandStressCriteria.bCheckStrandStress[+StrandStressCriteria::CheckStage::BeforeTransfer] = false;
          m_StrandStressCriteria.bCheckStrandStress[+StrandStressCriteria::CheckStage::AfterTransfer] = true;
          m_StrandStressCriteria.bCheckStrandStress[+StrandStressCriteria::CheckStage::AfterAllLosses] = true;
          break;
 
-      case WBFL::LRFD::LRFDVersionMgr::Version::FirstEditionWith1996Interims:
-      case WBFL::LRFD::LRFDVersionMgr::Version::FirstEditionWith1997Interims:
-      case WBFL::LRFD::LRFDVersionMgr::Version::SecondEdition1998:
-      case WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith1999Interims:
-      case WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims:
-      case WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2001Interims:
+      case WBFL::LRFD::BDSManager::Edition::FirstEditionWith1996Interims:
+      case WBFL::LRFD::BDSManager::Edition::FirstEditionWith1997Interims:
+      case WBFL::LRFD::BDSManager::Edition::SecondEdition1998:
+      case WBFL::LRFD::BDSManager::Edition::SecondEditionWith1999Interims:
+      case WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims:
+      case WBFL::LRFD::BDSManager::Edition::SecondEditionWith2001Interims:
          m_StrandStressCriteria.bCheckStrandStress[+StrandStressCriteria::CheckStage::AtJacking] = false;
          m_StrandStressCriteria.bCheckStrandStress[+StrandStressCriteria::CheckStage::BeforeTransfer] = true;
          m_StrandStressCriteria.bCheckStrandStress[+StrandStressCriteria::CheckStage::AfterTransfer] = false;
@@ -3658,9 +3658,9 @@ bool SpecLibraryEntryImpl::LegacyLoadMe(WBFL::Library::LibraryEntry* pParent, WB
 
       // MaxInterfaceShearConnectorSpacing wasn't available in *this version of the input
       // the default value is 48". Set the value to match the spec
-      if (m_SpecificationCriteria.Edition < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014)
+      if (m_SpecificationCriteria.Edition < WBFL::LRFD::BDSManager::Edition::SeventhEdition2014)
       {
-         if (m_SpecificationCriteria.Units == WBFL::LRFD::LRFDVersionMgr::Units::US)
+         if (m_SpecificationCriteria.Units == WBFL::LRFD::BDSManager::Units::US)
          {
             m_InterfaceShearCriteria.MaxInterfaceShearConnectorSpacing = WBFL::Units::ConvertToSysUnits(24.0, WBFL::Units::Measure::Inch);
          }
@@ -3697,13 +3697,13 @@ bool SpecLibraryEntryImpl::LegacyLoadMe(WBFL::Library::LibraryEntry* pParent, WB
 
       // The general method from the 2007 spec becomes the tables method in the 2008 spec
       // make that adjustment here
-      if (m_SpecificationCriteria.Edition < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims && m_ShearCapacityCriteria.CapacityMethod == pgsTypes::scmBTEquations)
+      if (m_SpecificationCriteria.Edition < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims && m_ShearCapacityCriteria.CapacityMethod == pgsTypes::scmBTEquations)
       {
          m_ShearCapacityCriteria.CapacityMethod = pgsTypes::scmBTTables;
       }
 
       // if *this is the 2008 spec, or later and if the shear method is WSDOT 2007, change it to Beta-Theta equations
-      if (WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims <= m_SpecificationCriteria.Edition && m_ShearCapacityCriteria.CapacityMethod == pgsTypes::scmWSDOT2007)
+      if (WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= m_SpecificationCriteria.Edition && m_ShearCapacityCriteria.CapacityMethod == pgsTypes::scmWSDOT2007)
       {
          m_ShearCapacityCriteria.CapacityMethod = pgsTypes::scmBTEquations;
       }
@@ -3765,9 +3765,9 @@ bool SpecLibraryEntryImpl::LegacyLoadMe(WBFL::Library::LibraryEntry* pParent, WB
       else
       {
          // prior to 7th Edition 2014 max spacing was 24 inches... 
-         if (m_SpecificationCriteria.Edition < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014)
+         if (m_SpecificationCriteria.Edition < WBFL::LRFD::BDSManager::Edition::SeventhEdition2014)
          {
-            if (m_SpecificationCriteria.Units == WBFL::LRFD::LRFDVersionMgr::Units::US)
+            if (m_SpecificationCriteria.Units == WBFL::LRFD::BDSManager::Units::US)
             {
                m_InterfaceShearCriteria.MaxInterfaceShearConnectorSpacing = WBFL::Units::ConvertToSysUnits(24.0, WBFL::Units::Measure::Inch);
             }
@@ -3813,13 +3813,13 @@ bool SpecLibraryEntryImpl::LegacyLoadMe(WBFL::Library::LibraryEntry* pParent, WB
 
       // The general method from the 2007 spec becomes the tables method in the 2008 spec
       // make that adjustment here
-      if (m_SpecificationCriteria.Edition < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims && m_ShearCapacityCriteria.CapacityMethod == pgsTypes::scmBTEquations)
+      if (m_SpecificationCriteria.Edition < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims && m_ShearCapacityCriteria.CapacityMethod == pgsTypes::scmBTEquations)
       {
          m_ShearCapacityCriteria.CapacityMethod = pgsTypes::scmBTTables;
       }
 
       // if *this is the 2008 spec, or later and if the shear method is WSDOT 2007, change it to Beta-Theta equations
-      if (WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims <= m_SpecificationCriteria.Edition && m_ShearCapacityCriteria.CapacityMethod == pgsTypes::scmWSDOT2007)
+      if (WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= m_SpecificationCriteria.Edition && m_ShearCapacityCriteria.CapacityMethod == pgsTypes::scmWSDOT2007)
       {
          m_ShearCapacityCriteria.CapacityMethod = pgsTypes::scmBTEquations;
       }
@@ -3967,7 +3967,7 @@ bool SpecLibraryEntryImpl::LegacyLoadMe(WBFL::Library::LibraryEntry* pParent, WB
 
    if (version < 26)
    {
-      if (m_SpecificationCriteria.Units == WBFL::LRFD::LRFDVersionMgr::Units::SI)
+      if (m_SpecificationCriteria.Units == WBFL::LRFD::BDSManager::Units::SI)
       {
          m_LiveLoadCriteria.PedestrianLoad = WBFL::Units::ConvertToSysUnits(3.6e-3, WBFL::Units::Measure::MPa);
          m_LiveLoadCriteria.MinSidewalkWidth = WBFL::Units::ConvertToSysUnits(600., WBFL::Units::Measure::Millimeter);
@@ -4197,7 +4197,7 @@ bool SpecLibraryEntryImpl::LegacyLoadMe(WBFL::Library::LibraryEntry* pParent, WB
    {
       // *this was the hard-coded default for versions before 5.x
       m_SlabOffsetCriteria.RoundingMethod = pgsTypes::sormRoundNearest;
-      m_SlabOffsetCriteria.SlabOffsetTolerance = m_SpecificationCriteria.Units == WBFL::LRFD::LRFDVersionMgr::Units::US ? WBFL::Units::ConvertToSysUnits(0.25, WBFL::Units::Measure::Inch) : WBFL::Units::ConvertToSysUnits(5.0, WBFL::Units::Measure::Millimeter);
+      m_SlabOffsetCriteria.SlabOffsetTolerance = m_SpecificationCriteria.Units == WBFL::LRFD::BDSManager::Units::US ? WBFL::Units::ConvertToSysUnits(0.25, WBFL::Units::Measure::Inch) : WBFL::Units::ConvertToSysUnits(5.0, WBFL::Units::Measure::Millimeter);
    }
 
    // Bearings was added in verison 79
@@ -4261,13 +4261,13 @@ bool SpecLibraryEntryImpl::SaveMe(WBFL::System::IStructuredSave* pSave)
    pSave->Property(_T("Description"), *this->GetDescription(false).c_str());
 
    pSave->Property(_T("UseCurrentSpecification"), m_bUseCurrentSpecification); // added in version 77
-   pSave->Property(_T("SpecificationType"), WBFL::LRFD::LRFDVersionMgr::GetVersionString(m_SpecificationType, true));
+   pSave->Property(_T("SpecificationType"), WBFL::LRFD::BDSManager::GetEditionAsString(m_SpecificationType, true));
 
-   if (m_SpecificationUnits == WBFL::LRFD::LRFDVersionMgr::Units::SI)
+   if (m_SpecificationUnits == WBFL::LRFD::BDSManager::Units::SI)
    {
       pSave->Property(_T("SpecificationUnits"), _T("SiUnitsSpec"));
    }
-   else if (m_SpecificationUnits == WBFL::LRFD::LRFDVersionMgr::Units::US)
+   else if (m_SpecificationUnits == WBFL::LRFD::BDSManager::Units::US)
    {
       pSave->Property(_T("SpecificationUnits"), _T("UsUnitsSpec"));
    }

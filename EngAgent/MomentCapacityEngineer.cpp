@@ -374,8 +374,8 @@ Float64 pgsMomentCapacityEngineer::GetCrackingMoment(IntervalIndexType intervalI
    // 
    // We are going to use the correct equation from 2nd Edition 2003 forward.
    // The limiting value was removed in LRFD 6th Edition, 2012
-   bool bAfter2002 = (WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2003Interims <= pSpecEntry->GetSpecificationCriteria().GetEdition() ? true : false);
-   bool bBefore2012 = (pSpecEntry->GetSpecificationCriteria().GetEdition() <  WBFL::LRFD::LRFDVersionMgr::Version::SixthEdition2012 ? true : false);
+   bool bAfter2002 = (WBFL::LRFD::BDSManager::Edition::SecondEditionWith2003Interims <= pSpecEntry->GetSpecificationCriteria().GetEdition() ? true : false);
+   bool bBefore2012 = (pSpecEntry->GetSpecificationCriteria().GetEdition() <  WBFL::LRFD::BDSManager::Edition::SixthEdition2012 ? true : false);
    if (bAfter2002 && bBefore2012)
    {
       Mcr = (bPositiveMoment ? Max(pcmd->Mcr, pcmd->McrLimit) : Min(pcmd->Mcr, pcmd->McrLimit));
@@ -1378,7 +1378,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
    GET_IFACE(ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
-   if (WBFL::LRFD::LRFDVersionMgr::GetVersion() <= WBFL::LRFD::LRFDVersionMgr::Version::FifthEdition2010)
+   if (WBFL::LRFD::BDSManager::GetEdition() <= WBFL::LRFD::BDSManager::Edition::FifthEdition2010)
    {
       GET_IFACE_NOCHECK(ILongRebarGeometry, pLongRebarGeom);
 
@@ -1470,7 +1470,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
       GET_IFACE(IResistanceFactors, pResistanceFactors);
       Float64 PhiRC, PhiPS, PhiSP, PhiC;
       pResistanceFactors->GetFlexureResistanceFactors(concreteType, &PhiPS, &PhiRC, &PhiSP, &PhiC);
-      if (mcd.Method == LRFD_METHOD && pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2006Interims)
+      if (mcd.Method == LRFD_METHOD && pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2006Interims)
       {
          if (bIsSplicedGirder)
          {
@@ -1572,7 +1572,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
 
    // deal with over reinforced sections, if applicable
    mcd.bOverReinforced = false;
-   if (mcd.Method == LRFD_METHOD && pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2006Interims)
+   if (mcd.Method == LRFD_METHOD && pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2006Interims)
    {
       mcd.bOverReinforced = (0.42 < (mcd.c / mcd.de)) ? true : false;
       if (mcd.bOverReinforced)
@@ -1697,8 +1697,8 @@ void pgsMomentCapacityEngineer::ComputeMinMomentCapacity(IntervalIndexType inter
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfter2002  = ( pSpecEntry->GetSpecificationCriteria().GetEdition() >= WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2003Interims ? true : false );
-   bool bBefore2012 = ( pSpecEntry->GetSpecificationCriteria().GetEdition() <  WBFL::LRFD::LRFDVersionMgr::Version::SixthEdition2012 ? true : false );
+   bool bAfter2002  = ( pSpecEntry->GetSpecificationCriteria().GetEdition() >= WBFL::LRFD::BDSManager::Edition::SecondEditionWith2003Interims ? true : false );
+   bool bBefore2012 = ( pSpecEntry->GetSpecificationCriteria().GetEdition() <  WBFL::LRFD::BDSManager::Edition::SixthEdition2012 ? true : false );
 
    GET_IFACE(IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType bat = pProdForces->GetBridgeAnalysisType(bPositiveMoment ? pgsTypes::Maximize : pgsTypes::Minimize);
@@ -1766,7 +1766,7 @@ void pgsMomentCapacityEngineer::ComputeMinMomentCapacity(IntervalIndexType inter
    }
    Mu = IsZero(Mu) ? 0 : Mu;
 
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::SixthEdition2012 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
+   if ( WBFL::LRFD::BDSManager::Edition::SixthEdition2012 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
    {
       MrMin1 = Mcr;
    }
@@ -1882,7 +1882,7 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType interval
 
 void pgsMomentCapacityEngineer::GetCrackingMomentFactors(bool bPositiveMoment,Float64* pG1,Float64* pG2,Float64* pG3) const
 {
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::SixthEdition2012 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::SixthEdition2012 <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       *pG1 = 1.6; // all other concrete structures (not-segmental)
       *pG2 = 1.1; // bonded strand/tendon
@@ -2196,7 +2196,7 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(Float64 g1,Float64 g2,Floa
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfter2002 = ( pSpecEntry->GetSpecificationCriteria().GetEdition() >= WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2003Interims ? true : false );
+   bool bAfter2002 = ( pSpecEntry->GetSpecificationCriteria().GetEdition() >= WBFL::LRFD::BDSManager::Edition::SecondEditionWith2003Interims ? true : false );
    if ( bAfter2002 )
    {
       Float64 McrLimit = Sbc*fr;

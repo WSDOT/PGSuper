@@ -641,7 +641,7 @@ std::_tstring CNUBeamFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker
    const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
    const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
    if ( section_properties_criteria.EffectiveFlangeWidthMethod == pgsTypes::efwmTribWidth || 
-      WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims <= specification_criteria.GetEdition() )
+      WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= specification_criteria.GetEdition() )
    {
       return _T("IBeam_Effective_Flange_Width_Interior_Girder_2008.gif");
    }
@@ -659,7 +659,7 @@ std::_tstring CNUBeamFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker
    const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
    const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
    if ( section_properties_criteria.EffectiveFlangeWidthMethod == pgsTypes::efwmTribWidth || 
-      WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims <= specification_criteria.GetEdition() )
+      WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= specification_criteria.GetEdition() )
    {
       return _T("IBeam_Effective_Flange_Width_Exterior_Girder_2008.gif");
    }

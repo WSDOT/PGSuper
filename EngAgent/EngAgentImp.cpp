@@ -533,7 +533,7 @@ const std::vector<CRITSECTDETAILS>& CEngAgentImp::ValidateShearCritSection(pgsTy
 
    // LRFD 2004 and later, critical section is only a function of dv, which comes from the calculation of Mu,
    // so critical section is not a function of the limit state. We will work with the Strength I limit state
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
+   if ( WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
    {
       limitState = pgsTypes::StrengthI;
    }
@@ -593,7 +593,7 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bThirdEdition = ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 <= pSpecEntry->GetSpecificationCriteria().GetEdition() ? true : false );
+   bool bThirdEdition = ( WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 <= pSpecEntry->GetSpecificationCriteria().GetEdition() ? true : false );
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
@@ -1362,7 +1362,7 @@ bool CEngAgentImp::AreElasticGainsApplicable() const
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
-   return prestress_loss_criteria.AreElasticGainsApplicable(WBFL::LRFD::LRFDVersionMgr::GetVersion());
+   return prestress_loss_criteria.AreElasticGainsApplicable(WBFL::LRFD::BDSManager::GetEdition());
 }
 
 bool CEngAgentImp::IsDeckShrinkageApplicable() const
@@ -1378,13 +1378,13 @@ bool CEngAgentImp::IsDeckShrinkageApplicable() const
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
-   return prestress_loss_criteria.IsDeckShrinkageApplicable(WBFL::LRFD::LRFDVersionMgr::GetVersion());
+   return prestress_loss_criteria.IsDeckShrinkageApplicable(WBFL::LRFD::BDSManager::GetEdition());
 }
 
 bool CEngAgentImp::LossesIncludeInitialRelaxation() const
 {
    GET_IFACE_NOCHECK(ILossParameters, pLossParams); // not used if spec is before 3rd Edition 2004
-   bool bInitialRelaxation = (WBFL::LRFD::LRFDVersionMgr::GetVersion() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 ||
+   bool bInitialRelaxation = (WBFL::LRFD::BDSManager::GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 ||
       pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::WSDOT_REFINED ||
       pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2004 ||
       pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::WSDOT_LUMPSUM ||
@@ -2373,7 +2373,7 @@ Int32 CEngAgentImp::CheckCurvatureRequirements(const pgsPointOfInterest& poi) co
       return 0; // no curves
    }
 
-   if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion()) // no longer required with 2005 specs
+   if (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition()) // no longer required with 2005 specs
    {
       // this criteria is not applicable because the user has chosen to ignore the range of applicability requirements
       // or we are using the LRFD 2005 or later (curvature limits were removed in 2005)
@@ -2911,7 +2911,7 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
    *V  = GetShearDistFactor(spanKey,limitState);
 
 
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::SeventhEdition2014 <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       // LRFD 7th Edition, 2014 added variable skew correction factor for shear
       Float64 skewFactor = GetSkewCorrectionFactorForShear(spanKey,limitState);
@@ -3213,7 +3213,7 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
       pgsTypes::GirderLocation gl = pGroup->IsInteriorGirder(girderKey.girderIndex) ? pgsTypes::Interior : pgsTypes::Exterior;
 
       ColumnIndexType nCols = 4;
-      if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          nCols += 3;
       }
@@ -3224,7 +3224,7 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
 
 
       // Set up table headings
-      if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims )
+      if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims )
       {
          table->SetNumberOfHeaderRows(1);
          (*table)(0,0) << _T("");
@@ -3281,7 +3281,7 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
 
          (*table)(row,3) << _T("");
 
-         if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
          {
             (*table)(row,4) << _T("");
 
@@ -3326,7 +3326,7 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
 
             (*table)(row,3) << scalar.SetValue( pSpan->GetLLDFShear(girderKey.girderIndex,pgsTypes::StrengthI) );
 
-            if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
             {
                (*table)(row,4) << scalar.SetValue( pSpan->GetLLDFPosMoment(girderKey.girderIndex,pgsTypes::FatigueI) );
                

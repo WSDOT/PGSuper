@@ -114,7 +114,7 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
-   bool bAfter1999 = ( WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() ? true : false );
+   bool bAfter1999 = ( WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false );
 
    // some lrfd-related values
    GET_IFACE_NOCHECK(IMaterials,pMaterial);
@@ -575,7 +575,7 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
    // fy <= 100 ksi
    // See LRFD 5.7.2.5 (pre2017: 5.8.2.5)
    // Also see UHPC GS 1.7.3.4.1
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::SeventhEdition2014 <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       fy = min(fy,WBFL::Units::ConvertToSysUnits(100.0,WBFL::Units::Measure::KSI));
    }
@@ -690,7 +690,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
-   bool bAfter1999 = ( WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() ? true : false );
+   bool bAfter1999 = ( WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false );
 
    Float64 struct_slab_h = pBridge->GetStructuralSlabDepth(poi);
 
@@ -1061,13 +1061,13 @@ bool pgsShearCapacityEngineer::ComputeVcc(const pgsPointOfInterest& poi, SHEARCA
            shear_capacity_criteria.CapacityMethod == pgsTypes::scmBTTables    || 
            shear_capacity_criteria.CapacityMethod == pgsTypes::scmWSDOT2007 )
       {
-         // The Beta-Theta equations are introducted in AASHTO LRFD in 4th Edition with 2008 interims. However, WSDOT adopted the equations by
+         // The Beta-Theta equations are introduced in AASHTO LRFD in 4th Edition with 2008 interims. However, WSDOT adopted the equations by
          // design memo 12-2007 while the 4th Edition (no interims) was in effect. The Shear::ComputeThetaAndBeta will throw an exception
          // if equations are used before LRFD 4th Ed 2008. To get around this, temporary bump the LRFD spec to 4th 2008.
-         WBFL::LRFD::LRFDAutoVersion av;
-         if (shear_capacity_criteria.CapacityMethod == pgsTypes::scmWSDOT2007 && WBFL::LRFD::LRFDVersionMgr::GetVersion() == WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007)
+         WBFL::LRFD::BDSAutoVersion av;
+         if (shear_capacity_criteria.CapacityMethod == pgsTypes::scmWSDOT2007 && WBFL::LRFD::BDSManager::GetEdition() == WBFL::LRFD::BDSManager::Edition::FourthEdition2007)
          {
-            WBFL::LRFD::LRFDVersionMgr::SetVersion(WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims);
+            WBFL::LRFD::BDSManager::SetEdition(WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims);
          }
 
          WBFL::LRFD::Shear::ComputeThetaAndBeta( &data, shear_capacity_criteria.CapacityMethod == pgsTypes::scmBTTables ? WBFL::LRFD::Shear::Method::Tables : WBFL::LRFD::Shear::Method::Equations );
@@ -1156,7 +1156,7 @@ bool pgsShearCapacityEngineer::ComputeVcc(const pgsPointOfInterest& poi, SHEARCA
          const WBFL::Units::Force*  pForceUnit  = nullptr;
          Float64 K; // main coefficient in equation 5.7.3.3-3 (pre2017: 5.8.3.3-3)
          Float64 Kfct; // coefficient for fct if LWC
-         if ( WBFL::LRFD::LRFDVersionMgr::GetUnits() == WBFL::LRFD::LRFDVersionMgr::Units::US )
+         if ( WBFL::LRFD::BDSManager::GetUnits() == WBFL::LRFD::BDSManager::Units::US )
          {
             pLengthUnit = &WBFL::Units::Measure::Inch;
             pStressUnit = &WBFL::Units::Measure::KSI;
@@ -1196,7 +1196,7 @@ bool pgsShearCapacityEngineer::ComputeVcc(const pgsPointOfInterest& poi, SHEARCA
 
             // 5.7.3.3-3 (pre2017: 5.8.3.3-3)
             Vc = K * data.lambda * Beta * bv * dv;
-            if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims)
+            if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims)
             {
                switch (pscd->ConcreteType)
                {
@@ -1367,7 +1367,7 @@ bool pgsShearCapacityEngineer::ComputeVs(const pgsPointOfInterest& poi, SHEARCAP
       else
       {
          Float64 fc, fpc, fct, Kfct, K;
-         if (WBFL::LRFD::LRFDVersionMgr::GetUnits() == WBFL::LRFD::LRFDVersionMgr::Units::SI )
+         if (WBFL::LRFD::BDSManager::GetUnits() == WBFL::LRFD::BDSManager::Units::SI )
          {
             fc  = WBFL::Units::ConvertFromSysUnits(pscd->fc,  WBFL::Units::Measure::MPa);
             fpc = WBFL::Units::ConvertFromSysUnits(pscd->fpc, WBFL::Units::Measure::MPa);
@@ -1385,7 +1385,7 @@ bool pgsShearCapacityEngineer::ComputeVs(const pgsPointOfInterest& poi, SHEARCAP
          }
 
          Float64 sqrt_fc;
-         if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+         if ( WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() )
          {
             GET_IFACE(IMaterials,pMaterials);
             Float64 lambda = pMaterials->GetSegmentLambda(poi.GetSegmentKey());
@@ -1439,7 +1439,7 @@ bool pgsShearCapacityEngineer::ComputeVs(const pgsPointOfInterest& poi, SHEARCAP
 
    Float64 Vs = (IsZero(S) ? 0 : fy * dv * Av * cot_theta / S );
 
-   if (WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+   if (WBFL::LRFD::BDSManager::Edition::NinthEdition2020 <= WBFL::LRFD::BDSManager::GetEdition())
    {
       // We are assuming that the bridge is open to traffic so all ducts are grouted
 

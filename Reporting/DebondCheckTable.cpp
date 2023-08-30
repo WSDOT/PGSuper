@@ -71,7 +71,7 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsG
    if (!bDebondedStrands)
       return; // no debonded strands... nothing to report
 
-   bool bAfter8thEdition = WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() ? true : false;
+   bool bAfter8thEdition = WBFL::LRFD::BDSManager::Edition::NinthEdition2020 <= WBFL::LRFD::BDSManager::GetEdition() ? true : false;
 
    // report debonding checks
    INIT_UV_PROTOTYPE(rptLengthUnitValue, loc, pDisplayUnits->GetSpanLengthUnit(), true);

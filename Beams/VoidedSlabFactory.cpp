@@ -707,7 +707,7 @@ std::_tstring CVoidedSlabFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBr
    case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeSIP:
       if (section_properties_criteria.EffectiveFlangeWidthMethod == pgsTypes::efwmTribWidth ||
-         WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims <= specification_criteria.GetEdition())
+         WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= specification_criteria.GetEdition())
       {
          strImage =  _T("SpreadVoidedSlab_Effective_Flange_Width_Interior_Girder_2008.gif");
       }
@@ -719,7 +719,7 @@ std::_tstring CVoidedSlabFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBr
 
    case pgsTypes::sdtCompositeOverlay:
       if (section_properties_criteria.EffectiveFlangeWidthMethod == pgsTypes::efwmTribWidth ||
-         WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims <= specification_criteria.GetEdition())
+         WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= specification_criteria.GetEdition())
       {
          return _T("VoidedSlab_Effective_Flange_Width_Interior_Girder_2008.gif");
       }
@@ -752,7 +752,7 @@ std::_tstring CVoidedSlabFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBr
    case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeSIP:
       if (section_properties_criteria.EffectiveFlangeWidthMethod == pgsTypes::efwmTribWidth ||
-         WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims <= specification_criteria.GetEdition())
+         WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= specification_criteria.GetEdition())
       {
          strImage =  _T("SpreadVoidedSlab_Effective_Flange_Width_Exterior_Girder_2008.gif");
       }
@@ -764,7 +764,7 @@ std::_tstring CVoidedSlabFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBr
 
    case pgsTypes::sdtCompositeOverlay:
       if (section_properties_criteria.EffectiveFlangeWidthMethod == pgsTypes::efwmTribWidth ||
-         WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims <= specification_criteria.GetEdition())
+         WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= specification_criteria.GetEdition())
       {
          return _T("VoidedSlab_Effective_Flange_Width_Exterior_Girder_2008.gif");
       }

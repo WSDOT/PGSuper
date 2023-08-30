@@ -277,7 +277,7 @@ BOOL CSpecDesignPage::OnSetActive()
    pWnd = GetDlgItem(IDC_90_DAY_STRENGTH_LABEL);
    pWnd->SetWindowText(CString(_T("% of f'c for stress combinations after 90 days for slow curing concretes (")) + WBFL::LRFD::LrfdCw8th(_T("5.14.1.2.5"), _T("5.12.3.2.5")) + _T(")"));
 
-   if (pDad->GetSpecVersion() < WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020)
+   if (pDad->GetSpecVersion() < WBFL::LRFD::BDSManager::Edition::NinthEdition2020)
    {
       pWnd = GetDlgItem(IDC_LIFTING_GROUP);
       pWnd->SetWindowText(_T("Lifting Stability Check/Design Options"));

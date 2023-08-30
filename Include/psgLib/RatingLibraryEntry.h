@@ -27,7 +27,7 @@
 #include <psgLib\ISupportIcon.h>
 #include <libraryFw\LibraryEntry.h>
 #include <System\SubjectT.h>
-#include <LRFD\LRFRVersionMgr.h>
+#include <LRFD\MBEManager.h>
 #include <array>
 
 class pgsLibraryEntryDifferenceItem;
@@ -253,8 +253,8 @@ public:
    void UseCurrentSpecification(bool bUseCurrent);
    bool UseCurrentSpecification() const;
 
-   void SetSpecificationVersion(WBFL::LRFD::LRFRVersionMgr::Version version);
-   WBFL::LRFD::LRFRVersionMgr::Version GetSpecificationVersion() const;
+   void SetSpecificationVersion(WBFL::LRFD::MBEManager::Edition version);
+   WBFL::LRFD::MBEManager::Edition GetSpecificationVersion() const;
 
    // For use with LRFR before LRFR2013
    void SetLiveLoadFactorModel(pgsTypes::LoadRatingType ratingType,const CLiveLoadFactorModel& model);
@@ -286,7 +286,7 @@ private:
 
    // general
    bool m_bUseCurrentSpecification;
-   WBFL::LRFD::LRFRVersionMgr::Version m_SpecificationVersion;
+   WBFL::LRFD::MBEManager::Edition m_SpecificationVersion;
    std::_tstring m_Description;
 
    // for use with LRFR before 2013

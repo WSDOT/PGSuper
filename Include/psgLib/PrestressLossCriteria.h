@@ -25,7 +25,7 @@
 
 #include "psgLibLib.h"
 #include <LRFD/RefinedLosses2005.h>
-#include <LRFD/VersionMgr.h>
+#include <LRFD/BDSManager.h>
 
 class rptChapter;
 interface IEAFDisplayUnits;
@@ -95,8 +95,8 @@ struct PSGLIBCLASS PrestressLossCriteria
    void Save(WBFL::System::IStructuredSave* pSave) const;
    void Load(WBFL::System::IStructuredLoad* pLoad);
 
-   bool AreElasticGainsApplicable(WBFL::LRFD::LRFDVersionMgr::Version edition) const;
-   bool IsDeckShrinkageApplicable(WBFL::LRFD::LRFDVersionMgr::Version edition) const;
+   bool AreElasticGainsApplicable(WBFL::LRFD::BDSManager::Edition edition) const;
+   bool IsDeckShrinkageApplicable(WBFL::LRFD::BDSManager::Edition edition) const;
 };
 
 

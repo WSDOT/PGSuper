@@ -5507,7 +5507,7 @@ void CProjectAgentImp::ReleaseDuctLibraryEntries(CPrecastSegmentData* pSegment)
 
 void CProjectAgentImp::UpdateConcreteMaterial()
 {
-   bool bAfter2015 = (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() ? true : false);
+   bool bAfter2015 = (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
    // starting with LRFD 2016, AllLightweight is not a valid concrete type. Concrete is either Normal weight or lightweight.
    // We are using SandLightweight to mean lightweight so updated the concrete type if needed.
 
@@ -5683,8 +5683,8 @@ void CProjectAgentImp::UpdateStrandMaterial()
    }
 
    // change the units
-   WBFL::LRFD::LRFDVersionMgr::SetVersion( m_pSpecEntry->GetSpecificationCriteria().GetEdition() );
-   WBFL::LRFD::LRFDVersionMgr::SetUnits( m_pSpecEntry->GetSpecificationCriteria().Units );
+   WBFL::LRFD::BDSManager::SetEdition( m_pSpecEntry->GetSpecificationCriteria().GetEdition() );
+   WBFL::LRFD::BDSManager::SetUnits( m_pSpecEntry->GetSpecificationCriteria().Units );
 
    // Get the new strand material based on the new units
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
@@ -5738,12 +5738,12 @@ void CProjectAgentImp::VerifyRebarGrade()
          {
             CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
 
-            if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::SixthEditionWith2013Interims && pSegment->LongitudinalRebarData.BarGrade == WBFL::Materials::Rebar::Grade100 )
+            if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims && pSegment->LongitudinalRebarData.BarGrade == WBFL::Materials::Rebar::Grade100 )
             {
                CString strMsg;
                strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nLongitudinal reinforcement for Group %d Girder %s Segment %d has been changed to %s"),
-                              WBFL::LRFD::LRFDVersionMgr::GetCodeString(),
-                              WBFL::LRFD::LRFDVersionMgr::GetVersionString(WBFL::LRFD::LRFDVersionMgr::Version::SixthEditionWith2013Interims),
+                              WBFL::LRFD::BDSManager::GetSpecificationName(),
+                              WBFL::LRFD::BDSManager::GetEditionAsString(WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims),
                               LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx),
                               WBFL::LRFD::RebarPool::GetMaterialName(WBFL::Materials::Rebar::Type::A615,WBFL::Materials::Rebar::Grade::Grade60).c_str());
                pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pSegment->GetSegmentKey(),pgsRebarStrengthStatusItem::Longitudinal,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
@@ -5754,12 +5754,12 @@ void CProjectAgentImp::VerifyRebarGrade()
                pSegment->LongitudinalRebarData.BarGrade = WBFL::Materials::Rebar::Grade::Grade60;
             }
 
-            if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::SixthEditionWith2013Interims && pSegment->ShearData.ShearBarGrade == WBFL::Materials::Rebar::Grade100 )
+            if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims && pSegment->ShearData.ShearBarGrade == WBFL::Materials::Rebar::Grade100 )
             {
                CString strMsg;
                strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nTransverse reinforcement for Group %d Girder %s Segment %d has been changed to %s"),
-                              WBFL::LRFD::LRFDVersionMgr::GetCodeString(),
-                              WBFL::LRFD::LRFDVersionMgr::GetVersionString(WBFL::LRFD::LRFDVersionMgr::Version::SixthEditionWith2013Interims),
+                              WBFL::LRFD::BDSManager::GetSpecificationName(),
+                              WBFL::LRFD::BDSManager::GetEditionAsString(WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims),
                               LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx),
                               WBFL::LRFD::RebarPool::GetMaterialName(WBFL::Materials::Rebar::Type::A615,WBFL::Materials::Rebar::Grade::Grade60).c_str());
                pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pSegment->GetSegmentKey(),pgsRebarStrengthStatusItem::Transverse,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
@@ -5773,12 +5773,12 @@ void CProjectAgentImp::VerifyRebarGrade()
             CClosureJointData* pClosure = pSegment->GetClosureJoint(pgsTypes::metEnd);
             if ( pClosure )
             {
-               if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::SixthEditionWith2013Interims && pClosure->GetRebar().BarGrade == WBFL::Materials::Rebar::Grade100 )
+               if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims && pClosure->GetRebar().BarGrade == WBFL::Materials::Rebar::Grade100 )
                {
                   CString strMsg;
                   strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nLongitudinal reinforcement for Group %d Girder %s Closure Joint %d has been changed to %s"),
-                                 WBFL::LRFD::LRFDVersionMgr::GetCodeString(),
-                                 WBFL::LRFD::LRFDVersionMgr::GetVersionString(WBFL::LRFD::LRFDVersionMgr::Version::SixthEditionWith2013Interims),
+                                 WBFL::LRFD::BDSManager::GetSpecificationName(),
+                                 WBFL::LRFD::BDSManager::GetEditionAsString(WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims),
                                  LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx),
                                  WBFL::LRFD::RebarPool::GetMaterialName(WBFL::Materials::Rebar::Type::A615,WBFL::Materials::Rebar::Grade::Grade60).c_str());
                   pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pClosure->GetClosureKey(),pgsRebarStrengthStatusItem::Longitudinal,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
@@ -5789,12 +5789,12 @@ void CProjectAgentImp::VerifyRebarGrade()
                   pClosure->GetRebar().BarGrade = WBFL::Materials::Rebar::Grade::Grade60;
                }
 
-               if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::SixthEditionWith2013Interims && pClosure->GetStirrups().ShearBarGrade == WBFL::Materials::Rebar::Grade100 )
+               if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims && pClosure->GetStirrups().ShearBarGrade == WBFL::Materials::Rebar::Grade100 )
                {
                   CString strMsg;
                   strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nTransverse reinforcement for Group %d Girder %s Closure Joint %d has been changed to %s"),
-                                 WBFL::LRFD::LRFDVersionMgr::GetCodeString(),
-                                 WBFL::LRFD::LRFDVersionMgr::GetVersionString(WBFL::LRFD::LRFDVersionMgr::Version::SixthEditionWith2013Interims),
+                                 WBFL::LRFD::BDSManager::GetSpecificationName(),
+                                 WBFL::LRFD::BDSManager::GetEditionAsString(WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims),
                                  LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx),
                                  WBFL::LRFD::RebarPool::GetMaterialName(WBFL::Materials::Rebar::Type::A615,WBFL::Materials::Rebar::Grade::Grade60).c_str());
                   pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pClosure->GetClosureKey(),pgsRebarStrengthStatusItem::Transverse,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
@@ -5809,12 +5809,12 @@ void CProjectAgentImp::VerifyRebarGrade()
    } // next group
 
    CDeckDescription2* pDeck = m_BridgeDescription.GetDeckDescription();
-   if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::SixthEditionWith2013Interims && pDeck->DeckRebarData.TopRebarGrade == WBFL::Materials::Rebar::Grade100 )
+   if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims && pDeck->DeckRebarData.TopRebarGrade == WBFL::Materials::Rebar::Grade100 )
    {
       CString strMsg;
       strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nDeck reinforcement has been changed to %s"),
-                     WBFL::LRFD::LRFDVersionMgr::GetCodeString(),
-                     WBFL::LRFD::LRFDVersionMgr::GetVersionString(WBFL::LRFD::LRFDVersionMgr::Version::SixthEditionWith2013Interims,false),
+                     WBFL::LRFD::BDSManager::GetSpecificationName(),
+                     WBFL::LRFD::BDSManager::GetEditionAsString(WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims,false),
                      WBFL::LRFD::RebarPool::GetMaterialName(WBFL::Materials::Rebar::Type::A615,WBFL::Materials::Rebar::Grade::Grade60).c_str());
       pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(CSegmentKey(),pgsRebarStrengthStatusItem::Deck,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
 
@@ -9407,7 +9407,7 @@ Float64 CProjectAgentImp::GetLiveLoadFactor(pgsTypes::LimitState ls,pgsTypes::Sp
    if ( gLL < 0 && bResolveIfDefault )
    {
       pgsTypes::LoadRatingType ratingType = ::RatingTypeFromLimitState(ls);
-      if ( pRatingEntry->GetSpecificationVersion() < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
+      if ( pRatingEntry->GetSpecificationVersion() < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
       {
          CLiveLoadFactorModel model;
          if ( ratingType == pgsTypes::lrPermit_Routine )
@@ -9604,7 +9604,7 @@ Float64 CProjectAgentImp::GetStrengthLiveLoadFactor(pgsTypes::LoadRatingType rat
 
    Float64 gLL = 0;
    const RatingLibraryEntry* pRatingEntry = GetRatingEntry( GetRatingSpecification().c_str() );
-   if ( pRatingEntry->GetSpecificationVersion() < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
+   if ( pRatingEntry->GetSpecificationVersion() < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
    {
       CLiveLoadFactorModel model;
       if ( ratingType == pgsTypes::lrPermit_Special )
@@ -9649,7 +9649,7 @@ Float64 CProjectAgentImp::GetServiceLiveLoadFactor(pgsTypes::LoadRatingType rati
 
    Float64 gLL = 0;
    const RatingLibraryEntry* pRatingEntry = GetRatingEntry( GetRatingSpecification().c_str() );
-   if ( pRatingEntry->GetSpecificationVersion() < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
+   if ( pRatingEntry->GetSpecificationVersion() < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
    {
       CLiveLoadFactorModel model;
       if ( ratingType == pgsTypes::lrPermit_Special )
@@ -9924,7 +9924,7 @@ ISpecification::PrincipalWebStressCheckType CProjectAgentImp::GetPrincipalWebStr
 
 }
 
-WBFL::LRFD::LRFDVersionMgr::Version CProjectAgentImp::GetSpecificationType() const
+WBFL::LRFD::BDSManager::Edition CProjectAgentImp::GetSpecificationType() const
 {
    return m_pSpecEntry->GetSpecificationCriteria().GetEdition();
 }
@@ -12097,8 +12097,8 @@ void CProjectAgentImp::InitSpecification(const std::_tstring& spec)
                          &m_pSpecEntry,
                          *(m_pLibMgr->GetSpecLibrary()) );
 
-      WBFL::LRFD::LRFDVersionMgr::SetVersion( m_pSpecEntry->GetSpecificationCriteria().GetEdition() );
-      WBFL::LRFD::LRFDVersionMgr::SetUnits( m_pSpecEntry->GetSpecificationCriteria().Units );
+      WBFL::LRFD::BDSManager::SetEdition( m_pSpecEntry->GetSpecificationCriteria().GetEdition() );
+      WBFL::LRFD::BDSManager::SetUnits( m_pSpecEntry->GetSpecificationCriteria().Units );
    }
 }
 
@@ -12118,10 +12118,10 @@ void CProjectAgentImp::InitRatingSpecification(const std::_tstring& spec)
                          &m_pRatingEntry,
                          *(m_pLibMgr->GetRatingLibrary()) );
 
-      WBFL::LRFD::LRFRVersionMgr::SetVersion( m_pRatingEntry->GetSpecificationVersion() );
+      WBFL::LRFD::MBEManager::SetEdition( m_pRatingEntry->GetSpecificationVersion() );
 
       // update live load factors
-      if ( m_pRatingEntry->GetSpecificationVersion() < WBFL::LRFD::LRFRVersionMgr::Version::SecondEditionWith2013Interims )
+      if ( m_pRatingEntry->GetSpecificationVersion() < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
       {
          const CLiveLoadFactorModel& design_inventory_model = m_pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrDesign_Inventory);
          if ( !design_inventory_model.AllowUserOverride() )

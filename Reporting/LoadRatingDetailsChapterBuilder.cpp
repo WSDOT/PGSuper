@@ -226,7 +226,7 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
       *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("MomentRatingEquation.png")) << rptNewLine;
    }
 
-   if (WBFL::LRFD::LRFDVersionMgr::Version::SixthEdition2012 <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+   if (WBFL::LRFD::BDSManager::Edition::SixthEdition2012 <= WBFL::LRFD::BDSManager::GetEdition())
    {
       *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("MomentRating_K_Equation_2012.png")) << rptNewLine;
    }

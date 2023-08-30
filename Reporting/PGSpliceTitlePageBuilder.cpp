@@ -316,7 +316,7 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(const std::shared_ptr<const WBFL::R
       (*pTable)(row,0) << _T("Deck Bar Cutoff");
       (*pTable)(row++,1) << _T("End of a reinforcing bar in the deck");
 
-      if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          (*pTable)(row,0) << _T("CS");
          (*pTable)(row++,1) << _T("Critical Section for Shear");

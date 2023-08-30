@@ -102,7 +102,7 @@ void CHaulingCheck::Build(rptChapter* pChapter,
       *pChapter << p;
 
       *p <<color(Red)<<_T("Hauling analysis disabled in Project Criteria. No analysis performed.")<<color(Black)<<rptNewLine;
-      if (WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+      if (WBFL::LRFD::BDSManager::Edition::NinthEdition2020 <= WBFL::LRFD::BDSManager::GetEdition())
       {
          *p << color(Red) << _T("Per LRFD 5.5.4.3, \"Buckling and stability of precast members during handling, transportation, and erection shall be investigated.\" Also see C5.5.4.3 and C5.12.3.2.1.") << color(Black) << rptNewLine;
       }
@@ -146,7 +146,7 @@ void CHaulingCheck::Build(rptChapter* pChapter,
       *pChapter << p;
 
       *p << color(Red) << _T("Hauling analysis disabled in Project Criteria. No analysis performed.") << color(Black) << rptNewLine;
-      if (WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+      if (WBFL::LRFD::BDSManager::Edition::NinthEdition2020 <= WBFL::LRFD::BDSManager::GetEdition())
       {
          *p << color(Red) << _T("Per LRFD 5.5.4.3, \"Buckling and stability of precast members during handling, transportation, and erection shall be investigated.\" Also see C5.5.4.3 and C5.12.3.2.1.") << color(Black) << rptNewLine;
       }

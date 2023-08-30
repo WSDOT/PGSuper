@@ -38,7 +38,7 @@ CLASS
 #include <IFace\Intervals.h>
 #include <IFace\PrestressForce.h>
 
-#include <LRFD\VersionMgr.h>
+#include <Lrfd/BDSManager.h>
 
 #include <PsgLib\SpecLibraryEntry.h>
 #include <PgsExt\PrecastSegmentData.h>

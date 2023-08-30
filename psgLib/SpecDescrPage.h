@@ -47,7 +47,7 @@ public:
 	//}}AFX_DATA
 
 
-   WBFL::LRFD::LRFDVersionMgr::Version GetSpecVersion();
+   WBFL::LRFD::BDSManager::Edition GetSpecVersion();
 
 // Overrides
 	// ClassWizard generate virtual function overrides

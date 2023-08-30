@@ -412,7 +412,7 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
    pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
 
    // Computes effective flange width, retaining details of calculation per LRFD 4.6.2.6.1
-   if ( m_bUseTribWidth == VARIANT_TRUE || WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( m_bUseTribWidth == VARIANT_TRUE || WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       GET_IFACE(IBridge,pBridge);
       GET_IFACE(IEffectiveFlangeWidth, pIEffFW);
@@ -1736,5 +1736,5 @@ bool CEffectiveFlangeWidthTool::DoUseTributaryWidth(const CBridgeDescription2* p
 {
    pgsTypes::SupportedBeamSpacing beamSpacing = pBridgeDesc->GetGirderSpacingType();
 
-   return m_bUseTribWidth || IsAdjacentSpacing(beamSpacing) || WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2008Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion();
+   return m_bUseTribWidth || IsAdjacentSpacing(beamSpacing) || WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= WBFL::LRFD::BDSManager::GetEdition();
 }

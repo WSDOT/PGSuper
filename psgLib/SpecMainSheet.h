@@ -91,7 +91,7 @@ public:
    CString m_Name;
    CString m_Description;
 
-   WBFL::LRFD::LRFDVersionMgr::Version GetSpecVersion();
+   WBFL::LRFD::BDSManager::Edition GetSpecVersion();
 
 // Operations
 public:

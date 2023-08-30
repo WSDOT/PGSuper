@@ -121,7 +121,7 @@ CEffectivePrestressForceTable* CEffectivePrestressForceTable::PrepareTable(rptCh
    (*table)(1, col++) << COLHDR(Sub2(_T("P"), _T("pe")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
 
    table->SetColumnSpan(0, col, 2);
-   (*table)(0, col) << GetLimitStateString(WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI) << rptNewLine << _T("with Live load");
+   (*table)(0, col) << GetLimitStateString(WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI) << rptNewLine << _T("with Live load");
    (*table)(1, col++) << COLHDR(RPT_FPE, rptStressUnitTag, pDisplayUnits->GetStressUnit());
    (*table)(1, col++) << COLHDR(Sub2(_T("P"), _T("pe")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
 
@@ -151,7 +151,7 @@ void CEffectivePrestressForceTable::AddRow(rptChapter* pChapter,IBroker* pBroker
    Float64 Ppe = pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, m_LiveLoadIntervalIdx, pgsTypes::End, true/*include elastic effects*/, pgsTypes::TransferLengthType::Minimum);
    ATLASSERT(IsEqual(Ppe, pPrestressForce->GetPrestressForce(poi, pgsTypes::Straight, m_LiveLoadIntervalIdx, pgsTypes::End, true/*include elastic effects*/, pgsTypes::TransferLengthType::Minimum) + pPrestressForce->GetPrestressForce(poi, pgsTypes::Harped, m_LiveLoadIntervalIdx, pgsTypes::End, true/*include elastic effects*/, pgsTypes::TransferLengthType::Minimum)));
 
-   std::array<pgsTypes::LimitState, 3> vLimitStates{ pgsTypes::ServiceI, pgsTypes::ServiceIII, WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI };
+   std::array<pgsTypes::LimitState, 3> vLimitStates{ pgsTypes::ServiceI, pgsTypes::ServiceIII, WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI };
    std::array<Float64, 3> fpe_with_liveload;
    std::array<Float64, 3> Ppe_with_liveload;
    int i = 0;

@@ -467,7 +467,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
       pgsTypes::LimitState lstates[num_cases] = {pgsTypes::ServiceI,   pgsTypes::ServiceI,   pgsTypes::ServiceI,    pgsTypes::ServiceI   , pgsTypes::ServiceIII,  pgsTypes::FatigueI,    pgsTypes::ServiceIA};
       pgsTypes::StressType ststype[num_cases] = {pgsTypes::Tension,    pgsTypes::Compression,pgsTypes::Compression, pgsTypes::Compression, pgsTypes::Tension,     pgsTypes::Compression, pgsTypes::Compression};
 
-      if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
          lstates[num_cases-1] = pgsTypes::FatigueI;
 
       // Loop over all pois and limit states and factor results in our copy
@@ -479,8 +479,8 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
          pIPoi->GetPointsOfInterest(fabrSegmentKey,&vPOI);
          ATLASSERT(vPOI.size()>0);
 
-         if ( (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims && lstates[icase] == pgsTypes::FatigueI) || 
-              (WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion()&& lstates[icase] == pgsTypes::ServiceIA)
+         if ( (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims && lstates[icase] == pgsTypes::FatigueI) || 
+              (WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition()&& lstates[icase] == pgsTypes::ServiceIA)
               )
          {
             // if before LRFD 2009 and Fatigue I 

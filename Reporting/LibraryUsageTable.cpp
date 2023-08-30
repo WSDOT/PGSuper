@@ -76,12 +76,12 @@ rptRcTable* CLibraryUsageTable::Build(IBroker* pBroker) const
       if (record.LibName == _T("Project Criteria"))
       {
          const SpecLibraryEntry* pEntry = pLibrary->GetSpecEntry(record.EntryName.c_str());
-         (*table)(row, 1) << _T(" based on") << rptNewLine << WBFL::LRFD::LRFDVersionMgr::GetCodeString() << _T(", ") << WBFL::LRFD::LRFDVersionMgr::GetVersionString(pEntry->GetSpecificationCriteria().GetEdition());
+         (*table)(row, 1) << _T(" based on") << rptNewLine << WBFL::LRFD::BDSManager::GetSpecificationName() << _T(", ") << WBFL::LRFD::BDSManager::GetEditionAsString(pEntry->GetSpecificationCriteria().GetEdition());
       }
       else if (record.LibName == _T("Load Rating Criteria"))
       {
          const RatingLibraryEntry* pEntry = pLibrary->GetRatingEntry(record.EntryName.c_str());
-         (*table)(row, 1) << _T(" based on") << rptNewLine << WBFL::LRFD::LRFRVersionMgr::GetCodeString() << _T(", ") << WBFL::LRFD::LRFRVersionMgr::GetVersionString(pEntry->GetSpecificationVersion());
+         (*table)(row, 1) << _T(" based on") << rptNewLine << WBFL::LRFD::MBEManager::GetSpecificationName() << _T(", ") << WBFL::LRFD::MBEManager::GetEditionAsString(pEntry->GetSpecificationVersion());
       }
       
       if ( record.bEditable )

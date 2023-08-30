@@ -95,7 +95,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
 
-   WBFL::LRFD::LRFDVersionMgr::Version vers = WBFL::LRFD::LRFDVersionMgr::GetVersion();
+   WBFL::LRFD::BDSManager::Edition vers = WBFL::LRFD::BDSManager::GetEdition();
 
    if (bUHPC)
    {
@@ -105,11 +105,11 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    {
       if (0 < nDucts)
       {
-         if (WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017 <= vers)
+         if (WBFL::LRFD::BDSManager::Edition::EighthEdition2017 <= vers)
          {
             *pBody << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2017_with_PT.png")) << rptNewLine;
          }
-         else if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= vers)
+         else if (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= vers)
          {
             *pBody << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2005_with_PT.png")) << rptNewLine;
          }
@@ -120,11 +120,11 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
       }
       else
       {
-         if (WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017 <= vers)
+         if (WBFL::LRFD::BDSManager::Edition::EighthEdition2017 <= vers)
          {
             *pBody << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2017.png")) << rptNewLine;
          }
-         else if (WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= vers)
+         else if (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= vers)
          {
             *pBody << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2005.png")) << rptNewLine;
          }
@@ -134,13 +134,13 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
          }
       }
 
-      if (WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= vers)
+      if (WBFL::LRFD::BDSManager::Edition::NinthEdition2020 <= vers)
       {
          *pBody << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LRS_ReinforcementLimit.png")) << rptNewLine;
       }
    }
 
-   rptRcTable* table = rptStyleManager::CreateDefaultTable(vers < WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 ? 5 : 8,_T(""));
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(vers < WBFL::LRFD::BDSManager::Edition::NinthEdition2020 ? 5 : 8,_T(""));
    *pBody << table;
 
    ColumnIndexType col = 0;
@@ -150,7 +150,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    (*table)(0, col++)  << _T("Equation");
    (*table)(0, col++)  << _T("Status") << rptNewLine << _T("(C/D)");
    
-   if (WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= vers)
+   if (WBFL::LRFD::BDSManager::Edition::NinthEdition2020 <= vers)
    {
       (*table)(0, col++) << COLHDR(RPT_APS << RPT_FPS, rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
       if (bUHPC)
@@ -228,7 +228,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
             (*table)(row, col) << rptNewLine << _T("(") << cap_demand.SetValue(C,D,bPassed) << _T(")");
             col++;
 
-            if (WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= vers)
+            if (WBFL::LRFD::BDSManager::Edition::NinthEdition2020 <= vers)
             {
                (*table)(row, col++) << shear.SetValue(pArtifact->GetPretensionForce());
                (*table)(row, col++) << shear.SetValue(pArtifact->GetRebarForce());
@@ -285,7 +285,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    rptParagraph* pBody = new rptParagraph;
    *pChapter << pBody;
 
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       *pBody <<rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2005.png"))<<rptNewLine;
    }

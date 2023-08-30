@@ -179,7 +179,7 @@ BOOL CConcreteGeneralPage::OnInitDialog()
    }
 
    CComboBox* pcbConcreteType = (CComboBox*)GetDlgItem(IDC_CONCRETE_TYPE);
-   if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims )
+   if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims )
    {  
       int idx = pcbConcreteType->AddString(_T("Normal weight"));
       pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::Normal);
@@ -204,7 +204,7 @@ BOOL CConcreteGeneralPage::OnInitDialog()
       idx = pcbConcreteType->AddString(_T("Lightweight"));
       pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::SandLightweight);
 
-      if (WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() && pParent->m_bIncludeUHPC)
+      if (WBFL::LRFD::BDSManager::Edition::NinthEdition2020 <= WBFL::LRFD::BDSManager::GetEdition() && pParent->m_bIncludeUHPC)
       {
          idx = pcbConcreteType->AddString(_T("PCI-UHPC"));
          pcbConcreteType->SetItemData(idx, (DWORD_PTR)pgsTypes::PCI_UHPC);

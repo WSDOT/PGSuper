@@ -374,7 +374,7 @@ void pgsLRFDSplittingCheckEngineer::ReportDemand(rptParagraph* pPara, IEAFDispla
 
       if (bInitialRelaxation)
       {
-         if (pSpecification->GetSpecificationType() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004)
+         if (pSpecification->GetSpecificationType() <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004)
          {
             (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pR1")) << _T(" - ");
          }
@@ -397,7 +397,7 @@ void pgsLRFDSplittingCheckEngineer::ReportDemand(rptParagraph* pPara, IEAFDispla
 
       if (bInitialRelaxation)
       {
-         if (pSpecification->GetSpecificationType() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004)
+         if (pSpecification->GetSpecificationType() <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004)
          {
             (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pR1")) << _T(" - ");
          }
@@ -424,7 +424,7 @@ void pgsLRFDSplittingCheckEngineer::ReportDemand(rptParagraph* pPara, IEAFDispla
 
       if (bInitialRelaxation)
       {
-         if (pSpecification->GetSpecificationType() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004)
+         if (pSpecification->GetSpecificationType() <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004)
          {
             (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pR1")) << _T(" - ");
          }

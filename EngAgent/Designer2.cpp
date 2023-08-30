@@ -1759,7 +1759,7 @@ void pgsDesigner2::CheckTendonDetailing(const CGirderKey& girderKey,pgsGirderArt
          Float64 Aduct = pSegmentTendonGeometry->GetInsideDuctArea(segmentKey, ductIdx);
 
          // starting with 9th edition, the duct diameter limit and the duct reduction for shear is based on nominal duct diameter
-         Float64 duct_diameter = (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 ? pSegmentTendonGeometry->GetOutsideDiameter(segmentKey,ductIdx) : pSegmentTendonGeometry->GetNominalDiameter(segmentKey, ductIdx));
+         Float64 duct_diameter = (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::NinthEdition2020 ? pSegmentTendonGeometry->GetOutsideDiameter(segmentKey,ductIdx) : pSegmentTendonGeometry->GetNominalDiameter(segmentKey, ductIdx));
 
          Float64 r = pSegmentTendonGeometry->GetMinimumRadiusOfCurvature(segmentKey, ductIdx);
 
@@ -1794,7 +1794,7 @@ void pgsDesigner2::CheckTendonDetailing(const CGirderKey& girderKey,pgsGirderArt
       Float64 Aduct = pGirderTendonGeometry->GetInsideDuctArea(girderKey,ductIdx);
 
       // starting with 9th edition, the duct diameter limit and the duct reduction for shear is based on nominal duct diameter
-      Float64 duct_diameter = (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 ? pGirderTendonGeometry->GetOutsideDiameter(girderKey, ductIdx) : pGirderTendonGeometry->GetNominalDiameter(girderKey, ductIdx));
+      Float64 duct_diameter = (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::NinthEdition2020 ? pGirderTendonGeometry->GetOutsideDiameter(girderKey, ductIdx) : pGirderTendonGeometry->GetNominalDiameter(girderKey, ductIdx));
 
       Float64 r = pGirderTendonGeometry->GetMinimumRadiusOfCurvature(girderKey,ductIdx);
 
@@ -2067,7 +2067,7 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
    IntervalIndexType compositeClosureIntervalIdx     = pIntervals->GetCompositeClosureJointInterval(segmentKey);
    IntervalIndexType lastIntervalIdx                 = pIntervals->GetIntervalCount()-1;
 
-   bool bSISpec = WBFL::LRFD::LRFDVersionMgr::GetUnits() == WBFL::LRFD::LRFDVersionMgr::Units::SI ? true : false;
+   bool bSISpec = WBFL::LRFD::BDSManager::GetUnits() == WBFL::LRFD::BDSManager::Units::SI ? true : false;
 
    GET_IFACE(IPretensionStresses,       pPretensionStresses);
    GET_IFACE(ILimitStateForces,         pLimitStateForces);
@@ -2929,7 +2929,7 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
    pgsTypes::BridgeAnalysisType batTop, batBottom;
    GetBridgeAnalysisType(segmentKey.girderIndex,task,batTop,batBottom);
 
-   bool bSISpec = WBFL::LRFD::LRFDVersionMgr::GetUnits() == WBFL::LRFD::LRFDVersionMgr::Units::SI ? true : false;
+   bool bSISpec = WBFL::LRFD::BDSManager::GetUnits() == WBFL::LRFD::BDSManager::Units::SI ? true : false;
 
    gbtAlternativeTensileStressRequirements altTensionRequirements;
    altTensionRequirements.concreteType = (WBFL::Materials::ConcreteType)pMaterials->GetSegmentConcreteType(segmentKey);
@@ -3207,7 +3207,7 @@ void pgsDesigner2::CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,
    GET_IFACE(ISpecification, pSpec);
 
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool c_over_de = ( pSpec->GetMomentCapacityMethod() == LRFD_METHOD && pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2006Interims );
+   bool c_over_de = ( pSpec->GetMomentCapacityMethod() == LRFD_METHOD && pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2006Interims );
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
    pArtifact->SetPointOfInterest(poi);
@@ -3622,7 +3622,7 @@ void pgsDesigner2::CheckHorizontalShear(pgsTypes::LimitState limitState, const p
    pArtifact->SetK2(K2);
 
    // nominal shear capacities 5.7.4.1-2,3 (pre2017: 5.8.4.1)
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() && gs_60KSI < fy)
+   if ( WBFL::LRFD::BDSManager::Edition::FourthEdition2007 <= WBFL::LRFD::BDSManager::GetEdition() && gs_60KSI < fy)
    {
       // 60 ksi limit was added in 4th Edition 2007
       fy = gs_60KSI;
@@ -3671,7 +3671,7 @@ void pgsDesigner2::CheckHorizontalShear(pgsTypes::LimitState limitState, const p
    // Determine average shear stress.
    // Average shear stress. Note: This value is vni prior to 2007 and vui afterwards 
    Float64 Vsavg;
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::FourthEdition2007 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::FourthEdition2007 <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       Float64 vui = IsZero(bvi_details.bvi) ? 0.0 : Vuh/ bvi_details.bvi;
       Vsavg = vui;
@@ -3888,7 +3888,7 @@ void pgsDesigner2::CheckFullStirrupDetailing(const pgsPointOfInterest& poi,
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfter1999 = ( WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims <= pSpecEntry->GetSpecificationCriteria().GetEdition() ? true : false );
+   bool bAfter1999 = ( WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims <= pSpecEntry->GetSpecificationCriteria().GetEdition() ? true : false );
 
    pArtifact->SetAfter1999(bAfter1999);
 
@@ -4068,7 +4068,7 @@ Float64 pgsDesigner2::GetAvsMin(const pgsPointOfInterest& poi,const SHEARCAPACIT
    const WBFL::Units::AreaPerLength* pAvsUnit;
    Float64 K;
    Float64 Kfct;
-   if ( WBFL::LRFD::LRFDVersionMgr::GetUnits() == WBFL::LRFD::LRFDVersionMgr::Units::US )
+   if ( WBFL::LRFD::BDSManager::GetUnits() == WBFL::LRFD::BDSManager::Units::US )
    {
       pLengthUnit = &WBFL::Units::Measure::Inch;
       pStressUnit = &WBFL::Units::Measure::KSI;
@@ -4095,7 +4095,7 @@ Float64 pgsDesigner2::GetAvsMin(const pgsPointOfInterest& poi,const SHEARCAPACIT
    Float64 lambda = pMaterials->GetSegmentLambda(poi.GetSegmentKey());
    avs *= lambda;
 
-   if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims )
+   if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims )
    {
       switch( scd.ConcreteType )
       {
@@ -4182,7 +4182,7 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
    // the tension tie
    GET_IFACE(IGirderTendonGeometry, pGirderTendonGeometry);
    auto nDucts = pGirderTendonGeometry->GetDuctCount(segmentKey);
-   pArtifact->PretensionForceMustExceedBarForce((scd.bTensionBottom || 0 < nDucts) && WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= pSpecEntry->GetSpecificationCriteria().GetEdition() ? true : false);
+   pArtifact->PretensionForceMustExceedBarForce((scd.bTensionBottom || 0 < nDucts) && WBFL::LRFD::BDSManager::Edition::NinthEdition2020 <= pSpecEntry->GetSpecificationCriteria().GetEdition() ? true : false);
 
    // Longitudinal steel
    GET_IFACE(IMaterials, pMaterials);
@@ -4325,7 +4325,7 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
    // shear demand 
    Float64 phi_shear = scd.Phi;
 
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2000Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
        if ( vu/phi_shear < vs )
        {
@@ -4356,7 +4356,7 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
    Float64 demand;
    Uint16 equation = 999; // dummy value
 
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       if ( bInCriticalSectionZone && !bContinuous )
       {
@@ -4374,11 +4374,11 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
    else
    {
       if (// Spec is 2003 or earlier AND poi is at one of the points of support 
-           (WBFL::LRFD::LRFDVersionMgr::GetVersion() <= WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2003Interims && 
+           (WBFL::LRFD::BDSManager::GetEdition() <= WBFL::LRFD::BDSManager::Edition::SecondEditionWith2003Interims && 
             (poi.HasAttribute(POI_FACEOFSUPPORT) && !bContinuous) )
             ||
            // Spec is 2004 AND poi is in a critical section zone
-           (WBFL::LRFD::LRFDVersionMgr::Version::SecondEditionWith2003Interims < WBFL::LRFD::LRFDVersionMgr::GetVersion() && WBFL::LRFD::LRFDVersionMgr::GetVersion() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004 && 
+           (WBFL::LRFD::BDSManager::Edition::SecondEditionWith2003Interims < WBFL::LRFD::BDSManager::GetEdition() && WBFL::LRFD::BDSManager::GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 && 
               ( bInCriticalSectionZone && !bContinuous ))
          )
       {
@@ -4671,7 +4671,7 @@ void pgsDesigner2::InitShearCheck(const CSegmentKey& segmentKey,IntervalIndexTyp
       pPoi->GetCriticalSections(limitState, segmentKey,&vCSPoi);
       std::vector<CRITSECTDETAILS> vCS = pShearCapacity->GetCriticalSectionDetails(limitState,segmentKey);
 
-      if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004)
+      if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::ThirdEdition2004)
       {
          // if the LRFD is before 2004, critical section for shear was a function of loading.... we end up with many critical section POIs but
          // only a few (usually 2) critical section details. Match the details to the POIs and throw out the other POIs. LRFD 2004 and later only depend on Mu
@@ -4715,7 +4715,7 @@ void pgsDesigner2::InitShearCheck(const CSegmentKey& segmentKey,IntervalIndexTyp
 
       const std::vector<CRITSECTDETAILS>& vCS = pShearCapacity->GetCriticalSectionDetails(limitState,segmentKey,pConfig);
 
-      if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004)
+      if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::ThirdEdition2004)
       {
          // if the LRFD is before 2004, critical section for shear was a function of loading.... we end up with many critical section POIs but
          // only a few (usually 2) critical section details. Match the details to the POIs and throw out the other POIs. LRFD 2004 and later only depend on Mu
@@ -5896,7 +5896,7 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey, pgsDebondArtifa
       // LRFD 9th Edition, 5.9.4.3.3, Restriction I, J, K (exterior strands in row must be debonded)
       if (pDebondLimits->IsExteriorStrandBondingRequiredInRow(segmentKey, pgsTypes::metStart, rowIdx))
       {
-         if (pArtifact->GetSection() == pgsDebondArtifact::K && WBFL::LRFD::LRFDVersionMgr::GetVersion() <= WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020)
+         if (pArtifact->GetSection() == pgsDebondArtifact::K && WBFL::LRFD::BDSManager::GetEdition() <= WBFL::LRFD::BDSManager::Edition::NinthEdition2020)
          {
             // this is a multi-web, no flange section - LRFD 9th Edition, 5.9.4.3.3 Requirement K applies. Exterior strands in each web need to be bonded
             if (nWebs == 0)
@@ -5924,7 +5924,7 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey, pgsDebondArtifa
       {
          // exterior strands are not required to be bonded in this row
          // this requirement was first introduced in LRFD 9th edition for I-Beams (5.9.4.3.3 Restriction I)
-         ATLASSERT(WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020 <= WBFL::LRFD::LRFDVersionMgr::GetVersion());
+         ATLASSERT(WBFL::LRFD::BDSManager::Edition::NinthEdition2020 <= WBFL::LRFD::BDSManager::GetEdition());
          pArtifact->SetExtriorStrandBondState(rowIdx, pgsDebondArtifact::None);
       }
    }
@@ -6286,7 +6286,7 @@ void pgsDesigner2::CheckPrincipalTensionStressInWebs(const CSegmentKey& segmentK
 {
    // First determine of this check is applicable... 
 
-   if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017)
+   if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::EighthEdition2017)
    {
       // this requirement was added in LRFD 8th Edition, 2017... so any spec before this
       // the requirement is not applicable
@@ -7096,7 +7096,7 @@ void pgsDesigner2::DesignMidZoneFinalConcrete(IProgress* pProgress) const
    vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(pgsTypes::ServiceI,_T("Service I final with live load"),lastIntervalIdx,true,pgsTypes::Compression,pgsTypes::BottomGirder,POI_HARPINGPOINT|POI_PSXFER));
    vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(pgsTypes::ServiceI, _T("Service I final without live load"), lastIntervalIdx, false, pgsTypes::Compression, pgsTypes::BottomGirder, POI_HARPINGPOINT | POI_PSXFER));
    vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(pgsTypes::ServiceI, _T("Service I final without live load"), lastIntervalIdx, false, pgsTypes::Compression, pgsTypes::TopGirder, (POI_SPAN | POI_5L)));
-   vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI,WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims ? _T("Service IA") : _T("Fatigue I"),lastIntervalIdx,true,pgsTypes::Compression,pgsTypes::BottomGirder,POI_HARPINGPOINT|POI_PSXFER));
+   vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI,WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims ? _T("Service IA") : _T("Fatigue I"),lastIntervalIdx,true,pgsTypes::Compression,pgsTypes::BottomGirder,POI_HARPINGPOINT|POI_PSXFER));
    vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(pgsTypes::ServiceIII,_T("Service III"),lastIntervalIdx,true,pgsTypes::Tension,pgsTypes::BottomGirder,POI_HARPINGPOINT|(POI_SPAN | POI_5L)));
 
    GET_IFACE(IAllowableConcreteStress,pAllowable);
@@ -7769,7 +7769,7 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands, IProgres
    // The following 3 lines are commented out because we don't want to look at the compression cases but left here as a reminder of what we don't want to do.
    //vInitialDesignParameters.push_back(InitialDesignParameters(lastIntervalIdx, true /*with live load*/,  pgsTypes::ServiceI, _T("Service I"), pgsTypes::TopGirder, _T("Top"), pgsTypes::Compression)); // 0.6f'c
    //vInitialDesignParameters.push_back(InitialDesignParameters(lastIntervalIdx, false /*without live load*/, pgsTypes::ServiceI, _T("Service I"), pgsTypes::TopGirder, _T("Top"), pgsTypes::Compression)); // 0.45f'c
-   //vInitialDesignParameters.push_back(InitialDesignParameters(lastIntervalIdx, true /*with live load*/,  WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI,WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims ? _T("Service IA") : _T("Fatigue I"),pgsTypes::TopGirder,_T("Top"),pgsTypes::Compression));
+   //vInitialDesignParameters.push_back(InitialDesignParameters(lastIntervalIdx, true /*with live load*/,  WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI,WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims ? _T("Service IA") : _T("Fatigue I"),pgsTypes::TopGirder,_T("Top"),pgsTypes::Compression));
    vInitialDesignParameters.push_back(InitialDesignParameters(lastIntervalIdx, true /*with live load*/,  pgsTypes::ServiceIII,_T("Service III"),pgsTypes::BottomGirder,_T("Bottom"),pgsTypes::Tension));
    if ( pAllowStress->CheckFinalDeadLoadTensionStress() )
    {

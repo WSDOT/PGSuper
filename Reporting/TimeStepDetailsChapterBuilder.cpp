@@ -2238,12 +2238,12 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
    PrestressLossCriteria::TimeDependentConcreteModelType model = pLossParams->GetTimeDependentModel();
    if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO )
    {
-      if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims )
+      if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims )
       {
          nColumns += 4;
          (*pPara) << rptRcImage(strImagePath + _T("AASHTO_Creep_Before_2005.png")) << rptNewLine;
       }
-      else if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2015Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+      else if ( WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2015Interims <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          nColumns += 6;
          (*pPara) << rptRcImage(strImagePath + _T("AASHTO_Creep_2015.png")) << rptNewLine;
@@ -2367,14 +2367,14 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
          if (model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO)
          {
             (*pTable)(rowIdx, colIdx++) << Sub2(_T("t"), _T("i")) << rptNewLine << _T("(day)");
-            if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims)
+            if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims)
             {
                (*pTable)(rowIdx, colIdx++) << COLHDR(RPT_FC, rptStressUnitTag, pDisplayUnits->GetStressUnit());
                (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("c")) << _T("(") << Sub2(_T("t"), _T("b")) << _T(")");
                (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("c")) << _T("(") << Sub2(_T("t"), _T("e")) << _T(")");
                (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("f"));
             }
-            else if (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2015Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+            else if (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2015Interims <= WBFL::LRFD::BDSManager::GetEdition())
             {
                (*pTable)(rowIdx, colIdx++) << COLHDR(RPT_FCI, rptStressUnitTag, pDisplayUnits->GetStressUnit());
                (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("vs"));
@@ -2417,7 +2417,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
 
          if (model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO)
          {
-            if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims)
+            if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims)
             {
                (*pTable)(rowIdx, colIdx++) << CREEP_te_ti;
             }
@@ -2510,13 +2510,13 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
             if (model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO)
             {
                auto pDetails = std::dynamic_pointer_cast<const WBFL::LRFD::LRFDTimeDependentConcreteCreepDetails>(pCreep);
-               if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims)
+               if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims)
                {
                   (*pTable)(rowIdx, colIdx++) << stress.SetValue(pDetails->fci);
                   (*pTable)(rowIdx, colIdx++) << pDetails->kc;
                   (*pTable)(rowIdx, colIdx++) << pDetails->kf;
                }
-               else if (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2015Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+               else if (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2015Interims <= WBFL::LRFD::BDSManager::GetEdition())
                {
                   (*pTable)(rowIdx, colIdx++) << stress.SetValue(pDetails->fci);
                   (*pTable)(rowIdx, colIdx++) << pDetails->kvs;
@@ -2579,14 +2579,14 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
          if (model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO)
          {
             (*pTable)(rowIdx, colIdx++) << Sub2(_T("t"), _T("i")) << rptNewLine << _T("(day)");
-            if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims)
+            if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims)
             {
                (*pTable)(rowIdx, colIdx++) << COLHDR(RPT_FC, rptStressUnitTag, pDisplayUnits->GetStressUnit());
                (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("c")) << _T("(") << Sub2(_T("t"), _T("b")) << _T(")");
                (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("c")) << _T("(") << Sub2(_T("t"), _T("e")) << _T(")");
                (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("f"));
             }
-            else if (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2015Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+            else if (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2015Interims <= WBFL::LRFD::BDSManager::GetEdition())
             {
                (*pTable)(rowIdx, colIdx++) << COLHDR(RPT_FCI, rptStressUnitTag, pDisplayUnits->GetStressUnit());
                (*pTable)(rowIdx, colIdx++) << Sub2(_T("k"), _T("vs"));
@@ -2634,7 +2634,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
 
          if (model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO)
          {
-            if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims)
+            if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims)
             {
                (*pTable)(rowIdx, colIdx++) << CREEP_tb_ti;
                (*pTable)(rowIdx, colIdx++) << CREEP_te_ti;
@@ -2746,14 +2746,14 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
                {
                   const std::shared_ptr<WBFL::LRFD::LRFDTimeDependentConcreteCreepDetails> pStartDetails = std::dynamic_pointer_cast<WBFL::LRFD::LRFDTimeDependentConcreteCreepDetails>(pConcrete->Creep[prevIntervalIdx].pStartDetails);
                   const std::shared_ptr<WBFL::LRFD::LRFDTimeDependentConcreteCreepDetails> pEndDetails   = std::dynamic_pointer_cast<WBFL::LRFD::LRFDTimeDependentConcreteCreepDetails>(pConcrete->Creep[prevIntervalIdx].pEndDetails);
-                  if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims)
+                  if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims)
                   {
                      (*pTable)(rowIdx, colIdx++) << stress.SetValue(pStartDetails->fci);
                      (*pTable)(rowIdx, colIdx++) << pStartDetails->kc;
                      (*pTable)(rowIdx, colIdx++) << pEndDetails->kc;
                      (*pTable)(rowIdx, colIdx++) << pStartDetails->kf;
                   }
-                  else if (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2015Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+                  else if (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2015Interims <= WBFL::LRFD::BDSManager::GetEdition())
                   {
                      (*pTable)(rowIdx, colIdx++) << stress.SetValue(pStartDetails->fci);
                      (*pTable)(rowIdx, colIdx++) << pStartDetails->kvs;
@@ -2856,12 +2856,12 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
    PrestressLossCriteria::TimeDependentConcreteModelType model = pLossParams->GetTimeDependentModel();
    if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO )
    {
-      if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims )
+      if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims )
       {
          nColumns += 3;
          (*pPara) << rptRcImage(strImagePath + _T("AASHTO_Shrinkage_Before_2005.png")) << rptNewLine;
       }
-      else if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2015Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+      else if ( WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2015Interims <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          nColumns += 5;
          (*pPara) << rptRcImage(strImagePath + _T("AASHTO_Shrinkage_2015.png")) << rptNewLine;
@@ -2940,7 +2940,7 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
       }
       *pPara << _T("V/S = ") << vs.SetValue(V/S) << rptNewLine;
       
-      if ( (model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO && WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims) || model == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
+      if ( (model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO && WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims) || model == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
       {
          if ( i == 0 )
          {
@@ -2959,7 +2959,7 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
          }
       }
 
-      if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO && WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+      if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO && WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          if ( i == 0 )
          {
@@ -3012,13 +3012,13 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
 
       if ( model == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO )
       {
-         if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims )
+         if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims )
          {
             (*pTable)(rowIdx,colIdx++) << Sub2(_T("k"),_T("s")) << _T("(") << Sub2(_T("t"),_T("b")) << _T(")");
             (*pTable)(rowIdx,colIdx++) << Sub2(_T("k"),_T("s")) << _T("(") << Sub2(_T("t"),_T("e")) << _T(")");
             (*pTable)(rowIdx,colIdx++) << Sub2(_T("k"),_T("h"));
          }
-         else if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2015Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+         else if ( WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2015Interims <= WBFL::LRFD::BDSManager::GetEdition() )
          {
             (*pTable)(rowIdx,colIdx++) << Sub2(_T("k"),_T("vs"));
             (*pTable)(rowIdx,colIdx++) << Sub2(_T("k"),_T("hs"));
@@ -3105,13 +3105,13 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
          {
             const std::shared_ptr<WBFL::LRFD::LRFDTimeDependentConcreteShrinkageDetails> pStartDetails = std::dynamic_pointer_cast<WBFL::LRFD::LRFDTimeDependentConcreteShrinkageDetails>(pConcrete->Shrinkage.pStartDetails);
             const std::shared_ptr<WBFL::LRFD::LRFDTimeDependentConcreteShrinkageDetails> pEndDetails   = std::dynamic_pointer_cast<WBFL::LRFD::LRFDTimeDependentConcreteShrinkageDetails>(pConcrete->Shrinkage.pEndDetails);
-            if ( WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims )
+            if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims )
             {
                (*pTable)(rowIdx,colIdx++) << pStartDetails->kvs;
                (*pTable)(rowIdx,colIdx++) << pEndDetails->kvs;
                (*pTable)(rowIdx,colIdx++) << pStartDetails->khs;
             }
-            else if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2015Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+            else if ( WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2015Interims <= WBFL::LRFD::BDSManager::GetEdition() )
             {
                (*pTable)(rowIdx,colIdx++) << pStartDetails->kvs;
                (*pTable)(rowIdx,colIdx++) << pStartDetails->khs;

@@ -457,7 +457,7 @@ public:
    virtual bool IsAssumedExcessCamberForSectProps() const override; 
    virtual void GetTaperedSolePlateRequirements(bool* pbCheckTaperedSolePlate, Float64* pTaperedSolePlateThreshold) const override;
    virtual ISpecification::PrincipalWebStressCheckType GetPrincipalWebStressCheckType(const CSegmentKey& segmentKey) const override;
-   virtual WBFL::LRFD::LRFDVersionMgr::Version GetSpecificationType() const override;
+   virtual WBFL::LRFD::BDSManager::Edition GetSpecificationType() const override;
 
 // IRatingSpecification
 public:

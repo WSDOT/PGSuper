@@ -45,7 +45,7 @@ CLASS
 #include <EAF\EAFAutoProgress.h>
 #include <IFace\DocumentType.h>
 
-#include <LRFD\VersionMgr.h>
+#include <Lrfd/BDSManager.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

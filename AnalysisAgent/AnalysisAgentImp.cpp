@@ -6835,7 +6835,7 @@ CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(const CSeg
 
    // compute the creep coefficient
    CREEPCOEFFICIENTDETAILS details;
-   details.Spec = (pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004) ? pgsTypes::CreepSpecification::LRFDPre2005 : pgsTypes::CreepSpecification::LRFD2005;
+   details.Spec = (pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004) ? pgsTypes::CreepSpecification::LRFDPre2005 : pgsTypes::CreepSpecification::LRFD2005;
    details.kl = -99999; // dummy value since this parameter isn't always used
 
    try
@@ -6947,7 +6947,7 @@ std::shared_ptr<const WBFL::LRFD::CreepCoefficient> CAnalysisAgentImp::GetGirder
     GET_IFACE(ILibrary, pLib);
     GET_IFACE(ISpecification, pSpec);
     const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-    auto spec = (pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::LRFDVersionMgr::Version::ThirdEdition2004) ? pgsTypes::CreepSpecification::LRFDPre2005 : pgsTypes::CreepSpecification::LRFD2005;
+    auto spec = (pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004) ? pgsTypes::CreepSpecification::LRFDPre2005 : pgsTypes::CreepSpecification::LRFD2005;
 
     const auto& creep_criteria = pSpecEntry->GetCreepCriteria();
 

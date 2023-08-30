@@ -90,7 +90,7 @@ bool LimitsCriteria::Compare(const LimitsCriteria& other, const SpecLibraryEntry
    for (int i = 0; i < count && bConcreteLimits == true; i++)
    {
       pgsTypes::ConcreteType concreteType = pgsTypes::ConcreteType(i);
-      if (concreteType == pgsTypes::AllLightweight && WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= impl.GetSpecificationCriteria().GetEdition())
+      if (concreteType == pgsTypes::AllLightweight && WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= impl.GetSpecificationCriteria().GetEdition())
       {
          // All Lightweight not used after LRFD2016, there is only Lightweight and those parameters are stored with pgsTypes::SandLightweight
          continue;

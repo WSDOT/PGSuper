@@ -259,7 +259,7 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
    {
       (*p_table)(row++, 0) << _T("Final with Live Load (Service I)");
       (*p_table)(row++, 0) << _T("Final with Live Load (Service III)");
-      if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims)
+      if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims)
       {
          (*p_table)(row++, 0) << _T("Final with Live Load (Service IA)");
       }
@@ -380,7 +380,7 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
    {
       (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::ServiceI, bIncludeElasticEffects));
       (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::ServiceIII, bIncludeElasticEffects));
-      if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims)
+      if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims)
       {
          (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::ServiceIA, bIncludeElasticEffects));
       }
@@ -574,7 +574,7 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
       {
          (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffectsWithLiveLoad(poi, pgsTypes::Permanent, pgsTypes::ServiceI)/*pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Permanent)*/);
          (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffectsWithLiveLoad(poi, pgsTypes::Permanent, pgsTypes::ServiceIII)/*pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Permanent)*/);
-         if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims)
+         if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims)
          {
             (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffectsWithLiveLoad(poi, pgsTypes::Permanent, pgsTypes::ServiceIA)/*pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Permanent)*/);
          }
@@ -675,7 +675,7 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
    {
       (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::ServiceI, bIncludeElasticEffects, true/*include elastic gain reduction*/));
       (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::ServiceIII, bIncludeElasticEffects, true/*include elastic gain reduction*/));
-      if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims)
+      if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims)
       {
          (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::ServiceIA, bIncludeElasticEffects, true/*include elastic gain reduction*/));
       }

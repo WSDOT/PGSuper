@@ -883,7 +883,7 @@ CString CBridgeDescRailingSystemPage::UpdateConcreteParametersToolTip(CRailingSy
       _T("Max Aggregate Size"),  FormatDimension(pRailingSystem->Concrete.MaxAggregateSize,aggsize)
       );
 
-   //if ( WBFL::LRFD::LRFDVersionMgr::Version::ThirdEditionWith2005Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   //if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    //{
    //   // add K1 parameter
    //   CString strK1;

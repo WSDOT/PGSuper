@@ -41,7 +41,7 @@ CLASS
 #include <WBFLGenericBridge.h>
 
 #include <LRFD\ConcreteUtil.h>
-#include <LRFD\VersionMgr.h>
+#include <Lrfd/BDSManager.h>
 
 #include <EAF\EAFApp.h>
 #include <psgLib\LibraryEntryDifferenceItem.h>
@@ -74,10 +74,10 @@ m_CurbOffset(0)
    Float64 fc = WBFL::Units::ConvertToSysUnits(4.0,WBFL::Units::Measure::KSI);
    Float64 density = WBFL::Units::ConvertToSysUnits(155.0,WBFL::Units::Measure::LbmPerFeet3);
 
-   WBFL::LRFD::LRFDVersionMgr::Units old_units = WBFL::LRFD::LRFDVersionMgr::GetUnits();
-   WBFL::LRFD::LRFDVersionMgr::SetUnits(WBFL::LRFD::LRFDVersionMgr::Units::US);
+   WBFL::LRFD::BDSManager::Units old_units = WBFL::LRFD::BDSManager::GetUnits();
+   WBFL::LRFD::BDSManager::SetUnits(WBFL::LRFD::BDSManager::Units::US);
    m_Ec = WBFL::LRFD::ConcreteUtil::ModE(WBFL::Materials::ConcreteType::Normal, fc,density,false);
-   WBFL::LRFD::LRFDVersionMgr::SetUnits(old_units);
+   WBFL::LRFD::BDSManager::SetUnits(old_units);
 }
 
 TrafficBarrierEntry::TrafficBarrierEntry(const TrafficBarrierEntry& rOther) :

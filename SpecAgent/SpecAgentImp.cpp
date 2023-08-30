@@ -292,7 +292,7 @@ std::vector<StressCheckTask> CSpecAgentImp::GetStressCheckTasks(const CSegmentKe
    if (pMaterials->GetSegmentConcreteType(segmentKey) != pgsTypes::PCI_UHPC)
    {
       // fatigue checks are not applicable to PCI_UHPC, put are applicable to all other
-      vStressCheckTasks.emplace_back(lastIntervalIdx, WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI, pgsTypes::Compression);
+      vStressCheckTasks.emplace_back(lastIntervalIdx, WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI, pgsTypes::Compression);
 
       // this is a tension stress check for fatigue in UHPC. See GS 1.5.3
       if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
@@ -2168,8 +2168,8 @@ bool CSpecAgentImp::IsStressCheckApplicable(const CSegmentKey& segmentKey, const
 {
    ATLASSERT(::IsServiceLimitState(task.limitState) || ::IsFatigueLimitState(task.limitState) ); // must be a service limit state
 
-   if ( (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims && task.limitState == pgsTypes::FatigueI) ||
-        (WBFL::LRFD::LRFDVersionMgr::Version::FourthEditionWith2009Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion()&& task.limitState == pgsTypes::ServiceIA)
+   if ( (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims && task.limitState == pgsTypes::FatigueI) ||
+        (WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition()&& task.limitState == pgsTypes::ServiceIA)
         )
    {
       // if before LRFD 2009 and Fatigue I 
@@ -2406,7 +2406,7 @@ void CSpecAgentImp::ReportAllowableSegmentPrincipalWebTensionStress(const CSegme
 
       Float64 coefficient = GetAllowablePrincipalWebTensionStressCoefficient();
       *pPara << _T("Tension stress limit = ") << tension_coeff.SetValue(coefficient);
-      if (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+      if (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition())
       {
          (*pPara) << symbol(lambda);
       }
@@ -2442,7 +2442,7 @@ void CSpecAgentImp::ReportAllowableClosureJointPrincipalWebTensionStress(const C
 
    Float64 coefficient = GetAllowablePrincipalWebTensionStressCoefficient();
    *pPara << _T("Tension stress limit = ") << tension_coeff.SetValue(coefficient);
-   if (WBFL::LRFD::LRFDVersionMgr::Version::SeventhEditionWith2016Interims <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+   if (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition())
    {
       (*pPara) << symbol(lambda);
    }
@@ -2687,7 +2687,7 @@ Float64 CSpecAgentImp::GetMinStirrupSpacing(Float64 maxAggregateSize, Float64 ba
    const auto& specification_criteria = pSpec->GetSpecificationCriteria();
 
    Float64 abs_min_spc;
-   if (specification_criteria.Units == WBFL::LRFD::LRFDVersionMgr::Units::SI)
+   if (specification_criteria.Units == WBFL::LRFD::BDSManager::Units::SI)
    {
       abs_min_spc = WBFL::Units::ConvertToSysUnits(25., WBFL::Units::Measure::Millimeter);
    }
@@ -2710,7 +2710,7 @@ Float64 CSpecAgentImp::GetMinTopFlangeThickness() const
    const auto& specification_criteria = pSpec->GetSpecificationCriteria();
 
    Float64 dim;
-   if (specification_criteria.Units == WBFL::LRFD::LRFDVersionMgr::Units::SI)
+   if (specification_criteria.Units == WBFL::LRFD::BDSManager::Units::SI)
    {
       dim = WBFL::Units::ConvertToSysUnits(50., WBFL::Units::Measure::Millimeter);
    }
@@ -2751,7 +2751,7 @@ Float64 CSpecAgentImp::GetMinWebThickness() const
    Float64 dim;
    if ( bPostTension )
    {
-      if (specification_criteria.Units == WBFL::LRFD::LRFDVersionMgr::Units::SI)
+      if (specification_criteria.Units == WBFL::LRFD::BDSManager::Units::SI)
       {
          dim = WBFL::Units::ConvertToSysUnits(165., WBFL::Units::Measure::Millimeter);
       }
@@ -2762,7 +2762,7 @@ Float64 CSpecAgentImp::GetMinWebThickness() const
    }
    else
    {
-      if (specification_criteria.Units == WBFL::LRFD::LRFDVersionMgr::Units::SI)
+      if (specification_criteria.Units == WBFL::LRFD::BDSManager::Units::SI)
       {
          dim = WBFL::Units::ConvertToSysUnits(125., WBFL::Units::Measure::Millimeter);
       }
@@ -2781,7 +2781,7 @@ Float64 CSpecAgentImp::GetMinBottomFlangeThickness() const
    const auto& specification_criteria = pSpec->GetSpecificationCriteria();
 
    Float64 dim;
-   if (specification_criteria.Units == WBFL::LRFD::LRFDVersionMgr::Units::SI)
+   if (specification_criteria.Units == WBFL::LRFD::BDSManager::Units::SI)
    {
       dim = WBFL::Units::ConvertToSysUnits(125., WBFL::Units::Measure::Millimeter);
    }
@@ -3928,7 +3928,7 @@ bool CSpecAgentImp::CheckDebondingInWebWidthProjections(const CSegmentKey& segme
 #endif
 bool CSpecAgentImp::IsExteriorStrandBondingRequiredInRow(const CSegmentKey& segmentKey, pgsTypes::MemberEndType endType, RowIndexType rowIdx) const
 {
-   if (WBFL::LRFD::LRFDVersionMgr::GetVersion() < WBFL::LRFD::LRFDVersionMgr::Version::NinthEdition2020)
+   if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::NinthEdition2020)
    {
       // exterior strands in each row are required to be bonded
       return true;
@@ -4039,7 +4039,7 @@ Float64 CSpecAgentImp::GetShearResistanceFactor(bool isDebonded, pgsTypes::Concr
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    const auto& shear_capacity_criteria = pSpec->GetShearCapacityCriteria();
-   return shear_capacity_criteria.GetResistanceFactor(type, isDebonded, WBFL::LRFD::LRFDVersionMgr::GetVersion());
+   return shear_capacity_criteria.GetResistanceFactor(type, isDebonded, WBFL::LRFD::BDSManager::GetEdition());
 }
 
 Float64 CSpecAgentImp::GetShearResistanceFactor(const pgsPointOfInterest& poi, pgsTypes::ConcreteType type) const
@@ -4048,7 +4048,7 @@ Float64 CSpecAgentImp::GetShearResistanceFactor(const pgsPointOfInterest& poi, p
    bool is_debond = false;
 
    // different phi factor for debonding only applies to 8th edition and later
-   if (WBFL::LRFD::LRFDVersionMgr::Version::EighthEdition2017 <= WBFL::LRFD::LRFDVersionMgr::GetVersion())
+   if (WBFL::LRFD::BDSManager::Edition::EighthEdition2017 <= WBFL::LRFD::BDSManager::GetEdition())
    {
       const CSegmentKey& segkey(poi.GetSegmentKey());
       GET_IFACE(IStrandGeometry, pStrandGeom);
@@ -4119,7 +4119,7 @@ Float64 CSpecAgentImp::GetMaxShearConnectorSpacing(const pgsPointOfInterest& poi
    const SpecLibraryEntry* pSpec = GetSpec();
    const auto& interface_shear_criteria = pSpec->GetInterfaceShearCriteria();
    Float64 sMax = interface_shear_criteria.MaxInterfaceShearConnectorSpacing;
-   if ( WBFL::LRFD::LRFDVersionMgr::Version::SeventhEdition2014 <= WBFL::LRFD::LRFDVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::SeventhEdition2014 <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       GET_IFACE(ISectionProperties,pSectProp);
       GET_IFACE(IIntervals,pIntervals);
