@@ -32,7 +32,7 @@
 #include <IFace\SplittingChecks.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\Intervals.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <EAF\EAFDisplayUnits.h>
 
 #ifdef _DEBUG
@@ -643,8 +643,8 @@ std::shared_ptr<pgsSplittingCheckArtifact> pgsUHPCSplittingCheckEngineer::Check(
    Float64 ft_cri = pMaterials->GetSegmentConcreteInitialEffectiveCrackingStrength(segmentKey);
    pArtifact->SetUHPCDesignTensileStrength(ft_cri);
 
-   GET_IFACE(IAllowableConcreteStress, pAllowable);
-   Float64 gamma_u = pAllowable->GetAllowableUHPCTensionStressLimitCoefficient(segmentKey);
+   GET_IFACE(IConcreteStressLimits, pLimits);
+   Float64 gamma_u = pLimits->GetUHPCTensionStressLimitCoefficient(segmentKey);
 
    GET_IFACE(IGirder, pGdr);
    for (int i = 0; i < 2; i++)
@@ -699,8 +699,8 @@ void pgsUHPCSplittingCheckEngineer::ReportResistance(rptParagraph* pPara, IEAFDi
 
    const auto& segmentKey = pArtifact->GetSegmentKey();
 
-   GET_IFACE(IAllowableConcreteStress, pAllowable);
-   Float64 gamma_u = pAllowable->GetAllowableUHPCTensionStressLimitCoefficient(segmentKey);
+   GET_IFACE(IConcreteStressLimits, pLimits);
+   Float64 gamma_u = pLimits->GetUHPCTensionStressLimitCoefficient(segmentKey);
 
    (*pPara) << strSplittingType << _T(" Resistance: ") << Sub2(_T("P"), _T("r")) << _T(" = ") << RPT_STRESS(_T("s")) << Sub2(_T("A"), _T("s")) << _T(" + ") << Sub2(symbol(gamma),_T("u")) << RPT_STRESS(_T("t,cri")) << Sub2(_T("b"),_T("v")) << _T("h/") << scalar.SetValue(pArtifact->GetSplittingZoneLengthFactor());
    (*pPara) << _T(" = ");

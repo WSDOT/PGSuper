@@ -24,7 +24,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <IFace\PointOfInterest.h>
 #include <IFace\TransverseReinforcementSpec.h>
 #include <IFace\ShearCapacity.h>

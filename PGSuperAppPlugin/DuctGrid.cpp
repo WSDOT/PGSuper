@@ -37,7 +37,7 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\BeamFactory.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <EAF\EAFDisplayUnits.h>
 
 #include <PgsExt\BridgeDescription2.h>

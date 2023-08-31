@@ -32,15 +32,15 @@ pgsPrincipalTensionSectionArtifact::pgsPrincipalTensionSectionArtifact()
    m_fcReqd = NO_AVAILABLE_CONCRETE_STRENGTH;
 }
 
-pgsPrincipalTensionSectionArtifact::pgsPrincipalTensionSectionArtifact(const pgsPointOfInterest& poi, Float64 fAllow, Float64 fmax, Float64 Yg, LPCTSTR lpszWebLocation, Float64 fcReqd)
+pgsPrincipalTensionSectionArtifact::pgsPrincipalTensionSectionArtifact(const pgsPointOfInterest& poi, Float64 fLimit, Float64 fmax, Float64 Yg, LPCTSTR lpszWebLocation, Float64 fcReqd)
 {
-   Init(poi, fAllow, fmax, Yg, lpszWebLocation, fcReqd);
+   Init(poi, fLimit, fmax, Yg, lpszWebLocation, fcReqd);
 }
 
-void pgsPrincipalTensionSectionArtifact::Init(const pgsPointOfInterest& poi, Float64 fAllow, Float64 fmax, Float64 Yg, LPCTSTR lpszWebLocation, Float64 fcReqd)
+void pgsPrincipalTensionSectionArtifact::Init(const pgsPointOfInterest& poi, Float64 fLimit, Float64 fmax, Float64 Yg, LPCTSTR lpszWebLocation, Float64 fcReqd)
 {
    m_Poi = poi;
-   m_StressLimit = fAllow;
+   m_StressLimit = fLimit;
    m_fmax = fmax;
    m_Yg = Yg;
    m_strWebLocation = lpszWebLocation;

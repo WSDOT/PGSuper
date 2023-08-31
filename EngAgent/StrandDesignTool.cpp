@@ -24,7 +24,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <IFace\PointOfInterest.h>
 #include <IFace\Intervals.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -2025,7 +2025,7 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
 
    ConcStrengthResultType result = ConcSuccess;
 
-   GET_IFACE(IAllowableConcreteStress,pAllowStress);
+   GET_IFACE(IConcreteStressLimits,pAllowStress);
    pgsPointOfInterest dummyPOI(m_SegmentKey,0.0);
    if ( task.stressType == pgsTypes::Compression )
    {

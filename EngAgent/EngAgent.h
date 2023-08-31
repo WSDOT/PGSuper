@@ -34,7 +34,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Alignment.h>
 #include <IFace\AnalysisResults.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <IFace\TransverseReinforcementSpec.h>
 #include <IFace\PointOfInterest.h>
 #include <IFace\GirderHandling.h>

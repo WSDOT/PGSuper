@@ -26,7 +26,7 @@
 
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <IFace\Project.h>
 
 #ifdef _DEBUG
@@ -155,7 +155,7 @@ void CPrincipalTensionStressCheckTable::BuildTable(rptChapter* pChapter, IBroker
    const auto* pSpecEntry = pLib->GetSpecEntry(specName.c_str());
    const auto& principal_tension_stress_criteria = pSpecEntry->GetPrincipalTensionStressCriteria();
 
-   GET_IFACE2(pBroker, IAllowableConcreteStress, pAllowables);
+   GET_IFACE2(pBroker, IConcreteStressLimits, pLimits);
 
    IntervalIndexType liveLoadInterval = pIntervals->GetLiveLoadInterval();
 
@@ -214,13 +214,13 @@ void CPrincipalTensionStressCheckTable::BuildTable(rptChapter* pChapter, IBroker
       Float64 fc = pMaterials->GetSegmentDesignFc(segmentKey, intervalIdx);
       *pSegmentPara << RPT_FC << _T(" = ") << stress_u.SetValue(fc) << rptNewLine;
 
-      pAllowables->ReportAllowableSegmentPrincipalWebTensionStress(segmentKey, pSegmentPara, pDisplayUnits);
+      pLimits->ReportSegmentConcreteWebPrincipalTensionStressLimit(segmentKey, pSegmentPara, pDisplayUnits);
 
       Float64 fc_reqd = pArtifact->GetRequiredSegmentConcreteStrength();
       
       GET_IFACE2(pBroker, IMaterials, pMaterials);
-      GET_IFACE2(pBroker, IAllowableConcreteStress, pAllowable);
-      auto name = pAllowable->GetAllowableStressParameterName(pgsTypes::Tension, pMaterials->GetSegmentConcreteType(segmentKey));
+      GET_IFACE2(pBroker, IConcreteStressLimits, pLimits);
+      auto name = pLimits->GetConcreteStressLimitParameterName(pgsTypes::Tension, pMaterials->GetSegmentConcreteType(segmentKey));
 
       if (0 < fc_reqd)
       {
@@ -245,7 +245,7 @@ void CPrincipalTensionStressCheckTable::BuildTable(rptChapter* pChapter, IBroker
          Float64 fc = pMaterials->GetClosureJointDesignFc(closureKey, intervalIdx);
          *pClosurePara << RPT_FC << _T(" = ") << stress_u.SetValue(fc) << rptNewLine;
 
-         pAllowables->ReportAllowableClosureJointPrincipalWebTensionStress(closureKey, pClosurePara, pDisplayUnits);
+         pLimits->ReportClosureJointConcreteWebPrincipalTensionStressLimit(closureKey, pClosurePara, pDisplayUnits);
 
          Float64 fc_reqd = pArtifact->GetRequiredClosureJointConcreteStrength();
          if (0 < fc_reqd)
@@ -306,8 +306,8 @@ void CPrincipalTensionStressCheckTable::BuildTable(rptChapter* pChapter, IBroker
             (*pTable)(row, col) << RPT_FAIL;
          }
 
-         Float64 fAllow = artifact.GetStressLimit();
-         (*pTable)(row, col) << rptNewLine << _T("(") << cap_demand.SetValue(fAllow, f_max, bPassed) << _T(")");
+         Float64 fLimit = artifact.GetStressLimit();
+         (*pTable)(row, col) << rptNewLine << _T("(") << cap_demand.SetValue(fLimit, f_max, bPassed) << _T(")");
          col++;
 
          row++;

@@ -51,7 +51,7 @@ struct InitialDesignParameters
    pgsTypes::StressLocation stress_location;
    Float64 fmin;
    Float64 fmax;
-   Float64 fAllow;
+   Float64 fLimit;
    Float64 fpre;
    Float64 Preqd;
    StrandIndexType Np;

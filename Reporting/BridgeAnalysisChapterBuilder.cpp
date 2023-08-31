@@ -57,7 +57,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 
 
 #ifdef _DEBUG

@@ -27,7 +27,7 @@
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
 #include <IFace\Bridge.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\DocumentType.h>
 

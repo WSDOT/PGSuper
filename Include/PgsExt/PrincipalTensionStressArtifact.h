@@ -32,9 +32,9 @@ class PGSEXTCLASS pgsPrincipalTensionSectionArtifact
 {
 public:
    pgsPrincipalTensionSectionArtifact();
-   pgsPrincipalTensionSectionArtifact(const pgsPointOfInterest& poi, Float64 fAllow, Float64 fmax, Float64 Yg, LPCTSTR lpszWebLocation, Float64 fcReqd);
+   pgsPrincipalTensionSectionArtifact(const pgsPointOfInterest& poi, Float64 fLimit, Float64 fmax, Float64 Yg, LPCTSTR lpszWebLocation, Float64 fcReqd);
 
-   void Init(const pgsPointOfInterest& poi, Float64 fAllow, Float64 fmax, Float64 Yg, LPCTSTR lpszWebLocation, Float64 fcReqd);
+   void Init(const pgsPointOfInterest& poi, Float64 fLimit, Float64 fmax, Float64 Yg, LPCTSTR lpszWebLocation, Float64 fcReqd);
 
    const pgsPointOfInterest& GetPointOfInterest() const;
    void GetfmaxDetails(Float64* pFmax, Float64* pYg, std::_tstring* pstrWebLocation) const;

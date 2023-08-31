@@ -24,7 +24,7 @@
 #define INCLUDED_ENGAGENT_H_
 
 
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <IFace\TransverseReinforcementSpec.h>
 #include <IFace\PrecastIGirderDetailsSpec.h>
 #include <IFace\GirderHandlingSpecCriteria.h>

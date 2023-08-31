@@ -31,7 +31,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

@@ -37,7 +37,7 @@
 #include <IFace\ResistanceFactors.h>
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 
 #include <PgsExt\statusitem.h>
 #include <PgsExt\GirderLabel.h>
@@ -958,8 +958,8 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
             {
                // for positive moment, assume reinforcement limit for strands
                pgsTypes::StrandType strandType = pgsTypes::Straight;
-               GET_IFACE(IAllowableStrandStress, pAllow);
-               Float64 fsl = pAllow->GetAllowableAfterLosses(segmentKey, strandType);
+               GET_IFACE(IStrandStressLimit, pAllow);
+               Float64 fsl = pAllow->GetStrandStressLimitAfterLosses(segmentKey, strandType);
                
                // Need to determine the strain associated with this level of stress
                // using the stress-strain model. For grade 270 strand, fsl = 0.8fy = 194.4 ksi
@@ -2012,7 +2012,7 @@ Float64 pgsMomentCapacityEngineer::GetNonCompositeDeadLoadMoment(IntervalIndexTy
    return Mdnc;
 }
 
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment,const GDRCONFIG* pConfig) const
 {
    GET_IFACE(IMaterials,pMaterial);
@@ -2039,8 +2039,8 @@ Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(IntervalIndexType interva
       if (pMaterial->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC)
       {
          // PCI UHPC uses the tensile stress limit at service limit state, ft, instead of modulus of rupture, fr
-         GET_IFACE(IAllowableConcreteStress, pAllowables);
-         fr = pAllowables->GetAllowableTensionStress(poi, pgsTypes::BottomGirder, StressCheckTask(intervalIdx, pgsTypes::ServiceIII, pgsTypes::Tension), true, true);
+         GET_IFACE(IConcreteStressLimits, pLimits);
+         fr = pLimits->GetConcreteTensionStressLimit(poi, pgsTypes::BottomGirder, StressCheckTask(intervalIdx, pgsTypes::ServiceIII, pgsTypes::Tension), true, true);
       }
       else
       {
@@ -2418,7 +2418,7 @@ void pgsMomentCapacityEngineer::CreateGirderMaterial(IntervalIndexType intervalI
          matGirder->put_fc(pMaterial->GetSegmentDesignFc(segmentKey, intervalIdx));
       }
 
-      GET_IFACE(IAllowableConcreteStress,pAllowables);
+      GET_IFACE(IConcreteStressLimits,pLimits);
 
       const auto& pConcrete = pMaterial->GetSegmentConcrete(segmentKey);
       const auto* pLRFDConcrete = dynamic_cast<const WBFL::LRFD::LRFDConcreteBase*>(pConcrete.get());
@@ -2432,7 +2432,7 @@ void pgsMomentCapacityEngineer::CreateGirderMaterial(IntervalIndexType intervalI
       matGirder->put_ftcr(pLRFDConcrete->GetDesignEffectiveCrackingStrength());
       matGirder->put_ftloc(pLRFDConcrete->GetCrackLocalizationStrength());
       matGirder->put_etloc(pLRFDConcrete->GetCrackLocalizationStrain());
-      matGirder->put_gamma(pAllowables->GetAllowableUHPCTensionStressLimitCoefficient(segmentKey));
+      matGirder->put_gamma(pLimits->GetUHPCTensionStressLimitCoefficient(segmentKey));
 
 
       matGirder->QueryInterface(ppSS);

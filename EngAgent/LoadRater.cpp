@@ -220,7 +220,7 @@ void pgsLoadRater::FlexureRating(const CGirderKey& girderKey, const PoiList& vPo
 
       ASSIGN_IFACE(ICombinedForces, stressRatingParams.pCombinedForces);
       ASSIGN_IFACE(IPretensionStresses, stressRatingParams.pPrestress);
-      ASSIGN_IFACE(IAllowableConcreteStress, stressRatingParams.pAllowables);
+      ASSIGN_IFACE(IConcreteStressLimits, stressRatingParams.pLimits);
       stressRatingParams.pRatingSpec = pRatingSpec;
       stressRatingParams.pProductForces = momentRatingParams.pProductForces;
       stressRatingParams.pProductLoads = pProductLoads;
@@ -1016,7 +1016,7 @@ void pgsLoadRater::StressRating(const pgsPointOfInterest& poi, const StressRatin
 
       // do this in the loop because the vector of POI can be for multiple segments
       Float64 condition_factor = ratingParams.pRatingSpec->GetGirderConditionFactor(poi.GetSegmentKey());
-      Float64 fr = ratingParams.pAllowables->GetAllowableTensionStress(ratingParams.ratingType, poi, stressLocation);
+      Float64 fr = ratingParams.pLimits->GetConcreteTensionStressLimit(ratingParams.ratingType, poi, stressLocation);
 
       VehicleIndexType truck_index = ratingParams.vehicleIdx;
       if (ratingParams.vehicleIdx == INVALID_INDEX)

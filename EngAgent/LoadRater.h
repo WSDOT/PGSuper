@@ -29,7 +29,7 @@
 #include <IFace\Intervals.h>
 #include <IFace\DistributionFactors.h>
 #include <IFace\RatingSpecification.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 
 class pgsLoadRater
 {
@@ -141,7 +141,7 @@ protected:
       CComPtr<ICombinedForces> pCombinedForces;
       CComPtr<IPretensionStresses> pPrestress;
       CComPtr<IRatingSpecification> pRatingSpec;
-      CComPtr<IAllowableConcreteStress> pAllowables;
+      CComPtr<IConcreteStressLimits> pLimits;
       CComPtr<IProductForces> pProductForces;
       CComPtr<IProductLoads> pProductLoads;
    };

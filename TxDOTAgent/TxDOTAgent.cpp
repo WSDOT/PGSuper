@@ -73,7 +73,7 @@
 #include <IFace\UpdateTemplates.h>
 #include <IFace\Test1250.h>
 #include <IFace\GirderHandling.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <IFace\EditByUI.h>
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>

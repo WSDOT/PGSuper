@@ -34,7 +34,7 @@
 #include <IFace\ResistanceFactors.h>
 #include <IFace\EditByUI.h>
 #include <IFace\Intervals.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <LRFD\Rebar.h>
 
 #include <PsgLib\SpecLibraryEntry.h>
@@ -1178,8 +1178,8 @@ bool pgsShearCapacityEngineer::ComputeVcc(const pgsPointOfInterest& poi, SHEARCA
          {
             GET_IFACE(IIntervals, pIntervals);
             IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-            GET_IFACE(IAllowableConcreteStress, pAllowables);
-            Float64 ft = pAllowables->GetAllowableTensionStress(poi, pgsTypes::BottomGirder, StressCheckTask(liveLoadIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension), false, true);
+            GET_IFACE(IConcreteStressLimits, pLimits);
+            Float64 ft = pLimits->GetConcreteTensionStressLimit(poi, pgsTypes::BottomGirder, StressCheckTask(liveLoadIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension), false, true);
             pscd->FiberStress = ft;
 
             Float64 cot_theta = IsEqual(Theta,PI_OVER_2) ? 0 : (1 / tan(Theta));
@@ -1324,8 +1324,8 @@ bool pgsShearCapacityEngineer::ComputeVuhpc(const pgsPointOfInterest& poi, SHEAR
    if (WBFL::LRFD::UHPCShear::ComputeShearResistanceParameters(&data))
    {
       // compute nominal capacity
-      GET_IFACE(IAllowableConcreteStress, pAllowable);
-      Float64 gamma_u = pAllowable->GetAllowableUHPCTensionStressLimitCoefficient(poi.GetSegmentKey());
+      GET_IFACE(IConcreteStressLimits, pLimits);
+      Float64 gamma_u = pLimits->GetUHPCTensionStressLimitCoefficient(poi.GetSegmentKey());
       Float64 theta = WBFL::Units::ConvertFromSysUnits(data.Theta, WBFL::Units::Measure::Radian); // need angle in radians
       Float64 cot_theta = 1 / tan(theta);
 

@@ -30,7 +30,7 @@
     <ClInclude Include="..\Include\IFace\ResistanceFactors.h">
       <Filter>IFace</Filter>
     </ClInclude>
-    <ClInclude Include="..\Include\IFace\Allowables.h">
+    <ClInclude Include="..\Include\IFace\Limits.h">
       <Filter>IFace</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\IFace\GirderHandlingSpecCriteria.h">

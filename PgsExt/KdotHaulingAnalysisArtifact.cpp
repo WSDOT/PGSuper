@@ -69,7 +69,7 @@ m_At(0.0),
 m_T(0.0),
 m_AsReqd(0.0),
 m_AsProvd(0.0),
-m_fAllow(0.0)
+m_fLimit(0.0)
 {
 }
 
@@ -130,9 +130,9 @@ bool pgsKdotHaulingStressAnalysisArtifact::Passed() const
 }
 
 //======================== ACCESS     =======================================
-void pgsKdotHaulingStressAnalysisArtifact::SetCompressiveCapacity(Float64 fAllowable)
+void pgsKdotHaulingStressAnalysisArtifact::SetCompressiveCapacity(Float64 fLimit)
 {
-   m_AllowableCompression = fAllowable;
+   m_AllowableCompression = fLimit;
 }
 
 Float64 pgsKdotHaulingStressAnalysisArtifact::GetCompressiveCapacity() const
@@ -209,29 +209,29 @@ void pgsKdotHaulingStressAnalysisArtifact::GetConcreteTensileStress(Float64* fTo
 {
    *fTop = m_TopFiberStress;
    *fBottom = m_BottomFiberStress;
-   *Capacity = m_fAllow;
+   *Capacity = m_fLimit;
 }
 
 void pgsKdotHaulingStressAnalysisArtifact::SetAlternativeTensileStressParameters(Float64 Yna,   Float64 At,   Float64 T,
-                                                                             Float64 AsProvd,  Float64 AsReqd,  Float64 fAllow)
+                                                                             Float64 AsProvd,  Float64 AsReqd,  Float64 fLimit)
 {
    m_Yna = Yna;
    m_At  = At;
    m_T   = T;
    m_AsReqd  = AsReqd;
    m_AsProvd = AsProvd;
-   m_fAllow  = fAllow;
+   m_fLimit  = fLimit;
 }
 
 void pgsKdotHaulingStressAnalysisArtifact::GetAlternativeTensileStressParameters(Float64* Yna,   Float64* At,   Float64* T,  
-                                                                             Float64* AsProvd,  Float64* AsReqd,  Float64* fAllow) const
+                                                                             Float64* AsProvd,  Float64* AsReqd,  Float64* fLimit) const
 {
    *Yna   = m_Yna;
    *At    = m_At;
    *T     = m_T;
    *AsReqd   = m_AsReqd;
    *AsProvd  = m_AsProvd;
-   *fAllow   = m_fAllow;
+   *fLimit   = m_fLimit;
 }
 
 void pgsKdotHaulingStressAnalysisArtifact::SetRequiredConcreteStrength(Float64 fciComp,Float64 fciTensNoRebar,Float64 fciTensWithRebar)
@@ -271,7 +271,7 @@ void pgsKdotHaulingStressAnalysisArtifact::MakeCopy(const pgsKdotHaulingStressAn
    m_T       = rOther.m_T;
    m_AsReqd  = rOther.m_AsReqd;
    m_AsProvd = rOther.m_AsProvd;
-   m_fAllow  = rOther.m_fAllow;
+   m_fLimit  = rOther.m_fLimit;
 
    m_AllowableCompression = rOther.m_AllowableCompression;
    m_ReqdCompConcreteStrength = rOther.m_ReqdCompConcreteStrength;
@@ -929,8 +929,8 @@ void pgsKdotHaulingAnalysisArtifact::BuildRebarTable(IBroker* pBroker,rptChapter
          continue;
       }
 
-      Float64 Yna, At, T, AsProvd, AsReqd, fAllow;
-      pStressArtifact->GetAlternativeTensileStressParameters(&Yna, &At, &T, &AsProvd, &AsReqd, &fAllow);
+      Float64 Yna, At, T, AsProvd, AsReqd, fLimit;
+      pStressArtifact->GetAlternativeTensileStressParameters(&Yna, &At, &T, &AsProvd, &AsReqd, &fLimit);
 
       (*pTable)(row,0) << location.SetValue( POI_HAUL_SEGMENT, poi );
 
@@ -969,8 +969,8 @@ void pgsKdotHaulingAnalysisArtifact::BuildRebarTable(IBroker* pBroker,rptChapter
          (*pTable)(row,5) << force.SetValue(T);
          (*pTable)(row,6) << area.SetValue(AsProvd);
          (*pTable)(row,7) << area.SetValue(AsReqd);
-         (*pTable)(row,8) << stress.SetValue(fAllow);
-         (*pTable)(row,9) <<_T("(")<< cap_demand.SetValue(fAllow,fTens,true)<<_T(")");
+         (*pTable)(row,8) << stress.SetValue(fLimit);
+         (*pTable)(row,9) <<_T("(")<< cap_demand.SetValue(fLimit,fTens,true)<<_T(")");
       }
 
       row++;

@@ -32,7 +32,7 @@
 
 #include <IFace\Artifact.h>
 #include <IFace\AnalysisResults.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <IFace\Intervals.h>
 
 #ifdef _DEBUG
@@ -388,7 +388,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
       // build model
       IBroker* pBroker = this->m_pTxDOTOptionalDesignDoc->GetUpdatedBroker();
 
-      GET_IFACE2(pBroker,IAllowableConcreteStress, pAllowable );
+      GET_IFACE2(pBroker,IConcreteStressLimits, pLimits );
 
       GET_IFACE2(pBroker,IIntervals,pIntervals);
       IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(origSegmentKey);
@@ -535,13 +535,13 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
             if (! (intervals[icase] == liveLoadIntervalIdx && ststype[icase] == pgsTypes::Tension)) // don't consider top tension at final
             {
                bIsInPTZ = pFabrStressArtifact->IsInPrecompressedTensileZone(pgsTypes::TopGirder);
-               fc_reqd = pAllowable->ComputeRequiredConcreteStrength(poi,pgsTypes::TopGirder,fTop,task,false/*inadequate rebar*/,bIsInPTZ);
+               fc_reqd = pLimits->ComputeRequiredConcreteStrength(poi,pgsTypes::TopGirder,fTop,task,false/*inadequate rebar*/,bIsInPTZ);
                pFabrStressArtifact->SetRequiredConcreteStrength(ststype[icase],pgsTypes::TopGirder,fc_reqd);
             }
 
             // bottom
             bIsInPTZ = pFabrStressArtifact->IsInPrecompressedTensileZone(pgsTypes::BottomGirder);
-            fc_reqd = pAllowable->ComputeRequiredConcreteStrength(poi,pgsTypes::BottomGirder,fBot,task,false/*inadequate rebar*/,bIsInPTZ);
+            fc_reqd = pLimits->ComputeRequiredConcreteStrength(poi,pgsTypes::BottomGirder,fBot,task,false/*inadequate rebar*/,bIsInPTZ);
             pFabrStressArtifact->SetRequiredConcreteStrength(ststype[icase],pgsTypes::BottomGirder,fc_reqd);
          }
       }

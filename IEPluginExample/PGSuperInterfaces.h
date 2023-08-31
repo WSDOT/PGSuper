@@ -31,7 +31,7 @@
 
 #include <IFace\Tools.h> // for GET_IFACE
 #include <IFace\Alignment.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Artifact.h>
 #include <IFace\BeamFactory.h>

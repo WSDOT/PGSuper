@@ -27,7 +27,7 @@
 #include <IFace\Intervals.h>
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <EAF\EAFDisplayUnits.h>
 
 #include <PgsExt\PoiKey.h>

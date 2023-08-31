@@ -45,7 +45,7 @@
 #include <IFace\Project.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\RatingSpecification.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <IFace\MomentCapacity.h>
 #include <IFace\ShearCapacity.h>
 #include <IFace\Artifact.h>
@@ -2267,21 +2267,21 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx,const 
       {
          if ( graphType == graphAllowable )
          {
-            GET_IFACE(IAllowableConcreteStress,pAllowable);
+            GET_IFACE(IConcreteStressLimits,pLimits);
 
             if ( ((CAnalysisResultsGraphController*)m_pGraphController)->PlotStresses(pgsTypes::TopGirder) ||
                  ((CAnalysisResultsGraphController*)m_pGraphController)->PlotStresses(pgsTypes::BottomGirder) )
             {
-               if ( pAllowable->IsStressCheckApplicable(girderKey,StressCheckTask(intervalIdx,limitState,pgsTypes::Tension)) )
+               if ( pLimits->IsConcreteStressLimitApplicable(girderKey,StressCheckTask(intervalIdx,limitState,pgsTypes::Tension)) )
                {
-                  std::vector<Float64> t(pAllowable->GetGirderAllowableTensionStress(vPoi,StressCheckTask(intervalIdx,limitState,pgsTypes::Tension),false/*without rebar*/,false/*not in PTZ*/));
+                  std::vector<Float64> t(pLimits->GetGirderConcreteTensionStressLimit(vPoi,StressCheckTask(intervalIdx,limitState,pgsTypes::Tension),false/*without rebar*/,false/*not in PTZ*/));
                   AddGraphPoints(min_girder_capacity_series, xVals, t);
                   m_Graph.SetDataLabel(min_girder_capacity_series,strDataLabel + (strDataLabel.IsEmpty() ? _T("") : _T(" - Girder")));
                }
 
-               if ( pAllowable->IsStressCheckApplicable(girderKey,StressCheckTask(intervalIdx,limitState,pgsTypes::Compression)) )
+               if ( pLimits->IsConcreteStressLimitApplicable(girderKey,StressCheckTask(intervalIdx,limitState,pgsTypes::Compression)) )
                {
-                  std::vector<Float64> c( pAllowable->GetGirderAllowableCompressionStress(vPoi,StressCheckTask(intervalIdx,limitState,pgsTypes::Compression)) );
+                  std::vector<Float64> c( pLimits->GetGirderConcreteCompressionStressLimit(vPoi,StressCheckTask(intervalIdx,limitState,pgsTypes::Compression)) );
                   AddGraphPoints(max_girder_capacity_series, xVals, c);
                }
             }
@@ -2289,16 +2289,16 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx,const 
             if ( ((CAnalysisResultsGraphController*)m_pGraphController)->PlotStresses(pgsTypes::TopDeck) ||
                  ((CAnalysisResultsGraphController*)m_pGraphController)->PlotStresses(pgsTypes::BottomDeck) )
             {
-               if ( pAllowable->IsStressCheckApplicable(girderKey,StressCheckTask(intervalIdx,limitState,pgsTypes::Tension)) )
+               if ( pLimits->IsConcreteStressLimitApplicable(girderKey,StressCheckTask(intervalIdx,limitState,pgsTypes::Tension)) )
                {
-                  std::vector<Float64> t(pAllowable->GetDeckAllowableTensionStress(vPoi,StressCheckTask(intervalIdx,limitState,pgsTypes::Tension),false/*without rebar*/));
+                  std::vector<Float64> t(pLimits->GetDeckConcreteTensionStressLimit(vPoi,StressCheckTask(intervalIdx,limitState,pgsTypes::Tension),false/*without rebar*/));
                   AddGraphPoints(min_deck_capacity_series, xVals, t);
                   m_Graph.SetDataLabel(min_deck_capacity_series,strDataLabel + (strDataLabel.IsEmpty() ? _T("") : _T(" - Deck")));
                }
 
-               if ( pAllowable->IsStressCheckApplicable(girderKey,StressCheckTask(intervalIdx,limitState,pgsTypes::Compression)) )
+               if ( pLimits->IsConcreteStressLimitApplicable(girderKey,StressCheckTask(intervalIdx,limitState,pgsTypes::Compression)) )
                {
-                  std::vector<Float64> c( pAllowable->GetDeckAllowableCompressionStress(vPoi,StressCheckTask(intervalIdx,limitState,pgsTypes::Compression)) );
+                  std::vector<Float64> c( pLimits->GetDeckConcreteCompressionStressLimit(vPoi,StressCheckTask(intervalIdx,limitState,pgsTypes::Compression)) );
                   AddGraphPoints(max_deck_capacity_series, xVals, c);
                }
             }

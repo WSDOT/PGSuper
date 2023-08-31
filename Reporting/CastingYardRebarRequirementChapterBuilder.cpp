@@ -31,7 +31,7 @@
 #include <IFace\Artifact.h>
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <IFace\DocumentType.h>
 
 #ifdef _DEBUG
@@ -80,7 +80,7 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(const std::shared_
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
-   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowStress);
+   GET_IFACE2(pBroker,IConcreteStressLimits,pAllowStress);
 
    bool bSimpleTable = true;
    if (pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing())
@@ -154,7 +154,7 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(const std::shared_
             // Service III limit state after live load is applied
             pgsTypes::LimitState limitState = (liveLoadIntervalIdx <= intervalIdx ? pgsTypes::ServiceIII : pgsTypes::ServiceI);
 
-            bool bIsApplicable = pAllowStress->IsStressCheckApplicable(girderKey,StressCheckTask(intervalIdx,limitState,pgsTypes::Tension));
+            bool bIsApplicable = pAllowStress->IsConcreteStressLimitApplicable(girderKey,StressCheckTask(intervalIdx,limitState,pgsTypes::Tension));
             if ( bIsApplicable )
             {
                pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());

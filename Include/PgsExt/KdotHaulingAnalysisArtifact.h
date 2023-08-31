@@ -110,16 +110,16 @@ public:
    Float64 GetMaximumConcreteTensileStress() const;
 
    void SetAlternativeTensileStressParameters(Float64 Yna,   Float64 At,   Float64 T,  
-                                              Float64 AsProvd,  Float64 AsReqd,  Float64 fAllow);
+                                              Float64 AsProvd,  Float64 AsReqd,  Float64 fLimit);
 
    void GetAlternativeTensileStressParameters(Float64* Yna,   Float64* At,   Float64* T,  
-                                              Float64* AsProvd,  Float64* AsReqd,  Float64* fAllow) const;
+                                              Float64* AsProvd,  Float64* AsReqd,  Float64* fLimit) const;
 
    // Note there is only one capacity. This assumes that the entire section cannot be in tension, so only one capacity 
    // is required (for the tension side, or none if both are in compression).
    void GetConcreteTensileStress(Float64* fTop, Float64* fBottom, Float64* pCapacity) const;
 
-   void SetCompressiveCapacity(Float64 fAllowableCompression);
+   void SetCompressiveCapacity(Float64 fLimitCompression);
    Float64 GetCompressiveCapacity() const;
 
    void SetRequiredConcreteStrength(Float64 fciComp,Float64 fciTensNoRebar,Float64 fciTensWithRebar);
@@ -164,7 +164,7 @@ private:
    Float64 m_T;
    Float64 m_AsReqd;
    Float64 m_AsProvd;
-   Float64 m_fAllow;
+   Float64 m_fLimit;
 
    Float64 m_AllowableCompression;
 

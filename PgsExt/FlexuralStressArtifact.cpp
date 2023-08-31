@@ -50,7 +50,7 @@ pgsFlexuralStressArtifact::pgsFlexuralStressArtifact()
       m_fPosttension[stressLocation]  = 0.0;
       m_fExternal[stressLocation]     = 0.0;
       m_fDemand[stressLocation]       = 0.0;
-      m_fAllowable[stressLocation]    = 0.0;
+      m_fLimit[stressLocation]    = 0.0;
       m_bIsInPTZ[stressLocation]      = false;
 
       m_fAltAllowableStress[i]           = 0.0;
@@ -81,7 +81,7 @@ m_Poi(poi),m_Task(task)
       m_fPosttension[stressLocation]  = 0.0;
       m_fExternal[stressLocation]     = 0.0;
       m_fDemand[stressLocation]       = 0.0;
-      m_fAllowable[stressLocation]    = 0.0;
+      m_fLimit[stressLocation]    = 0.0;
       m_bIsInPTZ[stressLocation]      = false;
 
       m_fAltAllowableStress[i]           = 0.0;
@@ -206,14 +206,14 @@ bool pgsFlexuralStressArtifact::IsInPrecompressedTensileZone(pgsTypes::StressLoc
    return m_bIsInPTZ[stressLocation];
 }
 
-void pgsFlexuralStressArtifact::SetCapacity(pgsTypes::StressLocation stressLocation,Float64 fAllowable)
+void pgsFlexuralStressArtifact::SetCapacity(pgsTypes::StressLocation stressLocation,Float64 fLimit)
 {
-   m_fAllowable[stressLocation] = fAllowable;
+   m_fLimit[stressLocation] = fLimit;
 }
 
 Float64 pgsFlexuralStressArtifact::GetCapacity(pgsTypes::StressLocation stressLocation) const
 {
-   return m_fAllowable[stressLocation];
+   return m_fLimit[stressLocation];
 }
 
 
@@ -290,7 +290,7 @@ bool pgsFlexuralStressArtifact::StressedPassed(pgsTypes::StressLocation stressLo
    {
       if ( IsTopStressLocation(stressLocation) && m_bIsApplicable[stressLocation] )
       {
-         if ( (fStress < m_fAllowable[stressLocation] && !IsEqual(m_fAllowable[stressLocation],fStress,0.001)) )
+         if ( (fStress < m_fLimit[stressLocation] && !IsEqual(m_fLimit[stressLocation],fStress,0.001)) )
          {
             return false;
          }
@@ -298,7 +298,7 @@ bool pgsFlexuralStressArtifact::StressedPassed(pgsTypes::StressLocation stressLo
 
       if ( IsBottomStressLocation(stressLocation) && m_bIsApplicable[stressLocation] )
       {
-         if ( (fStress < m_fAllowable[stressLocation] && !IsEqual(m_fAllowable[stressLocation],fStress,0.001)) )
+         if ( (fStress < m_fLimit[stressLocation] && !IsEqual(m_fLimit[stressLocation],fStress,0.001)) )
          {
             return false;
          }
@@ -341,7 +341,7 @@ bool pgsFlexuralStressArtifact::TensionPassedWithoutRebar(Float64 fTens,pgsTypes
 {
    if ( m_bIsApplicable[stressLocation] )
    {
-      if ( ( m_fAllowable[stressLocation] < fTens && !IsEqual(m_fAllowable[stressLocation],fTens,0.001)) )
+      if ( ( m_fLimit[stressLocation] < fTens && !IsEqual(m_fLimit[stressLocation],fTens,0.001)) )
       {
          return false;
       }
@@ -497,7 +497,7 @@ Float64 pgsFlexuralStressArtifact::GetCDRatio(pgsTypes::StressLocation stressLoc
    }
    else
    {
-      c = m_fAllowable[stressLocation];
+      c = m_fLimit[stressLocation];
    }
 
    return GetCDRatio(c,d);
@@ -517,7 +517,7 @@ void pgsFlexuralStressArtifact::MakeCopy(const pgsFlexuralStressArtifact& rOther
       m_fPosttension[stressLocation]  = rOther.m_fPosttension[stressLocation];
       m_fExternal[stressLocation]     = rOther.m_fExternal[stressLocation];
       m_fDemand[stressLocation]       = rOther.m_fDemand[stressLocation];
-      m_fAllowable[stressLocation]    = rOther.m_fAllowable[stressLocation];
+      m_fLimit[stressLocation]    = rOther.m_fLimit[stressLocation];
       m_bIsInPTZ[stressLocation]      = rOther.m_bIsInPTZ[stressLocation];
 
       m_AltTensileStressRequirements[stressLocation] = rOther.m_AltTensileStressRequirements[stressLocation];

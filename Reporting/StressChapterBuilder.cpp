@@ -37,7 +37,7 @@
 #include <IFace\RatingSpecification.h>
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 
 #include <psgLib\SpecLibraryEntry.h>
 

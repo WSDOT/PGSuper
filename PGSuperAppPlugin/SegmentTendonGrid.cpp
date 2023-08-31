@@ -35,7 +35,7 @@
 #include <GenericBridge\Helpers.h>
 
 #include <IFace\Bridge.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <EAF\EAFDisplayUnits.h>
 
 #include <PgsExt\SplicedGirderData.h>

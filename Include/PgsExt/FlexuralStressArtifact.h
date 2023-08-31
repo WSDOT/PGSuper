@@ -112,7 +112,7 @@ public:
    bool IsInPrecompressedTensileZone(pgsTypes::StressLocation stressLocation) const;
 
    // Set/Get the allowable stress "capacity"
-   void SetCapacity(pgsTypes::StressLocation stressLocation,Float64 fAllowable);
+   void SetCapacity(pgsTypes::StressLocation stressLocation,Float64 fLimit);
    Float64 GetCapacity(pgsTypes::StressLocation stressLocation) const;
 
    void SetRequiredConcreteStrength(pgsTypes::StressType stressType,pgsTypes::StressLocation stressLocation,Float64 fcReqd);
@@ -151,7 +151,7 @@ private:
    std::array<Float64,4> m_fExternal;     // Stresses caused by externally applied loads
    std::array<bool,4>    m_bIsInPTZ;      // Is the location in the Precompressed Tensile Zone
    std::array<Float64,4> m_fDemand;       // Total stress demand
-   std::array<Float64,4> m_fAllowable;    // Allowable stresses
+   std::array<Float64,4> m_fLimit;    // Allowable stresses
 
    // Alternative tensile stress parameters
    // access array with pgsTypes::StressLocation constant

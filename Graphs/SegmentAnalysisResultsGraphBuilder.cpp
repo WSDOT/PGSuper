@@ -45,7 +45,7 @@
 #include <IFace\Project.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\RatingSpecification.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <IFace\MomentCapacity.h>
 #include <IFace\ShearCapacity.h>
 #include <IFace\Artifact.h>
@@ -1199,22 +1199,22 @@ void CSegmentAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx
    {
       if (graphType == graphAllowable)
       {
-         GET_IFACE(IAllowableConcreteStress,pAllowable);
+         GET_IFACE(IConcreteStressLimits,pLimits);
          const CSegmentKey& segmentKey(m_pGraphController->GetSegmentKey());
 
          if (((CSegmentAnalysisResultsGraphController*)m_pGraphController)->PlotStresses(pgsTypes::TopGirder) ||
             ((CSegmentAnalysisResultsGraphController*)m_pGraphController)->PlotStresses(pgsTypes::BottomGirder))
          {
-            if (pAllowable->IsStressCheckApplicable(segmentKey,StressCheckTask(intervalIdx,limitState,pgsTypes::Tension)))
+            if (pLimits->IsConcreteStressLimitApplicable(segmentKey,StressCheckTask(intervalIdx,limitState,pgsTypes::Tension)))
             {
-               std::vector<Float64> t(pAllowable->GetGirderAllowableTensionStress(vPoi,StressCheckTask(intervalIdx,limitState,pgsTypes::Tension),false/*without rebar*/,false/*not in PTZ*/));
+               std::vector<Float64> t(pLimits->GetGirderConcreteTensionStressLimit(vPoi,StressCheckTask(intervalIdx,limitState,pgsTypes::Tension),false/*without rebar*/,false/*not in PTZ*/));
                AddGraphPoints(min_girder_capacity_series,xVals,t);
                m_Graph.SetDataLabel(min_girder_capacity_series,strDataLabel + (strDataLabel.IsEmpty() ? _T("") : _T(" - Girder")));
             }
 
-            if (pAllowable->IsStressCheckApplicable(segmentKey,StressCheckTask(intervalIdx,limitState,pgsTypes::Compression)))
+            if (pLimits->IsConcreteStressLimitApplicable(segmentKey,StressCheckTask(intervalIdx,limitState,pgsTypes::Compression)))
             {
-               std::vector<Float64> c(pAllowable->GetGirderAllowableCompressionStress(vPoi,StressCheckTask(intervalIdx,limitState,pgsTypes::Compression)));
+               std::vector<Float64> c(pLimits->GetGirderConcreteCompressionStressLimit(vPoi,StressCheckTask(intervalIdx,limitState,pgsTypes::Compression)));
                AddGraphPoints(max_girder_capacity_series,xVals,c);
             }
          }

@@ -77,7 +77,7 @@
 #include <IFace\MomentCapacity.h>
 #include <IFace\AgeAdjustedMaterial.h>
 #include <IFace\DocumentType.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 
 #include <PgsExt\DesignConfigUtil.h>
 

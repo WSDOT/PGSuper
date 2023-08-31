@@ -80,7 +80,7 @@ Float64 pgsAlternativeTensileStressCalculator::GetBarStressLimit() const
 Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequirements(
                                         const pgsPointOfInterest& poi, const GDRCONFIG* pConfig,
                                         Float64 fTop, Float64 fBot, 
-                                        Float64 fAllowableWithoutRebar, Float64 fAllowableWithRebar,
+                                        Float64 fLimitWithoutRebar, Float64 fLimitWithRebar,
                                         Float64 *pYna, Float64 *pAreaTens, Float64 *pT, 
                                         Float64 *pAsProvd, Float64 *pAsReqd, bool* pIsAdequateRebar)
 {
@@ -384,18 +384,18 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
    }
 
    // Now we can determine which allowable we can use
-   Float64 fAllowable;
+   Float64 fLimit;
    if (AsReqd <= AsProvd)
    {
       // if the section is in compression, use the without rebar allowable... sometimes there are segments without
       // mild reinforcement, in all compression, and the allowable is reported for the with rebar case. This causes
       // confusion... for the all compression case, the tension allowable doesn't matter anyway
-      fAllowable = (stressLoc == slAllComp ? fAllowableWithoutRebar : fAllowableWithRebar);
+      fLimit = (stressLoc == slAllComp ? fLimitWithoutRebar : fLimitWithRebar);
       *pIsAdequateRebar = true;
    }
    else
    {
-      fAllowable = fAllowableWithoutRebar;
+      fLimit = fLimitWithoutRebar;
       *pIsAdequateRebar = false;
    }
 
@@ -405,7 +405,7 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
    *pAsProvd  = AsProvd;
    *pAsReqd   = AsReqd;
 
-   return fAllowable;
+   return fLimit;
 }
 
 void pgsAlternativeTensileStressCalculator::ComputeReqdFcTens(const CSegmentKey& segmentKey,Float64 ft, // stress demand

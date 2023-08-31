@@ -481,12 +481,12 @@ void pgsKdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& segm
    IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
 
    // Get allowable tension for with and without rebar cases
-   Float64 fLowTensAllowable, fHighTensAllowable , fCompAllowable;
+   Float64 fLowTensAllowable, fHighTensAllowable , fCompLimits;
    if (!bUseConfig)
    {
       fLowTensAllowable  = pHaulingSpecCriteria->GetKdotHaulingAllowableTensileConcreteStress(segmentKey);
       fHighTensAllowable = pHaulingSpecCriteria->GetKdotHaulingWithMildRebarAllowableStress(segmentKey);
-      fCompAllowable     = pHaulingSpecCriteria->GetKdotHaulingAllowableCompressiveConcreteStress(segmentKey);
+      fCompLimits     = pHaulingSpecCriteria->GetKdotHaulingAllowableCompressiveConcreteStress(segmentKey);
    }
    else
    {
@@ -494,7 +494,7 @@ void pgsKdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& segm
 
       fLowTensAllowable  = pHaulingSpecCriteria->GetKdotHaulingAllowableTensileConcreteStressEx(segmentKey, fc, false);
       fHighTensAllowable = pHaulingSpecCriteria->GetKdotHaulingAllowableTensileConcreteStressEx(segmentKey, fc, true);
-      fCompAllowable     = pHaulingSpecCriteria->GetKdotHaulingAllowableCompressiveConcreteStressEx(segmentKey, fc);
+      fCompLimits     = pHaulingSpecCriteria->GetKdotHaulingAllowableCompressiveConcreteStressEx(segmentKey, fc);
    }
 
    // Parameters for computing required concrete strengths
@@ -584,12 +584,12 @@ void pgsKdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& segm
       Float64 Yna, At, T, AsReqd, AsProvd;
       bool isAdequateBar;
  
-      Float64 fAllow = altCalc.ComputeAlternativeStressRequirements(poi, pConfig, ft_mo, fb_mo, fLowTensAllowable, fHighTensAllowable,
+      Float64 fLimit = altCalc.ComputeAlternativeStressRequirements(poi, pConfig, ft_mo, fb_mo, fLowTensAllowable, fHighTensAllowable,
                                                                       &Yna, &At, &T, &AsProvd, &AsReqd, &isAdequateBar);
 
-      haul_artifact.SetAlternativeTensileStressParameters(Yna, At, T, AsProvd, AsReqd, fAllow);
+      haul_artifact.SetAlternativeTensileStressParameters(Yna, At, T, AsProvd, AsReqd, fLimit);
 
-      haul_artifact.SetCompressiveCapacity(fCompAllowable);
+      haul_artifact.SetCompressiveCapacity(fCompLimits);
 
       // Compute required concrete strengths
       // Compression

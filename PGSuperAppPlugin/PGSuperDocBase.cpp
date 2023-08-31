@@ -73,7 +73,7 @@
 #include <IFace\MomentCapacity.h>
 #include <IFace\ShearCapacity.h>
 #include <IFace\PointOfInterest.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <IFace\StatusCenter.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\DistributionFactors.h>

@@ -35,7 +35,7 @@
 #include <IFace\BeamFactory.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\GirderHandling.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <IFace\DocumentType.h>
 #include <IFace\TransverseReinforcementSpec.h>
 #include <IFace\PrestressForce.h>

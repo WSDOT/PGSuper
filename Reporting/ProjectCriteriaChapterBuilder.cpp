@@ -32,7 +32,7 @@ CLASS
 
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\Intervals.h>

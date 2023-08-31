@@ -200,7 +200,7 @@
     <ResourceCompile Include="SpecAgent.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Include\IFace\Allowables.h" />
+    <ClInclude Include="..\Include\IFace\Limits.h" />
     <ClInclude Include="..\Include\IFace\GirderHandlingSpecCriteria.h" />
     <ClInclude Include="..\Include\IFace\InterfaceShearRequirements.h" />
     <ClInclude Include="..\Include\IFace\PrecastIGirderDetailsSpec.h" />

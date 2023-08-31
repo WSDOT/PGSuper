@@ -150,12 +150,12 @@ public:
    Float64 GetSegmentTendonCrackingStressIncrement() const;
    Float64 GetSegmentTendonStress() const;
    Float64 GetSegmentTendonStressRatio() const;
-   Float64 GetSegmentTendonAllowableStress() const;
+   Float64 GetSegmentTendonStressLimitStress() const;
 
    Float64 GetGirderTendonCrackingStressIncrement() const;
    Float64 GetGirderTendonStress() const;
    Float64 GetGirderTendonStressRatio() const;
-   Float64 GetGirderTendonAllowableStress() const;
+   Float64 GetGirderTendonStressLimitStress() const;
 
    Float64 GetStressRatio() const;
    Float64 GetRatingFactor() const { return GetStressRatio(); }

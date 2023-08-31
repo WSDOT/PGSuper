@@ -54,7 +54,7 @@
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
 #include <IFace\Selection.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 
 #include <Plugins\BeamFamilyCLSID.h>
 

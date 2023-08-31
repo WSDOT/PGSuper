@@ -34,7 +34,7 @@
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 
 
 #ifdef _DEBUG

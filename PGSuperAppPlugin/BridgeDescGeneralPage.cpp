@@ -688,9 +688,9 @@ void CBridgeDescGeneralPage::EnableGirderSpacing(BOOL bEnable,BOOL bClearControl
    pTag->EnableWindow(bEnable);
    pTag->ShowWindow(bClearControls ? SW_HIDE : SW_SHOW);
 
-   CWnd* pAllowable = GetDlgItem(IDC_ALLOWABLE_SPACING);
-   pAllowable->EnableWindow(bEnable);
-   pAllowable->ShowWindow(bClearControls ? SW_HIDE : SW_SHOW);
+   CWnd* pLimits = GetDlgItem(IDC_ALLOWABLE_SPACING);
+   pLimits->EnableWindow(bEnable);
+   pLimits->ShowWindow(bClearControls ? SW_HIDE : SW_SHOW);
 
    if ( !bEnable && bClearControls )
    {
@@ -709,7 +709,7 @@ void CBridgeDescGeneralPage::EnableTopWidth(BOOL bEnable)
    CWnd* pRightLabel = GetDlgItem(IDC_RIGHT_TOP_WIDTH_LABEL);
    CWnd* pRightEdit = GetDlgItem(IDC_RIGHT_TOP_WIDTH);
    CWnd* pRightUnit = GetDlgItem(IDC_RIGHT_TOP_WIDTH_UNIT);
-   CWnd* pAllowable = GetDlgItem(IDC_ALLOWABLE_TOP_WIDTH);
+   CWnd* pLimits = GetDlgItem(IDC_ALLOWABLE_TOP_WIDTH);
    int nShowCommand = (bEnable ? SW_SHOW : SW_HIDE);
    pLabel->ShowWindow(nShowCommand);
    pType->ShowWindow(nShowCommand);
@@ -719,7 +719,7 @@ void CBridgeDescGeneralPage::EnableTopWidth(BOOL bEnable)
    pRightLabel->ShowWindow(nShowCommand);
    pRightEdit->ShowWindow(nShowCommand);
    pRightUnit->ShowWindow(nShowCommand);
-   pAllowable->ShowWindow(nShowCommand);
+   pLimits->ShowWindow(nShowCommand);
 }
 
 void CBridgeDescGeneralPage::EnableLongitudinalJointMaterial()

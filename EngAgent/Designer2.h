@@ -49,7 +49,7 @@
 // FORWARD DECLARATIONS
 //
 interface IBroker;
-interface IAllowableConcreteStress;
+interface IConcreteStressLimits;
 
 // MISCELLANEOUS
 //

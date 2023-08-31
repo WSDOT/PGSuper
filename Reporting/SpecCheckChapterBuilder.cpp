@@ -54,7 +54,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Artifact.h>
 #include <IFace\Project.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>

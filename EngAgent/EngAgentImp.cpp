@@ -1697,8 +1697,8 @@ Float64 CEngAgentImp::GetGirderTendonPjackMax(const CGirderKey& girderKey,Strand
 
 Float64 CEngAgentImp::GetGirderTendonPjackMax(const CGirderKey& girderKey,const WBFL::Materials::PsStrand& strand,StrandIndexType nStrands) const
 {
-   GET_IFACE( IAllowableTendonStress, pAllowable);
-   Float64 fpj = (pAllowable->CheckTendonStressAtJacking() ? pAllowable->GetGirderTendonAllowableAtJacking(girderKey) : pAllowable->GetGirderTendonAllowablePriorToSeating(girderKey));
+   GET_IFACE( ITendonStressLimit, pLimits);
+   Float64 fpj = (pLimits->CheckTendonStressAtJacking() ? pLimits->GetGirderTendonStressLimitAtJacking(girderKey) : pLimits->GetGirderTendonStressLimitPriorToSeating(girderKey));
    Float64 aps = strand.GetNominalArea();
    Float64 Fpj = fpj*aps*nStrands;
 
@@ -1716,8 +1716,8 @@ Float64 CEngAgentImp::GetSegmentTendonPjackMax(const CSegmentKey& segmentKey, St
 
 Float64 CEngAgentImp::GetSegmentTendonPjackMax(const CSegmentKey& segmentKey, const WBFL::Materials::PsStrand& strand, StrandIndexType nStrands) const
 {
-   GET_IFACE(IAllowableTendonStress, pAllowable);
-   Float64 fpj = (pAllowable->CheckTendonStressAtJacking() ? pAllowable->GetSegmentTendonAllowableAtJacking(segmentKey) : pAllowable->GetSegmentTendonAllowablePriorToSeating(segmentKey));
+   GET_IFACE(ITendonStressLimit, pLimits);
+   Float64 fpj = (pLimits->CheckTendonStressAtJacking() ? pLimits->GetSegmentTendonStressLimitAtJacking(segmentKey) : pLimits->GetSegmentTendonStressLimitPriorToSeating(segmentKey));
    Float64 aps = strand.GetNominalArea();
    Float64 Fpj = fpj*aps*nStrands;
 
@@ -4017,10 +4017,10 @@ bool CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       max_stress_WithoutTTS = Max(fBotMax_WithoutTTS,fTopMax_WithoutTTS,max_stress_WithoutTTS);
    }
 
-   GET_IFACE(IAllowableConcreteStress,pAllowStress);
+   GET_IFACE(IConcreteStressLimits,pAllowStress);
    pgsPointOfInterest dummyPOI(segmentKey,0.0);
-   Float64 c = -pAllowStress->GetAllowableCompressionStressCoefficient(dummyPOI,pgsTypes::TopGirder,StressCheckTask(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression));
-   auto tension_stress_limit = pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,StressCheckTask(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension),false/*without rebar*/,false);
+   Float64 c = -pAllowStress->GetConcreteCompressionStressLimitCoefficient(dummyPOI,pgsTypes::TopGirder,StressCheckTask(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression));
+   auto tension_stress_limit = pAllowStress->GetConcreteTensionStressLimitParameters(dummyPOI,pgsTypes::TopGirder,StressCheckTask(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension),false/*without rebar*/,false);
 
    Float64 fc_reqd_compression = min_stress_WithoutTTS/c;
    Float64 fc_reqd_tension = 0;
@@ -4034,7 +4034,7 @@ bool CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
          {
             // allowable stress is limited to value lower than needed
             // look at the with rebar case
-            auto alt_tension_stress_limit = pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,StressCheckTask(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension),true/*with rebar*/,false/*in other than precompressed tensile zone*/);
+            auto alt_tension_stress_limit = pAllowStress->GetConcreteTensionStressLimitParameters(dummyPOI,pgsTypes::TopGirder,StressCheckTask(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension),true/*with rebar*/,false/*in other than precompressed tensile zone*/);
             fc_reqd_tension = pow(max_stress_WithoutTTS/alt_tension_stress_limit.Coefficient,2);
          }
       }

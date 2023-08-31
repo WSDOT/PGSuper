@@ -36,7 +36,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace/DocumentType.h>
 
@@ -805,7 +805,7 @@ void CFlexuralStressCheckTable::BuildAllowDeckStressInformation(rptChapter* pCha
    INIT_UV_PROTOTYPE( rptPressureSectionValue, stress_u, pDisplayUnits->GetStressUnit(), true );
    INIT_UV_PROTOTYPE( rptSqrtPressureValue, tension_coeff, pDisplayUnits->GetTensionCoefficientUnit(), false);
 
-   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowable);
+   GET_IFACE2(pBroker,IConcreteStressLimits,pLimits);
    GET_IFACE2(pBroker,IMaterials,pMaterials);
 
    Float64 fc = pMaterials->GetDeckDesignFc(task.intervalIdx);
@@ -823,10 +823,10 @@ void CFlexuralStressCheckTable::BuildAllowDeckStressInformation(rptChapter* pCha
       const pgsFlexuralStressArtifact* pArtifact = pSegmentArtifact->GetFlexuralStressArtifact( task, 0 );
       const pgsPointOfInterest& poi(pArtifact->GetPointOfInterest());
 
-      Float64 c = pAllowable->GetDeckAllowableCompressionStressCoefficient(poi,task);
-      Float64 fAllowable = pAllowable->GetDeckAllowableCompressionStress(poi, task);
+      Float64 c = pLimits->GetDeckConcreteCompressionStressLimitCoefficient(poi,task);
+      Float64 fLimit = pLimits->GetDeckConcreteCompressionStressLimit(poi, task);
 
-      *pPara << _T("Compression stress limit = -") << c << RPT_FC << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
+      *pPara << _T("Compression stress limit = -") << c << RPT_FC << _T(" = ") << stress_u.SetValue(fLimit) << rptNewLine;
    }
 
    //
@@ -843,19 +843,19 @@ void CFlexuralStressCheckTable::BuildAllowDeckStressInformation(rptChapter* pCha
       // NOTE: don't need to worry about segment tendons here... we are checking deck stresses and segment tendons are stress
       // at the fabrication plant so they don't effect the deck
 
-      auto tension_stress_limit = pAllowable->GetDeckAllowableTensionStressCoefficient(poi, task,false/*without rebar*/);
+      auto tension_stress_limit = pLimits->GetDeckConcreteTensionStressLimitParameters(poi, task,false/*without rebar*/);
 
       if ( bIsTendonStressingInterval )
       {
          (*pPara) << _T("Tension stress limit in areas other than the precompressed tensile zone = ");
          tension_stress_limit.Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fc);
-         Float64 fAllowable = pAllowable->GetDeckAllowableTensionStress(poi, task,false/*without rebar*/);
-         *pPara  << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
+         Float64 fLimit = pLimits->GetDeckConcreteTensionStressLimit(poi, task,false/*without rebar*/);
+         *pPara  << _T(" = ") << stress_u.SetValue(fLimit) << rptNewLine;
 
          if ( pGirderArtifact->WasDeckWithRebarAllowableStressUsed(task) )
          {
-            tension_stress_limit = pAllowable->GetDeckAllowableTensionStressCoefficient(poi, task,true/*with rebar*/);
-            fAllowable = pAllowable->GetDeckAllowableTensionStress(poi, task,true/*with rebar*/);
+            tension_stress_limit = pLimits->GetDeckConcreteTensionStressLimitParameters(poi, task,true/*with rebar*/);
+            fLimit = pLimits->GetDeckConcreteTensionStressLimit(poi, task,true/*with rebar*/);
 
             (*pPara) << _T("Tension stress limit in areas with sufficient bonded reinforcement = ");
             tension_stress_limit.Report(pPara,pDisplayUnits,TensionStressLimit::ConcreteSymbol::fc);
@@ -867,8 +867,8 @@ void CFlexuralStressCheckTable::BuildAllowDeckStressInformation(rptChapter* pCha
          (*pPara) << _T("Allowable tensile stress in the precompressed tensile zone = ");
          tension_stress_limit.Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fc);
 
-         Float64 fAllowable = pAllowable->GetDeckAllowableTensionStress(poi, task,false/*without rebar*/);
-         *pPara  << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
+         Float64 fLimit = pLimits->GetDeckConcreteTensionStressLimit(poi, task,false/*without rebar*/);
+         *pPara  << _T(" = ") << stress_u.SetValue(fLimit) << rptNewLine;
       }
    }
 
@@ -908,7 +908,7 @@ void CFlexuralStressCheckTable::BuildAllowSegmentStressInformation(rptParagraph*
 
    const pgsFlexuralStressArtifact* pArtifact;
 
-   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowable);
+   GET_IFACE2(pBroker,IConcreteStressLimits,pLimits);
 
    //
    // Compression
@@ -920,7 +920,7 @@ void CFlexuralStressCheckTable::BuildAllowSegmentStressInformation(rptParagraph*
       const pgsPointOfInterest& poi(pArtifact->GetPointOfInterest());
       ATLASSERT(!poi.HasAttribute(POI_CLOSURE));
 
-      pAllowable->ReportSegmentAllowableCompressionStress(poi, task, pPara, pDisplayUnits);
+      pLimits->ReportSegmentConcreteCompressionStressLimit(poi, task, pPara, pDisplayUnits);
    }
 
    //
@@ -934,7 +934,7 @@ void CFlexuralStressCheckTable::BuildAllowSegmentStressInformation(rptParagraph*
       ATLASSERT( !poi.HasAttribute(POI_CLOSURE) );
       ATLASSERT( poi.GetSegmentKey() == segmentKey);
       
-      pAllowable->ReportSegmentAllowableTensionStress(poi, task, pSegmentArtifact, pPara, pDisplayUnits);
+      pLimits->ReportSegmentConcreteTensionStressLimit(poi, task, pSegmentArtifact, pPara, pDisplayUnits);
    }
 
    //
@@ -943,7 +943,7 @@ void CFlexuralStressCheckTable::BuildAllowSegmentStressInformation(rptParagraph*
    Float64 fc_reqd = pSegmentArtifact->GetRequiredSegmentConcreteStrength(task);
 
    GET_IFACE2(pBroker, IMaterials, pMaterials);
-   auto name = pAllowable->GetAllowableStressParameterName(task.stressType, pMaterials->GetSegmentConcreteType(segmentKey));
+   auto name = pLimits->GetConcreteStressLimitParameterName(task.stressType, pMaterials->GetSegmentConcreteType(segmentKey));
 
    if ( 0 < fc_reqd )
    {
@@ -973,7 +973,7 @@ void CFlexuralStressCheckTable::BuildAllowClosureJointStressInformation(rptParag
 
    const pgsFlexuralStressArtifact* pArtifact;
 
-   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowable);
+   GET_IFACE2(pBroker,IConcreteStressLimits,pLimits);
 
    //
    // Compression
@@ -985,7 +985,7 @@ void CFlexuralStressCheckTable::BuildAllowClosureJointStressInformation(rptParag
       const pgsPointOfInterest& poi(pArtifact->GetPointOfInterest());
       ATLASSERT(poi.HasAttribute(POI_CLOSURE));
 
-      pAllowable->ReportClosureJointAllowableCompressionStress(poi, task, pPara, pDisplayUnits);
+      pLimits->ReportClosureJointConcreteCompressionStressLimit(poi, task, pPara, pDisplayUnits);
    }
 
    //
@@ -998,7 +998,7 @@ void CFlexuralStressCheckTable::BuildAllowClosureJointStressInformation(rptParag
       const pgsPointOfInterest& poi(pArtifact->GetPointOfInterest());
       ATLASSERT(poi.HasAttribute(POI_CLOSURE));
 
-      pAllowable->ReportClosureJointAllowableTensionStress(poi, task, pSegmentArtifact, pPara, pDisplayUnits);
+      pLimits->ReportClosureJointConcreteTensionStressLimit(poi, task, pSegmentArtifact, pPara, pDisplayUnits);
    }
 
    //

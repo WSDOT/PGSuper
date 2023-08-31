@@ -30,7 +30,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\PrestressForce.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 
 #include <IFace\Project.h>
 #include <PgsExt\LoadFactors.h>
@@ -320,8 +320,8 @@ void pgsPrincipalWebStressEngineer::CheckTimeStep(const PoiList& vPois, pgsPrinc
    GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType liveLoadInterval = pIntervals->GetLiveLoadInterval();
 
-   GET_IFACE(IAllowableConcreteStress, pAllowables);
-   Float64 coefficient = pAllowables->GetAllowablePrincipalWebTensionStressCoefficient();
+   GET_IFACE(IConcreteStressLimits, pLimits);
+   Float64 coefficient = pLimits->GetConcreteWebPrincipalTensionStressLimitCoefficient();
 
    Float64 fcReqd = -Float64_Max;
    for (const pgsPointOfInterest& poi : vPois)
@@ -329,7 +329,7 @@ void pgsPrincipalWebStressEngineer::CheckTimeStep(const PoiList& vPois, pgsPrinc
       // Time step analysis:
       const auto* pWebSectionDetails =  GetTimeStepPrincipalWebStressDetails(poi, liveLoadInterval);
 
-      Float64 stress_limit = pAllowables->GetAllowablePrincipalWebTensionStress(poi);
+      Float64 stress_limit = pLimits->GetConcreteWebPrincipalTensionStressLimit(poi);
 
       // find controlling web section
       Float64 fmax = -Float64_Max;
@@ -345,7 +345,7 @@ void pgsPrincipalWebStressEngineer::CheckTimeStep(const PoiList& vPois, pgsPrinc
          }
       }
 
-      Float64 fc_reqd = pAllowables->GetPrincipalTensileStressRequiredConcreteStrength(poi, fmax);
+      Float64 fc_reqd = pLimits->GetPrincipalTensileStressRequiredConcreteStrength(poi, fmax);
       fcReqd = Max(fcReqd, fc_reqd); // we want the max
 
       // create check artifact for this poi
@@ -357,15 +357,15 @@ void pgsPrincipalWebStressEngineer::CheckTimeStep(const PoiList& vPois, pgsPrinc
 
 void pgsPrincipalWebStressEngineer::CheckSimpleLosses(const PoiList & vPois, pgsPrincipalTensionStressArtifact * pArtifact) const
 {
-   GET_IFACE(IAllowableConcreteStress, pAllowables);
-   Float64 coefficient = pAllowables->GetAllowablePrincipalWebTensionStressCoefficient();
+   GET_IFACE(IConcreteStressLimits, pLimits);
+   Float64 coefficient = pLimits->GetConcreteWebPrincipalTensionStressLimitCoefficient();
 
    Float64 fcReqd = -Float64_Max;
    for (const pgsPointOfInterest& poi : vPois)
    {
       const auto* pDetails = GetPrincipalStressInWeb(poi);
 
-      Float64 stress_limit = pAllowables->GetAllowablePrincipalWebTensionStress(poi);
+      Float64 stress_limit = pLimits->GetConcreteWebPrincipalTensionStressLimit(poi);
 
       // find controlling web section
       Float64 fmax = -Float64_Max;
@@ -381,7 +381,7 @@ void pgsPrincipalWebStressEngineer::CheckSimpleLosses(const PoiList & vPois, pgs
          }
       }
 
-      Float64 fc_reqd = pAllowables->GetPrincipalTensileStressRequiredConcreteStrength(poi, fmax);
+      Float64 fc_reqd = pLimits->GetPrincipalTensileStressRequiredConcreteStrength(poi, fmax);
       fcReqd = Max(fcReqd, fc_reqd); // we want the max
 
       // create check artifact for this poi
@@ -400,7 +400,7 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
    GET_IFACE(ILimitStateForces, pLSForces);
    GET_IFACE(IIntervals, pIntervals);
    GET_IFACE(IProductForces, pProductForces);
-   GET_IFACE(IAllowableConcreteStress, pAllowables);
+   GET_IFACE(IConcreteStressLimits, pLimits);
    GET_IFACE(IGirder, pGirder);
    GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
    GET_IFACE(IGirderTendonGeometry, pGirderTendonGeometry);
@@ -431,7 +431,7 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
       bInClosureJoint = true;
    }
 
-   Float64 stress_limit = pAllowables->GetAllowablePrincipalWebTensionStress(poi);
+   Float64 stress_limit = pLimits->GetConcreteWebPrincipalTensionStressLimit(poi);
 
    if (bInClosureJoint)
    {

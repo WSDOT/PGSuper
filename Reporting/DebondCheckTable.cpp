@@ -29,7 +29,7 @@
 
 #include <IFace\Bridge.h>
 #include <IFace\Artifact.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 
 
 #ifdef _DEBUG

@@ -834,34 +834,34 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
          Float64 fy;
          Float64 fs;
          Float64 fcr;
-         Float64 fallow;
+         Float64 fLimit;
          if (srIdx == 0)
          {
             artifact.GetRebar(&d, &f, &fy, &E);
             fcr = artifact.GetRebarCrackingStressIncrement();
             fs = artifact.GetRebarStress();
-            fallow = artifact.GetRebarAllowableStress();
+            fLimit = artifact.GetRebarAllowableStress();
          }
          else if (srIdx == 1)
          {
             artifact.GetStrand(&d, &f, &fy, &E);
             fcr = artifact.GetStrandCrackingStressIncrement();
             fs = artifact.GetStrandStress();
-            fallow = artifact.GetStrandAllowableStress();
+            fLimit = artifact.GetStrandAllowableStress();
          }
          else if (srIdx == 2)
          {
             artifact.GetSegmentTendon(&d, &f, &fy, &E);
             fcr = artifact.GetSegmentTendonCrackingStressIncrement();
             fs = artifact.GetSegmentTendonStress();
-            fallow = artifact.GetSegmentTendonAllowableStress();
+            fLimit = artifact.GetSegmentTendonStressLimitStress();
          }
          else
          {
             artifact.GetGirderTendon(&d, &f, &fy, &E);
             fcr = artifact.GetGirderTendonCrackingStressIncrement();
             fs = artifact.GetGirderTendonStress();
-            fallow = artifact.GetGirderTendonAllowableStress();
+            fLimit = artifact.GetGirderTendonStressLimitStress();
          }
 
 
@@ -887,7 +887,7 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
          (*table)(row, col++) << mod_e.SetValue(E);
          (*table)(row, col++) << mod_e.SetValue(artifact.GetEg());
          (*table)(row, col++) << stress.SetValue(fs);
-         (*table)(row, col++) << stress.SetValue(fallow);
+         (*table)(row, col++) << stress.SetValue(fLimit);
 
 
          if (SR < 1)

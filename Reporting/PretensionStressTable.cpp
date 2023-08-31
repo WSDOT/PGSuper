@@ -33,7 +33,7 @@
 #include <IFace\Intervals.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\RatingSpecification.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

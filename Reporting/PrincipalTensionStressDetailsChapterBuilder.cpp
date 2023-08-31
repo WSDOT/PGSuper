@@ -27,7 +27,7 @@
 #include <IFace\PrincipalWebStress.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 
 #include <PgsExt\GirderArtifact.h>
 
@@ -108,8 +108,8 @@ rptChapter* CPrincipalTensionStressDetailsChapterBuilder::Build(const std::share
 
    GET_IFACE2_NOCHECK(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
-   GET_IFACE2(pBroker, IAllowableConcreteStress, pAllowables);
-   Float64 threshold = pAllowables->GetPrincipalTensileStressFcThreshold();
+   GET_IFACE2(pBroker, IConcreteStressLimits, pLimits);
+   Float64 threshold = pLimits->GetPrincipalTensileStressFcThreshold();
 
    bool bApplicable = false;
    for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
