@@ -167,9 +167,12 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(erectSegmentIntervalIdx, reactionLocation, pgsTypes::pftGirder,    analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
      }
 
-     if ( reactionDecider.DoReport(diaphragmIntervalIdx) )
+     if ( reactionDecider.DoReport(diaphragmIntervalIdx) || reactionDecider.DoReport(lastCastDeckIntervalIdx))
      {
-        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(diaphragmIntervalIdx,     reactionLocation, pgsTypes::pftDiaphragm, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+        // for simple spans and expansion piers, pier diaphragm loads are applied in the diaphragm loading interval
+        // for spans made continous or integral, pier diaphragms are cast with the deck
+        // report the total diaphragm reaction by using the deck casting interval (reactions are cumulative in this function call)
+        (*p_table)(row,col++) << reaction.SetValue(pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftDiaphragm, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan));
      }
      else
      {
