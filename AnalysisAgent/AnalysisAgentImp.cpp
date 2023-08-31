@@ -119,7 +119,7 @@ static std::vector<ICamber::CreepPeriod> GetCreepPeriods(IntervalIndexType inter
 
       if (intervalIdx < storageIntervalIdx)
       {
-         // creep has not yet occured
+         // creep has not yet occurred
       }
       else if (storageIntervalIdx < intervalIdx && intervalIdx < erectionIntervalIdx)
       {
@@ -146,7 +146,7 @@ static std::vector<ICamber::CreepPeriod> GetCreepPeriods(IntervalIndexType inter
 
       if (intervalIdx < storageIntervalIdx)
       {
-         // creep has not yet occured
+         // creep has not yet occurred
       }
       else if (storageIntervalIdx < intervalIdx && intervalIdx < erectionIntervalIdx)
       {
