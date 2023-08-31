@@ -30,6 +30,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
+#include <IFace\ReportOptions.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -80,7 +81,8 @@ rptRcTable* CUserStressTable::Build(IBroker* pBroker,const CGirderKey& girderKey
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
 
-   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS ? true : false);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    CString strTitle;

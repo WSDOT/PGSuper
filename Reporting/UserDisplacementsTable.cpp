@@ -31,6 +31,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
+#include <IFace\ReportOptions.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -79,8 +80,8 @@ rptRcTable* CUserDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& gird
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, deflection, pDisplayUnits->GetDeflectionUnit(), false );
 
-   GET_IFACE2(pBroker, IDocumentType, pDocType);
-   location.IncludeSpanAndGirder(pDocType->IsPGSpliceDocument() || girderKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    CString strTitle;

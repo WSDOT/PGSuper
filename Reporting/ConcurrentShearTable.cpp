@@ -30,6 +30,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
+#include <IFace\ReportOptions.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -80,7 +81,8 @@ void CConcurrentShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
    INIT_UV_PROTOTYPE( rptForceUnitValue, shear, pDisplayUnits->GetGeneralForceUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
 
-   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 

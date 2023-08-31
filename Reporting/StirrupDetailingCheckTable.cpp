@@ -32,6 +32,7 @@
 #include <IFace\Project.h>
 #include <IFace\Artifact.h>
 #include <IFace\Intervals.h>
+#include <IFace\ReportOptions.h>
 
 #include <LRFD\Rebar.h>
 #include <LRFD\RebarPool.h>
@@ -116,8 +117,8 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,const pgsGirderA
    INIT_UV_PROTOTYPE( rptAreaPerLengthValue, AvS,      pDisplayUnits->GetAvOverSUnit(),      false );
    INIT_UV_PROTOTYPE( rptLengthSectionValue, dim,      pDisplayUnits->GetComponentDimUnit(), false );
 
-   GET_IFACE2(pBroker, IDocumentType, pDocType);
-   location.IncludeSpanAndGirder(pDocType->IsPGSpliceDocument() || girderKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    // Fill up the table
 

@@ -102,8 +102,6 @@ rptRcTable* CNetGirderPropertiesTable::Build(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptAreaUnitValue,          l2,       pDisplayUnits->GetAreaUnit(),            false );
    INIT_UV_PROTOTYPE( rptLength4UnitValue,       l4,       pDisplayUnits->GetMomentOfInertiaUnit(), false );
 
-   location.IncludeSpanAndGirder(segmentKey.groupIndex == ALL_SPANS);
-
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);

@@ -30,7 +30,7 @@
 #include <IFace\Artifact.h>
 #include <IFace\Intervals.h>
 #include <IFace\AnalysisResults.h>
-
+#include <IFace\ReportOptions.h>
 
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\ReportPointOfInterest.h>
@@ -169,7 +169,9 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
-   location.IncludeSpanAndGirder(1 < nSegments);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
+
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
@@ -269,7 +271,8 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
                               IEAFDisplayUnits* pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
-   location.IncludeSpanAndGirder(true);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    INIT_UV_PROTOTYPE( rptForceSectionValue, shear,  pDisplayUnits->GetShearUnit(), false );
 

@@ -36,6 +36,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\Intervals.h>
+#include <IFace\ReportOptions.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -123,8 +124,8 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
 
-   GET_IFACE2(pBroker, IDocumentType, pDocType);
-   location.IncludeSpanAndGirder(pDocType->IsPGSpliceDocument() || girderKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -362,7 +363,8 @@ void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter*
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
 
-   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
@@ -670,7 +672,8 @@ void CCombinedMomentsTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* p
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
 
-   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;

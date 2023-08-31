@@ -33,6 +33,7 @@
 #include <IFace\Intervals.h>
 #include <IFace/Limits.h>
 #include <IFace\DocumentType.h>
+#include <IFace\ReportOptions.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -395,7 +396,8 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
    pgsTypes::LimitState limitState = (liveLoadIntervalIdx <= intervalIdx ? pgsTypes::ServiceIII : pgsTypes::ServiceI);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,       pDisplayUnits->GetSpanLengthUnit(), false );
-   location.IncludeSpanAndGirder(segmentKey.segmentIndex == ALL_SEGMENTS || poi.GetID() != INVALID_ID);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(segmentKey.segmentIndex == ALL_SEGMENTS && (pReportOptions->IncludeSpanAndGirder4Pois(segmentKey) || poi.GetID() != INVALID_ID));
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
    INIT_UV_PROTOTYPE( rptForceUnitValue,  force,  pDisplayUnits->GetShearUnit(),        false );

@@ -31,6 +31,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\Artifact.h>
+#include <IFace\ReportOptions.h>
 
 #include <PgsExt\CapacityToDemand.h>
 
@@ -96,8 +97,8 @@ rptRcTable* CShearCheckTable::Build(IBroker* pBroker,const pgsGirderArtifact* pG
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,  pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptForceSectionValue,  shear,  pDisplayUnits->GetShearUnit(),        false );
 
-   GET_IFACE2(pBroker, IDocumentType, pDocType);
-   location.IncludeSpanAndGirder(pDocType->IsPGSpliceDocument() || girderKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    rptCapacityToDemand cap_demand;
 

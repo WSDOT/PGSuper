@@ -27,6 +27,7 @@
 #include <IFace\PointOfInterest.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\Intervals.h>
+#include <IFace\ReportOptions.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -87,8 +88,9 @@ rptChapter* CGirderTendonGeometryChapterBuilder::Build(const std::shared_ptr<con
    INIT_UV_PROTOTYPE( rptLengthUnitValue,        ecc,      pDisplayUnits->GetComponentDimUnit(), false);
    INIT_UV_PROTOTYPE( rptStressUnitValue,        stress,   pDisplayUnits->GetStressUnit(), false);
 
-   location.IncludeSpanAndGirder(true);
-
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
+   
    PoiList vPoi;
    pPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), &vPoi);
 

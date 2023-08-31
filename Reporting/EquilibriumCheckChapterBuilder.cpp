@@ -29,6 +29,7 @@
 #include <IFace\PrestressForce.h>
 #include <IFace\Intervals.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace\ReportOptions.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -89,7 +90,8 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(const std::shared_ptr<const W
    INIT_UV_PROTOTYPE(rptStressUnitValue,    modE,       pDisplayUnits->GetModEUnit(),            true);
    INIT_UV_PROTOTYPE(rptPointOfInterest,    location,   pDisplayUnits->GetSpanLengthUnit(),      true);
 
-   location.IncludeSpanAndGirder(true);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    GET_IFACE2(pBroker,ILosses,pLosses);
    const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,intervalIdx);

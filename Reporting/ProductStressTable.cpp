@@ -30,6 +30,7 @@
 #include <IFace\DocumentType.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
+#include <IFace\ReportOptions.h>
 
 #include <IFace\AnalysisResults.h>
 #include <IFace\RatingSpecification.h>
@@ -84,8 +85,8 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
 
-   GET_IFACE2(pBroker, IDocumentType, pDocType);
-   location.IncludeSpanAndGirder(pDocType->IsPGSpliceDocument() || girderKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    bool bHasOverlay    = pBridge->HasOverlay();

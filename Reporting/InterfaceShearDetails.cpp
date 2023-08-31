@@ -34,6 +34,7 @@
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace\ReportOptions.h>
 
 #include <PsgLib\SpecLibraryEntry.h>
 #include <psgLib/SpecificationCriteria.h>
@@ -105,8 +106,8 @@ void CInterfaceShearDetails::Build(IBroker* pBroker, rptChapter* pChapter,
       (*pPara) << _T("UHPC GS 1.7.4.1") << rptNewLine;
    }
 
-   GET_IFACE2(pBroker, IDocumentType, pDocType);
-   location.IncludeSpanAndGirder(pDocType->IsPGSpliceDocument() || girderKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    if (IsDesignLimitState(ls))
    {

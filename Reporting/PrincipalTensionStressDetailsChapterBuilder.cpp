@@ -27,7 +27,8 @@
 #include <IFace\PrincipalWebStress.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
-#include <IFace/Limits.h>
+#include <IFace\Limits.h>
+#include <IFace\ReportOptions.h>
 
 #include <PgsExt\GirderArtifact.h>
 
@@ -162,7 +163,8 @@ rptChapter* CPrincipalTensionStressDetailsChapterBuilder::Build(const std::share
    INIT_UV_PROTOTYPE(rptForceUnitValue, shear, pDisplayUnits->GetShearUnit(), false);
    INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
 
-   location.IncludeSpanAndGirder(1 < nSegments);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    // need to know if there are any tendons. if so, we need a footnote
    // if nGirderDucts + nSegmentDucts > 0, we need the footnote... the actual sum doesn't have to be accurate

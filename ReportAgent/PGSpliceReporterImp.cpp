@@ -134,7 +134,7 @@ STDMETHODIMP CPGSpliceReporterImp::RegInterfaces()
 {
    CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
 
-   // this agent doesn't implement any interfaces... it just provides reports
+   pBrokerInit->RegInterface(IID_IReportOptions,this);
 
    return S_OK;
 }
@@ -239,6 +239,11 @@ HRESULT CPGSpliceReporterImp::OnSpecificationChanged()
 HRESULT CPGSpliceReporterImp::OnAnalysisTypeChanged()
 {
    return S_OK;
+}
+
+bool CPGSpliceReporterImp::IncludeSpanAndGirder4Pois(const CGirderKey& rKey)
+{
+   return true;
 }
 
 WBFL::Reporting::TitlePageBuilder* CPGSpliceReporterImp::CreateTitlePageBuilder(LPCTSTR strReportName,bool bFullVersion)

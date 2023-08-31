@@ -30,6 +30,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
 #include <IFace\Project.h>
+#include <IFace\ReportOptions.h>
 
 #include <WBFLGenericBridgeTools.h>
 
@@ -118,7 +119,8 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const
    INIT_UV_PROTOTYPE(rptLengthUnitValue,    length,     pDisplayUnits->GetSpanLengthUnit(),      false);
    INIT_UV_PROTOTYPE(rptLengthUnitValue,    deflection, pDisplayUnits->GetDeflectionUnit(),      false);
 
-   location.IncludeSpanAndGirder(true);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    ///////////////////////////////////////////////////////////////////////////////////
    // Time Step Parameters that are independent of POI

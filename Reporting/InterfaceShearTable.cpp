@@ -34,6 +34,7 @@
 #include <IFace\Artifact.h>
 #include <IFace\Intervals.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace\ReportOptions.h>
 
 #include <LRFD\ConcreteUtil.h>
 
@@ -74,8 +75,8 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
    INIT_UV_PROTOTYPE( rptAreaUnitValue,           area,     pDisplayUnits->GetAreaUnit(),            false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,         dimu,      pDisplayUnits->GetComponentDimUnit(),  true);
 
-   GET_IFACE2(pBroker, IDocumentType, pDocType);
-   location.IncludeSpanAndGirder(pDocType->IsPGSpliceDocument() || girderKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    rptCapacityToDemand cap_demand;
 

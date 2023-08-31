@@ -27,6 +27,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace\ReportOptions.h>
 
 #include <iterator>
 
@@ -507,7 +508,8 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateBeforeSlabCastingDeflectionTabl
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,     pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, deflection,   pDisplayUnits->GetDeflectionUnit(), false );
 
-   location.IncludeSpanAndGirder(true);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    GET_IFACE2(pBroker,IUserDefinedLoads,pUserLoads);
    GET_IFACE2(pBroker,IUserDefinedLoadData,pUserLoadData);
@@ -703,7 +705,8 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,     pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, deflection,   pDisplayUnits->GetDeflectionUnit(), false );
 
-   location.IncludeSpanAndGirder(true);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    GET_IFACE2(pBroker,IUserDefinedLoads,pUserLoads);
    GET_IFACE2(pBroker,IUserDefinedLoadData,pUserLoadData);
@@ -887,7 +890,8 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateExcessCamberTable(IBroker* pBro
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,     pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, deflection,   pDisplayUnits->GetDeflectionUnit(), false );
 
-   location.IncludeSpanAndGirder(true);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(4,_T("Excess Camber"));
 
@@ -946,8 +950,8 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateFinalDeflectionTable(IBroker* p
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,     pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, deflection,   pDisplayUnits->GetDeflectionUnit(), false );
 
-   location.IncludeSpanAndGirder(true);
-
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    GET_IFACE2(pBroker,IUserDefinedLoads,pUserLoads);
    GET_IFACE2(pBroker,IUserDefinedLoadData,pUserLoadData);

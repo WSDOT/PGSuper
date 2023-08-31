@@ -31,6 +31,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
 #include <IFace\PrincipalWebStress.h>
+#include <IFace\ReportOptions.h>
 
 #include <WBFLGenericBridgeTools.h>
 
@@ -120,7 +121,8 @@ rptChapter* CPrincipalWebStressDetailsChapterBuilder::Build(const std::shared_pt
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    INIT_UV_PROTOTYPE(rptPointOfInterest,    location,   pDisplayUnits->GetSpanLengthUnit(),      true);
-   location.IncludeSpanAndGirder(true);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(segmentKey));
 
    // reporting for a specific poi... list poi at top of report
    if ( !pTSDRptSpec->ReportAtAllLocations() )
@@ -232,7 +234,8 @@ void CPrincipalWebStressDetailsChapterBuilder::BuildIncrementalStressTables(rptC
    INIT_UV_PROTOTYPE(rptLength3UnitValue,   l3,         pDisplayUnits->GetSectModulusUnit(),      false);
    INIT_UV_PROTOTYPE(rptLengthUnitValue,    ecc,        pDisplayUnits->GetComponentDimUnit(),    false );
 
-   location.IncludeSpanAndGirder(true);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(CGirderKey()));
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
@@ -578,7 +581,8 @@ void CPrincipalWebStressDetailsChapterBuilder::BuildCombinedStressTables(rptChap
    
    INIT_UV_PROTOTYPE(rptStressUnitValue,    stress,     pDisplayUnits->GetStressUnit(),          false);
    INIT_UV_PROTOTYPE(rptPointOfInterest,    location,   pDisplayUnits->GetSpanLengthUnit(),      false);
-   location.IncludeSpanAndGirder(true);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(CGirderKey()));
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 

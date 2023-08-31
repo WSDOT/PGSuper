@@ -39,6 +39,7 @@
 #include <IFace/Limits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace/DocumentType.h>
+#include <IFace\ReportOptions.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -334,6 +335,9 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, IBroker* pBroke
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptPressureSectionValue,   stress,   pDisplayUnits->GetStressUnit(),     false );
+
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey) && segIdx==ALL_SEGMENTS);
 
    rptCapacityToDemand cap_demand;
 

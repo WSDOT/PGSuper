@@ -28,6 +28,7 @@
 #include <IFace\Intervals.h>
 #include <IFace/Limits.h>
 #include <IFace\Project.h>
+#include <IFace\ReportOptions.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -139,10 +140,11 @@ void CPrincipalTensionStressCheckTable::BuildTable(rptChapter* pChapter, IBroker
    rptCapacityToDemand cap_demand;
 
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
-   location.IncludeSpanAndGirder(1 < nSegments);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    GET_IFACE2(pBroker, IIntervals, pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount() - 1;

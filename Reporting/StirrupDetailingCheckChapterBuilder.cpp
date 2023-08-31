@@ -34,6 +34,7 @@
 #include <IFace\TransverseReinforcementSpec.h>
 #include <IFace\Intervals.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace\ReportOptions.h>
 
 #include <psgLib/ShearCapacityCriteria.h>
 
@@ -87,9 +88,8 @@ rptChapter* CStirrupDetailingCheckChapterBuilder::Build(const std::shared_ptr<co
    GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
-   bool bIncludeSpanAndGirderForPois = nSegments > 1;
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   bool bIncludeSpanAndGirderForPois = pReportOptions->IncludeSpanAndGirder4Pois(girderKey);
 
    build_min_avs_paragraph(pBroker,pChapter,girderKey,intervalIdx, bIncludeSpanAndGirderForPois, pDisplayUnits);
 

@@ -85,9 +85,6 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
    INIT_UV_PROTOTYPE( rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), true );
    INIT_UV_PROTOTYPE(rptLengthUnitValue, ecc, pDisplayUnits->GetComponentDimUnit(), true);
 
-   //gdrpoi.IncludeSpanAndGirder(span == ALL_SPANS);
-   //spanpoi.IncludeSpanAndGirder(span == ALL_SPANS);
-
    GET_IFACE2(pBroker, IBridge, pBridge);
    bool bIsAsymmetric = (pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing() ? true : false);
 

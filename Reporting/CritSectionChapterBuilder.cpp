@@ -33,6 +33,7 @@
 #include <IFace\RatingSpecification.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\DocumentType.h>
+#include <IFace\ReportOptions.h>
 
 #include <psgLib/SpecificationCriteria.h>
 
@@ -189,10 +190,8 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
    INIT_UV_PROTOTYPE( rptLengthSectionValue,      dim,       pDisplayUnits->GetComponentDimUnit(),  false );
    INIT_UV_PROTOTYPE( rptAngleSectionValue,       ang,       pDisplayUnits->GetAngleUnit(),  false );
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
-
-   locationp.IncludeSpanAndGirder(nSegments > 1);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   locationp.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);

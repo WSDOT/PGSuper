@@ -30,6 +30,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
+#include <IFace\ReportOptions.h>
 
 #include <psgLib/CreepCriteria.h>
 
@@ -183,8 +184,10 @@ void CCamberTable::Build_Deck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
    rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const
 {
    INIT_UV_PROTOTYPE(rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false);
-   location.IncludeSpanAndGirder(segmentKey.groupIndex == ALL_GROUPS);
    INIT_UV_PROTOTYPE(rptLengthUnitValue, deflection, pDisplayUnits->GetDeflectionUnit(), false);
+
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(segmentKey));
 
    GET_IFACE2(pBroker, ILibrary, pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
@@ -579,7 +582,9 @@ void CCamberTable::Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey
    rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const
 {
    INIT_UV_PROTOTYPE(rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false);
-   location.IncludeSpanAndGirder(segmentKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(segmentKey));
+
    INIT_UV_PROTOTYPE(rptLengthUnitValue, deflection, pDisplayUnits->GetDeflectionUnit(), false);
 
    GET_IFACE2(pBroker, ILibrary, pLib);
@@ -1099,7 +1104,9 @@ void CCamberTable::Build_NoDeck_Y(IBroker* pBroker, const CSegmentKey& segmentKe
    rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const
 {
    INIT_UV_PROTOTYPE(rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false);
-   location.IncludeSpanAndGirder(segmentKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(segmentKey));
+
    INIT_UV_PROTOTYPE(rptLengthUnitValue, deflection, pDisplayUnits->GetDeflectionUnit(), false);
 
    GET_IFACE2(pBroker, ILibrary, pLib);
@@ -1511,7 +1518,9 @@ void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKe
                                             rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const
 {
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
-   location.IncludeSpanAndGirder(segmentKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(segmentKey));
+
    INIT_UV_PROTOTYPE( rptLengthUnitValue, deflection, pDisplayUnits->GetDeflectionUnit(), false );
 
    GET_IFACE2(pBroker,ILibrary,pLib);

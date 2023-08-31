@@ -30,6 +30,7 @@
 #include <IFace\PrestressForce.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
+#include <IFace\ReportOptions.h>
 
 #include <WBFLGenericBridgeTools.h>
 
@@ -135,8 +136,8 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<const WB
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   location.IncludeSpanAndGirder(true);
-
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    // reporting for a specific poi... list poi at top of report
    if ( !pTSDRptSpec->ReportAtAllLocations() )

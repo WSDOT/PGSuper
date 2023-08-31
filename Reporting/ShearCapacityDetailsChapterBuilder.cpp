@@ -38,6 +38,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
 #include <IFace\BeamFactory.h>
+#include <IFace\ReportOptions.h>
 
 #include <Reporter\ReportingUtils.h>
 
@@ -275,10 +276,8 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(const std::shared_ptr<con
          *pPara << pgsGirderLabel::GetGirderLabel(thisGirderKey) << rptNewLine;
       }
 
-      // Determine wheter we need to print span and girder information for POI locations. Store in a static so we only need to compute once.
-      SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
-
-      m_IncludeSpanAndGirderForPois = nSegments > 1;
+      GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+      m_IncludeSpanAndGirderForPois = pReportOptions->IncludeSpanAndGirder4Pois(thisGirderKey);
 
       bool bPermit = pLimitStateForces->IsStrengthIIApplicable(thisGirderKey);
 
@@ -513,7 +512,8 @@ void write_shear_dimensions_table(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,      pDisplayUnits->GetComponentDimUnit(), false );
 
-   location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(segmentKey));
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 

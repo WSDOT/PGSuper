@@ -39,6 +39,7 @@
 #include <IFace\RatingSpecification.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
+#include <IFace\ReportOptions.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -388,7 +389,8 @@ void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter, co
          INIT_UV_PROTOTYPE( rptAreaPerLengthValue, avs,      pDisplayUnits->GetAvOverSUnit(),         false );
          INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,      pDisplayUnits->GetComponentDimUnit(),    false );
 
-         location.IncludeSpanAndGirder(true);
+         GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+         location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
          const pgsRatingArtifact* pRatingArtifact = pIArtifact->GetRatingArtifact(thisGirderKey,ratingType,INVALID_INDEX/*all vehicles*/);
          const pgsRatingArtifact::LongitudinalReinforcementForShear& longReinfShear = pRatingArtifact->GetLongitudinalReinforcementForShear();
@@ -453,9 +455,11 @@ void create_table1_design(rptChapter* pChapter,IBroker* pBroker,
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
 
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
+
    GET_IFACE2(pBroker, IBridge, pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
-   location.IncludeSpanAndGirder(1 < nSegments);
 
    GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
    DuctIndexType nMaxSegmentDucts = pSegmentTendonGeometry->GetMaxDuctCount(girderKey);
@@ -683,9 +687,11 @@ void create_table2_design(rptChapter* pChapter,IBroker* pBroker,
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
+
    GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
-   location.IncludeSpanAndGirder(1 < nSegments);
 
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
@@ -768,10 +774,11 @@ void create_table3_design(rptChapter* pChapter, IBroker* pBroker,
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
-   location.IncludeSpanAndGirder(1 < nSegments);
 
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
@@ -838,10 +845,10 @@ void create_table1_rating(rptChapter* pChapter,IBroker* pBroker,
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
 
-   location.IncludeSpanAndGirder(true);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    GET_IFACE2(pBroker, IBridge, pBridge);
-
    GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
    DuctIndexType nMaxSegmentDucts = pSegmentTendonGeometry->GetMaxDuctCount(girderKey);;
 
@@ -1017,7 +1024,8 @@ void create_table2_rating(rptChapter* pChapter,IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptMomentSectionValue, moment,   pDisplayUnits->GetMomentUnit(),       false );
    INIT_UV_PROTOTYPE( rptAngleUnitValue,     angle,    pDisplayUnits->GetAngleUnit(),        false );
 
-   location.IncludeSpanAndGirder(true);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(longReinfShear.front().first.GetSegmentKey()));
 
    rptRcScalar scalar;
    scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Automatic );
@@ -1134,7 +1142,8 @@ void create_table3_rating(rptChapter* pChapter,IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptMomentSectionValue, moment,   pDisplayUnits->GetMomentUnit(),       false );
    INIT_UV_PROTOTYPE( rptAngleUnitValue,     angle,    pDisplayUnits->GetAngleUnit(),        false );
 
-   location.IncludeSpanAndGirder(true);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(longReinfShear.front().first.GetSegmentKey()));
 
    rptRcScalar scalar;
    scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Automatic );

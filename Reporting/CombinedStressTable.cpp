@@ -33,6 +33,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\Intervals.h>
+#include <IFace\ReportOptions.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -130,8 +131,8 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDisplayUnits->GetStressUnit(),     false );
 
-   GET_IFACE2(pBroker, IDocumentType, pDocType);
-   location.IncludeSpanAndGirder(pDocType->IsPGSpliceDocument() || girderKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -356,7 +357,8 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDisplayUnits->GetStressUnit(),     false );
 
-   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS ? true : false);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
@@ -634,7 +636,8 @@ void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pC
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDisplayUnits->GetStressUnit(),     false );
 
-   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS ? true : false);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,ILimitStateForces2,pLsForces2);

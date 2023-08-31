@@ -29,6 +29,7 @@
 #include <IFace\DocumentType.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
+#include <IFace\ReportOptions.h>
 
 #include <IFace\AnalysisResults.h>
 #include <IFace\RatingSpecification.h>
@@ -474,8 +475,8 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,const CGirderKey& girde
       p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
-   GET_IFACE2(pBroker, IDocumentType, pDocType);
-   location.IncludeSpanAndGirder(pDocType->IsPGSpliceDocument() || girderKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
    PoiAttributeType poiRefAttribute(girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : POI_ERECTED_SEGMENT);
 
    RowIndexType row = ConfigureProductLoadTableHeading<rptMomentUnitTag,WBFL::Units::MomentData>(pBroker,p_table,false,false,bSegments,bConstruction,bDeck,bDeckPanels,bSidewalk,bShearKey,bLongitudinalJoint,bHasOverlay,bFutureOverlay,bDesign,bPedLoading,

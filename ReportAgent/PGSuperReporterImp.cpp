@@ -127,7 +127,7 @@ STDMETHODIMP CPGSuperReporterImp::RegInterfaces()
 {
    CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
 
-   // this agent doesn't implement any interfaces... it just provides reports
+   pBrokerInit->RegInterface(IID_IReportOptions,this);
 
    return S_OK;
 }
@@ -286,6 +286,11 @@ HRESULT CPGSuperReporterImp::OnSpecificationChanged()
 HRESULT CPGSuperReporterImp::OnAnalysisTypeChanged()
 {
    return S_OK;
+}
+
+bool CPGSuperReporterImp::IncludeSpanAndGirder4Pois(const CGirderKey& girderKey)
+{
+   return girderKey.groupIndex == ALL_GROUPS;
 }
 
 WBFL::Reporting::TitlePageBuilder* CPGSuperReporterImp::CreateTitlePageBuilder(LPCTSTR strReportName,bool bFullVersion)

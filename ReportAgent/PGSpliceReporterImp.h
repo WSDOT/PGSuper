@@ -30,6 +30,7 @@
 #include <EAF\EAFInterfaceCache.h>
 
 #include <IFace\Project.h>
+#include <IFace\ReportOptions.h>
 
 #include <memory>
 
@@ -47,6 +48,7 @@ class ATL_NO_VTABLE CPGSpliceReporterImp :
    public CReporterBase,
 	public IConnectionPointContainerImpl<CPGSpliceReporterImp>,
    public IAgentEx,
+   public IReportOptions,
    public ISpecificationEventSink
 {
 public:
@@ -62,6 +64,7 @@ BEGIN_COM_MAP(CPGSpliceReporterImp)
    COM_INTERFACE_ENTRY(IAgentEx)
    COM_INTERFACE_ENTRY(ISpecificationEventSink)
 	COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
+   COM_INTERFACE_ENTRY(IReportOptions)
 END_COM_MAP()
 
 BEGIN_CONNECTION_POINT_MAP(CPGSpliceReporterImp)
@@ -82,6 +85,9 @@ public:
 public:
    virtual HRESULT OnSpecificationChanged() override;
    virtual HRESULT OnAnalysisTypeChanged() override;
+
+   // IReportOptions
+   virtual bool IncludeSpanAndGirder4Pois(const CGirderKey& rKey) override;
 
 protected:
    // CReporterBase implementation

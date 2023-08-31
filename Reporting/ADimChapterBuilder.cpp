@@ -31,6 +31,7 @@
 #include <IFace\DocumentType.h>
 #include <IFace\Intervals.h>
 #include <IFace\Alignment.h>
+#include <IFace\ReportOptions.h>
 
 #include <PgsExt\BridgeDescription2.h>
 
@@ -224,7 +225,8 @@ void CADimChapterBuilder::BuildAdimContent(rptChapter * pChapter,const std::shar
    vRequiredSlabOffset.resize(nSegments, 0.0);
    vMaxHaunchDiff.resize(nSegments, 0.0);
 
-   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS || 0 < nSegments);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
    {
