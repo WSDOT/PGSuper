@@ -74,15 +74,15 @@ protected:
 
    void BuildSectionHeading(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, SegmentIndexType segIdx, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task, bool bGirderStresses) const;
 
-   void BuildAllowStressInformation(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, SegmentIndexType segIdx, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task, bool bGirderStresses) const;
+   void BuildStressLimitInformation(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, SegmentIndexType segIdx, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task, bool bGirderStresses) const;
 
-   void BuildAllowGirderStressInformation(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, SegmentIndexType segIdx, IEAFDisplayUnits* pDisplayUnits,const StressCheckTask& task) const;
+   void BuildGirderStressLimitInformation(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, SegmentIndexType segIdx, IEAFDisplayUnits* pDisplayUnits,const StressCheckTask& task) const;
 
-   void BuildAllowDeckStressInformation(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task) const;
+   void BuildDeckStressLimitInformation(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task) const;
 
-   void BuildAllowSegmentStressInformation(rptParagraph* pPara, IBroker* pBroker, const pgsSegmentArtifact* pSegmentArtifact, IndexType artifactIdx, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task) const;
+   void BuildSegmentStressLimitInformation(rptParagraph* pPara, IBroker* pBroker, const pgsSegmentArtifact* pSegmentArtifact, IndexType artifactIdx, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task) const;
 
-   void BuildAllowClosureJointStressInformation(rptParagraph* pPara, IBroker* pBroker, const pgsSegmentArtifact* pSegmentArtifact, IndexType artifactIdx, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task) const;
+   void BuildClosureJointStressLimitInformation(rptParagraph* pPara, IBroker* pBroker, const pgsSegmentArtifact* pSegmentArtifact, IndexType artifactIdx, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task) const;
 };
 
 #endif // INCLUDED_FLEXURALSTRESSCHECKTABLE_H_

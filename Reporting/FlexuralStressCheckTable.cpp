@@ -134,7 +134,7 @@ void CFlexuralStressCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, co
             }
             else
             {
-               BuildAllowStressInformation(pChapter, pBroker, pGirderArtifact, segIdx, pDisplayUnits, task, bGirderStresses);
+               BuildStressLimitInformation(pChapter, pBroker, pGirderArtifact, segIdx, pDisplayUnits, task, bGirderStresses);
                BuildTable(pChapter, pBroker, pGirderArtifact, segIdx, pDisplayUnits, task, bGirderStresses);
             }
          }
@@ -161,7 +161,7 @@ void CFlexuralStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker, con
 void CFlexuralStressCheckTable::BuildNotes(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, SegmentIndexType segIdx, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task,bool bGirderStresses) const
 {
    BuildSectionHeading(        pChapter, pBroker, pGirderArtifact, segIdx, pDisplayUnits, task, bGirderStresses);
-   BuildAllowStressInformation(pChapter, pBroker, pGirderArtifact, segIdx, pDisplayUnits, task, bGirderStresses);
+   BuildStressLimitInformation(pChapter, pBroker, pGirderArtifact, segIdx, pDisplayUnits, task, bGirderStresses);
 }
 
 void CFlexuralStressCheckTable::BuildSectionHeading(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, SegmentIndexType segIdx, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task,bool bGirderStresses) const
@@ -235,7 +235,7 @@ void CFlexuralStressCheckTable::BuildSectionHeading(rptChapter* pChapter, IBroke
 
       if ( task.stressType == pgsTypes::Compression )
       {
-         if ( bIsStressingInterval )
+         if ( bIsStressingInterval || (storageIntervalIdx <= task.intervalIdx && task.intervalIdx < haulIntervalIdx))
          {
             *pPara << _T("Compression Stresses (LRFD ") << WBFL::LRFD::LrfdCw8th(_T("5.9.4.1.1"), _T("5.9.2.3.1a"));
          }
@@ -247,7 +247,7 @@ void CFlexuralStressCheckTable::BuildSectionHeading(rptChapter* pChapter, IBroke
 
       if ( task.stressType == pgsTypes::Tension )
       {
-         if ( bIsStressingInterval )
+         if ( bIsStressingInterval || (storageIntervalIdx <= task.intervalIdx && task.intervalIdx < haulIntervalIdx))
          {
             *pPara << _T("Tension Stresses (LRFD ") << WBFL::LRFD::LrfdCw8th(_T("5.9.4.1.2"),_T("5.9.2.3.1b"));
          }
@@ -259,22 +259,22 @@ void CFlexuralStressCheckTable::BuildSectionHeading(rptChapter* pChapter, IBroke
 
       if (pDocType->IsPGSpliceDocument())
       {
-         *pPara << _T(", ") << WBFL::LRFD::LrfdCw8th(_T("5.12.3.4.2d"), _T("5.14.1.3.2d")) << _T(", ") << WBFL::LRFD::LrfdCw8th(_T("5.12.3.4.3"), _T("5.14.1.3.3"));
+         *pPara << _T(", ") << WBFL::LRFD::LrfdCw8th(_T("5.14.1.3.2d"), _T("5.12.3.4.2d")) << _T(", ") << WBFL::LRFD::LrfdCw8th(_T("5.14.1.3.3"), _T("5.12.3.4.3"));
       }
 
       *pPara << _T(")") << rptNewLine;
    }
 }
 
-void CFlexuralStressCheckTable::BuildAllowStressInformation(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, SegmentIndexType segIdx, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task,bool bGirderStresses) const
+void CFlexuralStressCheckTable::BuildStressLimitInformation(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, SegmentIndexType segIdx, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task,bool bGirderStresses) const
 {
    if ( bGirderStresses )
    {
-      BuildAllowGirderStressInformation(pChapter, pBroker, pGirderArtifact, segIdx, pDisplayUnits, task);
+      BuildGirderStressLimitInformation(pChapter, pBroker, pGirderArtifact, segIdx, pDisplayUnits, task);
    }
    else
    {
-      BuildAllowDeckStressInformation(pChapter, pBroker, pGirderArtifact, pDisplayUnits, task);
+      BuildDeckStressLimitInformation(pChapter, pBroker, pGirderArtifact, pDisplayUnits, task);
    }
 }
 
@@ -687,7 +687,7 @@ void CFlexuralStressCheckTable::MakeAssignment(const CFlexuralStressCheckTable& 
    MakeCopy( rOther );
 }
 
-void CFlexuralStressCheckTable::BuildAllowGirderStressInformation(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, SegmentIndexType segIdx, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task) const
+void CFlexuralStressCheckTable::BuildGirderStressLimitInformation(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, SegmentIndexType segIdx, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task) const
 {
    pgsTypes::StressLocation topLocation = pgsTypes::TopGirder;
    pgsTypes::StressLocation botLocation = pgsTypes::BottomGirder;
@@ -760,7 +760,7 @@ void CFlexuralStressCheckTable::BuildAllowGirderStressInformation(rptChapter* pC
          if ( bIsTopApplicableStress || bIsBotApplicableStress )
          {
             // report the allowable stress information from the first applicable artifact
-            BuildAllowSegmentStressInformation(p, pBroker, pSegmentArtifact, artifactIdx, pDisplayUnits, task);
+            BuildSegmentStressLimitInformation(p, pBroker, pSegmentArtifact, artifactIdx, pDisplayUnits, task);
             break;
          }
       }
@@ -791,14 +791,14 @@ void CFlexuralStressCheckTable::BuildAllowGirderStressInformation(rptChapter* pC
             *p << RPT_FC << _T(" = ") << stress_u.SetValue(fc) << rptNewLine;
          }
 
-         BuildAllowClosureJointStressInformation(p, pBroker, pSegmentArtifact, nArtifacts-1, pDisplayUnits, task);
+         BuildClosureJointStressLimitInformation(p, pBroker, pSegmentArtifact, nArtifacts-1, pDisplayUnits, task);
 
          *p << rptNewLine;
       }
    }
 }
 
-void CFlexuralStressCheckTable::BuildAllowDeckStressInformation(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task) const
+void CFlexuralStressCheckTable::BuildDeckStressLimitInformation(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task) const
 {
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -868,7 +868,7 @@ void CFlexuralStressCheckTable::BuildAllowDeckStressInformation(rptChapter* pCha
       }
       else
       {
-         (*pPara) << _T("Allowable tensile stress in the precompressed tensile zone = ");
+         (*pPara) << _T("Tensile stress limit in the precompressed tensile zone = ");
          tension_stress_limit.Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fc);
 
          Float64 fLimit = pLimits->GetDeckConcreteTensionStressLimit(poi, task,false/*without rebar*/);
@@ -896,7 +896,7 @@ void CFlexuralStressCheckTable::BuildAllowDeckStressInformation(rptChapter* pCha
    }
 }
 
-void CFlexuralStressCheckTable::BuildAllowSegmentStressInformation(rptParagraph* pPara, IBroker* pBroker, const pgsSegmentArtifact* pSegmentArtifact, IndexType artifactIdx, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task) const
+void CFlexuralStressCheckTable::BuildSegmentStressLimitInformation(rptParagraph* pPara, IBroker* pBroker, const pgsSegmentArtifact* pSegmentArtifact, IndexType artifactIdx, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task) const
 {
    pgsTypes::StressLocation topLocation = pgsTypes::TopGirder;
    pgsTypes::StressLocation botLocation = pgsTypes::BottomGirder;
@@ -964,7 +964,7 @@ void CFlexuralStressCheckTable::BuildAllowSegmentStressInformation(rptParagraph*
    }
 }
 
-void CFlexuralStressCheckTable::BuildAllowClosureJointStressInformation(rptParagraph* pPara, IBroker* pBroker, const pgsSegmentArtifact* pSegmentArtifact, IndexType artifactIdx, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task) const
+void CFlexuralStressCheckTable::BuildClosureJointStressLimitInformation(rptParagraph* pPara, IBroker* pBroker, const pgsSegmentArtifact* pSegmentArtifact, IndexType artifactIdx, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task) const
 {
    INIT_UV_PROTOTYPE( rptPressureSectionValue, stress,   pDisplayUnits->GetStressUnit(), false );
    INIT_UV_PROTOTYPE( rptPressureSectionValue, stress_u, pDisplayUnits->GetStressUnit(), true );

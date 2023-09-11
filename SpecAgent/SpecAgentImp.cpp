@@ -987,9 +987,18 @@ void CSpecAgentImp::ReportSegmentConcreteTensionStressLimit(const pgsPointOfInte
    {
       bool bIsStressingInterval = pIntervals->IsStressingInterval(segmentKey, task.intervalIdx);
 
+      IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
+      IntervalIndexType haulIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
+
       auto tension_stress_limit = GetSegmentConcreteTensionStressLimitParameters(poi, task, false/*without rebar*/);
 
-      if (bIsStressingInterval)
+      // The storage interval represents a change in loading conditions because supports move relative to release.
+      // Per LRFD 5.12.3.4.3 for spliced girder segments the concrete stress limits for after losses in
+      // LRFD 5.9.2.3.2. However this doesn't may any sense. At release the BeforeLosses case applies and
+      // a short time later the AfterLosses case applies, and the stress limit change. This doesn't make sense.
+      // For this reason we use the "Before Losses" case for storage
+
+      if (bIsStressingInterval || storageIntervalIdx <= task.intervalIdx && task.intervalIdx < haulIntervalIdx)
       {
          (*pPara) << _T("Tension stress limit in precompressed tensile zone without bounded reinforcement = N/A") << rptNewLine;
          (*pPara) << _T("Tension stress limit in areas other than the precompressed tensile zone and without bonded reinforcement = ");
@@ -1905,7 +1914,7 @@ TensionStressLimit CSpecAgentImp::GetSegmentConcreteTensionStressLimitParameters
       // The storage interval represents a change in loading conditions because supports move relative to release.
       // Per LRFD 5.12.3.4.3 for spliced girder segments the concrete stress limits for after losses in
       // LRFD 5.9.2.3.2. However this doesn't may any sense. At release the BeforeLosses case applies and
-      // a short time later the AfterLosses case applies, and the stress limit goes from 0.65f'ci to 0.45f'ci.
+      // a short time later the AfterLosses case applies, and the stress limit change. This doesn't make sense.
       // For this reason we use the "Before Losses" case for storage
 
       ATLASSERT( task.limitState == pgsTypes::ServiceI );
