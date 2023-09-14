@@ -1839,29 +1839,28 @@ Float64 CSpecAgentImp::GetDeckConcreteCompressionStressLimitCoefficient(const pg
    else
    {
       // non-stressing interval
-      if ( task.intervalIdx < liveLoadIntervalIdx )
+      if (liveLoadIntervalIdx <= task.intervalIdx && task.bIncludeLiveLoad == true)
+      {
+         // live load is on the structure so this is the "at service limit states" "after all losses" case
+         ATLASSERT((task.limitState == pgsTypes::ServiceI) || (task.limitState == pgsTypes::ServiceIA) || (task.limitState == pgsTypes::FatigueI));
+         x = (task.limitState == pgsTypes::ServiceI ? prestressed_element_criteria.CompressionStressCoefficient_AllLoads_AfterLosses : prestressed_element_criteria.CompressionStressCoefficient_Fatigue);
+      }
+      else
       {
          // before the deck is composite (this is for temporary loading conditions)
          // this is basically the wet slab on girder case
-         if ( task.intervalIdx < compositeDeckIntervalIdx )
+         if (task.intervalIdx < compositeDeckIntervalIdx)
          {
-            ATLASSERT( task.limitState == pgsTypes::ServiceI );
+            ATLASSERT(task.limitState == pgsTypes::ServiceI);
             x = prestressed_element_criteria.CompressionStressCoefficient_AfterDeckPlacement;
          }
          else
          {
             // the deck is now composite so this is the Effective Prestress + Permanent Loads case
             // (basically the case when the railing system has been installed, but no live load)
-            ATLASSERT( task.limitState == pgsTypes::ServiceI );
+            ATLASSERT(task.limitState == pgsTypes::ServiceI);
             x = prestressed_element_criteria.CompressionStressCoefficient_PermanentLoadsOnly_AfterLosses;
          }
-      }
-      else
-      {
-         // live load is on the structure so this is the "at service limit states" "after all losses"
-         // case
-         ATLASSERT( (task.limitState == pgsTypes::ServiceI) || (task.limitState == pgsTypes::ServiceIA) || (task.limitState == pgsTypes::FatigueI));
-         x = (task.limitState == pgsTypes::ServiceI ? prestressed_element_criteria.CompressionStressCoefficient_AllLoads_AfterLosses : prestressed_element_criteria.CompressionStressCoefficient_Fatigue);
       }
    }
 
@@ -2149,11 +2148,22 @@ TensionStressLimit CSpecAgentImp::GetDeckConcreteTensionStressLimitParameters(co
    else
    {
       // if this is a non-stressing interval, use allowables from Table 5.9.2.3.2b-1 (pre2017: 5.9.4.2.2-1)
-      GET_IFACE(IEnvironment,pEnv);
-      auto exposureCondition = pEnv->GetExposureCondition();
-      tension_stress_limit = (exposureCondition == pgsTypes::ExposureCondition::Normal ?
-         prestress_element_criteria.TensionStressLimit_ServiceIII_InPTZ_ModerateCorrosionConditions_AfterLosses :
-         prestress_element_criteria.TensionStressLimit_ServiceIII_InPTZ_SevereCorrosionConditions_AfterLosses);
+      if (task.limitState == pgsTypes::ServiceI && CheckFinalDeadLoadTensionStress())
+      {
+         tension_stress_limit = prestress_element_criteria.TensionStressLimit_ServiceI_PermanentLoadsOnly_AfterLosses;
+      }
+      else
+      {
+#if defined _DEBUG
+         GET_IFACE(IDocumentType, pDocType);
+         ATLASSERT((pDocType->IsPGSpliceDocument() && task.limitState == pgsTypes::ServiceI) || task.limitState == pgsTypes::ServiceIII);
+#endif
+         GET_IFACE(IEnvironment, pEnv);
+         auto exposureCondition = pEnv->GetExposureCondition();
+         tension_stress_limit = (exposureCondition == pgsTypes::ExposureCondition::Normal ?
+            prestress_element_criteria.TensionStressLimit_ServiceIII_InPTZ_ModerateCorrosionConditions_AfterLosses :
+            prestress_element_criteria.TensionStressLimit_ServiceIII_InPTZ_SevereCorrosionConditions_AfterLosses);
+      }
    }
 
    return tension_stress_limit;
