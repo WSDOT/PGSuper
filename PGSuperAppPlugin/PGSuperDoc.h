@@ -65,7 +65,7 @@ public:
 
    virtual UINT GetStandardToolbarResourceID() override;
 
-   void DesignGirder(bool bPrompt, arSlabOffsetDesignType designSlabOffset, const CGirderKey& girderKey);
+   void DesignGirder(bool bPrompt, arSlabOffsetDesignType haunchDesignRequest, const CGirderKey& girderKey);
    bool DesignHaunch(const CGirderKey& girderKey);
 
    CPGSuperComponentInfoManager* GetComponentInfoManager() { return &m_ComponentInfoManager; }

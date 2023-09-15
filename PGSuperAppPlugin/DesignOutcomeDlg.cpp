@@ -268,7 +268,7 @@ BOOL CDesignOutcomeDlg::OnInitDialog()
 	CDialog::OnInitDialog();
 
    // don't show A dim controls if no A design
-   if (m_DesignADimType==dtNoDesign)
+   if (m_DesignADimType==sodPreserveHaunch)
    {
       m_ADesignCheckBox.ShowWindow(SW_HIDE);
       m_ADesignFromCombo.ShowWindow(SW_HIDE);

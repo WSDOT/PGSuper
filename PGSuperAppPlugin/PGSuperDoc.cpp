@@ -354,7 +354,7 @@ void CPGSuperDoc::OnProjectDesignGirderDirectPreserveHaunch()
    DesignGirder(false/*don't prompt for design options, used last values*/,sodPreserveHaunch,CGirderKey(m_Selection.GroupIdx,m_Selection.GirderIdx));
 }
 
-void CPGSuperDoc::DesignGirder(bool bPrompt, arSlabOffsetDesignType designSlabOffset, const CGirderKey& girderKey)
+void CPGSuperDoc::DesignGirder(bool bPrompt, arSlabOffsetDesignType haunchDesignRequest, const CGirderKey& girderKey)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -377,7 +377,6 @@ void CPGSuperDoc::DesignGirder(bool bPrompt, arSlabOffsetDesignType designSlabOf
    {
       CString msg(_T("Geometric design of the slab haunch is only available if the \"A\" dimension input format is used to define the haunch. Haunch geometry will be not be modified during the design."));
       AfxMessageBox(msg,MB_OK | MB_ICONWARNING);
-      designSlabOffset = sodPreserveHaunch;
    }
    else
    {
@@ -417,10 +416,8 @@ void CPGSuperDoc::DesignGirder(bool bPrompt, arSlabOffsetDesignType designSlabOf
    std::vector<CGirderKey> girderKeys;
    if (bPrompt)
    {
-      // only show A design option if it's allowed in the library
-      // Do not save this in registry because library selection should be default for new documents
-
-      CDesignGirderDlg dlg(thisGirderKey, m_pBroker, designSlabOffset);
+      // Dialog saves design options in registery to be loaded later below
+      CDesignGirderDlg dlg(thisGirderKey, m_pBroker, haunchDesignRequest);
 
       if (dlg.DoModal() == IDOK)
       {
@@ -447,7 +444,7 @@ void CPGSuperDoc::DesignGirder(bool bPrompt, arSlabOffsetDesignType designSlabOf
    arSlabOffsetDesignType haunchDesignType;
    arConcreteDesignType concreteDesignType;
    arShearDesignType shearDesignType;
-   CDesignGirderDlg::LoadSettings(bDesignFlexure, haunchDesignType, concreteDesignType, shearDesignType);
+   CDesignGirderDlg::LoadSettings(haunchDesignRequest, bDesignFlexure, haunchDesignType, concreteDesignType, shearDesignType);
 
    DoDesignGirder(girderKeys, bDesignFlexure, haunchDesignType, concreteDesignType, shearDesignType);
 }
