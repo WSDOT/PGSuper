@@ -197,7 +197,7 @@ void CPierDetailsBearingsPage::DoDataExchange(CDataExchange* pDX)
    }
 
    DDX_UnitValueAndTag( pDX, IDC_BRG_LENGTH_1, IDC_BRG_LENGTH_UNIT, B1Dat.Length, pDisplayUnits->GetComponentDimUnit() );
-   DDV_UnitValueGreaterThanZero(pDX, IDC_BRG_LENGTH_1, B1Dat.Length, pDisplayUnits->GetComponentDimUnit() );
+   DDV_UnitValueZeroOrMore(pDX, IDC_BRG_LENGTH_1, B1Dat.Length, pDisplayUnits->GetComponentDimUnit() );
    if (!(pDX->m_bSaveAndValidate && B1Dat.Shape==bsRound))
    {
       DDX_UnitValueAndTag( pDX, IDC_BRG_WIDTH_1, IDC_BRG_WIDTH_UNIT, B1Dat.Width, pDisplayUnits->GetComponentDimUnit() );
@@ -225,7 +225,7 @@ void CPierDetailsBearingsPage::DoDataExchange(CDataExchange* pDX)
    }
 
    DDX_UnitValueAndTag( pDX, IDC_BRG_LENGTH_2, IDC_BRG_LENGTH_UNIT, B2Dat.Length, pDisplayUnits->GetComponentDimUnit() );
-   DDV_UnitValueGreaterThanZero(pDX, IDC_BRG_LENGTH_2, B2Dat.Length, pDisplayUnits->GetComponentDimUnit() );
+   DDV_UnitValueZeroOrMore(pDX, IDC_BRG_LENGTH_2, B2Dat.Length, pDisplayUnits->GetComponentDimUnit() );
    if (!(pDX->m_bSaveAndValidate && B2Dat.Shape==bsRound))
    {
       DDX_UnitValueAndTag( pDX, IDC_BRG_WIDTH_2, IDC_BRG_WIDTH_UNIT, B2Dat.Width, pDisplayUnits->GetComponentDimUnit() );
