@@ -65,8 +65,6 @@ void TensionStressLimit::Save(LPCTSTR strUnitName, WBFL::System::IStructuredSave
 
 void TensionStressLimit::Load(LPCTSTR strUnitName, WBFL::System::IStructuredLoad* pLoad)
 {
-   PRECONDITION(83 <= pLoad->GetVersion());
-
    if (!pLoad->BeginUnit(strUnitName)) THROW_LOAD(InvalidFileFormat, pLoad);
    if (!pLoad->Property(_T("Coefficient"), &Coefficient)) THROW_LOAD(InvalidFileFormat, pLoad);
    if (!pLoad->Property(_T("bHasMaxValue"), &bHasMaxValue)) THROW_LOAD(InvalidFileFormat, pLoad);
