@@ -54,9 +54,13 @@ using namespace ATL;
 // are used for the stress analysis
 //#define USE_AVERAGE_TENDON_FORCE
 
+#if defined _DEBUG
+#undef WBFL_DEBUG
+#define WBFL_DEBUG
+#endif
+
 #include <WBFLAll.h>
 #include <WBFLAtlExt.h>
 #include <PGSuperTypes.h>
-#include <PGSuperDebug.h>
 #include <PGSuperUnits.h>
 

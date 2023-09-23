@@ -730,7 +730,6 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClInclude Include="..\Include\PGSuperAll.h" />
     <ClInclude Include="..\Include\PGSuperCatCom.h" />
     <ClInclude Include="..\Include\PGSuperColors.h" />
-    <ClInclude Include="..\Include\PGSuperDebug.h" />
     <ClInclude Include="..\Include\PGSuperTypes.h" />
     <ClInclude Include="..\Include\PGSuperUnits.h" />
     <ClInclude Include="..\Include\PGSuperVersion.h" />

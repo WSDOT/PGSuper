@@ -1040,9 +1040,6 @@
     <ClInclude Include="..\Include\PGSuperColors.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Include\PGSuperDebug.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\Include\PGSuperTypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>

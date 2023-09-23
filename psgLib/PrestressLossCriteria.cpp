@@ -153,7 +153,7 @@ bool PrestressLossCriteria::Compare(const PrestressLossCriteria& other, const Sp
       }
       else
       {
-         CHECK(LossMethod == LossMethod::TIME_STEP);
+         CHECK(LossMethod == LossMethodType::TIME_STEP);
          if (TimeDependentConcreteModel != other.TimeDependentConcreteModel)
          {
             bSame = false;
