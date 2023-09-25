@@ -132,7 +132,7 @@ void PrestressedElementCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* 
 
    if (bCheckFinalServiceITension)
    {
-      *pPara << _T(" - (Optional) Tension due to the sum of effective prestress and permanent loads : "); TensionStressLimit_ServiceI_PermanentLoadsOnly_AfterLosses.Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fc); *pPara << rptNewLine;
+      *pPara << _T(" - (Optional, Enabled) Tension due to the sum of effective prestress and permanent loads : "); TensionStressLimit_ServiceI_PermanentLoadsOnly_AfterLosses.Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fc); *pPara << rptNewLine;
    }
 
    if (bCheckTemporaryStresses)

@@ -41,8 +41,15 @@ struct PSGLIBCLASS ClosureJointCriteria
 
    Float64 CompressionStressCoefficient_PermanentLoadsOnly_AfterLosses = 0.45;
    Float64 CompressionStressCoefficient_AllLoads_AfterLosses = 0.60;
+
+   // This is an optional tension check, not in the LRFD, but used by TxDOT and CalTrans (zero tension under dead load only)
+   // Note that the bool below appears to be independent of the same in PrestressedElementCriteria, but it is forced to be synchronized by the UI. 
+   // Do not make this independent unless you are willing to update creation of the new limit state in the specagent
+   bool bCheckFinalServiceITension = false; // false is consistent with the original features of the program (this feature didn't originally exists, so defaulting to false makes old files unchanged)
+   TensionStressLimit TensionStressLimit_ServiceI_PermanentLoadsOnly_AfterLosses{ 0.0,false,0.0 };
+
    TensionStressLimit TensionStressLimit_InPTZ_WithoutReinforcement_AfterLosses{ 0.0,false,0.0 };
-   TensionStressLimit TensionStressLimit_InPTZ_WithReinforcement_AfterLosses{ WBFL::Units::ConvertToSysUnits(0.0948,WBFL::Units::Measure::SqrtKSI),false,0.0 };
+   TensionStressLimit TensionStressLimit_InPTZ_WithReinforcement_AfterLosses{ WBFL::Units::ConvertToSysUnits(0.0948,WBFL::Units::Measure::SqrtKSI),true,  WBFL::Units::ConvertToSysUnits(0.30,WBFL::Units::Measure::KSI) };
    TensionStressLimit TensionStressLimit_OtherAreas_WithoutReinforcement_AfterLosses{ 0.0,false,0.0 };
    TensionStressLimit TensionStressLimit_OtherAreas_WithReinforcement_AfterLosses{ WBFL::Units::ConvertToSysUnits(0.19,WBFL::Units::Measure::SqrtKSI),false,0.0 };
 

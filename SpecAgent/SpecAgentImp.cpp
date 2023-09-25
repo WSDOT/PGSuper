@@ -2048,6 +2048,7 @@ TensionStressLimit CSpecAgentImp::GetClosureJointConcreteTensionStressLimitParam
 
    GET_IFACE(IIntervals,pIntervals);
    bool bIsTendonStressingInterval = pIntervals->IsGirderTendonStressingInterval(segmentKey,task.intervalIdx);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    // closure joints have allowables for both "in the precompressed tensile zone" and "in areas other than
    // the precompressed tensile zone" (See Table 5.9.2.3.1b-1 and 5.9.2.3.2b-1 (pre2017: 5.9.4.1.2-1 and -5.9.4.2.2-1)) for both during stressing (before losses)
@@ -2082,26 +2083,43 @@ TensionStressLimit CSpecAgentImp::GetClosureJointConcreteTensionStressLimitParam
    else
    {
       // non-stressing interval, use Table 5.9.2.3.2b-1 (pre2017: 5.9.4.2.2-1)
-      if ( bInPrecompressedTensileZone )
+      // 
+      // For non-live load case, use similar logic to that in GetSegmentConcreteTensionStressLimitParameters
+      if (liveLoadIntervalIdx <= task.intervalIdx && task.limitState == pgsTypes::ServiceI && CheckFinalDeadLoadTensionStress())
       {
-         if ( bWithBondedReinforcement )
-         {
-            tension_stress_limit = closure_joint_criteria.TensionStressLimit_InPTZ_WithReinforcement_AfterLosses;
-         }
-         else
-         {
-            tension_stress_limit = closure_joint_criteria.TensionStressLimit_InPTZ_WithoutReinforcement_AfterLosses;
-         }
+         tension_stress_limit = closure_joint_criteria.TensionStressLimit_ServiceI_PermanentLoadsOnly_AfterLosses;
       }
       else
       {
-         if ( bWithBondedReinforcement )
+         if (bInPrecompressedTensileZone)
          {
-            tension_stress_limit = closure_joint_criteria.TensionStressLimit_OtherAreas_WithReinforcement_AfterLosses;
+            if (bWithBondedReinforcement)
+            {
+               tension_stress_limit = closure_joint_criteria.TensionStressLimit_InPTZ_WithReinforcement_AfterLosses;
+            }
+            else
+            {
+               tension_stress_limit = closure_joint_criteria.TensionStressLimit_InPTZ_WithoutReinforcement_AfterLosses;
+            }
          }
          else
          {
-            tension_stress_limit = closure_joint_criteria.TensionStressLimit_OtherAreas_WithoutReinforcement_AfterLosses;
+            if (bWithBondedReinforcement)
+            {
+               tension_stress_limit = closure_joint_criteria.TensionStressLimit_OtherAreas_WithReinforcement_AfterLosses;
+            }
+            else
+            {
+               tension_stress_limit = closure_joint_criteria.TensionStressLimit_OtherAreas_WithoutReinforcement_AfterLosses;
+            }
+         }
+
+         // Same-ilar hack as done for segment stresses:
+         // Use the final tension stress as permitted by AASHTO 5.9.2.3.2, unless it is zero AND the CheckFinalDeadLoadTensionStress option is enabled, 
+         // in which case, use the final tension for permanent load tension stress limit
+         if (IsZero(tension_stress_limit.Coefficient) && CheckFinalDeadLoadTensionStress())
+         {
+            tension_stress_limit = closure_joint_criteria.TensionStressLimit_ServiceI_PermanentLoadsOnly_AfterLosses;
          }
       }
    }

@@ -90,7 +90,6 @@ BOOL CSpecGirderStressPage::OnInitDialog()
 	OnCheckReleaseTensionMax();
 	OnCheckTSRemovalTensionMax();
    OnCheckAfterDeckTensionMax();
-	OnCheckServiceITensionMax();
 	OnCheckServiceIIITensionMax();
 	OnCheckSevereServiceIIITensionMax();
    OnCheckTemporaryStresses();
@@ -206,6 +205,9 @@ void CSpecGirderStressPage::OnCheckServiceITensileStress()
    pwnd = GetDlgItem(IDC_SERVICE_I_TENSION_MAX_UNIT);
    ASSERT(pchk);
    pwnd->EnableWindow(ischk);
+
+   OnCheckServiceITensionMax();
+
 }
 
 void CSpecGirderStressPage::OnCheckServiceITensionMax()
@@ -213,6 +215,11 @@ void CSpecGirderStressPage::OnCheckServiceITensionMax()
    CButton* pchk = (CButton*)GetDlgItem(IDC_CHECK_SERVICE_I_TENSION_MAX);
    ASSERT(pchk);
    BOOL ischk = pchk->GetCheck();
+
+   // Need also to check main setting
+   pchk = (CButton*)GetDlgItem(IDC_CHECK_SERVICE_I_TENSION);
+   ASSERT(pchk);
+   ischk &= pchk->GetCheck();
 
    CWnd* pwnd = GetDlgItem(IDC_SERVICE_I_TENSION_MAX);
    ASSERT(pchk);

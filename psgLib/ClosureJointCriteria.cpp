@@ -28,11 +28,19 @@ bool ClosureJointCriteria::Compare(const ClosureJointCriteria& other, const Spec
 {
    bool bSame = true;
 
+   bool bServiceITension = (bCheckFinalServiceITension == other.bCheckFinalServiceITension);
+   if (bServiceITension && TensionStressLimit_ServiceI_PermanentLoadsOnly_AfterLosses != other.TensionStressLimit_ServiceI_PermanentLoadsOnly_AfterLosses)
+   {
+      bServiceITension = false;
+   }
+
    if (!::IsEqual(CompressionStressCoefficient_BeforeLosses, other.CompressionStressCoefficient_BeforeLosses) 
       or
       TensionStressLimit_InPTZ_WithoutReinforcement_BeforeLosses != other.TensionStressLimit_InPTZ_WithoutReinforcement_BeforeLosses
       or
       TensionStressLimit_InPTZ_WithReinforcement_BeforeLosses != other.TensionStressLimit_InPTZ_WithReinforcement_BeforeLosses
+      or
+      !bServiceITension
       or
       TensionStressLimit_OtherAreas_WithoutReinforcement_BeforeLosses != other.TensionStressLimit_OtherAreas_WithoutReinforcement_BeforeLosses
       or
@@ -108,6 +116,12 @@ void ClosureJointCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDispl
    *pPara << _T("- Due to the sum of effective prestress and permanent loads : ") << CompressionStressCoefficient_PermanentLoadsOnly_AfterLosses << RPT_FC << rptNewLine;
    *pPara << _T("- Due to the sum of effective prestress, permanent loads, and transient loads : ") << CompressionStressCoefficient_AllLoads_AfterLosses << RPT_FC << rptNewLine;
    *pPara << _T("Tension stress") << rptNewLine;
+
+   if (bCheckFinalServiceITension)
+   {
+      *pPara << _T(" - (Optional, Enabled) Tension due to the sum of effective prestress and permanent loads : "); TensionStressLimit_ServiceI_PermanentLoadsOnly_AfterLosses.Report(pPara,pDisplayUnits,TensionStressLimit::ConcreteSymbol::fc); *pPara << rptNewLine;
+   }
+
    *pPara << _T("- Longitudinal Stresses through Joints in the Precompressed Tensile Zone") << rptNewLine;
    *pPara << _T("  * Joints with minimum bonded auxiliary reinforcement through the joints, which is sufficient to carry the calculated tensile force at a stress of 0.5") << RPT_FY << _T("; with internal tendons or external tendons :");
    TensionStressLimit_InPTZ_WithReinforcement_AfterLosses.Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fc); *pPara << rptNewLine;
@@ -145,7 +159,8 @@ void ClosureJointCriteria::Save(WBFL::System::IStructuredSave* pSave) const
 
    pSave->EndUnit(); // BeforeLosses
 
-   pSave->BeginUnit(_T("AfterLosses"), 1.0);
+   // Version 2 added OptionalFinalTensionStressLimit
+   pSave->BeginUnit(_T("AfterLosses"), 2.0);
 
    pSave->Property(_T("CompressionStressCoefficient_PermanentLoadsOnly"), CompressionStressCoefficient_PermanentLoadsOnly_AfterLosses);
    pSave->Property(_T("CompressionStressCoefficient_AllLoads"), CompressionStressCoefficient_AllLoads_AfterLosses);
@@ -157,6 +172,11 @@ void ClosureJointCriteria::Save(WBFL::System::IStructuredSave* pSave) const
    TensionStressLimit_OtherAreas_WithoutReinforcement_AfterLosses.Save(_T("TensionStressLimit_OtherAreas_WithoutReinforcement"), pSave);
 
    TensionStressLimit_OtherAreas_WithReinforcement_AfterLosses.Save(_T("TensionStressLimit_OtherAreas_WithReinforcement"), pSave);
+
+   pSave->BeginUnit(_T("OptionalFinalTensionStressLimit"),1.0);
+   pSave->Property(_T("bCheckFinalServiceITension"),bCheckFinalServiceITension);
+   TensionStressLimit_ServiceI_PermanentLoadsOnly_AfterLosses.Save(_T("TensionStressLimit_ServiceI_PermanentLoadsOnly"),pSave);
+   pSave->EndUnit(); // OptionalFinalTensionStressLimit
 
    pSave->EndUnit(); // AfterLosses
 
@@ -199,6 +219,14 @@ void ClosureJointCriteria::Load(WBFL::System::IStructuredLoad* pLoad)
    TensionStressLimit_OtherAreas_WithoutReinforcement_AfterLosses.Load(_T("TensionStressLimit_OtherAreas_WithoutReinforcement"),pLoad);
 
    TensionStressLimit_OtherAreas_WithReinforcement_AfterLosses.Load(_T("TensionStressLimit_OtherAreas_WithReinforcement"),pLoad);
+
+   if (pLoad->GetVersion() > 1.0)
+   {
+      if (!pLoad->BeginUnit(_T("OptionalFinalTensionStressLimit"))) THROW_LOAD(InvalidFileFormat,pLoad);
+      if (!pLoad->Property(_T("bCheckFinalServiceITension"),&bCheckFinalServiceITension)) THROW_LOAD(InvalidFileFormat,pLoad);
+      TensionStressLimit_ServiceI_PermanentLoadsOnly_AfterLosses.Load(_T("TensionStressLimit_ServiceI_PermanentLoadsOnly"),pLoad);
+      if (!pLoad->EndUnit()) THROW_LOAD(InvalidFileFormat,pLoad); // OptionalFinalTensionStressLimit
+   }
 
    if (!pLoad->EndUnit()) THROW_LOAD(InvalidFileFormat, pLoad); // AfterLosses
 

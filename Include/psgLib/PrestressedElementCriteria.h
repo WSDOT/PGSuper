@@ -43,7 +43,7 @@ struct PSGLIBCLASS PrestressedElementCriteria
    Float64 CompressionStressCoefficient_AllLoads_AfterLosses = 0.60;
 
    // This is an optional tension check, not in the LRFD, but used by TxDOT and CalTrans (zero tension under dead load only)
-   bool bCheckFinalServiceITension = false; // false is consistent with the oringal features of the program (this feature didn't originally exists, so defaulting to false makes old files unchanged)
+   bool bCheckFinalServiceITension = false; // false is consistent with the original features of the program (this feature didn't originally exists, so defaulting to false makes old files unchanged)
    TensionStressLimit TensionStressLimit_ServiceI_PermanentLoadsOnly_AfterLosses{ 0.0,false,0.0 };
 
    TensionStressLimit TensionStressLimit_ServiceIII_InPTZ_ModerateCorrosionConditions_AfterLosses{ 0.0,false,WBFL::Units::ConvertToSysUnits(0.200,WBFL::Units::Measure::KSI) };

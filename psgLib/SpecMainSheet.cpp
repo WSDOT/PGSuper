@@ -1275,21 +1275,61 @@ void CSpecMainSheet::ExchangeClosureData(CDataExchange* pDX)
    DDX_Text(pDX,IDC_SERVICE_COMPRESSION_WITH_LIVELOAD,m_Entry.m_pImpl->m_ClosureJointCriteria.CompressionStressCoefficient_AllLoads_AfterLosses);
    DDV_GreaterThanZero(pDX, IDC_SERVICE_COMPRESSION_WITH_LIVELOAD,m_Entry.m_pImpl->m_ClosureJointCriteria.CompressionStressCoefficient_AllLoads_AfterLosses);
 
+   // Activation of optional service I check after losses is dependent on setting in m_PrestressedElementCriteria. Synchronize here
+   if (!pDX->m_bSaveAndValidate)
+   {
+      m_Entry.m_pImpl->m_ClosureJointCriteria.bCheckFinalServiceITension = m_Entry.m_pImpl->m_PrestressedElementCriteria.bCheckFinalServiceITension;
+   }
+
+   DDX_UnitValueAndTag(pDX,IDC_SERVICE_I_TENSION,IDC_SERVICE_I_TENSION_UNIT,m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_ServiceI_PermanentLoadsOnly_AfterLosses.Coefficient,pDisplayUnits->SqrtPressure);
+   DDX_Text(pDX,IDC_SERVICE_I_TENSION_UNIT,tagAfterLosses);
+   DDV_UnitValueZeroOrMore(pDX,IDC_SERVICE_I_TENSION,m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_ServiceI_PermanentLoadsOnly_AfterLosses.Coefficient,pDisplayUnits->SqrtPressure);
+   DDX_Check_Bool(pDX,IDC_CHECK_SERVICE_I_TENSION_MAX,m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_ServiceI_PermanentLoadsOnly_AfterLosses.bHasMaxValue);
+   DDX_UnitValueAndTag(pDX,IDC_SERVICE_I_TENSION_MAX,IDC_SERVICE_I_TENSION_MAX_UNIT,m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_ServiceI_PermanentLoadsOnly_AfterLosses.MaxValue,pDisplayUnits->Stress);
+   if (m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_ServiceI_PermanentLoadsOnly_AfterLosses.bHasMaxValue)
+   {
+      DDV_UnitValueGreaterThanZero(pDX,IDC_SERVICE_I_TENSION_MAX,m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_ServiceI_PermanentLoadsOnly_AfterLosses.MaxValue,pDisplayUnits->Stress);
+   }
+
    DDX_UnitValueAndTag(pDX, IDC_SERVICE_PTZ_TENSION, IDC_SERVICE_PTZ_TENSION_UNIT, m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_InPTZ_WithoutReinforcement_AfterLosses.Coefficient, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_SERVICE_PTZ_TENSION_UNIT,tagAfterLosses);
    DDV_UnitValueZeroOrMore(pDX, IDC_SERVICE_PTZ_TENSION_UNIT,m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_InPTZ_WithoutReinforcement_AfterLosses.Coefficient, pDisplayUnits->SqrtPressure);
+   DDX_Check_Bool(pDX,IDC_CHECK_SERVICE_PTZ_TENSION_MAX,m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_InPTZ_WithoutReinforcement_AfterLosses.bHasMaxValue);
+   DDX_UnitValueAndTag(pDX,IDC_SERVICE_PTZ_TENSION_MAX,IDC_SERVICE_PTZ_TENSION_MAX_UNIT,m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_InPTZ_WithoutReinforcement_AfterLosses.MaxValue,pDisplayUnits->Stress);
+   if (m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_InPTZ_WithoutReinforcement_AfterLosses.bHasMaxValue)
+   {
+      DDV_UnitValueGreaterThanZero(pDX,IDC_SERVICE_PTZ_TENSION_MAX,m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_InPTZ_WithoutReinforcement_AfterLosses.MaxValue,pDisplayUnits->Stress);
+   }
 
    DDX_UnitValueAndTag(pDX, IDC_SERVICE_PTZ_TENSION_WITH_REBAR, IDC_SERVICE_PTZ_TENSION_WITH_REBAR_UNIT, m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_InPTZ_WithReinforcement_AfterLosses.Coefficient, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_SERVICE_PTZ_TENSION_WITH_REBAR_UNIT,tagAfterLosses);
    DDV_UnitValueZeroOrMore(pDX, IDC_SERVICE_PTZ_TENSION_WITH_REBAR_UNIT,m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_InPTZ_WithReinforcement_AfterLosses.Coefficient, pDisplayUnits->SqrtPressure);
+   DDX_Check_Bool(pDX,IDC_CHECK_SERVICE_PTZ_TENSION_WITH_REBAR_MAX,m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_InPTZ_WithReinforcement_AfterLosses.bHasMaxValue);
+   DDX_UnitValueAndTag(pDX,IDC_SERVICE_PTZ_TENSION_WITH_REBAR_MAX,IDC_SERVICE_PTZ_TENSION_WITH_REBAR_MAX_UNIT,m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_InPTZ_WithReinforcement_AfterLosses.MaxValue,pDisplayUnits->Stress);
+   if (m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_InPTZ_WithReinforcement_AfterLosses.bHasMaxValue)
+   {
+      DDV_UnitValueGreaterThanZero(pDX,IDC_SERVICE_PTZ_TENSION_WITH_REBAR_MAX,m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_InPTZ_WithReinforcement_AfterLosses.MaxValue,pDisplayUnits->Stress);
+   }
 
    DDX_UnitValueAndTag(pDX, IDC_SERVICE_III_TENSION, IDC_SERVICE_III_TENSION_UNIT, m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_OtherAreas_WithoutReinforcement_AfterLosses.Coefficient, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_SERVICE_III_TENSION_UNIT,tagAfterLosses);
    DDV_UnitValueZeroOrMore(pDX, IDC_SERVICE_III_TENSION_UNIT,m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_OtherAreas_WithoutReinforcement_AfterLosses.Coefficient, pDisplayUnits->SqrtPressure);
+   DDX_Check_Bool(pDX,IDC_CHECK_SERVICE_III_TENSION_MAX,m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_OtherAreas_WithoutReinforcement_AfterLosses.bHasMaxValue);
+   DDX_UnitValueAndTag(pDX,IDC_SERVICE_III_TENSION_MAX,IDC_SERVICE_III_TENSION_MAX_UNIT,m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_OtherAreas_WithoutReinforcement_AfterLosses.MaxValue,pDisplayUnits->Stress);
+   if (m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_OtherAreas_WithoutReinforcement_AfterLosses.bHasMaxValue)
+   {
+      DDV_UnitValueGreaterThanZero(pDX,IDC_SERVICE_III_TENSION_MAX,m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_OtherAreas_WithoutReinforcement_AfterLosses.MaxValue,pDisplayUnits->Stress);
+   }
 
    DDX_UnitValueAndTag(pDX, IDC_SERVICE_III_TENSION_WITH_REBAR, IDC_SERVICE_III_TENSION_WITH_REBAR_UNIT, m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_OtherAreas_WithReinforcement_AfterLosses.Coefficient, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_SERVICE_III_TENSION_WITH_REBAR_UNIT,tagAfterLosses);
    DDV_UnitValueZeroOrMore(pDX, IDC_SERVICE_III_TENSION_WITH_REBAR_UNIT,m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_OtherAreas_WithReinforcement_AfterLosses.Coefficient, pDisplayUnits->SqrtPressure);
+   DDX_Check_Bool(pDX,IDC_CHECK_SERVICE_III_TENSION_WITH_REBAR_MAX,m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_OtherAreas_WithReinforcement_AfterLosses.bHasMaxValue);
+   DDX_UnitValueAndTag(pDX,IDC_SERVICE_III_TENSION_WITH_REBAR_MAX,IDC_SERVICE_III_TENSION_WITH_REBAR_MAX_UNIT,m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_OtherAreas_WithReinforcement_AfterLosses.MaxValue,pDisplayUnits->Stress);
+   if (m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_OtherAreas_WithReinforcement_AfterLosses.bHasMaxValue)
+   {
+      DDV_UnitValueGreaterThanZero(pDX,IDC_SERVICE_III_TENSION_WITH_REBAR_MAX,m_Entry.m_pImpl->m_ClosureJointCriteria.TensionStressLimit_OtherAreas_WithReinforcement_AfterLosses.MaxValue,pDisplayUnits->Stress);
+   }
 
    DDX_Text(pDX,IDC_FATIGUE_COMPRESSION,m_Entry.m_pImpl->m_ClosureJointCriteria.CompressionStressCoefficient_Fatigue);
    DDV_GreaterThanZero(pDX, IDC_FATIGUE_COMPRESSION,m_Entry.m_pImpl->m_ClosureJointCriteria.CompressionStressCoefficient_Fatigue);

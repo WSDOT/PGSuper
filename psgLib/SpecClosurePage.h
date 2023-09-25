@@ -45,4 +45,10 @@ protected:
 public:
    virtual BOOL OnInitDialog();
    virtual BOOL OnSetActive();
+	afx_msg void OnCheckServiceITensionMax();
+	afx_msg void OnCheckServicePtzTensionMax();
+	afx_msg void OnCheckServicePtzTensionMaxWithRebar();
+	afx_msg void OnCheckServiceTensionMax();
+	afx_msg void OnCheckServiceTensionMaxWithRebar();
+
 };
