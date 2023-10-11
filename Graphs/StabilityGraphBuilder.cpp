@@ -223,20 +223,11 @@ bool CStabilityGraphBuilder::UpdateNow()
 
    m_Graph.DrawGrid(bShowGrid);
 
-   IndexType seriesFS1 = m_Graph.CreateDataSeries();
-   m_Graph.SetPenStyle(seriesFS1, CURVE_STYLE, CURVE_PEN_WEIGHT, CURVE1_COLOR);
-
-   IndexType seriesFS2 = m_Graph.CreateDataSeries();
-   m_Graph.SetPenStyle(seriesFS2, CURVE_STYLE, CURVE_PEN_WEIGHT, CURVE2_COLOR);
-
-   IndexType seriesFS3 = m_Graph.CreateDataSeries();
-   m_Graph.SetPenStyle(seriesFS3, CURVE_STYLE, CURVE_PEN_WEIGHT, CURVE3_COLOR);
-
-   IndexType limitFS1 = m_Graph.CreateDataSeries();
-   m_Graph.SetPenStyle(limitFS1, LIMIT_STYLE, CURVE_PEN_WEIGHT, CURVE1_COLOR);
-
-   IndexType limitFS2 = m_Graph.CreateDataSeries();
-   m_Graph.SetPenStyle(limitFS2, LIMIT_STYLE, CURVE_PEN_WEIGHT, CURVE2_COLOR);
+   IndexType seriesFS1 = m_Graph.CreateDataSeries(_T("F.S. Against Cracking (FScr)"), CURVE_STYLE, CURVE_PEN_WEIGHT, CURVE1_COLOR);
+   IndexType seriesFS2 = m_Graph.CreateDataSeries(_T("F.S. Against Failure (FSf)"), CURVE_STYLE, CURVE_PEN_WEIGHT, CURVE2_COLOR);
+   IndexType seriesFS3 = m_Graph.CreateDataSeries(_T("F.S. Against Rollover (FSro)"), CURVE_STYLE, CURVE_PEN_WEIGHT, CURVE3_COLOR);
+   IndexType limitFS1 = m_Graph.CreateDataSeries(_T("F.S. Limit 1"), LIMIT_STYLE, CURVE_PEN_WEIGHT, CURVE1_COLOR);
+   IndexType limitFS2 = m_Graph.CreateDataSeries(_T("F.S. Limit 2"), LIMIT_STYLE, CURVE_PEN_WEIGHT, CURVE2_COLOR);
 
    GET_IFACE_NOCHECK(IArtifact,pArtifact);
    GET_IFACE(IStrandGeometry,pStrandGeom);
@@ -438,7 +429,7 @@ void CStabilityGraphBuilder::DrawTheGraph(CWnd* pGraphWnd,CDC* pDC)
    m_Graph.SetSubtitle(buffer);
 
    m_Graph.Draw(pDC->GetSafeHdc());
-   DrawLegend(pDC);
+
 
    pDC->RestoreDC(save);
 }
