@@ -144,17 +144,23 @@ rptChapter* CLongReinfShearCheckChapterBuilder::Build(const std::shared_ptr<cons
       girderKey = pGdrLineRptSpec->GetGirderKey();
    }
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
-   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
-
    bool bUHPC = false;
    GET_IFACE2(pBroker, IMaterials, pMaterials);
-   for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+   GET_IFACE2(pBroker, IBridge, pBridge);
+
+   GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
+   GroupIndexType lastGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? pBridge->GetGirderGroupCount() - 1 : firstGroupIdx);
+   for (GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx && bUHPC == false; grpIdx++)
    {
-      if (pMaterials->GetSegmentConcreteType(CSegmentKey(girderKey, segIdx)) == pgsTypes::UHPC)
+      CGirderKey this_girder_key(grpIdx, girderKey.girderIndex);
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(this_girder_key);
+      for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
       {
-         bUHPC = true;
-         break;
+         if (pMaterials->GetSegmentConcreteType(CSegmentKey(this_girder_key, segIdx)) == pgsTypes::UHPC)
+         {
+            bUHPC = true;
+            break;
+         }
       }
    }
 
@@ -455,9 +461,6 @@ void create_table1_design(rptChapter* pChapter,IBroker* pBroker,
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
-   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
-
    GET_IFACE2(pBroker, IBridge, pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
@@ -540,6 +543,9 @@ void create_table1_design(rptChapter* pChapter,IBroker* pBroker,
    }
 
    RowIndexType row = table->GetNumberOfHeaderRows();
+
+   GET_IFACE2(pBroker, IReportOptions, pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
@@ -644,11 +650,6 @@ void create_table2_design(rptChapter* pChapter,IBroker* pBroker,
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
 
-   GET_IFACE2(pBroker,ISpecification,pSpec);
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   ATLASSERT(pSpecEntry!=nullptr);
-
    rptParagraph* pParagraph = new rptParagraph();
    *pChapter << pParagraph;
 
@@ -673,7 +674,7 @@ void create_table2_design(rptChapter* pChapter,IBroker* pBroker,
    (*table)(0,col++) << COLHDR(_T("V")<<Sub(_T("u")),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    (*table)(0,col++) << _T("Shear") << rptNewLine << Sub2(symbol(phi),_T("v"));
    
-   if ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims )
+   if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims )
    {
       (*table)(0,col++) << COLHDR(_T("V")<<Sub(_T("s")),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    }
@@ -742,22 +743,7 @@ void create_table3_design(rptChapter* pChapter, IBroker* pBroker,
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
    INIT_UV_PROTOTYPE( rptPointOfInterest,    location, pDisplayUnits->GetSpanLengthUnit(),   false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue,    stress,   pDisplayUnits->GetStressUnit(),       false );
-   INIT_UV_PROTOTYPE( rptAreaUnitValue,      area,     pDisplayUnits->GetAreaUnit(),         false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,      pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptForceSectionValue,  shear,    pDisplayUnits->GetShearUnit(),        false );
-   INIT_UV_PROTOTYPE( rptMomentSectionValue, moment,   pDisplayUnits->GetMomentUnit(),       false );
-   INIT_UV_PROTOTYPE( rptAngleUnitValue,     angle,    pDisplayUnits->GetAngleUnit(),        false );
-
-   rptRcScalar scalar;
-   scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Automatic );
-   scalar.SetWidth(6); 
-   scalar.SetPrecision(3);
-
-   GET_IFACE2(pBroker,ISpecification,pSpec);
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   ATLASSERT(pSpecEntry != nullptr);
 
    rptParagraph* pParagraph = new rptParagraph();
    *pChapter << pParagraph;
@@ -872,9 +858,6 @@ void create_table1_rating(rptChapter* pChapter,IBroker* pBroker,
    }
 
    rptRcTable* table = rptStyleManager::CreateDefaultTable(nColumns,_T("Longitudinal Reinforcement Shear Check Details - Table 1 of 3"));
-   
-   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    rptParagraph* pParagraph = new rptParagraph();
    *pChapter << pParagraph;
@@ -1032,15 +1015,7 @@ void create_table2_rating(rptChapter* pChapter,IBroker* pBroker,
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
 
-   GET_IFACE2(pBroker,ISpecification,pSpec);
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   ATLASSERT(pSpecEntry != nullptr);
-
    rptRcTable* table = rptStyleManager::CreateDefaultTable(11,_T("Longitudinal Reinforcement Shear Check Details - Table 2 of 3"));
-   
-   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    rptParagraph* pParagraph = new rptParagraph();
    *pChapter << pParagraph;
@@ -1075,7 +1050,7 @@ void create_table2_rating(rptChapter* pChapter,IBroker* pBroker,
    (*table)(0, col++) << COLHDR(_T("V")<<Sub(_T("u")),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    (*table)(0, col++) << _T("Shear") << rptNewLine << Sub2(symbol(phi),_T("v"));
    
-   if ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims )
+   if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims )
    {
       (*table)(0, col++) << COLHDR(_T("V")<<Sub(_T("s")),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    }
@@ -1135,30 +1110,12 @@ void create_table3_rating(rptChapter* pChapter,IBroker* pBroker,
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(longReinfShear.front().first.GetSegmentKey());
 
    INIT_UV_PROTOTYPE( rptPointOfInterest,    location, pDisplayUnits->GetSpanLengthUnit(),   false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue,    stress,   pDisplayUnits->GetStressUnit(),       false );
-   INIT_UV_PROTOTYPE( rptAreaUnitValue,      area,     pDisplayUnits->GetAreaUnit(),         false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,      pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptForceSectionValue,  shear,    pDisplayUnits->GetShearUnit(),        false );
-   INIT_UV_PROTOTYPE( rptMomentSectionValue, moment,   pDisplayUnits->GetMomentUnit(),       false );
-   INIT_UV_PROTOTYPE( rptAngleUnitValue,     angle,    pDisplayUnits->GetAngleUnit(),        false );
 
    GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(longReinfShear.front().first.GetSegmentKey()));
 
-   rptRcScalar scalar;
-   scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Automatic );
-   scalar.SetWidth(6); 
-   scalar.SetPrecision(3);
-
-   GET_IFACE2(pBroker,ISpecification,pSpec);
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   ATLASSERT(pSpecEntry != nullptr);
-
    rptRcTable* table = rptStyleManager::CreateDefaultTable(4,_T("Longitudinal Reinforcement Shear Check Details - Table 3 of 3"));
-   
-   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    rptParagraph* pParagraph = new rptParagraph();
    *pChapter << pParagraph;
