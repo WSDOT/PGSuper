@@ -71,5 +71,4 @@ protected:
    void AddGraphPoint(IndexType series, Float64 xval, Float64 yval);
 
    void DrawTheGraph(CWnd* pGraphWnd,CDC* pDC);
-   void DrawLegend(CDC* pDC);
 };

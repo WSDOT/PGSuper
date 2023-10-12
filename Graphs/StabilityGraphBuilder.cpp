@@ -223,11 +223,19 @@ bool CStabilityGraphBuilder::UpdateNow()
 
    m_Graph.DrawGrid(bShowGrid);
 
-   IndexType seriesFS1 = m_Graph.CreateDataSeries(_T("F.S. Against Cracking (FScr)"), CURVE_STYLE, CURVE_PEN_WEIGHT, CURVE1_COLOR);
-   IndexType seriesFS2 = m_Graph.CreateDataSeries(_T("F.S. Against Failure (FSf)"), CURVE_STYLE, CURVE_PEN_WEIGHT, CURVE2_COLOR);
-   IndexType seriesFS3 = m_Graph.CreateDataSeries(_T("F.S. Against Rollover (FSro)"), CURVE_STYLE, CURVE_PEN_WEIGHT, CURVE3_COLOR);
-   IndexType limitFS1 = m_Graph.CreateDataSeries(_T("F.S. Limit 1"), LIMIT_STYLE, CURVE_PEN_WEIGHT, CURVE1_COLOR);
-   IndexType limitFS2 = m_Graph.CreateDataSeries(_T("F.S. Limit 2"), LIMIT_STYLE, CURVE_PEN_WEIGHT, CURVE2_COLOR);
+   IndexType seriesFS1 = m_Graph.CreateDataSeries(_T("FS Against Cracking (FScr)"), CURVE_STYLE, CURVE_PEN_WEIGHT, CURVE1_COLOR);
+   IndexType seriesFS2 = m_Graph.CreateDataSeries(_T("FS Against Failure (FSf)"), CURVE_STYLE, CURVE_PEN_WEIGHT, CURVE2_COLOR);
+   IndexType seriesFS3 = m_Graph.CreateDataSeries(_T("FS Against Rollover (FSro)"), CURVE_STYLE, CURVE_PEN_WEIGHT, CURVE3_COLOR);
+   IndexType limitFS1 = m_Graph.CreateDataSeries(_T("Min FScr"), LIMIT_STYLE, CURVE_PEN_WEIGHT, CURVE1_COLOR);
+   IndexType limitFS2;
+   if (m_pGraphController->GetGraphType() == GT_LIFTING)
+   {
+      limitFS2 = m_Graph.CreateDataSeries(_T("Min FSf"), LIMIT_STYLE, CURVE_PEN_WEIGHT, CURVE2_COLOR);
+   }
+   else
+   {
+      limitFS2 = m_Graph.CreateDataSeries(_T("Min FSf/FSro"), LIMIT_STYLE, CURVE_PEN_WEIGHT, CURVE2_COLOR);
+   }
 
    GET_IFACE_NOCHECK(IArtifact,pArtifact);
    GET_IFACE(IStrandGeometry,pStrandGeom);
@@ -422,7 +430,7 @@ void CStabilityGraphBuilder::DrawTheGraph(CWnd* pGraphWnd,CDC* pDC)
    else
    {
       GET_IFACE(ISegmentHaulingSpecCriteria,pCriteria);
-      _stprintf_s(buffer,sizeof(buffer)/sizeof(TCHAR),_T("Min. FScr = %3.1f, Min. FSf/FSr = %3.1f"),
+      _stprintf_s(buffer,sizeof(buffer)/sizeof(TCHAR),_T("Min. FScr = %3.1f, Min. FSf/FSro = %3.1f"),
          pCriteria->GetHaulingCrackingFs(),
          pCriteria->GetHaulingRolloverFs() );
    }
@@ -432,96 +440,6 @@ void CStabilityGraphBuilder::DrawTheGraph(CWnd* pGraphWnd,CDC* pDC)
 
 
    pDC->RestoreDC(save);
-}
-
-void CStabilityGraphBuilder::DrawLegend(CDC* pDC)
-{
-   // Graph doesn't support legends... Draw a legend in the top
-   // left corner of the graph's client area
-
-   CPen pen1(CURVE_STYLE,CURVE_PEN_WEIGHT,CURVE1_COLOR);
-   CPen pen2(CURVE_STYLE,CURVE_PEN_WEIGHT,CURVE2_COLOR);
-   CPen pen3(CURVE_STYLE,CURVE_PEN_WEIGHT,CURVE3_COLOR);
-
-   CFont font;
-   font.CreatePointFont(80,_T("Arial"),pDC);
-   CFont* oldFont = pDC->SelectObject(&font);
-
-   CBrush brush;
-   brush.CreateSolidBrush(GRAPH_BACKGROUND);
-   CBrush* oldBrush = pDC->SelectObject(&brush );
-
-   COLORREF oldBkColor = pDC->SetBkColor(GRAPH_BACKGROUND);
-
-   const WBFL::Graphing::PointMapper& mapper = m_Graph.GetClientAreaPointMapper(pDC->GetSafeHdc());
-   WBFL::Graphing::Point org = mapper.GetWorldOrg();
-   WBFL::Graphing::Size  ext = mapper.GetWorldExt();
-
-   CPoint topLeft;
-   mapper.WPtoDP(org.X()-ext.Dx()/2.,org.Y()+ext.Dy()/2.,&topLeft.x,&topLeft.y);
-   topLeft.x += 5;
-   topLeft.y += 5;
-
-   UINT oldAlign = pDC->SetTextAlign(TA_LEFT | TA_TOP);
-
-   CString legend1, legend2, legend3;
-   CSize size1, size2, size3;
-
-   if (  m_pGraphController->GetGraphType() == GT_LIFTING )
-   {
-      legend1 = _T("F.S. Against Cracking (FScr)");
-      legend2 = _T("F.S. Against Failure (FSf)");
-   }
-   else
-   {
-      legend1 = _T("F.S. Against Cracking (FScr)");
-      legend2 = _T("F.S. Against Failure (FSf)");
-      legend3 = _T("F.S. Against Rollover (FSro)");
-   }
-   
-   size1 = pDC->GetTextExtent(legend1);
-   size2 = pDC->GetTextExtent(legend2);
-   size3 = pDC->GetTextExtent(legend3);
-
-   int logPixelsX = pDC->GetDeviceCaps(LOGPIXELSX); // Pixels per inch in the x direction
-   // we want a 1/2" line for the legend
-   int legendLength = logPixelsX/2;
-
-   CPoint bottomRight;
-   bottomRight.x = 5 + topLeft.x + Max(size1.cx,size2.cx,size3.cx) + 5 + legendLength + 5;
-   bottomRight.y = 5 + topLeft.y + size1.cy + 5 + size2.cy + 5;
-   if (  m_pGraphController->GetGraphType() == GT_HAULING )
-   {
-      bottomRight.y += size3.cy + 5;
-   }
-
-   // draw the box around the legend
-   pDC->Rectangle(CRect(topLeft,bottomRight));
-
-
-   pDC->TextOut(5 + topLeft.x,5 + topLeft.y,legend1);
-   CPen* oldPen = pDC->SelectObject(&pen1);
-   pDC->MoveTo(5 + topLeft.x + Max(size1.cx,size2.cx,size3.cx) + 5,                5 + topLeft.y + size1.cy/2);
-   pDC->LineTo(5 + topLeft.x + Max(size1.cx,size2.cx,size3.cx) + 5 + legendLength, 5 + topLeft.y + size1.cy/2);
-
-   pDC->SelectObject(&pen2);
-   pDC->TextOut(5 + topLeft.x,5 + topLeft.y + size1.cy + 5, legend2);
-   pDC->MoveTo(5 + topLeft.x + Max(size1.cx,size2.cx,size3.cx) + 5,                5 + topLeft.y + size1.cy + 5 + size2.cy/2);
-   pDC->LineTo(5 + topLeft.x + Max(size1.cx,size2.cx,size3.cx) + 5 + legendLength, 5 + topLeft.y + size1.cy + 5 + size2.cy/2);
-
-   if (  m_pGraphController->GetGraphType() == GT_HAULING )
-   {
-      pDC->SelectObject(&pen3);
-      pDC->TextOut(5 + topLeft.x,5 + topLeft.y + size1.cy + 5 + size2.cy + 5, legend3);
-      pDC->MoveTo(5 + topLeft.x + Max(size1.cx,size2.cx,size3.cx) + 5,                5 + topLeft.y + size1.cy + 5 + size2.cy + 5 + size3.cy/2);
-      pDC->LineTo(5 + topLeft.x + Max(size1.cx,size2.cx,size3.cx) + 5 + legendLength, 5 + topLeft.y + size1.cy + 5 + size2.cy + 5 + size3.cy/2);
-   }
-
-   pDC->SelectObject(oldPen);
-   pDC->SelectObject(oldFont);
-   pDC->SelectObject(oldBrush);
-   pDC->SetTextAlign(oldAlign);
-   pDC->SetBkColor(oldBkColor);
 }
 
 void CStabilityGraphBuilder::ExportGraphData(LPCTSTR rstrDefaultFileName)
