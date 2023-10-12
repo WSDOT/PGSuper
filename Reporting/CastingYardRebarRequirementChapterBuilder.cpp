@@ -396,7 +396,7 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
    pgsTypes::LimitState limitState = (liveLoadIntervalIdx <= intervalIdx ? pgsTypes::ServiceIII : pgsTypes::ServiceI);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,       pDisplayUnits->GetSpanLengthUnit(), false );
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   GET_IFACE2_NOCHECK(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(segmentKey.segmentIndex == ALL_SEGMENTS && (pReportOptions->IncludeSpanAndGirder4Pois(segmentKey) || poi.GetID() != INVALID_ID));
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
