@@ -87,7 +87,7 @@ rptChapter* CTexasLoadRatingSummaryChapterBuilder::Build(const std::shared_ptr<c
          pPara = new rptParagraph;
          (*pChapter) << pPara;
 
-         (*pPara) << CRatingSummaryTable().BuildByLimitState(pBroker, girderKeys, CRatingSummaryTable::Design) << rptNewLine;
+         (*pPara) << CRatingSummaryTable::BuildByLimitState(pBroker, girderKeys, CRatingSummaryTable::Design) << rptNewLine;
          return pChapter;
       }
       else
