@@ -106,13 +106,14 @@ rptChapter* CTexasGirderSummaryChapterBuilder::Build(const std::shared_ptr<const
    // girder line geometry table
    girder_line_geometry( pChapter, pBroker, segmentKey, pDisplayUnits );
 
-   // put a page break at bottom of table
-   if (doEjectPage)
-   {
-      rptParagraph* p = new rptParagraph;
-      *pChapter << p;
-      *p << rptNewPage;
-   }
+   // Mantis 1470 - Taya requested that this page break be removed
+   //// put a page break at bottom of table
+   //if (doEjectPage)
+   //{
+   //   rptParagraph* p = new rptParagraph;
+   //   *pChapter << p;
+   //   *p << rptNewPage;
+   //}
 
    return pChapter;
 }
