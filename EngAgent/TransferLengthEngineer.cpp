@@ -332,7 +332,7 @@ Float64 pgsTransferLengthEngineer::GetTransferLengthAdjustment(const pgsPointOfI
             continue;
          }
 
-         StrandIndexType endStrandIdx = startStrandIdx + strandRow.m_nStrands;
+         StrandIndexType endStrandIdx = startStrandIdx + strandRow.m_nStrands - 1;
          if (startStrandIdx <= strandIdx && strandIdx <= endStrandIdx)
          {
             if (strandRow.m_bIsDebonded[pgsTypes::metStart] || strandRow.m_bIsDebonded[pgsTypes::metEnd])
@@ -384,7 +384,7 @@ Float64 pgsTransferLengthEngineer::GetTransferLengthAdjustment(const pgsPointOfI
                }
                else
                {
-                  // poi is in the fully transfered region
+                  // poi is in the fully transferred region
                   adjust = 1.0;
                }
             }
